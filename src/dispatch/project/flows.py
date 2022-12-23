@@ -84,6 +84,7 @@ def project_create_flow(*, organization_slug: str, project_id: int, db_session=N
         case_priority_in = CasePriorityCreate(
             name=priority["name"],
             description=priority["description"],
+            page_assignee=priority["page_assignee"],
             project=project,
             default=priority["default"],
             enabled=priority["enabled"],

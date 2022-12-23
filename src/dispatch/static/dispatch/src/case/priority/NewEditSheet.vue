@@ -73,6 +73,13 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
+                <v-checkbox
+                  v-model="page_assignee"
+                  label="Page Assignee"
+                  hint="Would you like Dispatch to page the case assignee on case creation?"
+                />
+              </v-flex>
+              <v-flex xs12>
                 <color-picker-input label="Color" v-model="color"></color-picker-input>
               </v-flex>
               <v-flex xs12>
@@ -133,6 +140,7 @@ export default {
       "selected.id",
       "selected.loading",
       "selected.name",
+      "selected.page_assignee",
       "selected.project",
       "selected.view_order",
     ]),
