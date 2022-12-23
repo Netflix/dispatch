@@ -164,6 +164,9 @@ def configure(config):
     app.command(config.slack_command_update_incident, middleware=middleware)(
         handle_update_incident_command
     )
+    app.command(config.slack_command_update_notifications_group, middleware=middleware)(
+        handle_update_notifications_group_command
+    )
     app.command(config.slack_command_report_tactical, middleware=middleware)(
         handle_report_tactical_command
     )
@@ -388,6 +391,12 @@ async def handle_list_participants_command(ack, respond, client, db_session, con
     contact_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="contact"
     )
+    if not contact_plugin:
+        await respond(
+            text="Contact plugin is not enabled. Unable to list participants.",
+            response_type="ephemeral",
+        )
+        return
 
     for participant in participants:
         if participant.active_roles:
@@ -1003,12 +1012,17 @@ app.view(
 )(ack=ack_update_participant_submission_event, lazy=[handle_update_participant_submission_event])
 
 
-async def handle_update_notifications_group_command(ack, body, context, client, db_session):
+async def handle_update_notifications_group_command(
+    ack, respond, body, context, client, db_session
+):
     """Handles the update notification group command."""
     await ack()
 
     # TODO handle cases
     if context["subject"].type == "case":
+        await respond(
+            text="Command is not currently available for cases.", response_type="ephemeral"
+        )
         return
 
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
@@ -1016,6 +1030,19 @@ async def handle_update_notifications_group_command(ack, body, context, client, 
     group_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
     )
+    if not group_plugin:
+        await respond(
+            text="Group plugin is not enabled. Unable to update notifications group.",
+            response_type="ephemeral",
+        )
+        return
+
+    if not incident.notifications_group:
+        await respond(
+            text="No notification group available for this incident.", response_type="ephemeral"
+        )
+        return
+
     members = group_plugin.instance.list(incident.notifications_group.email)
 
     blocks = [
@@ -1029,17 +1056,17 @@ async def handle_update_notifications_group_command(ack, body, context, client, 
         Input(
             label="Members",
             element=PlainTextInput(
-                text=", ".join(members),
+                initial_value=", ".join(members),
                 multiline=True,
                 action_id=UpdateNotificationGroupActionIds.members,
             ),
             block_id=UpdateNotificationGroupBlockIds.members,
         ),
-        Context(elements=MarkdownText(text="Separate email addresses with commas")),
+        Context(elements=[MarkdownText(text="Separate email addresses with commas")]),
     ]
 
     modal = Modal(
-        title="Update Group Membership",
+        title="Update Group Members",  # 24 Char Limit
         blocks=blocks,
         close="Cancel",
         submit="Submit",
@@ -1053,7 +1080,7 @@ async def handle_update_notifications_group_command(ack, body, context, client, 
 async def ack_update_notifications_group_submission_event(ack):
     """Handles the update notifications group submission acknowledgement."""
     modal = Modal(
-        title="Update Notifications Group",
+        title="Update Group Members",
         close="Close",
         blocks=[Section(text="Updating notifications group...")],
     ).build()
@@ -1061,10 +1088,46 @@ async def ack_update_notifications_group_submission_event(ack):
 
 
 async def handle_update_notifications_group_submission_event(
-    ack, user, client, context, db_session, form_data
+    ack, body, user, client, context, db_session, form_data
 ):
-    """Handles the update notifications group submission"""
-    ack()
+    """Handles the update notifications group submission event."""
+    # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
+    # in the future
+    schema_engine = engine.execution_options(
+        schema_translate_map={
+            None: f"dispatch_organization_{context['subject'].organization_slug}",
+        }
+    )
+    db_session = sessionmaker(bind=schema_engine)()
+
+    current_members = (
+        body["view"]["blocks"][1]["element"]["initial_value"].replace(" ", "").split(",")
+    )
+    updated_members = (
+        form_data.get(UpdateNotificationGroupBlockIds.members).replace(" ", "").split(",")
+    )
+    members_added = list(set(updated_members) - set(current_members))
+    members_removed = list(set(current_members) - set(updated_members))
+
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+
+    group_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
+    )
+
+    group_plugin.instance.add(incident.notifications_group.email, members_added)
+    group_plugin.instance.remove(incident.notifications_group.email, members_removed)
+
+    modal = Modal(
+        title="Update Group Members",
+        blocks=[Section(text="Updating Notification Group Members... Success!")],
+        close="Close",
+    ).build()
+
+    await client.views_update(
+        view_id=body["view"]["id"],
+        view=modal,
+    )
 
 
 app.view(
