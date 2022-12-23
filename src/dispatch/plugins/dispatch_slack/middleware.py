@@ -10,6 +10,7 @@ from dispatch.database.core import SessionLocal, engine, sessionmaker
 from dispatch.organization import service as organization_service
 from dispatch.participant import service as participant_service
 from dispatch.participant_role.enums import ParticipantRoleType
+from dispatch.plugin import service as plugin_service
 
 from .models import SubjectMetadata
 from .exceptions import ContextError, RoleError
@@ -172,14 +173,8 @@ async def modal_submit_middleware(body, context, next):
     await next()
 
 
-# TODO determine how we an get the current slack config
-async def configuration_context_middleware(context, db_session, next):
-    context["config"] = {}  # SlackConversationConfiguration()
-    await next()
-
-
 # NOTE we don't need to handle cases because commands are not available in threads.
-async def command_context_middleware(context, payload, next):
+async def command_context_middleware(context, payload, next, respond):
     conversation = resolve_conversation_from_context(channel_id=context["channel_id"])
     if conversation:
         context.update(
@@ -193,6 +188,10 @@ async def command_context_middleware(context, payload, next):
             }
         )
     else:
+        await respond(
+            text=f"Sorry, I can't determine the correct context to run the command `{payload['command']}`.  Are you running this command in an incident channel?",
+            response_type="ephemeral",
+        )
         raise ContextError(
             f"Sorry, I can't determine the correct context to run the command '{payload['command']}'. Are you running this command in an incident channel?"
         )
@@ -218,4 +217,24 @@ async def db_middleware(context, next):
         }
     )
     context["db_session"] = sessionmaker(bind=schema_engine)()
+    await next()
+
+
+async def configuration_middleware(context, next):
+    if context.get("config"):
+        return await next()
+
+    if not context.get("subject") and not context.get("db_session"):
+        return await next()
+
+    plugin = plugin_service.get_active_instance(
+        db_session=context["db_session"],
+        project_id=context["subject"].project_id,
+        plugin_type="conversation",
+    )
+
+    if not plugin:
+        return await next()
+
+    context["config"] = plugin.configuration
     await next()

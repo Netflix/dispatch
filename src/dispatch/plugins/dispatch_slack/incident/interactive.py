@@ -20,6 +20,7 @@ from blockkit import (
     UsersSelect,
 )
 from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.database.core import engine, resolve_attr, sessionmaker
@@ -88,7 +89,7 @@ from dispatch.plugins.dispatch_slack.messaging import create_message_blocks
 from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
     command_context_middleware,
-    configuration_context_middleware,
+    configuration_middleware,
     db_middleware,
     modal_submit_middleware,
     restricted_command_middleware,
@@ -128,8 +129,8 @@ def configure(config):
     middleware = [
         command_context_middleware,
         db_middleware,
-        configuration_context_middleware,
         user_middleware,
+        configuration_middleware,
     ]
 
     # don't need an incident context
@@ -181,6 +182,16 @@ def configure(config):
     app.event(config.timeline_event_reaction, middleware=[db_middleware])(
         handle_timeline_added_event
     )
+
+
+def refetch_db_session(organization_slug: str) -> Session:
+    schema_engine = engine.execution_options(
+        schema_translate_map={
+            None: f"dispatch_organization_{organization_slug}",
+        }
+    )
+    db_session = sessionmaker(bind=schema_engine)()
+    return db_session
 
 
 @app.options(
@@ -461,14 +472,14 @@ def filter_tasks_by_assignee_and_creator(tasks: List[Task], by_assignee: str, by
     return filtered_tasks
 
 
-async def handle_list_tasks_command(ack, user, respond, context, db_session):
+async def handle_list_tasks_command(ack, user, body, respond, context, db_session):
     """Handles the list tasks command."""
     await ack()
     blocks = []
 
     caller_only = False
-    # if body["command"] == context["config"].slack_command_list_my_tasks:
-    #    caller_only = True
+    if body["command"] == context["config"].slack_command_list_my_tasks:
+        caller_only = True
 
     for status in TaskStatus:
         blocks.append(Section(text=f"*{status} Incident Tasks*"))
@@ -687,9 +698,8 @@ async def handle_after_hours_message(ack, context, client, payload, user, db_ses
 @message_dispatcher.add()
 async def handle_thread_creation(client, payload, context):
     """Sends the user an ephemeral message if they use threads."""
-    # TODO figure out how to pass current slack config
-    # if not context["config"].ban_threads:
-    #    return
+    if not context["config"].ban_threads:
+        return
 
     if context["subject"].type == "incident":
         if payload.get("thread_ts"):
@@ -876,12 +886,7 @@ async def handle_add_timeline_submission_event(body, user, client, context, form
     """Handles the add timeline submission event."""
     # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
     # in the future
-    schema_engine = engine.execution_options(
-        schema_translate_map={
-            None: f"dispatch_organization_{context['subject'].organization_slug}",
-        }
-    )
-    db_session = sessionmaker(bind=schema_engine)()
+    db_session = refetch_db_session(context["subject"].organization_slug)
     event_date = form_data.get(DefaultBlockIds.date_picker_input)
     event_hour = form_data.get(DefaultBlockIds.hour_picker_input)["value"]
     event_minute = form_data.get(DefaultBlockIds.minute_picker_input)["value"]
@@ -979,12 +984,7 @@ async def handle_update_participant_submission_event(body, client, context, db_s
     """Handles the update participant submission event."""
     # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
     # in the future
-    schema_engine = engine.execution_options(
-        schema_translate_map={
-            None: f"dispatch_organization_{context['subject'].organization_slug}",
-        }
-    )
-    db_session = sessionmaker(bind=schema_engine)()
+    db_session = refetch_db_session(context["subject"].organization_slug)
     added_reason = form_data.get(UpdateParticipantBlockIds.reason)
     participant_id = int(form_data.get(UpdateParticipantBlockIds.participant)["value"])
     selected_participant = participant_service.get(
@@ -1093,12 +1093,7 @@ async def handle_update_notifications_group_submission_event(
     """Handles the update notifications group submission event."""
     # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
     # in the future
-    schema_engine = engine.execution_options(
-        schema_translate_map={
-            None: f"dispatch_organization_{context['subject'].organization_slug}",
-        }
-    )
-    db_session = sessionmaker(bind=schema_engine)()
+    db_session = refetch_db_session(context["subject"].organization_slug)
 
     current_members = (
         body["view"]["blocks"][1]["element"]["initial_value"].replace(" ", "").split(",")
@@ -1190,12 +1185,8 @@ async def handle_assign_role_submission_event(body, user, client, context, form_
     """Handles the assign role submission."""
     # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
     # in the future
-    schema_engine = engine.execution_options(
-        schema_translate_map={
-            None: f"dispatch_organization_{context['subject'].organization_slug}",
-        }
-    )
-    db_session = sessionmaker(bind=schema_engine)()
+    db_session = refetch_db_session(context["subject"].organization_slug)
+
     assignee_user_id = form_data[AssignRoleBlockIds.user]["value"]
     assignee_role = form_data[AssignRoleBlockIds.role]["value"]
     assignee_email = await get_user_email_async(client=client, user_id=assignee_user_id)
@@ -1425,7 +1416,7 @@ async def handle_report_executive_command(ack, body, client, respond, context, d
     """Handles executive report command."""
     await ack()
 
-    if context["subject"].type == "case":
+    if context["subject"].type != "incident":
         await respond(
             text="Command is not available outside of incident channels.", response_type="ephemeral"
         )
@@ -1463,13 +1454,13 @@ async def handle_report_executive_command(ack, body, client, respond, context, d
             ),
             block_id=ReportExecutiveBlockIds.next_steps,
         ),
-        # Context(
-        #    elements=[
-        #        MarkdownText(
-        #            text=f"Use {context['config'].slack_command_update_notifications_group} to update the list of recipients of this report."
-        #        )
-        #    ]
-        # ),
+        Context(
+            elements=[
+                MarkdownText(
+                    text=f"Use {context['config'].slack_command_update_notifications_group} to update the list of recipients of this report."
+                )
+            ]
+        ),
     ]
 
     modal = Modal(
@@ -1522,7 +1513,13 @@ async def handle_report_executive_submission_event(client, body, user, context, 
 
 app.view(
     ReportExecutiveActions.submit,
-    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
+    middleware=[
+        action_context_middleware,
+        db_middleware,
+        user_middleware,
+        modal_submit_middleware,
+        configuration_middleware,
+    ],
 )(ack=ack_report_executive_submission_event, lazy=[handle_report_executive_submission_event])
 
 
@@ -1601,12 +1598,8 @@ async def handle_update_incident_submission_event(
     """Handles the update incident submission"""
     # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
     # in the future
-    schema_engine = engine.execution_options(
-        schema_translate_map={
-            None: f"dispatch_organization_{context['subject'].organization_slug}",
-        }
-    )
-    db_session = sessionmaker(bind=schema_engine)()
+    db_session = refetch_db_session(context["subject"].organization_slug)
+
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
     tags = []
@@ -1711,18 +1704,13 @@ async def ack_report_incident_submission_event(ack):
     await ack(response_action="update", view=modal)
 
 
-async def handle_report_incident_submission_event(user, client, body, form_data):
+async def handle_report_incident_submission_event(user, context, client, body, form_data):
     """Handles the report incident submission"""
     # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
     # in the future
 
     # TODO handle multiple organizations during submission
-    schema_engine = engine.execution_options(
-        schema_translate_map={
-            None: "dispatch_organization_default",
-        }
-    )
-    db_session = sessionmaker(bind=schema_engine)()
+    db_session = refetch_db_session(context["subject"].organization_slug)
 
     tags = []
     for t in form_data.get(DefaultBlockIds.tags_multi_select, []):

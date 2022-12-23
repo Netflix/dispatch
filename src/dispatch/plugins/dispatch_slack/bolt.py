@@ -9,7 +9,13 @@ from fastapi import APIRouter
 from starlette.requests import Request
 
 from .decorators import message_dispatcher
-from .middleware import message_context_middleware, db_middleware, user_middleware
+from .middleware import (
+    message_context_middleware,
+    db_middleware,
+    user_middleware,
+    configuration_middleware,
+)
+
 
 app = AsyncApp(
     token="xoxb-valid", raise_error_for_unhandled_request=True, process_before_response=True
@@ -37,7 +43,13 @@ async def app_error_handler(error, client, body, logger):
 
 
 @app.event(
-    {"type": "message"}, middleware=[message_context_middleware, db_middleware, user_middleware]
+    {"type": "message"},
+    middleware=[
+        message_context_middleware,
+        db_middleware,
+        user_middleware,
+        configuration_middleware,
+    ],
 )
 async def handle_message_events(ack, payload, context, body, client, respond, user, db_session):
     """Container function for all message functions."""
