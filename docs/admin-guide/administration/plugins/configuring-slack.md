@@ -82,6 +82,7 @@ The following are the bot and user scopes required for the Dispatch Slack App to
 **Bot Token Scopes**
 
 ```text
+bookmarks:write
 channels:read
 chat:write
 commands
