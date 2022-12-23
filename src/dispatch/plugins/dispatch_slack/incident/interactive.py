@@ -1088,7 +1088,7 @@ async def ack_update_notifications_group_submission_event(ack):
 
 
 async def handle_update_notifications_group_submission_event(
-    ack, body, user, client, context, db_session, form_data
+    body, client, context, db_session, form_data
 ):
     """Handles the update notifications group submission event."""
     # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
