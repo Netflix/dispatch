@@ -10,12 +10,12 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 # NOTE: define permissions before enabling the code block below
-# from dispatch.auth.permissions import (
-#     CaseEditPermission,
-#     CaseJoinPermission,
-#     PermissionsDependency,
-#     CaseViewPermission,
-# )
+from dispatch.auth.permissions import (
+    # CaseEditPermission,
+    # CaseJoinPermission,
+    PermissionsDependency,
+    CaseViewPermission,
+)
 from dispatch.auth import service as auth_service
 from dispatch.auth.models import DispatchUser
 from dispatch.case.enums import CaseStatus
@@ -61,6 +61,7 @@ def get_current_case(*, db_session: Session = Depends(get_db), request: Request)
     "/{case_id}",
     response_model=CaseRead,
     summary="Retrieves a single case.",
+    dependencies=[Depends(PermissionsDependency([CaseViewPermission]))],
 )
 def get_case(
     *,
@@ -105,6 +106,12 @@ def create_case(
     background_tasks: BackgroundTasks,
 ):
     """Creates a new case."""
+    # TODO: (wshel) this conditional always happens in the UI flow since
+    # reporter is not available to be set.
+    if not case_in.reporter:
+        case_in.reporter = ParticipantUpdate(
+            individual=IndividualContactRead(email=current_user.email)
+        )
     case = create(db_session=db_session, case_in=case_in, current_user=current_user)
 
     if case.status == CaseStatus.triage:

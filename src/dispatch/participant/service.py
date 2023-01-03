@@ -67,34 +67,43 @@ def get_all_by_incident_id(*, db_session, incident_id: int) -> List[Optional[Par
 def get_or_create(
     *,
     db_session,
-    incident_id: int,
+    obj_id: int,
+    obj_type: str,
     individual_id: int,
     service_id: int,
     participant_roles: List[ParticipantRoleCreate],
 ) -> Participant:
     """Gets an existing participant object or creates a new one."""
-    from dispatch.incident import service as incident_service
-
-    participant = (
+    participant: Participant = (
         db_session.query(Participant)
-        .filter(Participant.incident_id == incident_id)
+        .filter(
+            Participant.incident_id == obj_id
+            if obj_type == "incident"
+            else Participant.case_id == obj_id
+        )
         .filter(Participant.individual_contact_id == individual_id)
         .one_or_none()
     )
 
     if not participant:
-        incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+        if obj_type == "incident":
+            from dispatch.incident import service as incident_service
 
-        # We get information about the individual
-        individual_contact = individual_service.get(
-            db_session=db_session, individual_contact_id=individual_id
-        )
+            obj = incident_service.get(db_session=db_session, incident_id=obj_id)
+        if obj_type == "case":
+            from dispatch.case import service as case_service
+
+            obj = case_service.get(db_session=db_session, case_id=obj_id)
 
         individual_info = {}
         contact_plugin = plugin_service.get_active_instance(
-            db_session=db_session, project_id=incident.project.id, plugin_type="contact"
+            db_session=db_session, project_id=obj.project.id, plugin_type="contact"
         )
         if contact_plugin:
+            # We get information about the individual
+            individual_contact = individual_service.get(
+                db_session=db_session, individual_contact_id=individual_id
+            )
             individual_info = contact_plugin.instance.get(
                 individual_contact.email, db_session=db_session
             )

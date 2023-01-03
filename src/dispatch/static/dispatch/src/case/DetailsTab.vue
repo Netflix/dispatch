@@ -122,6 +122,7 @@ import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
 import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
 import OrganizationMemberCombobox from "@/organization/OrganizationMemberCombobox.vue"
+import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 
@@ -141,6 +142,7 @@ export default {
     DateTimePickerMenu,
     IncidentFilterCombobox,
     OrganizationMemberCombobox,
+    ParticipantSelect,
     ProjectSelect,
     TagFilterAutoComplete,
     ValidationProvider,
@@ -166,6 +168,7 @@ export default {
       "selected.id",
       "selected.incidents",
       "selected.name",
+      "selected.observer",
       "selected.signals",
       "selected.project",
       "selected.related",

@@ -1,5 +1,5 @@
 from datetime import datetime
-from collections import defaultdict
+from collections import Counter, defaultdict
 from typing import List, Optional, Any
 
 from pydantic import validator
@@ -14,7 +14,7 @@ from sqlalchemy import (
     UniqueConstraint,
 )
 from sqlalchemy.orm import relationship
-from sqlalchemy_utils import TSVectorType
+from sqlalchemy_utils import TSVectorType, observes
 
 from dispatch.auth.models import UserRead
 from dispatch.case.priority.models import CasePriorityRead
@@ -29,6 +29,8 @@ from dispatch.incident.models import IncidentRead
 from dispatch.messaging.strings import CASE_RESOLUTION_DEFAULT
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 from dispatch.models import NameStr, PrimaryKey
+from dispatch.participant.models import Participant
+from dispatch.participant.models import ParticipantRead, ParticipantUpdate
 from dispatch.storage.models import StorageRead
 from dispatch.tag.models import TagRead
 from dispatch.ticket.models import TicketRead
@@ -66,6 +68,8 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     resolution = Column(String, default=CASE_RESOLUTION_DEFAULT, nullable=False)
     status = Column(String, default=CaseStatus.new, nullable=False)
     visibility = Column(String, default=Visibility.open, nullable=False)
+    participants_team = Column(String)
+    participants_location = Column(String)
 
     reported_at = Column(DateTime, default=datetime.utcnow)
     triage_at = Column(DateTime)
@@ -106,6 +110,16 @@ class Case(Base, TimeStampMixin, ProjectMixin):
         "Group", backref="case", cascade="all, delete-orphan", foreign_keys=[Group.case_id]
     )
 
+    participants = relationship(
+        "Participant",
+        backref="case",
+        cascade="all, delete-orphan",
+        foreign_keys=[Participant.case_id],
+    )
+
+    observer_id = Column(Integer, ForeignKey("participant.id"))
+    observer = relationship("Participant", foreign_keys=[observer_id], post_update=True)
+
     incidents = relationship("Incident", secondary=assoc_cases_incidents, backref="cases")
 
     tactical_group_id = Column(Integer, ForeignKey("group.id"))
@@ -127,6 +141,11 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     )
 
     ticket = relationship("Ticket", uselist=False, backref="case", cascade="all, delete-orphan")
+
+    @observes("participants")
+    def participant_observer(self, participants):
+        self.participants_team = Counter(p.team for p in participants).most_common(1)[0][0]
+        self.participants_location = Counter(p.location for p in participants).most_common(1)[0][0]
 
 
 class SignalRead(DispatchBase):
@@ -180,6 +199,8 @@ class CaseCreate(CaseBase):
     case_severity: Optional[CaseSeverityRead]
     case_type: Optional[CaseTypeRead]
     project: Optional[ProjectRead]
+    reporter: Optional[ParticipantUpdate]
+    observer: Optional[ParticipantUpdate]
     tags: Optional[List[TagRead]] = []
 
 
@@ -217,6 +238,8 @@ class CaseRead(CaseBase):
     project: ProjectRead
     related: Optional[List[CaseReadNested]] = []
     reported_at: Optional[datetime] = None
+    observer: Optional[ParticipantRead]
+    participants: Optional[List[ParticipantRead]] = []
     storage: Optional[StorageRead] = None
     tags: Optional[List[TagRead]] = []
     ticket: Optional[TicketRead] = None
@@ -234,6 +257,7 @@ class CaseUpdate(CaseBase):
     escalated_at: Optional[datetime] = None
     incidents: Optional[List[IncidentRead]] = []
     reported_at: Optional[datetime] = None
+    observer: Optional[ParticipantUpdate]
     tags: Optional[List[TagRead]] = []
     triage_at: Optional[datetime] = None
 

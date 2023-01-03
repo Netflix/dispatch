@@ -13,6 +13,8 @@ from dispatch.case.type import service as case_type_service
 from dispatch.event import service as event_service
 from dispatch.exceptions import NotFoundError
 from dispatch.incident import service as incident_service
+from dispatch.participant import flows as participant_flows
+from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.project import service as project_service
 from dispatch.service import flows as service_flows
 from dispatch.tag import service as tag_service
@@ -186,6 +188,24 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
         description="Case created",
         case_id=case.id,
     )
+
+    # add reporter
+    participant_flows.add_participant(
+        case_in.reporter.individual.email,
+        case,
+        db_session,
+        role=ParticipantRoleType.reporter,
+    )
+
+    # add observer
+    observer_email = case_in.observer.individual.email
+    if observer_email:
+        participant_flows.add_participant(
+            observer_email,
+            case,
+            db_session,
+            role=ParticipantRoleType.observer,
+        )
 
     return case
 
