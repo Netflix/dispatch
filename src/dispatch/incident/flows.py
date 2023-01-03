@@ -551,6 +551,10 @@ def set_conversation_bookmarks(incident: Incident, db_session: SessionLocal):
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
+    if not plugin:
+        log.warning("Bookmarks not created. No conversation plugin enabled.")
+        return
+
     try:
         plugin.instance.set_bookmark(
             incident.conversation.channel_id,
@@ -875,6 +879,40 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
             )
             log.exception(e)
 
+    # we create the conversation for real-time communications
+
+    conversation_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+    )
+    if conversation_plugin:
+        try:
+            conversation = create_conversation(incident, db_session)
+
+            conversation_in = ConversationCreate(
+                resource_id=conversation["resource_id"],
+                resource_type=conversation["resource_type"],
+                weblink=conversation["weblink"],
+                channel_id=conversation["id"],
+            )
+            incident.conversation = conversation_service.create(
+                db_session=db_session, conversation_in=conversation_in
+            )
+
+            event_service.log_incident_event(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description="Conversation added to incident",
+                incident_id=incident.id,
+            )
+        except Exception as e:
+            event_service.log_incident_event(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description=f"Creation of incident conversation failed. Reason: {e}",
+                incident_id=incident.id,
+            )
+            log.exception(e)
+
     # we update the incident ticket
     update_external_incident_ticket(incident.id, db_session)
 
@@ -911,44 +949,10 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
                 )
                 log.exception(e)
 
-    # we create the conversation for real-time communications
-
-    conversation_plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
-    )
-    if conversation_plugin:
-        try:
-            conversation = create_conversation(incident, db_session)
-
-            conversation_in = ConversationCreate(
-                resource_id=conversation["resource_id"],
-                resource_type=conversation["resource_type"],
-                weblink=conversation["weblink"],
-                channel_id=conversation["id"],
-            )
-            incident.conversation = conversation_service.create(
-                db_session=db_session, conversation_in=conversation_in
-            )
-
-            event_service.log_incident_event(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description="Conversation added to incident",
-                incident_id=incident.id,
-            )
-
-            # we set the conversation topic
-            set_conversation_topic(incident, db_session)
-            # we set the conversation bookmarks
-            set_conversation_bookmarks(incident, db_session)
-        except Exception as e:
-            event_service.log_incident_event(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description=f"Creation of incident conversation failed. Reason: {e}",
-                incident_id=incident.id,
-            )
-            log.exception(e)
+    # we set the conversation topic
+    set_conversation_topic(incident, db_session)
+    # we set the conversation bookmarks
+    set_conversation_bookmarks(incident, db_session)
 
     # we defer this setup for all resolved incident roles until after resources have been created
     roles = ["reporter", "commander", "liaison", "scribe"]
