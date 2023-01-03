@@ -879,42 +879,6 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
             )
             log.exception(e)
 
-    # we update the incident ticket
-    update_external_incident_ticket(incident.id, db_session)
-
-    # we update the investigation document
-    document_plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="document"
-    )
-    if document_plugin:
-        if incident.incident_document:
-            try:
-                document_plugin.instance.update(
-                    incident.incident_document.resource_id,
-                    commander_fullname=incident.commander.individual.name,
-                    conference_challenge=resolve_attr(incident, "conference.challenge"),
-                    conference_weblink=resolve_attr(incident, "conference.weblink"),
-                    conversation_weblink=resolve_attr(incident, "conversation.weblink"),
-                    description=incident.description,
-                    document_weblink=resolve_attr(incident, "incident_document.weblink"),
-                    name=incident.name,
-                    priority=incident.incident_priority.name,
-                    severity=incident.incident_severity.name,
-                    status=incident.status,
-                    storage_weblink=resolve_attr(incident, "storage.weblink"),
-                    ticket_weblink=resolve_attr(incident, "ticket.weblink"),
-                    title=incident.title,
-                    type=incident.incident_type.name,
-                )
-            except Exception as e:
-                event_service.log_incident_event(
-                    db_session=db_session,
-                    source="Dispatch Core App",
-                    description=f"Incident documents rendering failed. Reason: {e}",
-                    incident_id=incident.id,
-                )
-                log.exception(e)
-
     # we create the conversation for real-time communications
 
     conversation_plugin = plugin_service.get_active_instance(
