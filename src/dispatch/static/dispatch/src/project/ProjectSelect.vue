@@ -98,6 +98,12 @@ export default {
 
       ProjectApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
+
+        // check to see if the current selection is available in the list and if not we add it
+        if (!this.items.find((match) => match.id === this.project.id)) {
+          this.items = [this.project].concat(this.items)
+        }
+
         this.total = response.data.total
 
         if (this.items.length < this.total) {

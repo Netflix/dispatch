@@ -50,14 +50,13 @@ def configure(config):
 
 def workflow_select(
     db_session: SessionLocal,
-    project_id: int,
     action_id: str = RunWorkflowActionIds.workflow_select,
     block_id: str = RunWorkflowBlockIds.workflow_select,
     initial_option: dict = None,
     label: str = "Workflow",
     **kwargs,
 ):
-    workflows = workflow_service.get_enabled(db_session=db_session, project_id=project_id)
+    workflows = workflow_service.get_enabled(db_session=db_session)
 
     return static_select_block(
         action_id=action_id,
@@ -114,8 +113,9 @@ def param_input(
     return inputs
 
 
-async def handle_workflow_list_command(ack, body, respond, client, context, db_session):
+async def handle_workflow_list_command(ack, respond, context, db_session):
     """Handles the workflow list command."""
+    await ack()
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
     workflows = incident.workflow_instances
 
@@ -128,12 +128,14 @@ async def handle_workflow_list_command(ack, body, respond, client, context, db_s
         blocks.append(
             Section(
                 fields=[
-                    f"*Name:* \n <{w.weblink}|{w.workflow.name}>"
-                    f"*Workflow Description:* \n {w.workflow.description}"
-                    f"*Run Reason:* \n {w.run_reason}"
-                    f"*Creator:* \n {w.creator.individual.name}"
-                    f"*Status:* \n {w.status}"
-                    f"*Artifacts:* \n {artifact_links}"
+                    "*Name:* " + f"\n <{w.weblink}|{w.workflow.name}> \n"
+                    if w.weblink
+                    else "*Name:* " + f"\n {w.workflow.name} \n"
+                    f"*Workflow Description:* \n {w.workflow.description} \n"
+                    f"*Run Reason:* \n {w.run_reason} \n"
+                    f"*Creator:* \n {w.creator.individual.name} \n"
+                    f"*Status:* \n {w.status} \n"
+                    f"*Artifacts:* \n {artifact_links} \n"
                 ]
             )
         )
@@ -151,12 +153,12 @@ async def handle_workflow_run_command(
 ):
     """Handles the workflow run command."""
     await ack()
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
     blocks = [
         Context(elements=[MarkdownText(text="Select a workflow to run.")]),
         workflow_select(
-            db_session=db_session, dispatch_action=True, project_id=incident.project.id
+            db_session=db_session,
+            dispatch_action=True,
         ),
     ]
 
@@ -176,10 +178,11 @@ async def handle_workflow_run_command(
     RunWorkflowActions.submit,
     middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
 )
-async def handle_workflow_submission_event(ack, body, client, context, db_session, form_data, user):
+async def handle_workflow_submission_event(ack, context, db_session, form_data, user):
     """Handles workflow submission event."""
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    await ack()
 
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
     workflow_id = form_data.get(RunWorkflowBlockIds.workflow_select)["value"]
     workflow = workflow_service.get(db_session=db_session, workflow_id=workflow_id)
 
@@ -198,8 +201,8 @@ async def handle_workflow_submission_event(ack, body, client, context, db_sessio
 
     instance = workflow_service.create_instance(
         db_session=db_session,
+        workflow=workflow,
         instance_in=WorkflowInstanceCreate(
-            workflow=workflow,
             incident=incident,
             creator=creator,
             run_reason=form_data[RunWorkflowBlockIds.reason_input],
@@ -243,7 +246,6 @@ async def handle_run_workflow_select_action(ack, body, db_session, context, clie
         "selected_option"
     ]["value"]
 
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
     selected_workflow = workflow_service.get(db_session=db_session, workflow_id=workflow_id)
 
     blocks = [
@@ -252,7 +254,6 @@ async def handle_run_workflow_select_action(ack, body, db_session, context, clie
             initial_option={"text": selected_workflow.name, "value": selected_workflow.id},
             db_session=db_session,
             dispatch_action=True,
-            project_id=incident.project.id,
         ),
         reason_input(),
     ]

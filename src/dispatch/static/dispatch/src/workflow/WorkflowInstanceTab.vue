@@ -1,11 +1,5 @@
 <template>
-  <v-data-table
-    :headers="headers"
-    :items="value"
-    :items-per-page="-1"
-    disabled-pagination
-    hide-default-footer
-  >
+  <v-data-table :headers="headers" :items="value" :items-per-page="-1" disabled-pagination hide-default-footer>
     <template v-slot:item.parameters="{ item }">
       <workflow-instance-detail-menu :value="item" />
     </template>
@@ -41,7 +35,7 @@ export default {
       headers: [
         { text: "Name", value: "workflow.name" },
         { text: "Status", value: "status" },
-        { text: "Creator", value: "creator" },
+        { text: "Creator", value: "creator.individual.name" },
         { text: "Run Reason", value: "run_reason" },
         { text: "Created At", value: "created_at" },
         { text: "", value: "parameters" },

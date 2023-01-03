@@ -8,10 +8,10 @@ from dispatch.signal.models import SignalInstanceCreate
 
 def create_signal_instance(db_session: SessionLocal, signal_instance_data: dict):
     """Creates a signal and a case if necessary."""
-    signal = signal_service.get_by_external_id_and_variant(
+    signal = signal_service.get_by_variant_or_external_id(
         db_session=db_session,
-        external_id=signal_instance_data["id"],
-        variant=signal_instance_data.get("variant"),
+        external_id=signal_instance_data.id,
+        variant=signal_instance_data.variant,
     )
     signal_instance_in = SignalInstanceCreate(**signal_instance_data, project=signal.project)
 

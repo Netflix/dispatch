@@ -41,6 +41,9 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
+            <template v-slot:item.page_assignee="{ item }">
+              <v-simple-checkbox v-model="item.page_assignee" disabled />
+            </template>
             <template v-slot:item.default="{ item }">
               <v-simple-checkbox v-model="item.default" disabled />
             </template>
@@ -88,6 +91,7 @@ export default {
       headers: [
         { text: "Name", value: "name", sortable: true },
         { text: "Description", value: "description", sortable: false },
+        { text: "Page Assignee", value: "page_assignee", sortable: true },
         { text: "Default", value: "default", sortable: true },
         { text: "Enabled", value: "enabled", sortable: true },
         { text: "View Order", value: "view_order", sortable: true },

@@ -78,7 +78,7 @@ class DefaultActionIds(DispatchEnum):
 
 class TimezoneOptions(DispatchEnum):
     local = "Local Time (based on your slack profile)"
-    utc = "Coordinated Universal Time (UTC)"
+    utc = "UTC"
 
 
 def date_picker_input(
@@ -503,7 +503,7 @@ def participant_select(
     **kwargs,
 ):
     """Creates a static select of available participants."""
-    participants = [{"text": p.individual.name, "value": p.individual.id} for p in participants]
+    participants = [{"text": p.individual.name, "value": p.id} for p in participants]
     return static_select_block(
         placeholder="Select Participant",
         options=participants,

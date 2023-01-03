@@ -1,14 +1,21 @@
 import logging
+from blockkit import Section, Modal
 from slack_bolt.app.async_app import AsyncApp
-from slack_bolt.adapter.starlette.async_handler import AsyncSlackRequestHandler
 from slack_bolt.response import BoltResponse
-
+from slack_bolt.adapter.starlette.async_handler import AsyncSlackRequestHandler
 
 from fastapi import APIRouter
 
 from starlette.requests import Request
 
-from .exceptions import ContextError, RoleError
+from .decorators import message_dispatcher
+from .middleware import (
+    message_context_middleware,
+    db_middleware,
+    user_middleware,
+    configuration_middleware,
+)
+
 
 app = AsyncApp(
     token="xoxb-valid", raise_error_for_unhandled_request=True, process_before_response=True
@@ -19,30 +26,34 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 @app.error
-async def errors(ack, error, body, respond, logger):
+async def app_error_handler(error, client, body, logger):
+    modal = Modal(
+        title="Error", close="Close", blocks=[Section(text="Something went wrong...")]
+    ).build()
 
-    print(error)
+    if body and body.get("view"):
+        await client.views_update(
+            view_id=body["view"]["id"],
+            view=modal,
+        )
 
-    message = "An unknown error has occured."
-    if isinstance(error, ContextError):
-        message = str(error)
+    logger.exception(f"Error: {error}")
+    logger.info(f"Request body: {body}")
+    return BoltResponse(body="", status=200)
 
-    elif isinstance(error, RoleError):
-        message = str(error)
 
-    if body.get("view"):
-        pass
-
-    else:
-        await respond(text=message, response_type="ephemeral")
-
-    logger.debug(body)
-    from pprint import pprint
-
-    pprint(body)
-    logger.exception(error)
-    logger.debug(error)
-    return BoltResponse(status=200, body="")
+@app.event(
+    {"type": "message"},
+    middleware=[
+        message_context_middleware,
+        db_middleware,
+        user_middleware,
+        configuration_middleware,
+    ],
+)
+async def handle_message_events(ack, payload, context, body, client, respond, user, db_session):
+    """Container function for all message functions."""
+    await message_dispatcher.dispatch(**locals())
 
 
 handler = AsyncSlackRequestHandler(app)
