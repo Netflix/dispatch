@@ -37,11 +37,20 @@
           clearable
         />
       </v-flex>
-      <v-flex xs12>
+      <v-flex xs6>
         <organization-member-combobox
           v-model="assignee"
           label="Assignee"
           hint="The organization member to which the case is assigned."
+          clearable
+          :project="project"
+        />
+      </v-flex>
+      <v-flex xs6>
+        <participant-select
+          v-model="observer"
+          label="Observer"
+          hint="A participant who can observe the case."
           clearable
           :project="project"
         />

@@ -111,14 +111,14 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     )
 
     participants = relationship(
-        "Participant",
+        Participant,
         backref="case",
         cascade="all, delete-orphan",
         foreign_keys=[Participant.case_id],
     )
 
     observer_id = Column(Integer, ForeignKey("participant.id"))
-    observer = relationship("Participant", foreign_keys=[observer_id], post_update=True)
+    observer = relationship(Participant, foreign_keys=[observer_id], post_update=True)
 
     incidents = relationship("Incident", secondary=assoc_cases_incidents, backref="cases")
 
