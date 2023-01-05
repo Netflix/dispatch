@@ -1318,7 +1318,7 @@ async def handle_engage_oncall_submission_event(client, body, user, context, for
         message = f"A member of {oncall_service.name} is already in the conversation."
 
     if oncall_individual and oncall_service:
-        message = f"You have successfully engaged {oncall_individual} from the {oncall_service} oncall rotation."
+        message = f"You have successfully engaged {oncall_individual.name} from the {oncall_service.name} oncall rotation."
 
     modal = Modal(title="Engagement", blocks=[Section(text=message)], close="Close").build()
     await client.views_update(
