@@ -39,7 +39,7 @@ def rating_select(
     action_id: str = FeedbackNotificationActionIds.rating_select,
     block_id: str = FeedbackNotificationBlockIds.rating_select,
     initial_option: dict = None,
-    label: str = "Feedback Rating",
+    label: str = "Rate your experience",
     **kwargs,
 ):
     return static_select_block(
@@ -48,7 +48,7 @@ def rating_select(
         initial_option=initial_option,
         label=label,
         options=[{"text": r, "value": r} for r in FeedbackRating],
-        placeholder="Select Rating",
+        placeholder="Select a rating",
         **kwargs,
     )
 
@@ -66,7 +66,7 @@ def feedback_input(
             action_id=action_id,
             initial_value=initial_value,
             multiline=True,
-            placeholder="How would you describe your experiance?",
+            placeholder="How would you describe your experience?",
         ),
         label=label,
         **kwargs,
@@ -80,7 +80,7 @@ def anonymous_checkbox(
     label: str = "Check the box if you wish to provide your feedback anonymously",
     **kwargs,
 ):
-    options = [{"text": "Anonymize my feedbak", "value": "anonymouse"}]
+    options = [{"text": "Anonymize my feedback", "value": "anonymous"}]
     return Input(
         block_id=block_id,
         element=Checkboxes(options=options, initial_value=initial_value, action_id=action_id),

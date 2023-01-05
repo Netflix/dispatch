@@ -77,7 +77,7 @@ class DefaultActionIds(DispatchEnum):
 
 
 class TimezoneOptions(DispatchEnum):
-    local = "Local Time (based on your slack profile)"
+    local = "Local Time (based on your Slack profile)"
     utc = "UTC"
 
 
@@ -106,7 +106,7 @@ def hour_picker_input(
     label: str = "Hour",
     **kwargs,
 ):
-    """Builds a hour picker input."""
+    """Builds an hour picker input."""
     hours = [{"text": str(h).zfill(2), "value": str(h).zfill(2)} for h in range(0, 24)]
     return static_select_block(
         action_id=action_id,
@@ -291,7 +291,7 @@ def incident_priority_select(
     project_id: int = None,
     **kwargs,
 ):
-    """Creates a incident priority select."""
+    """Creates an incident priority select."""
     priorities = [
         {"text": p.name, "value": p.id}
         for p in incident_priority_service.get_all_enabled(
@@ -453,7 +453,7 @@ def case_severity_select(
     project_id: int = None,
     **kwargs,
 ):
-    """Creates an case severity select."""
+    """Creates a case severity select."""
     severities = [
         {"text": s.name, "value": s.id}
         for s in case_severity_service.get_all_enabled(db_session=db_session, project_id=project_id)

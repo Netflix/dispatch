@@ -2,14 +2,14 @@ from dispatch.enums import DispatchEnum
 
 
 class AddTimelineEventBlockIds(DispatchEnum):
-    date = "add-timeline-event-input"
+    date = "add-timeline-event-date"
     hour = "add-timeline-event-hour"
     minute = "add-timeline-event-minute"
     timezone = "add-timeline-event-timezone"
 
 
 class AddTimelineEventActionIds(DispatchEnum):
-    date = "add-timeline-event-input"
+    date = "add-timeline-event-date"
     hour = "add-timeline-event-hour"
     minute = "add-timeline-event-minute"
     timezone = "add-timeline-event-timezone"
@@ -24,7 +24,7 @@ class TaskNotificationActions(DispatchEnum):
 
 
 class TaskNotificationActionIds(DispatchEnum):
-    update_status = "update-task-event"
+    update_status = "task-notification-update-status"
 
 
 class TaskNotificationBlockIds(DispatchEnum):

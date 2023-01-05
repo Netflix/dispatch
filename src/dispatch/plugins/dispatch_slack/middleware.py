@@ -97,7 +97,7 @@ async def restricted_command_middleware(context, db_session, user, next):
                 return await next()
 
     raise RoleError(
-        f"User does not have correct role. allowedRoles: {','.join(['r.name for r in allowed_roles'])}"
+        f"Participant does not have permission to run this command. Roles with permission: {','.join(['r.name for r in allowed_roles'])}"
     )
 
 
@@ -188,7 +188,7 @@ async def command_context_middleware(context, payload, next, respond):
             }
         )
     else:
-        msg = f"Sorry, I can't determine the correct context to run the command `{payload['command']}`.  Are you running this command in an incident channel?"
+        msg = f"Sorry, I can't determine the correct context to run the command `{payload['command']}`. Are you running this command in an incident channel?"
         await respond(
             text=msg,
             response_type="ephemeral",
