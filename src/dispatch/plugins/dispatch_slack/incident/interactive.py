@@ -232,7 +232,7 @@ async def handle_tag_search_action(ack, payload, context, db_session):
 @app.action(
     IncidentUpdateActions.project_select, middleware=[action_context_middleware, db_middleware]
 )
-async def handle_project_select_action(ack, body, client, context, db_session):
+async def handle_update_incident_project_select_action(ack, body, client, context, db_session):
     await ack()
     values = body["view"]["state"]["values"]
 
@@ -252,6 +252,7 @@ async def handle_project_select_action(ack, body, client, context, db_session):
         title_input(initial_value=incident.title),
         description_input(initial_value=incident.description),
         resolution_input(initial_value=incident.resolution),
+        incident_status_select(initial_option={"text": incident.status, "value": incident.status}),
         project_select(
             db_session=db_session,
             initial_option={"text": project.name, "value": project.id},
@@ -590,7 +591,7 @@ async def handle_timeline_added_event(client, context, db_session):
     message_text = response["messages"][0]["text"]
     message_sender_id = response["messages"][0]["user"]
 
-    # TODO handle case reactions
+    # TODO: (wshel) handle case reactions
     if context["subject"].type == "incident":
         # we fetch the incident
         incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
@@ -617,7 +618,7 @@ async def handle_participant_role_activity(ack, db_session, context, user):
     """Increments the participant role's activity counter."""
     await ack()
 
-    # TODO add when case support when participants are added.
+    # TODO: add when case support when participants are added.
     if context["subject"].type == "incident":
         participant = participant_service.get_by_incident_id_and_email(
             db_session=db_session, incident_id=context["subject"].id, email=user.email
@@ -653,10 +654,11 @@ async def handle_participant_role_activity(ack, db_session, context, user):
                     )
 
 
-@message_dispatcher.add(exclude={"subtype": ["channel_join", "group_join"]})
+@message_dispatcher.add(
+    exclude={"subtype": ["channel_join", "group_join"]}
+)  # we ignore user channel and group join messages
 async def handle_after_hours_message(ack, context, client, payload, user, db_session):
     """Notifies the user that this incident is currently in after hours mode."""
-    # we ignore user channel and group join messages
     await ack()
 
     if context["subject"].type == "incident":
@@ -710,7 +712,7 @@ async def handle_thread_creation(client, payload, context):
 async def handle_message_tagging(db_session, payload, context):
     """Looks for incident tags in incident messages."""
 
-    # TODO handle case tagging
+    # TODO: (wshel) handle case tagging
     if context["subject"].type == "incident":
         text = payload["text"]
         incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
@@ -935,8 +937,11 @@ app.view(
 async def handle_update_participant_command(ack, respond, body, context, db_session, client):
     """Handles the update participant command."""
     await ack()
+
     if context["subject"].type == "case":
-        await respond(text="Command is not currently available for cases.")
+        await respond(
+            text="Command is not currently available for cases.", response_type="ephemeral"
+        )
         return
 
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
@@ -1087,9 +1092,7 @@ async def ack_update_notifications_group_submission_event(ack):
     await ack(response_action="update", view=modal)
 
 
-async def handle_update_notifications_group_submission_event(
-    body, client, context, db_session, form_data
-):
+async def handle_update_notifications_group_submission_event(body, client, context, form_data):
     """Handles the update notifications group submission event."""
     # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
     # in the future
@@ -1224,7 +1227,8 @@ app.view(
 async def handle_engage_oncall_command(ack, respond, context, body, client, db_session):
     """Handles the engage oncall command."""
     await ack()
-    # TODO handle cases
+
+    # TODO: handle cases
     if context["subject"].type == "case":
         await respond(
             text="Command is not currently available for cases.", response_type="ephemeral"
@@ -1279,16 +1283,23 @@ async def handle_engage_oncall_command(ack, respond, context, body, client, db_s
         callback_id=EngageOncallActions.submit,
         private_metadata=context["subject"].json(),
     ).build()
-
     await client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
-@app.view(
-    EngageOncallActions.submit,
-    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
-)
-async def handle_engage_oncall_submission_event(ack, user, context, db_session, form_data):
+async def ack_engage_oncall_submission_event(ack):
+    """Handles enage oncall acknowledgment."""
+    modal = Modal(
+        title="Engage Oncall", close="Close", blocks=[Section(text="Engaging oncall...")]
+    ).build()
+    await ack(response_action="update", view=modal)
+
+
+async def handle_engage_oncall_submission_event(client, body, user, context, form_data):
     """Handles the engage oncall submission"""
+    # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
+    # in the future
+    db_session = refetch_db_session(context["subject"].organization_slug)
+
     oncall_service_external_id = form_data[EngageOncallBlockIds.service]["value"]
     page = form_data.get(EngageOncallBlockIds.page, {"value": None})["value"]
 
@@ -1307,10 +1318,19 @@ async def handle_engage_oncall_submission_event(ack, user, context, db_session, 
         message = f"A member of {oncall_service.name} is already in the conversation."
 
     if oncall_individual and oncall_service:
-        message = f"You have successfully engaged {oncall_individual.name} from the {oncall_service.name} oncall rotation."
+        message = f"You have successfully engaged {oncall_individual} from the {oncall_service} oncall rotation."
 
     modal = Modal(title="Engagement", blocks=[Section(text=message)], close="Close").build()
-    await ack(response_action="update", view=modal)
+    await client.views_update(
+        view_id=body["view"]["id"],
+        view=modal,
+    )
+
+
+app.view(
+    EngageOncallActions.submit,
+    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
+)(ack=ack_engage_oncall_submission_event, lazy=[handle_engage_oncall_submission_event])
 
 
 async def handle_report_tactical_command(ack, client, respond, context, db_session, body):
@@ -1373,7 +1393,7 @@ async def handle_report_tactical_command(ack, client, respond, context, db_sessi
 
 
 async def ack_report_tactical_submission_event(ack):
-    """Handles report tactical submission event."""
+    """Handles report tactical acknowledgment."""
     modal = Modal(
         title="Report Tactical", close="Close", blocks=[Section(text="Creating tactical report...")]
     ).build()
@@ -1592,9 +1612,7 @@ async def ack_incident_update_submission_event(ack):
     await ack(response_action="update", view=modal)
 
 
-async def handle_update_incident_submission_event(
-    body, client, user, context, db_session, form_data
-):
+async def handle_update_incident_submission_event(body, client, user, context, form_data):
     """Handles the update incident submission"""
     # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
     # in the future
@@ -1709,12 +1727,12 @@ async def handle_report_incident_submission_event(user, context, client, body, f
     # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
     # in the future
 
-    # TODO handle multiple organizations during submission
+    # TODO: handle multiple organizations during submission
     db_session = refetch_db_session(context["subject"].organization_slug)
 
     tags = []
     for t in form_data.get(DefaultBlockIds.tags_multi_select, []):
-        # we have to fetch as only the IDs are embedded in slack
+        # we have to fetch as only the IDs are embedded in Slack
         tag = tag_service.get(db_session=db_session, tag_id=int(t["value"]))
         tags.append(tag)
 

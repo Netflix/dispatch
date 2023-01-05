@@ -729,7 +729,6 @@ def run_slack_websocket(organization: str, project: str):
     from slack_bolt.adapter.socket_mode.async_handler import AsyncSocketModeHandler
 
     from dispatch.common.utils.cli import install_plugins
-    from dispatch.plugins.dispatch_slack import feedback  # noqa
     from dispatch.plugins.dispatch_slack.bolt import app
     from dispatch.plugins.dispatch_slack.incident.interactive import configure as incident_configure
     from dispatch.plugins.dispatch_slack.service import get_organization_scope_from_slug
@@ -755,7 +754,7 @@ def run_slack_websocket(organization: str, project: str):
     instance = None
     for i in instances:
         if i.plugin.slug == "slack-conversation":
-            instance = i
+            instance: PluginInstance = i
             break
 
     if not instance:

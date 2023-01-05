@@ -31,7 +31,7 @@ async def app_error_handler(error, client, body, logger):
         title="Error", close="Close", blocks=[Section(text="Something went wrong...")]
     ).build()
 
-    if body and body.get("view"):
+    if body:
         await client.views_update(
             view_id=body["view"]["id"],
             view=modal,
@@ -39,7 +39,7 @@ async def app_error_handler(error, client, body, logger):
 
     logger.exception(f"Error: {error}")
     logger.info(f"Request body: {body}")
-    return BoltResponse(body="", status=200)
+    return BoltResponse(body=body, status=500)
 
 
 @app.event(
@@ -51,7 +51,7 @@ async def app_error_handler(error, client, body, logger):
         configuration_middleware,
     ],
 )
-async def handle_message_events(ack, payload, context, body, client, respond, user, db_session):
+async def handle_message_events():
     """Container function for all message functions."""
     await message_dispatcher.dispatch(**locals())
 
