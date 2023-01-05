@@ -1,4 +1,6 @@
+from http import HTTPStatus
 import logging
+
 from blockkit import Section, Modal
 from slack_bolt.app.async_app import AsyncApp
 from slack_bolt.response import BoltResponse
@@ -39,7 +41,7 @@ async def app_error_handler(error, client, body, logger):
 
     logger.exception(f"Error: {error}")
     logger.info(f"Request body: {body}")
-    return BoltResponse(body=body, status=500)
+    return BoltResponse(body=body, status=HTTPStatus.INTERNAL_SERVER_ERROR.value)
 
 
 @app.event(

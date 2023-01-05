@@ -1287,7 +1287,7 @@ async def handle_engage_oncall_command(ack, respond, context, body, client, db_s
 
 
 async def ack_engage_oncall_submission_event(ack):
-    """Handles enage oncall acknowledgment."""
+    """Handles engage oncall acknowledgment."""
     modal = Modal(
         title="Engage Oncall", close="Close", blocks=[Section(text="Engaging oncall...")]
     ).build()
