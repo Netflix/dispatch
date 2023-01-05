@@ -1425,6 +1425,7 @@ async def handle_report_tactical_submission_event(client, body, user, context, f
         view=modal,
     )
 
+
 app.view(
     ReportTacticalActions.submit,
     middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
