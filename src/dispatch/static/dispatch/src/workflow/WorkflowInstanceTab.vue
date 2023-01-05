@@ -1,5 +1,11 @@
 <template>
-  <v-data-table :headers="headers" :items="value" :items-per-page="-1" disabled-pagination hide-default-footer>
+  <v-data-table
+    :headers="headers"
+    :items="value"
+    :items-per-page="-1"
+    disabled-pagination
+    hide-default-footer
+  >
     <template v-slot:item.parameters="{ item }">
       <workflow-instance-detail-menu :value="item" />
     </template>
