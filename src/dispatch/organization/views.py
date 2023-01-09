@@ -1,22 +1,23 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
-from dispatch.database.core import get_db
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
-
-from dispatch.enums import UserRoles
 from dispatch.auth.models import DispatchUser
-from dispatch.auth.service import get_current_user
-
 from dispatch.auth.permissions import (
     OrganizationOwnerPermission,
     PermissionsDependency,
 )
+from dispatch.auth.service import get_current_user
+from dispatch.database.core import get_db
+from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.enums import UserRoles
 from dispatch.exceptions import ExistsError
 from dispatch.models import PrimaryKey
+from dispatch.project import service as project_service
+from dispatch.project.flows import project_init_flow
+from dispatch.project.models import ProjectCreate
 
 from .models import (
     OrganizationCreate,
@@ -45,6 +46,7 @@ def create_organization(
     db_session: Session = Depends(get_db),
     organization_in: OrganizationCreate,
     current_user: DispatchUser = Depends(get_current_user),
+    background_tasks: BackgroundTasks,
 ):
     """Create a new organization."""
     organization = get_by_name(db_session=db_session, name=organization_in.name)
@@ -54,12 +56,26 @@ def create_organization(
             detail=[{"msg": "An organization with this name already exists."}],
         )
 
-    # create organization
+    # we create the organization
     organization = create(db_session=db_session, organization_in=organization_in)
 
     # add creator as organization owner
     add_user(
         db_session=db_session, organization=organization, user=current_user, role=UserRoles.owner
+    )
+
+    # we create the default project
+    project_in = ProjectCreate(
+        name="default",
+        default=True,
+        description="Default Dispatch project.",
+        organization=organization,
+    )
+    project = project_service.create(db_session=db_session, project_in=project_in)
+
+    # we initialize the default project
+    background_tasks.add_task(
+        project_init_flow, project=project, organization_slug=organization.slug
     )
 
     return organization

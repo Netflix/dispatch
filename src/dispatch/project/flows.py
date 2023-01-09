@@ -17,13 +17,12 @@ from dispatch.incident_cost_type.models import IncidentCostTypeCreate
 from dispatch.plugin import service as plugin_service
 from dispatch.plugin.models import PluginInstanceCreate
 
-from .service import get
+from .models import Project
 
 
 @background_task
-def project_create_flow(*, organization_slug: str, project_id: int, db_session=None):
-    project = get(db_session=db_session, project_id=project_id)
-
+def project_init_flow(*, project: Project, organization_slug: str, db_session=None):
+    """Initializes a new project with default settings."""
     # Add all plugins in disabled mode
     plugins = plugin_service.get_all(db_session=db_session)
     for plugin in plugins:
