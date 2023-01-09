@@ -58,7 +58,9 @@ async def app_error_handler(
         configuration_middleware,
     ],
 )
-async def handle_message_events() -> None:
+async def handle_message_events(
+    ack, payload, context, body, client, respond, user, db_session
+) -> None:
     """Container function for all message functions."""
     await message_dispatcher.dispatch(**locals())
 
