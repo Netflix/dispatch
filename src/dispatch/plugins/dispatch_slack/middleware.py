@@ -1,9 +1,11 @@
-from typing import Optional
+from typing import Optional, Callable
 
+from slack_bolt.async_app import AsyncBoltContext, AsyncRespond
+from slack_sdk.web.async_client import AsyncWebClient
 from sqlalchemy.orm.session import Session
 
 from dispatch.auth import service as user_service
-from dispatch.auth.models import UserRegister
+from dispatch.auth.models import UserRegister, DispatchUser
 from dispatch.conversation import service as conversation_service
 from dispatch.conversation.models import Conversation
 from dispatch.database.core import SessionLocal, engine, sessionmaker
@@ -17,7 +19,7 @@ from .exceptions import ContextError, RoleError
 
 
 def resolve_conversation_from_context(
-    channel_id: str, message_ts: str = None
+    channel_id: str, message_ts: Optional[str] = None
 ) -> Optional[Conversation]:
     """Attempts to resolve a conversation based on the channel id or message_ts."""
     db_session = SessionLocal()
@@ -44,25 +46,27 @@ def resolve_conversation_from_context(
     return conversation
 
 
-async def shortcut_context_middleware(body, context, next):
+async def shortcut_context_middleware(context: AsyncBoltContext, next: Callable) -> None:
     """Attempts to determine the current context of the event."""
     context.update({"subject": SubjectMetadata(channel_id=context["channel_id"])})
     await next()
 
 
-async def button_context_middleware(payload, context, next):
+async def button_context_middleware(
+    payload: dict, context: AsyncBoltContext, next: Callable
+) -> None:
     """Attempt to determine the current context of the event."""
     context.update({"subject": SubjectMetadata.parse_raw(payload["value"])})
     await next()
 
 
-async def action_context_middleware(body, context, next):
+async def action_context_middleware(body: dict, context: AsyncBoltContext, next: Callable) -> None:
     """Attempt to determine the current context of the event."""
     context.update({"subject": SubjectMetadata.parse_raw(body["view"]["private_metadata"])})
     await next()
 
 
-async def message_context_middleware(context, next):
+async def message_context_middleware(context: AsyncBoltContext, next: Callable) -> None:
     """Attemps to determine the current context of the event."""
     conversation = resolve_conversation_from_context(context["channel_id"])
     if conversation:
@@ -83,7 +87,9 @@ async def message_context_middleware(context, next):
     await next()
 
 
-async def restricted_command_middleware(context, db_session, user, next):
+async def restricted_command_middleware(
+    context: AsyncBoltContext, db_session, user: DispatchUser, next: Callable
+):
     """Rejects commands from unauthorized individuals."""
     allowed_roles = [ParticipantRoleType.incident_commander, ParticipantRoleType.scribe]
     participant = participant_service.get_by_incident_id_and_email(
@@ -101,7 +107,14 @@ async def restricted_command_middleware(context, db_session, user, next):
     )
 
 
-async def user_middleware(body, payload, db_session, client, context, next):
+async def user_middleware(
+    body: dict,
+    payload: dict,
+    db_session: Session,
+    client: AsyncWebClient,
+    context: AsyncBoltContext,
+    next: Callable,
+) -> None:
     """Attempts to determine the user making the request."""
 
     # for modals
@@ -128,7 +141,7 @@ async def user_middleware(body, payload, db_session, client, context, next):
     await next()
 
 
-async def modal_submit_middleware(body, context, next):
+async def modal_submit_middleware(body: dict, context: AsyncBoltContext, next: Callable) -> None:
     """Parses view data into a reasonable data struct."""
     parsed_data = {}
     state_elem = body["view"].get("state")
@@ -174,7 +187,9 @@ async def modal_submit_middleware(body, context, next):
 
 
 # NOTE we don't need to handle cases because commands are not available in threads.
-async def command_context_middleware(context, payload, next, respond):
+async def command_context_middleware(
+    context: AsyncBoltContext, payload: dict, next: Callable, respond: AsyncRespond
+) -> None:
     conversation = resolve_conversation_from_context(channel_id=context["channel_id"])
     if conversation:
         context.update(
@@ -197,7 +212,7 @@ async def command_context_middleware(context, payload, next, respond):
     await next()
 
 
-async def db_middleware(context, next):
+async def db_middleware(context: AsyncBoltContext, next: Callable):
     if context.get("db_session"):
         return await next()
 
@@ -218,7 +233,7 @@ async def db_middleware(context, next):
     await next()
 
 
-async def configuration_middleware(context, next):
+async def configuration_middleware(context: AsyncBoltContext, next: Callable):
     if context.get("config"):
         return await next()
 

@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import List
+from typing import List, Any
 
 import pytz
 from blockkit import (
@@ -19,9 +19,13 @@ from blockkit import (
     Section,
     UsersSelect,
 )
+from slack_bolt.async_app import AsyncAck, AsyncBoltContext, AsyncRespond
+from slack_sdk.web.async_client import AsyncWebClient
+
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from dispatch.auth.models import DispatchUser
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.database.core import engine, resolve_attr, sessionmaker
 from dispatch.database.service import search_filter_sort_paginate
@@ -197,7 +201,9 @@ def refetch_db_session(organization_slug: str) -> Session:
 @app.options(
     DefaultActionIds.tags_multi_select, middleware=[action_context_middleware, db_middleware]
 )
-async def handle_tag_search_action(ack, payload, context, db_session):
+async def handle_tag_search_action(
+    ack: AsyncAck, payload: dict, context: AsyncBoltContext, db_session: Session
+) -> None:
     """Handles tag lookup actions."""
     query_str = payload["value"]
 
@@ -232,7 +238,13 @@ async def handle_tag_search_action(ack, payload, context, db_session):
 @app.action(
     IncidentUpdateActions.project_select, middleware=[action_context_middleware, db_middleware]
 )
-async def handle_update_incident_project_select_action(ack, body, client, context, db_session):
+async def handle_update_incident_project_select_action(
+    ack: AsyncAck,
+    body: dict,
+    client: AsyncWebClient,
+    context: AsyncBoltContext,
+    db_session: Session,
+) -> None:
     await ack()
     values = body["view"]["state"]["values"]
 
@@ -307,7 +319,13 @@ async def handle_update_incident_project_select_action(ack, body, client, contex
 
 
 # COMMANDS
-async def handle_list_incidents_command(ack, payload, respond, db_session, context):
+async def handle_list_incidents_command(
+    ack: AsyncAck,
+    payload: dict,
+    respond: AsyncRespond,
+    db_session: Session,
+    context: AsyncBoltContext,
+) -> None:
     """Handles the list incidents command."""
     await ack()
     projects = []
@@ -388,7 +406,13 @@ async def handle_list_incidents_command(ack, payload, respond, db_session, conte
         await respond(text="Incident List", blocks=blocks, response_type="ephemeral")
 
 
-async def handle_list_participants_command(ack, respond, client, db_session, context):
+async def handle_list_participants_command(
+    ack: AsyncAck,
+    respond: AsyncRespond,
+    client: AsyncWebClient,
+    db_session: Session,
+    context: AsyncBoltContext,
+) -> None:
     """Handles list participants command."""
     await ack()
     blocks = [Section(text="*Incident Participants*")]
@@ -452,7 +476,9 @@ async def handle_list_participants_command(ack, respond, client, db_session, con
     await respond(text="Incident Participant List", blocks=blocks, response_type="ephemeral")
 
 
-def filter_tasks_by_assignee_and_creator(tasks: List[Task], by_assignee: str, by_creator: str):
+def filter_tasks_by_assignee_and_creator(
+    tasks: List[Task], by_assignee: str, by_creator: str
+) -> list[Task]:
     """Filters a list of tasks looking for a given creator or assignee."""
     filtered_tasks = []
     for t in tasks:
@@ -471,7 +497,14 @@ def filter_tasks_by_assignee_and_creator(tasks: List[Task], by_assignee: str, by
     return filtered_tasks
 
 
-async def handle_list_tasks_command(ack, user, body, respond, context, db_session):
+async def handle_list_tasks_command(
+    ack: AsyncAck,
+    user: DispatchUser,
+    body: dict,
+    respond: AsyncRespond,
+    context: AsyncBoltContext,
+    db_session: Session,
+) -> None:
     """Handles the list tasks command."""
     await ack()
     blocks = []
@@ -526,7 +559,9 @@ async def handle_list_tasks_command(ack, user, body, respond, context, db_sessio
     await respond(text="Incident Task List", blocks=message, response_type="ephermeral")
 
 
-async def handle_list_resources_command(ack, respond, db_session, context):
+async def handle_list_resources_command(
+    ack: AsyncAck, respond: AsyncRespond, db_session: Session, context: AsyncBoltContext
+) -> None:
     """Handles the list resources command."""
     await ack()
 
@@ -578,7 +613,9 @@ async def handle_list_resources_command(ack, respond, db_session, context):
 # EVENTS
 
 
-async def handle_timeline_added_event(client, context, db_session):
+async def handle_timeline_added_event(
+    client: Any, context: AsyncBoltContext, db_session: Session
+) -> None:
     """Handles an event where a reaction is added to a message."""
     conversation_id = context["channel_id"]
     message_ts = context["ts"]
@@ -614,7 +651,9 @@ async def handle_timeline_added_event(client, context, db_session):
 
 
 @message_dispatcher.add()
-async def handle_participant_role_activity(ack, db_session, context, user):
+async def handle_participant_role_activity(
+    ack: AsyncAck, db_session: Session, context: AsyncBoltContext, user: DispatchUser
+) -> None:
     """Increments the participant role's activity counter."""
     await ack()
 
@@ -629,35 +668,42 @@ async def handle_participant_role_activity(ack, db_session, context, user):
             for participant_role in active_participant_roles:
                 participant_role.activity += 1
 
-            # re-assign role once threshold is reached
-            if participant_role.role == ParticipantRoleType.observer:
-                if participant_role.activity >= 10:  # ten messages sent to the incident channel
-                    # we change the participant's role to the participant one
-                    participant_role_service.renounce_role(
-                        db_session=db_session, participant_role=participant_role
-                    )
-                    participant_role_service.add_role(
-                        db_session=db_session,
-                        participant_id=participant.id,
-                        participant_role=ParticipantRoleType.participant,
-                    )
+                # re-assign role once threshold is reached
+                if participant_role.role == ParticipantRoleType.observer:
+                    if participant_role.activity >= 10:  # ten messages sent to the incident channel
+                        # we change the participant's role to the participant one
+                        participant_role_service.renounce_role(
+                            db_session=db_session, participant_role=participant_role
+                        )
+                        participant_role_service.add_role(
+                            db_session=db_session,
+                            participant_id=participant.id,
+                            participant_role=ParticipantRoleType.participant,
+                        )
 
-                    # we log the event
-                    event_service.log_incident_event(
-                        db_session=db_session,
-                        source="Slack Plugin - Conversation Management",
-                        description=(
-                            f"{participant.individual.name}'s role changed from {participant_role.role} to "
-                            f"{ParticipantRoleType.participant} due to activity in the incident channel"
-                        ),
-                        incident_id=context["subject"].id,
-                    )
+                        # we log the event
+                        event_service.log_incident_event(
+                            db_session=db_session,
+                            source="Slack Plugin - Conversation Management",
+                            description=(
+                                f"{participant.individual.name}'s role changed from {participant_role.role} to "
+                                f"{ParticipantRoleType.participant} due to activity in the incident channel"
+                            ),
+                            incident_id=context["subject"].id,
+                        )
 
 
 @message_dispatcher.add(
     exclude={"subtype": ["channel_join", "group_join"]}
 )  # we ignore user channel and group join messages
-async def handle_after_hours_message(ack, context, client, payload, user, db_session):
+async def handle_after_hours_message(
+    ack: AsyncAck,
+    context: AsyncBoltContext,
+    client: AsyncWebClient,
+    payload: dict,
+    user: DispatchUser,
+    db_session: Session,
+) -> None:
     """Notifies the user that this incident is currently in after hours mode."""
     await ack()
 
@@ -692,7 +738,9 @@ async def handle_after_hours_message(ack, context, client, payload, user, db_ses
 
 
 @message_dispatcher.add()
-async def handle_thread_creation(client, payload, context):
+async def handle_thread_creation(
+    client: AsyncWebClient, payload: dict, context: AsyncBoltContext
+) -> None:
     """Sends the user an ephemeral message if they use threads."""
     if not context["config"].ban_threads:
         return
@@ -709,7 +757,9 @@ async def handle_thread_creation(client, payload, context):
 
 
 @message_dispatcher.add()
-async def handle_message_tagging(db_session, payload, context):
+async def handle_message_tagging(
+    db_session: Session, payload: dict, context: AsyncBoltContext
+) -> None:
     """Looks for incident tags in incident messages."""
 
     # TODO: (wshel) handle case tagging
@@ -733,7 +783,14 @@ async def handle_message_tagging(db_session, payload, context):
 
 
 @message_dispatcher.add()
-async def handle_message_monitor(ack, payload, context, client, db_session, respond):
+async def handle_message_monitor(
+    ack: AsyncAck,
+    payload: dict,
+    context: AsyncBoltContext,
+    client: AsyncWebClient,
+    db_session: Session,
+    respond: AsyncRespond,
+) -> None:
     """Looks for strings that are available for monitoring (e.g. links)."""
     await ack()
 
@@ -812,7 +869,14 @@ async def handle_message_monitor(ack, payload, context, client, db_session, resp
 
 
 @app.event("member_joined", middleware=[action_context_middleware, user_middleware, db_middleware])
-async def handle_member_joined_channel(ack, user, body, client, db_session, context):
+async def handle_member_joined_channel(
+    ack: AsyncAck,
+    user: DispatchUser,
+    body: dict,
+    client: AsyncWebClient,
+    db_session: Session,
+    context: AsyncBoltContext,
+) -> None:
     """Handles the member_joined_channel Slack event."""
     await ack()
     participant = incident_flows.incident_add_or_reactivate_participant_flow(
@@ -821,15 +885,19 @@ async def handle_member_joined_channel(ack, user, body, client, db_session, cont
 
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
+    # TODO: (wshel) check this
     if body["inviter"]:
         inviter_email = await get_user_email_async(client=client, user_id=body["inviter"])
-        client.user
         added_by_participant = participant_service.get_by_incident_id_and_email(
             db_session=db_session, incident_id=context["subject"].id, email=inviter_email
         )
         participant.added_by = added_by_participant
         participant.added_reason = body["text"]
     else:
+        inviter_email = await get_user_email_async(client=client, user_id=body["inviter"])
+        added_by_participant = participant_service.get_by_incident_id_and_email(
+            db_session=db_session, incident_id=context["subject"].id, email=inviter_email
+        )
         participant.added_by = incident.commander
         participant.added_reason = f"Participant added by {added_by_participant.individual.name}"
 
@@ -838,7 +906,9 @@ async def handle_member_joined_channel(ack, user, body, client, db_session, cont
 
 
 @app.event("member_left", middleware=[action_context_middleware, db_middleware])
-async def handle_member_left_channel(ack, context, db_session, user):
+async def handle_member_left_channel(
+    ack: AsyncAck, context: AsyncBoltContext, db_session: Session, user: DispatchUser
+) -> None:
     await ack()
     incident_flows.incident_remove_participant_flow(
         user.email, context["subject"].id, db_session=db_session
@@ -846,7 +916,9 @@ async def handle_member_left_channel(ack, context, db_session, user):
 
 
 # MODALS
-async def handle_add_timeline_event_command(ack, body, client, context):
+async def handle_add_timeline_event_command(
+    ack: AsyncAck, body: dict, client: AsyncWebClient, context: AsyncBoltContext
+) -> None:
     """Handles the add timeline event command."""
     await ack()
     blocks = [
@@ -875,7 +947,7 @@ async def handle_add_timeline_event_command(ack, body, client, context):
     )
 
 
-async def ack_add_timeline_submission_event(ack):
+async def ack_add_timeline_submission_event(ack: AsyncAck) -> None:
     """Handles the add timeline submission event acknowledgement."""
     modal = Modal(
         title="Add Timeline Event", close="Close", blocks=[Section(text="Adding timeline event...")]
@@ -883,7 +955,13 @@ async def ack_add_timeline_submission_event(ack):
     await ack(response_action="update", view=modal)
 
 
-async def handle_add_timeline_submission_event(body, user, client, context, form_data):
+async def handle_add_timeline_submission_event(
+    body: dict,
+    user: DispatchUser,
+    client: AsyncWebClient,
+    context: AsyncBoltContext,
+    form_data: dict,
+):
     """Handles the add timeline submission event."""
     # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
     # in the future
@@ -934,7 +1012,14 @@ app.view(
 )(ack=ack_add_timeline_submission_event, lazy=[handle_add_timeline_submission_event])
 
 
-async def handle_update_participant_command(ack, respond, body, context, db_session, client):
+async def handle_update_participant_command(
+    ack: AsyncAck,
+    respond: AsyncRespond,
+    body: dict,
+    context: AsyncBoltContext,
+    db_session: Session,
+    client: AsyncWebClient,
+) -> None:
     """Handles the update participant command."""
     await ack()
 
@@ -985,7 +1070,13 @@ async def ack_update_participant_submission_event(ack):
     await ack(response_action="update", view=modal)
 
 
-async def handle_update_participant_submission_event(body, client, context, db_session, form_data):
+async def handle_update_participant_submission_event(
+    body: dict,
+    client: AsyncWebClient,
+    context: AsyncBoltContext,
+    db_session: Session,
+    form_data: dict,
+) -> None:
     """Handles the update participant submission event."""
     # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
     # in the future
@@ -1018,8 +1109,13 @@ app.view(
 
 
 async def handle_update_notifications_group_command(
-    ack, respond, body, context, client, db_session
-):
+    ack: AsyncAck,
+    respond: AsyncRespond,
+    body: dict,
+    context: AsyncBoltContext,
+    client: AsyncWebClient,
+    db_session: Session,
+) -> None:
     """Handles the update notification group command."""
     await ack()
 
@@ -1092,7 +1188,12 @@ async def ack_update_notifications_group_submission_event(ack):
     await ack(response_action="update", view=modal)
 
 
-async def handle_update_notifications_group_submission_event(body, client, context, form_data):
+async def handle_update_notifications_group_submission_event(
+    body: dict,
+    client: AsyncWebClient,
+    context: AsyncBoltContext,
+    form_data: dict,
+) -> None:
     """Handles the update notifications group submission event."""
     # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
     # in the future
@@ -1137,7 +1238,9 @@ app.view(
 )
 
 
-async def handle_assign_role_command(ack, context, body, client):
+async def handle_assign_role_command(
+    ack: AsyncAck, context: AsyncBoltContext, body: dict, client: AsyncWebClient
+) -> None:
     """Handles the assign role command."""
     await ack()
 
@@ -1176,7 +1279,7 @@ async def handle_assign_role_command(ack, context, body, client):
     await client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
-async def ack_assign_role_submission_event(ack):
+async def ack_assign_role_submission_event(ack: AsyncAck):
     """Handles the assign role submission acknowledgement."""
     modal = Modal(
         title="Assign Role", close="Close", blocks=[Section(text="Assigning role...")]
@@ -1184,7 +1287,13 @@ async def ack_assign_role_submission_event(ack):
     await ack(response_action="update", view=modal)
 
 
-async def handle_assign_role_submission_event(body, user, client, context, form_data):
+async def handle_assign_role_submission_event(
+    body: dict,
+    user: DispatchUser,
+    client: AsyncWebClient,
+    context: AsyncBoltContext,
+    form_data: dict,
+) -> None:
     """Handles the assign role submission."""
     # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
     # in the future
@@ -1224,7 +1333,14 @@ app.view(
 )(ack=ack_assign_role_submission_event, lazy=[handle_assign_role_submission_event])
 
 
-async def handle_engage_oncall_command(ack, respond, context, body, client, db_session):
+async def handle_engage_oncall_command(
+    ack: AsyncAck,
+    respond: AsyncRespond,
+    context: AsyncBoltContext,
+    body: dict,
+    client: AsyncWebClient,
+    db_session: Session,
+) -> None:
     """Handles the engage oncall command."""
     await ack()
 
@@ -1286,7 +1402,7 @@ async def handle_engage_oncall_command(ack, respond, context, body, client, db_s
     await client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
-async def ack_engage_oncall_submission_event(ack):
+async def ack_engage_oncall_submission_event(ack: AsyncAck) -> None:
     """Handles engage oncall acknowledgment."""
     modal = Modal(
         title="Engage Oncall", close="Close", blocks=[Section(text="Engaging oncall...")]
@@ -1294,7 +1410,13 @@ async def ack_engage_oncall_submission_event(ack):
     await ack(response_action="update", view=modal)
 
 
-async def handle_engage_oncall_submission_event(client, body, user, context, form_data):
+async def handle_engage_oncall_submission_event(
+    client: AsyncWebClient,
+    body: dict,
+    user: DispatchUser,
+    context: AsyncBoltContext,
+    form_data: dict,
+) -> None:
     """Handles the engage oncall submission"""
     # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
     # in the future
@@ -1333,7 +1455,14 @@ app.view(
 )(ack=ack_engage_oncall_submission_event, lazy=[handle_engage_oncall_submission_event])
 
 
-async def handle_report_tactical_command(ack, client, respond, context, db_session, body):
+async def handle_report_tactical_command(
+    ack: AsyncAck,
+    client: AsyncWebClient,
+    respond: AsyncRespond,
+    context: AsyncBoltContext,
+    db_session: Session,
+    body: dict,
+) -> None:
     """Handles the report tactical command."""
     await ack()
 
@@ -1392,7 +1521,7 @@ async def handle_report_tactical_command(ack, client, respond, context, db_sessi
     await client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
-async def ack_report_tactical_submission_event(ack):
+async def ack_report_tactical_submission_event(ack: AsyncAck) -> None:
     """Handles report tactical acknowledgment."""
     modal = Modal(
         title="Report Tactical", close="Close", blocks=[Section(text="Creating tactical report...")]
@@ -1400,7 +1529,13 @@ async def ack_report_tactical_submission_event(ack):
     await ack(response_action="update", view=modal)
 
 
-async def handle_report_tactical_submission_event(client, body, user, context, form_data):
+async def handle_report_tactical_submission_event(
+    client: AsyncWebClient,
+    body: dict,
+    user: DispatchUser,
+    context: AsyncBoltContext,
+    form_data: dict,
+) -> None:
     """Handles the report tactical submission"""
     tactical_report_in = TacticalReportCreate(
         conditions=form_data[ReportTacticalBlockIds.conditions],
@@ -1432,7 +1567,14 @@ app.view(
 )(ack=ack_report_tactical_submission_event, lazy=[handle_report_tactical_submission_event])
 
 
-async def handle_report_executive_command(ack, body, client, respond, context, db_session):
+async def handle_report_executive_command(
+    ack: AsyncAck,
+    body: dict,
+    client: AsyncWebClient,
+    respond: AsyncRespond,
+    context: AsyncBoltContext,
+    db_session: Session,
+) -> None:
     """Handles executive report command."""
     await ack()
 
@@ -1495,7 +1637,7 @@ async def handle_report_executive_command(ack, body, client, respond, context, d
     await client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
-async def ack_report_executive_submission_event(ack):
+async def ack_report_executive_submission_event(ack: AsyncAck) -> None:
     """Handles executive submission acknowledgement."""
     modal = Modal(
         title="Executive Report",
@@ -1505,7 +1647,13 @@ async def ack_report_executive_submission_event(ack):
     await ack(response_action="update", view=modal)
 
 
-async def handle_report_executive_submission_event(client, body, user, context, form_data):
+async def handle_report_executive_submission_event(
+    client: AsyncWebClient,
+    body: dict,
+    user: DispatchUser,
+    context: AsyncBoltContext,
+    form_data: dict,
+) -> None:
     """Handles the report executive submission"""
     executive_report_in = ExecutiveReportCreate(
         current_status=form_data[ReportExecutiveBlockIds.current_status],
@@ -1543,7 +1691,13 @@ app.view(
 )(ack=ack_report_executive_submission_event, lazy=[handle_report_executive_submission_event])
 
 
-async def handle_update_incident_command(ack, body, client, context, db_session):
+async def handle_update_incident_command(
+    ack: AsyncAck,
+    body: dict,
+    client: AsyncWebClient,
+    context: AsyncBoltContext,
+    db_session: Session,
+) -> None:
     """Creates the incident update modal."""
     await ack()
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
@@ -1602,7 +1756,7 @@ async def handle_update_incident_command(ack, body, client, context, db_session)
     await client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
-async def ack_incident_update_submission_event(ack):
+async def ack_incident_update_submission_event(ack: AsyncAck) -> None:
     """Handles incident update submission event."""
     modal = Modal(
         title="Incident Update",
@@ -1612,7 +1766,13 @@ async def ack_incident_update_submission_event(ack):
     await ack(response_action="update", view=modal)
 
 
-async def handle_update_incident_submission_event(body, client, user, context, form_data):
+async def handle_update_incident_submission_event(
+    body: dict,
+    client: AsyncWebClient,
+    user: DispatchUser,
+    context: AsyncBoltContext,
+    form_data: dict,
+) -> None:
     """Handles the update incident submission"""
     # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
     # in the future
@@ -1679,7 +1839,13 @@ app.view(
 )(ack=ack_incident_update_submission_event, lazy=[handle_update_incident_submission_event])
 
 
-async def handle_report_incident_command(ack, body, context, db_session, client):
+async def handle_report_incident_command(
+    ack: AsyncAck,
+    body: dict,
+    context: AsyncBoltContext,
+    db_session: Session,
+    client: AsyncWebClient,
+) -> None:
     """Handles the report incident command."""
     await ack()
 
@@ -1712,7 +1878,7 @@ async def handle_report_incident_command(ack, body, context, db_session, client)
     await client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
-async def ack_report_incident_submission_event(ack):
+async def ack_report_incident_submission_event(ack: AsyncAck) -> None:
     """Handles the report incident submission event acknowledgment."""
     modal = Modal(
         title="Report Incident",
@@ -1722,7 +1888,13 @@ async def ack_report_incident_submission_event(ack):
     await ack(response_action="update", view=modal)
 
 
-async def handle_report_incident_submission_event(user, context, client, body, form_data):
+async def handle_report_incident_submission_event(
+    user: DispatchUser,
+    context: AsyncBoltContext,
+    client: AsyncWebClient,
+    body: dict,
+    form_data: dict,
+) -> None:
     """Handles the report incident submission"""
     # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
     # in the future
@@ -1818,7 +1990,13 @@ app.view(
 @app.action(
     IncidentReportActions.project_select, middleware=[action_context_middleware, db_middleware]
 )
-async def handle_report_incident_project_select_action(ack, body, client, context, db_session):
+async def handle_report_incident_project_select_action(
+    ack: AsyncAck,
+    body: dict,
+    client: AsyncWebClient,
+    context: AsyncBoltContext,
+    db_session: Session,
+) -> None:
     await ack()
     values = body["view"]["state"]["values"]
 

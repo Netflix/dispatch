@@ -1,10 +1,12 @@
 from http import HTTPStatus
 import logging
+from typing import Any
 
 from blockkit import Section, Modal
 from slack_bolt.app.async_app import AsyncApp
 from slack_bolt.response import BoltResponse
 from slack_bolt.adapter.starlette.async_handler import AsyncSlackRequestHandler
+from slack_sdk.web.async_client import AsyncWebClient
 
 from fastapi import APIRouter
 
@@ -28,7 +30,9 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 @app.error
-async def app_error_handler(error, client, body, logger):
+async def app_error_handler(
+    error: Any, client: AsyncWebClient, body: dict[str, Any], logger: logging.Logger
+) -> BoltResponse:
     if body:
         logger.info(f"Request body: {body}")
 
@@ -54,7 +58,7 @@ async def app_error_handler(error, client, body, logger):
         configuration_middleware,
     ],
 )
-async def handle_message_events():
+async def handle_message_events() -> None:
     """Container function for all message functions."""
     await message_dispatcher.dispatch(**locals())
 
