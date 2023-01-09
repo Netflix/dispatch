@@ -31,7 +31,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 @app.error
 async def app_error_handler(
-    error: Any, client: AsyncWebClient, body: dict[str, Any], logger: logging.Logger
+    error: Any, client: AsyncWebClient, body: dict, logger: logging.Logger
 ) -> BoltResponse:
     if body:
         logger.info(f"Request body: {body}")

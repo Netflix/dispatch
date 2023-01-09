@@ -1,5 +1,9 @@
 from blockkit import Context, Input, Section, MarkdownText, Modal, PlainTextInput, Message
+from slack_bolt.async_app import AsyncAck, AsyncBoltContext, AsyncRespond
+from slack_sdk.web.async_client import AsyncWebClient
+from sqlalchemy.orm import Session
 
+from dispatch.auth.models import DispatchUser
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.database.core import SessionLocal
 from dispatch.enums import DispatchEnum
@@ -113,7 +117,9 @@ def param_input(
     return inputs
 
 
-async def handle_workflow_list_command(ack, respond, context, db_session):
+async def handle_workflow_list_command(
+    ack: AsyncAck, respond: AsyncRespond, context: AsyncBoltContext, db_session: Session
+) -> None:
     """Handles the workflow list command."""
     await ack()
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
@@ -145,12 +151,12 @@ async def handle_workflow_list_command(ack, respond, context, db_session):
 
 
 async def handle_workflow_run_command(
-    ack,
-    body,
-    client,
-    context,
-    db_session,
-):
+    ack: AsyncAck,
+    body: dict,
+    client: AsyncWebClient,
+    context: AsyncBoltContext,
+    db_session: Session,
+) -> None:
     """Handles the workflow run command."""
     await ack()
 
@@ -178,7 +184,13 @@ async def handle_workflow_run_command(
     RunWorkflowActions.submit,
     middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
 )
-async def handle_workflow_submission_event(ack, context, db_session, form_data, user):
+async def handle_workflow_submission_event(
+    ack: AsyncAck,
+    context: AsyncBoltContext,
+    db_session: Session,
+    form_data: dict,
+    user: DispatchUser,
+) -> None:
     """Handles workflow submission event."""
     await ack()
 
@@ -238,7 +250,13 @@ async def handle_workflow_submission_event(ack, context, db_session, form_data, 
 @app.action(
     RunWorkflowActions.workflow_select, middleware=[action_context_middleware, db_middleware]
 )
-async def handle_run_workflow_select_action(ack, body, db_session, context, client):
+async def handle_run_workflow_select_action(
+    ack: AsyncAck,
+    body: dict,
+    db_session: Session,
+    context: AsyncBoltContext,
+    client: AsyncWebClient,
+) -> None:
     """Handles workflow select event."""
     await ack()
     values = body["view"]["state"]["values"]
