@@ -654,7 +654,10 @@ async def handle_timeline_added_event(
 async def handle_participant_role_activity(
     ack: AsyncAck, db_session: Session, context: AsyncBoltContext, user: DispatchUser
 ) -> None:
-    """Increments the participant role's activity counter."""
+    """
+    Increments the participant role's activity counter and assesses the need of changing
+    a participant's role based on its activity and changes it if needed.
+    """
     await ack()
 
     # TODO: add when case support when participants are added.
@@ -664,8 +667,7 @@ async def handle_participant_role_activity(
         )
 
         if participant:
-            active_participant_roles = participant.active_roles
-            for participant_role in active_participant_roles:
+            for participant_role in participant.active_roles:
                 participant_role.activity += 1
 
                 # re-assign role once threshold is reached
@@ -691,6 +693,8 @@ async def handle_participant_role_activity(
                             ),
                             incident_id=context["subject"].id,
                         )
+
+            db_session.commit()
 
 
 @message_dispatcher.add(
