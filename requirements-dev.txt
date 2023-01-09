@@ -92,7 +92,7 @@ traitlets==5.6.0
     # via
     #   ipython
     #   matplotlib-inline
-vulture==2.6
+vulture==2.7
     # via -r requirements-dev.in
 wcwidth==0.2.5
     # via prompt-toolkit
