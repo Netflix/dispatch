@@ -650,7 +650,9 @@ async def handle_timeline_added_event(
         )
 
 
-@message_dispatcher.add()
+@message_dispatcher.add(
+    exclude={"subtype": ["channel_join", "channel_leave"]}
+)  # we ignore channel join and leave messages
 async def handle_participant_role_activity(
     ack: AsyncAck, db_session: Session, context: AsyncBoltContext, user: DispatchUser
 ) -> None:
