@@ -32,7 +32,7 @@ bcrypt==4.0.1
     # via -r requirements-base.in
 blis==0.7.9
     # via thinc
-cachetools==5.2.0
+cachetools==5.2.1
     # via
     #   -r requirements-base.in
     #   google-auth
