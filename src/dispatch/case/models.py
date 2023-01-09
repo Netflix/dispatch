@@ -183,7 +183,7 @@ class CaseCreate(CaseBase):
     tags: Optional[List[TagRead]] = []
 
 
-class CaseReadReadMinimal(CaseBase):
+class CaseReadMinimal(CaseBase):
     id: PrimaryKey
     assignee: Optional[UserRead]
     case_priority: CasePriorityRead
@@ -208,14 +208,14 @@ class CaseRead(CaseBase):
     closed_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
     documents: Optional[List[DocumentRead]] = []
-    duplicates: Optional[List[CaseReadReadMinimal]] = []
+    duplicates: Optional[List[CaseReadMinimal]] = []
     escalated_at: Optional[datetime] = None
     events: Optional[List[EventRead]] = []
     groups: Optional[List[GroupRead]] = []
     incidents: Optional[List[IncidentRead]] = []
     name: Optional[NameStr]
     project: ProjectRead
-    related: Optional[List[CaseReadReadMinimal]] = []
+    related: Optional[List[CaseReadMinimal]] = []
     reported_at: Optional[datetime] = None
     storage: Optional[StorageRead] = None
     tags: Optional[List[TagRead]] = []
@@ -255,7 +255,7 @@ class CaseUpdate(CaseBase):
 
 
 class CasePagination(DispatchBase):
-    items: List[CaseReadReadMinimal] = []
+    items: List[CaseReadMinimal] = []
     itemsPerPage: int
     page: int
     total: int

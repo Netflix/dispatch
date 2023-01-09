@@ -1,6 +1,6 @@
 from datetime import datetime
 from collections import Counter, defaultdict
-from typing import List, Optional, Any
+from typing import List, Optional, ForwardRef
 
 from pydantic import validator
 from sqlalchemy import (
@@ -27,18 +27,15 @@ from dispatch.group.models import Group
 from dispatch.incident.priority.models import (
     IncidentPriorityBase,
     IncidentPriorityCreate,
-    IncidentPriorityRead,
     IncidentPriorityReadMinimal,
 )
 from dispatch.incident.severity.models import (
     IncidentSeverityCreate,
-    IncidentSeverityRead,
     IncidentSeverityReadMinimal,
     IncidentSeverityBase,
 )
 from dispatch.incident.type.models import (
     IncidentTypeCreate,
-    IncidentTypeRead,
     IncidentTypeReadMinimal,
     IncidentTypeBase,
 )
@@ -273,6 +270,9 @@ class IncidentCreate(IncidentBase):
     tags: Optional[List[TagRead]] = []
 
 
+IncidentReadMinimal = ForwardRef("IncidentReadMinimal")
+
+
 class IncidentReadMinimal(IncidentBase):
     id: PrimaryKey
     closed_at: Optional[datetime] = None
@@ -292,8 +292,11 @@ class IncidentReadMinimal(IncidentBase):
     stable_at: Optional[datetime] = None
     tags: Optional[List[TagReadMinimal]] = []
     total_cost: Optional[float]
-    duplicates: Optional[List[Any]] = []
+    duplicates: Optional[List[IncidentReadMinimal]] = []
     incident_costs: Optional[List[IncidentCostRead]] = []
+
+
+IncidentReadMinimal.update_forward_refs()
 
 
 class IncidentUpdate(IncidentBase):
