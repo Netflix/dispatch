@@ -15,7 +15,7 @@ const getDefaultSelectedState = () => {
   }
 }
 
-function authCurrentUser(base, token, bad_token_ok = false) {
+function authCurrentUser (base, token, bad_token_ok=false) {
   let decodedToken
   let loggedIn
   try {
@@ -34,22 +34,18 @@ function authCurrentUser(base, token, bad_token_ok = false) {
     ...base,
     loggedIn: loggedIn,
     token: token,
-    ...decodedToken,
+    ...decodedToken
   }
 }
 
 const state = {
-  currentUser: authCurrentUser(
-    {
-      loggedIn: false,
-      token: null,
-      email: "",
-      projects: [],
-      role: null,
-    },
-    localStorage.getItem("token"),
-    true
-  ),
+  currentUser: authCurrentUser({
+    loggedIn: false,
+    token: null,
+    email: "",
+    projects: [],
+    role: null,
+  }, localStorage.getItem("token"), true),
   selected: {
     ...getDefaultSelectedState(),
   },
