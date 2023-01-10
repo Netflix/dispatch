@@ -56,6 +56,7 @@ class IPlugin(local):
     author: Optional[str] = None
     author_url: Optional[str] = None
     configuration: Optional[dict] = None
+    project_id: Optional[int] = None
     resource_links = ()
 
     schema: PluginConfiguration
