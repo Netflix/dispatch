@@ -95,6 +95,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     command_context_middleware,
     configuration_middleware,
     db_middleware,
+    message_context_middleware,
     modal_submit_middleware,
     restricted_command_middleware,
     user_middleware,
@@ -874,7 +875,15 @@ async def handle_message_monitor(
                     )
 
 
-@app.event("member_joined", middleware=[action_context_middleware, user_middleware, db_middleware])
+@app.event(
+    "member_joined_channel",
+    middleware=[
+        message_context_middleware,
+        user_middleware,
+        db_middleware,
+        configuration_middleware,
+    ],
+)
 async def handle_member_joined_channel(
     ack: AsyncAck,
     user: DispatchUser,
@@ -885,37 +894,46 @@ async def handle_member_joined_channel(
 ) -> None:
     """Handles the member_joined_channel Slack event."""
     await ack()
+
     participant = incident_flows.incident_add_or_reactivate_participant_flow(
         user_email=user.email, incident_id=context["subject"].id, db_session=db_session
     )
 
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    # If the user was invited, the message will include an inviter property containing the user ID of the inviting user.
+    # The property will be absent when a user manually joins a channel, or a user is added by default (e.g. #general channel).
+    inviter = body.get("event", {}).get("inviter", None)
+    inviter_is_user = (
+        dispatch_slack_service.is_user(context["config"], inviter) if inviter else None
+    )
 
-    # TODO: (wshel) check this
-    if body["inviter"]:
-        inviter_email = await get_user_email_async(client=client, user_id=body["inviter"])
+    if inviter and inviter_is_user:
+        # Participant is added into the incident channel using an @ message or /invite command.
+        inviter_email = await get_user_email_async(client=client, user_id=inviter)
         added_by_participant = participant_service.get_by_incident_id_and_email(
             db_session=db_session, incident_id=context["subject"].id, email=inviter_email
         )
         participant.added_by = added_by_participant
-        participant.added_reason = body["text"]
     else:
-        inviter_email = await get_user_email_async(client=client, user_id=body["inviter"])
-        added_by_participant = participant_service.get_by_incident_id_and_email(
-            db_session=db_session, incident_id=context["subject"].id, email=inviter_email
-        )
+        # User joins via the `join` button on Web Application or Slack.
+        # We default to the incident commander when we don't know who added the user or the user is the Dispatch bot.
+        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
         participant.added_by = incident.commander
-        participant.added_reason = f"Participant added by {added_by_participant.individual.name}"
+
+    # Message text when someone @'s a user is not available in body, use generic added by reason
+    participant.added_reason = f"Participant added by {participant.added_by}"
 
     db_session.add(participant)
     db_session.commit()
 
 
-@app.event("member_left", middleware=[action_context_middleware, db_middleware])
+@app.event(
+    "member_left_channel", middleware=[message_context_middleware, user_middleware, db_middleware]
+)
 async def handle_member_left_channel(
     ack: AsyncAck, context: AsyncBoltContext, db_session: Session, user: DispatchUser
 ) -> None:
     await ack()
+
     incident_flows.incident_remove_participant_flow(
         user.email, context["subject"].id, db_session=db_session
     )
@@ -1320,7 +1338,7 @@ async def handle_assign_role_submission_event(
 
     if (
         assignee_role == ParticipantRoleType.reporter
-        or assignee_role == ParticipantRoleType.incident_commander
+        or assignee_role == ParticipantRoleType.incident_commander  # noqa
     ):
         # we update the external ticket
         incident_flows.update_external_incident_ticket(

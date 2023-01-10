@@ -464,3 +464,8 @@ def message_filter(message):
         return
 
     return message
+
+
+def is_user(config: SlackConversationConfiguration, user_id: str) -> bool:
+    """Returns true if it's a regular user, false if Dispatch or Slackbot bot'."""
+    return user_id != config.app_user_slug and user_id != "USLACKBOT"

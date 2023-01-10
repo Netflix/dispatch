@@ -33,9 +33,14 @@ logging.basicConfig(level=logging.DEBUG)
 async def app_error_handler(
     error: Any, client: AsyncWebClient, body: dict, logger: logging.Logger
 ) -> BoltResponse:
+
     if body:
         logger.info(f"Request body: {body}")
 
+    if error:
+        logger.exception(f"Error: {error}")
+
+    if body.get("view"):
         modal = Modal(
             title="Error", close="Close", blocks=[Section(text="Something went wrong...")]
         ).build()
@@ -45,7 +50,6 @@ async def app_error_handler(
             view=modal,
         )
 
-    logger.exception(f"Error: {error}")
     return BoltResponse(body=body, status=HTTPStatus.INTERNAL_SERVER_ERROR.value)
 
 

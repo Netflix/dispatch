@@ -88,7 +88,7 @@ async def message_context_middleware(context: AsyncBoltContext, next: Callable) 
 
 
 async def restricted_command_middleware(
-    context: AsyncBoltContext, db_session, user: DispatchUser, next: Callable
+    context: AsyncBoltContext, db_session, user: DispatchUser, next: Callable, payload: dict
 ):
     """Rejects commands from unauthorized individuals."""
     allowed_roles = [ParticipantRoleType.incident_commander, ParticipantRoleType.scribe]
@@ -103,7 +103,7 @@ async def restricted_command_middleware(
                 return await next()
 
     raise RoleError(
-        f"Participant does not have permission to run this command. Roles with permission: {','.join(['r.name for r in allowed_roles'])}"
+        f"Participant does not have permission to run `{payload['command']}`. Roles with permission: {','.join([r.name for r in allowed_roles])}",
     )
 
 
@@ -130,7 +130,7 @@ async def user_middleware(
         user_id = payload["user_id"]
 
     if not user_id:
-        raise ContextError("Unabled to determine user from context.")
+        raise ContextError("Unable to determine user from context.")
 
     email = (await client.users_info(user=user_id))["user"]["profile"]["email"]
     context["user"] = user_service.get_or_create(
