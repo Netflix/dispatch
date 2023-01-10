@@ -25,7 +25,7 @@ from dispatch.document.models import Document, DocumentRead
 from dispatch.enums import Visibility
 from dispatch.event.models import EventRead
 from dispatch.group.models import Group, GroupRead
-from dispatch.incident.models import IncidentRead
+from dispatch.incident.models import IncidentReadMinimal
 from dispatch.messaging.strings import CASE_RESOLUTION_DEFAULT
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 from dispatch.models import NameStr, PrimaryKey
@@ -204,7 +204,6 @@ class CaseRead(CaseBase):
     case_priority: CasePriorityRead
     case_severity: CaseSeverityRead
     case_type: CaseTypeRead
-    signal_instances: Optional[List[SignalInstanceRead]] = []
     closed_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
     documents: Optional[List[DocumentRead]] = []
@@ -212,11 +211,12 @@ class CaseRead(CaseBase):
     escalated_at: Optional[datetime] = None
     events: Optional[List[EventRead]] = []
     groups: Optional[List[GroupRead]] = []
-    incidents: Optional[List[IncidentRead]] = []
+    incidents: Optional[List[IncidentReadMinimal]] = []
     name: Optional[NameStr]
     project: ProjectRead
     related: Optional[List[CaseReadMinimal]] = []
     reported_at: Optional[datetime] = None
+    signal_instances: Optional[List[SignalInstanceRead]] = []
     storage: Optional[StorageRead] = None
     tags: Optional[List[TagRead]] = []
     ticket: Optional[TicketRead] = None
@@ -232,7 +232,7 @@ class CaseUpdate(CaseBase):
     duplicates: Optional[List[CaseRead]] = []
     related: Optional[List[CaseRead]] = []
     escalated_at: Optional[datetime] = None
-    incidents: Optional[List[IncidentRead]] = []
+    incidents: Optional[List[IncidentReadMinimal]] = []
     reported_at: Optional[datetime] = None
     tags: Optional[List[TagRead]] = []
     triage_at: Optional[datetime] = None

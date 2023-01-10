@@ -292,7 +292,6 @@ class IncidentReadMinimal(IncidentBase):
     stable_at: Optional[datetime] = None
     tags: Optional[List[TagReadMinimal]] = []
     total_cost: Optional[float]
-    duplicates: Optional[List[IncidentReadMinimal]] = []
     incident_costs: Optional[List[IncidentCostRead]] = []
 
 
@@ -330,9 +329,11 @@ class IncidentUpdate(IncidentBase):
 
 
 class IncidentRead(IncidentReadMinimal):
+    cases: Optional[List[CaseRead]] = []
     conference: Optional[ConferenceRead] = None
     conversation: Optional[ConversationRead] = None
     documents: Optional[List[DocumentRead]] = []
+    duplicates: Optional[List[IncidentReadMinimal]] = []
     events: Optional[List[EventRead]] = []
     last_executive_report: Optional[ReportRead]
     last_tactical_report: Optional[ReportRead]
