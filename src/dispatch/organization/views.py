@@ -1,4 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from sqlalchemy.orm import Session
@@ -46,7 +46,6 @@ def create_organization(
     db_session: Session = Depends(get_db),
     organization_in: OrganizationCreate,
     current_user: DispatchUser = Depends(get_current_user),
-    background_tasks: BackgroundTasks,
 ):
     """Create a new organization."""
     organization = get_by_name(db_session=db_session, name=organization_in.name)
