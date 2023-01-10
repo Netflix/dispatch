@@ -40,6 +40,7 @@ def consume_signals(db_session: SessionLocal, project: Project):
             try:
                 signal_flows.create_signal_instance(
                     db_session=db_session,
+                    project=project,
                     signal_instance_data=signal_instance_data,
                 )
             except Exception as e:

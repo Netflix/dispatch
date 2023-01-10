@@ -1,3 +1,4 @@
+import json
 import hashlib
 from typing import Optional
 from datetime import datetime, timedelta, timezone
@@ -98,12 +99,20 @@ def get(*, db_session, signal_id: int) -> Optional[Signal]:
 
 
 def get_by_variant_or_external_id(
-    *, db_session, external_id: str = None, variant: str = None
+    *, db_session, project_id: int, external_id: str = None, variant: str = None
 ) -> Optional[Signal]:
     """Gets a signal it's external id (and variant if supplied)."""
     if variant:
-        return db_session.query(Signal).filter(Signal.variant == variant).one()
-    return db_session.query(Signal).filter(Signal.external_id == external_id).one()
+        return (
+            db_session.query(Signal)
+            .filter(Signal.project_id == project_id, Signal.variant == variant)
+            .one_or_none()
+        )
+    return (
+        db_session.query(Signal)
+        .filter(Signal.project_id == project_id, Signal.external_id == external_id)
+        .one_or_none()
+    )
 
 
 def create(*, db_session, signal_in: SignalCreate) -> Signal:
@@ -218,8 +227,11 @@ def create_instance(*, db_session, signal_instance_in: SignalInstanceCreate) -> 
         db_session=db_session, project_in=signal_instance_in.project
     )
 
+    # we round trip the raw data to json-ify date strings
     signal_instance = SignalInstance(
-        **signal_instance_in.dict(exclude={"project", "tags"}), project=project
+        **signal_instance_in.dict(exclude={"project", "tags", "raw"}),
+        raw=json.loads(signal_instance_in.raw.json()),
+        project=project,
     )
 
     tags = []
@@ -235,19 +247,19 @@ def create_instance(*, db_session, signal_instance_in: SignalInstanceCreate) -> 
 
 def create_instance_fingerprint(duplication_rule, signal_instance: SignalInstance) -> str:
     """Given a list of tag_types and tags creates a hash of their values."""
-    hash_values = []
+    fingerprint = hashlib.sha1(str(signal_instance.raw).encode("utf-8")).hexdigest()
+
+    # use tags if we have them
     if duplication_rule:
         if signal_instance.tags:
             tag_type_names = [t.name for t in duplication_rule.tag_types]
+            hash_values = []
             for tag in signal_instance.tags:
                 if tag.tag_type.name in tag_type_names:
                     hash_values.append(tag.tag_type.name)
-        else:
-            hash_values = signal_instance.raw.values()
-    else:
-        hash_values = signal_instance.raw.values()  # fall back to creating a hash of all values
+            fingerprint = hashlib.sha1("-".join(sorted(hash_values)).encode("utf-8")).hexdigest()
 
-    return hashlib.sha1("-".join(sorted(hash_values)).encode("utf-8")).hexdigest()
+    return fingerprint
 
 
 def deduplicate(
