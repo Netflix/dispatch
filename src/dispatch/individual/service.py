@@ -89,12 +89,10 @@ def get_or_create(
 
     individual_info = {}
     if contact_plugin:
-        individual_info = contact_plugin.instance.get(email,
-                                                      project_id=contact_plugin.project_id,
-                                                      db_session=db_session)
+        individual_info = contact_plugin.instance.get(email, db_session=db_session)
 
     kwargs["email"] = individual_info.get("email", email)
-    kwargs["name"] = individual_info.get("name", "Unknown")
+    kwargs["name"] = individual_info.get("fullname", "Unknown")
     kwargs["weblink"] = individual_info.get("weblink", "")
 
     if not individual_contact:
