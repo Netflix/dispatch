@@ -1,6 +1,7 @@
 aiofiles
 aiohttp
 alembic
+blockkit
 bcrypt
 cachetools
 chardet
