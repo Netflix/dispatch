@@ -15,8 +15,8 @@ from dispatch.database.service import common_parameters, search_filter_sort_pagi
 from dispatch.enums import UserRoles
 from dispatch.exceptions import ExistsError
 from dispatch.models import PrimaryKey
+from dispatch.project import flows as project_flows
 from dispatch.project import service as project_service
-from dispatch.project.flows import project_init_flow
 from dispatch.project.models import ProjectCreate
 
 from .models import (
@@ -59,7 +59,7 @@ def create_organization(
     # we create the organization
     organization = create(db_session=db_session, organization_in=organization_in)
 
-    # add creator as organization owner
+    # we add the creator as organization owner
     add_user(
         db_session=db_session, organization=organization, user=current_user, role=UserRoles.owner
     )
@@ -74,8 +74,8 @@ def create_organization(
     project = project_service.create(db_session=db_session, project_in=project_in)
 
     # we initialize the default project
-    background_tasks.add_task(
-        project_init_flow, project=project, organization_slug=organization.slug
+    project_flows.project_init_flow(
+        project_id=project.id, organization_slug=organization.slug, db_session=db_session
     )
 
     return organization

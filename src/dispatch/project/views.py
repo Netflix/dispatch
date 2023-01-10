@@ -55,7 +55,9 @@ def create_project(
         )
 
     project = create(db_session=db_session, project_in=project_in)
-    background_tasks.add_task(project_init_flow, project=project, organization_slug=organization)
+    background_tasks.add_task(
+        project_init_flow, project_id=project.id, organization_slug=organization
+    )
     return project
 
 
