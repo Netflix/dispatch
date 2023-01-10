@@ -67,8 +67,8 @@ def get_all_by_incident_id(*, db_session, incident_id: int) -> List[Optional[Par
 def get_or_create(
     *,
     db_session,
-    obj_id: int,
-    obj_type: str,
+    subject_id: int,
+    subject_type: str,
     individual_id: int,
     service_id: int,
     participant_roles: List[ParticipantRoleCreate],
@@ -77,27 +77,27 @@ def get_or_create(
     participant: Participant = (
         db_session.query(Participant)
         .filter(
-            Participant.incident_id == obj_id
-            if obj_type == "incident"
-            else Participant.case_id == obj_id
+            Participant.incident_id == subject_id
+            if subject_type == "incident"
+            else Participant.case_id == subject_id
         )
         .filter(Participant.individual_contact_id == individual_id)
         .one_or_none()
     )
 
     if not participant:
-        if obj_type == "incident":
+        if subject_type == "incident":
             from dispatch.incident import service as incident_service
 
-            obj = incident_service.get(db_session=db_session, incident_id=obj_id)
-        if obj_type == "case":
+            subject = incident_service.get(db_session=db_session, incident_id=subject_id)
+        if subject_type == "case":
             from dispatch.case import service as case_service
 
-            obj = case_service.get(db_session=db_session, case_id=obj_id)
+            subject = case_service.get(db_session=db_session, case_id=subject_id)
 
         individual_info = {}
         contact_plugin = plugin_service.get_active_instance(
-            db_session=db_session, project_id=obj.project.id, plugin_type="contact"
+            db_session=db_session, project_id=subject.project.id, plugin_type="contact"
         )
         if contact_plugin:
             # We get information about the individual

@@ -15,12 +15,12 @@ from .service import get_or_create, get_by_incident_id_and_email
 
 log = logging.getLogger(__name__)
 
-Obj = TypeVar("Obj", Case, Incident)
+Subject = TypeVar("Subject", Case, Incident)
 
 
 def add_participant(
     user_email: str,
-    obj: Obj,
+    subject: Subject,
     db_session: SessionLocal,
     service_id: int = None,
     role: ParticipantRoleType = ParticipantRoleType.participant,
@@ -29,61 +29,60 @@ def add_participant(
 
     # we get or create a new individual
     individual = individual_service.get_or_create(
-        db_session=db_session, incident=obj, email=user_email
+        db_session=db_session, incident=subject, email=user_email
     )
 
     # we get or create a new participant
-    obj_type = get_table_name_by_class_instance(obj)
+    subject_type = get_table_name_by_class_instance(subject)
     participant_role = ParticipantRoleCreate(role=role)
     participant = get_or_create(
         db_session=db_session,
-        obj_id=obj.id,
-        obj_type=obj_type,
+        subject_id=subject.id,
+        subject_type=subject_type,
         individual_id=individual.id,
         service_id=service_id,
         participant_roles=[participant_role],
     )
 
     individual.participant.append(participant)
-    obj.participants.append(participant)
+    subject.participants.append(participant)
 
     # TODO: Split this assignment depending on Obj type
     # we update the commander, reporter, scribe, or liaison foreign key
     if role == ParticipantRoleType.incident_commander:
-        obj.commander_id = participant.id
-        obj.commanders_location = participant.location
+        subject.commander_id = participant.id
+        subject.commanders_location = participant.location
     elif role == ParticipantRoleType.reporter:
-        obj.reporter_id = participant.id
-        obj.reporters_location = participant.location
+        subject.reporter_id = participant.id
+        subject.reporters_location = participant.location
     elif role == ParticipantRoleType.scribe:
-        obj.scribe_id = participant.id
+        subject.scribe_id = participant.id
     elif role == ParticipantRoleType.liaison:
-        obj.liaison_id = participant.id
+        subject.liaison_id = participant.id
     elif role == ParticipantRoleType.observer:
-        obj.observer_id = participant.id
+        subject.observer_id = participant.id
 
     # we add and commit the changes
     db_session.add(participant)
     db_session.add(individual)
-    db_session.add(obj)
+    db_session.add(subject)
     db_session.commit()
 
-    if obj_type == "case":
+    if subject_type == "case":
         event_service.log_case_event(
             db_session=db_session,
             source="Dispatch Core App",
             description="Case group updated",
-            case_id=obj.id,
+            case_id=subject.id,
         )
-    if obj_type == "incident":
+    if subject_type == "incident":
         event_service.log_incident_event(
             db_session=db_session,
             source="Dispatch Core App",
             description="Incident group updated",
-            incident_id=obj.id,
+            incident_id=subject.id,
         )
 
-    print("LOG: END PARTICIPANT CREATE FLOW")
     return participant
 
 
