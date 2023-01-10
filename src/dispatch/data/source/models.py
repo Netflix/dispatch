@@ -90,7 +90,7 @@ class Source(Base, TimeStampMixin, ProjectMixin):
     search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
 
-class QueryReadNested(DispatchBase):
+class QueryReadMinimal(DispatchBase):
     id: PrimaryKey
     name: str
     description: str
@@ -119,7 +119,7 @@ class SourceBase(DispatchBase):
     links: Optional[List] = []
     tags: Optional[List[TagRead]] = []
     incidents: Optional[List[IncidentRead]] = []
-    queries: Optional[List[QueryReadNested]] = []
+    queries: Optional[List[QueryReadMinimal]] = []
     alerts: Optional[List[AlertRead]] = []
     cost: Optional[float]
     owner: Optional[ServiceRead] = Field(None, nullable=True)

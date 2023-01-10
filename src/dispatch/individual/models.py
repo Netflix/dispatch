@@ -77,6 +77,12 @@ class IndividualContactRead(IndividualContactBase):
     updated_at: Optional[datetime] = None
 
 
+class IndividualContactReadMinimal(IndividualContactBase):
+    id: Optional[PrimaryKey]
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+
 class IndividualContactPagination(DispatchBase):
     total: int
-    items: List[IndividualContactRead] = []
+    items: List[IndividualContactReadMinimal] = []

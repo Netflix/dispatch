@@ -8,7 +8,7 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.feedback.enums import FeedbackRating
-from dispatch.incident.models import IncidentReadNested
+from dispatch.incident.models import IncidentReadMinimal
 from dispatch.models import DispatchBase, TimeStampMixin, PrimaryKey
 from dispatch.participant.models import ParticipantRead
 from dispatch.project.models import ProjectRead
@@ -42,7 +42,7 @@ class FeedbackBase(DispatchBase):
     created_at: Optional[datetime]
     rating: FeedbackRating = FeedbackRating.very_satisfied
     feedback: Optional[str] = Field(None, nullable=True)
-    incident: Optional[IncidentReadNested]
+    incident: Optional[IncidentReadMinimal]
     participant: Optional[ParticipantRead]
 
 

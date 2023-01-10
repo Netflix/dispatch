@@ -39,7 +39,3 @@ class ConferenceRead(ConferenceBase):
         return Template(INCIDENT_CONFERENCE_DESCRIPTION).render(
             conference_challenge=values["conference_challenge"]
         )
-
-
-class ConferenceNested(ConferenceBase):
-    pass

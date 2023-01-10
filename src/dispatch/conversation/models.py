@@ -35,7 +35,3 @@ class ConversationRead(ConversationBase):
     def set_description(cls, v):
         """Sets the description"""
         return INCIDENT_CONVERSATION_DESCRIPTION
-
-
-class ConversationNested(ConversationBase):
-    pass

@@ -111,6 +111,16 @@ class IncidentTypeRead(IncidentTypeBase):
     id: PrimaryKey
 
 
+class IncidentTypeReadMinimal(DispatchBase):
+    id: PrimaryKey
+    name: NameStr
+    visibility: Optional[str] = Field(None, nullable=True)
+    description: Optional[str] = Field(None, nullable=True)
+    enabled: Optional[bool]
+    exclude_from_metrics: Optional[bool] = False
+    default: Optional[bool] = False
+
+
 class IncidentTypePagination(DispatchBase):
     total: int
-    items: List[IncidentTypeRead] = []
+    items: List[IncidentTypeReadMinimal] = []

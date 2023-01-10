@@ -133,7 +133,11 @@ const actions = {
         ]),
       }).then((response) => {
         if (response.data.items.length) {
-          commit("SET_SELECTED", response.data.items[0])
+          // get the full data set
+          return CaseApi.get(response.data.items[0].id).then((response) => {
+            commit("SET_SELECTED", response.data)
+            commit("SET_SELECTED_LOADING", false)
+          })
         } else {
           commit(
             "notification_backend/addBeNotification",

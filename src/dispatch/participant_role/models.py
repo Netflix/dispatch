@@ -39,6 +39,10 @@ class ParticipantRoleRead(ParticipantRoleBase):
     activity: Optional[int]
 
 
+class ParticipantRoleReadMinimal(ParticipantRoleRead):
+    pass
+
+
 class ParticipantRolePagination(ParticipantRoleBase):
     total: int
-    items: List[ParticipantRoleRead] = []
+    items: List[ParticipantRoleReadMinimal] = []
