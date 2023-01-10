@@ -5,24 +5,26 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from joblib import Memory
-from typing import List, Optional
 import logging
 import os
 import re
+from typing import List, Optional
+
+from blockkit import Message
+from joblib import Memory
 
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.decorators import apply, counter, timer
 from dispatch.exceptions import DispatchPluginException
 from dispatch.plugins import dispatch_slack as slack_plugin
-from dispatch.plugins.bases import ConversationPlugin, DocumentPlugin, ContactPlugin
+from dispatch.plugins.bases import ContactPlugin, ConversationPlugin, DocumentPlugin
 from dispatch.plugins.dispatch_slack.config import (
     SlackConfiguration,
     SlackContactConfiguration,
     SlackConversationConfiguration,
 )
 
-from .views import router as slack_event_router
+from .bolt import router as slack_event_router
 from .messaging import create_message_blocks
 from .service import (
     add_users_to_conversation,
@@ -42,9 +44,9 @@ from .service import (
     send_ephemeral_message,
     send_message,
     set_conversation_topic,
+    set_conversation_bookmark,
     unarchive_conversation,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -83,10 +85,14 @@ class SlackConversationPlugin(ConversationPlugin):
         """Sends a new message based on data and type."""
         client = create_slack_client(self.configuration)
         if not blocks:
-            blocks = create_message_blocks(message_template, notification_type, items, **kwargs)
+            blocks = Message(
+                blocks=create_message_blocks(message_template, notification_type, items, **kwargs)
+            ).build()["blocks"]
 
+        messages = []
         for c in chunks(blocks, 50):
-            send_message(client, conversation_id, text, c, persist)
+            messages.append(send_message(client, conversation_id, text, c, persist))
+        return messages
 
     def send_direct(
         self,
@@ -103,7 +109,9 @@ class SlackConversationPlugin(ConversationPlugin):
         user_id = resolve_user(client, user)["id"]
 
         if not blocks:
-            blocks = create_message_blocks(message_template, notification_type, items, **kwargs)
+            blocks = Message(
+                blocks=create_message_blocks(message_template, notification_type, items, **kwargs)
+            ).build()["blocks"]
 
         return send_message(client, user_id, text, blocks)
 
@@ -123,7 +131,9 @@ class SlackConversationPlugin(ConversationPlugin):
         user_id = resolve_user(client, user)["id"]
 
         if not blocks:
-            blocks = create_message_blocks(message_template, notification_type, items, **kwargs)
+            blocks = Message(
+                blocks=create_message_blocks(message_template, notification_type, items, **kwargs)
+            ).build()["blocks"]
 
         archived = conversation_archived(client, conversation_id)
         if not archived:
@@ -157,6 +167,11 @@ class SlackConversationPlugin(ConversationPlugin):
         """Sets the conversation topic."""
         client = create_slack_client(self.configuration)
         return set_conversation_topic(client, conversation_id, topic)
+
+    def set_bookmark(self, conversation_id: str, weblink: str, title: str):
+        """Sets the conversation bookmark."""
+        client = create_slack_client(self.configuration)
+        return set_conversation_bookmark(client, conversation_id, weblink, title)
 
     def get_command_name(self, command: str):
         """Gets the command name."""

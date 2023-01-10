@@ -542,6 +542,62 @@ def set_conversation_topic(incident: Incident, db_session: SessionLocal):
         log.exception(e)
 
 
+def set_conversation_bookmarks(incident: Incident, db_session: SessionLocal):
+    """Sets the conversation bookmarks."""
+    if not incident.conversation:
+        log.warning("Conversation bookmark not set. No conversation available for this incident.")
+        return
+
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+    )
+    if not plugin:
+        log.warning("Bookmarks not created. No conversation plugin enabled.")
+        return
+
+    try:
+        plugin.instance.set_bookmark(
+            incident.conversation.channel_id,
+            resolve_attr(incident, "incident_document.weblink"),
+            title="Incident Document",
+        ) if incident.documents else log.warning(
+            "Document bookmark not set. No document available for this incident."
+        )
+
+        plugin.instance.set_bookmark(
+            incident.conversation.channel_id,
+            resolve_attr(incident, "conference.weblink"),
+            title="Video Conference",
+        ) if incident.conference else log.warning(
+            "Conference bookmark not set. No conference available for this incident."
+        )
+
+        plugin.instance.set_bookmark(
+            incident.conversation.channel_id,
+            resolve_attr(incident, "storage.weblink"),
+            title="Storage",
+        ) if incident.storage else log.warning(
+            "Storage bookmark not set. No storage available for this incident."
+        )
+
+        plugin.instance.set_bookmark(
+            incident.conversation.channel_id,
+            resolve_attr(incident, "ticket.weblink"),
+            title="Ticket",
+        ) if incident.ticket else log.warning(
+            "Ticket bookmark not set. No ticket available for this incident."
+        )
+
+    except Exception as e:
+        event_service.log_incident_event(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"Setting the incident conversation bookmarks failed. Reason: {e}",
+            incident_id=incident.id,
+        )
+        log.exception(e)
+
+
 def add_participants_to_conversation(
     participant_emails: List[str], incident: Incident, db_session: SessionLocal
 ):
@@ -848,9 +904,6 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
                 description="Conversation added to incident",
                 incident_id=incident.id,
             )
-
-            # we set the conversation topic
-            set_conversation_topic(incident, db_session)
         except Exception as e:
             event_service.log_incident_event(
                 db_session=db_session,
@@ -895,6 +948,11 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
                     incident_id=incident.id,
                 )
                 log.exception(e)
+
+    # we set the conversation topic
+    set_conversation_topic(incident, db_session)
+    # we set the conversation bookmarks
+    set_conversation_bookmarks(incident, db_session)
 
     # we defer this setup for all resolved incident roles until after resources have been created
     roles = ["reporter", "commander", "liaison", "scribe"]
