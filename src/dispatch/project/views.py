@@ -14,7 +14,7 @@ from dispatch.database.service import common_parameters, search_filter_sort_pagi
 from dispatch.exceptions import ExistsError
 from dispatch.models import OrganizationSlug, PrimaryKey
 
-from .flows import project_create_flow
+from .flows import project_init_flow
 from .models import (
     ProjectCreate,
     ProjectRead,
@@ -56,7 +56,7 @@ def create_project(
 
     project = create(db_session=db_session, project_in=project_in)
     background_tasks.add_task(
-        project_create_flow, project_id=project.id, organization_slug=organization
+        project_init_flow, project_id=project.id, organization_slug=organization
     )
     return project
 

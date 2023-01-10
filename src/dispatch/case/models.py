@@ -1,6 +1,6 @@
 from datetime import datetime
 from collections import defaultdict
-from typing import List, Optional, Any
+from typing import List, Optional, Any, ForwardRef
 
 from pydantic import validator
 from sqlalchemy import (
@@ -25,7 +25,7 @@ from dispatch.document.models import Document, DocumentRead
 from dispatch.enums import Visibility
 from dispatch.event.models import EventRead
 from dispatch.group.models import Group, GroupRead
-from dispatch.incident.models import IncidentRead
+from dispatch.incident.models import IncidentReadMinimal
 from dispatch.messaging.strings import CASE_RESOLUTION_DEFAULT
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 from dispatch.models import NameStr, PrimaryKey
@@ -156,7 +156,7 @@ class ProjectRead(DispatchBase):
 # Pydantic models...
 class CaseBase(DispatchBase):
     title: str
-    description: str
+    description: Optional[str]
     resolution: Optional[str]
     status: Optional[CaseStatus]
     visibility: Optional[Visibility]
@@ -183,7 +183,10 @@ class CaseCreate(CaseBase):
     tags: Optional[List[TagRead]] = []
 
 
-class CaseReadNested(CaseBase):
+CaseReadMinimal = ForwardRef("CaseReadMinimal")
+
+
+class CaseReadMinimal(CaseBase):
     id: PrimaryKey
     assignee: Optional[UserRead]
     case_priority: CasePriorityRead
@@ -198,25 +201,28 @@ class CaseReadNested(CaseBase):
     triage_at: Optional[datetime] = None
 
 
+CaseReadMinimal.update_forward_refs()
+
+
 class CaseRead(CaseBase):
     id: PrimaryKey
     assignee: Optional[UserRead]
     case_priority: CasePriorityRead
     case_severity: CaseSeverityRead
     case_type: CaseTypeRead
-    signal_instances: Optional[List[SignalInstanceRead]] = []
     closed_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
     documents: Optional[List[DocumentRead]] = []
-    duplicates: Optional[List[CaseReadNested]] = []
+    duplicates: Optional[List[CaseReadMinimal]] = []
     escalated_at: Optional[datetime] = None
     events: Optional[List[EventRead]] = []
     groups: Optional[List[GroupRead]] = []
-    incidents: Optional[List[IncidentRead]] = []
+    incidents: Optional[List[IncidentReadMinimal]] = []
     name: Optional[NameStr]
     project: ProjectRead
-    related: Optional[List[CaseReadNested]] = []
+    related: Optional[List[CaseReadMinimal]] = []
     reported_at: Optional[datetime] = None
+    signal_instances: Optional[List[SignalInstanceRead]] = []
     storage: Optional[StorageRead] = None
     tags: Optional[List[TagRead]] = []
     ticket: Optional[TicketRead] = None
@@ -232,7 +238,7 @@ class CaseUpdate(CaseBase):
     duplicates: Optional[List[CaseRead]] = []
     related: Optional[List[CaseRead]] = []
     escalated_at: Optional[datetime] = None
-    incidents: Optional[List[IncidentRead]] = []
+    incidents: Optional[List[IncidentReadMinimal]] = []
     reported_at: Optional[datetime] = None
     tags: Optional[List[TagRead]] = []
     triage_at: Optional[datetime] = None
@@ -255,7 +261,7 @@ class CaseUpdate(CaseBase):
 
 
 class CasePagination(DispatchBase):
-    items: List[CaseRead] = []
+    items: List[CaseReadMinimal] = []
     itemsPerPage: int
     page: int
     total: int

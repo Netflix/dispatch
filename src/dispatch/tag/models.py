@@ -9,7 +9,7 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.database.core import Base
 from dispatch.models import DispatchBase, TimeStampMixin, ProjectMixin, PrimaryKey
 from dispatch.project.models import ProjectRead
-from dispatch.tag_type.models import TagTypeRead, TagTypeCreate, TagTypeUpdate
+from dispatch.tag_type.models import TagTypeRead, TagTypeCreate, TagTypeUpdate, TagTypeReadMinimal
 
 
 class Tag(Base, TimeStampMixin, ProjectMixin):
@@ -57,6 +57,16 @@ class TagRead(TagBase):
     project: ProjectRead
 
 
+class TagReadMinimal(DispatchBase):
+    id: PrimaryKey
+    name: Optional[str] = Field(None, nullable=True)
+    source: Optional[str] = Field(None, nullable=True)
+    uri: Optional[str] = Field(None, nullable=True)
+    discoverable: Optional[bool] = True
+    description: Optional[str] = Field(None, nullable=True)
+    tag_type: Optional[TagTypeReadMinimal]
+
+
 class TagPagination(DispatchBase):
-    items: List[TagRead]
+    items: List[TagReadMinimal]
     total: int

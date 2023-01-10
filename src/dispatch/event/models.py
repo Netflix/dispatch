@@ -58,7 +58,3 @@ class EventUpdate(EventBase):
 
 class EventRead(EventBase):
     pass
-
-
-class EventNested(EventBase):
-    id: PrimaryKey
