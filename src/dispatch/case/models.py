@@ -1,6 +1,6 @@
 from datetime import datetime
 from collections import defaultdict
-from typing import List, Optional, Any
+from typing import List, Optional, Any, ForwardRef
 
 from pydantic import validator
 from sqlalchemy import (
@@ -183,6 +183,9 @@ class CaseCreate(CaseBase):
     tags: Optional[List[TagRead]] = []
 
 
+CaseReadMinimal = ForwardRef("CaseReadMinimal")
+
+
 class CaseReadMinimal(CaseBase):
     id: PrimaryKey
     assignee: Optional[UserRead]
@@ -196,6 +199,9 @@ class CaseReadMinimal(CaseBase):
     project: ProjectRead
     reported_at: Optional[datetime] = None
     triage_at: Optional[datetime] = None
+
+
+CaseReadMinimal.update_forward_refs()
 
 
 class CaseRead(CaseBase):
