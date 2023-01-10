@@ -21,7 +21,8 @@ from .service import get
 
 
 @background_task
-def project_create_flow(*, organization_slug: str, project_id: int, db_session=None):
+def project_init_flow(*, project_id: int, organization_slug: str, db_session=None):
+    """Initializes a new project with default settings."""
     project = get(db_session=db_session, project_id=project_id)
 
     # Add all plugins in disabled mode

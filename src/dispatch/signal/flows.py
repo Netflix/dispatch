@@ -1,19 +1,27 @@
 from dispatch.case.models import CaseCreate
 from dispatch.database.core import SessionLocal
+from dispatch.project.models import Project
 from dispatch.case import service as case_service
 from dispatch.case import flows as case_flows
 from dispatch.signal import service as signal_service
-from dispatch.signal.models import SignalInstanceCreate
+from dispatch.signal.models import SignalInstanceCreate, RawSignal
 
 
-def create_signal_instance(db_session: SessionLocal, signal_instance_data: dict):
+def create_signal_instance(
+    db_session: SessionLocal, project: Project, signal_instance_data: RawSignal
+):
     """Creates a signal and a case if necessary."""
     signal = signal_service.get_by_variant_or_external_id(
         db_session=db_session,
+        project_id=project.id,
         external_id=signal_instance_data.id,
         variant=signal_instance_data.variant,
     )
-    signal_instance_in = SignalInstanceCreate(**signal_instance_data, project=signal.project)
+
+    if not signal:
+        raise Exception("No signal definition defined.")
+
+    signal_instance_in = SignalInstanceCreate(raw=signal_instance_data, project=signal.project)
 
     signal_instance = signal_service.create_instance(
         db_session=db_session, signal_instance_in=signal_instance_in

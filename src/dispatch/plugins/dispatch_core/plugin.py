@@ -272,14 +272,16 @@ class DispatchContactPlugin(ContactPlugin):
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
-    def get(self, email, project_id=None, db_session=None):
-        return getattr(
-            individual_service.get_by_email_and_project(
-                db_session=db_session, email=email, project_id=project_id
-            ),
-            "__dict__",
-            {"email": email, "fullname": email},
+    def get(self, email, db_session=None):
+        individual = individual_service.get_by_email_and_project(
+            db_session=db_session, email=email, project_id=self.project_id
         )
+        if individual is None:
+            return {"email": email, "fullname": email}
+
+        data = individual.dict()
+        data["fullname"] = data["name"]
+        return data
 
 
 class DispatchParticipantResolverPlugin(ParticipantPlugin):

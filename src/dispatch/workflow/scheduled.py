@@ -30,8 +30,7 @@ def sync_workflow(db_session, project, workflow_plugin, instance, notify: bool =
     )
     instance_data = workflow_plugin.instance.get_workflow_instance(
         workflow_id=instance.workflow.resource_id,
-        workflow_instance_id=instance.id,
-        tags=[f"workflowInstanceId:{instance.id}"],
+        tags=[f"workflowId:{instance.workflow.resource_id}", f"workflowInstanceId:{instance.id}"],
     )
 
     log.debug(f"Retrieved instance data from plugin. Data: {instance_data}")
