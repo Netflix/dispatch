@@ -156,7 +156,7 @@ class ProjectRead(DispatchBase):
 # Pydantic models...
 class CaseBase(DispatchBase):
     title: str
-    description: str
+    description: Optional[str]
     resolution: Optional[str]
     status: Optional[CaseStatus]
     visibility: Optional[Visibility]
