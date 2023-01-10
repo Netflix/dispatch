@@ -4,6 +4,7 @@ from typing import Any
 
 from blockkit import Section, Modal
 from slack_bolt.app.async_app import AsyncApp
+from slack_bolt.async_app import AsyncRespond
 from slack_bolt.response import BoltResponse
 from slack_bolt.adapter.starlette.async_handler import AsyncSlackRequestHandler
 from slack_sdk.web.async_client import AsyncWebClient
@@ -31,7 +32,11 @@ logging.basicConfig(level=logging.DEBUG)
 
 @app.error
 async def app_error_handler(
-    error: Any, client: AsyncWebClient, body: dict, logger: logging.Logger
+    error: Any,
+    client: AsyncWebClient,
+    body: dict,
+    logger: logging.Logger,
+    respond: AsyncRespond,
 ) -> BoltResponse:
 
     if body:
@@ -40,15 +45,18 @@ async def app_error_handler(
     if error:
         logger.exception(f"Error: {error}")
 
+    # the user is within a modal flow
     if body.get("view"):
-        modal = Modal(
-            title="Error", close="Close", blocks=[Section(text="Something went wrong...")]
-        ).build()
+        modal = Modal(title="Error", close="Close", blocks=[Section(text=str(error))]).build()
 
         await client.views_update(
             view_id=body["view"]["id"],
             view=modal,
         )
+
+    # the user is in a message flow
+    if body.get("response_url"):
+        await respond(text=str(error), response_type="ephemeral")
 
     return BoltResponse(body=body, status=HTTPStatus.INTERNAL_SERVER_ERROR.value)
 

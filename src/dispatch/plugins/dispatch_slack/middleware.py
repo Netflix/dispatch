@@ -203,12 +203,9 @@ async def command_context_middleware(
             }
         )
     else:
-        msg = f"Sorry, I can't determine the correct context to run the command `{payload['command']}`. Are you running this command in an incident channel?"
-        await respond(
-            text=msg,
-            response_type="ephemeral",
+        raise ContextError(
+            f"Sorry, I can't determine the correct context to run the command `{payload['command']}`. Are you running this command in an incident channel?"
         )
-        raise ContextError(msg)
     await next()
 
 
