@@ -195,20 +195,20 @@ class SignalPagination(DispatchBase):
 
 class RawSignal(DispatchBase):
     action: Optional[List[Dict]] = []
-    additional_metadata: Optional[List[Dict]] = Field([], alias="additionalMetadata")
+    additional_metadata: Optional[List[Dict]] = Field([])
     asset: Optional[List[Dict]] = []
     identity: Optional[Dict] = {}
-    origin_location: Optional[List[Dict]] = Field([], alias="originLocation")
+    origin_location: Optional[List[Dict]] = Field([])
     variant: Optional[str] = None
-    created_at: Optional[datetime] = Field(None, alias="createdAt")
-    id: str
+    created_at: Optional[datetime] = Field(None)
+    id: Optional[str]
 
 
 class SignalInstanceBase(DispatchBase):
     project: ProjectRead
     case: Optional[CaseRead]
     tags: Optional[List[TagRead]] = []
-    raw: Any
+    raw: RawSignal
     suppression_rule: Optional[SuppressionRuleBase]
     duplication_rule: Optional[DuplicationRuleBase]
     created_at: Optional[datetime] = None
