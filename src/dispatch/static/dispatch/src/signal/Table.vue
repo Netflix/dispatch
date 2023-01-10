@@ -10,9 +10,9 @@
         </v-alert>
       </v-col>
     </v-row>
-    <v-row no-gutters>
-      <v-col>
-        <div class="headline">Signal Definitions</div>
+    <v-row align="center" justify="space-between" no-gutters>
+      <v-col cols="8">
+        <settings-breadcrumbs v-model="project" />
       </v-col>
       <v-col class="text-right">
         <v-btn color="info" class="mr-2" @click="createEditShow()"> New </v-btn>
@@ -135,7 +135,7 @@ export default {
     ...mapFields("signal", [
       "table.loading",
       "table.options.descending",
-      "table.options.filters",
+      "table.options.filters.project",
       "table.options.itemsPerPage",
       "table.options.page",
       "table.options.q",
@@ -143,19 +143,8 @@ export default {
       "table.rows.items",
       "table.rows.total",
     ]),
-    ...mapFields("route", ["query"]),
+    ...mapFields("route", ["query", "params"]),
     ...mapFields("auth", ["currentUser.projects"]),
-
-    defaultUserProjects: {
-      get() {
-        let d = null
-        if (this.projects) {
-          let d = this.projects.filter((v) => v.default === true)
-          return d.map((v) => v.project)
-        }
-        return d
-      },
-    },
   },
 
   methods: {
@@ -163,26 +152,15 @@ export default {
   },
 
   created() {
-    this.filters = {
-      ...this.filters,
-      ...RouterUtils.deserializeFilters(this.query),
-      project: this.defaultUserProjects,
-    }
+    this.project = [{ name: this.query.project }]
 
     this.getAll()
 
     this.$watch(
-      (vm) => [vm.page],
-      () => {
-        this.getAll()
-      }
-    )
-
-    this.$watch(
-      (vm) => [vm.q, vm.sortBy, vm.itemsPerPage, vm.descending, vm.created_at, vm.project],
+      (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending, vm.project],
       () => {
         this.page = 1
-        RouterUtils.updateURLFilters(this.filters)
+        this.$router.push({ query: { project: this.project[0].name } })
         this.getAll()
       }
     )
