@@ -15,37 +15,14 @@ const getDefaultSelectedState = () => {
   }
 }
 
-function authCurrentUser (base, token, bad_token_ok=false) {
-  let decodedToken
-  let loggedIn
-  try {
-    decodedToken = jwt_decode(token)
-    loggedIn = true
-  } catch (e) {
-    if (!bad_token_ok) {
-      throw e
-    }
-    token = null
-    decodedToken = {}
-    loggedIn = false
-  }
-
-  return {
-    ...base,
-    loggedIn: loggedIn,
-    token: token,
-    ...decodedToken
-  }
-}
-
 const state = {
-  currentUser: authCurrentUser({
+  currentUser: {
     loggedIn: false,
     token: null,
     email: "",
     projects: [],
     role: null,
-  }, localStorage.getItem("token"), true),
+  },
   selected: {
     ...getDefaultSelectedState(),
   },
@@ -201,7 +178,12 @@ const mutations = {
     state.loading = value
   },
   SET_USER_LOGIN(state, token) {
-    state.currentUser = authCurrentUser(state.currentUser, token)
+    state.currentUser = {
+      ...state.currentUser,
+      ...jwt_decode(token),
+      token: token,
+      loggedIn: true,
+    }
     localStorage.setItem("token", token)
   },
   SET_USER_LOGOUT(state) {
