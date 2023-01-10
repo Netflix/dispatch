@@ -208,7 +208,7 @@ class SignalInstanceBase(DispatchBase):
     project: ProjectRead
     case: Optional[CaseRead]
     tags: Optional[List[TagRead]] = []
-    raw: Any
+    raw: RawSignal
     suppression_rule: Optional[SuppressionRuleBase]
     duplication_rule: Optional[DuplicationRuleBase]
     created_at: Optional[datetime] = None
