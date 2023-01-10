@@ -10,8 +10,6 @@ from sqlalchemy_utils import create_database, database_exists
 
 from dispatch import config
 from dispatch.organization.models import Organization
-from dispatch.project import service as project_service
-from dispatch.project.models import ProjectCreate
 from dispatch.search import fulltext
 from dispatch.search.fulltext import (
     sync_trigger,
@@ -92,8 +90,8 @@ def init_database(engine):
 
 def init_schema(*, engine, organization: Organization):
     """Initializes a new schema."""
-
     schema_name = f"{DISPATCH_ORGANIZATION_SCHEMA_PREFIX}_{organization.slug}"
+
     if not engine.dialect.has_schema(engine, schema_name):
         with engine.connect() as connection:
             connection.execute(CreateSchema(schema_name))
@@ -125,19 +123,6 @@ def init_schema(*, engine, organization: Organization):
 
     organization = db_session.merge(organization)
     db_session.add(organization)
-
-    # create any required default values in schema here
-    #
-    #
-    project_service.get_or_create(
-        db_session=db_session,
-        project_in=ProjectCreate(
-            name="default",
-            default=True,
-            description="Default Dispatch project.",
-            organization=organization,
-        ),
-    )
     db_session.commit()
     return organization
 
