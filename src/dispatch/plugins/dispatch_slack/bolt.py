@@ -12,7 +12,6 @@ from slack_sdk.web.async_client import AsyncWebClient
 from .decorators import message_dispatcher
 from .middleware import (
     configuration_middleware,
-    configuration_middleware,
     db_middleware,
     message_context_middleware,
 )
