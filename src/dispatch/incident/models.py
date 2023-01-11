@@ -279,6 +279,8 @@ class IncidentReadMinimal(IncidentBase):
     commander: Optional[ParticipantReadMinimal]
     commanders_location: Optional[str]
     created_at: Optional[datetime] = None
+    duplicates: Optional[List[IncidentReadMinimal]] = []
+    incident_costs: Optional[List[IncidentCostRead]] = []
     incident_priority: IncidentPriorityReadMinimal
     incident_severity: IncidentSeverityReadMinimal
     incident_type: IncidentTypeReadMinimal
@@ -292,7 +294,6 @@ class IncidentReadMinimal(IncidentBase):
     stable_at: Optional[datetime] = None
     tags: Optional[List[TagReadMinimal]] = []
     total_cost: Optional[float]
-    incident_costs: Optional[List[IncidentCostRead]] = []
 
 
 IncidentReadMinimal.update_forward_refs()
