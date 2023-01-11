@@ -35,6 +35,7 @@ sentry-asgi
 sentry-sdk
 sh
 slack_sdk
+slack-bolt
 spacy
 sqlalchemy-filters
 sqlalchemy-utils

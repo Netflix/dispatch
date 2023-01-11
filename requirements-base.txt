@@ -4,7 +4,6 @@
 #
 #    pip-compile requirements-base.in
 #
-
 aiofiles==22.1.0
     # via -r requirements-base.in
 aiohttp==3.8.3
@@ -348,8 +347,12 @@ six==1.16.0
     #   python-multipart
     #   sqlalchemy-filters
     #   validators
-slack-sdk==3.19.5
+slack-bolt==1.16.1
     # via -r requirements-base.in
+slack-sdk==3.19.5
+    # via
+    #   -r requirements-base.in
+    #   slack-bolt
 smart-open==5.2.1
     # via
     #   pathy
