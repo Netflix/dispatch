@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import List, Any
+from typing import Any, List
 
 import pytz
 from blockkit import (
@@ -21,11 +21,11 @@ from blockkit import (
 )
 from slack_bolt.async_app import AsyncAck, AsyncBoltContext, AsyncRespond
 from slack_sdk.web.async_client import AsyncWebClient
-
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from dispatch.auth.models import DispatchUser
+from dispatch.auth import service as user_service
+from dispatch.auth.models import DispatchUser, UserRegister
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.database.core import engine, resolve_attr, sessionmaker
 from dispatch.database.service import search_filter_sort_paginate
@@ -134,7 +134,6 @@ def configure(config):
     middleware = [
         command_context_middleware,
         db_middleware,
-        user_middleware,
         configuration_middleware,
     ]
 
@@ -500,11 +499,12 @@ def filter_tasks_by_assignee_and_creator(
 
 async def handle_list_tasks_command(
     ack: AsyncAck,
-    user: DispatchUser,
     body: dict,
-    respond: AsyncRespond,
+    payload: dict,
+    client: AsyncWebClient,
     context: AsyncBoltContext,
     db_session: Session,
+    respond: AsyncRespond,
 ) -> None:
     """Handles the list tasks command."""
     await ack()
@@ -523,6 +523,13 @@ async def handle_list_tasks_command(
         )
 
         if caller_only:
+            user_id = payload["user_id"]
+            email = (await client.users_info(user=user_id))["user"]["profile"]["email"]
+            user = user_service.get_or_create(
+                db_session=db_session,
+                organization=context["subject"].organization_slug,
+                user_in=UserRegister(email=email),
+            )
             tasks = filter_tasks_by_assignee_and_creator(tasks, user.email, user.email)
 
         if not tasks:
@@ -1342,7 +1349,7 @@ async def handle_assign_role_submission_event(
     ):
         # we update the external ticket
         incident_flows.update_external_incident_ticket(
-            incident_id=context["subject"].id, db_session=context["subject"].organization_slug
+            incident_id=context["subject"].id, db_session=db_session
         )
 
     modal = Modal(

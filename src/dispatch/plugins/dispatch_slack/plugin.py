@@ -24,7 +24,7 @@ from dispatch.plugins.dispatch_slack.config import (
     SlackConversationConfiguration,
 )
 
-from .bolt import router as slack_event_router
+from .endpoints import router as slack_event_router
 from .messaging import create_message_blocks
 from .service import (
     add_users_to_conversation,
