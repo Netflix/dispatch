@@ -87,7 +87,6 @@ def default_notification(items: list):
                             action_id=button["button_action"],
                             text=button["button_text"],
                             value=button["button_value"],
-                            url=button["button_url"],
                         )
 
                     elements.append(element)
