@@ -17,7 +17,6 @@ from .decorators import message_dispatcher
 from .middleware import (
     message_context_middleware,
     db_middleware,
-    user_middleware,
     configuration_middleware,
 )
 
@@ -66,7 +65,6 @@ async def app_error_handler(
     middleware=[
         message_context_middleware,
         db_middleware,
-        user_middleware,
         configuration_middleware,
     ],
 )
