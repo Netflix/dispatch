@@ -71,7 +71,7 @@ async def action_context_middleware(body: dict, context: AsyncBoltContext, next:
 
 async def message_context_middleware(context: AsyncBoltContext, next: Callable) -> None:
     """Attemps to determine the current context of the event."""
-    conversation = resolve_conversation_from_context(context["channel_id"])
+    conversation = resolve_conversation_from_context(channel_id=context["channel_id"])
     if conversation:
         context.update(
             {
