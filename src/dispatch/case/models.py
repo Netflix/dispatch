@@ -192,6 +192,8 @@ class CaseReadMinimal(CaseBase):
     case_priority: CasePriorityRead
     case_severity: CaseSeverityRead
     case_type: CaseTypeRead
+    duplicates: Optional[List[CaseReadMinimal]] = []
+    related: Optional[List[CaseReadMinimal]] = []
     closed_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
     escalated_at: Optional[datetime] = None
