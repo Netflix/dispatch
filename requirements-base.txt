@@ -4,7 +4,8 @@
 #
 #    pip-compile requirements-base.in
 #
-
+aiocache==0.11.1
+    # via -r requirements-base.in
 aiofiles==22.1.0
     # via -r requirements-base.in
 aiohttp==3.8.3
