@@ -1342,7 +1342,7 @@ async def handle_assign_role_submission_event(
     ):
         # we update the external ticket
         incident_flows.update_external_incident_ticket(
-            incident_id=context["subject"].id, db_session=context["subject"].organization_slug
+            incident_id=context["subject"].id, db_session=db_session
         )
 
     modal = Modal(
