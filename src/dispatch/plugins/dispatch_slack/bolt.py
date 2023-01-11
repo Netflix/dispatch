@@ -14,7 +14,6 @@ from .middleware import (
     configuration_middleware,
     db_middleware,
     message_context_middleware,
-    user_middleware,
 )
 
 app = AsyncApp(
@@ -62,7 +61,6 @@ async def app_error_handler(
     middleware=[
         message_context_middleware,
         db_middleware,
-        user_middleware,
         configuration_middleware,
     ],
 )
