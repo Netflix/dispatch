@@ -108,6 +108,24 @@ def timer(func: Any):
         metrics_provider.timer(
             "function.elapsed.time", value=elapsed_time, tags={"function": fullname(func)}
         )
+        log.debug(f"function.elapsed.time.{fullname(func)}: {elapsed_time}")
+        return result
+
+    return wrapper
+
+
+def async_timer(func: Any):
+    """Timing decorator that sends a timing metric."""
+
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        start = time.perf_counter()
+        result = await func(*args, **kwargs)
+        elapsed_time = time.perf_counter() - start
+        metrics_provider.timer(
+            "function.elapsed.time", value=elapsed_time, tags={"function": fullname(func)}
+        )
+        log.debug(f"function.elapsed.time.{fullname(func)}: {elapsed_time}")
         return result
 
     return wrapper

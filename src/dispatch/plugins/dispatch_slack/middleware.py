@@ -1,4 +1,4 @@
-from typing import Optional, Callable
+from typing import Callable, Optional, Tuple
 
 from aiocache import Cache
 from slack_bolt.async_app import AsyncBoltContext, AsyncRespond
@@ -6,30 +6,34 @@ from slack_sdk.web.async_client import AsyncWebClient
 from sqlalchemy.orm.session import Session
 
 from dispatch.auth import service as user_service
-from dispatch.auth.models import UserRegister, DispatchUser
+from dispatch.auth.models import DispatchUser, UserRegister
 from dispatch.conversation import service as conversation_service
-from dispatch.conversation.models import Conversation
 from dispatch.database.core import SessionLocal, engine, sessionmaker
+from dispatch.decorators import async_timer
 from dispatch.organization import service as organization_service
 from dispatch.participant import service as participant_service
 from dispatch.participant_role.enums import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 
-from .models import SubjectMetadata
 from .exceptions import ContextError, RoleError
+from .models import SubjectMetadata
 
 cache = Cache()
 
 
-def resolve_conversation_from_context(
+async def resolve_context_from_conversation(
     channel_id: str, message_ts: Optional[str] = None
-) -> Optional[Conversation]:
+) -> Optional[SubjectMetadata]:
     """Attempts to resolve a conversation based on the channel id or message_ts."""
-    db_session = SessionLocal()
-    organization_slugs = [o.slug for o in organization_service.get_all(db_session=db_session)]
-    db_session.close()
 
-    conversation = None
+    organization_slugs = await cache.get("organization-slugs")
+
+    if not organization_slugs:
+        db_session = SessionLocal()
+        organization_slugs = [o.slug for o in organization_service.get_all(db_session=db_session)]
+        db_session.close()
+        await cache.set("organization-slugs", organization_slugs)
+
     for slug in organization_slugs:
         schema_engine = engine.execution_options(
             schema_translate_map={
@@ -37,16 +41,20 @@ def resolve_conversation_from_context(
             }
         )
 
-        # we close this later
         scoped_db_session = sessionmaker(bind=schema_engine)()
         conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
             db_session=scoped_db_session, channel_id=channel_id
         )
-
         if conversation:
-            break
+            subject = SubjectMetadata(
+                type="incident",
+                id=conversation.incident_id,
+                organization_slug=slug,
+                project_id=conversation.incident.project_id,
+            )
 
-    return conversation
+            return subject, scoped_db_session
+        scoped_db_session.close()
 
 
 async def shortcut_context_middleware(context: AsyncBoltContext, next: Callable) -> None:
@@ -69,19 +77,15 @@ async def action_context_middleware(body: dict, context: AsyncBoltContext, next:
     await next()
 
 
+@async_timer
 async def message_context_middleware(context: AsyncBoltContext, next: Callable) -> None:
     """Attemps to determine the current context of the event."""
-    conversation = resolve_conversation_from_context(channel_id=context["channel_id"])
-    if conversation:
+    subject, db_session = await resolve_context_from_conversation(channel_id=context["channel_id"])
+    if subject:
         context.update(
             {
-                "subject": SubjectMetadata(
-                    type="incident",
-                    id=conversation.incident.id,
-                    organization_slug=conversation.incident.project.organization.slug,
-                    project_id=conversation.incident.project.id,
-                ),
-                "db_session": Session.object_session(conversation),
+                "subject": subject,
+                "db_session": db_session,
             }
         )
     else:
@@ -90,6 +94,7 @@ async def message_context_middleware(context: AsyncBoltContext, next: Callable) 
     await next()
 
 
+@async_timer
 async def restricted_command_middleware(
     context: AsyncBoltContext, db_session, user: DispatchUser, next: Callable, payload: dict
 ):
@@ -110,6 +115,7 @@ async def restricted_command_middleware(
     )
 
 
+@async_timer
 async def user_middleware(
     body: dict,
     payload: dict,
@@ -148,6 +154,7 @@ async def user_middleware(
     await next()
 
 
+@async_timer
 async def modal_submit_middleware(body: dict, context: AsyncBoltContext, next: Callable) -> None:
     """Parses view data into a reasonable data struct."""
     parsed_data = {}
@@ -194,21 +201,13 @@ async def modal_submit_middleware(body: dict, context: AsyncBoltContext, next: C
 
 
 # NOTE we don't need to handle cases because commands are not available in threads.
+@async_timer
 async def command_context_middleware(
     context: AsyncBoltContext, payload: dict, next: Callable, respond: AsyncRespond
 ) -> None:
-    conversation = resolve_conversation_from_context(channel_id=context["channel_id"])
-    if conversation:
-        context.update(
-            {
-                "subject": SubjectMetadata(
-                    type="incident",
-                    id=conversation.incident.id,
-                    organization_slug=conversation.incident.project.organization.slug,
-                    project_id=conversation.incident.project.id,
-                )
-            }
-        )
+    subject, db_session = await resolve_context_from_conversation(channel_id=context["channel_id"])
+    if subject:
+        context.update({"subject": subject, "db_session": db_session})
     else:
         raise ContextError(
             f"Sorry, I can't determine the correct context to run the command `{payload['command']}`. Are you running this command in an incident channel?"
@@ -216,6 +215,7 @@ async def command_context_middleware(
     await next()
 
 
+@async_timer
 async def db_middleware(context: AsyncBoltContext, next: Callable):
     if context.get("db_session"):
         return await next()
@@ -237,21 +237,15 @@ async def db_middleware(context: AsyncBoltContext, next: Callable):
     await next()
 
 
+@async_timer
 async def configuration_middleware(context: AsyncBoltContext, next: Callable):
     if context.get("config"):
         return await next()
-
-    if not context.get("subject") and not context.get("db_session"):
-        return await next()
-
     plugin = plugin_service.get_active_instance(
         db_session=context["db_session"],
         project_id=context["subject"].project_id,
         plugin_type="conversation",
     )
-
-    if not plugin:
-        return await next()
 
     context["config"] = plugin.configuration
     await next()

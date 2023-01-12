@@ -1,21 +1,17 @@
-import time
-import logging
 import functools
 import inspect
-from pydantic import BaseModel
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+import logging
+import time
+from typing import Any, Dict, List, Optional
 
 import slack_sdk
 from slack_sdk.web.async_client import AsyncWebClient
-
-from typing import Any, Dict, List, Optional
-
 from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
 
-from dispatch.exceptions import NotFoundError
-from dispatch.database.core import SessionLocal, sessionmaker, engine
 from dispatch.conversation import service as conversation_service
+from dispatch.database.core import SessionLocal, engine, sessionmaker
 from dispatch.organization import service as organization_service
+
 from .config import SlackConversationConfiguration
 
 log = logging.getLogger(__name__)
@@ -49,28 +45,13 @@ def get_organization_scope_from_channel_id(channel_id: str) -> SessionLocal:
 
 def get_organization_scope_from_slug(slug: str) -> SessionLocal:
     """Iterate all organizations looking for a matching slug."""
-    db_session = SessionLocal()
-    organization = organization_service.get_by_slug(db_session=db_session, slug=slug)
-    db_session.close()
-
-    if organization:
-        schema_engine = engine.execution_options(
-            schema_translate_map={
-                None: f"dispatch_organization_{slug}",
-            }
-        )
-
-        return sessionmaker(bind=schema_engine)()
-
-    raise ValidationError(
-        [
-            ErrorWrapper(
-                NotFoundError(msg=f"Organization slug '{slug}' not found. Check your spelling."),
-                loc="organization",
-            )
-        ],
-        model=BaseModel,
+    schema_engine = engine.execution_options(
+        schema_translate_map={
+            None: f"dispatch_organization_{slug}",
+        }
     )
+
+    return sessionmaker(bind=schema_engine)()
 
 
 def get_default_organization_scope() -> str:
