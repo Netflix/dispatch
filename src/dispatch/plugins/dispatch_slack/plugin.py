@@ -84,14 +84,19 @@ class SlackConversationPlugin(ConversationPlugin):
     ):
         """Sends a new message based on data and type."""
         client = create_slack_client(self.configuration)
-        if not blocks:
-            blocks = Message(
-                blocks=create_message_blocks(message_template, notification_type, items, **kwargs)
-            ).build()["blocks"]
-
         messages = []
-        for c in chunks(blocks, 50):
-            messages.append(send_message(client, conversation_id, text, c, persist))
+        if not blocks:
+            blocks = create_message_blocks(message_template, notification_type, items, **kwargs)
+
+            for c in chunks(blocks, 50):
+                messages.append(
+                    send_message(
+                        client, conversation_id, text, Message(blocks=c).build()["blocks"], persist
+                    )
+                )
+        else:
+            for c in chunks(blocks, 50):
+                messages.append(send_message(client, conversation_id, text, c, persist))
         return messages
 
     def send_direct(
