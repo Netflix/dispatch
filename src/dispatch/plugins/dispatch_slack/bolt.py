@@ -3,7 +3,7 @@ import logging
 from http import HTTPStatus
 from typing import Any
 
-from blockkit import Modal, Section
+from blockkit import Modal, MarkdownText, Context
 from slack_bolt.app.async_app import AsyncApp
 from slack_bolt.async_app import AsyncRespond
 from slack_bolt.response import BoltResponse
@@ -14,6 +14,7 @@ from .middleware import (
     configuration_middleware,
     db_middleware,
     message_context_middleware,
+    user_middleware,
 )
 
 app = AsyncApp(
@@ -25,7 +26,7 @@ app = AsyncApp(
 logging.basicConfig(level=logging.DEBUG)
 
 
-# @app.error
+@app.error
 async def app_error_handler(
     error: Any,
     client: AsyncWebClient,
@@ -42,7 +43,17 @@ async def app_error_handler(
 
     # the user is within a modal flow
     if body.get("view"):
-        modal = Modal(title="Error", close="Close", blocks=[Section(text=str(error))]).build()
+        modal = Modal(
+            title="Error",
+            close="Close",
+            blocks=[
+                Context(
+                    elements=[
+                        MarkdownText(text=f"❌ An internal error occured:\n ```{str(error)}```")
+                    ]
+                )
+            ],
+        ).build()
 
         await client.views_update(
             view_id=body["view"]["id"],
@@ -61,6 +72,7 @@ async def app_error_handler(
     middleware=[
         message_context_middleware,
         db_middleware,
+        user_middleware,
         configuration_middleware,
     ],
 )

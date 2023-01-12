@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional
 
 import slack_sdk
 from slack_sdk.web.async_client import AsyncWebClient
+from sqlalchemy.orm import Session
 from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
 
 from dispatch.conversation import service as conversation_service
@@ -20,7 +21,7 @@ log = logging.getLogger(__name__)
 # we need a way to determine which organization to use for a given
 # event, we use the unique channel id to determine which organization the
 # event belongs to.
-def get_organization_scope_from_channel_id(channel_id: str) -> SessionLocal:
+def get_organization_scope_from_channel_id(channel_id: str) -> Optional[Session]:
     """Iterate all organizations looking for a relevant channel_id."""
     db_session = SessionLocal()
     organization_slugs = [o.slug for o in organization_service.get_all(db_session=db_session)]
@@ -43,7 +44,7 @@ def get_organization_scope_from_channel_id(channel_id: str) -> SessionLocal:
         scoped_db_session.close()
 
 
-def get_organization_scope_from_slug(slug: str) -> SessionLocal:
+def get_organization_scope_from_slug(slug: str) -> Session:
     """Iterate all organizations looking for a matching slug."""
     schema_engine = engine.execution_options(
         schema_translate_map={

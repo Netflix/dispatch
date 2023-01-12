@@ -30,7 +30,7 @@ async def is_current_configuration(request: Request, plugin_instance: PluginInst
 async def get_request_handler(request: Request, organization: str) -> AsyncSlackRequestHandler:
     """Creates a slack request handler for use by the api."""
     session = get_organization_scope_from_slug(organization)
-    plugin_instances = (
+    plugin_instances: list[PluginInstance] = (
         session.query(PluginInstance)
         .join(Plugin)
         .filter(PluginInstance.enabled == true(), Plugin.slug == "slack-conversation")

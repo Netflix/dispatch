@@ -1,7 +1,7 @@
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional, NamedTuple
 
 from aiocache import Cache
-from slack_bolt.async_app import AsyncBoltContext, AsyncRespond
+from slack_bolt.async_app import AsyncBoltContext
 from slack_sdk.web.async_client import AsyncWebClient
 from sqlalchemy.orm.session import Session
 
@@ -20,10 +20,12 @@ from .models import SubjectMetadata
 
 cache = Cache()
 
+Subject = NamedTuple("Subject", subject=SubjectMetadata, db_session=Session)
+
 
 async def resolve_context_from_conversation(
     channel_id: str, message_ts: Optional[str] = None
-) -> Optional[SubjectMetadata]:
+) -> Optional[Subject]:
     """Attempts to resolve a conversation based on the channel id or message_ts."""
 
     organization_slugs = await cache.get("organization-slugs")
@@ -52,14 +54,14 @@ async def resolve_context_from_conversation(
                 organization_slug=slug,
                 project_id=conversation.incident.project_id,
             )
+            return Subject(subject, db_session=scoped_db_session)
 
-            return subject, scoped_db_session
         scoped_db_session.close()
 
 
 async def shortcut_context_middleware(context: AsyncBoltContext, next: Callable) -> None:
     """Attempts to determine the current context of the event."""
-    context.update({"subject": SubjectMetadata(channel_id=context["channel_id"])})
+    context.update({"subject": SubjectMetadata(channel_id=context.channel_id)})
     await next()
 
 
@@ -80,14 +82,8 @@ async def action_context_middleware(body: dict, context: AsyncBoltContext, next:
 @async_timer
 async def message_context_middleware(context: AsyncBoltContext, next: Callable) -> None:
     """Attemps to determine the current context of the event."""
-    subject, db_session = await resolve_context_from_conversation(channel_id=context["channel_id"])
-    if subject:
-        context.update(
-            {
-                "subject": subject,
-                "db_session": db_session,
-            }
-        )
+    if Subject := await resolve_context_from_conversation(channel_id=context.channel_id):
+        context.update(Subject._asdict())
     else:
         raise ContextError("Unable to determine context for message.")
 
@@ -125,6 +121,8 @@ async def user_middleware(
     next: Callable,
 ) -> None:
     """Attempts to determine the user making the request."""
+
+    user_id = None
 
     # for modals
     if body.get("user"):
@@ -203,11 +201,10 @@ async def modal_submit_middleware(body: dict, context: AsyncBoltContext, next: C
 # NOTE we don't need to handle cases because commands are not available in threads.
 @async_timer
 async def command_context_middleware(
-    context: AsyncBoltContext, payload: dict, next: Callable, respond: AsyncRespond
+    context: AsyncBoltContext, payload: dict, next: Callable
 ) -> None:
-    subject, db_session = await resolve_context_from_conversation(channel_id=context["channel_id"])
-    if subject:
-        context.update({"subject": subject, "db_session": db_session})
+    if Subject := await resolve_context_from_conversation(channel_id=context.channel_id):
+        context.update(Subject._asdict())
     else:
         raise ContextError(
             f"Sorry, I can't determine the correct context to run the command `{payload['command']}`. Are you running this command in an incident channel?"
@@ -241,6 +238,7 @@ async def db_middleware(context: AsyncBoltContext, next: Callable):
 async def configuration_middleware(context: AsyncBoltContext, next: Callable):
     if context.get("config"):
         return await next()
+
     plugin = plugin_service.get_active_instance(
         db_session=context["db_session"],
         project_id=context["subject"].project_id,

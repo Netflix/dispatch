@@ -1,11 +1,17 @@
 import logging
 import inspect
+from functools import wraps
+from typing import Callable, TypeVar
+from typing_extensions import ParamSpec
 
 log = logging.getLogger(__file__)
 
+T = TypeVar("T")
+P = ParamSpec("P")
+
 
 class MessageDispatcher:
-    """Dispatches current message to any registered function."""
+    """Dispatches current message to any registered function: https://github.com/slackapi/bolt-python/issues/786"""
 
     registered_funcs = []
 
@@ -37,3 +43,22 @@ class MessageDispatcher:
 
 
 message_dispatcher = MessageDispatcher()
+
+
+def handle_lazy_error(func: Callable[P, T]):
+    """Surfaces tracable exceptions within lazy listener functions: https://github.com/slackapi/bolt-python/issues/635"""
+
+    @wraps(func)
+    async def handle(*args: P.args, **kwargs: P.kwargs) -> None:
+        try:
+            await func(*args, **kwargs)
+        except Exception as error:
+            log.debug(f"Failed to run a lazy listener function {func.__name__}")
+            log.exception(f"{func.__name__}: {error}")
+
+            from .bolt import app_error_handler
+
+            client, body, respond = [kwargs.get(key) for key in ("client", "body", "respond")]
+            await app_error_handler(error, client, body, log, respond)
+
+    return handle
