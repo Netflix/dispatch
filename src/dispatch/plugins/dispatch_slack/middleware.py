@@ -138,7 +138,7 @@ async def user_middleware(
     email = await cache.get(user_id)
     if not email:
         email = (await client.users_info(user=user_id))["user"]["profile"]["email"]
-        cache.set(user_id, email)
+        await cache.set(user_id, email)
 
     context["user"] = user_service.get_or_create(
         db_session=db_session,

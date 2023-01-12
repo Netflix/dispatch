@@ -164,7 +164,7 @@ def configure(config):
     )
 
     # sensitive commands
-    middleware.append(restricted_command_middleware)
+    middleware.extend([user_middleware, restricted_command_middleware])
     app.command(config.slack_command_assign_role, middleware=middleware)(handle_assign_role_command)
     app.command(config.slack_command_update_incident, middleware=middleware)(
         handle_update_incident_command
