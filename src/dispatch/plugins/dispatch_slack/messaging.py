@@ -67,7 +67,7 @@ def default_notification(items: list):
             if item["type"] == "context":
                 blocks.append(Context(elements=[MarkdownText(text=format_default_text(item))]))
             else:
-                blocks.append(PlainText(text=format_default_text(item)))
+                blocks.append(Section(text=format_default_text(item)))
         else:
             blocks.append(Section(text=format_default_text(item)))
 
@@ -91,7 +91,6 @@ def default_notification(items: list):
 
                     elements.append(element)
             blocks.append(Actions(elements=elements))
-
     return blocks
 
 

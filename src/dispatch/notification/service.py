@@ -119,6 +119,7 @@ def send(*, db_session, project_id: int, notification: Notification, notificatio
                 **notification_params["kwargs"],
             )
         except Exception as e:
+            log.exception(e)
             log.error(f"Error in sending {notification_params['type']}: {e}")
     else:
         log.warning(
