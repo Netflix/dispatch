@@ -4,9 +4,6 @@ from functools import wraps
 from typing import Callable, TypeVar
 from typing_extensions import ParamSpec
 
-from blockkit import Modal, Section
-
-
 log = logging.getLogger(__file__)
 
 T = TypeVar("T")
@@ -59,28 +56,9 @@ def handle_lazy_error(func: Callable[P, T]):
             log.debug(f"Failed to run a lazy listener function {func.__name__}")
             log.exception(f"{func.__name__}: {error}")
 
+            from .bolt import app_error_handler
+
             client, body, respond = [kwargs.get(key) for key in ("client", "body", "respond")]
-            await surface_exception_to_user(client, body, respond, error)
-
-    async def surface_exception_to_user(client, body, respond, error):
-
-        # the user is within a modal flow
-        if body.get("view"):
-            modal = Modal(
-                title="Error",
-                close="Close",
-                blocks=[Section(text=f"An internal error occured: `{str(error)}`")],
-            ).build()
-
-            await client.views_update(
-                view_id=body["view"]["id"],
-                view=modal,
-            )
-
-        # the user is in a message flow
-        if body.get("response_url"):
-            await respond(
-                text=f"An internal error occured: `{str(error)}`", response_type="ephemeral"
-            )
+            await app_error_handler(error, client, body, log, respond)
 
     return handle

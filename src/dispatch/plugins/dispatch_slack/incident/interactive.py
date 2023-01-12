@@ -986,6 +986,7 @@ async def ack_add_timeline_submission_event(ack: AsyncAck) -> None:
     await ack(response_action="update", view=modal)
 
 
+@handle_lazy_error
 async def handle_add_timeline_submission_event(
     body: dict,
     user: DispatchUser,
@@ -1101,6 +1102,7 @@ async def ack_update_participant_submission_event(ack):
     await ack(response_action="update", view=modal)
 
 
+@handle_lazy_error
 async def handle_update_participant_submission_event(
     body: dict,
     client: AsyncWebClient,
@@ -1219,6 +1221,7 @@ async def ack_update_notifications_group_submission_event(ack):
     await ack(response_action="update", view=modal)
 
 
+@handle_lazy_error
 async def handle_update_notifications_group_submission_event(
     body: dict,
     client: AsyncWebClient,
@@ -1442,6 +1445,7 @@ async def ack_engage_oncall_submission_event(ack: AsyncAck) -> None:
     await ack(response_action="update", view=modal)
 
 
+@handle_lazy_error
 async def handle_engage_oncall_submission_event(
     client: AsyncWebClient,
     body: dict,
@@ -1561,6 +1565,7 @@ async def ack_report_tactical_submission_event(ack: AsyncAck) -> None:
     await ack(response_action="update", view=modal)
 
 
+@handle_lazy_error
 async def handle_report_tactical_submission_event(
     client: AsyncWebClient,
     body: dict,
@@ -1679,6 +1684,7 @@ async def ack_report_executive_submission_event(ack: AsyncAck) -> None:
     await ack(response_action="update", view=modal)
 
 
+@handle_lazy_error
 async def handle_report_executive_submission_event(
     client: AsyncWebClient,
     body: dict,
@@ -1798,6 +1804,7 @@ async def ack_incident_update_submission_event(ack: AsyncAck) -> None:
     await ack(response_action="update", view=modal)
 
 
+@handle_lazy_error
 async def handle_update_incident_submission_event(
     body: dict,
     client: AsyncWebClient,
@@ -1920,6 +1927,7 @@ async def ack_report_incident_submission_event(ack: AsyncAck) -> None:
     await ack(response_action="update", view=modal)
 
 
+@handle_lazy_error
 async def handle_report_incident_submission_event(
     user: DispatchUser,
     context: AsyncBoltContext,
