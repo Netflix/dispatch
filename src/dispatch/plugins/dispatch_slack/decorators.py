@@ -4,6 +4,8 @@ from functools import wraps
 from typing import Callable, TypeVar
 from typing_extensions import ParamSpec
 
+from blockkit import Modal, Section
+
 
 log = logging.getLogger(__file__)
 
@@ -12,7 +14,7 @@ P = ParamSpec("P")
 
 
 class MessageDispatcher:
-    """Dispatches current message to any registered function."""
+    """Dispatches current message to any registered function: https://github.com/slackapi/bolt-python/issues/786"""
 
     registered_funcs = []
 
@@ -47,12 +49,38 @@ message_dispatcher = MessageDispatcher()
 
 
 def handle_lazy_error(func: Callable[P, T]):
+    """Surfaces tracable exceptions within lazy listener functions: https://github.com/slackapi/bolt-python/issues/635"""
+
     @wraps(func)
     async def handle(*args: P.args, **kwargs: P.kwargs) -> None:
         try:
             await func(*args, **kwargs)
-        except Exception as e:
+        except Exception as error:
             log.debug(f"Failed to run a lazy listener function {func.__name__}")
-            log.exception(f"{func.__name__}: {e}")
+            log.exception(f"{func.__name__}: {error}")
+
+            client, body, respond = [kwargs.get(key) for key in ("client", "body", "respond")]
+            await surface_exception_to_user(client, body, respond, error)
+
+    async def surface_exception_to_user(client, body, respond, error):
+
+        # the user is within a modal flow
+        if body.get("view"):
+            modal = Modal(
+                title="Error",
+                close="Close",
+                blocks=[Section(text=f"An internal error occured: `{str(error)}`")],
+            ).build()
+
+            await client.views_update(
+                view_id=body["view"]["id"],
+                view=modal,
+            )
+
+        # the user is in a message flow
+        if body.get("response_url"):
+            await respond(
+                text=f"An internal error occured: `{str(error)}`", response_type="ephemeral"
+            )
 
     return handle
