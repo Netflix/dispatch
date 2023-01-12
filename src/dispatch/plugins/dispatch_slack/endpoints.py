@@ -5,6 +5,7 @@ from sqlalchemy import true
 from starlette.requests import Request
 
 from dispatch.plugin.models import Plugin, PluginInstance
+from dispatch.decorators import async_timer
 
 from .bolt import app
 from .incident.interactive import configure as incident_configure
@@ -25,6 +26,7 @@ async def is_current_configuration(request: Request, plugin_instance: PluginInst
     return verifier.is_valid_request(body=body, headers=request.headers)
 
 
+@async_timer
 async def get_request_handler(request: Request, organization: str) -> AsyncSlackRequestHandler:
     """Creates a slack request handler for use by the api."""
     session = get_organization_scope_from_slug(organization)
@@ -34,7 +36,6 @@ async def get_request_handler(request: Request, organization: str) -> AsyncSlack
         .filter(PluginInstance.enabled == true(), Plugin.slug == "slack-conversation")
         .all()
     )
-
     for p in plugin_instances:
         if await is_current_configuration(request=request, plugin_instance=p):
             incident_configure(p.configuration)
