@@ -1,7 +1,14 @@
 import logging
 import inspect
+from functools import wraps
+from typing import Callable, TypeVar
+from typing_extensions import ParamSpec
+
 
 log = logging.getLogger(__file__)
+
+T = TypeVar("T")
+P = ParamSpec("P")
 
 
 class MessageDispatcher:
@@ -37,3 +44,15 @@ class MessageDispatcher:
 
 
 message_dispatcher = MessageDispatcher()
+
+
+def handle_lazy_error(func: Callable[P, T]):
+    @wraps(func)
+    async def handle(*args: P.args, **kwargs: P.kwargs) -> None:
+        try:
+            await func(*args, **kwargs)
+        except Exception as e:
+            log.debug(f"Failed to run a lazy listener function {func.__name__}")
+            log.exception(f"{func.__name__}: {e}")
+
+    return handle

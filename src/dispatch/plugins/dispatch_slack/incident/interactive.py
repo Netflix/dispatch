@@ -48,7 +48,7 @@ from dispatch.participant_role.enums import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.bolt import app
-from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
+from dispatch.plugins.dispatch_slack.decorators import message_dispatcher, handle_lazy_error
 from dispatch.plugins.dispatch_slack.fields import (
     DefaultActionIds,
     DefaultBlockIds,
@@ -1318,6 +1318,7 @@ async def ack_assign_role_submission_event(ack: AsyncAck):
     await ack(response_action="update", view=modal)
 
 
+@handle_lazy_error
 async def handle_assign_role_submission_event(
     body: dict,
     user: DispatchUser,
