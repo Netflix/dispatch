@@ -183,9 +183,10 @@ def configure(config):
     )
 
     # required to allow the user to change the reaction string
-    app.event(config.timeline_event_reaction, middleware=[db_middleware])(
-        handle_timeline_added_event
-    )
+    app.event(
+        {"type": "reaction_added", "reaction": config.timeline_event_reaction},
+        middleware=[db_middleware],
+    )(handle_timeline_added_event)
 
 
 def refetch_db_session(organization_slug: str) -> Session:
@@ -622,15 +623,15 @@ async def handle_list_resources_command(
 
 
 async def handle_timeline_added_event(
-    client: Any, context: AsyncBoltContext, db_session: Session
+    client: Any, context: AsyncBoltContext, payload: Any, db_session: Session
 ) -> None:
     """Handles an event where a reaction is added to a message."""
     conversation_id = context["channel_id"]
-    message_ts = context["ts"]
-    message_ts_utc = datetime.datetime.utcfromtimestamp(float(message_ts))
+    message_ts = payload["item"]["ts"]
+    message_ts_utc = datetime.utcfromtimestamp(float(message_ts))
 
     # we fetch the message information
-    response = dispatch_slack_service.list_conversation_messages(
+    response = await dispatch_slack_service.list_conversation_messages(
         client, conversation_id, latest=message_ts, limit=1, inclusive=1
     )
     message_text = response["messages"][0]["text"]
