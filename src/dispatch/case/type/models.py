@@ -26,6 +26,7 @@ class CaseType(ProjectMixin, Base):
     enabled = Column(Boolean, default=True)
     exclude_from_metrics = Column(Boolean, default=False)
     plugin_metadata = Column(JSON, default=[])
+    conversation_target = Column(String)
 
     # the catalog here is simple to help matching "named entities"
     search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
@@ -55,8 +56,8 @@ listen(CaseType.default, "set", ensure_unique_default_per_project)
 
 # Pydantic models
 class Document(DispatchBase):
-    description: Optional[str] = Field(None, nullable=True)
     id: PrimaryKey
+    description: Optional[str] = Field(None, nullable=True)
     name: NameStr
     resource_id: Optional[str] = Field(None, nullable=True)
     resource_type: Optional[str] = Field(None, nullable=True)
@@ -71,9 +72,9 @@ class IncidentType(DispatchBase):
 
 
 class Service(DispatchBase):
+    id: PrimaryKey
     description: Optional[str] = Field(None, nullable=True)
     external_id: str
-    id: PrimaryKey
     is_active: Optional[bool] = None
     name: NameStr
     type: Optional[str] = Field(None, nullable=True)
@@ -81,6 +82,7 @@ class Service(DispatchBase):
 
 class CaseTypeBase(DispatchBase):
     case_template_document: Optional[Document]
+    conversation_target: Optional[str]
     default: Optional[bool] = False
     description: Optional[str] = Field(None, nullable=True)
     enabled: Optional[bool]

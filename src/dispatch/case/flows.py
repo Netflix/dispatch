@@ -1,15 +1,16 @@
 import logging
-
 from datetime import datetime
 
 from dispatch.case.models import CaseRead
+from dispatch.conversation import service as conversation_service
+from dispatch.conversation.models import ConversationCreate
 from dispatch.database.core import SessionLocal
 from dispatch.decorators import background_task
 from dispatch.document import flows as document_flows
 from dispatch.enums import DocumentResourceTypes
 from dispatch.event import service as event_service
 from dispatch.group import flows as group_flows
-from dispatch.group.enums import GroupType, GroupAction
+from dispatch.group.enums import GroupAction, GroupType
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
@@ -23,10 +24,46 @@ from dispatch.storage.enums import StorageAction
 from dispatch.ticket import flows as ticket_flows
 
 from .models import Case, CaseStatus
-from .service import get, delete
-
+from .service import delete, get
 
 log = logging.getLogger(__name__)
+
+
+def create_conversation(case: Case, db_session: SessionLocal):
+    """Create external communication conversation."""
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project.id, plugin_type="conversation"
+    )
+    conversation = plugin.instance.create_threaded(
+        case=case, conversation_id=case.case_type.conversation_target
+    )
+    conversation.update({"resource_type": plugin.plugin.slug, "resource_id": conversation["id"]})
+
+    event_service.log_case_event(
+        db_session=db_session,
+        source=plugin.plugin.title,
+        description="Case conversation created",
+        case_id=case.id,
+    )
+
+    return conversation
+
+
+def update_conversation(case: Case, db_session: SessionLocal):
+    """Updates external communication conversation."""
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project.id, plugin_type="conversation"
+    )
+    plugin.instance.update_thread(
+        case=case, conversation_id=case.conversation.channel_id, ts=case.conversation.thread_id
+    )
+
+    event_service.log_case_event(
+        db_session=db_session,
+        source=plugin.plugin.title,
+        description="Case conversation updated.",
+        case_id=case.id,
+    )
 
 
 @background_task
@@ -127,10 +164,41 @@ def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, d
                 "Case assignee not paged. No relationship between case type and an oncall service."
             )
 
-    # TODO(mvilanova): we send the case created notification
+    conversation_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project.id, plugin_type="conversation"
+    )
+    if conversation_plugin:
+        try:
+            conversation = create_conversation(case, db_session)
+            conversation_in = ConversationCreate(
+                resource_id=conversation["resource_id"],
+                resource_type=conversation["resource_type"],
+                weblink=conversation["weblink"],
+                thread_id=conversation["timestamp"],
+                channel_id=conversation["id"],
+            )
+            case.conversation = conversation_service.create(
+                db_session=db_session, conversation_in=conversation_in
+            )
+
+            event_service.log_case_event(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description="Conversation added to case",
+                case_id=case.id,
+            )
+        except Exception as e:
+            event_service.log_case_event(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description=f"Creation of case conversation failed. Reason: {e}",
+                case_id=case.id,
+            )
+            log.exception(e)
 
     db_session.add(case)
     db_session.commit()
+    return case
 
 
 @background_task
@@ -224,6 +292,7 @@ def case_update_flow(
         )
 
     # we send the case updated notification
+    update_conversation(case, db_session)
 
 
 def case_delete_flow(case: Case, db_session: SessionLocal):

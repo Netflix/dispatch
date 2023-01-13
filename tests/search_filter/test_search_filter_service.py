@@ -5,7 +5,7 @@ def test_get(session, search_filter):
     assert t_search_filter.id == search_filter.id
 
 
-def test_create(session, project):
+def test_create(session, user, project):
     from dispatch.search_filter.service import create
     from dispatch.search_filter.models import SearchFilterCreate
 
@@ -21,7 +21,7 @@ def test_create(session, project):
         type=type,
         project=project,
     )
-    search_filter = create(db_session=session, search_filter_in=search_filter_in)
+    search_filter = create(db_session=session, creator=user, search_filter_in=search_filter_in)
     assert search_filter
 
 

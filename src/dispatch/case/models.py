@@ -17,9 +17,9 @@ from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.auth.models import UserRead
-from dispatch.case.priority.models import CasePriorityRead
-from dispatch.case.severity.models import CaseSeverityRead
-from dispatch.case.type.models import CaseTypeRead
+from dispatch.case.priority.models import CasePriorityRead, CasePriorityBase
+from dispatch.case.severity.models import CaseSeverityRead, CaseSeverityBase
+from dispatch.case.type.models import CaseTypeRead, CaseTypeBase
 from dispatch.database.core import Base
 from dispatch.document.models import Document, DocumentRead
 from dispatch.enums import Visibility
@@ -113,6 +113,10 @@ class Case(Base, TimeStampMixin, ProjectMixin):
 
     workflow_instances = relationship(
         "WorkflowInstance", backref="case", cascade="all, delete-orphan"
+    )
+
+    conversation = relationship(
+        "Conversation", uselist=False, backref="case", cascade="all, delete-orphan"
     )
 
     related_id = Column(Integer, ForeignKey("case.id"))
@@ -235,9 +239,9 @@ class CaseRead(CaseBase):
 
 class CaseUpdate(CaseBase):
     assignee: Optional[UserRead]
-    case_priority: CasePriorityRead
-    case_severity: CaseSeverityRead
-    case_type: CaseTypeRead
+    case_priority: Optional[CasePriorityBase]
+    case_severity: Optional[CaseSeverityBase]
+    case_type: CaseTypeBase
     duplicates: Optional[List[CaseRead]] = []
     related: Optional[List[CaseRead]] = []
     escalated_at: Optional[datetime] = None

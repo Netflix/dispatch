@@ -7,7 +7,7 @@
 import logging
 from typing import List, Optional
 
-from blockkit import Section, Divider, Button, Context, MarkdownText, PlainText, Actions
+from blockkit import Section, Divider, Button, Context, MarkdownText, Actions
 
 from dispatch.messaging.strings import (
     EVERGREEN_REMINDER_DESCRIPTION,

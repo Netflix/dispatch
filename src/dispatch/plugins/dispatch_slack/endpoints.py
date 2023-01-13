@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from fastapi import APIRouter, HTTPException
 from slack_bolt.adapter.starlette.async_handler import AsyncSlackRequestHandler
 from slack_sdk.signature import SignatureVerifier
@@ -46,7 +48,9 @@ async def get_request_handler(request: Request, organization: str) -> AsyncSlack
             return AsyncSlackRequestHandler(app)
 
     session.close()
-    raise HTTPException(status_code=403, detail=[{"msg": "Invalid request signature"}])
+    raise HTTPException(
+        status_code=HTTPStatus.FORBIDDEN.value, detail=[{"msg": "Invalid request signature"}]
+    )
 
 
 @router.post(
