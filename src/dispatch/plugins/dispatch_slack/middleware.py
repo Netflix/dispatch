@@ -121,6 +121,10 @@ async def user_middleware(
     next: Callable,
 ) -> None:
     """Attempts to determine the user making the request."""
+    # filter out member join bot events as the built in slack-bolt doesn't catch these events
+    # https://github.com/slackapi/bolt-python/blob/main/slack_bolt/middleware/ignoring_self_events/ignoring_self_events.py#L37
+    if context.get("bot_user_id"):
+        return context.ack()
 
     user_id = None
 
