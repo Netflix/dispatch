@@ -19,7 +19,7 @@ from .middleware import (
 
 app = AsyncApp(
     token="xoxb-valid",
-    # raise_error_for_unhandled_request=True,
+    # raise_error_for_unhandled_request=False,
     process_before_response=True,
     request_verification_enabled=False,  # NOTE this is only safe because we do additional verification in order to determine which plugin configuration we are using
 )
