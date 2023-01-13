@@ -1,7 +1,7 @@
 from typing import Callable, Optional, NamedTuple
 
 from aiocache import Cache
-from slack_bolt.async_app import AsyncBoltContext
+from slack_bolt.async_app import AsyncBoltContext, AsyncBoltRequest
 from slack_sdk.web.async_client import AsyncWebClient
 from sqlalchemy.orm.session import Session
 
@@ -111,16 +111,36 @@ async def restricted_command_middleware(
     )
 
 
+# filter out member join bot events as the built in slack-bolt doesn't catch these events
+# https://github.com/slackapi/bolt-python/blob/main/slack_bolt/middleware/ignoring_self_events/ignoring_self_events.py#L37
+def is_bot(request: AsyncBoltRequest):
+    auth_result = request.context.authorize_result
+    user_id = request.context.user_id
+    bot_id = request.body.get("event", {}).get("bot_id")
+    body = request.body
+    return (
+        auth_result is not None
+        and (
+            (user_id is not None and user_id == auth_result.bot_user_id)
+            or (bot_id is not None and bot_id == auth_result.bot_id)  # for bot_message events
+        )
+        and body.get("event") is not None
+    )
+
+
 @async_timer
 async def user_middleware(
     body: dict,
     payload: dict,
     db_session: Session,
     client: AsyncWebClient,
+    request: AsyncBoltRequest,
     context: AsyncBoltContext,
     next: Callable,
 ) -> None:
     """Attempts to determine the user making the request."""
+    if is_bot(request):
+        return await context.ack()
 
     user_id = None
 
