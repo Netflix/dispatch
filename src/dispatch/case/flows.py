@@ -168,32 +168,33 @@ def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, d
         db_session=db_session, project_id=case.project.id, plugin_type="conversation"
     )
     if conversation_plugin:
-        try:
-            conversation = create_conversation(case, db_session)
-            conversation_in = ConversationCreate(
-                resource_id=conversation["resource_id"],
-                resource_type=conversation["resource_type"],
-                weblink=conversation["weblink"],
-                thread_id=conversation["timestamp"],
-                channel_id=conversation["id"],
-            )
-            case.conversation = conversation_service.create(
-                db_session=db_session, conversation_in=conversation_in
-            )
+        if case.case_type.conversation_target:
+            try:
+                conversation = create_conversation(case, db_session)
+                conversation_in = ConversationCreate(
+                    resource_id=conversation["resource_id"],
+                    resource_type=conversation["resource_type"],
+                    weblink=conversation["weblink"],
+                    thread_id=conversation["timestamp"],
+                    channel_id=conversation["id"],
+                )
+                case.conversation = conversation_service.create(
+                    db_session=db_session, conversation_in=conversation_in
+                )
 
-            event_service.log_case_event(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description="Conversation added to case",
-                case_id=case.id,
-            )
-        except Exception as e:
-            event_service.log_case_event(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description=f"Creation of case conversation failed. Reason: {e}",
-                case_id=case.id,
-            )
+                event_service.log_case_event(
+                    db_session=db_session,
+                    source="Dispatch Core App",
+                    description="Conversation added to case",
+                    case_id=case.id,
+                )
+            except Exception as e:
+                event_service.log_case_event(
+                    db_session=db_session,
+                    source="Dispatch Core App",
+                    description=f"Creation of case conversation failed. Reason: {e}",
+                    case_id=case.id,
+                )
             log.exception(e)
 
     db_session.add(case)
