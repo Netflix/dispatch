@@ -138,9 +138,11 @@ def configure(config):
     ]
 
     # don't need an incident context
-    app.command(config.slack_command_list_incidents, middleware=[db_middleware])(
-        handle_list_incidents_command
-    )
+    app.command(
+        config.slack_command_list_incidents,
+        middleware=[db_middleware],
+    )(ack=ack_command, lazy=[handle_list_incidents_command])
+
     app.command(config.slack_command_report_incident, middleware=[db_middleware])(
         handle_report_incident_command
     )
@@ -320,16 +322,16 @@ async def handle_update_incident_project_select_action(
 
 
 # COMMANDS
+@handle_lazy_error
 async def handle_list_incidents_command(
-    ack: AsyncAck,
     payload: dict,
     respond: AsyncRespond,
-    db_session: Session,
     context: AsyncBoltContext,
 ) -> None:
     """Handles the list incidents command."""
-    await ack()
     projects = []
+
+    db_session = refetch_db_session(context["subject"].organization_slug)
 
     if context["subject"].type == "incident":
         # command was run in an incident conversation
@@ -617,6 +619,11 @@ async def handle_list_resources_command(
     )
     blocks = Message(blocks=blocks).build()["blocks"]
     await respond(text="Incident Resources", blocks=blocks, response_type="ephemeral")
+
+
+async def ack_command(ack: AsyncAck) -> None:
+    """Handles request acknowledgement for slash commands."""
+    await ack()
 
 
 # EVENTS
