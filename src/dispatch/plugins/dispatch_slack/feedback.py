@@ -1,5 +1,6 @@
 from blockkit import Checkboxes, Context, Input, MarkdownText, Modal, PlainTextInput
 
+from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.enums import DispatchEnum
 from dispatch.feedback import service as feedback_service
 from dispatch.feedback.enums import FeedbackRating
@@ -32,7 +33,7 @@ class FeedbackNotificationActionIds(DispatchEnum):
 
 class FeedbackNotificationActions(DispatchEnum):
     submit = "feedback-notification-submit"
-    provide = "feedback-notification-provide"
+    provide = ConversationButtonActions.feedback_notification_provide
 
 
 def rating_select(
@@ -93,6 +94,7 @@ def anonymous_checkbox(
     FeedbackNotificationActions.provide, middleware=[button_context_middleware, db_middleware]
 )
 async def provide_feedback_button_click(ack, body, client, respond, db_session, context):
+    print("Hello")
     await ack()
     incident = incident_service.get(
         db_session=db_session, incident_id=context["subject"].incident_id
@@ -107,7 +109,7 @@ async def provide_feedback_button_click(ack, body, client, respond, db_session, 
     blocks = [
         Context(
             elements=[
-                MarkdownText(text="Use this form to rate your experiance about the incident.")
+                MarkdownText(text="Use this form to rate your experience about the incident.")
             ]
         ),
         rating_select(),

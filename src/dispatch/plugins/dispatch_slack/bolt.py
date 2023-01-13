@@ -19,52 +19,52 @@ from .middleware import (
 
 app = AsyncApp(
     token="xoxb-valid",
-    raise_error_for_unhandled_request=True,
+    # raise_error_for_unhandled_request=True,
     process_before_response=True,
     request_verification_enabled=False,  # NOTE this is only safe because we do additional verification in order to determine which plugin configuration we are using
 )
 logging.basicConfig(level=logging.DEBUG)
 
 
-@app.error
-async def app_error_handler(
-    error: Any,
-    client: AsyncWebClient,
-    body: dict,
-    logger: logging.Logger,
-    respond: AsyncRespond,
-) -> BoltResponse:
-
-    if body:
-        logger.info(f"Request body: {body}")
-
-    if error:
-        logger.exception(f"Error: {error}")
-
-    # the user is within a modal flow
-    if body.get("view"):
-        modal = Modal(
-            title="Error",
-            close="Close",
-            blocks=[
-                Context(
-                    elements=[
-                        MarkdownText(text=f"❌ An internal error occured:\n ```{str(error)}```")
-                    ]
-                )
-            ],
-        ).build()
-
-        await client.views_update(
-            view_id=body["view"]["id"],
-            view=modal,
-        )
-
-    # the user is in a message flow
-    if body.get("response_url"):
-        await respond(text=str(error), response_type="ephemeral")
-
-    return BoltResponse(body=body, status=HTTPStatus.INTERNAL_SERVER_ERROR.value)
+# @app.error
+# async def app_error_handler(
+#     error: Any,
+#     client: AsyncWebClient,
+#     body: dict,
+#     logger: logging.Logger,
+#     respond: AsyncRespond,
+# ) -> BoltResponse:
+#
+#     if body:
+#         logger.info(f"Request body: {body}")
+#
+#     if error:
+#         logger.exception(f"Error: {error}")
+#
+#     # the user is within a modal flow
+#     if body.get("view"):
+#         modal = Modal(
+#             title="Error",
+#             close="Close",
+#             blocks=[
+#                 Context(
+#                     elements=[
+#                         MarkdownText(text=f"❌ An internal error occured:\n ```{str(error)}```")
+#                     ]
+#                 )
+#             ],
+#         ).build()
+#
+#         await client.views_update(
+#             view_id=body["view"]["id"],
+#             view=modal,
+#         )
+#
+#     # the user is in a message flow
+#     if body.get("response_url"):
+#         await respond(text=str(error), response_type="ephemeral")
+#
+#     return BoltResponse(body=body, status=HTTPStatus.INTERNAL_SERVER_ERROR.value)
 
 
 @app.event(
