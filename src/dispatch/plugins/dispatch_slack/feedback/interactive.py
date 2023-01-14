@@ -153,10 +153,6 @@ async def ack_feedback_submission_event(ack: AsyncAck) -> None:
     await ack(response_action="update", view=modal)
 
 
-# @app.view(
-# 	  FeedbackNotificationActions.submit,
-# 	  middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
-# )
 @handle_lazy_error
 async def handle_feedback_submission_event(
     ack: AsyncAck,
@@ -166,7 +162,6 @@ async def handle_feedback_submission_event(
     client: AsyncWebClient,
     form_data: dict,
 ):
-    # await ack()
     # TODO: handle multiple organizations during submission
     db_session = refetch_db_session(context["subject"].organization_slug)
 
