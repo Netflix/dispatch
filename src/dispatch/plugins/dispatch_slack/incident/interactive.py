@@ -424,15 +424,14 @@ async def handle_list_incidents_command(
 
 @handle_lazy_error
 async def handle_list_participants_command(
-    ack: AsyncAck,
     respond: AsyncRespond,
     client: AsyncWebClient,
-    db_session: Session,
     context: AsyncBoltContext,
 ) -> None:
     """Handles list participants command."""
-    await ack()
     blocks = [Section(text="*Incident Participants*")]
+    db_session = refetch_db_session(context["subject"].organization_slug)
+
     participants = participant_service.get_all_by_incident_id(
         db_session=db_session, incident_id=context["subject"].id
     ).all()
@@ -516,17 +515,16 @@ def filter_tasks_by_assignee_and_creator(
 
 @handle_lazy_error
 async def handle_list_tasks_command(
-    ack: AsyncAck,
     body: dict,
     payload: dict,
     client: AsyncWebClient,
     context: AsyncBoltContext,
-    db_session: Session,
     respond: AsyncRespond,
 ) -> None:
     """Handles the list tasks command."""
-    await ack()
     blocks = []
+
+    db_session = refetch_db_session(context["subject"].organization_slug)
 
     caller_only = False
     if body["command"] == context["config"].slack_command_list_my_tasks:
@@ -586,11 +584,10 @@ async def handle_list_tasks_command(
 
 
 @handle_lazy_error
-async def handle_list_resources_command(
-    ack: AsyncAck, respond: AsyncRespond, db_session: Session, context: AsyncBoltContext
-) -> None:
+async def handle_list_resources_command(respond: AsyncRespond, context: AsyncBoltContext) -> None:
     """Handles the list resources command."""
-    await ack()
+
+    db_session = refetch_db_session(context["subject"].organization_slug)
 
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
