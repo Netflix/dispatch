@@ -141,28 +141,38 @@ def configure(config):
     ]
 
     # don't need an incident context
+    app.command(config.slack_command_report_incident, middleware=[db_middleware])(
+        handle_report_incident_command
+    )
+
+    # non-sensitive-commands
     app.command(
         config.slack_command_list_incidents,
         middleware=middleware,
     )(ack=ack_command, lazy=[handle_list_incidents_command])
 
-    app.command(config.slack_command_report_incident, middleware=middleware)(
-        handle_report_incident_command
-    )
+    app.command(
+        config.slack_command_list_tasks,
+        middleware=middleware,
+    )(ack=ack_command, lazy=[handle_list_tasks_command])
 
-    # non-sensitive-commands
-    app.command(config.slack_command_list_tasks, middleware=middleware)(handle_list_tasks_command)
-    app.command(config.slack_command_list_my_tasks, middleware=middleware)(
-        handle_list_tasks_command
-    )
-    app.command(config.slack_command_list_participants, middleware=middleware)(
-        handle_list_participants_command
-    )
+    app.command(
+        config.slack_command_list_my_tasks,
+        middleware=middleware,
+    )(ack=ack_command, lazy=[handle_list_tasks_command])
+
+    app.command(
+        config.slack_command_list_participants,
+        middleware=middleware,
+    )(ack=ack_command, lazy=[handle_list_participants_command])
+
+    app.command(
+        config.slack_command_list_resources,
+        middleware=middleware,
+    )(ack=ack_command, lazy=[handle_list_resources_command])
+
     app.command(config.slack_command_update_participant, middleware=middleware)(
         handle_update_participant_command
-    )
-    app.command(config.slack_command_list_resources, middleware=middleware)(
-        handle_list_resources_command
     )
     app.command(config.slack_command_engage_oncall, middleware=middleware)(
         handle_engage_oncall_command
@@ -412,6 +422,7 @@ async def handle_list_incidents_command(
         await respond(text="Incident List", blocks=blocks, response_type="ephemeral")
 
 
+@handle_lazy_error
 async def handle_list_participants_command(
     ack: AsyncAck,
     respond: AsyncRespond,
@@ -503,6 +514,7 @@ def filter_tasks_by_assignee_and_creator(
     return filtered_tasks
 
 
+@handle_lazy_error
 async def handle_list_tasks_command(
     ack: AsyncAck,
     body: dict,
@@ -573,6 +585,7 @@ async def handle_list_tasks_command(
     await respond(text="Incident Task List", blocks=message, response_type="ephermeral")
 
 
+@handle_lazy_error
 async def handle_list_resources_command(
     ack: AsyncAck, respond: AsyncRespond, db_session: Session, context: AsyncBoltContext
 ) -> None:
