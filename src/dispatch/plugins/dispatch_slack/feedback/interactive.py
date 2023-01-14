@@ -199,11 +199,6 @@ async def handle_feedback_submission_event(
     )
 
 
-# @app.view(
-# 	  FeedbackNotificationActions.submit,
-# 	  middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
-# )
-
 app.view(
     FeedbackNotificationActions.submit,
     middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
