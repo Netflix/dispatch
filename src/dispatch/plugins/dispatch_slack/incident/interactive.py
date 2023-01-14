@@ -89,7 +89,10 @@ from dispatch.plugins.dispatch_slack.incident.enums import (
     UpdateParticipantActions,
     UpdateParticipantBlockIds,
 )
-from dispatch.plugins.dispatch_slack.messaging import create_message_blocks
+from dispatch.plugins.dispatch_slack.messaging import (
+    create_message_blocks,
+    get_incident_conversation_command_message,
+)
 from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
     command_context_middleware,
@@ -140,10 +143,10 @@ def configure(config):
     # don't need an incident context
     app.command(
         config.slack_command_list_incidents,
-        middleware=[db_middleware],
+        middleware=middleware,
     )(ack=ack_command, lazy=[handle_list_incidents_command])
 
-    app.command(config.slack_command_report_incident, middleware=[db_middleware])(
+    app.command(config.slack_command_report_incident, middleware=middleware)(
         handle_report_incident_command
     )
 
@@ -621,9 +624,26 @@ async def handle_list_resources_command(
     await respond(text="Incident Resources", blocks=blocks, response_type="ephemeral")
 
 
-async def ack_command(ack: AsyncAck) -> None:
+async def ack_command(ack: AsyncAck, context: AsyncBoltContext, payload: dict) -> None:
     """Handles request acknowledgement for slash commands."""
-    await ack()
+    message = get_incident_conversation_command_message(
+        config=context.get("config"), command_string=payload.get("command")
+    )
+
+    if isinstance(message, str):
+        # if message is a string, no custom message was found.
+        # avoid calling .get() on a string and default to an ephemeral message.
+        text = message
+        response_type = "ephemeral"
+    elif isinstance(message, dict):
+        # if message is a dict, we found a corresponding user response.
+        text = message.get("text")
+        response_type = message.get("response_type")
+    else:
+        # something went very wrong, we ack() without a response, and move on.
+        await ack()
+
+    await ack(text=text, response_type=response_type)
 
 
 # EVENTS

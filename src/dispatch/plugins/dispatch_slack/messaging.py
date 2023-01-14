@@ -17,6 +17,7 @@ from dispatch.messaging.strings import (
     MessageType,
     render_message_template,
 )
+from dispatch.plugins.dispatch_slack.config import SlackConfiguration
 
 log = logging.getLogger(__name__)
 
@@ -40,6 +41,77 @@ def get_template(message_type: MessageType):
     }
 
     return template_map.get(message_type, (default_notification, None))
+
+
+def get_incident_conversation_command_message(config: SlackConfiguration, command_string: str):
+    command_messages = {
+        config.slack_command_run_workflow: {
+            "response_type": "ephemeral",
+            "text": "Opening a modal to run a workflow...",
+        },
+        config.slack_command_report_tactical: {
+            "response_type": "ephemeral",
+            "text": "Opening a dialog to write a tactical report...",
+        },
+        config.slack_command_list_tasks: {
+            "response_type": "ephemeral",
+            "text": "Fetching the list of incident tasks...",
+        },
+        config.slack_command_list_my_tasks: {
+            "response_type": "ephemeral",
+            "text": "Fetching your incident tasks...",
+        },
+        config.slack_command_list_participants: {
+            "response_type": "ephemeral",
+            "text": "Fetching the list of incident participants...",
+        },
+        config.slack_command_assign_role: {
+            "response_type": "ephemeral",
+            "text": "Opening a dialog to assign a role to a participant...",
+        },
+        config.slack_command_update_incident: {
+            "response_type": "ephemeral",
+            "text": "Opening a dialog to update incident information...",
+        },
+        config.slack_command_update_participant: {
+            "response_type": "ephemeral",
+            "text": "Opening a dialog to update participant information...",
+        },
+        config.slack_command_engage_oncall: {
+            "response_type": "ephemeral",
+            "text": "Opening a dialog to engage an oncall person...",
+        },
+        config.slack_command_list_resources: {
+            "response_type": "ephemeral",
+            "text": "Fetching the list of incident resources...",
+        },
+        config.slack_command_report_incident: {
+            "response_type": "ephemeral",
+            "text": "Opening a dialog to report an incident...",
+        },
+        config.slack_command_report_executive: {
+            "response_type": "ephemeral",
+            "text": "Opening a dialog to write an executive report...",
+        },
+        config.slack_command_update_notifications_group: {
+            "response_type": "ephemeral",
+            "text": "Opening a dialog to update the membership of the notifications group...",
+        },
+        config.slack_command_add_timeline_event: {
+            "response_type": "ephemeral",
+            "text": "Opening a dialog to add an event to the incident timeline...",
+        },
+        config.slack_command_list_incidents: {
+            "response_type": "ephemeral",
+            "text": "Fetching the list of incidents...",
+        },
+        config.slack_command_list_workflows: {
+            "response_type": "ephemeral",
+            "text": "Fetching the list of workflows...",
+        },
+    }
+
+    return command_messages.get(command_string, f"Running command... {command_string}")
 
 
 def format_default_text(item: dict):
