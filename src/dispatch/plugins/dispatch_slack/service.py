@@ -4,6 +4,7 @@ import logging
 import time
 from typing import Any, Dict, List, Optional
 
+from aiocache import Cache
 import slack_sdk
 from slack_sdk.web.async_client import AsyncWebClient
 from sqlalchemy.orm import Session
@@ -16,6 +17,8 @@ from dispatch.organization import service as organization_service
 from .config import SlackConversationConfiguration
 
 log = logging.getLogger(__name__)
+
+cache = Cache()
 
 
 # we need a way to determine which organization to use for a given
@@ -295,37 +298,46 @@ async def get_user_avatar_url_async(client: Any, email: str):
 Conversations = list[dict[str, str]]
 
 
-async def get_conversations_by_user_id_async(
-    client: Any, user_id: str
-) -> tuple[Conversations, Conversations]:
-    """Gets the list of public and private conversations a user is a member of."""
-    result = await make_call_async(
-        client,
-        "users.conversations",
-        user=user_id,
-        types="public_channel",
-        exclude_archived="true",
-    )
-    public_conversations = []
-    for channel in result["channels"]:
-        public_conversations.append(
-            {k: v for (k, v) in channel.items() if k == "id" or k == "name"}
+async def get_private_conversations_by_user_id_async(client: Any, user_id: str) -> Conversations:
+    private_result = await cache.get(user_id)
+    if not private_result:
+        private_result = await make_call_async(
+            client,
+            "users.conversations",
+            user=user_id,
+            types="private_channel",
+            exclude_archived="true",
         )
+        await cache.set(user_id, private_result)
 
-    result = await make_call_async(
-        client,
-        "users.conversations",
-        user=user_id,
-        types="private_channel",
-        exclude_archived="true",
-    )
     private_conversations = []
-    for channel in result["channels"]:
+    for channel in private_result["channels"]:
         private_conversations.append(
             {k: v for (k, v) in channel.items() if k == "id" or k == "name"}
         )
 
-    return public_conversations, private_conversations
+    return private_conversations
+
+
+async def get_public_conversations_by_user_id_async(client: Any, user_id: str) -> Conversations:
+    public_result = await cache.get(user_id)
+    if not public_result:
+        public_result = await make_call_async(
+            client,
+            "users.conversations",
+            user=user_id,
+            types="public_channel",
+            exclude_archived="true",
+        )
+        await cache.set(user_id, public_result)
+
+    public_conversations = []
+    for channel in public_result["channels"]:
+        public_conversations.append(
+            {k: v for (k, v) in channel.items() if k == "id" or k == "name"}
+        )
+
+    return public_conversations
 
 
 # note this will get slower over time, we might exclude archived to make it sane
