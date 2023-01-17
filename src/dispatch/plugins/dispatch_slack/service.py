@@ -4,6 +4,7 @@ import logging
 import time
 from typing import Any, Dict, List, Optional
 
+from aiocache import Cache
 import slack_sdk
 from slack_sdk.web.async_client import AsyncWebClient
 from sqlalchemy.orm import Session
@@ -16,6 +17,8 @@ from dispatch.organization import service as organization_service
 from .config import SlackConversationConfiguration
 
 log = logging.getLogger(__name__)
+
+cache = Cache()
 
 
 # we need a way to determine which organization to use for a given
@@ -292,12 +295,70 @@ async def get_user_avatar_url_async(client: Any, email: str):
     return (await get_user_info_by_email_async(client, email))["profile"]["image_512"]
 
 
+Conversations = list[dict[str, str]]
+
+
+async def get_private_conversations_by_user_id_async(client: Any, user_id: str) -> Conversations:
+    private_result = await cache.get(user_id)
+    if not private_result:
+        private_result = await make_call_async(
+            client,
+            "users.conversations",
+            user=user_id,
+            types="private_channel",
+            exclude_archived="true",
+        )
+        await cache.set(user_id, private_result)
+
+    private_conversations = []
+    for channel in private_result["channels"]:
+        private_conversations.append(
+            {k: v for (k, v) in channel.items() if k == "id" or k == "name"}
+        )
+
+    return private_conversations
+
+
+async def get_public_conversations_by_user_id_async(client: Any, user_id: str) -> Conversations:
+    public_result = await cache.get(user_id)
+    if not public_result:
+        public_result = await make_call_async(
+            client,
+            "users.conversations",
+            user=user_id,
+            types="public_channel",
+            exclude_archived="true",
+        )
+        await cache.set(user_id, public_result)
+
+    public_conversations = []
+    for channel in public_result["channels"]:
+        public_conversations.append(
+            {k: v for (k, v) in channel.items() if k == "id" or k == "name"}
+        )
+
+    return public_conversations
+
+
 # note this will get slower over time, we might exclude archived to make it sane
 def get_conversation_by_name(client: Any, name: str):
     """Fetches a conversation by name."""
     for c in list_conversations(client):
         if c["name"] == name:
             return c
+
+
+async def get_conversation_name_by_id_async(client: Any, conversation_id: str):
+    """Fetches a conversation by id and returns its name."""
+    try:
+        return (await make_call_async(client, "conversations.info", channel=conversation_id))[
+            "channel"
+        ]["name"]
+    except slack_sdk.errors.SlackApiError as e:
+        if e.response["error"] == "channel_not_found":
+            return None
+        else:
+            raise e
 
 
 def set_conversation_topic(client: Any, conversation_id: str, topic: str):
@@ -374,6 +435,12 @@ def add_users_to_conversation(client: Any, conversation_id: str, user_ids: List[
             # that result in folks already existing in the channel.
             if e.response["error"] == "already_in_channel":
                 pass
+
+
+async def get_current_team_id_async(client: Any):
+    """Sets a bookmark for the specified conversation."""
+    team_id = await make_call_async(client, "team.info")
+    return team_id["team"]["id"]
 
 
 def send_message(
