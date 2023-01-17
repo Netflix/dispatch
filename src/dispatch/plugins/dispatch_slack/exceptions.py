@@ -19,3 +19,8 @@ class ContextError(DispatchException):
 class RoleError(DispatchException):
     code = "role"
     msg_template = "{msg}"
+
+
+class BotNotPresentError(DispatchException):
+    code = "bot_not_present"
+    msg_template = "{msg}"

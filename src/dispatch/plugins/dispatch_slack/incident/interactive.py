@@ -89,7 +89,10 @@ from dispatch.plugins.dispatch_slack.incident.enums import (
     UpdateParticipantActions,
     UpdateParticipantBlockIds,
 )
-from dispatch.plugins.dispatch_slack.messaging import create_message_blocks
+from dispatch.plugins.dispatch_slack.messaging import (
+    create_message_blocks,
+    get_incident_conversation_command_message,
+)
 from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
     command_context_middleware,
@@ -97,7 +100,9 @@ from dispatch.plugins.dispatch_slack.middleware import (
     db_middleware,
     message_context_middleware,
     modal_submit_middleware,
+    non_incident_command_middlware,
     restricted_command_middleware,
+    subject_middleware,
     user_middleware,
 )
 from dispatch.plugins.dispatch_slack.models import SubjectMetadata
@@ -132,54 +137,71 @@ class MonitorMetadata(SubjectMetadata):
 def configure(config):
     """Maps commands/events to their functions."""
     middleware = [
-        command_context_middleware,
-        db_middleware,
+        subject_middleware,
         configuration_middleware,
+        non_incident_command_middlware,
     ]
 
     # don't need an incident context
-    app.command(config.slack_command_list_incidents, middleware=[db_middleware])(
-        handle_list_incidents_command
+    app.command(config.slack_command_report_incident, middleware=middleware)(
+        ack=ack_command, lazy=[handle_report_incident_command]
     )
-    app.command(config.slack_command_report_incident, middleware=[db_middleware])(
-        handle_report_incident_command
+    app.command(config.slack_command_list_incidents, middleware=middleware)(
+        ack=ack_command, lazy=[handle_list_incidents_command]
     )
 
     # non-sensitive-commands
-    app.command(config.slack_command_list_tasks, middleware=middleware)(handle_list_tasks_command)
+    middleware = [
+        subject_middleware,
+        configuration_middleware,
+        command_context_middleware,
+    ]
+
+    app.command(config.slack_command_list_tasks, middleware=middleware)(
+        ack=ack_command, lazy=[handle_list_tasks_command]
+    )
     app.command(config.slack_command_list_my_tasks, middleware=middleware)(
-        handle_list_tasks_command
+        ack=ack_command, lazy=[handle_list_tasks_command]
     )
     app.command(config.slack_command_list_participants, middleware=middleware)(
-        handle_list_participants_command
-    )
-    app.command(config.slack_command_update_participant, middleware=middleware)(
-        handle_update_participant_command
+        ack=ack_command, lazy=[handle_list_participants_command]
     )
     app.command(config.slack_command_list_resources, middleware=middleware)(
-        handle_list_resources_command
+        ack=ack_command, lazy=[handle_list_resources_command]
+    )
+    app.command(config.slack_command_update_participant, middleware=middleware)(
+        ack=ack_command, lazy=[handle_update_participant_command]
     )
     app.command(config.slack_command_engage_oncall, middleware=middleware)(
-        handle_engage_oncall_command
+        ack=ack_command, lazy=[handle_engage_oncall_command]
     )
 
     # sensitive commands
-    middleware.extend([user_middleware, restricted_command_middleware])
-    app.command(config.slack_command_assign_role, middleware=middleware)(handle_assign_role_command)
+    middleware = [
+        subject_middleware,
+        configuration_middleware,
+        command_context_middleware,
+        user_middleware,
+        restricted_command_middleware,
+    ]
+
+    app.command(config.slack_command_assign_role, middleware=middleware)(
+        ack=ack_command, lazy=[handle_assign_role_command]
+    )
     app.command(config.slack_command_update_incident, middleware=middleware)(
-        handle_update_incident_command
+        ack=ack_command, lazy=[handle_update_incident_command]
     )
     app.command(config.slack_command_update_notifications_group, middleware=middleware)(
-        handle_update_notifications_group_command
+        ack=ack_command, lazy=[handle_update_notifications_group_command]
     )
     app.command(config.slack_command_report_tactical, middleware=middleware)(
-        handle_report_tactical_command
+        ack=ack_command, lazy=[handle_report_tactical_command]
     )
     app.command(config.slack_command_report_executive, middleware=middleware)(
-        handle_report_executive_command
+        ack=ack_command, lazy=[handle_report_executive_command]
     )
     app.command(config.slack_command_add_timeline_event, middleware=middleware)(
-        handle_add_timeline_event_command
+        ack=ack_command, lazy=[handle_add_timeline_event_command]
     )
 
     # required to allow the user to change the reaction string
@@ -187,6 +209,16 @@ def configure(config):
         {"type": "reaction_added", "reaction": config.timeline_event_reaction},
         middleware=[db_middleware],
     )(handle_timeline_added_event)
+
+
+async def ack_command(ack: AsyncAck, context: AsyncBoltContext, payload: dict) -> None:
+    """Handles request acknowledgement for slash commands."""
+    message = get_incident_conversation_command_message(
+        config=context.get("config"), command_string=payload.get("command", "")
+    )
+    text = message.get("text")
+    response_type = message.get("response_type")
+    await ack(text=text, response_type=response_type)
 
 
 @app.options(
@@ -310,16 +342,16 @@ async def handle_update_incident_project_select_action(
 
 
 # COMMANDS
+@handle_lazy_error
 async def handle_list_incidents_command(
-    ack: AsyncAck,
     payload: dict,
     respond: AsyncRespond,
-    db_session: Session,
     context: AsyncBoltContext,
 ) -> None:
     """Handles the list incidents command."""
-    await ack()
     projects = []
+
+    db_session = refetch_db_session(context["subject"].organization_slug)
 
     if context["subject"].type == "incident":
         # command was run in an incident conversation
@@ -397,16 +429,16 @@ async def handle_list_incidents_command(
         await respond(text="Incident List", blocks=blocks, response_type="ephemeral")
 
 
+@handle_lazy_error
 async def handle_list_participants_command(
-    ack: AsyncAck,
     respond: AsyncRespond,
     client: AsyncWebClient,
-    db_session: Session,
     context: AsyncBoltContext,
 ) -> None:
     """Handles list participants command."""
-    await ack()
     blocks = [Section(text="*Incident Participants*")]
+    db_session = refetch_db_session(context["subject"].organization_slug)
+
     participants = participant_service.get_all_by_incident_id(
         db_session=db_session, incident_id=context["subject"].id
     ).all()
@@ -488,18 +520,18 @@ def filter_tasks_by_assignee_and_creator(
     return filtered_tasks
 
 
+@handle_lazy_error
 async def handle_list_tasks_command(
-    ack: AsyncAck,
     body: dict,
     payload: dict,
     client: AsyncWebClient,
     context: AsyncBoltContext,
-    db_session: Session,
     respond: AsyncRespond,
 ) -> None:
     """Handles the list tasks command."""
-    await ack()
     blocks = []
+
+    db_session = refetch_db_session(context["subject"].organization_slug)
 
     caller_only = False
     if body["command"] == context["config"].slack_command_list_my_tasks:
@@ -558,11 +590,11 @@ async def handle_list_tasks_command(
     await respond(text="Incident Task List", blocks=message, response_type="ephermeral")
 
 
-async def handle_list_resources_command(
-    ack: AsyncAck, respond: AsyncRespond, db_session: Session, context: AsyncBoltContext
-) -> None:
+@handle_lazy_error
+async def handle_list_resources_command(respond: AsyncRespond, context: AsyncBoltContext) -> None:
     """Handles the list resources command."""
-    await ack()
+
+    db_session = refetch_db_session(context["subject"].organization_slug)
 
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
@@ -921,7 +953,7 @@ async def handle_member_joined_channel(
         participant.added_by = incident.commander
 
     # Message text when someone @'s a user is not available in body, use generic added by reason
-    participant.added_reason = f"Participant added by {participant.added_by}"
+    participant.added_reason = f"Participant added by {participant.added_by.individual.name}"
 
     db_session.add(participant)
     db_session.commit()
@@ -941,11 +973,14 @@ async def handle_member_left_channel(
 
 
 # MODALS
+
+
+@handle_lazy_error
 async def handle_add_timeline_event_command(
-    ack: AsyncAck, body: dict, client: AsyncWebClient, context: AsyncBoltContext
+    body: dict, client: AsyncWebClient, context: AsyncBoltContext
 ) -> None:
     """Handles the add timeline event command."""
-    await ack()
+
     blocks = [
         Context(
             elements=[
@@ -992,6 +1027,7 @@ async def handle_add_timeline_submission_event(
     # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
     # in the future
     db_session = refetch_db_session(context["subject"].organization_slug)
+
     event_date = form_data.get(DefaultBlockIds.date_picker_input)
     event_hour = form_data.get(DefaultBlockIds.hour_picker_input)["value"]
     event_minute = form_data.get(DefaultBlockIds.minute_picker_input)["value"]
@@ -1038,16 +1074,15 @@ app.view(
 )(ack=ack_add_timeline_submission_event, lazy=[handle_add_timeline_submission_event])
 
 
+@handle_lazy_error
 async def handle_update_participant_command(
-    ack: AsyncAck,
     respond: AsyncRespond,
     body: dict,
     context: AsyncBoltContext,
-    db_session: Session,
     client: AsyncWebClient,
 ) -> None:
     """Handles the update participant command."""
-    await ack()
+    db_session = refetch_db_session(context["subject"].organization_slug)
 
     if context["subject"].type == "case":
         await respond(
@@ -1108,6 +1143,7 @@ async def handle_update_participant_submission_event(
     # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
     # in the future
     db_session = refetch_db_session(context["subject"].organization_slug)
+
     added_reason = form_data.get(UpdateParticipantBlockIds.reason)
     participant_id = int(form_data.get(UpdateParticipantBlockIds.participant)["value"])
     selected_participant = participant_service.get(
@@ -1135,16 +1171,15 @@ app.view(
 )(ack=ack_update_participant_submission_event, lazy=[handle_update_participant_submission_event])
 
 
+@handle_lazy_error
 async def handle_update_notifications_group_command(
-    ack: AsyncAck,
     respond: AsyncRespond,
     body: dict,
     context: AsyncBoltContext,
     client: AsyncWebClient,
-    db_session: Session,
 ) -> None:
     """Handles the update notification group command."""
-    await ack()
+    db_session = refetch_db_session(context["subject"].organization_slug)
 
     # TODO handle cases
     if context["subject"].type == "case":
@@ -1266,11 +1301,11 @@ app.view(
 )
 
 
+@handle_lazy_error
 async def handle_assign_role_command(
-    ack: AsyncAck, context: AsyncBoltContext, body: dict, client: AsyncWebClient
+    context: AsyncBoltContext, body: dict, client: AsyncWebClient
 ) -> None:
     """Handles the assign role command."""
-    await ack()
 
     roles = [
         {"text": r.value, "value": r.value}
@@ -1363,15 +1398,13 @@ app.view(
 
 
 async def handle_engage_oncall_command(
-    ack: AsyncAck,
     respond: AsyncRespond,
     context: AsyncBoltContext,
     body: dict,
     client: AsyncWebClient,
-    db_session: Session,
 ) -> None:
     """Handles the engage oncall command."""
-    await ack()
+    db_session = refetch_db_session(context["subject"].organization_slug)
 
     # TODO: handle cases
     if context["subject"].type == "case":
@@ -1485,16 +1518,15 @@ app.view(
 )(ack=ack_engage_oncall_submission_event, lazy=[handle_engage_oncall_submission_event])
 
 
+@handle_lazy_error
 async def handle_report_tactical_command(
-    ack: AsyncAck,
     client: AsyncWebClient,
     respond: AsyncRespond,
     context: AsyncBoltContext,
-    db_session: Session,
     body: dict,
 ) -> None:
     """Handles the report tactical command."""
-    await ack()
+    db_session = refetch_db_session(context["subject"].organization_slug)
 
     if context["subject"].type == "case":
         await respond(
@@ -1598,16 +1630,15 @@ app.view(
 )(ack=ack_report_tactical_submission_event, lazy=[handle_report_tactical_submission_event])
 
 
+@handle_lazy_error
 async def handle_report_executive_command(
-    ack: AsyncAck,
     body: dict,
     client: AsyncWebClient,
     respond: AsyncRespond,
     context: AsyncBoltContext,
-    db_session: Session,
 ) -> None:
     """Handles executive report command."""
-    await ack()
+    db_session = refetch_db_session(context["subject"].organization_slug)
 
     if context["subject"].type == "case":
         await respond(
@@ -1723,15 +1754,15 @@ app.view(
 )(ack=ack_report_executive_submission_event, lazy=[handle_report_executive_submission_event])
 
 
+@handle_lazy_error
 async def handle_update_incident_command(
-    ack: AsyncAck,
     body: dict,
     client: AsyncWebClient,
     context: AsyncBoltContext,
-    db_session: Session,
 ) -> None:
     """Creates the incident update modal."""
-    await ack()
+    db_session = refetch_db_session(context["subject"].organization_slug)
+
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
     blocks = [
@@ -1872,15 +1903,14 @@ app.view(
 )(ack=ack_incident_update_submission_event, lazy=[handle_update_incident_submission_event])
 
 
+@handle_lazy_error
 async def handle_report_incident_command(
-    ack: AsyncAck,
     body: dict,
     context: AsyncBoltContext,
-    db_session: Session,
     client: AsyncWebClient,
 ) -> None:
     """Handles the report incident command."""
-    await ack()
+    db_session = refetch_db_session(context["subject"].organization_slug)
 
     blocks = [
         Context(
@@ -2003,7 +2033,6 @@ async def handle_report_incident_submission_event(
 
     result = await client.views_update(
         view_id=result["view"]["id"],
-        hash=result["view"]["hash"],
         trigger_id=result["trigger_id"],
         view=modal,
     )
