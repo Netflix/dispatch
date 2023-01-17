@@ -100,6 +100,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     db_middleware,
     message_context_middleware,
     modal_submit_middleware,
+    non_incident_command_middlware,
     restricted_command_middleware,
     subject_middleware,
     user_middleware,
@@ -141,6 +142,8 @@ def configure(config):
     ]
 
     # don't need an incident context
+    middleware.extend([non_incident_command_middlware])
+
     app.command(config.slack_command_report_incident, middleware=middleware)(
         ack=ack_command, lazy=[handle_report_incident_command]
     )
@@ -149,6 +152,7 @@ def configure(config):
     )
 
     # non-sensitive-commands
+    middleware.remove(non_incident_command_middlware)
     middleware.extend([command_context_middleware])
 
     app.command(config.slack_command_list_tasks, middleware=middleware)(

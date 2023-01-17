@@ -15,8 +15,9 @@ from dispatch.participant import service as participant_service
 from dispatch.participant_role.enums import ParticipantRoleType
 from dispatch.project import service as project_service
 from dispatch.plugin import service as plugin_service
+from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
-from .exceptions import ContextError, RoleError
+from .exceptions import ContextError, RoleError, BotNotPresentError
 from .models import SubjectMetadata
 
 cache = Cache()
@@ -279,6 +280,41 @@ async def configuration_middleware(context: AsyncBoltContext, next: Callable):
         await cache.set(project_id, plugin)
 
     context["config"] = plugin.configuration
+    await next()
+
+
+# This middleware has a dependency on configuration_middleware()
+async def non_incident_command_middlware(
+    client: AsyncWebClient,
+    context: AsyncBoltContext,
+    next: Callable,
+):
+    """Attempts to resolve a conversation based on the channel id or message_ts."""
+    # We get the list of public and private conversations the Dispatch bot is a member of
+    (
+        public_conversations,
+        private_conversations,
+    ) = await dispatch_slack_service.get_conversations_by_user_id_async(
+        client,
+        context["config"].app_user_slug,  # dependency
+    )
+
+    public_conversation_names = [c["name"] for c in public_conversations]
+    private_conversation_names = [c["name"] for c in private_conversations]
+
+    # We get the name of conversation where the command was run
+    conversation_name = await dispatch_slack_service.get_conversation_name_by_id_async(
+        client, context.channel_id
+    )
+
+    if (
+        not conversation_name
+        or conversation_name not in public_conversation_names + private_conversation_names  # noqa
+    ):
+        # We let the user know in which public conversations they can run the command
+        context["conversations"] = public_conversations
+        raise BotNotPresentError
+
     await next()
 
 

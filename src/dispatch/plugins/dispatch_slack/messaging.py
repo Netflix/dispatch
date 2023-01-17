@@ -5,9 +5,10 @@
     :license: Apache, see LICENSE for more details.
 """
 import logging
-from typing import List, Optional
+from typing import Any, List, Optional
 
-from blockkit import Section, Divider, Button, Context, MarkdownText, PlainText, Actions
+from blockkit import Section, Divider, Button, Context, MarkdownText, Actions
+from slack_sdk.web.async_client import AsyncWebClient
 
 from dispatch.messaging.strings import (
     EVERGREEN_REMINDER_DESCRIPTION,
@@ -17,6 +18,7 @@ from dispatch.messaging.strings import (
     MessageType,
     render_message_template,
 )
+from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.config import SlackConfiguration
 
 log = logging.getLogger(__name__)
@@ -124,6 +126,40 @@ def get_incident_conversation_command_message(
     }
 
     return command_messages.get(command_string, default)
+
+
+async def build_role_error_message(payload: dict) -> str:
+    message = f"""I see you tried to run `{payload['command']}`. This is a sensitive command and cannot be run with the incident role you are currently assigned."""
+    return message
+
+
+async def build_context_error_message(payload: dict, error: Any) -> str:
+    message = (
+        f"""I see you tried to run `{payload['command']}` in an non-incident conversation. Incident-specifc commands can only be run in incident conversations."""  # command_context_middleware()
+        if payload.get("command")
+        else str(error)  # everything else
+    )
+    return message
+
+
+async def build_bot_not_present_message(
+    client: AsyncWebClient, command: str, conversations: dict
+) -> str:
+    team_id = await dispatch_slack_service.get_current_team_id_async(client)
+
+    deep_links = [
+        f"<slack://channel?team={team_id}&id={c['id']}|#{c['name']}>" for c in conversations
+    ]
+
+    message = f"""
+    Looks like you tried to run `{command}` in a conversation where the Dispatch bot is not present. Add the bot to your conversation or run the command in one of the following conversations:\n\n {(", ").join(deep_links)}"""
+    return message
+
+
+async def build_unexpected_error_message(guid: str) -> str:
+    message = f"""Sorry, we've run into an unexpected error. \
+For help please reach out to your Dispatch admins and provide them with the following token: `{guid}`"""
+    return message
 
 
 def format_default_text(item: dict):
