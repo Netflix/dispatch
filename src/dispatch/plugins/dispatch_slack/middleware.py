@@ -8,11 +8,12 @@ from sqlalchemy.orm.session import Session
 from dispatch.auth import service as user_service
 from dispatch.auth.models import DispatchUser, UserRegister
 from dispatch.conversation import service as conversation_service
-from dispatch.database.core import SessionLocal, engine, sessionmaker
+from dispatch.database.core import SessionLocal, engine, sessionmaker, refetch_db_session
 from dispatch.decorators import async_timer
 from dispatch.organization import service as organization_service
 from dispatch.participant import service as participant_service
 from dispatch.participant_role.enums import ParticipantRoleType
+from dispatch.project import service as project_service
 from dispatch.plugin import service as plugin_service
 
 from .exceptions import ContextError, RoleError
@@ -82,8 +83,8 @@ async def action_context_middleware(body: dict, context: AsyncBoltContext, next:
 @async_timer
 async def message_context_middleware(context: AsyncBoltContext, next: Callable) -> None:
     """Attemps to determine the current context of the event."""
-    if Subject := await resolve_context_from_conversation(channel_id=context.channel_id):
-        context.update(Subject._asdict())
+    if subject := await resolve_context_from_conversation(channel_id=context.channel_id):
+        context.update(subject._asdict())
     else:
         raise ContextError("Unable to determine context for message.")
 
@@ -223,8 +224,8 @@ async def modal_submit_middleware(body: dict, context: AsyncBoltContext, next: C
 async def command_context_middleware(
     context: AsyncBoltContext, payload: dict, next: Callable
 ) -> None:
-    if Subject := await resolve_context_from_conversation(channel_id=context.channel_id):
-        context.update(Subject._asdict())
+    if subject := await resolve_context_from_conversation(channel_id=context.channel_id):
+        context.update(subject._asdict())
     else:
         raise ContextError(
             f"Sorry, I can't determine the correct context to run the command `{payload['command']}`. Are you running this command in an incident channel?"
@@ -234,23 +235,23 @@ async def command_context_middleware(
 
 @async_timer
 async def db_middleware(context: AsyncBoltContext, next: Callable):
-    if context.get("db_session"):
-        return await next()
-
     if not context.get("subject"):
-        db_session = SessionLocal()
-        slug = organization_service.get_default(db_session=db_session).slug
+        slug = get_default_org_slug()
         context.update({"subject": SubjectMetadata(organization_slug=slug)})
-        db_session.close()
     else:
         slug = context["subject"].organization_slug
 
-    schema_engine = engine.execution_options(
-        schema_translate_map={
-            None: f"dispatch_organization_{slug}",
-        }
-    )
-    context["db_session"] = sessionmaker(bind=schema_engine)()
+    context["db_session"] = refetch_db_session(slug)
+    await next()
+
+
+@async_timer
+async def subject_middleware(context: AsyncBoltContext, next: Callable):
+    """"""
+    if not context.get("subject"):
+        slug = get_default_org_slug()
+        context.update({"subject": SubjectMetadata(organization_slug=slug)})
+
     await next()
 
 
@@ -259,11 +260,30 @@ async def configuration_middleware(context: AsyncBoltContext, next: Callable):
     if context.get("config"):
         return await next()
 
-    plugin = plugin_service.get_active_instance(
-        db_session=context["db_session"],
-        project_id=context["subject"].project_id,
-        plugin_type="conversation",
-    )
+    if not context.get("db_session"):
+        slug = get_default_org_slug()
+        db_session = refetch_db_session(slug)
+    else:
+        # handle_message_events() flow can contain a db_session in context
+        db_session = context["db_session"]
+
+    project_id = project_service.get_default(db_session=db_session).id
+
+    plugin = await cache.get(project_id)
+    if not plugin:
+        plugin = plugin_service.get_active_instance(
+            db_session=db_session,
+            project_id=project_id,
+            plugin_type="conversation",
+        )
+        await cache.set(project_id, plugin)
 
     context["config"] = plugin.configuration
     await next()
+
+
+def get_default_org_slug() -> str:
+    db_session = SessionLocal()
+    slug = organization_service.get_default(db_session=db_session).slug
+    db_session.close()
+    return slug

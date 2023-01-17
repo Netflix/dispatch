@@ -6,10 +6,9 @@ import logging
 
 from pydantic import BaseModel
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from sqlalchemy import create_engine, event, inspect
-from sqlalchemy.engine import Engine
+from sqlalchemy import create_engine, inspect
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import object_session, sessionmaker
+from sqlalchemy.orm import object_session, sessionmaker, Session
 from sqlalchemy.sql.expression import true
 from sqlalchemy_utils import get_mapper
 from starlette.requests import Request
@@ -188,3 +187,13 @@ def ensure_unique_default_per_project(target, value, oldvalue, initiator):
             if previous_default.id != target.id:
                 previous_default.default = False
                 session.commit()
+
+
+def refetch_db_session(organization_slug: str) -> Session:
+    schema_engine = engine.execution_options(
+        schema_translate_map={
+            None: f"dispatch_organization_{organization_slug}",
+        }
+    )
+    db_session = sessionmaker(bind=schema_engine)()
+    return db_session

@@ -43,7 +43,19 @@ def get_template(message_type: MessageType):
     return template_map.get(message_type, (default_notification, None))
 
 
-def get_incident_conversation_command_message(config: SlackConfiguration, command_string: str):
+def get_incident_conversation_command_message(
+    command_string: str, config: Optional[SlackConfiguration] = None
+) -> dict[str, str]:
+    """Fetches a custom message and response type for each respective slash command."""
+
+    default = {
+        "response_type": "ephemeral",
+        "text": f"Running command... `{command_string}`",
+    }
+
+    if not config:
+        return default
+
     command_messages = {
         config.slack_command_run_workflow: {
             "response_type": "ephemeral",
@@ -111,7 +123,7 @@ def get_incident_conversation_command_message(config: SlackConfiguration, comman
         },
     }
 
-    return command_messages.get(command_string, f"Running command... {command_string}")
+    return command_messages.get(command_string, default)
 
 
 def format_default_text(item: dict):
