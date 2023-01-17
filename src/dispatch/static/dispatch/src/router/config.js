@@ -1,10 +1,29 @@
 import { DefaultLayout, DashboardLayout, BasicLayout } from "@/components/layouts"
 
+const registrationEnabled =
+  import.meta.env.VITE_DISPATCH_AUTH_REGISTRATION_ENABLED === "false" ? false : true
+
 const withPrefix = (prefix, routes) =>
   routes.map((route) => {
     route.path = prefix + route.path
     return route
   })
+
+const authPages = [
+  {
+    path: "login",
+    name: "BasicLogin",
+    component: () => import("@/auth/Login.vue"),
+  },
+]
+
+if (registrationEnabled) {
+  authPages.push({
+    path: "register",
+    name: "BasicRegister",
+    component: () => import("@/auth/Register.vue"),
+  })
+}
 
 export const publicRoute = [
   {
@@ -16,18 +35,7 @@ export const publicRoute = [
     path: "/:organization/auth/",
     component: BasicLayout,
     meta: { title: "Auth", icon: "view_compact", group: "auth" },
-    children: [
-      {
-        path: "login",
-        name: "BasicLogin",
-        component: () => import("@/auth/Login.vue"),
-      },
-      {
-        path: "register",
-        name: "BasicRegister",
-        component: () => import("@/auth/Register.vue"),
-      },
-    ],
+    children: authPages,
   },
   {
     path: "/404",
