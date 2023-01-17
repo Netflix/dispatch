@@ -70,6 +70,7 @@ class DispatchUserFactory(BaseFactory):
     """Dispatch User Factory."""
 
     email = Sequence(lambda n: f"user{n}@example.com")
+    password = FuzzyText()
 
     class Meta:
         """Factory Configuration."""
