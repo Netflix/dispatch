@@ -193,4 +193,6 @@ def register_user(
 
 
 if DISPATCH_AUTH_REGISTRATION_ENABLED:
-    register_user = auth_router.post("/register", response_model=UserRegisterResponse)(register_user)
+    register_user = auth_router.post("/register", response_model=UserRegisterResponse)(
+        register_user
+    )
