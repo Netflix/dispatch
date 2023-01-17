@@ -195,7 +195,7 @@ def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, d
                     description=f"Creation of case conversation failed. Reason: {e}",
                     case_id=case.id,
                 )
-            log.exception(e)
+                log.exception(e)
 
     db_session.add(case)
     db_session.commit()
