@@ -155,19 +155,19 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
 
     if case_in.assignee:
         # we assign the case to the assignee provided
-        assignee_email_adddress = case_in.assignee.email
+        assignee_email = case_in.assignee.individual.email
     else:
         if case_type.oncall_service:
             # we assign the case to the oncall person for the given case type
-            assignee_email_adddress = service_flows.resolve_oncall(
+            assignee_email = service_flows.resolve_oncall(
                 service=case_type.oncall_service, db_session=db_session
             )
         else:
             # we assign the case to the current user
             if current_user:
-                assignee_email_adddress = current_user.email
+                assignee_email = current_user.email
 
-    case.assignee = auth_service.get_by_email(db_session=db_session, email=assignee_email_adddress)
+    case.assignee = auth_service.get_by_email(db_session=db_session, email=assignee_email)
 
     case_severity = case_severity_service.get_by_name_or_default(
         db_session=db_session, project_id=project.id, case_severity_in=case_in.case_severity
@@ -187,6 +187,14 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
         source="Dispatch Core App",
         description="Case created",
         case_id=case.id,
+    )
+
+    # add assignee
+    participant_flows.add_participant(
+        case_in.assignee.individual.email,
+        case,
+        db_session,
+        role=ParticipantRoleType.assignee,
     )
 
     # add reporter
