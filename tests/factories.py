@@ -66,6 +66,17 @@ class TimeStampBaseFactory(BaseFactory):
     updated_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
 
 
+class DispatchUserFactory(BaseException):
+    """Dispatch User Factory."""
+
+    email = Sequence(lambda n: f"user{n}@example.com")
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = DispatchUser
+
+
 class OrganizationFactory(BaseFactory):
     """Organization Factory."""
 
