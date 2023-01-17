@@ -583,11 +583,11 @@ def dispatch_scheduler():
     from .incident_cost.scheduled import calculate_incidents_response_cost  # noqa
     from .report.scheduled import incident_report_reminders  # noqa
     from .tag.scheduled import sync_tags, build_tag_models  # noqa
-    from .task.scheduled import (
+    from .task.scheduled import (  # noqa
         create_task_reminders,
         daily_sync_task,
         sync_active_stable_tasks,
-    )  # noqa
+    )
     from .term.scheduled import sync_terms  # noqa
     from .workflow.scheduled import sync_workflow  # noqa
     from .monitor.scheduled import sync_active_stable_monitors  # noqa
@@ -731,6 +731,9 @@ def run_slack_websocket(organization: str, project: str):
     from dispatch.common.utils.cli import install_plugins
     from dispatch.plugins.dispatch_slack.bolt import app
     from dispatch.plugins.dispatch_slack.incident.interactive import configure as incident_configure
+    from dispatch.plugins.dispatch_slack.feedback.interactive import (  # noqa
+        configure as feedback_configure,
+    )
     from dispatch.plugins.dispatch_slack.service import get_organization_scope_from_slug
     from dispatch.plugins.dispatch_slack.workflow import configure as workflow_configure
     from dispatch.plugins.dispatch_slack.case.interactive import configure as case_configure
