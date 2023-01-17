@@ -9,7 +9,7 @@ from factory import Sequence, post_generation, SubFactory, LazyAttribute
 from factory.alchemy import SQLAlchemyModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime, FuzzyInteger
 
-from dispatch.auth.models import DispatchUser  # noqa
+from dispatch.auth.models import DispatchUser, hash_password  # noqa
 from dispatch.case.models import Case
 from dispatch.conference.models import Conference
 from dispatch.conversation.models import Conversation
@@ -70,7 +70,7 @@ class DispatchUserFactory(BaseFactory):
     """Dispatch User Factory."""
 
     email = Sequence(lambda n: f"user{n}@example.com")
-    password = FuzzyText()
+    password = hash_password(FuzzyText())
 
     class Meta:
         """Factory Configuration."""
