@@ -2032,6 +2032,7 @@ async def handle_report_incident_submission_event(
 
     result = await client.views_update(
         view_id=result["view"]["id"],
+        hash=body["view"]["hash"],
         trigger_id=result["trigger_id"],
         view=modal,
     )
@@ -2094,6 +2095,7 @@ async def handle_report_incident_project_select_action(
 
     await client.views_update(
         view_id=body["view"]["id"],
+        hash=body["view"]["hash"],
         trigger_id=body["trigger_id"],
         view=modal,
     )
