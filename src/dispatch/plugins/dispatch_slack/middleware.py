@@ -1,3 +1,5 @@
+import logging
+
 from typing import Callable, Optional, NamedTuple
 
 from aiocache import Cache
@@ -17,6 +19,9 @@ from dispatch.plugin import service as plugin_service
 
 from .exceptions import ContextError, RoleError
 from .models import SubjectMetadata
+
+
+log = logging.getLogger(__file__)
 
 cache = Cache()
 
@@ -69,7 +74,16 @@ async def button_context_middleware(
     payload: dict, context: AsyncBoltContext, next: Callable
 ) -> None:
     """Attempt to determine the current context of the event."""
-    context.update({"subject": SubjectMetadata.parse_raw(payload["value"])})
+    try:
+        subject_data = SubjectMetadata.parse_raw(payload["value"])
+    except Exception:
+        log.debug("Extracting context data from legacy template...")
+        organization_slug, incident_id = payload["value"].split("-")
+        subject_data = SubjectMetadata(
+            organization_slug=organization_slug, id=incident_id, type="Incident"
+        )
+
+    context.update({"subject": subject_data})
     await next()
 
 

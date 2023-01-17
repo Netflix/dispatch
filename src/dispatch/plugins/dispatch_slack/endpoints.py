@@ -11,8 +11,10 @@ from dispatch.decorators import async_timer
 
 from .bolt import app
 from .incident.interactive import configure as incident_configure
+from .feedback.interactive import *  # noqa
 from .service import get_organization_scope_from_slug
 from .workflow import configure as workflow_configure
+
 
 router = APIRouter()
 
