@@ -5,9 +5,10 @@
     :license: Apache, see LICENSE for more details.
 """
 import logging
-from typing import List, Optional
+from typing import Any, List, Optional
 
-from blockkit import Section, Divider, Button, Context, MarkdownText, PlainText, Actions
+from blockkit import Section, Divider, Button, Context, MarkdownText, Actions
+from slack_sdk.web.async_client import AsyncWebClient
 
 from dispatch.messaging.strings import (
     EVERGREEN_REMINDER_DESCRIPTION,
@@ -17,6 +18,8 @@ from dispatch.messaging.strings import (
     MessageType,
     render_message_template,
 )
+from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
+from dispatch.plugins.dispatch_slack.config import SlackConfiguration
 
 log = logging.getLogger(__name__)
 
@@ -40,6 +43,123 @@ def get_template(message_type: MessageType):
     }
 
     return template_map.get(message_type, (default_notification, None))
+
+
+def get_incident_conversation_command_message(
+    command_string: str, config: Optional[SlackConfiguration] = None
+) -> dict[str, str]:
+    """Fetches a custom message and response type for each respective slash command."""
+
+    default = {
+        "response_type": "ephemeral",
+        "text": f"Running command... `{command_string}`",
+    }
+
+    if not config:
+        return default
+
+    command_messages = {
+        config.slack_command_run_workflow: {
+            "response_type": "ephemeral",
+            "text": "Opening a modal to run a workflow...",
+        },
+        config.slack_command_report_tactical: {
+            "response_type": "ephemeral",
+            "text": "Opening a dialog to write a tactical report...",
+        },
+        config.slack_command_list_tasks: {
+            "response_type": "ephemeral",
+            "text": "Fetching the list of incident tasks...",
+        },
+        config.slack_command_list_my_tasks: {
+            "response_type": "ephemeral",
+            "text": "Fetching your incident tasks...",
+        },
+        config.slack_command_list_participants: {
+            "response_type": "ephemeral",
+            "text": "Fetching the list of incident participants...",
+        },
+        config.slack_command_assign_role: {
+            "response_type": "ephemeral",
+            "text": "Opening a dialog to assign a role to a participant...",
+        },
+        config.slack_command_update_incident: {
+            "response_type": "ephemeral",
+            "text": "Opening a dialog to update incident information...",
+        },
+        config.slack_command_update_participant: {
+            "response_type": "ephemeral",
+            "text": "Opening a dialog to update participant information...",
+        },
+        config.slack_command_engage_oncall: {
+            "response_type": "ephemeral",
+            "text": "Opening a dialog to engage an oncall person...",
+        },
+        config.slack_command_list_resources: {
+            "response_type": "ephemeral",
+            "text": "Fetching the list of incident resources...",
+        },
+        config.slack_command_report_incident: {
+            "response_type": "ephemeral",
+            "text": "Opening a dialog to report an incident...",
+        },
+        config.slack_command_report_executive: {
+            "response_type": "ephemeral",
+            "text": "Opening a dialog to write an executive report...",
+        },
+        config.slack_command_update_notifications_group: {
+            "response_type": "ephemeral",
+            "text": "Opening a dialog to update the membership of the notifications group...",
+        },
+        config.slack_command_add_timeline_event: {
+            "response_type": "ephemeral",
+            "text": "Opening a dialog to add an event to the incident timeline...",
+        },
+        config.slack_command_list_incidents: {
+            "response_type": "ephemeral",
+            "text": "Fetching the list of incidents...",
+        },
+        config.slack_command_list_workflows: {
+            "response_type": "ephemeral",
+            "text": "Fetching the list of workflows...",
+        },
+    }
+
+    return command_messages.get(command_string, default)
+
+
+async def build_role_error_message(payload: dict) -> str:
+    message = f"""I see you tried to run `{payload['command']}`. This is a sensitive command and cannot be run with the incident role you are currently assigned."""
+    return message
+
+
+async def build_context_error_message(payload: dict, error: Any) -> str:
+    message = (
+        f"""I see you tried to run `{payload['command']}` in an non-incident conversation. Incident-specifc commands can only be run in incident conversations."""  # command_context_middleware()
+        if payload.get("command")
+        else str(error)  # everything else
+    )
+    return message
+
+
+async def build_bot_not_present_message(
+    client: AsyncWebClient, command: str, conversations: dict
+) -> str:
+    team_id = await dispatch_slack_service.get_current_team_id_async(client)
+
+    deep_links = [
+        f"<slack://channel?team={team_id}&id={c['id']}|#{c['name']}>" for c in conversations
+    ]
+
+    message = f"""
+    Looks like you tried to run `{command}` in a conversation where the Dispatch bot is not present. Add the bot to your conversation or run the command in one of the following conversations:\n\n {(", ").join(deep_links)}"""
+    return message
+
+
+async def build_unexpected_error_message(guid: str) -> str:
+    message = f"""Sorry, we've run into an unexpected error. \
+For help please reach out to your Dispatch admins and provide them with the following token: `{guid}`"""
+    return message
 
 
 def format_default_text(item: dict):
