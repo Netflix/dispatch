@@ -139,11 +139,10 @@ def configure(config):
     middleware = [
         subject_middleware,
         configuration_middleware,
+        non_incident_command_middlware,
     ]
 
     # don't need an incident context
-    middleware.extend([non_incident_command_middlware])
-
     app.command(config.slack_command_report_incident, middleware=middleware)(
         ack=ack_command, lazy=[handle_report_incident_command]
     )
@@ -152,8 +151,11 @@ def configure(config):
     )
 
     # non-sensitive-commands
-    middleware.remove(non_incident_command_middlware)
-    middleware.extend([command_context_middleware])
+    middleware = [
+        subject_middleware,
+        configuration_middleware,
+        command_context_middleware,
+    ]
 
     app.command(config.slack_command_list_tasks, middleware=middleware)(
         ack=ack_command, lazy=[handle_list_tasks_command]
@@ -175,7 +177,13 @@ def configure(config):
     )
 
     # sensitive commands
-    middleware.extend([user_middleware, restricted_command_middleware])
+    middleware = [
+        subject_middleware,
+        configuration_middleware,
+        command_context_middleware,
+        user_middleware,
+        restricted_command_middleware,
+    ]
 
     app.command(config.slack_command_assign_role, middleware=middleware)(
         ack=ack_command, lazy=[handle_assign_role_command]
@@ -942,7 +950,7 @@ async def handle_member_joined_channel(
         participant.added_by = incident.commander
 
     # Message text when someone @'s a user is not available in body, use generic added by reason
-    participant.added_reason = f"Participant added by {participant.added_by}"
+    participant.added_reason = f"Participant added by {participant.added_by.individual.name}"
 
     db_session.add(participant)
     db_session.commit()
@@ -2022,7 +2030,6 @@ async def handle_report_incident_submission_event(
 
     result = await client.views_update(
         view_id=result["view"]["id"],
-        hash=body["view"]["hash"],
         trigger_id=result["trigger_id"],
         view=modal,
     )
