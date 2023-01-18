@@ -47,6 +47,7 @@ def project_init_flow(*, project_id: int, organization_slug: str, db_session=Non
         exclude_from_metrics=default_incident_type["exclude_from_metrics"],
         default=default_incident_type["default"],
         enabled=default_incident_type["enabled"],
+        project=project,
     )
     incident_type = incident_type_service.create(
         db_session=db_session, incident_type_in=incident_type_in
@@ -107,6 +108,7 @@ def project_init_flow(*, project_id: int, organization_slug: str, db_session=Non
         exclude_from_metrics=default_case_type["exclude_from_metrics"],
         default=default_case_type["default"],
         enabled=default_case_type["enabled"],
+        project=project,
     )
     case_type = case_type_service.create(db_session=db_session, case_type_in=case_type_in)
 
