@@ -80,17 +80,17 @@ async def build_and_log_error(
 ) -> str:
     if isinstance(error, RoleError):
         message = await build_role_error_message(payload)
-        logger.warn(error)
+        logger.info(error)
 
     elif isinstance(error, ContextError):
         message = await build_context_error_message(payload, error)
-        logger.warn(error)
+        logger.info(error)
 
     elif isinstance(error, BotNotPresentError):
         message = await build_bot_not_present_message(
             client, payload["command"], context["conversations"]
         )
-        logger.warn(error)
+        logger.info(error)
     else:
         guid = str(uuid.uuid4())
         message = await build_unexpected_error_message(guid)
