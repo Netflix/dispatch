@@ -96,8 +96,13 @@ async def action_context_middleware(body: dict, context: AsyncBoltContext, next:
 
 
 @async_timer
-async def message_context_middleware(context: AsyncBoltContext, next: Callable) -> None:
+async def message_context_middleware(
+    request: AsyncBoltRequest, context: AsyncBoltContext, next: Callable
+) -> None:
     """Attemps to determine the current context of the event."""
+    if is_bot(request):
+        return await context.ack()
+
     if subject := await resolve_context_from_conversation(channel_id=context.channel_id):
         context.update(subject._asdict())
     else:
@@ -326,7 +331,7 @@ async def non_incident_command_middlware(
     ):
         # We let the user know in which public conversations they can run the command
         context["conversations"] = public_conversations
-        raise BotNotPresentError
+        raise BotNotPresentError("User ran a command where the bot is not present.")
 
     await next()
 

@@ -12,7 +12,7 @@ from slack_bolt.response import BoltResponse
 from slack_sdk.web.async_client import AsyncWebClient
 
 from .decorators import message_dispatcher
-from .exceptions import BotNotPresentError, RoleError, ContextError
+from .exceptions import BotNotPresentError, RoleError, ContextError, DispatchException
 from .messaging import (
     build_bot_not_present_message,
     build_context_error_message,
@@ -69,7 +69,11 @@ async def app_error_handler(
     if body.get("response_url"):
         await respond(text=message, response_type="ephemeral")
 
-    return BoltResponse(body=body, status=HTTPStatus.INTERNAL_SERVER_ERROR.value)
+    if not isinstance(error, DispatchException):
+        return BoltResponse(body=body, status=HTTPStatus.INTERNAL_SERVER_ERROR.value)
+
+    # for known exceptions we return OK, prevents error messages from Slackbot
+    return BoltResponse(status=HTTPStatus.OK.value)
 
 
 async def build_and_log_error(
@@ -81,17 +85,17 @@ async def build_and_log_error(
 ) -> str:
     if isinstance(error, RoleError):
         message = await build_role_error_message(payload)
-        logger.warn(error)
+        logger.info(error)
 
     elif isinstance(error, ContextError):
         message = await build_context_error_message(payload, error)
-        logger.warn(error)
+        logger.info(error)
 
     elif isinstance(error, BotNotPresentError):
         message = await build_bot_not_present_message(
             client, payload["command"], context["conversations"]
         )
-        logger.warn(error)
+        logger.info(error)
     else:
         guid = str(uuid.uuid4())
         message = await build_unexpected_error_message(guid)
