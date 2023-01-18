@@ -298,46 +298,23 @@ async def get_user_avatar_url_async(client: Any, email: str):
 Conversations = list[dict[str, str]]
 
 
-async def get_private_conversations_by_user_id_async(client: Any, user_id: str) -> Conversations:
-    private_result = await cache.get(user_id)
-    if not private_result:
-        private_result = await make_call_async(
+async def get_conversations_by_user_id_async(client: Any, user_id: str, type: str) -> Conversations:
+    result = await cache.get(user_id)
+    if not result:
+        result = await make_call_async(
             client,
             "users.conversations",
             user=user_id,
-            types="private_channel",
+            types=f"{type}_channel",
             exclude_archived="true",
         )
-        await cache.set(user_id, private_result)
+        await cache.set(f"{user_id}-{type}", result)
 
-    private_conversations = []
-    for channel in private_result["channels"]:
-        private_conversations.append(
-            {k: v for (k, v) in channel.items() if k == "id" or k == "name"}
-        )
+    conversations = []
+    for channel in result["channels"]:
+        conversations.append({k: v for (k, v) in channel.items() if k == "id" or k == "name"})
 
-    return private_conversations
-
-
-async def get_public_conversations_by_user_id_async(client: Any, user_id: str) -> Conversations:
-    public_result = await cache.get(user_id)
-    if not public_result:
-        public_result = await make_call_async(
-            client,
-            "users.conversations",
-            user=user_id,
-            types="public_channel",
-            exclude_archived="true",
-        )
-        await cache.set(user_id, public_result)
-
-    public_conversations = []
-    for channel in public_result["channels"]:
-        public_conversations.append(
-            {k: v for (k, v) in channel.items() if k == "id" or k == "name"}
-        )
-
-    return public_conversations
+    return conversations
 
 
 # note this will get slower over time, we might exclude archived to make it sane
