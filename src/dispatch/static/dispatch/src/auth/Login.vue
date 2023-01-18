@@ -33,7 +33,7 @@
       </v-card-text>
       <v-card-actions>
         <v-list-item two-line>
-          <v-list-item-content>
+          <v-list-item-content v-if="registrationEnabled">
             <v-list-item-subtitle>
               Don't have a account?
               <router-link :to="{ name: 'BasicRegister' }"> Register </router-link>
@@ -63,6 +63,8 @@ import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required, email } from "vee-validate/dist/rules"
+const registrationEnabled =
+  import.meta.env.VITE_DISPATCH_AUTH_REGISTRATION_ENABLED === "false" ? false : true
 
 extend("email", email)
 
@@ -80,6 +82,7 @@ export default {
     return {
       email: "",
       password: "",
+      registrationEnabled: registrationEnabled,
     }
   },
   computed: {
