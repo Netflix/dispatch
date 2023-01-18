@@ -308,7 +308,7 @@ async def get_conversations_by_user_id_async(client: Any, user_id: str, type: st
             types=f"{type}_channel",
             exclude_archived="true",
         )
-        await cache.set(user_id + f"-{type}", result)
+        await cache.set(f"{user_id}-{type}", result)
 
     conversations = []
     for channel in result["channels"]:
