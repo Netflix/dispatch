@@ -19,7 +19,7 @@ from blockkit import (
     Section,
     UsersSelect,
 )
-from slack_bolt.async_app import AsyncAck, AsyncBoltContext, AsyncRespond
+from slack_bolt.async_app import AsyncAck, AsyncBoltContext, AsyncRespond, AsyncBoltRequest
 from slack_sdk.web.async_client import AsyncWebClient
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -98,6 +98,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     command_context_middleware,
     configuration_middleware,
     db_middleware,
+    is_bot,
     message_context_middleware,
     modal_submit_middleware,
     non_incident_command_middlware,
@@ -776,14 +777,14 @@ async def handle_after_hours_message(
 
 @message_dispatcher.add()
 async def handle_thread_creation(
-    client: AsyncWebClient, payload: dict, context: AsyncBoltContext
+    client: AsyncWebClient, payload: dict, context: AsyncBoltContext, request: AsyncBoltRequest
 ) -> None:
     """Sends the user an ephemeral message if they use threads."""
     if not context["config"].ban_threads:
         return
 
     if context["subject"].type == "incident":
-        if payload.get("thread_ts"):
+        if payload.get("thread_ts") and not is_bot(request):
             message = "Please refrain from using threads in incident channels. Threads make it harder for incident participants to maintain context."
             await client.chat_postEphemeral(
                 text=message,
