@@ -310,11 +310,11 @@ async def non_incident_command_middlware(
 ):
     """Attempts to resolve a conversation based on the channel id or message_ts."""
     # We get the list of public and private conversations the Dispatch bot is a member of
-    public_conversations = await dispatch_slack_service.get_public_conversations_by_user_id_async(
-        client, context["config"].app_user_slug
+    public_conversations = await dispatch_slack_service.get_conversations_by_user_id_async(
+        client, context["config"].app_user_slug, type="public"
     )
-    private_conversations = await dispatch_slack_service.get_private_conversations_by_user_id_async(
-        client, context["config"].app_user_slug
+    private_conversations = await dispatch_slack_service.get_conversations_by_user_id_async(
+        client, context["config"].app_user_slug, type="private"
     )
 
     public_conversation_names = [c["name"] for c in public_conversations]
