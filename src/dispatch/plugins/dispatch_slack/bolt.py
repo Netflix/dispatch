@@ -113,7 +113,7 @@ async def build_and_log_error(
     ],
 )
 async def handle_message_events(
-    ack, payload, context, body, client, respond, user, db_session
+    ack, body, client, context, db_session, payload, respond, request, user
 ) -> None:
     """Container function for all message functions."""
     await message_dispatcher.dispatch(**locals())
