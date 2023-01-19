@@ -27,6 +27,7 @@ from sqlalchemy.orm import Session
 from dispatch.auth import service as user_service
 from dispatch.auth.models import DispatchUser, UserRegister
 from dispatch.config import DISPATCH_UI_URL
+from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.database.core import resolve_attr, refetch_db_session
 from dispatch.database.service import search_filter_sort_paginate
 from dispatch.document import service as document_service
@@ -95,6 +96,7 @@ from dispatch.plugins.dispatch_slack.messaging import (
 )
 from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
+    button_context_middleware,
     command_context_middleware,
     configuration_middleware,
     db_middleware,
@@ -580,7 +582,7 @@ async def handle_list_tasks_command(
                     accessory=Button(
                         text=button_text,
                         value=button_metadata,
-                        action_id=TaskNotificationActionIds.update_status,
+                        action_id=ConversationButtonActions.update_task_status,
                     ),
                 )
             )
@@ -588,6 +590,56 @@ async def handle_list_tasks_command(
 
     message = Message(blocks=blocks).build()["blocks"]
     await respond(text="Incident Task List", blocks=message, response_type="ephermeral")
+
+
+@app.action(
+    TaskNotificationActionIds.update_status,
+    middleware=[button_context_middleware, db_middleware],
+)
+async def handle_update_task_status_button_click(
+    ack: AsyncAck,
+    body: dict,
+    respond: AsyncRespond,
+    db_session: Session,
+):
+    """Handles the feedback button in the feedback direct message."""
+    await ack()
+
+    button = body["actions"][0]["value"]
+
+    resolve = True
+    if button.action_type == "reopen":
+        resolve = False
+
+    task = task_service.get_by_resource_id(db_session=db_session, resource_id=button.resource_id)
+
+    # avoid external calls if we are already in the desired state
+    if resolve and task.status == TaskStatus.resolved:
+        message = "Task is already resolved."
+        respond(text=message, response_type="ephemeral")
+        return
+
+    if not resolve and task.status == TaskStatus.open:
+        message = "Task is already open."
+        respond(text=message, response_type="ephemeral")
+        return
+
+    # we don't currently have a good way to get the correct file_id (we don't store a task <-> relationship)
+    # lets try in both the incident doc and PIR doc
+    drive_task_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=task.incident.project.id, plugin_type="task"
+    )
+
+    try:
+        file_id = task.incident.incident_document.resource_id
+        drive_task_plugin.instance.update(file_id, button.resource_id, resolved=resolve)
+    except Exception:
+        file_id = task.incident.incident_review_document.resource_id
+        drive_task_plugin.instance.update(file_id, button.resource_id, resolved=resolve)
+
+    status = "resolved" if task.status == TaskStatus.open else "re-opened"
+    message = f"Task successfully {status}."
+    respond(text=message, response_type="ephemeral")
 
 
 @handle_lazy_error
