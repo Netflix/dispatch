@@ -73,6 +73,7 @@ from dispatch.plugins.dispatch_slack.incident.enums import (
     EngageOncallActionIds,
     EngageOncallActions,
     EngageOncallBlockIds,
+    IncidentNotificationActions,
     IncidentReportActions,
     IncidentUpdateActions,
     IncidentUpdateBlockIds,
@@ -95,6 +96,7 @@ from dispatch.plugins.dispatch_slack.messaging import (
 )
 from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
+    button_context_middleware,
     command_context_middleware,
     configuration_middleware,
     db_middleware,
@@ -342,6 +344,8 @@ async def handle_update_incident_project_select_action(
 
 
 # COMMANDS
+
+
 @handle_lazy_error
 async def handle_list_incidents_command(
     payload: dict,
@@ -2096,3 +2100,37 @@ async def handle_report_incident_project_select_action(
         trigger_id=body["trigger_id"],
         view=modal,
     )
+
+
+# BUTTONS
+
+
+@app.action(
+    IncidentNotificationActions.invite_user, middleware=[button_context_middleware, db_middleware]
+)
+async def handle_incident_notification_join_button_click(
+    ack: AsyncAck,
+    body: dict,
+    client: AsyncWebClient,
+    respond: AsyncRespond,
+    db_session: Session,
+    context: AsyncBoltContext,
+):
+    """Handles the incident join button click event."""
+    await ack()
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+
+    if not incident:
+        message = "Sorry, we can't invite you to this incident. The incident does not exist."
+    elif incident.visibility == Visibility.restricted:
+        message = "Sorry, we can't invite you to this incident. The incident's visbility is restricted. Please, reach out to the incident commander if you have any questions."
+    elif incident.status == IncidentStatus.closed:
+        message = "Sorry, you can't join this incident. The incident has already been marked as closed. Please, reach out to the incident commander if you have any questions."
+    else:
+        user_id = context["user_id"]
+        await dispatch_slack_service.add_users_to_conversation_async(
+            client, incident.conversation.channel_id, [user_id]
+        )
+        message = f"Success! We've added you to incident {incident.name}. Please, check your Slack sidebar for the new incident channel."
+
+    await respond(text=message, response_type="ephemeral")
