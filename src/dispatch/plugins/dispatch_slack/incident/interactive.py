@@ -126,10 +126,6 @@ from dispatch.task.models import Task
 log = logging.getLogger(__file__)
 
 
-class TaskMetadata(SubjectMetadata):
-    resource_id: str
-
-
 def configure(config):
     """Maps commands/events to their functions."""
     middleware = [
@@ -517,6 +513,7 @@ def handle_list_tasks_command(
     for status in TaskStatus:
         blocks.append(Section(text=f"*{status} Incident Tasks*"))
         button_text = "Resolve" if status == TaskStatus.open else "Re-open"
+        action_type = "resolve" if status == TaskStatus.open else "reopen"
 
         tasks = task_service.get_all_by_incident_id_and_status(
             db_session=db_session, incident_id=context["subject"].id, status=status
@@ -540,6 +537,7 @@ def handle_list_tasks_command(
 
             button_metadata = TaskMetadata(
                 type="incident",
+                action_type=action_type,
                 organization_slug=task.project.organization.slug,
                 id=task.incident.id,
                 project_id=task.project.id,

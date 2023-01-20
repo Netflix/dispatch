@@ -13,6 +13,7 @@ class SubjectMetadata(BaseModel):
 
 class TaskMetadata(SubjectMetadata):
     resource_id: str
+    action_type: str
 
 
 class MonitorMetadata(SubjectMetadata):
