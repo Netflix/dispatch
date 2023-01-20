@@ -414,20 +414,6 @@ def add_users_to_conversation(client: Any, conversation_id: str, user_ids: List[
                 pass
 
 
-async def add_users_to_conversation_async(client: Any, conversation_id: str, user_ids: List[str]):
-    """Add users to conversation."""
-    # NOTE this will trigger a member_joined_channel event, which we will capture and run
-    # the incident.incident_add_or_reactivate_participant_flow() as a result
-    for c in chunks(user_ids, 30):  # NOTE api only allows 30 at a time.
-        try:
-            await make_call_async(client, "conversations.invite", users=c, channel=conversation_id)
-        except slack_sdk.errors.SlackApiError as e:
-            # sometimes slack sends duplicate member_join events
-            # that result in folks already existing in the channel.
-            if e.response["error"] == "already_in_channel":
-                pass
-
-
 async def get_current_team_id_async(client: Any):
     """Sets a bookmark for the specified conversation."""
     team_id = await make_call_async(client, "team.info")
