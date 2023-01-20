@@ -33,6 +33,7 @@ from dispatch.database.service import search_filter_sort_paginate
 from dispatch.document import service as document_service
 from dispatch.enums import Visibility
 from dispatch.event import service as event_service
+from dispatch.exceptions import DispatchException
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
@@ -41,6 +42,7 @@ from dispatch.individual import service as individual_service
 from dispatch.individual.models import IndividualContactRead
 from dispatch.messaging.strings import INCIDENT_RESOURCES_MESSAGE, MessageType
 from dispatch.monitor import service as monitor_service
+from dispatch.monitor.models import MonitorCreate
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
@@ -126,10 +128,6 @@ log = logging.getLogger(__file__)
 
 class TaskMetadata(SubjectMetadata):
     resource_id: str
-
-
-class MonitorMetadata(SubjectMetadata):
-    weblink: str
 
 
 def configure(config):
@@ -841,10 +839,11 @@ def handle_message_monitor(
                         type="incident",
                         organization_slug=incident.project.organization.slug,
                         id=incident.id,
+                        plugin_instance_id=p.id,
                         project_id=incident.project.id,
                         channel_id=context["channel_id"],
                         weblink=match_data["weblink"],
-                    )
+                    ).json()
 
                     blocks = [
                         Section(
@@ -873,10 +872,103 @@ def handle_message_monitor(
                     client.chat_postEphemeral(
                         text="Link Monitor",
                         channel=payload["channel"],
-                        thread_ts=payload["thread_ts"],
+                        thread_ts=payload.get("thread_ts"),
                         blocks=blocks,
                         user=payload["user"],
                     )
+
+
+@app.action(
+    LinkMonitorActionIds.monitor,
+    middleware=[button_context_middleware, db_middleware, user_middleware],
+)
+async def handle_monitor_link_monitor_button_click(
+    ack: AsyncAck,
+    body: dict,
+    context: AsyncBoltContext,
+    db_session: Session,
+    respond: AsyncRespond,
+    user: DispatchUser,
+):
+    """Handles the feedback button in the feedback direct message."""
+    await ack()
+
+    button = MonitorMetadata.parse_raw((body["actions"][0]["value"]))
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    plugin_instance = plugin_service.get_instance(
+        db_session=db_session, plugin_instance_id=button.plugin_instance_id
+    )
+
+    creator = participant_service.get_by_incident_id_and_email(
+        db_session=db_session, incident_id=incident.id, email=user.email
+    )
+
+    status = plugin_instance.instance.get_match_status(weblink=button.weblink)
+
+    monitor_in = MonitorCreate(
+        incident=incident,
+        enabled=True,
+        status=status,
+        plugin_instance=plugin_instance,
+        creator=creator,
+        weblink=button.weblink,
+    )
+    message_template = (
+        f"""A new monitor instance has been created.\n\n *Weblink:* {button.weblink}"""
+    )
+
+    monitor_service.create_or_update(db_session=db_session, monitor_in=monitor_in)
+
+    await respond(
+        text=message_template,
+        response_type="ephemeral",
+        delete_original=False,
+        replace_original=False,
+    )
+
+
+@app.action(
+    LinkMonitorActionIds.ignore,
+    middleware=[button_context_middleware, db_middleware, user_middleware],
+)
+async def handle_monitor_link_ignore_button_click(
+    ack: AsyncAck,
+    body: dict,
+    context: AsyncBoltContext,
+    db_session: Session,
+    respond: AsyncRespond,
+    user: DispatchUser,
+):
+    await ack()
+
+    button = MonitorMetadata.parse_raw((body["actions"][0]["value"]))
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    plugin_instance = plugin_service.get_instance(
+        db_session=db_session, plugin_instance_id=button.plugin_instance_id
+    )
+
+    creator = participant_service.get_by_incident_id_and_email(
+        db_session=db_session, incident_id=incident.id, email=user.email
+    )
+
+    monitor_in = MonitorCreate(
+        incident=incident,
+        enabled=False,
+        plugin_instance=plugin_instance,
+        creator=creator,
+        weblink=button.weblink,
+    )
+
+    message_template = f"""This monitor is now ignored. Dispatch won't remind this incident channel about it again.\n\n *Weblink:* {button.weblink}"""
+
+    monitor_service.create_or_update(db_session=db_session, monitor_in=monitor_in)
+
+    await respond(
+        text=message_template,
+        response_type="ephemeral",
+        delete_original=False,
+        replace_original=False,
+    )
 
 
 @app.event(
