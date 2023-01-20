@@ -2135,3 +2135,36 @@ async def handle_incident_notification_join_button_click(
         message = f"Success! We've added you to incident {incident.name}. Please, check your Slack sidebar for the new incident channel."
 
     await respond(text=message, response_type="ephemeral")
+
+
+@app.action(
+    IncidentNotificationActions.subscribe_user,
+    middleware=[button_context_middleware, db_middleware],
+)
+async def handle_incident_notification_subscribe_button_click(
+    ack: AsyncAck,
+    body: dict,
+    client: AsyncWebClient,
+    respond: AsyncRespond,
+    db_session: Session,
+    context: AsyncBoltContext,
+):
+    """Handles the incident subscribe button click event."""
+    await ack()
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+
+    if not incident:
+        message = "Sorry, we can't invite you to this incident. The incident does not exist."
+    elif incident.visibility == Visibility.restricted:
+        message = "Sorry, we can't invite you to this incident. The incident's visbility is restricted. Please, reach out to the incident commander if you have any questions."
+    elif incident.status == IncidentStatus.closed:
+        message = "Sorry, you can't subscribe to this incident. The incident has already been marked as closed. Please, reach out to the incident commander if you have any questions."
+    else:
+        user_id = context["user_id"]
+        user_email = await get_user_email_async(client=client, user_id=user_id)
+        incident_flows.add_participant_to_tactical_group(
+            user_email=user_email, incident=incident, db_session=db_session
+        )
+        message = f"Success! We've subscribed you to incident {incident.name}. You will start receiving all tactical reports about this incident via email."
+
+    await respond(text=message, response_type="ephemeral")
