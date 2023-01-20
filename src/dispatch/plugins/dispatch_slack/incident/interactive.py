@@ -1,8 +1,8 @@
-import logging
 from datetime import datetime
 from typing import Any, List
-
+import logging
 import pytz
+
 from blockkit import (
     Actions,
     Button,
@@ -19,8 +19,10 @@ from blockkit import (
     Section,
     UsersSelect,
 )
-from slack_bolt.async_app import AsyncAck, AsyncBoltContext, AsyncRespond
+from slack_bolt.async_app import AsyncAck, AsyncBoltContext, AsyncRespond, AsyncBoltRequest
+from slack_sdk.errors import SlackApiError
 from slack_sdk.web.async_client import AsyncWebClient
+
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -75,6 +77,7 @@ from dispatch.plugins.dispatch_slack.incident.enums import (
     EngageOncallActionIds,
     EngageOncallActions,
     EngageOncallBlockIds,
+    IncidentNotificationActions,
     IncidentReportActions,
     IncidentUpdateActions,
     IncidentUpdateBlockIds,
@@ -101,6 +104,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     command_context_middleware,
     configuration_middleware,
     db_middleware,
+    is_bot,
     message_context_middleware,
     modal_submit_middleware,
     non_incident_command_middlware,
@@ -125,6 +129,7 @@ from dispatch.tag.models import Tag
 from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
 from dispatch.task.models import Task
+
 
 log = logging.getLogger(__file__)
 
@@ -341,6 +346,8 @@ async def handle_update_incident_project_select_action(
 
 
 # COMMANDS
+
+
 @handle_lazy_error
 async def handle_list_incidents_command(
     payload: dict,
@@ -825,14 +832,14 @@ async def handle_after_hours_message(
 
 @message_dispatcher.add()
 async def handle_thread_creation(
-    client: AsyncWebClient, payload: dict, context: AsyncBoltContext
+    client: AsyncWebClient, payload: dict, context: AsyncBoltContext, request: AsyncBoltRequest
 ) -> None:
     """Sends the user an ephemeral message if they use threads."""
     if not context["config"].ban_threads:
         return
 
     if context["subject"].type == "incident":
-        if payload.get("thread_ts"):
+        if payload.get("thread_ts") and not is_bot(request):
             message = "Please refrain from using threads in incident channels. Threads make it harder for incident participants to maintain context."
             await client.chat_postEphemeral(
                 text=message,
@@ -2238,4 +2245,79 @@ async def handle_report_incident_project_select_action(
         hash=body["view"]["hash"],
         trigger_id=body["trigger_id"],
         view=modal,
+    )
+
+
+# BUTTONS
+
+
+@app.action(
+    IncidentNotificationActions.invite_user, middleware=[button_context_middleware, db_middleware]
+)
+async def handle_incident_notification_join_button_click(
+    ack: AsyncAck,
+    body: dict,
+    client: AsyncWebClient,
+    respond: AsyncRespond,
+    db_session: Session,
+    context: AsyncBoltContext,
+):
+    """Handles the incident join button click event."""
+    await ack()
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+
+    if not incident:
+        message = "Sorry, we can't invite you to this incident. The incident does not exist."
+    elif incident.visibility == Visibility.restricted:
+        message = "Sorry, we can't invite you to this incident. The incident's visbility is restricted. Please, reach out to the incident commander if you have any questions."
+    elif incident.status == IncidentStatus.closed:
+        message = "Sorry, you can't join this incident. The incident has already been marked as closed. Please, reach out to the incident commander if you have any questions."
+    else:
+        user_id = context["user_id"]
+        try:
+            await client.conversations_invite(
+                channel=incident.conversation.channel_id, users=[user_id]
+            )
+            message = f"Success! We've added you to incident {incident.name}. Please, check your Slack sidebar for the new incident channel."
+        except SlackApiError as e:
+            if e.response.get("error") == "already_in_channel":
+                message = f"Sorry, we can't invite you to this incident - you're already a member. Search for a channel called {incident.name.lower()} in your Slack sidebar."
+
+    await respond(
+        text=message, response_type="ephemeral", replace_original=False, delete_original=False
+    )
+
+
+@app.action(
+    IncidentNotificationActions.subscribe_user,
+    middleware=[button_context_middleware, db_middleware],
+)
+async def handle_incident_notification_subscribe_button_click(
+    ack: AsyncAck,
+    body: dict,
+    client: AsyncWebClient,
+    respond: AsyncRespond,
+    db_session: Session,
+    context: AsyncBoltContext,
+):
+    """Handles the incident subscribe button click event."""
+    await ack()
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+
+    if not incident:
+        message = "Sorry, we can't invite you to this incident. The incident does not exist."
+    elif incident.visibility == Visibility.restricted:
+        message = "Sorry, we can't invite you to this incident. The incident's visbility is restricted. Please, reach out to the incident commander if you have any questions."
+    elif incident.status == IncidentStatus.closed:
+        message = "Sorry, you can't subscribe to this incident. The incident has already been marked as closed. Please, reach out to the incident commander if you have any questions."
+    else:
+        user_id = context["user_id"]
+        user_email = await get_user_email_async(client=client, user_id=user_id)
+        incident_flows.add_participant_to_tactical_group(
+            user_email=user_email, incident=incident, db_session=db_session
+        )
+        message = f"Success! We've subscribed you to incident {incident.name}. You will start receiving all tactical reports about this incident via email."
+
+    await respond(
+        text=message, response_type="ephemeral", replace_original=False, delete_original=False
     )

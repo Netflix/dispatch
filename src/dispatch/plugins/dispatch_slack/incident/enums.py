@@ -1,3 +1,4 @@
+from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.enums import DispatchEnum
 
 
@@ -17,6 +18,20 @@ class AddTimelineEventActionIds(DispatchEnum):
 
 class AddTimelineEventActions(DispatchEnum):
     submit = "add-timeline-event-submit"
+
+
+class IncidentNotificationBlockIds(DispatchEnum):
+    invite_user = ConversationButtonActions.invite_user
+    subscribe_user = ConversationButtonActions.subscribe_user
+
+
+class IncidentNotificationActionIds(DispatchEnum):
+    pass
+
+
+class IncidentNotificationActions(DispatchEnum):
+    invite_user = ConversationButtonActions.invite_user
+    subscribe_user = ConversationButtonActions.subscribe_user
 
 
 class TaskNotificationActions(DispatchEnum):
