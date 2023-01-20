@@ -146,7 +146,7 @@ async def handle_feedback_direct_message_button_click(
 
 
 async def ack_feedback_submission_event(ack: AsyncAck) -> None:
-    """Handles the feednack submission event acknowledgement."""
+    """Handles the feedback submission event acknowledgement."""
     modal = Modal(
         title="Incident Feedback", close="Close", blocks=[Section(text="Submitting feedback...")]
     ).build()
