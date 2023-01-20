@@ -58,7 +58,17 @@ def handle_lazy_error(func: Callable[P, T]):
 
             from .bolt import app_error_handler
 
-            client, body, respond = [kwargs.get(key) for key in ("client", "body", "respond")]
-            await app_error_handler(error, client, body, log, respond)
+            client, body, respond, context, payload = [
+                kwargs.get(key) for key in ("client", "body", "respond", "context", "payload")
+            ]
+            await app_error_handler(
+                error=error,
+                body=body,
+                client=client,
+                context=context,
+                logger=log,
+                payload=payload,
+                respond=respond,
+            )
 
     return handle

@@ -112,7 +112,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     subject_middleware,
     user_middleware,
 )
-from dispatch.plugins.dispatch_slack.models import SubjectMetadata, MonitorMetadata
+from dispatch.plugins.dispatch_slack.models import MonitorMetadata, TaskMetadata
 from dispatch.plugins.dispatch_slack.service import (
     chunks,
     get_user_email_async,
@@ -132,10 +132,6 @@ from dispatch.task.models import Task
 
 
 log = logging.getLogger(__file__)
-
-
-class TaskMetadata(SubjectMetadata):
-    resource_id: str
 
 
 def configure(config):
@@ -546,6 +542,7 @@ async def handle_list_tasks_command(
     for status in TaskStatus:
         blocks.append(Section(text=f"*{status} Incident Tasks*"))
         button_text = "Resolve" if status == TaskStatus.open else "Re-open"
+        action_type = "resolve" if status == TaskStatus.open else "reopen"
 
         tasks = task_service.get_all_by_incident_id_and_status(
             db_session=db_session, incident_id=context["subject"].id, status=status
@@ -569,6 +566,7 @@ async def handle_list_tasks_command(
 
             button_metadata = TaskMetadata(
                 type="incident",
+                action_type=action_type,
                 organization_slug=task.project.organization.slug,
                 id=task.incident.id,
                 project_id=task.project.id,
@@ -609,7 +607,7 @@ async def handle_update_task_status_button_click(
     """Handles the update task button in the list-my-tasks message."""
     await ack()
 
-    button = body["actions"][0]["value"]
+    button = TaskMetadata.parse_raw(body["actions"][0]["value"])
 
     resolve = True
     if button.action_type == "reopen":
