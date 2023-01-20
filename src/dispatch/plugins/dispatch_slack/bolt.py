@@ -70,7 +70,7 @@ async def app_error_handler(
 
     # the user is in a message flow
     if body.get("response_url"):
-        await respond(text=message, response_type="ephemeral")
+        await respond(text=message, response_type="ephemeral", replace_original=False)
 
     if not isinstance(error, DispatchException):
         return BoltResponse(body=body, status=HTTPStatus.INTERNAL_SERVER_ERROR.value)
