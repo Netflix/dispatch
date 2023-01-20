@@ -580,7 +580,7 @@ async def handle_list_tasks_command(
                     accessory=Button(
                         text=button_text,
                         value=button_metadata,
-                        action_id=ConversationButtonActions.update_task_status,
+                        action_id=TaskNotificationActionIds.update_status,
                     ),
                 )
             )
@@ -600,7 +600,7 @@ async def handle_update_task_status_button_click(
     respond: AsyncRespond,
     db_session: Session,
 ):
-    """Handles the feedback button in the feedback direct message."""
+    """Handles the update task button in the list-my-tasks message."""
     await ack()
 
     button = body["actions"][0]["value"]
