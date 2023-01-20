@@ -36,12 +36,13 @@ from dispatch.plugins.dispatch_slack.middleware import (
     shortcut_context_middleware,
     user_middleware,
 )
+from dispatch.plugins.dispatch_slack.decorators import handle_lazy_error
 from dispatch.project import service as project_service
 
 
 def configure(config):
     """Maps commands/events to their functions."""
-    pass
+    middleware = []
 
 
 def assignee_select(
@@ -186,15 +187,23 @@ async def handle_project_select_action(
     )
 
 
-@app.view(CaseEscalateActions.submit, middleware=[action_context_middleware, db_middleware])
+async def ack_handle_escalation_submission_event(ack):
+    """Handles the escalation submission event."""
+    modal = Modal(
+        title="Escalate Case",
+        close="Close",
+        blocks=[Section(text="Escalating case as incident...")],
+    ).build()
+    await ack(response_action="update", view=modal)
+
+
+@handle_lazy_error
 async def handle_escalation_submission_event(
-    ack,
     client,
     context,
     db_session,
     user,
 ):
-    await ack()
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
     case.status = CaseStatus.escalated
     db_session.commit()
@@ -212,9 +221,16 @@ async def handle_escalation_submission_event(
         case=case, organization_slug=context["subject"].organization_slug, db_session=db_session
     )
 
+    # TODO add reciept similar to report incident, will require we decompose case escalated status
+
     incident_flows.add_participants_to_conversation(
         db_session=db_session, participant_emails=[user.email], incident=incident
     )
+
+
+app.view(CaseEscalateActions.submit, middleware=[action_context_middleware, db_middleware])(
+    ack=ack_handle_escalation_submission_event, lazy=[handle_escalation_submission_event]
+)
 
 
 @app.action(
@@ -270,31 +286,41 @@ async def edit_button_click(ack, body, db_session, context, client):
     await client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
-@app.action(CaseNotificationActions.resolve, middleware=[button_context_middleware, db_middleware])
-async def resolve_button_click(ack, body, db_session, context, client):
-    await ack()
+@app.action(CaseNotificationActions.edit, middleware=[button_context_middleware, db_middleware])
+async def handle_edit_submission_event(context, user, form_data, db_session, client):
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
-    assignee_initial_user = (await client.users_lookupByEmail(email=case.assignee.email))["user"][
-        "id"
-    ]
+    case_priority = None
+    if form_data.get(DefaultBlockIds.case_priority_select):
+        case_priority = {"name": form_data[DefaultBlockIds.case_priority_select]["name"]}
+
+    case_type = None
+    if form_data.get(DefaultBlockIds.case_type_select):
+        case_type = {"name": form_data[DefaultBlockIds.case_type_select]["name"]}
+
+    case_in = CaseUpdate(
+        title=form_data[DefaultBlockIds.title_input],
+        description=form_data[DefaultBlockIds.description_input],
+        resolution=form_data[DefaultBlockIds.resolution_input],
+        status=form_data[DefaultBlockIds.case_status_select],
+        visibility=case.visibility,
+        case_priority=case_priority,
+        case_type=case_type,
+    )
+
+    case = case_service.update(db_session=db_session, case=case, case_in=case_in, current_user=user)
+    blocks = create_case_message(case=case, channel_id=context["subject"].channel_id)
+    await client.chat_update(
+        blocks=blocks, ts=case.conversation.thread_id, channel=case.conversation.channel_id
+    )
+
+
+@app.action(CaseNotificationActions.resolve, middleware=[button_context_middleware, db_middleware])
+async def resolve_button_click(body, db_session, context, client):
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+
     blocks = [
-        Context(elements=[MarkdownText(text="Accept the defaults or adjust as needed.")]),
-        title_input(initial_value=case.title),
-        description_input(initial_value=case.description),
         resolution_input(initial_value=case.resolution),
-        assignee_select(initial_user=assignee_initial_user),
-        case_type_select(
-            db_session=db_session,
-            initial_option={"text": case.case_type.name, "value": case.case_type.id},
-            project_id=case.project.id,
-        ),
-        case_priority_select(
-            db_session=db_session,
-            initial_option={"text": case.case_priority.name, "value": case.case_priority.id},
-            project_id=case.project.id,
-            optional=True,
-        ),
     ]
 
     modal = Modal(
@@ -312,28 +338,14 @@ async def resolve_button_click(ack, body, db_session, context, client):
     CaseResolveActions.submit,
     middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
 )
-async def handle_resolve_submission_event(
-    ack, body, context, payload, user, form_data, db_session, client
-):
-    await ack()
+async def handle_resolve_submission_event(context, user, form_data, db_session, client):
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
-    case_priority = None
-    if form_data.get(DefaultBlockIds.case_priority_select):
-        case_priority = {"name": form_data[DefaultBlockIds.case_priority_select]["name"]}
-
-    case_type = None
-    if form_data.get(DefaultBlockIds.case_type_select):
-        case_type = {"name": form_data[DefaultBlockIds.case_type_select]["name"]}
-
     case_in = CaseUpdate(
-        title=form_data[DefaultBlockIds.title_input],
-        description=form_data[DefaultBlockIds.description_input],
+        title=case.title,
         resolution=form_data[DefaultBlockIds.resolution_input],
-        status=CaseStatus.closed,
         visibility=case.visibility,
-        case_priority=case_priority,
-        case_type=case_type,
+        status=CaseStatus.closed,
     )
 
     case = case_service.update(db_session=db_session, case=case, case_in=case_in, current_user=user)
@@ -405,9 +417,7 @@ async def handle_report_project_select_action(ack, body, db_session, context, cl
             action_id=CaseEscalateActions.project_select,
             dispatch_action=True,
         ),
-        case_type_select(
-            db_session=db_session, initial_option=None, project_id=project.id
-        ),
+        case_type_select(db_session=db_session, initial_option=None, project_id=project.id),
         case_priority_select(
             db_session=db_session,
             project_id=project.id,
@@ -467,7 +477,7 @@ async def handle_report_submission_event(
         blocks=[Section(text="Your case has been created. Running case execution flows now...")],
     ).build()
 
-    await client.views_update(
+    result = await client.views_update(
         view_id=body["view"]["id"],
         hash=body["view"]["hash"],
         trigger_id=body["trigger_id"],
@@ -485,8 +495,7 @@ async def handle_report_submission_event(
     ).build()
 
     await client.views_update(
-        view_id=body["view"]["id"],
-        hash=body["view"]["hash"],
-        trigger_id=body["trigger_id"],
+        view_id=result["view"]["id"],
+        trigger_id=result["trigger_id"],
         view=modal,
     )

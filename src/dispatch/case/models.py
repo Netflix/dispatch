@@ -245,7 +245,7 @@ class CaseUpdate(CaseBase):
     assignee: Optional[UserRead]
     case_priority: Optional[CasePriorityBase]
     case_severity: Optional[CaseSeverityBase]
-    case_type: CaseTypeBase
+    case_type: Optional[CaseTypeBase]
     duplicates: Optional[List[CaseRead]] = []
     related: Optional[List[CaseRead]] = []
     escalated_at: Optional[datetime] = None
