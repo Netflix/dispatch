@@ -1,8 +1,8 @@
-import logging
 from datetime import datetime
 from typing import Any, List
-
+import logging
 import pytz
+
 from blockkit import (
     Actions,
     Button,
@@ -20,7 +20,9 @@ from blockkit import (
     UsersSelect,
 )
 from slack_bolt.async_app import AsyncAck, AsyncBoltContext, AsyncRespond, AsyncBoltRequest
+from slack_sdk.errors import SlackApiError
 from slack_sdk.web.async_client import AsyncWebClient
+
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -125,6 +127,7 @@ from dispatch.tag.models import Tag
 from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
 from dispatch.task.models import Task
+
 
 log = logging.getLogger(__file__)
 
@@ -2129,10 +2132,14 @@ async def handle_incident_notification_join_button_click(
         message = "Sorry, you can't join this incident. The incident has already been marked as closed. Please, reach out to the incident commander if you have any questions."
     else:
         user_id = context["user_id"]
-        await dispatch_slack_service.add_users_to_conversation_async(
-            client, incident.conversation.channel_id, [user_id]
-        )
-        message = f"Success! We've added you to incident {incident.name}. Please, check your Slack sidebar for the new incident channel."
+        try:
+            await client.conversations_invite(
+                channel=incident.conversation.channel_id, users=[user_id]
+            )
+            message = f"Success! We've added you to incident {incident.name}. Please, check your Slack sidebar for the new incident channel."
+        except SlackApiError as e:
+            if e.response.get("error") == "already_in_channel":
+                message = f"Sorry, we can't invite you to this incident - you're already a member. Search for a channel called {incident.name.lower()} in your Slack sidebar."
 
     await respond(text=message, response_type="ephemeral")
 
