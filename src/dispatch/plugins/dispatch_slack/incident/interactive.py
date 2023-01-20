@@ -557,7 +557,7 @@ def handle_list_tasks_command(
                     accessory=Button(
                         text=button_text,
                         value=button_metadata,
-                        action_id=ConversationButtonActions.update_task_status,
+                        action_id=TaskNotificationActionIds.update_status,
                     ),
                 )
             )
