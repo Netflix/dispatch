@@ -241,7 +241,6 @@ async def edit_button_click(ack, body, db_session, context, client):
     ]
 
     blocks = [
-        Context(elements=[MarkdownText(text="Edit the case as needed.")]),
         title_input(initial_value=case.title),
         description_input(initial_value=case.description),
         resolution_input(initial_value=case.resolution),
