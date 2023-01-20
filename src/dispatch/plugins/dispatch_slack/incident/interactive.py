@@ -2141,7 +2141,9 @@ async def handle_incident_notification_join_button_click(
             if e.response.get("error") == "already_in_channel":
                 message = f"Sorry, we can't invite you to this incident - you're already a member. Search for a channel called {incident.name.lower()} in your Slack sidebar."
 
-    await respond(text=message, response_type="ephemeral")
+    await respond(
+        text=message, response_type="ephemeral", replace_original=False, delete_original=False
+    )
 
 
 @app.action(
@@ -2174,4 +2176,6 @@ async def handle_incident_notification_subscribe_button_click(
         )
         message = f"Success! We've subscribed you to incident {incident.name}. You will start receiving all tactical reports about this incident via email."
 
-    await respond(text=message, response_type="ephemeral")
+    await respond(
+        text=message, response_type="ephemeral", replace_original=False, delete_original=False
+    )
