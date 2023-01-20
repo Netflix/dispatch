@@ -178,7 +178,9 @@ export default {
     },
     switchOrganizations(slug) {
       this.$router.push({ params: { organization: slug } })
-      this.$router.go(this.$router.currentRoute)
+      .then(() => {
+        this.$router.go()
+      })
     },
     ...mapState("auth", ["currentUser", "userAvatarUrl"]),
     ...mapActions("auth", ["logout"]),

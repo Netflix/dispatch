@@ -1,15 +1,18 @@
 import logging
+from typing import Union
 import uuid
 
 from http import HTTPStatus
 from typing import Any
 
 from blockkit import Modal, MarkdownText, Context
+from dispatch.auth.models import DispatchUser
 from slack_bolt.app.async_app import AsyncApp
-from slack_bolt.async_app import AsyncBoltContext
-from slack_bolt.async_app import AsyncRespond
+from slack_bolt.async_app import AsyncBoltContext, AsyncRespond, AsyncAck, AsyncBoltRequest
 from slack_bolt.response import BoltResponse
 from slack_sdk.web.async_client import AsyncWebClient
+from slack_sdk.web.client import WebClient
+from sqlalchemy.orm import Session
 
 from .decorators import message_dispatcher
 from .exceptions import BotNotPresentError, RoleError, ContextError, DispatchException
@@ -114,7 +117,15 @@ async def build_and_log_error(
     ],
 )
 async def handle_message_events(
-    ack, payload, context, body, client, respond, user, db_session
+    ack: AsyncAck,
+    body: dict,
+    client: Union[AsyncWebClient, WebClient],
+    context: AsyncBoltContext,
+    db_session: Session,
+    payload: dict,
+    respond: AsyncRespond,
+    request: AsyncBoltRequest,
+    user: DispatchUser,
 ) -> None:
     """Container function for all message functions."""
     await message_dispatcher.dispatch(**locals())
