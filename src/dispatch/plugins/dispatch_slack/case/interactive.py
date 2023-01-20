@@ -204,7 +204,7 @@ async def handle_escalation_submission_event(
         blocks=blocks, ts=case.conversation.thread_id, channel=case.conversation.channel_id
     )
     await client.chat_postMessage(
-        text="This case has been escalated to an incident all further triage work will take place in the incident channel.",
+        text="This case has been escalated to an incident. All further triage work will take place in the incident channel.",
         channel=case.conversation.channel_id,
         thread_ts=case.conversation.thread_id,
     )
