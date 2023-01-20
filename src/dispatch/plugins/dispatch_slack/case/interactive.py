@@ -407,7 +407,7 @@ async def handle_report_project_select_action(ack, body, db_session, context, cl
             dispatch_action=True,
         ),
         case_type_select(
-            db_session=db_session, initial_option=None, project_id=project.id, block_id=None
+            db_session=db_session, initial_option=None, project_id=project.id
         ),
         case_priority_select(
             db_session=db_session,
