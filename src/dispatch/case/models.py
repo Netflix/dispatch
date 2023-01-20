@@ -17,9 +17,13 @@ from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.auth.models import UserRead
-from dispatch.case.priority.models import CasePriorityRead, CasePriorityBase
-from dispatch.case.severity.models import CaseSeverityRead, CaseSeverityBase
-from dispatch.case.type.models import CaseTypeRead, CaseTypeBase
+from dispatch.case.priority.models import (
+    CasePriorityCreate,
+    CasePriorityRead,
+    CasePriorityBase,
+)
+from dispatch.case.severity.models import CaseSeverityBase, CaseSeverityCreate, CaseSeverityRead
+from dispatch.case.type.models import CaseTypeBase, CaseTypeCreate, CaseTypeRead
 from dispatch.database.core import Base
 from dispatch.document.models import Document, DocumentRead
 from dispatch.enums import Visibility
