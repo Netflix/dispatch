@@ -27,7 +27,6 @@ from sqlalchemy.orm import Session
 from dispatch.auth import service as user_service
 from dispatch.auth.models import DispatchUser, UserRegister
 from dispatch.config import DISPATCH_UI_URL
-from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.database.core import resolve_attr, refetch_db_session
 from dispatch.database.service import search_filter_sort_paginate
 from dispatch.document import service as document_service
