@@ -24,7 +24,6 @@ from dispatch.plugins.dispatch_slack.config import (
     SlackConversationConfiguration,
 )
 
-from .endpoints import router as slack_event_router
 from .messaging import create_message_blocks
 from .service import (
     add_users_to_conversation,
@@ -58,7 +57,6 @@ class SlackConversationPlugin(ConversationPlugin):
     slug = "slack-conversation"
     description = "Uses Slack to facilitate conversations."
     version = slack_plugin.__version__
-    events = slack_event_router
 
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"

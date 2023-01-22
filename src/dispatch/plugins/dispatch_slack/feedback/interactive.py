@@ -8,21 +8,17 @@ from blockkit import (
     PlainTextInput,
     Section,
 )
-
-from slack_bolt.async_app import AsyncAck, AsyncBoltContext, AsyncRespond
-from slack_sdk.web.async_client import AsyncWebClient
-
+from slack_bolt import Ack, BoltContext, Respond
+from slack_sdk.web.client import WebClient
 from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
-from dispatch.database.core import refetch_db_session
 from dispatch.feedback import service as feedback_service
 from dispatch.feedback.enums import FeedbackRating
 from dispatch.feedback.models import FeedbackCreate
 from dispatch.incident import service as incident_service
 from dispatch.participant import service as participant_service
 from dispatch.plugins.dispatch_slack.bolt import app
-from dispatch.plugins.dispatch_slack.decorators import handle_lazy_error
 from dispatch.plugins.dispatch_slack.fields import static_select_block
 from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
@@ -103,23 +99,23 @@ def anonymous_checkbox(
 @app.action(
     FeedbackNotificationActions.provide, middleware=[button_context_middleware, db_middleware]
 )
-async def handle_feedback_direct_message_button_click(
-    ack: AsyncAck,
+def handle_feedback_direct_message_button_click(
+    ack: Ack,
     body: dict,
-    client: AsyncWebClient,
-    respond: AsyncRespond,
+    client: WebClient,
+    respond: Respond,
     db_session: Session,
-    context: AsyncBoltContext,
+    context: BoltContext,
 ):
     """Handles the feedback button in the feedback direct message."""
-    await ack()
+    ack()
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
     if not incident:
         message = (
             "Sorry, you cannot submit feedback about this incident. The incident does not exist."
         )
-        await respond(message=message, ephemeral=True)
+        respond(message=message, ephemeral=True)
         return
 
     blocks = [
@@ -142,29 +138,31 @@ async def handle_feedback_direct_message_button_click(
         private_metadata=context["subject"].json(),
     ).build()
 
-    await client.views_open(trigger_id=body["trigger_id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
-async def ack_feedback_submission_event(ack: AsyncAck) -> None:
+def ack_feedback_submission_event(ack: Ack) -> None:
     """Handles the feedback submission event acknowledgement."""
     modal = Modal(
         title="Incident Feedback", close="Close", blocks=[Section(text="Submitting feedback...")]
     ).build()
-    await ack(response_action="update", view=modal)
+    ack(response_action="update", view=modal)
 
 
-@handle_lazy_error
-async def handle_feedback_submission_event(
-    ack: AsyncAck,
+@app.view(
+    FeedbackNotificationActions.submit,
+    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
+)
+def handle_feedback_submission_event(
+    ack: Ack,
     body: dict,
-    context: AsyncBoltContext,
+    context: BoltContext,
     user: DispatchUser,
-    client: AsyncWebClient,
+    client: WebClient,
+    db_session: Session,
     form_data: dict,
 ):
     # TODO: handle multiple organizations during submission
-    db_session = refetch_db_session(context["subject"].organization_slug)
-
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
     feedback = form_data.get(FeedbackNotificationBlockIds.feedback_input)
@@ -193,13 +191,7 @@ async def handle_feedback_submission_event(
         blocks=[Section(text="Submitting feedback... Success!")],
     ).build()
 
-    await client.views_update(
+    client.views_update(
         view_id=body["view"]["id"],
         view=modal,
     )
-
-
-app.view(
-    FeedbackNotificationActions.submit,
-    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
-)(ack=ack_feedback_submission_event, lazy=[handle_feedback_submission_event])

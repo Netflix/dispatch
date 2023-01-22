@@ -1,48 +1,43 @@
 import logging
+from typing import Callable, NamedTuple, Optional
 
-from typing import Callable, Optional, NamedTuple
-
-from aiocache import Cache
-from slack_bolt.async_app import AsyncBoltContext, AsyncBoltRequest
-from slack_sdk.web.async_client import AsyncWebClient
+from slack_bolt import BoltContext, BoltRequest
+from slack_sdk.web import WebClient
 from sqlalchemy.orm.session import Session
 
+from blockkit import Modal, Section
+
+from dispatch.decorators import timer
 from dispatch.auth import service as user_service
 from dispatch.auth.models import DispatchUser, UserRegister
 from dispatch.conversation import service as conversation_service
-from dispatch.database.core import SessionLocal, engine, sessionmaker, refetch_db_session
-from dispatch.decorators import async_timer
+from dispatch.database.core import SessionLocal, engine, refetch_db_session, sessionmaker
 from dispatch.organization import service as organization_service
 from dispatch.participant import service as participant_service
 from dispatch.participant_role.enums import ParticipantRoleType
-from dispatch.project import service as project_service
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
+from dispatch.project import service as project_service
+from dispatch.plugins.dispatch_slack.messaging import get_incident_conversation_command_message
 
-from .exceptions import ContextError, RoleError, BotNotPresentError
+from .exceptions import BotNotPresentError, ContextError, RoleError
 from .models import SubjectMetadata
-
 
 log = logging.getLogger(__file__)
 
-cache = Cache()
 
 Subject = NamedTuple("Subject", subject=SubjectMetadata, db_session=Session)
 
 
-async def resolve_context_from_conversation(
+@timer
+def resolve_context_from_conversation(
     channel_id: str, message_ts: Optional[str] = None
 ) -> Optional[Subject]:
     """Attempts to resolve a conversation based on the channel id or message_ts."""
-
-    organization_slugs = await cache.get("organization-slugs")
-
-    if not organization_slugs:
-        db_session = SessionLocal()
-        organization_slugs = [o.slug for o in organization_service.get_all(db_session=db_session)]
-        db_session.close()
-        await cache.set("organization-slugs", organization_slugs)
-
+    db_session = SessionLocal()
+    organization_slugs = [o.slug for o in organization_service.get_all(db_session=db_session)]
+    db_session.close()
+    organization_slugs = ["default"]
     for slug in organization_slugs:
         schema_engine = engine.execution_options(
             schema_translate_map={
@@ -66,15 +61,32 @@ async def resolve_context_from_conversation(
         scoped_db_session.close()
 
 
-async def shortcut_context_middleware(context: AsyncBoltContext, next: Callable) -> None:
+@timer
+def command_acknowledge_middleware(
+    context: BoltContext, body: dict, client: WebClient, payload: dict, next: Callable
+) -> None:
+    """Acknowleges that a command has been run."""
+    context.ack()
+    message = get_incident_conversation_command_message(
+        config=context.get("config"), command_string=payload.get("command", "")
+    )
+    modal = Modal(
+        title="Please wait...",
+        blocks=[Section(text=message["text"])],
+        close="Cancel",
+    ).build()
+    view = client.views_open(trigger_id=body["trigger_id"], view=modal)
+    context.update({"parentView": {"id": view.data["view"]["id"]}})
+    next()
+
+
+def shortcut_context_middleware(context: BoltContext, next: Callable) -> None:
     """Attempts to determine the current context of the event."""
     context.update({"subject": SubjectMetadata(channel_id=context.channel_id)})
-    await next()
+    next()
 
 
-async def button_context_middleware(
-    payload: dict, context: AsyncBoltContext, next: Callable
-) -> None:
+def button_context_middleware(payload: dict, context: BoltContext, next: Callable) -> None:
     """Attempt to determine the current context of the event."""
     try:
         subject_data = SubjectMetadata.parse_raw(payload["value"])
@@ -86,34 +98,31 @@ async def button_context_middleware(
         )
 
     context.update({"subject": subject_data})
-    await next()
+    next()
 
 
-async def action_context_middleware(body: dict, context: AsyncBoltContext, next: Callable) -> None:
+def action_context_middleware(body: dict, context: BoltContext, next: Callable) -> None:
     """Attempt to determine the current context of the event."""
     context.update({"subject": SubjectMetadata.parse_raw(body["view"]["private_metadata"])})
-    await next()
+    next()
 
 
-@async_timer
-async def message_context_middleware(
-    request: AsyncBoltRequest, context: AsyncBoltContext, next: Callable
-) -> None:
+def message_context_middleware(request: BoltRequest, context: BoltContext, next: Callable) -> None:
     """Attemps to determine the current context of the event."""
     if is_bot(request):
-        return await context.ack()
+        return context.ack()
 
-    if subject := await resolve_context_from_conversation(channel_id=context.channel_id):
+    if subject := resolve_context_from_conversation(channel_id=context.channel_id):
         context.update(subject._asdict())
     else:
         raise ContextError("Unable to determine context for message.")
 
-    await next()
+    next()
 
 
-@async_timer
-async def restricted_command_middleware(
-    context: AsyncBoltContext, db_session, user: DispatchUser, next: Callable, payload: dict
+@timer
+def restricted_command_middleware(
+    context: BoltContext, db_session, user: DispatchUser, next: Callable, payload: dict
 ):
     """Rejects commands from unauthorized individuals."""
     allowed_roles = [ParticipantRoleType.incident_commander, ParticipantRoleType.scribe]
@@ -125,7 +134,7 @@ async def restricted_command_middleware(
     for active_role in participant.active_roles:
         for allowed_role in allowed_roles:
             if active_role.role == allowed_role:
-                return await next()
+                return next()
 
     raise RoleError(
         f"Participant does not have permission to run `{payload['command']}`. Roles with permission: {','.join([r.name for r in allowed_roles])}",
@@ -134,7 +143,7 @@ async def restricted_command_middleware(
 
 # filter out member join bot events as the built in slack-bolt doesn't catch these events
 # https://github.com/slackapi/bolt-python/blob/main/slack_bolt/middleware/ignoring_self_events/ignoring_self_events.py#L37
-def is_bot(request: AsyncBoltRequest):
+def is_bot(request: BoltRequest):
     auth_result = request.context.authorize_result
     user_id = request.context.user_id
     bot_id = request.body.get("event", {}).get("bot_id")
@@ -149,19 +158,19 @@ def is_bot(request: AsyncBoltRequest):
     )
 
 
-@async_timer
-async def user_middleware(
+@timer
+def user_middleware(
     body: dict,
     payload: dict,
     db_session: Session,
-    client: AsyncWebClient,
-    request: AsyncBoltRequest,
-    context: AsyncBoltContext,
+    client: WebClient,
+    request: BoltRequest,
+    context: BoltContext,
     next: Callable,
 ) -> None:
     """Attempts to determine the user making the request."""
     if is_bot(request):
-        return await context.ack()
+        return context.ack()
 
     user_id = None
 
@@ -180,21 +189,17 @@ async def user_middleware(
     if not user_id:
         raise ContextError("Unable to determine user from context.")
 
-    email = await cache.get(user_id)
-    if not email:
-        email = (await client.users_info(user=user_id))["user"]["profile"]["email"]
-        await cache.set(user_id, email)
+    email = client.users_info(user=user_id)["user"]["profile"]["email"]
 
     context["user"] = user_service.get_or_create(
         db_session=db_session,
         organization=context["subject"].organization_slug,
         user_in=UserRegister(email=email),
     )
-    await next()
+    next()
 
 
-@async_timer
-async def modal_submit_middleware(body: dict, context: AsyncBoltContext, next: Callable) -> None:
+def modal_submit_middleware(body: dict, context: BoltContext, next: Callable) -> None:
     """Parses view data into a reasonable data struct."""
     parsed_data = {}
     state_elem = body["view"].get("state")
@@ -236,25 +241,21 @@ async def modal_submit_middleware(body: dict, context: AsyncBoltContext, next: C
                 parsed_data[state] = elem_key_value_pair.get("value")
 
     context["form_data"] = parsed_data
-    await next()
+    next()
 
 
 # NOTE we don't need to handle cases because commands are not available in threads.
-@async_timer
-async def command_context_middleware(
-    context: AsyncBoltContext, payload: dict, next: Callable
-) -> None:
-    if subject := await resolve_context_from_conversation(channel_id=context.channel_id):
+def command_context_middleware(context: BoltContext, payload: dict, next: Callable) -> None:
+    if subject := resolve_context_from_conversation(channel_id=context.channel_id):
         context.update(subject._asdict())
     else:
         raise ContextError(
             f"Sorry, I can't determine the correct context to run the command `{payload['command']}`. Are you running this command in an incident channel?"
         )
-    await next()
+    next()
 
 
-@async_timer
-async def db_middleware(context: AsyncBoltContext, next: Callable):
+def db_middleware(context: BoltContext, next: Callable):
     if not context.get("subject"):
         slug = get_default_org_slug()
         context.update({"subject": SubjectMetadata(organization_slug=slug)})
@@ -262,58 +263,54 @@ async def db_middleware(context: AsyncBoltContext, next: Callable):
         slug = context["subject"].organization_slug
 
     context["db_session"] = refetch_db_session(slug)
-    await next()
+    next()
 
 
-@async_timer
-async def subject_middleware(context: AsyncBoltContext, next: Callable):
+def subject_middleware(context: BoltContext, next: Callable):
     """"""
     if not context.get("subject"):
         slug = get_default_org_slug()
         context.update({"subject": SubjectMetadata(organization_slug=slug)})
 
-    await next()
+    next()
 
 
-@async_timer
-async def configuration_middleware(context: AsyncBoltContext, next: Callable):
+def configuration_middleware(context: BoltContext, next: Callable):
     if context.get("config"):
-        return await next()
+        return next()
 
     if not context.get("db_session"):
         slug = get_default_org_slug()
         db_session = refetch_db_session(slug)
+        context["db_session"] = db_session
     else:
         # handle_message_events() flow can contain a db_session in context
         db_session = context["db_session"]
 
     project_id = project_service.get_default(db_session=db_session).id
 
-    plugin = await cache.get(project_id)
-    if not plugin:
-        plugin = plugin_service.get_active_instance(
-            db_session=db_session,
-            project_id=project_id,
-            plugin_type="conversation",
-        )
-        await cache.set(project_id, plugin)
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session,
+        project_id=project_id,
+        plugin_type="conversation",
+    )
 
     context["config"] = plugin.configuration
-    await next()
+    next()
 
 
 # This middleware has a dependency on configuration_middleware()
-async def non_incident_command_middlware(
-    client: AsyncWebClient,
-    context: AsyncBoltContext,
+def non_incident_command_middlware(
+    client: WebClient,
+    context: BoltContext,
     next: Callable,
 ):
     """Attempts to resolve a conversation based on the channel id or message_ts."""
     # We get the list of public and private conversations the Dispatch bot is a member of
-    public_conversations = await dispatch_slack_service.get_conversations_by_user_id_async(
+    public_conversations = dispatch_slack_service.get_conversations_by_user_id(
         client, context["config"].app_user_slug, type="public"
     )
-    private_conversations = await dispatch_slack_service.get_conversations_by_user_id_async(
+    private_conversations = dispatch_slack_service.get_conversations_by_user_id(
         client, context["config"].app_user_slug, type="private"
     )
 
@@ -321,7 +318,7 @@ async def non_incident_command_middlware(
     private_conversation_names = [c["name"] for c in private_conversations]
 
     # We get the name of conversation where the command was run
-    conversation_name = await dispatch_slack_service.get_conversation_name_by_id_async(
+    conversation_name = dispatch_slack_service.get_conversation_name_by_id(
         client, context.channel_id
     )
 
@@ -333,7 +330,7 @@ async def non_incident_command_middlware(
         context["conversations"] = public_conversations
         raise BotNotPresentError("User ran a command where the bot is not present.")
 
-    await next()
+    next()
 
 
 def get_default_org_slug() -> str:
