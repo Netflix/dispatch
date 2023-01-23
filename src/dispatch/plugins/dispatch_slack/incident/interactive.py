@@ -41,6 +41,7 @@ from dispatch.individual import service as individual_service
 from dispatch.individual.models import IndividualContactRead
 from dispatch.messaging.strings import INCIDENT_RESOURCES_MESSAGE, MessageType
 from dispatch.monitor import service as monitor_service
+from dispatch.monitor.models import MonitorCreate
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
@@ -2036,3 +2037,101 @@ def handle_incident_notification_subscribe_button_click(
         message = f"Success! We've subscribed you to incident {incident.name}. You will start receiving all tactical reports about this incident via email."
 
     respond(text=message, response_type="ephemeral", replace_original=False, delete_original=False)
+
+
+@app.action(
+    LinkMonitorActionIds.monitor,
+    middleware=[button_context_middleware, db_middleware, user_middleware],
+)
+def handle_monitor_link_monitor_button_click(
+    ack: Ack,
+    body: dict,
+    context: BoltContext,
+    db_session: Session,
+    respond: Respond,
+    user: DispatchUser,
+) -> None:
+    """Handles the monitor button in the handle_message_monitor() event."""
+    ack()
+
+    message = monitor_link_button_click(
+        body=body,
+        context=context,
+        db_session=db_session,
+        enabled=False,
+        email=user.email,
+    )
+
+    respond(
+        text=message,
+        response_type="ephemeral",
+        delete_original=False,
+        replace_original=False,
+    )
+
+
+@app.action(
+    LinkMonitorActionIds.ignore,
+    middleware=[button_context_middleware, db_middleware, user_middleware],
+)
+def handle_monitor_link_ignore_button_click(
+    ack: Ack,
+    body: dict,
+    context: BoltContext,
+    db_session: Session,
+    respond: Respond,
+    user: DispatchUser,
+) -> None:
+    """Handles the ignore button in the handle_message_monitor() event."""
+    ack()
+
+    message = monitor_link_button_click(
+        body=body,
+        context=context,
+        db_session=db_session,
+        enabled=False,
+        email=user.email,
+    )
+
+    respond(
+        text=message,
+        response_type="ephemeral",
+        delete_original=False,
+        replace_original=False,
+    )
+
+
+def monitor_link_button_click(
+    body: dict,
+    context: BoltContext,
+    db_session: Session,
+    enabled: bool,
+    email: str,
+) -> str:
+    """Core logic for handle_message_monitor() button click that builds MonitorCreate object and message."""
+
+    button = MonitorMetadata.parse_raw((body["actions"][0]["value"]))
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    plugin_instance = plugin_service.get_instance(
+        db_session=db_session, plugin_instance_id=button.plugin_instance_id
+    )
+
+    creator = participant_service.get_by_incident_id_and_email(
+        db_session=db_session, incident_id=incident.id, email=email
+    )
+
+    monitor_in = MonitorCreate(
+        incident=incident,
+        enabled=enabled,
+        plugin_instance=plugin_instance,
+        creator=creator,
+        weblink=button.weblink,
+    )
+
+    monitor_service.create_or_update(db_session=db_session, monitor_in=monitor_in)
+
+    return (
+        f"A new monitor instance has been created.\n\n *Weblink:* {button.weblink}"
+        if enabled is True
+        else f"This monitor is now ignored. Dispatch won't remind this incident channel about it again.\n\n *Weblink:* {button.weblink}"
+    )
