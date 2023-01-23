@@ -1125,7 +1125,7 @@ def handle_update_participant_submission_event(
 
 
 def handle_update_notifications_group_command(
-    respond: Respond, context: BoltContext, client: WebClient, db_session: Session
+    context: BoltContext, client: WebClient, db_session: Session
 ) -> None:
     """Handles the update notification group command."""
 
