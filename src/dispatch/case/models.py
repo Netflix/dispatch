@@ -117,9 +117,6 @@ class Case(Base, TimeStampMixin, ProjectMixin):
         foreign_keys=[Participant.case_id],
     )
 
-    observer_id = Column(Integer, ForeignKey("participant.id"))
-    observer = relationship("Participant", foreign_keys=[observer_id], post_update=True)
-
     incidents = relationship("Incident", secondary=assoc_cases_incidents, backref="cases")
 
     tactical_group_id = Column(Integer, ForeignKey("group.id"))
@@ -238,7 +235,6 @@ class CaseRead(CaseBase):
     project: ProjectRead
     related: Optional[List[CaseReadNested]] = []
     reported_at: Optional[datetime] = None
-    observer: Optional[ParticipantRead]
     participants: Optional[List[ParticipantRead]] = []
     storage: Optional[StorageRead] = None
     tags: Optional[List[TagRead]] = []
@@ -257,7 +253,6 @@ class CaseUpdate(CaseBase):
     escalated_at: Optional[datetime] = None
     incidents: Optional[List[IncidentRead]] = []
     reported_at: Optional[datetime] = None
-    observer: Optional[ParticipantUpdate]
     tags: Optional[List[TagRead]] = []
     triage_at: Optional[datetime] = None
 

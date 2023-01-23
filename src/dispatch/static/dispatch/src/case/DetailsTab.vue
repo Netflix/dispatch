@@ -37,20 +37,11 @@
           clearable
         />
       </v-flex>
-      <v-flex xs6>
+      <v-flex xs12>
         <organization-member-combobox
           v-model="assignee"
           label="Assignee"
           hint="The organization member to which the case is assigned."
-          clearable
-          :project="project"
-        />
-      </v-flex>
-      <v-flex xs6>
-        <participant-select
-          v-model="observer"
-          label="Observer"
-          hint="A participant who can observe the case."
           clearable
           :project="project"
         />
@@ -123,7 +114,6 @@
 import { mapFields } from "vuex-map-fields"
 import { ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
-
 import CaseFilterCombobox from "@/case/CaseFilterCombobox.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
 import CaseSeveritySelect from "@/case/severity/CaseSeveritySelect.vue"
@@ -131,18 +121,14 @@ import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
 import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
 import OrganizationMemberCombobox from "@/organization/OrganizationMemberCombobox.vue"
-import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
-
 extend("required", {
   ...required,
   message: "This field is required",
 })
-
 export default {
   name: "CaseDetailsTab",
-
   components: {
     CaseFilterCombobox,
     CasePrioritySelect,
@@ -151,19 +137,16 @@ export default {
     DateTimePickerMenu,
     IncidentFilterCombobox,
     OrganizationMemberCombobox,
-    ParticipantSelect,
     ProjectSelect,
     TagFilterAutoComplete,
     ValidationProvider,
   },
-
   data() {
     return {
       statuses: ["New", "Triage", "Escalated", "Closed"],
       visibilities: ["Open", "Restricted"],
     }
   },
-
   computed: {
     ...mapFields("case_management", [
       "selected.assignee",
@@ -177,7 +160,6 @@ export default {
       "selected.id",
       "selected.incidents",
       "selected.name",
-      "selected.observer",
       "selected.signals",
       "selected.project",
       "selected.related",

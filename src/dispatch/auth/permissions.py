@@ -315,7 +315,6 @@ class CaseViewPermission(BasePermission):
                 permissions=[
                     OrganizationAdminPermission,
                     CaseAssigneePermission,
-                    CaseObserverPermission,
                     CaseReporterPermission,
                 ],
                 request=request,
@@ -355,22 +354,4 @@ class CaseReporterPermission(BasePermission):
 
         if current_case.reporter:
             if current_case.reporter.individual.email == current_user.email:
-                return True
-
-
-class CaseObserverPermission(BasePermission):
-    def has_required_permissions(
-        self,
-        request: Request,
-    ) -> bool:
-        current_user = get_current_user(request=request)
-        current_case: Case = case_service.get(
-            db_session=request.state.db, incident_id=request.path_params["case_id"]
-        )
-
-        if not current_case:
-            return False
-
-        if current_case.observer:
-            if current_case.observer.individual.email == current_user.email:
                 return True

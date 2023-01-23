@@ -205,16 +205,6 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
         role=ParticipantRoleType.reporter,
     )
 
-    # add observer
-    observer_email = case_in.observer.individual.email
-    if observer_email:
-        participant_flows.add_participant(
-            observer_email,
-            case,
-            db_session,
-            role=ParticipantRoleType.observer,
-        )
-
     return case
 
 

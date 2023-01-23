@@ -24,7 +24,6 @@ def upgrade():
     op.create_foreign_key(
         None, "participant", "case", ["case_id"], ["id"], ondelete="CASCADE", use_alter=True
     )
-    op.add_column("case", sa.Column("observer_id", sa.Integer(), nullable=True))
     op.create_foreign_key(None, "case", "participant", ["observer_id"], ["id"])
     # ### end Alembic commands ###
 
@@ -36,5 +35,4 @@ def downgrade():
     op.drop_column("case", "participants_location")
     op.drop_column("case", "participants_team")
     op.drop_constraint(None, "case", type_="foreignkey")
-    op.drop_column("case", "observer_id")
     # ### end Alembic commands ###
