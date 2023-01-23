@@ -4,73 +4,13 @@ import logging
 import time
 from typing import Any, Dict, List, Optional
 
-from aiocache import Cache
 import slack_sdk
 from slack_sdk.web.async_client import AsyncWebClient
-from sqlalchemy.orm import Session
 from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
-
-from dispatch.conversation import service as conversation_service
-from dispatch.database.core import SessionLocal, engine, sessionmaker
-from dispatch.organization import service as organization_service
 
 from .config import SlackConversationConfiguration
 
 log = logging.getLogger(__name__)
-
-cache = Cache()
-
-
-# we need a way to determine which organization to use for a given
-# event, we use the unique channel id to determine which organization the
-# event belongs to.
-def get_organization_scope_from_channel_id(channel_id: str) -> Optional[Session]:
-    """Iterate all organizations looking for a relevant channel_id."""
-    db_session = SessionLocal()
-    organization_slugs = [o.slug for o in organization_service.get_all(db_session=db_session)]
-    db_session.close()
-
-    for slug in organization_slugs:
-        schema_engine = engine.execution_options(
-            schema_translate_map={
-                None: f"dispatch_organization_{slug}",
-            }
-        )
-
-        scoped_db_session = sessionmaker(bind=schema_engine)()
-        conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
-            db_session=scoped_db_session, channel_id=channel_id
-        )
-        if conversation:
-            return scoped_db_session
-
-        scoped_db_session.close()
-
-
-def get_organization_scope_from_slug(slug: str) -> Session:
-    """Iterate all organizations looking for a matching slug."""
-    schema_engine = engine.execution_options(
-        schema_translate_map={
-            None: f"dispatch_organization_{slug}",
-        }
-    )
-
-    return sessionmaker(bind=schema_engine)()
-
-
-def get_default_organization_scope() -> str:
-    """Iterate all organizations looking for matching organization."""
-    db_session = SessionLocal()
-    organization = organization_service.get_default(db_session=db_session)
-    db_session.close()
-
-    schema_engine = engine.execution_options(
-        schema_translate_map={
-            None: f"dispatch_organization_{organization.slug}",
-        }
-    )
-
-    return sessionmaker(bind=schema_engine)()
 
 
 def fullname(o):
@@ -96,7 +36,7 @@ def resolve_user(client: Any, user_id: str):
 def chunks(ids, n):
     """Yield successive n-sized chunks from l."""
     for i in range(0, len(ids), n):
-        yield ids[i : i + n]
+        yield ids[i : i + n]  # noqa
 
 
 def paginated(data_key):
@@ -298,17 +238,14 @@ async def get_user_avatar_url_async(client: Any, email: str):
 Conversations = list[dict[str, str]]
 
 
-async def get_conversations_by_user_id_async(client: Any, user_id: str, type: str) -> Conversations:
-    result = await cache.get(user_id)
-    if not result:
-        result = await make_call_async(
-            client,
-            "users.conversations",
-            user=user_id,
-            types=f"{type}_channel",
-            exclude_archived="true",
-        )
-        await cache.set(f"{user_id}-{type}", result)
+def get_conversations_by_user_id(client: Any, user_id: str, type: str) -> Conversations:
+    result = make_call(
+        client,
+        "users.conversations",
+        user=user_id,
+        types=f"{type}_channel",
+        exclude_archived="true",
+    )
 
     conversations = []
     for channel in result["channels"]:
@@ -325,12 +262,10 @@ def get_conversation_by_name(client: Any, name: str):
             return c
 
 
-async def get_conversation_name_by_id_async(client: Any, conversation_id: str):
+def get_conversation_name_by_id(client: Any, conversation_id: str):
     """Fetches a conversation by id and returns its name."""
     try:
-        return (await make_call_async(client, "conversations.info", channel=conversation_id))[
-            "channel"
-        ]["name"]
+        return make_call(client, "conversations.info", channel=conversation_id)["channel"]["name"]
     except slack_sdk.errors.SlackApiError as e:
         if e.response["error"] == "channel_not_found":
             return None
@@ -414,28 +349,46 @@ def add_users_to_conversation(client: Any, conversation_id: str, user_ids: List[
                 pass
 
 
-async def get_current_team_id_async(client: Any):
-    """Sets a bookmark for the specified conversation."""
-    team_id = await make_call_async(client, "team.info")
-    return team_id["team"]["id"]
-
-
 def send_message(
     client: Any,
     conversation_id: str,
     text: str = None,
+    ts: str = None,
     blocks: List[Dict] = None,
     persist: bool = False,
 ):
     """Sends a message to the given conversation."""
     response = make_call(
-        client, "chat.postMessage", channel=conversation_id, text=text, blocks=blocks
+        client, "chat.postMessage", channel=conversation_id, text=text, thread_ts=ts, blocks=blocks
     )
 
     if persist:
         add_pin(client, response["channel"], response["ts"])
 
-    return {"id": response["channel"], "timestamp": response["ts"]}
+    return {
+        "id": response["channel"],
+        "timestamp": response["ts"],
+        "weblink": f"https://slack.com/app_redirect?channel={response['id']}",  # TODO should we fetch the permalink?
+    }
+
+
+def update_message(
+    client: Any,
+    conversation_id: str,
+    text: str = None,
+    ts: str = None,
+    blocks: List[Dict] = None,
+):
+    """Updates a message for the given conversation."""
+    response = make_call(
+        client, "chat.update", channel=conversation_id, text=text, ts=ts, blocks=blocks
+    )
+
+    return {
+        "id": response["channel"],
+        "timestamp": response["ts"],
+        "weblink": f"https://slack.com/app_redirect?channel={response['id']}",  # TODO should we fetch the permalink?
+    }
 
 
 def send_ephemeral_message(

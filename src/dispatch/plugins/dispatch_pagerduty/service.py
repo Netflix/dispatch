@@ -53,7 +53,7 @@ def get_escalation_policy(client: APISession, escalation_policy_id: str) -> dict
 
 
 def create_incident(client: APISession, headers: dict, data: dict) -> dict:
-    """Creates an incident."""
+    """Creates an incident and pages the oncall person."""
     try:
         incident = client.rpost("/incidents", headers=headers, json=data)
     except PDClientError as e:

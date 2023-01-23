@@ -320,7 +320,7 @@ def send_incident_created_notifications(incident: Incident, db_session: SessionL
 
     notification_service.filter_and_send(
         db_session=db_session,
-        incident=incident,
+        project_id=incident.project.id,
         class_instance=incident,
         notification_params=notification_params,
     )
@@ -440,7 +440,7 @@ def send_incident_update_notifications(
 
     notification_service.filter_and_send(
         db_session=db_session,
-        incident=incident,
+        project_id=incident.project.id,
         class_instance=incident,
         notification_params=notification_params,
     )

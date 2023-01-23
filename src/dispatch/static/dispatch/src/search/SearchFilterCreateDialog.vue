@@ -183,7 +183,6 @@ import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
-
 import IncidentApi from "@/incident/api"
 import IncidentPriority from "@/incident/priority/IncidentPriority.vue"
 import IncidentPriorityCombobox from "@/incident/priority/IncidentPriorityCombobox.vue"
@@ -193,12 +192,10 @@ import IncidentTypeCombobox from "@/incident/type/IncidentTypeCombobox.vue"
 import SearchUtils from "@/search/utils"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
-
 extend("required", {
   ...required,
   message: "This field is required",
 })
-
 export default {
   name: "SearchFilterCreateDialog",
   props: {
@@ -207,7 +204,6 @@ export default {
       default: null,
     },
   },
-
   data() {
     return {
       visibilities: [{ name: "Open" }, { name: "Restricted" }],
@@ -271,17 +267,14 @@ export default {
       },
     },
   },
-
   methods: {
     ...mapActions("search", ["closeCreateDialog", "save"]),
-
     saveFilter() {
       // reset local data
       this.save("incident").then((filter) => {
         this.$emit("input", filter)
       })
     },
-
     getPreviewData() {
       let params = {}
       if (this.expression) {
