@@ -99,8 +99,14 @@ def create_case_message(case: Case, channel_id: str):
                         ),
                         Overflow(
                             options=[
-                                PlainOption(text="Storage", url=case.storage.weblink),
-                                PlainOption(text="Document", url=case.case_document.weblink),
+                                PlainOption(
+                                    text="Storage", url=case.storage.weblink, value="option-1"
+                                ),
+                                PlainOption(
+                                    text="Document",
+                                    url=case.case_document.weblink,
+                                    value="option-2",
+                                ),
                             ],
                             action_id="overflow-action",
                         ),
