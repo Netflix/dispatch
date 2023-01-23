@@ -28,7 +28,7 @@ from .middleware import (
     user_middleware,
 )
 
-app = App(token="xoxb-valid", token_verification_enabled=False)
+app = App(token="xoxb-valid", request_verification_enabled=False, token_verification_enabled=False)
 logging.basicConfig(level=logging.DEBUG)
 
 
