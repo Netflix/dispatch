@@ -2063,7 +2063,7 @@ def handle_monitor_link_monitor_button_click(
         body=body,
         context=context,
         db_session=db_session,
-        enabled=False,
+        enabled=True,
         email=user.email,
     )
 
