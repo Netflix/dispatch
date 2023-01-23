@@ -7,8 +7,8 @@
 import logging
 from typing import Any, List, Optional
 
-from blockkit import Section, Divider, Button, Context, MarkdownText, Actions
-from slack_sdk.web.async_client import AsyncWebClient
+from blockkit import Actions, Button, Context, Divider, MarkdownText, Section
+from slack_sdk.web.client import WebClient
 
 from dispatch.messaging.strings import (
     EVERGREEN_REMINDER_DESCRIPTION,
@@ -18,7 +18,6 @@ from dispatch.messaging.strings import (
     MessageType,
     render_message_template,
 )
-from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.config import SlackConfiguration
 
 log = logging.getLogger(__name__)
@@ -128,12 +127,17 @@ def get_incident_conversation_command_message(
     return command_messages.get(command_string, default)
 
 
-async def build_role_error_message(payload: dict) -> str:
+def build_command_error_message(payload: dict, error: Any) -> str:
+    message = f"""Unfortunately we couldn't run `{payload['command']}` due to the following reason: {str(error)}  """
+    return message
+
+
+def build_role_error_message(payload: dict) -> str:
     message = f"""I see you tried to run `{payload['command']}`. This is a sensitive command and cannot be run with the incident role you are currently assigned."""
     return message
 
 
-async def build_context_error_message(payload: dict, error: Any) -> str:
+def build_context_error_message(payload: dict, error: Any) -> str:
     message = (
         f"""I see you tried to run `{payload['command']}` in an non-incident conversation. Incident-specifc commands can only be run in incident conversations."""  # command_context_middleware()
         if payload.get("command")
@@ -142,10 +146,8 @@ async def build_context_error_message(payload: dict, error: Any) -> str:
     return message
 
 
-async def build_bot_not_present_message(
-    client: AsyncWebClient, command: str, conversations: dict
-) -> str:
-    team_id = await dispatch_slack_service.get_current_team_id_async(client)
+def build_bot_not_present_message(client: WebClient, command: str, conversations: dict) -> str:
+    team_id = client.team_info(client)["team"]["id"]
 
     deep_links = [
         f"<slack://channel?team={team_id}&id={c['id']}|#{c['name']}>" for c in conversations
@@ -156,7 +158,7 @@ async def build_bot_not_present_message(
     return message
 
 
-async def build_unexpected_error_message(guid: str) -> str:
+def build_unexpected_error_message(guid: str) -> str:
     message = f"""Sorry, we've run into an unexpected error. \
 For help please reach out to your Dispatch admins and provide them with the following token: `{guid}`"""
     return message
