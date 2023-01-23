@@ -1,7 +1,74 @@
-def get_oncall_email(client, service: dict) -> str:
-    """Fetches the oncall's email for a given service."""
+import logging
+from http import HTTPStatus
+
+from pdpyras import APISession, PDHTTPError, PDClientError
+
+
+log = logging.getLogger(__file__)
+
+
+def get_user(client: APISession, user_id: str) -> dict:
+    """Gets an oncall user by id."""
+    try:
+        user = client.rget(f"/users/{user_id}")
+    except PDHTTPError as e:
+        if e.response.status_code == HTTPStatus.NOT_FOUND.value:
+            log.warn(f"User with id {user_id} not found.")
+        else:
+            raise e
+    except PDClientError as e:
+        log.warn(f"Non-transient network or client error: {e}")
+
+    return user
+
+
+def get_service(client: APISession, service_id: str) -> dict:
+    """Gets an oncall service by id."""
+    try:
+        service = client.rget(f"/services/{service_id}")
+    except PDHTTPError as e:
+        if e.response.status_code == HTTPStatus.NOT_FOUND.value:
+            log.warn(f"Service with id {service_id} not found.")
+        else:
+            raise e
+    except PDClientError as e:
+        log.warn(f"Non-transient network or client error: {e}")
+
+    return service
+
+
+def get_escalation_policy(client: APISession, escalation_policy_id: str) -> dict:
+    """Gets an escalation policy by id."""
+    try:
+        escalation_policy = client.rget(f"/escalation_policies/{escalation_policy_id}")
+    except PDHTTPError as e:
+        if e.response.status_code == HTTPStatus.NOT_FOUND.value:
+            log.warn(f"Escalation policy with id {escalation_policy_id} not found.")
+        else:
+            raise e
+    except PDClientError as e:
+        log.warn(f"Non-transient network or client error: {e}")
+
+    return escalation_policy
+
+
+def create_incident(client: APISession, headers: dict, data: dict) -> dict:
+    """Creates an incident."""
+    try:
+        incident = client.rpost("/incidents", headers=headers, json=data)
+    except PDClientError as e:
+        log.error(
+            f"Error creating incident for service id {data['service']['id']} and escalation_policy id {data['escalation_policy']['id']}: {e}."
+        )
+
+    return incident
+
+
+def get_oncall_email(client: APISession, service: dict) -> str:
+    """Gets the oncall's email given a service."""
     escalation_policy_id = service["escalation_policy"]["id"]
-    escalation_policy = client.rget(f"/escalation_policies/{escalation_policy_id}")
+    escalation_policy = get_escalation_policy(client, escalation_policy_id)
+
     filter_name = (
         f"{escalation_policy['escalation_rules'][0]['targets'][0]['type'].split('_')[0]}_ids[]"
     )
@@ -17,36 +84,35 @@ def get_oncall_email(client, service: dict) -> str:
         )
     )
 
-    if oncalls:
-        user_id = list(oncalls)[0]["user"]["id"]
-    else:
+    if not oncalls:
         raise Exception(
-            f"No users could be found for this pagerduty escalation policy ({escalation_policy_id}). Is there a schedule associated?"
+            f"No users could be found for this PagerDuty escalation policy ({escalation_policy_id}). Is there a schedule associated to it?"
         )
-    user = client.rget(f"/users/{user_id}")
 
+    user_id = list(oncalls)[0]["user"]["id"]
+    user = get_user(client, user_id)
     return user["email"]
 
 
-def get_oncall(client, service_id: str):
+def get_oncall(client: APISession, service_id: str) -> str:
     """Gets the oncall for a given service id or name."""
-    service = client.rget(f"/services/{service_id}")
+    service = get_service(client, service_id)
     return get_oncall_email(client, service)
 
 
 def page_oncall(
-    client,
+    client: APISession,
     from_email: str,
     service_id: str,
     incident_name: str,
     incident_title: str,
     incident_description: str,
-):
+) -> dict:
     """Pages the oncall for a given service id."""
-    service = client.rget(f"/services/{service_id}")
-
+    service = get_service(client, service_id)
     escalation_policy_id = service["escalation_policy"]["id"]
 
+    headers = {"from": from_email}
     data = {
         "type": "incident",
         "title": f"{incident_name} - {incident_title}",
@@ -54,7 +120,5 @@ def page_oncall(
         "body": {"type": "incident_body", "details": incident_description},
         "escalation_policy": {"id": escalation_policy_id, "type": "escalation_policy_reference"},
     }
-    headers = {"from": from_email}
-    incident = client.rpost("/incidents", json=data, headers=headers)
 
-    return incident
+    return create_incident(client, headers, data)

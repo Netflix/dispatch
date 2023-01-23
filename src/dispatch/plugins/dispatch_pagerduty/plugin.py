@@ -4,9 +4,10 @@
     :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
-import logging
-from pydantic import Field, SecretStr, EmailStr
 from pdpyras import APISession
+from pydantic import Field, SecretStr, EmailStr
+import logging
+
 from dispatch.config import BaseConfigurationModel
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_pagerduty as pagerduty_oncall_plugin
@@ -44,10 +45,14 @@ class PagerDutyOncallPlugin(OncallPlugin):
     def __init__(self):
         self.configuration_schema = PagerdutyConfiguration
 
-    def get(self, service_id: str = None, **kwargs):
+    def get(self, service_id: str = None, **kwargs) -> str:
         """Gets the oncall person."""
         client = APISession(self.configuration.api_key.get_secret_value())
         return get_oncall(client=client, service_id=service_id)
+
+    def get_schedule(self, service_id: str = None, **kwargs) -> dict:
+        """Gets the oncall schedule."""
+        pass
 
     def page(
         self,
@@ -56,7 +61,7 @@ class PagerDutyOncallPlugin(OncallPlugin):
         incident_title: str,
         incident_description: str,
         **kwargs,
-    ):
+    ) -> dict:
         """Pages the oncall person."""
         client = APISession(self.configuration.api_key.get_secret_value())
         return page_oncall(
