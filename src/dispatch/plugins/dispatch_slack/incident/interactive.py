@@ -1235,7 +1235,7 @@ def handle_update_notifications_group_submission_event(
     )
 
 
-def handle_assign_role_command(context: BoltContext, body: dict, client: WebClient) -> None:
+def handle_assign_role_command(context: BoltContext, client: WebClient) -> None:
     """Handles the assign role command."""
     roles = [
         {"text": r.value, "value": r.value}
