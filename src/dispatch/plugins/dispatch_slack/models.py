@@ -19,3 +19,12 @@ class TaskMetadata(SubjectMetadata):
 class MonitorMetadata(SubjectMetadata):
     weblink: str
     plugin_instance_id: int
+
+
+class SubjectMetadata(BaseModel):
+    id: Optional[str]
+    type: Optional[str]
+    organization_slug: str = "default"
+
+    project_id: Optional[str]
+    channel_id: Optional[str]

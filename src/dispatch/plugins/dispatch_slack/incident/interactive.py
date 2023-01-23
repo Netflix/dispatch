@@ -904,6 +904,8 @@ def handle_member_joined_channel(
         user_email=user.email, incident_id=context["subject"].id, db_session=db_session
     )
 
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+
     # If the user was invited, the message will include an inviter property containing the user ID of the inviting user.
     # The property will be absent when a user manually joins a channel, or a user is added by default (e.g. #general channel).
     inviter = body.get("event", {}).get("inviter", None)
@@ -918,6 +920,7 @@ def handle_member_joined_channel(
             db_session=db_session, incident_id=context["subject"].id, email=inviter_email
         )
         participant.added_by = added_by_participant
+
     else:
         # User joins via the `join` button on Web Application or Slack.
         # We default to the incident commander when we don't know who added the user or the user is the Dispatch bot.

@@ -1,10 +1,19 @@
 import uuid
 from datetime import datetime
-from typing import Any, List, Optional, Dict
+from typing import List, Optional, Dict
 from pydantic import Field
 
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, String, ForeignKey, Table, PrimaryKeyConstraint, DateTime
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    ForeignKey,
+    Table,
+    PrimaryKeyConstraint,
+    DateTime,
+    Boolean,
+)
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy_utils import TSVectorType
 
@@ -34,6 +43,14 @@ assoc_signal_instance_tags = Table(
     Column("signal_instance_id", UUID, ForeignKey("signal_instance.id", ondelete="CASCADE")),
     Column("tag_id", Integer, ForeignKey("tag.id", ondelete="CASCADE")),
     PrimaryKeyConstraint("signal_instance_id", "tag_id"),
+)
+
+assoc_signal_tags = Table(
+    "assoc_signal_tags",
+    Base.metadata,
+    Column("signal_id", Integer, ForeignKey("signal.id", ondelete="CASCADE")),
+    Column("tag_id", Integer, ForeignKey("tag.id", ondelete="CASCADE")),
+    PrimaryKeyConstraint("signal_id", "tag_id"),
 )
 
 assoc_duplication_tag_types = Table(
@@ -85,6 +102,7 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     source = relationship("Source", backref="signals")
     source_id = Column(Integer, ForeignKey("source.id"))
     variant = Column(String)
+    loopin_signal_identity = Column(Boolean, default=False)
     case_type_id = Column(Integer, ForeignKey(CaseType.id))
     case_type = relationship("CaseType", backref="signals")
     case_priority_id = Column(Integer, ForeignKey(CasePriority.id))
@@ -93,22 +111,26 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     duplication_rule = relationship("DuplicationRule", backref="signal")
     suppression_rule_id = Column(Integer, ForeignKey(SuppressionRule.id))
     suppression_rule = relationship("SuppressionRule", backref="signal")
+    tags = relationship(
+        "Tag",
+        secondary=assoc_signal_tags,
+        backref="signals",
+    )
     search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
 
 class SignalInstance(Base, TimeStampMixin, ProjectMixin):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"))
     case = relationship("Case", backref="signal_instances")
-    signal_id = Column(Integer, ForeignKey("signal.id"))
-    signal = relationship("Signal", backref="instances")
-    fingerprint = Column(String)
-    duplication_rule_id = Column(Integer, ForeignKey(DuplicationRule.id))
+    case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"))
     duplication_rule = relationship("DuplicationRule", backref="signal_instances")
-    suppression_rule_id = Column(Integer, ForeignKey(SuppressionRule.id))
-    suppression_rule = relationship("SuppressionRule", backref="signal_instances")
-
+    duplication_rule_id = Column(Integer, ForeignKey(DuplicationRule.id))
+    fingerprint = Column(String)
     raw = Column(JSONB)
+    signal = relationship("Signal", backref="instances")
+    signal_id = Column(Integer, ForeignKey("signal.id"))
+    suppression_rule = relationship("SuppressionRule", backref="signal_instances")
+    suppression_rule_id = Column(Integer, ForeignKey(SuppressionRule.id))
     tags = relationship(
         "Tag",
         secondary=assoc_signal_instance_tags,

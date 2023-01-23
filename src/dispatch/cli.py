@@ -735,6 +735,8 @@ def run_slack_websocket(organization: str, project: str):
         configure as feedback_configure,
     )
     from dispatch.plugins.dispatch_slack.workflow import configure as workflow_configure
+    from dispatch.plugins.dispatch_slack.case.interactive import configure as case_configure
+
     from dispatch.project import service as project_service
     from dispatch.project.models import ProjectRead
 
@@ -771,6 +773,7 @@ def run_slack_websocket(organization: str, project: str):
     click.secho("Slack websocket process started...", fg="blue")
     incident_configure(instance.configuration)
     workflow_configure(instance.configuration)
+    case_configure(instance.configuration)
 
     app._token = instance.configuration.api_bot_token.get_secret_value()
 

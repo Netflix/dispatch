@@ -25,13 +25,25 @@ def get(*, db_session, workflow_id: int) -> Optional[Workflow]:
     return db_session.query(Workflow).filter(Workflow.id == workflow_id).one_or_none()
 
 
+def get_by_name(*, db_session, name: str) -> Optional[Workflow]:
+    """Returns a workflow based on the given workflow name."""
+    return db_session.query(Workflow).filter(Workflow.name == name).one_or_none()
+
+
 def get_all(*, db_session) -> List[Optional[Workflow]]:
     """Returns all workflows."""
     return db_session.query(Workflow)
 
 
-def get_enabled(*, db_session) -> List[Optional[Workflow]]:
+def get_enabled(*, db_session, project_id: int = None) -> List[Optional[Workflow]]:
     """Fetches all enabled workflows."""
+    if project_id:
+        return (
+            db_session.query(Workflow)
+            .filter(Workflow.enabled == true())
+            .filter(Workflow.project_id == project_id)
+            .all()
+        )
     return db_session.query(Workflow).filter(Workflow.enabled == true()).all()
 
 
