@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Any, List
+from typing import Any
 
 import pytz
 from blockkit import (
@@ -107,7 +107,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     subject_middleware,
     user_middleware,
 )
-from dispatch.plugins.dispatch_slack.models import SubjectMetadata
+from dispatch.plugins.dispatch_slack.models import TaskMetadata, MonitorMetadata
 from dispatch.plugins.dispatch_slack.service import get_user_email, get_user_profile_by_email
 from dispatch.project import service as project_service
 from dispatch.report import flows as report_flows
@@ -122,14 +122,6 @@ from dispatch.task.enums import TaskStatus
 from dispatch.task.models import Task
 
 log = logging.getLogger(__file__)
-
-
-class TaskMetadata(SubjectMetadata):
-    resource_id: str
-
-
-class MonitorMetadata(SubjectMetadata):
-    weblink: str
 
 
 def configure(config):
@@ -482,7 +474,7 @@ def handle_list_participants_command(
 
 
 def filter_tasks_by_assignee_and_creator(
-    tasks: List[Task], by_assignee: str, by_creator: str
+    tasks: list[Task], by_assignee: str, by_creator: str
 ) -> list[Task]:
     """Filters a list of tasks looking for a given creator or assignee."""
     filtered_tasks = []
@@ -519,6 +511,7 @@ def handle_list_tasks_command(
     for status in TaskStatus:
         blocks.append(Section(text=f"*{status} Incident Tasks*"))
         button_text = "Resolve" if status == TaskStatus.open else "Re-open"
+        action_type = "resolve" if status == TaskStatus.open else "reopen"
 
         tasks = task_service.get_all_by_incident_id_and_status(
             db_session=db_session, incident_id=context["subject"].id, status=status
@@ -542,6 +535,7 @@ def handle_list_tasks_command(
 
             button_metadata = TaskMetadata(
                 type="incident",
+                action_type=action_type,
                 organization_slug=task.project.organization.slug,
                 id=task.incident.id,
                 project_id=task.project.id,
@@ -578,7 +572,6 @@ def handle_list_resources_command(
     respond: Respond, db_session: Session, context: BoltContext
 ) -> None:
     """Handles the list resources command."""
-
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
     incident_description = (
@@ -720,9 +713,9 @@ def handle_after_hours_message(
     ack: Ack,
     context: BoltContext,
     client: WebClient,
+    db_session: Session,
     payload: dict,
     user: DispatchUser,
-    db_session: Session,
 ) -> None:
     """Notifies the user that this incident is currently in after hours mode."""
     ack()
@@ -777,7 +770,6 @@ def handle_thread_creation(
 @message_dispatcher.add()
 def handle_message_tagging(db_session: Session, payload: dict, context: BoltContext) -> None:
     """Looks for incident tags in incident messages."""
-
     # TODO: (wshel) handle case tagging
     if context["subject"].type == "incident":
         text = payload["text"]
@@ -841,10 +833,11 @@ def handle_message_monitor(
                         type="incident",
                         organization_slug=incident.project.organization.slug,
                         id=incident.id,
+                        plugin_instance_id=p.id,
                         project_id=incident.project.id,
                         channel_id=context["channel_id"],
                         weblink=match_data["weblink"],
-                    )
+                    ).json()
 
                     blocks = [
                         Section(
@@ -873,7 +866,7 @@ def handle_message_monitor(
                     client.chat_postEphemeral(
                         text="Link Monitor",
                         channel=payload["channel"],
-                        thread_ts=payload["thread_ts"],
+                        thread_ts=payload.get("thread_ts"),
                         blocks=blocks,
                         user=payload["user"],
                     )
@@ -946,9 +939,8 @@ def handle_member_left_channel(
 # MODALS
 
 
-def handle_add_timeline_event_command(body: dict, client: WebClient, context: BoltContext) -> None:
+def handle_add_timeline_event_command(client: WebClient, context: BoltContext) -> None:
     """Handles the add timeline event command."""
-
     blocks = [
         Context(
             elements=[
@@ -1113,6 +1105,7 @@ def handle_update_participant_submission_event(
         participant=selected_participant,
         participant_in=ParticipantUpdate(added_reason=added_reason),
     )
+
     modal = Modal(
         title="Update Participant",
         close="Close",
@@ -1287,10 +1280,10 @@ def ack_assign_role_submission_event(ack: Ack):
 def handle_assign_role_submission_event(
     ack: Ack,
     body: dict,
-    user: DispatchUser,
     client: WebClient,
     context: BoltContext,
     db_session: Session,
+    user: DispatchUser,
     form_data: dict,
 ) -> None:
     """Handles the assign role submission."""

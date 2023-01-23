@@ -18,7 +18,6 @@ from dispatch.messaging.strings import (
     MessageType,
     render_message_template,
 )
-from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.config import SlackConfiguration
 
 log = logging.getLogger(__name__)
@@ -148,7 +147,7 @@ def build_context_error_message(payload: dict, error: Any) -> str:
 
 
 def build_bot_not_present_message(client: WebClient, command: str, conversations: dict) -> str:
-    team_id = dispatch_slack_service.get_current_team_id(client)
+    team_id = client.team_info(client)["team"]["id"]
 
     deep_links = [
         f"<slack://channel?team={team_id}&id={c['id']}|#{c['name']}>" for c in conversations
