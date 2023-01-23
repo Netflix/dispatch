@@ -1,5 +1,5 @@
 from typing import List
-from blockkit import Actions, Button, Context, Message, Section, Divider
+from blockkit import Actions, Button, Context, Message, Section, Divider, Overflow, PlainOption
 
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.case.enums import CaseStatus
@@ -102,6 +102,13 @@ def create_case_message(case: Case, channel_id: str):
                             action_id=CaseNotificationActions.escalate,
                             style="danger",
                             value=button_metadata,
+                        ),
+                        Overflow(
+                            options=[
+                                PlainOption(text="Storage", url="https://google.com"),
+                                PlainOption(text="Document", url="https://google.com"),
+                            ],
+                            action_id="overflow-action",
                         ),
                     ]
                 )
