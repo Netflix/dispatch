@@ -38,7 +38,10 @@ def get_all_by_incident_id_and_status(
 ) -> List[Optional[Task]]:
     """Get all tasks by incident id and status."""
     return (
-        db_session.query(Task).filter(Task.incident_id == incident_id).filter(Task.status == status)
+        db_session.query(Task)
+        .filter(Task.incident_id == incident_id)
+        .filter(Task.status == status)
+        .all()
     )
 
 
