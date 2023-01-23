@@ -1537,7 +1537,6 @@ def handle_report_executive_command(
     client: WebClient,
     context: BoltContext,
     db_session: Session,
-    respond: Respond,
 ) -> None:
     """Handles executive report command."""
 
