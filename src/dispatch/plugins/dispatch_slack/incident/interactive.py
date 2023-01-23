@@ -1097,7 +1097,6 @@ def handle_update_participant_submission_event(
     body: dict,
     ack: Ack,
     client: WebClient,
-    context: BoltContext,
     db_session: Session,
     form_data: dict,
 ) -> None:
