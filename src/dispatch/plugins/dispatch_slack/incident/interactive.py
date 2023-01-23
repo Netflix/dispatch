@@ -142,6 +142,16 @@ def configure(config):
 
     # non-sensitive-commands
     middleware = [
+        subject_middleware,
+        configuration_middleware,
+        command_context_middleware,
+    ]
+
+    app.command(config.slack_command_list_resources, middleware=middleware)(
+        handle_list_resources_command
+    )
+
+    middleware = [
         command_acknowledge_middleware,
         subject_middleware,
         configuration_middleware,
@@ -154,9 +164,6 @@ def configure(config):
     )
     app.command(config.slack_command_list_participants, middleware=middleware)(
         handle_list_participants_command
-    )
-    app.command(config.slack_command_list_resources, middleware=middleware)(
-        handle_list_resources_command
     )
     app.command(config.slack_command_update_participant, middleware=middleware)(
         handle_update_participant_command
@@ -569,7 +576,7 @@ def handle_list_tasks_command(
 
 
 def handle_list_resources_command(
-    db_session: Session, context: BoltContext, client: WebClient
+    respond: Respond, db_session: Session, context: BoltContext
 ) -> None:
     """Handles the list resources command."""
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
@@ -614,13 +621,8 @@ def handle_list_resources_command(
         INCIDENT_RESOURCES_MESSAGE, MessageType.incident_resources_message, **message_kwargs
     )
 
-    modal = Modal(
-        title="Incident Resources",
-        blocks=blocks,
-        close="Close",
-    ).build()
-
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    blocks = Message(blocks=blocks).build()["blocks"]
+    respond(text="Incident Resources", blocks=blocks, response_type="ephemeral")
 
 
 # EVENTS
