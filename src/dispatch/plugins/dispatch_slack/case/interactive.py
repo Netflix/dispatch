@@ -410,7 +410,7 @@ def handle_report_project_select_action(ack, body, db_session, context, client):
         project_select(
             db_session=db_session,
             initial_option={"text": project.name, "value": project.id},
-            action_id=CaseEscalateActions.project_select,
+            action_id=CaseReportActions.project_select,
             dispatch_action=True,
         ),
         case_type_select(db_session=db_session, initial_option=None, project_id=project.id),
