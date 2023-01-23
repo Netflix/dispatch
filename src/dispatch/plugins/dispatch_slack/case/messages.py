@@ -85,12 +85,6 @@ def create_case_message(case: Case, channel_id: str):
                             style="primary",
                             value=button_metadata,
                         ),
-                        # Button(
-                        #    text="Acknowledge",
-                        #    action_id=CaseNotificationActions.acknowledge,
-                        #    style="primary",
-                        #    value=button_metadata,
-                        # ),
                         Button(
                             text="Resolve",
                             action_id=CaseNotificationActions.resolve,
@@ -105,8 +99,8 @@ def create_case_message(case: Case, channel_id: str):
                         ),
                         Overflow(
                             options=[
-                                PlainOption(text="Storage", url="https://google.com"),
-                                PlainOption(text="Document", url="https://google.com"),
+                                PlainOption(text="Storage", url=case.storage.weblink),
+                                PlainOption(text="Document", url=case.case_document.weblink),
                             ],
                             action_id="overflow-action",
                         ),

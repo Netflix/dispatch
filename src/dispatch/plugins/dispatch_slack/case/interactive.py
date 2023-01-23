@@ -1,5 +1,9 @@
 from blockkit import Context, Input, MarkdownText, Modal, Section, UsersSelect
+from slack_bolt import Ack, BoltContext
+from slack_sdk.web.client import WebClient
+from sqlalchemy.orm import Session
 
+from dispatch.auth.models import DispatchUser
 from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
 from dispatch.case.enums import CaseStatus
@@ -13,9 +17,7 @@ from dispatch.plugins.dispatch_slack.case.enums import (
     CaseResolveActions,
     CaseShortcutCallbacks,
 )
-from dispatch.plugins.dispatch_slack.case.messages import (
-    create_case_message,
-)
+from dispatch.plugins.dispatch_slack.case.messages import create_case_message
 from dispatch.plugins.dispatch_slack.fields import (
     DefaultBlockIds,
     case_priority_select,
@@ -180,13 +182,12 @@ def handle_project_select_action(
 
     client.views_update(
         view_id=body["view"]["id"],
-        hash=body["view"]["hash"],
         trigger_id=body["trigger_id"],
         view=modal,
     )
 
 
-def ack_handle_escalation_submission_event(ack):
+def ack_handle_escalation_submission_event(ack: Ack) -> None:
     """Handles the escalation submission event."""
     modal = Modal(
         title="Escalate Case",
@@ -197,11 +198,16 @@ def ack_handle_escalation_submission_event(ack):
 
 
 def handle_escalation_submission_event(
-    client,
-    context,
-    db_session,
-    user,
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+    user: DispatchUser,
 ):
+    """Handles the escalation submission event."""
+    ack_handle_escalation_submission_event(ack=ack)
+
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
     case.status = CaseStatus.escalated
     db_session.commit()
@@ -219,10 +225,37 @@ def handle_escalation_submission_event(
         case=case, organization_slug=context["subject"].organization_slug, db_session=db_session
     )
 
-    # TODO add reciept similar to report incident, will require we decompose case escalated status
-
     incident_flows.add_participants_to_conversation(
         db_session=db_session, participant_emails=[user.email], incident=incident
+    )
+
+    blocks = [
+        Section(
+            text="This is a confirmation that you have reported an incident with the following information. You will be invited to an incident Slack conversation shortly."
+        ),
+        Section(text=f"*Title*\n {incident.title}"),
+        Section(text=f"*Description*\n {incident.description}"),
+        Section(
+            fields=[
+                MarkdownText(
+                    text=f"*Commander*\n<{incident.commander.individual.weblink}|{incident.commander.individual.name}>"
+                ),
+                MarkdownText(text=f"*Type*\n {incident.incident_type.name}"),
+                MarkdownText(text=f"*Severity*\n {incident.incident_severity.name}"),
+                MarkdownText(text=f"*Priority*\n {incident.incident_priority.name}"),
+            ]
+        ),
+    ]
+
+    modal = Modal(
+        title="Escalate Case",
+        close="Close",
+        blocks=blocks,
+    ).build()
+
+    client.views_update(
+        view_id=body["view"]["id"],
+        view=modal,
     )
 
 
@@ -250,7 +283,7 @@ def edit_button_click(ack, body, db_session, context, client):
     ack()
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
-    assignee_initial_user = (client.users_lookupByEmail(email=case.assignee.email))["user"]["id"]
+    assignee_initial_user = client.users_lookupByEmail(email=case.assignee.email)["user"]["id"]
 
     blocks = [
         title_input(initial_value=case.title),
