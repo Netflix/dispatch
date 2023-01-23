@@ -108,7 +108,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     subject_middleware,
     user_middleware,
 )
-from dispatch.plugins.dispatch_slack.models import TaskMetadata, MonitorMetadata
+from dispatch.plugins.dispatch_slack.models import MonitorMetadata, TaskMetadata
 from dispatch.plugins.dispatch_slack.service import get_user_email, get_user_profile_by_email
 from dispatch.project import service as project_service
 from dispatch.report import flows as report_flows
@@ -577,7 +577,7 @@ def handle_list_tasks_command(
 
 
 def handle_list_resources_command(
-    db_session: Session, context: BoltContext, client: WebClient
+    db_session: Session, context: BoltContext, respond: Respond
 ) -> None:
     """Handles the list resources command."""
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
@@ -624,6 +624,7 @@ def handle_list_resources_command(
 
     blocks = Message(blocks=blocks).build()["blocks"]
     respond(text="Incident Resources", blocks=blocks, response_type="ephemeral")
+
 
 # EVENTS
 
