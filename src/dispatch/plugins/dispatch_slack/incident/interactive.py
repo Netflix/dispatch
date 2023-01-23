@@ -569,7 +569,7 @@ def handle_list_tasks_command(
 
 
 def handle_list_resources_command(
-    respond: Respond, db_session: Session, context: BoltContext
+    db_session: Session, context: BoltContext, client: WebClient
 ) -> None:
     """Handles the list resources command."""
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
@@ -613,8 +613,14 @@ def handle_list_resources_command(
     blocks = create_message_blocks(
         INCIDENT_RESOURCES_MESSAGE, MessageType.incident_resources_message, **message_kwargs
     )
-    blocks = Message(blocks=blocks).build()["blocks"]
-    respond(text="Incident Resources", blocks=blocks, response_type="ephemeral")
+
+    modal = Modal(
+        title="Incident Resources",
+        blocks=blocks,
+        close="Close",
+    ).build()
+
+    client.views_update(view_id=context["parentView"]["id"], view=modal)
 
 
 # EVENTS
@@ -1029,7 +1035,6 @@ def handle_add_timeline_submission_event(
 
 
 def handle_update_participant_command(
-    respond: Respond,
     context: BoltContext,
     client: WebClient,
 ) -> None:
