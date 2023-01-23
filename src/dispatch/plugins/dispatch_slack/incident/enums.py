@@ -39,7 +39,7 @@ class TaskNotificationActions(DispatchEnum):
 
 
 class TaskNotificationActionIds(DispatchEnum):
-    update_status = "task-notification-update-status"
+    update_status = "update-task-status"
 
 
 class TaskNotificationBlockIds(DispatchEnum):
