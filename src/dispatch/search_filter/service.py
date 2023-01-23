@@ -53,12 +53,14 @@ def get_all(*, db_session):
     return db_session.query(SearchFilter)
 
 
-def create(*, db_session, search_filter_in: SearchFilterCreate) -> SearchFilter:
+def create(*, db_session, creator, search_filter_in: SearchFilterCreate) -> SearchFilter:
     """Creates a new search filter."""
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=search_filter_in.project
     )
-    search_filter = SearchFilter(**search_filter_in.dict(exclude={"project"}), project=project)
+    search_filter = SearchFilter(
+        **search_filter_in.dict(exclude={"project"}), project=project, creator=creator
+    )
     db_session.add(search_filter)
     db_session.commit()
     return search_filter
