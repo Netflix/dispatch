@@ -11,8 +11,9 @@ from dispatch.plugin.models import Plugin, PluginInstance
 
 from .bolt import app
 from .incident.interactive import configure as incident_configure
-from .feedback.interactive import *  # noqa
+from .feedback.interactive import configure as feedback_configure
 from .workflow import configure as workflow_configure
+from .case.interactive import configure as case_configure
 
 
 router = APIRouter()
@@ -47,6 +48,8 @@ def get_request_handler(request: Request, body: bytes, organization: str) -> Sla
         if is_current_configuration(body=body, headers=request.headers, plugin_instance=p):
             incident_configure(p.configuration)
             workflow_configure(p.configuration)
+            case_configure(p.configuration)
+            feedback_configure(p.configuration)
             app._token = p.configuration.api_bot_token.get_secret_value()
             app._signing_secret = p.configuration.signing_secret.get_secret_value()
             session.close()
