@@ -18,6 +18,7 @@ def create_case_message(case: Case, channel_id: str):
             text=f"*Title* \n {case.title}.",
             accessory=Button(
                 text="View",
+                action_id="button-link",
                 url=f"{DISPATCH_UI_URL}/{case.project.organization.slug}/cases/{case.name}",
             ),
         ),
@@ -100,11 +101,15 @@ def create_case_message(case: Case, channel_id: str):
                         Overflow(
                             options=[
                                 PlainOption(
-                                    text="Storage", url=case.storage.weblink, value="option-1"
+                                    text="Storage",
+                                    action_id="button-link",
+                                    url=case.storage.weblink,
+                                    value="option-1",
                                 ),
                                 PlainOption(
                                     text="Document",
                                     url=case.case_document.weblink,
+                                    action_id="button-link",
                                     value="option-2",
                                 ),
                             ],
