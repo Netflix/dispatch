@@ -735,7 +735,7 @@ def handle_after_hours_message(
             db_session=db_session, incident_id=context["subject"].id, email=user.email
         )
         # get their timezone from slack
-        owner_tz = (dispatch_slack_service.get_user_info_by_email_(client, email=owner_email))["tz"]
+        owner_tz = (dispatch_slack_service.get_user_info_by_email(client, email=owner_email))["tz"]
         message = f"Responses may be delayed. The current incident priority is *{incident.incident_priority.name}* and your message was sent outside of the Incident Commander's working hours (Weekdays, 9am-5pm, {owner_tz} timezone)."
     else:
         # TODO: add case support
