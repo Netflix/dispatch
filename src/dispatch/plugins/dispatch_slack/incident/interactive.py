@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Any, List
+from typing import Any
 
 import pytz
 from blockkit import (
@@ -33,7 +33,6 @@ from dispatch.database.service import search_filter_sort_paginate
 from dispatch.document import service as document_service
 from dispatch.enums import Visibility
 from dispatch.event import service as event_service
-from dispatch.exceptions import DispatchException
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
@@ -42,7 +41,6 @@ from dispatch.individual import service as individual_service
 from dispatch.individual.models import IndividualContactRead
 from dispatch.messaging.strings import INCIDENT_RESOURCES_MESSAGE, MessageType
 from dispatch.monitor import service as monitor_service
-from dispatch.monitor.models import MonitorCreate
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
@@ -109,7 +107,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     subject_middleware,
     user_middleware,
 )
-from dispatch.plugins.dispatch_slack.models import SubjectMetadata
+from dispatch.plugins.dispatch_slack.models import TaskMetadata, MonitorMetadata
 from dispatch.plugins.dispatch_slack.service import get_user_email, get_user_profile_by_email
 from dispatch.project import service as project_service
 from dispatch.report import flows as report_flows
@@ -476,7 +474,7 @@ def handle_list_participants_command(
 
 
 def filter_tasks_by_assignee_and_creator(
-    tasks: List[Task], by_assignee: str, by_creator: str
+    tasks: list[Task], by_assignee: str, by_creator: str
 ) -> list[Task]:
     """Filters a list of tasks looking for a given creator or assignee."""
     filtered_tasks = []
@@ -574,7 +572,6 @@ def handle_list_resources_command(
     respond: Respond, db_session: Session, context: BoltContext
 ) -> None:
     """Handles the list resources command."""
-
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
     incident_description = (
@@ -716,9 +713,9 @@ def handle_after_hours_message(
     ack: Ack,
     context: BoltContext,
     client: WebClient,
+    db_session: Session,
     payload: dict,
     user: DispatchUser,
-    db_session: Session,
 ) -> None:
     """Notifies the user that this incident is currently in after hours mode."""
     ack()
@@ -773,7 +770,6 @@ def handle_thread_creation(
 @message_dispatcher.add()
 def handle_message_tagging(db_session: Session, payload: dict, context: BoltContext) -> None:
     """Looks for incident tags in incident messages."""
-
     # TODO: (wshel) handle case tagging
     if context["subject"].type == "incident":
         text = payload["text"]
@@ -876,99 +872,6 @@ def handle_message_monitor(
                     )
 
 
-@app.action(
-    LinkMonitorActionIds.monitor,
-    middleware=[button_context_middleware, db_middleware, user_middleware],
-)
-async def handle_monitor_link_monitor_button_click(
-    ack: AsyncAck,
-    body: dict,
-    context: AsyncBoltContext,
-    db_session: Session,
-    respond: AsyncRespond,
-    user: DispatchUser,
-):
-    """Handles the feedback button in the feedback direct message."""
-    await ack()
-
-    button = MonitorMetadata.parse_raw((body["actions"][0]["value"]))
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
-    plugin_instance = plugin_service.get_instance(
-        db_session=db_session, plugin_instance_id=button.plugin_instance_id
-    )
-
-    creator = participant_service.get_by_incident_id_and_email(
-        db_session=db_session, incident_id=incident.id, email=user.email
-    )
-
-    status = plugin_instance.instance.get_match_status(weblink=button.weblink)
-
-    monitor_in = MonitorCreate(
-        incident=incident,
-        enabled=True,
-        status=status,
-        plugin_instance=plugin_instance,
-        creator=creator,
-        weblink=button.weblink,
-    )
-    message_template = (
-        f"""A new monitor instance has been created.\n\n *Weblink:* {button.weblink}"""
-    )
-
-    monitor_service.create_or_update(db_session=db_session, monitor_in=monitor_in)
-
-    await respond(
-        text=message_template,
-        response_type="ephemeral",
-        delete_original=False,
-        replace_original=False,
-    )
-
-
-@app.action(
-    LinkMonitorActionIds.ignore,
-    middleware=[button_context_middleware, db_middleware, user_middleware],
-)
-async def handle_monitor_link_ignore_button_click(
-    ack: AsyncAck,
-    body: dict,
-    context: AsyncBoltContext,
-    db_session: Session,
-    respond: AsyncRespond,
-    user: DispatchUser,
-):
-    await ack()
-
-    button = MonitorMetadata.parse_raw((body["actions"][0]["value"]))
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
-    plugin_instance = plugin_service.get_instance(
-        db_session=db_session, plugin_instance_id=button.plugin_instance_id
-    )
-
-    creator = participant_service.get_by_incident_id_and_email(
-        db_session=db_session, incident_id=incident.id, email=user.email
-    )
-
-    monitor_in = MonitorCreate(
-        incident=incident,
-        enabled=False,
-        plugin_instance=plugin_instance,
-        creator=creator,
-        weblink=button.weblink,
-    )
-
-    message_template = f"""This monitor is now ignored. Dispatch won't remind this incident channel about it again.\n\n *Weblink:* {button.weblink}"""
-
-    monitor_service.create_or_update(db_session=db_session, monitor_in=monitor_in)
-
-    await respond(
-        text=message_template,
-        response_type="ephemeral",
-        delete_original=False,
-        replace_original=False,
-    )
-
-
 @app.event(
     "member_joined_channel",
     middleware=[
@@ -1036,9 +939,8 @@ def handle_member_left_channel(
 # MODALS
 
 
-def handle_add_timeline_event_command(body: dict, client: WebClient, context: BoltContext) -> None:
+def handle_add_timeline_event_command(client: WebClient, context: BoltContext) -> None:
     """Handles the add timeline event command."""
-
     blocks = [
         Context(
             elements=[
@@ -1203,6 +1105,7 @@ def handle_update_participant_submission_event(
         participant=selected_participant,
         participant_in=ParticipantUpdate(added_reason=added_reason),
     )
+
     modal = Modal(
         title="Update Participant",
         close="Close",
@@ -1377,10 +1280,10 @@ def ack_assign_role_submission_event(ack: Ack):
 def handle_assign_role_submission_event(
     ack: Ack,
     body: dict,
-    user: DispatchUser,
     client: WebClient,
     context: BoltContext,
     db_session: Session,
+    user: DispatchUser,
     form_data: dict,
 ) -> None:
     """Handles the assign role submission."""

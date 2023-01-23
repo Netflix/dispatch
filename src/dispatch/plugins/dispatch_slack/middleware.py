@@ -11,7 +11,7 @@ from dispatch.decorators import timer
 from dispatch.auth import service as user_service
 from dispatch.auth.models import DispatchUser, UserRegister
 from dispatch.conversation import service as conversation_service
-from dispatch.database.core import SessionLocal, engine, refetch_db_session, sessionmaker
+from dispatch.database.core import SessionLocal, refetch_db_session
 from dispatch.organization import service as organization_service
 from dispatch.participant import service as participant_service
 from dispatch.participant_role.enums import ParticipantRoleType
@@ -39,13 +39,7 @@ def resolve_context_from_conversation(
     db_session.close()
     organization_slugs = ["default"]
     for slug in organization_slugs:
-        schema_engine = engine.execution_options(
-            schema_translate_map={
-                None: f"dispatch_organization_{slug}",
-            }
-        )
-
-        scoped_db_session = sessionmaker(bind=schema_engine)()
+        scoped_db_session = refetch_db_session(slug)
         conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
             db_session=scoped_db_session, channel_id=channel_id
         )
@@ -129,6 +123,10 @@ def restricted_command_middleware(
     participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=context["subject"].id, email=user.email
     )
+    if not participant:
+        raise RoleError(
+            f"User is not a participant in the incident and does not have permission to run `{payload['command']}`."
+        )
 
     # if any required role is active, allow command
     for active_role in participant.active_roles:
@@ -150,23 +148,25 @@ def is_bot(request: BoltRequest):
     body = request.body
     return (
         auth_result is not None
-        and (
+        and (  # noqa
             (user_id is not None and user_id == auth_result.bot_user_id)
-            or (bot_id is not None and bot_id == auth_result.bot_id)  # for bot_message events
+            or (  # noqa
+                bot_id is not None and bot_id == auth_result.bot_id  # for bot_message events
+            )
         )
-        and body.get("event") is not None
+        and body.get("event") is not None  # noqa
     )
 
 
 @timer
 def user_middleware(
     body: dict,
-    payload: dict,
-    db_session: Session,
     client: WebClient,
-    request: BoltRequest,
     context: BoltContext,
+    db_session: Session,
+    request: BoltRequest,
     next: Callable,
+    payload: dict,
 ) -> None:
     """Attempts to determine the user making the request."""
     if is_bot(request):

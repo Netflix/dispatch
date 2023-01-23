@@ -5,9 +5,6 @@ from typing_extensions import ParamSpec
 
 log = logging.getLogger(__file__)
 
-T = TypeVar("T")
-P = ParamSpec("P")
-
 
 class MessageDispatcher:
     """Dispatches current message to any registered function: https://github.com/slackapi/bolt-python/issues/786"""

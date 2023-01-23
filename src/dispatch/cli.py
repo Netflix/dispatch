@@ -727,20 +727,20 @@ def run_slack_websocket(organization: str, project: str):
 
     from slack_bolt.adapter.socket_mode import SocketModeHandler
 
+    from dispatch.database.core import refetch_db_session
     from dispatch.common.utils.cli import install_plugins
     from dispatch.plugins.dispatch_slack.bolt import app
     from dispatch.plugins.dispatch_slack.incident.interactive import configure as incident_configure
     from dispatch.plugins.dispatch_slack.feedback.interactive import (  # noqa
         configure as feedback_configure,
     )
-    from dispatch.plugins.dispatch_slack.service import get_organization_scope_from_slug
     from dispatch.plugins.dispatch_slack.workflow import configure as workflow_configure
     from dispatch.project import service as project_service
     from dispatch.project.models import ProjectRead
 
     install_plugins()
 
-    session = get_organization_scope_from_slug(organization)
+    session = refetch_db_session(organization)
 
     project = project_service.get_by_name_or_raise(
         db_session=session, project_in=ProjectRead(name=project)

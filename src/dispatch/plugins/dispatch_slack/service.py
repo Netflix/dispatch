@@ -6,68 +6,11 @@ from typing import Any, Dict, List, Optional
 
 import slack_sdk
 from slack_sdk.web.async_client import AsyncWebClient
-from sqlalchemy.orm import Session
 from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
-
-from dispatch.conversation import service as conversation_service
-from dispatch.database.core import SessionLocal, engine, sessionmaker
-from dispatch.organization import service as organization_service
 
 from .config import SlackConversationConfiguration
 
 log = logging.getLogger(__name__)
-
-
-# we need a way to determine which organization to use for a given
-# event, we use the unique channel id to determine which organization the
-# event belongs to.
-def get_organization_scope_from_channel_id(channel_id: str) -> Optional[Session]:
-    """Iterate all organizations looking for a relevant channel_id."""
-    db_session = SessionLocal()
-    organization_slugs = [o.slug for o in organization_service.get_all(db_session=db_session)]
-    db_session.close()
-
-    for slug in organization_slugs:
-        schema_engine = engine.execution_options(
-            schema_translate_map={
-                None: f"dispatch_organization_{slug}",
-            }
-        )
-
-        scoped_db_session = sessionmaker(bind=schema_engine)()
-        conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
-            db_session=scoped_db_session, channel_id=channel_id
-        )
-        if conversation:
-            return scoped_db_session
-
-        scoped_db_session.close()
-
-
-def get_organization_scope_from_slug(slug: str) -> Session:
-    """Iterate all organizations looking for a matching slug."""
-    schema_engine = engine.execution_options(
-        schema_translate_map={
-            None: f"dispatch_organization_{slug}",
-        }
-    )
-
-    return sessionmaker(bind=schema_engine)()
-
-
-def get_default_organization_scope() -> str:
-    """Iterate all organizations looking for matching organization."""
-    db_session = SessionLocal()
-    organization = organization_service.get_default(db_session=db_session)
-    db_session.close()
-
-    schema_engine = engine.execution_options(
-        schema_translate_map={
-            None: f"dispatch_organization_{organization.slug}",
-        }
-    )
-
-    return sessionmaker(bind=schema_engine)()
 
 
 def fullname(o):
@@ -93,7 +36,7 @@ def resolve_user(client: Any, user_id: str):
 def chunks(ids, n):
     """Yield successive n-sized chunks from l."""
     for i in range(0, len(ids), n):
-        yield ids[i : i + n]
+        yield ids[i : i + n]  # noqa
 
 
 def paginated(data_key):
@@ -404,12 +347,6 @@ def add_users_to_conversation(client: Any, conversation_id: str, user_ids: List[
             # that result in folks already existing in the channel.
             if e.response["error"] == "already_in_channel":
                 pass
-
-
-def get_current_team_id(client: Any):
-    """Sets a bookmark for the specified conversation."""
-    team_id = make_call(client, "team.info")
-    return team_id["team"]["id"]
 
 
 def send_message(
