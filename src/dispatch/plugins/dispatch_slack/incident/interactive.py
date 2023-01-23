@@ -329,7 +329,7 @@ def handle_update_incident_project_select_action(
 
 # COMMANDS
 def handle_list_incidents_command(
-    payload: dict, respond: Respond, db_session: Session, context: BoltContext, client: WebClient
+    payload: dict, db_session: Session, context: BoltContext, client: WebClient
 ) -> None:
     """Handles the list incidents command."""
     projects = []
