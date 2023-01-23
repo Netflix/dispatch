@@ -1,7 +1,6 @@
 import logging
 import inspect
-from functools import wraps
-from typing import Callable, TypeVar
+from typing import TypeVar
 from typing_extensions import ParamSpec
 
 log = logging.getLogger(__file__)
@@ -28,7 +27,7 @@ class MessageDispatcher:
 
         return decorator
 
-    async def dispatch(self, *args, **kwargs):
+    def dispatch(self, *args, **kwargs):
         """Runs all registered functions."""
         for f in self.registered_funcs:
             # only inject the args the function cares about
@@ -36,29 +35,10 @@ class MessageDispatcher:
             injected_args = (kwargs[a] for a in func_args)
 
             try:
-                await f["func"](*injected_args)
+                f["func"](*injected_args)
             except Exception as e:
                 log.exception(e)
                 log.debug(f"Failed to run dispatched function ({e})")
 
 
 message_dispatcher = MessageDispatcher()
-
-
-def handle_lazy_error(func: Callable[P, T]):
-    """Surfaces tracable exceptions within lazy listener functions: https://github.com/slackapi/bolt-python/issues/635"""
-
-    @wraps(func)
-    async def handle(*args: P.args, **kwargs: P.kwargs) -> None:
-        try:
-            await func(*args, **kwargs)
-        except Exception as error:
-            log.debug(f"Failed to run a lazy listener function {func.__name__}")
-            log.exception(f"{func.__name__}: {error}")
-
-            from .bolt import app_error_handler
-
-            client, body, respond = [kwargs.get(key) for key in ("client", "body", "respond")]
-            await app_error_handler(error, client, body, log, respond)
-
-    return handle

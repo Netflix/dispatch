@@ -4,7 +4,6 @@ import logging
 import time
 from typing import Any, Dict, List, Optional
 
-from aiocache import Cache
 import slack_sdk
 from slack_sdk.web.async_client import AsyncWebClient
 from sqlalchemy.orm import Session
@@ -17,8 +16,6 @@ from dispatch.organization import service as organization_service
 from .config import SlackConversationConfiguration
 
 log = logging.getLogger(__name__)
-
-cache = Cache()
 
 
 # we need a way to determine which organization to use for a given
@@ -298,17 +295,14 @@ async def get_user_avatar_url_async(client: Any, email: str):
 Conversations = list[dict[str, str]]
 
 
-async def get_conversations_by_user_id_async(client: Any, user_id: str, type: str) -> Conversations:
-    result = await cache.get(user_id)
-    if not result:
-        result = await make_call_async(
-            client,
-            "users.conversations",
-            user=user_id,
-            types=f"{type}_channel",
-            exclude_archived="true",
-        )
-        await cache.set(f"{user_id}-{type}", result)
+def get_conversations_by_user_id(client: Any, user_id: str, type: str) -> Conversations:
+    result = make_call(
+        client,
+        "users.conversations",
+        user=user_id,
+        types=f"{type}_channel",
+        exclude_archived="true",
+    )
 
     conversations = []
     for channel in result["channels"]:
@@ -325,12 +319,10 @@ def get_conversation_by_name(client: Any, name: str):
             return c
 
 
-async def get_conversation_name_by_id_async(client: Any, conversation_id: str):
+def get_conversation_name_by_id(client: Any, conversation_id: str):
     """Fetches a conversation by id and returns its name."""
     try:
-        return (await make_call_async(client, "conversations.info", channel=conversation_id))[
-            "channel"
-        ]["name"]
+        return make_call(client, "conversations.info", channel=conversation_id)["channel"]["name"]
     except slack_sdk.errors.SlackApiError as e:
         if e.response["error"] == "channel_not_found":
             return None
@@ -414,9 +406,9 @@ def add_users_to_conversation(client: Any, conversation_id: str, user_ids: List[
                 pass
 
 
-async def get_current_team_id_async(client: Any):
+def get_current_team_id(client: Any):
     """Sets a bookmark for the specified conversation."""
-    team_id = await make_call_async(client, "team.info")
+    team_id = make_call(client, "team.info")
     return team_id["team"]["id"]
 
 

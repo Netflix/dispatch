@@ -1,7 +1,7 @@
 from dispatch.exceptions import DispatchException
 
 
-class CommandDispatchError(DispatchException):
+class CommandError(DispatchException):
     code = "command"
     msg_template = "{msg}"
 
