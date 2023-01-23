@@ -353,18 +353,42 @@ def send_message(
     client: Any,
     conversation_id: str,
     text: str = None,
+    ts: str = None,
     blocks: List[Dict] = None,
     persist: bool = False,
 ):
     """Sends a message to the given conversation."""
     response = make_call(
-        client, "chat.postMessage", channel=conversation_id, text=text, blocks=blocks
+        client, "chat.postMessage", channel=conversation_id, text=text, thread_ts=ts, blocks=blocks
     )
 
     if persist:
         add_pin(client, response["channel"], response["ts"])
 
-    return {"id": response["channel"], "timestamp": response["ts"]}
+    return {
+        "id": response["channel"],
+        "timestamp": response["ts"],
+        "weblink": f"https://slack.com/app_redirect?channel={response['id']}",  # TODO should we fetch the permalink?
+    }
+
+
+def update_message(
+    client: Any,
+    conversation_id: str,
+    text: str = None,
+    ts: str = None,
+    blocks: List[Dict] = None,
+):
+    """Updates a message for the given conversation."""
+    response = make_call(
+        client, "chat.update", channel=conversation_id, text=text, ts=ts, blocks=blocks
+    )
+
+    return {
+        "id": response["channel"],
+        "timestamp": response["ts"],
+        "weblink": f"https://slack.com/app_redirect?channel={response['id']}",  # TODO should we fetch the permalink?
+    }
 
 
 def send_ephemeral_message(

@@ -108,7 +108,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     subject_middleware,
     user_middleware,
 )
-from dispatch.plugins.dispatch_slack.models import TaskMetadata, MonitorMetadata
+from dispatch.plugins.dispatch_slack.models import MonitorMetadata, TaskMetadata
 from dispatch.plugins.dispatch_slack.service import get_user_email, get_user_profile_by_email
 from dispatch.project import service as project_service
 from dispatch.report import flows as report_flows
@@ -143,6 +143,16 @@ def configure(config):
 
     # non-sensitive-commands
     middleware = [
+        subject_middleware,
+        configuration_middleware,
+        command_context_middleware,
+    ]
+
+    app.command(config.slack_command_list_resources, middleware=middleware)(
+        handle_list_resources_command
+    )
+
+    middleware = [
         command_acknowledge_middleware,
         subject_middleware,
         configuration_middleware,
@@ -155,9 +165,6 @@ def configure(config):
     )
     app.command(config.slack_command_list_participants, middleware=middleware)(
         handle_list_participants_command
-    )
-    app.command(config.slack_command_list_resources, middleware=middleware)(
-        handle_list_resources_command
     )
     app.command(config.slack_command_update_participant, middleware=middleware)(
         handle_update_participant_command
@@ -570,7 +577,7 @@ def handle_list_tasks_command(
 
 
 def handle_list_resources_command(
-    respond: Respond, db_session: Session, context: BoltContext
+    db_session: Session, context: BoltContext, respond: Respond
 ) -> None:
     """Handles the list resources command."""
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
@@ -614,6 +621,7 @@ def handle_list_resources_command(
     blocks = create_message_blocks(
         INCIDENT_RESOURCES_MESSAGE, MessageType.incident_resources_message, **message_kwargs
     )
+
     blocks = Message(blocks=blocks).build()["blocks"]
     respond(text="Incident Resources", blocks=blocks, response_type="ephemeral")
 
@@ -897,6 +905,8 @@ def handle_member_joined_channel(
         user_email=user.email, incident_id=context["subject"].id, db_session=db_session
     )
 
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+
     # If the user was invited, the message will include an inviter property containing the user ID of the inviting user.
     # The property will be absent when a user manually joins a channel, or a user is added by default (e.g. #general channel).
     inviter = body.get("event", {}).get("inviter", None)
@@ -911,6 +921,7 @@ def handle_member_joined_channel(
             db_session=db_session, incident_id=context["subject"].id, email=inviter_email
         )
         participant.added_by = added_by_participant
+
     else:
         # User joins via the `join` button on Web Application or Slack.
         # We default to the incident commander when we don't know who added the user or the user is the Dispatch bot.
@@ -1030,7 +1041,6 @@ def handle_add_timeline_submission_event(
 
 
 def handle_update_participant_command(
-    respond: Respond,
     context: BoltContext,
     client: WebClient,
 ) -> None:

@@ -9,7 +9,7 @@ from factory import Sequence, post_generation, SubFactory, LazyAttribute
 from factory.alchemy import SQLAlchemyModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime, FuzzyInteger
 
-from dispatch.auth.models import DispatchUser  # noqa
+from dispatch.auth.models import DispatchUser, hash_password  # noqa
 from dispatch.case.models import Case
 from dispatch.conference.models import Conference
 from dispatch.conversation.models import Conversation
@@ -64,6 +64,18 @@ class TimeStampBaseFactory(BaseFactory):
 
     created_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
     updated_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
+
+
+class DispatchUserFactory(BaseFactory):
+    """Dispatch User Factory."""
+
+    email = Sequence(lambda n: f"user{n}@example.com")
+    password = hash_password("test123")
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = DispatchUser
 
 
 class OrganizationFactory(BaseFactory):
@@ -944,7 +956,6 @@ class NotificationFactory(BaseFactory):
 
     name = FuzzyText()
     description = FuzzyText()
-    type = FuzzyChoice(["email", "conversation"])
     target = FuzzyText()
     enabled = Faker().pybool()
 
@@ -969,7 +980,6 @@ class SearchFilterFactory(BaseFactory):
     name = FuzzyText()
     description = FuzzyText()
     expression = [{}]
-    type = FuzzyText()
 
     class Meta:
         """Factory Configuration."""

@@ -58,6 +58,19 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
+                <ValidationProvider name="ConversationTarget" immediate>
+                  <v-text-field
+                    v-model="conversation_target"
+                    slot-scope="{ errors, valid }"
+                    :error-messages="errors"
+                    :success="valid"
+                    label="Conversation Target"
+                    hint="The conversation identifier that new case messages will be sent to."
+                    clearable
+                  />
+                </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
                 <v-select
                   v-model="visibility"
                   label="Visibility"
@@ -170,6 +183,7 @@ export default {
     ...mapFields("case_type", [
       "dialogs.showCreateEdit",
       "selected.case_template_document",
+      "selected.conversation_target",
       "selected.default",
       "selected.description",
       "selected.enabled",

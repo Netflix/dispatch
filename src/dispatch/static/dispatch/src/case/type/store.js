@@ -19,6 +19,7 @@ const getDefaultSelectedState = () => {
     plugin_metadata: [],
     project: null,
     slug: null,
+    conversation_target: null,
     visibility: null,
   }
 }
