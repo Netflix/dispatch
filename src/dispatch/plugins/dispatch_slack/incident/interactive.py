@@ -50,6 +50,7 @@ from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.bolt import app
 from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
+from dispatch.plugins.dispatch_slack.exceptions import CommandError
 from dispatch.plugins.dispatch_slack.fields import (
     DefaultActionIds,
     DefaultBlockIds,
@@ -91,12 +92,11 @@ from dispatch.plugins.dispatch_slack.incident.enums import (
     UpdateParticipantActions,
     UpdateParticipantBlockIds,
 )
-from dispatch.plugins.dispatch_slack.messaging import (
-    create_message_blocks,
-)
+from dispatch.plugins.dispatch_slack.messaging import create_message_blocks
 from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
     button_context_middleware,
+    command_acknowledge_middleware,
     command_context_middleware,
     configuration_middleware,
     db_middleware,
@@ -106,13 +106,9 @@ from dispatch.plugins.dispatch_slack.middleware import (
     restricted_command_middleware,
     subject_middleware,
     user_middleware,
-    command_acknowledge_middleware,
 )
 from dispatch.plugins.dispatch_slack.models import SubjectMetadata
-from dispatch.plugins.dispatch_slack.service import (
-    get_user_email,
-    get_user_profile_by_email,
-)
+from dispatch.plugins.dispatch_slack.service import get_user_email, get_user_profile_by_email
 from dispatch.project import service as project_service
 from dispatch.report import flows as report_flows
 from dispatch.report import service as report_service
@@ -352,11 +348,9 @@ def handle_list_incidents_command(
             if project:
                 projects.append(project)
             else:
-                respond(
-                    text=f"Project name '{args[1]}' in organization '{args[0]}' not found. Check your spelling.",
-                    response_type="ephemeral",
+                raise CommandError(
+                    f"Project name '{args[1]}' in organization '{args[0]}' not found. Check your spelling.",
                 )
-                return
         else:
             projects = project_service.get_all(db_session=db_session)
 
@@ -435,11 +429,9 @@ def handle_list_participants_command(
         db_session=db_session, project_id=incident.project.id, plugin_type="contact"
     )
     if not contact_plugin:
-        respond(
-            text="Contact plugin is not enabled. Unable to list participants.",
-            response_type="ephemeral",
+        raise CommandError(
+            "Contact plugin is not enabled. Unable to list participants.",
         )
-        return
 
     for participant in participants:
         if participant.active_roles:
@@ -814,7 +806,6 @@ def handle_message_monitor(
     context: BoltContext,
     client: WebClient,
     db_session: Session,
-    respond: Respond,
 ) -> None:
     """Looks for strings that are available for monitoring (e.g. links)."""
     ack()
@@ -823,9 +814,7 @@ def handle_message_monitor(
         incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
         project_id = incident.project.id
     else:
-        # TODO: handle cases
-        respond(text="Command is not currently available for cases.", response_type="ephemeral")
-        return
+        raise CommandError("Command is not currently available for cases.")
 
     plugins = plugin_service.get_active_instances(
         db_session=db_session, project_id=project_id, plugin_type="monitor"
@@ -1056,8 +1045,7 @@ def handle_update_participant_command(
     """Handles the update participant command."""
 
     if context["subject"].type == "case":
-        respond(text="Command is not currently available for cases.", response_type="ephemeral")
-        return
+        raise CommandError("Command is not currently available for cases.")
 
     incident = incident_service.get(
         db_session=context["db_session"], incident_id=context["subject"].id
@@ -1139,14 +1127,13 @@ def handle_update_participant_submission_event(
 
 
 def handle_update_notifications_group_command(
-    respond: Respond, body: dict, context: BoltContext, client: WebClient, db_session: Session
+    respond: Respond, context: BoltContext, client: WebClient, db_session: Session
 ) -> None:
     """Handles the update notification group command."""
 
     # TODO handle cases
     if context["subject"].type == "case":
-        respond(text="Command is not currently available for cases.", response_type="ephemeral")
-        return
+        raise CommandError("Command is not currently available for cases.")
 
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
@@ -1154,17 +1141,12 @@ def handle_update_notifications_group_command(
         db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
     )
     if not group_plugin:
-        respond(
-            text="Group plugin is not enabled. Unable to update notifications group.",
-            response_type="ephemeral",
+        raise CommandError(
+            "Group plugin is not enabled. Unable to update notifications group.",
         )
-        return
 
     if not incident.notifications_group:
-        respond(
-            text="No notification group available for this incident.", response_type="ephemeral"
-        )
-        return
+        raise CommandError("No notification group available for this incident.")
 
     members = group_plugin.instance.list(incident.notifications_group.email)
 
@@ -1352,8 +1334,7 @@ def handle_engage_oncall_command(
     """Handles the engage oncall command."""
     # TODO: handle cases
     if context["subject"].type == "case":
-        respond(text="Command is not currently available for cases.", response_type="ephemeral")
-        return
+        raise CommandError("Command is not currently available for cases.")
 
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
@@ -1362,17 +1343,9 @@ def handle_engage_oncall_command(
     )
 
     if not oncall_services.count():
-        respond(
-            blocks=Message(
-                blocks=[
-                    Section(
-                        text="No oncall services have been defined. You can define them in the Dispatch UI at /services."
-                    )
-                ]
-            ).build()["blocks"],
-            response_type="ephemeral",
+        raise CommandError(
+            "No oncall services have been defined. You can define them in the Dispatch UI at /services."
         )
-        return
 
     services = [{"text": s.name, "value": s.external_id} for s in oncall_services]
 
@@ -1460,14 +1433,10 @@ def handle_report_tactical_command(
     client: WebClient,
     context: BoltContext,
     db_session: Session,
-    respond: Respond,
 ) -> None:
     """Handles the report tactical command."""
     if context["subject"].type == "case":
-        respond(
-            text="Command is not available outside of incident channels.", response_type="ephemeral"
-        )
-        return
+        raise CommandError("Command is not available outside of incident channels.")
 
     # we load the most recent tactical report
     tactical_report = report_service.get_most_recent_by_incident_id_and_type(
@@ -1573,10 +1542,7 @@ def handle_report_executive_command(
     """Handles executive report command."""
 
     if context["subject"].type == "case":
-        respond(
-            text="Command is not available outside of incident channels.", response_type="ephemeral"
-        )
-        return
+        raise CommandError("Command is not available outside of incident channels.")
 
     executive_report = report_service.get_most_recent_by_incident_id_and_type(
         db_session=db_session,

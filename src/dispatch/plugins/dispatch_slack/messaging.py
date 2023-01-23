@@ -128,6 +128,11 @@ def get_incident_conversation_command_message(
     return command_messages.get(command_string, default)
 
 
+def build_command_error_message(payload: dict, error: Any) -> str:
+    message = f"""Unfortunately we couldn't run `{payload['command']}` due to the following reason: {str(error)}  """
+    return message
+
+
 def build_role_error_message(payload: dict) -> str:
     message = f"""I see you tried to run `{payload['command']}`. This is a sensitive command and cannot be run with the incident role you are currently assigned."""
     return message

@@ -13,8 +13,9 @@ from sqlalchemy.orm import Session
 from dispatch.auth.models import DispatchUser
 
 from .decorators import message_dispatcher
-from .exceptions import BotNotPresentError, ContextError, DispatchException, RoleError
+from .exceptions import BotNotPresentError, ContextError, DispatchException, RoleError, CommandError
 from .messaging import (
+    build_command_error_message,
     build_bot_not_present_message,
     build_context_error_message,
     build_role_error_message,
@@ -31,7 +32,7 @@ app = App(token="xoxb-valid", token_verification_enabled=False)
 logging.basicConfig(level=logging.DEBUG)
 
 
-# @app.error
+@app.error
 def app_error_handler(
     error: Any,
     client: WebClient,
@@ -47,6 +48,20 @@ def app_error_handler(
 
     message = build_and_log_error(client, error, logger, payload, context)
 
+    # if we have a parent view available
+    if context.get("parentView"):
+        modal = Modal(
+            title="Error",
+            close="Close",
+            blocks=[Context(elements=[MarkdownText(text=message)])],
+        ).build()
+
+        client.views_update(
+            view_id=context["parentView"]["id"],
+            view=modal,
+        )
+        return
+
     # the user is within a modal flow
     if body.get("view"):
         modal = Modal(
@@ -59,6 +74,7 @@ def app_error_handler(
             view_id=body["view"]["id"],
             view=modal,
         )
+        return
 
     # the user is in a message flow
     if body.get("response_url"):
@@ -80,6 +96,10 @@ def build_and_log_error(
 ) -> str:
     if isinstance(error, RoleError):
         message = build_role_error_message(payload)
+        logger.info(error)
+
+    elif isinstance(error, CommandError):
+        message = build_command_error_message(payload, error)
         logger.info(error)
 
     elif isinstance(error, ContextError):

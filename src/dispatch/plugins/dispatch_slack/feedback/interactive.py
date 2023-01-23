@@ -163,6 +163,7 @@ def handle_feedback_submission_event(
     form_data: dict,
 ):
     # TODO: handle multiple organizations during submission
+    ack_feedback_submission_event(ack=ack)
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
     feedback = form_data.get(FeedbackNotificationBlockIds.feedback_input)
