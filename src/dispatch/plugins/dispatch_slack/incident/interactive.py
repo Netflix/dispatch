@@ -1327,7 +1327,6 @@ def handle_engage_oncall_command(
     client: WebClient,
     context: BoltContext,
     db_session: Session,
-    respond: Respond,
 ) -> None:
     """Handles the engage oncall command."""
     # TODO: handle cases
