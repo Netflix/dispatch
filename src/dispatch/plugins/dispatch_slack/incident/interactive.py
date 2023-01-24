@@ -2263,11 +2263,8 @@ def handle_update_task_status_button_click(
             file_id = task.incident.incident_review_document.resource_id
             drive_task_plugin.instance.update(file_id, button.resource_id, resolved=resolve)
     else:
-        task_service.resolve_or_reopen(
-            db_session=db_session, task_id=task.id, status=TaskStatus.resolved
-        ) if resolve is True else task_service.resolve_or_reopen(
-            db_session=db_session, task_id=task.id, status=TaskStatus.open
-        )
+        status = TaskStatus.resolved if resolve is True else TaskStatus.open
+        task_service.resolve_or_reopen(db_session=db_session, task_id=task.id, status=status)
 
     tasks = task_service.get_all_by_incident_id(
         db_session=db_session,
