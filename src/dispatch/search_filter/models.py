@@ -45,7 +45,7 @@ class SearchFilterUpdate(SearchFilterBase):
 
 class SearchFilterRead(SearchFilterBase):
     id: PrimaryKey
-    creator: UserRead
+    creator: Optional[UserRead]
 
 
 class SearchFilterPagination(DispatchBase):
