@@ -29,7 +29,7 @@ class MessageDispatcher:
     def dispatch(self, *args, **kwargs):
         """Runs all registered functions."""
         for f in self.registered_funcs:
-            # only inject the args the function cares about + body for us to do subtype filtering
+            # only inject the args the function cares about
             func_args = inspect.getfullargspec(inspect.unwrap(f["func"])).args
             injected_args = (kwargs[a] for a in func_args)
 
