@@ -1,5 +1,7 @@
-import logging
+from datetime import datetime, timedelta
 from http import HTTPStatus
+from typing import Literal
+import logging
 
 from pdpyras import APISession, PDHTTPError, PDClientError
 
@@ -64,8 +66,8 @@ def create_incident(client: APISession, headers: dict, data: dict) -> dict:
     return incident
 
 
-def get_oncall_email(client: APISession, service: dict) -> str:
-    """Gets the oncall's email given a service."""
+def get_oncall_info(client: APISession, service: dict, type: Literal["current", "next"]) -> dict:
+    """Gets the current or next oncall info given a service."""
     escalation_policy_id = service["escalation_policy"]["id"]
     escalation_policy = get_escalation_policy(client, escalation_policy_id)
 
@@ -80,6 +82,7 @@ def get_oncall_email(client: APISession, service: dict) -> str:
             {
                 filter_name: [filter_value],
                 "escalation_policy_ids[]": [escalation_policy_id],
+                "until": datetime.utcnow() + timedelta(hours=6),
             },  # params
         )
     )
@@ -89,15 +92,34 @@ def get_oncall_email(client: APISession, service: dict) -> str:
             f"No users could be found for this PagerDuty escalation policy ({escalation_policy_id}). Is there a schedule associated to it?"
         )
 
-    user_id = list(oncalls)[0]["user"]["id"]
-    user = get_user(client, user_id)
-    return user["email"]
+    oncalls_info = []
+    for oncall in oncalls:
+        user_id = oncall["user"]["id"]
+        user = get_user(client, user_id)
+        oncalls_info.append(
+            {
+                "name": user["name"],
+                "email": user["email"],
+                # "time_zone": user["time_zone"],
+                "start": oncall["start"],
+                "end": oncall["end"],
+            }
+        )
+
+    if len(oncalls_info) == 1:
+        return oncalls_info[0]
+    else:
+        if type == "current":
+            return oncalls_info[0]
+
+        if type == "next":
+            return oncalls_info[-1]
 
 
-def get_oncall(client: APISession, service_id: str) -> str:
+def get_oncall(client: APISession, service_id: str, type: Literal["current", "next"]) -> str:
     """Gets the oncall for a given service id or name."""
     service = get_service(client, service_id)
-    return get_oncall_email(client, service)
+    return get_oncall_info(client, service, type)
 
 
 def page_oncall(

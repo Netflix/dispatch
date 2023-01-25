@@ -6,6 +6,7 @@
 """
 from pdpyras import APISession
 from pydantic import Field, SecretStr, EmailStr
+from typing import Literal
 import logging
 
 from dispatch.config import BaseConfigurationModel
@@ -45,14 +46,10 @@ class PagerDutyOncallPlugin(OncallPlugin):
     def __init__(self):
         self.configuration_schema = PagerdutyConfiguration
 
-    def get(self, service_id: str = None, **kwargs) -> str:
-        """Gets the oncall person."""
+    def get(self, service_id: str, type: Literal["current", "next"] = "current", **kwargs) -> str:
+        """Gets the current or next oncall person's email."""
         client = APISession(self.configuration.api_key.get_secret_value())
-        return get_oncall(client=client, service_id=service_id)
-
-    def get_schedule(self, service_id: str = None, **kwargs) -> dict:
-        """Gets the oncall schedule."""
-        pass
+        return get_oncall(client=client, service_id=service_id, type=type)
 
     def page(
         self,
