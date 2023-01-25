@@ -519,11 +519,11 @@ def set_conversation_topic(incident: Incident, db_session: SessionLocal):
         return
 
     conversation_topic = (
-        f":helmet_with_white_cross: {incident.commander.individual.name}, {incident.commander.team} - "
-        f"Type: {incident.incident_type.name} - "
-        f"Severity: {incident.incident_severity.name} - "
-        f"Priority: {incident.incident_priority.name} - "
-        f"Status: {incident.status}"
+        f":helmet_with_white_cross: {incident.commander.individual.name}, {incident.commander.team} | "
+        f"Status: {incident.status} | "
+        f"Type: {incident.incident_type.name} | "
+        f"Severity: {incident.incident_severity.name} | "
+        f"Priority: {incident.incident_priority.name}"
     )
 
     plugin = plugin_service.get_active_instance(
