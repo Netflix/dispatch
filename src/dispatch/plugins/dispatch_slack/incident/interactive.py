@@ -329,7 +329,7 @@ def handle_update_incident_project_select_action(
 
 # COMMANDS
 def handle_list_incidents_command(
-    payload: dict, db_session: Session, context: BoltContext, client: WebClient
+    body: dict, payload: dict, db_session: Session, context: BoltContext, client: WebClient
 ) -> None:
     """Handles the list incidents command."""
     projects = []
@@ -407,7 +407,7 @@ def handle_list_incidents_command(
         close="Close",
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def handle_list_participants_command(
@@ -478,7 +478,7 @@ def handle_list_participants_command(
         close="Close",
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def filter_tasks_by_assignee_and_creator(
@@ -573,13 +573,15 @@ def handle_list_tasks_command(
         close="Close",
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def handle_list_resources_command(
-    db_session: Session, context: BoltContext, respond: Respond
+    ack: Ack, db_session: Session, context: BoltContext, respond: Respond
 ) -> None:
     """Handles the list resources command."""
+    ack()
+
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
     incident_description = (
@@ -951,7 +953,7 @@ def handle_member_left_channel(
 # MODALS
 
 
-def handle_add_timeline_event_command(client: WebClient, context: BoltContext) -> None:
+def handle_add_timeline_event_command(body: dict, client: WebClient, context: BoltContext) -> None:
     """Handles the add timeline event command."""
     blocks = [
         Context(
@@ -973,7 +975,7 @@ def handle_add_timeline_event_command(client: WebClient, context: BoltContext) -
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_add_timeline_submission_event(ack: Ack) -> None:
@@ -1041,6 +1043,7 @@ def handle_add_timeline_submission_event(
 
 
 def handle_update_participant_command(
+    body: dict,
     context: BoltContext,
     client: WebClient,
 ) -> None:
@@ -1081,7 +1084,7 @@ def handle_update_participant_command(
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_update_participant_submission_event(ack: Ack):
@@ -1129,7 +1132,7 @@ def handle_update_participant_submission_event(
 
 
 def handle_update_notifications_group_command(
-    context: BoltContext, client: WebClient, db_session: Session
+    body: dict, context: BoltContext, client: WebClient, db_session: Session
 ) -> None:
     """Handles the update notification group command."""
 
@@ -1181,7 +1184,7 @@ def handle_update_notifications_group_command(
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_update_notifications_group_submission_event(ack: Ack):
@@ -1239,7 +1242,7 @@ def handle_update_notifications_group_submission_event(
     )
 
 
-def handle_assign_role_command(context: BoltContext, client: WebClient) -> None:
+def handle_assign_role_command(body: dict, context: BoltContext, client: WebClient) -> None:
     """Handles the assign role command."""
     roles = [
         {"text": r.value, "value": r.value}
@@ -1273,7 +1276,7 @@ def handle_assign_role_command(context: BoltContext, client: WebClient) -> None:
         callback_id=AssignRoleActions.submit,
         private_metadata=context["subject"].json(),
     ).build()
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_assign_role_submission_event(ack: Ack):
@@ -1328,6 +1331,7 @@ def handle_assign_role_submission_event(
 
 
 def handle_engage_oncall_command(
+    body: dict,
     client: WebClient,
     context: BoltContext,
     db_session: Session,
@@ -1377,7 +1381,7 @@ def handle_engage_oncall_command(
         callback_id=EngageOncallActions.submit,
         private_metadata=context["subject"].json(),
     ).build()
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_engage_oncall_submission_event(ack: Ack) -> None:
@@ -1431,6 +1435,7 @@ def handle_engage_oncall_submission_event(
 
 
 def handle_report_tactical_command(
+    body: dict,
     client: WebClient,
     context: BoltContext,
     db_session: Session,
@@ -1485,7 +1490,7 @@ def handle_report_tactical_command(
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_report_tactical_submission_event(ack: Ack) -> None:
@@ -1535,6 +1540,7 @@ def handle_report_tactical_submission_event(
 
 
 def handle_report_executive_command(
+    body: dict,
     client: WebClient,
     context: BoltContext,
     db_session: Session,
@@ -1594,7 +1600,7 @@ def handle_report_executive_command(
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_report_executive_submission_event(ack: Ack) -> None:
@@ -1652,7 +1658,7 @@ def handle_report_executive_submission_event(
 
 
 def handle_update_incident_command(
-    client: WebClient, context: BoltContext, db_session: Session
+    body: dict, client: WebClient, context: BoltContext, db_session: Session
 ) -> None:
     """Creates the incident update modal."""
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
@@ -1708,7 +1714,7 @@ def handle_update_incident_command(
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_incident_update_submission_event(ack: Ack) -> None:
