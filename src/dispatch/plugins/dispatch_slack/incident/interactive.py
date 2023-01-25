@@ -433,45 +433,48 @@ def handle_list_participants_command(
             "Contact plugin is not enabled. Unable to list participants.",
         )
 
-    for participant in participants:
-        if participant.active_roles:
-            participant_email = participant.individual.email
-            participant_info = contact_plugin.instance.get(participant_email, db_session=db_session)
-            participant_name = participant_info.get("fullname", participant.individual.email)
-            participant_team = participant_info.get("team", "Unknown")
-            participant_department = participant_info.get("department", "Unknown")
-            participant_location = participant_info.get("location", "Unknown")
-            participant_weblink = participant_info.get("weblink")
+    active_participants = [p for p in participants if p.active_roles]
+    for idx, participant in enumerate(active_participants, 1):
+        participant_email = participant.individual.email
+        participant_info = contact_plugin.instance.get(participant_email, db_session=db_session)
+        participant_name = participant_info.get("fullname", participant.individual.email)
+        participant_team = participant_info.get("team", "Unknown")
+        participant_department = participant_info.get("department", "Unknown")
+        participant_location = participant_info.get("location", "Unknown")
+        participant_weblink = participant_info.get("weblink")
 
-            participant_active_roles = participant_role_service.get_all_active_roles(
-                db_session=db_session, participant_id=participant.id
+        participant_active_roles = participant_role_service.get_all_active_roles(
+            db_session=db_session, participant_id=participant.id
+        )
+        participant_roles = []
+        for role in participant_active_roles:
+            participant_roles.append(role.role)
+
+        accessory = None
+        # don't load avatars for large incidents
+        if len(participants) < 20:
+            participant_avatar_url = dispatch_slack_service.get_user_avatar_url(
+                client, participant_email
             )
-            participant_roles = []
-            for role in participant_active_roles:
-                participant_roles.append(role.role)
+            accessory = Image(image_url=participant_avatar_url, alt_text=participant_name)
 
-            accessory = None
-            # don't load avatars for large incidents
-            if len(participants) < 20:
-                participant_avatar_url = dispatch_slack_service.get_user_avatar_url(
-                    client, participant_email
-                )
-                accessory = Image(image_url=participant_avatar_url, alt_text=participant_name)
+        blocks.extend(
+            [
+                Section(
+                    fields=[
+                        f"*Name* \n<{participant_weblink}|{participant_name} ({participant_email})>",
+                        f"*Team*\n {participant_team}, {participant_department}",
+                        f"*Location* \n{participant_location}",
+                        f"*Incident Role(s)* \n{(', ').join(participant_roles)}",
+                    ],
+                    accessory=accessory,
+                ),
+            ]
+        )
 
-            blocks.extend(
-                [
-                    Section(
-                        fields=[
-                            f"*Name* \n<{participant_weblink}|{participant_name} ({participant_email})>",
-                            f"*Team*\n {participant_team}, {participant_department}",
-                            f"*Location* \n{participant_location}",
-                            f"*Incident Role(s)* \n{(', ').join(participant_roles)}",
-                        ],
-                        accessory=accessory,
-                    ),
-                    Divider(),
-                ]
-            )
+        # Don't add a divider if we are at the last participant
+        if idx != len(active_participants):
+            blocks.extend([Divider()])
 
     modal = Modal(
         title="Incident Participants",
