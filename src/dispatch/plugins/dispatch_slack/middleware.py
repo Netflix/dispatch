@@ -5,8 +5,6 @@ from slack_bolt import Ack, BoltContext, BoltRequest, Respond
 from slack_sdk.web import WebClient
 from sqlalchemy.orm.session import Session
 
-from blockkit import Modal, Section
-
 from dispatch.decorators import timer
 from dispatch.auth import service as user_service
 from dispatch.auth.models import DispatchUser, UserRegister

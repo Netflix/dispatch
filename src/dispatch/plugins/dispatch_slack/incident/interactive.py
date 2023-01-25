@@ -411,6 +411,7 @@ def handle_list_incidents_command(
 
 
 def handle_list_participants_command(
+    body: dict,
     client: WebClient,
     context: BoltContext,
     db_session: Session,
