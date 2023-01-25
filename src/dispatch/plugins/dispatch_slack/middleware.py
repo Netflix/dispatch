@@ -58,6 +58,9 @@ def command_acknowledge_middleware(
 ) -> None:
     """Acknowleges that a command has been run."""
     ack()
+
+    # TODO: (wshel) this will always return default if we run it as the first middleware
+    # because we need the plugin configuration to retrieve a custom message.
     message = get_incident_conversation_command_message(
         config=context.get("config"), command_string=payload.get("command", "")
     )

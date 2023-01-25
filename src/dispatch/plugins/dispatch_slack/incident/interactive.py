@@ -676,7 +676,7 @@ def handle_timeline_added_event(
     exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
 def handle_participant_role_activity(
-    ack: Ack, db_session: Session, context: BoltContext, user: DispatchUser
+    ack: Ack, body: dict, db_session: Session, context: BoltContext, user: DispatchUser
 ) -> None:
     """
     Increments the participant role's activity counter and assesses the need of changing
@@ -684,7 +684,11 @@ def handle_participant_role_activity(
     """
     ack()
 
-    # TODO: add when case support when participants are added.
+    # TODO: (wshel) message_dispatcher decorator not correctly filtering subtypes
+    if body.get("event", {}).get("subtype", "") in ("channel_join", "channel_leave"):
+        return
+
+    # TODO: (wshel) add when case support when participants are added.
     if context["subject"].type == "incident":
         participant = participant_service.get_by_incident_id_and_email(
             db_session=db_session, incident_id=context["subject"].id, email=user.email
@@ -726,6 +730,7 @@ def handle_participant_role_activity(
 )  # we ignore user channel and group join messages
 def handle_after_hours_message(
     ack: Ack,
+    body: dict,
     context: BoltContext,
     client: WebClient,
     db_session: Session,
@@ -734,6 +739,10 @@ def handle_after_hours_message(
 ) -> None:
     """Notifies the user that this incident is currently in after hours mode."""
     ack()
+
+    # TODO: (wshel) message_dispatcher decorator not correctly filtering subtypes
+    if body.get("event", {}).get("subtype", "") in ("channel_join", "channel_leave"):
+        return
 
     if context["subject"].type == "incident":
         incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
