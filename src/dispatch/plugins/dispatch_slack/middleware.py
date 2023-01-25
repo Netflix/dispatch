@@ -1,7 +1,7 @@
 import logging
 from typing import Callable, NamedTuple, Optional
 
-from slack_bolt import BoltContext, BoltRequest
+from slack_bolt import Ack, BoltContext, BoltRequest, Respond
 from slack_sdk.web import WebClient
 from sqlalchemy.orm.session import Session
 
@@ -55,22 +55,15 @@ def resolve_context_from_conversation(
         scoped_db_session.close()
 
 
-@timer
 def command_acknowledge_middleware(
-    context: BoltContext, body: dict, client: WebClient, payload: dict, next: Callable
+    ack: Ack, context: BoltContext, payload: dict, next: Callable, respond: Respond
 ) -> None:
     """Acknowleges that a command has been run."""
-    context.ack()
+    ack()
     message = get_incident_conversation_command_message(
         config=context.get("config"), command_string=payload.get("command", "")
     )
-    modal = Modal(
-        title="Please wait...",
-        blocks=[Section(text=message["text"])],
-        close="Cancel",
-    ).build()
-    view = client.views_open(trigger_id=body["trigger_id"], view=modal)
-    context.update({"parentView": {"id": view.data["view"]["id"]}})
+    respond(text=message["text"], response_type=message["response_type"], replace_original=False)
     next()
 
 

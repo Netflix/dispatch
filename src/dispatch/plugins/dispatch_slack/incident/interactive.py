@@ -1792,6 +1792,7 @@ def handle_update_incident_submission_event(
 
 
 def handle_report_incident_command(
+    body: dict,
     context: BoltContext,
     client: WebClient,
     db_session: Session,
@@ -1823,7 +1824,7 @@ def handle_report_incident_command(
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_report_incident_submission_event(ack: Ack) -> None:
