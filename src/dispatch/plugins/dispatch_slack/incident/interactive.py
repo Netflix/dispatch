@@ -461,7 +461,7 @@ def handle_list_participants_command(
                 [
                     Section(
                         fields=[
-                            f"*Name* \n<{participant_weblink}|{participant_name} ({participant_email})>",
+                            f"*Name* \n<{participant_weblink}|{participant_name}>",
                             f"*Team*\n {participant_team}, {participant_department}",
                             f"*Location* \n{participant_location}",
                             f"*Incident Role(s)* \n{(', ').join(participant_roles)}",
