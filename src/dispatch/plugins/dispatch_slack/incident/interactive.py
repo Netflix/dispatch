@@ -99,6 +99,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     button_context_middleware,
     command_acknowledge_middleware,
     command_context_middleware,
+    command_reply_middleware,
     configuration_middleware,
     db_middleware,
     is_bot,
@@ -131,6 +132,7 @@ def configure(config):
         command_acknowledge_middleware,
         subject_middleware,
         configuration_middleware,
+        command_reply_middleware,
     ]
 
     # don't need an incident context
@@ -143,8 +145,10 @@ def configure(config):
 
     # non-sensitive-commands
     middleware = [
+        command_acknowledge_middleware,
         subject_middleware,
         configuration_middleware,
+        command_reply_middleware,
         command_context_middleware,
     ]
 
@@ -156,6 +160,7 @@ def configure(config):
         command_acknowledge_middleware,
         subject_middleware,
         configuration_middleware,
+        command_reply_middleware,
         command_context_middleware,
     ]
 
@@ -178,6 +183,7 @@ def configure(config):
         command_acknowledge_middleware,
         subject_middleware,
         configuration_middleware,
+        command_reply_middleware,
         command_context_middleware,
         user_middleware,
         restricted_command_middleware,
@@ -676,17 +682,13 @@ def handle_timeline_added_event(
     exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
 def handle_participant_role_activity(
-    ack: Ack, body: dict, db_session: Session, context: BoltContext, user: DispatchUser
+    ack: Ack, db_session: Session, context: BoltContext, user: DispatchUser
 ) -> None:
     """
     Increments the participant role's activity counter and assesses the need of changing
     a participant's role based on its activity and changes it if needed.
     """
     ack()
-
-    # TODO: (wshel) message_dispatcher decorator not correctly filtering subtypes
-    if body.get("event", {}).get("subtype", "") in ("channel_join", "channel_leave"):
-        return
 
     # TODO: (wshel) add when case support when participants are added.
     if context["subject"].type == "incident":
@@ -730,7 +732,6 @@ def handle_participant_role_activity(
 )  # we ignore user channel and group join messages
 def handle_after_hours_message(
     ack: Ack,
-    body: dict,
     context: BoltContext,
     client: WebClient,
     db_session: Session,
@@ -739,10 +740,6 @@ def handle_after_hours_message(
 ) -> None:
     """Notifies the user that this incident is currently in after hours mode."""
     ack()
-
-    # TODO: (wshel) message_dispatcher decorator not correctly filtering subtypes
-    if body.get("event", {}).get("subtype", "") in ("channel_join", "channel_leave"):
-        return
 
     if context["subject"].type == "incident":
         incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)

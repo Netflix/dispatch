@@ -16,6 +16,8 @@ from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
     command_acknowledge_middleware,
     command_context_middleware,
+    command_reply_middleware,
+    configuration_middleware,
     db_middleware,
     modal_submit_middleware,
     user_middleware,
@@ -44,7 +46,13 @@ class RunWorkflowActions(DispatchEnum):
 
 def configure(config):
     """Maps commands/events to their functions."""
-    middleware = [command_acknowledge_middleware, command_context_middleware, db_middleware]
+    middleware = [
+        command_acknowledge_middleware,
+        command_context_middleware,
+        db_middleware,
+        configuration_middleware,
+        command_reply_middleware,
+    ]
     app.command(config.slack_command_list_workflows, middleware=middleware)(
         handle_workflow_list_command
     )

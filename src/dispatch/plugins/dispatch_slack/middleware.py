@@ -53,14 +53,18 @@ def resolve_context_from_conversation(
         scoped_db_session.close()
 
 
-def command_acknowledge_middleware(
-    ack: Ack, context: BoltContext, payload: dict, next: Callable, respond: Respond
-) -> None:
+def command_acknowledge_middleware(ack: Ack, next: Callable) -> None:
     """Acknowleges that a command has been run."""
     ack()
+    next()
 
-    # TODO: (wshel) this will always return default if we run it as the first middleware
-    # because we need the plugin configuration to retrieve a custom message.
+
+def command_reply_middleware(
+    ack: Ack, context: BoltContext, payload: dict, next: Callable, respond: Respond
+) -> None:
+    """Sends user a custom ephemeral message confirming receipt of their slash command."""
+    ack()
+    # This middleware has a dependency on configuration_middleware() to return a custom message
     message = get_incident_conversation_command_message(
         config=context.get("config"), command_string=payload.get("command", "")
     )
