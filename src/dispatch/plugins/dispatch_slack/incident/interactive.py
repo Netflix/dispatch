@@ -1632,6 +1632,7 @@ def handle_report_executive_submission_event(
     body: dict,
     client: WebClient,
     context: BoltContext,
+    db_session: Session,
     form_data: dict,
     user: DispatchUser,
 ) -> None:
@@ -1643,15 +1644,26 @@ def handle_report_executive_submission_event(
         next_steps=form_data[ReportExecutiveBlockIds.next_steps],
     )
 
-    report_flows.create_executive_report(
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+
+    executive_report = report_flows.create_executive_report(
         user_email=user.email,
         incident_id=context["subject"].id,
         executive_report_in=executive_report_in,
         organization_slug=context["subject"].organization_slug,
     )
+
     modal = Modal(
         title="Executive Report",
-        blocks=[Section(text="Creating executive report... Success!")],
+        blocks=[
+            Section(text="Creating executive report... Success!"),
+            Section(
+                text=f"The executive report document has been created and can be found in the incident storage here: {executive_report.document.weblink}"
+            ),
+            Section(
+                text=f"The executive report has been emailed to the incident notifications group ({incident.notifications_group.email}).",
+            ),
+        ],
         close="Close",
     ).build()
 
