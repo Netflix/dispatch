@@ -23,6 +23,7 @@ from dispatch.individual import service as individual_service
 from dispatch.messaging.strings import (
     INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION,
     INCIDENT_INVESTIGATION_SHEET_DESCRIPTION,
+    INCIDENT_CONVERSATION_DESCRIPTION,
 )
 from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
@@ -892,6 +893,7 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
                 resource_id=conversation["resource_id"],
                 resource_type=conversation["resource_type"],
                 weblink=conversation["weblink"],
+                description=INCIDENT_CONVERSATION_DESCRIPTION,
                 channel_id=conversation["id"],
             )
             incident.conversation = conversation_service.create(
