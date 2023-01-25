@@ -65,12 +65,18 @@ def assignee_select(
     )
 
 
+@app.action("button-link")
+def ack_button_link(ack: Ack):
+    """Handles noop button link action."""
+    ack()
+
+
 @app.action(CaseNotificationActions.reopen, middleware=[button_context_middleware, db_middleware])
 def reopen_button_click(
-    ack,
-    client,
-    context,
-    db_session,
+    ack: Ack,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
 ):
     ack()
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
@@ -89,11 +95,11 @@ def reopen_button_click(
     middleware=[button_context_middleware, db_middleware, user_middleware],
 )
 def escalate_button_click(
-    ack,
-    body,
-    client,
-    context,
-    db_session,
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
 ):
     ack()
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
@@ -133,11 +139,11 @@ def escalate_button_click(
     CaseEscalateActions.project_select, middleware=[action_context_middleware, db_middleware]
 )
 def handle_project_select_action(
-    ack,
-    body,
-    client,
-    context,
-    db_session,
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
 ):
     ack()
     values = body["view"]["state"]["values"]
@@ -268,7 +274,9 @@ app.view(CaseEscalateActions.submit, middleware=[action_context_middleware, db_m
     CaseNotificationActions.join_incident,
     middleware=[button_context_middleware, db_middleware, user_middleware],
 )
-def join_incident_button_click(ack, body, user, db_session, context, client):
+def join_incident_button_click(
+    ack: Ack, user: DispatchUser, db_session: Session, context: BoltContext
+):
     ack()
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
@@ -279,7 +287,9 @@ def join_incident_button_click(ack, body, user, db_session, context, client):
 
 
 @app.action(CaseNotificationActions.edit, middleware=[button_context_middleware, db_middleware])
-def edit_button_click(ack, body, db_session, context, client):
+def edit_button_click(
+    ack: Ack, body: dict, db_session: Session, context: BoltContext, client: WebClient
+):
     ack()
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
@@ -316,7 +326,13 @@ def edit_button_click(ack, body, db_session, context, client):
 
 
 @app.action(CaseNotificationActions.edit, middleware=[button_context_middleware, db_middleware])
-def handle_edit_submission_event(context, user, form_data, db_session, client):
+def handle_edit_submission_event(
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+    form_data: dict,
+    user: DispatchUser,
+):
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
     case_priority = None
@@ -345,7 +361,10 @@ def handle_edit_submission_event(context, user, form_data, db_session, client):
 
 
 @app.action(CaseNotificationActions.resolve, middleware=[button_context_middleware, db_middleware])
-def resolve_button_click(body, db_session, context, client):
+def resolve_button_click(
+    ack: Ack, body: dict, db_session: Session, context: BoltContext, client: WebClient
+):
+    ack()
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
     blocks = [
@@ -367,7 +386,15 @@ def resolve_button_click(body, db_session, context, client):
     CaseResolveActions.submit,
     middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
 )
-def handle_resolve_submission_event(context, user, form_data, db_session, client):
+def handle_resolve_submission_event(
+    ack: Ack,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+    form_data: dict,
+    user: DispatchUser,
+):
+    ack()
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
     case_in = CaseUpdate(
@@ -385,7 +412,14 @@ def handle_resolve_submission_event(context, user, form_data, db_session, client
 
 
 @app.shortcut(CaseShortcutCallbacks.report, middleware=[db_middleware, shortcut_context_middleware])
-def report_issue(ack, shortcut, body, context, db_session, client):
+def report_issue(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+    shortcut: dict,
+):
     ack()
     initial_description = None
     if body.get("message"):
@@ -423,7 +457,9 @@ def report_issue(ack, shortcut, body, context, db_session, client):
 
 
 @app.action(CaseReportActions.project_select, middleware=[db_middleware, action_context_middleware])
-def handle_report_project_select_action(ack, body, db_session, context, client):
+def handle_report_project_select_action(
+    ack: Ack, body: dict, db_session: Session, context: BoltContext, client: WebClient
+):
     ack()
     values = body["view"]["state"]["values"]
 
@@ -467,7 +503,6 @@ def handle_report_project_select_action(ack, body, db_session, context, client):
 
     client.views_update(
         view_id=body["view"]["id"],
-        hash=body["view"]["hash"],
         trigger_id=body["trigger_id"],
         view=modal,
     )
@@ -477,7 +512,15 @@ def handle_report_project_select_action(ack, body, db_session, context, client):
     CaseReportActions.submit,
     middleware=[db_middleware, action_context_middleware, modal_submit_middleware, user_middleware],
 )
-def handle_report_submission_event(ack, body, context, form_data, db_session, user, client, logger):
+def handle_report_submission_event(
+    ack: Ack,
+    body: dict,
+    context: BoltContext,
+    form_data: dict,
+    db_session: Session,
+    user: DispatchUser,
+    client: WebClient,
+):
     ack()
 
     case_priority = None
@@ -506,7 +549,6 @@ def handle_report_submission_event(ack, body, context, form_data, db_session, us
 
     result = client.views_update(
         view_id=body["view"]["id"],
-        hash=body["view"]["hash"],
         trigger_id=body["trigger_id"],
         view=modal,
     )
