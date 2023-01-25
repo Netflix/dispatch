@@ -20,16 +20,22 @@ class MessageDispatcher:
             else:
                 name = kwargs.pop("name")
 
-            self.registered_funcs.append({"name": name, "func": func})
+            self.registered_funcs.append(
+                {"name": name, "func": func, "exclude": kwargs.pop("exclude", [])}
+            )
 
         return decorator
 
     def dispatch(self, *args, **kwargs):
         """Runs all registered functions."""
         for f in self.registered_funcs:
-            # only inject the args the function cares about
+            # only inject the args the function cares about + body for us to do subtype filtering
             func_args = inspect.getfullargspec(inspect.unwrap(f["func"])).args
             injected_args = (kwargs[a] for a in func_args)
+
+            if kwargs.get("body"):
+                if kwargs["body"].get("event", {}).get("subtype", "") in f["exclude"]:
+                    continue
 
             try:
                 f["func"](*injected_args)
