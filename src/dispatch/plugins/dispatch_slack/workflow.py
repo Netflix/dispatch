@@ -119,7 +119,7 @@ def param_input(
 
 
 def handle_workflow_list_command(
-    ack: Ack, client: WebClient, context: BoltContext, db_session: Session
+    ack: Ack, body: dict, client: WebClient, context: BoltContext, db_session: Session
 ) -> None:
     """Handles the workflow list command."""
     ack()
@@ -127,6 +127,10 @@ def handle_workflow_list_command(
     workflows = incident.workflow_instances
 
     blocks = [Section(text="*Workflows*")]
+
+    if not workflows:
+        blocks.append(Section(text="No workflows running."))
+
     for w in workflows:
         artifact_links = ""
         for a in w.artifacts:
@@ -146,12 +150,14 @@ def handle_workflow_list_command(
                 ]
             )
         )
+
     modal = Modal(
         title="Workflows List",
         blocks=blocks,
         close="Close",
     ).build()
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def handle_workflow_run_command(
@@ -180,7 +186,7 @@ def handle_workflow_run_command(
         callback_id=RunWorkflowActions.submit,
         private_metadata=context["subject"].json(),
     ).build()
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 @app.view(
