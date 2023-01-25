@@ -74,10 +74,10 @@ const actions = {
   closeCreateDialog({ commit }) {
     commit("SET_DIALOG_SHOW_CREATE", false)
   },
-  save({ commit }, data) {
+  save({ commit }) {
     commit("SET_LOADING", true)
-    if (!data.id) {
-      return SearchApi.create(data)
+    if (!state.selected.id) {
+      return SearchApi.create(state.selected)
         .then((resp) => {
           commit(
             "notification_backend/addBeNotification",
@@ -92,7 +92,7 @@ const actions = {
           commit("SET_LOADING", false)
         })
     } else {
-      return SearchApi.update(data.id, data)
+      return SearchApi.update(state.selected.id, state.selected)
         .then(() => {
           commit(
             "notification_backend/addBeNotification",
