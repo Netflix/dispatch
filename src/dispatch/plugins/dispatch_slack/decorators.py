@@ -1,7 +1,5 @@
 import logging
 import inspect
-from typing import TypeVar
-from typing_extensions import ParamSpec
 
 log = logging.getLogger(__file__)
 
