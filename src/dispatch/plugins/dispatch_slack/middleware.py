@@ -112,7 +112,7 @@ def message_context_middleware(request: BoltRequest, context: BoltContext, next:
     next()
 
 
-def reaction_context_middleware(context: BoltContext, payload: dict, next: Callable) -> None:
+def reaction_context_middleware(context: BoltContext, next: Callable) -> None:
     """Attemps to determine the current context of a reaction event."""
     if subject := resolve_context_from_conversation(channel_id=context.channel_id):
         context.update(subject._asdict())
