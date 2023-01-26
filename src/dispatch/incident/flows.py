@@ -602,57 +602,105 @@ def add_participants_to_conversation(
     participant_emails: List[str], incident: Incident, db_session: SessionLocal
 ):
     """Adds one or more participants to the conversation."""
+    if not incident.conversation:
+        log.warning(
+            "Incident participant(s) not added to conversation. No conversation available for this incident."
+        )
+        return
+
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
+    if not plugin:
+        log.warning(
+            "Incident participant(s) not added to conversation. No conversation plugin enabled."
+        )
+        return
 
-    if plugin:
-        try:
-            plugin.instance.add(incident.conversation.channel_id, participant_emails)
-        except Exception as e:
-            event_service.log_incident_event(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description=f"Adding participant(s) to incident conversation failed. Reason: {e}",
-                incident_id=incident.id,
-            )
-            log.exception(e)
+    try:
+        plugin.instance.add(incident.conversation.channel_id, participant_emails)
+    except Exception as e:
+        event_service.log_incident_event(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"Adding participant(s) to incident conversation failed. Reason: {e}",
+            incident_id=incident.id,
+        )
+        log.exception(e)
 
 
 def add_participant_to_tactical_group(
     user_email: str, incident: Incident, db_session: SessionLocal
 ):
     """Adds participant to the tactical group."""
-    # we get the tactical group
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
     )
-    if plugin:
-        tactical_group = group_service.get_by_incident_id_and_resource_type(
-            db_session=db_session,
-            incident_id=incident.id,
-            resource_type=f"{plugin.plugin.slug}-tactical-group",
+
+    if not plugin:
+        log.warning("Incident participant not added to tactical group. No group plugin enabled.")
+        return
+
+    tactical_group = group_service.get_by_incident_id_and_resource_type(
+        db_session=db_session,
+        incident_id=incident.id,
+        resource_type=f"{plugin.plugin.slug}-tactical-group",
+    )
+
+    if not tactical_group:
+        log.warning(
+            "Incident participant not added to tactical group. No tactical group available for this incident."
         )
-        if tactical_group:
-            plugin.instance.add(tactical_group.email, [user_email])
+        return
+
+    try:
+        plugin.instance.add(tactical_group.email, [user_email])
+    except Exception as e:
+        event_service.log_incident_event(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"Adding participant(s) to incident tactical group failed. Reason: {e}",
+            incident_id=incident.id,
+        )
+        log.exception(e)
 
 
 def remove_participant_from_tactical_group(
     user_email: str, incident: Incident, db_session: SessionLocal
 ):
     """Removes participant from the tactical group."""
-    # we get the tactical group
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
     )
-    if plugin:
-        tactical_group = group_service.get_by_incident_id_and_resource_type(
-            db_session=db_session,
-            incident_id=incident.id,
-            resource_type=f"{plugin.plugin.slug}-tactical-group",
+
+    if not plugin:
+        log.warning(
+            "Incident participant not removed from tactical group. No group plugin enabled."
         )
-        if tactical_group:
-            plugin.instance.remove(tactical_group.email, [user_email])
+        return
+
+    tactical_group = group_service.get_by_incident_id_and_resource_type(
+        db_session=db_session,
+        incident_id=incident.id,
+        resource_type=f"{plugin.plugin.slug}-tactical-group",
+    )
+
+    if not tactical_group:
+        log.warning(
+            "Incident participant not removed from tactical group. No tactical group available for this incident."
+        )
+        return
+
+    try:
+        plugin.instance.remove(tactical_group.email, [user_email])
+    except Exception as e:
+        event_service.log_incident_event(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"Removing participant(s) from incident tactical group failed. Reason: {e}",
+            incident_id=incident.id,
+        )
+        log.exception(e)
 
 
 @background_task
