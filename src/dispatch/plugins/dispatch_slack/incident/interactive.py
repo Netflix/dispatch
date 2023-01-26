@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 import pytz
 from blockkit import (
@@ -25,8 +25,7 @@ from slack_sdk.web.client import WebClient
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from dispatch.auth import service as user_service
-from dispatch.auth.models import DispatchUser, UserRegister
+from dispatch.auth.models import DispatchUser
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.database.core import resolve_attr
 from dispatch.database.service import search_filter_sort_paginate
@@ -2275,10 +2274,15 @@ def handle_update_task_status_button_click(
         incident_id=context["subject"].id,
     )
 
+    tasks = task_service.get_all_by_incident_id(
+        db_session=db_session,
+        incident_id=context["subject"].id,
+    )
+
     draw_task_modal(
-        channel_id=context.channel_id,
+        channel_id=button.channel_id,
         client=client,
         first_open=False,
-        tasks=tasks,
         view_id=body["view"]["id"],
+        tasks=tasks,
     )
