@@ -1,11 +1,9 @@
 import logging
 from typing import Callable, NamedTuple, Optional
 
-from slack_bolt import BoltContext, BoltRequest
+from slack_bolt import Ack, BoltContext, BoltRequest, Respond
 from slack_sdk.web import WebClient
 from sqlalchemy.orm.session import Session
-
-from blockkit import Modal, Section
 
 from dispatch.decorators import timer
 from dispatch.auth import service as user_service
@@ -55,22 +53,22 @@ def resolve_context_from_conversation(
         scoped_db_session.close()
 
 
-@timer
-def command_acknowledge_middleware(
-    context: BoltContext, body: dict, client: WebClient, payload: dict, next: Callable
-) -> None:
+def command_acknowledge_middleware(ack: Ack, next: Callable) -> None:
     """Acknowleges that a command has been run."""
-    context.ack()
+    ack()
+    next()
+
+
+def command_reply_middleware(
+    ack: Ack, context: BoltContext, payload: dict, next: Callable, respond: Respond
+) -> None:
+    """Sends user a custom ephemeral message confirming receipt of their slash command."""
+    ack()
+    # This middleware has a dependency on configuration_middleware() to return a custom message
     message = get_incident_conversation_command_message(
         config=context.get("config"), command_string=payload.get("command", "")
     )
-    modal = Modal(
-        title="Please wait...",
-        blocks=[Section(text=message["text"])],
-        close="Cancel",
-    ).build()
-    view = client.views_open(trigger_id=body["trigger_id"], view=modal)
-    context.update({"parentView": {"id": view.data["view"]["id"]}})
+    respond(text=message["text"], response_type=message["response_type"], replace_original=False)
     next()
 
 

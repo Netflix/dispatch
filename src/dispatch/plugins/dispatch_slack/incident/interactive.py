@@ -99,6 +99,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     button_context_middleware,
     command_acknowledge_middleware,
     command_context_middleware,
+    command_reply_middleware,
     configuration_middleware,
     db_middleware,
     is_bot,
@@ -131,6 +132,7 @@ def configure(config):
         command_acknowledge_middleware,
         subject_middleware,
         configuration_middleware,
+        command_reply_middleware,
     ]
 
     # don't need an incident context
@@ -143,8 +145,10 @@ def configure(config):
 
     # non-sensitive-commands
     middleware = [
+        command_acknowledge_middleware,
         subject_middleware,
         configuration_middleware,
+        command_reply_middleware,
         command_context_middleware,
     ]
 
@@ -156,6 +160,7 @@ def configure(config):
         command_acknowledge_middleware,
         subject_middleware,
         configuration_middleware,
+        command_reply_middleware,
         command_context_middleware,
     ]
 
@@ -178,6 +183,7 @@ def configure(config):
         command_acknowledge_middleware,
         subject_middleware,
         configuration_middleware,
+        command_reply_middleware,
         command_context_middleware,
         user_middleware,
         restricted_command_middleware,
@@ -329,7 +335,7 @@ def handle_update_incident_project_select_action(
 
 # COMMANDS
 def handle_list_incidents_command(
-    payload: dict, db_session: Session, context: BoltContext, client: WebClient
+    body: dict, payload: dict, db_session: Session, context: BoltContext, client: WebClient
 ) -> None:
     """Handles the list incidents command."""
     projects = []
@@ -383,10 +389,23 @@ def handle_list_incidents_command(
     blocks = []
 
     if incidents:
-        for incident in incidents:
-            if incident.visibility == Visibility.open:
-                incident_weblink = f"{DISPATCH_UI_URL}/{incident.project.organization.name}/incidents/{incident.name}?project={incident.project.name}"
-                blocks.append(
+        open_incidents = [i for i in incidents if i.visibility == Visibility.open]
+        if len(open_incidents) > 50:
+            blocks.extend(
+                [
+                    Context(
+                        elements=[
+                            "💡 There are more than 50 open incidents, which is the max we can display."
+                        ]
+                    ),
+                    Divider(),
+                ]
+            )
+
+        for idx, incident in enumerate(open_incidents[0:49], 1):
+            incident_weblink = f"{DISPATCH_UI_URL}/{incident.project.organization.name}/incidents/{incident.name}?project={incident.project.name}"
+            blocks.extend(
+                [
                     Section(
                         fields=[
                             f"*<{incident_weblink}|{incident.name}>*\n {incident.title}",
@@ -398,8 +417,11 @@ def handle_list_incidents_command(
                             f"*Priority*\n {incident.incident_priority.name}",
                         ]
                     )
-                )
-                blocks.append(Divider())
+                ]
+            )
+            # Don't add a divider if we are at the last incident
+            if idx != len(open_incidents):
+                blocks.extend([Divider()])
 
     modal = Modal(
         title="Incident List",
@@ -407,10 +429,11 @@ def handle_list_incidents_command(
         close="Close",
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def handle_list_participants_command(
+    body: dict,
     client: WebClient,
     context: BoltContext,
     db_session: Session,
@@ -432,45 +455,48 @@ def handle_list_participants_command(
             "Contact plugin is not enabled. Unable to list participants.",
         )
 
-    for participant in participants:
-        if participant.active_roles:
-            participant_email = participant.individual.email
-            participant_info = contact_plugin.instance.get(participant_email, db_session=db_session)
-            participant_name = participant_info.get("fullname", participant.individual.email)
-            participant_team = participant_info.get("team", "Unknown")
-            participant_department = participant_info.get("department", "Unknown")
-            participant_location = participant_info.get("location", "Unknown")
-            participant_weblink = participant_info.get("weblink")
+    active_participants = [p for p in participants if p.active_roles]
+    for idx, participant in enumerate(active_participants, 1):
+        participant_email = participant.individual.email
+        participant_info = contact_plugin.instance.get(participant_email, db_session=db_session)
+        participant_name = participant_info.get("fullname", participant.individual.email)
+        participant_team = participant_info.get("team", "Unknown")
+        participant_department = participant_info.get("department", "Unknown")
+        participant_location = participant_info.get("location", "Unknown")
+        participant_weblink = participant_info.get("weblink")
 
-            participant_active_roles = participant_role_service.get_all_active_roles(
-                db_session=db_session, participant_id=participant.id
+        participant_active_roles = participant_role_service.get_all_active_roles(
+            db_session=db_session, participant_id=participant.id
+        )
+        participant_roles = []
+        for role in participant_active_roles:
+            participant_roles.append(role.role)
+
+        accessory = None
+        # don't load avatars for large incidents
+        if len(participants) < 20:
+            participant_avatar_url = dispatch_slack_service.get_user_avatar_url(
+                client, participant_email
             )
-            participant_roles = []
-            for role in participant_active_roles:
-                participant_roles.append(role.role)
+            accessory = Image(image_url=participant_avatar_url, alt_text=participant_name)
 
-            accessory = None
-            # don't load avatars for large incidents
-            if len(participants) < 20:
-                participant_avatar_url = dispatch_slack_service.get_user_avatar_url(
-                    client, participant_email
-                )
-                accessory = Image(image_url=participant_avatar_url, alt_text=participant_name)
+        blocks.extend(
+            [
+                Section(
+                    fields=[
+                        f"*Name* \n<{participant_weblink}|{participant_name} ({participant_email})>",
+                        f"*Team*\n {participant_team}, {participant_department}",
+                        f"*Location* \n{participant_location}",
+                        f"*Incident Role(s)* \n{(', ').join(participant_roles)}",
+                    ],
+                    accessory=accessory,
+                ),
+            ]
+        )
 
-            blocks.extend(
-                [
-                    Section(
-                        fields=[
-                            f"*Name* \n<{participant_weblink}|{participant_name}>",
-                            f"*Team*\n {participant_team}, {participant_department}",
-                            f"*Location* \n{participant_location}",
-                            f"*Incident Role(s)* \n{(', ').join(participant_roles)}",
-                        ],
-                        accessory=accessory,
-                    ),
-                    Divider(),
-                ]
-            )
+        # Don't add a divider if we are at the last participant
+        if idx != len(active_participants):
+            blocks.extend([Divider()])
 
     modal = Modal(
         title="Incident Participants",
@@ -478,7 +504,7 @@ def handle_list_participants_command(
         close="Close",
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def filter_tasks_by_assignee_and_creator(
@@ -573,13 +599,15 @@ def handle_list_tasks_command(
         close="Close",
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def handle_list_resources_command(
-    db_session: Session, context: BoltContext, respond: Respond
+    ack: Ack, db_session: Session, context: BoltContext, respond: Respond
 ) -> None:
     """Handles the list resources command."""
+    ack()
+
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
     incident_description = (
@@ -678,7 +706,7 @@ def handle_participant_role_activity(
     """
     ack()
 
-    # TODO: add when case support when participants are added.
+    # TODO: (wshel) add when case support when participants are added.
     if context["subject"].type == "incident":
         participant = participant_service.get_by_incident_id_and_email(
             db_session=db_session, incident_id=context["subject"].id, email=user.email
@@ -951,7 +979,7 @@ def handle_member_left_channel(
 # MODALS
 
 
-def handle_add_timeline_event_command(client: WebClient, context: BoltContext) -> None:
+def handle_add_timeline_event_command(body: dict, client: WebClient, context: BoltContext) -> None:
     """Handles the add timeline event command."""
     blocks = [
         Context(
@@ -973,7 +1001,7 @@ def handle_add_timeline_event_command(client: WebClient, context: BoltContext) -
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_add_timeline_submission_event(ack: Ack) -> None:
@@ -1041,6 +1069,7 @@ def handle_add_timeline_submission_event(
 
 
 def handle_update_participant_command(
+    body: dict,
     context: BoltContext,
     client: WebClient,
 ) -> None:
@@ -1081,7 +1110,7 @@ def handle_update_participant_command(
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_update_participant_submission_event(ack: Ack):
@@ -1129,7 +1158,7 @@ def handle_update_participant_submission_event(
 
 
 def handle_update_notifications_group_command(
-    context: BoltContext, client: WebClient, db_session: Session
+    body: dict, context: BoltContext, client: WebClient, db_session: Session
 ) -> None:
     """Handles the update notification group command."""
 
@@ -1181,7 +1210,7 @@ def handle_update_notifications_group_command(
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_update_notifications_group_submission_event(ack: Ack):
@@ -1239,7 +1268,7 @@ def handle_update_notifications_group_submission_event(
     )
 
 
-def handle_assign_role_command(context: BoltContext, client: WebClient) -> None:
+def handle_assign_role_command(body: dict, context: BoltContext, client: WebClient) -> None:
     """Handles the assign role command."""
     roles = [
         {"text": r.value, "value": r.value}
@@ -1273,7 +1302,7 @@ def handle_assign_role_command(context: BoltContext, client: WebClient) -> None:
         callback_id=AssignRoleActions.submit,
         private_metadata=context["subject"].json(),
     ).build()
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_assign_role_submission_event(ack: Ack):
@@ -1328,6 +1357,7 @@ def handle_assign_role_submission_event(
 
 
 def handle_engage_oncall_command(
+    body: dict,
     client: WebClient,
     context: BoltContext,
     db_session: Session,
@@ -1377,7 +1407,7 @@ def handle_engage_oncall_command(
         callback_id=EngageOncallActions.submit,
         private_metadata=context["subject"].json(),
     ).build()
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_engage_oncall_submission_event(ack: Ack) -> None:
@@ -1431,6 +1461,7 @@ def handle_engage_oncall_submission_event(
 
 
 def handle_report_tactical_command(
+    body: dict,
     client: WebClient,
     context: BoltContext,
     db_session: Session,
@@ -1485,7 +1516,7 @@ def handle_report_tactical_command(
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_report_tactical_submission_event(ack: Ack) -> None:
@@ -1535,6 +1566,7 @@ def handle_report_tactical_submission_event(
 
 
 def handle_report_executive_command(
+    body: dict,
     client: WebClient,
     context: BoltContext,
     db_session: Session,
@@ -1594,7 +1626,7 @@ def handle_report_executive_command(
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_report_executive_submission_event(ack: Ack) -> None:
@@ -1622,6 +1654,7 @@ def handle_report_executive_submission_event(
     body: dict,
     client: WebClient,
     context: BoltContext,
+    db_session: Session,
     form_data: dict,
     user: DispatchUser,
 ) -> None:
@@ -1633,15 +1666,26 @@ def handle_report_executive_submission_event(
         next_steps=form_data[ReportExecutiveBlockIds.next_steps],
     )
 
-    report_flows.create_executive_report(
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+
+    executive_report = report_flows.create_executive_report(
         user_email=user.email,
         incident_id=context["subject"].id,
         executive_report_in=executive_report_in,
         organization_slug=context["subject"].organization_slug,
     )
+
     modal = Modal(
         title="Executive Report",
-        blocks=[Section(text="Creating executive report... Success!")],
+        blocks=[
+            Section(text="Creating executive report... Success!"),
+            Section(
+                text=f"The executive report document has been created and can be found in the incident storage here: {executive_report.document.weblink}"
+            ),
+            Section(
+                text=f"The executive report has been emailed to the incident notifications group ({incident.notifications_group.email}).",
+            ),
+        ],
         close="Close",
     ).build()
 
@@ -1652,7 +1696,7 @@ def handle_report_executive_submission_event(
 
 
 def handle_update_incident_command(
-    client: WebClient, context: BoltContext, db_session: Session
+    body: dict, client: WebClient, context: BoltContext, db_session: Session
 ) -> None:
     """Creates the incident update modal."""
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
@@ -1708,7 +1752,7 @@ def handle_update_incident_command(
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_incident_update_submission_event(ack: Ack) -> None:
@@ -1792,6 +1836,7 @@ def handle_update_incident_submission_event(
 
 
 def handle_report_incident_command(
+    body: dict,
     context: BoltContext,
     client: WebClient,
     db_session: Session,
@@ -1823,7 +1868,7 @@ def handle_report_incident_command(
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_report_incident_submission_event(ack: Ack) -> None:
