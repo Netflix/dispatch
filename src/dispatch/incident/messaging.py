@@ -66,13 +66,20 @@ def get_suggested_documents(db_session, incident: Incident) -> list:
 def send_welcome_ephemeral_message_to_participant(
     participant_email: str, incident: Incident, db_session: SessionLocal
 ):
-    """Sends an ephemeral message to the participant."""
-    # we load the incident instance
+    """Sends an ephemeral welcome message to the participant."""
+    if not incident.conversation:
+        log.warning(
+            "Incident participant welcome message not sent. No conversation available for this incident."
+        )
+        return
+
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
     if not plugin:
-        log.warning("Incident welcome message not sent. No conversation plugin enabled.")
+        log.warning(
+            "Incident participant welcome message not sent. No conversation plugin enabled."
+        )
         return
 
     incident_description = (
@@ -243,23 +250,32 @@ def send_incident_suggested_reading_messages(
     incident: Incident, items: list, participant_email: str, db_session: SessionLocal
 ):
     """Sends a suggested reading message to a participant."""
-    if items:
-        plugin = plugin_service.get_active_instance(
-            db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
-        )
-        if not plugin:
-            log.warning("Suggested reading message not sent, no conversation plugin enabled.")
-            return
+    if not items:
+        return
 
-        plugin.instance.send_ephemeral(
-            incident.conversation.channel_id,
-            participant_email,
-            "Suggested Reading",
-            [INCIDENT_PARTICIPANT_SUGGESTED_READING_ITEM],
-            MessageType.incident_participant_suggested_reading,
-            items=items,
+    if not incident.conversation:
+        log.warning(
+            "Incident suggested reading message not sent. No conversation available for this incident."
         )
-        log.debug(f"Suggested reading ephemeral message sent to {participant_email}.")
+        return
+
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+    )
+    if not plugin:
+        log.warning("Incident suggested reading message not sent. No conversation plugin enabled.")
+        return
+
+    plugin.instance.send_ephemeral(
+        incident.conversation.channel_id,
+        participant_email,
+        "Suggested Reading",
+        [INCIDENT_PARTICIPANT_SUGGESTED_READING_ITEM],
+        MessageType.incident_participant_suggested_reading,
+        items=items,
+    )
+
+    log.debug(f"Suggested reading ephemeral message sent to {participant_email}.")
 
 
 def send_incident_created_notifications(incident: Incident, db_session: SessionLocal):
@@ -452,10 +468,16 @@ def send_incident_participant_announcement_message(
     participant_email: str, incident: Incident, db_session: SessionLocal
 ):
     """Announces a participant in the conversation."""
-    convo_plugin = plugin_service.get_active_instance(
+    if not incident.conversation:
+        log.warning(
+            "Incident participant announcement message not sent. No conversation available for this incident."
+        )
+        return
+
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
-    if not convo_plugin:
+    if not plugin:
         log.warning(
             "Incident participant announcement message not sent. No conversation plugin enabled."
         )
@@ -489,7 +511,7 @@ def send_incident_participant_announcement_message(
     for role in participant_active_roles:
         participant_roles.append(role.role)
 
-    participant_avatar_url = convo_plugin.instance.get_participant_avatar_url(participant_email)
+    participant_avatar_url = plugin.instance.get_participant_avatar_url(participant_email)
 
     participant_name_mrkdwn = participant_name
     if participant_weblink:
@@ -516,7 +538,7 @@ def send_incident_participant_announcement_message(
         },
     ]
 
-    convo_plugin.instance.send(
+    plugin.instance.send(
         incident.conversation.channel_id,
         notification_text,
         notification_template,
