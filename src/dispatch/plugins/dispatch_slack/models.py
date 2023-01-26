@@ -12,7 +12,8 @@ class SubjectMetadata(BaseModel):
 
 
 class TaskMetadata(SubjectMetadata):
-    resource_id: str
+    task_id: Optional[str]
+    resource_id: Optional[str]
     action_type: str
 
 
