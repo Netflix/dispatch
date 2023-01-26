@@ -605,7 +605,7 @@ def add_participants_to_conversation(
     """Adds one or more participants to the conversation."""
     if not incident.conversation:
         log.warning(
-            "Incident participant not added to conversation. No conversation available for this incident."
+            "Incident participant(s) not added to conversation. No conversation available for this incident."
         )
         return
 
@@ -614,7 +614,7 @@ def add_participants_to_conversation(
     )
     if not plugin:
         log.warning(
-            "Incident participant not added to conversation. No conversation plugin enabled."
+            "Incident participant(s) not added to conversation. No conversation plugin enabled."
         )
         return
 
