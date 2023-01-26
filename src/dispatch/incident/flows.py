@@ -1070,7 +1070,7 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
     # we create the post-incident review document
     create_post_incident_review_document(incident, db_session)
 
-    if incident.incident_review_document:
+    if incident.incident_review_document and incident.conversation:
         # we send a notification about the incident review document to the conversation
         send_incident_review_document_notification(
             incident.conversation.channel_id,
