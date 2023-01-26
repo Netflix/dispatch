@@ -389,10 +389,23 @@ def handle_list_incidents_command(
     blocks = []
 
     if incidents:
-        for incident in incidents:
-            if incident.visibility == Visibility.open:
-                incident_weblink = f"{DISPATCH_UI_URL}/{incident.project.organization.name}/incidents/{incident.name}?project={incident.project.name}"
-                blocks.append(
+        open_incidents = [i for i in incidents if i.visibility == Visibility.open]
+        if len(open_incidents) > 50:
+            blocks.extend(
+                [
+                    Context(
+                        elements=[
+                            "💡 There are more than 50 open incidents, which is the max we can display."
+                        ]
+                    ),
+                    Divider(),
+                ]
+            )
+
+        for idx, incident in enumerate(open_incidents[0:49], 1):
+            incident_weblink = f"{DISPATCH_UI_URL}/{incident.project.organization.name}/incidents/{incident.name}?project={incident.project.name}"
+            blocks.extend(
+                [
                     Section(
                         fields=[
                             f"*<{incident_weblink}|{incident.name}>*\n {incident.title}",
@@ -404,8 +417,11 @@ def handle_list_incidents_command(
                             f"*Priority*\n {incident.incident_priority.name}",
                         ]
                     )
-                )
-                blocks.append(Divider())
+                ]
+            )
+            # Don't add a divider if we are at the last incident
+            if idx != len(open_incidents):
+                blocks.extend([Divider()])
 
     modal = Modal(
         title="Incident List",
