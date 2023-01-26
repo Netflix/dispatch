@@ -1,8 +1,9 @@
-from pydantic import Field
+from pydantic import Field, validator
 
 from typing import Optional
 
 from sqlalchemy import Column, String, Integer, ForeignKey
+from dispatch.messaging.strings import INCIDENT_CONVERSATION_DESCRIPTION
 
 from dispatch.database.core import Base
 from dispatch.models import ResourceBase, ResourceMixin
@@ -33,6 +34,11 @@ class ConversationUpdate(ConversationBase):
 
 class ConversationRead(ConversationBase):
     description: Optional[str] = Field(None, nullable=True)
+
+    @validator("description", pre=True, always=True)
+    def set_description(cls):
+        """Sets the description"""
+        return INCIDENT_CONVERSATION_DESCRIPTION
 
 
 class ConversationNested(ConversationBase):
