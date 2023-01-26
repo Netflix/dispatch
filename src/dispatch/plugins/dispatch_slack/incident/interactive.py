@@ -25,14 +25,14 @@ from slack_sdk.web.client import WebClient
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from dispatch.auth import service as user_service
-from dispatch.auth.models import DispatchUser, UserRegister
+from dispatch.auth.models import DispatchUser
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.database.core import resolve_attr
 from dispatch.database.service import search_filter_sort_paginate
 from dispatch.document import service as document_service
 from dispatch.enums import Visibility
 from dispatch.event import service as event_service
+from dispatch.exceptions import DispatchException
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
@@ -536,35 +536,50 @@ def handle_list_tasks_command(
     db_session: Session,
 ) -> None:
     """Handles the list tasks command."""
-    blocks = []
+    tasks = task_service.get_all_by_incident_id(
+        db_session=db_session,
+        incident_id=context["subject"].id,
+    )
 
     caller_only = False
+    email = None
     if body["command"] == context["config"].slack_command_list_my_tasks:
         caller_only = True
+
+    if caller_only:
+        email = (client.users_info(user=payload["user_id"]))["user"]["profile"]["email"]
+        tasks = filter_tasks_by_assignee_and_creator(tasks, email, email)
+
+    draw_task_modal(
+        channel_id=context.channel_id,
+        client=client,
+        first_open=True,
+        tasks=tasks,
+        view_id=body["trigger_id"],
+    )
+
+
+def draw_task_modal(
+    channel_id: str,
+    client: WebClient,
+    first_open: bool,
+    tasks: list[Task],
+    view_id: str,
+) -> None:
+    """Builds and draws the list tasks modal on first open and after each button click."""
+    blocks = []
 
     for status in TaskStatus:
         blocks.append(Section(text=f"*{status} Incident Tasks*"))
         button_text = "Resolve" if status == TaskStatus.open else "Re-open"
         action_type = "resolve" if status == TaskStatus.open else "reopen"
 
-        tasks = task_service.get_all_by_incident_id_and_status(
-            db_session=db_session, incident_id=context["subject"].id, status=status
-        )
+        tasks_for_status = [task for task in tasks if task.status == status]
 
-        if caller_only:
-            user_id = payload["user_id"]
-            email = (client.users_info(user=user_id))["user"]["profile"]["email"]
-            user = user_service.get_or_create(
-                db_session=db_session,
-                organization=context["subject"].organization_slug,
-                user_in=UserRegister(email=email),
-            )
-            tasks = filter_tasks_by_assignee_and_creator(tasks, user.email, user.email)
-
-        if not tasks:
+        if not tasks_for_status:
             blocks.append(Section(text="No tasks."))
 
-        for idx, task in enumerate(tasks):
+        for idx, task in enumerate(tasks_for_status, 1):
             assignees = [f"<{a.individual.weblink}|{a.individual.name}>" for a in task.assignees]
 
             button_metadata = TaskMetadata(
@@ -572,15 +587,18 @@ def handle_list_tasks_command(
                 action_type=action_type,
                 organization_slug=task.project.organization.slug,
                 id=task.incident.id,
+                task_id=task.id,
                 project_id=task.project.id,
                 resource_id=task.resource_id,
-                channel_id=context["channel_id"],
+                channel_id=channel_id,
             ).json()
 
             blocks.append(
                 Section(
                     fields=[
-                        f"*Description:* \n <{task.weblink}|{task.description}>",
+                        f"*Description:* \n <{task.weblink}|{task.description}>"
+                        if task.weblink
+                        else f"*Description:* \n {task.description}",
                         f"*Creator:* \n <{task.creator.individual.weblink}|{task.creator.individual.name}>",
                         f"*Assignees:* \n {', '.join(assignees)}",
                     ],
@@ -591,7 +609,9 @@ def handle_list_tasks_command(
                     ),
                 )
             )
-            blocks.append(Divider())
+            # Don't add a divider if we are at the last task
+            if idx != len(tasks_for_status):
+                blocks.extend([Divider()])
 
     modal = Modal(
         title="Incident Tasks",
@@ -599,7 +619,10 @@ def handle_list_tasks_command(
         close="Close",
     ).build()
 
-    client.views_open(trigger_id=body["trigger_id"], view=modal)
+    if first_open is True:
+        client.views_open(trigger_id=view_id, view=modal)
+    else:
+        client.views_update(view_id=view_id, view=modal)
 
 
 def handle_list_resources_command(
@@ -2184,4 +2207,79 @@ def monitor_link_button_click(
         f"A new monitor instance has been created.\n\n *Weblink:* {button.weblink}"
         if enabled is True
         else f"This monitor is now ignored. Dispatch won't remind this incident channel about it again.\n\n *Weblink:* {button.weblink}"
+    )
+
+
+@app.action(
+    TaskNotificationActionIds.update_status,
+    middleware=[button_context_middleware, db_middleware],
+)
+def handle_update_task_status_button_click(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+):
+    """Handles the update task button in the list-my-tasks message."""
+    ack()
+
+    button = TaskMetadata.parse_raw(body["actions"][0]["value"])
+
+    resolve = True
+    if button.action_type == "reopen":
+        resolve = False
+
+    # When the task originated from the Dispatch front-end.
+    # Tasks created in the front-end do not have an associated "resource".
+    # Thus, no "resource_id" entry is necessary.
+    from_drive = True if button.resource_id is not None else False
+
+    if from_drive:
+        # When the task originated from the drive plugin
+        task = task_service.get_by_resource_id(
+            db_session=db_session, resource_id=button.resource_id
+        )
+    else:
+        task = task_service.get(db_session=db_session, task_id=button.task_id)
+
+    # avoid external calls if we are already in the desired state
+    if resolve and task.status == TaskStatus.resolved:
+        return
+
+    if not resolve and task.status == TaskStatus.open:
+        return
+
+    if from_drive:
+        # we don't currently have a good way to get the correct file_id (we don't store a task <-> relationship)
+        # lets try in both the incident doc and PIR doc
+        drive_task_plugin = plugin_service.get_active_instance(
+            db_session=db_session, project_id=task.incident.project.id, plugin_type="task"
+        )
+        try:
+            file_id = task.incident.incident_document.resource_id
+            drive_task_plugin.instance.update(file_id, button.resource_id, resolved=resolve)
+        except DispatchException:
+            file_id = task.incident.incident_review_document.resource_id
+            drive_task_plugin.instance.update(file_id, button.resource_id, resolved=resolve)
+    else:
+        status = TaskStatus.resolved if resolve is True else TaskStatus.open
+        task_service.resolve_or_reopen(db_session=db_session, task_id=task.id, status=status)
+
+    tasks = task_service.get_all_by_incident_id(
+        db_session=db_session,
+        incident_id=context["subject"].id,
+    )
+
+    tasks = task_service.get_all_by_incident_id(
+        db_session=db_session,
+        incident_id=context["subject"].id,
+    )
+
+    draw_task_modal(
+        channel_id=button.channel_id,
+        client=client,
+        first_open=False,
+        view_id=body["view"]["id"],
+        tasks=tasks,
     )
