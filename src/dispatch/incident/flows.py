@@ -23,6 +23,7 @@ from dispatch.individual import service as individual_service
 from dispatch.messaging.strings import (
     INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION,
     INCIDENT_INVESTIGATION_SHEET_DESCRIPTION,
+    INCIDENT_CONVERSATION_DESCRIPTION,
 )
 from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
@@ -892,6 +893,7 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
                 resource_id=conversation["resource_id"],
                 resource_type=conversation["resource_type"],
                 weblink=conversation["weblink"],
+                description=INCIDENT_CONVERSATION_DESCRIPTION,
                 channel_id=conversation["id"],
             )
             incident.conversation = conversation_service.create(
@@ -1068,7 +1070,7 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
     # we create the post-incident review document
     create_post_incident_review_document(incident, db_session)
 
-    if incident.incident_review_document:
+    if incident.incident_review_document and incident.conversation:
         # we send a notification about the incident review document to the conversation
         send_incident_review_document_notification(
             incident.conversation.channel_id,

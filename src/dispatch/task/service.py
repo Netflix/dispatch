@@ -189,6 +189,13 @@ def update(*, db_session, task: Task, task_in: TaskUpdate, sync_external: bool =
     return task
 
 
+def resolve_or_reopen(*, db_session, task_id: int, status: str) -> None:
+    """Resolve an existing task or re-open it."""
+    task = db_session.query(Task).filter(Task.id == task_id).first()
+    task.status = status
+    db_session.commit()
+
+
 def delete(*, db_session, task_id: int):
     """Delete an existing task."""
     task = db_session.query(Task).filter(Task.id == task_id).first()

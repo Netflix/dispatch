@@ -338,7 +338,7 @@ class IncidentRead(IncidentReadMinimal):
     events: Optional[List[EventRead]] = []
     last_executive_report: Optional[ReportRead]
     last_tactical_report: Optional[ReportRead]
-    participants: Optional[List[ParticipantRead]] = []
+    participants: Optional[List[ParticipantReadMinimal]] = []
     storage: Optional[StorageRead] = None
     terms: Optional[List[TermRead]] = []
     ticket: Optional[TicketRead] = None
