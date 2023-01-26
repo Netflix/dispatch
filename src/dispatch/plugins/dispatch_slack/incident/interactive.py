@@ -104,6 +104,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     is_bot,
     message_context_middleware,
     modal_submit_middleware,
+    reaction_context_middleware,
     restricted_command_middleware,
     subject_middleware,
     user_middleware,
@@ -121,6 +122,7 @@ from dispatch.tag.models import Tag
 from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
 from dispatch.task.models import Task
+
 
 log = logging.getLogger(__file__)
 
@@ -203,7 +205,7 @@ def configure(config):
     # required to allow the user to change the reaction string
     app.event(
         {"type": "reaction_added", "reaction": config.timeline_event_reaction},
-        middleware=[db_middleware],
+        middleware=[reaction_context_middleware, db_middleware],
     )(handle_timeline_added_event)
 
 

@@ -114,6 +114,15 @@ def message_context_middleware(request: BoltRequest, context: BoltContext, next:
     next()
 
 
+def reaction_context_middleware(context: BoltContext, payload: dict, next: Callable) -> None:
+    """Attemps to determine the current context of a reaction event."""
+    if subject := resolve_context_from_conversation(channel_id=context.channel_id):
+        context.update(subject._asdict())
+    else:
+        raise ContextError("Unable to determine context for reaction.")
+    next()
+
+
 @timer
 def restricted_command_middleware(
     context: BoltContext, db_session, user: DispatchUser, next: Callable, payload: dict
@@ -250,7 +259,7 @@ def command_context_middleware(context: BoltContext, payload: dict, next: Callab
         context.update(subject._asdict())
     else:
         raise ContextError(
-            f"Sorry, I can't determine the correct context to run the command `{payload['command']}`. Are you running this command in an incident channel?"
+            f"Sorry, we were unable to determine the correct context to run the command `{payload['command']}`. Are you running this command in an incident channel?"
         )
     next()
 
