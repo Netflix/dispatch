@@ -18,7 +18,9 @@ class MessageDispatcher:
             else:
                 name = kwargs.pop("name")
 
-            self.registered_funcs.append({"name": name, "func": func})
+            self.registered_funcs.append(
+                {"name": name, "func": func, "exclude": kwargs.pop("exclude", [])}
+            )
 
         return decorator
 
@@ -28,6 +30,10 @@ class MessageDispatcher:
             # only inject the args the function cares about
             func_args = inspect.getfullargspec(inspect.unwrap(f["func"])).args
             injected_args = (kwargs[a] for a in func_args)
+
+            if kwargs.get("body"):
+                if kwargs["body"].get("event", {}).get("subtype", "") in f["exclude"]:
+                    continue
 
             try:
                 f["func"](*injected_args)
