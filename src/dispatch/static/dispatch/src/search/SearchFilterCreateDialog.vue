@@ -29,6 +29,9 @@
                   <v-tab>Advanced</v-tab>
                   <v-tab-item>
                     <v-list dense>
+                      <v-list-item> </v-list-item>
+                    </v-list>
+                    <v-list dense>
                       <v-list-item>
                         <v-list-item-content>
                           <tag-filter-auto-complete
