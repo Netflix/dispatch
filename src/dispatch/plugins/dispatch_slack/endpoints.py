@@ -96,13 +96,11 @@ async def slack_events(request: Request, organization: str, body: bytes = Depend
 async def slack_commands(organization: str, request: Request, body: bytes = Depends(get_body)):
     """Handle all incoming Slack commands."""
     # We build the background task
-    context_properties = {"start_time": time.perf_counter()}
     handler = get_request_handler(request=request, body=body, organization=organization)
     task = BackgroundTask(
         handler.handle,
         req=request,
         body=body,
-        addition_context_properties=context_properties,
     )
 
     # We get the name of command that was run

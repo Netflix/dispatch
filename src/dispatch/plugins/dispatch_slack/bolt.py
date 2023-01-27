@@ -25,7 +25,6 @@ from .messaging import (
 )
 from .middleware import (
     configuration_middleware,
-    db_middleware,
     message_context_middleware,
     user_middleware,
 )
@@ -130,7 +129,6 @@ def build_and_log_error(
     {"type": "message"},
     middleware=[
         message_context_middleware,
-        db_middleware,
         user_middleware,
         configuration_middleware,
     ],

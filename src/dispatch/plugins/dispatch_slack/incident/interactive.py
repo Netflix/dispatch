@@ -203,7 +203,7 @@ def configure(config):
     # required to allow the user to change the reaction string
     app.event(
         {"type": "reaction_added", "reaction": config.timeline_event_reaction},
-        middleware=[reaction_context_middleware, db_middleware],
+        middleware=[reaction_context_middleware],
     )(handle_timeline_added_event)
 
 
@@ -442,10 +442,6 @@ def handle_list_participants_command(
 ) -> None:
     """Handles list participants command."""
     ack()
-    log.debug(
-        f"Begin {inspect.currentframe().f_code.co_name}: {time.perf_counter() - context['start_time']} seconds have elapsed since recieving trigger_id: {body['trigger_id']}"
-    )
-
     blocks = []
 
     participants = participant_service.get_all_by_incident_id(
@@ -511,9 +507,6 @@ def handle_list_participants_command(
         close="Close",
     ).build()
 
-    log.debug(
-        f"End {inspect.currentframe().f_code.co_name}: {time.perf_counter() - context['start_time']} seconds have elapsed since recieving trigger_id: {body['trigger_id']}"
-    )
     client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
@@ -958,7 +951,6 @@ def handle_message_monitor(
     middleware=[
         message_context_middleware,
         user_middleware,
-        db_middleware,
         configuration_middleware,
     ],
 )
@@ -1008,9 +1000,7 @@ def handle_member_joined_channel(
     db_session.commit()
 
 
-@app.event(
-    "member_left_channel", middleware=[message_context_middleware, user_middleware, db_middleware]
-)
+@app.event("member_left_channel", middleware=[message_context_middleware, user_middleware])
 def handle_member_left_channel(
     ack: Ack, context: BoltContext, db_session: Session, user: DispatchUser
 ) -> None:
