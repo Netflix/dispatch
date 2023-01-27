@@ -34,7 +34,7 @@ class MessageDispatcher:
             if exclude := f["exclude"]:
                 subtype: str = kwargs.get("body", {}).get("event", {}).get("subtype", "")
                 if subtype in exclude.get("subtype", []):
-                    log.debug(f"Skipping a dispatched function ({f['name']})")
+                    log.debug(f"Skipping dispatched function ({f['name']})")
                     continue
 
             try:
