@@ -1,7 +1,7 @@
 import logging
 from typing import Callable, NamedTuple, Optional
 
-from slack_bolt import Ack, BoltContext, BoltRequest, Respond
+from slack_bolt import BoltContext, BoltRequest
 from slack_sdk.web import WebClient
 from sqlalchemy.orm.session import Session
 
@@ -16,7 +16,6 @@ from dispatch.participant_role.enums import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.project import service as project_service
-from dispatch.plugins.dispatch_slack.messaging import get_incident_conversation_command_message
 
 from .exceptions import BotNotPresentError, ContextError, RoleError
 from .models import SubjectMetadata
@@ -51,25 +50,6 @@ def resolve_context_from_conversation(
             return Subject(subject, db_session=scoped_db_session)
 
         scoped_db_session.close()
-
-
-def command_acknowledge_middleware(ack: Ack, next: Callable) -> None:
-    """Acknowleges that a command has been run."""
-    ack()
-    next()
-
-
-def command_reply_middleware(
-    ack: Ack, context: BoltContext, payload: dict, next: Callable, respond: Respond
-) -> None:
-    """Sends user a custom ephemeral message confirming receipt of their slash command."""
-    ack()
-    # This middleware has a dependency on configuration_middleware() to return a custom message
-    message = get_incident_conversation_command_message(
-        config=context.get("config"), command_string=payload.get("command", "")
-    )
-    respond(text=message["text"], response_type=message["response_type"], replace_original=False)
-    next()
 
 
 def shortcut_context_middleware(context: BoltContext, next: Callable) -> None:
@@ -278,7 +258,6 @@ def subject_middleware(context: BoltContext, next: Callable):
     if not context.get("subject"):
         slug = get_default_org_slug()
         context.update({"subject": SubjectMetadata(organization_slug=slug)})
-
     next()
 
 
