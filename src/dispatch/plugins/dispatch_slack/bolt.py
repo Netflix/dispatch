@@ -116,7 +116,7 @@ def build_and_log_error(
 
     elif isinstance(error, SlackApiError):
         message = build_slack_api_error_message(error)
-        logger.info(error)
+        logger.exception(error)
 
     else:
         guid = str(uuid.uuid4())
