@@ -33,7 +33,7 @@ async def parse_request(request: Request):
     try:
         request = json.loads(request_body_form.get("payload"))
     except Exception:
-        raise HTTPException(status_code=400, detail=[{"msg": "Bad Request"}])
+        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=[{"msg": "Bad Request"}])
     return request
 
 
