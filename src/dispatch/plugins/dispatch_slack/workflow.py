@@ -46,6 +46,7 @@ def configure(config):
     """Maps commands/events to their functions."""
     middleware = [
         command_context_middleware,
+        db_middleware,
         configuration_middleware,
     ]
     app.command(config.slack_command_list_workflows, middleware=middleware)(
@@ -122,13 +123,11 @@ def param_input(
 
 
 def handle_workflow_list_command(
-    ack: Ack, body: dict, client: WebClient, context: BoltContext
+    ack: Ack, body: dict, client: WebClient, context: BoltContext, db_session: Session
 ) -> None:
     """Handles the workflow list command."""
     ack()
-    incident = incident_service.get(
-        db_session=context["db_session"], incident_id=context["subject"].id
-    )
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
     workflows = incident.workflow_instances
 
     blocks = [Section(text="*Workflows*")]
@@ -166,7 +165,11 @@ def handle_workflow_list_command(
 
 
 def handle_workflow_run_command(
-    ack: Ack, body: dict, client: WebClient, context: BoltContext
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
 ) -> None:
     """Handles the workflow run command."""
     ack()
@@ -174,7 +177,7 @@ def handle_workflow_run_command(
     blocks = [
         Context(elements=[MarkdownText(text="Select a workflow to run.")]),
         workflow_select(
-            db_session=context["db_session"],
+            db_session=db_session,
             dispatch_action=True,
         ),
     ]
