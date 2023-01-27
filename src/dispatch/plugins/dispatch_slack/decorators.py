@@ -31,8 +31,10 @@ class MessageDispatcher:
             func_args = inspect.getfullargspec(inspect.unwrap(f["func"])).args
             injected_args = (kwargs[a] for a in func_args)
 
-            if kwargs.get("body"):
-                if kwargs["body"].get("event", {}).get("subtype", "") in f["exclude"]:
+            if exclude := f["exclude"]:
+                subtype: str = kwargs.get("body", {}).get("event", {}).get("subtype", "")
+                if subtype in exclude.get("subtype", []):
+                    log.debug(f"Skipping a dispatched function ({f['name']})")
                     continue
 
             try:
