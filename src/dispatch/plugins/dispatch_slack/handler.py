@@ -78,6 +78,6 @@ class SlackRequestHandler:
             return to_starlette_response(bolt_resp)
 
         return Response(
-            status_code=HTTPStatus.NOT_FOUND,
-            content="Not found",
+            status_code=HTTPStatus.NOT_FOUND.value,
+            content=HTTPStatus.NOT_FOUND.phrase,
         )
