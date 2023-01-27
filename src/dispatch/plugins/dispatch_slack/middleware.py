@@ -176,6 +176,19 @@ def user_middleware(
     if not user_id:
         raise ContextError("Unable to determine user from context.")
 
+    context["user_id"] = user_id
+
+    participant = participant_service.get_by_incident_id_and_conversation_id(
+        db_session=db_session, incident_id=context["subject"].id, user_conversation_id=user_id
+    )
+    if participant:
+        context["user"] = user_service.get_or_create(
+            db_session=db_session,
+            organization=context["subject"].organization_slug,
+            user_in=UserRegister(email=participant.individual.email),
+        )
+        return next()
+
     email = client.users_info(user=user_id)["user"]["profile"]["email"]
 
     context["user"] = user_service.get_or_create(
