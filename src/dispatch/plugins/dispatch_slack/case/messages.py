@@ -102,18 +102,16 @@ def create_case_message(case: Case, channel_id: str):
                             options=[
                                 PlainOption(
                                     text="Storage",
-                                    action_id="button-link",
                                     url=case.storage.weblink,
                                     value="option-1",
                                 ),
                                 PlainOption(
                                     text="Document",
                                     url=case.case_document.weblink,
-                                    action_id="button-link",
                                     value="option-2",
                                 ),
                             ],
-                            action_id="overflow-action",
+                            action_id="button-link",
                         ),
                     ]
                 )
