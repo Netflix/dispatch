@@ -1936,8 +1936,6 @@ def handle_report_incident_command(
         private_metadata=context["subject"].json(),
     ).build()
 
-    elapsed_time = time.perf_counter() - context["start_time"]
-    log.debug(f"It has been {elapsed_time} since we got a trigger_id")
     client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
