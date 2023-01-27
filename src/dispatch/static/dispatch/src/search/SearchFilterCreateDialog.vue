@@ -29,9 +29,16 @@
                   <v-tab>Advanced</v-tab>
                   <v-tab-item>
                     <v-list dense>
-                      <v-list-item> </v-list-item>
+                      <v-list-item
+                        ><v-list-item-content>
+                          <v-radio-group v-model="subject" row>
+                            <v-radio label="Incident" value="incident"></v-radio>
+                            <v-radio label="Case" value="case"></v-radio>
+                          </v-radio-group>
+                        </v-list-item-content>
+                      </v-list-item>
                     </v-list>
-                    <v-list dense>
+                    <v-list v-if="subject == 'incident'" dense>
                       <v-list-item>
                         <v-list-item-content>
                           <tag-filter-auto-complete
@@ -63,6 +70,56 @@
                           <incident-priority-combobox
                             :project="project"
                             v-model="filters.incident_priority"
+                          />
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <incident-status-multi-select v-model="filters.status" />
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <v-select
+                            :items="visibilities"
+                            v-model="filters.visibility"
+                            name="visibility"
+                            item-text="name"
+                            return-object
+                            label="Visibility"
+                          />
+                        </v-list-item-content>
+                      </v-list-item>
+                    </v-list>
+                    <v-list v-else>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <tag-filter-auto-complete
+                            :project="project"
+                            v-model="filters.tag"
+                            label="Tags"
+                          />
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <tag-type-filter-combobox
+                            :project="project"
+                            v-model="filters.tag_type"
+                            label="Tag Types"
+                          />
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <case-type-combobox :project="project" v-model="filters.case_type" />
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <case-priority-combobox
+                            :project="project"
+                            v-model="filters.case_priority"
                           />
                         </v-list-item-content>
                       </v-list-item>
@@ -186,6 +243,10 @@ import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
+import CaseApi from "@/case/api"
+import CasePriorityCombobox from "@/case/priority/CasePriorityCombobox.vue"
+import CaseStatus from "@/case/status/CaseStatus.vue"
+import CaseTypeCombobox from "@/case/type/CaseTypeCombobox.vue"
 import IncidentApi from "@/incident/api"
 import IncidentPriority from "@/incident/priority/IncidentPriority.vue"
 import IncidentPriorityCombobox from "@/incident/priority/IncidentPriorityCombobox.vue"
@@ -239,15 +300,19 @@ export default {
     }
   },
   components: {
+    CaseApi,
+    CasePriorityCombobox,
+    CaseStatus,
+    CaseTypeCombobox,
+    IncidentPriority,
+    IncidentPriorityCombobox,
+    IncidentStatus,
+    IncidentStatusMultiSelect,
+    IncidentTypeCombobox,
+    TagFilterAutoComplete,
+    TagTypeFilterCombobox,
     ValidationObserver,
     ValidationProvider,
-    TagFilterAutoComplete,
-    IncidentTypeCombobox,
-    IncidentPriorityCombobox,
-    TagTypeFilterCombobox,
-    IncidentStatusMultiSelect,
-    IncidentStatus,
-    IncidentPriority,
     MonacoEditor: () => import("monaco-editor-vue"),
   },
   computed: {
