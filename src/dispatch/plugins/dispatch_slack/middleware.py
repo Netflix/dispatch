@@ -178,6 +178,13 @@ def user_middleware(
 
     context["user_id"] = user_id
 
+    if not context.get("db_session"):
+        slug = get_default_org_slug()
+        db_session = refetch_db_session(slug)
+        context["db_session"] = db_session
+    else:
+        db_session = context["db_session"]
+
     participant = participant_service.get_by_incident_id_and_conversation_id(
         db_session=db_session, incident_id=context["subject"].id, user_conversation_id=user_id
     )
