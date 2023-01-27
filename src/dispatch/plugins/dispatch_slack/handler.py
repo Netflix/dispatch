@@ -3,7 +3,7 @@ https://github.com/slackapi/bolt-python/blob/c99c23fd056d26f8b1e39436bd1fcd2c83a
 
 Fork of the built-in Bolt Starlette adapater. Removes async to allow instant acknowledgment of interactivity payloads from Slack.
 """
-
+from http import HTTPStatus
 from typing import Dict, Any, Optional
 
 from starlette.requests import Request
@@ -78,6 +78,6 @@ class SlackRequestHandler:
             return to_starlette_response(bolt_resp)
 
         return Response(
-            status_code=404,
+            status_code=HTTPStatus.NOT_FOUND,
             content="Not found",
         )
