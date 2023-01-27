@@ -976,7 +976,6 @@ def handle_member_joined_channel(
     participant = incident_flows.incident_add_or_reactivate_participant_flow(
         user_email=user.email, incident_id=context["subject"].id, db_session=db_session
     )
-    participant.user_conversation_id = context["user_id"]
 
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 

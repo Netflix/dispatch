@@ -4,8 +4,9 @@
     :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
-import re
 import platform
+import re
+from re import Pattern
 import sys
 import requests
 from datetime import datetime
@@ -56,10 +57,10 @@ class GithubMonitorPlugin(MonitorPlugin):
     def __init__(self):
         self.configuration_schema = GithubConfiguration
 
-    def get_matchers(self, *args, **kwargs):
+    def get_matchers(self, *args, **kwargs) -> list[Pattern]:
         """Returns a list of regexes that this monitor plugin should look for in chat messages."""
         matchers = [
-            r"(?P<weblink>https:\/\/github.com\/(?P<organization>\w+)*\/(?P<repo>\w+)*\/(?P<type>pull|issues)*\/(?P<id>\w+)*)"
+            r"(?P<weblink>https:\/\/github.com\/(?P<organization>[a-zA-Z0-9-_]+)*\/(?P<repo>[a-zA-Z0-9-_]+)*\/(?P<type>pull|issues)*\/(?P<id>\w+)*)"
         ]
         return [re.compile(r) for r in matchers]
 
