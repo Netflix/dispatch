@@ -9,6 +9,7 @@ from typing import Any, List, Optional
 
 from blockkit import Actions, Button, Context, Divider, MarkdownText, Section
 from slack_sdk.web.client import WebClient
+from slack_sdk.errors import SlackApiError
 
 from dispatch.messaging.strings import (
     EVERGREEN_REMINDER_DESCRIPTION,
@@ -156,6 +157,14 @@ def build_bot_not_present_message(client: WebClient, command: str, conversations
     message = f"""
     Looks like you tried to run `{command}` in a conversation where the Dispatch bot is not present. Add the bot to your conversation or run the command in one of the following conversations:\n\n {(", ").join(deep_links)}"""
     return message
+
+
+def build_slack_api_error_message(error: SlackApiError) -> str:
+    return (
+        "Sorry, the request to Slack timed out. Try running your command again."
+        if error.response.get("error") == "expired_trigger_id"
+        else "Sorry, we've run into an unexpected error with Slack."
+    )
 
 
 def build_unexpected_error_message(guid: str) -> str:
