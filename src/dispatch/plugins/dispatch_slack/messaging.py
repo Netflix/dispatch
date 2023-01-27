@@ -163,7 +163,7 @@ def build_slack_api_error_message(error: SlackApiError) -> str:
     return (
         "Sorry, the request to Slack timed out. Try running your command again."
         if error.response.get("error") == "expired_trigger_id"
-        else "Sorry, the we've run into an unexpected error with Slack."
+        else "Sorry, we've run into an unexpected error with Slack."
     )
 
 
