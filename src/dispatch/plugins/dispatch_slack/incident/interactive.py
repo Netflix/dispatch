@@ -442,10 +442,6 @@ def handle_list_participants_command(
 ) -> None:
     """Handles list participants command."""
     ack()
-    log.debug(
-        f"Begin {inspect.currentframe().f_code.co_name}: {time.perf_counter() - context['start_time']} seconds have elapsed since recieving trigger_id: {body['trigger_id']}"
-    )
-
     blocks = []
 
     participants = participant_service.get_all_by_incident_id(
@@ -511,9 +507,6 @@ def handle_list_participants_command(
         close="Close",
     ).build()
 
-    log.debug(
-        f"End {inspect.currentframe().f_code.co_name}: {time.perf_counter() - context['start_time']} seconds have elapsed since recieving trigger_id: {body['trigger_id']}"
-    )
     client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
