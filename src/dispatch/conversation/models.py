@@ -3,10 +3,10 @@ from pydantic import Field, validator
 from typing import Optional
 
 from sqlalchemy import Column, String, Integer, ForeignKey
-from dispatch.messaging.strings import INCIDENT_CONVERSATION_DESCRIPTION
 
 from dispatch.database.core import Base
-from dispatch.models import ResourceBase, ResourceMixin
+from dispatch.messaging.strings import INCIDENT_CONVERSATION_DESCRIPTION
+from dispatch.models import ResourceBase, ResourceMixin, PrimaryKey
 
 
 class Conversation(Base, ResourceMixin):
@@ -33,10 +33,11 @@ class ConversationUpdate(ConversationBase):
 
 
 class ConversationRead(ConversationBase):
+    id: PrimaryKey
     description: Optional[str] = Field(None, nullable=True)
 
     @validator("description", pre=True, always=True)
-    def set_description(cls):
+    def set_description(cls, v):
         """Sets the description"""
         return INCIDENT_CONVERSATION_DESCRIPTION
 
