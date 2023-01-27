@@ -29,6 +29,7 @@ class Participant(Base):
     )
     added_reason = Column(String)
     after_hours_notification = Column(Boolean, default=False)
+    user_conversation_id = Column(String)
 
     # relationships
     feedback = relationship("Feedback", backref="participant")
