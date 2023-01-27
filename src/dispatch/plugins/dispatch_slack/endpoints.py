@@ -85,7 +85,7 @@ async def slack_events(request: Request, organization: str, body: bytes = Depend
     task = BackgroundTask(handler.handle, req=request, body=body)
     return JSONResponse(
         background=task,
-        content={"ok": ""},
+        content=HTTPStatus.OK.phrase,
         status_code=HTTPStatus.OK,
     )
 
