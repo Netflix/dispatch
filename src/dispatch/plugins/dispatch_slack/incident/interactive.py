@@ -693,7 +693,9 @@ def handle_list_resources_command(
 # EVENTS
 
 
-def handle_timeline_added_event(ack: Ack, client: Any, context: BoltContext, payload: Any) -> None:
+def handle_timeline_added_event(
+    ack: Ack, client: Any, context: BoltContext, payload: Any, db_session: Session
+) -> None:
     """Handles an event where a reaction is added to a message."""
     ack()
 
@@ -711,21 +713,17 @@ def handle_timeline_added_event(ack: Ack, client: Any, context: BoltContext, pay
     # TODO: (wshel) handle case reactions
     if context["subject"].type == "incident":
         # we fetch the incident
-        incident = incident_service.get(
-            db_session=context["db_session"], incident_id=context["subject"].id
-        )
+        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
         # we fetch the individual who sent the message
         message_sender_email = get_user_email(client=client, user_id=message_sender_id)
         individual = individual_service.get_by_email_and_project(
-            db_session=context["db_session"],
-            email=message_sender_email,
-            project_id=incident.project.id,
+            db_session=db_session, email=message_sender_email, project_id=incident.project.id
         )
 
         # we log the event
         event_service.log_incident_event(
-            db_session=context["db_session"],
+            db_session=db_session,
             source="Slack Plugin - Conversation Management",
             description=f'"{message_text}," said {individual.name}',
             incident_id=context["subject"].id,
@@ -737,7 +735,9 @@ def handle_timeline_added_event(ack: Ack, client: Any, context: BoltContext, pay
 @message_dispatcher.add(
     exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
-def handle_participant_role_activity(ack: Ack, context: BoltContext, user: DispatchUser) -> None:
+def handle_participant_role_activity(
+    ack: Ack, db_session: Session, context: BoltContext, user: DispatchUser
+) -> None:
     """
     Increments the participant role's activity counter and assesses the need of changing
     a participant's role based on its activity and changes it if needed.
@@ -747,7 +747,7 @@ def handle_participant_role_activity(ack: Ack, context: BoltContext, user: Dispa
     # TODO: (wshel) add when case support when participants are added.
     if context["subject"].type == "incident":
         participant = participant_service.get_by_incident_id_and_email(
-            db_session=context["db_session"], incident_id=context["subject"].id, email=user.email
+            db_session=db_session, incident_id=context["subject"].id, email=user.email
         )
 
         if participant:
@@ -759,17 +759,17 @@ def handle_participant_role_activity(ack: Ack, context: BoltContext, user: Dispa
                     if participant_role.activity >= 10:  # ten messages sent to the incident channel
                         # we change the participant's role to the participant one
                         participant_role_service.renounce_role(
-                            db_session=context["db_session"], participant_role=participant_role
+                            db_session=db_session, participant_role=participant_role
                         )
                         participant_role_service.add_role(
-                            db_session=context["db_session"],
+                            db_session=db_session,
                             participant_id=participant.id,
                             participant_role=ParticipantRoleType.participant,
                         )
 
                         # we log the event
                         event_service.log_incident_event(
-                            db_session=context["db_session"],
+                            db_session=db_session,
                             source="Slack Plugin - Conversation Management",
                             description=(
                                 f"{participant.individual.name}'s role changed from {participant_role.role} to "
@@ -778,7 +778,7 @@ def handle_participant_role_activity(ack: Ack, context: BoltContext, user: Dispa
                             incident_id=context["subject"].id,
                         )
 
-            context["db_session"].commit()
+            db_session.commit()
 
 
 @message_dispatcher.add(
@@ -788,6 +788,7 @@ def handle_after_hours_message(
     ack: Ack,
     context: BoltContext,
     client: WebClient,
+    db_session: Session,
     payload: dict,
     user: DispatchUser,
 ) -> None:
@@ -795,12 +796,10 @@ def handle_after_hours_message(
     ack()
 
     if context["subject"].type == "incident":
-        incident = incident_service.get(
-            db_session=context["db_session"], incident_id=context["subject"].id
-        )
+        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
         owner_email = incident.commander.individual.email
         participant = participant_service.get_by_incident_id_and_email(
-            db_session=context["db_session"], incident_id=context["subject"].id, email=user.email
+            db_session=db_session, incident_id=context["subject"].id, email=user.email
         )
         # get their timezone from slack
         owner_tz = (dispatch_slack_service.get_user_info_by_email(client, email=owner_email))["tz"]
@@ -815,8 +814,8 @@ def handle_after_hours_message(
     if not is_business_hours:
         if not participant.after_hours_notification:
             participant.after_hours_notification = True
-            context["db_session"].add(participant)
-            context["db_session"].commit()
+            db_session.add(participant)
+            db_session.commit()
             client.chat_postEphemeral(
                 text=message,
                 channel=payload["channel"],
@@ -878,20 +877,19 @@ def handle_message_monitor(
     payload: dict,
     context: BoltContext,
     client: WebClient,
+    db_session: Session,
 ) -> None:
     """Looks for strings that are available for monitoring (e.g. links)."""
     ack()
 
     if context["subject"].type == "incident":
-        incident = incident_service.get(
-            db_session=context["db_session"], incident_id=context["subject"].id
-        )
+        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
         project_id = incident.project.id
     else:
         raise CommandError("Command is not currently available for cases.")
 
     plugins = plugin_service.get_active_instances(
-        db_session=context["db_session"], project_id=project_id, plugin_type="monitor"
+        db_session=db_session, project_id=project_id, plugin_type="monitor"
     )
 
     for p in plugins:
@@ -899,7 +897,7 @@ def handle_message_monitor(
             for match in matcher.finditer(payload["text"]):
                 match_data = match.groupdict()
                 monitor = monitor_service.get_by_weblink(
-                    db_session=context["db_session"], weblink=match_data["weblink"]
+                    db_session=db_session, weblink=match_data["weblink"]
                 )
 
                 # silence ignored matches
@@ -968,19 +966,18 @@ def handle_member_joined_channel(
     user: DispatchUser,
     body: dict,
     client: WebClient,
+    db_session: Session,
     context: BoltContext,
 ) -> None:
     """Handles the member_joined_channel Slack event."""
     ack()
 
     participant = incident_flows.incident_add_or_reactivate_participant_flow(
-        user_email=user.email, incident_id=context["subject"].id, db_session=context["db_session"]
+        user_email=user.email, incident_id=context["subject"].id, db_session=db_session
     )
     participant.user_conversation_id = context["user_id"]
 
-    incident = incident_service.get(
-        db_session=context["db_session"], incident_id=context["subject"].id
-    )
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
     # If the user was invited, the message will include an inviter property containing the user ID of the inviting user.
     # The property will be absent when a user manually joins a channel, or a user is added by default (e.g. #general channel).
@@ -993,28 +990,24 @@ def handle_member_joined_channel(
         # Participant is added into the incident channel using an @ message or /invite command.
         inviter_email = get_user_email(client=client, user_id=inviter)
         added_by_participant = participant_service.get_by_incident_id_and_email(
-            db_session=context["db_session"], incident_id=context["subject"].id, email=inviter_email
+            db_session=db_session, incident_id=context["subject"].id, email=inviter_email
         )
         participant.added_by = added_by_participant
 
     else:
         # User joins via the `join` button on Web Application or Slack.
         # We default to the incident commander when we don't know who added the user or the user is the Dispatch bot.
-        incident = incident_service.get(
-            db_session=context["db_session"], incident_id=context["subject"].id
-        )
+        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
         participant.added_by = incident.commander
 
     # Message text when someone @'s a user is not available in body, use generic added by reason
     participant.added_reason = f"Participant added by {participant.added_by.individual.name}"
 
-    context["db_session"].add(participant)
-    context["db_session"].commit()
+    db_session.add(participant)
+    db_session.commit()
 
 
-@app.event(
-    "member_left_channel", middleware=[message_context_middleware, user_middleware, db_middleware]
-)
+@app.event("member_left_channel", middleware=[message_context_middleware, user_middleware])
 def handle_member_left_channel(
     ack: Ack, context: BoltContext, db_session: Session, user: DispatchUser
 ) -> None:
