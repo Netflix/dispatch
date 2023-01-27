@@ -252,6 +252,7 @@ export default {
       "selected",
       "selected.description",
       "selected.expression",
+      "selected.subject",
       "selected.name",
       "selected.project",
       "loading",

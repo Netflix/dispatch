@@ -1,16 +1,22 @@
 from typing import List, Optional
 
 from pydantic import Field
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy.sql.sqltypes import JSON
 from sqlalchemy_utils import TSVectorType
 
+from dispatch.enums import DispatchEnum
 from dispatch.auth.models import DispatchUser, UserRead
 from dispatch.database.core import Base
 from dispatch.models import DispatchBase, NameStr, PrimaryKey, ProjectMixin
 from dispatch.project.models import ProjectRead
+
+
+class SearchFilterSubject(DispatchEnum):
+    case = "case"
+    incident = "incident"
 
 
 class SearchFilter(Base, ProjectMixin):
@@ -22,6 +28,7 @@ class SearchFilter(Base, ProjectMixin):
     expression = Column(JSON, nullable=False, default=[])
     creator_id = Column(Integer, ForeignKey(DispatchUser.id))
     creator = relationship("DispatchUser", backref="search_filters")
+    subject = Column(Enum(SearchFilterSubject))
 
     search_vector = Column(
         TSVectorType("name", "description", weights={"name": "A", "description": "B"})
@@ -32,6 +39,7 @@ class SearchFilter(Base, ProjectMixin):
 class SearchFilterBase(DispatchBase):
     expression: List[dict]
     name: NameStr
+    subject: SearchFilterSubject = SearchFilterSubject.incident
     description: Optional[str] = Field(None, nullable=True)
 
 
