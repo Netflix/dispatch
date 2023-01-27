@@ -1,6 +1,8 @@
 import logging
 from datetime import datetime
+import inspect
 from typing import Any
+import time
 
 import pytz
 from blockkit import (
@@ -97,9 +99,7 @@ from dispatch.plugins.dispatch_slack.messaging import create_message_blocks
 from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
     button_context_middleware,
-    command_acknowledge_middleware,
     command_context_middleware,
-    command_reply_middleware,
     configuration_middleware,
     db_middleware,
     is_bot,
@@ -131,10 +131,8 @@ log = logging.getLogger(__file__)
 def configure(config):
     """Maps commands/events to their functions."""
     middleware = [
-        command_acknowledge_middleware,
         subject_middleware,
         configuration_middleware,
-        command_reply_middleware,
     ]
 
     # don't need an incident context
@@ -147,10 +145,8 @@ def configure(config):
 
     # non-sensitive-commands
     middleware = [
-        command_acknowledge_middleware,
         subject_middleware,
         configuration_middleware,
-        command_reply_middleware,
         command_context_middleware,
     ]
 
@@ -159,10 +155,8 @@ def configure(config):
     )
 
     middleware = [
-        command_acknowledge_middleware,
         subject_middleware,
         configuration_middleware,
-        command_reply_middleware,
         command_context_middleware,
     ]
 
@@ -182,10 +176,8 @@ def configure(config):
 
     # sensitive commands
     middleware = [
-        command_acknowledge_middleware,
         subject_middleware,
         configuration_middleware,
-        command_reply_middleware,
         command_context_middleware,
         user_middleware,
         restricted_command_middleware,
@@ -337,9 +329,16 @@ def handle_update_incident_project_select_action(
 
 # COMMANDS
 def handle_list_incidents_command(
-    body: dict, payload: dict, db_session: Session, context: BoltContext, client: WebClient
+    ack: Ack,
+    body: dict,
+    payload: dict,
+    db_session: Session,
+    context: BoltContext,
+    client: WebClient,
 ) -> None:
     """Handles the list incidents command."""
+    ack()
+
     projects = []
 
     if context["subject"].type == "incident":
@@ -435,12 +434,18 @@ def handle_list_incidents_command(
 
 
 def handle_list_participants_command(
+    ack: Ack,
     body: dict,
     client: WebClient,
     context: BoltContext,
     db_session: Session,
 ) -> None:
     """Handles list participants command."""
+    ack()
+    log.debug(
+        f"Begin {inspect.currentframe().f_code.co_name}: {time.perf_counter() - context['start_time']} seconds have elapsed since recieving trigger_id: {body['trigger_id']}"
+    )
+
     blocks = []
 
     participants = participant_service.get_all_by_incident_id(
@@ -506,6 +511,9 @@ def handle_list_participants_command(
         close="Close",
     ).build()
 
+    log.debug(
+        f"End {inspect.currentframe().f_code.co_name}: {time.perf_counter() - context['start_time']} seconds have elapsed since recieving trigger_id: {body['trigger_id']}"
+    )
     client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
@@ -531,6 +539,7 @@ def filter_tasks_by_assignee_and_creator(
 
 
 def handle_list_tasks_command(
+    ack: Ack,
     body: dict,
     payload: dict,
     client: WebClient,
@@ -538,6 +547,8 @@ def handle_list_tasks_command(
     db_session: Session,
 ) -> None:
     """Handles the list tasks command."""
+    ack()
+
     tasks = task_service.get_all_by_incident_id(
         db_session=db_session,
         incident_id=context["subject"].id,
@@ -683,9 +694,11 @@ def handle_list_resources_command(
 
 
 def handle_timeline_added_event(
-    client: Any, context: BoltContext, payload: Any, db_session: Session
+    ack: Ack, client: Any, context: BoltContext, payload: Any, db_session: Session
 ) -> None:
     """Handles an event where a reaction is added to a message."""
+    ack()
+
     conversation_id = context["channel_id"]
     message_ts = payload["item"]["ts"]
     message_ts_utc = datetime.utcfromtimestamp(float(message_ts))
@@ -812,9 +825,11 @@ def handle_after_hours_message(
 
 @message_dispatcher.add()
 def handle_thread_creation(
-    client: WebClient, payload: dict, context: BoltContext, request: BoltRequest
+    ack: Ack, client: WebClient, payload: dict, context: BoltContext, request: BoltRequest
 ) -> None:
     """Sends the user an ephemeral message if they use threads."""
+    ack()
+
     if not context["config"].ban_threads:
         return
 
@@ -830,8 +845,12 @@ def handle_thread_creation(
 
 
 @message_dispatcher.add()
-def handle_message_tagging(db_session: Session, payload: dict, context: BoltContext) -> None:
+def handle_message_tagging(
+    ack: Ack, db_session: Session, payload: dict, context: BoltContext
+) -> None:
     """Looks for incident tags in incident messages."""
+    ack()
+
     # TODO: (wshel) handle case tagging
     if context["subject"].type == "incident":
         text = payload["text"]
@@ -1004,8 +1023,12 @@ def handle_member_left_channel(
 # MODALS
 
 
-def handle_add_timeline_event_command(body: dict, client: WebClient, context: BoltContext) -> None:
+def handle_add_timeline_event_command(
+    ack: Ack, body: dict, client: WebClient, context: BoltContext
+) -> None:
     """Handles the add timeline event command."""
+    ack()
+
     blocks = [
         Context(
             elements=[
@@ -1094,11 +1117,13 @@ def handle_add_timeline_submission_event(
 
 
 def handle_update_participant_command(
+    ack: Ack,
     body: dict,
     context: BoltContext,
     client: WebClient,
 ) -> None:
     """Handles the update participant command."""
+    ack()
 
     if context["subject"].type == "case":
         raise CommandError("Command is not currently available for cases.")
@@ -1183,9 +1208,10 @@ def handle_update_participant_submission_event(
 
 
 def handle_update_notifications_group_command(
-    body: dict, context: BoltContext, client: WebClient, db_session: Session
+    ack: Ack, body: dict, context: BoltContext, client: WebClient, db_session: Session
 ) -> None:
     """Handles the update notification group command."""
+    ack()
 
     # TODO handle cases
     if context["subject"].type == "case":
@@ -1293,8 +1319,12 @@ def handle_update_notifications_group_submission_event(
     )
 
 
-def handle_assign_role_command(body: dict, context: BoltContext, client: WebClient) -> None:
+def handle_assign_role_command(
+    ack: Ack, body: dict, context: BoltContext, client: WebClient
+) -> None:
     """Handles the assign role command."""
+    ack()
+
     roles = [
         {"text": r.value, "value": r.value}
         for r in ParticipantRoleType
@@ -1382,12 +1412,15 @@ def handle_assign_role_submission_event(
 
 
 def handle_engage_oncall_command(
+    ack: Ack,
     body: dict,
     client: WebClient,
     context: BoltContext,
     db_session: Session,
 ) -> None:
     """Handles the engage oncall command."""
+    ack()
+
     # TODO: handle cases
     if context["subject"].type == "case":
         raise CommandError("Command is not currently available for cases.")
@@ -1486,12 +1519,15 @@ def handle_engage_oncall_submission_event(
 
 
 def handle_report_tactical_command(
+    ack: Ack,
     body: dict,
     client: WebClient,
     context: BoltContext,
     db_session: Session,
 ) -> None:
     """Handles the report tactical command."""
+    ack()
+
     if context["subject"].type == "case":
         raise CommandError("Command is not available outside of incident channels.")
 
@@ -1591,12 +1627,14 @@ def handle_report_tactical_submission_event(
 
 
 def handle_report_executive_command(
+    ack: Ack,
     body: dict,
     client: WebClient,
     context: BoltContext,
     db_session: Session,
 ) -> None:
     """Handles executive report command."""
+    ack()
 
     if context["subject"].type == "case":
         raise CommandError("Command is not available outside of incident channels.")
@@ -1721,9 +1759,11 @@ def handle_report_executive_submission_event(
 
 
 def handle_update_incident_command(
-    body: dict, client: WebClient, context: BoltContext, db_session: Session
+    ack: Ack, body: dict, client: WebClient, context: BoltContext, db_session: Session
 ) -> None:
     """Creates the incident update modal."""
+    ack()
+
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
     blocks = [
@@ -1861,12 +1901,15 @@ def handle_update_incident_submission_event(
 
 
 def handle_report_incident_command(
+    ack: Ack,
     body: dict,
     context: BoltContext,
     client: WebClient,
     db_session: Session,
 ) -> None:
     """Handles the report incident command."""
+    ack()
+
     blocks = [
         Context(
             elements=[
