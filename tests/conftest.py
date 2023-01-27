@@ -25,6 +25,7 @@ from dispatch.database.manage import init_database
 
 from .database import Session
 from .factories import (
+    DispatchUserFactory,
     CaseFactory,
     ConferenceFactory,
     ConversationFactory,
@@ -248,6 +249,11 @@ def workflow_plugin():
 
     register(TestWorkflowPlugin)
     return TestWorkflowPlugin
+
+
+@pytest.fixture
+def user(session):
+    return DispatchUserFactory()
 
 
 @pytest.fixture

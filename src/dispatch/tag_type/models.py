@@ -40,6 +40,13 @@ class TagTypeRead(TagTypeBase):
     project: ProjectRead
 
 
+class TagTypeReadMinimal(DispatchBase):
+    id: PrimaryKey
+    name: NameStr
+    exclusive: Optional[bool] = False
+    description: Optional[str] = Field(None, nullable=True)
+
+
 class TagTypePagination(DispatchBase):
-    items: List[TagTypeRead]
+    items: List[TagTypeReadMinimal]
     total: int

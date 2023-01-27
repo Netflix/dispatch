@@ -5,8 +5,11 @@
     :license: Apache, see LICENSE for more details.
 """
 import logging
-from typing import List, Optional
-from jinja2 import Template
+from typing import Any, List, Optional
+
+from blockkit import Actions, Button, Context, Divider, MarkdownText, Section
+from slack_sdk.web.client import WebClient
+from slack_sdk.errors import SlackApiError
 
 from dispatch.messaging.strings import (
     EVERGREEN_REMINDER_DESCRIPTION,
@@ -16,14 +19,45 @@ from dispatch.messaging.strings import (
     MessageType,
     render_message_template,
 )
-
-from .config import SlackConfiguration
-
+from dispatch.plugins.dispatch_slack.config import SlackConfiguration
 
 log = logging.getLogger(__name__)
 
 
-def get_incident_conversation_command_message(config: SlackConfiguration, command_string: str):
+def get_template(message_type: MessageType):
+    """Fetches the correct template based on message type."""
+    template_map = {
+        MessageType.evergreen_reminder: (
+            default_notification,
+            EVERGREEN_REMINDER_DESCRIPTION,
+        ),
+        MessageType.incident_participant_suggested_reading: (
+            default_notification,
+            INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION,
+        ),
+        MessageType.incident_task_list: (default_notification, INCIDENT_TASK_LIST_DESCRIPTION),
+        MessageType.incident_task_reminder: (
+            default_notification,
+            INCIDENT_TASK_REMINDER_DESCRIPTION,
+        ),
+    }
+
+    return template_map.get(message_type, (default_notification, None))
+
+
+def get_incident_conversation_command_message(
+    command_string: str, config: Optional[SlackConfiguration] = None
+) -> dict[str, str]:
+    """Fetches a custom message and response type for each respective slash command."""
+
+    default = {
+        "response_type": "ephemeral",
+        "text": f"Running command... `{command_string}`",
+    }
+
+    if not config:
+        return default
+
     command_messages = {
         config.slack_command_run_workflow: {
             "response_type": "ephemeral",
@@ -91,115 +125,52 @@ def get_incident_conversation_command_message(config: SlackConfiguration, comman
         },
     }
 
-    return command_messages.get(command_string, f"Running command... {command_string}")
+    return command_messages.get(command_string, default)
 
 
-INCIDENT_CONVERSATION_COMMAND_RUN_IN_NONINCIDENT_CONVERSATION = """
-I see you tried to run `{{command}}` in an non-incident conversation.
-Incident-specifc commands can only be run in incident conversations.""".replace(
-    "\n", " "
-).strip()
-
-INCIDENT_CONVERSATION_COMMAND_RUN_BY_NON_PRIVILEGED_USER = """
-I see you tried to run `{{command}}`.
-This is a sensitive command and cannot be run with the incident role you are currently assigned.""".replace(
-    "\n", " "
-).strip()
-
-INCIDENT_CONVERSATION_COMMAND_RUN_IN_CONVERSATION_WHERE_BOT_NOT_PRESENT = """
-Looks like you tried to run `{{command}}` in a conversation where the Dispatch bot is not present.
-Add the bot to your conversation or run the command in one of the following conversations: {{conversations}}""".replace(
-    "\n", " "
-).strip()
+def build_command_error_message(payload: dict, error: Any) -> str:
+    message = f"""Unfortunately we couldn't run `{payload['command']}` due to the following reason: {str(error)}  """
+    return message
 
 
-def create_command_run_by_non_privileged_user_message(command: str):
-    """Creates a message for when a sensitive command is run by a non privileged user."""
-    return {
-        "response_type": "ephemeral",
-        "text": Template(INCIDENT_CONVERSATION_COMMAND_RUN_BY_NON_PRIVILEGED_USER).render(
-            command=command
-        ),
-    }
+def build_role_error_message(payload: dict) -> str:
+    message = f"""I see you tried to run `{payload['command']}`. This is a sensitive command and cannot be run with the incident role you are currently assigned."""
+    return message
 
 
-def create_command_run_in_nonincident_conversation_message(command: str):
-    """Creates a message for when an incident specific command is run in an nonincident conversation."""
-    return {
-        "response_type": "ephemeral",
-        "text": Template(INCIDENT_CONVERSATION_COMMAND_RUN_IN_NONINCIDENT_CONVERSATION).render(
-            command=command
-        ),
-    }
+def build_context_error_message(payload: dict, error: Any) -> str:
+    message = (
+        f"""I see you tried to run `{payload['command']}` in an non-incident conversation. Incident-specifc commands can only be run in incident conversations."""  # command_context_middleware()
+        if payload.get("command")
+        else str(error)  # everything else
+    )
+    return message
 
 
-def create_command_run_in_conversation_where_bot_not_present_message(
-    command: str, conversations: List
-):
-    """Creates a message for when a non-incident specific command is run in a conversation where the Dispatch bot is not present."""
-    conversations = (", ").join([f"#{conversation}" for conversation in conversations])
-    return {
-        "response_type": "ephemeral",
-        "text": Template(
-            INCIDENT_CONVERSATION_COMMAND_RUN_IN_CONVERSATION_WHERE_BOT_NOT_PRESENT
-        ).render(command=command, conversations=conversations),
-    }
+def build_bot_not_present_message(client: WebClient, command: str, conversations: dict) -> str:
+    team_id = client.team_info(client)["team"]["id"]
 
-
-def create_incident_reported_confirmation_message(
-    title: str, description: str, incident_type: str, incident_priority: str
-):
-    """Creates an incident reported confirmation message."""
-    return [
-        {
-            "type": "header",
-            "text": {
-                "type": "plain_text",
-                "text": "Security Incident Reported",
-            },
-        },
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "This is a confirmation that you have reported a security incident with the following information. You'll get invited to a Slack conversation soon.",
-            },
-        },
-        {"type": "section", "text": {"type": "mrkdwn", "text": f"*Incident Title*: {title}"}},
-        {
-            "type": "section",
-            "text": {"type": "mrkdwn", "text": f"*Incident Description*: {description}"},
-        },
-        {
-            "type": "section",
-            "text": {"type": "mrkdwn", "text": f"*Incident Type*: {incident_type}"},
-        },
-        {
-            "type": "section",
-            "text": {"type": "mrkdwn", "text": f"*Incident Priority*: {incident_priority}"},
-        },
+    deep_links = [
+        f"<slack://channel?team={team_id}&id={c['id']}|#{c['name']}>" for c in conversations
     ]
 
+    message = f"""
+    Looks like you tried to run `{command}` in a conversation where the Dispatch bot is not present. Add the bot to your conversation or run the command in one of the following conversations:\n\n {(", ").join(deep_links)}"""
+    return message
 
-def get_template(message_type: MessageType):
-    """Fetches the correct template based on message type."""
-    template_map = {
-        MessageType.evergreen_reminder: (
-            default_notification,
-            EVERGREEN_REMINDER_DESCRIPTION,
-        ),
-        MessageType.incident_participant_suggested_reading: (
-            default_notification,
-            INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION,
-        ),
-        MessageType.incident_task_list: (default_notification, INCIDENT_TASK_LIST_DESCRIPTION),
-        MessageType.incident_task_reminder: (
-            default_notification,
-            INCIDENT_TASK_REMINDER_DESCRIPTION,
-        ),
-    }
 
-    return template_map.get(message_type, (default_notification, None))
+def build_slack_api_error_message(error: SlackApiError) -> str:
+    return (
+        "Sorry, the request to Slack timed out. Try running your command again."
+        if error.response.get("error") == "expired_trigger_id"
+        else "Sorry, we've run into an unexpected error with Slack."
+    )
+
+
+def build_unexpected_error_message(guid: str) -> str:
+    message = f"""Sorry, we've run into an unexpected error. \
+For help please reach out to your Dispatch admins and provide them with the following token: `{guid}`"""
+    return message
 
 
 def format_default_text(item: dict):
@@ -215,8 +186,7 @@ def format_default_text(item: dict):
 
 def default_notification(items: list):
     """Creates blocks for a default notification."""
-    blocks = []
-    blocks.append({"type": "divider"})
+    blocks = [Divider()]
     for item in items:
         if isinstance(item, list):  # handle case where we are passing multiple grouped items
             blocks += default_notification(item)
@@ -225,35 +195,33 @@ def default_notification(items: list):
             continue
 
         if item.get("type"):
-            block = {
-                "type": item["type"],
-            }
             if item["type"] == "context":
-                block.update({"elements": [{"type": "mrkdwn", "text": format_default_text(item)}]})
+                blocks.append(Context(elements=[MarkdownText(text=format_default_text(item))]))
             else:
-                block.update({"text": {"type": "plain_text", "text": format_default_text(item)}})
-            blocks.append(block)
+                blocks.append(Section(text=format_default_text(item)))
         else:
-            block = {
-                "type": "section",
-                "text": {"type": "mrkdwn", "text": format_default_text(item)},
-            }
-            blocks.append(block)
+            blocks.append(Section(text=format_default_text(item)))
 
         if item.get("buttons"):
-            block = {"type": "actions", "elements": []}
+            elements = []
             for button in item["buttons"]:
                 if button.get("button_text") and button.get("button_value"):
-                    block["elements"].append(
-                        {
-                            "action_id": button["button_action"],
-                            "type": "button",
-                            "text": {"type": "plain_text", "text": button["button_text"]},
-                            "value": button["button_value"],
-                        }
-                    )
-            blocks.append(block)
+                    if button.get("button_url"):
+                        element = Button(
+                            action_id=button["button_action"],
+                            text=button["button_text"],
+                            value=button["button_value"],
+                            url=button["button_url"],
+                        )
+                    else:
+                        element = Button(
+                            action_id=button["button_action"],
+                            text=button["button_text"],
+                            value=button["button_value"],
+                        )
 
+                    elements.append(element)
+            blocks.append(Actions(elements=elements))
     return blocks
 
 
@@ -274,11 +242,14 @@ def create_message_blocks(
 
     blocks = []
     if description:  # include optional description text (based on message type)
-        blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": description}})
+        blocks.append(Section(text=description))
 
     for item in items:
-        rendered_items = render_message_template(message_template, **item)
-        blocks += template_func(rendered_items)
+        if message_template:
+            rendered_items = render_message_template(message_template, **item)
+            blocks += template_func(rendered_items)
+        else:
+            blocks += template_func(**item)["blocks"]
 
     blocks_grouped = []
     if items:

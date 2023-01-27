@@ -80,7 +80,6 @@ class GenericWorkflowPlugin(WorkflowPlugin):
     def get_workflow_instance(
         self,
         workflow_id: str,
-        workflow_instance_id: int,
         tags: list[str],
         **kwargs,
     ):
@@ -91,7 +90,6 @@ class GenericWorkflowPlugin(WorkflowPlugin):
         }
         fields = {
             "workflow_id": workflow_id,
-            "workflow_instance_id": workflow_instance_id,
             "tags": tags,
         }
         resp = requests.get(api_url, params=fields, headers=headers)

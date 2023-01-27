@@ -1,6 +1,8 @@
+aiocache
 aiofiles
 aiohttp
 alembic
+blockkit
 bcrypt
 cachetools
 chardet
@@ -34,6 +36,7 @@ sentry-asgi
 sentry-sdk
 sh
 slack_sdk
+slack-bolt
 spacy
 sqlalchemy-filters
 sqlalchemy-utils

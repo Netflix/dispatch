@@ -72,6 +72,7 @@ class PluginInstance(Base, ProjectMixin):
         """Fetches a plugin instance that matches this record."""
         plugin = plugins.get(self.plugin.slug)
         plugin.configuration = self.configuration
+        plugin.project_id = self.project_id
         return plugin
 
     @property

@@ -6,6 +6,7 @@ from typing import List
 
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.incident.enums import IncidentStatus
+from dispatch.case.enums import CaseStatus
 
 from dispatch.enums import DispatchEnum, DocumentResourceTypes, DocumentResourceReferenceTypes
 
@@ -661,7 +662,7 @@ INCIDENT_CLOSED_RATING_FEEDBACK_NOTIFICATION = [
             {
                 "button_text": "Provide Feedback",
                 "button_value": "{{organization_slug}}-{{incident_id}}",
-                "button_action": ConversationButtonActions.provide_feedback,
+                "button_action": ConversationButtonActions.feedback_notification_provide,
             }
         ],
     }
@@ -755,7 +756,12 @@ def render_message_template(message_template: List[dict], **kwargs):
             for button in d["buttons"]:
                 button["button_text"] = Template(button["button_text"]).render(**kwargs)
                 button["button_value"] = Template(button["button_value"]).render(**kwargs)
-                button["button_action"] = Template(button["button_action"]).render(**kwargs)
+
+                if button.get("button_action"):
+                    button["button_action"] = Template(button["button_action"]).render(**kwargs)
+
+                if button.get("button_url"):
+                    button["button_url"] = Template(button["button_url"]).render(**kwargs)
 
         if d.get("status_mapping"):
             d["text"] = d["status_mapping"][kwargs["status"]]
@@ -767,4 +773,5 @@ def render_message_template(message_template: List[dict], **kwargs):
             d["context"] = Template(d["context"]).render(**kwargs)
 
         data.append(d)
+
     return data

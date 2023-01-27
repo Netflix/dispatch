@@ -2,6 +2,8 @@ from typing import Optional
 
 from dispatch.event import service as event_service
 
+from dispatch.project.models import Project
+from dispatch.incident.models import Incident
 from .models import Conversation, ConversationCreate, ConversationUpdate
 
 
@@ -15,6 +17,8 @@ def get_by_channel_id_ignoring_channel_type(db_session, channel_id: str) -> Opti
     and update the channel id in the database if the channel type has changed."""
     conversation = (
         db_session.query(Conversation)
+        .join(Incident)
+        .join(Project)
         .filter(Conversation.channel_id.contains(channel_id[1:]))
         .one_or_none()
     )

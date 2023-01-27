@@ -1,12 +1,12 @@
-import re
 import functools
+import re
 from typing import Any
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from pydantic import BaseModel
 
+from pydantic import BaseModel
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import sessionmaker, object_session
+from sqlalchemy.orm import object_session, sessionmaker, Session
 from sqlalchemy.sql.expression import true
 from sqlalchemy_utils import get_mapper
 from starlette.requests import Request
@@ -15,12 +15,32 @@ from dispatch import config
 from dispatch.exceptions import NotFoundError
 from dispatch.search.fulltext import make_searchable
 
-
 engine = create_engine(
     config.SQLALCHEMY_DATABASE_URI,
     pool_size=config.DATABASE_ENGINE_POOL_SIZE,
     max_overflow=config.DATABASE_ENGINE_MAX_OVERFLOW,
 )
+
+
+# Useful for identifying slow or n + 1 queries. But doesn't need to be enabled in production.
+# logging.basicConfig()
+# logger = logging.getLogger(__name__)
+# logger.setLevel(logging.DEBUG)
+
+
+# @event.listens_for(Engine, "before_cursor_execute")
+# def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+#    conn.info.setdefault("query_start_time", []).append(time.time())
+#    logger.debug("Start Query: %s", statement)
+
+
+# @event.listens_for(Engine, "after_cursor_execute")
+# def after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+#    total = time.time() - conn.info["query_start_time"].pop(-1)
+#    logger.debug("Query Complete!")
+#    logger.debug("Total Time: %f", total)
+
+
 SessionLocal = sessionmaker(bind=engine)
 
 
@@ -165,3 +185,13 @@ def ensure_unique_default_per_project(target, value, oldvalue, initiator):
             if previous_default.id != target.id:
                 previous_default.default = False
                 session.commit()
+
+
+def refetch_db_session(organization_slug: str) -> Session:
+    schema_engine = engine.execution_options(
+        schema_translate_map={
+            None: f"dispatch_organization_{organization_slug}",
+        }
+    )
+    db_session = sessionmaker(bind=schema_engine)()
+    return db_session

@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.orm import Session
 
+from dispatch.config import DISPATCH_AUTH_REGISTRATION_ENABLED
+
 from dispatch.auth.permissions import (
     OrganizationMemberPermission,
     PermissionsDependency,
@@ -169,7 +171,6 @@ def login_user(
     )
 
 
-@auth_router.post("/register", response_model=UserRegisterResponse)
 def register_user(
     user_in: UserRegister,
     organization: OrganizationSlug,
@@ -189,3 +190,9 @@ def register_user(
 
     user = create(db_session=db_session, organization=organization, user_in=user_in)
     return user
+
+
+if DISPATCH_AUTH_REGISTRATION_ENABLED:
+    register_user = auth_router.post("/register", response_model=UserRegisterResponse)(
+        register_user
+    )

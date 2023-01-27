@@ -1,17 +1,21 @@
-import time
-import logging
 import functools
+import inspect
+import logging
+import time
+from typing import Any, Dict, List, Optional
 
 import slack_sdk
 from slack_sdk.web.async_client import AsyncWebClient
-
-from typing import Any, Dict, List, Optional
-
 from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
 
 from .config import SlackConversationConfiguration
 
 log = logging.getLogger(__name__)
+
+
+def fullname(o):
+    module = inspect.getmodule(o)
+    return f"{module.__name__}.{o.__qualname__}"
 
 
 def create_slack_client(config: SlackConversationConfiguration, run_async: bool = False):
@@ -32,7 +36,7 @@ def resolve_user(client: Any, user_id: str):
 def chunks(ids, n):
     """Yield successive n-sized chunks from l."""
     for i in range(0, len(ids), n):
-        yield ids[i : i + n]
+        yield ids[i : i + n]  # noqa
 
 
 def paginated(data_key):
@@ -182,11 +186,24 @@ def get_user_info_by_email(client: Any, email: str):
     return make_call(client, "users.lookupByEmail", email=email)["user"]
 
 
+async def get_user_info_by_email_async(client: Any, email: str):
+    """Gets profile information about a user by email."""
+    return (await make_call_async(client, "users.lookupByEmail", email=email))["user"]
+
+
 @functools.lru_cache()
 def get_user_profile_by_email(client: Any, email: str):
     """Gets extended profile information about a user by email."""
     user = make_call(client, "users.lookupByEmail", email=email)["user"]
     profile = make_call(client, "users.profile.get", user=user["id"])["profile"]
+    profile["tz"] = user["tz"]
+    return profile
+
+
+async def get_user_profile_by_email_async(client: Any, email: str):
+    """Gets extended profile information about a user by email."""
+    user = (await make_call(client, "users.lookupByEmail", email=email))["user"]
+    profile = (await make_call(client, "users.profile.get", user=user["id"]))["profile"]
     profile["tz"] = user["tz"]
     return profile
 
@@ -213,28 +230,28 @@ def get_user_avatar_url(client: Any, email: str):
     return get_user_info_by_email(client, email)["profile"]["image_512"]
 
 
-# @functools.lru_cache()
-async def get_conversations_by_user_id_async(client: Any, user_id: str):
-    """Gets the list of public and private conversations a user is a member of."""
-    result = await make_call_async(
+async def get_user_avatar_url_async(client: Any, email: str):
+    """Gets the user's avatar url."""
+    return (await get_user_info_by_email_async(client, email))["profile"]["image_512"]
+
+
+Conversations = list[dict[str, str]]
+
+
+def get_conversations_by_user_id(client: Any, user_id: str, type: str) -> Conversations:
+    result = make_call(
         client,
         "users.conversations",
         user=user_id,
-        types="public_channel",
+        types=f"{type}_channel",
         exclude_archived="true",
     )
-    public_conversations = [c["name"] for c in result["channels"]]
 
-    result = await make_call_async(
-        client,
-        "users.conversations",
-        user=user_id,
-        types="private_channel",
-        exclude_archived="true",
-    )
-    private_conversations = [c["name"] for c in result["channels"]]
+    conversations = []
+    for channel in result["channels"]:
+        conversations.append({k: v for (k, v) in channel.items() if k == "id" or k == "name"})
 
-    return public_conversations, private_conversations
+    return conversations
 
 
 # note this will get slower over time, we might exclude archived to make it sane
@@ -245,12 +262,10 @@ def get_conversation_by_name(client: Any, name: str):
             return c
 
 
-async def get_conversation_name_by_id_async(client: Any, conversation_id: str):
+def get_conversation_name_by_id(client: Any, conversation_id: str):
     """Fetches a conversation by id and returns its name."""
     try:
-        return (await make_call_async(client, "conversations.info", channel=conversation_id))[
-            "channel"
-        ]["name"]
+        return make_call(client, "conversations.info", channel=conversation_id)["channel"]["name"]
     except slack_sdk.errors.SlackApiError as e:
         if e.response["error"] == "channel_not_found":
             return None
@@ -261,6 +276,18 @@ async def get_conversation_name_by_id_async(client: Any, conversation_id: str):
 def set_conversation_topic(client: Any, conversation_id: str, topic: str):
     """Sets the topic of the specified conversation."""
     return make_call(client, "conversations.setTopic", channel=conversation_id, topic=topic)
+
+
+def set_conversation_bookmark(client: Any, conversation_id: str, weblink: str, title: str):
+    """Sets a bookmark for the specified conversation."""
+    return make_call(
+        client,
+        "bookmarks.add",
+        channel_id=conversation_id,
+        title=title,
+        type="link",
+        link=weblink,
+    )
 
 
 def create_conversation(client: Any, name: str, is_private: bool = False):
@@ -326,18 +353,42 @@ def send_message(
     client: Any,
     conversation_id: str,
     text: str = None,
+    ts: str = None,
     blocks: List[Dict] = None,
     persist: bool = False,
 ):
     """Sends a message to the given conversation."""
     response = make_call(
-        client, "chat.postMessage", channel=conversation_id, text=text, blocks=blocks
+        client, "chat.postMessage", channel=conversation_id, text=text, thread_ts=ts, blocks=blocks
     )
 
     if persist:
         add_pin(client, response["channel"], response["ts"])
 
-    return {"id": response["channel"], "timestamp": response["ts"]}
+    return {
+        "id": response["channel"],
+        "timestamp": response["ts"],
+        "weblink": f"https://slack.com/app_redirect?channel={response['id']}",  # TODO should we fetch the permalink?
+    }
+
+
+def update_message(
+    client: Any,
+    conversation_id: str,
+    text: str = None,
+    ts: str = None,
+    blocks: List[Dict] = None,
+):
+    """Updates a message for the given conversation."""
+    response = make_call(
+        client, "chat.update", channel=conversation_id, text=text, ts=ts, blocks=blocks
+    )
+
+    return {
+        "id": response["channel"],
+        "timestamp": response["ts"],
+        "weblink": f"https://slack.com/app_redirect?channel={response['id']}",  # TODO should we fetch the permalink?
+    }
 
 
 def send_ephemeral_message(
@@ -394,22 +445,6 @@ def message_filter(message):
     return message
 
 
-def is_user(config: SlackConversationConfiguration, user_id: str):
+def is_user(config: SlackConversationConfiguration, user_id: str) -> bool:
     """Returns true if it's a regular user, false if Dispatch or Slackbot bot'."""
     return user_id != config.app_user_slug and user_id != "USLACKBOT"
-
-
-def open_dialog_with_user(client: Any, trigger_id: str, dialog: dict):
-    """Opens a dialog with a user."""
-    return make_call(client, "dialog.open", trigger_id=trigger_id, dialog=dialog)
-
-
-def open_modal_with_user(client: Any, trigger_id: str, modal: dict):
-    """Opens a modal with a user."""
-    # the argument should be view in the make call, since slack api expects view
-    return make_call(client, "views.open", trigger_id=trigger_id, view=modal)
-
-
-def update_modal_with_user(client: Any, trigger_id: str, view_id: str, modal: dict):
-    """Updates a modal with a user."""
-    return make_call(client, "views.update", trigger_id=trigger_id, view_id=view_id, view=modal)

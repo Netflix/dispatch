@@ -41,7 +41,3 @@ class GroupRead(GroupBase):
     def set_description(cls, v):
         """Sets the description"""
         return TACTICAL_GROUP_DESCRIPTION
-
-
-class GroupNested(GroupBase):
-    id: PrimaryKey

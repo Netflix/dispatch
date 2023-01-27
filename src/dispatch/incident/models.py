@@ -1,6 +1,6 @@
 from datetime import datetime
 from collections import Counter, defaultdict
-from typing import List, Optional
+from typing import List, Optional, ForwardRef
 
 from pydantic import validator
 from sqlalchemy import (
@@ -27,24 +27,28 @@ from dispatch.group.models import Group
 from dispatch.incident.priority.models import (
     IncidentPriorityBase,
     IncidentPriorityCreate,
-    IncidentPriorityRead,
+    IncidentPriorityReadMinimal,
 )
 from dispatch.incident.severity.models import (
     IncidentSeverityCreate,
-    IncidentSeverityRead,
+    IncidentSeverityReadMinimal,
     IncidentSeverityBase,
 )
-from dispatch.incident.type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeBase
+from dispatch.incident.type.models import (
+    IncidentTypeCreate,
+    IncidentTypeReadMinimal,
+    IncidentTypeBase,
+)
 from dispatch.incident_cost.models import IncidentCostRead, IncidentCostUpdate
 from dispatch.messaging.strings import INCIDENT_RESOLUTION_DEFAULT
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 from dispatch.models import NameStr, PrimaryKey
 from dispatch.participant.models import Participant
-from dispatch.participant.models import ParticipantRead, ParticipantUpdate
+from dispatch.participant.models import ParticipantRead, ParticipantReadMinimal, ParticipantUpdate
 from dispatch.report.enums import ReportTypes
 from dispatch.report.models import ReportRead
 from dispatch.storage.models import StorageRead
-from dispatch.tag.models import TagRead
+from dispatch.tag.models import TagRead, TagReadMinimal
 from dispatch.term.models import TermRead
 from dispatch.ticket.models import TicketRead
 from dispatch.workflow.models import WorkflowInstanceRead
@@ -124,6 +128,7 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
         "IncidentCost",
         backref="incident",
         cascade="all, delete-orphan",
+        lazy="subquery",
         order_by="IncidentCost.created_at",
     )
 
@@ -166,6 +171,7 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     tags = relationship(
         "Tag",
         secondary=assoc_incident_tags,
+        lazy="subquery",
         backref="incidents",
     )
     tasks = relationship("Task", backref="incident", cascade="all, delete-orphan")
@@ -176,13 +182,19 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     )
 
     duplicate_id = Column(Integer, ForeignKey("incident.id"))
-    duplicates = relationship("Incident", remote_side=[id], uselist=True)
+    duplicates = relationship(
+        "Incident", remote_side=[id], lazy="joined", join_depth=2, uselist=True
+    )
 
     commander_id = Column(Integer, ForeignKey("participant.id"))
-    commander = relationship("Participant", foreign_keys=[commander_id], post_update=True)
+    commander = relationship(
+        "Participant", foreign_keys=[commander_id], lazy="subquery", post_update=True
+    )
 
     reporter_id = Column(Integer, ForeignKey("participant.id"))
-    reporter = relationship("Participant", foreign_keys=[reporter_id], post_update=True)
+    reporter = relationship(
+        "Participant", foreign_keys=[reporter_id], lazy="subquery", post_update=True
+    )
 
     liaison_id = Column(Integer, ForeignKey("participant.id"))
     liaison = relationship("Participant", foreign_keys=[liaison_id], post_update=True)
@@ -248,21 +260,6 @@ class IncidentBase(DispatchBase):
         return v
 
 
-class IncidentReadNested(IncidentBase):
-    id: PrimaryKey
-    closed_at: Optional[datetime] = None
-    commander: Optional[ParticipantRead]
-    created_at: Optional[datetime] = None
-    incident_priority: IncidentPriorityRead
-    incident_severity: IncidentSeverityRead
-    incident_type: IncidentTypeRead
-    name: Optional[NameStr]
-    project: ProjectRead
-    reported_at: Optional[datetime] = None
-    reporter: Optional[ParticipantRead]
-    stable_at: Optional[datetime] = None
-
-
 class IncidentCreate(IncidentBase):
     commander: Optional[ParticipantUpdate]
     incident_priority: Optional[IncidentPriorityCreate]
@@ -273,10 +270,39 @@ class IncidentCreate(IncidentBase):
     tags: Optional[List[TagRead]] = []
 
 
+IncidentReadMinimal = ForwardRef("IncidentReadMinimal")
+
+
+class IncidentReadMinimal(IncidentBase):
+    id: PrimaryKey
+    closed_at: Optional[datetime] = None
+    commander: Optional[ParticipantReadMinimal]
+    commanders_location: Optional[str]
+    created_at: Optional[datetime] = None
+    duplicates: Optional[List[IncidentReadMinimal]] = []
+    incident_costs: Optional[List[IncidentCostRead]] = []
+    incident_priority: IncidentPriorityReadMinimal
+    incident_severity: IncidentSeverityReadMinimal
+    incident_type: IncidentTypeReadMinimal
+    name: Optional[NameStr]
+    participants_location: Optional[str]
+    participants_team: Optional[str]
+    project: ProjectRead
+    reported_at: Optional[datetime] = None
+    reporter: Optional[ParticipantReadMinimal]
+    reporters_location: Optional[str]
+    stable_at: Optional[datetime] = None
+    tags: Optional[List[TagReadMinimal]] = []
+    total_cost: Optional[float]
+
+
+IncidentReadMinimal.update_forward_refs()
+
+
 class IncidentUpdate(IncidentBase):
     cases: Optional[List[CaseRead]] = []
     commander: Optional[ParticipantUpdate]
-    duplicates: Optional[List[IncidentReadNested]] = []
+    duplicates: Optional[List[IncidentReadMinimal]] = []
     incident_costs: Optional[List[IncidentCostUpdate]] = []
     incident_priority: IncidentPriorityBase
     incident_severity: IncidentSeverityBase
@@ -303,38 +329,16 @@ class IncidentUpdate(IncidentBase):
         return v
 
 
-class IncidentReadMinimal(IncidentBase):
-    id: PrimaryKey
-    cases: Optional[List[CaseRead]]
-    closed_at: Optional[datetime] = None
-    commander: Optional[ParticipantRead]
-    commanders_location: Optional[str]
-    created_at: Optional[datetime] = None
-    duplicates: Optional[List[IncidentReadNested]] = []
-    incident_costs: Optional[List[IncidentCostRead]] = []
-    incident_priority: IncidentPriorityRead
-    incident_severity: IncidentSeverityRead
-    incident_type: IncidentTypeRead
-    name: Optional[NameStr]
-    participants_location: Optional[str]
-    participants_team: Optional[str]
-    project: ProjectRead
-    reported_at: Optional[datetime] = None
-    reporter: Optional[ParticipantRead]
-    reporters_location: Optional[str]
-    stable_at: Optional[datetime] = None
-    tags: Optional[List[TagRead]] = []
-    total_cost: Optional[float]
-
-
 class IncidentRead(IncidentReadMinimal):
+    cases: Optional[List[CaseRead]] = []
     conference: Optional[ConferenceRead] = None
     conversation: Optional[ConversationRead] = None
     documents: Optional[List[DocumentRead]] = []
+    duplicates: Optional[List[IncidentReadMinimal]] = []
     events: Optional[List[EventRead]] = []
     last_executive_report: Optional[ReportRead]
     last_tactical_report: Optional[ReportRead]
-    participants: Optional[List[ParticipantRead]] = []
+    participants: Optional[List[ParticipantReadMinimal]] = []
     storage: Optional[StorageRead] = None
     terms: Optional[List[TermRead]] = []
     ticket: Optional[TicketRead] = None
@@ -345,4 +349,4 @@ class IncidentPagination(DispatchBase):
     total: int
     itemsPerPage: int
     page: int
-    items: List[IncidentRead] = []
+    items: List[IncidentReadMinimal] = []
