@@ -108,6 +108,7 @@ def timer(func: Any):
         metrics_provider.timer(
             "function.elapsed.time", value=elapsed_time, tags={"function": fullname(func)}
         )
+        log.debug(f"function.elapsed.time.{fullname(func)}: {elapsed_time}")
         return result
 
     return wrapper

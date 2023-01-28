@@ -167,14 +167,13 @@ class MetricsMiddleware(BaseHTTPMiddleware):
             start = time.perf_counter()
             response = await call_next(request)
             elapsed_time = time.perf_counter() - start
+            tags.update({"status_code": response.status_code})
+            metric_provider.counter("server.call.counter", tags=tags)
+            metric_provider.timer("server.call.elapsed", value=elapsed_time, tags=tags)
+            log.debug(f"server.call.elapsed.{path_template}: {elapsed_time}")
         except Exception as e:
             metric_provider.counter("server.call.exception.counter", tags=tags)
             raise e from None
-        else:
-            tags.update({"status_code": response.status_code})
-            metric_provider.timer("server.call.elapsed", value=elapsed_time, tags=tags)
-            metric_provider.counter("server.call.counter", tags=tags)
-
         return response
 
 

@@ -35,7 +35,3 @@ class TicketRead(TicketBase):
     def set_description(cls, v):
         """Sets the description"""
         return TICKET_DESCRIPTION
-
-
-class TicketNested(TicketBase):
-    id: PrimaryKey

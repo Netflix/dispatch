@@ -51,11 +51,11 @@ To enable Dispatch to process Slack events, under `Events Subscriptions`, ensure
 
 Then, under the `Subscribe to bot events` section, add the following bot user events:
 
-|Event Name | Description |
-|---|---|
+| Event Name            | Description                               |
+| --------------------- | ----------------------------------------- |
 | member_joined_channel | A user joined a public or private channel |
-| member_left_channel | A user left a public or private channel |
-| message.groups | A message was posted to a private channel |
+| member_left_channel   | A user left a public or private channel   |
+| message.groups        | A message was posted to a private channel |
 
 ### Interactivity
 
@@ -82,6 +82,7 @@ The following are the bot and user scopes required for the Dispatch Slack App to
 **Bot Token Scopes**
 
 ```text
+bookmarks:write
 channels:read
 chat:write
 commands
@@ -115,7 +116,7 @@ groups:read
 
 ## Dispatch Configuration
 
-The Dispatch Slack plugins for conversation management and resolving contact information are configured in the Dispatch Web UI under Settings ->  Project -> Plugins. Add the desired plugin(s) using the `NEW` button and then edit the plugin(s) configuration by clicking on the three vertical dots.
+The Dispatch Slack plugins for conversation management and resolving contact information are configured in the Dispatch Web UI under Settings -> Project -> Plugins. Add the desired plugin(s) using the `NEW` button and then edit the plugin(s) configuration by clicking on the three vertical dots.
 
 ### Conversation Management Plugin
 
@@ -155,24 +156,24 @@ The Dispatch Slack plugins for conversation management and resolving contact inf
 
 You can override their values if you wish to do so. Included below are their descriptions for easy cut & paste into your Slack app slash commands set-up.
 
-| Command Name                   | Command Description                                                                                             |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------|
-| `/dispatch-add-timeline-event` | Opens a dialog to add an event to the incident timeline.                                                        |
-| `/dispatch-assign-role`        | Opens a dialog for assigning a role to a participant.                                                           |
-| `/dispatch-engage-oncall`      | Opens a dialog to engage an on-call person.                                                                     |
-| `/dispatch-list-incidents <organization-slug\|'default'> <project-slug\|'default'>` | Lists current active and stable incidents and closed incidents in the last 24 hours. |
-| `/dispatch-list-my-tasks`      | Sends an ephemeral message with the list of your open and resolved incident tasks.                              |
-| `/dispatch-list-participants`  | Sends an ephemeral message with the list of incident participants.                                              |
-| `/dispatch-list-resources`     | Sends an ephemeral message with the list of all incident resources.                                             |
-| `/dispatch-list-tasks`         | Sends an ephemeral message with the list of open and resolved incident tasks.                                   |
-| `/dispatch-list-workflows`     | List workflows previously run during this incident.                                                             |
-| `/dispatch-report-executive`   | Opens a dialog to write an executive report.                                                                    |
-| `/dispatch-report-incident <organization-slug\|'default'>` | Opens a dialog to report an incident. This command can be run from non-incident channels where the Dispatch bot is a member. |
-| `/dispatch-report-tactical`    | Opens a dialog to write a tactical report.                                                                      |
-| `/dispatch-run-workflow`       | Run a workflow and associate artifacts with this incident.                                                      |
-| `/dispatch-update-incident`    | Opens a dialog to update the incident.                                                                          |
-| `/dispatch-notifications-group` | Opens a dialog to edit the notifications group.                                                                |
-| `/dispatch-update-participant` | Opens a dialog to update participant metadata.                                                                  |
+| Command Name                                                                        | Command Description                                                                                                         |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `/dispatch-add-timeline-event`                                                      | Opens a modal to add an event to the incident timeline.                                                                     |
+| `/dispatch-assign-role`                                                             | Opens a modal for assigning a role to a participant.                                                                        |
+| `/dispatch-engage-oncall`                                                           | Opens a modal to engage an on-call person.                                                                                  |
+| `/dispatch-list-incidents <organization-slug\|'default'> <project-slug\|'default'>` | Lists current active and stable incidents and closed incidents in the last 24 hours.                                        |
+| `/dispatch-list-my-tasks`                                                           | Opens a modal with the list of your open and resolved incident tasks.                                                       |
+| `/dispatch-list-participants`                                                       | Opens a modal with the list of incident participants.                                                                       |
+| `/dispatch-list-resources`                                                          | Opens a modal with the list of all incident resources.                                                                      |
+| `/dispatch-list-tasks`                                                              | Opens a modal with the list of open and resolved incident tasks.                                                            |
+| `/dispatch-list-workflows`                                                          | List workflows previously run during this incident.                                                                         |
+| `/dispatch-report-executive`                                                        | Opens a modal to write an executive report.                                                                                 |
+| `/dispatch-report-incident <organization-slug\|'default'>`                          | Opens a modal to report an incident. This command can be run from non-incident channels where the Dispatch bot is a member. |
+| `/dispatch-report-tactical`                                                         | Opens a modal to write a tactical report.                                                                                   |
+| `/dispatch-run-workflow`                                                            | Run a workflow and associate artifacts with this incident.                                                                  |
+| `/dispatch-update-incident`                                                         | Opens a modal to update the incident.                                                                                       |
+| `/dispatch-notifications-group`                                                     | Opens a modal to edit the notifications group.                                                                              |
+| `/dispatch-update-participant`                                                      | Opens a modal to update participant metadata.                                                                               |
 
 ### Contact Information Resolver Plugin
 

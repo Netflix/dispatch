@@ -75,7 +75,7 @@ const actions = {
     commit("SET_DIALOG_SHOW_CREATE", false)
   },
   save({ commit }) {
-    commit("SET_SELECTED_LOADING", true)
+    commit("SET_LOADING", true)
     if (!state.selected.id) {
       return SearchApi.create(state.selected)
         .then((resp) => {
@@ -84,13 +84,12 @@ const actions = {
             { text: "Search filter created successfully.", type: "success" },
             { root: true }
           )
-          commit("SET_SELECTED_LOADING", false)
+          commit("SET_LOADING", false)
           commit("SET_DIALOG_SHOW_CREATE", false)
-          commit("RESET_SELECTED")
           return resp.data
         })
         .catch(() => {
-          commit("SET_SELECTED_LOADING", false)
+          commit("SET_LOADING", false)
         })
     } else {
       return SearchApi.update(state.selected.id, state.selected)
@@ -100,10 +99,10 @@ const actions = {
             { text: "Search filter updated successfully.", type: "success" },
             { root: true }
           )
-          commit("SET_SELECTED_LOADING", false)
+          commit("SET_LOADING", false)
         })
         .catch(() => {
-          commit("SET_SELECTED_LOADING", false)
+          commit("SET_LOADING", false)
         })
     }
   },
@@ -113,9 +112,6 @@ const mutations = {
   updateField,
   SET_LOADING(state, value) {
     state.loading = value
-  },
-  SET_SELECTED_LOADING(state, value) {
-    state.selected.loading = value
   },
   SET_RESULTS(state, results) {
     state.results = results
@@ -128,12 +124,6 @@ const mutations = {
   },
   SET_DIALOG_SHOW_CREATE(state, value) {
     state.dialogs.showCreate = value
-  },
-  RESET_SELECTED(state) {
-    // do not reset project
-    let project = state.selected.project
-    state.selected = { ...getDefaultSelectedState() }
-    state.selected.project = project
   },
 }
 

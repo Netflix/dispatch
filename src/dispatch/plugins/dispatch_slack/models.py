@@ -1,16 +1,31 @@
+from typing import Optional
 from pydantic import BaseModel
 
 
-class ButtonValue(BaseModel):
+class SubjectMetadata(BaseModel):
+    id: Optional[str]
+    type: Optional[str]
     organization_slug: str = "default"
-    incident_id: str
+
+    project_id: Optional[str]
+    channel_id: Optional[str]
+
+
+class TaskMetadata(SubjectMetadata):
+    task_id: Optional[str]
+    resource_id: Optional[str]
     action_type: str
 
 
-class TaskButton(ButtonValue):
-    resource_id: str
-
-
-class MonitorButton(ButtonValue):
+class MonitorMetadata(SubjectMetadata):
     weblink: str
     plugin_instance_id: int
+
+
+class SubjectMetadata(BaseModel):
+    id: Optional[str]
+    type: Optional[str]
+    organization_slug: str = "default"
+
+    project_id: Optional[str]
+    channel_id: Optional[str]

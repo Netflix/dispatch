@@ -141,10 +141,6 @@ class WorkflowRead(WorkflowBase):
         return v
 
 
-class WorkflowNested(WorkflowRead):
-    pass
-
-
 class WorkflowPagination(DispatchBase):
     total: int
     items: List[WorkflowRead] = []

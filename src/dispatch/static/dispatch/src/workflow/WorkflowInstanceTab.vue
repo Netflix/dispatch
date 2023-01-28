@@ -41,7 +41,7 @@ export default {
       headers: [
         { text: "Name", value: "workflow.name" },
         { text: "Status", value: "status" },
-        { text: "Creator", value: "creator" },
+        { text: "Creator", value: "creator.individual.name" },
         { text: "Run Reason", value: "run_reason" },
         { text: "Created At", value: "created_at" },
         { text: "", value: "parameters" },

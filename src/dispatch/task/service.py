@@ -38,7 +38,10 @@ def get_all_by_incident_id_and_status(
 ) -> List[Optional[Task]]:
     """Get all tasks by incident id and status."""
     return (
-        db_session.query(Task).filter(Task.incident_id == incident_id).filter(Task.status == status)
+        db_session.query(Task)
+        .filter(Task.incident_id == incident_id)
+        .filter(Task.status == status)
+        .all()
     )
 
 
@@ -184,6 +187,13 @@ def update(*, db_session, task: Task, task_in: TaskUpdate, sync_external: bool =
 
     db_session.commit()
     return task
+
+
+def resolve_or_reopen(*, db_session, task_id: int, status: str) -> None:
+    """Resolve an existing task or re-open it."""
+    task = db_session.query(Task).filter(Task.id == task_id).first()
+    task.status = status
+    db_session.commit()
 
 
 def delete(*, db_session, task_id: int):

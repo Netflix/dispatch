@@ -10,10 +10,11 @@ from dispatch.models import DispatchBase, PrimaryKey
 from dispatch.participant_role.models import (
     ParticipantRoleCreate,
     ParticipantRoleRead,
+    ParticipantRoleReadMinimal,
     ParticipantRole,
 )
 from dispatch.service.models import ServiceRead
-from dispatch.individual.models import IndividualContactRead
+from dispatch.individual.models import IndividualContactRead, IndividualContactReadMinimal
 
 
 class Participant(Base):
@@ -28,6 +29,7 @@ class Participant(Base):
     )
     added_reason = Column(String)
     after_hours_notification = Column(Boolean, default=False)
+    user_conversation_id = Column(String)
 
     # relationships
     feedback = relationship("Feedback", backref="participant")
@@ -87,6 +89,12 @@ class ParticipantRead(ParticipantBase):
     id: PrimaryKey
     participant_roles: Optional[List[ParticipantRoleRead]] = []
     individual: Optional[IndividualContactRead]
+
+
+class ParticipantReadMinimal(DispatchBase):
+    id: PrimaryKey
+    participant_roles: Optional[List[ParticipantRoleReadMinimal]] = []
+    individual: Optional[IndividualContactReadMinimal]
 
 
 class ParticipantPagination(DispatchBase):

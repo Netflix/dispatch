@@ -21,8 +21,8 @@ def get_by_incident_id_and_role(
     """Get a participant by incident id and role name."""
     return (
         db_session.query(Participant)
-        .filter(Participant.incident_id == incident_id)
         .join(ParticipantRole)
+        .filter(Participant.incident_id == incident_id)
         .filter(ParticipantRole.renounced_at.is_(None))
         .filter(ParticipantRole.role == role)
         .one_or_none()
@@ -35,8 +35,8 @@ def get_by_incident_id_and_email(
     """Get a participant by incident id and email."""
     return (
         db_session.query(Participant)
-        .filter(Participant.incident_id == incident_id)
         .join(IndividualContact)
+        .filter(Participant.incident_id == incident_id)
         .filter(IndividualContact.email == email)
         .one_or_none()
     )
@@ -50,6 +50,18 @@ def get_by_incident_id_and_service_id(
         db_session.query(Participant)
         .filter(Participant.incident_id == incident_id)
         .filter(Participant.service_id == service_id)
+        .one_or_none()
+    )
+
+
+def get_by_incident_id_and_conversation_id(
+    *, db_session, incident_id: int, user_conversation_id: str
+) -> Optional[Participant]:
+    """Get participant by incident and user_conversation id."""
+    return (
+        db_session.query(Participant)
+        .filter(Participant.incident_id == incident_id)
+        .filter(Participant.user_conversation_id == user_conversation_id)
         .one_or_none()
     )
 

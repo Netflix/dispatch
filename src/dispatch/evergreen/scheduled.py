@@ -56,6 +56,7 @@ def create_evergreen_reminder(
     name = subject = notification_text = "Evergreen Reminder"
 
     # Can raise exception "tenacity.RetryError: RetryError". (Email may still go through).
+    success = False
     try:
         success = plugin.instance.send(
             owner_email,

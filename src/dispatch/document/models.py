@@ -73,10 +73,6 @@ class DocumentRead(DocumentBase):
         return v
 
 
-class DocumentNested(DocumentRead):
-    pass
-
-
 class DocumentPagination(DispatchBase):
     total: int
     items: List[DocumentRead] = []

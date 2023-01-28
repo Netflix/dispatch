@@ -583,11 +583,11 @@ def dispatch_scheduler():
     from .incident_cost.scheduled import calculate_incidents_response_cost  # noqa
     from .report.scheduled import incident_report_reminders  # noqa
     from .tag.scheduled import sync_tags, build_tag_models  # noqa
-    from .task.scheduled import (
+    from .task.scheduled import (  # noqa
         create_task_reminders,
         daily_sync_task,
         sync_active_stable_tasks,
-    )  # noqa
+    )
     from .term.scheduled import sync_terms  # noqa
     from .workflow.scheduled import sync_workflow  # noqa
     from .monitor.scheduled import sync_active_stable_monitors  # noqa
@@ -723,17 +723,26 @@ def signals_group():
 @click.argument("project")
 def run_slack_websocket(organization: str, project: str):
     """Runs the slack websocket process."""
-    import asyncio
     from sqlalchemy import true
-    from dispatch.project.models import ProjectRead
-    from dispatch.project import service as project_service
-    from dispatch.plugins.dispatch_slack import socket_mode
-    from dispatch.plugins.dispatch_slack.decorators import get_organization_scope_from_slug
+
+    from slack_bolt.adapter.socket_mode import SocketModeHandler
+
+    from dispatch.database.core import refetch_db_session
     from dispatch.common.utils.cli import install_plugins
+    from dispatch.plugins.dispatch_slack.bolt import app
+    from dispatch.plugins.dispatch_slack.incident.interactive import configure as incident_configure
+    from dispatch.plugins.dispatch_slack.feedback.interactive import (  # noqa
+        configure as feedback_configure,
+    )
+    from dispatch.plugins.dispatch_slack.workflow import configure as workflow_configure
+    from dispatch.plugins.dispatch_slack.case.interactive import configure as case_configure
+
+    from dispatch.project import service as project_service
+    from dispatch.project.models import ProjectRead
 
     install_plugins()
 
-    session = get_organization_scope_from_slug(organization)
+    session = refetch_db_session(organization)
 
     project = project_service.get_by_name_or_raise(
         db_session=session, project_in=ProjectRead(name=project)
@@ -749,7 +758,7 @@ def run_slack_websocket(organization: str, project: str):
     instance = None
     for i in instances:
         if i.plugin.slug == "slack-conversation":
-            instance = i
+            instance: PluginInstance = i
             break
 
     if not instance:
@@ -760,8 +769,18 @@ def run_slack_websocket(organization: str, project: str):
         return
 
     session.close()
+
     click.secho("Slack websocket process started...", fg="blue")
-    asyncio.run(socket_mode.run_websocket_process(instance.configuration))
+    incident_configure(instance.configuration)
+    workflow_configure(instance.configuration)
+    case_configure(instance.configuration)
+
+    app._token = instance.configuration.api_bot_token.get_secret_value()
+
+    handler = SocketModeHandler(
+        app, instance.configuration.socket_mode_app_token.get_secret_value()
+    )
+    handler.start()
 
 
 @dispatch_server.command("shell")

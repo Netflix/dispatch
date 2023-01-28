@@ -43,7 +43,7 @@ def send_message(service, message: dict) -> bool:
         .messages()
         .list(userId="me", q="from=mailer-daemon@googlemail.com", maxResults=10)
         .execute()
-    )["messages"]
+    ).get("messages", [])
 
     for message in messages:
         if message["threadId"] == sent_message_thread_id:
