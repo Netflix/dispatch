@@ -1,4 +1,5 @@
 import logging
+from typing import List
 from datetime import datetime
 from typing import List
 
@@ -42,7 +43,8 @@ def get_case_participants(case: Case, db_session: SessionLocal):
         )
         if plugin:
             individual_contacts, team_contacts = plugin.instance.get(
-                case,
+                class_instance=case,
+                project_id=case.project.id,
                 db_session=db_session,
             )
 

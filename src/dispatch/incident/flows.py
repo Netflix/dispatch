@@ -70,9 +70,9 @@ def get_incident_participants(incident: Incident, db_session: SessionLocal):
             db_session=db_session, project_id=incident.project.id, plugin_type="participant"
         )
         if plugin:
-            # TODO(mvilanova): add support for resolving participants based on severity
             individual_contacts, team_contacts = plugin.instance.get(
-                incident,
+                class_instance=incident,
+                project_id=incident.project.id,
                 db_session=db_session,
             )
 
