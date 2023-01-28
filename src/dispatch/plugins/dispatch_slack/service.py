@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional
 
 import slack_sdk
 from slack_sdk.web.async_client import AsyncWebClient
+from blockkit import Section
 from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
 
 from .config import SlackConversationConfiguration
@@ -333,6 +334,16 @@ def conversation_archived(client: Any, conversation_id: str):
             return None
         else:
             raise e
+
+
+def add_users_to_conversation_thread(
+    client: Any, conversation_id: str, thread_id, user_ids: List[str]
+):
+    """Adds user to a threaded conversation."""
+    # TODO we don't yet have a facility to add a conversation user as a participant
+    users = [f"<@{user_id}>" for user_id in user_ids]
+    blocks = [Section(text="Looping in individuals to help resolve this case...", fields=users)]
+    send_message(client=client, conversation_id=conversation_id, blocks=blocks, ts=thread_id)
 
 
 def add_users_to_conversation(client: Any, conversation_id: str, user_ids: List[str]):

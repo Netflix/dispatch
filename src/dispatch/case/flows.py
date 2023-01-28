@@ -1,13 +1,15 @@
 import logging
 from datetime import datetime
+from typing import List
 
+from dispatch.case import service as case_service
 from dispatch.case.models import CaseRead
 from dispatch.conversation import service as conversation_service
 from dispatch.conversation.models import ConversationCreate
 from dispatch.database.core import SessionLocal
 from dispatch.decorators import background_task
 from dispatch.document import flows as document_flows
-from dispatch.enums import DocumentResourceTypes
+from dispatch.enums import DocumentResourceTypes, Visibility
 from dispatch.event import service as event_service
 from dispatch.group import flows as group_flows
 from dispatch.group.enums import GroupAction, GroupType
@@ -27,6 +29,116 @@ from .models import Case, CaseStatus
 from .service import delete, get
 
 log = logging.getLogger(__name__)
+
+
+def get_case_participants(case: Case, db_session: SessionLocal):
+    """Get additional case participants based on priority, type and description."""
+    individual_contacts = []
+    team_contacts = []
+
+    if case.visibility == Visibility.open:
+        plugin = plugin_service.get_active_instance(
+            db_session=db_session, project_id=case.project.id, plugin_type="participant"
+        )
+        if plugin:
+            individual_contacts, team_contacts = plugin.instance.get(
+                case,
+                db_session=db_session,
+            )
+
+            event_service.log_case_event(
+                db_session=db_session,
+                source=plugin.plugin.title,
+                description="Case participants resolved",
+                case_id=case.id,
+            )
+
+    return individual_contacts, team_contacts
+
+
+def add_participants_to_conversation(
+    participant_emails: List[str], case: Case, db_session: SessionLocal
+):
+    """Adds one or more participants to the case conversation."""
+    if not case.conversation:
+        log.warning(
+            "Case participant(s) not added to conversation. No conversation available for this case."
+        )
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project.id, plugin_type="conversation"
+    )
+    if not plugin:
+        log.warning(
+            "Incident participant(s) not added to conversation. No conversation plugin enabled."
+        )
+        return
+
+    try:
+        plugin.instance.add_to_thread(
+            case.conversation.channel_id, case.conversation.thread_id, participant_emails
+        )
+    except Exception as e:
+        event_service.log_case_event(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"Adding participant(s) to case conversation failed. Reason: {e}",
+            case_id=case.id,
+        )
+        log.exception(e)
+
+
+@background_task
+def case_add_or_reactive_participant_flow(
+    user_email: str,
+    case_id: int,
+    # participant_role: ParticipantRoleType = ParticipantRoleType.participant, #TODO
+    service_id: int = 0,
+    event: dict = None,
+    organization_slug: str = None,
+    db_session=None,
+):
+    """Runs the case add or reactive participant flow."""
+    case = case_service.get(db_session=db_session, case_id=case_id)
+
+    # TODO once cases have participants
+    # if service_id:
+    #    # we need to ensure that we don't add another member of a service if one
+    #    # already exists (e.g. overlapping oncalls, we assume they will hand-off if necessary)
+    #    participant = participant_service.get_by_case_id_and_service_id(
+    #        case_id=case_id, service_id=service_id, db_session=db_session
+    #    )
+
+    #    if participant:
+    #        log.debug("Skipping resolved participant. Oncall service member already engaged.")
+    #        return
+
+    # participant = participant_service.get_by_case_id_and_email(
+    #    db_session=db_session, case_id=case.id, email=user_email
+    # )
+
+    # if participant:
+    #    if participant.active_roles:
+    #        return participant
+
+    #    if case.status != CaseStatus.closed:
+    #        # we reactivate the participant
+    #        participant_flows.reactivate_participant(
+    #            user_email, case, db_session, service_id=service_id
+    #        )
+    # else:
+    # we add the participant to the incident
+    #    participant = participant_flows.add_participant(
+    #        user_email, case, db_session, service_id=service_id, role=participant_role
+    #    )
+
+    # we add the participant to the tactical group
+    # add_participant_to_tactical_group(user_email, case, db_session)
+
+    if case.status != CaseStatus.closed:
+        # we add the participant to the conversation
+        add_participants_to_conversation([user_email], case, db_session)
+
+    # return participant
 
 
 def create_conversation(case: Case, db_session: SessionLocal):
@@ -83,8 +195,14 @@ def case_new_create_flow(
 
         return
 
+    individual_participants, team_participants = get_case_participants(
+        case=case, db_session=db_session
+    )
+
     # we create the tactical group
-    group_participants = [case.assignee.individual.email]
+    group_participants = (
+        [case.assignee.individual.email] + individual_participants + team_participants
+    )
     group = group_flows.create_group(
         subject=case,
         group_type=GroupType.tactical,
@@ -92,29 +210,18 @@ def case_new_create_flow(
         db_session=db_session,
     )
 
-    # if not group:
-    # we delete the ticket
-    # ticket_flows.delete_ticket(ticket=ticket, db_session=db_session)
-
-    # we delete the case
-    #    delete(db_session=db_session, case_id=case_id)
-
-    #    return
-
     # we create the storage folder
-    # storage_members = [group.email]
-    storage = storage_flows.create_storage(subject=case, storage_members=[], db_session=db_session)
-    if not storage:
-        # we delete the group
-        group_flows.delete_group(group=group, db_session=db_session)
+    storage_members = []
+    if group:
+        storage_members = [group.email]
 
-        # we delete the ticket
-        ticket_flows.delete_ticket(ticket=ticket, db_session=db_session)
+    # direct add members if not group exists
+    else:
+        storage_members = group_participants
 
-        # we delete the case
-        delete(db_session=db_session, case_id=case_id)
-
-        return
+    case.storage = storage_flows.create_storage(
+        obj=case, storage_members=storage_members, db_session=db_session
+    )
 
     # we create the investigation document
     document = document_flows.create_document(
@@ -123,20 +230,6 @@ def case_new_create_flow(
         document_template=case.case_type.case_template_document,
         db_session=db_session,
     )
-    if not document:
-        # we delete the storage
-        storage_flows.delete_storage(storage=storage, db_session=db_session)
-
-        # we delete the group
-        group_flows.delete_group(group=group, db_session=db_session)
-
-        # we delete the ticket
-        ticket_flows.delete_ticket(ticket=ticket, db_session=db_session)
-
-        # we delete the case
-        delete(db_session=db_session, case_id=case_id)
-
-        return
 
     # we update the ticket
     ticket_flows.update_case_ticket(case=case, db_session=db_session)
