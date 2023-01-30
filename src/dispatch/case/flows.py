@@ -293,6 +293,12 @@ def case_update_flow(
             group_member=case.assignee.individual.email,
             db_session=db_session,
         )
+        event_service.log_case_event(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description="Case group updated",
+            case_id=case_id,
+        )
 
     # we send the case updated notification
     update_conversation(case, db_session)
