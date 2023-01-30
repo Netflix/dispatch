@@ -255,7 +255,10 @@ class DispatchDocumentResolverPlugin(DocumentResolverPlugin):
     ):
         """Fetches documents from Dispatch."""
         recommendation = route_service.get(
-            db_session=db_session, incident=incident, models=[(Document, DocumentRead)]
+            db_session=db_session,
+            project_id=incident.project_id,
+            class_instance=incident,
+            models=[(Document, DocumentRead)],
         )
         return recommendation.matches
 

@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 def get_resource_matches(
     *, db_session, project_id: int, class_instance: Base, model: Any
 ) -> List[RecommendationMatch]:
-    """Fetches all matching model entities for the given incident."""
+    """Fetches all matching model entities for the given class instance."""
     # get all entities with an associated filter
     model_cls, model_state = model
     resources = (
@@ -27,6 +27,7 @@ def get_resource_matches(
         for f in resource.filters:
             match = search_filter_service.match(
                 db_session=db_session,
+                subject=f.subject,
                 filter_spec=f.expression,
                 class_instance=class_instance,
             )

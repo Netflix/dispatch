@@ -29,7 +29,7 @@ def add_participant(
 
     # we get or create a new individual
     individual = individual_service.get_or_create(
-        db_session=db_session, incident=subject, email=user_email
+        db_session=db_session, project=subject.project, email=user_email
     )
 
     # we get or create a new participant

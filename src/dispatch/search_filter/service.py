@@ -24,9 +24,14 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[SearchFil
     )
 
 
-def match(*, db_session, filter_spec: List[dict], class_instance: Base):
+def match(*, db_session, subject: str, filter_spec: List[dict], class_instance: Base):
     """Matches a class instance with a given search filter."""
     table_name = get_table_name_by_class_instance(class_instance)
+
+    # this filter doesn't apply to the current class_instance
+    if table_name != subject:
+        return
+
     model_cls = get_class_by_tablename(table_name)
     query = db_session.query(model_cls)
 
