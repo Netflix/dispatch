@@ -15,11 +15,11 @@ log = logging.getLogger(__name__)
 
 
 def create_group(
-    obj: Any, group_type: str, group_participants: List[str], db_session: SessionLocal
+    subject: Any, group_type: str, group_participants: List[str], db_session: SessionLocal
 ):
     """Creates a group."""
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=obj.project.id, plugin_type="participant-group"
+        db_session=db_session, project_id=subject.project.id, plugin_type="participant-group"
     )
     if not plugin:
         log.warning("Group not created. No group plugin enabled.")
@@ -27,7 +27,7 @@ def create_group(
 
     # we create the external group
     try:
-        external_group = plugin.instance.create(name=obj.name, participants=group_participants)
+        external_group = plugin.instance.create(name=subject.name, participants=group_participants)
     except Exception as e:
         log.exception(e)
         return
@@ -52,41 +52,45 @@ def create_group(
         weblink=external_group["weblink"],
     )
     group = create(db_session=db_session, group_in=group_in)
-    obj.groups.append(group)
+    subject.groups.append(group)
 
     if group_type == GroupType.tactical:
-        obj.tactical_group_id = group.id
+        subject.tactical_group_id = group.id
     else:
-        obj.notifications_group_id = group.id
+        subject.notifications_group_id = group.id
 
-    db_session.add(obj)
+    db_session.add(subject)
     db_session.commit()
 
-    obj_type = get_table_name_by_class_instance(obj)
-    if obj_type == "case":
+    subject_type = get_table_name_by_class_instance(subject)
+    if subject_type == "case":
         event_service.log_case_event(
             db_session=db_session,
             source=plugin.plugin.title,
             description="Case group created",
-            case_id=obj.id,
+            case_id=subject.id,
         )
-    if obj_type == "incident":
+    if subject_type == "incident":
         event_service.log_incident_event(
             db_session=db_session,
             source=plugin.plugin.title,
             description="Incident group created",
-            incident_id=obj.id,
+            incident_id=subject.id,
         )
 
     return group
 
 
 def update_group(
-    obj: Any, group: Group, group_action: GroupAction, group_member: str, db_session: SessionLocal
+    subject: Any,
+    group: Group,
+    group_action: GroupAction,
+    group_member: str,
+    db_session: SessionLocal,
 ):
     """Updates an existing group."""
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=obj.project.id, plugin_type="participant-group"
+        db_session=db_session, project_id=subject.project.id, plugin_type="participant-group"
     )
     if not plugin:
         log.warning("Group not updated. No group plugin enabled.")
@@ -115,20 +119,20 @@ def update_group(
             log.exception(e)
             return
 
-    obj_type = get_table_name_by_class_instance(obj)
-    if obj_type == "case":
+    subject_type = get_table_name_by_class_instance(subject)
+    if subject_type == "case":
         event_service.log_case_event(
             db_session=db_session,
             source=plugin.plugin.title,
             description="Case group updated",
-            case_id=obj.id,
+            case_id=subject.id,
         )
-    if obj_type == "incident":
+    if subject_type == "incident":
         event_service.log_incident_event(
             db_session=db_session,
             source=plugin.plugin.title,
             description="Incident group updated",
-            incident_id=obj.id,
+            incident_id=subject.id,
         )
 
 

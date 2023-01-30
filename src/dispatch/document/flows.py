@@ -16,18 +16,18 @@ log = logging.getLogger(__name__)
 
 
 def create_document(
-    obj: Any, document_type: str, document_template: Document, db_session: SessionLocal
+    subject: Any, document_type: str, document_template: Document, db_session: SessionLocal
 ):
     """Creates a document."""
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=obj.project.id, plugin_type="storage"
+        db_session=db_session, project_id=subject.project.id, plugin_type="storage"
     )
     if not plugin:
         log.warning("Document not created. No storage plugin enabled.")
         return
 
     # we create the external document
-    external_document_name = f"{obj.name} - {deslug(document_type)}"
+    external_document_name = f"{subject.name} - {deslug(document_type)}"
     external_document_description = ""
     try:
         if document_template:
@@ -35,16 +35,18 @@ def create_document(
 
             # we make a copy of the template in the storage folder
             external_document = plugin.instance.copy_file(
-                folder_id=obj.storage.resource_id,
+                folder_id=subject.storage.resource_id,
                 file_id=document_template.resource_id,
                 name=external_document_name,
             )
             # we move the document to the storage folder
-            plugin.instance.move_file(obj.storage.resource_id, file_id=external_document["id"])
+            plugin.instance.move_file(subject.storage.resource_id, file_id=external_document["id"])
         else:
             # we create a blank document in the storage folder
             external_document = plugin.instance.create_file(
-                parent_id=obj.storage.resource_id, name=external_document_name, file_type="document"
+                parent_id=subject.storage.resource_id,
+                name=external_document_name,
+                file_type="document",
             )
     except Exception as e:
         log.exception(e)
@@ -69,38 +71,38 @@ def create_document(
     document_in = DocumentCreate(
         name=external_document["name"],
         description=external_document["description"],
-        project={"name": obj.project.name},
+        project={"name": subject.project.name},
         resource_id=external_document["resource_id"],
         resource_type=external_document["resource_type"],
         weblink=external_document["weblink"],
     )
 
     document = create(db_session=db_session, document_in=document_in)
-    obj.documents.append(document)
+    subject.documents.append(document)
 
     if document_type == DocumentResourceTypes.case:
-        obj.case_document_id = document.id
+        subject.case_document_id = document.id
 
     if document_type == DocumentResourceTypes.incident:
-        obj.incident_document_id = document.id
+        subject.incident_document_id = document.id
 
-    db_session.add(obj)
+    db_session.add(subject)
     db_session.commit()
 
-    obj_type = get_table_name_by_class_instance(obj)
-    if obj_type == "case":
+    subject_type = get_table_name_by_class_instance(subject)
+    if subject_type == "case":
         event_service.log_case_event(
             db_session=db_session,
             source=plugin.plugin.title,
             description=f"{deslug(document_type).lower().capitalize()} created",
-            case_id=obj.id,
+            case_id=subject.id,
         )
     else:
         event_service.log_incident_event(
             db_session=db_session,
             source=plugin.plugin.title,
             description=f"{deslug(document_type).lower().capitalize()} created",
-            incident_id=obj.id,
+            incident_id=subject.id,
         )
 
     return document

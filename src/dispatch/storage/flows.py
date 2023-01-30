@@ -14,10 +14,10 @@ from .service import create
 log = logging.getLogger(__name__)
 
 
-def create_storage(obj: Any, storage_members: List[str], db_session: SessionLocal):
+def create_storage(subject: Any, storage_members: List[str], db_session: SessionLocal):
     """Creates a storage."""
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=obj.project.id, plugin_type="storage"
+        db_session=db_session, project_id=subject.project.id, plugin_type="storage"
     )
     if not plugin:
         log.warning("Storage not created. No storage plugin enabled.")
@@ -27,7 +27,7 @@ def create_storage(obj: Any, storage_members: List[str], db_session: SessionLoca
     external_storage_root_id = plugin.configuration.root_id
     try:
         external_storage = plugin.instance.create_file(
-            parent_id=external_storage_root_id, name=obj.name, participants=storage_members
+            parent_id=external_storage_root_id, name=subject.name, participants=storage_members
         )
     except Exception as e:
         log.exception(e)
@@ -53,38 +53,38 @@ def create_storage(obj: Any, storage_members: List[str], db_session: SessionLoca
     )
 
     storage = create(db_session=db_session, storage_in=storage_in)
-    obj.storage = storage
-    db_session.add(obj)
+    subject.storage = storage
+    db_session.add(subject)
     db_session.commit()
 
-    obj_type = get_table_name_by_class_instance(obj)
-    if obj_type == "case":
+    subject_type = get_table_name_by_class_instance(subject)
+    if subject_type == "case":
         event_service.log_case_event(
             db_session=db_session,
             source=plugin.plugin.title,
             description="Case storage created",
-            case_id=obj.id,
+            case_id=subject.id,
         )
-    if obj_type == "incident":
+    if subject_type == "incident":
         event_service.log_incident_event(
             db_session=db_session,
             source=plugin.plugin.title,
             description="Incident storage created",
-            incident_id=obj.id,
+            incident_id=subject.id,
         )
 
     return storage
 
 
 def update_storage(
-    obj: Any,
+    subject: Any,
     storage_action: StorageAction,
     storage_members: List[str],
     db_session: SessionLocal,
 ):
     """Updates an exisiting storage."""
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=obj.project.id, plugin_type="storage"
+        db_session=db_session, project_id=subject.project.id, plugin_type="storage"
     )
     if not plugin:
         log.warning("Storage not updated. No storage plugin enabled.")
@@ -94,7 +94,7 @@ def update_storage(
     if storage_action == StorageAction.add_members:
         try:
             plugin.instance.add_participant(
-                team_drive_or_file_id=obj.storage.resource_id, participants=storage_members
+                team_drive_or_file_id=subject.storage.resource_id, participants=storage_members
             )
         except Exception as e:
             log.exception(e)
@@ -104,26 +104,26 @@ def update_storage(
     if storage_action == StorageAction.remove_members:
         try:
             plugin.instance.remove_participant(
-                team_drive_or_file_id=obj.storage.resource_id, participants=storage_members
+                team_drive_or_file_id=subject.storage.resource_id, participants=storage_members
             )
         except Exception as e:
             log.exception(e)
             return
 
-    obj_type = get_table_name_by_class_instance(obj)
-    if obj_type == "case":
+    subject_type = get_table_name_by_class_instance(subject)
+    if subject_type == "case":
         event_service.log_case_event(
             db_session=db_session,
             source=plugin.plugin.title,
             description="Case storage updated",
-            case_id=obj.id,
+            case_id=subject.id,
         )
-    if obj_type == "incident":
+    if subject_type == "incident":
         event_service.log_incident_event(
             db_session=db_session,
             source=plugin.plugin.title,
             description="Incident storage updated",
-            incident_id=obj.id,
+            incident_id=subject.id,
         )
 
 
