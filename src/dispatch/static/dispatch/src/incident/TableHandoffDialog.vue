@@ -78,12 +78,6 @@
             <v-flex xs12>
               <participant-select label="Commander" :project="project"/>
             </v-flex>
-            <!-- <v-list dense> -->
-            <!--   <v-list-item> -->
-            <!--     <v-list-item-content> -->
-            <!--     </v-list-item-content> -->
-            <!--   </v-list-item> -->
-            <!-- </v-list> -->
             <v-spacer />
             <v-btn @click="closeHandoff()" text> Cancel </v-btn>
             <v-badge :value="total" overlap color="info" bordered :content="total">
