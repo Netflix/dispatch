@@ -335,6 +335,9 @@ class CaseAssigneePermission(BasePermission):
             return False
 
         if current_case.assignee:
+            if current_case.assignee.individual.email != current_user.email:
+                return False
+
             if current_case.assignee.individual.email == current_user.email:
                 return True
 
@@ -353,5 +356,8 @@ class CaseReporterPermission(BasePermission):
             return False
 
         if current_case.reporter:
+            if current_case.reporter.individual.email != current_user.email:
+                return False
+
             if current_case.reporter.individual.email == current_user.email:
                 return True
