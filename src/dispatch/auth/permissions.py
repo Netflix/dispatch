@@ -12,7 +12,6 @@ from dispatch.case.models import Case
 from dispatch.incident import service as incident_service
 from dispatch.organization import service as organization_service
 from dispatch.organization.models import OrganizationRead
-from dispatch.participant.models import Participant
 
 
 log = logging.getLogger(__name__)

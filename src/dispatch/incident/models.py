@@ -44,7 +44,7 @@ from dispatch.messaging.strings import INCIDENT_RESOLUTION_DEFAULT
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 from dispatch.models import NameStr, PrimaryKey
 from dispatch.participant.models import Participant
-from dispatch.participant.models import ParticipantRead, ParticipantReadMinimal, ParticipantUpdate
+from dispatch.participant.models import ParticipantReadMinimal, ParticipantUpdate
 from dispatch.report.enums import ReportTypes
 from dispatch.report.models import ReportRead
 from dispatch.storage.models import StorageRead
