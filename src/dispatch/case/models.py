@@ -16,14 +16,12 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType, observes
 
-from dispatch.auth.models import UserRead
 from dispatch.case.priority.models import (
-    CasePriorityCreate,
     CasePriorityRead,
     CasePriorityBase,
 )
-from dispatch.case.severity.models import CaseSeverityBase, CaseSeverityCreate, CaseSeverityRead
-from dispatch.case.type.models import CaseTypeBase, CaseTypeCreate, CaseTypeRead
+from dispatch.case.severity.models import CaseSeverityBase, CaseSeverityRead
+from dispatch.case.type.models import CaseTypeBase, CaseTypeRead
 from dispatch.database.core import Base
 from dispatch.document.models import Document, DocumentRead
 from dispatch.enums import Visibility
@@ -34,7 +32,7 @@ from dispatch.messaging.strings import CASE_RESOLUTION_DEFAULT
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 from dispatch.models import NameStr, PrimaryKey
 from dispatch.participant.models import Participant
-from dispatch.participant.models import ParticipantRead, ParticipantUpdate
+from dispatch.participant.models import ParticipantRead, ParticipantReadMinimal, ParticipantUpdate
 from dispatch.storage.models import StorageRead
 from dispatch.tag.models import TagRead
 from dispatch.ticket.models import TicketRead
@@ -87,8 +85,10 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     )
 
     # relationships
-    assignee_id = Column(Integer, ForeignKey("dispatch_core.dispatch_user.id"))
-    assignee = relationship("DispatchUser", foreign_keys=[assignee_id], post_update=True)
+    assignee_id = Column(Integer, ForeignKey(Participant.id))
+    assignee = relationship(
+        Participant, foreign_keys=[assignee_id], lazy="subquery", post_update=True
+    )
 
     case_type = relationship("CaseType", backref="case")
     case_type_id = Column(Integer, ForeignKey("case_type.id"))
@@ -115,7 +115,7 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     )
 
     participants = relationship(
-        "Participant",
+        Participant,
         backref="case",
         cascade="all, delete-orphan",
         foreign_keys=[Participant.case_id],
@@ -199,7 +199,7 @@ class CaseBase(DispatchBase):
 
 
 class CaseCreate(CaseBase):
-    assignee: Optional[UserRead]
+    assignee: Optional[ParticipantUpdate]
     case_priority: Optional[CasePriorityRead]
     case_severity: Optional[CaseSeverityRead]
     case_type: Optional[CaseTypeRead]
@@ -214,7 +214,7 @@ CaseReadMinimal = ForwardRef("CaseReadMinimal")
 
 class CaseReadMinimal(CaseBase):
     id: PrimaryKey
-    assignee: Optional[UserRead]
+    assignee: Optional[ParticipantReadMinimal]
     case_priority: CasePriorityRead
     case_severity: CaseSeverityRead
     case_type: CaseTypeRead
@@ -235,7 +235,7 @@ CaseReadMinimal.update_forward_refs()
 
 class CaseRead(CaseBase):
     id: PrimaryKey
-    assignee: Optional[UserRead]
+    assignee: Optional[ParticipantRead]
     case_priority: CasePriorityRead
     case_severity: CaseSeverityRead
     case_type: CaseTypeRead
@@ -261,7 +261,7 @@ class CaseRead(CaseBase):
 
 
 class CaseUpdate(CaseBase):
-    assignee: Optional[UserRead]
+    assignee: Optional[ParticipantUpdate]
     case_priority: Optional[CasePriorityBase]
     case_severity: Optional[CaseSeverityBase]
     case_type: Optional[CaseTypeBase]

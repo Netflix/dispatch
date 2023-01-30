@@ -82,7 +82,7 @@ def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, d
         return
 
     # we create the tactical group
-    group_participants = [case.assignee.email]
+    group_participants = [case.assignee.individual.email]
     group = group_flows.create_group(
         obj=case,
         group_type=GroupType.tactical,
@@ -283,12 +283,12 @@ def case_update_flow(
     ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
     # we update the tactical group if we have a new assignee
-    if previous_case.assignee.email != case.assignee.email:
+    if previous_case.assignee.individual.email != case.assignee.individual.email:
         group_flows.update_group(
             obj=case,
             group=case.tactical_group,
             group_action=GroupAction.add_member,
-            group_member=case.assignee.email,
+            group_member=case.assignee.individual.email,
             db_session=db_session,
         )
 
@@ -421,7 +421,9 @@ def case_to_incident_escalate_flow(
         return
 
     # we make the assignee of the case the reporter of the incident
-    reporter = ParticipantUpdate(individual=IndividualContactRead(email=case.assignee.email))
+    reporter = ParticipantUpdate(
+        individual=IndividualContactRead(email=case.assignee.individual.email)
+    )
 
     # we add information about the case in the incident's description
     description = (

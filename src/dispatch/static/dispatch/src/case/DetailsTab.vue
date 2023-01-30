@@ -38,7 +38,7 @@
         />
       </v-flex>
       <v-flex xs12>
-        <organization-member-combobox
+        <participant-select
           v-model="assignee"
           label="Assignee"
           hint="The organization member to which the case is assigned."
@@ -120,7 +120,7 @@ import CaseSeveritySelect from "@/case/severity/CaseSeveritySelect.vue"
 import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
 import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
-import OrganizationMemberCombobox from "@/organization/OrganizationMemberCombobox.vue"
+import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 extend("required", {
@@ -136,7 +136,7 @@ export default {
     CaseTypeSelect,
     DateTimePickerMenu,
     IncidentFilterCombobox,
-    OrganizationMemberCombobox,
+    ParticipantSelect,
     ProjectSelect,
     TagFilterAutoComplete,
     ValidationProvider,

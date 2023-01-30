@@ -61,6 +61,8 @@ def add_participant(
         subject.liaison_id = participant.id
     elif role == ParticipantRoleType.observer:
         subject.observer_id = participant.id
+    elif role == ParticipantRoleType.assignee:
+        subject.assignee_id = participant.id
 
     # we add and commit the changes
     db_session.add(participant)

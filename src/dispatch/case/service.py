@@ -124,7 +124,7 @@ def get_all_last_x_hours_by_status(
         )
 
 
-def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None) -> Case:
+def create(*, db_session, case_in: CaseCreate) -> Case:
     """Creates a new case."""
     project = project_service.get_by_name_or_default(
         db_session=db_session, project_in=case_in.project
@@ -153,22 +153,6 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
     if case_in.visibility:
         case.visibility = case_in.visibility
 
-    if case_in.assignee:
-        # we assign the case to the assignee provided
-        assignee_email = case_in.assignee.individual.email
-    else:
-        if case_type.oncall_service:
-            # we assign the case to the oncall person for the given case type
-            assignee_email = service_flows.resolve_oncall(
-                service=case_type.oncall_service, db_session=db_session
-            )
-        else:
-            # we assign the case to the current user
-            if current_user:
-                assignee_email = current_user.email
-
-    case.assignee = auth_service.get_by_email(db_session=db_session, email=assignee_email)
-
     case_severity = case_severity_service.get_by_name_or_default(
         db_session=db_session, project_id=project.id, case_severity_in=case_in.case_severity
     )
@@ -189,9 +173,19 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
         case_id=case.id,
     )
 
+    if case_in.assignee:
+        # we assign the case to the assignee provided
+        assignee_email = case_in.assignee.individual.email
+    else:
+        if case_type.oncall_service:
+            # we assign the case to the oncall person for the given case type
+            assignee_email = service_flows.resolve_oncall(
+                service=case_type.oncall_service, db_session=db_session
+            )
+
     # add assignee
     participant_flows.add_participant(
-        case_in.assignee.individual.email,
+        assignee_email,
         case,
         db_session,
         role=ParticipantRoleType.assignee,
@@ -231,9 +225,9 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
         setattr(case, field, update_data[field])
 
     if case_in.assignee:
-        if case.assignee.email != case_in.assignee.email:
+        if case.assignee.individual.email != case_in.assignee.individual.email:
             case_assignee = auth_service.get_by_email(
-                db_session=db_session, email=case_in.assignee.email
+                db_session=db_session, email=case_in.assignee.individual.email
             )
             if case_assignee:
                 case.assignee = case_assignee
@@ -241,12 +235,14 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
                 event_service.log_case_event(
                     db_session=db_session,
                     source="Dispatch Core App",
-                    description=f"Case assigned to {case_in.assignee.email} by {current_user.email}",
+                    description=f"Case assigned to {case_in.assignee.individual.email} by {current_user.email}",
                     dispatch_user_id=current_user.id,
                     case_id=case.id,
                 )
             else:
-                log.warning(f"Dispatch user with email address {case_in.assignee.email} not found.")
+                log.warning(
+                    f"Dispatch user with email address {case_in.assignee.individual.email} not found."
+                )
 
     if case_in.case_type:
         if case.case_type.name != case_in.case_type.name:

@@ -304,7 +304,7 @@ class CaseViewPermission(BasePermission):
         request: Request,
     ) -> bool:
         current_case = case_service.get(
-            db_session=request.state.db, incident_id=request.path_params["case_id"]
+            db_session=request.state.db, case_id=request.path_params["case_id"]
         )
 
         if not current_case:
