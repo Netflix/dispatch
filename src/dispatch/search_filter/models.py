@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from pydantic import Field
-from sqlalchemy import Column, ForeignKey, Integer, String, Enum
+from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy.sql.sqltypes import JSON
@@ -28,7 +28,7 @@ class SearchFilter(Base, ProjectMixin):
     expression = Column(JSON, nullable=False, default=[])
     creator_id = Column(Integer, ForeignKey(DispatchUser.id))
     creator = relationship("DispatchUser", backref="search_filters")
-    subject = Column(Enum(SearchFilterSubject))
+    subject = Column(String, default="incident")
 
     search_vector = Column(
         TSVectorType("name", "description", weights={"name": "A", "description": "B"})

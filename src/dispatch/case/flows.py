@@ -26,7 +26,7 @@ from dispatch.storage.enums import StorageAction
 from dispatch.ticket import flows as ticket_flows
 
 from .models import Case, CaseStatus
-from .service import delete, get
+from .service import get
 
 log = logging.getLogger(__name__)
 
@@ -188,26 +188,20 @@ def case_new_create_flow(
     case = get(db_session=db_session, case_id=case_id)
 
     # we create the ticket
-    ticket = ticket_flows.create_case_ticket(case=case, db_session=db_session)
-
-    if not ticket:
-        # we delete the case
-        delete(db_session=db_session, case_id=case_id)
-
-        return
+    ticket_flows.create_case_ticket(case=case, db_session=db_session)
 
     individual_participants, team_participants = get_case_participants(
         case=case, db_session=db_session
     )
 
     # we create the tactical group
-    group_participants = (
+    participant_emails = (
         [case.assignee.individual.email] + individual_participants + team_participants
     )
     group = group_flows.create_group(
         subject=case,
         group_type=GroupType.tactical,
-        group_participants=group_participants,
+        group_participants=participant_emails,
         db_session=db_session,
     )
 
@@ -218,7 +212,7 @@ def case_new_create_flow(
 
     # direct add members if not group exists
     else:
-        storage_members = group_participants
+        storage_members = participant_emails
 
     case.storage = storage_flows.create_storage(
         obj=case, storage_members=storage_members, db_session=db_session
@@ -284,6 +278,19 @@ def case_new_create_flow(
                     description="Conversation added to case",
                     case_id=case.id,
                 )
+                # wait until all resources are created before adding suggested participants
+                individual_participants = [x.email for x, _ in individual_participants]
+                conversation_plugin.instance.add_to_thread(
+                    case.conversation.channel_id,
+                    case.conversation.thread_id,
+                    individual_participants,
+                )
+                event_service.log_case_event(
+                    db_session=db_session,
+                    source="Dispatch Core App",
+                    description="Incident participants added to case conversation.",
+                    case_id=case.id,
+                )
             except Exception as e:
                 event_service.log_case_event(
                     db_session=db_session,
@@ -295,6 +302,7 @@ def case_new_create_flow(
 
     db_session.add(case)
     db_session.commit()
+
     return case
 
 

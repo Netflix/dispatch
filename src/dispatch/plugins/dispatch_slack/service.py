@@ -5,8 +5,8 @@ import time
 from typing import Any, Dict, List, Optional
 
 import slack_sdk
+from blockkit import Message, Section
 from slack_sdk.web.async_client import AsyncWebClient
-from blockkit import Section
 from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
 
 from .config import SlackConversationConfiguration
@@ -342,7 +342,9 @@ def add_users_to_conversation_thread(
     """Adds user to a threaded conversation."""
     # TODO we don't yet have a facility to add a conversation user as a participant
     users = [f"<@{user_id}>" for user_id in user_ids]
-    blocks = [Section(text="Looping in individuals to help resolve this case...", fields=users)]
+    blocks = Message(
+        blocks=[Section(text="Looping in individuals to help resolve this case...", fields=users)]
+    ).build()["blocks"]
     send_message(client=client, conversation_id=conversation_id, blocks=blocks, ts=thread_id)
 
 

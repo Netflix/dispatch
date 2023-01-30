@@ -318,7 +318,7 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
                 team = team_service.get_or_create(
                     db_session=db_session,
                     email=match.resource_state["email"],
-                    project_id=project_id,
+                    project=class_instance.project,
                 )
                 team_contacts.append(team)
 
@@ -326,7 +326,7 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
                 individual = individual_service.get_or_create(
                     db_session=db_session,
                     email=match.resource_state["email"],
-                    project_id=project_id,
+                    project=class_instance.project,
                 )
 
                 individual_contacts.append((individual, None))

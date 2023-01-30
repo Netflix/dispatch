@@ -1,21 +1,18 @@
 import json
 import logging
-
 from collections import namedtuple
 from collections.abc import Iterable
 from inspect import signature
 from itertools import chain
-from six import string_types
-from sortedcontainers import SortedSet
-
 from typing import List
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from pydantic import BaseModel
-from pydantic.types import Json, constr
 
 from fastapi import Depends, Query
-
-from sqlalchemy import and_, not_, or_, orm, func, desc
+from pydantic import BaseModel
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic.types import Json, constr
+from six import string_types
+from sortedcontainers import SortedSet
+from sqlalchemy import and_, desc, func, not_, or_, orm
 from sqlalchemy.exc import InvalidRequestError, ProgrammingError
 from sqlalchemy.orm.mapper import Mapper
 from sqlalchemy_filters import apply_pagination, apply_sort
@@ -23,7 +20,8 @@ from sqlalchemy_filters.exceptions import BadFilterFormat, FieldNotFound
 from sqlalchemy_filters.models import Field, get_model_from_spec
 
 from dispatch.auth.models import DispatchUser
-from dispatch.auth.service import get_current_user, get_current_role
+from dispatch.auth.service import get_current_role, get_current_user
+from dispatch.case.models import Case
 from dispatch.data.query.models import Query as QueryModel
 from dispatch.data.source.models import Source
 from dispatch.enums import UserRoles, Visibility
@@ -37,13 +35,7 @@ from dispatch.plugin.models import Plugin, PluginInstance
 from dispatch.search.fulltext.composite_search import CompositeSearch
 from dispatch.task.models import Task
 
-from .core import (
-    Base,
-    get_class_by_tablename,
-    get_model_name_by_tablename,
-    get_db,
-)
-
+from .core import Base, get_class_by_tablename, get_db, get_model_name_by_tablename
 
 log = logging.getLogger(__file__)
 
@@ -349,6 +341,8 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (QueryModel, "Tag"): (QueryModel.tags, True),
         (QueryModel, "TagType"): (QueryModel.tags, True),
         (DispatchUser, "Organization"): (DispatchUser.organizations, True),
+        (Case, "Tag"): (Case.tags, True),
+        (Case, "TagType"): (Case.tags, True),
         (Incident, "Tag"): (Incident.tags, True),
         (Incident, "TagType"): (Incident.tags, True),
         (Incident, "Term"): (Incident.terms, True),
