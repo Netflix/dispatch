@@ -12,6 +12,7 @@ from dispatch.case.models import Case
 from dispatch.incident import service as incident_service
 from dispatch.organization import service as organization_service
 from dispatch.organization.models import OrganizationRead
+from dispatch.participant.models import Participant
 
 
 log = logging.getLogger(__name__)
@@ -314,45 +315,37 @@ class CaseViewPermission(BasePermission):
             return any_permission(
                 permissions=[
                     OrganizationAdminPermission,
-                    CaseAssigneePermission,
-                    CaseReporterPermission,
+                    CaseParticipantPermission,
                 ],
                 request=request,
             )
         return True
 
 
-class CaseAssigneePermission(BasePermission):
+class CaseEditPermission(BasePermission):
     def has_required_permissions(
         self,
         request: Request,
     ) -> bool:
-        has_permission = False
-        current_user = get_current_user(request=request)
-        current_case: Case = case_service.get(
-            db_session=request.state.db, incident_id=request.path_params["case_id"]
+        return any_permission(
+            permissions=[
+                OrganizationAdminPermission,
+                CaseParticipantPermission,
+            ],
+            request=request,
         )
 
-        if current_case.assignee:
-            if current_case.assignee.individual.email == current_user.email:
-                has_permission = True
 
-        return has_permission
-
-
-class CaseReporterPermission(BasePermission):
+class CaseParticipantPermission(BasePermission):
     def has_required_permissions(
         self,
         request: Request,
     ) -> bool:
-        has_permission = False
         current_user = get_current_user(request=request)
         current_case: Case = case_service.get(
-            db_session=request.state.db, incident_id=request.path_params["case_id"]
+            db_session=request.state.db, case_id=request.path_params["case_id"]
         )
-
-        if current_case.reporter:
-            if current_case.reporter.individual.email == current_user.email:
-                has_permission = True
-
-        return has_permission
+        participant_emails: list[str] = [
+            participant.individual.email for participant in current_case.participants
+        ]
+        return current_user.email in participant_emails

@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 # NOTE: define permissions before enabling the code block below
 from dispatch.auth.permissions import (
-    # CaseEditPermission,
+    CaseEditPermission,
     # CaseJoinPermission,
     PermissionsDependency,
     CaseViewPermission,
@@ -146,7 +146,7 @@ def create_case(
     "/{case_id}",
     response_model=CaseRead,
     summary="Updates an existing case.",
-    # dependencies=[Depends(PermissionsDependency([CaseEditPermission]))],
+    dependencies=[Depends(PermissionsDependency([CaseEditPermission]))],
 )
 def update_case(
     *,
@@ -183,7 +183,7 @@ def update_case(
     "/{case_id}/escalate",
     response_model=IncidentRead,
     summary="Escalates an existing case.",
-    # dependencies=[Depends(PermissionsDependency([CaseEditPermission]))],
+    dependencies=[Depends(PermissionsDependency([CaseEditPermission]))],
 )
 def escalate_case(
     *,
@@ -225,7 +225,7 @@ def escalate_case(
     "/{case_id}",
     response_model=None,
     summary="Deletes an existing case.",
-    # dependencies=[Depends(PermissionsDependency([CaseEditPermission]))],
+    dependencies=[Depends(PermissionsDependency([CaseEditPermission]))],
 )
 def delete_case(
     *,
