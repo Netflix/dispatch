@@ -27,16 +27,16 @@ export default {
     return API.put(`/${resource}/${incidentId}`, payload)
   },
 
-  createReport(incidentId, type, payload) {
-    return API.post(`/${resource}/${incidentId}/report/${type}`, payload)
-  },
-
   bulkUpdate(incidents, payload) {
     return Promise.all(
       incidents.map((incident) => {
         return this.update(incident.id, { ...incident, ...payload })
       })
     )
+  },
+
+  delete(incidentId) {
+    return API.delete(`/${resource}/${incidentId}`)
   },
 
   bulkDelete(incidents) {
@@ -55,7 +55,13 @@ export default {
     return API.post(`/${resource}/${incidentId}/subscribe`, payload)
   },
 
-  delete(incidentId) {
-    return API.delete(`/${resource}/${incidentId}`)
+  createReport(incidentId, type, payload) {
+    return API.post(`/${resource}/${incidentId}/report/${type}`, payload)
+  },
+
+  handoff(options) {
+    return API.post(`/${resource}/handoff`, {
+      params: { ...options },
+    })
   },
 }

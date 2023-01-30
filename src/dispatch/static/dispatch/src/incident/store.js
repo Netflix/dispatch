@@ -66,6 +66,7 @@ const state = {
     showEditSheet: false,
     showExport: false,
     showNewSheet: false,
+    showHandoff: false,
   },
   report: {
     ...getDefaultReportState(),
@@ -213,6 +214,12 @@ const actions = {
   },
   closeExport({ commit }) {
     commit("SET_DIALOG_SHOW_EXPORT", false)
+  },
+  showHandoff({ commit }) {
+    commit("SET_DIALOG_SHOW_HANDOFF", true)
+  },
+  closeHandoff({ commit }) {
+    commit("SET_DIALOG_SHOW_HANDOFF", false)
   },
   report({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
@@ -380,6 +387,9 @@ const mutations = {
   },
   SET_DIALOG_SHOW_EXPORT(state, value) {
     state.dialogs.showExport = value
+  },
+  SET_DIALOG_SHOW_HANDOFF(state, value) {
+    state.dialogs.showHandoff = value
   },
   SET_DIALOG_DELETE(state, value) {
     state.dialogs.showDeleteDialog = value

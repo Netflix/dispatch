@@ -14,6 +14,7 @@
       <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
         <table-export-dialog />
+        <table-handoff-dialog />
         <v-btn color="info" class="ml-2" @click="showNewSheet()"> New </v-btn>
       </v-col>
     </v-row>
@@ -127,11 +128,12 @@ import IncidentPriority from "@/incident/priority/IncidentPriority.vue"
 import IncidentSeverity from "@/incident/severity/IncidentSeverity.vue"
 import IncidentStatus from "@/incident/status/IncidentStatus.vue"
 import NewSheet from "@/incident/NewSheet.vue"
-import WorkflowRunModal from "@/workflow/RunModal.vue"
 import ReportDialog from "@/incident/ReportDialog.vue"
 import RouterUtils from "@/router/utils"
 import TableExportDialog from "@/incident/TableExportDialog.vue"
 import TableFilterDialog from "@/incident/TableFilterDialog.vue"
+import TableHandoffDialog from "@/incident/TableHandoffDialog.vue"
+import WorkflowRunModal from "@/workflow/RunModal.vue"
 
 export default {
   name: "IncidentTable",
@@ -146,9 +148,10 @@ export default {
     IncidentStatus,
     NewSheet,
     ReportDialog,
-    WorkflowRunModal,
     TableExportDialog,
     TableFilterDialog,
+    TableHandoffDialog,
+    WorkflowRunModal,
   },
 
   props: {
