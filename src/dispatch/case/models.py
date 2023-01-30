@@ -205,7 +205,6 @@ class CaseCreate(CaseBase):
     case_type: Optional[CaseTypeRead]
     project: Optional[ProjectRead]
     reporter: Optional[ParticipantUpdate]
-    observer: Optional[ParticipantUpdate]
     tags: Optional[List[TagRead]] = []
 
 
