@@ -42,6 +42,17 @@ def get_by_incident_id_and_email(
     )
 
 
+def get_by_case_id_and_email(*, db_session, case_id: int, email: str) -> Optional[Participant]:
+    """Get a participant by case id and email."""
+    return (
+        db_session.query(Participant)
+        .join(IndividualContact)
+        .filter(Participant.case_id == case_id)
+        .filter(IndividualContact.email == email)
+        .one_or_none()
+    )
+
+
 def get_by_incident_id_and_service_id(
     *, db_session, incident_id: int, service_id: int
 ) -> Optional[Participant]:

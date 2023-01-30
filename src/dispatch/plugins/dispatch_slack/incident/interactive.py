@@ -1,8 +1,6 @@
 import logging
 from datetime import datetime
-import inspect
 from typing import Any
-import time
 
 import pytz
 from blockkit import (
@@ -123,7 +121,6 @@ from dispatch.tag.models import Tag
 from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
 from dispatch.task.models import Task
-
 
 log = logging.getLogger(__file__)
 
@@ -737,7 +734,6 @@ def handle_participant_role_activity(
     """
     ack()
 
-    # TODO: (wshel) add when case support when participants are added.
     if context["subject"].type == "incident":
         participant = participant_service.get_by_incident_id_and_email(
             db_session=db_session, incident_id=context["subject"].id, email=user.email
@@ -797,9 +793,6 @@ def handle_after_hours_message(
         # get their timezone from slack
         owner_tz = (dispatch_slack_service.get_user_info_by_email(client, email=owner_email))["tz"]
         message = f"Responses may be delayed. The current incident priority is *{incident.incident_priority.name}* and your message was sent outside of the Incident Commander's working hours (Weekdays, 9am-5pm, {owner_tz} timezone)."
-    else:
-        # TODO: add case support
-        return
 
     now = datetime.now(pytz.timezone(owner_tz))
     is_business_hours = now.weekday() not in [5, 6] and 9 <= now.hour < 17

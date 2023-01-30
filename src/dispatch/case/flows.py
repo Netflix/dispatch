@@ -19,6 +19,9 @@ from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import IncidentCreate
 from dispatch.individual.models import IndividualContactRead
 from dispatch.models import OrganizationSlug, PrimaryKey
+from dispatch.participant import flows as participant_flows
+from dispatch.participant_role.models import ParticipantRoleType
+from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
 from dispatch.plugin import service as plugin_service
 from dispatch.storage import flows as storage_flows
@@ -92,7 +95,7 @@ def add_participants_to_conversation(
 def case_add_or_reactive_participant_flow(
     user_email: str,
     case_id: int,
-    # participant_role: ParticipantRoleType = ParticipantRoleType.participant, #TODO
+    participant_role: ParticipantRoleType = ParticipantRoleType.participant,
     service_id: int = 0,
     event: dict = None,
     organization_slug: str = None,
@@ -101,36 +104,34 @@ def case_add_or_reactive_participant_flow(
     """Runs the case add or reactive participant flow."""
     case = case_service.get(db_session=db_session, case_id=case_id)
 
-    # TODO once cases have participants
-    # if service_id:
-    #    # we need to ensure that we don't add another member of a service if one
-    #    # already exists (e.g. overlapping oncalls, we assume they will hand-off if necessary)
-    #    participant = participant_service.get_by_case_id_and_service_id(
-    #        case_id=case_id, service_id=service_id, db_session=db_session
-    #    )
+    if service_id:
+        # we need to ensure that we don't add another member of a service if one
+        # already exists (e.g. overlapping oncalls, we assume they will hand-off if necessary)
+        participant = participant_service.get_by_case_id_and_service_id(
+            case_id=case_id, service_id=service_id, db_session=db_session
+        )
 
-    #    if participant:
-    #        log.debug("Skipping resolved participant. Oncall service member already engaged.")
-    #        return
+        if participant:
+            log.debug("Skipping resolved participant. Oncall service member already engaged.")
+            return
 
-    # participant = participant_service.get_by_case_id_and_email(
-    #    db_session=db_session, case_id=case.id, email=user_email
-    # )
+    participant = participant_service.get_by_case_id_and_email(
+        db_session=db_session, case_id=case.id, email=user_email
+    )
+    if participant:
+        if participant.active_roles:
+            return participant
 
-    # if participant:
-    #    if participant.active_roles:
-    #        return participant
-
-    #    if case.status != CaseStatus.closed:
-    #        # we reactivate the participant
-    #        participant_flows.reactivate_participant(
-    #            user_email, case, db_session, service_id=service_id
-    #        )
-    # else:
-    # we add the participant to the incident
-    #    participant = participant_flows.add_participant(
-    #        user_email, case, db_session, service_id=service_id, role=participant_role
-    #    )
+        if case.status != CaseStatus.closed:
+            # we reactivate the participant
+            participant_flows.reactivate_participant(
+                user_email, case, db_session, service_id=service_id
+            )
+    else:
+        # we add the participant to the incident
+        participant = participant_flows.add_participant(
+            user_email, case, db_session, service_id=service_id, role=participant_role
+        )
 
     # we add the participant to the tactical group
     # add_participant_to_tactical_group(user_email, case, db_session)
@@ -139,7 +140,7 @@ def case_add_or_reactive_participant_flow(
         # we add the participant to the conversation
         add_participants_to_conversation([user_email], case, db_session)
 
-    # return participant
+    return participant
 
 
 def create_conversation(case: Case, db_session: SessionLocal):
@@ -180,9 +181,7 @@ def update_conversation(case: Case, db_session: SessionLocal):
 
 
 @background_task
-def case_new_create_flow(
-    *, case_id: int, curreorganization_slug: OrganizationSlug, db_session=None
-):
+def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, db_session=None):
     """Runs the case new creation flow."""
     # we get the case
     case = get(db_session=db_session, case_id=case_id)
