@@ -124,7 +124,7 @@ def get_all_last_x_hours_by_status(
         )
 
 
-def create(*, db_session, case_in: CaseCreate) -> Case:
+def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None) -> Case:
     """Creates a new case."""
     project = project_service.get_by_name_or_default(
         db_session=db_session, project_in=case_in.project
@@ -182,6 +182,10 @@ def create(*, db_session, case_in: CaseCreate) -> Case:
             assignee_email = service_flows.resolve_oncall(
                 service=case_type.oncall_service, db_session=db_session
             )
+        else:
+            # we assign the case to the current user
+            if current_user:
+                assignee_email = current_user.email
 
     # add assignee
     participant_flows.add_participant(

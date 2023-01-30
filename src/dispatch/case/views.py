@@ -112,7 +112,7 @@ def create_case(
         case_in.reporter = ParticipantUpdate(
             individual=IndividualContactRead(email=current_user.email)
         )
-    case = create(db_session=db_session, case_in=case_in)
+    case = create(db_session=db_session, case_in=case_in, current_user=current_user)
 
     if case.status == CaseStatus.triage:
         background_tasks.add_task(
