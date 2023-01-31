@@ -489,6 +489,12 @@ def handle_list_participants_command(
                         f"*Team*\n {participant_team}, {participant_department}",
                         f"*Location* \n{participant_location}",
                         f"*Incident Role(s)* \n{(', ').join(participant_roles)}",
+                        f"*Added By* \n{participant.added_by.individual.name}"
+                        if participant.added_by
+                        else "*Added By* \nUnknown",
+                        f"*Added Reason* \n{participant.added_reason}"
+                        if participant.added_reason
+                        else "*Added Reason* \nUnknown",
                     ],
                     accessory=accessory,
                 ),
