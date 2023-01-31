@@ -489,6 +489,12 @@ def handle_list_participants_command(
                         f"*Team*\n {participant_team}, {participant_department}",
                         f"*Location* \n{participant_location}",
                         f"*Incident Role(s)* \n{(', ').join(participant_roles)}",
+                        f"*Added By* \n{participant.added_by.individual.name}"
+                        if participant.added_by
+                        else "*Added By* \nUnknown",
+                        f"*Added Reason* \n{participant.added_reason}"
+                        if participant.added_reason
+                        else "*Added Reason* \nUnknown",
                     ],
                     accessory=accessory,
                 ),
@@ -1710,34 +1716,46 @@ def handle_report_executive_submission_event(
     form_data: dict,
     user: DispatchUser,
 ) -> None:
-    """Handles the report executive submission"""
+    """Handles the report executive submission."""
     ack_report_executive_submission_event(ack=ack)
+
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+
     executive_report_in = ExecutiveReportCreate(
         current_status=form_data[ReportExecutiveBlockIds.current_status],
         overview=form_data[ReportExecutiveBlockIds.overview],
         next_steps=form_data[ReportExecutiveBlockIds.next_steps],
     )
 
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
-
     executive_report = report_flows.create_executive_report(
         user_email=user.email,
-        incident_id=context["subject"].id,
+        incident_id=incident.id,
         executive_report_in=executive_report_in,
         organization_slug=context["subject"].organization_slug,
     )
 
-    modal = Modal(
-        title="Executive Report",
-        blocks=[
+    blocks = []
+    if executive_report and incident.notifications_group:
+        blocks = [
             Section(text="Creating executive report... Success!"),
             Section(
                 text=f"The executive report document has been created and can be found in the incident storage here: {executive_report.document.weblink}"
             ),
             Section(
-                text=f"The executive report has been emailed to the incident notifications group ({incident.notifications_group.email}).",
+                text=f"The executive report has been emailed to the incident notifications group: {incident.notifications_group.email}",
             ),
-        ],
+        ]
+    else:
+        blocks = [
+            Section(text="Creating executive report... Failed!"),
+            Section(
+                text="The executive report document was not created successfully or the incident notifications group does not exist."
+            ),
+        ]
+
+    modal = Modal(
+        title="Executive Report",
+        blocks=blocks,
         close="Close",
     ).build()
 
