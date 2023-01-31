@@ -19,10 +19,6 @@ def test_get_by_name(session, case: Case):
     assert t_case.name == case.name
 
 
-def test_get_by_name_or_raise():
-    pass
-
-
 def test_get_all(session, case: Case):
     from dispatch.case.service import get_all
 
@@ -49,10 +45,6 @@ def test_get_all_by_status(session, new_case: Case):
         status=CaseStatus.closed,
     )
     assert not t_cases
-
-
-def test_get_all_last_x_hours_by_status():
-    pass
 
 
 def test_create(session, case: Case, project):
