@@ -28,7 +28,6 @@ from .factories import (
     DispatchUserFactory,
     CaseFactory,
     CasePriorityFactory,
-    CaseReadFactory,
     CaseSeverityFactory,
     CaseTypeFactory,
     ConferenceFactory,
@@ -463,11 +462,6 @@ def case(session):
 @pytest.fixture
 def new_case(session):
     return CaseFactory(status="New")
-
-
-@pytest.fixture
-def case_in(session):
-    pass
 
 
 @pytest.fixture
