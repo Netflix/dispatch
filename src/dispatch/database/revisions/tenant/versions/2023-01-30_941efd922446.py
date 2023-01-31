@@ -1,7 +1,7 @@
 """Migrates to subject instead of type for search filters"
 
 Revision ID: 941efd922446
-Revises: 956eb8f8987e
+Revises: e4b4991dddcd
 Create Date: 2023-01-30 08:49:41.713653
 
 """
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "941efd922446"
-down_revision = "956eb8f8987e"
+down_revision = "e4b4991dddcd"
 branch_labels = None
 depends_on = None
 
