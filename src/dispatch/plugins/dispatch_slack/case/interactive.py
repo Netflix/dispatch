@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 
 import pytz
@@ -44,6 +45,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     shortcut_context_middleware,
     user_middleware,
 )
+from dispatch.plugins.dispatch_slack.service import get_user_email
 from dispatch.project import service as project_service
 
 
@@ -74,6 +76,23 @@ def assignee_select(
 @message_dispatcher.add(
     exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
+def handle_new_participant_added(ack: Ack, context: BoltContext, client: WebClient) -> None:
+    """Looks for new participants being added to conversation via @<user-name>"""
+    ack()
+    if context["subject"].type == "case":
+        participants = re.findall(context["message"], r"\<\@([a-zA-Z0-9]*)\>")
+        for user_id in participants:
+            user_email = get_user_email(client=client, user_id=user_id)
+
+            participant = case_flows.case_add_or_reactivate_participant_flow(
+                case_id=context["subject"].id, user_email=user_email
+            )
+            participant.user_conversation_id = user_id
+
+
+@message_dispatcher.add(
+    exclude={"subtype": ["channel_join", "channel_leave"]}
+)  # we ignore channel join and leave messages
 def handle_participant_role_activity(
     ack: Ack, db_session: Session, context: BoltContext, user: DispatchUser
 ) -> None:
@@ -86,12 +105,13 @@ def handle_participant_role_activity(
         if participant:
             for participant_role in participant.active_roles:
                 participant_role.activity += 1
-            db_session.commit()
         else:
             # we have a new active participant lets add them
-            case_flows.case_add_or_reactivate_participant_flow(
+            participant = case_flows.case_add_or_reactivate_participant_flow(
                 case_id=context["subject"].id, user_email=user.email
             )
+            participant.user_conversation_id = context["user_id"]
+        db_session.commit()
 
 
 @message_dispatcher.add(
