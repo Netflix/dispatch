@@ -105,7 +105,11 @@ def restricted_command_middleware(
     context: BoltContext, db_session, user: DispatchUser, next: Callable, payload: dict
 ):
     """Rejects commands from unauthorized individuals."""
-    allowed_roles = [ParticipantRoleType.incident_commander, ParticipantRoleType.scribe]
+    allowed_roles = [
+        ParticipantRoleType.incident_commander,
+        ParticipantRoleType.scribe,
+        ParticipantRoleType.reporter,
+    ]
     participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=context["subject"].id, email=user.email
     )
