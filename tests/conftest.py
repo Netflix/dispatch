@@ -27,6 +27,10 @@ from .database import Session
 from .factories import (
     DispatchUserFactory,
     CaseFactory,
+    CasePriorityFactory,
+    CaseReadFactory,
+    CaseSeverityFactory,
+    CaseTypeFactory,
     ConferenceFactory,
     ConversationFactory,
     DefinitionFactory,
@@ -454,6 +458,31 @@ def tickets(session):
 @pytest.fixture
 def case(session):
     return CaseFactory()
+
+
+@pytest.fixture
+def new_case(session):
+    return CaseFactory(status="New")
+
+
+@pytest.fixture
+def case_in(session):
+    pass
+
+
+@pytest.fixture
+def case_priority(session):
+    return CasePriorityFactory()
+
+
+@pytest.fixture
+def case_severity(session):
+    return CaseSeverityFactory()
+
+
+@pytest.fixture
+def case_type(session):
+    return CaseTypeFactory()
 
 
 @pytest.fixture
