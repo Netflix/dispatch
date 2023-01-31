@@ -50,14 +50,19 @@ def test_get_all_by_status(session, new_case: Case):
 def test_create(session, case: Case, project):
     from dispatch.case.service import create as create_case
 
-    current_user = DispatchUser(email="test@netflix.com")
+    # No assignee, No oncall_service, resolves current_user to assignee
+    current_user = DispatchUser(email="test@netflix.com", password=bytes("test", "utf-8"))
+    session.add(current_user)
+    session.commit()
+
     case.case_type = CaseType(name="Test", project=project)
     case.case_severity = CaseSeverity(name="Low", project=project)
     case.case_priority = CasePriority(name="Low", project=project)
     case.project = project
 
-    case = create_case(db_session=session, case_in=case, current_user=current_user)
-    assert case
+    case_out = create_case(db_session=session, case_in=case, current_user=current_user)
+    assert case_out
+    assert case_out.assignee.email == current_user.email
 
 
 def test_update(session, case: Case, project):
