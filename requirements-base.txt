@@ -284,7 +284,7 @@ python-jose==3.3.0
     # via -r requirements-base.in
 python-multipart==0.0.5
     # via -r requirements-base.in
-python-slugify==7.0.0
+python-slugify==8.0.0
     # via -r requirements-base.in
 pytz==2022.7.1
     # via
