@@ -1,5 +1,8 @@
 from dispatch.auth.models import DispatchUser
-from dispatch.case.models import Case, CaseCreate, CaseRead
+from dispatch.case.models import Case, CaseUpdate
+from dispatch.case.severity.models import CaseSeverity
+from dispatch.case.priority.models import CasePriority
+from dispatch.case.type.models import CaseType
 
 
 def test_get(session, case: Case):
@@ -31,6 +34,7 @@ def test_get_all_by_status(session, new_case: Case):
     from dispatch.case.service import get_all_by_status
     from dispatch.case.enums import CaseStatus
 
+    # Some case
     t_cases = get_all_by_status(
         db_session=session,
         project_id=new_case.project.id,
@@ -38,11 +42,7 @@ def test_get_all_by_status(session, new_case: Case):
     )
     assert t_cases
 
-
-def test_get_all_by_status_none(session, new_case: Case):
-    from dispatch.case.service import get_all_by_status
-    from dispatch.case.enums import CaseStatus
-
+    # None case
     t_cases = get_all_by_status(
         db_session=session,
         project_id=new_case.project.id,
@@ -55,19 +55,57 @@ def test_get_all_last_x_hours_by_status():
     pass
 
 
-# TODO: (wshel) get CaseRead factory working
 def test_create(session, case: Case, project):
     from dispatch.case.service import create as create_case
-    from dispatch.case.type.service import create as create_type
-    from dispatch.case.type.models import CaseTypeCreate
 
-    name = "WOW"
+    current_user = DispatchUser(email="test@netflix.com")
+    case.case_type = CaseType(name="Test", project=project)
+    case.case_severity = CaseSeverity(name="Low", project=project)
+    case.case_priority = CasePriority(name="Low", project=project)
+    case.project = project
 
-    create_type_in = CaseTypeCreate(
-        name=name,
-        project=project,
-    )
-    create_type(db_session=session, case_type_in=create_type_in)
-
-    case = create_case(db_session=session, case_in=case)
+    case = create_case(db_session=session, case_in=case, current_user=current_user)
     assert case
+
+
+def test_update(session, case: Case, project):
+    from dispatch.case.service import update as update_case
+    from dispatch.case.enums import CaseStatus
+    from dispatch.enums import Visibility
+
+    current_user = DispatchUser(email="test@netflix.com")
+    case.case_type = CaseType(name="Test", project=project)
+    case.case_severity = CaseSeverity(name="Low", project=project)
+    case.case_priority = CasePriority(name="Low", project=project)
+    case.project = project
+    case.visibility = Visibility.open
+
+    case_in = CaseUpdate(
+        title="XXX",
+        description="YYY",
+        resolution="True Positive",
+        status=CaseStatus.closed,
+        visibility=Visibility.restricted,
+    )
+
+    case_out = update_case(
+        db_session=session, case=case, case_in=case_in, current_user=current_user
+    )
+    assert case_out.title == "XXX"
+    assert case_out.description == "YYY"
+    assert case_out.resolution == "True Positive"
+    assert case_out.status == CaseStatus.closed
+    assert case_out.visibility == Visibility.restricted
+
+
+def test_delete(session, case: Case):
+    from dispatch.case.service import delete as case_delete
+    from dispatch.case.service import get as case_get
+
+    case_delete(
+        db_session=session,
+        case_id=case.id,
+    )
+
+    t_case = case_get(db_session=session, case_id=case.id)
+    assert not t_case
