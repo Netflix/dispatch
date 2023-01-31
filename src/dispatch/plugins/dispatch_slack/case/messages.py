@@ -185,6 +185,6 @@ def create_signal_messages(case: Case) -> List[Message]:
                 signal_metadata_blocks.append(
                     Section(text=item["value"]),
                 )
-        messages.append(Message(blocks=signal_metadata_blocks).build())
+        messages.append(Message(blocks=signal_metadata_blocks).build()["blocks"])
 
     return messages
