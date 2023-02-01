@@ -106,9 +106,11 @@ export default {
       CaseTypeApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
 
-        // check to see if the current selection is available in the list and if not we add it
-        if (!this.items.find((match) => match.id === this.case_type.id)) {
-          this.items = [this.case_type].concat(this.items)
+        if (this.case_type) {
+          // check to see if the current selection is available in the list and if not we add it
+          if (!this.items.find((match) => match.id === this.case_type.id)) {
+            this.items = [this.case_type].concat(this.items)
+          }
         }
 
         this.total = response.data.total
