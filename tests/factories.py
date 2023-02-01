@@ -698,7 +698,6 @@ class CaseFactory(BaseFactory):
         model = Case
 
     class Params:
-
         status = "New"
 
 

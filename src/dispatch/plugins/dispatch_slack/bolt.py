@@ -43,7 +43,6 @@ def app_error_handler(
     logger: logging.Logger,
     respond: Respond,
 ) -> BoltResponse:
-
     if body:
         logger.info(f"Request body: {body}")
 

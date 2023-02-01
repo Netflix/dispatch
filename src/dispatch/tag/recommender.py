@@ -111,7 +111,6 @@ def find_correlations(dataframe, tag):
 
     # Loop through all column at the row with the tag as its index
     for i, corr in enumerate(dataframe.loc[tag, :]):
-
         # Find the column
         col = dataframe.columns[i]
 
