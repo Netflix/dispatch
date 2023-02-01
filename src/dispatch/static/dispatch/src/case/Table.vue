@@ -57,6 +57,9 @@
                 {{ item.project.name }}
               </v-chip>
             </template>
+            <template v-slot:item.assignee="{ item }">
+              <case-participant :participant="item.assignee" />
+            </template>
             <template v-slot:item.reported_at="{ item }">
               <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
@@ -120,6 +123,7 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
 import BulkEditSheet from "@/case/BulkEditSheet.vue"
+import CaseParticipant from "@/case/Participant.vue"
 import CasePriority from "@/case/priority/CasePriority.vue"
 import CaseSeverity from "@/case/severity/CaseSeverity.vue"
 import CaseStatus from "@/case/CaseStatus.vue"
@@ -136,6 +140,7 @@ export default {
 
   components: {
     BulkEditSheet,
+    CaseParticipant,
     CasePriority,
     CaseSeverity,
     CaseStatus,
@@ -164,7 +169,7 @@ export default {
         { text: "Severity", value: "case_severity.name", sortable: true },
         { text: "Priority", value: "case_priority.name", sortable: true },
         { text: "Project", value: "project.name", sortable: true },
-        { text: "Assignee", value: "assignee.email", sortable: true },
+        { text: "Assignee", value: "assignee", sortable: true },
         { text: "Reported At", value: "reported_at" },
         { text: "Closed At", value: "closed_at" },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
