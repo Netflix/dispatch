@@ -106,7 +106,13 @@
         </v-row>
       </v-flex>
       <v-flex xs12>
-        <tag-filter-auto-complete label="Tags" v-model="tags" model="incident" :model-id="id" />
+        <tag-filter-auto-complete
+          label="Tags"
+          v-model="tags"
+          :project="project"
+          model="incident"
+          :model-id="id"
+        />
       </v-flex>
       <v-flex xs12>
         <incident-filter-combobox label="Duplicates" v-model="duplicates" :project="project" />

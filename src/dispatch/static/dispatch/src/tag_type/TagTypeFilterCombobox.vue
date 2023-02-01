@@ -32,7 +32,7 @@
     </template>
     <template v-slot:item="data">
       <v-list-item-content>
-        <v-list-item-title> {{ data.item.project.name }}/{{ data.item.name }} </v-list-item-title>
+        <v-list-item-title> {{ data.item.name }} </v-list-item-title>
         <v-list-item-subtitle style="width: 200px" class="text-truncate">
           {{ data.item.description }}
         </v-list-item-subtitle>
