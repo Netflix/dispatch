@@ -21,7 +21,7 @@ def upgrade():
     op.add_column("case", sa.Column("participants_team", sa.String(), nullable=True))
     op.add_column("case", sa.Column("participants_location", sa.String(), nullable=True))
     op.drop_constraint("case_assignee_id_fkey", "case", type_="foreignkey")
-    # op.create_foreign_key(None, "case", "participant", ["assignee_id"], ["id"])
+    op.create_foreign_key(None, "case", "participant", ["assignee_id"], ["id"])
     op.add_column("participant", sa.Column("case_id", sa.Integer(), nullable=True))
     op.create_foreign_key(
         None, "participant", "case", ["case_id"], ["id"], ondelete="CASCADE", use_alter=True
