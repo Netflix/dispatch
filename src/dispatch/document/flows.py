@@ -122,7 +122,7 @@ def update_document(document: Document, project_id: int, db_session: SessionLoca
         document_kwargs = {
             "case_description": document.case.description,
             "case_name": document.case.name,
-            "case_owner": document.case.assignee.email,
+            "case_owner": document.case.assignee.individual.email,
             "case_priority": document.case.case_priority.name,
             "case_resolution": document.case.resolution,
             "case_severity": document.case.case_severity.name,
