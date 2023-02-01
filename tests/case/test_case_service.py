@@ -1,8 +1,11 @@
 from dispatch.auth.models import DispatchUser
-from dispatch.case.models import Case, CaseUpdate
+from dispatch.case.models import Case, CaseCreate, CaseUpdate
 from dispatch.case.severity.models import CaseSeverity
 from dispatch.case.priority.models import CasePriority
-from dispatch.case.type.models import CaseType
+from dispatch.case.type.models import CaseType, CaseTypeRead
+from dispatch.case.severity.models import CaseSeverityRead
+from dispatch.case.priority.models import CasePriorityRead
+from dispatch.participant.models import ParticipantUpdate
 
 
 def test_get(session, case: Case):
@@ -47,22 +50,37 @@ def test_get_all_by_status(session, new_case: Case):
     assert not t_cases
 
 
-def test_create(session, case: Case, project):
+def test_create(session, case: Case, participant, project):
     from dispatch.case.service import create as create_case
+    from dispatch.enums import Visibility
+
+    case_type = CaseType(name="Test", project=project, id=999)
+    case_severity = CaseSeverity(name="Low", project=project, id=999)
+    case_priority = CasePriority(name="Low", project=project, id=999)
+    session.add(case_type)
+    session.add(case_severity)
+    session.add(case_priority)
+    session.commit()
 
     # No assignee, No oncall_service, resolves current_user to assignee
     current_user = DispatchUser(email="test@netflix.com", password=bytes("test", "utf-8"))
     session.add(current_user)
     session.commit()
 
-    case.case_type = CaseType(name="Test", project=project)
-    case.case_severity = CaseSeverity(name="Low", project=project)
-    case.case_priority = CasePriority(name="Low", project=project)
-    case.project = project
-
-    case_out = create_case(db_session=session, case_in=case, current_user=current_user)
+    case_in = CaseCreate(
+        title="A",
+        description="B",
+        resolution=None,
+        visibility=Visibility.open,
+        case_type=CaseTypeRead(name="Test", project=project, id=999),
+        case_severity=CaseSeverityRead(name="Low", project=project, id=999),
+        case_priority=CasePriorityRead(name="Low", project=project, id=999),
+        reporter=participant,
+        project=project,
+    )
+    case_out = create_case(db_session=session, case_in=case_in, current_user=current_user)
     assert case_out
-    assert case_out.assignee.email == current_user.email
+    assert case_out.assignee.individual.email == current_user.email
 
 
 def test_update(session, case: Case, project):
