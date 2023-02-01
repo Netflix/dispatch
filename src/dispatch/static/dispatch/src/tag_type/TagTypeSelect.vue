@@ -100,9 +100,11 @@ export default {
       TagTypeApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
 
-        // check to see if the current selection is available in the list and if not we add it
-        if (!this.items.find((match) => match.id === this.tag_type.id)) {
-          this.items = [this.tag_type].concat(this.items)
+        if (this.tag_type) {
+          // check to see if the current selection is available in the list and if not we add it
+          if (!this.items.find((match) => match.id === this.tag_type.id)) {
+            this.items = [this.tag_type].concat(this.items)
+          }
         }
 
         this.total = response.data.total
