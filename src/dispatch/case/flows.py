@@ -67,9 +67,7 @@ def update_conversation(case: Case, db_session: SessionLocal):
 
 
 @background_task
-def case_new_create_flow(
-    *, case_id: int, curreorganization_slug: OrganizationSlug, db_session=None
-):
+def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, db_session=None):
     """Runs the case new creation flow."""
     # we get the case
     case = get(db_session=db_session, case_id=case_id)
