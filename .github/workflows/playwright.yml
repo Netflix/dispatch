@@ -1,0 +1,54 @@
+name: "playwright"
+on: # rebuild any PRs and main branch changes
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  end-to-end:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: dispatch
+          POSTGRES_DB: dispatch
+        ports:
+          - 5432:5432
+        # needed because the postgres container does not provide a healthcheck
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install python dependencies
+        run: |
+          export DISPATCH_LIGHT_BUILD=1
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - name: Install dependencies
+        run: npm ci
+      - name: Install playwright browsers
+        run: npx playwright install --with-deps
+      - name: Run tests
+        run: npx playwright test
+        env:
+          LOG_LEVEL: ERROR
+          STATIC_DIR:
+          DATABASE_HOSTNAME: localhost
+          DATABASE_CREDENTIALS: dispatch:dispatch
+          DISPATCH_ENCRYPTION_KEY: NJHDWDJ3PbHT8h
+          DISPATCH_JWT_SECRET: foo
