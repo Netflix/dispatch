@@ -64,9 +64,9 @@ class TagReadMinimal(DispatchBase):
     uri: Optional[str] = Field(None, nullable=True)
     discoverable: Optional[bool] = True
     description: Optional[str] = Field(None, nullable=True)
-    tag_type: Optional[TagTypeReadMinimal]
+    tag_type: Optional[TagTypeRead]
 
 
 class TagPagination(DispatchBase):
-    items: List[TagReadMinimal]
+    items: List[TagRead]
     total: int
