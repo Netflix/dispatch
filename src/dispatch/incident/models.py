@@ -361,6 +361,13 @@ class IncidentRead(IncidentBase):
     workflow_instances: Optional[List[WorkflowInstanceRead]] = []
 
 
+class IncidentExpandedPagination(DispatchBase):
+    total: int
+    itemsPerPage: int
+    page: int
+    items: List[IncidentRead] = []
+
+
 class IncidentPagination(DispatchBase):
     total: int
     itemsPerPage: int
