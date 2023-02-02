@@ -121,7 +121,6 @@ def upgrade():
     for case in db_session.query(Case):
         print(f"Processing Case {case.id}...")
         if not is_participant(db_session, participant_id=case.assignee_id):
-
             current_user = (
                 db_session.query(DispatchUser).filter(DispatchUser.id == case.assignee_id).first()
             )

@@ -62,7 +62,7 @@ def make_forecast(incidents: List[Incident]):
 
     dataframe_dict = {"ds": [], "y": []}
 
-    for (last_day, items) in groupby(incidents_sorted, month_grouper):
+    for last_day, items in groupby(incidents_sorted, month_grouper):
         dataframe_dict["ds"].append(str(last_day))
         dataframe_dict["y"].append(len(list(items)))
 
