@@ -1,17 +1,9 @@
-from datetime import datetime
 from collections import Counter, defaultdict
-from typing import List, Optional, ForwardRef
+from datetime import datetime
+from typing import ForwardRef, List, Optional
 
 from pydantic import validator
-from sqlalchemy import (
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    PrimaryKeyConstraint,
-    String,
-    Table,
-)
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType, observes
@@ -19,32 +11,37 @@ from sqlalchemy_utils import TSVectorType, observes
 from dispatch.conference.models import ConferenceRead
 from dispatch.conversation.models import ConversationRead
 from dispatch.database.core import Base
-from dispatch.document.models import Document
-from dispatch.document.models import DocumentRead
+from dispatch.document.models import Document, DocumentRead
 from dispatch.enums import Visibility
 from dispatch.event.models import EventRead
 from dispatch.group.models import Group
 from dispatch.incident.priority.models import (
     IncidentPriorityBase,
     IncidentPriorityCreate,
+    IncidentPriorityRead,
     IncidentPriorityReadMinimal,
 )
 from dispatch.incident.severity.models import (
-    IncidentSeverityCreate,
-    IncidentSeverityReadMinimal,
     IncidentSeverityBase,
+    IncidentSeverityCreate,
+    IncidentSeverityRead,
+    IncidentSeverityReadMinimal,
 )
 from dispatch.incident.type.models import (
-    IncidentTypeCreate,
-    IncidentTypeReadMinimal,
     IncidentTypeBase,
+    IncidentTypeCreate,
+    IncidentTypeRead,
+    IncidentTypeReadMinimal,
 )
 from dispatch.incident_cost.models import IncidentCostRead, IncidentCostUpdate
 from dispatch.messaging.strings import INCIDENT_RESOLUTION_DEFAULT
-from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
-from dispatch.models import NameStr, PrimaryKey
-from dispatch.participant.models import Participant
-from dispatch.participant.models import ParticipantRead, ParticipantReadMinimal, ParticipantUpdate
+from dispatch.models import DispatchBase, NameStr, PrimaryKey, ProjectMixin, TimeStampMixin
+from dispatch.participant.models import (
+    Participant,
+    ParticipantRead,
+    ParticipantReadMinimal,
+    ParticipantUpdate,
+)
 from dispatch.report.enums import ReportTypes
 from dispatch.report.models import ReportRead
 from dispatch.storage.models import StorageRead
@@ -54,7 +51,6 @@ from dispatch.ticket.models import TicketRead
 from dispatch.workflow.models import WorkflowInstanceRead
 
 from .enums import IncidentStatus
-
 
 assoc_incident_terms = Table(
     "assoc_incident_terms",
@@ -329,7 +325,27 @@ class IncidentUpdate(IncidentBase):
         return v
 
 
-class IncidentRead(IncidentReadMinimal):
+class IncidentRead(IncidentBase):
+    id: PrimaryKey
+    closed_at: Optional[datetime] = None
+    commander: Optional[ParticipantRead]
+    commanders_location: Optional[str]
+    created_at: Optional[datetime] = None
+    duplicates: Optional[List[IncidentReadMinimal]] = []
+    incident_costs: Optional[List[IncidentCostRead]] = []
+    incident_priority: IncidentPriorityRead
+    incident_severity: IncidentSeverityRead
+    incident_type: IncidentTypeRead
+    name: Optional[NameStr]
+    participants_location: Optional[str]
+    participants_team: Optional[str]
+    project: ProjectRead
+    reported_at: Optional[datetime] = None
+    reporter: Optional[ParticipantRead]
+    reporters_location: Optional[str]
+    stable_at: Optional[datetime] = None
+    tags: Optional[List[TagRead]] = []
+    total_cost: Optional[float]
     cases: Optional[List[CaseRead]] = []
     conference: Optional[ConferenceRead] = None
     conversation: Optional[ConversationRead] = None
@@ -338,7 +354,7 @@ class IncidentRead(IncidentReadMinimal):
     events: Optional[List[EventRead]] = []
     last_executive_report: Optional[ReportRead]
     last_tactical_report: Optional[ReportRead]
-    participants: Optional[List[ParticipantReadMinimal]] = []
+    participants: Optional[List[ParticipantRead]] = []
     storage: Optional[StorageRead] = None
     terms: Optional[List[TermRead]] = []
     ticket: Optional[TicketRead] = None
