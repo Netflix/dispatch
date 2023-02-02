@@ -5,7 +5,7 @@ const resource = "incidents"
 export default {
   getAll(options) {
     return API.get(`/${resource}`, {
-      params: { ...options, expand: true },
+      params: { ...options },
     })
   },
 
