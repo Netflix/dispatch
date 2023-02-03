@@ -57,8 +57,6 @@ jobs:
         run: npx playwright install --with-deps
       - name: Setup sample database
         run: dispatch database restore --dump-file data/dispatch-sample-data.dump && dispatch database upgrade
-      - name: debug, try to delete node_modules and install again
-        run: rm -rf src/dispatch/static/dispatch/node_modules/ ; rm -rf node_modules/ ; npm install --prefix src/dispatch/static/dispatch && npm install --global cross-env && npm ci && npx playwright install --with-deps
       - name: Run tests
         run: npx playwright test
       - uses: actions/upload-artifact@v3
