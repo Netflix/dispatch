@@ -51,6 +51,7 @@ jobs:
           npm install --prefix src/dispatch/static/dispatch/
           npm list -g --depth=0
           npm install --global cross-env
+
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
       - name: Install javascript dependencies
@@ -59,5 +60,7 @@ jobs:
         run: npx playwright install --with-deps
       - name: Setup sample database
         run: dispatch database restore --dump-file data/dispatch-sample-data.dump && dispatch database upgrade
+      - name: debug, try to delete node_modules and install again
+        run: rm -rf $(npm root -g)/* ; rm -rf node_modules/* ; npm install --prefix src/dispatch/static/dispatch/ && npm install --global cross-env
       - name: Run tests
         run: npx playwright test
