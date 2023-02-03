@@ -58,7 +58,7 @@ jobs:
       - name: Setup sample database
         run: dispatch database restore --dump-file data/dispatch-sample-data.dump && dispatch database upgrade
       - name: Run tests
-        run: npm ls --prefix=src/dispatch/static/dispatch && npx playwright test
+        run: npx playwright test
       - uses: actions/upload-artifact@v3
         if: always()
         with:

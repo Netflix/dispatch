@@ -4,6 +4,9 @@ async function login(page: Page): Promise<void> {
   let email = (Math.random() + 1).toString(36).substring(7) + "@example.com"
   let password = (Math.random() + 1).toString(36).substring(7)
 
+  // Wait for 30 seconds to be sure web server is fully init
+  await page.waitForTimeout(30000)
+
   // baseURL is set in the config to http://localhost:8080/
   // This will navigate to http://localhost:8080/default/auth/login
   await page.goto("./default/auth/login")
