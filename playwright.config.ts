@@ -68,6 +68,7 @@ const config: PlaywrightTestConfig = {
   webServer: {
     command: "dispatch server develop",
     url: "http://localhost:8080/",
+    reuseExistingServer: !process.env.CI,
   },
 }
 
