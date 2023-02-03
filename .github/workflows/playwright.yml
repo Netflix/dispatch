@@ -29,7 +29,7 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
@@ -51,7 +51,6 @@ jobs:
           npm install --prefix src/dispatch/static/dispatch/
           npm list -g --depth=0
           npm install --global cross-env
-      - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
       - name: Install javascript dependencies
         run: npm ci
