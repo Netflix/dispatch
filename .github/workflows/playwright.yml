@@ -63,3 +63,9 @@ jobs:
         run: rm -rf src/dispatch/static/dispatch/node_modules/ ; rm -rf node_modules/ ; npm install --prefix src/dispatch/static/dispatch && npm install --global cross-env && npm ci && npx playwright install --with-deps
       - name: Run tests
         run: npx playwright test
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
