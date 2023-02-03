@@ -49,6 +49,8 @@ jobs:
       - name: Install npm dependencies
         run: |
           npm install --prefix src/dispatch/static/dispatch/
+          npm list -g --depth=0
+          npm install --global cross-env
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
       - name: Install javascript dependencies
