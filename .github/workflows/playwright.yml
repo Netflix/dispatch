@@ -1,0 +1,67 @@
+name: "playwright"
+on: # rebuild any PRs and main branch changes
+  pull_request:
+  push:
+    branches:
+      - main
+
+env:
+  LOG_LEVEL: ERROR
+  STATIC_DIR:
+  DATABASE_HOSTNAME: localhost
+  DATABASE_CREDENTIALS: dispatch:dispatch
+  DISPATCH_ENCRYPTION_KEY: NJHDWDJ3PbHT8h
+  DISPATCH_JWT_SECRET: foo
+
+jobs:
+  end-to-end:
+    runs-on: ubuntu-20.04
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: dispatch
+          POSTGRES_PASSWORD: dispatch
+          POSTGRES_DB: dispatch
+        ports:
+          - 5432:5432
+        # needed because the postgres container does not provide a healthcheck
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install python dependencies
+        run: |
+          export DISPATCH_LIGHT_BUILD=1
+          python -m pip install --upgrade pip
+          pip install psycopg[binary]
+          pip install -e ".[dev]"
+      - name: Install npm dependencies
+        run: |
+          npm ci -D --prefix src/dispatch/static/dispatch
+          npm install -D @playwright/test
+      - name: Install playwright browsers
+        run: npx playwright install --with-deps
+      - name: Setup sample database
+        run: dispatch database restore --dump-file data/dispatch-sample-data.dump && dispatch database upgrade
+      - name: Run tests
+        run: npx playwright test
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
