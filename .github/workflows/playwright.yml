@@ -34,6 +34,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
       - uses: actions/cache@v2
         with:
           path: ~/.cache/pip
@@ -51,7 +54,6 @@ jobs:
           npm install --prefix src/dispatch/static/dispatch/
           npm list -g --depth=0
           npm install --global cross-env
-      - uses: actions/setup-node@v3
       - name: Install javascript dependencies
         run: npm ci
       - name: Install playwright browsers
