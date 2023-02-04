@@ -424,7 +424,7 @@ setup(
             "slack_conversation = dispatch.plugins.dispatch_slack.plugin:SlackConversationPlugin",
             "zoom_conference = dispatch.plugins.dispatch_zoom.plugin:ZoomConferencePlugin",
             "dispatch_confluence = dispatch.plugins.dispatch_confluence.plugin:ConfluencePagePlugin",
-            "dispatch_confluece_document = dispatch.plugins.dispatch_confluence.docs.plugin:ConfluencePageDocPlugin",
+            "dispatch_confluence_document = dispatch.plugins.dispatch_confluence.docs.plugin:ConfluencePageDocPlugin",
         ],
     },
 )

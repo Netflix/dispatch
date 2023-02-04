@@ -31,7 +31,7 @@ def replace_content(client: Confluence, document_id: str, replacements: List[str
 class ConfluencePageDocPlugin(DocumentPlugin):
     title = "Confluence pages plugin - Document Management"
     slug = "confluence-docs-document"
-    description = "Use Confluence to manage the contents."
+    description = "Use Confluence to update the contents."
     version = confluence_doc_plugin.__version__
 
     author = "Cino Jose"

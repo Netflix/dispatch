@@ -16,14 +16,14 @@ class ConfluenceConfiguration(ConfluenceConfigurationBase):
     """Confluene configuration description."""
 
     template_id: str = Field(
-        title="Incident template URL", description="This is the URL to get the template."
+        title="Incident template ID", description="This is the page id of the template."
     )
     root_id: str = Field(
         title="Default Space ID", description="Defines the default Confluence Space to use."
     )
     parent_id: str = Field(
         title="Parent ID for the pages",
-        description="Defines the Parent id of the confluence page.",
+        description="Define the page id of a parent page where all the incident documents can be kept.",
     )
     open_on_close: bool = Field(
         title="Open On Close",
@@ -63,8 +63,6 @@ class ConfluencePagePlugin(StoragePlugin):
                 password=self.configuration.password.get_secret_value(),
                 cloud=self.configuration.hosting_type,
             )
-
-            print(confluence_client)
             child_display_body = """<h3>Incident Documents:</h3><ac:structured-macro ac:name="children"
                                     ac:schema-version="2" data-layout="default" ac:local-id="ec0e8d6d-3215-4328-b1f8-e96b03ccefb9"
                                     ac:macro-id="10235d28b48543519d4e2b06ca230142"><ac:parameter ac:name="sort">modified</ac:parameter>
@@ -79,7 +77,6 @@ class ConfluencePagePlugin(StoragePlugin):
                 editor="v2",
                 full_width=False,
             )
-            print(f"create file function{page_details}")
             return {
                 "weblink": f"{self.configuration.api_url}wiki/spaces/{drive_id}/pages/{page_details['id']}/{name}",
                 "id": page_details["id"],
@@ -136,11 +133,6 @@ class ConfluencePagePlugin(StoragePlugin):
             )
             headers = {"Accept": "application/json"}
             response = requests.request("PUT", url, headers=headers, auth=auth)
-            print(
-                json.dumps(
-                    json.loads(response.text), sort_keys=True, indent=4, separators=(",", ": ")
-                )
-            )
             return response
         except Exception as e:
             print(f"Exception happened while moving page: {e}")
