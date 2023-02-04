@@ -41,6 +41,7 @@
   },
   "devDependencies": {
     "@mdi/font": "^5.9.55",
+    "@playwright/test": "^1.30.0",
     "@vitejs/plugin-vue2": "^2.0.0",
     "@vue/compiler-sfc": "^3.0.11",
     "babel-runtime": "^6.26.0",

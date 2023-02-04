@@ -207,3 +207,7 @@ docker/.env
 *.dump
 
 .gitconfig
+/test-results/
+/playwright-report/
+/playwright/.cache/
+/tests/e2e/artifacts/*
