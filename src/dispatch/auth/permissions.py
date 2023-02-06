@@ -314,14 +314,11 @@ class CaseViewPermission(BasePermission):
             return any_permission(
                 permissions=[
                     OrganizationAdminPermission,
-                    CaseAssigneePermission,
-                    CaseReporterPermission,
                     CaseParticipantPermission,
                 ],
                 request=request,
             )
         return True
-
 
 
 class CaseEditPermission(BasePermission):
