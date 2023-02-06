@@ -29,8 +29,9 @@ def add_participant(
     """Adds a participant."""
 
     # we get or create a new individual
-    individual = individual_service.get_or_create(db_session=db_session, project=subject.project, email=user_email)
-
+    individual = individual_service.get_or_create(
+        db_session=db_session, project=subject.project, email=user_email
+    )
 
     # we get or create a new participant
     subject_type = get_table_name_by_class_instance(subject)

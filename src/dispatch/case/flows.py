@@ -194,13 +194,14 @@ def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, d
     )
 
     # we create the tactical group
-    participant_emails = (
-        [case.assignee.individual.email] + individual_participants + team_participants
-    )
+    direct_participant_emails = [i.email for i, _ in individual_participants]
+    direct_participant_emails.append(case.assignee.individual.email)
+
+    indirect_participant_emails = [t.email for t in team_participants]
     group = group_flows.create_group(
         subject=case,
         group_type=GroupType.tactical,
-        group_participants=participant_emails,
+        group_participants=list(set(direct_participant_emails + indirect_participant_emails)),
         db_session=db_session,
     )
 
@@ -211,10 +212,10 @@ def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, d
 
     # direct add members if not group exists
     else:
-        storage_members = participant_emails
+        storage_members = direct_participant_emails
 
     case.storage = storage_flows.create_storage(
-        obj=case, storage_members=storage_members, db_session=db_session
+        subject=case, storage_members=storage_members, db_session=db_session
     )
 
     # we create the investigation document

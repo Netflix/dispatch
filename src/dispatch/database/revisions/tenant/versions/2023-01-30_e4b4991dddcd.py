@@ -170,4 +170,5 @@ def downgrade():
     op.drop_column("case", "participants_location")
     op.drop_column("case", "participants_team")
 
+
 # ### end Alembic commands ###

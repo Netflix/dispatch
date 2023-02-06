@@ -119,6 +119,7 @@ def update_group(
             log.exception(e)
             return
 
+
 def delete_group(group: Group, db_session: SessionLocal):
     """Deletes an existing group."""
     plugin = plugin_service.get_active_instance(
