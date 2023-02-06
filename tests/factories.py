@@ -5,12 +5,15 @@ from datetime import datetime
 
 from faker import Faker
 
-from factory import Sequence, post_generation, SubFactory, LazyAttribute
+from factory import Sequence, post_generation, SubFactory, LazyAttribute, LazyFunction
 from factory.alchemy import SQLAlchemyModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime, FuzzyInteger
 
 from dispatch.auth.models import DispatchUser, hash_password  # noqa
-from dispatch.case.models import Case
+from dispatch.case.models import Case, CaseRead, Case
+from dispatch.case.priority.models import CasePriority
+from dispatch.case.severity.models import CaseSeverity
+from dispatch.case.type.models import CaseType
 from dispatch.conference.models import Conference
 from dispatch.conversation.models import Conversation
 from dispatch.definition.models import Definition
@@ -665,6 +668,19 @@ class StorageFactory(ResourceBaseFactory):
             self.incident_id = extracted.id
 
 
+class CaseTypeFactory(BaseFactory):
+    """Case Type Factory."""
+
+    name = FuzzyText()
+    description = FuzzyText()
+    project = SubFactory(ProjectFactory)
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = CaseType
+
+
 class CaseFactory(BaseFactory):
     """Case Factory."""
 
@@ -674,11 +690,58 @@ class CaseFactory(BaseFactory):
     description = FuzzyText()
     status = FuzzyChoice(["New", "Triage", "Escalated", "Closed"])
     project = SubFactory(ProjectFactory)
+    case_type = SubFactory(CaseTypeFactory)
 
     class Meta:
         """Factory Configuration."""
 
         model = Case
+
+    class Params:
+        status = "New"
+
+
+class CasePriorityFactory(BaseFactory):
+    """Case Priority Factory."""
+
+    name = FuzzyText()
+    description = FuzzyText()
+    project = SubFactory(ProjectFactory)
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = CasePriority
+
+
+class CaseSeverityFactory(BaseFactory):
+    """Case Severity Factory."""
+
+    name = FuzzyText()
+    description = FuzzyText()
+    project = SubFactory(ProjectFactory)
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = CaseSeverity
+
+
+class CaseReadFactory(BaseFactory):
+    """CaseRead Factory."""
+
+    id = Sequence(lambda n: f"1{n}")
+    name = FuzzyText()
+    title = FuzzyText()
+    case_priority = SubFactory(CasePriorityFactory)
+    case_severity = SubFactory(CaseSeverityFactory)
+    case_type = SubFactory(CaseTypeFactory)
+    project = SubFactory(ProjectFactory)
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = CaseRead
 
 
 class IncidentFactory(BaseFactory):

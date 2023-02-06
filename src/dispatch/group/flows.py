@@ -119,23 +119,6 @@ def update_group(
             log.exception(e)
             return
 
-    subject_type = get_table_name_by_class_instance(subject)
-    if subject_type == "case":
-        event_service.log_case_event(
-            db_session=db_session,
-            source=plugin.plugin.title,
-            description="Case group updated",
-            case_id=subject.id,
-        )
-    if subject_type == "incident":
-        event_service.log_incident_event(
-            db_session=db_session,
-            source=plugin.plugin.title,
-            description="Incident group updated",
-            incident_id=subject.id,
-        )
-
-
 def delete_group(group: Group, db_session: SessionLocal):
     """Deletes an existing group."""
     plugin = plugin_service.get_active_instance(

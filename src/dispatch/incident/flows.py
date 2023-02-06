@@ -1125,6 +1125,29 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
             db_session,
         )
 
+        # we bookmark the incident review document
+        plugin = plugin_service.get_active_instance(
+            db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+        )
+        if not plugin:
+            log.warning("Incident review document not bookmarked. No conversation plugin enabled.")
+            return
+
+        try:
+            plugin.instance.set_bookmark(
+                incident.conversation.channel_id,
+                resolve_attr(incident, "incident_review_document.weblink"),
+                title="Incident Review Document",
+            )
+        except Exception as e:
+            event_service.log_incident_event(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description=f"Bookmarking the incident review document failed. Reason: {e}",
+                incident_id=incident.id,
+            )
+            log.exception(e)
+
 
 def incident_closed_status_flow(incident: Incident, db_session=None):
     """Runs the incident closed flow."""

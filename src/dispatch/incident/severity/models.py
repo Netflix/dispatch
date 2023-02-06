@@ -71,4 +71,4 @@ class IncidentSeverityReadMinimal(DispatchBase):
 
 class IncidentSeverityPagination(DispatchBase):
     total: int
-    items: List[IncidentSeverityReadMinimal] = []
+    items: List[IncidentSeverityRead] = []
