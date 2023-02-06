@@ -137,7 +137,7 @@ export default {
       ],
       previewRowsLoading: false,
       handoffLoading: false,
-      commander: {},
+      commander: { individual: {name: "Commander Name"}},
     }
   },
 
@@ -178,7 +178,6 @@ export default {
 
       return IncidentApi.handoff(params, this.commander)
         .then((response) => {
-          // let items = response.data.items
           this.handoffLoading = false
           this.closeHandoff()
         })
