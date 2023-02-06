@@ -38,7 +38,7 @@
         />
       </v-flex>
       <v-flex xs12>
-        <organization-member-combobox
+        <participant-select
           v-model="assignee"
           label="Assignee"
           hint="The organization member to which the case is assigned."
@@ -114,25 +114,21 @@
 import { mapFields } from "vuex-map-fields"
 import { ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
-
 import CaseFilterCombobox from "@/case/CaseFilterCombobox.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
 import CaseSeveritySelect from "@/case/severity/CaseSeveritySelect.vue"
 import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
 import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
-import OrganizationMemberCombobox from "@/organization/OrganizationMemberCombobox.vue"
+import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
-
 extend("required", {
   ...required,
   message: "This field is required",
 })
-
 export default {
   name: "CaseDetailsTab",
-
   components: {
     CaseFilterCombobox,
     CasePrioritySelect,
@@ -140,19 +136,17 @@ export default {
     CaseTypeSelect,
     DateTimePickerMenu,
     IncidentFilterCombobox,
-    OrganizationMemberCombobox,
+    ParticipantSelect,
     ProjectSelect,
     TagFilterAutoComplete,
     ValidationProvider,
   },
-
   data() {
     return {
       statuses: ["New", "Triage", "Escalated", "Closed"],
       visibilities: ["Open", "Restricted"],
     }
   },
-
   computed: {
     ...mapFields("case_management", [
       "selected.assignee",

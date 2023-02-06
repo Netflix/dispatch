@@ -39,6 +39,7 @@
             :sort-by.sync="sortBy"
             :sort-desc.sync="descending"
             :loading="loading"
+            data-testid="incident-data-table"
             v-model="selected"
             loading-text="Loading... Please wait"
             show-select
@@ -88,6 +89,7 @@
                 </template>
                 <v-list>
                   <v-list-item
+                    data-testid="incident-table-edit"
                     :to="{
                       name: 'IncidentTableEdit',
                       params: { name: item.name },
