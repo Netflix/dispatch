@@ -51,7 +51,6 @@ BOOLEAN_FUNCTIONS = [
 
 
 class Operator(object):
-
     OPERATORS = {
         "is_null": lambda f: f.is_(None),
         "is_not_null": lambda f: f.isnot(None),
