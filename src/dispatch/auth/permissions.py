@@ -316,48 +316,38 @@ class CaseViewPermission(BasePermission):
                     OrganizationAdminPermission,
                     CaseAssigneePermission,
                     CaseReporterPermission,
+                    CaseParticipantPermission,
                 ],
                 request=request,
             )
         return True
 
 
-class CaseAssigneePermission(BasePermission):
+
+class CaseEditPermission(BasePermission):
+    def has_required_permissions(
+        self,
+        request: Request,
+    ) -> bool:
+        return any_permission(
+            permissions=[
+                OrganizationAdminPermission,
+                CaseParticipantPermission,
+            ],
+            request=request,
+        )
+
+
+class CaseParticipantPermission(BasePermission):
     def has_required_permissions(
         self,
         request: Request,
     ) -> bool:
         current_user = get_current_user(request=request)
         current_case: Case = case_service.get(
-            db_session=request.state.db, incident_id=request.path_params["case_id"]
+            db_session=request.state.db, case_id=request.path_params["case_id"]
         )
-        if not current_case:
-            return False
-
-        if current_case.assignee:
-            if current_case.assignee.individual.email != current_user.email:
-                return False
-
-            if current_case.assignee.individual.email == current_user.email:
-                return True
-
-
-class CaseReporterPermission(BasePermission):
-    def has_required_permissions(
-        self,
-        request: Request,
-    ) -> bool:
-        current_user = get_current_user(request=request)
-        current_case: Case = case_service.get(
-            db_session=request.state.db, incident_id=request.path_params["case_id"]
-        )
-
-        if not current_case:
-            return False
-
-        if current_case.reporter:
-            if current_case.reporter.individual.email != current_user.email:
-                return False
-
-            if current_case.reporter.individual.email == current_user.email:
-                return True
+        participant_emails: list[str] = [
+            participant.individual.email for participant in current_case.participants
+        ]
+        return current_user.email in participant_emails

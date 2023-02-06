@@ -1,5 +1,7 @@
 from typing import List, Optional
 
+from dispatch.case import service as case_service
+from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
 from dispatch.individual.models import IndividualContact
 from dispatch.participant_role import service as participant_role_service
@@ -97,25 +99,21 @@ def get_or_create(
     participant_roles: List[ParticipantRoleCreate],
 ) -> Participant:
     """Gets an existing participant object or creates a new one."""
-    participant: Participant = (
-        db_session.query(Participant)
-        .filter(
-            Participant.incident_id == subject_id
-            if subject_type == "incident"
-            else Participant.case_id == subject_id
-        )
-        .filter(Participant.individual_contact_id == individual_id)
-        .one_or_none()
-    )
+    query = db_session.query(Participant)
+
+    if subject_type == "incident":
+        query = query.filter(Participant.incident_id == subject_id)
+    else:
+        query = query.filter(Participant.case_id == subject_id)
+
+    participant: Participant = query.filter(
+        Participant.individual_contact_id == individual_id
+    ).one_or_none()
 
     if not participant:
         if subject_type == "incident":
-            from dispatch.incident import service as incident_service
-
             subject = incident_service.get(db_session=db_session, incident_id=subject_id)
         if subject_type == "case":
-            from dispatch.case import service as case_service
-
             subject = case_service.get(db_session=db_session, case_id=subject_id)
 
         individual_info = {}

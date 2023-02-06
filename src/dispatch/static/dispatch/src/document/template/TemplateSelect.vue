@@ -154,9 +154,11 @@ export default {
       DocumentApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
 
-        // check to see if the current selection is available in the list and if not we add it
-        if (!this.items.find((match) => match.id === this.template.id)) {
-          this.items = [this.template].concat(this.items)
+        if (this.template) {
+          // check to see if the current selection is available in the list and if not we add it
+          if (!this.items.find((match) => match.id === this.template.id)) {
+            this.items = [this.template].concat(this.items)
+          }
         }
 
         this.total = response.data.total

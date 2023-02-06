@@ -100,4 +100,14 @@ def delete_service(*, db_session: Session = Depends(get_db), service_id: Primary
             status_code=status.HTTP_404_NOT_FOUND,
             detail=[{"msg": "A service with this id does not exist."}],
         )
-    delete(db_session=db_session, service_id=service_id)
+    try:
+        delete(db_session=db_session, service_id=service_id)
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=[
+                {
+                    "msg": "Unable to delete service because it is referenced by an incident `Role`. Remove this reference before deletion."
+                }
+            ],
+        )

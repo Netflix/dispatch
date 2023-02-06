@@ -6,6 +6,7 @@ from dispatch.database.core import SessionLocal, get_table_name_by_class_instanc
 from dispatch.event import service as event_service
 from dispatch.incident.models import Incident
 from dispatch.individual import service as individual_service
+from dispatch.participant.models import Participant
 from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType, ParticipantRoleCreate
 from dispatch.service import service as service_service
@@ -24,13 +25,12 @@ def add_participant(
     db_session: SessionLocal,
     service_id: int = None,
     role: ParticipantRoleType = ParticipantRoleType.participant,
-):
+) -> Participant:
     """Adds a participant."""
 
     # we get or create a new individual
-    individual = individual_service.get_or_create(
-        db_session=db_session, project=subject.project, email=user_email
-    )
+    individual = individual_service.get_or_create(db_session=db_session, project=subject.project, email=user_email)
+
 
     # we get or create a new participant
     subject_type = get_table_name_by_class_instance(subject)

@@ -91,7 +91,7 @@ class ParticipantRead(ParticipantBase):
     individual: Optional[IndividualContactRead]
 
 
-class ParticipantReadMinimal(DispatchBase):
+class ParticipantReadMinimal(ParticipantBase):
     id: PrimaryKey
     participant_roles: Optional[List[ParticipantRoleReadMinimal]] = []
     individual: Optional[IndividualContactReadMinimal]
