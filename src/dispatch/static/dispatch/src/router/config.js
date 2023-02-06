@@ -513,6 +513,7 @@ export const protectedRoute = [
         {
           path: "results",
           name: "ResultList",
+          meta: { name: "Results" },
           component: () => import("@/search/ResultList.vue"),
         },
       ],

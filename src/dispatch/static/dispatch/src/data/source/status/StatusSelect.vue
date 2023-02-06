@@ -129,9 +129,11 @@ export default {
       SourceStatusApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
 
-        // check to see if the current selection is available in the list and if not we add it
-        if (!this.items.find((match) => match.id === this.status.id)) {
-          this.items = [this.status].concat(this.items)
+        if (this.status) {
+          // check to see if the current selection is available in the list and if not we add it
+          if (!this.items.find((match) => match.id === this.status.id)) {
+            this.items = [this.status].concat(this.items)
+          }
         }
 
         this.total = response.data.total

@@ -77,4 +77,4 @@ class IncidentPriorityReadMinimal(DispatchBase):
 
 class IncidentPriorityPagination(DispatchBase):
     total: int
-    items: List[IncidentPriorityReadMinimal] = []
+    items: List[IncidentPriorityRead] = []

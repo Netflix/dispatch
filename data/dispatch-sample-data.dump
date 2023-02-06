@@ -6665,8 +6665,11 @@ COPY dispatch_organization_default.incident_role_tag (incident_role_id, tag_id) 
 --
 
 COPY dispatch_organization_default.incident_type (id, name, slug, description, exclude_from_metrics, enabled, "default", visibility, plugin_metadata, incident_template_document_id, executive_template_document_id, review_template_document_id, tracking_template_document_id, commander_service_id, liaison_service_id, search_vector, project_id) FROM stdin;
-2	Employee Investigation	\N	This is an employee investigation.	f	t	f	Restricted	[]	1	2	3	\N	\N	\N	'employe':1,6 'investig':2,7	1
+6	Other	\N	This is a miscellaneous incident.	f	t	f	Open	[]	1	2	3	\N	\N	\N	'oth':1,8 'misc':2,9 'incid':6 'involv':7	1
+5	Denial of Service	\N	This is an incident involving a Denial of Service attack on a compute resource or service.	f	t	f	Open	[]	1	2	3	\N	\N	\N	'ddos':1,8 'den':2,9 'incid':6 'involv':7	1
+4	Malware	\N	This is an incident involving malware on a host.	f	t	f	Open	[]	1	2	3	\N	\N	\N	'mal':1,8 'incid':6 'involv':7	1
 3	Customer Data	\N	This is an incident involving customer data.	f	t	f	Open	[]	1	2	3	\N	\N	\N	'custom':1,8 'data':2,9 'incid':6 'involv':7	1
+2	Employee Investigation	\N	This is an employee investigation.	f	t	f	Restricted	[]	1	2	3	\N	\N	\N	'employe':1,6 'investig':2,7	1
 1	Vulnerability	\N	This is an incident involving a misconfiguration or vulnerability.	f	t	t	Open	[]	1	2	3	\N	\N	\N	'incid':5 'involv':6 'misconfigur':8 'vulner':1,10	1
 \.
 
@@ -12042,4 +12045,3 @@ ALTER TABLE ONLY public.workflow_term
 --
 -- PostgreSQL database dump complete
 --
-

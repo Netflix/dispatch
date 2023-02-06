@@ -1,5 +1,5 @@
 from datetime import datetime
-from collections import defaultdict
+from collections import Counter, defaultdict
 from typing import List, Optional, Any, ForwardRef
 
 from pydantic import validator
@@ -14,16 +14,14 @@ from sqlalchemy import (
     UniqueConstraint,
 )
 from sqlalchemy.orm import relationship
-from sqlalchemy_utils import TSVectorType
+from sqlalchemy_utils import TSVectorType, observes
 
-from dispatch.auth.models import UserRead
 from dispatch.case.priority.models import (
-    CasePriorityCreate,
     CasePriorityRead,
     CasePriorityBase,
 )
-from dispatch.case.severity.models import CaseSeverityBase, CaseSeverityCreate, CaseSeverityRead
-from dispatch.case.type.models import CaseTypeBase, CaseTypeCreate, CaseTypeRead
+from dispatch.case.severity.models import CaseSeverityBase, CaseSeverityRead
+from dispatch.case.type.models import CaseTypeBase, CaseTypeRead
 from dispatch.database.core import Base
 from dispatch.document.models import Document, DocumentRead
 from dispatch.enums import Visibility
@@ -33,6 +31,8 @@ from dispatch.incident.models import IncidentReadMinimal
 from dispatch.messaging.strings import CASE_RESOLUTION_DEFAULT
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 from dispatch.models import NameStr, PrimaryKey
+from dispatch.participant.models import Participant
+from dispatch.participant.models import ParticipantRead, ParticipantReadMinimal, ParticipantUpdate
 from dispatch.storage.models import StorageRead
 from dispatch.tag.models import TagRead
 from dispatch.ticket.models import TicketRead
@@ -70,6 +70,8 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     resolution = Column(String, default=CASE_RESOLUTION_DEFAULT, nullable=False)
     status = Column(String, default=CaseStatus.new, nullable=False)
     visibility = Column(String, default=Visibility.open, nullable=False)
+    participants_team = Column(String)
+    participants_location = Column(String)
 
     reported_at = Column(DateTime, default=datetime.utcnow)
     triage_at = Column(DateTime)
@@ -83,8 +85,10 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     )
 
     # relationships
-    assignee_id = Column(Integer, ForeignKey("dispatch_core.dispatch_user.id"))
-    assignee = relationship("DispatchUser", foreign_keys=[assignee_id], post_update=True)
+    assignee_id = Column(Integer, ForeignKey(Participant.id))
+    assignee = relationship(
+        Participant, foreign_keys=[assignee_id], lazy="subquery", post_update=True
+    )
 
     case_type = relationship("CaseType", backref="case")
     case_type_id = Column(Integer, ForeignKey("case_type.id"))
@@ -108,6 +112,13 @@ class Case(Base, TimeStampMixin, ProjectMixin):
 
     groups = relationship(
         "Group", backref="case", cascade="all, delete-orphan", foreign_keys=[Group.case_id]
+    )
+
+    participants = relationship(
+        Participant,
+        backref="case",
+        cascade="all, delete-orphan",
+        foreign_keys=[Participant.case_id],
     )
 
     incidents = relationship("Incident", secondary=assoc_cases_incidents, backref="cases")
@@ -135,6 +146,11 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     )
 
     ticket = relationship("Ticket", uselist=False, backref="case", cascade="all, delete-orphan")
+
+    @observes("participants")
+    def participant_observer(self, participants):
+        self.participants_team = Counter(p.team for p in participants).most_common(1)[0][0]
+        self.participants_location = Counter(p.location for p in participants).most_common(1)[0][0]
 
 
 class SignalRead(DispatchBase):
@@ -183,11 +199,12 @@ class CaseBase(DispatchBase):
 
 
 class CaseCreate(CaseBase):
-    assignee: Optional[UserRead]
+    assignee: Optional[ParticipantUpdate]
     case_priority: Optional[CasePriorityRead]
     case_severity: Optional[CaseSeverityRead]
     case_type: Optional[CaseTypeRead]
     project: Optional[ProjectRead]
+    reporter: Optional[ParticipantUpdate]
     tags: Optional[List[TagRead]] = []
 
 
@@ -196,7 +213,7 @@ CaseReadMinimal = ForwardRef("CaseReadMinimal")
 
 class CaseReadMinimal(CaseBase):
     id: PrimaryKey
-    assignee: Optional[UserRead]
+    assignee: Optional[ParticipantReadMinimal]
     case_priority: CasePriorityRead
     case_severity: CaseSeverityRead
     case_type: CaseTypeRead
@@ -217,7 +234,7 @@ CaseReadMinimal.update_forward_refs()
 
 class CaseRead(CaseBase):
     id: PrimaryKey
-    assignee: Optional[UserRead]
+    assignee: Optional[ParticipantRead]
     case_priority: CasePriorityRead
     case_severity: CaseSeverityRead
     case_type: CaseTypeRead
@@ -233,6 +250,7 @@ class CaseRead(CaseBase):
     project: ProjectRead
     related: Optional[List[CaseReadMinimal]] = []
     reported_at: Optional[datetime] = None
+    participants: Optional[List[ParticipantRead]] = []
     signal_instances: Optional[List[SignalInstanceRead]] = []
     storage: Optional[StorageRead] = None
     tags: Optional[List[TagRead]] = []
@@ -242,7 +260,7 @@ class CaseRead(CaseBase):
 
 
 class CaseUpdate(CaseBase):
-    assignee: Optional[UserRead]
+    assignee: Optional[ParticipantUpdate]
     case_priority: Optional[CasePriorityBase]
     case_severity: Optional[CaseSeverityBase]
     case_type: Optional[CaseTypeBase]
