@@ -59,9 +59,9 @@ export default {
     return API.post(`/${resource}/${incidentId}/report/${type}`, payload)
   },
 
-  handoff(options) {
+  handoff(params, commander) {
     return API.post(`/${resource}/handoff`, {
-      params: { ...options },
+      params: { ...options, commander },
     })
   },
 }

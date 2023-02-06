@@ -76,7 +76,7 @@
           </v-stepper-content>
           <v-stepper-content step="3">
             <v-flex xs12>
-              <participant-select label="Commander" :project="project"/>
+              <participant-select v-model="commander" label="Commander" :project="project"/>
             </v-flex>
             <v-spacer />
             <v-btn @click="closeHandoff()" text> Cancel </v-btn>
@@ -108,8 +108,6 @@ import IncidentStatusMultiSelect from "@/incident/status/IncidentStatusMultiSele
 import IncidentTypeCombobox from "@/incident/type/IncidentTypeCombobox.vue"
 import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
-import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
-import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
 
 export default {
   name: "IncidentTableHandoffDialog",
@@ -125,8 +123,6 @@ export default {
     IncidentTypeCombobox,
     ParticipantSelect,
     ProjectCombobox,
-    TagFilterAutoComplete,
-    TagTypeFilterCombobox,
   },
 
   data() {
@@ -141,6 +137,7 @@ export default {
       ],
       previewRowsLoading: false,
       handoffLoading: false,
+      commander: {},
     }
   },
 
@@ -176,9 +173,12 @@ export default {
 
       this.handoffLoading = true
 
-      return IncidentApi.handoff(params)
+      console.log(params)
+      console.log(this.commander)
+
+      return IncidentApi.handoff(params, this.commander)
         .then((response) => {
-          <!-- let items = response.data.items -->
+          // let items = response.data.items
           this.handoffLoading = false
           this.closeHandoff()
         })
@@ -199,8 +199,6 @@ export default {
         vm.project,
         vm.reported_at,
         vm.status,
-        vm.tag,
-        vm.tag_type,
       ],
       () => {
         this.getPreviewData()
