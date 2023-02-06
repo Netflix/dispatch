@@ -1,8 +1,8 @@
-import logging
 from datetime import datetime
 from typing import Any
-
+import logging
 import pytz
+
 from blockkit import (
     Actions,
     Button,
@@ -22,14 +22,13 @@ from blockkit import (
 from slack_bolt import Ack, BoltContext, BoltRequest, Respond
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
+
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
 from dispatch.config import DISPATCH_UI_URL
-from dispatch.database.core import resolve_attr
 from dispatch.database.service import search_filter_sort_paginate
-from dispatch.document import service as document_service
 from dispatch.enums import Visibility
 from dispatch.event import service as event_service
 from dispatch.exceptions import DispatchException
@@ -39,7 +38,6 @@ from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import IncidentCreate, IncidentRead, IncidentUpdate
 from dispatch.individual import service as individual_service
 from dispatch.individual.models import IndividualContactRead
-from dispatch.messaging.strings import INCIDENT_RESOURCES_MESSAGE, MessageType
 from dispatch.monitor import service as monitor_service
 from dispatch.monitor.models import MonitorCreate
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
@@ -52,6 +50,8 @@ from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.bolt import app
 from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
 from dispatch.plugins.dispatch_slack.exceptions import CommandError
+from dispatch.plugins.dispatch_slack.models import MonitorMetadata, TaskMetadata
+from dispatch.plugins.dispatch_slack.service import get_user_email, get_user_profile_by_email
 from dispatch.plugins.dispatch_slack.fields import (
     DefaultActionIds,
     DefaultBlockIds,
@@ -93,7 +93,6 @@ from dispatch.plugins.dispatch_slack.incident.enums import (
     UpdateParticipantActions,
     UpdateParticipantBlockIds,
 )
-from dispatch.plugins.dispatch_slack.messaging import create_message_blocks
 from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
     button_context_middleware,
@@ -108,8 +107,6 @@ from dispatch.plugins.dispatch_slack.middleware import (
     subject_middleware,
     user_middleware,
 )
-from dispatch.plugins.dispatch_slack.models import MonitorMetadata, TaskMetadata
-from dispatch.plugins.dispatch_slack.service import get_user_email, get_user_profile_by_email
 from dispatch.project import service as project_service
 from dispatch.report import flows as report_flows
 from dispatch.report import service as report_service
@@ -147,10 +144,6 @@ def configure(config):
         configuration_middleware,
         command_context_middleware,
     ]
-
-    app.command(config.slack_command_list_resources, middleware=middleware)(
-        handle_list_resources_command
-    )
 
     middleware = [
         subject_middleware,
@@ -633,58 +626,6 @@ def draw_task_modal(
         client.views_open(trigger_id=view_id, view=modal)
     else:
         client.views_update(view_id=view_id, view=modal)
-
-
-def handle_list_resources_command(
-    ack: Ack, db_session: Session, context: BoltContext, respond: Respond
-) -> None:
-    """Handles the list resources command."""
-    ack()
-
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
-
-    incident_description = (
-        incident.description
-        if len(incident.description) <= 500
-        else f"{incident.description[:500]}..."
-    )
-
-    # we send the ephemeral message
-    message_kwargs = {
-        "title": incident.title,
-        "description": incident_description,
-        "commander_fullname": incident.commander.individual.name,
-        "commander_team": incident.commander.team,
-        "commander_weblink": incident.commander.individual.weblink,
-        "reporter_fullname": incident.reporter.individual.name,
-        "reporter_team": incident.reporter.team,
-        "reporter_weblink": incident.reporter.individual.weblink,
-        "document_weblink": resolve_attr(incident, "incident_document.weblink"),
-        "storage_weblink": resolve_attr(incident, "storage.weblink"),
-        "conference_weblink": resolve_attr(incident, "conference.weblink"),
-        "conference_challenge": resolve_attr(incident, "conference.conference_challenge"),
-    }
-
-    faq_doc = document_service.get_incident_faq_document(
-        db_session=db_session, project_id=incident.project_id
-    )
-    if faq_doc:
-        message_kwargs.update({"faq_weblink": faq_doc.weblink})
-
-    conversation_reference = document_service.get_conversation_reference_document(
-        db_session=db_session, project_id=incident.project_id
-    )
-    if conversation_reference:
-        message_kwargs.update(
-            {"conversation_commands_reference_document_weblink": conversation_reference.weblink}
-        )
-
-    blocks = create_message_blocks(
-        INCIDENT_RESOURCES_MESSAGE, MessageType.incident_resources_message, **message_kwargs
-    )
-
-    blocks = Message(blocks=blocks).build()["blocks"]
-    respond(text="Incident Resources", blocks=blocks, response_type="ephemeral")
 
 
 # EVENTS

@@ -29,7 +29,6 @@ from dispatch.messaging.strings import (
     INCIDENT_PARTICIPANT_SUGGESTED_READING_ITEM,
     INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
     INCIDENT_PRIORITY_CHANGE,
-    INCIDENT_RESOURCES_MESSAGE,
     INCIDENT_REVIEW_DOCUMENT,
     INCIDENT_SEVERITY_CHANGE,
     INCIDENT_STATUS_CHANGE,
@@ -717,71 +716,6 @@ def send_incident_review_document_notification(
     )
 
     log.debug("Incident review document notification sent.")
-
-
-def send_incident_resources_ephemeral_message_to_participant(
-    user_id: str, incident: Incident, db_session: SessionLocal
-):
-    """Sends the list of incident resources to the participant via an ephemeral message."""
-    plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
-    )
-    if not plugin:
-        log.warning("Incident resource message not sent, no conversation plugin enabled.")
-        return
-
-    incident_description = (
-        incident.description
-        if len(incident.description) <= 500
-        else f"{incident.description[:500]}..."
-    )
-
-    message_kwargs = {
-        "title": incident.title,
-        "description": incident_description,
-        "commander_fullname": incident.commander.individual.name,
-        "commander_team": incident.commander.team,
-        "commander_weblink": incident.commander.individual.weblink,
-        "reporter_fullname": incident.reporter.individual.name,
-        "reporter_team": incident.reporter.team,
-        "reporter_weblink": incident.reporter.individual.weblink,
-        "document_weblink": resolve_attr(incident, "incident_document.weblink"),
-        "storage_weblink": resolve_attr(incident, "storage.weblink"),
-        "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
-        "conference_weblink": resolve_attr(incident, "conference.weblink"),
-        "conference_challenge": resolve_attr(incident, "conference.conference_challenge"),
-    }
-
-    if incident.incident_review_document:
-        message_kwargs.update(
-            {"review_document_weblink": incident.incident_review_document.weblink}
-        )
-
-    faq_doc = document_service.get_incident_faq_document(
-        db_session=db_session, project_id=incident.project_id
-    )
-    if faq_doc:
-        message_kwargs.update({"faq_weblink": faq_doc.weblink})
-
-    conversation_reference = document_service.get_conversation_reference_document(
-        db_session=db_session, project_id=incident.project_id
-    )
-    if conversation_reference:
-        message_kwargs.update(
-            {"conversation_commands_reference_document_weblink": conversation_reference.weblink}
-        )
-
-    # we send the ephemeral message
-    plugin.instance.send_ephemeral(
-        incident.conversation.channel_id,
-        user_id,
-        "Incident Resources Message",
-        INCIDENT_RESOURCES_MESSAGE,
-        MessageType.incident_resources_message,
-        **message_kwargs,
-    )
-
-    log.debug(f"List of incident resources sent to {user_id} via ephemeral message.")
 
 
 def send_incident_close_reminder(incident: Incident, db_session: SessionLocal):

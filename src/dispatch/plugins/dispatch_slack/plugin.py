@@ -24,11 +24,10 @@ from dispatch.plugins.dispatch_slack.config import (
     SlackContactConfiguration,
     SlackConversationConfiguration,
 )
-from dispatch.plugins.dispatch_slack.endpoints import router as slack_event_router
 
 from .case.messages import create_case_message, create_signal_messages
-from .endpoints import router as slack_event_router
 
+from .endpoints import router as slack_event_router
 from .messaging import create_message_blocks
 from .service import (
     add_users_to_conversation,
@@ -226,7 +225,6 @@ class SlackConversationPlugin(ConversationPlugin):
             ConversationCommands.engage_oncall: self.configuration.slack_command_engage_oncall,
             ConversationCommands.executive_report: self.configuration.slack_command_report_executive,
             ConversationCommands.list_participants: self.configuration.slack_command_list_participants,
-            ConversationCommands.list_resources: self.configuration.slack_command_list_resources,
             ConversationCommands.list_tasks: self.configuration.slack_command_list_tasks,
             ConversationCommands.tactical_report: self.configuration.slack_command_report_tactical,
         }

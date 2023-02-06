@@ -93,11 +93,6 @@ class SlackConversationConfiguration(SlackConfiguration):
         title="Engage Oncall Command String",
         description="Defines the string used to engage an oncall. Must match what is defined in Slack.",
     )
-    slack_command_list_resources: str = Field(
-        "/dispatch-list-resources",
-        title="List Resources Command String",
-        description="Defines the string used to list incident resources. Must match what is defined in Slack.",
-    )
     slack_command_report_incident: str = Field(
         "/dispatch-report-incident",
         title="Report Incident Command String",
