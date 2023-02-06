@@ -35,14 +35,18 @@ def consume_signals(db_session: SessionLocal, project: Project):
     for plugin in plugins:
         log.debug(f"Consuming signals. Signal Consumer: {plugin.plugin.slug}")
         signal_instances = plugin.instance.consume()
+        if plugin.plugin.slug == "det-eng-sqs-signal-consumer":
+            with open("data.json", "w") as f:
+                for signal_instance_data in signal_instances:
+                    log.debug(signal_instance_data.json())
+                    print(signal_instance_data.json(), file=f)
 
-        for signal_instance_data in signal_instances:
-            try:
-                signal_flows.create_signal_instance(
-                    db_session=db_session,
-                    project=project,
-                    signal_instance_data=signal_instance_data,
-                )
-            except Exception as e:
-                log.debug(signal_instance_data)
-                log.exception(e)
+            # try:
+            # signal_flows.create_signal_instance(
+            #    db_session=db_session,
+            #    project=project,
+            #    signal_instance_data=signal_instance_data,
+            # )
+            # except Exception as e:
+            #    log.debug(signal_instance_data)
+            #    log.exception(e)
