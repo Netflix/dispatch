@@ -210,4 +210,4 @@ docker/.env
 /test-results/
 /playwright-report/
 /playwright/.cache/
-/tests/e2e/artifacts/*
+/tests/static/e2e/artifacts/*
