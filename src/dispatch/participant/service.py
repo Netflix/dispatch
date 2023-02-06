@@ -1,5 +1,7 @@
 from typing import List, Optional
 
+from dispatch.case import service as case_service
+from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
 from dispatch.individual.models import IndividualContact
 from dispatch.participant_role import service as participant_role_service
@@ -79,34 +81,39 @@ def get_all_by_incident_id(*, db_session, incident_id: int) -> List[Optional[Par
 def get_or_create(
     *,
     db_session,
-    incident_id: int,
+    subject_id: int,
+    subject_type: str,
     individual_id: int,
     service_id: int,
     participant_roles: List[ParticipantRoleCreate],
 ) -> Participant:
     """Gets an existing participant object or creates a new one."""
-    from dispatch.incident import service as incident_service
+    query = db_session.query(Participant)
 
-    participant = (
-        db_session.query(Participant)
-        .filter(Participant.incident_id == incident_id)
-        .filter(Participant.individual_contact_id == individual_id)
-        .one_or_none()
-    )
+    if subject_type == "incident":
+        query = query.filter(Participant.incident_id == subject_id)
+    else:
+        query = query.filter(Participant.case_id == subject_id)
+
+    participant: Participant = query.filter(
+        Participant.individual_contact_id == individual_id
+    ).one_or_none()
 
     if not participant:
-        incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
-        # We get information about the individual
-        individual_contact = individual_service.get(
-            db_session=db_session, individual_contact_id=individual_id
-        )
+        if subject_type == "incident":
+            subject = incident_service.get(db_session=db_session, incident_id=subject_id)
+        if subject_type == "case":
+            subject = case_service.get(db_session=db_session, case_id=subject_id)
 
         individual_info = {}
         contact_plugin = plugin_service.get_active_instance(
-            db_session=db_session, project_id=incident.project.id, plugin_type="contact"
+            db_session=db_session, project_id=subject.project.id, plugin_type="contact"
         )
         if contact_plugin:
+            # We get information about the individual
+            individual_contact = individual_service.get(
+                db_session=db_session, individual_contact_id=individual_id
+            )
             individual_info = contact_plugin.instance.get(
                 individual_contact.email, db_session=db_session
             )

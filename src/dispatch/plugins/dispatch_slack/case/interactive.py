@@ -293,7 +293,9 @@ def edit_button_click(
     ack()
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
-    assignee_initial_user = client.users_lookupByEmail(email=case.assignee.email)["user"]["id"]
+    assignee_initial_user = client.users_lookupByEmail(email=case.assignee.individual.email)[
+        "user"
+    ]["id"]
 
     blocks = [
         title_input(initial_value=case.title),

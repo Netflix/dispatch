@@ -37,6 +37,7 @@
       <v-tabs color="primary" fixed-tabs v-model="tab">
         <v-tab key="details"> Details </v-tab>
         <v-tab key="resources"> Resources </v-tab>
+        <v-tab key="participants"> Participants </v-tab>
         <v-tab key="timeline"> Timeline </v-tab>
         <v-tab key="workflows"> Workflows </v-tab>
         <v-tab key="signals">Signals</v-tab>
@@ -47,6 +48,9 @@
         </v-tab-item>
         <v-tab-item key="resources">
           <case-resources-tab />
+        </v-tab-item>
+        <v-tab-item key="participants">
+          <case-participants-tab />
         </v-tab-item>
         <v-tab-item key="timeline">
           <case-timeline-tab />
@@ -68,6 +72,7 @@ import { mapActions } from "vuex"
 import { ValidationObserver } from "vee-validate"
 
 import CaseDetailsTab from "@/case/DetailsTab.vue"
+import CaseParticipantsTab from "@/case/ParticipantsTab.vue"
 import CaseResourcesTab from "@/case/ResourcesTab.vue"
 import CaseTimelineTab from "@/case/TimelineTab.vue"
 import WorkflowInstanceTab from "@/workflow/WorkflowInstanceTab.vue"
@@ -79,6 +84,7 @@ export default {
   components: {
     CaseDetailsTab,
     CaseResourcesTab,
+    CaseParticipantsTab,
     CaseTimelineTab,
     WorkflowInstanceTab,
     SignalInstanceTab,
