@@ -17,7 +17,7 @@ from dispatch.decorators import scheduled_project_task
 log = logging.getLogger(__name__)
 
 
-# TODO do we want per signal source flexibility?
+ TODO do we want per signal source flexibility?
 @scheduler.add(every(1).minutes, name="signal-consume")
 @scheduled_project_task
 def consume_signals(db_session: SessionLocal, project: Project):
@@ -35,18 +35,13 @@ def consume_signals(db_session: SessionLocal, project: Project):
     for plugin in plugins:
         log.debug(f"Consuming signals. Signal Consumer: {plugin.plugin.slug}")
         signal_instances = plugin.instance.consume()
-        if plugin.plugin.slug == "det-eng-sqs-signal-consumer":
-            with open("data.json", "w") as f:
-                for signal_instance_data in signal_instances:
-                    log.debug(signal_instance_data.json())
-                    print(signal_instance_data.json(), file=f)
-
-            # try:
-            # signal_flows.create_signal_instance(
-            #    db_session=db_session,
-            #    project=project,
-            #    signal_instance_data=signal_instance_data,
-            # )
-            # except Exception as e:
-            #    log.debug(signal_instance_data)
-            #    log.exception(e)
+        for signal_instance_data in signal_instances:
+            try:
+                signal_flows.create_signal_instance(
+                    db_session=db_session,
+                    project=project,
+                    signal_instance_data=signal_instance_data,
+                )
+            except Exception as e:
+                log.debug(signal_instance_data)
+                log.exception(e)
