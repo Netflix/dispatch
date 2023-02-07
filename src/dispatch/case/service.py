@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from typing import List, Optional
 
-from dispatch.auth import service as auth_service
 from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.severity import service as case_severity_service
@@ -14,6 +13,7 @@ from dispatch.event import service as event_service
 from dispatch.exceptions import NotFoundError
 from dispatch.incident import service as incident_service
 from dispatch.participant import flows as participant_flows
+from dispatch.participant_role import flows as role_flows
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.project import service as project_service
 from dispatch.service import flows as service_flows
@@ -231,7 +231,7 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
     if case_in.assignee:
         if case.assignee.individual.email != case_in.assignee.individual.email:
             # We change the current assignee role to participant
-            participant_flows.change_participant_role(
+            role_flows.change_role_flow(
                 db_session=db_session,
                 case=case,
                 user_email=case.assignee.individual.email,

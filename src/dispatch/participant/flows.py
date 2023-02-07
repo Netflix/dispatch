@@ -2,7 +2,7 @@ import logging
 from typing import TypeVar
 
 from dispatch.case.models import Case
-from dispatch.database.core import Session, SessionLocal, get_table_name_by_class_instance
+from dispatch.database.core import SessionLocal, get_table_name_by_class_instance
 from dispatch.event import service as event_service
 from dispatch.incident.models import Incident
 from dispatch.individual import service as individual_service
@@ -11,11 +11,9 @@ from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import (
     ParticipantRoleType,
     ParticipantRoleCreate,
-    ParticipantRoleUpdate,
 )
 from dispatch.service import service as service_service
-
-from .service import get_or_create, get_by_incident_id_and_email, get_by_case_id_and_email
+from .service import get_or_create, get_by_incident_id_and_email
 
 
 log = logging.getLogger(__name__)
@@ -147,42 +145,6 @@ def inactivate_participant(user_email: str, incident: Incident, db_session: Sess
     )
 
     return True
-
-
-def change_participant_role(
-    db_session: Session,
-    case: Case,
-    user_email: str,
-    from_role: ParticipantRoleType,
-    to_role: ParticipantRoleType = ParticipantRoleType.participant,
-):
-    """Changes a participants role."""
-    participant = get_by_case_id_and_email(
-        db_session=db_session,
-        case_id=case.id,
-        email=user_email,
-    )
-    log.debug(f"Changing {participant.individual.name}'s role from {from_role} to {to_role}...")
-
-    participant_roles = [r.role for r in participant.participant_roles]
-    if from_role not in participant_roles:
-        log.debug(
-            f"{participant.individual.name}'s does not have the role {from_role} that was set to be changed."
-        )
-        return
-
-    for role in participant.participant_roles:
-        if from_role == role.role:
-            from_participant_role = role
-
-    log.debug(f"{participant.individual.name}'s role changed from {from_role} to {to_role}...")
-
-    participant_role_in = ParticipantRoleUpdate(role=to_role)
-    participant_role_service.update(
-        db_session=db_session,
-        participant_role=from_participant_role,
-        participant_role_in=participant_role_in,
-    )
 
 
 def reactivate_participant(
