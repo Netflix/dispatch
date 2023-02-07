@@ -245,7 +245,7 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
                 db_session=db_session,
                 source="Dispatch Core App",
                 description=f"Case assigned to {case_in.assignee.individual.email} by {current_user.email}",
-                dispatch_user_id=case.assignee.id,
+                dispatch_user_id=current_user.id,
                 case_id=case.id,
             )
 
