@@ -155,6 +155,7 @@
             </span>
             <signal-search-filter-combobox
               v-model="supression_filters"
+              :project="project"
             ></signal-search-filter-combobox>
           </v-card>
         </v-col>

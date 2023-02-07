@@ -205,7 +205,7 @@ export default {
       previewFields: [
         { text: "Name", value: "signal.name", sortable: false },
         { text: "Case", value: "case.name", sortable: false },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { text: "Fingerprint", value: "fingerprint", sortable: false },
       ],
       windows: [5, 10, 15, 20, 30],
       step: 1,
@@ -231,13 +231,11 @@ export default {
     MonacoEditor: () => import("monaco-editor-vue"),
   },
   computed: {
-    ...mapFields("signalFilter", [
+    ...mapFields("search", [
       "selected",
       "selected.description",
       "selected.expression",
-      "selected.expiration",
-      "selected.window",
-      "selected.action",
+      "selected.subject",
       "selected.name",
       "selected.project",
       "loading",
@@ -284,6 +282,7 @@ export default {
     if (this.query.project) {
       this.project = { name: this.query.project }
     }
+    this.subject = "signal"
     this.getPreviewData()
 
     this.$watch(

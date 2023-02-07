@@ -169,6 +169,7 @@ export default {
           ...filterOptions,
           filters: {
             project: [this.project],
+            subject: ["signal"],
           },
         }
         filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
