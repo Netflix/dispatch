@@ -45,7 +45,7 @@ def get_by_incident_id_and_email(
 
 
 def get_by_case_id_and_email(*, db_session, case_id: int, email: str) -> Optional[Participant]:
-    """Get a participant by incident id and email."""
+    """Get a participant by case id and email."""
     return (
         db_session.query(Participant)
         .join(IndividualContact)
