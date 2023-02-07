@@ -95,7 +95,7 @@ def get_or_create(
     subject_id: int,
     subject_type: str,
     individual_id: int,
-    service_id: int = None,
+    service_id: int,
     participant_roles: List[ParticipantRoleCreate],
 ) -> Participant:
     """Gets an existing participant object or creates a new one."""
