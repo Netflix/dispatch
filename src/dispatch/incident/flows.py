@@ -361,16 +361,17 @@ def create_incident_documents(incident: Incident, db_session: SessionLocal):
                 incident.storage.resource_id, incident_sheet_name, file_type="sheet"
             )
 
-        sheet.update(
-            {
-                "name": incident_sheet_name,
-                "description": incident_sheet_description,
-                "resource_type": DocumentResourceTypes.tracking,
-                "resource_id": sheet["id"],
-            }
-        )
+        if sheet:
+            sheet.update(
+                {
+                    "name": incident_sheet_name,
+                    "description": incident_sheet_description,
+                    "resource_type": DocumentResourceTypes.tracking,
+                    "resource_id": sheet["id"],
+                }
+            )
 
-        incident_documents.append(sheet)
+            incident_documents.append(sheet)
 
         event_service.log_incident_event(
             db_session=db_session,
