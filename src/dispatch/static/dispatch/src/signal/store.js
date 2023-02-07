@@ -4,6 +4,27 @@ import { debounce } from "lodash"
 import SearchUtils from "@/search/utils"
 import SignalApi from "@/signal/api"
 
+const getDefaultSupressionFilterState = () => {
+  return {
+    expression: null,
+    description: null,
+    name: null,
+    subject: "signal",
+    loading: false,
+    previewRows: {
+      items: [],
+      total: null,
+    },
+    previewRowsLoading: false,
+    step: 1,
+    filters: {
+      tag: [],
+      tag_type: [],
+      project: [],
+    },
+  }
+}
+
 const getDefaultSelectedState = () => {
   return {
     id: null,
@@ -15,8 +36,8 @@ const getDefaultSelectedState = () => {
     external_url: null,
     case_type: null,
     case_priority: null,
-    duplication_rule: null,
-    suppression_rule: null,
+    duplication_filters: null,
+    supression_filters: null,
     source: null,
     project: null,
     created_at: null,
@@ -27,6 +48,9 @@ const getDefaultSelectedState = () => {
 const state = {
   selected: {
     ...getDefaultSelectedState(),
+  },
+  selectedSupressionFilter: {
+    ...getDefaultSupressionFilterState(),
   },
   dialogs: {
     showCreateEdit: false,

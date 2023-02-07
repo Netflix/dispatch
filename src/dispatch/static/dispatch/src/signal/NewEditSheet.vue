@@ -143,10 +143,20 @@
           </v-card>
         </v-col>
         <v-col cols="12">
-          <duplication-rule-card v-model="duplication_rule"></duplication-rule-card>
-        </v-col>
-        <v-col cols="12">
-          <suppression-rule v-model="suppression_rule"></suppression-rule>
+          <v-card flat tile>
+            <span class="subtitle-2"
+              >Supression Filters
+              <v-tooltip max-width="250px" bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
+                </template>
+                Any signal matching these filters will not have cases created for them.
+              </v-tooltip>
+            </span>
+            <signal-search-filter-combobox
+              v-model="supression_filters"
+            ></signal-search-filter-combobox>
+          </v-card>
         </v-col>
       </v-row>
     </v-navigation-drawer>
@@ -162,8 +172,7 @@ import { required } from "vee-validate/dist/rules"
 import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
 
-import DuplicationRuleCard from "@/signal/DuplicationRule.vue"
-import SuppressionRule from "./SuppressionRule.vue"
+import SignalSearchFilterCombobox from "@/signal/SignalSearchFilterCombobox.vue"
 
 extend("required", {
   ...required,
@@ -177,20 +186,7 @@ export default {
     ValidationProvider,
     CaseTypeSelect,
     CasePrioritySelect,
-    DuplicationRuleCard,
-    SuppressionRule,
-  },
-
-  data() {
-    return {
-      windows: [
-        { label: "10min", value: 600 },
-        { label: "30min", value: 1800 },
-        { label: "1hr", value: 3600 },
-        { label: "8hr", value: 28800 },
-        { label: "24hr", value: 86400 },
-      ],
-    }
+    SignalSearchFilterCombobox,
   },
 
   computed: {
@@ -205,8 +201,8 @@ export default {
       "selected.external_url",
       "selected.case_type",
       "selected.case_priority",
-      "selected.duplication_rule",
-      "selected.suppression_rule",
+      "selected.duplication_filters",
+      "selected.supression_filters",
       "selected.source",
       "selected.project",
       "selected.loading",
