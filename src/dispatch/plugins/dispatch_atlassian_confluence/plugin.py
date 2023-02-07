@@ -42,7 +42,7 @@ class ConfluenceConfiguration(ConfluenceConfigurationBase):
 class ConfluencePagePlugin(StoragePlugin):
     title = "Confluence Plugin - Store your incident details"
     slug = "confluence"
-    description = "Confluence plugin to create Incident documents"
+    description = "Confluence plugin to create incident documents"
     version = confluence_plugin.__version__
 
     author = "Cino Jose"
