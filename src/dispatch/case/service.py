@@ -233,7 +233,7 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
             # We change the current assignee role to participant
             role_flows.change_role_flow(
                 db_session=db_session,
-                case=case,
+                subject=case,
                 user_email=case.assignee.individual.email,
                 from_role=ParticipantRoleType.assignee,
                 to_role=ParticipantRoleType.participant,
