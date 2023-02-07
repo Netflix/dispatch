@@ -4,6 +4,7 @@ from dispatch.project.models import Project
 from dispatch.case import service as case_service
 from dispatch.case import flows as case_flows
 from dispatch.signal import service as signal_service
+from dispatch.tag import service as tag_service
 from dispatch.signal.models import SignalInstanceCreate, RawSignal
 
 
@@ -26,6 +27,9 @@ def create_signal_instance(
     signal_instance = signal_service.create_instance(
         db_session=db_session, signal_instance_in=signal_instance_in
     )
+
+    # associate any known tags with the signal
+    tag = tag_service.get_by_name(db_session=db_session, project_id=project.id, name="foo")
 
     signal_instance.signal = signal
     db_session.commit()
