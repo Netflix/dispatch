@@ -282,6 +282,16 @@ def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, d
                 )
                 # wait until all resources are created before adding suggested participants
                 individual_participants = [x.email for x, _ in individual_participants]
+
+                for email in individual_participants:
+                    # we don't rely on on this flow to add folks to the conversation because in this case
+                    # we want to do it in bulk
+                    case_add_or_reactive_participant_flow(
+                        db_session=db_session,
+                        user_email=email,
+                        case_id=case.id,
+                        add_to_conversation=False,
+                    )
                 conversation_plugin.instance.add_to_thread(
                     case.conversation.channel_id,
                     case.conversation.thread_id,

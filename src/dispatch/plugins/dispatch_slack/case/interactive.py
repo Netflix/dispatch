@@ -76,6 +76,23 @@ def assignee_select(
 @message_dispatcher.add(
     subject="case", exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
+def handle_new_participant_message(
+    ack: Ack, user: DispatchUser, context: BoltContext, db_session: Session, client: WebClient
+) -> None:
+    """Looks for new participants that have starting chatting for the first time."""
+    ack()
+    participant = case_flows.case_add_or_reactive_participant_flow(
+        case_id=context["subject"].id,
+        user_email=user.email,
+        db_session=db_session,
+        add_to_conversation=False,
+    )
+    participant.user_conversation_id = context["user_id"]
+
+
+@message_dispatcher.add(
+    subject="case", exclude={"subtype": ["channel_join", "channel_leave"]}
+)  # we ignore channel join and leave messages
 def handle_new_participant_added(
     ack: Ack, payload: dict, context: BoltContext, db_session: Session, client: WebClient
 ) -> None:
