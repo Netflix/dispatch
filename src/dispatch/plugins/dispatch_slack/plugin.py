@@ -24,13 +24,13 @@ from dispatch.plugins.dispatch_slack.config import (
     SlackContactConfiguration,
     SlackConversationConfiguration,
 )
-from dispatch.plugins.dispatch_slack.endpoints import router as slack_event_router
 
 from .case.messages import create_case_message, create_signal_messages
 from .endpoints import router as slack_event_router
 
 from .messaging import create_message_blocks
 from .service import (
+    add_users_to_conversation_thread,
     add_users_to_conversation,
     archive_conversation,
     chunks,
@@ -192,6 +192,12 @@ class SlackConversationPlugin(ConversationPlugin):
         archived = conversation_archived(client, conversation_id)
         if not archived:
             add_users_to_conversation(client, conversation_id, participants)
+
+    def add_to_thread(self, conversation_id: str, thread_id: str, participants: List[str]):
+        """Adds users to a thread conversation."""
+        client = create_slack_client(self.configuration)
+        participants = [resolve_user(client, p)["id"] for p in participants]
+        add_users_to_conversation_thread(client, conversation_id, thread_id, participants)
 
     def archive(self, conversation_id: str):
         """Archives conversation."""

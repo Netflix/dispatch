@@ -340,6 +340,8 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (QueryModel, "Tag"): (QueryModel.tags, True),
         (QueryModel, "TagType"): (QueryModel.tags, True),
         (DispatchUser, "Organization"): (DispatchUser.organizations, True),
+        (Case, "Tag"): (Case.tags, True),
+        (Case, "TagType"): (Case.tags, True),
         (Incident, "Tag"): (Incident.tags, True),
         (Incident, "TagType"): (Incident.tags, True),
         (Incident, "Term"): (Incident.terms, True),

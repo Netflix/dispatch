@@ -28,7 +28,7 @@ Subject = NamedTuple("Subject", subject=SubjectMetadata, db_session=Session)
 
 @timer
 def resolve_context_from_conversation(
-    channel_id: str, message_ts: Optional[str] = None
+    channel_id: str, thread_id: Optional[str] = None
 ) -> Optional[Subject]:
     """Attempts to resolve a conversation based on the channel id or message_ts."""
     db_session = SessionLocal()
@@ -36,16 +36,25 @@ def resolve_context_from_conversation(
     db_session.close()
     for slug in organization_slugs:
         scoped_db_session = refetch_db_session(slug)
+
         conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
-            db_session=scoped_db_session, channel_id=channel_id
+            db_session=scoped_db_session, channel_id=channel_id, thread_id=thread_id
         )
         if conversation:
-            subject = SubjectMetadata(
-                type="incident",
-                id=conversation.incident_id,
-                organization_slug=slug,
-                project_id=conversation.incident.project_id,
-            )
+            if thread_id:
+                subject = SubjectMetadata(
+                    type="case",
+                    id=conversation.case_id,
+                    organization_slug=slug,
+                    project_id=conversation.case.project_id,
+                )
+            else:
+                subject = SubjectMetadata(
+                    type="incident",
+                    id=conversation.incident_id,
+                    organization_slug=slug,
+                    project_id=conversation.incident.project_id,
+                )
             return Subject(subject, db_session=scoped_db_session)
 
         scoped_db_session.close()
@@ -78,12 +87,16 @@ def action_context_middleware(body: dict, context: BoltContext, next: Callable) 
     next()
 
 
-def message_context_middleware(request: BoltRequest, context: BoltContext, next: Callable) -> None:
+def message_context_middleware(
+    request: BoltRequest, payload: dict, context: BoltContext, next: Callable
+) -> None:
     """Attemps to determine the current context of the event."""
     if is_bot(request):
         return context.ack()
 
-    if subject := resolve_context_from_conversation(channel_id=context.channel_id):
+    if subject := resolve_context_from_conversation(
+        channel_id=context.channel_id, thread_id=payload.get("thread_ts")
+    ):
         context.update(subject._asdict())
     else:
         raise ContextError("Unable to determine context for message.")
