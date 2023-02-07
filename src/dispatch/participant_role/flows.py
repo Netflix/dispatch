@@ -1,14 +1,11 @@
 import logging
 from typing import Any
 
-from dispatch.database.core import Session, SessionLocal, get_table_name_by_class_instance
+from dispatch.database.core import SessionLocal, get_table_name_by_class_instance
 from dispatch.event import service as event_service
 from dispatch.participant import service as participant_service
-from dispatch.participant_role import service as participant_role_service
-from dispatch.participant_role.models import (
-    ParticipantRoleType,
-    ParticipantRoleUpdate,
-)
+from dispatch.participant_role.models import ParticipantRoleType
+
 from .service import get_all_active_roles, add_role, renounce_role
 
 
