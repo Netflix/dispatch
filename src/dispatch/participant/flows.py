@@ -11,7 +11,7 @@ from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType, ParticipantRoleCreate
 from dispatch.service import service as service_service
 
-from .service import get_or_create, get_by_incident_id_and_email
+from .service import get_or_create, get_by_incident_id_and_email, get_by_case_id_and_email
 
 
 log = logging.getLogger(__name__)
@@ -89,43 +89,63 @@ def add_participant(
     return participant
 
 
-def remove_participant(user_email: str, incident: Incident, db_session: SessionLocal):
+def remove_participant(user_email: str, subject: Subject, db_session: SessionLocal):
     """Removes a participant."""
-    inactivated = inactivate_participant(user_email, incident, db_session)
+    inactivated = inactivate_participant(user_email, subject, db_session)
 
+    subject_type = get_table_name_by_class_instance(subject)
     if inactivated:
-        participant = get_by_incident_id_and_email(
-            db_session=db_session, incident_id=incident.id, email=user_email
-        )
+        if subject_type == "incident":
+            participant = get_by_incident_id_and_email(
+                db_session=db_session, incident_id=subject.id, email=user_email
+            )
+        if subject_type == "case":
+            participant = get_by_case_id_and_email(
+                db_session=db_session, case_id=subject.id, email=user_email
+            )
 
-        log.debug(f"Removing {participant.individual.name} from {incident.name} incident...")
+        log.debug(f"Removing {participant.individual.name} from {subject.name}...")
 
         participant.service = None
 
         db_session.add(participant)
         db_session.commit()
 
-        event_service.log_incident_event(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description=f"{participant.individual.name} has been removed",
-            incident_id=incident.id,
-        )
+        if subject_type == "incident":
+            event_service.log_incident_event(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description=f"{participant.individual.name} has been removed",
+                incident_id=subject.id,
+            )
+        if subject_type == "case":
+            event_service.log_case_event(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description=f"{participant.individual.name} has been removed",
+                case_id=subject.id,
+            )
 
 
-def inactivate_participant(user_email: str, incident: Incident, db_session: SessionLocal):
+def inactivate_participant(user_email: str, subject: Subject, db_session: SessionLocal):
     """Inactivates a participant."""
-    participant = get_by_incident_id_and_email(
-        db_session=db_session, incident_id=incident.id, email=user_email
-    )
+    subject_type = get_table_name_by_class_instance(subject)
+    if subject_type == "incident":
+        participant = get_by_incident_id_and_email(
+            db_session=db_session, incident_id=subject.id, email=user_email
+        )
+    if subject_type == "case":
+        participant = get_by_case_id_and_email(
+            db_session=db_session, case_id=subject.id, email=user_email
+        )
 
     if not participant:
         log.debug(
-            f"Can't inactivate participant with {user_email} email. They're not a participant of {incident.name} incident."
+            f"Can't inactivate participant with {user_email} email. They're not a participant of {subject.name}."
         )
         return False
 
-    log.debug(f"Inactivating {participant.individual.name} from {incident.name} incident...")
+    log.debug(f"Inactivating {participant.individual.name} from {subject.name}...")
 
     participant_active_roles = participant_role_service.get_all_active_roles(
         db_session=db_session, participant_id=participant.id
@@ -135,12 +155,20 @@ def inactivate_participant(user_email: str, incident: Incident, db_session: Sess
             db_session=db_session, participant_role=participant_active_role
         )
 
-    event_service.log_incident_event(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description=f"{participant.individual.name} has been inactivated",
-        incident_id=incident.id,
-    )
+    if subject_type == "incident":
+        event_service.log_incident_event(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"{participant.individual.name} has been inactivated",
+            incident_id=subject.id,
+        )
+    if subject_type == "case":
+        event_service.log_case_event(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"{participant.individual.name} has been inactivated",
+            case_id=subject.id,
+        )
 
     return True
 

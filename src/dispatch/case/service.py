@@ -230,23 +230,24 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
 
     if case_in.assignee:
         if case.assignee.individual.email != case_in.assignee.individual.email:
-            case_assignee = auth_service.get_by_email(
-                db_session=db_session, email=case_in.assignee.individual.email
+            participant_flows.add_participant(
+                case_in.assignee.individual.email,
+                case,
+                db_session,
+                role=ParticipantRoleType.assignee,
             )
-            if case_assignee:
-                case.assignee = case_assignee
-
-                event_service.log_case_event(
-                    db_session=db_session,
-                    source="Dispatch Core App",
-                    description=f"Case assigned to {case_in.assignee.individual.email} by {current_user.email}",
-                    dispatch_user_id=current_user.id,
-                    case_id=case.id,
-                )
-            else:
-                log.warning(
-                    f"Dispatch user with email address {case_in.assignee.individual.email} not found."
-                )
+            participant_flows.remove_participant(
+                case.assignee.individual.email,
+                case,
+                db_session,
+            )
+            event_service.log_case_event(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description=f"Case assigned to {case_in.assignee.individual.email} by {current_user.email}",
+                dispatch_user_id=case.assignee.id,
+                case_id=case.id,
+            )
 
     if case_in.case_type:
         if case.case_type.name != case_in.case_type.name:
