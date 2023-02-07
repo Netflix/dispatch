@@ -215,14 +215,21 @@ class SignalPagination(DispatchBase):
     total: int
 
 
+class AdditionalMetadata(DispatchBase):
+    name: Optional[str]
+    value: Optional[str]
+    type: Optional[str]
+    important: Optional[bool]
+
+
 class RawSignal(DispatchBase):
     action: Optional[List[Dict]] = []
-    additional_metadata: Optional[List[Dict]] = Field([])
+    additional_metadata: Optional[List[AdditionalMetadata]] = Field([], alias="additionalMetadata")
     asset: Optional[List[Dict]] = []
     identity: Optional[Dict] = {}
-    origin_location: Optional[List[Dict]] = Field([])
+    origin_location: Optional[List[Dict]] = Field([], alias="originLocation")
     variant: Optional[str] = None
-    created_at: Optional[datetime] = Field(None)
+    created_at: Optional[datetime] = Field(None, fields="createdAt")
     id: Optional[str]
 
 
