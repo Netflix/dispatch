@@ -233,9 +233,10 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
             # We change the current assignee role to participant
             participant_flows.change_participant_role(
                 db_session=db_session,
-                case_id=case.id,
-                email=case.assignee.individual.email,
-                role=ParticipantRoleType.participant,
+                case=case,
+                user_email=case.assignee.individual.email,
+                from_role=ParticipantRoleType.assignee,
+                to_role=ParticipantRoleType.participant,
             )
             # We add the new participant as the assignee
             participant_flows.add_participant(
