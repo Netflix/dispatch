@@ -346,8 +346,8 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (Incident, "Tag"): (Incident.tags, True),
         (Incident, "TagType"): (Incident.tags, True),
         (Incident, "Term"): (Incident.terms, True),
-        (SignalInstance, "Entity"): (SignalInstance.entities, True),
-        (SignalInstance, "EntityType"): (SignalInstance.entities, True),
+        (SignalInstance, "Tag"): (SignalInstance.tags, True),
+        (SignalInstance, "TagType"): (SignalInstance.tags, True),
     }
     filters = build_filters(filter_spec)
     filter_models = get_named_models(filters)[0]

@@ -144,20 +144,18 @@
         </v-col>
         <v-col cols="12">
           <v-card flat tile>
-            <v-app-bar color="white" flat>
-              <v-toolbar-title class="subtitle-2"> Filter(s) </v-toolbar-title>
-              <v-spacer></v-spacer>
+            <span class="subtitle-2"
+              >Supression Filters
               <v-tooltip max-width="250px" bottom>
                 <template v-slot:activator="{ on, attrs }">
                   <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                 </template>
-                Defines a signal filter allowing you to take either a "Snooze" or "Deduplication"
-                action for any match signal matching the filter.
+                Any signal matching these filters will not have cases created for them.
               </v-tooltip>
-            </v-app-bar>
-            <v-card-text>
-              <signal-filter-combobox v-model="filters" :project="project"></signal-filter-combobox>
-            </v-card-text>
+            </span>
+            <signal-search-filter-combobox
+              v-model="supression_filters"
+            ></signal-search-filter-combobox>
           </v-card>
         </v-col>
       </v-row>
@@ -174,7 +172,7 @@ import { required } from "vee-validate/dist/rules"
 import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
 
-import SignalFilterCombobox from "@/signal/filter/SignalFilterCombobox.vue"
+import SignalSearchFilterCombobox from "@/signal/SignalSearchFilterCombobox.vue"
 
 extend("required", {
   ...required,
@@ -188,7 +186,7 @@ export default {
     ValidationProvider,
     CaseTypeSelect,
     CasePrioritySelect,
-    SignalFilterCombobox,
+    SignalSearchFilterCombobox,
   },
 
   computed: {
@@ -203,8 +201,8 @@ export default {
       "selected.external_url",
       "selected.case_type",
       "selected.case_priority",
-      "selected.filters",
-      "selected.entity_types",
+      "selected.duplication_filters",
+      "selected.supression_filters",
       "selected.source",
       "selected.project",
       "selected.loading",

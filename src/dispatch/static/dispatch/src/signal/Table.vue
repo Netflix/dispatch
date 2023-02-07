@@ -98,7 +98,7 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
-import NewEditDialog from "@/signal/NewEditDialog.vue"
+import NewEditDialog from "@/signal/NewEditSheet.vue"
 import DeleteDialog from "@/signal/DeleteDialog.vue"
 export default {
   name: "SignalTable",
