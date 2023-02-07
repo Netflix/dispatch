@@ -21,6 +21,7 @@ from dispatch.individual.models import IndividualContactRead
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.participant import service as participant_service
 from dispatch.participant import flows as participant_flows
+from dispatch.participant_role import flows as role_flow
 from dispatch.participant.models import ParticipantUpdate
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
@@ -669,9 +670,6 @@ def case_assign_role_flow(
     db_session: SessionLocal,
 ):
     """Runs the case participant role assignment flow."""
-
-    from dispatch.participant_role import flows as role_flow
-
     case = get(case_id=case_id, db_session=db_session)
 
     # we add the assignee to the incident if they're not a participant
