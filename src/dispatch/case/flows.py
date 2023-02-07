@@ -19,10 +19,10 @@ from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import IncidentCreate
 from dispatch.individual.models import IndividualContactRead
 from dispatch.models import OrganizationSlug, PrimaryKey
-from dispatch.participant import flows as participant_flows
-from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.participant import service as participant_service
+from dispatch.participant import flows as participant_flows
 from dispatch.participant.models import ParticipantUpdate
+from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.storage import flows as storage_flows
 from dispatch.storage.enums import StorageAction
@@ -368,6 +368,7 @@ def case_update_flow(
     *,
     case_id: int,
     previous_case: CaseRead,
+    assignee_email: str,
     user_email: str,
     organization_slug: OrganizationSlug,
     db_session=None,
@@ -389,20 +390,30 @@ def case_update_flow(
     ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
     # we update the tactical group if we have a new assignee
-    if previous_case.assignee.individual.email != case.assignee.individual.email:
-        group_flows.update_group(
-            subject=case,
-            group=case.tactical_group,
-            group_action=GroupAction.add_member,
-            group_member=case.assignee.individual.email,
+    if previous_case.assignee.individual.email != assignee_email:
+        log.debug(
+            f"{user_email} updated Case {case_id} assignee from {previous_case.assignee.individual.email} to {assignee_email}"
+        )
+        case_assign_role_flow(
+            case_id=case.id,
+            assignee_email=assignee_email,
+            assignee_role=ParticipantRoleType.assignee,
             db_session=db_session,
         )
-        event_service.log_case_event(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description="Case group updated",
-            case_id=case_id,
-        )
+        if case.tactical_group:
+            group_flows.update_group(
+                subject=case,
+                group=case.tactical_group,
+                group_action=GroupAction.add_member,
+                group_member=case.assignee.individual.email,
+                db_session=db_session,
+            )
+            event_service.log_case_event(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description="Case group updated",
+                case_id=case_id,
+            )
 
     # we send the case updated notification
     update_conversation(case, db_session)
@@ -639,3 +650,67 @@ def case_to_incident_endpoint_escalate_flow(
         description=f"The members of the incident's tactical group {incident.tactical_group.email} have been given permission to access the case's storage folder",
         case_id=case.id,
     )
+
+
+def case_assign_role_flow(
+    case_id: int,
+    assignee_email: str,
+    assignee_role: str,
+    db_session: SessionLocal,
+):
+    """Runs the case participant role assignment flow."""
+
+    from dispatch.participant_role import flows as role_flow
+
+    case = get(case_id=case_id, db_session=db_session)
+
+    # we add the assignee to the incident if they're not a participant
+    case_add_or_reactivate_participant_flow(assignee_email, case.id, db_session=db_session)
+
+    role_flow.assign_role_flow(case, assignee_email, assignee_role, db_session)
+
+
+@background_task
+def case_add_or_reactivate_participant_flow(
+    user_email: str,
+    case_id: int,
+    participant_role: ParticipantRoleType = ParticipantRoleType.participant,
+    service_id: int = 0,
+    event: dict = None,
+    organization_slug: str = None,
+    db_session=None,
+):
+    """Runs the case add or reactivate participant flow."""
+    case = get(db_session=db_session, case_id=case_id)
+
+    if service_id:
+        # we need to ensure that we don't add another member of a service if one
+        # already exists (e.g. overlapping oncalls, we assume they will hand-off if necessary)
+        participant = participant_service.get_by_case_id_and_service_id(
+            case_id=case_id, service_id=service_id, db_session=db_session
+        )
+
+        if participant:
+            log.debug("Skipping resolved participant. Oncall service member already engaged.")
+            return
+
+    participant = participant_service.get_by_case_id_and_email(
+        db_session=db_session, case_id=case.id, email=user_email
+    )
+
+    if participant:
+        if participant.active_roles:
+            return participant
+
+        if case.status != CaseStatus.closed:
+            # we reactivate the participant
+            participant_flows.reactivate_participant(
+                user_email, case, db_session, service_id=service_id
+            )
+    else:
+        # we add the participant to the incident
+        participant = participant_flows.add_participant(
+            user_email, case, db_session, service_id=service_id, role=participant_role
+        )
+
+    return participant
