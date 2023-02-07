@@ -138,7 +138,7 @@ def create_case_ticket(case: Case, db_session: SessionLocal):
         external_ticket = plugin.instance.create_case_ticket(
             case.id,
             title,
-            case.assignee.email,
+            case.assignee.individual.email,
             case_type_plugin_metadata,
             db_session=db_session,
         )
@@ -205,7 +205,7 @@ def update_case_ticket(
             case.case_severity.name,
             case.case_priority.name,
             case.status.lower(),
-            case.assignee.email,
+            case.assignee.individual.email,
             resolve_attr(case, "case_document.weblink"),
             resolve_attr(case, "storage.weblink"),
             case_type_plugin_metadata=case_type_plugin_metadata,
