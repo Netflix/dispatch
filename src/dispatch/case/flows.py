@@ -97,6 +97,7 @@ def case_add_or_reactive_participant_flow(
     case_id: int,
     participant_role: ParticipantRoleType = ParticipantRoleType.participant,
     service_id: int = 0,
+    add_to_conversation: bool = True,
     event: dict = None,
     organization_slug: str = None,
     db_session=None,
@@ -138,7 +139,8 @@ def case_add_or_reactive_participant_flow(
 
     if case.status != CaseStatus.closed:
         # we add the participant to the conversation
-        add_participants_to_conversation([user_email], case, db_session)
+        if add_to_conversation:
+            add_participants_to_conversation([user_email], case, db_session)
 
     return participant
 
