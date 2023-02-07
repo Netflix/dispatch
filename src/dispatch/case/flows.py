@@ -92,7 +92,7 @@ def add_participants_to_conversation(
 
 
 @background_task
-def case_add_or_reactive_participant_flow(
+def case_add_or_reactivate_participant_flow(
     user_email: str,
     case_id: int,
     participant_role: ParticipantRoleType = ParticipantRoleType.participant,
