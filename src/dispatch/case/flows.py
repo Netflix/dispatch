@@ -286,7 +286,7 @@ def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, d
                 for email in individual_participants:
                     # we don't rely on on this flow to add folks to the conversation because in this case
                     # we want to do it in bulk
-                    case_add_or_reactive_participant_flow(
+                    case_add_or_reactivate_participant_flow(
                         db_session=db_session,
                         user_email=email,
                         case_id=case.id,
