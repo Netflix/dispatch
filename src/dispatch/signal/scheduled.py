@@ -17,7 +17,7 @@ from dispatch.decorators import scheduled_project_task
 log = logging.getLogger(__name__)
 
 
- TODO do we want per signal source flexibility?
+# TODO do we want per signal source flexibility?
 @scheduler.add(every(1).minutes, name="signal-consume")
 @scheduled_project_task
 def consume_signals(db_session: SessionLocal, project: Project):
