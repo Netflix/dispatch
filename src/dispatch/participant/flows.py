@@ -173,6 +173,31 @@ def inactivate_participant(user_email: str, subject: Subject, db_session: Sessio
     return True
 
 
+def change_participant_role(
+    db_session: SessionLocal,
+    case_id: int,
+    email: str,
+    role: ParticipantRoleType = ParticipantRoleType.participant,
+):
+    """Changes a participants role."""
+    participant = get_by_case_id_and_email(
+        db_session=db_session,
+        case_id=case_id,
+        email=email,
+    )
+    log.debug(f"Changing {participant.individual.name}'s role to {role}...")
+
+    participant_role_in = ParticipantRoleCreate(role=role)
+    participant_role = participant_role_service.create(
+        db_session=db_session, participant_role_in=participant_role_in
+    )
+    participant.participant_roles.clear()
+    participant.participant_roles.append(participant_role)
+
+    db_session.add(participant)
+    db_session.commit()
+
+
 def reactivate_participant(
     user_email: str, incident: Incident, db_session: SessionLocal, service_id: int = None
 ):
