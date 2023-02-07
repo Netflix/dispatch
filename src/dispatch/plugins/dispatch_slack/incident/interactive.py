@@ -122,7 +122,6 @@ from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
 from dispatch.task.models import Task
 
-
 log = logging.getLogger(__file__)
 
 
@@ -730,7 +729,7 @@ def handle_timeline_added_event(
 
 
 @message_dispatcher.add(
-    exclude={"subtype": ["channel_join", "channel_leave"]}
+    subject="incident", exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
 def handle_participant_role_activity(
     ack: Ack, db_session: Session, context: BoltContext, user: DispatchUser
@@ -740,46 +739,43 @@ def handle_participant_role_activity(
     a participant's role based on its activity and changes it if needed.
     """
     ack()
+    participant = participant_service.get_by_incident_id_and_email(
+        db_session=db_session, incident_id=context["subject"].id, email=user.email
+    )
 
-    # TODO: (wshel) add when case support when participants are added.
-    if context["subject"].type == "incident":
-        participant = participant_service.get_by_incident_id_and_email(
-            db_session=db_session, incident_id=context["subject"].id, email=user.email
-        )
+    if participant:
+        for participant_role in participant.active_roles:
+            participant_role.activity += 1
 
-        if participant:
-            for participant_role in participant.active_roles:
-                participant_role.activity += 1
+            # re-assign role once threshold is reached
+            if participant_role.role == ParticipantRoleType.observer:
+                if participant_role.activity >= 10:  # ten messages sent to the incident channel
+                    # we change the participant's role to the participant one
+                    participant_role_service.renounce_role(
+                        db_session=db_session, participant_role=participant_role
+                    )
+                    participant_role_service.add_role(
+                        db_session=db_session,
+                        participant_id=participant.id,
+                        participant_role=ParticipantRoleType.participant,
+                    )
 
-                # re-assign role once threshold is reached
-                if participant_role.role == ParticipantRoleType.observer:
-                    if participant_role.activity >= 10:  # ten messages sent to the incident channel
-                        # we change the participant's role to the participant one
-                        participant_role_service.renounce_role(
-                            db_session=db_session, participant_role=participant_role
-                        )
-                        participant_role_service.add_role(
-                            db_session=db_session,
-                            participant_id=participant.id,
-                            participant_role=ParticipantRoleType.participant,
-                        )
-
-                        # we log the event
-                        event_service.log_incident_event(
-                            db_session=db_session,
-                            source="Slack Plugin - Conversation Management",
-                            description=(
-                                f"{participant.individual.name}'s role changed from {participant_role.role} to "
-                                f"{ParticipantRoleType.participant} due to activity in the incident channel"
-                            ),
-                            incident_id=context["subject"].id,
-                        )
+                    # we log the event
+                    event_service.log_incident_event(
+                        db_session=db_session,
+                        source="Slack Plugin - Conversation Management",
+                        description=(
+                            f"{participant.individual.name}'s role changed from {participant_role.role} to "
+                            f"{ParticipantRoleType.participant} due to activity in the incident channel"
+                        ),
+                        incident_id=context["subject"].id,
+                    )
 
             db_session.commit()
 
 
 @message_dispatcher.add(
-    exclude={"subtype": ["channel_join", "group_join"]}
+    subject="incident", exclude={"subtype": ["channel_join", "group_join"]}
 )  # we ignore user channel and group join messages
 def handle_after_hours_message(
     ack: Ack,
@@ -792,18 +788,14 @@ def handle_after_hours_message(
     """Notifies the user that this incident is currently in after hours mode."""
     ack()
 
-    if context["subject"].type == "incident":
-        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
-        owner_email = incident.commander.individual.email
-        participant = participant_service.get_by_incident_id_and_email(
-            db_session=db_session, incident_id=context["subject"].id, email=user.email
-        )
-        # get their timezone from slack
-        owner_tz = (dispatch_slack_service.get_user_info_by_email(client, email=owner_email))["tz"]
-        message = f"Responses may be delayed. The current incident priority is *{incident.incident_priority.name}* and your message was sent outside of the Incident Commander's working hours (Weekdays, 9am-5pm, {owner_tz} timezone)."
-    else:
-        # TODO: add case support
-        return
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    owner_email = incident.commander.individual.email
+    participant = participant_service.get_by_incident_id_and_email(
+        db_session=db_session, incident_id=context["subject"].id, email=user.email
+    )
+    # get their timezone from slack
+    owner_tz = (dispatch_slack_service.get_user_info_by_email(client, email=owner_email))["tz"]
+    message = f"Responses may be delayed. The current incident priority is *{incident.incident_priority.name}* and your message was sent outside of the Incident Commander's working hours (Weekdays, 9am-5pm, {owner_tz} timezone)."
 
     now = datetime.now(pytz.timezone(owner_tz))
     is_business_hours = now.weekday() not in [5, 6] and 9 <= now.hour < 17
@@ -820,7 +812,7 @@ def handle_after_hours_message(
             )
 
 
-@message_dispatcher.add()
+@message_dispatcher.add(subject="incident")
 def handle_thread_creation(
     ack: Ack, client: WebClient, payload: dict, context: BoltContext, request: BoltRequest
 ) -> None:
@@ -841,34 +833,31 @@ def handle_thread_creation(
             )
 
 
-@message_dispatcher.add()
+@message_dispatcher.add(subject="incident")
 def handle_message_tagging(
     ack: Ack, db_session: Session, payload: dict, context: BoltContext
 ) -> None:
     """Looks for incident tags in incident messages."""
     ack()
+    text = payload["text"]
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    tags = tag_service.get_all(db_session=db_session, project_id=incident.project.id).all()
+    tag_strings = [t.name.lower() for t in tags if t.discoverable]
+    phrases = build_term_vocab(tag_strings)
+    matcher = build_phrase_matcher("dispatch-tag", phrases)
+    extracted_tags = list(set(extract_terms_from_text(text, matcher)))
 
-    # TODO: (wshel) handle case tagging
-    if context["subject"].type == "incident":
-        text = payload["text"]
-        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
-        tags = tag_service.get_all(db_session=db_session, project_id=incident.project.id).all()
-        tag_strings = [t.name.lower() for t in tags if t.discoverable]
-        phrases = build_term_vocab(tag_strings)
-        matcher = build_phrase_matcher("dispatch-tag", phrases)
-        extracted_tags = list(set(extract_terms_from_text(text, matcher)))
+    matched_tags = (
+        db_session.query(Tag)
+        .filter(func.upper(Tag.name).in_([func.upper(t) for t in extracted_tags]))
+        .all()
+    )
 
-        matched_tags = (
-            db_session.query(Tag)
-            .filter(func.upper(Tag.name).in_([func.upper(t) for t in extracted_tags]))
-            .all()
-        )
-
-        incident.tags.extend(matched_tags)
-        db_session.commit()
+    incident.tags.extend(matched_tags)
+    db_session.commit()
 
 
-@message_dispatcher.add()
+@message_dispatcher.add(subject="incident")
 def handle_message_monitor(
     ack: Ack,
     payload: dict,
@@ -879,11 +868,8 @@ def handle_message_monitor(
     """Looks for strings that are available for monitoring (e.g. links)."""
     ack()
 
-    if context["subject"].type == "incident":
-        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
-        project_id = incident.project.id
-    else:
-        raise CommandError("Command is not currently available for cases.")
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    project_id = incident.project.id
 
     plugins = plugin_service.get_active_instances(
         db_session=db_session, project_id=project_id, plugin_type="monitor"

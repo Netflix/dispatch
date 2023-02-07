@@ -6,6 +6,7 @@ Create Date: 2023-01-30 10:52:31.676368
 
 """
 from alembic import op
+
 from enum import Enum
 from pydantic import BaseModel
 import sqlalchemy as sa

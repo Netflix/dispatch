@@ -113,6 +113,7 @@ def daily_report(db_session: SessionLocal, project: Project):
             for search_filter in notification.filters:
                 match = search_filter_service.match(
                     db_session=db_session,
+                    subject=search_filter.subject,
                     filter_spec=search_filter.expression,
                     class_instance=incident,
                 )
