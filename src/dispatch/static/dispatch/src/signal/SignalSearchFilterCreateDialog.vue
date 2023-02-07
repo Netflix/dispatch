@@ -168,11 +168,9 @@ export default {
         renderValidationDecorations: "on",
       },
       previewFields: [
-        { text: "Name", value: "name", sortable: false },
-        { text: "Title", value: "title", sortable: false },
-        { text: "Status", value: "status", sortable: false },
-        { text: "Incident Type", value: "incident_type.name", sortable: false },
-        { text: "Incident Priority", value: "incident_priority.name", sortable: false },
+        { text: "Name", value: "signal.name", sortable: false },
+        { text: "Case", value: "case.name", sortable: false },
+        { text: "Fingerprint", value: "fingerprint", sortable: false },
       ],
       step: 1,
       previewRows: {
@@ -195,12 +193,12 @@ export default {
     MonacoEditor: () => import("monaco-editor-vue"),
   },
   computed: {
-    ...mapFields("signal", [
-      "selectedSupressionFilter",
-      "selectedSupressionFilter.description",
-      "selectedSupressionFilter.expression",
-      "selectedSupressionFilter.subject",
-      "selectedSupressionFilter.name",
+    ...mapFields("search", [
+      "selected",
+      "selected.description",
+      "selected.expression",
+      "selected.subject",
+      "selected.name",
       "selected.project",
       "loading",
       "dialogs.showCreate",
@@ -219,7 +217,7 @@ export default {
     ...mapActions("search", ["closeCreateDialog", "save"]),
     saveFilter() {
       // reset local data
-      this.save("incident").then((filter) => {
+      this.save().then((filter) => {
         this.$emit("input", filter)
       })
     },
@@ -237,7 +235,6 @@ export default {
         this.previewRowsLoading = "error"
       }
       return SignalApi.getAllInstances(params).then((response) => {
-        this.previewFields = this.incidentPreviewFields
         this.previewRows = response.data
         this.previewRowsLoading = false
       })
@@ -247,6 +244,7 @@ export default {
     if (this.query.project) {
       this.project = { name: this.query.project }
     }
+    this.subject = "signal"
     this.getPreviewData()
 
     this.$watch(

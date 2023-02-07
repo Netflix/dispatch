@@ -160,7 +160,6 @@ export default {
       let filterOptions = {
         q: this.search,
         itemsPerPage: 50,
-        subject: "signal",
         sortBy: ["name"],
         descending: [false],
       }
@@ -170,6 +169,7 @@ export default {
           ...filterOptions,
           filters: {
             project: [this.project],
+            subject: ["signal"],
           },
         }
         filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })

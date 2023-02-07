@@ -70,7 +70,6 @@ def get_incidents(
     expand: bool = Query(default=False),
 ):
     """Retrieves a list of incidents."""
-    print(expand)
     pagination = search_filter_sort_paginate(model="Incident", **common)
 
     if expand:
