@@ -423,8 +423,8 @@ setup(
             "slack_contact = dispatch.plugins.dispatch_slack.plugin:SlackContactPlugin",
             "slack_conversation = dispatch.plugins.dispatch_slack.plugin:SlackConversationPlugin",
             "zoom_conference = dispatch.plugins.dispatch_zoom.plugin:ZoomConferencePlugin",
-            "dispatch_confluence = dispatch.plugins.dispatch_confluence.plugin:ConfluencePagePlugin",
-            "dispatch_confluence_document = dispatch.plugins.dispatch_confluence.docs.plugin:ConfluencePageDocPlugin",
+            "dispatch_atlassian_confluence = dispatch.plugins.dispatch_atlassian_confluence.plugin:ConfluencePagePlugin",
+            "dispatch_atlassian_confluence_document = dispatch.plugins.dispatch_atlassian_confluence.docs.plugin:ConfluencePageDocPlugin",
         ],
     },
 )

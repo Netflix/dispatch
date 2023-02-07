@@ -1,19 +1,21 @@
-from dispatch.plugins import dispatch_confluence as confluence_plugin
+from dispatch.plugins import dispatch_atlassian_confluence as confluence_plugin
 from dispatch.plugins.bases import StoragePlugin
-from dispatch.plugins.dispatch_confluence.config import ConfluenceConfigurationBase
+from dispatch.plugins.dispatch_atlassian_confluence.config import ConfluenceConfigurationBase
 
 from pydantic import Field
 
 from atlassian import Confluence
 import requests
 from requests.auth import HTTPBasicAuth
-import json
+import logging
 from typing import List
+
+logger = logging.getLogger(__name__)
 
 
 # TODO : Use the common config from the root directory.
 class ConfluenceConfiguration(ConfluenceConfigurationBase):
-    """Confluene configuration description."""
+    """Confluence configuration description."""
 
     template_id: str = Field(
         title="Incident template ID", description="This is the page id of the template."
@@ -40,7 +42,7 @@ class ConfluenceConfiguration(ConfluenceConfigurationBase):
 class ConfluencePagePlugin(StoragePlugin):
     title = "Confluence Plugin - Store your incident details"
     slug = "confluence"
-    description = "Conflunce plugin to create Incident documents"
+    description = "Confluence plugin to create Incident documents"
     version = confluence_plugin.__version__
 
     author = "Cino Jose"
@@ -54,7 +56,6 @@ class ConfluencePagePlugin(StoragePlugin):
     ):
         """Creates a new Home page for the incident documents.."""
         try:
-            print(f"{drive_id} {name} {participants} {file_type}")
             if file_type not in ["document", "folder"]:
                 return None
             confluence_client = Confluence(
@@ -84,7 +85,7 @@ class ConfluencePagePlugin(StoragePlugin):
                 "description": "",
             }
         except Exception as e:
-            print(f"Exception happened while creating page: {e}")
+            logger.error(f"Exception happened while creating page: {e}")
 
     def copy_file(self, folder_id: str, file_id: str, name: str):
         # TODO : This is the function that is responsible for making the incident documents.
@@ -95,7 +96,7 @@ class ConfluencePagePlugin(StoragePlugin):
                 password=self.configuration.password.get_secret_value(),
                 cloud=self.configuration.hosting_type,
             )
-            print(f"Copy_file function with args {folder_id}, {file_id}, {name}")
+            logger.info(f"Copy_file function with args {folder_id}, {file_id}, {name}")
             template_content = confluence_client.get_page_by_id(
                 self.configuration.template_id, expand="body.storage", status=None, version=None
             )
@@ -118,14 +119,14 @@ class ConfluencePagePlugin(StoragePlugin):
                 "name": name,
             }
         except Exception as e:
-            print(f"Exception happened while creating page: {e}")
+            logger.error(f"Exception happened while creating page: {e}")
 
-    def move_file(self, new_folder_id, file_id, **kwargs):
+    def move_file(self, new_folder_id: str, file_id: str, **kwargs):
         """Moves a file from one place to another. Not used in the plugin,
         keeping the body as the interface is needed to avoid exceptions."""
         return {}
 
-    def move_file_confluence(self, page_id_to_move, parent_id):
+    def move_file_confluence(self, page_id_to_move: str, parent_id: str):
         try:
             url = f"{self.configuration.api_url}wiki/rest/api/content/{page_id_to_move}/move/append/{parent_id}"
             auth = HTTPBasicAuth(
@@ -135,4 +136,4 @@ class ConfluencePagePlugin(StoragePlugin):
             response = requests.request("PUT", url, headers=headers, auth=auth)
             return response
         except Exception as e:
-            print(f"Exception happened while moving page: {e}")
+            logger.error(f"Exception happened while moving page: {e}")

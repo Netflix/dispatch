@@ -1,6 +1,6 @@
-from dispatch.plugins.dispatch_confluence import docs as confluence_doc_plugin
+from dispatch.plugins.dispatch_atlassian_confluence import docs as confluence_doc_plugin
 from dispatch.plugins.bases import DocumentPlugin
-from dispatch.plugins.dispatch_confluence.config import ConfluenceConfigurationBase
+from dispatch.plugins.dispatch_atlassian_confluence.config import ConfluenceConfigurationBase
 from atlassian import Confluence
 from typing import List
 

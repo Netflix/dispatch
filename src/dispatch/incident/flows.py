@@ -360,6 +360,7 @@ def create_incident_documents(incident: Incident, db_session: SessionLocal):
             sheet = plugin.instance.create_file(
                 incident.storage.resource_id, incident_sheet_name, file_type="sheet"
             )
+
         if sheet:
             sheet.update(
                 {
