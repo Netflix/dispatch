@@ -31,6 +31,18 @@ def get_by_incident_id_and_role(
     )
 
 
+def get_by_case_id_and_role(*, db_session, case_id: int, role: str) -> Optional[Participant]:
+    """Get a participant by case id and role name."""
+    return (
+        db_session.query(Participant)
+        .join(ParticipantRole)
+        .filter(Participant.case_id == case_id)
+        .filter(ParticipantRole.renounced_at.is_(None))
+        .filter(ParticipantRole.role == role)
+        .one_or_none()
+    )
+
+
 def get_by_incident_id_and_email(
     *, db_session, incident_id: int, email: str
 ) -> Optional[Participant]:
@@ -62,6 +74,18 @@ def get_by_incident_id_and_service_id(
     return (
         db_session.query(Participant)
         .filter(Participant.incident_id == incident_id)
+        .filter(Participant.service_id == service_id)
+        .one_or_none()
+    )
+
+
+def get_by_case_id_and_service_id(
+    *, db_session, case_id: int, service_id: int
+) -> Optional[Participant]:
+    """Get participant by incident and service id."""
+    return (
+        db_session.query(Participant)
+        .filter(Participant.case_id == case_id)
         .filter(Participant.service_id == service_id)
         .one_or_none()
     )

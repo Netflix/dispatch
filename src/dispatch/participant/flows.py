@@ -8,9 +8,11 @@ from dispatch.incident.models import Incident
 from dispatch.individual import service as individual_service
 from dispatch.participant.models import Participant
 from dispatch.participant_role import service as participant_role_service
-from dispatch.participant_role.models import ParticipantRoleType, ParticipantRoleCreate
+from dispatch.participant_role.models import (
+    ParticipantRoleType,
+    ParticipantRoleCreate,
+)
 from dispatch.service import service as service_service
-
 from .service import get_or_create, get_by_incident_id_and_email
 
 
