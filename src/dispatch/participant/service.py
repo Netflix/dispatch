@@ -103,6 +103,18 @@ def get_by_incident_id_and_conversation_id(
     )
 
 
+def get_by_case_id_and_conversation_id(
+    *, db_session, case_id: int, user_conversation_id: str
+) -> Optional[Participant]:
+    """Get participant by case and user_conversation id."""
+    return (
+        db_session.query(Participant)
+        .filter(Participant.case_id == case_id)
+        .filter(Participant.user_conversation_id == user_conversation_id)
+        .one_or_none()
+    )
+
+
 def get_all(*, db_session) -> List[Optional[Participant]]:
     """Get all participants."""
     return db_session.query(Participant)
