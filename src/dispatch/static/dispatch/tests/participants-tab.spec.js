@@ -73,4 +73,17 @@ describe("CaseParticipantsTab", () => {
       expect(participantListItem.text()).to.include(activeRoles)
     })
   })
+
+  it("does not display renounced roles", () => {
+    const wrapper = mount(CaseParticipantsTab, { store, localVue })
+    const participantListItems = wrapper.findAll("v-list-item-title").wrappers
+    participantListItems.forEach((participantListItem, index) => {
+      const participant = state.case_management.selected.participants[index]
+      const renouncedRoles = participant.participant_roles
+        .filter((role) => typeof role.renounced_at === "string" && role.renounced_at.length)
+        .map((role) => role.role)
+        .join(", ")
+      expect(participantListItem.text()).to.not.include(renouncedRoles)
+    })
+  })
 })
