@@ -24,4 +24,4 @@ jobs:
       - name: Run Vitest
         working-directory: src/dispatch/static/dispatch
         run: |
-          npm run test
+          npm run test:coverage
