@@ -6,7 +6,7 @@
       <v-col>
         <v-alert dismissible icon="mdi-school" prominent text type="info"
           >Signal definitions determine how a signal is processed. Allowing you to map case types,
-          snooze and duplication rules for each signal.
+          suppression and duplication rules for each signal.
         </v-alert>
       </v-col>
     </v-row>

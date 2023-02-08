@@ -47,15 +47,28 @@ def create_signal_filter(
     return signal_filter
 
 
-def update_signal_filter(
-    *, db_session, signal_filter: SignalFilter, signal_filter_in: SignalFilterUpdate
-) -> SignalFilter:
-    """Updates an existing signal filter."""
+def create_suppression_rule(
+    *, db_session, suppression_rule_in: SuppressionRuleCreate
+) -> SuppressionRule:
+    """Creates a new suppression rule."""
+    rule = SuppressionRule(**suppression_rule_in.dict(exclude={"tags"}))
 
-    signal_filter_data = signal_filter.dict()
-    update_data = signal_filter_in.dict(
-        skip_defaults=True,
-        exclude={},
+    tags = []
+    for t in suppression_rule_in.tags:
+        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
+
+    rule.tags = tags
+    db_session.add(rule)
+    db_session.commit()
+    return rule
+
+
+def update_suppression_rule(
+    *, db_session, suppression_rule_in: SuppressionRuleUpdate
+) -> SuppressionRule:
+    """Updates an existing suppression rule."""
+    rule = (
+        db_session.query(SuppressionRule).filter(SuppressionRule.id == suppression_rule_in.id).one()
     )
 
     for field in signal_filter_data:
