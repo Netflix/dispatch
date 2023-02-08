@@ -13,7 +13,7 @@
       <v-simple-checkbox :value="item.duplication_rule || false" disabled></v-simple-checkbox>
     </template>
     <template v-slot:item.suppression_rule="{ item }">
-      <v-simple-checkbox :value="item.supression_rule || false" disabled></v-simple-checkbox>
+      <v-simple-checkbox :value="item.suppression_rule || false" disabled></v-simple-checkbox>
     </template>
     <template v-slot:item.created_at="{ item }">
       <v-tooltip bottom>

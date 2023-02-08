@@ -4,7 +4,7 @@ import { debounce } from "lodash"
 import SearchUtils from "@/search/utils"
 import SignalApi from "@/signal/api"
 
-const getDefaultSupressionFilterState = () => {
+const getDefaultSuppressionFilterState = () => {
   return {
     expression: null,
     description: null,
@@ -37,7 +37,7 @@ const getDefaultSelectedState = () => {
     case_type: null,
     case_priority: null,
     duplication_filters: null,
-    supression_filters: null,
+    suppression_filters: null,
     source: null,
     project: null,
     created_at: null,
@@ -49,8 +49,8 @@ const state = {
   selected: {
     ...getDefaultSelectedState(),
   },
-  selectedSupressionFilter: {
-    ...getDefaultSupressionFilterState(),
+  selectedSuppressionFilter: {
+    ...getDefaultSuppressionFilterState(),
   },
   dialogs: {
     showCreateEdit: false,

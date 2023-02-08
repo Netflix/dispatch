@@ -38,7 +38,7 @@
             </template>
             <template v-slot:item.suppression_rule="{ item }">
               <v-simple-checkbox
-                :value="item.supression_rule || false"
+                :value="item.suppression_rule || false"
                 disabled
               ></v-simple-checkbox>
             </template>

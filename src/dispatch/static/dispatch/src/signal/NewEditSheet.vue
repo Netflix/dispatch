@@ -144,19 +144,22 @@
         </v-col>
         <v-col cols="12">
           <v-card flat tile>
-            <span class="subtitle-2"
-              >Supression Filters
+            <v-app-bar color="white" flat>
+              <v-toolbar-title class="subtitle-2"> Suppression Filter(s) </v-toolbar-title>
+              <v-spacer></v-spacer>
               <v-tooltip max-width="250px" bottom>
                 <template v-slot:activator="{ on, attrs }">
                   <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                 </template>
                 Any signal matching these filters will not have cases created for them.
               </v-tooltip>
-            </span>
-            <signal-search-filter-combobox
-              v-model="supression_filters"
-              :project="project"
-            ></signal-search-filter-combobox>
+            </v-app-bar>
+            <v-card-text>
+              <signal-search-filter-combobox
+                v-model="suppression_filters"
+                :project="project"
+              ></signal-search-filter-combobox>
+            </v-card-text>
           </v-card>
         </v-col>
       </v-row>
@@ -203,7 +206,7 @@ export default {
       "selected.case_type",
       "selected.case_priority",
       "selected.duplication_filters",
-      "selected.supression_filters",
+      "selected.suppression_filters",
       "selected.source",
       "selected.project",
       "selected.loading",

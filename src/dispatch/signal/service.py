@@ -62,7 +62,7 @@ def update_duplication_rule(
 def create_suppression_rule(
     *, db_session, suppression_rule_in: SuppressionRuleCreate
 ) -> SuppressionRule:
-    """Creates a new supression rule."""
+    """Creates a new suppression rule."""
     rule = SuppressionRule(**suppression_rule_in.dict(exclude={"tags"}))
 
     tags = []
@@ -78,7 +78,7 @@ def create_suppression_rule(
 def update_suppression_rule(
     *, db_session, suppression_rule_in: SuppressionRuleUpdate
 ) -> SuppressionRule:
-    """Updates an existing supression rule."""
+    """Updates an existing suppression rule."""
     rule = (
         db_session.query(SuppressionRule).filter(SuppressionRule.id == suppression_rule_in.id).one()
     )

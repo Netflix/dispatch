@@ -1,11 +1,9 @@
 from typing import Optional
 from datetime import datetime, timedelta
 
-import validators
-
 from pydantic.fields import Field
 from pydantic.networks import EmailStr
-from pydantic import BaseModel, validator
+from pydantic import BaseModel
 from pydantic.types import conint, constr, SecretStr
 
 from sqlalchemy import func
