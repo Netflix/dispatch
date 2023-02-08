@@ -12,7 +12,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v1
         with:
-          node-version: '12'
+          node-version: "12"
       - name: Install dev deps
         working-directory: src/dispatch/static/dispatch
         run: |
@@ -21,3 +21,7 @@ jobs:
         working-directory: src/dispatch/static/dispatch
         run: |
           npm run lint
+      - name: Run Vitest
+        working-directory: src/dispatch/static/dispatch
+        run: |
+          npm run test:coverage
