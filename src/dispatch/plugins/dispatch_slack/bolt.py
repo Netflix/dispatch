@@ -89,37 +89,35 @@ def app_error_handler(
 
 def build_and_log_error(
     client: WebClient,
-    error: Any,
+    error: Exception,
     logger: logging.Logger,
     payload: dict,
     context: BoltContext,
 ) -> str:
-    if isinstance(error, RoleError):
-        message = build_role_error_message(payload)
-        logger.info(error)
+    message = ""
+    error_type = type(error).__name__
 
-    elif isinstance(error, CommandError):
-        message = build_command_error_message(payload, error)
-        logger.info(error)
-
-    elif isinstance(error, ContextError):
-        message = build_context_error_message(payload, error)
-        logger.info(error)
-
-    elif isinstance(error, BotNotPresentError):
-        message = build_bot_not_present_message(
+    error_handlers = {
+        "RoleError": build_role_error_message,
+        "CommandError": build_command_error_message,
+        "ContextError": build_context_error_message,
+        "BotNotPresentError": lambda: build_bot_not_present_message(
             client, payload["command"], context["conversations"]
-        )
-        logger.info(error)
+        ),
+        "SlackApiError": build_slack_api_error_message,
+    }
 
-    elif isinstance(error, SlackApiError):
-        message = build_slack_api_error_message(error)
-        logger.exception(error)
+    def default_handler():
+        return build_unexpected_error_message(str(uuid.uuid4()))
 
+    handler = error_handlers.get(error_type, default_handler)
+    message = handler()
+
+    if error_type in ["SlackApiError", "RoleError", "CommandError", "ContextError"]:
+        logger.info(message)
     else:
         guid = str(uuid.uuid4())
-        message = build_unexpected_error_message(guid)
-        logger.exception(error, extra=dict(slack_interaction_guid=guid))
+        logger.exception(message, extra=dict(slack_interaction_guid=guid))
 
     return message
 
