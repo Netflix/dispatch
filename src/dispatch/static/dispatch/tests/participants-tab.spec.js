@@ -4,7 +4,7 @@
 
 import { describe, expect, it, vi } from "vitest"
 import { createLocalVue, shallowMount } from "@vue/test-utils"
-import { CaseParticipantsTab } from "src/case/ParticipantsTab.vue"
+import CaseParticipantsTab from "src/case/ParticipantsTab.vue"
 import { activeRoles } from "src/filters"
 
 describe("CaseParticipantsTab", () => {
@@ -55,6 +55,7 @@ describe("CaseParticipantsTab", () => {
   it("displays active roles", () => {
     const wrapper = shallowMount(CaseParticipantsTab, { localVue, computed })
     const participantListItems = wrapper.findAll("v-list-item-title").wrappers
+    console.log(participantListItems)
 
     participantListItems.forEach((participantListItem, index) => {
       const participant = participants[index]
@@ -62,6 +63,11 @@ describe("CaseParticipantsTab", () => {
         .filter((role) => !role.renounced_at)
         .map((role) => role.role)
         .join(", ")
+
+      console.log("test")
+      console.log(activeRoles)
+      console.log("test")
+      console.log(participantListItem.text())
 
       expect(participantListItem.text()).to.include(activeRoles)
     })
