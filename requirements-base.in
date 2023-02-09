@@ -48,3 +48,4 @@ tenacity
 uvicorn
 uvloop
 validators==0.18.2
+markdown

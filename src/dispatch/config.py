@@ -110,6 +110,7 @@ MJML_PATH = config(
     "MJML_PATH",
     default=f"{os.path.dirname(os.path.realpath(__file__))}/static/dispatch/node_modules/.bin",
 )
+DISPATCH_MARKDOWN_IN_INCIDENT_DESC = config("DISPATCH_MARKDOWN_IN_INCIDENT_DESC", default=False)
 
 DISPATCH_JWT_AUDIENCE = config("DISPATCH_JWT_AUDIENCE", default=None)
 DISPATCH_JWT_EMAIL_OVERRIDE = config("DISPATCH_JWT_EMAIL_OVERRIDE", default=None)
