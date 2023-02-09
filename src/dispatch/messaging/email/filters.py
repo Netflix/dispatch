@@ -7,9 +7,12 @@ from jinja2 import (
     FileSystemLoader,
 )
 from markupsafe import Markup
+from dispatch import config
 
 here = os.path.dirname(os.path.realpath(__file__))
-env = Environment(loader=FileSystemLoader(here), autoescape=True)
+
+autoescape = bool(config.DISPATCH_MARKDOWN_IN_INCIDENT_DESC)
+env = Environment(loader=FileSystemLoader(here), autoescape=autoescape)
 
 
 def format_datetime(value):
