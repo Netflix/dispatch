@@ -4,7 +4,7 @@
             <span v-for="participant in participants" :key="participant.id">
                 <v-list-item :href="participant.individual.weblink" target="_blank">
                     <v-list-item-content>
-                        <v-list-item-title>
+                        <v-list-item-title ref="participants">
                             {{ participant.individual.name }} ({{
                                 participant.participant_roles | activeRoles
                             }})
@@ -36,15 +36,6 @@ export default {
 
   computed: {
     ...mapFields("case_management", ["selected.participants"]),
-  },
-
-  filters: {
-    activeRoles: function (participantRoles) {
-        return participantRoles
-          .filter(role => !role.renounced_at)
-          .map(role => role.role)
-          .join(", ");
-    }
   },
 }
 </script>
