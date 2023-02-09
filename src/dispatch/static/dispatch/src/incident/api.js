@@ -59,9 +59,10 @@ export default {
     return API.post(`/${resource}/${incidentId}/report/${type}`, payload)
   },
 
-  handoff(params, commander) {
-    return API.post(`/${resource}/handoff`, {
-      params: { ...options, commander },
+  bulkHandoff(filter, commander) {
+    return API.put(`/${resource}/handoff`, {
+      filter: filter, commander: commander.individual
     })
   },
+
 }

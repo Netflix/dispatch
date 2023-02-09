@@ -8,6 +8,12 @@
           </v-list-item-content>
           <v-spacer />
           <v-list-item-icon>
+            <v-btn text @click="handoffBulk()">
+              <v-icon>mdi-account-arrow-right</v-icon>
+              Handoff
+            </v-btn>
+          </v-list-item-icon>
+          <v-list-item-icon>
             <v-btn text @click="saveBulk({ status: 'Active' })">
               <v-icon>mdi-check</v-icon>
               Mark Active
@@ -49,7 +55,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions("incident", ["saveBulk", "deleteBulk"]),
+    ...mapActions("incident", ["saveBulk", "deleteBulk", "handoffBulk"]),
   },
 }
 </script>

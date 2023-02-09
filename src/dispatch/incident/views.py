@@ -40,6 +40,7 @@ from .models import (
     Incident,
     IncidentCreate,
     IncidentExpandedPagination,
+    IncidentHandoffRead,
     IncidentPagination,
     IncidentRead,
     IncidentUpdate,
@@ -174,6 +175,22 @@ def update_incident(
     return incident
 
 
+@router.delete(
+    "/{incident_id}",
+    response_model=None,
+    summary="Delete an incident.",
+    dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
+)
+def delete_incident(
+    *,
+    incident_id: PrimaryKey,
+    db_session: Session = Depends(get_db),
+    current_incident: Incident = Depends(get_current_incident),
+):
+    """Deletes an incident."""
+    delete(db_session=db_session, incident_id=current_incident.id)
+
+
 @router.post(
     "/{incident_id}/join",
     summary="Adds an individual to an incident.",
@@ -270,20 +287,24 @@ def create_executive_report(
     )
 
 
-@router.delete(
-    "/{incident_id}",
-    response_model=None,
-    summary="Delete an incident.",
+@router.post(
+    "/handoff",
+    summary="Hands off one or multiple incidents to another commander.",
     dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
 )
-def delete_incident(
+def handoff(
     *,
-    incident_id: PrimaryKey,
     db_session: Session = Depends(get_db),
-    current_incident: Incident = Depends(get_current_incident),
+    organization: OrganizationSlug,
+    current_user: DispatchUser = Depends(get_current_user),
+    handoff_in: IncidentHandoffRead,
+    background_tasks: BackgroundTasks,
 ):
-    """Deletes an incident."""
-    delete(db_session=db_session, incident_id=current_incident.id)
+    """Hands off one or multiple incidents to another commander."""
+    # pagination = search_filter_sort_paginate(model="Incident", **common)
+    # print(IncidentPagination(pagination))
+    # {'items': [<Incident #9>, <Incident #8>, <Incident #7>, <Incident #6>, <Incident #5>], 'itemsPerPage': 5, 'page': 1, 'total': 133}
+    print(handoff_in.commander.name, handoff_in.filter)
 
 
 def get_month_range(relative):
