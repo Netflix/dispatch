@@ -369,7 +369,7 @@ INCIDENT_NAME = {
 INCIDENT_TITLE = {"title": "Title", "text": "{{title}}"}
 
 if config.DISPATCH_MARKDOWN_IN_INCIDENT_DESC:
-    INCIDENT_DESCRIPTION = {"title": "Description", "text": "{{description | markdown | safe}}"}
+    INCIDENT_DESCRIPTION = {"title": "Description", "text": "{{description | markdown}}"}
 else:
     INCIDENT_DESCRIPTION = {"title": "Description", "text": "{{description}}"}
 
