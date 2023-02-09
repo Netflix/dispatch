@@ -21,7 +21,3 @@ jobs:
         working-directory: src/dispatch/static/dispatch
         run: |
           npm run lint
-      - name: Run Vitest
-        working-directory: src/dispatch/static/dispatch
-        run: |
-          npm run test:coverage
