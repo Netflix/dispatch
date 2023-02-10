@@ -1,6 +1,7 @@
 import logging
 from typing import TypeVar
 
+from dispatch.decorators import timer
 from dispatch.case.models import Case
 from dispatch.database.core import SessionLocal, get_table_name_by_class_instance
 from dispatch.event import service as event_service
@@ -21,6 +22,7 @@ log = logging.getLogger(__name__)
 Subject = TypeVar("Subject", Case, Incident)
 
 
+@timer
 def add_participant(
     user_email: str,
     subject: Subject,
@@ -147,6 +149,7 @@ def inactivate_participant(user_email: str, incident: Incident, db_session: Sess
     return True
 
 
+@timer
 def reactivate_participant(
     user_email: str, incident: Incident, db_session: SessionLocal, service_id: int = None
 ):
