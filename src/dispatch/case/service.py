@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from typing import List, Optional
 
-from dispatch.auth import service as auth_service
 from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.severity import service as case_severity_service
@@ -227,26 +226,6 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
 
     for field in update_data.keys():
         setattr(case, field, update_data[field])
-
-    if case_in.assignee:
-        if case.assignee.individual.email != case_in.assignee.individual.email:
-            case_assignee = auth_service.get_by_email(
-                db_session=db_session, email=case_in.assignee.individual.email
-            )
-            if case_assignee:
-                case.assignee = case_assignee
-
-                event_service.log_case_event(
-                    db_session=db_session,
-                    source="Dispatch Core App",
-                    description=f"Case assigned to {case_in.assignee.individual.email} by {current_user.email}",
-                    dispatch_user_id=current_user.id,
-                    case_id=case.id,
-                )
-            else:
-                log.warning(
-                    f"Dispatch user with email address {case_in.assignee.individual.email} not found."
-                )
 
     if case_in.case_type:
         if case.case_type.name != case_in.case_type.name:

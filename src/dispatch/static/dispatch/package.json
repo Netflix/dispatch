@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "serve": "cross-env NODE_ENV=dev NODE_OPTIONS='--max-http-header-size=100000' vite",
-    "preview": "vite preview --open --port 8080",
     "build": "vite build --out-dir dist",
     "lint": "eslint src",
-    "lint:fix": "eslint src --fix"
+    "lint:fix": "eslint src --fix",
+    "preview": "vite preview --open --port 8080"
   },
   "dependencies": {
     "@json2csv/plainjs": "^6.1.1",
@@ -42,7 +42,7 @@
   "devDependencies": {
     "@mdi/font": "^5.9.55",
     "@playwright/test": "^1.30.0",
-    "@vitejs/plugin-vue2": "^2.0.0",
+    "@vitejs/plugin-vue2": "^2.2.0",
     "@vue/compiler-sfc": "^3.0.11",
     "babel-runtime": "^6.26.0",
     "cross-env": "^7.0.3",

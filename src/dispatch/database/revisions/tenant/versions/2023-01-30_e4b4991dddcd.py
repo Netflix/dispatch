@@ -10,7 +10,9 @@ from alembic import op
 from enum import Enum
 from pydantic import BaseModel
 import sqlalchemy as sa
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, relationship
+from sqlalchemy.sql.expression import true
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.declarative import declarative_base
 from typing import Optional
 
@@ -29,6 +31,13 @@ class DispatchUser(Base):
     __table_args__ = {"schema": "dispatch_core"}
     id = sa.Column(sa.Integer, primary_key=True)
     email = sa.Column(sa.String)
+
+
+class Project(Base):
+    __tablename__ = "project"
+    id = sa.Column(sa.Integer, primary_key=True)
+    name = sa.Column(sa.String)
+    default = sa.Column(sa.Boolean, default=False)
 
 
 class Case(Base):
@@ -72,11 +81,25 @@ class ParticipantRoleCreate(ParticipantRoleBase):
     role: Optional[ParticipantRoleType]
 
 
-class IndividualContact(Base):
+class ProjectMixin(object):
+    """Project mixin"""
+
+    @declared_attr
+    def project_id(cls):  # noqa
+        return sa.Column(sa.Integer, sa.ForeignKey("project.id", ondelete="CASCADE"))
+
+    @declared_attr
+    def project(cls):  # noqa
+        return relationship("Project")
+
+
+class IndividualContact(Base, ProjectMixin):
     __tablename__ = "individual_contact"
 
     id = sa.Column(sa.Integer, primary_key=True)
     email = sa.Column(sa.String)
+    name = sa.Column(sa.String)
+    weblink = sa.Column(sa.String)
 
 
 class Participant(Base):
@@ -130,6 +153,19 @@ def upgrade():
                 .filter(IndividualContact.email == current_user.email)
                 .first()
             )
+            if individual is None:
+                i = {}
+                i["email"] = current_user.email
+                i["name"] = current_user.email
+                i["weblink"] = ""
+                default_project = (
+                    db_session.query(Project).filter(Project.default == true()).one_or_none()
+                )
+                individual = IndividualContact(
+                    **i,
+                    project=default_project if default_project else "default",
+                )
+                db_session.add(individual)
 
             participant = Participant(
                 individual_contact_id=individual.id,

@@ -1,5 +1,6 @@
 from typing import List, Optional
 
+from dispatch.decorators import timer
 from dispatch.case import service as case_service
 from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
@@ -31,6 +32,19 @@ def get_by_incident_id_and_role(
     )
 
 
+def get_by_case_id_and_role(*, db_session, case_id: int, role: str) -> Optional[Participant]:
+    """Get a participant by case id and role name."""
+    return (
+        db_session.query(Participant)
+        .join(ParticipantRole)
+        .filter(Participant.case_id == case_id)
+        .filter(ParticipantRole.renounced_at.is_(None))
+        .filter(ParticipantRole.role == role)
+        .one_or_none()
+    )
+
+
+@timer
 def get_by_incident_id_and_email(
     *, db_session, incident_id: int, email: str
 ) -> Optional[Participant]:
@@ -55,6 +69,7 @@ def get_by_case_id_and_email(*, db_session, case_id: int, email: str) -> Optiona
     )
 
 
+@timer
 def get_by_incident_id_and_service_id(
     *, db_session, incident_id: int, service_id: int
 ) -> Optional[Participant]:
@@ -67,6 +82,18 @@ def get_by_incident_id_and_service_id(
     )
 
 
+def get_by_case_id_and_service_id(
+    *, db_session, case_id: int, service_id: int
+) -> Optional[Participant]:
+    """Get participant by incident and service id."""
+    return (
+        db_session.query(Participant)
+        .filter(Participant.case_id == case_id)
+        .filter(Participant.service_id == service_id)
+        .one_or_none()
+    )
+
+
 def get_by_incident_id_and_conversation_id(
     *, db_session, incident_id: int, user_conversation_id: str
 ) -> Optional[Participant]:
@@ -74,6 +101,18 @@ def get_by_incident_id_and_conversation_id(
     return (
         db_session.query(Participant)
         .filter(Participant.incident_id == incident_id)
+        .filter(Participant.user_conversation_id == user_conversation_id)
+        .one_or_none()
+    )
+
+
+def get_by_case_id_and_conversation_id(
+    *, db_session, case_id: int, user_conversation_id: str
+) -> Optional[Participant]:
+    """Get participant by case and user_conversation id."""
+    return (
+        db_session.query(Participant)
+        .filter(Participant.case_id == case_id)
         .filter(Participant.user_conversation_id == user_conversation_id)
         .one_or_none()
     )

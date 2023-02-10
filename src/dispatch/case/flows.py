@@ -19,10 +19,11 @@ from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import IncidentCreate
 from dispatch.individual.models import IndividualContactRead
 from dispatch.models import OrganizationSlug, PrimaryKey
-from dispatch.participant import flows as participant_flows
-from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.participant import service as participant_service
+from dispatch.participant import flows as participant_flows
+from dispatch.participant_role import flows as role_flow
 from dispatch.participant.models import ParticipantUpdate
+from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.storage import flows as storage_flows
 from dispatch.storage.enums import StorageAction
@@ -92,7 +93,7 @@ def add_participants_to_conversation(
 
 
 @background_task
-def case_add_or_reactive_participant_flow(
+def case_add_or_reactivate_participant_flow(
     user_email: str,
     case_id: int,
     participant_role: ParticipantRoleType = ParticipantRoleType.participant,
@@ -282,6 +283,16 @@ def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, d
                 )
                 # wait until all resources are created before adding suggested participants
                 individual_participants = [x.email for x, _ in individual_participants]
+
+                for email in individual_participants:
+                    # we don't rely on on this flow to add folks to the conversation because in this case
+                    # we want to do it in bulk
+                    case_add_or_reactivate_participant_flow(
+                        db_session=db_session,
+                        user_email=email,
+                        case_id=case.id,
+                        add_to_conversation=False,
+                    )
                 conversation_plugin.instance.add_to_thread(
                     case.conversation.channel_id,
                     case.conversation.thread_id,
@@ -368,6 +379,7 @@ def case_update_flow(
     *,
     case_id: int,
     previous_case: CaseRead,
+    assignee_email: str,
     user_email: str,
     organization_slug: OrganizationSlug,
     db_session=None,
@@ -389,20 +401,30 @@ def case_update_flow(
     ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
     # we update the tactical group if we have a new assignee
-    if previous_case.assignee.individual.email != case.assignee.individual.email:
-        group_flows.update_group(
-            subject=case,
-            group=case.tactical_group,
-            group_action=GroupAction.add_member,
-            group_member=case.assignee.individual.email,
+    if previous_case.assignee.individual.email != assignee_email:
+        log.debug(
+            f"{user_email} updated Case {case_id} assignee from {previous_case.assignee.individual.email} to {assignee_email}"
+        )
+        case_assign_role_flow(
+            case_id=case.id,
+            assignee_email=assignee_email,
+            assignee_role=ParticipantRoleType.assignee,
             db_session=db_session,
         )
-        event_service.log_case_event(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description="Case group updated",
-            case_id=case_id,
-        )
+        if case.tactical_group:
+            group_flows.update_group(
+                subject=case,
+                group=case.tactical_group,
+                group_action=GroupAction.add_member,
+                group_member=case.assignee.individual.email,
+                db_session=db_session,
+            )
+            event_service.log_case_event(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description="Case group updated",
+                case_id=case_id,
+            )
 
     # we send the case updated notification
     update_conversation(case, db_session)
@@ -639,3 +661,18 @@ def case_to_incident_endpoint_escalate_flow(
         description=f"The members of the incident's tactical group {incident.tactical_group.email} have been given permission to access the case's storage folder",
         case_id=case.id,
     )
+
+
+def case_assign_role_flow(
+    case_id: int,
+    assignee_email: str,
+    assignee_role: str,
+    db_session: SessionLocal,
+):
+    """Runs the case participant role assignment flow."""
+    case = get(case_id=case_id, db_session=db_session)
+
+    # we add the assignee to the incident if they're not a participant
+    case_add_or_reactivate_participant_flow(assignee_email, case.id, db_session=db_session)
+
+    role_flow.assign_role_flow(case, assignee_email, assignee_role, db_session)
