@@ -40,7 +40,7 @@ from dispatch.ticket import service as ticket_service
 from dispatch.ticket.models import TicketCreate
 
 from .messaging import (
-    get_suggested_document_items,
+    # get_suggested_document_items,
     send_incident_closed_information_review_reminder,
     send_incident_commander_readded_notification,
     send_incident_created_notifications,
@@ -50,7 +50,7 @@ from .messaging import (
     send_incident_participant_announcement_message,
     send_incident_rating_feedback_message,
     send_incident_review_document_notification,
-    send_incident_suggested_reading_messages,
+    # send_incident_suggested_reading_messages,
     send_incident_update_notifications,
     send_incident_welcome_participant_messages,
 )
@@ -1025,11 +1025,12 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
         # we send the welcome messages to the participant
         send_incident_welcome_participant_messages(user_email, incident, db_session)
 
+        # NOTE: Temporarily disabled until an issue with the Dispatch resolver plugin is resolved
         # we send a suggested reading message to the participant
-        suggested_document_items = get_suggested_document_items(incident, db_session)
-        send_incident_suggested_reading_messages(
-            incident, suggested_document_items, user_email, db_session
-        )
+        # suggested_document_items = get_suggested_document_items(incident, db_session)
+        # send_incident_suggested_reading_messages(
+        # 	  incident, suggested_document_items, user_email, db_session
+        # )
 
     # wait until all resources are created before adding suggested participants
     for individual, service_id in individual_participants:
@@ -1625,11 +1626,12 @@ def incident_add_or_reactivate_participant_flow(
         # we send the welcome messages to the participant
         send_incident_welcome_participant_messages(user_email, incident, db_session)
 
+        # NOTE: Temporarily disabled until an issue with the Dispatch resolver plugin is resolved
         # we send a suggested reading message to the participant
-        suggested_document_items = get_suggested_document_items(incident, db_session)
-        send_incident_suggested_reading_messages(
-            incident, suggested_document_items, user_email, db_session
-        )
+        # suggested_document_items = get_suggested_document_items(incident, db_session)
+        # send_incident_suggested_reading_messages(
+        # 	  incident, suggested_document_items, user_email, db_session
+        # )
 
     return participant
 
