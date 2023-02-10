@@ -8,6 +8,7 @@ const getDefaultSelectedState = () => {
     name: null,
     type: null,
     loading: false,
+    subject: "incident",
     previewRows: {
       items: [],
       total: null,
@@ -16,6 +17,8 @@ const getDefaultSelectedState = () => {
     step: 1,
     filters: {
       incident_type: [],
+      case_type: [],
+      case_priority: [],
       incident_priority: [],
       status: [],
       tag: [],
@@ -29,6 +32,7 @@ const getDefaultSelectedState = () => {
 const state = {
   results: {
     incidents: [],
+    cases: [],
     tasks: [],
     documents: [],
     tags: [],
@@ -36,7 +40,7 @@ const state = {
     sources: [],
   },
   query: "",
-  type: ["Document", "Incident", "Tag", "Task", "Source", "Query"],
+  type: ["Document", "Incident", "Case", "Tag", "Task", "Source", "Query"],
   dialogs: {
     showCreate: false,
   },

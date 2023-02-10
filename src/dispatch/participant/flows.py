@@ -1,6 +1,7 @@
 import logging
 from typing import TypeVar
 
+from dispatch.decorators import timer
 from dispatch.case.models import Case
 from dispatch.database.core import SessionLocal, get_table_name_by_class_instance
 from dispatch.event import service as event_service
@@ -8,9 +9,11 @@ from dispatch.incident.models import Incident
 from dispatch.individual import service as individual_service
 from dispatch.participant.models import Participant
 from dispatch.participant_role import service as participant_role_service
-from dispatch.participant_role.models import ParticipantRoleType, ParticipantRoleCreate
+from dispatch.participant_role.models import (
+    ParticipantRoleType,
+    ParticipantRoleCreate,
+)
 from dispatch.service import service as service_service
-
 from .service import get_or_create, get_by_incident_id_and_email
 
 
@@ -19,6 +22,7 @@ log = logging.getLogger(__name__)
 Subject = TypeVar("Subject", Case, Incident)
 
 
+@timer
 def add_participant(
     user_email: str,
     subject: Subject,
@@ -30,7 +34,7 @@ def add_participant(
 
     # we get or create a new individual
     individual = individual_service.get_or_create(
-        db_session=db_session, incident=subject, email=user_email
+        db_session=db_session, project=subject.project, email=user_email
     )
 
     # we get or create a new participant
@@ -145,6 +149,7 @@ def inactivate_participant(user_email: str, incident: Incident, db_session: Sess
     return True
 
 
+@timer
 def reactivate_participant(
     user_email: str, incident: Incident, db_session: SessionLocal, service_id: int = None
 ):

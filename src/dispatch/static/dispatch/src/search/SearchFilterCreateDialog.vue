@@ -8,6 +8,13 @@
     <v-card>
       <v-card-title>
         <span class="headline">Create Search Filter</span>
+        <v-spacer></v-spacer>
+        <span>
+          <v-radio-group v-model="subject" class="justify-right" row>
+            <v-radio label="Incident" value="incident"></v-radio>
+            <v-radio label="Case" value="case"></v-radio>
+          </v-radio-group>
+        </span>
       </v-card-title>
       <v-stepper v-model="step">
         <v-stepper-header>
@@ -28,7 +35,7 @@
                   <v-tab>Basic</v-tab>
                   <v-tab>Advanced</v-tab>
                   <v-tab-item>
-                    <v-list dense>
+                    <v-list v-if="subject == 'incident'" dense>
                       <v-list-item>
                         <v-list-item-content>
                           <tag-filter-auto-complete
@@ -60,6 +67,56 @@
                           <incident-priority-combobox
                             :project="project"
                             v-model="filters.incident_priority"
+                          />
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <incident-status-multi-select v-model="filters.status" />
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <v-select
+                            :items="visibilities"
+                            v-model="filters.visibility"
+                            name="visibility"
+                            item-text="name"
+                            return-object
+                            label="Visibility"
+                          />
+                        </v-list-item-content>
+                      </v-list-item>
+                    </v-list>
+                    <v-list v-else>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <tag-filter-auto-complete
+                            :project="project"
+                            v-model="filters.tag"
+                            label="Tags"
+                          />
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <tag-type-filter-combobox
+                            :project="project"
+                            v-model="filters.tag_type"
+                            label="Tag Types"
+                          />
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <case-type-combobox :project="project" v-model="filters.case_type" />
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <case-priority-combobox
+                            :project="project"
+                            v-model="filters.case_priority"
                           />
                         </v-list-item-content>
                       </v-list-item>
@@ -183,6 +240,9 @@ import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
+import CaseApi from "@/case/api"
+import CasePriorityCombobox from "@/case/priority/CasePriorityCombobox.vue"
+import CaseTypeCombobox from "@/case/type/CaseTypeCombobox.vue"
 import IncidentApi from "@/incident/api"
 import IncidentPriority from "@/incident/priority/IncidentPriority.vue"
 import IncidentPriorityCombobox from "@/incident/priority/IncidentPriorityCombobox.vue"
@@ -211,12 +271,20 @@ export default {
         automaticLayout: true,
         renderValidationDecorations: "on",
       },
-      previewFields: [
+      previewFields: [],
+      incidentPreviewFields: [
         { text: "Name", value: "name", sortable: false },
         { text: "Title", value: "title", sortable: false },
         { text: "Status", value: "status", sortable: false },
         { text: "Incident Type", value: "incident_type.name", sortable: false },
         { text: "Incident Priority", value: "incident_priority.name", sortable: false },
+      ],
+      casePreviewFields: [
+        { text: "Name", value: "name", sortable: false },
+        { text: "Title", value: "title", sortable: false },
+        { text: "Status", value: "status", sortable: false },
+        { text: "Case Type", value: "case_type.name", sortable: false },
+        { text: "Case Priority", value: "case_priority.name", sortable: false },
       ],
       step: 1,
       previewRows: {
@@ -227,6 +295,8 @@ export default {
       filters: {
         incident_type: [],
         incident_priority: [],
+        case_type: [],
+        case_priority: [],
         status: [],
         tag: [],
         project: [],
@@ -236,15 +306,18 @@ export default {
     }
   },
   components: {
+    CaseApi,
+    CasePriorityCombobox,
+    CaseTypeCombobox,
+    IncidentPriority,
+    IncidentPriorityCombobox,
+    IncidentStatus,
+    IncidentStatusMultiSelect,
+    IncidentTypeCombobox,
+    TagFilterAutoComplete,
+    TagTypeFilterCombobox,
     ValidationObserver,
     ValidationProvider,
-    TagFilterAutoComplete,
-    IncidentTypeCombobox,
-    IncidentPriorityCombobox,
-    TagTypeFilterCombobox,
-    IncidentStatusMultiSelect,
-    IncidentStatus,
-    IncidentPriority,
     MonacoEditor: () => import("monaco-editor-vue"),
   },
   computed: {
@@ -252,6 +325,7 @@ export default {
       "selected",
       "selected.description",
       "selected.expression",
+      "selected.subject",
       "selected.name",
       "selected.project",
       "loading",
@@ -275,28 +349,58 @@ export default {
         this.$emit("input", filter)
       })
     },
+    resetFilters() {
+      this.filters = {
+        incident_type: [],
+        incident_priority: [],
+        case_type: [],
+        case_priority: [],
+        status: [],
+        tag: [],
+        project: [],
+        tag_type: [],
+        visibility: [],
+      }
+    },
     getPreviewData() {
       let params = {}
       if (this.expression) {
         params = { filter: JSON.stringify(this.expression) }
         this.previewRowsLoading = "error"
       }
-      return IncidentApi.getAll(params).then((response) => {
-        this.previewRows = response.data
-        this.previewRowsLoading = false
-      })
+      if (this.subject === "incident") {
+        return IncidentApi.getAll(params).then((response) => {
+          this.previewFields = this.incidentPreviewFields
+          this.previewRows = response.data
+          this.previewRowsLoading = false
+        })
+      } else {
+        return CaseApi.getAll(params).then((response) => {
+          this.previewFields = this.casePreviewFields
+          this.previewRows = response.data
+          this.previewRowsLoading = false
+        })
+      }
     },
   },
   created() {
     if (this.query.project) {
       this.project = { name: this.query.project }
     }
-    this.type = "incident"
     this.getPreviewData()
+    this.$watch(
+      (vm) => [vm.subject],
+      () => {
+        this.resetFilters()
+      }
+    )
+
     this.$watch(
       (vm) => [
         vm.filters.incident_type,
         vm.filters.incident_priority,
+        vm.filters.case_priority,
+        vm.filters.case_type,
         vm.filters.status,
         vm.filters.tag,
         vm.filters.tag_type,

@@ -3,6 +3,7 @@ import logging
 from datetime import datetime
 from typing import Any, List
 
+from dispatch.decorators import timer
 from dispatch.conference import service as conference_service
 from dispatch.conference.models import ConferenceCreate
 from dispatch.conversation import service as conversation_service
@@ -40,7 +41,7 @@ from dispatch.ticket import service as ticket_service
 from dispatch.ticket.models import TicketCreate
 
 from .messaging import (
-    get_suggested_document_items,
+    # get_suggested_document_items,
     send_incident_closed_information_review_reminder,
     send_incident_commander_readded_notification,
     send_incident_created_notifications,
@@ -50,7 +51,7 @@ from .messaging import (
     send_incident_participant_announcement_message,
     send_incident_rating_feedback_message,
     send_incident_review_document_notification,
-    send_incident_suggested_reading_messages,
+    # send_incident_suggested_reading_messages,
     send_incident_update_notifications,
     send_incident_welcome_participant_messages,
 )
@@ -70,9 +71,9 @@ def get_incident_participants(incident: Incident, db_session: SessionLocal):
             db_session=db_session, project_id=incident.project.id, plugin_type="participant"
         )
         if plugin:
-            # TODO(mvilanova): add support for resolving participants based on severity
             individual_contacts, team_contacts = plugin.instance.get(
-                incident,
+                class_instance=incident,
+                project_id=incident.project.id,
                 db_session=db_session,
             )
 
@@ -361,16 +362,17 @@ def create_incident_documents(incident: Incident, db_session: SessionLocal):
                 incident.storage.resource_id, incident_sheet_name, file_type="sheet"
             )
 
-        sheet.update(
-            {
-                "name": incident_sheet_name,
-                "description": incident_sheet_description,
-                "resource_type": DocumentResourceTypes.tracking,
-                "resource_id": sheet["id"],
-            }
-        )
+        if sheet:
+            sheet.update(
+                {
+                    "name": incident_sheet_name,
+                    "description": incident_sheet_description,
+                    "resource_type": DocumentResourceTypes.tracking,
+                    "resource_id": sheet["id"],
+                }
+            )
 
-        incident_documents.append(sheet)
+            incident_documents.append(sheet)
 
         event_service.log_incident_event(
             db_session=db_session,
@@ -598,6 +600,7 @@ def set_conversation_bookmarks(incident: Incident, db_session: SessionLocal):
         log.exception(e)
 
 
+@timer
 def add_participants_to_conversation(
     participant_emails: List[str], incident: Incident, db_session: SessionLocal
 ):
@@ -629,6 +632,7 @@ def add_participants_to_conversation(
         log.exception(e)
 
 
+@timer
 def add_participant_to_tactical_group(
     user_email: str, incident: Incident, db_session: SessionLocal
 ):
@@ -1025,11 +1029,12 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
         # we send the welcome messages to the participant
         send_incident_welcome_participant_messages(user_email, incident, db_session)
 
+        # NOTE: Temporarily disabled until an issue with the Dispatch resolver plugin is resolved
         # we send a suggested reading message to the participant
-        suggested_document_items = get_suggested_document_items(incident, db_session)
-        send_incident_suggested_reading_messages(
-            incident, suggested_document_items, user_email, db_session
-        )
+        # suggested_document_items = get_suggested_document_items(incident, db_session)
+        # send_incident_suggested_reading_messages(
+        # 	  incident, suggested_document_items, user_email, db_session
+        # )
 
     # wait until all resources are created before adding suggested participants
     for individual, service_id in individual_participants:
@@ -1625,11 +1630,12 @@ def incident_add_or_reactivate_participant_flow(
         # we send the welcome messages to the participant
         send_incident_welcome_participant_messages(user_email, incident, db_session)
 
+        # NOTE: Temporarily disabled until an issue with the Dispatch resolver plugin is resolved
         # we send a suggested reading message to the participant
-        suggested_document_items = get_suggested_document_items(incident, db_session)
-        send_incident_suggested_reading_messages(
-            incident, suggested_document_items, user_email, db_session
-        )
+        # suggested_document_items = get_suggested_document_items(incident, db_session)
+        # send_incident_suggested_reading_messages(
+        # 	  incident, suggested_document_items, user_email, db_session
+        # )
 
     return participant
 

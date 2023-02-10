@@ -6,6 +6,7 @@
 """
 import logging
 
+from dispatch.decorators import timer
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.database.core import SessionLocal, resolve_attr
@@ -213,6 +214,7 @@ def send_welcome_email_to_participant(
     log.debug(f"Welcome email sent to {participant_email}.")
 
 
+@timer
 def send_incident_welcome_participant_messages(
     participant_email: str, incident: Incident, db_session: SessionLocal
 ):
@@ -226,6 +228,7 @@ def send_incident_welcome_participant_messages(
     log.debug(f"Welcome participant messages sent {participant_email}.")
 
 
+@timer
 def get_suggested_document_items(incident: Incident, db_session: SessionLocal):
     """Create the suggested document item message."""
     suggested_documents = get_suggested_documents(db_session, incident)
@@ -245,6 +248,7 @@ def get_suggested_document_items(incident: Incident, db_session: SessionLocal):
     return items
 
 
+@timer
 def send_incident_suggested_reading_messages(
     incident: Incident, items: list, participant_email: str, db_session: SessionLocal
 ):
@@ -463,6 +467,7 @@ def send_incident_update_notifications(
     log.debug("Incident updated notifications sent.")
 
 
+@timer
 def send_incident_participant_announcement_message(
     participant_email: str, incident: Incident, db_session: SessionLocal
 ):
