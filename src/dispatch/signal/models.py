@@ -23,41 +23,28 @@ from dispatch.case.priority.models import CasePriority, CasePriorityRead
 from dispatch.case.type.models import CaseType, CaseTypeRead
 from dispatch.data.source.models import SourceBase
 from dispatch.database.core import Base
-from dispatch.enums import DispatchEnum
-from dispatch.models import DispatchBase, EvergreenMixin, PrimaryKey, ProjectMixin, TimeStampMixin
+from dispatch.models import (
+    DispatchBase,
+    EvergreenMixin,
+    PrimaryKey,
+    ProjectMixin,
+    TimeStampMixin,
+    NameStr,
+)
 from dispatch.project.models import ProjectRead
-from dispatch.tag.models import TagRead
-from dispatch.tag_type.models import TagTypeRead
+from dispatch.enums import DispatchEnum
 
 
-class FilterMode(DispatchEnum):
-    active = "Active"
-    monitor = "Monitor"
-    inactive = "Inactive"
+class SignalFilterMode(DispatchEnum):
+    active = "active"
+    monitor = "monitor"
+    inactive = "inactive"
+    expired = "expired"
 
 
-class SearchFilterMixin(Base, ProjectMixin, EvergreenMixin, TimeStampMixin):
-    __table_args__ = (UniqueConstraint("name", "project_id"),)
-    name = Column(String)
-    description = Column(String)
-    expression = Column(JSON, nullable=False, default=[])
-    creator_id = Column(Integer, ForeignKey(DispatchUser.id))
-    creator = relationship("DispatchUser", backref="search_filters")
-    mode = Column(String, default=FilterMode.active, nullable=False)
-    search_vector = Column(
-        TSVectorType("name", "description", weights={"name": "A", "description": "B"})
-    )
-
-
-class SuppressionFilter(Base, SearchFilterMixin):
-    id = Column(Integer, primary_key=True)
-    expiration = Column(DateTime, nullable=True)
-
-
-class DuplicationFilter(Base, SearchFilterMixin):
-    id = Column(Integer, primary_key=True)
-    # number of seconds for duplication lookback default to 1 hour
-    window = Column(Integer, default=(60 * 60))
+class SignalFilterAction(DispatchEnum):
+    deduplicate = "deduplicate"
+    suppress = "suppress"
 
 
 class Signal(Base, TimeStampMixin, ProjectMixin):
@@ -75,64 +62,70 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     case_type = relationship("CaseType", backref="signals")
     case_priority_id = Column(Integer, ForeignKey(CasePriority.id))
     case_priority = relationship("CasePriority", backref="signals")
-    duplication_filter_id = Column(Integer, ForeignKey(DuplicationFilter.id))
-    duplication_filter = relationship("DuplicationFilter", backref="signal")
-    suppression_filter_id = Column(Integer, ForeignKey(SuppressionFilter.id))
-    suppression_filter = relationship("SuppressionFilter", backref="signal")
+    filters = relationship("SignalFilter", backref="signal")
     search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
+
+
+class SignalFilter(Base, ProjectMixin, EvergreenMixin, TimeStampMixin):
+    __table_args__ = (UniqueConstraint("name", "project_id"),)
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    description = Column(String)
+    expression = Column(JSON, nullable=False, default=[])
+    mode = Column(String, default=SignalFilterMode.active, nullable=False)
+    action = Column(String, nullable=False)
+    expiration = Column(DateTime, nullable=True)
+    window = Column(
+        Integer, default=(60 * 60)
+    )  # number of seconds for duplication lookback default to 1 hour
+
+    signal_id = Column(Integer, ForeignKey(Signal.id))
+
+    creator_id = Column(Integer, ForeignKey(DispatchUser.id))
+    creator = relationship("DispatchUser", backref="signal_filters")
+
+    search_vector = Column(
+        TSVectorType("name", "description", weights={"name": "A", "description": "B"})
+    )
 
 
 class SignalInstance(Base, TimeStampMixin, ProjectMixin):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     case = relationship("Case", backref="signal_instances")
     case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"))
-    duplication_filter = relationship("DuplicationFilter", backref="signal_instances")
-    duplication_filter_id = Column(Integer, ForeignKey(DuplicationFilter.id))
     fingerprint = Column(String)
+    filter_action = Column(String)
     raw = Column(JSONB)
     signal = relationship("Signal", backref="instances")
     signal_id = Column(Integer, ForeignKey("signal.id"))
-    suppression_filter = relationship("SuppressionFilter", backref="signal_instances")
-    suppression_filter_id = Column(Integer, ForeignKey(SuppressionFilter.id))
 
 
 # Pydantic models...
 class SignalFilterBase(DispatchBase):
-    mode: Optional[FilterMode] = FilterMode.active
-
-
-class DuplicationFilterBase(SignalFilterBase):
+    mode: Optional[SignalFilterMode] = SignalFilterMode.active
+    expression: List[dict]
+    name: NameStr
+    action: SignalFilterAction = SignalFilterAction.suppress
+    description: Optional[str] = Field(None, nullable=True)
     window: Optional[int] = 600
-    tag_types: List[TagTypeRead]
+    expiration: Optional[datetime] = Field(None, nullable=True)
 
 
-class DuplicationFilterCreate(DuplicationFilterBase):
-    pass
-
-
-class DuplicationFilterUpdate(DuplicationFilterBase):
-    id: Optional[PrimaryKey]
-
-
-class DuplicationFilterRead(DuplicationFilterBase):
+class SignalFilterUpdate(SignalFilterBase):
     id: PrimaryKey
 
 
-class SuppressionFilterBase(SignalFilterBase):
-    expiration: Optional[datetime]
-    tags: List[TagRead]
-
-
-class SuppressionFilterCreate(SuppressionFilterBase):
+class SignalFilterCreate(SignalFilterBase):
     pass
 
 
-class SuppressionFilterUpdate(SuppressionFilterBase):
-    id: Optional[PrimaryKey]
-
-
-class SuppressionFilterRead(SuppressionFilterBase):
+class SignalFilterRead(SignalFilterBase):
     id: PrimaryKey
+
+
+class SignalFilterPagination(DispatchBase):
+    items: List[SignalFilterRead]
+    total: int
 
 
 class SignalBase(DispatchBase):
@@ -146,26 +139,20 @@ class SignalBase(DispatchBase):
     external_url: Optional[str]
     source: Optional[SourceBase]
     created_at: Optional[datetime] = None
-    suppression_filters: Optional[List[SuppressionFilterRead]]
-    duplication_filters: Optional[List[DuplicationFilterBase]]
+    filters: Optional[List[SignalFilterRead]] = []
     project: ProjectRead
 
 
 class SignalCreate(SignalBase):
-    suppression_filters: Optional[List[SuppressionFilterCreate]]
-    duplication_filters: Optional[List[DuplicationFilterCreate]]
+    pass
 
 
 class SignalUpdate(SignalBase):
     id: PrimaryKey
-    suppression_filters: Optional[List[SuppressionFilterUpdate]]
-    duplication_filters: Optional[List[DuplicationFilterUpdate]]
 
 
 class SignalRead(SignalBase):
     id: PrimaryKey
-    suppression_filters: Optional[List[SuppressionFilterRead]]
-    duplication_filters: Optional[List[DuplicationFilterRead]]
 
 
 class SignalPagination(DispatchBase):
@@ -195,8 +182,7 @@ class SignalInstanceBase(DispatchBase):
     project: ProjectRead
     case: Optional[CaseRead]
     raw: RawSignal
-    suppression_filters: Optional[List[SuppressionFilterBase]]
-    duplication_filters: Optional[List[DuplicationFilterBase]]
+    filter_action: SignalFilterAction = None
     created_at: Optional[datetime] = None
 
 

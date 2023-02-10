@@ -34,7 +34,7 @@ def create_signal_instance(
     signal_instance.signal = signal
     db_session.commit()
 
-    suppressed = signal_service.supress(
+    suppressed = signal_service.suppress(
         db_session=db_session,
         signal_instance=signal_instance,
         suppression_rule=signal.suppression_rule,

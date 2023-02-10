@@ -17,6 +17,7 @@ from .models import (
     SignalInstanceRead,
     SignalInstanceCreate,
     SignalInstancePagination,
+    SignalFilterPagination,
 )
 from .service import create, update, get, create_instance, delete
 
@@ -29,6 +30,12 @@ def get_signal_instances(*, common: dict = Depends(common_parameters)):
     return search_filter_sort_paginate(model="SignalInstance", **common)
 
 
+@router.get("/filters", response_model=SignalFilterPagination)
+def get_signal_filters(*, common: dict = Depends(common_parameters)):
+    """Get all signal filters."""
+    return search_filter_sort_paginate(model="SignalFilter", **common)
+
+
 @router.get("", response_model=SignalPagination)
 def get_signals(*, common: dict = Depends(common_parameters)):
     """Get all signal definitions."""
@@ -37,7 +44,7 @@ def get_signals(*, common: dict = Depends(common_parameters)):
 
 @router.get("/{signal_id}", response_model=SignalRead)
 def get_signal(*, db_session: Session = Depends(get_db), signal_id: PrimaryKey):
-    """Update a signal."""
+    """Get a signal by it's ID."""
     signal = get(db_session=db_session, signal_id=signal_id)
     if not signal:
         raise HTTPException(

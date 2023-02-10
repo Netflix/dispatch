@@ -17,7 +17,6 @@ from dispatch.project.models import ProjectRead
 class SearchFilterSubject(DispatchEnum):
     case = "case"
     incident = "incident"
-    signal = "signal"
 
 
 class SearchFilter(Base, ProjectMixin):
