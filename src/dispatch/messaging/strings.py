@@ -761,7 +761,9 @@ def render_message_template(message_template: List[dict], **kwargs):
                 button["button_value"] = env.from_string(button["button_value"]).render(**kwargs)
 
                 if button.get("button_action"):
-                    button["button_action"] = env.from_string(button["button_action"]).render(**kwargs)
+                    button["button_action"] = env.from_string(button["button_action"]).render(
+                        **kwargs
+                    )
 
                 if button.get("button_url"):
                     button["button_url"] = env.from_string(button["button_url"]).render(**kwargs)

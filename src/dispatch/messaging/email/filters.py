@@ -11,7 +11,7 @@ from dispatch import config
 
 here = os.path.dirname(os.path.realpath(__file__))
 
-autoescape = bool(config.DISPATCH_MARKDOWN_IN_INCIDENT_DESC)
+autoescape = bool(config.DISPATCH_ESCAPE_HTML)
 env = Environment(loader=FileSystemLoader(here), autoescape=autoescape)
 
 
