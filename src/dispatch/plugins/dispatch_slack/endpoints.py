@@ -1,6 +1,5 @@
 from http import HTTPStatus
 import json
-import time
 
 from fastapi import APIRouter, HTTPException, Depends
 from starlette.background import BackgroundTask
@@ -19,7 +18,6 @@ from .incident.interactive import configure as incident_configure
 from .feedback.interactive import configure as feedback_configure
 from .workflow import configure as workflow_configure
 from .messaging import get_incident_conversation_command_message
-
 
 router = APIRouter()
 
