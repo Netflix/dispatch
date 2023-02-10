@@ -3,6 +3,7 @@ import logging
 from datetime import datetime
 from typing import Any, List
 
+from dispatch.decorators import timer
 from dispatch.conference import service as conference_service
 from dispatch.conference.models import ConferenceCreate
 from dispatch.conversation import service as conversation_service
@@ -599,6 +600,7 @@ def set_conversation_bookmarks(incident: Incident, db_session: SessionLocal):
         log.exception(e)
 
 
+@timer
 def add_participants_to_conversation(
     participant_emails: List[str], incident: Incident, db_session: SessionLocal
 ):
@@ -630,6 +632,7 @@ def add_participants_to_conversation(
         log.exception(e)
 
 
+@timer
 def add_participant_to_tactical_group(
     user_email: str, incident: Incident, db_session: SessionLocal
 ):

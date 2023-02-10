@@ -1,5 +1,6 @@
 from typing import List, Optional
 
+from dispatch.decorators import timer
 from dispatch.case import service as case_service
 from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
@@ -43,6 +44,7 @@ def get_by_case_id_and_role(*, db_session, case_id: int, role: str) -> Optional[
     )
 
 
+@timer
 def get_by_incident_id_and_email(
     *, db_session, incident_id: int, email: str
 ) -> Optional[Participant]:
@@ -67,6 +69,7 @@ def get_by_case_id_and_email(*, db_session, case_id: int, email: str) -> Optiona
     )
 
 
+@timer
 def get_by_incident_id_and_service_id(
     *, db_session, incident_id: int, service_id: int
 ) -> Optional[Participant]:
