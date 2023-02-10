@@ -27,9 +27,11 @@ from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
 from dispatch.config import DISPATCH_UI_URL
-from dispatch.database.core import resolve_attr
+
+# from dispatch.database.core import resolve_attr
 from dispatch.database.service import search_filter_sort_paginate
-from dispatch.document import service as document_service
+
+# from dispatch.document import service as document_service
 from dispatch.enums import Visibility
 from dispatch.event import service as event_service
 from dispatch.exceptions import DispatchException
@@ -39,7 +41,8 @@ from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import IncidentCreate, IncidentRead, IncidentUpdate
 from dispatch.individual import service as individual_service
 from dispatch.individual.models import IndividualContactRead
-from dispatch.messaging.strings import INCIDENT_RESOURCES_MESSAGE, MessageType
+
+# from dispatch.messaging.strings import INCIDENT_RESOURCES_MESSAGE, MessageType
 from dispatch.monitor import service as monitor_service
 from dispatch.monitor.models import MonitorCreate
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
@@ -93,7 +96,8 @@ from dispatch.plugins.dispatch_slack.incident.enums import (
     UpdateParticipantActions,
     UpdateParticipantBlockIds,
 )
-from dispatch.plugins.dispatch_slack.messaging import create_message_blocks
+
+# from dispatch.plugins.dispatch_slack.messaging import create_message_blocks
 from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
     button_context_middleware,
@@ -634,56 +638,60 @@ def draw_task_modal(
         client.views_update(view_id=view_id, view=modal)
 
 
+# NOTE: This command has been deprecated in favor of channel bookmarks and its code will be removed in Q1 2023.
 def handle_list_resources_command(
     ack: Ack, db_session: Session, context: BoltContext, respond: Respond
 ) -> None:
     """Handles the list resources command."""
     ack()
 
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    # incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    #
+    # incident_description = (
+    #     incident.description
+    #     if len(incident.description) <= 500
+    #     else f"{incident.description[:500]}..."
+    # )
+    #
+    # # we send the ephemeral message
+    # message_kwargs = {
+    #     "title": incident.title,
+    #     "description": incident_description,
+    #     "commander_fullname": incident.commander.individual.name,
+    #     "commander_team": incident.commander.team,
+    #     "commander_weblink": incident.commander.individual.weblink,
+    #     "reporter_fullname": incident.reporter.individual.name,
+    #     "reporter_team": incident.reporter.team,
+    #     "reporter_weblink": incident.reporter.individual.weblink,
+    #     "document_weblink": resolve_attr(incident, "incident_document.weblink"),
+    #     "storage_weblink": resolve_attr(incident, "storage.weblink"),
+    #     "conference_weblink": resolve_attr(incident, "conference.weblink"),
+    #     "conference_challenge": resolve_attr(incident, "conference.conference_challenge"),
+    # }
+    #
+    # faq_doc = document_service.get_incident_faq_document(
+    #     db_session=db_session, project_id=incident.project_id
+    # )
+    # if faq_doc:
+    #     message_kwargs.update({"faq_weblink": faq_doc.weblink})
+    #
+    # conversation_reference = document_service.get_conversation_reference_document(
+    #     db_session=db_session, project_id=incident.project_id
+    # )
+    # if conversation_reference:
+    #     message_kwargs.update(
+    #         {"conversation_commands_reference_document_weblink": conversation_reference.weblink}
+    #     )
+    #
+    # blocks = create_message_blocks(
+    #     INCIDENT_RESOURCES_MESSAGE, MessageType.incident_resources_message, **message_kwargs
+    # )
+    #
+    # blocks = Message(blocks=blocks).build()["blocks"]
+    # respond(text="Incident Resources", blocks=blocks, response_type="ephemeral")
 
-    incident_description = (
-        incident.description
-        if len(incident.description) <= 500
-        else f"{incident.description[:500]}..."
-    )
-
-    # we send the ephemeral message
-    message_kwargs = {
-        "title": incident.title,
-        "description": incident_description,
-        "commander_fullname": incident.commander.individual.name,
-        "commander_team": incident.commander.team,
-        "commander_weblink": incident.commander.individual.weblink,
-        "reporter_fullname": incident.reporter.individual.name,
-        "reporter_team": incident.reporter.team,
-        "reporter_weblink": incident.reporter.individual.weblink,
-        "document_weblink": resolve_attr(incident, "incident_document.weblink"),
-        "storage_weblink": resolve_attr(incident, "storage.weblink"),
-        "conference_weblink": resolve_attr(incident, "conference.weblink"),
-        "conference_challenge": resolve_attr(incident, "conference.conference_challenge"),
-    }
-
-    faq_doc = document_service.get_incident_faq_document(
-        db_session=db_session, project_id=incident.project_id
-    )
-    if faq_doc:
-        message_kwargs.update({"faq_weblink": faq_doc.weblink})
-
-    conversation_reference = document_service.get_conversation_reference_document(
-        db_session=db_session, project_id=incident.project_id
-    )
-    if conversation_reference:
-        message_kwargs.update(
-            {"conversation_commands_reference_document_weblink": conversation_reference.weblink}
-        )
-
-    blocks = create_message_blocks(
-        INCIDENT_RESOURCES_MESSAGE, MessageType.incident_resources_message, **message_kwargs
-    )
-
-    blocks = Message(blocks=blocks).build()["blocks"]
-    respond(text="Incident Resources", blocks=blocks, response_type="ephemeral")
+    message = "This slash command has been deprecated in favor of channel bookmarks. You can find all incident resources bookmarked in the channel."
+    respond(text=message, response_type="ephemeral", replace_original=False, delete_original=False)
 
 
 # EVENTS
