@@ -172,6 +172,7 @@ def update_case(
         case_update_flow,
         case_id=case_id,
         previous_case=previous_case,
+        assignee_email=case_in.assignee.individual.email,
         user_email=current_user.email,
         organization_slug=organization,
     )

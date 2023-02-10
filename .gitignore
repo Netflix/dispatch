@@ -211,3 +211,5 @@ docker/.env
 /playwright-report/
 /playwright/.cache/
 /tests/static/e2e/artifacts/*
+src/dispatch/static/dispatch/tests/__snapshots__
+src/dispatch/static/dispatch/coverage

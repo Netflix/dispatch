@@ -30,7 +30,7 @@ executing==1.2.0
     #   stack-data
 factory-boy==3.2.1
     # via -r requirements-dev.in
-faker==16.6.1
+faker==16.8.1
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -38,7 +38,7 @@ flake8==6.0.0
     # via -r requirements-dev.in
 iniconfig==1.1.1
     # via pytest
-ipython==8.9.0
+ipython==8.10.0
     # via -r requirements-dev.in
 jedi==0.18.2
     # via ipython
