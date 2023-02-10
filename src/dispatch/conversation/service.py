@@ -1,9 +1,10 @@
 from typing import Optional
 
+from dispatch.case.models import Case
 from dispatch.event import service as event_service
-
-from dispatch.project.models import Project
 from dispatch.incident.models import Incident
+from dispatch.project.models import Project
+
 from .models import Conversation, ConversationCreate, ConversationUpdate
 
 
@@ -12,16 +13,29 @@ def get(*, db_session, conversation_id: int) -> Optional[Conversation]:
     return db_session.query(Conversation).filter(Conversation.id == conversation_id).one_or_none()
 
 
-def get_by_channel_id_ignoring_channel_type(db_session, channel_id: str) -> Optional[Conversation]:
+def get_by_channel_id_ignoring_channel_type(
+    db_session, channel_id: str, thread_id: Optional[str] = None
+) -> Optional[Conversation]:
     """Fetch a conversation by its `channel_id` ignoring the channel type
     and update the channel id in the database if the channel type has changed."""
-    conversation = (
-        db_session.query(Conversation)
-        .join(Incident)
-        .join(Project)
-        .filter(Conversation.channel_id.contains(channel_id[1:]))
-        .one_or_none()
-    )
+    if thread_id:
+        conversation = (
+            db_session.query(Conversation)
+            .join(Case)
+            .join(Project)
+            .filter(Conversation.channel_id.contains(channel_id[1:]))
+            .filter(Conversation.thread_id == thread_id)
+            .one_or_none()
+        )
+
+    else:
+        conversation = (
+            db_session.query(Conversation)
+            .join(Incident)
+            .join(Project)
+            .filter(Conversation.channel_id.contains(channel_id[1:]))
+            .one_or_none()
+        )
 
     if conversation:
         if channel_id[0] != conversation.channel_id[0]:

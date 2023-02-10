@@ -82,12 +82,12 @@ export default {
 
   created() {
     this.$watch(
-      (vm) => [vm.caseTitle, vm.caseProject, vm.caseDescription],
+      (vm) => [vm.showEscalateDialog],
       () => {
         this.incidentDescription = this.caseDescription
-        this.incidentProject = this.caseProject
         this.incidentTitle = this.caseTitle
-        this.incidentType = this.caseType.incident_type
+        this.incidentProject = this.caseProject ? this.caseProject : null
+        this.incidentType = this.caseType.incident_type ? this.caseType : null
       }
     )
   },

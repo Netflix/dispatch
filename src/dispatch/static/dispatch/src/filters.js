@@ -104,3 +104,16 @@ Vue.filter("commaString", function (value, key) {
       .join(", ")
   }
 })
+
+export const activeRoles = function (value) {
+  if (value) {
+    return value
+      .filter((role) => !role.renounced_at)
+      .map(function (role) {
+        return role.role
+      })
+      .join(", ")
+  }
+}
+
+Vue.filter("activeRoles", activeRoles)

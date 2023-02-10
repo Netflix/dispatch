@@ -3,6 +3,7 @@ import logging
 from datetime import datetime
 from typing import Any, List
 
+from dispatch.decorators import timer
 from dispatch.conference import service as conference_service
 from dispatch.conference.models import ConferenceCreate
 from dispatch.conversation import service as conversation_service
@@ -70,9 +71,9 @@ def get_incident_participants(incident: Incident, db_session: SessionLocal):
             db_session=db_session, project_id=incident.project.id, plugin_type="participant"
         )
         if plugin:
-            # TODO(mvilanova): add support for resolving participants based on severity
             individual_contacts, team_contacts = plugin.instance.get(
-                incident,
+                class_instance=incident,
+                project_id=incident.project.id,
                 db_session=db_session,
             )
 
@@ -361,16 +362,17 @@ def create_incident_documents(incident: Incident, db_session: SessionLocal):
                 incident.storage.resource_id, incident_sheet_name, file_type="sheet"
             )
 
-        sheet.update(
-            {
-                "name": incident_sheet_name,
-                "description": incident_sheet_description,
-                "resource_type": DocumentResourceTypes.tracking,
-                "resource_id": sheet["id"],
-            }
-        )
+        if sheet:
+            sheet.update(
+                {
+                    "name": incident_sheet_name,
+                    "description": incident_sheet_description,
+                    "resource_type": DocumentResourceTypes.tracking,
+                    "resource_id": sheet["id"],
+                }
+            )
 
-        incident_documents.append(sheet)
+            incident_documents.append(sheet)
 
         event_service.log_incident_event(
             db_session=db_session,
@@ -598,6 +600,7 @@ def set_conversation_bookmarks(incident: Incident, db_session: SessionLocal):
         log.exception(e)
 
 
+@timer
 def add_participants_to_conversation(
     participant_emails: List[str], incident: Incident, db_session: SessionLocal
 ):
@@ -629,6 +632,7 @@ def add_participants_to_conversation(
         log.exception(e)
 
 
+@timer
 def add_participant_to_tactical_group(
     user_email: str, incident: Incident, db_session: SessionLocal
 ):

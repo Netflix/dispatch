@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
+from dispatch.decorators import timer
 from dispatch.case import service as case_service
 from dispatch.database.core import SessionLocal
 from dispatch.event import service as event_service
@@ -62,6 +63,7 @@ def resolve_and_associate_role(
     return email_address, service_id
 
 
+@timer
 def get(*, db_session, incident_id: int) -> Optional[Incident]:
     """Returns an incident based on the given id."""
     return db_session.query(Incident).filter(Incident.id == incident_id).first()
