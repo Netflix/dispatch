@@ -25,6 +25,7 @@ from dispatch.models import DispatchBase, EvergreenMixin, PrimaryKey, TimeStampM
 from dispatch.case.models import CaseRead
 from dispatch.case.type.models import CaseTypeRead, CaseType
 from dispatch.case.priority.models import CasePriority, CasePriorityRead
+from dispatch.entity.models import EntityRead
 from dispatch.tag.models import TagRead
 from dispatch.project.models import ProjectRead
 from dispatch.data.source.models import SourceBase
@@ -51,6 +52,22 @@ assoc_signal_tags = Table(
     Column("signal_id", Integer, ForeignKey("signal.id", ondelete="CASCADE")),
     Column("tag_id", Integer, ForeignKey("tag.id", ondelete="CASCADE")),
     PrimaryKeyConstraint("signal_id", "tag_id"),
+)
+
+assoc_signal_instance_entities = Table(
+    "assoc_signal_instance_entities",
+    Base.metadata,
+    Column("signal_instance_id", Integer, ForeignKey("signal_instance.id", ondelete="CASCADE")),
+    Column("entity_id", Integer, ForeignKey("entity.id", ondelete="CASCADE")),
+    PrimaryKeyConstraint("signal_instance_id", "entity_id"),
+)
+
+assoc_signal_entities = Table(
+    "assoc_signal_entities",
+    Base.metadata,
+    Column("signal_id", Integer, ForeignKey("signal.id", ondelete="CASCADE")),
+    Column("entity_id", Integer, ForeignKey("entity.id", ondelete="CASCADE")),
+    PrimaryKeyConstraint("signal_id", "entity_id"),
 )
 
 assoc_duplication_tag_types = Table(
@@ -109,6 +126,11 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     case_priority = relationship("CasePriority", backref="signals")
     duplication_rule_id = Column(Integer, ForeignKey(DuplicationRule.id))
     duplication_rule = relationship("DuplicationRule", backref="signal")
+    entities = relationship(
+        "Entity",
+        secondary=assoc_signal_entities,
+        backref="signals",
+    )
     suppression_rule_id = Column(Integer, ForeignKey(SuppressionRule.id))
     suppression_rule = relationship("SuppressionRule", backref="signal")
     tags = relationship(
@@ -125,6 +147,11 @@ class SignalInstance(Base, TimeStampMixin, ProjectMixin):
     case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"))
     duplication_rule = relationship("DuplicationRule", backref="signal_instances")
     duplication_rule_id = Column(Integer, ForeignKey(DuplicationRule.id))
+    entities = relationship(
+        "Entity",
+        secondary=assoc_signal_instance_entities,
+        backref="signal_instances",
+    )
     fingerprint = Column(String)
     raw = Column(JSONB)
     signal = relationship("Signal", backref="instances")
@@ -236,6 +263,7 @@ class RawSignal(DispatchBase):
 class SignalInstanceBase(DispatchBase):
     project: ProjectRead
     case: Optional[CaseRead]
+    entities: Optional[List[EntityRead]] = []
     tags: Optional[List[TagRead]] = []
     raw: RawSignal
     suppression_rule: Optional[SuppressionRuleBase]

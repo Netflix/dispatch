@@ -143,6 +143,9 @@
           </v-card>
         </v-col>
         <v-col cols="12">
+          <entity-rule-card v-model="entities"></entity-rule-card>
+        </v-col>
+        <v-col cols="12">
           <duplication-rule-card v-model="duplication_rule"></duplication-rule-card>
         </v-col>
         <v-col cols="12">
@@ -163,6 +166,7 @@ import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
 
 import DuplicationRuleCard from "@/signal/DuplicationRule.vue"
+import EntityRuleCard from "@/signal/EntityRule.vue"
 import SuppressionRule from "./SuppressionRule.vue"
 
 extend("required", {
@@ -178,6 +182,7 @@ export default {
     CaseTypeSelect,
     CasePrioritySelect,
     DuplicationRuleCard,
+    EntityRuleCard,
     SuppressionRule,
   },
 
@@ -205,6 +210,7 @@ export default {
       "selected.external_url",
       "selected.case_type",
       "selected.case_priority",
+      "selected.entities",
       "selected.duplication_rule",
       "selected.suppression_rule",
       "selected.source",

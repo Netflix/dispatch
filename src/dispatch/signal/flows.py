@@ -50,6 +50,12 @@ def create_signal_instance(
     if duplicate:
         return
 
+    # entities = signal_service.find_entities(
+    #     db_session=db_session,
+    #     signal_instance=signal_instance,
+    #     duplication_rule=signal.entity_rule,
+    # )
+
     # create a case if not duplicate or supressed
     case_in = CaseCreate(
         title=signal.name,

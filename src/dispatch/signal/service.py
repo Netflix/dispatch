@@ -1,5 +1,6 @@
 import json
 import hashlib
+import re
 from typing import Optional
 from datetime import datetime, timedelta, timezone
 from dispatch.enums import RuleMode
@@ -326,3 +327,49 @@ def supress(
 
     db_session.commit()
     return supressed
+
+
+def find_entities(d, signal_instance: SignalInstance):
+    """
+    Recursively search a dictionary for values that match a list of entities.
+
+    Args:
+    - d (dict): The dictionary to search
+    - entity_list (list): The list of entities to search for
+
+    Returns:
+    - result (list): The values in the dictionary that match the entities
+
+    """
+    result = []
+    entity_regexes = [
+        re.compile(entity) for entity in signal_instance.entities if isinstance(entity, str)
+    ]
+    cache = {}
+
+    def _search(val):
+        """Helper function to search a value for entities"""
+        if id(val) in cache:
+            # If val has been searched before, return cached result
+            result.extend(cache[id(val)])
+            return
+
+        if isinstance(val, dict):
+            # If val is a dictionary, recursively search it
+            entities_found = find_entities(val, signal_instance.entities)
+            cache[id(val)] = entities_found
+            result.extend(entities_found)
+        elif isinstance(val, list):
+            # If val is a list, search each item in the list
+            for item in val:
+                _search(item)
+        elif isinstance(val, str):
+            for entity_regex in entity_regexes:
+                # If val is a string and matches any entity regex, add it to result
+                if entity_regex.match(val):
+                    result.append(val)
+
+    for key, value in d.items():
+        _search(value)
+
+    return result

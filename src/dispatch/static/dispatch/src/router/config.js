@@ -465,6 +465,12 @@ export const protectedRoute = [
             component: () => import("@/team/Table.vue"),
           },
           {
+            path: "entity",
+            name: "EntityTable",
+            meta: { title: "Entities", subMenu: "project", group: "knowledge" },
+            component: () => import("@/entity/Table.vue"),
+          },
+          {
             path: "tagTypes",
             name: "TagTypeTable",
             meta: { title: "Tag Types", subMenu: "project", group: "knowledge" },
