@@ -6,11 +6,11 @@ from pydantic.networks import EmailStr
 from pydantic import BaseModel
 from pydantic.types import conint, constr, SecretStr
 
-from sqlalchemy import func
-from sqlalchemy.orm import relationship
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, event, ForeignKey
+from sqlalchemy import func
+from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
 
 # pydantic type that limits the range of primary keys
 PrimaryKey = conint(gt=0, lt=2147483647)

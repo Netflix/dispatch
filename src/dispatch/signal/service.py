@@ -1,24 +1,25 @@
 import json
-from typing import Optional
 from datetime import datetime, timedelta, timezone
-from dispatch.project import service as project_service
-from dispatch.case.type import service as case_type_service
-from dispatch.case.priority import service as case_priority_service
+from typing import Optional
 
 from sqlalchemy import asc
+
+from dispatch.case.priority import service as case_priority_service
+from dispatch.case.type import service as case_type_service
+from dispatch.database.service import apply_filters
+from dispatch.project import service as project_service
 
 from .models import (
     Signal,
     SignalCreate,
-    SignalUpdate,
+    SignalFilter,
+    SignalFilterAction,
+    SignalFilterCreate,
+    SignalFilterMode,
+    SignalFilterUpdate,
     SignalInstance,
     SignalInstanceCreate,
-    SignalFilterMode,
-    SignalFilter,
-    SignalFilterCreate,
-    SignalFilterUpdate,
-    SignalFilterRead,
-    SignalFilterAction,
+    SignalUpdate,
 )
 
 
@@ -183,7 +184,7 @@ def apply_filter_actions(*, db_session, signal_instance: SignalInstance):
         query = db_session.query(SignalInstance).filter(
             SignalInstance.signal_id == signal_instance.signal_id
         )
-        query = apply_filters(query, filter_spec)
+        query = apply_filters(query, f.expression)
 
         # order matters, check for supression before deduplication
         # we check to see if the current instances match's it's signals supression filter
@@ -195,11 +196,11 @@ def apply_filter_actions(*, db_session, signal_instance: SignalInstance):
                 return
 
         elif f.action == SignalFilterAction.deduplicate:
-            window = datetime.now(timezone.utc) - timedelta(seconds=duplication_filter.window)
+            window = datetime.now(timezone.utc) - timedelta(seconds=f.window)
             query = query.filter(SignalInstance.created_at >= window)
 
             # get the earliest instance
-            query = query.order_by(acs(SignalInstance.created_at))
+            query = query.order_by(asc(SignalInstance.created_at))
             instances = query.all()
 
             if instances:

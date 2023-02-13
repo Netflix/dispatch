@@ -174,6 +174,22 @@ def update_incident(
     return incident
 
 
+@router.delete(
+    "/{incident_id}",
+    response_model=None,
+    summary="Delete an incident.",
+    dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
+)
+def delete_incident(
+    *,
+    incident_id: PrimaryKey,
+    db_session: Session = Depends(get_db),
+    current_incident: Incident = Depends(get_current_incident),
+):
+    """Deletes an incident."""
+    delete(db_session=db_session, incident_id=current_incident.id)
+
+
 @router.post(
     "/{incident_id}/join",
     summary="Adds an individual to an incident.",
@@ -268,22 +284,6 @@ def create_executive_report(
         executive_report_in=executive_report_in,
         organization_slug=organization,
     )
-
-
-@router.delete(
-    "/{incident_id}",
-    response_model=None,
-    summary="Delete an incident.",
-    dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
-)
-def delete_incident(
-    *,
-    incident_id: PrimaryKey,
-    db_session: Session = Depends(get_db),
-    current_incident: Incident = Depends(get_current_incident),
-):
-    """Deletes an incident."""
-    delete(db_session=db_session, incident_id=current_incident.id)
 
 
 def get_month_range(relative):

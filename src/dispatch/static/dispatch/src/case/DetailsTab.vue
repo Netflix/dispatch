@@ -111,9 +111,10 @@
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
 import { ValidationProvider, extend } from "vee-validate"
+import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
+
 import CaseFilterCombobox from "@/case/CaseFilterCombobox.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
 import CaseSeveritySelect from "@/case/severity/CaseSeveritySelect.vue"
@@ -123,12 +124,15 @@ import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
 import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
+
 extend("required", {
   ...required,
   message: "This field is required",
 })
+
 export default {
   name: "CaseDetailsTab",
+
   components: {
     CaseFilterCombobox,
     CasePrioritySelect,
@@ -141,12 +145,14 @@ export default {
     TagFilterAutoComplete,
     ValidationProvider,
   },
+
   data() {
     return {
       statuses: ["New", "Triage", "Escalated", "Closed"],
       visibilities: ["Open", "Restricted"],
     }
   },
+
   computed: {
     ...mapFields("case_management", [
       "selected.assignee",
@@ -160,11 +166,11 @@ export default {
       "selected.id",
       "selected.incidents",
       "selected.name",
-      "selected.signals",
       "selected.project",
       "selected.related",
       "selected.reported_at",
       "selected.resolution",
+      "selected.signals",
       "selected.status",
       "selected.tags",
       "selected.title",

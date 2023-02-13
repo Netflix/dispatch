@@ -10,7 +10,9 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Integer,
+    PrimaryKeyConstraint,
     String,
+    Table,
     UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import JSONB, UUID
@@ -23,16 +25,42 @@ from dispatch.case.priority.models import CasePriority, CasePriorityRead
 from dispatch.case.type.models import CaseType, CaseTypeRead
 from dispatch.data.source.models import SourceBase
 from dispatch.database.core import Base
+from dispatch.entity.models import EntityRead
+from dispatch.entity_type.models import EntityTypeCreate, EntityTypeRead
+from dispatch.enums import DispatchEnum
 from dispatch.models import (
     DispatchBase,
     EvergreenMixin,
+    NameStr,
     PrimaryKey,
     ProjectMixin,
     TimeStampMixin,
-    NameStr,
 )
 from dispatch.project.models import ProjectRead
-from dispatch.enums import DispatchEnum
+
+assoc_signal_tags = Table(
+    "assoc_signal_tags",
+    Base.metadata,
+    Column("signal_id", Integer, ForeignKey("signal.id", ondelete="CASCADE")),
+    Column("tag_id", Integer, ForeignKey("tag.id", ondelete="CASCADE")),
+    PrimaryKeyConstraint("signal_id", "tag_id"),
+)
+
+assoc_signal_instance_entities = Table(
+    "assoc_signal_instance_entities",
+    Base.metadata,
+    Column("signal_instance_id", UUID, ForeignKey("signal_instance.id", ondelete="CASCADE")),
+    Column("entity_id", Integer, ForeignKey("entity.id", ondelete="CASCADE")),
+    PrimaryKeyConstraint("signal_instance_id", "entity_id"),
+)
+
+assoc_signal_entity_types = Table(
+    "assoc_signal_entity_types",
+    Base.metadata,
+    Column("signal_id", Integer, ForeignKey("signal.id", ondelete="CASCADE")),
+    Column("entity_type_id", Integer, ForeignKey("entity_type.id", ondelete="CASCADE")),
+    PrimaryKeyConstraint("signal_id", "entity_type_id"),
+)
 
 
 class SignalFilterMode(DispatchEnum):
@@ -63,6 +91,16 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     case_priority_id = Column(Integer, ForeignKey(CasePriority.id))
     case_priority = relationship("CasePriority", backref="signals")
     filters = relationship("SignalFilter", backref="signal")
+    entity_types = relationship(
+        "EntityType",
+        secondary=assoc_signal_entity_types,
+        backref="signals",
+    )
+    tags = relationship(
+        "Tag",
+        secondary=assoc_signal_tags,
+        backref="signals",
+    )
     search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
 
@@ -93,6 +131,11 @@ class SignalInstance(Base, TimeStampMixin, ProjectMixin):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     case = relationship("Case", backref="signal_instances")
     case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"))
+    entities = relationship(
+        "Entity",
+        secondary=assoc_signal_instance_entities,
+        backref="signal_instances",
+    )
     fingerprint = Column(String)
     filter_action = Column(String)
     raw = Column(JSONB)
@@ -140,19 +183,22 @@ class SignalBase(DispatchBase):
     source: Optional[SourceBase]
     created_at: Optional[datetime] = None
     filters: Optional[List[SignalFilterRead]] = []
+    entity_types: Optional[List[EntityTypeRead]]
     project: ProjectRead
 
 
 class SignalCreate(SignalBase):
-    pass
+    entity_types: Optional[EntityTypeCreate]
 
 
 class SignalUpdate(SignalBase):
     id: PrimaryKey
+    entity_types: Optional[List[EntityTypeRead]] = []
 
 
 class SignalRead(SignalBase):
     id: PrimaryKey
+    entity_types: Optional[List[EntityTypeRead]]
 
 
 class SignalPagination(DispatchBase):
@@ -181,6 +227,7 @@ class RawSignal(DispatchBase):
 class SignalInstanceBase(DispatchBase):
     project: ProjectRead
     case: Optional[CaseRead]
+    entities: Optional[List[EntityRead]] = []
     raw: RawSignal
     filter_action: SignalFilterAction = None
     created_at: Optional[datetime] = None
@@ -192,7 +239,7 @@ class SignalInstanceCreate(SignalInstanceBase):
 
 class SignalInstanceRead(SignalInstanceBase):
     id: uuid.UUID
-    fingerprint: str
+    fingerprint: str = None
     signal: SignalRead
 
 

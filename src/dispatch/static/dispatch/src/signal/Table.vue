@@ -100,19 +100,15 @@ import { mapActions } from "vuex"
 
 import NewEditDialog from "@/signal/NewEditDialog.vue"
 import DeleteDialog from "@/signal/DeleteDialog.vue"
-
 export default {
   name: "SignalTable",
-
   components: { NewEditDialog, DeleteDialog },
-
   props: {
     name: {
       type: String,
       default: null,
     },
   },
-
   data() {
     return {
       headers: [
@@ -129,7 +125,6 @@ export default {
       showEditSheet: false,
     }
   },
-
   computed: {
     ...mapFields("signal", [
       "table.loading",
@@ -145,16 +140,12 @@ export default {
     ...mapFields("route", ["query", "params"]),
     ...mapFields("auth", ["currentUser.projects"]),
   },
-
   methods: {
     ...mapActions("signal", ["getAll", "createEditShow", "removeShow"]),
   },
-
   created() {
     this.project = [{ name: this.query.project }]
-
     this.getAll()
-
     this.$watch(
       (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending, vm.project],
       () => {

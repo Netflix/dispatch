@@ -204,6 +204,7 @@ export default {
       "selected.case_type",
       "selected.case_priority",
       "selected.filters",
+      "selected.entity_types",
       "selected.source",
       "selected.project",
       "selected.loading",
