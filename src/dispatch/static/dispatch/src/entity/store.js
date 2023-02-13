@@ -2,26 +2,15 @@ import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
-import SignalApi from "@/signal/api"
+import EntityApi from "@/entity/api"
 
 const getDefaultSelectedState = () => {
   return {
     id: null,
     name: null,
-    description: null,
-    variant: null,
-    owner: null,
-    external_id: null,
-    external_url: null,
-    case_type: null,
-    case_priority: null,
-    entity_types: null,
-    duplication_rule: null,
-    suppression_rule: null,
-    source: null,
+    regular_expression: null,
     project: null,
-    created_at: null,
-    loading: false,
+    default: false,
   }
 }
 
@@ -31,28 +20,7 @@ const state = {
   },
   dialogs: {
     showCreateEdit: false,
-    showRawSignalDialog: false,
     showRemove: false,
-  },
-  instanceTable: {
-    rows: {
-      items: [],
-      total: null,
-    },
-    options: {
-      filters: {
-        created_at: {
-          start: null,
-          end: null,
-        },
-      },
-      q: "",
-      page: 1,
-      itemsPerPage: 10,
-      sortBy: ["created_at"],
-      descending: [true],
-    },
-    loading: false,
   },
   table: {
     rows: {
@@ -60,36 +28,28 @@ const state = {
       total: null,
     },
     options: {
-      filters: {
-        created_at: {
-          start: null,
-          end: null,
-        },
-      },
       q: "",
       page: 1,
       itemsPerPage: 10,
       sortBy: ["name"],
       descending: [true],
+      filters: {
+        project: [],
+      },
     },
     loading: false,
-    bulkEditLoading: false,
   },
 }
 
 const getters = {
   getField,
-  tableOptions({ state }) {
-    // format our filters
-    return state.table.options
-  },
 }
 
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
-    let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options }, "signal")
-    return SignalApi.getAll(params)
+    let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options }, "Entity")
+    return EntityApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)
         commit("SET_TABLE_ROWS", response.data)
@@ -98,35 +58,15 @@ const actions = {
         commit("SET_TABLE_LOADING", false)
       })
   }, 500),
-  getAllInstances: debounce(({ commit, state }) => {
-    commit("SET_INSTANCE_TABLE_LOADING", "primary")
-    let params = SearchUtils.createParametersFromTableOptions(
-      { ...state.instanceTable.options },
-      "signal"
-    )
-    return SignalApi.getAllInstances(params)
-      .then((response) => {
-        commit("SET_INSTANCE_TABLE_LOADING", false)
-        commit("SET_INSTANCE_TABLE_ROWS", response.data)
-      })
-      .catch(() => {
-        commit("SET_INSTANCE_TABLE_LOADING", false)
-      })
-  }, 500),
-  get({ commit, state }) {
-    return SignalApi.get(state.selected.id).then((response) => {
-      commit("SET_SELECTED", response.data)
-    })
-  },
-  createEditShow({ commit }, signal) {
-    if (signal) {
-      commit("SET_SELECTED", signal)
-    }
+  createEditShow({ commit }, entity) {
     commit("SET_DIALOG_CREATE_EDIT", true)
+    if (entity) {
+      commit("SET_SELECTED", entity)
+    }
   },
-  removeShow({ commit }, signal) {
+  removeShow({ commit }, entity) {
     commit("SET_DIALOG_DELETE", true)
-    commit("SET_SELECTED", signal)
+    commit("SET_SELECTED", entity)
   },
   closeCreateEdit({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
@@ -136,17 +76,17 @@ const actions = {
     commit("SET_DIALOG_DELETE", false)
     commit("RESET_SELECTED")
   },
-  save({ commit, dispatch }) {
+  save({ commit, state, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
-      return SignalApi.create(state.selected)
+      return EntityApi.create(state.selected)
         .then(() => {
           commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
-            { text: "Signal Definition created successfully.", type: "success" },
+            { text: "Entity created successfully.", type: "success" },
             { root: true }
           )
         })
@@ -154,14 +94,14 @@ const actions = {
           commit("SET_SELECTED_LOADING", false)
         })
     } else {
-      return SignalApi.update(state.selected.id, state.selected)
+      return EntityApi.update(state.selected.id, state.selected)
         .then(() => {
           commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
-            { text: "Signal Defintion updated successfully.", type: "success" },
+            { text: "Entity updated successfully.", type: "success" },
             { root: true }
           )
         })
@@ -170,13 +110,13 @@ const actions = {
         })
     }
   },
-  remove({ commit, dispatch }) {
-    return SignalApi.delete(state.selected.id).then(function () {
+  remove({ commit, dispatch, state }) {
+    return EntityApi.delete(state.selected.id).then(() => {
       dispatch("closeRemove")
       dispatch("getAll")
       commit(
         "notification_backend/addBeNotification",
-        { text: "Signal Definition deleted successfully.", type: "success" },
+        { text: "Entity deleted successfully.", type: "success" },
         { root: true }
       )
     })
@@ -196,12 +136,6 @@ const mutations = {
   },
   SET_TABLE_ROWS(state, value) {
     state.table.rows = value
-  },
-  SET_INSTANCE_TABLE_LOADING(state, value) {
-    state.instanceTable.loading = value
-  },
-  SET_INSTANCE_TABLE_ROWS(state, value) {
-    state.instanceTable.rows = value
   },
   SET_DIALOG_CREATE_EDIT(state, value) {
     state.dialogs.showCreateEdit = value

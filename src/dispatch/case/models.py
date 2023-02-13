@@ -25,6 +25,7 @@ from dispatch.case.type.models import CaseTypeBase, CaseTypeRead
 from dispatch.database.core import Base
 from dispatch.document.models import Document, DocumentRead
 from dispatch.enums import Visibility
+from dispatch.entity.models import EntityRead
 from dispatch.event.models import EventRead
 from dispatch.group.models import Group, GroupRead
 from dispatch.incident.models import IncidentReadMinimal
@@ -165,6 +166,7 @@ class SignalRead(DispatchBase):
 
 class SignalInstanceRead(DispatchBase):
     signal: SignalRead
+    entities: Optional[List[EntityRead]] = []
     tags: Optional[List[TagRead]] = []
     raw: Any
     fingerprint: str
