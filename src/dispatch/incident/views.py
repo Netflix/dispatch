@@ -40,7 +40,6 @@ from .models import (
     Incident,
     IncidentCreate,
     IncidentExpandedPagination,
-    IncidentHandoffRead,
     IncidentPagination,
     IncidentRead,
     IncidentUpdate,
@@ -285,26 +284,6 @@ def create_executive_report(
         executive_report_in=executive_report_in,
         organization_slug=organization,
     )
-
-
-@router.post(
-    "/handoff",
-    summary="Hands off one or multiple incidents to another commander.",
-    dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
-)
-def handoff(
-    *,
-    db_session: Session = Depends(get_db),
-    organization: OrganizationSlug,
-    current_user: DispatchUser = Depends(get_current_user),
-    handoff_in: IncidentHandoffRead,
-    background_tasks: BackgroundTasks,
-):
-    """Hands off one or multiple incidents to another commander."""
-    # pagination = search_filter_sort_paginate(model="Incident", **common)
-    # print(IncidentPagination(pagination))
-    # {'items': [<Incident #9>, <Incident #8>, <Incident #7>, <Incident #6>, <Incident #5>], 'itemsPerPage': 5, 'page': 1, 'total': 133}
-    print(handoff_in.commander.name, handoff_in.filter)
 
 
 def get_month_range(relative):
