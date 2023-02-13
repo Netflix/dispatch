@@ -6,7 +6,7 @@
           <v-list-item-content>
             <v-list-item-title>
               {{ participant.individual.name }} ({{
-                participant.participant_roles | commaSeparatedRoles
+                participant.participant_roles | activeRoles
               }})
             </v-list-item-title>
             <v-list-item-subtitle>
@@ -36,16 +36,6 @@ export default {
 
   computed: {
     ...mapFields("incident", ["selected.participants"]),
-  },
-
-  filters: {
-    commaSeparatedRoles: function (value) {
-      return value
-        .map(function (v) {
-          return v.role
-        })
-        .join(", ")
-    },
   },
 }
 </script>

@@ -29,10 +29,12 @@ class Participant(Base):
     )
     added_reason = Column(String)
     after_hours_notification = Column(Boolean, default=False)
+    user_conversation_id = Column(String)
 
     # relationships
     feedback = relationship("Feedback", backref="participant")
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE", use_alter=True))
+    case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE", use_alter=True))
     individual = relationship("IndividualContact", lazy="subquery", backref="participant")
     individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))
     participant_roles = relationship(
@@ -89,7 +91,7 @@ class ParticipantRead(ParticipantBase):
     individual: Optional[IndividualContactRead]
 
 
-class ParticipantReadMinimal(DispatchBase):
+class ParticipantReadMinimal(ParticipantBase):
     id: PrimaryKey
     participant_roles: Optional[List[ParticipantRoleReadMinimal]] = []
     individual: Optional[IndividualContactReadMinimal]

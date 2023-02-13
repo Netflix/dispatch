@@ -27,7 +27,7 @@ def create_case_message(case: Case, channel_id: str):
         ),
         Section(
             fields=[
-                f"*Assignee* \n {case.assignee.email}",
+                f"*Assignee* \n {case.assignee.individual.email}",
                 f"*Status* \n {case.status}",
                 f"*Severity* \n {case.case_severity.name}",
                 f"*Type* \n {case.case_type.name}",
@@ -102,18 +102,16 @@ def create_case_message(case: Case, channel_id: str):
                             options=[
                                 PlainOption(
                                     text="Storage",
-                                    action_id="button-link",
                                     url=case.storage.weblink,
                                     value="option-1",
                                 ),
                                 PlainOption(
                                     text="Document",
                                     url=case.case_document.weblink,
-                                    action_id="button-link",
                                     value="option-2",
                                 ),
                             ],
-                            action_id="overflow-action",
+                            action_id="button-link",
                         ),
                     ]
                 )
@@ -187,6 +185,6 @@ def create_signal_messages(case: Case) -> List[Message]:
                 signal_metadata_blocks.append(
                     Section(text=item["value"]),
                 )
-        messages.append(Message(blocks=signal_metadata_blocks).build())
+        messages.append(Message(blocks=signal_metadata_blocks).build()["blocks"])
 
     return messages

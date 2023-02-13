@@ -1,5 +1,8 @@
 from typing import List, Optional
 
+from dispatch.decorators import timer
+from dispatch.case import service as case_service
+from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
 from dispatch.individual.models import IndividualContact
 from dispatch.participant_role import service as participant_role_service
@@ -29,6 +32,19 @@ def get_by_incident_id_and_role(
     )
 
 
+def get_by_case_id_and_role(*, db_session, case_id: int, role: str) -> Optional[Participant]:
+    """Get a participant by case id and role name."""
+    return (
+        db_session.query(Participant)
+        .join(ParticipantRole)
+        .filter(Participant.case_id == case_id)
+        .filter(ParticipantRole.renounced_at.is_(None))
+        .filter(ParticipantRole.role == role)
+        .one_or_none()
+    )
+
+
+@timer
 def get_by_incident_id_and_email(
     *, db_session, incident_id: int, email: str
 ) -> Optional[Participant]:
@@ -42,6 +58,18 @@ def get_by_incident_id_and_email(
     )
 
 
+def get_by_case_id_and_email(*, db_session, case_id: int, email: str) -> Optional[Participant]:
+    """Get a participant by case id and email."""
+    return (
+        db_session.query(Participant)
+        .join(IndividualContact)
+        .filter(Participant.case_id == case_id)
+        .filter(IndividualContact.email == email)
+        .one_or_none()
+    )
+
+
+@timer
 def get_by_incident_id_and_service_id(
     *, db_session, incident_id: int, service_id: int
 ) -> Optional[Participant]:
@@ -50,6 +78,42 @@ def get_by_incident_id_and_service_id(
         db_session.query(Participant)
         .filter(Participant.incident_id == incident_id)
         .filter(Participant.service_id == service_id)
+        .one_or_none()
+    )
+
+
+def get_by_case_id_and_service_id(
+    *, db_session, case_id: int, service_id: int
+) -> Optional[Participant]:
+    """Get participant by incident and service id."""
+    return (
+        db_session.query(Participant)
+        .filter(Participant.case_id == case_id)
+        .filter(Participant.service_id == service_id)
+        .one_or_none()
+    )
+
+
+def get_by_incident_id_and_conversation_id(
+    *, db_session, incident_id: int, user_conversation_id: str
+) -> Optional[Participant]:
+    """Get participant by incident and user_conversation id."""
+    return (
+        db_session.query(Participant)
+        .filter(Participant.incident_id == incident_id)
+        .filter(Participant.user_conversation_id == user_conversation_id)
+        .one_or_none()
+    )
+
+
+def get_by_case_id_and_conversation_id(
+    *, db_session, case_id: int, user_conversation_id: str
+) -> Optional[Participant]:
+    """Get participant by case and user_conversation id."""
+    return (
+        db_session.query(Participant)
+        .filter(Participant.case_id == case_id)
+        .filter(Participant.user_conversation_id == user_conversation_id)
         .one_or_none()
     )
 
@@ -67,34 +131,39 @@ def get_all_by_incident_id(*, db_session, incident_id: int) -> List[Optional[Par
 def get_or_create(
     *,
     db_session,
-    incident_id: int,
+    subject_id: int,
+    subject_type: str,
     individual_id: int,
     service_id: int,
     participant_roles: List[ParticipantRoleCreate],
 ) -> Participant:
     """Gets an existing participant object or creates a new one."""
-    from dispatch.incident import service as incident_service
+    query = db_session.query(Participant)
 
-    participant = (
-        db_session.query(Participant)
-        .filter(Participant.incident_id == incident_id)
-        .filter(Participant.individual_contact_id == individual_id)
-        .one_or_none()
-    )
+    if subject_type == "incident":
+        query = query.filter(Participant.incident_id == subject_id)
+    else:
+        query = query.filter(Participant.case_id == subject_id)
+
+    participant: Participant = query.filter(
+        Participant.individual_contact_id == individual_id
+    ).one_or_none()
 
     if not participant:
-        incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
-        # We get information about the individual
-        individual_contact = individual_service.get(
-            db_session=db_session, individual_contact_id=individual_id
-        )
+        if subject_type == "incident":
+            subject = incident_service.get(db_session=db_session, incident_id=subject_id)
+        if subject_type == "case":
+            subject = case_service.get(db_session=db_session, case_id=subject_id)
 
         individual_info = {}
         contact_plugin = plugin_service.get_active_instance(
-            db_session=db_session, project_id=incident.project.id, plugin_type="contact"
+            db_session=db_session, project_id=subject.project.id, plugin_type="contact"
         )
         if contact_plugin:
+            # We get information about the individual
+            individual_contact = individual_service.get(
+                db_session=db_session, individual_contact_id=individual_id
+            )
             individual_info = contact_plugin.instance.get(
                 individual_contact.email, db_session=db_session
             )

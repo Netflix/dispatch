@@ -1,23 +1,21 @@
 import calendar
 import json
 import logging
-
 from datetime import date
-from dateutil.relativedelta import relativedelta
 from typing import List
 
-from starlette.requests import Request
+from dateutil.relativedelta import relativedelta
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
-
 from sqlalchemy.orm import Session
+from starlette.requests import Request
 
+from dispatch.auth.models import DispatchUser
 from dispatch.auth.permissions import (
     IncidentEditPermission,
     IncidentJoinOrSubscribePermission,
     IncidentViewPermission,
     PermissionsDependency,
 )
-from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
 from dispatch.common.utils.views import create_pydantic_include
 from dispatch.database.core import get_db
@@ -27,7 +25,7 @@ from dispatch.individual.models import IndividualContactRead
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.participant.models import ParticipantUpdate
 from dispatch.report import flows as report_flows
-from dispatch.report.models import TacticalReportCreate, ExecutiveReportCreate
+from dispatch.report.models import ExecutiveReportCreate, TacticalReportCreate
 
 from .flows import (
     incident_add_or_reactivate_participant_flow,
@@ -37,10 +35,16 @@ from .flows import (
     incident_create_stable_flow,
     incident_update_flow,
 )
-from .metrics import make_forecast, create_incident_metric_query
-from .models import Incident, IncidentCreate, IncidentPagination, IncidentRead, IncidentUpdate
+from .metrics import create_incident_metric_query, make_forecast
+from .models import (
+    Incident,
+    IncidentCreate,
+    IncidentExpandedPagination,
+    IncidentPagination,
+    IncidentRead,
+    IncidentUpdate,
+)
 from .service import create, delete, get, update
-
 
 log = logging.getLogger(__name__)
 
@@ -63,9 +67,13 @@ def get_incidents(
     *,
     common: dict = Depends(common_parameters),
     include: List[str] = Query([], alias="include[]"),
+    expand: bool = Query(default=False),
 ):
     """Retrieves a list of incidents."""
     pagination = search_filter_sort_paginate(model="Incident", **common)
+
+    if expand:
+        return json.loads(IncidentExpandedPagination(**pagination).json())
 
     if include:
         # only allow two levels for now
@@ -166,6 +174,22 @@ def update_incident(
     return incident
 
 
+@router.delete(
+    "/{incident_id}",
+    response_model=None,
+    summary="Delete an incident.",
+    dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
+)
+def delete_incident(
+    *,
+    incident_id: PrimaryKey,
+    db_session: Session = Depends(get_db),
+    current_incident: Incident = Depends(get_current_incident),
+):
+    """Deletes an incident."""
+    delete(db_session=db_session, incident_id=current_incident.id)
+
+
 @router.post(
     "/{incident_id}/join",
     summary="Adds an individual to an incident.",
@@ -260,22 +284,6 @@ def create_executive_report(
         executive_report_in=executive_report_in,
         organization_slug=organization,
     )
-
-
-@router.delete(
-    "/{incident_id}",
-    response_model=None,
-    summary="Delete an incident.",
-    dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
-)
-def delete_incident(
-    *,
-    incident_id: PrimaryKey,
-    db_session: Session = Depends(get_db),
-    current_incident: Incident = Depends(get_current_incident),
-):
-    """Deletes an incident."""
-    delete(db_session=db_session, incident_id=current_incident.id)
 
 
 def get_month_range(relative):

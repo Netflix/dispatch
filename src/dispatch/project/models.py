@@ -30,6 +30,11 @@ class Project(Base):
     organization_id = Column(Integer, ForeignKey(Organization.id))
     organization = relationship("Organization")
 
+    dispatch_user_project = relationship(
+        "DispatchUserProject",
+        cascade="all, delete-orphan",
+    )
+
     @hybrid_property
     def slug(self):
         return slugify(self.name)

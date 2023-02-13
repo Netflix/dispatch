@@ -5,8 +5,6 @@ from slack_bolt import BoltContext, BoltRequest
 from slack_sdk.web import WebClient
 from sqlalchemy.orm.session import Session
 
-from blockkit import Modal, Section
-
 from dispatch.decorators import timer
 from dispatch.auth import service as user_service
 from dispatch.auth.models import DispatchUser, UserRegister
@@ -18,7 +16,6 @@ from dispatch.participant_role.enums import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.project import service as project_service
-from dispatch.plugins.dispatch_slack.messaging import get_incident_conversation_command_message
 
 from .exceptions import BotNotPresentError, ContextError, RoleError
 from .models import SubjectMetadata
@@ -31,47 +28,36 @@ Subject = NamedTuple("Subject", subject=SubjectMetadata, db_session=Session)
 
 @timer
 def resolve_context_from_conversation(
-    channel_id: str, message_ts: Optional[str] = None
+    channel_id: str, thread_id: Optional[str] = None
 ) -> Optional[Subject]:
     """Attempts to resolve a conversation based on the channel id or message_ts."""
     db_session = SessionLocal()
     organization_slugs = [o.slug for o in organization_service.get_all(db_session=db_session)]
     db_session.close()
-    organization_slugs = ["default"]
     for slug in organization_slugs:
         scoped_db_session = refetch_db_session(slug)
+
         conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
-            db_session=scoped_db_session, channel_id=channel_id
+            db_session=scoped_db_session, channel_id=channel_id, thread_id=thread_id
         )
         if conversation:
-            subject = SubjectMetadata(
-                type="incident",
-                id=conversation.incident_id,
-                organization_slug=slug,
-                project_id=conversation.incident.project_id,
-            )
+            if thread_id:
+                subject = SubjectMetadata(
+                    type="case",
+                    id=conversation.case_id,
+                    organization_slug=slug,
+                    project_id=conversation.case.project_id,
+                )
+            else:
+                subject = SubjectMetadata(
+                    type="incident",
+                    id=conversation.incident_id,
+                    organization_slug=slug,
+                    project_id=conversation.incident.project_id,
+                )
             return Subject(subject, db_session=scoped_db_session)
 
         scoped_db_session.close()
-
-
-@timer
-def command_acknowledge_middleware(
-    context: BoltContext, body: dict, client: WebClient, payload: dict, next: Callable
-) -> None:
-    """Acknowleges that a command has been run."""
-    context.ack()
-    message = get_incident_conversation_command_message(
-        config=context.get("config"), command_string=payload.get("command", "")
-    )
-    modal = Modal(
-        title="Please wait...",
-        blocks=[Section(text=message["text"])],
-        close="Cancel",
-    ).build()
-    view = client.views_open(trigger_id=body["trigger_id"], view=modal)
-    context.update({"parentView": {"id": view.data["view"]["id"]}})
-    next()
 
 
 def shortcut_context_middleware(context: BoltContext, next: Callable) -> None:
@@ -101,16 +87,29 @@ def action_context_middleware(body: dict, context: BoltContext, next: Callable) 
     next()
 
 
-def message_context_middleware(request: BoltRequest, context: BoltContext, next: Callable) -> None:
+def message_context_middleware(
+    request: BoltRequest, payload: dict, context: BoltContext, next: Callable
+) -> None:
     """Attemps to determine the current context of the event."""
     if is_bot(request):
         return context.ack()
 
-    if subject := resolve_context_from_conversation(channel_id=context.channel_id):
+    if subject := resolve_context_from_conversation(
+        channel_id=context.channel_id, thread_id=payload.get("thread_ts")
+    ):
         context.update(subject._asdict())
     else:
         raise ContextError("Unable to determine context for message.")
 
+    next()
+
+
+def reaction_context_middleware(context: BoltContext, next: Callable) -> None:
+    """Attemps to determine the current context of a reaction event."""
+    if subject := resolve_context_from_conversation(channel_id=context.channel_id):
+        context.update(subject._asdict())
+    else:
+        raise ContextError("Unable to determine context for reaction.")
     next()
 
 
@@ -189,6 +188,33 @@ def user_middleware(
     if not user_id:
         raise ContextError("Unable to determine user from context.")
 
+    context["user_id"] = user_id
+
+    if not db_session:
+        slug = (
+            context["subject"].organization_slug
+            if context["subject"].organization_slug
+            else get_default_org_slug()
+        )
+        db_session = refetch_db_session(slug)
+
+    if context["subject"].type == "incident":
+        participant = participant_service.get_by_incident_id_and_conversation_id(
+            db_session=db_session, incident_id=context["subject"].id, user_conversation_id=user_id
+        )
+    else:
+        participant = participant_service.get_by_case_id_and_conversation_id(
+            db_session=db_session, case_id=context["subject"].id, user_conversation_id=user_id
+        )
+
+    if participant:
+        context["user"] = user_service.get_or_create(
+            db_session=db_session,
+            organization=context["subject"].organization_slug,
+            user_in=UserRegister(email=participant.individual.email),
+        )
+        return next()
+
     email = client.users_info(user=user_id)["user"]["profile"]["email"]
 
     context["user"] = user_service.get_or_create(
@@ -250,7 +276,7 @@ def command_context_middleware(context: BoltContext, payload: dict, next: Callab
         context.update(subject._asdict())
     else:
         raise ContextError(
-            f"Sorry, I can't determine the correct context to run the command `{payload['command']}`. Are you running this command in an incident channel?"
+            f"Sorry, we were unable to determine the correct context to run the command `{payload['command']}`. Are you running this command in an incident channel?"
         )
     next()
 
@@ -271,7 +297,6 @@ def subject_middleware(context: BoltContext, next: Callable):
     if not context.get("subject"):
         slug = get_default_org_slug()
         context.update({"subject": SubjectMetadata(organization_slug=slug)})
-
     next()
 
 

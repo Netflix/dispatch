@@ -123,4 +123,4 @@ class IncidentTypeReadMinimal(DispatchBase):
 
 class IncidentTypePagination(DispatchBase):
     total: int
-    items: List[IncidentTypeReadMinimal] = []
+    items: List[IncidentTypeRead] = []

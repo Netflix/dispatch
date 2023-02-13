@@ -39,6 +39,7 @@
             :sort-by.sync="sortBy"
             :sort-desc.sync="descending"
             :loading="loading"
+            data-testid="incident-data-table"
             v-model="selected"
             loading-text="Loading... Please wait"
             show-select
@@ -88,6 +89,7 @@
                 </template>
                 <v-list>
                   <v-list-item
+                    data-testid="incident-table-edit"
                     :to="{
                       name: 'IncidentTableEdit',
                       params: { name: item.name },
@@ -127,11 +129,11 @@ import IncidentPriority from "@/incident/priority/IncidentPriority.vue"
 import IncidentSeverity from "@/incident/severity/IncidentSeverity.vue"
 import IncidentStatus from "@/incident/status/IncidentStatus.vue"
 import NewSheet from "@/incident/NewSheet.vue"
-import WorkflowRunModal from "@/workflow/RunModal.vue"
 import ReportDialog from "@/incident/ReportDialog.vue"
 import RouterUtils from "@/router/utils"
 import TableExportDialog from "@/incident/TableExportDialog.vue"
 import TableFilterDialog from "@/incident/TableFilterDialog.vue"
+import WorkflowRunModal from "@/workflow/RunModal.vue"
 
 export default {
   name: "IncidentTable",
@@ -146,9 +148,9 @@ export default {
     IncidentStatus,
     NewSheet,
     ReportDialog,
-    WorkflowRunModal,
     TableExportDialog,
     TableFilterDialog,
+    WorkflowRunModal,
   },
 
   props: {

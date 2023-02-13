@@ -1,7 +1,5 @@
 import logging
 import inspect
-from typing import TypeVar
-from typing_extensions import ParamSpec
 
 log = logging.getLogger(__file__)
 
@@ -20,7 +18,14 @@ class MessageDispatcher:
             else:
                 name = kwargs.pop("name")
 
-            self.registered_funcs.append({"name": name, "func": func})
+            self.registered_funcs.append(
+                {
+                    "name": name,
+                    "func": func,
+                    "subject": kwargs.pop("subject"),
+                    "exclude": kwargs.pop("exclude", []),
+                }
+            )
 
         return decorator
 
@@ -31,11 +36,26 @@ class MessageDispatcher:
             func_args = inspect.getfullargspec(inspect.unwrap(f["func"])).args
             injected_args = (kwargs[a] for a in func_args)
 
+            if subject := f["subject"]:
+                if subject_meta := kwargs.get("context", {}).get("subject"):
+                    if subject_meta:
+                        if subject != subject_meta.type:
+                            log.debug(
+                                f"Skipping dispatch function due to subject exclusion. ({f['name']})"
+                            )
+                            continue
+
+            if exclude := f["exclude"]:
+                subtype: str = kwargs.get("body", {}).get("event", {}).get("subtype", "")
+                if subtype in exclude.get("subtype", []):
+                    log.debug(f"Skipping dispatched function due to event exclusion. ({f['name']})")
+                    continue
+
             try:
                 f["func"](*injected_args)
             except Exception as e:
                 log.exception(e)
-                log.debug(f"Failed to run dispatched function ({e})")
+                log.debug(f"Failed to run dispatched function {f['name']}. Reason: ({e})")
 
 
 message_dispatcher = MessageDispatcher()

@@ -8,6 +8,7 @@ from slack_bolt.app import App
 from slack_bolt import Ack, BoltContext, BoltRequest, Respond
 from slack_bolt.response import BoltResponse
 from slack_sdk.web.client import WebClient
+from slack_sdk.errors import SlackApiError
 from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
@@ -19,11 +20,11 @@ from .messaging import (
     build_bot_not_present_message,
     build_context_error_message,
     build_role_error_message,
+    build_slack_api_error_message,
     build_unexpected_error_message,
 )
 from .middleware import (
     configuration_middleware,
-    db_middleware,
     message_context_middleware,
     user_middleware,
 )
@@ -42,7 +43,6 @@ def app_error_handler(
     logger: logging.Logger,
     respond: Respond,
 ) -> BoltResponse:
-
     if body:
         logger.info(f"Request body: {body}")
 
@@ -111,6 +111,11 @@ def build_and_log_error(
             client, payload["command"], context["conversations"]
         )
         logger.info(error)
+
+    elif isinstance(error, SlackApiError):
+        message = build_slack_api_error_message(error)
+        logger.exception(error)
+
     else:
         guid = str(uuid.uuid4())
         message = build_unexpected_error_message(guid)
@@ -123,7 +128,6 @@ def build_and_log_error(
     {"type": "message"},
     middleware=[
         message_context_middleware,
-        db_middleware,
         user_middleware,
         configuration_middleware,
     ],

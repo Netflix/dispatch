@@ -85,4 +85,4 @@ class IndividualContactReadMinimal(IndividualContactBase):
 
 class IndividualContactPagination(DispatchBase):
     total: int
-    items: List[IndividualContactReadMinimal] = []
+    items: List[IndividualContactRead] = []

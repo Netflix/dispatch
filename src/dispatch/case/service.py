@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from typing import List, Optional
 
-from dispatch.auth import service as auth_service
 from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.severity import service as case_severity_service
@@ -13,6 +12,8 @@ from dispatch.case.type import service as case_type_service
 from dispatch.event import service as event_service
 from dispatch.exceptions import NotFoundError
 from dispatch.incident import service as incident_service
+from dispatch.participant import flows as participant_flows
+from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.project import service as project_service
 from dispatch.service import flows as service_flows
 from dispatch.tag import service as tag_service
@@ -151,22 +152,6 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
     if case_in.visibility:
         case.visibility = case_in.visibility
 
-    if case_in.assignee:
-        # we assign the case to the assignee provided
-        assignee_email_adddress = case_in.assignee.email
-    else:
-        if case_type.oncall_service:
-            # we assign the case to the oncall person for the given case type
-            assignee_email_adddress = service_flows.resolve_oncall(
-                service=case_type.oncall_service, db_session=db_session
-            )
-        else:
-            # we assign the case to the current user
-            if current_user:
-                assignee_email_adddress = current_user.email
-
-    case.assignee = auth_service.get_by_email(db_session=db_session, email=assignee_email_adddress)
-
     case_severity = case_severity_service.get_by_name_or_default(
         db_session=db_session, project_id=project.id, case_severity_in=case_in.case_severity
     )
@@ -185,6 +170,36 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
         source="Dispatch Core App",
         description="Case created",
         case_id=case.id,
+    )
+
+    if case_in.assignee:
+        # we assign the case to the assignee provided
+        assignee_email = case_in.assignee.individual.email
+    else:
+        if case_type.oncall_service:
+            # we assign the case to the oncall person for the given case type
+            assignee_email = service_flows.resolve_oncall(
+                service=case_type.oncall_service, db_session=db_session
+            )
+        else:
+            # we assign the case to the current user
+            if current_user:
+                assignee_email = current_user.email
+
+    # add assignee
+    participant_flows.add_participant(
+        assignee_email,
+        case,
+        db_session,
+        role=ParticipantRoleType.assignee,
+    )
+
+    # add reporter
+    participant_flows.add_participant(
+        case_in.reporter.individual.email,
+        case,
+        db_session,
+        role=ParticipantRoleType.reporter,
     )
 
     return case
@@ -211,24 +226,6 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
 
     for field in update_data.keys():
         setattr(case, field, update_data[field])
-
-    if case_in.assignee:
-        if case.assignee.email != case_in.assignee.email:
-            case_assignee = auth_service.get_by_email(
-                db_session=db_session, email=case_in.assignee.email
-            )
-            if case_assignee:
-                case.assignee = case_assignee
-
-                event_service.log_case_event(
-                    db_session=db_session,
-                    source="Dispatch Core App",
-                    description=f"Case assigned to {case_in.assignee.email} by {current_user.email}",
-                    dispatch_user_id=current_user.id,
-                    case_id=case.id,
-                )
-            else:
-                log.warning(f"Dispatch user with email address {case_in.assignee.email} not found.")
 
     if case_in.case_type:
         if case.case_type.name != case_in.case_type.name:

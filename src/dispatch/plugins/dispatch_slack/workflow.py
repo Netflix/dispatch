@@ -14,8 +14,8 @@ from dispatch.plugins.dispatch_slack.bolt import app
 from dispatch.plugins.dispatch_slack.fields import static_select_block
 from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
-    command_acknowledge_middleware,
     command_context_middleware,
+    configuration_middleware,
     db_middleware,
     modal_submit_middleware,
     user_middleware,
@@ -44,7 +44,11 @@ class RunWorkflowActions(DispatchEnum):
 
 def configure(config):
     """Maps commands/events to their functions."""
-    middleware = [command_acknowledge_middleware, command_context_middleware, db_middleware]
+    middleware = [
+        command_context_middleware,
+        db_middleware,
+        configuration_middleware,
+    ]
     app.command(config.slack_command_list_workflows, middleware=middleware)(
         handle_workflow_list_command
     )
@@ -119,7 +123,7 @@ def param_input(
 
 
 def handle_workflow_list_command(
-    ack: Ack, client: WebClient, context: BoltContext, db_session: Session
+    ack: Ack, body: dict, client: WebClient, context: BoltContext, db_session: Session
 ) -> None:
     """Handles the workflow list command."""
     ack()
@@ -127,6 +131,10 @@ def handle_workflow_list_command(
     workflows = incident.workflow_instances
 
     blocks = [Section(text="*Workflows*")]
+
+    if not workflows:
+        blocks.append(Section(text="No workflows running."))
+
     for w in workflows:
         artifact_links = ""
         for a in w.artifacts:
@@ -146,12 +154,14 @@ def handle_workflow_list_command(
                 ]
             )
         )
+
     modal = Modal(
         title="Workflows List",
         blocks=blocks,
         close="Close",
     ).build()
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def handle_workflow_run_command(
@@ -180,7 +190,7 @@ def handle_workflow_run_command(
         callback_id=RunWorkflowActions.submit,
         private_metadata=context["subject"].json(),
     ).build()
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 @app.view(

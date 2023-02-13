@@ -90,8 +90,8 @@
                     <template v-slot:activator="{ on, attrs }">
                       <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                     </template>
-                    This individual will be automatically engaged for any incident matching the
-                    following filters.
+                    This individual will be automatically engaged for any incident or case matching
+                    the following filters.
                   </v-tooltip>
                 </span>
               </v-flex>

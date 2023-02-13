@@ -35,7 +35,6 @@ def consume_signals(db_session: SessionLocal, project: Project):
     for plugin in plugins:
         log.debug(f"Consuming signals. Signal Consumer: {plugin.plugin.slug}")
         signal_instances = plugin.instance.consume()
-
         for signal_instance_data in signal_instances:
             try:
                 signal_flows.create_signal_instance(

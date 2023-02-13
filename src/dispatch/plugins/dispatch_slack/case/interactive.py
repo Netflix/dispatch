@@ -1,5 +1,9 @@
+import re
+from datetime import datetime
+
+import pytz
 from blockkit import Context, Input, MarkdownText, Modal, Section, UsersSelect
-from slack_bolt import Ack, BoltContext
+from slack_bolt import Ack, BoltContext, Respond
 from slack_sdk.web.client import WebClient
 from sqlalchemy.orm import Session
 
@@ -9,6 +13,8 @@ from dispatch.case import service as case_service
 from dispatch.case.enums import CaseStatus
 from dispatch.case.models import CaseCreate, CaseUpdate
 from dispatch.incident import flows as incident_flows
+from dispatch.participant import service as participant_service
+from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.bolt import app
 from dispatch.plugins.dispatch_slack.case.enums import (
     CaseEscalateActions,
@@ -18,6 +24,7 @@ from dispatch.plugins.dispatch_slack.case.enums import (
     CaseShortcutCallbacks,
 )
 from dispatch.plugins.dispatch_slack.case.messages import create_case_message
+from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
 from dispatch.plugins.dispatch_slack.fields import (
     DefaultBlockIds,
     case_priority_select,
@@ -38,6 +45,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     shortcut_context_middleware,
     user_middleware,
 )
+from dispatch.plugins.dispatch_slack.service import get_user_email
 from dispatch.project import service as project_service
 
 
@@ -63,6 +71,108 @@ def assignee_select(
         label=label,
         **kwargs,
     )
+
+
+@message_dispatcher.add(
+    subject="case", exclude={"subtype": ["channel_join", "channel_leave"]}
+)  # we ignore channel join and leave messages
+def handle_new_participant_message(
+    ack: Ack, user: DispatchUser, context: BoltContext, db_session: Session, client: WebClient
+) -> None:
+    """Looks for new participants that have starting chatting for the first time."""
+    ack()
+    participant = case_flows.case_add_or_reactive_participant_flow(
+        case_id=context["subject"].id,
+        user_email=user.email,
+        db_session=db_session,
+        add_to_conversation=False,
+    )
+    participant.user_conversation_id = context["user_id"]
+
+
+@message_dispatcher.add(
+    subject="case", exclude={"subtype": ["channel_join", "channel_leave"]}
+)  # we ignore channel join and leave messages
+def handle_new_participant_added(
+    ack: Ack, payload: dict, context: BoltContext, db_session: Session, client: WebClient
+) -> None:
+    """Looks for new participants being added to conversation via @<user-name>"""
+    ack()
+    participants = re.findall(r"\<\@([a-zA-Z0-9]*)\>", payload["text"])
+    for user_id in participants:
+        user_email = get_user_email(client=client, user_id=user_id)
+
+        participant = case_flows.case_add_or_reactive_participant_flow(
+            case_id=context["subject"].id,
+            user_email=user_email,
+            db_session=db_session,
+            add_to_conversation=False,
+        )
+        participant.user_conversation_id = user_id
+
+
+@message_dispatcher.add(
+    subject="case", exclude={"subtype": ["channel_join", "channel_leave"]}
+)  # we ignore channel join and leave messages
+def handle_case_participant_role_activity(
+    ack: Ack, db_session: Session, context: BoltContext, user: DispatchUser
+) -> None:
+    ack()
+
+    participant = participant_service.get_by_case_id_and_email(
+        db_session=db_session, case_id=context["subject"].id, email=user.email
+    )
+
+    if participant:
+        for participant_role in participant.active_roles:
+            participant_role.activity += 1
+    else:
+        # we have a new active participant lets add them
+        participant = case_flows.case_add_or_reactivate_participant_flow(
+            case_id=context["subject"].id, user_email=user.email
+        )
+        participant.user_conversation_id = context["user_id"]
+    db_session.commit()
+
+
+@message_dispatcher.add(
+    subject="case", exclude={"subtype": ["channel_join", "group_join"]}
+)  # we ignore user channel and group join messages
+def handle_case_after_hours_message(
+    ack: Ack,
+    context: BoltContext,
+    client: WebClient,
+    db_session: Session,
+    respond: Respond,
+    payload: dict,
+    user: DispatchUser,
+) -> None:
+    """Notifies the user that this case is currently in after hours mode."""
+    ack()
+
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    owner_email = case.assignee.individual.email
+    participant = participant_service.get_by_case_id_and_email(
+        db_session=db_session, case_id=context["subject"].id, email=user.email
+    )
+    # get their timezone from slack
+    owner_tz = (dispatch_slack_service.get_user_info_by_email(client, email=owner_email))["tz"]
+    message = f"Responses may be delayed. The current case priority is *{case.case_priority.name}* and your message was sent outside of the Assignee's working hours (Weekdays, 9am-5pm, {owner_tz} timezone)."
+
+    now = datetime.now(pytz.timezone(owner_tz))
+    is_business_hours = now.weekday() not in [5, 6] and 9 <= now.hour < 17
+    if not is_business_hours:
+        if not participant.after_hours_notification:
+            participant.after_hours_notification = True
+            db_session.add(participant)
+            db_session.commit()
+
+            client.chat_postEphemeral(
+                text=message,
+                channel=payload["channel"],
+                thread_ts=payload["thread_ts"],
+                user=payload["user"],
+            )
 
 
 @app.action("button-link")
@@ -293,7 +403,9 @@ def edit_button_click(
     ack()
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
-    assignee_initial_user = client.users_lookupByEmail(email=case.assignee.email)["user"]["id"]
+    assignee_initial_user = client.users_lookupByEmail(email=case.assignee.individual.email)[
+        "user"
+    ]["id"]
 
     blocks = [
         title_input(initial_value=case.title),

@@ -25,21 +25,24 @@ from slack_sdk.web.client import WebClient
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from dispatch.auth import service as user_service
-from dispatch.auth.models import DispatchUser, UserRegister
+from dispatch.auth.models import DispatchUser
 from dispatch.config import DISPATCH_UI_URL
-from dispatch.database.core import resolve_attr
+
+# from dispatch.database.core import resolve_attr
 from dispatch.database.service import search_filter_sort_paginate
-from dispatch.document import service as document_service
+
+# from dispatch.document import service as document_service
 from dispatch.enums import Visibility
 from dispatch.event import service as event_service
+from dispatch.exceptions import DispatchException
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import IncidentCreate, IncidentRead, IncidentUpdate
 from dispatch.individual import service as individual_service
 from dispatch.individual.models import IndividualContactRead
-from dispatch.messaging.strings import INCIDENT_RESOURCES_MESSAGE, MessageType
+
+# from dispatch.messaging.strings import INCIDENT_RESOURCES_MESSAGE, MessageType
 from dispatch.monitor import service as monitor_service
 from dispatch.monitor.models import MonitorCreate
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
@@ -93,17 +96,18 @@ from dispatch.plugins.dispatch_slack.incident.enums import (
     UpdateParticipantActions,
     UpdateParticipantBlockIds,
 )
-from dispatch.plugins.dispatch_slack.messaging import create_message_blocks
+
+# from dispatch.plugins.dispatch_slack.messaging import create_message_blocks
 from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
     button_context_middleware,
-    command_acknowledge_middleware,
     command_context_middleware,
     configuration_middleware,
     db_middleware,
     is_bot,
     message_context_middleware,
     modal_submit_middleware,
+    reaction_context_middleware,
     restricted_command_middleware,
     subject_middleware,
     user_middleware,
@@ -128,7 +132,6 @@ log = logging.getLogger(__file__)
 def configure(config):
     """Maps commands/events to their functions."""
     middleware = [
-        command_acknowledge_middleware,
         subject_middleware,
         configuration_middleware,
     ]
@@ -153,7 +156,6 @@ def configure(config):
     )
 
     middleware = [
-        command_acknowledge_middleware,
         subject_middleware,
         configuration_middleware,
         command_context_middleware,
@@ -175,7 +177,6 @@ def configure(config):
 
     # sensitive commands
     middleware = [
-        command_acknowledge_middleware,
         subject_middleware,
         configuration_middleware,
         command_context_middleware,
@@ -203,7 +204,7 @@ def configure(config):
     # required to allow the user to change the reaction string
     app.event(
         {"type": "reaction_added", "reaction": config.timeline_event_reaction},
-        middleware=[db_middleware],
+        middleware=[reaction_context_middleware],
     )(handle_timeline_added_event)
 
 
@@ -329,9 +330,16 @@ def handle_update_incident_project_select_action(
 
 # COMMANDS
 def handle_list_incidents_command(
-    payload: dict, db_session: Session, context: BoltContext, client: WebClient
+    ack: Ack,
+    body: dict,
+    payload: dict,
+    db_session: Session,
+    context: BoltContext,
+    client: WebClient,
 ) -> None:
     """Handles the list incidents command."""
+    ack()
+
     projects = []
 
     if context["subject"].type == "incident":
@@ -383,10 +391,23 @@ def handle_list_incidents_command(
     blocks = []
 
     if incidents:
-        for incident in incidents:
-            if incident.visibility == Visibility.open:
-                incident_weblink = f"{DISPATCH_UI_URL}/{incident.project.organization.name}/incidents/{incident.name}?project={incident.project.name}"
-                blocks.append(
+        open_incidents = [i for i in incidents if i.visibility == Visibility.open]
+        if len(open_incidents) > 50:
+            blocks.extend(
+                [
+                    Context(
+                        elements=[
+                            "💡 There are more than 50 open incidents, which is the max we can display."
+                        ]
+                    ),
+                    Divider(),
+                ]
+            )
+
+        for idx, incident in enumerate(open_incidents[0:49], 1):
+            incident_weblink = f"{DISPATCH_UI_URL}/{incident.project.organization.name}/incidents/{incident.name}?project={incident.project.name}"
+            blocks.extend(
+                [
                     Section(
                         fields=[
                             f"*<{incident_weblink}|{incident.name}>*\n {incident.title}",
@@ -398,8 +419,11 @@ def handle_list_incidents_command(
                             f"*Priority*\n {incident.incident_priority.name}",
                         ]
                     )
-                )
-                blocks.append(Divider())
+                ]
+            )
+            # Don't add a divider if we are at the last incident
+            if idx != len(open_incidents):
+                blocks.extend([Divider()])
 
     modal = Modal(
         title="Incident List",
@@ -407,15 +431,18 @@ def handle_list_incidents_command(
         close="Close",
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def handle_list_participants_command(
+    ack: Ack,
+    body: dict,
     client: WebClient,
     context: BoltContext,
     db_session: Session,
 ) -> None:
     """Handles list participants command."""
+    ack()
     blocks = []
 
     participants = participant_service.get_all_by_incident_id(
@@ -432,45 +459,54 @@ def handle_list_participants_command(
             "Contact plugin is not enabled. Unable to list participants.",
         )
 
-    for participant in participants:
-        if participant.active_roles:
-            participant_email = participant.individual.email
-            participant_info = contact_plugin.instance.get(participant_email, db_session=db_session)
-            participant_name = participant_info.get("fullname", participant.individual.email)
-            participant_team = participant_info.get("team", "Unknown")
-            participant_department = participant_info.get("department", "Unknown")
-            participant_location = participant_info.get("location", "Unknown")
-            participant_weblink = participant_info.get("weblink")
+    active_participants = [p for p in participants if p.active_roles]
+    for idx, participant in enumerate(active_participants, 1):
+        participant_email = participant.individual.email
+        participant_info = contact_plugin.instance.get(participant_email, db_session=db_session)
+        participant_name = participant_info.get("fullname", participant.individual.email)
+        participant_team = participant_info.get("team", "Unknown")
+        participant_department = participant_info.get("department", "Unknown")
+        participant_location = participant_info.get("location", "Unknown")
+        participant_weblink = participant_info.get("weblink")
 
-            participant_active_roles = participant_role_service.get_all_active_roles(
-                db_session=db_session, participant_id=participant.id
+        participant_active_roles = participant_role_service.get_all_active_roles(
+            db_session=db_session, participant_id=participant.id
+        )
+        participant_roles = []
+        for role in participant_active_roles:
+            participant_roles.append(role.role)
+
+        accessory = None
+        # don't load avatars for large incidents
+        if len(participants) < 20:
+            participant_avatar_url = dispatch_slack_service.get_user_avatar_url(
+                client, participant_email
             )
-            participant_roles = []
-            for role in participant_active_roles:
-                participant_roles.append(role.role)
+            accessory = Image(image_url=participant_avatar_url, alt_text=participant_name)
 
-            accessory = None
-            # don't load avatars for large incidents
-            if len(participants) < 20:
-                participant_avatar_url = dispatch_slack_service.get_user_avatar_url(
-                    client, participant_email
-                )
-                accessory = Image(image_url=participant_avatar_url, alt_text=participant_name)
+        blocks.extend(
+            [
+                Section(
+                    fields=[
+                        f"*Name* \n<{participant_weblink}|{participant_name}>",
+                        f"*Team*\n {participant_team}, {participant_department}",
+                        f"*Location* \n{participant_location}",
+                        f"*Incident Role(s)* \n{(', ').join(participant_roles)}",
+                        f"*Added By* \n{participant.added_by.individual.name}"
+                        if participant.added_by
+                        else "*Added By* \nUnknown",
+                        f"*Added Reason* \n{participant.added_reason}"
+                        if participant.added_reason
+                        else "*Added Reason* \nUnknown",
+                    ],
+                    accessory=accessory,
+                ),
+            ]
+        )
 
-            blocks.extend(
-                [
-                    Section(
-                        fields=[
-                            f"*Name* \n<{participant_weblink}|{participant_name} ({participant_email})>",
-                            f"*Team*\n {participant_team}, {participant_department}",
-                            f"*Location* \n{participant_location}",
-                            f"*Incident Role(s)* \n{(', ').join(participant_roles)}",
-                        ],
-                        accessory=accessory,
-                    ),
-                    Divider(),
-                ]
-            )
+        # Don't add a divider if we are at the last participant
+        if idx != len(active_participants):
+            blocks.extend([Divider()])
 
     modal = Modal(
         title="Incident Participants",
@@ -478,7 +514,7 @@ def handle_list_participants_command(
         close="Close",
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def filter_tasks_by_assignee_and_creator(
@@ -503,6 +539,7 @@ def filter_tasks_by_assignee_and_creator(
 
 
 def handle_list_tasks_command(
+    ack: Ack,
     body: dict,
     payload: dict,
     client: WebClient,
@@ -510,35 +547,52 @@ def handle_list_tasks_command(
     db_session: Session,
 ) -> None:
     """Handles the list tasks command."""
-    blocks = []
+    ack()
+
+    tasks = task_service.get_all_by_incident_id(
+        db_session=db_session,
+        incident_id=context["subject"].id,
+    )
 
     caller_only = False
+    email = None
     if body["command"] == context["config"].slack_command_list_my_tasks:
         caller_only = True
+
+    if caller_only:
+        email = (client.users_info(user=payload["user_id"]))["user"]["profile"]["email"]
+        tasks = filter_tasks_by_assignee_and_creator(tasks, email, email)
+
+    draw_task_modal(
+        channel_id=context.channel_id,
+        client=client,
+        first_open=True,
+        tasks=tasks,
+        view_id=body["trigger_id"],
+    )
+
+
+def draw_task_modal(
+    channel_id: str,
+    client: WebClient,
+    first_open: bool,
+    tasks: list[Task],
+    view_id: str,
+) -> None:
+    """Builds and draws the list tasks modal on first open and after each button click."""
+    blocks = []
 
     for status in TaskStatus:
         blocks.append(Section(text=f"*{status} Incident Tasks*"))
         button_text = "Resolve" if status == TaskStatus.open else "Re-open"
         action_type = "resolve" if status == TaskStatus.open else "reopen"
 
-        tasks = task_service.get_all_by_incident_id_and_status(
-            db_session=db_session, incident_id=context["subject"].id, status=status
-        )
+        tasks_for_status = [task for task in tasks if task.status == status]
 
-        if caller_only:
-            user_id = payload["user_id"]
-            email = (client.users_info(user=user_id))["user"]["profile"]["email"]
-            user = user_service.get_or_create(
-                db_session=db_session,
-                organization=context["subject"].organization_slug,
-                user_in=UserRegister(email=email),
-            )
-            tasks = filter_tasks_by_assignee_and_creator(tasks, user.email, user.email)
-
-        if not tasks:
+        if not tasks_for_status:
             blocks.append(Section(text="No tasks."))
 
-        for idx, task in enumerate(tasks):
+        for idx, task in enumerate(tasks_for_status, 1):
             assignees = [f"<{a.individual.weblink}|{a.individual.name}>" for a in task.assignees]
 
             button_metadata = TaskMetadata(
@@ -546,15 +600,18 @@ def handle_list_tasks_command(
                 action_type=action_type,
                 organization_slug=task.project.organization.slug,
                 id=task.incident.id,
+                task_id=task.id,
                 project_id=task.project.id,
                 resource_id=task.resource_id,
-                channel_id=context["channel_id"],
+                channel_id=channel_id,
             ).json()
 
             blocks.append(
                 Section(
                     fields=[
-                        f"*Description:* \n <{task.weblink}|{task.description}>",
+                        f"*Description:* \n <{task.weblink}|{task.description}>"
+                        if task.weblink
+                        else f"*Description:* \n {task.description}",
                         f"*Creator:* \n <{task.creator.individual.weblink}|{task.creator.individual.name}>",
                         f"*Assignees:* \n {', '.join(assignees)}",
                     ],
@@ -565,7 +622,9 @@ def handle_list_tasks_command(
                     ),
                 )
             )
-            blocks.append(Divider())
+            # Don't add a divider if we are at the last task
+            if idx != len(tasks_for_status):
+                blocks.extend([Divider()])
 
     modal = Modal(
         title="Incident Tasks",
@@ -573,66 +632,77 @@ def handle_list_tasks_command(
         close="Close",
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    if first_open is True:
+        client.views_open(trigger_id=view_id, view=modal)
+    else:
+        client.views_update(view_id=view_id, view=modal)
 
 
+# NOTE: This command has been deprecated in favor of channel bookmarks and its code will be removed in Q1 2023.
 def handle_list_resources_command(
-    db_session: Session, context: BoltContext, respond: Respond
+    ack: Ack, db_session: Session, context: BoltContext, respond: Respond
 ) -> None:
     """Handles the list resources command."""
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    ack()
 
-    incident_description = (
-        incident.description
-        if len(incident.description) <= 500
-        else f"{incident.description[:500]}..."
-    )
+    # incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    #
+    # incident_description = (
+    #     incident.description
+    #     if len(incident.description) <= 500
+    #     else f"{incident.description[:500]}..."
+    # )
+    #
+    # # we send the ephemeral message
+    # message_kwargs = {
+    #     "title": incident.title,
+    #     "description": incident_description,
+    #     "commander_fullname": incident.commander.individual.name,
+    #     "commander_team": incident.commander.team,
+    #     "commander_weblink": incident.commander.individual.weblink,
+    #     "reporter_fullname": incident.reporter.individual.name,
+    #     "reporter_team": incident.reporter.team,
+    #     "reporter_weblink": incident.reporter.individual.weblink,
+    #     "document_weblink": resolve_attr(incident, "incident_document.weblink"),
+    #     "storage_weblink": resolve_attr(incident, "storage.weblink"),
+    #     "conference_weblink": resolve_attr(incident, "conference.weblink"),
+    #     "conference_challenge": resolve_attr(incident, "conference.conference_challenge"),
+    # }
+    #
+    # faq_doc = document_service.get_incident_faq_document(
+    #     db_session=db_session, project_id=incident.project_id
+    # )
+    # if faq_doc:
+    #     message_kwargs.update({"faq_weblink": faq_doc.weblink})
+    #
+    # conversation_reference = document_service.get_conversation_reference_document(
+    #     db_session=db_session, project_id=incident.project_id
+    # )
+    # if conversation_reference:
+    #     message_kwargs.update(
+    #         {"conversation_commands_reference_document_weblink": conversation_reference.weblink}
+    #     )
+    #
+    # blocks = create_message_blocks(
+    #     INCIDENT_RESOURCES_MESSAGE, MessageType.incident_resources_message, **message_kwargs
+    # )
+    #
+    # blocks = Message(blocks=blocks).build()["blocks"]
+    # respond(text="Incident Resources", blocks=blocks, response_type="ephemeral")
 
-    # we send the ephemeral message
-    message_kwargs = {
-        "title": incident.title,
-        "description": incident_description,
-        "commander_fullname": incident.commander.individual.name,
-        "commander_team": incident.commander.team,
-        "commander_weblink": incident.commander.individual.weblink,
-        "reporter_fullname": incident.reporter.individual.name,
-        "reporter_team": incident.reporter.team,
-        "reporter_weblink": incident.reporter.individual.weblink,
-        "document_weblink": resolve_attr(incident, "incident_document.weblink"),
-        "storage_weblink": resolve_attr(incident, "storage.weblink"),
-        "conference_weblink": resolve_attr(incident, "conference.weblink"),
-        "conference_challenge": resolve_attr(incident, "conference.conference_challenge"),
-    }
-
-    faq_doc = document_service.get_incident_faq_document(
-        db_session=db_session, project_id=incident.project_id
-    )
-    if faq_doc:
-        message_kwargs.update({"faq_weblink": faq_doc.weblink})
-
-    conversation_reference = document_service.get_conversation_reference_document(
-        db_session=db_session, project_id=incident.project_id
-    )
-    if conversation_reference:
-        message_kwargs.update(
-            {"conversation_commands_reference_document_weblink": conversation_reference.weblink}
-        )
-
-    blocks = create_message_blocks(
-        INCIDENT_RESOURCES_MESSAGE, MessageType.incident_resources_message, **message_kwargs
-    )
-
-    blocks = Message(blocks=blocks).build()["blocks"]
-    respond(text="Incident Resources", blocks=blocks, response_type="ephemeral")
+    message = "This slash command has been deprecated in favor of channel bookmarks. You can find all incident resources bookmarked in the channel."
+    respond(text=message, response_type="ephemeral", replace_original=False, delete_original=False)
 
 
 # EVENTS
 
 
 def handle_timeline_added_event(
-    client: Any, context: BoltContext, payload: Any, db_session: Session
+    ack: Ack, client: Any, context: BoltContext, payload: Any, db_session: Session
 ) -> None:
     """Handles an event where a reaction is added to a message."""
+    ack()
+
     conversation_id = context["channel_id"]
     message_ts = payload["item"]["ts"]
     message_ts_utc = datetime.utcfromtimestamp(float(message_ts))
@@ -667,7 +737,7 @@ def handle_timeline_added_event(
 
 
 @message_dispatcher.add(
-    exclude={"subtype": ["channel_join", "channel_leave"]}
+    subject="incident", exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
 def handle_participant_role_activity(
     ack: Ack, db_session: Session, context: BoltContext, user: DispatchUser
@@ -677,46 +747,43 @@ def handle_participant_role_activity(
     a participant's role based on its activity and changes it if needed.
     """
     ack()
+    participant = participant_service.get_by_incident_id_and_email(
+        db_session=db_session, incident_id=context["subject"].id, email=user.email
+    )
 
-    # TODO: add when case support when participants are added.
-    if context["subject"].type == "incident":
-        participant = participant_service.get_by_incident_id_and_email(
-            db_session=db_session, incident_id=context["subject"].id, email=user.email
-        )
+    if participant:
+        for participant_role in participant.active_roles:
+            participant_role.activity += 1
 
-        if participant:
-            for participant_role in participant.active_roles:
-                participant_role.activity += 1
+            # re-assign role once threshold is reached
+            if participant_role.role == ParticipantRoleType.observer:
+                if participant_role.activity >= 10:  # ten messages sent to the incident channel
+                    # we change the participant's role to the participant one
+                    participant_role_service.renounce_role(
+                        db_session=db_session, participant_role=participant_role
+                    )
+                    participant_role_service.add_role(
+                        db_session=db_session,
+                        participant_id=participant.id,
+                        participant_role=ParticipantRoleType.participant,
+                    )
 
-                # re-assign role once threshold is reached
-                if participant_role.role == ParticipantRoleType.observer:
-                    if participant_role.activity >= 10:  # ten messages sent to the incident channel
-                        # we change the participant's role to the participant one
-                        participant_role_service.renounce_role(
-                            db_session=db_session, participant_role=participant_role
-                        )
-                        participant_role_service.add_role(
-                            db_session=db_session,
-                            participant_id=participant.id,
-                            participant_role=ParticipantRoleType.participant,
-                        )
-
-                        # we log the event
-                        event_service.log_incident_event(
-                            db_session=db_session,
-                            source="Slack Plugin - Conversation Management",
-                            description=(
-                                f"{participant.individual.name}'s role changed from {participant_role.role} to "
-                                f"{ParticipantRoleType.participant} due to activity in the incident channel"
-                            ),
-                            incident_id=context["subject"].id,
-                        )
+                    # we log the event
+                    event_service.log_incident_event(
+                        db_session=db_session,
+                        source="Slack Plugin - Conversation Management",
+                        description=(
+                            f"{participant.individual.name}'s role changed from {participant_role.role} to "
+                            f"{ParticipantRoleType.participant} due to activity in the incident channel"
+                        ),
+                        incident_id=context["subject"].id,
+                    )
 
             db_session.commit()
 
 
 @message_dispatcher.add(
-    exclude={"subtype": ["channel_join", "group_join"]}
+    subject="incident", exclude={"subtype": ["channel_join", "group_join"]}
 )  # we ignore user channel and group join messages
 def handle_after_hours_message(
     ack: Ack,
@@ -729,18 +796,14 @@ def handle_after_hours_message(
     """Notifies the user that this incident is currently in after hours mode."""
     ack()
 
-    if context["subject"].type == "incident":
-        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
-        owner_email = incident.commander.individual.email
-        participant = participant_service.get_by_incident_id_and_email(
-            db_session=db_session, incident_id=context["subject"].id, email=user.email
-        )
-        # get their timezone from slack
-        owner_tz = (dispatch_slack_service.get_user_info_by_email(client, email=owner_email))["tz"]
-        message = f"Responses may be delayed. The current incident priority is *{incident.incident_priority.name}* and your message was sent outside of the Incident Commander's working hours (Weekdays, 9am-5pm, {owner_tz} timezone)."
-    else:
-        # TODO: add case support
-        return
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    owner_email = incident.commander.individual.email
+    participant = participant_service.get_by_incident_id_and_email(
+        db_session=db_session, incident_id=context["subject"].id, email=user.email
+    )
+    # get their timezone from slack
+    owner_tz = (dispatch_slack_service.get_user_info_by_email(client, email=owner_email))["tz"]
+    message = f"Responses may be delayed. The current incident priority is *{incident.incident_priority.name}* and your message was sent outside of the Incident Commander's working hours (Weekdays, 9am-5pm, {owner_tz} timezone)."
 
     now = datetime.now(pytz.timezone(owner_tz))
     is_business_hours = now.weekday() not in [5, 6] and 9 <= now.hour < 17
@@ -757,11 +820,13 @@ def handle_after_hours_message(
             )
 
 
-@message_dispatcher.add()
+@message_dispatcher.add(subject="incident")
 def handle_thread_creation(
-    client: WebClient, payload: dict, context: BoltContext, request: BoltRequest
+    ack: Ack, client: WebClient, payload: dict, context: BoltContext, request: BoltRequest
 ) -> None:
     """Sends the user an ephemeral message if they use threads."""
+    ack()
+
     if not context["config"].ban_threads:
         return
 
@@ -776,30 +841,31 @@ def handle_thread_creation(
             )
 
 
-@message_dispatcher.add()
-def handle_message_tagging(db_session: Session, payload: dict, context: BoltContext) -> None:
+@message_dispatcher.add(subject="incident")
+def handle_message_tagging(
+    ack: Ack, db_session: Session, payload: dict, context: BoltContext
+) -> None:
     """Looks for incident tags in incident messages."""
-    # TODO: (wshel) handle case tagging
-    if context["subject"].type == "incident":
-        text = payload["text"]
-        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
-        tags = tag_service.get_all(db_session=db_session, project_id=incident.project.id).all()
-        tag_strings = [t.name.lower() for t in tags if t.discoverable]
-        phrases = build_term_vocab(tag_strings)
-        matcher = build_phrase_matcher("dispatch-tag", phrases)
-        extracted_tags = list(set(extract_terms_from_text(text, matcher)))
+    ack()
+    text = payload["text"]
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    tags = tag_service.get_all(db_session=db_session, project_id=incident.project.id).all()
+    tag_strings = [t.name.lower() for t in tags if t.discoverable]
+    phrases = build_term_vocab(tag_strings)
+    matcher = build_phrase_matcher("dispatch-tag", phrases)
+    extracted_tags = list(set(extract_terms_from_text(text, matcher)))
 
-        matched_tags = (
-            db_session.query(Tag)
-            .filter(func.upper(Tag.name).in_([func.upper(t) for t in extracted_tags]))
-            .all()
-        )
+    matched_tags = (
+        db_session.query(Tag)
+        .filter(func.upper(Tag.name).in_([func.upper(t) for t in extracted_tags]))
+        .all()
+    )
 
-        incident.tags.extend(matched_tags)
-        db_session.commit()
+    incident.tags.extend(matched_tags)
+    db_session.commit()
 
 
-@message_dispatcher.add()
+@message_dispatcher.add(subject="incident")
 def handle_message_monitor(
     ack: Ack,
     payload: dict,
@@ -810,11 +876,8 @@ def handle_message_monitor(
     """Looks for strings that are available for monitoring (e.g. links)."""
     ack()
 
-    if context["subject"].type == "incident":
-        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
-        project_id = incident.project.id
-    else:
-        raise CommandError("Command is not currently available for cases.")
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    project_id = incident.project.id
 
     plugins = plugin_service.get_active_instances(
         db_session=db_session, project_id=project_id, plugin_type="monitor"
@@ -886,7 +949,6 @@ def handle_message_monitor(
     middleware=[
         message_context_middleware,
         user_middleware,
-        db_middleware,
         configuration_middleware,
     ],
 )
@@ -904,6 +966,7 @@ def handle_member_joined_channel(
     participant = incident_flows.incident_add_or_reactivate_participant_flow(
         user_email=user.email, incident_id=context["subject"].id, db_session=db_session
     )
+    participant.user_conversation_id = context["user_id"]
 
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
@@ -935,9 +998,7 @@ def handle_member_joined_channel(
     db_session.commit()
 
 
-@app.event(
-    "member_left_channel", middleware=[message_context_middleware, user_middleware, db_middleware]
-)
+@app.event("member_left_channel", middleware=[message_context_middleware, user_middleware])
 def handle_member_left_channel(
     ack: Ack, context: BoltContext, db_session: Session, user: DispatchUser
 ) -> None:
@@ -951,8 +1012,12 @@ def handle_member_left_channel(
 # MODALS
 
 
-def handle_add_timeline_event_command(client: WebClient, context: BoltContext) -> None:
+def handle_add_timeline_event_command(
+    ack: Ack, body: dict, client: WebClient, context: BoltContext
+) -> None:
     """Handles the add timeline event command."""
+    ack()
+
     blocks = [
         Context(
             elements=[
@@ -973,7 +1038,7 @@ def handle_add_timeline_event_command(client: WebClient, context: BoltContext) -
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_add_timeline_submission_event(ack: Ack) -> None:
@@ -1041,10 +1106,13 @@ def handle_add_timeline_submission_event(
 
 
 def handle_update_participant_command(
+    ack: Ack,
+    body: dict,
     context: BoltContext,
     client: WebClient,
 ) -> None:
     """Handles the update participant command."""
+    ack()
 
     if context["subject"].type == "case":
         raise CommandError("Command is not currently available for cases.")
@@ -1081,7 +1149,7 @@ def handle_update_participant_command(
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_update_participant_submission_event(ack: Ack):
@@ -1129,9 +1197,10 @@ def handle_update_participant_submission_event(
 
 
 def handle_update_notifications_group_command(
-    context: BoltContext, client: WebClient, db_session: Session
+    ack: Ack, body: dict, context: BoltContext, client: WebClient, db_session: Session
 ) -> None:
     """Handles the update notification group command."""
+    ack()
 
     # TODO handle cases
     if context["subject"].type == "case":
@@ -1181,7 +1250,7 @@ def handle_update_notifications_group_command(
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_update_notifications_group_submission_event(ack: Ack):
@@ -1239,8 +1308,12 @@ def handle_update_notifications_group_submission_event(
     )
 
 
-def handle_assign_role_command(context: BoltContext, client: WebClient) -> None:
+def handle_assign_role_command(
+    ack: Ack, body: dict, context: BoltContext, client: WebClient
+) -> None:
     """Handles the assign role command."""
+    ack()
+
     roles = [
         {"text": r.value, "value": r.value}
         for r in ParticipantRoleType
@@ -1273,7 +1346,7 @@ def handle_assign_role_command(context: BoltContext, client: WebClient) -> None:
         callback_id=AssignRoleActions.submit,
         private_metadata=context["subject"].json(),
     ).build()
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_assign_role_submission_event(ack: Ack):
@@ -1328,11 +1401,15 @@ def handle_assign_role_submission_event(
 
 
 def handle_engage_oncall_command(
+    ack: Ack,
+    body: dict,
     client: WebClient,
     context: BoltContext,
     db_session: Session,
 ) -> None:
     """Handles the engage oncall command."""
+    ack()
+
     # TODO: handle cases
     if context["subject"].type == "case":
         raise CommandError("Command is not currently available for cases.")
@@ -1377,7 +1454,7 @@ def handle_engage_oncall_command(
         callback_id=EngageOncallActions.submit,
         private_metadata=context["subject"].json(),
     ).build()
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_engage_oncall_submission_event(ack: Ack) -> None:
@@ -1431,11 +1508,15 @@ def handle_engage_oncall_submission_event(
 
 
 def handle_report_tactical_command(
+    ack: Ack,
+    body: dict,
     client: WebClient,
     context: BoltContext,
     db_session: Session,
 ) -> None:
     """Handles the report tactical command."""
+    ack()
+
     if context["subject"].type == "case":
         raise CommandError("Command is not available outside of incident channels.")
 
@@ -1485,7 +1566,7 @@ def handle_report_tactical_command(
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_report_tactical_submission_event(ack: Ack) -> None:
@@ -1535,11 +1616,14 @@ def handle_report_tactical_submission_event(
 
 
 def handle_report_executive_command(
+    ack: Ack,
+    body: dict,
     client: WebClient,
     context: BoltContext,
     db_session: Session,
 ) -> None:
     """Handles executive report command."""
+    ack()
 
     if context["subject"].type == "case":
         raise CommandError("Command is not available outside of incident channels.")
@@ -1594,7 +1678,7 @@ def handle_report_executive_command(
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_report_executive_submission_event(ack: Ack) -> None:
@@ -1622,26 +1706,50 @@ def handle_report_executive_submission_event(
     body: dict,
     client: WebClient,
     context: BoltContext,
+    db_session: Session,
     form_data: dict,
     user: DispatchUser,
 ) -> None:
-    """Handles the report executive submission"""
+    """Handles the report executive submission."""
     ack_report_executive_submission_event(ack=ack)
+
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+
     executive_report_in = ExecutiveReportCreate(
         current_status=form_data[ReportExecutiveBlockIds.current_status],
         overview=form_data[ReportExecutiveBlockIds.overview],
         next_steps=form_data[ReportExecutiveBlockIds.next_steps],
     )
 
-    report_flows.create_executive_report(
+    executive_report = report_flows.create_executive_report(
         user_email=user.email,
-        incident_id=context["subject"].id,
+        incident_id=incident.id,
         executive_report_in=executive_report_in,
         organization_slug=context["subject"].organization_slug,
     )
+
+    blocks = []
+    if executive_report and incident.notifications_group:
+        blocks = [
+            Section(text="Creating executive report... Success!"),
+            Section(
+                text=f"The executive report document has been created and can be found in the incident storage here: {executive_report.document.weblink}"
+            ),
+            Section(
+                text=f"The executive report has been emailed to the incident notifications group: {incident.notifications_group.email}",
+            ),
+        ]
+    else:
+        blocks = [
+            Section(text="Creating executive report... Failed!"),
+            Section(
+                text="The executive report document was not created successfully or the incident notifications group does not exist."
+            ),
+        ]
+
     modal = Modal(
         title="Executive Report",
-        blocks=[Section(text="Creating executive report... Success!")],
+        blocks=blocks,
         close="Close",
     ).build()
 
@@ -1652,9 +1760,11 @@ def handle_report_executive_submission_event(
 
 
 def handle_update_incident_command(
-    client: WebClient, context: BoltContext, db_session: Session
+    ack: Ack, body: dict, client: WebClient, context: BoltContext, db_session: Session
 ) -> None:
     """Creates the incident update modal."""
+    ack()
+
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
     blocks = [
@@ -1708,7 +1818,7 @@ def handle_update_incident_command(
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_incident_update_submission_event(ack: Ack) -> None:
@@ -1792,11 +1902,15 @@ def handle_update_incident_submission_event(
 
 
 def handle_report_incident_command(
+    ack: Ack,
+    body: dict,
     context: BoltContext,
     client: WebClient,
     db_session: Session,
 ) -> None:
     """Handles the report incident command."""
+    ack()
+
     blocks = [
         Context(
             elements=[
@@ -1823,7 +1937,7 @@ def handle_report_incident_command(
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=context["parentView"]["id"], view=modal)
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 def ack_report_incident_submission_event(ack: Ack) -> None:
@@ -2139,4 +2253,79 @@ def monitor_link_button_click(
         f"A new monitor instance has been created.\n\n *Weblink:* {button.weblink}"
         if enabled is True
         else f"This monitor is now ignored. Dispatch won't remind this incident channel about it again.\n\n *Weblink:* {button.weblink}"
+    )
+
+
+@app.action(
+    TaskNotificationActionIds.update_status,
+    middleware=[button_context_middleware, db_middleware],
+)
+def handle_update_task_status_button_click(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+):
+    """Handles the update task button in the list-my-tasks message."""
+    ack()
+
+    button = TaskMetadata.parse_raw(body["actions"][0]["value"])
+
+    resolve = True
+    if button.action_type == "reopen":
+        resolve = False
+
+    # When the task originated from the Dispatch front-end.
+    # Tasks created in the front-end do not have an associated "resource".
+    # Thus, no "resource_id" entry is necessary.
+    from_drive = True if button.resource_id is not None else False
+
+    if from_drive:
+        # When the task originated from the drive plugin
+        task = task_service.get_by_resource_id(
+            db_session=db_session, resource_id=button.resource_id
+        )
+    else:
+        task = task_service.get(db_session=db_session, task_id=button.task_id)
+
+    # avoid external calls if we are already in the desired state
+    if resolve and task.status == TaskStatus.resolved:
+        return
+
+    if not resolve and task.status == TaskStatus.open:
+        return
+
+    if from_drive:
+        # we don't currently have a good way to get the correct file_id (we don't store a task <-> relationship)
+        # lets try in both the incident doc and PIR doc
+        drive_task_plugin = plugin_service.get_active_instance(
+            db_session=db_session, project_id=task.incident.project.id, plugin_type="task"
+        )
+        try:
+            file_id = task.incident.incident_document.resource_id
+            drive_task_plugin.instance.update(file_id, button.resource_id, resolved=resolve)
+        except DispatchException:
+            file_id = task.incident.incident_review_document.resource_id
+            drive_task_plugin.instance.update(file_id, button.resource_id, resolved=resolve)
+    else:
+        status = TaskStatus.resolved if resolve is True else TaskStatus.open
+        task_service.resolve_or_reopen(db_session=db_session, task_id=task.id, status=status)
+
+    tasks = task_service.get_all_by_incident_id(
+        db_session=db_session,
+        incident_id=context["subject"].id,
+    )
+
+    tasks = task_service.get_all_by_incident_id(
+        db_session=db_session,
+        incident_id=context["subject"].id,
+    )
+
+    draw_task_modal(
+        channel_id=button.channel_id,
+        client=client,
+        first_open=False,
+        view_id=body["view"]["id"],
+        tasks=tasks,
     )
