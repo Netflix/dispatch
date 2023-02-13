@@ -1,54 +1,71 @@
-from typing import List, Optional
-from pydantic import StrictBool, Field
+from typing import Optional, List
+from pydantic import Field
 
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import UniqueConstraint
-from sqlalchemy.sql.sqltypes import Boolean
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, NameStr, TimeStampMixin, ProjectMixin, PrimaryKey
+from dispatch.models import DispatchBase, TimeStampMixin, ProjectMixin, PrimaryKey
 from dispatch.project.models import ProjectRead
+from dispatch.entity_type.models import (
+    EntityTypeRead,
+    EntityTypeCreate,
+    EntityTypeUpdate,
+)
 
 
 class Entity(Base, TimeStampMixin, ProjectMixin):
     __table_args__ = (UniqueConstraint("name", "project_id"),)
+
+    # Columns
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
-    regular_expression = Column(String)
-    global_find = Column(Boolean, default=False)
+    value = Column(String)
+    source = Column(String)
+
+    # Relationships
+    entity_type_id = Column(Integer, ForeignKey("entity_type.id"), nullable=False)
+    entity_type = relationship("EntityType", backref="entity")
+
+    # the catalog here is simple to help matching "named entities"
     search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
 
 # Pydantic models
 class EntityBase(DispatchBase):
-    name: NameStr
+    name: Optional[str] = Field(None, nullable=True)
+    source: Optional[str] = Field(None, nullable=True)
+    value: Optional[str] = Field(None, nullable=True)
     description: Optional[str] = Field(None, nullable=True)
-    global_find: Optional[StrictBool]
-    regular_expression: Optional[str] = Field(None, nullable=True)
 
 
 class EntityCreate(EntityBase):
+    id: Optional[PrimaryKey]
+    entity_type: EntityTypeCreate
     project: ProjectRead
 
 
 class EntityUpdate(EntityBase):
-    id: PrimaryKey = None
+    id: Optional[PrimaryKey]
+    entity_type: Optional[EntityTypeUpdate]
 
 
 class EntityRead(EntityBase):
     id: PrimaryKey
-    global_find: Optional[StrictBool]
+    entity_type: Optional[EntityTypeRead]
     project: ProjectRead
 
 
 class EntityReadMinimal(DispatchBase):
     id: PrimaryKey
-    name: NameStr
+    name: Optional[str] = Field(None, nullable=True)
+    source: Optional[str] = Field(None, nullable=True)
+    value: Optional[str] = Field(None, nullable=True)
     description: Optional[str] = Field(None, nullable=True)
-    global_find: Optional[StrictBool]
-    regular_expression: Optional[str] = Field(None, nullable=True)
+    entity_type: Optional[EntityTypeRead]
 
 
 class EntityPagination(DispatchBase):

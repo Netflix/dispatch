@@ -143,7 +143,7 @@
           </v-card>
         </v-col>
         <v-col cols="12">
-          <entity-rule-card v-model="entities"></entity-rule-card>
+          <entity-rule-card v-model="entity_types"></entity-rule-card>
         </v-col>
         <v-col cols="12">
           <duplication-rule-card v-model="duplication_rule"></duplication-rule-card>
@@ -210,7 +210,7 @@ export default {
       "selected.external_url",
       "selected.case_type",
       "selected.case_priority",
-      "selected.entities",
+      "selected.entity_types",
       "selected.duplication_rule",
       "selected.suppression_rule",
       "selected.source",

@@ -7,19 +7,27 @@ export default {
     return API.get(`${resource}`, { params: { ...options } })
   },
 
-  get(entityId) {
-    return API.get(`${resource}/${entityId}`)
+  get(EntityId) {
+    return API.get(`${resource}/${EntityId}`)
   },
 
   create(payload) {
     return API.post(`${resource}`, payload)
   },
 
-  update(entityId, payload) {
-    return API.put(`${resource}/${entityId}`, payload)
+  update(EntityId, payload) {
+    return API.put(`${resource}/${EntityId}`, payload)
   },
 
-  delete(entityId) {
-    return API.delete(`${resource}/${entityId}`)
+  delete(EntityId) {
+    return API.delete(`${resource}/${EntityId}`)
+  },
+
+  async getCasesCount(EntityId) {
+    return await API.get(`${resource}/${EntityId}/cases`)
+  },
+
+  async getSignalInstances(EntityId) {
+    return await API.get(`${resource}/${EntityId}/signal_instances`)
   },
 }

@@ -6,6 +6,7 @@ from dispatch.case import flows as case_flows
 from dispatch.signal import service as signal_service
 from dispatch.tag import service as tag_service
 from dispatch.signal.models import SignalInstanceCreate, RawSignal
+from dispatch.entity.correlator import search_cases_with_entity
 
 
 def create_signal_instance(
@@ -34,6 +35,13 @@ def create_signal_instance(
     signal_instance.signal = signal
     db_session.commit()
 
+    entities = signal_service.find_entities(
+        db_session=db_session,
+        signal_instance=signal_instance,
+        entity_types=signal.entity_types,
+    )
+    signal_instance.entities = entities
+
     suppressed = signal_service.supress(
         db_session=db_session,
         signal_instance=signal_instance,
@@ -50,13 +58,7 @@ def create_signal_instance(
     if duplicate:
         return
 
-    # entities = signal_service.find_entities(
-    #     db_session=db_session,
-    #     signal_instance=signal_instance,
-    #     duplication_rule=signal.entity_rule,
-    # )
-
-    # create a case if not duplicate or supressed
+    # # create a case if not duplicate or supressed
     case_in = CaseCreate(
         title=signal.name,
         description=signal.description,

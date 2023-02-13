@@ -26,6 +26,7 @@ from dispatch.case.models import CaseRead
 from dispatch.case.type.models import CaseTypeRead, CaseType
 from dispatch.case.priority.models import CasePriority, CasePriorityRead
 from dispatch.entity.models import EntityRead
+from dispatch.entity_type.models import EntityTypeRead, EntityTypeUpdate, EntityTypeCreate
 from dispatch.tag.models import TagRead
 from dispatch.project.models import ProjectRead
 from dispatch.data.source.models import SourceBase
@@ -62,12 +63,12 @@ assoc_signal_instance_entities = Table(
     PrimaryKeyConstraint("signal_instance_id", "entity_id"),
 )
 
-assoc_signal_entities = Table(
-    "assoc_signal_entities",
+assoc_signal_entity_types = Table(
+    "assoc_signal_entity_types",
     Base.metadata,
     Column("signal_id", Integer, ForeignKey("signal.id", ondelete="CASCADE")),
-    Column("entity_id", Integer, ForeignKey("entity.id", ondelete="CASCADE")),
-    PrimaryKeyConstraint("signal_id", "entity_id"),
+    Column("entity_type_id", Integer, ForeignKey("entity_type.id", ondelete="CASCADE")),
+    PrimaryKeyConstraint("signal_id", "entity_type_id"),
 )
 
 assoc_duplication_tag_types = Table(
@@ -126,9 +127,9 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     case_priority = relationship("CasePriority", backref="signals")
     duplication_rule_id = Column(Integer, ForeignKey(DuplicationRule.id))
     duplication_rule = relationship("DuplicationRule", backref="signal")
-    entities = relationship(
-        "Entity",
-        secondary=assoc_signal_entities,
+    entity_types = relationship(
+        "EntityType",
+        secondary=assoc_signal_entity_types,
         backref="signals",
     )
     suppression_rule_id = Column(Integer, ForeignKey(SuppressionRule.id))
@@ -215,24 +216,28 @@ class SignalBase(DispatchBase):
     external_url: Optional[str]
     source: Optional[SourceBase]
     created_at: Optional[datetime] = None
+    entity_types: Optional[List[EntityTypeRead]]
     suppression_rule: Optional[SuppressionRuleRead]
     duplication_rule: Optional[DuplicationRuleBase]
     project: ProjectRead
 
 
 class SignalCreate(SignalBase):
+    entity_types: Optional[EntityTypeCreate]
     suppression_rule: Optional[SuppressionRuleCreate]
     duplication_rule: Optional[DuplicationRuleCreate]
 
 
 class SignalUpdate(SignalBase):
     id: PrimaryKey
+    entity_types: Optional[List[EntityTypeUpdate]] = []
     suppression_rule: Optional[SuppressionRuleUpdate]
     duplication_rule: Optional[DuplicationRuleUpdate]
 
 
 class SignalRead(SignalBase):
     id: PrimaryKey
+    entity_types: Optional[List[EntityTypeRead]]
     suppression_rule: Optional[SuppressionRuleRead]
     duplication_rule: Optional[DuplicationRuleRead]
 

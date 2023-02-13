@@ -34,10 +34,10 @@
 import { cloneDeep } from "lodash"
 
 import SearchUtils from "@/search/utils"
-import EntityApi from "@/entity/api"
+import EntityTypeApi from "@/entity_type/api"
 
 export default {
-  name: "EntitySelect",
+  name: "EntityTypeSelect",
 
   props: {
     value: {
@@ -97,7 +97,7 @@ export default {
         filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
       }
 
-      EntityApi.getAll(filterOptions).then((response) => {
+      EntityTypeApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
 
         if (this.entity) {

@@ -10,7 +10,7 @@ import case_severity from "@/case/severity/store"
 import case_type from "@/case/type/store"
 import definition from "@/definition/store"
 import document from "@/document/store"
-import entity from "@/entity/store"
+import entity_type from "@/entity_type/store"
 import feedback from "@/feedback/store"
 import incident from "@/incident/store"
 import incident_cost_type from "@/incident_cost_type/store"
@@ -55,7 +55,7 @@ export default new Vuex.Store({
     case_type,
     definition,
     document,
-    entity,
+    entity_type,
     feedback,
     incident,
     incident_cost_type,

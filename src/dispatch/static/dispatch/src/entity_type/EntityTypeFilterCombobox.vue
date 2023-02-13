@@ -12,13 +12,13 @@
     item-value="id"
     multiple
     no-filter
-    v-model="entities"
+    v-model="entity_types"
   >
     <template v-slot:no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
-            No entities matching "
+            No entity types matching "
             <strong>{{ search }}</strong
             >"
           </v-list-item-title>
@@ -26,8 +26,8 @@
       </v-list-item>
     </template>
     <template v-slot:selection="{ item, index }">
-      <v-chip close @click:close="value.splice(index, 1)">
-        <span v-if="item.entity"> {{ item.name }} </span>
+      <v-chip close @click:close="entity_types.splice(index, 1)">
+        <span v-if="item.entity_type"> {{ item.name }} </span>{{ item.name }}
       </v-chip>
     </template>
     <template v-slot:item="data">
@@ -52,21 +52,19 @@
 import { cloneDeep, debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
-import EntitiesApi from "@/entities/api"
+import EntityTypeApi from "@/entity_type/api"
 
 export default {
-  name: "EntityCombobox",
+  name: "EntityTypeCombobox",
 
   props: {
     value: {
       type: Array,
-      default: function () {
-        return []
-      },
+      default: () => [],
     },
     label: {
       type: String,
-      default: "Add Entities",
+      default: "Add Entity Types",
     },
     model: {
       type: String,
@@ -93,19 +91,12 @@ export default {
   },
 
   computed: {
-    entities: {
+    entity_types: {
       get() {
-        return cloneDeep(this.value)
+        return this.value;
       },
       set(value) {
-        this.search = null
-        this._entities = value.filter((v) => {
-          if (typeof v === "string") {
-            return false
-          }
-          return true
-        })
-        this.$emit("input", this._entities)
+        this.$emit("input", value);
       },
     },
   },
@@ -144,7 +135,7 @@ export default {
         filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
       }
 
-      EntitiesApi.getAll(filterOptions).then((response) => {
+      EntityTypeApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.total = response.data.total
 
@@ -163,8 +154,10 @@ export default {
   },
 
   filters: {
-    filterGlobal: function(entities) {
-      return entities.filter(entity => entity.global_find === false);
+    filterGlobal: function(entity_types) {
+      return entity_types.filter(
+        entity_type => entity_type.global_find === false
+      );
     }
   }
 }

@@ -37,9 +37,22 @@
                     :error-messages="errors"
                     :success="valid"
                     label="Name"
-                    hint="A name for your entity."
+                    hint="A name for your entity type."
                     clearable
                     required
+                  />
+                </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
+                <ValidationProvider name="Description" immediate>
+                  <v-textarea
+                    v-model="description"
+                    slot-scope="{ errors, valid }"
+                    label="Description"
+                    :error-messages="errors"
+                    :success="valid"
+                    hint="A description for your entity type."
+                    clearable
                   />
                 </ValidationProvider>
               </v-flex>
@@ -51,13 +64,26 @@
                     label="Regular Expression"
                     :error-messages="errors"
                     :success="valid"
-                    hint="A regular expression pattern for your entity."
+                    hint="A regular expression pattern for your entity type."
                     clearable
                     required
                   />
                 </ValidationProvider>
               </v-flex>
-              <v-flex class="checkbox-tooltip-container">
+              <v-flex xs12>
+                <ValidationProvider name="Field" immediate>
+                  <v-text-field
+                    v-model="field"
+                    slot-scope="{ errors, valid }"
+                    :error-messages="errors"
+                    :success="valid"
+                    label="Field"
+                    hint="The field where the entity will be present."
+                    clearable
+                  />
+                </ValidationProvider>
+              </v-flex>
+              <v-flex class="checkbox-tooltip-container" xs12>
                 <v-checkbox
                   v-model="global_find"
                   label="Global"
@@ -67,8 +93,15 @@
                   <template v-slot:activator="{ on }">
                     <v-icon v-on="on" small class="ml-2">mdi-information</v-icon>
                   </template>
-                  <span>Checking this box collect the entity from all signals.</span>
+                  <span>Checking this box collects the entity from all signal instances.</span>
                 </v-tooltip>
+              </v-flex>
+              <v-flex xs12>
+                <v-checkbox
+                  v-model="enabled"
+                  label="Enabled"
+                >
+                </v-checkbox>
               </v-flex>
             </v-layout>
           </v-container>
@@ -102,7 +135,7 @@ extend('regexp', {
 });
 
 export default {
-  name: "EntityNewEditSheet",
+  name: "EntityTypeNewEditSheet",
 
   components: {
     ValidationObserver,
@@ -110,24 +143,26 @@ export default {
   },
 
   computed: {
-    ...mapFields("entity", [
+    ...mapFields("entity_type", [
       "dialogs.showCreateEdit",
       "selected.id",
       "selected.name",
       "selected.description",
+      "selected.field",
       "selected.project",
       "selected.regular_expression",
       "selected.global_find",
+      "selected.enabled",
       "selected.loading",
     ]),
-    ...mapFields("entity", {
+    ...mapFields("entity_type", {
       default_entity: "selected.default",
     }),
     ...mapFields("route", ["query"]),
   },
 
   methods: {
-    ...mapActions("entity", ["save", "closeCreateEdit"]),
+    ...mapActions("entity_type", ["save", "closeCreateEdit"]),
   },
 
   created() {

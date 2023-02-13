@@ -22,6 +22,7 @@ from dispatch.data.source.views import router as source_router
 from dispatch.definition.views import router as definition_router
 from dispatch.document.views import router as document_router
 from dispatch.entity.views import router as entity_router
+from dispatch.entity_type.views import router as entity_type_router
 from dispatch.feedback.views import router as feedback_router
 from dispatch.incident.priority.views import router as incident_priority_router
 from dispatch.incident.severity.views import router as incident_severity_router
@@ -134,6 +135,9 @@ authenticated_organization_api_router.include_router(
 )
 authenticated_organization_api_router.include_router(
     entity_router, prefix="/entity", tags=["entities"]
+)
+authenticated_organization_api_router.include_router(
+    entity_type_router, prefix="/entity_type", tags=["entity_types"]
 )
 authenticated_organization_api_router.include_router(tag_router, prefix="/tags", tags=["tags"])
 authenticated_organization_api_router.include_router(
