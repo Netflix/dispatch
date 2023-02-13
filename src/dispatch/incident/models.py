@@ -15,7 +15,6 @@ from dispatch.document.models import Document, DocumentRead
 from dispatch.enums import Visibility
 from dispatch.event.models import EventRead
 from dispatch.group.models import Group
-from dispatch.individual.models import IndividualContactRead
 from dispatch.incident.priority.models import (
     IncidentPriorityBase,
     IncidentPriorityCreate,
@@ -374,8 +373,3 @@ class IncidentPagination(DispatchBase):
     itemsPerPage: int
     page: int
     items: List[IncidentReadMinimal] = []
-
-
-class IncidentHandoffRead(DispatchBase):
-    commander: IndividualContactRead
-    filter: str
