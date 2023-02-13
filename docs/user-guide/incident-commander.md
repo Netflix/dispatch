@@ -17,7 +17,6 @@ All Slack commands are listed below, or you may view _groups_ of commands relati
 - [`/dispatch-engage-oncall`](#%2Fdispatch-engage-oncall)
 - [`/dispatch-list-my-tasks`](#%2Fdispatch-list-my-tasks)
 - [`/dispatch-list-participants`](#%2Fdispatch-list-participants)
-- [`/dispatch-list-resources`](#%2Fdispatch-list-resources)
 - [`/dispatch-list-tasks`](#%2Fdispatch-list-tasks)
 - [`/dispatch-list-workflows`](#%2Fdispatch-list-workflows)
 - [`/dispatch-list-incidents`](#%2Fdispatch-list-incidents)

@@ -7,7 +7,6 @@ class ConversationCommands(DispatchEnum):
     engage_oncall = "engage-oncall"
     executive_report = "executive-report"
     list_participants = "list-participants"
-    list_resources = "list-resources"
     list_tasks = "list-tasks"
     report_incident = "report-incident"
     tactical_report = "tactical-report"
