@@ -72,7 +72,6 @@ def upgrade():
     op.drop_table("assoc_suppression_rule_tags")
     op.drop_table("suppression_rule")
     op.drop_table("assoc_signal_instance_tags")
-    op.drop_table("service_incident")
     op.drop_column("signal", "suppression_rule_id")
     op.drop_column("signal", "duplication_rule_id")
     op.add_column("signal_instance", sa.Column("filter_action", sa.String(), nullable=True))
@@ -154,18 +153,6 @@ def downgrade():
         sa.PrimaryKeyConstraint(
             "suppression_rule_id", "tag_id", name="assoc_suppression_rule_tags_pkey"
         ),
-    )
-    op.create_table(
-        "service_incident",
-        sa.Column("incident_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("service_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(
-            ["incident_id"], ["incident.id"], name="service_incident_incident_id_fkey"
-        ),
-        sa.ForeignKeyConstraint(
-            ["service_id"], ["service.id"], name="service_incident_service_id_fkey"
-        ),
-        sa.PrimaryKeyConstraint("incident_id", "service_id", name="service_incident_pkey"),
     )
     op.create_table(
         "assoc_signal_instance_tags",
