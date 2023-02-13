@@ -83,11 +83,7 @@ const actions = {
     }
     commit("SET_DIALOG_CREATE_EDIT", true)
   },
-  removeShow({ commit }, signal) {
-    commit("SET_DIALOG_DELETE", true)
-    commit("SET_SELECTED", signal)
-  },
-  closeCreateEdit({ commit }) {
+  closeCreateEditDialog({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
     commit("RESET_SELECTED")
   },
@@ -110,6 +106,7 @@ const mutations = {
   SET_DIALOG_CREATE_EDIT(state, value) {
     state.dialogs.showCreateEdit = value
   },
+
   RESET_SELECTED(state) {
     // do not reset project
     let project = state.selected.project

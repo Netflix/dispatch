@@ -100,7 +100,6 @@ export default {
         return cloneDeep(this.value)
       },
       set(value) {
-        console.log(value)
         this.$emit("input", value)
       },
     },

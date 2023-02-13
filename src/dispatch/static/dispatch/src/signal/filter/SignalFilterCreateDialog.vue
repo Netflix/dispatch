@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="showCreate" persistent max-width="800px">
+  <v-dialog v-model="showCreateEdit" persistent max-width="800px">
     <template v-slot:activator="{ on }">
       <v-btn icon v-on="on">
         <v-icon>add</v-icon>
@@ -63,7 +63,7 @@
               </v-card-text>
               <v-card-actions>
                 <v-spacer />
-                <v-btn @click="closeCreateDialog()" text> Cancel </v-btn>
+                <v-btn @click="closeCreateEditDialog()" text> Cancel </v-btn>
                 <v-btn color="info" @click="step = 2"> Continue </v-btn>
               </v-card-actions>
             </v-card>
@@ -127,17 +127,23 @@
                       required
                     />
                   </ValidationProvider>
-                  <v-select
-                    persistent-hint
-                    label="Window (minutes)"
-                    :items="windows"
-                    v-model="window"
-                  ></v-select>
-                  <expiration-input persistent-hint v-model="expiration"></expiration-input>
-                  <v-radio-group label="Action" v-model="action" class="justify-right" row>
-                    <v-radio label="Suppress" value="suppress"></v-radio>
-                    <v-radio label="Deduplicate" value="deduplicate"></v-radio>
-                  </v-radio-group>
+                  <ValidationProvider name="Window" rules="required" immediate>
+                    <v-select
+                      persistent-hint
+                      label="Window (minutes)"
+                      :items="windows"
+                      v-model="window"
+                    ></v-select>
+                  </ValidationProvider>
+                  <ValidationProvider name="Expiration" rules="required" immediate>
+                    <expiration-input persistent-hint v-model="expiration"></expiration-input>
+                  </ValidationProvider>
+                  <ValidationProvider name="Action" rules="required" immediate>
+                    <v-radio-group label="Action" v-model="action" class="justify-right">
+                      <v-radio label="Suppress" value="suppress"></v-radio>
+                      <v-radio label="Deduplicate" value="deduplicate"></v-radio>
+                    </v-radio-group>
+                  </ValidationProvider>
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer />
@@ -230,7 +236,7 @@ export default {
       "selected.name",
       "selected.project",
       "loading",
-      "dialogs.showCreate",
+      "dialogs.showCreateEdit",
     ]),
     ...mapFields("route", ["query"]),
     expression_str: {
@@ -279,7 +285,6 @@ export default {
       (vm) => [vm.filters.tag, vm.filters.tag_type],
       () => {
         this.expression = SearchUtils.createFilterExpression(this.filters)
-        console.log(this.expression)
         this.getPreviewData()
       }
     )

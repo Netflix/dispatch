@@ -5,6 +5,8 @@ from dispatch.project import service as project_service
 from dispatch.case.type import service as case_type_service
 from dispatch.case.priority import service as case_priority_service
 
+from sqlalchemy import asc
+
 from .models import (
     Signal,
     SignalCreate,
@@ -16,6 +18,7 @@ from .models import (
     SignalFilterCreate,
     SignalFilterUpdate,
     SignalFilterRead,
+    SignalFilterAction,
 )
 
 
@@ -158,60 +161,48 @@ def create_instance(*, db_session, signal_instance_in: SignalInstanceCreate) -> 
 
     # we round trip the raw data to json-ify date strings
     signal_instance = SignalInstance(
-        **signal_instance_in.dict(exclude={"project", "tags", "raw"}),
+        **signal_instance_in.dict(exclude={"project", "entities", "raw"}),
         raw=json.loads(signal_instance_in.raw.json()),
         project=project,
     )
 
-    # signal_instance.tags = find_instance_tags(signal_instance.raw)
     db_session.add(signal_instance)
     db_session.commit()
     return signal_instance
 
 
-def deduplicate(
-    *, db_session, signal_instance: SignalInstance, duplication_filter: SignalFilter
-) -> bool:
-    """Find any matching duplication filters and match signals."""
-    if duplication_filter.mode != SignalFilterMode.active:
-        return
+def apply_filter_actions(*, db_session, signal_instance: SignalInstance):
+    """Applies any matching filter actions associated with this instance."""
+    for f in signal_instance.signal.filters:
+        if f.mode != SignalFilterMode.active:
+            continue
 
-    window = datetime.now(timezone.utc) - timedelta(seconds=duplication_filter.window)
+        if f.expiration <= datetime.now():
+            continue
 
-    instances = (
-        db_session.query(SignalInstance)
-        .filter(Signal.id == signal_instance.signal.id)
-        .filter(SignalInstance.id != signal_instance.id)
-        .filter(SignalInstance.created_at >= window)
-        .all()
-    )
+        query = db_session.query(SignalInstance).filter(SignalInstance.signal_id == signal_instance.signal_id)
+        query = apply_filters(query, filter_spec)
 
-    if instances:
-        # TODO find the earliest created instance
-        signal_instance.case_id = instances[0].case_id
-        signal_instance.duplication_filter_id = duplication_filter.id
+        # order matters, check for supression before deduplication
+        # we check to see if the current instances match's it's signals supression filter
+        if f.action == SignalFilterAction.suppress:
+            instances = query.filter(SignalInstance.id == signal_instance.id).all()
 
-    db_session.commit()
+            if instances:
+                signal_instance.filter_action = SignalFilterAction.suppress
+                return
+
+        elif f.action == SignalFilterAction.deduplicate:
+            window = datetime.now(timezone.utc) - timedelta(seconds=duplication_filter.window)
+            query = query.filter(SignalInstance.created_at >= window)
+
+            # get the earliest instance
+            query = query.order_by(acs(SignalInstance.created_at))
+            instances = query.all()
+
+            if instances:
+                # associate with existing case
+                signal_instance.case_id = instances[0].case_id
+                signal_instance.filter_action = SignalFilterAction.deduplicate
+                return
     return True
-
-
-def suppress(
-    *, db_session, signal_instance: SignalInstance, suppression_filter: SignalFilter
-) -> bool:
-    """Find any matching suppression filters and match instances."""
-    supressed = False
-
-    if not suppression_filter:
-        return supressed
-
-    if suppression_filter.mode != SignalFilterMode.active:
-        return supressed
-
-    if suppression_filter.expiration:
-        if suppression_filter.expiration <= datetime.now():
-            return supressed
-
-    # TODO apply filter logic
-
-    db_session.commit()
-    return supressed
