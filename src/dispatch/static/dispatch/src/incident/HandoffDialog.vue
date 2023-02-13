@@ -5,7 +5,7 @@
         <span class="headline">Handoff Incidents</span>
       </v-card-title>
       <v-card-text>
-        Select the new commander for the selected incidents and check if a handoff report needs to be generated and shared with both commanders.
+        Select the new commander for the selected incidents.
       </v-card-text>
       <v-card-actions>
         <v-container grid-list-md>
@@ -13,11 +13,11 @@
             <v-flex xs12>
               <participant-select v-model="commander" label="Incident Commander" :project="project"/>
             </v-flex>
-            <v-flex xs12>
-              <v-checkbox v-model="report" label="Generate Report"/>
-            </v-flex>
+            <!-- <v-flex xs12> -->
+            <!--   <v-checkbox v-model="report" label="Generate Report"/> -->
+            <!-- </v-flex> -->
             <v-btn color="blue en-1" text @click="closeHandoffDialog()"> Cancel </v-btn>
-            <v-btn color="red en-1" text :loading="loading" @click="handoffBulk(incidentSelected)">
+            <v-btn color="red en-1" text :loading="loading" @click="saveBulk({commander: commander})">
               Handoff
             </v-btn>
           </v-layout>
@@ -48,27 +48,11 @@ export default {
   },
 
   computed: {
-    ...mapFields("incident", {
-      loading: "selected.loading",
-      project: "selected.project",
-      showHandoffDialog: "dialogs.showHandoffDialog",
-    }),
+    ...mapFields("incident", ["dialogs.showHandoffDialog", "selected.loading", "selected.project"]),
   },
 
   methods: {
-    ...mapActions("incident", ["closeHandoffDialog", "handoffBulk", "resetSelected"]),
-  },
-
-  created() {
-    this.$watch(
-      (vm) => [vm.showHandoffDialog],
-      () => {
-        // this.incidentDescription = this.caseDescription
-        // this.incidentTitle = this.caseTitle
-        // this.incidentProject = this.caseProject ? this.caseProject : null
-        // this.incidentType = this.caseType.incident_type ? this.caseType : null
-      }
-    )
+    ...mapActions("incident", ["closeHandoffDialog", "saveBulk", "resetSelected"]),
   },
 }
 </script>
