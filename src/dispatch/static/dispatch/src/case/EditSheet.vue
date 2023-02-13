@@ -1,6 +1,6 @@
 <template>
   <ValidationObserver v-slot="{ invalid, validated }">
-    <v-navigation-drawer app clipped right width="800">
+    <v-navigation-drawer app clipped right width="900">
       <template v-slot:prepend>
         <v-list-item two-line>
           <v-list-item-content>
@@ -40,6 +40,7 @@
         <v-tab key="participants"> Participants </v-tab>
         <v-tab key="timeline"> Timeline </v-tab>
         <v-tab key="workflows"> Workflows </v-tab>
+        <v-tab key="entities"> Entities </v-tab>
         <v-tab key="signals">Signals</v-tab>
       </v-tabs>
       <v-tabs-items v-model="tab">
@@ -57,6 +58,9 @@
         </v-tab-item>
         <v-tab-item key="workflow_instances">
           <workflow-instance-tab v-model="workflow_instances" />
+        </v-tab-item>
+        <v-tab-item key="entities">
+          <entities-tab :selected="selected" v-model="signal_instances" />
         </v-tab-item>
         <v-tab-item key="signal_instances">
           <signal-instance-tab v-model="signal_instances" />
@@ -77,6 +81,7 @@ import CaseResourcesTab from "@/case/ResourcesTab.vue"
 import CaseTimelineTab from "@/case/TimelineTab.vue"
 import WorkflowInstanceTab from "@/workflow/WorkflowInstanceTab.vue"
 import SignalInstanceTab from "@/signal/SignalInstanceTab.vue"
+import EntitiesTab from "@/entity/EntitiesTab.vue"
 
 export default {
   name: "CaseEditSheet",
@@ -88,6 +93,7 @@ export default {
     CaseTimelineTab,
     WorkflowInstanceTab,
     SignalInstanceTab,
+    EntitiesTab,
     ValidationObserver,
   },
 
