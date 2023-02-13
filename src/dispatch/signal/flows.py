@@ -28,18 +28,14 @@ def create_signal_instance(
         db_session=db_session, signal_instance_in=signal_instance_in
     )
 
-    entities = entity_service.find_entities(
-        db_session=db_session,
-        signal_instance=signal_instance,
-        entity_types=signal.entity_types,
-    )
-    signal_instance.entities = entities
+    entities = entity_service.extract_entities(db_session=db_session, signal_instance_id=signal_instance_in)
+    signal.entities = entities
 
     signal_instance.signal = signal
     db_session.commit()
 
     if signal_service.apply_filter_actions(db_session=db_session, signal_instance=signal_instance):
-        # create a case if not duplicate or snoozed
+    # create a case if not duplicate or supressed
         case_in = CaseCreate(
             title=signal.name,
             description=signal.description,
@@ -52,4 +48,4 @@ def create_signal_instance(
         db_session.commit()
         return case_flows.case_new_create_flow(
             db_session=db_session, organization_slug=None, case_id=case.id
-        )
+    )
