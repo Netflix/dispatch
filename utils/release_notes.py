@@ -34,6 +34,9 @@ def release_notes(pull_request_number):
         "enhancement": "",
         "tests": "",
         "techdebt": "",
+        "python": "",
+        "UI/UX": "",
+        "javascript": "",
     }
 
     for pull_request in pull_requests:
