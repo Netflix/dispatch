@@ -46,6 +46,14 @@ assoc_signal_tags = Table(
     PrimaryKeyConstraint("signal_id", "tag_id"),
 )
 
+assoc_signal_filters = Table(
+    "assoc_signal_filters",
+    Base.metadata,
+    Column("signal_id", Integer, ForeignKey("signal.id", ondelete="CASCADE")),
+    Column("signal_filter_id", Integer, ForeignKey("signal_filter.id", ondelete="CASCADE")),
+    PrimaryKeyConstraint("signal_id", "signal_filter_id"),
+)
+
 assoc_signal_instance_entities = Table(
     "assoc_signal_instance_entities",
     Base.metadata,
@@ -90,7 +98,7 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     case_type = relationship("CaseType", backref="signals")
     case_priority_id = Column(Integer, ForeignKey(CasePriority.id))
     case_priority = relationship("CasePriority", backref="signals")
-    filters = relationship("SignalFilter", backref="signal")
+    filters = relationship("SignalFilter", secondary=assoc_signal_filters, backref="signals")
     entity_types = relationship(
         "EntityType",
         secondary=assoc_signal_entity_types,
@@ -116,8 +124,6 @@ class SignalFilter(Base, ProjectMixin, EvergreenMixin, TimeStampMixin):
     window = Column(
         Integer, default=(60 * 60)
     )  # number of seconds for duplication lookback default to 1 hour
-
-    signal_id = Column(Integer, ForeignKey(Signal.id))
 
     creator_id = Column(Integer, ForeignKey(DispatchUser.id))
     creator = relationship("DispatchUser", backref="signal_filters")
@@ -159,7 +165,7 @@ class SignalFilterUpdate(SignalFilterBase):
 
 
 class SignalFilterCreate(SignalFilterBase):
-    pass
+    project: ProjectRead
 
 
 class SignalFilterRead(SignalFilterBase):

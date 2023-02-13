@@ -2,7 +2,7 @@ import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
-import SignalApi from "@/signal/api"
+import SignalFilterApi from "@/signal/filter/api"
 
 const getDefaultSelectedState = () => {
   return {
@@ -12,18 +12,6 @@ const getDefaultSelectedState = () => {
     action: null,
     expiration: null,
     window: 5,
-    loading: false,
-    previewRows: {
-      items: [],
-      total: null,
-    },
-    previewRowsLoading: false,
-    step: 1,
-    filters: {
-      tag: [],
-      tag_type: [],
-      project: [],
-    },
   }
 }
 
@@ -77,6 +65,39 @@ const actions = {
         commit("SET_TABLE_LOADING", false)
       })
   }, 500),
+  save({ commit, state }) {
+    commit("SET_SELECTED_LOADING", true)
+    if (!state.selected.id) {
+      return SignalFilterApi.create(state.selected)
+        .then((resp) => {
+          commit(
+            "notification_backend/addBeNotification",
+            { text: "Signal filter created successfully.", type: "success" },
+            { root: true }
+          )
+          commit("SET_SELECTED_LOADING", false)
+          commit("RESET_SELECTED")
+          commit("SET_DIALOG_CREATE_EDIT", false)
+          return resp.data
+        })
+        .catch(() => {
+          commit("SET_SELECTED_LOADING", false)
+        })
+    } else {
+      return SignalFilterApi.update(state.selected.id, state.selected)
+        .then(() => {
+          commit(
+            "notification_backend/addBeNotification",
+            { text: "Signal filter updated successfully.", type: "success" },
+            { root: true }
+          )
+          commit("SET_SELECTED_LOADING", false)
+        })
+        .catch(() => {
+          commit("SET_SELECTED_LOADING", false)
+        })
+    }
+  },
   createEditShow({ commit }, signal) {
     if (signal) {
       commit("SET_SELECTED", signal)

@@ -32,19 +32,19 @@
                     <v-list dense>
                       <v-list-item>
                         <v-list-item-content>
-                          <tag-filter-auto-complete
+                          <entity-filter-combobox
                             :project="project"
-                            v-model="filters.tag"
-                            label="Tags"
+                            v-model="filters.entity"
+                            label="Entities"
                           />
                         </v-list-item-content>
                       </v-list-item>
                       <v-list-item>
                         <v-list-item-content>
-                          <tag-type-filter-combobox
+                          <entity-type-filter-combobox
                             :project="project"
-                            v-model="filters.tag_type"
-                            label="Tag Types"
+                            v-model="filters.entity_type"
+                            label="Entity Types"
                           />
                         </v-list-item-content>
                       </v-list-item>
@@ -173,8 +173,8 @@ import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
 import SearchUtils from "@/search/utils"
 import SignalApi from "@/signal/api"
-import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
-import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
+import EntityTypeFilterCombobox from "@/entity_type/EntityTypeFilterCombobox.vue"
+import EntityFilterCombobox from "@/entity/EntityFilterCombobox.vue"
 import RawSignalViewer from "@/signal/RawSignalViewer.vue"
 
 import ExpirationInput from "@/signal/filter/ExpirationInput.vue"
@@ -210,15 +210,15 @@ export default {
       },
       previewRowsLoading: false,
       filters: {
-        tag: [],
+        entity: [],
         project: [],
-        tag_type: [],
+        entity_type: [],
       },
     }
   },
   components: {
-    TagFilterAutoComplete,
-    TagTypeFilterCombobox,
+    EntityFilterCombobox,
+    EntityTypeFilterCombobox,
     ValidationObserver,
     ValidationProvider,
     RawSignalViewer,
@@ -282,7 +282,7 @@ export default {
     this.getPreviewData()
 
     this.$watch(
-      (vm) => [vm.filters.tag, vm.filters.tag_type],
+      (vm) => [vm.filters.entity, vm.filters.entity_type],
       () => {
         this.expression = SearchUtils.createFilterExpression(this.filters)
         this.getPreviewData()

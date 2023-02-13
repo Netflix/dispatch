@@ -4,6 +4,7 @@ from typing import Optional
 
 from sqlalchemy import asc
 
+from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.type import service as case_type_service
 from dispatch.database.service import apply_filters
@@ -23,22 +24,57 @@ from .models import (
 )
 
 
-def create_signal_filter(*, db_session, signal_filter_in: SignalFilterCreate) -> SignalFilter:
+def create_signal_filter(
+    *, db_session, creator: DispatchUser, signal_filter_in: SignalFilterCreate
+) -> SignalFilter:
     """Creates a new suppression filter."""
-    filter = SignalFilter(**signal_filter_in.dict())
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=signal_filter_in.project
+    )
 
-    db_session.add(filter)
+    signal_filter = SignalFilter(
+        **signal_filter_in.dict(
+            exclude={
+                "project",
+            }
+        ),
+        creator=creator,
+        project=project,
+    )
+    db_session.add(signal_filter)
     db_session.commit()
-    return filter
+    return signal_filter
 
 
 def update_signal_filter(*, db_session, signal_filter_in: SignalFilterUpdate) -> SignalFilter:
     """Updates an existing suppression filter."""
     filter = db_session.query(SignalFilter).filter(SignalFilter.id == signal_filter_in.id).one()
-
     db_session.add(filter)
     db_session.commit()
     return filter
+
+
+def delete_signal_filter(*, db_session, signal_filter_id: int) -> int:
+    """Deletes an existing signal filter."""
+    signal_filter = db_session.query(SignalFilter).filter(SignalFilter.id == signal_filter_id).one()
+    db_session.delete(signal_filter)
+    db_session.commit()
+    return signal_filter_id
+
+
+def get_signal_filter_by_name(*, db_session, project_id: int, name: str) -> Optional[SignalFilter]:
+    """Gets a signal filter by it's name."""
+    return (
+        db_session.query(SignalFilter)
+        .filter(SignalFilter.project_id == project_id)
+        .filter(SignalFilter.name == name)
+        .first()
+    )
+
+
+def get_signal_filter(*, db_session, signal_filter_id: int) -> SignalFilter:
+    """Gets a single signal filter."""
+    return db_session.query(SignalFilter).filter(SignalFilter.id == signal_filter_id).one()
 
 
 def get(*, db_session, signal_id: int) -> Optional[Signal]:
@@ -83,7 +119,7 @@ def create(*, db_session, signal_in: SignalCreate) -> Signal:
     )
 
     for f in signal_in.filter:
-        signal_filter = create_signal_filter(db_session=db_session, signal_filter_in=f)
+        signal_filter = get_signal_filter_by_name(db_session=db_session, signal_filter_in=f)
         signal.filters.append(signal_filter)
 
     if signal_in.case_priority:
