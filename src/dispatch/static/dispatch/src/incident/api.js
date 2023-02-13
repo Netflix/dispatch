@@ -58,5 +58,4 @@ export default {
   createReport(incidentId, type, payload) {
     return API.post(`/${resource}/${incidentId}/report/${type}`, payload)
   },
-
 }
