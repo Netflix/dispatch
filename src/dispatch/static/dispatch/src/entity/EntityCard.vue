@@ -100,7 +100,6 @@
             signalPromise,
         ]);
         this.caseCount = casesResponse.cases.length;
-        console.log(this.caseCount)
         this.signalInstanceCount = signalResponse.instances.length;
         this.isLoading = false;
     },
