@@ -92,7 +92,7 @@
       };
     },
     async mounted() {
-      const casePromise = EntityApi.getCasesCount(this.entity.id).then((response) => response.data);
+        const casePromise = EntityApi.getCasesCount(this.entity.id).then((response) => response.data);
         const signalPromise = EntityApi.getSignalInstances(this.entity.id).then((response) => response.data);
 
         const [casesResponse, signalResponse] = await Promise.all([

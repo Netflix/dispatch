@@ -10,8 +10,9 @@ from dispatch.database.core import Base
 from dispatch.models import DispatchBase, TimeStampMixin, ProjectMixin, PrimaryKey
 from dispatch.project.models import ProjectRead
 from dispatch.entity_type.models import (
-    EntityTypeRead,
     EntityTypeCreate,
+    EntityTypeRead,
+    EntityTypeReadMinimal,
     EntityTypeUpdate,
 )
 
@@ -31,7 +32,14 @@ class Entity(Base, TimeStampMixin, ProjectMixin):
     entity_type = relationship("EntityType", backref="entity")
 
     # the catalog here is simple to help matching "named entities"
-    search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
+    search_vector = Column(
+        TSVectorType(
+            "name",
+            "description",
+            weights={"name": "A", "description": "B"},
+            regconfig="pg_catalog.simple",
+        )
+    )
 
 
 # Pydantic models
@@ -65,7 +73,7 @@ class EntityReadMinimal(DispatchBase):
     source: Optional[str] = Field(None, nullable=True)
     value: Optional[str] = Field(None, nullable=True)
     description: Optional[str] = Field(None, nullable=True)
-    entity_type: Optional[EntityTypeRead]
+    entity_type: Optional[EntityTypeReadMinimal]
 
 
 class EntityPagination(DispatchBase):

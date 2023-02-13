@@ -204,7 +204,7 @@ def find_entities(
         dictionary objects by specifying a value for the 'field' attribute of the EntityType object.
     """
 
-    def search(key, val, entity_type_pairs):
+    def _search(key, val, entity_type_pairs):
         # Create a list to hold any entities that are found in this value
         entities = []
 
@@ -215,12 +215,12 @@ def find_entities(
         # If the value is a dictionary, search its key-value pairs recursively
         if isinstance(val, dict):
             for subkey, subval in val.items():
-                entities.extend(search(subkey, subval, entity_type_pairs))
+                entities.extend(_search(subkey, subval, entity_type_pairs))
 
         # If the value is a list, search its items recursively
         elif isinstance(val, list):
             for item in val:
-                entities.extend(search(None, item, entity_type_pairs))
+                entities.extend(_search(None, item, entity_type_pairs))
 
         # If the value is a string, search it for entity matches
         elif isinstance(val, str):
@@ -257,7 +257,7 @@ def find_entities(
     entities = [
         entity
         for key, val in signal_instance.raw.items()
-        for entity in search(key, val, entity_type_pairs)
+        for entity in _search(key, val, entity_type_pairs)
     ]
 
     # Create the entities in the database and add them to the signal instance

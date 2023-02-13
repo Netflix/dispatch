@@ -20,7 +20,14 @@ class EntityType(Base, TimeStampMixin, ProjectMixin):
     regular_expression = Column(String)
     global_find = Column(Boolean, default=False)
     enabled = Column(Boolean, default=False)
-    search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
+    search_vector = Column(
+        TSVectorType(
+            "name",
+            "description",
+            weights={"name": "A", "description": "B"},
+            regconfig="pg_catalog.simple",
+        )
+    )
 
 
 # Pydantic models

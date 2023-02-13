@@ -7,23 +7,23 @@ export default {
     return API.get(`${resource}`, { params: { ...options } })
   },
 
-  get(EntityTypeId) {
-    return API.get(`${resource}/${EntityTypeId}`)
+  get(entityTypeId) {
+    return API.get(`${resource}/${entityTypeId}`)
   },
 
   create(payload) {
     return API.post(`${resource}`, payload)
   },
 
-  update(EntityTypeId, payload) {
-    return API.put(`${resource}/${EntityTypeId}`, payload)
+  update(entityTypeId, payload) {
+    return API.put(`${resource}/${entityTypeId}`, payload)
   },
 
-  process(EntityTypeId, payload) {
-    return API.put(`${resource}/${EntityTypeId}/process`, payload)
+  process(entityTypeId, payload) {
+    return API.put(`${resource}/${entityTypeId}/process`, payload)
   },
 
-  delete(EntityTypeId) {
-    return API.delete(`${resource}/${EntityTypeId}`)
+  delete(entityTypeId) {
+    return API.delete(`${resource}/${entityTypeId}`)
   },
 }

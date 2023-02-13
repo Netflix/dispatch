@@ -18,7 +18,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=EntityPagination)
-def get_entitys(*, common: dict = Depends(common_parameters)):
+def get_entities(*, common: dict = Depends(common_parameters)):
     """Get all entitys, or only those matching a given search term."""
     return search_filter_sort_paginate(model="Entity", **common)
 
