@@ -58,7 +58,7 @@ assoc_signal_tags = Table(
 assoc_signal_instance_entities = Table(
     "assoc_signal_instance_entities",
     Base.metadata,
-    Column("signal_instance_id", Integer, ForeignKey("signal_instance.id", ondelete="CASCADE")),
+    Column("signal_instance_id", UUID, ForeignKey("signal_instance.id", ondelete="CASCADE")),
     Column("entity_id", Integer, ForeignKey("entity.id", ondelete="CASCADE")),
     PrimaryKeyConstraint("signal_instance_id", "entity_id"),
 )
@@ -230,7 +230,7 @@ class SignalCreate(SignalBase):
 
 class SignalUpdate(SignalBase):
     id: PrimaryKey
-    # entity_types: Optional[List[EntityTypeUpdate]] = []
+    entity_types: Optional[List[EntityTypeRead]] = []
     suppression_rule: Optional[SuppressionRuleUpdate]
     duplication_rule: Optional[DuplicationRuleUpdate]
 
