@@ -26,7 +26,7 @@ from dispatch.case.models import CaseRead
 from dispatch.case.type.models import CaseTypeRead, CaseType
 from dispatch.case.priority.models import CasePriority, CasePriorityRead
 from dispatch.entity.models import EntityRead
-from dispatch.entity_type.models import EntityTypeRead, EntityTypeUpdate, EntityTypeCreate
+from dispatch.entity_type.models import EntityTypeRead, EntityTypeCreate
 from dispatch.tag.models import TagRead
 from dispatch.project.models import ProjectRead
 from dispatch.data.source.models import SourceBase
