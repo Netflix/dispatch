@@ -1,6 +1,7 @@
 import json
 import hashlib
 from typing import Optional
+
 from datetime import datetime, timedelta, timezone
 from dispatch.enums import RuleMode
 from dispatch.project import service as project_service
@@ -8,6 +9,7 @@ from dispatch.tag import service as tag_service
 from dispatch.tag_type import service as tag_type_service
 from dispatch.case.type import service as case_type_service
 from dispatch.case.priority import service as case_priority_service
+from dispatch.entity_type import service as entity_type_service
 
 from .models import (
     Signal,
@@ -43,7 +45,7 @@ def create_duplication_rule(
 def update_duplication_rule(
     *, db_session, duplication_rule_in: DuplicationRuleUpdate
 ) -> DuplicationRule:
-    """Updates an 1existing duplication rule."""
+    """Updates an existing duplication rule."""
     rule = (
         db_session.query(DuplicationRule).filter(DuplicationRule.id == duplication_rule_in.id).one()
     )
@@ -172,6 +174,13 @@ def update(*, db_session, signal: Signal, signal_in: SignalUpdate) -> Signal:
     for field in signal_data:
         if field in update_data:
             setattr(signal, field, update_data[field])
+
+    entity_types = []
+    for entity_type in signal_in.entity_types:
+        entity_types.append(
+            entity_type_service.get_or_create(db_session=db_session, entity_type_in=entity_type)
+        )
+    signal.entity_types = entity_types
 
     if signal_in.duplication_rule:
         if signal_in.duplication_rule.id:

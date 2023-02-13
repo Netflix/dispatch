@@ -1,7 +1,7 @@
 <template>
   <v-data-table
     :headers="headers"
-    :items="signal_instances"
+    :items="signalInstances"
     :items-per-page="-1"
     disabled-pagination
     hide-default-footer
@@ -47,6 +47,12 @@ export default {
     SignalPopover,
     RawSignalViewer,
   },
+  props: {
+    inputSignalInstances: {
+      type: Array,
+      default: () => [],
+    },
+  },
   data() {
     return {
       menu: false,
@@ -62,6 +68,12 @@ export default {
   },
   computed: {
     ...mapFields("case_management", ["selected.signal_instances"]),
+    signalInstances() {
+      if (this.inputSignalInstances.length) {
+        return this.inputSignalInstances
+      }
+      return this.signal_instances;
+    },
   },
 }
 </script>

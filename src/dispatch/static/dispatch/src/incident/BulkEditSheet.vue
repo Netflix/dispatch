@@ -1,5 +1,6 @@
 <template>
   <v-bottom-sheet v-model="showBulkEdit" hide-overlay persistent>
+    <handoff-dialog />
     <v-card :loading="bulkEditLoading" tile>
       <v-list>
         <v-list-item>
@@ -7,6 +8,12 @@
             <v-list-item-subtitle>{{ selected.length }} selected</v-list-item-subtitle>
           </v-list-item-content>
           <v-spacer />
+          <v-list-item-icon>
+            <v-btn text @click="showHandoffDialog()">
+              <v-icon>mdi-account-arrow-right</v-icon>
+              Handoff
+            </v-btn>
+          </v-list-item-icon>
           <v-list-item-icon>
             <v-btn text @click="saveBulk({ status: 'Active' })">
               <v-icon>mdi-check</v-icon>
@@ -40,16 +47,26 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+
+import HandoffDialog from "@/incident/HandoffDialog.vue"
+
 export default {
   name: "IncidentBulkEditSheet",
+
+  components: {
+    HandoffDialog,
+  },
+
   computed: {
     ...mapFields("incident", ["table.rows.selected", "table.bulkEditLoading"]),
+
     showBulkEdit: function () {
       return this.selected.length ? true : false
     },
   },
+
   methods: {
-    ...mapActions("incident", ["saveBulk", "deleteBulk"]),
+    ...mapActions("incident", ["saveBulk", "deleteBulk", "showHandoffDialog"]),
   },
 }
 </script>
