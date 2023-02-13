@@ -58,7 +58,7 @@ def create_signal_instance(
     if duplicate:
         return
 
-    # # create a case if not duplicate or supressed
+    # create a case if not duplicate or suppressed
     case_in = CaseCreate(
         title=signal.name,
         description=signal.description,
