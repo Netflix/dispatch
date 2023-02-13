@@ -51,7 +51,7 @@ def create_duplication_rule(
 def update_duplication_rule(
     *, db_session, duplication_rule_in: DuplicationRuleUpdate
 ) -> DuplicationRule:
-    """Updates an 1existing duplication rule."""
+    """Updates an existing duplication rule."""
     rule = (
         db_session.query(DuplicationRule).filter(DuplicationRule.id == duplication_rule_in.id).one()
     )
@@ -181,13 +181,12 @@ def update(*, db_session, signal: Signal, signal_in: SignalUpdate) -> Signal:
         if field in update_data:
             setattr(signal, field, update_data[field])
 
-    if entity_types := signal_in.entity_types:
-        for entity_type in entity_types:
-            if entity_type.id:
-                entity_type = entity_type_service.get(
-                    db_session=db_session, entity_type_id=entity_type.id
-                )
-                signal.entity_types.append(entity_type)
+    entity_types = []
+    for entity_type in signal_in.entity_types:
+        entity_types.append(
+            entity_type_service.get_or_create(db_session=db_session, entity_type_in=entity_type)
+        )
+    signal.entity_types = entity_types
 
     if signal_in.duplication_rule:
         if signal_in.duplication_rule.id:
@@ -443,7 +442,7 @@ def find_entities(
 
     # Create the entities in the database and add them to the signal instance
     entities_out = [
-        entity_service.get_or_create(db_session=db_session, entity_in=entity_in)
+        entity_service.get_by_value_or_create(db_session=db_session, entity_in=entity_in)
         for entity_in in entities
     ]
 

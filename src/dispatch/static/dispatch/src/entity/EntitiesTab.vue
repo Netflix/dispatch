@@ -13,7 +13,6 @@
   </template>
 
   <script>
-  import { mapFields } from "vuex-map-fields"
   import EntityCard from "@/entity/EntityCard.vue"
 
   export default {
@@ -37,11 +36,7 @@
     },
     computed: {
       entities() {
-        if (
-          this.selected &&
-          this.selected.signal_instances &&
-          this.selected.signal_instances.length
-        ) {
+        if (this.selected.signal_instances.length) {
           // Concatenate all the entities associated with each SignalInstance
           return this.selected.signal_instances.reduce((acc, curr) => {
             const entities = curr.entities.map((entity) => ({

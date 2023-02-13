@@ -230,7 +230,7 @@ class SignalCreate(SignalBase):
 
 class SignalUpdate(SignalBase):
     id: PrimaryKey
-    entity_types: Optional[List[EntityTypeUpdate]] = []
+    # entity_types: Optional[List[EntityTypeUpdate]] = []
     suppression_rule: Optional[SuppressionRuleUpdate]
     duplication_rule: Optional[DuplicationRuleUpdate]
 
@@ -282,7 +282,7 @@ class SignalInstanceCreate(SignalInstanceBase):
 
 class SignalInstanceRead(SignalInstanceBase):
     id: uuid.UUID
-    fingerprint: str
+    fingerprint: str = None
     signal: SignalRead
 
 

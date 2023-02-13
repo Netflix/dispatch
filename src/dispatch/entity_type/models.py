@@ -42,7 +42,8 @@ class EntityTypeUpdate(EntityTypeBase):
 
 
 class EntityTypeRead(EntityTypeBase):
-    id: PrimaryKey = None
+    id: PrimaryKey
+    project: ProjectRead
 
 
 class EntityTypeReadMinimal(DispatchBase):

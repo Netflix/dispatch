@@ -1,16 +1,14 @@
 from datetime import datetime, timedelta
 from typing import Optional
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 from dispatch.case.models import Case
-from dispatch.entity.models import Entity
+from dispatch.entity.models import Entity, EntityCreate, EntityUpdate, EntityRead
 from dispatch.entity_type import service as entity_type_service
 from dispatch.signal.models import SignalInstance
-
-from .models import Entity, EntityCreate, EntityUpdate, EntityRead
 
 
 def get(*, db_session, entity_id: int) -> Optional[Entity]:
@@ -127,8 +125,12 @@ def delete(*, db_session, entity_id: int):
     db_session.commit()
 
 
-def get_cases_with_entity(db: Session, entity_id: int, days_back: int) -> int:
+def get_cases_with_entity(db: Session, entity_id: int, days_back: int) -> list[Case]:
+    """Searches for cases with the same entity within a given timeframe."""
+    # Calculate the datetime for the start of the search window
     start_date = datetime.utcnow() - timedelta(days=days_back)
+
+    # Query for signal instances containing the entity within the search window
     cases = (
         db.query(Case)
         .join(Case.signal_instances)
@@ -142,15 +144,14 @@ def get_cases_with_entity(db: Session, entity_id: int, days_back: int) -> int:
 def get_signal_instances_with_entity(
     db: Session, entity_id: int, days_back: int
 ) -> list[SignalInstance]:
-    """
-    Searches for signal instances with the same entity within a given timeframe.
-    """
+    """Searches for signal instances with the same entity within a given timeframe."""
     # Calculate the datetime for the start of the search window
     start_date = datetime.utcnow() - timedelta(days=days_back)
 
     # Query for signal instances containing the entity within the search window
     signal_instances = (
         db.query(SignalInstance)
+        .options(joinedload(SignalInstance.signal))
         .join(SignalInstance.entities)
         .filter(SignalInstance.created_at >= start_date, Entity.id == entity_id)
         .all()

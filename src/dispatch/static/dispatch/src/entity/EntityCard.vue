@@ -1,10 +1,5 @@
 <template>
     <v-card elevation="1" outlined class="position-relative">
-      <v-list-item-action class="position-absolute right-5">
-        <v-list-item-icon @click="openSignalInstanceTab">
-          <v-icon>mdi-open-in-new</v-icon>
-        </v-list-item-icon>
-      </v-list-item-action>
       <v-card-title>{{ entity.entity_type.name }}</v-card-title>
       <v-card-text style="font-size: 18px">{{ entity.value }}</v-card-text>
       <v-divider></v-divider>
