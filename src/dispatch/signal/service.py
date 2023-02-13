@@ -180,7 +180,9 @@ def apply_filter_actions(*, db_session, signal_instance: SignalInstance):
         if f.expiration <= datetime.now():
             continue
 
-        query = db_session.query(SignalInstance).filter(SignalInstance.signal_id == signal_instance.signal_id)
+        query = db_session.query(SignalInstance).filter(
+            SignalInstance.signal_id == signal_instance.signal_id
+        )
         query = apply_filters(query, filter_spec)
 
         # order matters, check for supression before deduplication
