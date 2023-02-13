@@ -274,17 +274,23 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
         incident_type_in=incident_in.incident_type,
     )
 
-    incident_priority = incident_priority_service.get_by_name_or_default(
-        db_session=db_session,
-        project_id=incident.project.id,
-        incident_priority_in=incident_in.incident_priority,
-    )
-
     incident_severity = incident_severity_service.get_by_name_or_default(
         db_session=db_session,
         project_id=incident.project.id,
         incident_severity_in=incident_in.incident_severity,
     )
+
+    if incident_in.status == IncidentStatus.stable:
+        incident_priority = incident_priority_service.get_default(
+            db_session=db_session,
+            project_id=incident.project.id,
+        )
+    else:
+        incident_priority = incident_priority_service.get_by_name_or_default(
+            db_session=db_session,
+            project_id=incident.project.id,
+            incident_priority_in=incident_in.incident_priority,
+        )
 
     cases = []
     for c in incident_in.cases:
