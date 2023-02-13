@@ -222,7 +222,6 @@ const actions = {
   closeHandoffDialog({ commit }) {
     commit("SET_DIALOG_SHOW_HANDOFF", false)
     commit("RESET_SELECTED")
-    // commit("incident/RESET_SELECTED", null, { root: true })
   },
   report({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
