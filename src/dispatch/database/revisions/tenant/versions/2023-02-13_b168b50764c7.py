@@ -1,8 +1,8 @@
-"""Moves signal processing to filter based approach.
+"""Moves signal processing to filter approach.
 
-Revision ID: 34ec3a05d2ca
-Revises: 941efd922446
-Create Date: 2023-02-10 09:46:17.230327
+Revision ID: b168b50764c7
+Revises: 8746b4e292d2
+Create Date: 2023-02-13 13:56:48.032074
 
 """
 from alembic import op
@@ -11,8 +11,8 @@ import sqlalchemy_utils
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "34ec3a05d2ca"
-down_revision = "941efd922446"
+revision = "b168b50764c7"
+down_revision = "8746b4e292d2"
 branch_labels = None
 depends_on = None
 
@@ -61,17 +61,16 @@ def upgrade():
     op.drop_constraint("signal_suppression_rule_id_fkey", "signal", type_="foreignkey")
     op.drop_constraint("signal_duplication_rule_id_fkey", "signal", type_="foreignkey")
     op.drop_constraint(
-        "signal_instance_suppression_rule_id_fkey", "signal_instance", type_="foreignkey"
-    )
-    op.drop_constraint(
         "signal_instance_duplication_rule_id_fkey", "signal_instance", type_="foreignkey"
     )
+    op.drop_constraint(
+        "signal_instance_suppression_rule_id_fkey", "signal_instance", type_="foreignkey"
+    )
     op.drop_table("assoc_duplication_rule_tag_types")
-    op.drop_table("duplication_rule")
-    op.drop_table("assoc_signal_tags")
     op.drop_table("assoc_suppression_rule_tags")
-    op.drop_table("suppression_rule")
     op.drop_table("assoc_signal_instance_tags")
+    op.drop_table("duplication_rule")
+    op.drop_table("suppression_rule")
     op.drop_column("signal", "suppression_rule_id")
     op.drop_column("signal", "duplication_rule_id")
     op.add_column("signal_instance", sa.Column("filter_action", sa.String(), nullable=True))
@@ -91,17 +90,17 @@ def downgrade():
         sa.Column("suppression_rule_id", sa.INTEGER(), autoincrement=False, nullable=True),
     )
     op.create_foreign_key(
-        "signal_instance_duplication_rule_id_fkey",
-        "signal_instance",
-        "duplication_rule",
-        ["duplication_rule_id"],
-        ["id"],
-    )
-    op.create_foreign_key(
         "signal_instance_suppression_rule_id_fkey",
         "signal_instance",
         "suppression_rule",
         ["suppression_rule_id"],
+        ["id"],
+    )
+    op.create_foreign_key(
+        "signal_instance_duplication_rule_id_fkey",
+        "signal_instance",
+        "duplication_rule",
+        ["duplication_rule_id"],
         ["id"],
     )
     op.drop_column("signal_instance", "filter_action")
@@ -134,6 +133,20 @@ def downgrade():
             nullable=True,
         ),
     )
+    op.drop_index("entity_search_vector_idx", table_name="entity", postgresql_using="gin")
+    op.create_index("ix_entity_search_vector", "entity", ["search_vector"], unique=False)
+    op.create_table(
+        "service_incident",
+        sa.Column("incident_id", sa.INTEGER(), autoincrement=False, nullable=False),
+        sa.Column("service_id", sa.INTEGER(), autoincrement=False, nullable=False),
+        sa.ForeignKeyConstraint(
+            ["incident_id"], ["incident.id"], name="service_incident_incident_id_fkey"
+        ),
+        sa.ForeignKeyConstraint(
+            ["service_id"], ["service.id"], name="service_incident_service_id_fkey"
+        ),
+        sa.PrimaryKeyConstraint("incident_id", "service_id", name="service_incident_pkey"),
+    )
     op.create_table(
         "assoc_suppression_rule_tags",
         sa.Column("suppression_rule_id", sa.INTEGER(), autoincrement=False, nullable=False),
@@ -152,6 +165,26 @@ def downgrade():
         ),
         sa.PrimaryKeyConstraint(
             "suppression_rule_id", "tag_id", name="assoc_suppression_rule_tags_pkey"
+        ),
+    )
+    op.create_table(
+        "assoc_duplication_rule_tag_types",
+        sa.Column("duplication_rule_id", sa.INTEGER(), autoincrement=False, nullable=False),
+        sa.Column("tag_type_id", sa.INTEGER(), autoincrement=False, nullable=False),
+        sa.ForeignKeyConstraint(
+            ["duplication_rule_id"],
+            ["duplication_rule.id"],
+            name="assoc_duplication_rule_tag_types_duplication_rule_id_fkey",
+            ondelete="CASCADE",
+        ),
+        sa.ForeignKeyConstraint(
+            ["tag_type_id"],
+            ["tag_type.id"],
+            name="assoc_duplication_rule_tag_types_tag_type_id_fkey",
+            ondelete="CASCADE",
+        ),
+        sa.PrimaryKeyConstraint(
+            "duplication_rule_id", "tag_type_id", name="assoc_duplication_rule_tag_types_pkey"
         ),
     )
     op.create_table(
@@ -182,13 +215,7 @@ def downgrade():
         sa.Column(
             "evergreen_last_reminder_at", postgresql.TIMESTAMP(), autoincrement=False, nullable=True
         ),
-        sa.Column(
-            "id",
-            sa.INTEGER(),
-            server_default=sa.text("nextval('suppression_rule_id_seq'::regclass)"),
-            autoincrement=True,
-            nullable=False,
-        ),
+        sa.Column("id", sa.INTEGER(), autoincrement=True, nullable=False),
         sa.Column("mode", sa.VARCHAR(), autoincrement=False, nullable=False),
         sa.Column("expiration", postgresql.TIMESTAMP(), autoincrement=False, nullable=True),
         sa.Column("project_id", sa.INTEGER(), autoincrement=False, nullable=True),
@@ -199,42 +226,6 @@ def downgrade():
             ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id", name="suppression_rule_pkey"),
-        postgresql_ignore_search_path=False,
-    )
-    op.create_table(
-        "assoc_duplication_rule_tag_types",
-        sa.Column("duplication_rule_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("tag_type_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(
-            ["duplication_rule_id"],
-            ["duplication_rule.id"],
-            name="assoc_duplication_rule_tag_types_duplication_rule_id_fkey",
-            ondelete="CASCADE",
-        ),
-        sa.ForeignKeyConstraint(
-            ["tag_type_id"],
-            ["tag_type.id"],
-            name="assoc_duplication_rule_tag_types_tag_type_id_fkey",
-            ondelete="CASCADE",
-        ),
-        sa.PrimaryKeyConstraint(
-            "duplication_rule_id", "tag_type_id", name="assoc_duplication_rule_tag_types_pkey"
-        ),
-    )
-    op.create_table(
-        "assoc_signal_tags",
-        sa.Column("signal_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("tag_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(
-            ["signal_id"],
-            ["signal.id"],
-            name="assoc_signal_tags_signal_id_fkey",
-            ondelete="CASCADE",
-        ),
-        sa.ForeignKeyConstraint(
-            ["tag_id"], ["tag.id"], name="assoc_signal_tags_tag_id_fkey", ondelete="CASCADE"
-        ),
-        sa.PrimaryKeyConstraint("signal_id", "tag_id", name="assoc_signal_tags_pkey"),
     )
     op.create_table(
         "duplication_rule",
