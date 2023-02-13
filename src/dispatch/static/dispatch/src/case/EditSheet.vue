@@ -1,6 +1,6 @@
 <template>
   <ValidationObserver v-slot="{ invalid, validated }">
-    <v-navigation-drawer app clipped right width="800">
+    <v-navigation-drawer app clipped right width="900">
       <template v-slot:prepend>
         <v-list-item two-line>
           <v-list-item-content>
