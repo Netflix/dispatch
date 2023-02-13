@@ -95,10 +95,6 @@ def get_incident_conversation_command_message(
             "response_type": "ephemeral",
             "text": "Opening a dialog to engage an oncall person...",
         },
-        config.slack_command_list_resources: {
-            "response_type": "ephemeral",
-            "text": "Fetching the list of incident resources...",
-        },
         config.slack_command_report_incident: {
             "response_type": "ephemeral",
             "text": "Opening a dialog to report an incident...",

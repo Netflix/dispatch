@@ -6,7 +6,6 @@ from typing import List
 
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.incident.enums import IncidentStatus
-from dispatch.case.enums import CaseStatus
 
 from dispatch.enums import DispatchEnum, DocumentResourceTypes, DocumentResourceReferenceTypes
 
@@ -23,7 +22,6 @@ class MessageType(DispatchEnum):
     incident_participant_suggested_reading = "incident-participant-suggested-reading"
     incident_participant_welcome = "incident-participant-welcome"
     incident_rating_feedback = "incident-rating-feedback"
-    incident_resources_message = "incident-resources-message"
     incident_status_reminder = "incident-status-reminder"
     incident_tactical_report = "incident-tactical-report"
     incident_task_list = "incident-task-list"
@@ -299,7 +297,7 @@ Hey, I see you're the Incident Commander for {{name}} ("{{title}}"). Here are a 
 \n • Keep the incident and its status up to date using the Slack `{{update_command}}` command.
 \n • Invite incident participants and team oncalls by mentioning them in the incident channel or using the Slack `{{engage_oncall_command}}` command.
 \n • Keep incident participants and stakeholders informed by creating tactical and executive reports using the `{{tactical_report_command}}` and `{{executive_report_command}}` commands.
-\n • Get links to all incident resources including the Slack commands reference sheet and Security Incident Response FAQ by running the `{{list_resources_command}}` command.
+\n • Get links to incident resources from the <{{dispatch_ui_incident_url}}|Dispatch Web UI> or bookmarks in the incident conversation.
 \n
 To find a Slack command, simply type `/` in the message field or click the lightning bolt icon to the left of the message field.
 """
@@ -484,19 +482,6 @@ INCIDENT_PARTICIPANT_WELCOME_MESSAGE = [
     INCIDENT_REPORTER,
     INCIDENT_COMMANDER,
     INCIDENT_INVESTIGATION_DOCUMENT,
-    INCIDENT_STORAGE,
-    INCIDENT_CONFERENCE,
-    INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
-    INCIDENT_FAQ_DOCUMENT,
-]
-
-INCIDENT_RESOURCES_MESSAGE = [
-    INCIDENT_TITLE,
-    INCIDENT_DESCRIPTION,
-    INCIDENT_REPORTER,
-    INCIDENT_COMMANDER,
-    INCIDENT_INVESTIGATION_DOCUMENT,
-    INCIDENT_REVIEW_DOCUMENT,
     INCIDENT_STORAGE,
     INCIDENT_CONFERENCE,
     INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
