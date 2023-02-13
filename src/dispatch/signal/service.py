@@ -406,15 +406,10 @@ def find_entities(
         # If the value is a string, search it for entity matches
         elif isinstance(val, str):
             for entity_type, entity_regex, field in entity_type_pairs:
-                import time
-
-                time.sleep(3)
                 # If a field was specified for this entity type, only search that field
                 if not field or key == field:
-                    print(f"Checking {val} for {entity_type.name} using {entity_regex} in {field=}")
                     # Search the string for matches to the entity type's regular expression
                     if match := entity_regex.search(val):
-                        print(f"Found match {match.group(0)} for {entity_type.name} in {field=}")
                         # If a match was found, create a new Entity object for it
                         entity = EntityCreate(
                             value=match.group(0),
