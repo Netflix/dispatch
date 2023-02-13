@@ -8,6 +8,11 @@ from sqlalchemy import asc
 from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.type import service as case_type_service
+from dispatch.database.service import apply_filters
+from dispatch.project import service as project_service
+from dispatch.case.type import service as case_type_service
+from dispatch.case.priority import service as case_priority_service
+from dispatch.case.type import service as case_type_service
 from dispatch.database.service import apply_filters, apply_filter_specific_joins
 from dispatch.project import service as project_service
 
@@ -35,7 +40,7 @@ from .models import (
 def create_signal_filter(
     *, db_session, creator: DispatchUser, signal_filter_in: SignalFilterCreate
 ) -> SignalFilter:
-    """Creates a new signal filter."""
+    """Creates a new suppression filter."""
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=signal_filter_in.project
     )
@@ -54,18 +59,10 @@ def create_signal_filter(
     return signal_filter
 
 
-def create_suppression_rule(
-    *, db_session, suppression_rule_in: SuppressionRuleCreate
-) -> SuppressionRule:
-    """Creates a new suppression rule."""
-    rule = SuppressionRule(**suppression_rule_in.dict(exclude={"tags"}))
-
-    tags = []
-    for t in suppression_rule_in.tags:
-        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
-
-    rule.tags = tags
-    db_session.add(rule)
+def update_signal_filter(*, db_session, signal_filter_in: SignalFilterUpdate) -> SignalFilter:
+    """Updates an existing suppression filter."""
+    filter = db_session.query(SignalFilter).filter(SignalFilter.id == signal_filter_in.id).one()
+    db_session.add(filter)
     db_session.commit()
     return rule
 
@@ -110,6 +107,29 @@ def get_signal_filter(*, db_session, signal_filter_id: int) -> SignalFilter:
     return db_session.query(SignalFilter).filter(SignalFilter.id == signal_filter_id).one_or_none()
 
 
+def delete_signal_filter(*, db_session, signal_filter_id: int) -> int:
+    """Deletes an existing signal filter."""
+    signal_filter = db_session.query(SignalFilter).filter(SignalFilter.id == signal_filter_id).one()
+    db_session.delete(signal_filter)
+    db_session.commit()
+    return signal_filter_id
+
+
+def get_signal_filter_by_name(*, db_session, project_id: int, name: str) -> Optional[SignalFilter]:
+    """Gets a signal filter by it's name."""
+    return (
+        db_session.query(SignalFilter)
+        .filter(SignalFilter.project_id == project_id)
+        .filter(SignalFilter.name == name)
+        .first()
+    )
+
+
+def get_signal_filter(*, db_session, signal_filter_id: int) -> SignalFilter:
+    """Gets a single signal filter."""
+    return db_session.query(SignalFilter).filter(SignalFilter.id == signal_filter_id).one()
+
+
 def get(*, db_session, signal_id: int) -> Optional[Signal]:
     """Gets a signal by id."""
     return db_session.query(Signal).filter(Signal.id == signal_id).one_or_none()
@@ -151,7 +171,7 @@ def create(*, db_session, signal_in: SignalCreate) -> Signal:
         project=project,
     )
 
-    for f in signal_in.filters:
+    for f in signal_in.filter:
         signal_filter = get_signal_filter_by_name(db_session=db_session, signal_filter_in=f)
         signal.filters.append(signal_filter)
 

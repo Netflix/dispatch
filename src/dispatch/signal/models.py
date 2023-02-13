@@ -23,11 +23,47 @@ from dispatch.case.priority.models import CasePriority, CasePriorityRead
 from dispatch.case.type.models import CaseType, CaseTypeRead
 from dispatch.data.source.models import SourceBase
 from dispatch.database.core import Base
-from dispatch.enums import DispatchEnum
-from dispatch.models import DispatchBase, EvergreenMixin, PrimaryKey, ProjectMixin, TimeStampMixin
+from dispatch.models import (
+    DispatchBase,
+    EvergreenMixin,
+    PrimaryKey,
+    ProjectMixin,
+    TimeStampMixin,
+    NameStr,
+)
 from dispatch.project.models import ProjectRead
-from dispatch.tag.models import TagRead
-from dispatch.tag_type.models import TagTypeRead
+
+assoc_signal_tags = Table(
+    "assoc_signal_tags",
+    Base.metadata,
+    Column("signal_id", Integer, ForeignKey("signal.id", ondelete="CASCADE")),
+    Column("tag_id", Integer, ForeignKey("tag.id", ondelete="CASCADE")),
+    PrimaryKeyConstraint("signal_id", "tag_id"),
+)
+
+assoc_signal_filters = Table(
+    "assoc_signal_filters",
+    Base.metadata,
+    Column("signal_id", Integer, ForeignKey("signal.id", ondelete="CASCADE")),
+    Column("signal_filter_id", Integer, ForeignKey("signal_filter.id", ondelete="CASCADE")),
+    PrimaryKeyConstraint("signal_id", "signal_filter_id"),
+)
+
+assoc_signal_instance_entities = Table(
+    "assoc_signal_instance_entities",
+    Base.metadata,
+    Column("signal_instance_id", UUID, ForeignKey("signal_instance.id", ondelete="CASCADE")),
+    Column("entity_id", Integer, ForeignKey("entity.id", ondelete="CASCADE")),
+    PrimaryKeyConstraint("signal_instance_id", "entity_id"),
+)
+
+assoc_signal_entity_types = Table(
+    "assoc_signal_entity_types",
+    Base.metadata,
+    Column("signal_id", Integer, ForeignKey("signal.id", ondelete="CASCADE")),
+    Column("entity_type_id", Integer, ForeignKey("entity_type.id", ondelete="CASCADE")),
+    PrimaryKeyConstraint("signal_id", "entity_type_id"),
+)
 
 
 class FilterMode(DispatchEnum):
@@ -75,10 +111,17 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     case_type = relationship("CaseType", backref="signals")
     case_priority_id = Column(Integer, ForeignKey(CasePriority.id))
     case_priority = relationship("CasePriority", backref="signals")
-    duplication_filter_id = Column(Integer, ForeignKey(DuplicationFilter.id))
-    duplication_filter = relationship("DuplicationFilter", backref="signal")
-    suppression_filter_id = Column(Integer, ForeignKey(SuppressionFilter.id))
-    suppression_filter = relationship("SuppressionFilter", backref="signal")
+    filters = relationship("SignalFilter", secondary=assoc_signal_filters, backref="signals")
+    entity_types = relationship(
+        "EntityType",
+        secondary=assoc_signal_entity_types,
+        backref="signals",
+    )
+    tags = relationship(
+        "Tag",
+        secondary=assoc_signal_tags,
+        backref="signals",
+    )
     search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
 
@@ -128,8 +171,12 @@ class DuplicationFilterBase(SignalFilterBase):
     expiration: Optional[datetime] = Field(None, nullable=True)
 
 
-class DuplicationFilterCreate(DuplicationFilterBase):
-    pass
+class SignalFilterUpdate(SignalFilterBase):
+    id: PrimaryKey
+
+
+class SignalFilterCreate(SignalFilterBase):
+    project: ProjectRead
 
 
 class DuplicationFilterUpdate(DuplicationFilterBase):

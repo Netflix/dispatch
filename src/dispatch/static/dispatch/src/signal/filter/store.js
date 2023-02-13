@@ -1,4 +1,7 @@
 import { getField, updateField } from "vuex-map-fields"
+import { debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
 import SignalFilterApi from "@/signal/filter/api"
 
 const getDefaultSelectedState = () => {
@@ -50,6 +53,18 @@ const getters = {
 }
 
 const actions = {
+  getAll: debounce(({ commit, state }) => {
+    commit("SET_TABLE_LOADING", "primary")
+    let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options }, "signal")
+    return SignalApi.getAllInstances(params)
+      .then((response) => {
+        commit("SET_TABLE_LOADING", false)
+        commit("SET_TABLE_ROWS", response.data)
+      })
+      .catch(() => {
+        commit("SET_TABLE_LOADING", false)
+      })
+  }, 500),
   save({ commit, state }) {
     commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
