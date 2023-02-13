@@ -6,7 +6,6 @@ from dispatch.case import flows as case_flows
 from dispatch.signal import service as signal_service
 from dispatch.tag import service as tag_service
 from dispatch.signal.models import SignalInstanceCreate, RawSignal
-from dispatch.entity.correlator import search_cases_with_entity
 
 
 def create_signal_instance(
