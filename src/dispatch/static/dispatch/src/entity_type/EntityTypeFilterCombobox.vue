@@ -1,6 +1,6 @@
 <template>
   <v-combobox
-    :items="items | filterGlobal"
+    :items="items"
     :label="label"
     :loading="loading"
     :search-input.sync="search"
@@ -153,12 +153,5 @@ export default {
     }, 500),
   },
 
-  filters: {
-    filterGlobal: function(entity_types) {
-      return entity_types.filter(
-        entity_type => entity_type.global_find === false
-      );
-    }
-  }
 }
 </script>

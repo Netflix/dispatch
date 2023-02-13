@@ -64,7 +64,7 @@
                     label="Regular Expression"
                     :error-messages="errors"
                     :success="valid"
-                    hint="A regular expression pattern for your entity type."
+                    hint="A regular expression pattern for your entity type. Multiple capture groups are not supported, the first group will be used."
                     clearable
                     required
                   />
@@ -82,19 +82,6 @@
                     clearable
                   />
                 </ValidationProvider>
-              </v-flex>
-              <v-flex class="checkbox-tooltip-container" xs12>
-                <v-checkbox
-                  v-model="global_find"
-                  label="Global"
-                >
-                </v-checkbox>
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on }">
-                    <v-icon v-on="on" small class="ml-2">mdi-information</v-icon>
-                  </template>
-                  <span>Checking this box collects the entity from all signal instances.</span>
-                </v-tooltip>
               </v-flex>
               <v-flex xs12>
                 <v-checkbox
@@ -151,7 +138,6 @@ export default {
       "selected.field",
       "selected.project",
       "selected.regular_expression",
-      "selected.global_find",
       "selected.enabled",
       "selected.loading",
     ]),

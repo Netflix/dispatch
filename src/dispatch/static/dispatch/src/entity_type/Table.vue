@@ -33,9 +33,6 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-          <template v-slot:item.global_find="{ item }">
-              <v-simple-checkbox v-model="item.global_find" disabled />
-            </template>
             <template v-slot:item.enabled="{ item }">
               <v-simple-checkbox v-model="item.enabled" disabled />
             </template>
@@ -80,7 +77,6 @@ export default {
         { text: "Name", value: "name", sortable: true },
         { text: "Field", value: "field", sortable: false },
         { text: "Regular Expression", value: "regular_expression", sortable: false },
-        { text: "Global", value: "global_find", sortable: true },
         { text: "Enabled", value: "enabled", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
