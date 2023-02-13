@@ -18,14 +18,15 @@ const getDefaultSelectedState = () => {
     escalated_at: null,
     events: [],
     groups: [],
-    signals: [],
     id: null,
     incidents: [],
+    loading: false,
     name: null,
     project: null,
     related: [],
     reported_at: null,
     resolution: null,
+    signals: [],
     status: null,
     storage: null,
     tags: [],
@@ -34,7 +35,6 @@ const getDefaultSelectedState = () => {
     triage_at: null,
     visibility: null,
     workflow_instances: null,
-    loading: false,
   }
 }
 
@@ -49,9 +49,10 @@ const state = {
   dialogs: {
     showDeleteDialog: false,
     showEditSheet: false,
-    showExport: false,
-    showNewSheet: false,
     showEscalateDialog: false,
+    showExport: false,
+    showHandoffDialog: false,
+    showNewSheet: false,
   },
   report: {
     ...getDefaultReportState(),
@@ -187,6 +188,14 @@ const actions = {
     commit("SET_DIALOG_ESCALATE", false)
     commit("RESET_SELECTED")
     commit("incident/RESET_SELECTED", null, { root: true })
+  },
+  showHandoffDialog({ commit }, value) {
+    commit("SET_DIALOG_SHOW_HANDOFF", true)
+    commit("SET_SELECTED", value)
+  },
+  closeHandoffDialog({ commit }) {
+    commit("SET_DIALOG_SHOW_HANDOFF", false)
+    commit("RESET_SELECTED")
   },
   showExport({ commit }) {
     commit("SET_DIALOG_SHOW_EXPORT", true)
@@ -332,6 +341,9 @@ const mutations = {
   },
   SET_DIALOG_SHOW_EXPORT(state, value) {
     state.dialogs.showExport = value
+  },
+  SET_DIALOG_SHOW_HANDOFF(state, value) {
+    state.dialogs.showHandoffDialog = value
   },
   SET_DIALOG_DELETE(state, value) {
     state.dialogs.showDeleteDialog = value
