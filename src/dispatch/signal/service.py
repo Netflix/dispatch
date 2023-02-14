@@ -7,7 +7,7 @@ from sqlalchemy import asc
 from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.type import service as case_type_service
-from dispatch.database.service import apply_filters
+from dispatch.database.service import apply_filters, apply_filter_specific_joins
 from dispatch.project import service as project_service
 
 from .models import (
@@ -158,11 +158,10 @@ def update(*, db_session, signal: Signal, signal_in: SignalUpdate) -> Signal:
             setattr(signal, field, update_data[field])
 
     for f in signal_in.filters:
-        if signal_in.suppression_filter.id:
-            update_signal_filter(db_session=db_session, signal_filter_in=f)
-        else:
-            signal_filter = create_signal_filter(db_session=db_session, signal_filter_in=f)
-            signal.filters.append(signal_filter)
+        signal_filter = get_signal_filter_by_name(
+            db_session=db_session, project_id=signal.project.id, name=f.name
+        )
+        signal.filters.append(signal_filter)
 
     if signal_in.case_priority:
         case_priority = case_priority_service.get_by_name_or_default(
@@ -210,6 +209,7 @@ def create_instance(*, db_session, signal_instance_in: SignalInstanceCreate) -> 
 
 def apply_filter_actions(*, db_session, signal_instance: SignalInstance):
     """Applies any matching filter actions associated with this instance."""
+
     for f in signal_instance.signal.filters:
         if f.mode != SignalFilterMode.active:
             continue
@@ -220,6 +220,7 @@ def apply_filter_actions(*, db_session, signal_instance: SignalInstance):
         query = db_session.query(SignalInstance).filter(
             SignalInstance.signal_id == signal_instance.signal_id
         )
+        query = apply_filter_specific_joins(SignalFilter, f.expression, query)
         query = apply_filters(query, f.expression)
 
         # order matters, check for supression before deduplication

@@ -169,7 +169,7 @@ class SignalInstanceRead(DispatchBase):
     entities: Optional[List[EntityRead]] = []
     tags: Optional[List[TagRead]] = []
     raw: Any
-    fingerprint: str
+    fingerprint: Optional[str]
     created_at: datetime
 
 

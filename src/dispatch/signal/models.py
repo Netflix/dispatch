@@ -245,7 +245,7 @@ class SignalInstanceCreate(SignalInstanceBase):
 
 class SignalInstanceRead(SignalInstanceBase):
     id: uuid.UUID
-    fingerprint: str = None
+    fingerprint: Optional[str]
     signal: SignalRead
 
 

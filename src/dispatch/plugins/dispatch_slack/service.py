@@ -341,10 +341,13 @@ def add_users_to_conversation_thread(
 ):
     """Adds user to a threaded conversation."""
     users = [f"<@{user_id}>" for user_id in user_ids]
-    blocks = Message(
-        blocks=[Section(text="Looping in individuals to help resolve this case...", fields=users)]
-    ).build()["blocks"]
-    send_message(client=client, conversation_id=conversation_id, blocks=blocks, ts=thread_id)
+    if users:
+        blocks = Message(
+            blocks=[
+                Section(text="Looping in individuals to help resolve this case...", fields=users)
+            ]
+        ).build()["blocks"]
+        send_message(client=client, conversation_id=conversation_id, blocks=blocks, ts=thread_id)
 
 
 def add_users_to_conversation(client: Any, conversation_id: str, user_ids: List[str]):
