@@ -3,7 +3,6 @@ import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import SignalFilterApi from "@/signal/filter/api"
-import SignalApi from "@/signal/api"
 
 const getDefaultSelectedState = () => {
   return {
