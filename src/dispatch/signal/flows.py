@@ -3,6 +3,7 @@ from dispatch.database.core import SessionLocal
 from dispatch.project.models import Project
 from dispatch.case import service as case_service
 from dispatch.case import flows as case_flows
+from dispatch.entity import service as entity_service
 from dispatch.signal import service as signal_service
 from dispatch.tag import service as tag_service
 from dispatch.signal.models import SignalInstanceCreate, RawSignal
@@ -34,6 +35,13 @@ def create_signal_instance(
     signal_instance.signal = signal
     db_session.commit()
 
+    entities = entity_service.find_entities(
+        db_session=db_session,
+        signal_instance=signal_instance,
+        entity_types=signal.entity_types,
+    )
+    signal_instance.entities = entities
+
     suppressed = signal_service.supress(
         db_session=db_session,
         signal_instance=signal_instance,
@@ -50,7 +58,7 @@ def create_signal_instance(
     if duplicate:
         return
 
-    # create a case if not duplicate or supressed
+    # create a case if not duplicate or suppressed
     case_in = CaseCreate(
         title=signal.name,
         description=signal.description,
