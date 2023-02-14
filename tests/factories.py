@@ -4,20 +4,22 @@ from pytz import UTC
 from datetime import datetime
 
 from faker import Faker
-
+from faker.providers import misc
 from factory import Sequence, post_generation, SubFactory, LazyAttribute, LazyFunction
 from factory.alchemy import SQLAlchemyModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime, FuzzyInteger
 
 from dispatch.auth.models import DispatchUser, hash_password  # noqa
-from dispatch.case.models import Case, CaseRead, Case
+from dispatch.case.models import Case, CaseRead
 from dispatch.case.priority.models import CasePriority
 from dispatch.case.severity.models import CaseSeverity
 from dispatch.case.type.models import CaseType
 from dispatch.conference.models import Conference
 from dispatch.conversation.models import Conversation
+from dispatch.database.core import Session
 from dispatch.definition.models import Definition
 from dispatch.document.models import Document
+from dispatch.entity_type.models import EntityType
 from dispatch.event.models import Event
 from dispatch.feedback.models import Feedback
 from dispatch.group.models import Group
@@ -39,6 +41,7 @@ from dispatch.report.models import Report
 from dispatch.route.models import Recommendation, RecommendationMatch
 from dispatch.search_filter.models import SearchFilter
 from dispatch.service.models import Service
+from dispatch.signal.models import Signal, SignalInstance
 from dispatch.storage.models import Storage
 from dispatch.tag.models import Tag
 from dispatch.tag_type.models import TagType
@@ -49,6 +52,10 @@ from dispatch.ticket.models import Ticket
 from dispatch.workflow.models import Workflow, WorkflowInstance
 
 from .database import Session
+
+
+fake = Faker()
+fake.add_provider(misc)
 
 
 class BaseFactory(SQLAlchemyModelFactory):
@@ -742,6 +749,56 @@ class CaseReadFactory(BaseFactory):
         """Factory Configuration."""
 
         model = CaseRead
+
+
+class EntityTypeFactory(BaseFactory):
+    name = FuzzyText()
+    description = FuzzyText()
+    field = FuzzyText()
+    regular_expression = r"[a-zA-Z]+"
+    global_find = Faker().pybool()
+    enabled = Faker().pybool()
+    project = SubFactory(ProjectFactory)
+
+    class Meta:
+        model = EntityType
+
+
+class SignalFactory(BaseFactory):
+    name = "Test Signal"
+    owner = "Test Owner"
+    description = "Test Description"
+    external_url = "https://test.com"
+    external_id = "1234"
+    variant = "Test Variant"
+    loopin_signal_identity = False
+    project = SubFactory(ProjectFactory)
+
+    class Meta:
+        model = Signal
+
+
+class SignalInstanceFactory(BaseFactory):
+    id = LazyFunction(uuid.uuid4)
+    project = SubFactory(ProjectFactory)
+    case = SubFactory(CaseFactory)
+    fingerprint = fake.md5()
+    signal = SubFactory(SignalFactory)
+    raw = {
+        "action": [{"type": "AWS_API_CALL", "value": {"Api": "assumerole", "ServiceName": "sts"}}],
+        "additionalMetadata": [],
+        "asset": [
+            {"id": "arn:aws:iam::123456789012:role/Test", "type": "AwsIamRole", "details": {}}
+        ],
+        "identity": {"id": "123456789012", "type": "AWS Principal"},
+        "originLocation": [],
+        "variant": "TEST:1.A",
+        "created_at": None,
+        "id": "TEST:1.A/c12a34a5-dd67-8910-1a1a-c1e23456f7c8",
+    }
+
+    class Meta:
+        model = SignalInstance
 
 
 class IncidentFactory(BaseFactory):
