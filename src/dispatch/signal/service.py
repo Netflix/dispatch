@@ -8,7 +8,7 @@ from sqlalchemy import asc
 from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.type import service as case_type_service
-from dispatch.database.service import apply_filters
+from dispatch.database.service import apply_filters, apply_filter_specific_joins
 from dispatch.project import service as project_service
 from dispatch.case.type import service as case_type_service
 from dispatch.case.priority import service as case_priority_service
@@ -262,6 +262,7 @@ def create_instance(*, db_session, signal_instance_in: SignalInstanceCreate) -> 
 
 def apply_filter_actions(*, db_session, signal_instance: SignalInstance):
     """Applies any matching filter actions associated with this instance."""
+
     for f in signal_instance.signal.filters:
         if f.mode != SignalFilterMode.active:
             continue
@@ -269,8 +270,11 @@ def apply_filter_actions(*, db_session, signal_instance: SignalInstance):
         if f.expiration <= datetime.now():
             continue
 
-        query = db_session.query(SignalInstance).filter(SignalInstance.signal_id == signal_instance.signal_id)
-        query = apply_filters(query, filter_spec)
+        query = db_session.query(SignalInstance).filter(
+            SignalInstance.signal_id == signal_instance.signal_id
+        )
+        query = apply_filter_specific_joins(SignalFilter, f.expression, query)
+        query = apply_filters(query, f.expression)
 
         # order matters, check for supression before deduplication
         # we check to see if the current instances match's it's signals supression filter
