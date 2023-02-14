@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-import itertools
 from typing import Generator, Optional, Sequence, Union, NewType, NamedTuple
 import re
 

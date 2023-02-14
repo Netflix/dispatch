@@ -90,7 +90,9 @@ cymem==2.0.7
     #   spacy
     #   thinc
 decorator==5.1.1
-    # via validators
+    # via
+    #   jsonpath-ng
+    #   validators
 defusedxml==0.7.1
     # via jira
 deprecated==1.2.13
@@ -103,6 +105,10 @@ email-validator==1.3.1
     # via -r requirements-base.in
 emails==0.6
     # via -r requirements-base.in
+exceptiongroup==1.1.0
+    # via
+    #   hypothesis
+    #   pytest
 fastapi==0.90.1
     # via -r requirements-base.in
 frozenlist==1.3.3
@@ -169,6 +175,8 @@ jira==2.0.0
     # via -r requirements-base.in
 joblib==1.2.0
     # via -r requirements-base.in
+jsonpath-ng==1.5.3
+    # via -r requirements-base.in
 jsonschema==4.17.3
     # via
     #   hypothesis-jsonschema
@@ -233,6 +241,8 @@ pdpyras==4.5.2
     # via -r requirements-base.in
 pluggy==1.0.0
     # via pytest
+ply==3.11
+    # via jsonpath-ng
 premailer==3.10.0
     # via emails
 preshed==3.0.8
@@ -347,6 +357,7 @@ six==1.16.0
     #   google-auth
     #   google-auth-httplib2
     #   jira
+    #   jsonpath-ng
     #   junit-xml
     #   oauth2client
     #   patsy
@@ -410,7 +421,9 @@ text-unidecode==1.3
 thinc==8.1.5
     # via spacy
 tomli==2.0.1
-    # via schemathesis
+    # via
+    #   pytest
+    #   schemathesis
 tomli-w==1.0.0
     # via schemathesis
 tqdm==4.64.1
@@ -423,6 +436,7 @@ typing-extensions==4.4.0
     # via
     #   pydantic
     #   schemathesis
+    #   starlette
 uritemplate==4.1.1
     # via google-api-python-client
 urllib3==1.26.13
