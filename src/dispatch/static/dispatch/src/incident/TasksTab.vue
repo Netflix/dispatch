@@ -32,14 +32,8 @@
 import map from "lodash"
 import { mapFields } from "vuex-map-fields"
 
-import Participant from "@/incident/Participant.vue"
-
 export default {
   name: "IncidentTasksTab",
-
-  components: {
-    Participant,
-  },
 
   computed: {
     ...mapFields("incident", ["selected.tasks"]),
