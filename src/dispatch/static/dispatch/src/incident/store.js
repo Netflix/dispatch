@@ -31,6 +31,7 @@ const getDefaultSelectedState = () => {
     status: null,
     storage: null,
     tags: [],
+    tasks: [],
     terms: [],
     ticket: null,
     title: null,

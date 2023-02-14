@@ -117,3 +117,20 @@ export const activeRoles = function (value) {
 }
 
 Vue.filter("activeRoles", activeRoles)
+
+Vue.filter("individualNames", function (value) {
+  if (value) {
+    return value
+      .map(function (assignee) {
+        return assignee.individual.name
+      })
+      .join(", ")
+  }
+})
+
+Vue.filter("truncateString", function (value) {
+  if (value) {
+    return value.slice(0, 100)
+  }
+})
+

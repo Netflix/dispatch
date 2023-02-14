@@ -2,7 +2,8 @@ from collections import Counter, defaultdict
 from datetime import datetime
 from typing import ForwardRef, List, Optional
 
-from pydantic import validator
+from pydantic import validator, Field
+
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
@@ -46,6 +47,7 @@ from dispatch.report.enums import ReportTypes
 from dispatch.report.models import ReportRead
 from dispatch.storage.models import StorageRead
 from dispatch.tag.models import TagRead, TagReadMinimal
+from dispatch.task.enums import TaskStatus
 from dispatch.term.models import TermRead
 from dispatch.ticket.models import TicketRead
 from dispatch.workflow.models import WorkflowInstanceRead
@@ -235,6 +237,15 @@ class CaseRead(DispatchBase):
     name: Optional[NameStr]
 
 
+class TaskRead(DispatchBase):
+    id: PrimaryKey
+    assignees: List[Optional[ParticipantRead]] = []
+    created_at: Optional[datetime]
+    description: Optional[str] = Field(None, nullable=True)
+    status: TaskStatus = TaskStatus.open
+    weblink: Optional[str]
+
+
 # Pydantic models...
 class IncidentBase(DispatchBase):
     title: str
@@ -327,16 +338,25 @@ class IncidentUpdate(IncidentBase):
 
 class IncidentRead(IncidentBase):
     id: PrimaryKey
+    cases: Optional[List[CaseRead]] = []
     closed_at: Optional[datetime] = None
     commander: Optional[ParticipantRead]
     commanders_location: Optional[str]
+    conference: Optional[ConferenceRead] = None
+    conversation: Optional[ConversationRead] = None
     created_at: Optional[datetime] = None
+    documents: Optional[List[DocumentRead]] = []
     duplicates: Optional[List[IncidentReadMinimal]] = []
+    duplicates: Optional[List[IncidentReadMinimal]] = []
+    events: Optional[List[EventRead]] = []
     incident_costs: Optional[List[IncidentCostRead]] = []
     incident_priority: IncidentPriorityRead
     incident_severity: IncidentSeverityRead
     incident_type: IncidentTypeRead
+    last_executive_report: Optional[ReportRead]
+    last_tactical_report: Optional[ReportRead]
     name: Optional[NameStr]
+    participants: Optional[List[ParticipantRead]] = []
     participants_location: Optional[str]
     participants_team: Optional[str]
     project: ProjectRead
@@ -344,20 +364,12 @@ class IncidentRead(IncidentBase):
     reporter: Optional[ParticipantRead]
     reporters_location: Optional[str]
     stable_at: Optional[datetime] = None
-    tags: Optional[List[TagRead]] = []
-    total_cost: Optional[float]
-    cases: Optional[List[CaseRead]] = []
-    conference: Optional[ConferenceRead] = None
-    conversation: Optional[ConversationRead] = None
-    documents: Optional[List[DocumentRead]] = []
-    duplicates: Optional[List[IncidentReadMinimal]] = []
-    events: Optional[List[EventRead]] = []
-    last_executive_report: Optional[ReportRead]
-    last_tactical_report: Optional[ReportRead]
-    participants: Optional[List[ParticipantRead]] = []
     storage: Optional[StorageRead] = None
+    tasks: Optional[List[TaskRead]] = []
+    tags: Optional[List[TagRead]] = []
     terms: Optional[List[TermRead]] = []
     ticket: Optional[TicketRead] = None
+    total_cost: Optional[float]
     workflow_instances: Optional[List[WorkflowInstanceRead]] = []
 
 
