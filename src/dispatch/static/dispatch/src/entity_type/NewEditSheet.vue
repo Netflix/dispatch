@@ -77,7 +77,7 @@
                     :error-messages="errors"
                     :success="valid"
                     label="Field"
-                    hint="The field where the entity will be present."
+                    hint="The field where the entity will be present. Accepts JSONPath expressions."
                     clearable
                   />
                 </ValidationProvider>
