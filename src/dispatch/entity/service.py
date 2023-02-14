@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
-from typing import Generator, Optional, Sequence, Union, TypeVar
+import itertools
+from typing import Generator, Optional, Sequence, Union, NewType, NamedTuple
 import re
 
 import jsonpath_ng
-from jsonpath_ng import jsonpath
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.orm import Session, joinedload
 
@@ -165,15 +165,16 @@ def get_signal_instances_with_entity(
     return signal_instances
 
 
-EntityTypePair = TypeVar(
+EntityTypePair = NewType(
     "EntityTypePair",
-    tuple[
-        EntityType,
-        Optional[re.Pattern[str]],
-        Optional[
-            jsonpath_ng.JSONPath,
+    NamedTuple(
+        "EntityTypePairTuple",
+        [
+            ("entity_type", EntityType),
+            ("regex", Union[re.Pattern[str], None]),
+            ("json_path", Union[jsonpath_ng.JSONPath, None]),
         ],
-    ],
+    ),
 )
 
 
