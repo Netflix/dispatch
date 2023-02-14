@@ -2,7 +2,7 @@
 // We suggest you to commit this file into source control
 // Read more: https://github.com/vuejs/core/pull/3399
 export {}
-        
+
 declare module 'vue' {
   export interface GlobalComponents {
     AdminLayout: typeof import('./src/components/layouts/AdminLayout.vue')['default']
@@ -23,15 +23,15 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     SettingsBreadcrumbs: typeof import('./src/components/SettingsBreadcrumbs.vue')['default']
     StatWidget: typeof import('./src/components/StatWidget.vue')['default']
-    VAlert: typeof import("vuetify/lib")["VAlert"]
+    VAlert: typeof import('vuetify/lib')['VAlert']
     VApp: typeof import('vuetify/lib')['VApp']
     VAppBar: typeof import('vuetify/lib')['VAppBar']
     VAutocomplete: typeof import('vuetify/lib')['VAutocomplete']
     VAvatar: typeof import('vuetify/lib')['VAvatar']
     VBadge: typeof import('vuetify/lib')['VBadge']
     VBottomSheet: typeof import('vuetify/lib')['VBottomSheet']
-    VBreadcrumbs: typeof import("vuetify/lib")["VBreadcrumbs"]
-    VBreadcrumbsItem: typeof import("vuetify/lib")["VBreadcrumbsItem"]
+    VBreadcrumbs: typeof import('vuetify/lib')['VBreadcrumbs']
+    VBreadcrumbsItem: typeof import('vuetify/lib')['VBreadcrumbsItem']
     VBtn: typeof import('vuetify/lib')['VBtn']
     VCard: typeof import('vuetify/lib')['VCard']
     VCardActions: typeof import('vuetify/lib')['VCardActions']
@@ -54,8 +54,8 @@ declare module 'vue' {
     VExpansionPanelHeader: typeof import("vuetify/lib")["VExpansionPanelHeader"]
     VExpansionPanels: typeof import("vuetify/lib")["VExpansionPanels"]
     VFlex: typeof import('vuetify/lib')['VFlex']
-    VForm: typeof import("vuetify/lib")["VForm"]
-    VHover: typeof import("vuetify/lib")["VHover"]
+    VForm: typeof import('vuetify/lib')['VForm']
+    VHover: typeof import('vuetify/lib')['VHover']
     VIcon: typeof import('vuetify/lib')['VIcon']
     VItem: typeof import("vuetify/lib")["VItem"]
     VLayout: typeof import('vuetify/lib')['VLayout']
@@ -77,7 +77,7 @@ declare module 'vue' {
     VRadioGroup: typeof import("vuetify/lib")["VRadioGroup"]
     VRow: typeof import('vuetify/lib')['VRow']
     VSelect: typeof import('vuetify/lib')['VSelect']
-    VSimpleCheckbox: typeof import("vuetify/lib")["VSimpleCheckbox"]
+    VSimpleCheckbox: typeof import('vuetify/lib')['VSimpleCheckbox']
     VSnackbar: typeof import('vuetify/lib')['VSnackbar']
     VSpacer: typeof import('vuetify/lib')['VSpacer']
     VStepper: typeof import('vuetify/lib')['VStepper']
@@ -100,7 +100,7 @@ declare module 'vue' {
     VTimePicker: typeof import('vuetify/lib')['VTimePicker']
     VToolbar: typeof import("vuetify/lib")["VToolbar"]
     VToolbarItems: typeof import('vuetify/lib')['VToolbarItems']
-    VToolbarTitle: typeof import("vuetify/lib")["VToolbarTitle"]
+    VToolbarTitle: typeof import('vuetify/lib')['VToolbarTitle']
     VTooltip: typeof import('vuetify/lib')['VTooltip']
   }
 }
