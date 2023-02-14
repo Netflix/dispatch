@@ -121,8 +121,8 @@ Vue.filter("activeRoles", activeRoles)
 Vue.filter("individualNames", function (value) {
   if (value) {
     return value
-      .map(function (assignee) {
-        return assignee.individual.name
+      .map(function (item) {
+        return item.individual.name
       })
       .join(", ")
   }
