@@ -56,6 +56,7 @@ from .factories import (
     ReportFactory,
     SearchFilterFactory,
     ServiceFactory,
+    SignalInstanceFactory,
     StorageFactory,
     TagFactory,
     TagTypeFactory,
@@ -412,6 +413,11 @@ def report(session):
 @pytest.fixture
 def reports(session):
     return [ReportFactory(), ReportFactory()]
+
+
+@pytest.fixture()
+def signal_instance():
+    return SignalInstanceFactory()
 
 
 @pytest.fixture

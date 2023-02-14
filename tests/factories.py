@@ -4,20 +4,22 @@ from pytz import UTC
 from datetime import datetime
 
 from faker import Faker
-
-from factory import Sequence, post_generation, SubFactory, LazyAttribute, LazyFunction
+import factory
+from factory import Sequence, post_generation, SubFactory, LazyAttribute
 from factory.alchemy import SQLAlchemyModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime, FuzzyInteger
 
 from dispatch.auth.models import DispatchUser, hash_password  # noqa
-from dispatch.case.models import Case, CaseRead, Case
+from dispatch.case.models import Case, CaseRead
 from dispatch.case.priority.models import CasePriority
 from dispatch.case.severity.models import CaseSeverity
 from dispatch.case.type.models import CaseType
 from dispatch.conference.models import Conference
 from dispatch.conversation.models import Conversation
+from dispatch.database.core import Session
 from dispatch.definition.models import Definition
 from dispatch.document.models import Document
+from dispatch.entity.models import Entity
 from dispatch.event.models import Event
 from dispatch.feedback.models import Feedback
 from dispatch.group.models import Group
@@ -39,6 +41,7 @@ from dispatch.report.models import Report
 from dispatch.route.models import Recommendation, RecommendationMatch
 from dispatch.search_filter.models import SearchFilter
 from dispatch.service.models import Service
+from dispatch.signal.models import Signal, SignalInstance
 from dispatch.storage.models import Storage
 from dispatch.tag.models import Tag
 from dispatch.tag_type.models import TagType
@@ -742,6 +745,60 @@ class CaseReadFactory(BaseFactory):
         """Factory Configuration."""
 
         model = CaseRead
+
+
+class SignalFactory(BaseFactory):
+    name = "Test Signal"
+    owner = "Test Owner"
+    description = "Test Description"
+    external_url = "https://test.com"
+    external_id = "1234"
+    variant = "Test Variant"
+    loopin_signal_identity = False
+
+    class Meta:
+        model = Signal
+
+
+class SignalInstanceFactory(BaseFactory):
+    class Meta:
+        model = SignalInstance
+        sqlalchemy_session = Session
+        sqlalchemy_session_persistence = "commit"
+
+    id = factory.LazyFunction(uuid.uuid4)
+    project = SubFactory(ProjectFactory)
+    case = SubFactory(CaseFactory)
+    fingerprint = factory.Faker("md5")
+    raw = {
+        "action": [{"type": "AWS_API_CALL", "value": {"Api": "assumerole", "ServiceName": "sts"}}],
+        "additionalMetadata": [],
+        "asset": [
+            {"id": "arn:aws:iam::123456789012:role/Test", "type": "AwsIamRole", "details": {}}
+        ],
+        "identity": {"id": "123456789012", "type": "AWS Principal"},
+        "originLocation": [],
+        "variant": "TEST:1.A",
+        "created_at": None,
+        "id": "TEST:1.A/c12a34a5-dd67-8910-1a1a-c1e23456f7c8",
+    }
+    signal = SubFactory(SignalFactory)
+
+    @factory.post_generation
+    def entities(self, create, extracted, **kwargs):
+        if not create:
+            # Simple build, do nothing.
+            return
+
+        if extracted:
+            # A list of entities were passed in, use them
+            for entity in extracted:
+                self.entities.append(entity)
+        else:
+            entity1 = Entity(name=factory.Faker("word"), value=factory.Faker("word"))
+            entity2 = Entity(name=factory.Faker("word"), value=factory.Faker("word"))
+            self.entities.append(entity1)
+            self.entities.append(entity2)
 
 
 class IncidentFactory(BaseFactory):
