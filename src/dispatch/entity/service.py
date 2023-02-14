@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Optional, Sequence, Generator, Union
+from typing import Generator, Optional, Sequence, Union, TypeVar
 import re
 
 import jsonpath_ng
@@ -165,6 +165,17 @@ def get_signal_instances_with_entity(
     return signal_instances
 
 
+EntityTypePair = TypeVar("EntityTypePair")
+
+EntityTypePair = tuple[
+    EntityType,
+    Optional[re.Pattern[str]],
+    Optional[
+        jsonpath_ng.JSONPath,
+    ],
+]
+
+
 def find_entities(
     db_session: Session, signal_instance: SignalInstance, entity_types: Sequence[EntityType]
 ) -> list[Entity]:
@@ -183,13 +194,7 @@ def find_entities(
     def _find_entites_by_regex(
         val: Union[dict, str, list],
         signal_instance: SignalInstance,
-        entity_type_pairs: list[
-            tuple[
-                EntityType,
-                re.Pattern,
-                jsonpath.Fields,
-            ]
-        ],
+        entity_type_pairs: list[EntityTypePair],
     ) -> Generator[EntityCreate, None, None]:
         """
         Find entities in a value using regular expressions.
@@ -260,13 +265,7 @@ def find_entities(
 
     def _find_entities_by_regex_and_jsonpath_expression(
         signal_instance: SignalInstance,
-        entity_type_pairs: list[
-            tuple[
-                EntityType,
-                re.Pattern,
-                jsonpath.Fields,
-            ]
-        ],
+        entity_type_pairs: list[EntityTypePair],
     ) -> Generator[EntityCreate, None, None]:
         """
         Yield entities found in a SignalInstance by searching its fields using regular expressions and JSONPath expressions.
