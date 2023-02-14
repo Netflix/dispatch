@@ -129,7 +129,9 @@ Vue.filter("individualNames", function (value) {
 })
 
 Vue.filter("truncateString", function (value) {
-  if (value) {
-    return value.slice(0, 100)
+  if (value && value.length > 100) {
+    return value.slice(0, 100).concat("...")
+  } else {
+    return value
   }
 })
