@@ -4,8 +4,8 @@ from pytz import UTC
 from datetime import datetime
 
 from faker import Faker
-import factory
-from factory import Sequence, post_generation, SubFactory, LazyAttribute
+from faker.providers import misc
+from factory import Sequence, post_generation, SubFactory, LazyAttribute, LazyFunction
 from factory.alchemy import SQLAlchemyModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime, FuzzyInteger
 
@@ -52,6 +52,10 @@ from dispatch.ticket.models import Ticket
 from dispatch.workflow.models import Workflow, WorkflowInstance
 
 from .database import Session
+
+
+fake = Faker()
+fake.add_provider(misc)
 
 
 class BaseFactory(SQLAlchemyModelFactory):
@@ -748,16 +752,16 @@ class CaseReadFactory(BaseFactory):
 
 
 class EntityTypeFactory(BaseFactory):
+    name = FuzzyText()
+    description = FuzzyText()
+    field = FuzzyText()
+    regular_expression = r"[a-zA-Z]+"
+    global_find = Faker().pybool()
+    enabled = Faker().pybool()
+    project = SubFactory(ProjectFactory)
+
     class Meta:
         model = EntityType
-
-    name = factory.Faker("name")
-    description = factory.Faker("sentence")
-    field = factory.Faker("word")
-    regular_expression = r"[a-zA-Z]+"
-    global_find = factory.Faker("pybool")
-    enabled = factory.Faker("pybool")
-    project = SubFactory(ProjectFactory)
 
 
 class SignalFactory(BaseFactory):
@@ -775,13 +779,11 @@ class SignalFactory(BaseFactory):
 
 
 class SignalInstanceFactory(BaseFactory):
-    class Meta:
-        model = SignalInstance
-
-    id = factory.LazyFunction(uuid.uuid4)
+    id = LazyFunction(uuid.uuid4)
     project = SubFactory(ProjectFactory)
     case = SubFactory(CaseFactory)
-    fingerprint = factory.Faker("md5")
+    fingerprint = fake.md5()
+    signal = SubFactory(SignalFactory)
     raw = {
         "action": [{"type": "AWS_API_CALL", "value": {"Api": "assumerole", "ServiceName": "sts"}}],
         "additionalMetadata": [],
@@ -794,7 +796,9 @@ class SignalInstanceFactory(BaseFactory):
         "created_at": None,
         "id": "TEST:1.A/c12a34a5-dd67-8910-1a1a-c1e23456f7c8",
     }
-    signal = SubFactory(SignalFactory)
+
+    class Meta:
+        model = SignalInstance
 
 
 class IncidentFactory(BaseFactory):
