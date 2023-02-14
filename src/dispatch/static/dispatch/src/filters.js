@@ -133,4 +133,3 @@ Vue.filter("truncateString", function (value) {
     return value.slice(0, 100)
   }
 })
-
