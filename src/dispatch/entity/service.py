@@ -194,6 +194,7 @@ def find_entities(
         >>> entity_types = [
         ...     EntityType(name="Name", field="name", regular_expression=r"\b[A-Z][a-z]+ [A-Z][a-z]+\b"),
         ...     EntityType(name="Phone", field=None, regular_expression=r"\b\\d{3}[-.]?\\d{3}[-.]?\\d{4}\b"),
+        ...     EntityType(name="Street", field="address.street"),
         ... ]
         >>> entities = find_entities(db_session, signal_instance, entity_types)
 
@@ -227,16 +228,23 @@ def find_entities(
             for entity_type, entity_regex, field in entity_type_pairs:
                 # If a field was specified for this entity type, only search that field
                 if not field or key == field:
-                    # Search the string for matches to the entity type's regular expression
-                    if match := entity_regex.search(val):
-                        # If a match was found, create a new Entity object for it
+                    if entity_regex is None:
+                        # If no regular expression was specified, return the value of the field/key
                         entity = EntityCreate(
-                            value=match.group(0),
+                            value=val,
                             entity_type=entity_type,
                             project=signal_instance.project,
                         )
-                        # Add the entity to the list of entities found in this value
                         entities.append(entity)
+                    else:
+                        # Search the string for matches to the entity type's regular expression
+                        if match := entity_regex.search(val):
+                            entity = EntityCreate(
+                                value=match.group(0),
+                                entity_type=entity_type,
+                                project=signal_instance.project,
+                            )
+                            entities.append(entity)
 
         # Cache the entities found for this value
         cache[id(val)] = entities
