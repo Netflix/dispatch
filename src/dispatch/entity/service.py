@@ -248,14 +248,13 @@ def find_entities(
 
         # Cache the entities found for this value
         cache[id(val)] = entities
-
         return entities
 
     # Create a list of (entity type, regular expression, field) tuples
     entity_type_pairs = [
-        (type, re.compile(type.regular_expression), type.field)
+        (type, re.compile(type.regular_expression) if type.regular_expression else None, type.field)
         for type in entity_types
-        if isinstance(type.regular_expression, str)
+        if isinstance(type.regular_expression, str) or type.field is not None
     ]
 
     # Initialize a cache of previously searched values

@@ -19,7 +19,7 @@ from dispatch.conversation.models import Conversation
 from dispatch.database.core import Session
 from dispatch.definition.models import Definition
 from dispatch.document.models import Document
-from dispatch.entity.models import Entity
+from dispatch.entity_type.models import EntityType
 from dispatch.event.models import Event
 from dispatch.feedback.models import Feedback
 from dispatch.group.models import Group
@@ -747,6 +747,19 @@ class CaseReadFactory(BaseFactory):
         model = CaseRead
 
 
+class EntityTypeFactory(BaseFactory):
+    class Meta:
+        model = EntityType
+
+    name = factory.Faker("name")
+    description = factory.Faker("sentence")
+    field = factory.Faker("word")
+    regular_expression = r"[a-zA-Z]+"
+    global_find = factory.Faker("pybool")
+    enabled = factory.Faker("pybool")
+    project = SubFactory(ProjectFactory)
+
+
 class SignalFactory(BaseFactory):
     name = "Test Signal"
     owner = "Test Owner"
@@ -755,6 +768,7 @@ class SignalFactory(BaseFactory):
     external_id = "1234"
     variant = "Test Variant"
     loopin_signal_identity = False
+    project = SubFactory(ProjectFactory)
 
     class Meta:
         model = Signal
@@ -763,8 +777,6 @@ class SignalFactory(BaseFactory):
 class SignalInstanceFactory(BaseFactory):
     class Meta:
         model = SignalInstance
-        sqlalchemy_session = Session
-        sqlalchemy_session_persistence = "commit"
 
     id = factory.LazyFunction(uuid.uuid4)
     project = SubFactory(ProjectFactory)
@@ -783,22 +795,6 @@ class SignalInstanceFactory(BaseFactory):
         "id": "TEST:1.A/c12a34a5-dd67-8910-1a1a-c1e23456f7c8",
     }
     signal = SubFactory(SignalFactory)
-
-    @factory.post_generation
-    def entities(self, create, extracted, **kwargs):
-        if not create:
-            # Simple build, do nothing.
-            return
-
-        if extracted:
-            # A list of entities were passed in, use them
-            for entity in extracted:
-                self.entities.append(entity)
-        else:
-            entity1 = Entity(name=factory.Faker("word"), value=factory.Faker("word"))
-            entity2 = Entity(name=factory.Faker("word"), value=factory.Faker("word"))
-            self.entities.append(entity1)
-            self.entities.append(entity2)
 
 
 class IncidentFactory(BaseFactory):
