@@ -151,8 +151,8 @@
                 <template v-slot:activator="{ on, attrs }">
                   <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                 </template>
-                Defines a signal filter allowing you to take either a "Suppression" or
-                "Deduplication" action for any match signal matching the filter.
+                Defines a signal filter allowing you to take either a "Snooze" or "Deduplication"
+                action for any match signal matching the filter.
               </v-tooltip>
             </v-app-bar>
             <v-card-text>

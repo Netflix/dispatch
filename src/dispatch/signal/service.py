@@ -27,7 +27,7 @@ from .models import (
 def create_signal_filter(
     *, db_session, creator: DispatchUser, signal_filter_in: SignalFilterCreate
 ) -> SignalFilter:
-    """Creates a new suppression filter."""
+    """Creates a new signal filter."""
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=signal_filter_in.project
     )
@@ -47,7 +47,7 @@ def create_signal_filter(
 
 
 def update_signal_filter(*, db_session, signal_filter_in: SignalFilterUpdate) -> SignalFilter:
-    """Updates an existing suppression filter."""
+    """Updates an existing signal filter."""
     filter = db_session.query(SignalFilter).filter(SignalFilter.id == signal_filter_in.id).one()
     db_session.add(filter)
     db_session.commit()
@@ -223,13 +223,13 @@ def apply_filter_actions(*, db_session, signal_instance: SignalInstance):
         query = apply_filter_specific_joins(SignalFilter, f.expression, query)
         query = apply_filters(query, f.expression)
 
-        # order matters, check for supression before deduplication
-        # we check to see if the current instances match's it's signals supression filter
-        if f.action == SignalFilterAction.suppress:
+        # order matters, check for snooze before deduplication
+        # we check to see if the current instances match's it's signals snooze filter
+        if f.action == SignalFilterAction.snooze:
             instances = query.filter(SignalInstance.id == signal_instance.id).all()
 
             if instances:
-                signal_instance.filter_action = SignalFilterAction.suppress
+                signal_instance.filter_action = SignalFilterAction.snooze
                 return
 
         elif f.action == SignalFilterAction.deduplicate:

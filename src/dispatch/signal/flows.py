@@ -39,7 +39,7 @@ def create_signal_instance(
     db_session.commit()
 
     if signal_service.apply_filter_actions(db_session=db_session, signal_instance=signal_instance):
-        # create a case if not duplicate or supressed
+        # create a case if not duplicate or snoozed
         case_in = CaseCreate(
             title=signal.name,
             description=signal.description,

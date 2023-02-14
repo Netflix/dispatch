@@ -140,7 +140,7 @@
                   </ValidationProvider>
                   <ValidationProvider name="Action" rules="required" immediate>
                     <v-radio-group label="Action" v-model="action" class="justify-right">
-                      <v-radio label="Suppress" value="suppress"></v-radio>
+                      <v-radio label="Snooze" value="snooze"></v-radio>
                       <v-radio label="Deduplicate" value="deduplicate"></v-radio>
                     </v-radio-group>
                   </ValidationProvider>

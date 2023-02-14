@@ -80,7 +80,7 @@ class SignalFilterMode(DispatchEnum):
 
 class SignalFilterAction(DispatchEnum):
     deduplicate = "deduplicate"
-    suppress = "suppress"
+    snooze = "snooze"
 
 
 class Signal(Base, TimeStampMixin, ProjectMixin):
@@ -154,7 +154,7 @@ class SignalFilterBase(DispatchBase):
     mode: Optional[SignalFilterMode] = SignalFilterMode.active
     expression: List[dict]
     name: NameStr
-    action: SignalFilterAction = SignalFilterAction.suppress
+    action: SignalFilterAction = SignalFilterAction.snooze
     description: Optional[str] = Field(None, nullable=True)
     window: Optional[int] = 600
     expiration: Optional[datetime] = Field(None, nullable=True)
