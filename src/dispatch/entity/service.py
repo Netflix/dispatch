@@ -165,15 +165,16 @@ def get_signal_instances_with_entity(
     return signal_instances
 
 
-EntityTypePair = TypeVar("EntityTypePair")
-
-EntityTypePair = tuple[
-    EntityType,
-    Optional[re.Pattern[str]],
-    Optional[
-        jsonpath_ng.JSONPath,
+EntityTypePair = TypeVar(
+    "EntityTypePair",
+    tuple[
+        EntityType,
+        Optional[re.Pattern[str]],
+        Optional[
+            jsonpath_ng.JSONPath,
+        ],
     ],
-]
+)
 
 
 def find_entities(
