@@ -66,7 +66,6 @@
                     :success="valid"
                     hint="A regular expression pattern for your entity type. Multiple capture groups are not supported, the first group will be used."
                     clearable
-                    required
                   />
                 </ValidationProvider>
               </v-flex>
