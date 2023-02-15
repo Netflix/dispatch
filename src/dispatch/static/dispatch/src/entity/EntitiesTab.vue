@@ -1,12 +1,14 @@
 <template>
-  <v-container fluid>
-    <v-row v-if="entities.length >= 1">
-      <v-col
-        v-for="entity in entities"
-        :key="entity.id"
-        cols="6"
-      >
-        <entity-card :entity="entity" />
+  <v-container fill-height fluid>
+    <v-row justify="center" align="center" v-if="entities.length >= 1">
+      <relative-date-picker
+        class="mt-6"
+        label="Time Range"
+        v-model="selectedDateTime"
+        @input="onSelectedDateTimeChange"
+      />
+      <v-col v-for="entity in entities" :key="entity.id" cols="6">
+        <entity-card :entity="entity" :selectedDateTime="selectedDateTime" />
       </v-col>
     </v-row>
     <v-row v-else>
@@ -20,12 +22,14 @@
 </template>
 
 <script>
-import EntityCard from "@/entity/EntityCard.vue"
+import EntityCard from "@/entity/EntityCard.vue";
+import DateChipGroupRelative from "@/components/DateChipGroupRelative.vue";
 
 export default {
   name: "EntitiesTab",
   components: {
     EntityCard,
+    DateChipGroupRelative,
   },
   props: {
     selected: {
@@ -35,10 +39,7 @@ export default {
   },
   data() {
     return {
-      headers: [
-        { text: "Entity Type", value: "entity_type" },
-        { text: "Entity", value: "entity" },
-      ],
+      selectedDateTime: 30,
     };
   },
   computed: {
@@ -49,13 +50,18 @@ export default {
           const entities = curr.entities.map((entity) => ({
             entity_type: entity.entity_type,
             value: entity.value,
-            id: entity.id
+            id: entity.id,
           }));
           return acc.concat(entities);
         }, []);
       } else {
         return [];
       }
+    },
+  },
+  methods: {
+    onSelectedDateTimeChange(newValue) {
+      this.selectedDateTime = newValue;
     },
   },
 };

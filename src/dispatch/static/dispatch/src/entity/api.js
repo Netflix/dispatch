@@ -23,11 +23,11 @@ export default {
     return API.delete(`${resource}/${entityId}`)
   },
 
-  async getCasesCount(entityId) {
-    return await API.get(`${resource}/${entityId}/cases`)
+  async getCasesCount(entityId, daysBack) {
+    return await API.get(`${resource}/${entityId}/cases/${daysBack}`)
   },
 
-  async getSignalInstances(entityId) {
-    return await API.get(`${resource}/${entityId}/signal_instances`)
+  async getSignalInstances(entityId, daysBack) {
+    return await API.get(`${resource}/${entityId}/signal_instances/${daysBack}`)
   },
 }
