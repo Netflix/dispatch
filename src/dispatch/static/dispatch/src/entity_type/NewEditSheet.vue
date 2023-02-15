@@ -70,7 +70,7 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Field" immediate>
+                <ValidationProvider rules="jsonpath" name="Field" immediate>
                   <v-text-field
                     v-model="field"
                     slot-scope="{ errors, valid }"
@@ -102,6 +102,8 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
+import jsonpath from "jsonpath";
+
 
 extend("required", {
   ...required,
@@ -118,6 +120,18 @@ extend('regexp', {
     }
   },
   message: 'Must be a valid regular expression pattern.'
+});
+
+extend('jsonpath', {
+  validate(value) {
+    try {
+      jsonpath.parse(value);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  },
+  message: 'Must be a valid JSONPath expression.'
 });
 
 export default {

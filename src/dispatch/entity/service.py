@@ -330,6 +330,9 @@ def find_entities(
         _find_entities_by_regex_and_jsonpath_expression(signal_instance, entity_type_pairs)
     )
 
+    # Filter out duplicate entities
+    entities = list(set(entities))
+
     entities_out = [
         get_by_value_or_create(db_session=db_session, entity_in=entity_in) for entity_in in entities
     ]

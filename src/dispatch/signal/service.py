@@ -1,4 +1,5 @@
 import json
+import uuid
 import hashlib
 from typing import Optional
 
@@ -239,6 +240,7 @@ def create_instance(*, db_session, signal_instance_in: SignalInstanceCreate) -> 
     # we round trip the raw data to json-ify date strings
     signal_instance = SignalInstance(
         **signal_instance_in.dict(exclude={"project", "tags", "raw"}),
+        id=uuid.uuid4(),
         raw=json.loads(signal_instance_in.raw.json()),
         project=project,
     )
