@@ -1,22 +1,19 @@
 import pytest
-
 from sqlalchemy_utils import drop_database
-from starlette.testclient import TestClient
 from starlette.config import environ
+from starlette.testclient import TestClient
 
 # set test config
 environ["DATABASE_CREDENTIALS"] = "postgres:dispatch"
 environ["DATABASE_HOSTNAME"] = "localhost"
 environ["DATABASE_NAME"] = "dispatch-test"
 environ["DISPATCH_ENCRYPTION_KEY"] = "test123"
-environ["DISPATCH_HELP_SLACK_CHANNEL"] = "help-me"
 environ["DISPATCH_JWT_SECRET"] = "test123"
 environ["DISPATCH_UI_URL"] = "https://example.com"
 environ["ENV"] = "pytest"
 environ["JWKS_URL"] = "example.com"
 environ["METRIC_PROVIDERS"] = ""  # TODO move this to the default
 environ["SECRET_PROVIDER"] = ""
-environ["SLACK_APP_USER_SLUG"] = "XXX"
 environ["STATIC_DIR"] = ""  # we don't need static files for tests
 
 from dispatch import config
@@ -25,7 +22,6 @@ from dispatch.database.manage import init_database
 
 from .database import Session
 from .factories import (
-    DispatchUserFactory,
     CaseFactory,
     CasePriorityFactory,
     CaseSeverityFactory,
@@ -33,9 +29,10 @@ from .factories import (
     ConferenceFactory,
     ConversationFactory,
     DefinitionFactory,
+    DispatchUserFactory,
     DocumentFactory,
-    EventFactory,
     EntityTypeFactory,
+    EventFactory,
     FeedbackFactory,
     GroupFactory,
     IncidentCostFactory,
@@ -57,6 +54,8 @@ from .factories import (
     ReportFactory,
     SearchFilterFactory,
     ServiceFactory,
+    SignalFactory,
+    SignalFilterFactory,
     SignalInstanceFactory,
     StorageFactory,
     TagFactory,
@@ -90,8 +89,8 @@ def pytest_runtest_makereport(item, call):
 @pytest.fixture(scope="session")
 def testapp():
     # we only want to use test plugins so unregister everybody else
-    from dispatch.plugins.base import unregister, plugins
     from dispatch.main import app
+    from dispatch.plugins.base import plugins, unregister
 
     for p in plugins.all():
         unregister(p)
@@ -424,6 +423,16 @@ def entity_type(session):
 @pytest.fixture()
 def entity_types(session):
     return [EntityTypeFactory(), EntityTypeFactory()]
+
+
+@pytest.fixture()
+def signal(session):
+    return SignalFactory()
+
+
+@pytest.fixture()
+def signal_filter(session):
+    return SignalFilterFactory()
 
 
 @pytest.fixture()

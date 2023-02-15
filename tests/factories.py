@@ -1,13 +1,12 @@
 import uuid
-
-from pytz import UTC
 from datetime import datetime
 
+from factory import LazyAttribute, LazyFunction, Sequence, SubFactory, post_generation
+from factory.alchemy import SQLAlchemyModelFactory
+from factory.fuzzy import FuzzyChoice, FuzzyDateTime, FuzzyInteger, FuzzyText
 from faker import Faker
 from faker.providers import misc
-from factory import Sequence, post_generation, SubFactory, LazyAttribute, LazyFunction
-from factory.alchemy import SQLAlchemyModelFactory
-from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime, FuzzyInteger
+from pytz import UTC
 
 from dispatch.auth.models import DispatchUser, hash_password  # noqa
 from dispatch.case.models import Case, CaseRead
@@ -41,7 +40,7 @@ from dispatch.report.models import Report
 from dispatch.route.models import Recommendation, RecommendationMatch
 from dispatch.search_filter.models import SearchFilter
 from dispatch.service.models import Service
-from dispatch.signal.models import Signal, SignalInstance
+from dispatch.signal.models import Signal, SignalFilter, SignalInstance
 from dispatch.storage.models import Storage
 from dispatch.tag.models import Tag
 from dispatch.tag_type.models import TagType
@@ -52,7 +51,6 @@ from dispatch.ticket.models import Ticket
 from dispatch.workflow.models import Workflow, WorkflowInstance
 
 from .database import Session
-
 
 fake = Faker()
 fake.add_provider(misc)
@@ -688,6 +686,32 @@ class CaseTypeFactory(BaseFactory):
         model = CaseType
 
 
+class CasePriorityFactory(BaseFactory):
+    """Case Priority Factory."""
+
+    name = FuzzyText()
+    description = FuzzyText()
+    project = SubFactory(ProjectFactory)
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = CasePriority
+
+
+class CaseSeverityFactory(BaseFactory):
+    """Case Severity Factory."""
+
+    name = FuzzyText()
+    description = FuzzyText()
+    project = SubFactory(ProjectFactory)
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = CaseSeverity
+
+
 class CaseFactory(BaseFactory):
     """Case Factory."""
 
@@ -697,6 +721,8 @@ class CaseFactory(BaseFactory):
     description = FuzzyText()
     status = FuzzyChoice(["New", "Triage", "Escalated", "Closed"])
     project = SubFactory(ProjectFactory)
+    case_priority = SubFactory(CasePriorityFactory)
+    case_severity = SubFactory(CaseSeverityFactory)
     case_type = SubFactory(CaseTypeFactory)
 
     class Meta:
@@ -799,6 +825,28 @@ class SignalInstanceFactory(BaseFactory):
 
     class Meta:
         model = SignalInstance
+
+
+class SignalFilterFactory(BaseFactory):
+    """Signal Filter Factory."""
+
+    name = FuzzyText()
+    description = FuzzyText()
+    expression = [{}]
+    action = FuzzyChoice(choices=["snooze", "deduplicate"])
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = SignalFilter
+
+    @post_generation
+    def creator(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.creator_id = extracted.id
 
 
 class IncidentFactory(BaseFactory):

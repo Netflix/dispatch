@@ -1,7 +1,7 @@
 def test_get(session, signal_filter):
-    from dispatch.signal.service import get
+    from dispatch.signal.service import get_signal_filter
 
-    t_signal_filter = get(db_session=session, signal_filter_id=signal_filter.id)
+    t_signal_filter = get_signal_filter(db_session=session, signal_filter_id=signal_filter.id)
     assert t_signal_filter.id == signal_filter.id
 
 
@@ -31,7 +31,7 @@ def test_update(session, signal_filter):
 
     name = "Updated name"
 
-    signal_filter_in = SignalFilterUpdate(name=name, expression=[{}])
+    signal_filter_in = SignalFilterUpdate(id=signal_filter.id, name=name, expression=[{}])
     signal_filter = update_signal_filter(
         db_session=session,
         signal_filter=signal_filter,

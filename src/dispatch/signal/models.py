@@ -134,7 +134,7 @@ class SignalFilter(Base, ProjectMixin, EvergreenMixin, TimeStampMixin):
 
 
 class SignalInstance(Base, TimeStampMixin, ProjectMixin):
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=lambda: str(uuid.uuid4()))
     case = relationship("Case", backref="signal_instances")
     case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"))
     entities = relationship(
@@ -194,7 +194,7 @@ class SignalBase(DispatchBase):
 
 
 class SignalCreate(SignalBase):
-    entity_types: Optional[EntityTypeCreate]
+    entity_types: Optional[EntityTypeCreate] = []
 
 
 class SignalUpdate(SignalBase):
@@ -204,7 +204,7 @@ class SignalUpdate(SignalBase):
 
 class SignalRead(SignalBase):
     id: PrimaryKey
-    entity_types: Optional[List[EntityTypeRead]]
+    entity_types: Optional[List[EntityTypeRead]] = []
 
 
 class SignalPagination(DispatchBase):

@@ -127,8 +127,15 @@
                       required
                     />
                   </ValidationProvider>
+                  <ValidationProvider name="Action" rules="required" immediate>
+                    <v-radio-group label="Action" v-model="action" class="justify-right">
+                      <v-radio label="Snooze" value="snooze"></v-radio>
+                      <v-radio label="Deduplicate" value="deduplicate"></v-radio>
+                    </v-radio-group>
+                  </ValidationProvider>
                   <ValidationProvider name="Window" rules="required" immediate>
                     <v-select
+                      v-if="action === 'deduplicate'"
                       persistent-hint
                       label="Window (minutes)"
                       :items="windows"
@@ -136,13 +143,11 @@
                     ></v-select>
                   </ValidationProvider>
                   <ValidationProvider name="Expiration" rules="required" immediate>
-                    <expiration-input persistent-hint v-model="expiration"></expiration-input>
-                  </ValidationProvider>
-                  <ValidationProvider name="Action" rules="required" immediate>
-                    <v-radio-group label="Action" v-model="action" class="justify-right">
-                      <v-radio label="Snooze" value="snooze"></v-radio>
-                      <v-radio label="Deduplicate" value="deduplicate"></v-radio>
-                    </v-radio-group>
+                    <expiration-input
+                      v-if="action == 'snooze'"
+                      persistent-hint
+                      v-model="expiration"
+                    ></expiration-input>
                   </ValidationProvider>
                 </v-card-text>
                 <v-card-actions>
