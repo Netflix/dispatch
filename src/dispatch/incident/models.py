@@ -347,7 +347,6 @@ class IncidentRead(IncidentBase):
     created_at: Optional[datetime] = None
     documents: Optional[List[DocumentRead]] = []
     duplicates: Optional[List[IncidentReadMinimal]] = []
-    duplicates: Optional[List[IncidentReadMinimal]] = []
     events: Optional[List[EventRead]] = []
     incident_costs: Optional[List[IncidentCostRead]] = []
     incident_priority: IncidentPriorityRead
@@ -365,8 +364,8 @@ class IncidentRead(IncidentBase):
     reporters_location: Optional[str]
     stable_at: Optional[datetime] = None
     storage: Optional[StorageRead] = None
-    tasks: Optional[List[TaskRead]] = []
     tags: Optional[List[TagRead]] = []
+    tasks: Optional[List[TaskRead]] = []
     terms: Optional[List[TermRead]] = []
     ticket: Optional[TicketRead] = None
     total_cost: Optional[float]
