@@ -31,7 +31,6 @@ from .factories import (
     DefinitionFactory,
     DispatchUserFactory,
     DocumentFactory,
-    EntityFactory,
     EntityTypeFactory,
     EventFactory,
     FeedbackFactory,

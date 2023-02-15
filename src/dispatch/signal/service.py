@@ -59,20 +59,15 @@ def create_signal_filter(
     return signal_filter
 
 
-def update_signal_filter(*, db_session, signal_filter_in: SignalFilterUpdate) -> SignalFilter:
-    """Updates an existing suppression filter."""
-    filter = db_session.query(SignalFilter).filter(SignalFilter.id == signal_filter_in.id).one()
-    db_session.add(filter)
-    db_session.commit()
-    return rule
+def update_signal_filter(
+    *, db_session, signal_filter: SignalFilter, signal_filter_in: SignalFilterUpdate
+) -> SignalFilter:
+    """Updates an existing signal filter."""
 
-
-def update_suppression_rule(
-    *, db_session, suppression_rule_in: SuppressionRuleUpdate
-) -> SuppressionRule:
-    """Updates an existing suppression rule."""
-    rule = (
-        db_session.query(SuppressionRule).filter(SuppressionRule.id == suppression_rule_in.id).one()
+    signal_filter_data = signal_filter.dict()
+    update_data = signal_filter_in.dict(
+        skip_defaults=True,
+        exclude={},
     )
 
     for field in signal_filter_data:
@@ -105,29 +100,6 @@ def get_signal_filter_by_name(*, db_session, project_id: int, name: str) -> Opti
 def get_signal_filter(*, db_session, signal_filter_id: int) -> SignalFilter:
     """Gets a single signal filter."""
     return db_session.query(SignalFilter).filter(SignalFilter.id == signal_filter_id).one_or_none()
-
-
-def delete_signal_filter(*, db_session, signal_filter_id: int) -> int:
-    """Deletes an existing signal filter."""
-    signal_filter = db_session.query(SignalFilter).filter(SignalFilter.id == signal_filter_id).one()
-    db_session.delete(signal_filter)
-    db_session.commit()
-    return signal_filter_id
-
-
-def get_signal_filter_by_name(*, db_session, project_id: int, name: str) -> Optional[SignalFilter]:
-    """Gets a signal filter by it's name."""
-    return (
-        db_session.query(SignalFilter)
-        .filter(SignalFilter.project_id == project_id)
-        .filter(SignalFilter.name == name)
-        .first()
-    )
-
-
-def get_signal_filter(*, db_session, signal_filter_id: int) -> SignalFilter:
-    """Gets a single signal filter."""
-    return db_session.query(SignalFilter).filter(SignalFilter.id == signal_filter_id).one()
 
 
 def get(*, db_session, signal_id: int) -> Optional[Signal]:
@@ -171,7 +143,7 @@ def create(*, db_session, signal_in: SignalCreate) -> Signal:
         project=project,
     )
 
-    for f in signal_in.filter:
+    for f in signal_in.filters:
         signal_filter = get_signal_filter_by_name(db_session=db_session, signal_filter_in=f)
         signal.filters.append(signal_filter)
 
@@ -250,7 +222,7 @@ def create_instance(*, db_session, signal_instance_in: SignalInstanceCreate) -> 
 
     # we round trip the raw data to json-ify date strings
     signal_instance = SignalInstance(
-        **signal_instance_in.dict(exclude={"project", "entities", "raw"}),
+        **signal_instance_in.dict(exclude={"case", "signal", "project", "entities", "raw"}),
         raw=json.loads(signal_instance_in.raw.json()),
         project=project,
     )
@@ -267,18 +239,18 @@ def apply_filter_actions(*, db_session, signal_instance: SignalInstance):
         if f.mode != SignalFilterMode.active:
             continue
 
-        if f.expiration <= datetime.now():
-            continue
-
         query = db_session.query(SignalInstance).filter(
             SignalInstance.signal_id == signal_instance.signal_id
         )
-        query = apply_filter_specific_joins(SignalFilter, f.expression, query)
+        query = apply_filter_specific_joins(SignalInstance, f.expression, query)
         query = apply_filters(query, f.expression)
 
-        # order matters, check for supression before deduplication
-        # we check to see if the current instances match's it's signals supression filter
-        if f.action == SignalFilterAction.suppress:
+        # order matters, check for snooze before deduplication
+        # we check to see if the current instances match's it's signals snooze filter
+        if f.action == SignalFilterAction.snooze:
+            if f.expiration <= datetime.now():
+                continue
+
             instances = query.filter(SignalInstance.id == signal_instance.id).all()
 
             if instances:

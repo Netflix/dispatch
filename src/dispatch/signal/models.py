@@ -226,8 +226,7 @@ class SignalBase(DispatchBase):
 
 
 class SignalCreate(SignalBase):
-    suppression_filters: Optional[List[SuppressionFilterCreate]]
-    duplication_filters: Optional[List[DuplicationFilterCreate]]
+    entity_types: Optional[EntityTypeCreate] = []
 
 
 class SignalUpdate(SignalBase):
@@ -238,8 +237,7 @@ class SignalUpdate(SignalBase):
 
 class SignalRead(SignalBase):
     id: PrimaryKey
-    suppression_filters: Optional[List[SuppressionFilterRead]]
-    duplication_filters: Optional[List[DuplicationFilterRead]]
+    entity_types: Optional[List[EntityTypeRead]] = []
 
 
 class SignalPagination(DispatchBase):
