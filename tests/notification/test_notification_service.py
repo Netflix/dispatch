@@ -1,5 +1,3 @@
-
-
 def test_get(session, notification):
     from dispatch.notification.service import get
 
