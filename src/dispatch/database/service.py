@@ -94,9 +94,11 @@ class Filter(object):
         try:
             filter_spec["field"]
         except KeyError:
-            raise BadFilterFormat("`field` is a mandatory filter attribute.")
+            raise BadFilterFormat("`field` is a mandatory filter attribute.") from None
         except TypeError:
-            raise BadFilterFormat("Filter spec `{}` should be a dictionary.".format(filter_spec))
+            raise BadFilterFormat(
+                "Filter spec `{}` should be a dictionary.".format(filter_spec)
+            ) from None
 
         self.operator = Operator(filter_spec.get("op"))
         self.value = filter_spec.get("value")
@@ -478,11 +480,11 @@ def search_filter_sort_paginate(
                 ErrorWrapper(FieldNotFoundError(msg=str(e)), loc="filter"),
             ],
             model=BaseModel,
-        )
+        ) from None
     except BadFilterFormat as e:
         raise ValidationError(
             [ErrorWrapper(InvalidFilterError(msg=str(e)), loc="filter")], model=BaseModel
-        )
+        ) from None
 
     if items_per_page == -1:
         items_per_page = None

@@ -74,7 +74,7 @@ def update_service(
         raise ValidationError(
             [ErrorWrapper(ExistsError(msg="A service with this name already exists."), loc="name")],
             model=ServiceUpdate,
-        )
+        ) from None
 
     return service
 
@@ -110,4 +110,4 @@ def delete_service(*, db_session: Session = Depends(get_db), service_id: Primary
                     "msg": "Unable to delete service because it is referenced by an incident `Role`. Remove this reference before deletion."
                 }
             ],
-        )
+        ) from None

@@ -40,7 +40,7 @@ def make_call(client: Any, func: Any, delay: int = None, propagate_errors: bool 
 
         return data
     except HttpError:
-        raise TryAgain
+        raise TryAgain from None
 
 
 def get_event(client: Any, event_id: str):

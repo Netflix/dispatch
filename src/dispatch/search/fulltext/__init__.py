@@ -387,12 +387,12 @@ def sync_trigger(conn, table, tsvector_column, indexed_columns, metadata=None, o
     """
     if metadata is None:
         metadata = MetaData()
-    params = dict(
-        tsvector_column=getattr(table.c, tsvector_column),
-        indexed_columns=indexed_columns,
-        options=options,
-        conn=conn,
-    )
+    params = {
+        "tsvector_column": getattr(table.c, tsvector_column),
+        "indexed_columns": indexed_columns,
+        "options": options,
+        "conn": conn,
+    }
     classes = [
         DropSearchTriggerSQL,
         DropSearchFunctionSQL,
@@ -438,7 +438,7 @@ def drop_trigger(conn, table_name, tsvector_column, metadata=None, options=None)
     if metadata is None:
         metadata = MetaData()
     table = Table(table_name, metadata, autoload=True, autoload_with=conn)
-    params = dict(tsvector_column=getattr(table.c, tsvector_column), options=options, conn=conn)
+    params = {"tsvector_column": getattr(table.c, tsvector_column), "options": options, "conn": conn}
     classes = [
         DropSearchTriggerSQL,
         DropSearchFunctionSQL,

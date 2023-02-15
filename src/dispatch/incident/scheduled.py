@@ -127,7 +127,7 @@ def daily_report(db_session: SessionLocal, project: Project):
 
     # we create and send an incidents daily report for each notification filter
     for notification_id, search_filter_dict in incidents_notification_filters_mapping.items():
-        for search_filter_id, incidents in search_filter_dict.items():
+        for _search_filter_id, incidents in search_filter_dict.items():
             items_grouped = []
             items_grouped_template = INCIDENT
 

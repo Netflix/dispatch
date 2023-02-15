@@ -3,7 +3,6 @@ import logging
 from typing import List, Optional, Type
 
 from dispatch.database.core import Base
-from dispatch.case.models import Case
 from dispatch.models import PrimaryKey
 from dispatch.plugin import service as plugin_service
 from dispatch.project import service as project_service

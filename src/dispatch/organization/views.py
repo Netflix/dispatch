@@ -122,5 +122,5 @@ def update_organization(
                 )
             ],
             model=OrganizationUpdate,
-        )
+        ) from None
     return organization

@@ -73,7 +73,9 @@ class BasicAuthProviderPlugin(AuthenticationProviderPlugin):
         try:
             data = jwt.decode(token, DISPATCH_JWT_SECRET)
         except (JWKError, JWTError) as e:
-            raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail=[{"msg": str(e)}])
+            raise HTTPException(
+                status_code=HTTP_401_UNAUTHORIZED, detail=[{"msg": str(e)}]
+            ) from None
         return data["email"]
 
 
