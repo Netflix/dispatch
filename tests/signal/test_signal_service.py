@@ -90,23 +90,27 @@ def test_filter_actions_deduplicate(session, signal, project):
         raw=RawSignal(id="foo").json(), project=project, signal=signal, entities=[entity]
     )
     session.add(signal_instance_1)
+
     signal_instance_2 = SignalInstance(
         raw=RawSignal(id="foo").json(), project=project, signal=signal, entities=[entity]
     )
     session.add(signal_instance_2)
+    signal.entity_types.append(entity_type)
+
+    session.commit()
 
     # create deduplicate signal filter
     signal_filter = SignalFilter(
         name="test",
         description="test",
-        expression=[{"or": [{"model": "EntityType", "field": "id", "op": "==", "value": 1}]}],
+        expression=[
+            {"or": [{"model": "EntityType", "field": "id", "op": "==", "value": entity_type.id}]}
+        ],
         action=SignalFilterAction.deduplicate,
         window=5,
         project=project,
     )
-
     signal.filters.append(signal_filter)
-    signal.entity_types.append(entity_type)
 
     session.commit()
     assert not apply_filter_actions(db_session=session, signal_instance=signal_instance_2)
