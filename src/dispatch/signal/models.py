@@ -24,6 +24,8 @@ from dispatch.case.models import CaseRead
 from dispatch.case.priority.models import CasePriority, CasePriorityRead
 from dispatch.case.type.models import CaseType, CaseTypeRead
 from dispatch.data.source.models import SourceBase
+from dispatch.project.models import ProjectRead
+
 from dispatch.database.core import Base
 from dispatch.entity.models import EntityRead
 from dispatch.entity_type.models import EntityTypeCreate, EntityTypeRead
@@ -35,8 +37,26 @@ from dispatch.models import (
     PrimaryKey,
     ProjectMixin,
     TimeStampMixin,
-)
-from dispatch.project.models import ProjectRead
+from dispatch.tag_type.models import TagTypeRead
+
+
+class RuleMode(DispatchEnum):
+    active = "Active"
+    monitor = "Monitor"
+    inactive = "Inactive"
+
+
+assoc_signal_instance_tags = Table(
+    "assoc_signal_instance_tags",
+    Base.metadata,
+    Column(
+        "signal_instance_id",
+        UUID(as_uuid=True),
+        ForeignKey("signal_instance.id", ondelete="CASCADE"),
+    ),
+    Column("tag_id", Integer, ForeignKey("tag.id", ondelete="CASCADE")),
+    PrimaryKeyConstraint("signal_instance_id", "tag_id"),
+
 
 assoc_signal_tags = Table(
     "assoc_signal_tags",
@@ -57,7 +77,11 @@ assoc_signal_filters = Table(
 assoc_signal_instance_entities = Table(
     "assoc_signal_instance_entities",
     Base.metadata,
-    Column("signal_instance_id", UUID, ForeignKey("signal_instance.id", ondelete="CASCADE")),
+    Column(
+        "signal_instance_id",
+        UUID(as_uuid=True),
+        ForeignKey("signal_instance.id", ondelete="CASCADE"),
+    ),
     Column("entity_id", Integer, ForeignKey("entity.id", ondelete="CASCADE")),
     PrimaryKeyConstraint("signal_instance_id", "entity_id"),
 )
