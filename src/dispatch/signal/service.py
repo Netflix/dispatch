@@ -235,7 +235,7 @@ def apply_filter_actions(*, db_session, signal_instance: SignalInstance):
         # order matters, check for snooze before deduplication
         # we check to see if the current instances match's it's signals snooze filter
         if f.action == SignalFilterAction.snooze:
-            if f.expiration <= datetime.now():
+            if f.expiration.replace(tzinfo=timezone.utc) <= datetime.now(timezone.utc):
                 continue
 
             instances = query.filter(SignalInstance.id == signal_instance.id).all()

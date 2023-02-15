@@ -18,6 +18,7 @@ from dispatch.conversation.models import Conversation
 from dispatch.database.core import Session
 from dispatch.definition.models import Definition
 from dispatch.document.models import Document
+from dispatch.entity.models import Entity
 from dispatch.entity_type.models import EntityType
 from dispatch.event.models import Event
 from dispatch.feedback.models import Feedback
@@ -788,6 +789,19 @@ class EntityTypeFactory(BaseFactory):
 
     class Meta:
         model = EntityType
+
+
+class EntityFactory(BaseFactory):
+    id = Sequence(lambda n: f"1{n}")
+    name = FuzzyText()
+    description = FuzzyText()
+    value = FuzzyText()
+    source = FuzzyText()
+    entity_type = SubFactory(EntityTypeFactory)
+    project = SubFactory(ProjectFactory)
+
+    class Meta:
+        model = Entity
 
 
 class SignalFactory(BaseFactory):

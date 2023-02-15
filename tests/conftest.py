@@ -31,6 +31,7 @@ from .factories import (
     DefinitionFactory,
     DispatchUserFactory,
     DocumentFactory,
+    EntityFactory,
     EntityTypeFactory,
     EventFactory,
     FeedbackFactory,
@@ -413,6 +414,11 @@ def report(session):
 @pytest.fixture
 def reports(session):
     return [ReportFactory(), ReportFactory()]
+
+
+@pytest.fixture()
+def entity(session):
+    return EntityFactory()
 
 
 @pytest.fixture()

@@ -123,7 +123,7 @@ def update(*, db_session, entity: Entity, entity_in: EntityUpdate) -> Entity:
 
 def delete(*, db_session, entity_id: int):
     """Deletes an existing entity."""
-    entity = db_session.query(Entity).filter(Entity.id == entity_id).one_or_none()
+    entity = db_session.query(Entity).filter(Entity.id == entity_id).one()
     db_session.delete(entity)
     db_session.commit()
 

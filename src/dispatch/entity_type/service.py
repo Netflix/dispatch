@@ -93,6 +93,6 @@ def update(
 
 def delete(*, db_session: Session, entity_type_id: int) -> None:
     """Deletes an entity type."""
-    entity_type = db_session.query(EntityType).filter(EntityType.id == entity_type_id)
-    db_session.delete(entity_type.one_or_none)
+    entity_type = db_session.query(EntityType).filter(EntityType.id == entity_type_id).one()
+    db_session.delete(entity_type)
     db_session.commit()
