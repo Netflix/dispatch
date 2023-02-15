@@ -1,7 +1,4 @@
 import { getField, updateField } from "vuex-map-fields"
-import { debounce } from "lodash"
-
-import SearchUtils from "@/search/utils"
 import SignalFilterApi from "@/signal/filter/api"
 
 const getDefaultSelectedState = () => {
