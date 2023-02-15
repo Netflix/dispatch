@@ -878,7 +878,6 @@ def send_incident_management_help_tips_message(incident: Incident, db_session: S
         return
 
     engage_oncall_command = plugin.instance.get_command_name(ConversationCommands.engage_oncall)
-    list_resources_command = plugin.instance.get_command_name(ConversationCommands.list_resources)
     executive_report_command = plugin.instance.get_command_name(
         ConversationCommands.executive_report
     )
@@ -890,7 +889,6 @@ def send_incident_management_help_tips_message(incident: Incident, db_session: S
             "name": incident.name,
             "title": incident.title,
             "engage_oncall_command": engage_oncall_command,
-            "list_resources_command": list_resources_command,
             "executive_report_command": executive_report_command,
             "tactical_report_command": tactical_report_command,
             "update_command": update_command,
