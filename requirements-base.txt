@@ -117,7 +117,7 @@ frozenlist==1.3.3
     #   aiosignal
 google-api-core==2.11.0
     # via google-api-python-client
-google-api-python-client==2.77.0
+google-api-python-client==2.78.0
     # via -r requirements-base.in
 google-auth==2.15.0
     # via
@@ -365,7 +365,7 @@ six==1.16.0
     #   python-multipart
     #   sqlalchemy-filters
     #   validators
-slack-bolt==1.16.1
+slack-bolt==1.16.2
     # via -r requirements-base.in
 slack-sdk==3.19.5
     # via
