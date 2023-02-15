@@ -2,7 +2,7 @@
     <v-chip-group
       v-model="selectedDateTime"
       @change="submit"
-      active-class="deep-purple--text text--accent-4"
+      active-class="red--text text--accent-4"
       mandatory
     >
       <v-chip v-for="option in options" :key="option.value" :value="option.value">

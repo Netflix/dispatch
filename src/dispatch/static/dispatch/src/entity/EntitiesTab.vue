@@ -1,7 +1,7 @@
 <template>
   <v-container fill-height fluid>
     <v-row justify="center" align="center" v-if="entities.length >= 1">
-      <relative-date-picker
+      <date-chip-group-relative
         class="mt-6"
         label="Time Range"
         v-model="selectedDateTime"
