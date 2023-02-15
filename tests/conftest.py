@@ -35,6 +35,7 @@ from .factories import (
     DefinitionFactory,
     DocumentFactory,
     EventFactory,
+    EntityTypeFactory,
     FeedbackFactory,
     GroupFactory,
     IncidentCostFactory,
@@ -56,6 +57,7 @@ from .factories import (
     ReportFactory,
     SearchFilterFactory,
     ServiceFactory,
+    SignalInstanceFactory,
     StorageFactory,
     TagFactory,
     TagTypeFactory,
@@ -412,6 +414,21 @@ def report(session):
 @pytest.fixture
 def reports(session):
     return [ReportFactory(), ReportFactory()]
+
+
+@pytest.fixture()
+def entity_type(session):
+    return EntityTypeFactory()
+
+
+@pytest.fixture()
+def entity_types(session):
+    return [EntityTypeFactory(), EntityTypeFactory()]
+
+
+@pytest.fixture()
+def signal_instance(session):
+    return SignalInstanceFactory()
 
 
 @pytest.fixture
