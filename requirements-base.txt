@@ -354,7 +354,7 @@ six==1.16.0
     #   python-multipart
     #   sqlalchemy-filters
     #   validators
-slack-bolt==1.16.1
+slack-bolt==1.16.2
     # via -r requirements-base.in
 slack-sdk==3.19.5
     # via
