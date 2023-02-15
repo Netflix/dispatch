@@ -132,6 +132,7 @@ def test_filter_actions_snooze(session, signal, project):
         project=project,
     )
     session.add(entity_type)
+    signal.entity_types.append(entity_type)
 
     entity = Entity(name="test", description="test", value="foo", entity_type=entity_type)
     session.add(entity)
@@ -141,22 +142,52 @@ def test_filter_actions_snooze(session, signal, project):
         raw=RawSignal(id="foo").json(), project=project, signal=signal, entities=[entity]
     )
     session.add(signal_instance_1)
+    session.commit()
 
     signal_filter = SignalFilter(
         name="snooze0",
         description="test",
-        expression=[{"or": [{"model": "Entity", "field": "id", "op": "==", "value": 1}]}],
+        expression=[{"or": [{"model": "Entity", "field": "id", "op": "==", "value": entity.id}]}],
         action=SignalFilterAction.snooze,
-        expiration=datetime.utcnow() + timedelta(minutes=5),
+        expiration=datetime.now(tz=timezone.utc) + timedelta(minutes=5),
         project=project,
     )
 
     signal.filters = [signal_filter]
-    signal.entity_types.append(entity_type)
 
     session.commit()
     assert not apply_filter_actions(db_session=session, signal_instance=signal_instance_1)
     assert signal_instance_1.filter_action == SignalFilterAction.snooze
+
+
+def test_filter_actions_snooze_expired(session, signal, project):
+    from datetime import datetime, timedelta, timezone
+    from dispatch.signal.models import (
+        RawSignal,
+        SignalFilter,
+        SignalInstance,
+        SignalFilterAction,
+    )
+    from dispatch.signal.service import apply_filter_actions
+    from dispatch.entity_type.models import EntityType
+    from dispatch.entity.models import Entity
+
+    entity_type = EntityType(
+        name="test",
+        field="id",
+        regular_expression=None,
+        project=project,
+    )
+    session.add(entity_type)
+
+    entity = Entity(name="test", description="test", value="foo", entity_type=entity_type)
+    session.add(entity)
+
+    # create instance
+    signal_instance_1 = SignalInstance(
+        raw=RawSignal(id="foo").json(), project=project, signal=signal, entities=[entity]
+    )
+    session.add(signal_instance_1)
 
     # expired
     signal_filter = SignalFilter(
