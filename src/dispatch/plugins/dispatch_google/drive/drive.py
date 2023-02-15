@@ -185,8 +185,9 @@ def create_file(
         supportsAllDrives=True,
     )
 
-    for member in members:
-        add_permission(client, member, file_data["id"], role, "user")
+    if members:
+        for member in members:
+            add_permission(client, member, file_data["id"], role, "user")
 
     return file_data
 

@@ -252,7 +252,7 @@ class JiraTicketPlugin(TicketPlugin):
         title: str,
         commander_email: str,
         reporter_email: str,
-        incident_type_plugin_metadata: dict = {},
+        incident_type_plugin_metadata: dict = None,
         db_session=None,
     ):
         """Creates an incident Jira issue."""
@@ -299,7 +299,7 @@ class JiraTicketPlugin(TicketPlugin):
         storage_weblink: str,
         conference_weblink: str,
         cost: float,
-        incident_type_plugin_metadata: dict = {},
+        incident_type_plugin_metadata: dict = None,
     ):
         """Updates an incident Jira issue."""
         client = create_client(self.configuration)
@@ -338,7 +338,7 @@ class JiraTicketPlugin(TicketPlugin):
         title: str,
         assignee_email: str,
         # reporter_email: str,
-        case_type_plugin_metadata: dict = {},
+        case_type_plugin_metadata: dict = None,
         db_session=None,
     ):
         """Creates a case Jira issue."""
@@ -384,7 +384,7 @@ class JiraTicketPlugin(TicketPlugin):
         # reporter_email: str,
         document_weblink: str,
         storage_weblink: str,
-        case_type_plugin_metadata: dict = {},
+        case_type_plugin_metadata: dict = None,
     ):
         """Updates a case Jira issue."""
         client = create_client(self.configuration)

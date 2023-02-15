@@ -214,9 +214,10 @@ class SearchManager:
         "weights": (),
     }
 
-    def __init__(self, options={}):
+    def __init__(self, options=None):
         self.options = self.default_options
-        self.options.update(options)
+        if options:
+            self.options.update(options)
         self.processed_columns = []
         self.classes = set()
         self.listeners = []
@@ -438,7 +439,11 @@ def drop_trigger(conn, table_name, tsvector_column, metadata=None, options=None)
     if metadata is None:
         metadata = MetaData()
     table = Table(table_name, metadata, autoload=True, autoload_with=conn)
-    params = {"tsvector_column": getattr(table.c, tsvector_column), "options": options, "conn": conn}
+    params = {
+        "tsvector_column": getattr(table.c, tsvector_column),
+        "options": options,
+        "conn": conn,
+    }
     classes = [
         DropSearchTriggerSQL,
         DropSearchFunctionSQL,
@@ -455,8 +460,9 @@ with open(os.path.join(path, "expressions.sql")) as file:
     sql_expressions = DDL(file.read())
 
 
-def make_searchable(metadata, mapper=orm.mapper, manager=search_manager, options={}):
-    manager.options.update(options)
+def make_searchable(metadata, mapper=orm.mapper, manager=search_manager, options=None):
+    if options:
+        manager.options.update(options)
     event.listen(mapper, "instrument_class", manager.process_mapper)
     # event.listen(mapper, "after_configured", manager.attach_ddl_listeners)
     event.listen(metadata, "before_create", sql_expressions)

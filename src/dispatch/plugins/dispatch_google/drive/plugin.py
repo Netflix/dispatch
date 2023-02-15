@@ -98,7 +98,7 @@ class GoogleDriveStoragePlugin(StoragePlugin):
         self,
         parent_id: str,
         name: str,
-        participants: List[str] = [],
+        participants: List[str] = None,
         role: str = Roles.writer,
         file_type: str = "folder",
     ):
