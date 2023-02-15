@@ -94,8 +94,10 @@ traitlets==5.6.0
     # via
     #   ipython
     #   matplotlib-inline
-typing-extensions==4.5.0
-    # via black
+typing-extensions==4.4.0
+    # via
+    #   -r requirements-dev.in
+    #   black
 vulture==2.7
     # via -r requirements-dev.in
 wcwidth==0.2.5

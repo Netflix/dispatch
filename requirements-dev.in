@@ -8,3 +8,4 @@ ipython
 ruff
 pytest
 vulture
+typing-extensions==4.4.0
