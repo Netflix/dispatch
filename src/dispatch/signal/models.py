@@ -37,7 +37,7 @@ from dispatch.models import (
     PrimaryKey,
     ProjectMixin,
     TimeStampMixin,
-from dispatch.tag_type.models import TagTypeRead
+)
 
 
 class RuleMode(DispatchEnum):
@@ -56,6 +56,7 @@ assoc_signal_instance_tags = Table(
     ),
     Column("tag_id", Integer, ForeignKey("tag.id", ondelete="CASCADE")),
     PrimaryKeyConstraint("signal_instance_id", "tag_id"),
+)
 
 
 assoc_signal_tags = Table(
