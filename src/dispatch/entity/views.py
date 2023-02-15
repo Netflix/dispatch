@@ -69,7 +69,10 @@ def delete_entity(*, db_session: Session = Depends(get_db), entity_id: PrimaryKe
 
 @router.get("/{entity_id}/cases/{days_back}", response_model=None)
 def count_cases_with_entity(
-    *, db_session: Session = Depends(get_db), entity_id: PrimaryKey, days_back: int = 7
+    *,
+    db_session: Session = Depends(get_db),
+    days_back: int = 7,
+    entity_id: PrimaryKey,
 ):
     cases = get_cases_with_entity(db=db_session, entity_id=entity_id, days_back=days_back)
     return {"cases": cases}
@@ -77,7 +80,12 @@ def count_cases_with_entity(
 
 @router.get("/{entity_id}/signal_instances/{days_back}", response_model=None)
 def get_signal_instances_by_entity(
-    entity_id: int, days_back: int = 7, db: Session = Depends(get_db)
+    *,
+    db_session: Session = Depends(get_db),
+    days_back: int = 7,
+    entity_id: PrimaryKey,
 ):
-    instances = get_signal_instances_with_entity(db, entity_id, days_back=days_back)
+    instances = get_signal_instances_with_entity(
+        db=db_session, entity_id=entity_id, days_back=days_back
+    )
     return {"instances": instances}
