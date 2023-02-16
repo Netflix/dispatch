@@ -21,6 +21,7 @@
     "date-fns": "^2.21.1",
     "date-fns-tz": "^1.1.6",
     "font-awesome": "^4.7.0",
+    "jsonpath": "^1.1.1",
     "lodash": "^4.17.21",
     "mjml": "^4.9.3",
     "monaco-editor": "^0.33.0",

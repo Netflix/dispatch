@@ -46,7 +46,7 @@ from dispatch.participant.models import (
 from dispatch.report.enums import ReportTypes
 from dispatch.report.models import ReportRead
 from dispatch.storage.models import StorageRead
-from dispatch.tag.models import TagRead, TagReadMinimal
+from dispatch.tag.models import TagRead
 from dispatch.task.enums import TaskStatus
 from dispatch.term.models import TermRead
 from dispatch.ticket.models import TicketRead
@@ -299,7 +299,7 @@ class IncidentReadMinimal(IncidentBase):
     reporter: Optional[ParticipantReadMinimal]
     reporters_location: Optional[str]
     stable_at: Optional[datetime] = None
-    tags: Optional[List[TagReadMinimal]] = []
+    tags: Optional[List[TagRead]] = []
     total_cost: Optional[float]
 
 
@@ -347,7 +347,6 @@ class IncidentRead(IncidentBase):
     created_at: Optional[datetime] = None
     documents: Optional[List[DocumentRead]] = []
     duplicates: Optional[List[IncidentReadMinimal]] = []
-    duplicates: Optional[List[IncidentReadMinimal]] = []
     events: Optional[List[EventRead]] = []
     incident_costs: Optional[List[IncidentCostRead]] = []
     incident_priority: IncidentPriorityRead
@@ -365,8 +364,8 @@ class IncidentRead(IncidentBase):
     reporters_location: Optional[str]
     stable_at: Optional[datetime] = None
     storage: Optional[StorageRead] = None
-    tasks: Optional[List[TaskRead]] = []
     tags: Optional[List[TagRead]] = []
+    tasks: Optional[List[TaskRead]] = []
     terms: Optional[List[TermRead]] = []
     ticket: Optional[TicketRead] = None
     total_cost: Optional[float]

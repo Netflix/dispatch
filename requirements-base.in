@@ -18,6 +18,7 @@ jinja2
 jira==2.0.0
 atlassian-python-api==3.32.0
 joblib
+jsonpath_ng
 numpy
 oauth2client
 pandas
