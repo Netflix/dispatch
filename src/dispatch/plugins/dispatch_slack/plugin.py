@@ -316,7 +316,7 @@ class SlackDocumentPlugin(DocumentPlugin):
             except re.error as e:
                 raise DispatchPluginException(
                     message=f"Invalid regex. Is everything escaped properly? Regex: '{regex}' Message: {e}"
-                )
+                ) from None
 
             logger.debug(
                 f"Querying slack for documents. ChannelsPattern: {kwargs['channel_match_pattern']}"

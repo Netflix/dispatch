@@ -257,4 +257,4 @@ def delete_case(
                     )
                 }
             ],
-        )
+        ) from None

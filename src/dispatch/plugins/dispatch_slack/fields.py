@@ -140,14 +140,16 @@ def minute_picker_input(
 def timezone_picker_input(
     action_id: str = DefaultActionIds.timezone_picker_input,
     block_id: str = DefaultBlockIds.timezone_picker_input,
-    initial_option: dict = {
-        "text": TimezoneOptions.local.value,
-        "value": TimezoneOptions.local.value,
-    },
+    initial_option: dict = None,
     label: str = "Timezone",
     **kwargs,
 ):
     """Builds a timezone picker input."""
+    if not initial_option:
+        initial_option = {
+            "text": TimezoneOptions.local.value,
+            "value": TimezoneOptions.local.value,
+        }
     return static_select_block(
         action_id=action_id,
         block_id=block_id,

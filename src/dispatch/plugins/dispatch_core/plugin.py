@@ -73,7 +73,9 @@ class BasicAuthProviderPlugin(AuthenticationProviderPlugin):
         try:
             data = jwt.decode(token, DISPATCH_JWT_SECRET)
         except (JWKError, JWTError) as e:
-            raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail=[{"msg": str(e)}])
+            raise HTTPException(
+                status_code=HTTP_401_UNAUTHORIZED, detail=[{"msg": str(e)}]
+            ) from None
         return data["email"]
 
 
@@ -194,7 +196,7 @@ class DispatchTicketPlugin(TicketPlugin):
         storage_weblink: str,
         conference_weblink: str,
         cost: float,
-        incident_type_plugin_metadata: dict = {},
+        incident_type_plugin_metadata: dict = None,
     ):
         """Updates a Dispatch incident ticket."""
         return
@@ -233,7 +235,7 @@ class DispatchTicketPlugin(TicketPlugin):
         # reporter_email: str,
         document_weblink: str,
         storage_weblink: str,
-        case_type_plugin_metadata: dict = {},
+        case_type_plugin_metadata: dict = None,
     ):
         """Updates a Dispatch case ticket."""
         return
