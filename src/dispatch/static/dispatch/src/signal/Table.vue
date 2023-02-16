@@ -6,7 +6,7 @@
       <v-col>
         <v-alert dismissible icon="mdi-school" prominent text type="info"
           >Signal definitions determine how a signal is processed. Allowing you to map case types,
-          supression and duplication rules for each signal.
+          snooze and duplication rules for each signal.
         </v-alert>
       </v-col>
     </v-row>
@@ -97,8 +97,8 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import RouterUtils from "@/router/utils"
-import NewEditDialog from "@/signal/NewEditSheet.vue"
+
+import NewEditDialog from "@/signal/NewEditDialog.vue"
 import DeleteDialog from "@/signal/DeleteDialog.vue"
 export default {
   name: "SignalTable",
