@@ -143,13 +143,22 @@
           </v-card>
         </v-col>
         <v-col cols="12">
-          <entity-rule-card v-model="entity_types"></entity-rule-card>
-        </v-col>
-        <v-col cols="12">
-          <duplication-rule-card v-model="duplication_rule"></duplication-rule-card>
-        </v-col>
-        <v-col cols="12">
-          <suppression-rule v-model="suppression_rule"></suppression-rule>
+          <v-card flat tile>
+            <v-app-bar color="white" flat>
+              <v-toolbar-title class="subtitle-2"> Filter(s) </v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-tooltip max-width="250px" bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
+                </template>
+                Defines a signal filter allowing you to take either a "Snooze" or "Deduplication"
+                action for any match signal matching the filter.
+              </v-tooltip>
+            </v-app-bar>
+            <v-card-text>
+              <signal-filter-combobox v-model="filters" :project="project"></signal-filter-combobox>
+            </v-card-text>
+          </v-card>
         </v-col>
       </v-row>
     </v-navigation-drawer>
@@ -165,37 +174,21 @@ import { required } from "vee-validate/dist/rules"
 import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
 
-import DuplicationRuleCard from "@/signal/DuplicationRule.vue"
-import EntityRuleCard from "@/signal/EntityRule.vue"
-import SuppressionRule from "./SuppressionRule.vue"
+import SignalFilterCombobox from "@/signal/filter/SignalFilterCombobox.vue"
 
 extend("required", {
   ...required,
 })
 
 export default {
-  name: "SignalNewEditSheet",
+  name: "SignalNewEditDialog",
 
   components: {
     ValidationObserver,
     ValidationProvider,
     CaseTypeSelect,
     CasePrioritySelect,
-    DuplicationRuleCard,
-    EntityRuleCard,
-    SuppressionRule,
-  },
-
-  data() {
-    return {
-      windows: [
-        { label: "10min", value: 600 },
-        { label: "30min", value: 1800 },
-        { label: "1hr", value: 3600 },
-        { label: "8hr", value: 28800 },
-        { label: "24hr", value: 86400 },
-      ],
-    }
+    SignalFilterCombobox,
   },
 
   computed: {
@@ -210,9 +203,8 @@ export default {
       "selected.external_url",
       "selected.case_type",
       "selected.case_priority",
+      "selected.filters",
       "selected.entity_types",
-      "selected.duplication_rule",
-      "selected.suppression_rule",
       "selected.source",
       "selected.project",
       "selected.loading",

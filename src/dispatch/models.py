@@ -1,9 +1,9 @@
 from typing import Optional
 from datetime import datetime, timedelta
 
-from pydantic import BaseModel
 from pydantic.fields import Field
 from pydantic.networks import EmailStr
+from pydantic import BaseModel
 from pydantic.types import conint, constr, SecretStr
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, event, ForeignKey

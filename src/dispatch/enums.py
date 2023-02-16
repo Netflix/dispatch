@@ -6,13 +6,6 @@ class DispatchEnum(str, Enum):
         return str.__str__(self)
 
 
-class RuleMode(DispatchEnum):
-    active = "Active"
-    monitor = "Monitor"
-    inactive = "Inactive"
-    expired = "Expired"
-
-
 class Visibility(DispatchEnum):
     open = "Open"
     restricted = "Restricted"
