@@ -51,6 +51,9 @@ class EntityBase(DispatchBase):
 
 
 class EntityCreate(EntityBase):
+    def __hash__(self):
+        return hash((self.id, self.value))
+
     id: Optional[PrimaryKey]
     entity_type: EntityTypeCreate
     project: ProjectRead
