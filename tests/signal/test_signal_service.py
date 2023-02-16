@@ -1,5 +1,3 @@
-
-
 def test_get(session, signal):
     from dispatch.signal.service import get
 
