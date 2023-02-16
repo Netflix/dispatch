@@ -30,6 +30,13 @@
           <date-time-picker label="Expiration" v-model="expiration" />
         </v-col>
       </v-row>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <slot name="actions" :parent="this">
+          <v-btn color="grey lighten-1" text @click.native="clearExpiration()">Clear</v-btn>
+          <v-btn text @click="closeMenu()">Ok</v-btn>
+        </slot>
+      </v-card-actions>
     </v-card>
   </v-menu>
 </template>
@@ -111,6 +118,9 @@ export default {
     },
     clearExpiration: function () {
       this.expiration = null
+    },
+    closeMenu: function () {
+      this.menu = false
     },
     toLocalISOString: function (date) {
       let tzOffset = date.getTimezoneOffset() * 60000 // offset in milliseconds

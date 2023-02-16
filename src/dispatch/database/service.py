@@ -486,10 +486,9 @@ def search_filter_sort_paginate(
     except BadFilterFormat as e:
         raise ValidationError(
             [ErrorWrapper(InvalidFilterError(msg=str(e)), loc="filter")], model=BaseModel
-        )
+        ) from None
     except Exception as e:
         log.exception(e)
-        ) from None
 
     if items_per_page == -1:
         items_per_page = None

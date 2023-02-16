@@ -27,7 +27,7 @@
     </template>
     <template v-slot:selection="{ item, index }">
       <v-chip close @click:close="entities.splice(index, 1)">
-        <span v-if="item.entity"> {{ item.name }} </span>{{ item.name }}
+        {{ item.entity_type.name }} / {{ item.value }}
       </v-chip>
     </template>
     <template v-slot:item="data">

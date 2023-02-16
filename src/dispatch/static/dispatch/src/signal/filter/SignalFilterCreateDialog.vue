@@ -25,6 +25,8 @@
           <v-stepper-content step="1">
             <v-card>
               <v-card-text>
+                Define the entity and entity types that will be used to match with existing signal
+                instances.
                 <v-tabs color="primary" right>
                   <v-tab>Basic</v-tab>
                   <v-tab>Advanced</v-tab>
@@ -133,22 +135,18 @@
                       <v-radio label="Deduplicate" value="deduplicate"></v-radio>
                     </v-radio-group>
                   </ValidationProvider>
-                  <ValidationProvider name="Window" rules="required" immediate>
-                    <v-select
-                      v-if="action === 'deduplicate'"
-                      persistent-hint
-                      label="Window (minutes)"
-                      :items="windows"
-                      v-model="window"
-                    ></v-select>
-                  </ValidationProvider>
-                  <ValidationProvider name="Expiration" rules="required" immediate>
-                    <expiration-input
-                      v-if="action == 'snooze'"
-                      persistent-hint
-                      v-model="expiration"
-                    ></expiration-input>
-                  </ValidationProvider>
+                  <v-select
+                    v-if="action === 'deduplicate'"
+                    persistent-hint
+                    label="Window (minutes)"
+                    :items="windows"
+                    v-model="window"
+                  ></v-select>
+                  <expiration-input
+                    v-if="action == 'snooze'"
+                    persistent-hint
+                    v-model="expiration"
+                  ></expiration-input>
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer />

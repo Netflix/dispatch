@@ -78,7 +78,7 @@ def create_filter(
                 )
             ],
             model=SignalFilterRead,
-        )
+        ) from None
 
 
 @router.put("/filters/{signal_filter_id}", response_model=SignalRead)
@@ -108,7 +108,7 @@ def update_filter(
                 )
             ],
             model=SignalFilterUpdate,
-        )
+        ) from None
 
     return signal_filter
 

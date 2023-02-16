@@ -20,13 +20,6 @@
         </v-tab-item>
       </v-tabs>
     </v-card-text>
-    <v-card-actions>
-      <v-spacer></v-spacer>
-      <slot name="actions" :parent="this">
-        <v-btn color="grey lighten-1" text @click.native="clearHandler">Clear</v-btn>
-        <v-btn text @click="okHandler">Ok</v-btn>
-      </slot>
-    </v-card-actions>
   </v-card>
 </template>
 <script>

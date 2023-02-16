@@ -6,9 +6,9 @@ const getDefaultSelectedState = () => {
     expression: null,
     description: null,
     name: null,
-    action: null,
+    action: "snooze",
     expiration: null,
-    window: 5,
+    window: null,
   }
 }
 
