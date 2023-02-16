@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_get(session, report):
     from dispatch.report.service import get
 

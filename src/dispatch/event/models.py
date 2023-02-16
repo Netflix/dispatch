@@ -2,7 +2,6 @@ from datetime import datetime
 from uuid import UUID
 
 from typing import Optional
-from dispatch.models import PrimaryKey
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID as SQLAlchemyUUID

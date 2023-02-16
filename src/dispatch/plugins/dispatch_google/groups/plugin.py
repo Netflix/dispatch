@@ -40,7 +40,7 @@ def make_call(client: Any, func: Any, delay: int = None, propagate_errors: bool 
         else:
             log.error(e.content.decode())
 
-        raise TryAgain
+        raise TryAgain from None
 
 
 def expand_group(client: Any, group_key: str):

@@ -2,10 +2,7 @@ from dispatch.auth.models import DispatchUser
 from dispatch.case.models import Case, CaseCreate, CaseUpdate
 from dispatch.case.severity.models import CaseSeverity
 from dispatch.case.priority.models import CasePriority
-from dispatch.case.type.models import CaseType, CaseTypeRead
-from dispatch.case.severity.models import CaseSeverityRead
-from dispatch.case.priority.models import CasePriorityRead
-from dispatch.participant.models import ParticipantUpdate
+from dispatch.case.type.models import CaseType
 
 
 def test_get(session, case: Case):
