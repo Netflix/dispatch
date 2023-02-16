@@ -9,6 +9,13 @@
     <template v-slot:item.signal="{ item }">
       <signal-popover v-model="item.signal" />
     </template>
+    <template v-slot:item.entities="{ item }">
+      <v-row>
+        <v-chip v-for="(entity, index) in item.entities" :key="index" class="mr-2">
+          {{ entity.entity_type.name }}
+        </v-chip>
+      </v-row>
+    </template>
     <template v-slot:item.created_at="{ item }">
       <v-tooltip bottom>
         <template v-slot:activator="{ on, attrs }">
