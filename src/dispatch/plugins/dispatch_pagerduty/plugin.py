@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 
 
 class PagerdutyConfiguration(BaseConfigurationModel):
-    """The values below are the availible configurations for Dispatch's PagerDuty plugin."""
+    """The values below are the available configurations for Dispatch's PagerDuty plugin."""
 
     api_key: SecretStr = Field(
         title="API Key",
