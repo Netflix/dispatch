@@ -12,7 +12,7 @@
         </v-card-title>
         <v-stepper v-model="step">
           <v-stepper-header>
-            <v-stepper-step :complete="step > 1" step="1" editable> Filter </v-stepper-step>
+            <v-stepper-step :complete="step > 1" step="1" editable> Build </v-stepper-step>
             <v-divider />
 
             <v-stepper-step :complete="step > 2" step="2" editable> Preview </v-stepper-step>
@@ -49,13 +49,53 @@
                             />
                         </ValidationProvider>
                     </v-flex>
-                    <regex-box></regex-box>
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer />
+                  <v-chip
+                    class="ma-2"
+                    color="red darken-3"
+                    outlined
+                    >
+                    <v-icon left>
+                        mdi-fire
+                    </v-icon>
+                    Found 6 signals that match your entity type
+                    </v-chip>
+                  <v-btn
+                        icon
+                        @click="show_signals = !show_signals"
+                    >
+                        <v-icon>{{ show_signals ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+                    </v-btn>
                   <v-btn @click="closeCreateEditDialog()" text> Cancel </v-btn>
                   <v-btn color="info" @click="step = 2"> Continue </v-btn>
                 </v-card-actions>
+                <v-expand-transition>
+                    <div v-show="show_signals">
+                        <v-divider></v-divider>
+                            <v-card>
+                                <v-data-table
+                                    hide-default-footer
+                                    :headers="previewFields"
+                                    :items="previewRows.items"
+                                    :loading="previewRowsLoading"
+                                >
+                                    <template v-slot:item.data-table-actions="{ item }">
+                                    <raw-signal-viewer v-model="item.raw" />
+                                    <v-tooltip bottom>
+                                        <template v-slot:activator="{ on, attrs }">
+                                        <v-icon v-bind="attrs" v-on="on" class="mr-2"> mdi-fingerprint </v-icon>
+                                        </template>
+                                        <span>{{ item.fingerprint }}</span>
+                                    </v-tooltip>
+                                    </template>
+                                </v-data-table>
+                                <v-card-actions>
+                            </v-card-actions>
+                        </v-card>
+                    </div>
+                </v-expand-transition>
               </v-card>
             </v-stepper-content>
 
@@ -181,6 +221,7 @@
         renderValidationDecorations: "on",
       },
       step: 1,
+      show_signals: false,
       previewFields: [
         { text: "Name", value: "signal.name", sortable: false },
         { text: "Case", value: "case.name", sortable: false },

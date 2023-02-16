@@ -53,6 +53,7 @@ declare module 'vue' {
     VDatePicker: typeof import('vuetify/lib')['VDatePicker']
     VDialog: typeof import('vuetify/lib')['VDialog']
     VDivider: typeof import('vuetify/lib')['VDivider']
+    VExpandTransition: typeof import('vuetify/lib')['VExpandTransition']
     VExpansionPanel: typeof import("vuetify/lib")["VExpansionPanel"]
     VExpansionPanelContent: typeof import("vuetify/lib")["VExpansionPanelContent"]
     VExpansionPanelHeader: typeof import("vuetify/lib")["VExpansionPanelHeader"]
