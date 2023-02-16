@@ -72,7 +72,6 @@ def test_delete(session, event):
 
 def test_log_incident_event(session, incident):
     from dispatch.event.service import log_incident_event
-    from dispatch.event.models import EventCreate
 
     source = "Dispatch event source"
     description = "Dispatch event description"
@@ -85,7 +84,6 @@ def test_log_incident_event(session, incident):
 
 def test_log_case_event(session, case):
     from dispatch.event.service import log_case_event
-    from dispatch.event.models import EventCreate
 
     source = "Dispatch event source"
     description = "Dispatch event description"

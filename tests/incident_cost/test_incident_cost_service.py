@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_get(session, incident_cost):
     from dispatch.incident_cost.service import get
 

@@ -46,7 +46,7 @@ def create_entity_type(*, db_session: Session = Depends(get_db), entity_type_in:
         raise ValidationError(
             [ErrorWrapper(ExistsError(msg="A entity with this name already exists."), loc="name")],
             model=EntityTypeCreate,
-        )
+        ) from None
     return entity
 
 
@@ -77,7 +77,7 @@ def update_entity_type(
                 )
             ],
             model=EntityTypeUpdate,
-        )
+        ) from None
     return entity_type
 
 
@@ -108,7 +108,7 @@ def process_entity_type(
                 )
             ],
             model=EntityTypeUpdate,
-        )
+        ) from None
     return entity_type
 
 

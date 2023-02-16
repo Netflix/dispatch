@@ -30,7 +30,7 @@ def create_signal_instance(
     )
 
     # associate any known tags with the signal
-    tag = tag_service.get_by_name(db_session=db_session, project_id=project.id, name="foo")
+    tag_service.get_by_name(db_session=db_session, project_id=project.id, name="foo")
 
     signal_instance.signal = signal
     db_session.commit()

@@ -48,7 +48,7 @@ def create_search_filter(
                 )
             ],
             model=SearchFilterRead,
-        )
+        ) from None
 
 
 @router.put("/{search_filter_id}", response_model=SearchFilterRead)
@@ -77,7 +77,7 @@ def update_search_filter(
                 )
             ],
             model=SearchFilterUpdate,
-        )
+        ) from None
     return search_filter
 
 

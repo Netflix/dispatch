@@ -75,7 +75,7 @@ def create_evergreen_reminder(
         return
 
     # we set the evergreen last reminder at time to now
-    for resource_type, resources in resource_groups.items():
+    for _, resources in resource_groups.items():
         for resource in resources:
             resource.evergreen_last_reminder_at = datetime.utcnow()
 

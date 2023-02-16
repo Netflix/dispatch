@@ -16,7 +16,6 @@ from dispatch.case.severity.models import CaseSeverity
 from dispatch.case.type.models import CaseType
 from dispatch.conference.models import Conference
 from dispatch.conversation.models import Conversation
-from dispatch.database.core import Session
 from dispatch.definition.models import Definition
 from dispatch.document.models import Document
 from dispatch.entity_type.models import EntityType

@@ -66,7 +66,7 @@ class ZoomConferencePlugin(ConferencePlugin):
         self.configuration_schema = ZoomConfiguration
 
     def create(
-        self, name: str, description: str = None, title: str = None, participants: List[str] = []
+        self, name: str, description: str = None, title: str = None, participants: List[str] = None
     ):
         """Create a new event."""
         client = ZoomClient(

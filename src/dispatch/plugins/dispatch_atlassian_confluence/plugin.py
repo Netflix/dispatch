@@ -52,7 +52,7 @@ class ConfluencePagePlugin(StoragePlugin):
         self.configuration_schema = ConfluenceConfiguration
 
     def create_file(
-        self, drive_id: str, name: str, participants: List[str] = [], file_type: str = "folder"
+        self, drive_id: str, name: str, participants: List[str] = None, file_type: str = "folder"
     ):
         """Creates a new Home page for the incident documents.."""
         try:

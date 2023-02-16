@@ -119,7 +119,7 @@ def build_and_log_error(
     else:
         guid = str(uuid.uuid4())
         message = build_unexpected_error_message(guid)
-        logger.exception(error, extra=dict(slack_interaction_guid=guid))
+        logger.exception(error, extra={"slack_interaction_guid": guid})
 
     return message
 

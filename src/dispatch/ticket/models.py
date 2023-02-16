@@ -6,7 +6,7 @@ from sqlalchemy import Column, Integer, ForeignKey
 
 from dispatch.database.core import Base
 from dispatch.messaging.strings import TICKET_DESCRIPTION
-from dispatch.models import ResourceBase, ResourceMixin, PrimaryKey
+from dispatch.models import ResourceBase, ResourceMixin
 
 
 class Ticket(Base, ResourceMixin):

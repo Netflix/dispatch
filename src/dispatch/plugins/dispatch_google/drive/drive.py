@@ -95,13 +95,13 @@ def make_call(client: Any, func: Any, propagate_errors: bool = False, **kwargs):
     except HttpError as e:
         if e.resp.status in [300, 429, 500, 502, 503, 504]:
             log.debug("Google encountered an error retrying...")
-            raise TryAgain
+            raise TryAgain from None
 
         if propagate_errors:
-            raise HttpError
+            raise HttpError from None
 
         errors = json.loads(e.content.decode())
-        raise Exception(f"Request failed. Errors: {errors}")
+        raise Exception(f"Request failed. Errors: {errors}") from None
 
 
 @retry(wait=wait_exponential(multiplier=1, max=10))
@@ -156,7 +156,7 @@ def download_google_document(client: Any, file_id: str, mime_type: str = "text/p
         return fp.getvalue().decode("utf-8")
     except (HttpError, OSError):
         # Do no retry. Log the error fail.
-        raise Exception(f"Failed to export the file. Id: {file_id} MimeType: {mime_type}")
+        raise Exception(f"Failed to export the file. Id: {file_id} MimeType: {mime_type}") from None
 
 
 def create_file(
@@ -185,8 +185,9 @@ def create_file(
         supportsAllDrives=True,
     )
 
-    for member in members:
-        add_permission(client, member, file_data["id"], role, "user")
+    if members:
+        for member in members:
+            add_permission(client, member, file_data["id"], role, "user")
 
     return file_data
 
