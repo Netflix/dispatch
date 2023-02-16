@@ -7,6 +7,7 @@
         v-model="selectedDateTime"
         @input="onSelectedDateTimeChange"
       />
+      <entity-type-create-dialog></entity-type-create-dialog>
       <v-col v-for="entity in entities" :key="entity.id" cols="6">
         <entity-card :entity="entity" :selectedDateTime="selectedDateTime" />
       </v-col>
@@ -24,11 +25,13 @@
 <script>
 import EntityCard from "@/entity/EntityCard.vue";
 import DateChipGroupRelative from "@/components/DateChipGroupRelative.vue";
+import EntityTypeCreateDialog from "@/entity_type/EntityTypeCreateDialog.vue";
 
 export default {
   name: "EntitiesTab",
   components: {
     EntityCard,
+    EntityTypeCreateDialog,
     DateChipGroupRelative,
   },
   props: {

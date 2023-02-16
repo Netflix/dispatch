@@ -113,7 +113,7 @@
       async refreshData() {
         try {
           this.isLoading = true;
-          const casePromise = EntityApi.getCasesCount(
+          const casePromise = EntityApi.getCases(
             this.entity.id, this.selectedDateTime).then((response) => response.data
           );
           const signalPromise = EntityApi.getSignalInstances(

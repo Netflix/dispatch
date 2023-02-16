@@ -67,6 +67,10 @@ const actions = {
       commit("SET_SELECTED", entity_type)
     }
   },
+  closeCreateEditDialog({ commit }) {
+    commit("SET_DIALOG_CREATE_EDIT", false)
+    commit("RESET_SELECTED")
+  },
   removeShow({ commit }, entity_type) {
     commit("SET_DIALOG_DELETE", true)
     commit("SET_SELECTED", entity_type)
