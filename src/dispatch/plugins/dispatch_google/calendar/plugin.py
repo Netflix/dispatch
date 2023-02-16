@@ -40,7 +40,7 @@ def make_call(client: Any, func: Any, delay: int = None, propagate_errors: bool 
 
         return data
     except HttpError:
-        raise TryAgain
+        raise TryAgain from None
 
 
 def get_event(client: Any, event_id: str):
@@ -76,11 +76,14 @@ def create_event(
     name: str,
     description: str = None,
     title: str = None,
-    participants: List[str] = [],
+    participants: List[str] = None,
     start_time: str = None,
     duration: int = 60000,  # duration in mins ~6 weeks
 ):
-    participants = [{"email": x} for x in participants]
+    if participants:
+        participants = [{"email": x} for x in participants]
+    else:
+        participants = []
 
     request_id = str(uuid.uuid4())
     body = {
@@ -132,7 +135,7 @@ class GoogleCalendarConferencePlugin(ConferencePlugin):
         self.configuration_schema = GoogleConfiguration
 
     def create(
-        self, name: str, description: str = None, title: str = None, participants: List[str] = []
+        self, name: str, description: str = None, title: str = None, participants: List[str] = None
     ):
         """Create a new event."""
         client = get_service(self.configuration, "calendar", "v3", self.scopes)

@@ -167,7 +167,7 @@ def update_signal(
         raise ValidationError(
             [ErrorWrapper(ExistsError(msg="A signal with this name already exists."), loc="name")],
             model=SignalUpdate,
-        )
+        ) from None
 
     return signal
 

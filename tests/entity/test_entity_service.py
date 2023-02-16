@@ -58,7 +58,7 @@ def test_find_entities_with_field_and_regex(session, signal_instance, project):
     entity_types = [
         EntityType(
             name="AWS IAM Role ARN",
-            field="id",
+            field="asset[*].id",
             regular_expression=r"^arn:aws:iam::\d{12}:role\/[a-zA-Z_0-9+=,.@\-_/]+$",
             project=project,
         ),
@@ -90,7 +90,7 @@ def test_find_entities_with_field_only(session, signal_instance, project):
         ),
     ]
     entities = entity_service.find_entities(session, signal_instance, entity_types)
-    assert len(entities) == 3
+    assert len(entities) == 1
 
 
 def test_find_entities_with_no_regex_or_field(session, signal_instance, project):
