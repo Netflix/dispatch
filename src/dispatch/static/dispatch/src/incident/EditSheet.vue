@@ -31,6 +31,7 @@
         <v-tab key="resources"> Resources </v-tab>
         <v-tab key="participants"> Participants </v-tab>
         <v-tab key="timeline"> Timeline </v-tab>
+        <v-tab key="tasks"> Tasks </v-tab>
         <v-tab key="workflows"> Workflows </v-tab>
         <v-tab key="costs"> Costs </v-tab>
       </v-tabs>
@@ -46,6 +47,9 @@
         </v-tab-item>
         <v-tab-item key="timeline">
           <incident-timeline-tab />
+        </v-tab-item>
+        <v-tab-item key="tasks">
+          <incident-tasks-tab />
         </v-tab-item>
         <v-tab-item key="workflow_instances">
           <workflow-instance-tab v-model="workflow_instances" />
@@ -63,23 +67,25 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver } from "vee-validate"
 
-import IncidentDetailsTab from "@/incident/DetailsTab.vue"
-import IncidentResourcesTab from "@/incident/ResourcesTab.vue"
-import IncidentParticipantsTab from "@/incident/ParticipantsTab.vue"
-import IncidentTimelineTab from "@/incident/TimelineTab.vue"
 import IncidentCostsTab from "@/incident/CostsTab.vue"
+import IncidentDetailsTab from "@/incident/DetailsTab.vue"
+import IncidentParticipantsTab from "@/incident/ParticipantsTab.vue"
+import IncidentResourcesTab from "@/incident/ResourcesTab.vue"
+import IncidentTasksTab from "@/incident/TasksTab.vue"
+import IncidentTimelineTab from "@/incident/TimelineTab.vue"
 import WorkflowInstanceTab from "@/workflow/WorkflowInstanceTab.vue"
 
 export default {
   name: "IncidentEditSheet",
 
   components: {
-    ValidationObserver,
-    IncidentDetailsTab,
-    IncidentResourcesTab,
-    IncidentParticipantsTab,
-    IncidentTimelineTab,
     IncidentCostsTab,
+    IncidentDetailsTab,
+    IncidentParticipantsTab,
+    IncidentResourcesTab,
+    IncidentTasksTab,
+    IncidentTimelineTab,
+    ValidationObserver,
     WorkflowInstanceTab,
   },
 

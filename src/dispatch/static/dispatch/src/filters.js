@@ -117,3 +117,13 @@ export const activeRoles = function (value) {
 }
 
 Vue.filter("activeRoles", activeRoles)
+
+Vue.filter("individualNames", function (value) {
+  if (value) {
+    return value
+      .map(function (item) {
+        return item.individual.name
+      })
+      .join(", ")
+  }
+})

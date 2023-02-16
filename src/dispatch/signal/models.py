@@ -42,7 +42,11 @@ class RuleMode(DispatchEnum):
 assoc_signal_instance_tags = Table(
     "assoc_signal_instance_tags",
     Base.metadata,
-    Column("signal_instance_id", UUID, ForeignKey("signal_instance.id", ondelete="CASCADE")),
+    Column(
+        "signal_instance_id",
+        UUID(as_uuid=True),
+        ForeignKey("signal_instance.id", ondelete="CASCADE"),
+    ),
     Column("tag_id", Integer, ForeignKey("tag.id", ondelete="CASCADE")),
     PrimaryKeyConstraint("signal_instance_id", "tag_id"),
 )
@@ -58,7 +62,11 @@ assoc_signal_tags = Table(
 assoc_signal_instance_entities = Table(
     "assoc_signal_instance_entities",
     Base.metadata,
-    Column("signal_instance_id", UUID, ForeignKey("signal_instance.id", ondelete="CASCADE")),
+    Column(
+        "signal_instance_id",
+        UUID(as_uuid=True),
+        ForeignKey("signal_instance.id", ondelete="CASCADE"),
+    ),
     Column("entity_id", Integer, ForeignKey("entity.id", ondelete="CASCADE")),
     PrimaryKeyConstraint("signal_instance_id", "entity_id"),
 )
