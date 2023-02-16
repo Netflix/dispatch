@@ -93,26 +93,23 @@ def init_database(engine):
 
     # we install all plugins
     from dispatch.common.utils.cli import install_plugins
-    from dispatch.plugin import service as plugin_service
     from dispatch.plugins.base import plugins
 
     install_plugins()
 
     for p in plugins.all():
-        record = plugin_service.get_by_slug(db_session=db_session, slug=p.slug)
-        if not record:
-            plugin = Plugin(
-                title=p.title,
-                slug=p.slug,
-                type=p.type,
-                version=p.version,
-                author=p.author,
-                author_url=p.author_url,
-                multiple=p.multiple,
-                description=p.description,
-            )
-            db_session.add(plugin)
-        db_session.commit()
+        plugin = Plugin(
+            title=p.title,
+            slug=p.slug,
+            type=p.type,
+            version=p.version,
+            author=p.author,
+            author_url=p.author_url,
+            multiple=p.multiple,
+            description=p.description,
+        )
+        db_session.add(plugin)
+    db_session.commit()
 
     # we create the default project if it doesn't exist
     project = db_session.query(Project).filter(Project.name == "default").one_or_none()
