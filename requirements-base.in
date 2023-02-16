@@ -2,8 +2,9 @@ aiocache
 aiofiles
 aiohttp
 alembic
-blockkit
+atlassian-python-api==3.32.0
 bcrypt
+blockkit
 cachetools
 chardet
 click
@@ -16,14 +17,13 @@ h11
 httpx
 jinja2
 jira==2.0.0
-atlassian-python-api==3.32.0
 joblib
 jsonpath_ng
 numpy
 oauth2client
 pandas
 pdpyras
-protobuf
+protobuf==3.20.*
 psycopg2-binary
 pyparsing
 python-dateutil
@@ -37,8 +37,8 @@ schemathesis
 sentry-asgi
 sentry-sdk
 sh
-slack_sdk
 slack-bolt
+slack_sdk
 spacy
 sqlalchemy-filters
 sqlalchemy-utils
