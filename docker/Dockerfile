@@ -94,7 +94,7 @@ RUN set -x \
     # These are also installed last as they are needed
     # during container run and can have the same deps w/
     && apt-get install -y --no-install-recommends \
-    pkg-config postgresql-client-12 nodejs \
+    pkg-config postgresql-client-14 nodejs \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && npm install mjml
