@@ -15,9 +15,8 @@ const getDefaultSelectedState = () => {
     external_url: null,
     case_type: null,
     case_priority: null,
+    filters: null,
     entity_types: null,
-    duplication_rule: null,
-    suppression_rule: null,
     source: null,
     project: null,
     created_at: null,
@@ -33,26 +32,6 @@ const state = {
     showCreateEdit: false,
     showRawSignalDialog: false,
     showRemove: false,
-  },
-  instanceTable: {
-    rows: {
-      items: [],
-      total: null,
-    },
-    options: {
-      filters: {
-        created_at: {
-          start: null,
-          end: null,
-        },
-      },
-      q: "",
-      page: 1,
-      itemsPerPage: 10,
-      sortBy: ["created_at"],
-      descending: [true],
-    },
-    loading: false,
   },
   table: {
     rows: {

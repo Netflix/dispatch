@@ -5,7 +5,7 @@ from atlassian import Confluence
 from typing import List
 
 
-def replace_content(client: Confluence, document_id: str, replacements: List[str]) -> dict():
+def replace_content(client: Confluence, document_id: str, replacements: List[str]) -> {}:
     # read content based on document_id
     current_content = client.get_page_by_id(
         document_id, expand="body.storage", status=None, version=None

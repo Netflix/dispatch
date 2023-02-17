@@ -9,11 +9,12 @@
     <template v-slot:item.signal="{ item }">
       <signal-popover v-model="item.signal" />
     </template>
-    <template v-slot:item.duplication_rule="{ item }">
-      <v-simple-checkbox :value="item.duplication_rule || false" disabled></v-simple-checkbox>
-    </template>
-    <template v-slot:item.suppression_rule="{ item }">
-      <v-simple-checkbox :value="item.supression_rule || false" disabled></v-simple-checkbox>
+    <template v-slot:item.entities="{ item }">
+      <v-row>
+        <v-chip v-for="(entity, index) in item.entities" :key="index" class="mr-2">
+          {{ entity.entity_type.name }}
+        </v-chip>
+      </v-row>
     </template>
     <template v-slot:item.created_at="{ item }">
       <v-tooltip bottom>
@@ -58,9 +59,7 @@ export default {
       menu: false,
       headers: [
         { text: "Signal", value: "signal", sortable: false },
-        { text: "Tags", value: "tags", sortable: false },
-        { text: "Duplicate", value: "duplication_rule", sortable: false },
-        { text: "Supressed", value: "suppression_rule", sortable: false },
+        { text: "Entities", value: "entities", sortable: false },
         { text: "Created At", value: "created_at" },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
@@ -72,7 +71,7 @@ export default {
       if (this.inputSignalInstances.length) {
         return this.inputSignalInstances
       }
-      return this.signal_instances;
+      return this.signal_instances
     },
   },
 }

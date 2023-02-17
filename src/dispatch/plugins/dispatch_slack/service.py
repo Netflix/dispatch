@@ -111,24 +111,24 @@ def make_call(client: Any, endpoint: str, **kwargs):
 
         # NOTE we've seen some eventual consistency problems with channel creation
         if e.response["error"] == "channel_not_found":
-            raise TryAgain
+            raise TryAgain from None
 
         # NOTE we've seen some eventual consistency problems after adding users to a channel
         if e.response["error"] == "user_not_in_channel":
-            raise TryAgain
+            raise TryAgain from None
 
         # NOTE we've experienced a wide range of issues when Slack's performance is degraded
         if e.response["error"] == "fatal_error":
             # we wait 5 minutes before trying again, as performance issues
             # take time to troubleshoot and fix
             time.sleep(300)
-            raise TryAgain
+            raise TryAgain from None
 
         if e.response.headers.get("Retry-After"):
             wait = int(e.response.headers["Retry-After"])
             log.info(f"SlackError: Rate limit hit. Waiting {wait} seconds.")
             time.sleep(wait)
-            raise TryAgain
+            raise TryAgain from None
         else:
             raise e
 
@@ -150,7 +150,7 @@ async def make_call_async(client: Any, endpoint: str, **kwargs):
             wait = int(e.response.headers["Retry-After"])
             log.info(f"SlackError: Rate limit hit. Waiting {wait} seconds.")
             time.sleep(wait)
-            raise TryAgain
+            raise TryAgain from None
         else:
             raise e
 
@@ -341,10 +341,13 @@ def add_users_to_conversation_thread(
 ):
     """Adds user to a threaded conversation."""
     users = [f"<@{user_id}>" for user_id in user_ids]
-    blocks = Message(
-        blocks=[Section(text="Looping in individuals to help resolve this case...", fields=users)]
-    ).build()["blocks"]
-    send_message(client=client, conversation_id=conversation_id, blocks=blocks, ts=thread_id)
+    if users:
+        blocks = Message(
+            blocks=[
+                Section(text="Looping in individuals to help resolve this case...", fields=users)
+            ]
+        ).build()["blocks"]
+        send_message(client=client, conversation_id=conversation_id, blocks=blocks, ts=thread_id)
 
 
 def add_users_to_conversation(client: Any, conversation_id: str, user_ids: List[str]):

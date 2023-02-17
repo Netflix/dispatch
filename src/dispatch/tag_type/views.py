@@ -50,7 +50,7 @@ def create_tag_type(*, db_session: Session = Depends(get_db), tag_type_in: TagTy
                 )
             ],
             model=TagTypeCreate,
-        )
+        ) from None
     return tag_type
 
 
@@ -76,7 +76,7 @@ def update_tag_type(
                 )
             ],
             model=TagTypeUpdate,
-        )
+        ) from None
     return tag_type
 
 

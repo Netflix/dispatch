@@ -10,6 +10,8 @@ from sqlalchemy_utils import create_database, database_exists
 
 from dispatch import config
 from dispatch.organization.models import Organization
+from dispatch.project.models import Project
+from dispatch.plugin.models import Plugin
 from dispatch.search import fulltext
 from dispatch.search.fulltext import (
     sync_trigger,
@@ -70,22 +72,65 @@ def init_database(engine):
     session = sessionmaker(bind=engine)
     db_session = session()
 
-    # default organization
+    # we create the default organization if it doesn't exist
     organization = (
         db_session.query(Organization).filter(Organization.name == "default").one_or_none()
     )
     if not organization:
+        print("Creating default organization...")
         organization = Organization(
             name="default",
             slug="default",
             default=True,
-            description="Default dispatch organization.",
+            description="Default Dispatch organization.",
         )
 
         db_session.add(organization)
         db_session.commit()
 
+    # we initialize the database schema
     init_schema(engine=engine, organization=organization)
+
+    # we install all plugins
+    from dispatch.common.utils.cli import install_plugins
+    from dispatch.plugins.base import plugins
+
+    install_plugins()
+
+    for p in plugins.all():
+        plugin = Plugin(
+            title=p.title,
+            slug=p.slug,
+            type=p.type,
+            version=p.version,
+            author=p.author,
+            author_url=p.author_url,
+            multiple=p.multiple,
+            description=p.description,
+        )
+        db_session.add(plugin)
+    db_session.commit()
+
+    # we create the default project if it doesn't exist
+    project = db_session.query(Project).filter(Project.name == "default").one_or_none()
+    if not project:
+        print("Creating default project...")
+        project = Project(
+            name="default",
+            default=True,
+            description="Default Dispatch project.",
+            organization=organization,
+        )
+        db_session.add(project)
+        db_session.commit()
+
+        # we initialize the project with defaults
+        from dispatch.project import flows as project_flows
+
+        print("Initializing default project...")
+        project_flows.project_init_flow(
+            project_id=project.id, organization_slug=organization.slug, db_session=db_session
+        )
 
 
 def init_schema(*, engine, organization: Organization):
