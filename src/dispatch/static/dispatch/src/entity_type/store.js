@@ -10,6 +10,7 @@ const getDefaultSelectedState = () => {
     name: null,
     description: null,
     regular_expression: null,
+    jpath: null,
     enabled: false,
     global_find: false,
     project: null,

@@ -7,7 +7,7 @@
         v-model="selectedDateTime"
         @input="onSelectedDateTimeChange"
       />
-      <entity-type-create-dialog></entity-type-create-dialog>
+      <entity-type-create-dialog />
       <v-col v-for="entity in entities" :key="entity.id" cols="6">
         <entity-card :entity="entity" :selectedDateTime="selectedDateTime" />
       </v-col>
@@ -23,9 +23,9 @@
 </template>
 
 <script>
-import EntityCard from "@/entity/EntityCard.vue";
-import DateChipGroupRelative from "@/components/DateChipGroupRelative.vue";
-import EntityTypeCreateDialog from "@/entity_type/EntityTypeCreateDialog.vue";
+import EntityCard from "@/entity/EntityCard.vue"
+import DateChipGroupRelative from "@/components/DateChipGroupRelative.vue"
+import EntityTypeCreateDialog from "@/entity_type/EntityTypeCreateDialog.vue"
 
 export default {
   name: "EntitiesTab",
@@ -43,7 +43,7 @@ export default {
   data() {
     return {
       selectedDateTime: 30,
-    };
+    }
   },
   computed: {
     entities() {
@@ -54,18 +54,18 @@ export default {
             entity_type: entity.entity_type,
             value: entity.value,
             id: entity.id,
-          }));
-          return acc.concat(entities);
-        }, []);
+          }))
+          return acc.concat(entities)
+        }, [])
       } else {
-        return [];
+        return []
       }
     },
   },
   methods: {
     onSelectedDateTimeChange(newValue) {
-      this.selectedDateTime = newValue;
+      this.selectedDateTime = newValue
     },
   },
-};
+}
 </script>
