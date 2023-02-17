@@ -105,10 +105,6 @@ email-validator==1.3.1
     # via -r requirements-base.in
 emails==0.6
     # via -r requirements-base.in
-exceptiongroup==1.1.0
-    # via
-    #   hypothesis
-    #   pytest
 fastapi==0.90.1
     # via -r requirements-base.in
 frozenlist==1.3.3
@@ -249,7 +245,7 @@ preshed==3.0.8
     # via
     #   spacy
     #   thinc
-protobuf==4.21.12
+protobuf==4.22.0
     # via
     #   -r requirements-base.in
     #   google-api-core
@@ -421,9 +417,7 @@ text-unidecode==1.3
 thinc==8.1.5
     # via spacy
 tomli==2.0.1
-    # via
-    #   pytest
-    #   schemathesis
+    # via schemathesis
 tomli-w==1.0.0
     # via schemathesis
 tqdm==4.64.1
@@ -436,7 +430,6 @@ typing-extensions==4.4.0
     # via
     #   pydantic
     #   schemathesis
-    #   starlette
 uritemplate==4.1.1
     # via google-api-python-client
 urllib3==1.26.13
