@@ -10,7 +10,6 @@ const getters = {
 
 const mutations = {
   updatePattern(state, payload) {
-    console.log("New pattern %O", payload)
     state.pattern = payload
   },
 }

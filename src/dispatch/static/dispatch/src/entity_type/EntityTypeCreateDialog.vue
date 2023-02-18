@@ -387,7 +387,6 @@ export default {
             if (!this.isValidRegex(newVal)) {
               return
             }
-            console.log("GOT VALID REGEX: $O", newVal)
             this.updatePattern(newVal)
           }
           let entityType = {
