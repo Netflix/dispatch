@@ -201,7 +201,6 @@ export default {
   },
   data() {
     return {
-      step: 1,
       show_signals: false,
       show_playground: false,
       text: "",
