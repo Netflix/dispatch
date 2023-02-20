@@ -104,6 +104,18 @@ def test_find_entities_with_field_only(session, signal_instance, project):
     entities = entity_service.find_entities(session, signal_instance, entity_types)
     assert len(entities) == 1
 
+    # An entire obj which is not valid
+    entity_types = [
+        EntityType(
+            name="Entire Obj",
+            field="identity",
+            regular_expression=None,
+            project=project,
+        ),
+    ]
+    entities = entity_service.find_entities(session, signal_instance, entity_types)
+    assert len(entities) == 0
+
     # Two matches
     entity_types = [
         EntityType(

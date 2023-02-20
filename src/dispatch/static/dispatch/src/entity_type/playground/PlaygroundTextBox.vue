@@ -59,9 +59,10 @@ export default {
   },
   data() {
     return {
+      matches: [],
       decoration: [],
       noHighlight: [],
-      edit: null,
+      editor: null,
       monaco: null,
       model: null,
     }
@@ -115,26 +116,16 @@ export default {
         regex = new RegExp(pattern, "g")
       }
 
-      const matches = []
+      this.matches = []
 
       if (jpath) {
         const jpathMatches = jsonpath.query(JSON.parse(editorText), jpath)
         if (jpathMatches.length) {
           jpathMatches.forEach((jpathMatch) => {
             if (!pattern) {
-              matches.push(jpathMatch)
+              this.matches.push(jpathMatch)
             } else {
-              let matchResult = regex.exec(jpathMatch)
-              while (matchResult) {
-                matches.push({
-                  value: matchResult[0],
-                  index: editorText.indexOf(jpathMatch) + matchResult.index,
-                })
-                matchResult = regex.exec(jpathMatch)
-              }
-              if (!matches.length) {
-                return
-              }
+              this.findMatchesWithRegex(regex, editorText, jpathMatch)
             }
           })
         }
@@ -143,25 +134,25 @@ export default {
         let values = this.flattenValues(JSON.parse(editorText))
         values.forEach((value) => {
           if (typeof value === "string") {
-            let matchResult = regex.exec(value)
-            while (matchResult) {
-              matches.push({
-                value: matchResult[0],
-                index: editorText.indexOf(value) + matchResult.index,
-              })
-              matchResult = regex.exec(value)
-            }
+            this.findMatchesWithRegex(regex, editorText, value)
           }
         })
       }
-
-      if (!matches.length) {
+      /**
+       * Return if no matches or the matches do not contain a value. The latter case can occur when
+       * a JSON Path expression is used that matches an entire object, which is not supported by the
+       * entity service. See: test_find_entities_with_field_only, case #2, in test_entity_service.py
+       */
+      if (!this.matches.length || !this.matches.some((match) => match.hasOwnProperty("value"))) {
         return
       }
 
-      const ranges = matches.map((match) => {
+      const ranges = this.matches.map((match) => {
         let startPos, endPos
-        if (typeof match === "string") {
+        if (typeof match !== "object") {
+          if (typeof match === "number") {
+            match = match.toString()
+          }
           startPos = model.getPositionAt(editorText.indexOf(match))
           endPos = model.getPositionAt(editorText.indexOf(match) + match.length)
         } else {
@@ -208,6 +199,16 @@ export default {
         }
       }
       return values
+    },
+    findMatchesWithRegex(regex, editorText, value) {
+      let matchResult = regex.exec(value)
+      while (matchResult) {
+        this.matches.push({
+          value: matchResult[0],
+          index: editorText.indexOf(value) + matchResult.index,
+        })
+        matchResult = regex.exec(value)
+      }
     },
     clearAllDecorations() {
       this.decoration = this.editor.deltaDecorations(this.decoration, this.noHighlight)
