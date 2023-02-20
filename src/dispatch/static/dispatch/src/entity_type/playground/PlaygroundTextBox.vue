@@ -110,7 +110,10 @@ export default {
       }
       this.clearAllDecorations()
 
-      const regex = new RegExp(pattern, "g")
+      let regex = null
+      if (pattern) {
+        regex = new RegExp(pattern, "g")
+      }
 
       const matches = []
 
@@ -135,19 +138,25 @@ export default {
             }
           })
         }
-      } else {
-        // Should only search values
-        let matchResult = regex.exec(editorText)
-        while (matchResult) {
-          matches.push({
-            value: matchResult[0],
-            index: matchResult.index,
-          })
-          matchResult = regex.exec(editorText)
-        }
-        if (!matches.length) {
-          return
-        }
+      } else if (pattern) {
+        // Should only search string values
+        let values = this.flattenValues(JSON.parse(editorText))
+        values.forEach((value) => {
+          if (typeof value === "string") {
+            let matchResult = regex.exec(value)
+            while (matchResult) {
+              matches.push({
+                value: matchResult[0],
+                index: editorText.indexOf(value) + matchResult.index,
+              })
+              matchResult = regex.exec(value)
+            }
+          }
+        })
+      }
+
+      if (!matches.length) {
+        return
       }
 
       const ranges = matches.map((match) => {
@@ -180,6 +189,25 @@ export default {
           }
         })
       )
+    },
+    flattenValues(obj) {
+      if (typeof obj === "string") {
+        return [obj]
+      }
+      let values = []
+      for (let key in obj) {
+        let value = obj[key]
+        if (Array.isArray(value)) {
+          value.forEach((val) => {
+            values = values.concat(this.flattenValues(val))
+          })
+        } else if (typeof value === "object") {
+          values = values.concat(this.flattenValues(value))
+        } else {
+          values.push(value)
+        }
+      }
+      return values
     },
     clearAllDecorations() {
       this.decoration = this.editor.deltaDecorations(this.decoration, this.noHighlight)
