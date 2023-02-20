@@ -24,14 +24,15 @@ export default {
   created() {
     loader.init().then((monaco) => {
       const editorOptions = {
-        language: "text",
         minimap: { enabled: false },
         renderLineHighlight: "none",
+        language: "json",
+        value: this.getDefaultValue(),
       }
       // Create a unique URI for the in-memory model
       const modelUri = monaco.Uri.parse("inmemory://playground")
-      // Create the model with an empty string as the initial value
-      const model = monaco.editor.createModel("text", modelUri)
+      // Create the model with an osquery log as the initial value
+      const model = monaco.editor.createModel(this.getDefaultValue(), "json", modelUri)
       // Create the editor and pass the model to the options
       const editor = monaco.editor.create(
         document.getElementById("playground-editor"),
@@ -183,12 +184,30 @@ export default {
     clearAllDecorations() {
       this.decoration = this.editor.deltaDecorations(this.decoration, this.noHighlight)
     },
+    getDefaultValue() {
+      const defaultEditorValue = `{
+  "name": "process_events",
+  "hostIdentifier": "host1",
+  "calendarTime": "2022-10-19T10:35:01Z",
+  "time": 1618698901,
+  "columns": {
+    "pid": 888,
+    "path": "/bin/process",
+    "cmdline": "/bin/process -arg1 value1 -arg2 value2",
+    "state": "running",
+    "parent": 555,
+    "created_at": 1618698901,
+    "updated_at": 1618698901
+  }
+}`
+      return defaultEditorValue
+    },
   },
 }
 </script>
 
 <style>
 .highlight {
-  background-color: rgb(243, 168, 168);
+  background-color: rgb(176, 227, 243);
 }
 </style>

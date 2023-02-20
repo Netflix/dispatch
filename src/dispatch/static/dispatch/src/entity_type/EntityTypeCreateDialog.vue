@@ -29,7 +29,7 @@
                       outlined
                     />
                   </ValidationProvider>
-                  <ValidationProvider name="Field" immediate>
+                  <ValidationProvider rules="jpath" name="Field" immediate>
                     <v-textarea
                       v-model="jpath"
                       background-color="white"
@@ -173,7 +173,7 @@ import SearchUtils from "@/search/utils"
 import SignalApi from "@/signal/api"
 import SignalDefinitionCombobox from "@/signal/SignalDefinitionCombobox.vue"
 import RawSignalViewer from "@/signal/RawSignalViewer.vue"
-import { isValidRegex } from "@/entity_type/utils.js"
+import { isValidJsonPath, isValidRegex } from "@/entity_type/utils.js"
 
 extend("required", {
   ...required,
@@ -184,6 +184,12 @@ extend("regexp", {
     return isValidRegex(value)
   },
   message: "Must be a valid regular expression pattern.",
+})
+extend("jpath", {
+  validate(value) {
+    return isValidJsonPath(value)
+  },
+  message: "Must be a valid JSON path expression.",
 })
 export default {
   name: "EntityTypeCreateDialog",
@@ -200,7 +206,6 @@ export default {
       show_playground: false,
       text: "",
       editorValue: "",
-      dragGhost: null,
       previewFields: [
         { text: "Signal", value: "signal.signal.name", sortable: false },
         { text: "Case", value: "signal.case.name", sortable: false },
@@ -273,6 +278,7 @@ export default {
       })
     },
     isValidRegex,
+    isValidJsonPath,
     resetTotalFound() {
       this.totalEntities = 0
       this.matchedSignals.total = 0
@@ -465,6 +471,7 @@ export default {
           onEnd: (event) => {
             // DOM location of the playground editor element
             const playgroundTextBoxRect = playgroundEditorEl.getBoundingClientRect()
+            // Location of the mouse cursor
             const mouseX = event.originalEvent.clientX
             const mouseY = event.originalEvent.clientY
             // If the mouse cursor is over the playground box
