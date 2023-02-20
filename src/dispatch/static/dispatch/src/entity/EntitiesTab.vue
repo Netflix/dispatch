@@ -1,14 +1,17 @@
 <template>
   <v-container fill-height fluid>
-    <v-row justify="center" align="center" v-if="entities.length >= 1">
+    <v-row v-if="entities.length >= 1">
       <date-chip-group-relative
-        class="mt-6"
+        class="pl-6 mt-6"
         label="Time Range"
         v-model="selectedDateTime"
         @input="onSelectedDateTimeChange"
       />
-      <entity-type-create-dialog />
-      <v-col v-for="entity in entities" :key="entity.id" cols="6">
+      <entity-type-create-dialog
+        class="mt-8"
+        :project="selected.project"
+      ></entity-type-create-dialog>
+      <v-col class="pl-6 mt-6" v-for="entity in entities" :key="entity.id" cols="6">
         <entity-card :entity="entity" :selectedDateTime="selectedDateTime" />
       </v-col>
     </v-row>

@@ -1,8 +1,8 @@
 <template>
-  <div class="text-box">
-    <v-card>
+  <div class="playground-editor">
+    <v-card style="height: 600px" elevation="4" outlined>
       <v-card-text>
-        <div id="editor" style="height: 400px"></div>
+        <div id="playground-editor" style="height: 560px"></div>
       </v-card-text>
     </v-card>
   </div>
@@ -11,27 +11,50 @@
 <script>
 import { mapMutations, mapGetters } from "vuex"
 import loader from "@monaco-editor/loader"
+import jsonpath from "jsonpath"
 
 export default {
   name: "PlaygroundTextBox",
-  async mounted() {
+  props: {
+    text: {
+      type: String,
+      required: false,
+    },
+  },
+  created() {
     loader.init().then((monaco) => {
       const editorOptions = {
-        language: "json",
+        language: "text",
         minimap: { enabled: false },
+        renderLineHighlight: "none",
       }
+      // Create a unique URI for the in-memory model
       const modelUri = monaco.Uri.parse("inmemory://playground")
-      const model = monaco.editor.createModel("", "json", modelUri)
-      const editor = monaco.editor.create(document.getElementById("editor"), editorOptions, {
-        model,
-      })
+      // Create the model with an empty string as the initial value
+      const model = monaco.editor.createModel("text", modelUri)
+      // Create the editor and pass the model to the options
+      const editor = monaco.editor.create(
+        document.getElementById("playground-editor"),
+        editorOptions,
+        {
+          model,
+        }
+      )
+      // Store the references to the model and editor
+      this.model = model
       this.editor = editor
       this.monaco = monaco
 
-      this.editor.onDidPaste(() => {
-        this.updateDecorations(this.pattern)
+      // Register an event listener for when the content of the model changes
+      this.editor.onDidChangeModelContent(() => {
+        // Call the updateDecorations method and pass the current pattern and jpath
+        this.updateDecorations(this.pattern, this.jpath)
       })
     })
+  },
+  beforeDestroy() {
+    this.editor.dispose()
+    this.model.dispose()
   },
   data() {
     return {
@@ -39,65 +62,126 @@ export default {
       noHighlight: [],
       edit: null,
       monaco: null,
-      mode: null,
+      model: null,
     }
   },
-  computed: mapGetters("playground", ["pattern"]),
+  computed: mapGetters("playground", ["pattern", "jpath"]),
   watch: {
-    pattern(pattern) {
-      if (pattern) {
-        this.updatePattern(pattern)
-        this.updateDecorations(pattern)
+    pattern(newPattern) {
+      if (!newPattern && !this.jpath) {
+        this.clearAllDecorations()
       }
+      if (newPattern) {
+        this.updatePattern(newPattern)
+        this.updateDecorations(newPattern, this.jpath)
+      }
+    },
+    jpath(newJsonPath) {
+      if (!newJsonPath && !this.pattern) {
+        this.clearAllDecorations()
+      }
+      if (newJsonPath) {
+        this.updateJsonPath(newJsonPath)
+        this.updateDecorations(this.pattern, newJsonPath)
+      }
+    },
+    text(newText) {
+      this.editor.getModel().setValue(newText)
     },
   },
   methods: {
-    ...mapMutations("playground", ["updatePattern"]),
-    updateDecorations(pattern) {
-      if (!pattern) {
-        // Check twice because we'll loop forever if we process a null pattern
+    ...mapMutations("playground", ["updatePattern", "updateJsonPath"]),
+    /**
+     * Update the decorations in the editor
+     *
+     * @param {string} pattern The pattern to match against
+     * @param {string} jpath The jpath to use
+     */
+    updateDecorations(pattern, jpath) {
+      if (!pattern && !jpath) {
         return
       }
-      this.decoration = this.editor.deltaDecorations(this.decoration, this.noHighlight)
+
       const model = this.editor.getModel()
-      const text = model.getValue()
-      const regex = new RegExp(pattern, "g")
-      const found = []
-      let match = regex.exec(text)
-      while (match !== null) {
-        found.push(match)
-        match = regex.exec(text)
-      }
-
-      if (found.length === 0) {
+      const editorText = model.getValue()
+      if (!editorText) {
         return
       }
+      this.clearAllDecorations()
 
-      const ranges = found.map((match) => {
-        const startPosition = model.getPositionAt(match.index)
-        const endPosition = model.getPositionAt(match.index + match[0].length)
+      const regex = new RegExp(pattern, "g")
+
+      const matches = []
+
+      if (jpath) {
+        const jpathMatches = jsonpath.query(JSON.parse(editorText), jpath)
+        if (jpathMatches.length) {
+          jpathMatches.forEach((jpathMatch) => {
+            if (!pattern) {
+              matches.push(jpathMatch)
+            } else {
+              let matchResult = regex.exec(jpathMatch)
+              while (matchResult) {
+                matches.push({
+                  value: matchResult[0],
+                  index: editorText.indexOf(jpathMatch) + matchResult.index,
+                })
+                matchResult = regex.exec(jpathMatch)
+              }
+              if (!matches.length) {
+                return
+              }
+            }
+          })
+        }
+      } else {
+        // Should only search values
+        let matchResult = regex.exec(editorText)
+        while (matchResult) {
+          matches.push({
+            value: matchResult[0],
+            index: matchResult.index,
+          })
+          matchResult = regex.exec(editorText)
+        }
+        if (!matches.length) {
+          return
+        }
+      }
+
+      const ranges = matches.map((match) => {
+        let startPos, endPos
+        if (typeof match === "string") {
+          startPos = model.getPositionAt(editorText.indexOf(match))
+          endPos = model.getPositionAt(editorText.indexOf(match) + match.length)
+        } else {
+          startPos = model.getPositionAt(match.index)
+          endPos = model.getPositionAt(match.index + match.value.length)
+        }
+
         return new this.monaco.Range(
-          startPosition.lineNumber,
-          startPosition.column,
-          endPosition.lineNumber,
-          endPosition.column
+          startPos.lineNumber,
+          startPos.column,
+          endPos.lineNumber,
+          endPos.column
         )
       })
-      const decorationOptions = {
-        isWholeLine: false,
-        className: "highlight",
-      }
 
-      // Add the decoration to the editor
       this.decoration = this.editor.deltaDecorations(
         this.decoration,
         ranges.map((range) => {
           return {
-            range: range,
-            options: decorationOptions,
+            range,
+            options: {
+              isWholeLine: false,
+              className: "highlight",
+            },
           }
         })
       )
+    },
+    clearAllDecorations() {
+      this.decoration = this.editor.deltaDecorations(this.decoration, this.noHighlight)
     },
   },
 }
@@ -105,6 +189,6 @@ export default {
 
 <style>
 .highlight {
-  background-color: rgb(205, 238, 237);
+  background-color: rgb(243, 168, 168);
 }
 </style>

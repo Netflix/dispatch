@@ -8,7 +8,6 @@ import "./filters.js"
 import "roboto-fontface/css/roboto/roboto-fontface.css"
 import "font-awesome/css/font-awesome.css"
 import { sync } from "vuex-router-sync"
-import { Sortable } from "sortablejs"
 
 import * as Sentry from "@sentry/browser"
 import * as Integrations from "@sentry/integrations"
@@ -41,17 +40,6 @@ Vue.config.productionTip = false
 
 Vue.use(VueClipboard)
 Vue.use(VueMarkdown)
-Vue.directive("sortableDataTable", {
-  bind(el, binding, vnode) {
-    const options = {
-      animation: 150,
-      onUpdate(event) {
-        vnode.child.$emit("sorted", event)
-      },
-    }
-    Sortable.create(el.getElementsByTagName("tbody")[0], options)
-  },
-})
 
 new Vue({
   vuetify,

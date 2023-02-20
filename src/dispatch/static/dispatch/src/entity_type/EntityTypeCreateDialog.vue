@@ -1,148 +1,158 @@
 <template>
   <ValidationObserver ref="observer">
-    <v-dialog v-model="showCreateEdit" persistent max-width="800px">
+    <v-dialog v-model="showCreateEdit" persistent max-width="1080px">
       <template v-slot:activator="{ on }">
-        <v-btn icon v-on="on">
-          <v-icon>add</v-icon>
-        </v-btn>
+        <v-btn elevation="1" v-on="on" small><v-icon>add</v-icon>Add entity type</v-btn>
       </template>
       <v-card>
-        <v-card-title>
-          <span class="headline">Create New Entity Type</span>
-          <v-spacer></v-spacer>
-        </v-card-title>
-        <v-stepper v-model="step">
-          <v-stepper-header>
-            <v-stepper-step :complete="step > 1" step="1" editable> Build </v-stepper-step>
-            <v-divider />
-            <v-stepper-step step="2" editable> Save </v-stepper-step>
-          </v-stepper-header>
-
-          <v-stepper-items>
-            <v-stepper-content step="1">
-              <v-card v-model="isFormVisible">
-                <v-card-text>
-                  <ValidationObserver>
-                    <ValidationProvider rules="regexp" name="Regular Expression" immediate>
-                      <v-textarea
-                        v-model="regular_expression"
-                        slot-scope="{ errors, valid }"
-                        label="Regular Expression"
-                        :error-messages="errors"
-                        :success="valid"
-                        hint="A regular expression pattern for your entity type. The first capture group will be used."
-                        clearable
-                      />
-                    </ValidationProvider>
-                    <ValidationProvider name="Field" immediate>
-                      <v-text-field
-                        v-model="jpath"
-                        slot-scope="{ errors, valid }"
-                        :error-messages="errors"
-                        :success="valid"
-                        label="JSON Path"
-                        hint="The field where the entity will be present. Support JSON Path expressions."
-                        clearable
-                      />
-                    </ValidationProvider>
-                    <PlaygroundTextBox ref="playgroundTextBox" v-model="text" />
-                  </ValidationObserver>
-                </v-card-text>
-                <v-card-actions>
-                  <v-spacer />
-                  <v-chip class="ma-2" :color="chipColor" outlined>
+        <v-window v-model="step">
+          <v-window-item :value="1">
+            <v-card class="px-6" color="grey lighten-5">
+              <v-card-title class="text-h6 font-weight-regular justify-space-between">
+                <span>New entity type</span>
+                <v-spacer></v-spacer>
+                <v-btn icon @click="closeCreateEditDialog()">
+                  <v-icon>close</v-icon>
+                </v-btn>
+              </v-card-title>
+              <v-row>
+                <v-col cols="4">
+                  <ValidationProvider rules="regexp" name="Regular Expression" immediate>
+                    <v-textarea
+                      v-model="regular_expression"
+                      background-color="white"
+                      color="black"
+                      slot-scope="{ errors }"
+                      label="Regular Expression"
+                      hint="A regular expression pattern for your entity type. The first capture group will be used."
+                      :error-messages="errors"
+                      outlined
+                    />
+                  </ValidationProvider>
+                  <ValidationProvider name="Field" immediate>
+                    <v-textarea
+                      v-model="jpath"
+                      background-color="white"
+                      color="black"
+                      slot-scope="{ errors }"
+                      label="JSON Path"
+                      hint="The field where the entity will be present. Supports JSON Path expressions."
+                      :error-messages="errors"
+                      outlined
+                    />
+                  </ValidationProvider>
+                </v-col>
+                <v-col cols="8">
+                  <PlaygroundTextBox :text="editorValue" />
+                </v-col>
+              </v-row>
+              <v-card-actions class="pt-6">
+                <v-btn icon fab @click="show_signals = !show_signals">
+                  <v-icon>{{ show_signals ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
+                </v-btn>
+                <v-hover v-slot="{ hover }">
+                  <v-chip
+                    class="ma-2"
+                    :color="chipColor"
+                    :class="{ 'on-hover': hover }"
+                    @click="show_signals = !show_signals"
+                    outlined
+                  >
                     <v-icon left>{{ chipIcon }}</v-icon>
                     <span>
-                      <animated-number :number="matchCount" /> entities in
+                      <animated-number :number="totalEntities" /> entities in
                       <animated-number :number="matchedSignals.total" /> signals
                     </span>
                   </v-chip>
-                  <v-btn icon @click="show_signals = !show_signals">
-                    <v-icon>{{ show_signals ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
-                  </v-btn>
-                  <v-btn @click="closeCreateEditDialog()" text> Cancel </v-btn>
-                  <v-btn color="info" @click="step = 2"> Continue </v-btn>
-                </v-card-actions>
-                <v-expand-transition>
-                  <div v-show="show_signals">
-                    <v-divider></v-divider>
-                    <v-spacer></v-spacer>
-                    <v-card class="mt-3" color="red lighten-5" outlined rounded="xl">
-                      <v-data-table
-                        v-sortable-data-table
-                        hide-default-footer
-                        :headers="previewFields"
-                        :items="matchedSignals.items"
-                        item-key="id"
-                        :loading="previewRowsLoading"
-                      >
-                        <draggable :list="matchedSignals.items"></draggable>
-                        <template v-slot:item.data-table-actions="{ item }">
-                          <raw-signal-viewer v-model="item.signal.raw" />
-                          <v-tooltip bottom>
-                            <template v-slot:activator="{ on, attrs }">
-                              <v-icon v-bind="attrs" v-on="on" class="mr-2">
-                                mdi-fingerprint
-                              </v-icon>
-                            </template>
-                            <span>{{ item.signal.fingerprint }}</span>
-                          </v-tooltip>
-                        </template>
-                      </v-data-table>
-                      <v-card-actions> </v-card-actions>
-                    </v-card>
-                  </div>
-                </v-expand-transition>
-              </v-card>
-            </v-stepper-content>
-            <v-stepper-content step="2">
-              <ValidationObserver disabled v-slot="{ invalid, validated }">
-                <v-card>
-                  <v-card-text>
-                    Provide a name and description for your filter.
-                    <ValidationProvider name="Name" rules="required" immediate>
-                      <v-text-field
-                        v-model="name"
-                        label="Name"
-                        hint="A name for your saved search."
-                        slot-scope="{ errors, valid }"
-                        :error-messages="errors"
-                        :success="valid"
-                        clearable
-                        required
-                      />
-                    </ValidationProvider>
-                    <ValidationProvider name="Description" rules="required" immediate>
-                      <v-textarea
-                        v-model="description"
-                        label="Description"
-                        hint="A short description."
-                        slot-scope="{ errors, valid }"
-                        :error-messages="errors"
-                        :success="valid"
-                        clearable
-                        auto-grow
-                        required
-                      />
-                    </ValidationProvider>
-                  </v-card-text>
-                  <v-card-actions>
-                    <v-spacer />
-                    <v-btn @click="closeCreateEditDialog()" text> Cancel </v-btn>
-                    <v-btn
-                      color="info"
-                      @click="saveFilter()"
-                      :loading="loading"
-                      :disabled="invalid || !validated"
+                </v-hover>
+                <v-spacer />
+                <v-btn color="info" @click="step = 2"> Continue </v-btn>
+              </v-card-actions>
+              <v-expand-transition>
+                <div v-show="show_signals" style="height: 620px">
+                  <v-divider></v-divider>
+                  <v-spacer></v-spacer>
+                  <v-card class="mt-3" outlined rounded="xl">
+                    <v-data-table
+                      style="height: 570px"
+                      :headers="previewFields"
+                      :items="matchedSignals.items"
+                      item-key="id"
+                      :loading="previewRowsLoading"
+                      id="signal-table"
+                      :footer-props="{ 'disable-items-per-page': true }"
                     >
-                      Save
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </ValidationObserver>
-            </v-stepper-content>
-          </v-stepper-items>
-        </v-stepper>
+                      <template id="sortable-row" v-slot:item.data-table-actions="{ item }">
+                        <raw-signal-viewer v-model="item.signal.raw" />
+                        <v-tooltip bottom>
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-icon v-bind="attrs" v-on="on" class="mr-2"> mdi-fingerprint </v-icon>
+                          </template>
+                          <span>{{ item.signal.fingerprint }}</span>
+                        </v-tooltip>
+                      </template>
+                    </v-data-table>
+                    <v-card-actions> </v-card-actions>
+                  </v-card>
+                </div>
+              </v-expand-transition>
+            </v-card>
+          </v-window-item>
+
+          <v-window-item :value="2">
+            <ValidationObserver disabled v-slot="{ invalid, validated }">
+              <v-card>
+                <v-card-title class="text-h6 font-weight-regular justify-space-between">
+                  <span>New entity type</span>
+                  <v-spacer></v-spacer>
+                  <v-btn icon @click="closeCreateEditDialog()">
+                    <v-icon>close</v-icon>
+                  </v-btn>
+                </v-card-title>
+                <v-card-text>
+                  <v-spacer></v-spacer>
+                  <ValidationProvider name="Name" rules="required" immediate>
+                    <v-text-field
+                      v-model="name"
+                      label="Name"
+                      hint="A name for your saved search."
+                      slot-scope="{ errors, valid }"
+                      :error-messages="errors"
+                      :success="valid"
+                      clearable
+                      required
+                    />
+                  </ValidationProvider>
+                  <ValidationProvider name="Description" immediate>
+                    <v-textarea
+                      v-model="description"
+                      label="Description"
+                      hint="A short description."
+                      slot-scope="{ errors, valid }"
+                      :error-messages="errors"
+                      :success="valid"
+                      clearable
+                      auto-grow
+                    />
+                  </ValidationProvider>
+                  <signal-definition-combobox></signal-definition-combobox>
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer />
+                  <v-btn :disabled="step === 1" text @click="step--"> Back </v-btn>
+                  <v-btn
+                    color="info"
+                    @click="saveEntityType(selected.project)"
+                    :loading="loading"
+                    :disabled="invalid || !validated"
+                  >
+                    Save
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </ValidationObserver>
+          </v-window-item>
+        </v-window>
       </v-card>
     </v-dialog>
   </ValidationObserver>
@@ -155,14 +165,15 @@ import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import draggable from "vuedraggable"
+import { Sortable } from "sortablejs"
 
 import AnimatedNumber from "@/components/AnimatedNumber.vue"
 import PlaygroundTextBox from "@/entity_type/playground/PlaygroundTextBox.vue"
 import SearchUtils from "@/search/utils"
 import SignalApi from "@/signal/api"
+import SignalDefinitionCombobox from "@/signal/SignalDefinitionCombobox.vue"
 import RawSignalViewer from "@/signal/RawSignalViewer.vue"
 import { isValidRegex } from "@/entity_type/utils.js"
-import { Sortable } from "sortablejs"
 
 extend("required", {
   ...required,
@@ -177,24 +188,19 @@ extend("regexp", {
 export default {
   name: "EntityTypeCreateDialog",
   props: {
-    value: {
+    project: {
       type: Object,
-      default: null,
+      required: true,
     },
   },
   data() {
     return {
-      editorOptions: {
-        automaticLayout: true,
-        renderValidationDecorations: "on",
-      },
-      $validator: null, // set a default value for $validator
       step: 1,
       show_signals: false,
       show_playground: false,
       text: "",
-      isFormVisible: false,
-      matchCount: 0,
+      editorValue: "",
+      dragGhost: null,
       previewFields: [
         { text: "Signal", value: "signal.signal.name", sortable: false },
         { text: "Case", value: "signal.case.name", sortable: false },
@@ -205,6 +211,7 @@ export default {
           align: "end",
         },
       ],
+      totalEntities: 0,
       matchedSignals: {
         items: [],
         fingerprints: [],
@@ -214,19 +221,21 @@ export default {
         items: [],
         total: null,
       },
-      filters: {
+      sampleFilter: {
         created_at: [],
       },
       previewRowsLoading: false,
+      step: 1,
     }
   },
   components: {
     AnimatedNumber,
     draggable,
     PlaygroundTextBox,
+    RawSignalViewer,
+    SignalDefinitionCombobox,
     ValidationObserver,
     ValidationProvider,
-    RawSignalViewer,
   },
   computed: {
     ...mapFields("entity_type", [
@@ -235,43 +244,50 @@ export default {
       "selected.regular_expression",
       "selected.jpath",
       "selected.name",
-      "selected.project",
       "loading",
       "dialogs.showCreateEdit",
     ]),
     ...mapFields("route", ["query"]),
+    /**
+     * Returns the color for the chip based on the total number of entities
+     * @return {string} the color class to use for the chip
+     */
     chipColor() {
-      return this.matchCount === 0 ? "grey lighten-1" : "red darken-3"
+      return this.totalEntities === 0 ? "grey lighten-1" : "red darken-3"
     },
+
+    /**
+     * Returns the icon for the chip based on the total number of entities
+     * @return {string} the icon class to use for the chip
+     */
     chipIcon() {
-      return this.matchCount === 0 ? "mdi-information" : "mdi-fire"
+      return this.totalEntities === 0 ? "mdi-information" : "mdi-fire"
     },
   },
   methods: {
-    ...mapMutations("playground", ["updatePattern"]),
+    ...mapMutations("playground", ["updatePattern", "updateJsonPath"]),
     ...mapActions("entity_type", ["closeCreateEditDialog", "save"]),
-    saveFilter() {
-      this.save().then((filter) => {
-        this.$emit("input", filter)
+    saveEntityType() {
+      this.save().then((entityType) => {
+        this.$emit("input", entityType)
       })
     },
     isValidRegex,
     resetTotalFound() {
-      this.matchCount = 0
+      this.totalEntities = 0
       this.matchedSignals.total = 0
       this.matchedSignals.items = []
     },
     getPreviewData() {
-      const startDate = new Date()
-      startDate.setDate(startDate.getDate() - 30)
-      const startDateString = startDate.toISOString().replace("T", " ").replace("Z", "")
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      const today = new Date()
 
-      const endDate = new Date()
-      const endDateString = endDate.toISOString().replace("T", " ").replace("Z", "")
+      this.sampleFilter.created_at = {
+        start: this.dateToStringISO(thirtyDaysAgo),
+        end: this.dateToStringISO(today),
+      }
 
-      this.filters.created_at = { start: startDateString, end: endDateString }
-
-      const expression = SearchUtils.createFilterExpression(this.filters, "SignalInstance")
+      const expression = SearchUtils.createFilterExpression(this.sampleFilter, "SignalInstance")
       if (!expression) return
 
       const params = { filter: JSON.stringify(expression), itemsPerPage: 100 }
@@ -289,10 +305,18 @@ export default {
         })
     },
     /**
+     * Convert a date to a string in ISO format
+     * @param {Date} date
+     */
+    dateToStringISO(date) {
+      return date.toISOString().replace("T", " ").replace("Z", "")
+    },
+    /**
      * Finds entities in the given `signalInstance` that match the `entityType` definition.
      *
      * @param {object} signalInstance - An object representing a signal instance.
      * @param {object} entityType - An object containing the definition of the entity type to match against.
+     *
      * @returns {array} - An array of unique entity objects that match the given `entityType` definition.
      */
     async findEntities(signalInstance, entityType) {
@@ -307,6 +331,8 @@ export default {
           : null,
         jpath: entityType.jpath,
       }
+
+      const fingerprint = signalInstance.fingerprint
 
       // Check if the jpath is present in the signalInstance
       if (jpath) {
@@ -369,8 +395,7 @@ export default {
 
       if (signalHadEntity) {
         this.matchedSignals.total += 1
-        this.matchCount += entityResults.size
-        const fingerprint = signalInstance.fingerprint
+        this.totalEntities += entityResults.size
         if (!this.matchedSignals.items.find((s) => s.fingerprint === fingerprint)) {
           this.matchedSignals.fingerprints.push(fingerprint)
           this.matchedSignals.items.push({
@@ -388,6 +413,9 @@ export default {
               return
             }
             this.updatePattern(newVal)
+          }
+          if (selector === "jpath") {
+            this.updateJsonPath(newVal)
           }
           let entityType = {
             regular_expression: this.selected.regular_expression,
@@ -411,50 +439,96 @@ export default {
               const matchedSignal = this.matchedSignals.items.find(
                 (signal) => signal.signal.fingerprint === signalFingerprint
               )
-              this.matchCount += matchedSignal.entities.length
+              this.totalEntities += matchedSignal.entities.length
             }
           })
         }
       })
     },
-  },
-  async mounted() {
-    this.$nextTick(() => {
-      const playgroundTextBoxEl = this.$el.querySelector(".playground-text-box")
+    /**
+     * This function sets up the draggable feature for the signal table and the playground editor.
+     * Updates the editor value with the selected signal raw JSON when dragging ends.
+     */
+    setupDraggable() {
+      this.$nextTick(() => {
+        const playgroundEditorEl = document.getElementById("playground-editor")
+        const signalTable = document.getElementById("signal-table")
 
-      // Initialize Sortable
-      Sortable.create(this.$el.querySelector("tbody"), {
-        onMove: (evt) => {
-          const playgroundTextBoxRect = playgroundTextBoxEl.getBoundingClientRect()
-          const el = evt.dragged
-          const elRect = el.getBoundingClientRect()
-          const pointerX = evt.clientX
-          const pointerY = evt.clientY
+        if (!playgroundEditorEl || !signalTable) {
+          return
+        }
 
-          // Check if mouse pointer is over PlaygroundTextBox component
-          if (
-            pointerX >= playgroundTextBoxRect.left &&
-            pointerX <= playgroundTextBoxRect.right &&
-            pointerY >= playgroundTextBoxRect.top &&
-            pointerY <= playgroundTextBoxRect.bottom
-          ) {
-            const item = this.items[evt.oldIndex]
-            this.text += item.signal.raw
-          }
-        },
+        const tableBody = signalTable.getElementsByTagName("tbody")[0]
+
+        const sortableOptions = {
+          animation: 150,
+          onEnd: (event) => {
+            // DOM location of the playground editor element
+            const playgroundTextBoxRect = playgroundEditorEl.getBoundingClientRect()
+            const mouseX = event.originalEvent.clientX
+            const mouseY = event.originalEvent.clientY
+            // If the mouse cursor is over the playground box
+            if (
+              mouseX >= playgroundTextBoxRect.left &&
+              mouseX <= playgroundTextBoxRect.right &&
+              mouseY >= playgroundTextBoxRect.top &&
+              mouseY <= playgroundTextBoxRect.bottom
+            ) {
+              // Update the editor value to the raw signal data of the dragged row
+              const item = this.signalSample.items[event.oldIndex]
+              const stringSignal = JSON.stringify(item.raw, null, 2)
+              this.updateEditorValue(stringSignal)
+            }
+          },
+        }
+        Sortable.create(tableBody, sortableOptions)
       })
-    })
+    },
+    updateEditorValue(newValue) {
+      this.editorValue = newValue
+    },
   },
   created() {
+    if (this.project) {
+      this.selected.project = this.project
+    }
     this.getPreviewData()
   },
   watch: {
     "selected.regular_expression": function (newVal, oldVal) {
+      if (!this.signalSample.items.length) return
       this.onSelectedChange("regular_expression", newVal, oldVal)
     },
     "selected.jpath": function (newVal, oldVal) {
+      if (!this.signalSample.items.length) return
       this.onSelectedChange("jpath", newVal, oldVal)
+    },
+    matchedSignals: {
+      handler(newVal) {
+        // We need the table to have rows to setup draggable
+        if (newVal.items.length > 1) {
+          this.setupDraggable()
+        }
+      },
+      deep: true,
     },
   },
 }
 </script>
+
+<style scoped>
+.v-chip {
+  transition: opacity 0.4s ease-in-out;
+}
+
+.v-chip.on-hover {
+  opacity: 1;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.4s ease-in-out;
+}
+
+.v-chip:not(.on-hover) {
+  opacity: 0.8;
+}
+</style>
