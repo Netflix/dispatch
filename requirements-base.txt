@@ -115,7 +115,7 @@ google-api-core==2.11.0
     # via google-api-python-client
 google-api-python-client==2.78.0
     # via -r requirements-base.in
-google-auth==2.16.0
+google-auth==2.16.1
     # via
     #   google-api-core
     #   google-api-python-client
@@ -336,9 +336,9 @@ rsa==4.9
     #   python-jose
 schedule==1.1.0
     # via -r requirements-base.in
-schemathesis==3.18.4
+schemathesis==3.18.5
     # via -r requirements-base.in
-scipy==1.10.0
+scipy==1.10.1
     # via statsmodels
 sentry-asgi==0.2.0
     # via -r requirements-base.in
@@ -428,7 +428,7 @@ typer==0.7.0
     # via
     #   pathy
     #   spacy
-typing-extensions==4.5.0
+typing-extensions==4.4.0
     # via
     #   pydantic
     #   schemathesis
