@@ -125,6 +125,7 @@ export default {
             if (!pattern) {
               this.matches.push(jpathMatch)
             } else {
+              jpathMatch = jpathMatch.toString()
               this.findMatchesWithRegex(regex, editorText, jpathMatch)
             }
           })
@@ -133,17 +134,11 @@ export default {
         // Should only search string values
         let values = this.flattenValues(JSON.parse(editorText))
         values.forEach((value) => {
-          if (typeof value === "string") {
-            this.findMatchesWithRegex(regex, editorText, value)
-          }
+          value = value.toString()
+          this.findMatchesWithRegex(regex, editorText, value)
         })
       }
-      /**
-       * Return if no matches or the matches do not contain a value. The latter case can occur when
-       * a JSON Path expression is used that matches an entire object, which is not supported by the
-       * entity service. See: test_find_entities_with_field_only, case #2, in test_entity_service.py
-       */
-      if (!this.matches.length || !this.matches.some((match) => match.hasOwnProperty("value"))) {
+      if (!this.matches.length) {
         return
       }
 
@@ -168,18 +163,24 @@ export default {
         )
       })
 
-      this.decoration = this.editor.deltaDecorations(
-        this.decoration,
-        ranges.map((range) => {
-          return {
-            range,
-            options: {
-              isWholeLine: false,
-              className: "highlight",
-            },
-          }
-        })
-      )
+      console.log("Apply ranges: %O", ranges)
+
+      try {
+        this.decoration = this.editor.deltaDecorations(
+          this.decoration,
+          ranges.map((range) => {
+            return {
+              range,
+              options: {
+                isWholeLine: false,
+                className: "highlight",
+              },
+            }
+          })
+        )
+      } catch (error) {
+        console.error(error)
+      }
     },
     flattenValues(obj) {
       if (typeof obj === "string") {
@@ -201,13 +202,21 @@ export default {
       return values
     },
     findMatchesWithRegex(regex, editorText, value) {
-      let matchResult = regex.exec(value)
-      while (matchResult) {
-        this.matches.push({
-          value: matchResult[0],
-          index: editorText.indexOf(value) + matchResult.index,
-        })
-        matchResult = regex.exec(value)
+      try {
+        let matchResult = regex.exec(value)
+        let counter = 0
+        const maxIterations = 100
+
+        while (matchResult && counter < maxIterations) {
+          this.matches.push({
+            value: matchResult[0],
+            index: editorText.indexOf(value) + matchResult.index,
+          })
+          matchResult = regex.exec(value)
+          counter++
+        }
+      } catch (error) {
+        console.error(error)
       }
     },
     clearAllDecorations() {
