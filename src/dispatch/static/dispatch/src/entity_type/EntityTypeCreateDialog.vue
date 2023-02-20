@@ -421,6 +421,9 @@ export default {
             this.updatePattern(newVal)
           }
           if (selector === "jpath") {
+            if (!this.isValidJsonPath(newVal)) {
+              return
+            }
             this.updateJsonPath(newVal)
           }
           let entityType = {
