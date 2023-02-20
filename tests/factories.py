@@ -831,8 +831,8 @@ class SignalInstanceFactory(BaseFactory):
             {
                 "id": "arn:aws:s3:::ap-northeast-3-123456789012-s3-server-access-logs",
                 "type": "AwsS3Bucket",
-                "details": {}
-            }
+                "details": {},
+            },
         ],
         "identity": {"id": "923456789012", "type": "AWS Principal"},
         "originLocation": [],
