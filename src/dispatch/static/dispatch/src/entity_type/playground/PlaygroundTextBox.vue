@@ -203,17 +203,12 @@ export default {
     },
     findMatchesWithRegex(regex, editorText, value) {
       try {
-        let matchResult = regex.exec(value)
-        let counter = 0
-        const maxIterations = 100
-
-        while (matchResult && counter < maxIterations) {
+        const matches = value.matchAll(regex)
+        for (const match of matches) {
           this.matches.push({
-            value: matchResult[0],
-            index: editorText.indexOf(value) + matchResult.index,
+            value: match[0],
+            index: editorText.indexOf(value) + match.index,
           })
-          matchResult = regex.exec(value)
-          counter++
         }
       } catch (error) {
         console.error(error)
