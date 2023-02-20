@@ -415,15 +415,11 @@ export default {
       this.$nextTick(() => {
         if (newVal !== oldVal) {
           if (selector === "regular_expression") {
-            if (!this.isValidRegex(newVal)) {
-              return
-            }
+            if (!this.isValidRegex(newVal)) return
             this.updatePattern(newVal)
           }
           if (selector === "jpath") {
-            if (!this.isValidJsonPath(newVal)) {
-              return
-            }
+            if (!this.isValidJsonPath(newVal)) return
             this.updateJsonPath(newVal)
           }
           let entityType = {
