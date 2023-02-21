@@ -175,9 +175,9 @@ export default {
             ranges.push(
               new this.monaco.Range(
                 el.value.loc.start.line,
-                el.value.loc.start.column,
+                el.value.loc.start.column + alignIndex,
                 el.value.loc.end.line,
-                el.value.loc.end.column
+                el.value.loc.end.column - alignIndex
               )
             )
           } else {
