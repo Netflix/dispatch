@@ -153,6 +153,7 @@ export default {
           const el = this.extractPath(ast, p)
           /**
            * JSON Paths can return an Object of matches, which is not supported.
+           *
            * @see test_find_entities_with_field_only, case #2, in test_entity_service.py
            */
           if (el.value.type === "Object") {
@@ -199,14 +200,26 @@ export default {
       } else {
         const seenIndexes = new Set()
 
-        for (const [index, match] of this.matches.entries()) {
+        for (const match of this.matches) {
           let startPos, endPos
+
+          // Values must be coerced to strings to get their length
           match.value = match.value.toString()
+
+          // Position of first occurence
           startPos = model.getPositionAt(match.index)
           endPos = model.getPositionAt(match.index + match.value.length)
+
+          // Push the first occurence of the pattern to ranges for decoration
           ranges.push(this.newRange(startPos, endPos))
 
           let indexOfNext = editorText.indexOf(match.value, editorText.indexOf(match.value) + 1)
+
+          /**
+           * Loop through the model until we extract all occurences.
+           *
+           * @see Array.prototype.indexOf(), indexOf() always returns -1 when searchElement is NaN
+           */
           while (indexOfNext !== -1) {
             if (seenIndexes.has(indexOfNext)) {
               break
