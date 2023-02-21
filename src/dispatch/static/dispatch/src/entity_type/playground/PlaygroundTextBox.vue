@@ -13,7 +13,6 @@ import { mapMutations, mapGetters } from "vuex"
 import loader from "@monaco-editor/loader"
 import jsonpath from "jsonpath"
 import json_to_ast from "json-to-ast"
-import { getByKey } from "ast-get-values-by-key"
 
 export default {
   name: "PlaygroundTextBox",
