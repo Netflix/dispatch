@@ -165,9 +165,11 @@ export default {
           // matchAll cannot be called on numbers
           if (typeof el.value.value === "number") {
             valueToMatch = el.value.raw
+            // There's no parentheses
             alignIndex = 0
           } else {
             valueToMatch = el.value.value
+            // There's parentheses, which we don't want to match on
             alignIndex = 1
           }
 
