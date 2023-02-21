@@ -167,35 +167,30 @@ export default {
             )
           } else {
             const el = this.extractPath(ast, p)
-            const matches = el.value.value.matchAll(regex)
+            let valueToMatch
+            let alignIndex
+            // matchAll cannot be called on numbers
+            if (typeof el.value.value === "number") {
+              valueToMatch = el.value.raw
+              alignIndex = 0
+            } else {
+              valueToMatch = el.value.value
+              alignIndex = 1
+            }
+            const matches = valueToMatch.matchAll(regex)
             for (const match of matches) {
               ranges.push(
                 new this.monaco.Range(
                   el.value.loc.start.line,
-                  el.value.loc.start.column + match.index + 1,
+                  el.value.loc.start.column + match.index + alignIndex,
                   el.value.loc.start.line,
-                  el.value.loc.start.column + match.index + match[0].length + 1
+                  el.value.loc.start.column + match.index + match[0].length + alignIndex
                 )
               )
             }
           }
         }
-        try {
-          this.decoration = this.editor.deltaDecorations(
-            this.decoration,
-            ranges.map((range) => {
-              return {
-                range,
-                options: {
-                  isWholeLine: false,
-                  className: "highlight",
-                },
-              }
-            })
-          )
-        } catch (error) {
-          console.error(error)
-        }
+        this.applyNewDecorations(ranges)
       } else {
         const ranges = []
         let indexOfNext = 0
@@ -223,22 +218,7 @@ export default {
           }
           ranges.push(this.newRange(startPos, endPos))
         }
-        try {
-          this.decoration = this.editor.deltaDecorations(
-            this.decoration,
-            ranges.map((range) => {
-              return {
-                range,
-                options: {
-                  isWholeLine: false,
-                  className: "highlight",
-                },
-              }
-            })
-          )
-        } catch (error) {
-          console.error(error)
-        }
+        this.applyNewDecorations(ranges)
       }
     },
     newRange(startPos, endPos) {
@@ -325,6 +305,24 @@ export default {
             index: editorText.indexOf(value) + match.index,
           })
         }
+      } catch (error) {
+        console.error(error)
+      }
+    },
+    applyNewDecorations(ranges) {
+      try {
+        this.decoration = this.editor.deltaDecorations(
+          this.decoration,
+          ranges.map((range) => {
+            return {
+              range,
+              options: {
+                isWholeLine: false,
+                className: "highlight",
+              },
+            }
+          })
+        )
       } catch (error) {
         console.error(error)
       }
