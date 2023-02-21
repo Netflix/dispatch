@@ -142,21 +142,36 @@ export default {
         return
       }
 
+      const ranges = []
+      const ast = json_to_ast(model.getValue())
+
       if (jpath) {
-        const ranges = []
-        const ast = json_to_ast(model.getValue())
         const nodes = jsonpath.nodes(JSON.parse(editorText), this.jpath)
         const jpathTree = nodes.map((node) => node.path.filter((item) => item !== "$"))
-        for (var p of jpathTree) {
+
+        for (const p of jpathTree) {
+          const el = this.extractPath(ast, p)
+          /**
+           * JSON Paths can return an Object of matches, which is not supported.
+           * @see test_find_entities_with_field_only, case #2, in test_entity_service.py
+           */
+          if (el.value.type === "Object") {
+            break
+          }
+
+          let valueToMatch
+          let alignIndex
+
+          // matchAll cannot be called on numbers
+          if (typeof el.value.value === "number") {
+            valueToMatch = el.value.raw
+            alignIndex = 0
+          } else {
+            valueToMatch = el.value.value
+            alignIndex = 1
+          }
+
           if (!pattern) {
-            const el = this.extractPath(ast, p)
-            /**
-             * JSON Paths can return an Object of matches, which is not supported.
-             * @see test_find_entities_with_field_only, case #2, in test_entity_service.py
-             */
-            if (el.value.type === "Object") {
-              break
-            }
             ranges.push(
               new this.monaco.Range(
                 el.value.loc.start.line,
@@ -166,17 +181,6 @@ export default {
               )
             )
           } else {
-            const el = this.extractPath(ast, p)
-            let valueToMatch
-            let alignIndex
-            // matchAll cannot be called on numbers
-            if (typeof el.value.value === "number") {
-              valueToMatch = el.value.raw
-              alignIndex = 0
-            } else {
-              valueToMatch = el.value.value
-              alignIndex = 1
-            }
             const matches = valueToMatch.matchAll(regex)
             for (const match of matches) {
               ranges.push(
@@ -190,36 +194,32 @@ export default {
             }
           }
         }
-        this.applyNewDecorations(ranges)
       } else {
-        const ranges = []
-        let indexOfNext = 0
         const seenIndexes = new Set()
-        for (let [index, match] of this.matches.entries()) {
+
+        for (const [index, match] of this.matches.entries()) {
           let startPos, endPos
-          // Coerce all values to a string, necessary because we can't call .length
           match.value = match.value.toString()
           startPos = model.getPositionAt(match.index)
           endPos = model.getPositionAt(match.index + match.value.length)
           ranges.push(this.newRange(startPos, endPos))
 
-          // Get the index of the next match
-          indexOfNext = editorText.indexOf(match.value, editorText.indexOf(match.value) + 1)
-
-          while (indexOfNext != -1) {
+          let indexOfNext = editorText.indexOf(match.value, editorText.indexOf(match.value) + 1)
+          while (indexOfNext !== -1) {
             if (seenIndexes.has(indexOfNext)) {
               break
             }
+
             startPos = model.getPositionAt(indexOfNext)
             endPos = model.getPositionAt(indexOfNext + match.value.length)
             ranges.push(this.newRange(startPos, endPos))
             seenIndexes.add(indexOfNext)
             indexOfNext = editorText.indexOf(match.value, indexOfNext + 1)
           }
-          ranges.push(this.newRange(startPos, endPos))
         }
-        this.applyNewDecorations(ranges)
       }
+
+      this.applyNewDecorations(ranges)
     },
     newRange(startPos, endPos) {
       return new this.monaco.Range(
