@@ -414,10 +414,18 @@ export default {
       this.$nextTick(() => {
         if (newVal !== oldVal) {
           if (selector === "regular_expression") {
+            if (!newVal) {
+              // Ensures we reset the pattern
+              this.updatePattern(newVal)
+            }
             if (!this.isValidRegex(newVal)) return
             this.updatePattern(newVal)
           }
           if (selector === "jpath") {
+            if (!newVal) {
+              // Ensures we reset the jsonpath
+              this.updateJsonPath(newVal)
+            }
             if (!this.isValidJsonPath(newVal)) return
             this.updateJsonPath(newVal)
           }

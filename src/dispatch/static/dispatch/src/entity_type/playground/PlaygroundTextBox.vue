@@ -12,6 +12,8 @@
 import { mapMutations, mapGetters } from "vuex"
 import loader from "@monaco-editor/loader"
 import jsonpath from "jsonpath"
+import json_to_ast from "json-to-ast"
+import { getByKey } from "ast-get-values-by-key"
 
 export default {
   name: "PlaygroundTextBox",
@@ -70,22 +72,20 @@ export default {
   computed: mapGetters("playground", ["pattern", "jpath"]),
   watch: {
     pattern(newPattern) {
+      this.clearAllDecorations()
       if (!newPattern && !this.jpath) {
         this.clearAllDecorations()
       }
-      if (newPattern) {
-        this.updatePattern(newPattern)
-        this.updateDecorations(newPattern, this.jpath)
-      }
+      this.updatePattern(newPattern)
+      this.updateDecorations(newPattern, this.jpath)
     },
     jpath(newJsonPath) {
+      this.clearAllDecorations()
       if (!newJsonPath && !this.pattern) {
         this.clearAllDecorations()
       }
-      if (newJsonPath) {
-        this.updateJsonPath(newJsonPath)
-        this.updateDecorations(this.pattern, newJsonPath)
-      }
+      this.updateJsonPath(newJsonPath)
+      this.updateDecorations(this.pattern, newJsonPath)
     },
     text(newText) {
       this.editor.getModel().setValue(newText)
@@ -109,7 +109,6 @@ export default {
       if (!editorText) {
         return
       }
-      this.clearAllDecorations()
 
       let regex = null
       if (pattern) {
@@ -123,15 +122,17 @@ export default {
         if (jpathMatches.length) {
           jpathMatches.forEach((jpathMatch) => {
             if (!pattern) {
-              this.matches.push(jpathMatch)
+              this.matches.push({
+                value: jpathMatch,
+                index: editorText.indexOf(jpathMatch),
+              })
             } else {
               jpathMatch = jpathMatch.toString()
               this.findMatchesWithRegex(regex, editorText, jpathMatch)
             }
           })
         }
-      } else if (pattern) {
-        // Should only search string values
+      } else {
         let values = this.flattenValues(JSON.parse(editorText))
         values.forEach((value) => {
           value = value.toString()
@@ -142,45 +143,137 @@ export default {
         return
       }
 
-      const ranges = this.matches.map((match) => {
-        let startPos, endPos
-        if (typeof match !== "object") {
-          if (typeof match === "number") {
-            match = match.toString()
+      if (jpath) {
+        const ranges = []
+        const ast = json_to_ast(model.getValue())
+        const nodes = jsonpath.nodes(JSON.parse(editorText), this.jpath)
+        const jpathTree = nodes.map((node) => node.path.filter((item) => item !== "$"))
+        for (var p of jpathTree) {
+          if (!pattern) {
+            const el = this.extractPath(ast, p)
+            ranges.push(
+              new this.monaco.Range(
+                el.value.loc.start.line,
+                el.value.loc.start.column,
+                el.value.loc.end.line,
+                el.value.loc.end.column
+              )
+            )
+          } else {
+            const el = this.extractPath(ast, p)
+            const matches = el.value.value.matchAll(regex)
+            for (const match of matches) {
+              ranges.push(
+                new this.monaco.Range(
+                  el.value.loc.start.line,
+                  el.value.loc.start.column + match.index + 1,
+                  el.value.loc.start.line,
+                  el.value.loc.start.column + match.index + match[0].length + 1
+                )
+              )
+            }
           }
-          startPos = model.getPositionAt(editorText.indexOf(match))
-          endPos = model.getPositionAt(editorText.indexOf(match) + match.length)
-        } else {
+        }
+        try {
+          this.decoration = this.editor.deltaDecorations(
+            this.decoration,
+            ranges.map((range) => {
+              return {
+                range,
+                options: {
+                  isWholeLine: false,
+                  className: "highlight",
+                },
+              }
+            })
+          )
+        } catch (error) {
+          console.error(error)
+        }
+      } else {
+        const ranges = []
+        let indexOfNext = 0
+        const seenIndexes = new Set()
+        for (let [index, match] of this.matches.entries()) {
+          let startPos, endPos
+
+          // JSON Paths can return an Object of matches, which is not supported.
+          // See: test_find_entities_with_field_only, case #2, in test_entity_service.py
+          if (typeof match.value === "object" || Array.isArray(match.value)) {
+            return
+          }
+          // Coerce all values to a string, necessary because we can't call .length
+          match.value = match.value.toString()
           startPos = model.getPositionAt(match.index)
           endPos = model.getPositionAt(match.index + match.value.length)
-        }
+          ranges.push(this.newRange(startPos, endPos))
 
-        return new this.monaco.Range(
-          startPos.lineNumber,
-          startPos.column,
-          endPos.lineNumber,
-          endPos.column
-        )
-      })
+          // Get the index of the next match
+          indexOfNext = editorText.indexOf(match.value, editorText.indexOf(match.value) + 1)
 
-      console.log("Apply ranges: %O", ranges)
-
-      try {
-        this.decoration = this.editor.deltaDecorations(
-          this.decoration,
-          ranges.map((range) => {
-            return {
-              range,
-              options: {
-                isWholeLine: false,
-                className: "highlight",
-              },
+          while (indexOfNext != -1) {
+            if (seenIndexes.has(indexOfNext)) {
+              break
             }
-          })
-        )
-      } catch (error) {
-        console.error(error)
+            startPos = model.getPositionAt(indexOfNext)
+            endPos = model.getPositionAt(indexOfNext + match.value.length)
+            ranges.push(this.newRange(startPos, endPos))
+            seenIndexes.add(indexOfNext)
+            indexOfNext = editorText.indexOf(match.value, indexOfNext + 1)
+          }
+          ranges.push(this.newRange(startPos, endPos))
+        }
+        try {
+          this.decoration = this.editor.deltaDecorations(
+            this.decoration,
+            ranges.map((range) => {
+              return {
+                range,
+                options: {
+                  isWholeLine: false,
+                  className: "highlight",
+                },
+              }
+            })
+          )
+        } catch (error) {
+          console.error(error)
+        }
       }
+    },
+    newRange(startPos, endPos) {
+      return new this.monaco.Range(
+        startPos.lineNumber,
+        startPos.column,
+        endPos.lineNumber,
+        endPos.column
+      )
+    },
+    extractPath(ast, path) {
+      if (!ast || !path) return null
+      let currentNode = ast
+      let currentPath = []
+      for (let i = 0; i < path.length; i++) {
+        currentPath.push(path[i])
+        if (currentNode.type === "Object") {
+          let propertyNode = currentNode.children.find((child) => {
+            return (
+              child.type === "Property" &&
+              child.key.type === "Identifier" &&
+              child.key.value === path[i]
+            )
+          })
+          if (!propertyNode) return null
+          currentNode = propertyNode.value
+        } else if (currentNode.type === "Array") {
+          let index = path[i]
+          if (index >= currentNode.children.length) return null
+          currentNode = currentNode.children[index]
+        } else {
+          return null
+        }
+      }
+      return { value: currentNode, path: currentPath }
     },
     flattenValues(obj) {
       if (typeof obj === "string") {
@@ -229,8 +322,8 @@ export default {
     "cmdline": "/bin/process -arg1 value1 -arg2 value2",
     "state": "running",
     "parent": 555,
-    "created_at": 1618698901,
-    "updated_at": 1618698901
+    "created_at": 1918698901,
+    "updated_at": 2118698901
   }
 }`
       return defaultEditorValue
