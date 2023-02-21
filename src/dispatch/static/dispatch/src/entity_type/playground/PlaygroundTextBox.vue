@@ -150,6 +150,13 @@ export default {
         for (var p of jpathTree) {
           if (!pattern) {
             const el = this.extractPath(ast, p)
+            /**
+             * JSON Paths can return an Object of matches, which is not supported.
+             * @see test_find_entities_with_field_only, case #2, in test_entity_service.py
+             */
+            if (el.value.type === "Object") {
+              break
+            }
             ranges.push(
               new this.monaco.Range(
                 el.value.loc.start.line,
@@ -195,12 +202,6 @@ export default {
         const seenIndexes = new Set()
         for (let [index, match] of this.matches.entries()) {
           let startPos, endPos
-
-          // JSON Paths can return an Object of matches, which is not supported.
-          // See: test_find_entities_with_field_only, case #2, in test_entity_service.py
-          if (typeof match.value === "object" || Array.isArray(match.value)) {
-            return
-          }
           // Coerce all values to a string, necessary because we can't call .length
           match.value = match.value.toString()
           startPos = model.getPositionAt(match.index)
@@ -248,13 +249,28 @@ export default {
         endPos.column
       )
     },
+    /**
+     * Extracts the path to a value within an abstract syntax tree (AST)
+     * @param {Object} ast - The abstract syntax tree to extract the path from
+     * @param {Array} path - An array of keys or indices representing the path to the desired value
+     * @returns {Object} An object with two properties: 'value' and 'path', where 'value' is the extracted value and 'path' is the full path to the value
+     * @returns {null} If the value is not found in the AST or if either the 'ast' or 'path' arguments are missing
+     */
     extractPath(ast, path) {
+      // Return null if either the ast or path is missing
       if (!ast || !path) return null
+
+      // Keep track of the current node in the iteration and the current path
       let currentNode = ast
       let currentPath = []
+
+      // Iterate over the path elements
       for (let i = 0; i < path.length; i++) {
+        // Add the current path element to the current path
         currentPath.push(path[i])
+
         if (currentNode.type === "Object") {
+          // Find the property node in the children of the current node that matches the current path element
           let propertyNode = currentNode.children.find((child) => {
             return (
               child.type === "Property" &&
@@ -262,13 +278,20 @@ export default {
               child.key.value === path[i]
             )
           })
+          // If the property node is not found, return null
           if (!propertyNode) return null
+
+          // Set the current node to the value of the property node
           currentNode = propertyNode.value
         } else if (currentNode.type === "Array") {
+          // Get the current path element as the index
           let index = path[i]
+          // If the index is out of bounds, return null
           if (index >= currentNode.children.length) return null
+          // Set the current node to the child at the given index
           currentNode = currentNode.children[index]
         } else {
+          // Return null if the current node is neither an object nor an array
           return null
         }
       }
