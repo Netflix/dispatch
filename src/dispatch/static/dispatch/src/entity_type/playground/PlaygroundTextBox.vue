@@ -108,6 +108,12 @@ export default {
       if (!editorText) {
         return
       }
+      try {
+        JSON.parse(editorText)
+      } catch (e) {
+        this.clearAllDecorations()
+        return
+      }
 
       let regex = null
       if (pattern) {
@@ -247,6 +253,7 @@ export default {
     },
     /**
      * Extracts the path to a value within an abstract syntax tree (AST)
+     *
      * @param {Object} ast - The abstract syntax tree to extract the path from
      * @param {Array} path - An array of keys or indices representing the path to the desired value
      * @returns {Object} An object with two properties: 'value' and 'path', where 'value' is the extracted value and 'path' is the full path to the value

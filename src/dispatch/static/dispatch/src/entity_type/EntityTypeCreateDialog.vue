@@ -20,6 +20,8 @@
                   <ValidationProvider rules="regexp" name="Regular Expression" immediate>
                     <v-textarea
                       v-model="regular_expression"
+                      class="pb-4 pt-16"
+                      rows="7"
                       background-color="white"
                       color="black"
                       slot-scope="{ errors }"
@@ -34,6 +36,8 @@
                       v-model="jpath"
                       background-color="white"
                       color="black"
+                      class="pb-4 pt-18"
+                      rows="7"
                       slot-scope="{ errors }"
                       label="JSON Path"
                       hint="The field where the entity will be present. Supports JSON Path expressions."
