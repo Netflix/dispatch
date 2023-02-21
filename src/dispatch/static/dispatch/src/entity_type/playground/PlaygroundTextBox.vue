@@ -165,6 +165,7 @@ export default {
 
           // matchAll cannot be called on numbers
           if (typeof el.value.value === "number") {
+            // matchAll cannot be called on string
             valueToMatch = el.value.raw
             // There's no parentheses
             alignIndex = 0
@@ -218,7 +219,7 @@ export default {
           /**
            * Loop through the model until we extract all occurences.
            *
-           * @see Array.prototype.indexOf(), indexOf() always returns -1 when searchElement is NaN
+           * @see Array.prototype.indexOf(), always returns -1 when searchElement is NaN
            */
           while (indexOfNext !== -1) {
             if (seenIndexes.has(indexOfNext)) {
