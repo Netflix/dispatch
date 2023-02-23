@@ -66,6 +66,7 @@ def get_suggested_documents(db_session, incident: Incident) -> list:
 def send_welcome_ephemeral_message_to_participant(
     participant_email: str, incident: Incident, db_session: SessionLocal
 ):
+
     """Sends an ephemeral welcome message to the participant."""
     if not incident.conversation:
         log.warning(
@@ -100,6 +101,7 @@ def send_welcome_ephemeral_message_to_participant(
         "severity_description": incident.incident_severity.description,
         "priority": incident.incident_priority.name,
         "priority_description": incident.incident_priority.description,
+        "visibility": incident.visibility,
         "commander_fullname": incident.commander.individual.name,
         "commander_team": incident.commander.team,
         "commander_weblink": incident.commander.individual.weblink,
@@ -168,6 +170,7 @@ def send_welcome_email_to_participant(
         "severity_description": incident.incident_severity.description,
         "priority": incident.incident_priority.name,
         "priority_description": incident.incident_priority.description,
+        "visibility": incident.visibility,
         "commander_fullname": incident.commander.individual.name,
         "commander_team": incident.commander.team,
         "commander_weblink": incident.commander.individual.weblink,
@@ -307,6 +310,7 @@ def send_incident_created_notifications(incident: Incident, db_session: SessionL
         "severity_description": incident.incident_severity.description,
         "priority": incident.incident_priority.name,
         "priority_description": incident.incident_priority.description,
+        "visibility": incident.visibility,
         "reporter_fullname": incident.reporter.individual.name,
         "reporter_team": incident.reporter.team,
         "reporter_weblink": incident.reporter.individual.weblink,
