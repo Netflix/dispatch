@@ -758,6 +758,7 @@ def render_message_template(message_template: List[dict], **kwargs):
 
                 if button.get("button_url"):
                     button["button_url"] = Template(button["button_url"]).render(**kwargs)
+
         if d.get("visibility_mapping"):
             d["text"] = d["visibility_mapping"][kwargs["visibility"]]
 
