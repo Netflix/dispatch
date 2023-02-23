@@ -37,7 +37,7 @@ INCIDENT_STATUS_DESCRIPTIONS = {
 
 INCIDENT_VISIBILITY_DESCRIPTIONS = {
     Visibility.open: " We ask that you use your best judgment while sharing details about this incident outside of the dedicated channels of communication.  Please reach out to the Incident Commander if you have any questions.",
-    Visibility.restricted: "This incident is restricted to immediate participants of this incident. We ask that you exercise extra caution and discretion while talking about this incident outside of the dedicated channels of communication , and only invite new participants that are strictly necessary. Please reach out to the Incident Commander if you have any questions.",
+    Visibility.restricted: "This incident is restricted to immediate participants of this incident. We ask that you exercise extra caution and discretion while talking about this incident outside of the dedicated channels of communication. Only invite new participants that are strictly necessary. Please reach out to the Incident Commander if you have any questions.",
 }
 EVERGREEN_REMINDER_DESCRIPTION = """
 You are the owner of the following resources in Dispatch.
