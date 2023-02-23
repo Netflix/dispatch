@@ -66,7 +66,6 @@ def get_suggested_documents(db_session, incident: Incident) -> list:
 def send_welcome_ephemeral_message_to_participant(
     participant_email: str, incident: Incident, db_session: SessionLocal
 ):
-
     """Sends an ephemeral welcome message to the participant."""
     if not incident.conversation:
         log.warning(
