@@ -36,7 +36,7 @@ faker==17.3.0
     #   factory-boy
 iniconfig==1.1.1
     # via pytest
-ipython==8.10.0
+ipython==8.11.0
     # via -r requirements-dev.in
 jedi==0.18.2
     # via ipython
@@ -72,7 +72,7 @@ pytest==7.2.1
     # via -r requirements-dev.in
 python-dateutil==2.8.2
     # via faker
-ruff==0.0.252
+ruff==0.0.253
     # via -r requirements-dev.in
 six==1.16.0
     # via

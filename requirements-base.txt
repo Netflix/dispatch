@@ -293,7 +293,7 @@ python-dateutil==2.8.2
     #   pandas
 python-jose==3.3.0
     # via -r requirements-base.in
-python-multipart==0.0.5
+python-multipart==0.0.6
     # via -r requirements-base.in
 python-slugify==8.0.1
     # via -r requirements-base.in
@@ -358,7 +358,6 @@ six==1.16.0
     #   oauth2client
     #   patsy
     #   python-dateutil
-    #   python-multipart
     #   sqlalchemy-filters
     #   validators
 slack-bolt==1.16.2
