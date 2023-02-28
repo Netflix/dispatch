@@ -799,6 +799,101 @@ IPython: {IPython.__version__}"""
     IPython.start_ipython(argv=ipython_args, user_ns={}, config=config)
 
 
+@dispatch_cli.command("load-mitre-tags")
+@click.argument("organization")
+@click.argument("project")
+def load_mitre_tags(organization, project):
+    from dispatch.tag_type import service as tag_type_service
+    from dispatch.tag_type.models import TagTypeCreate
+    from dispatch.project.models import ProjectRead
+    from dispatch.project import service as project_service
+    from dispatch.tag import service as tag_service
+    from dispatch.tag.models import TagCreate
+    from dispatch.database.core import refetch_db_session
+    from dispatch.common.utils.cli import install_plugins
+    from mitreattack.stix20 import MitreAttackData
+
+    mitre_attack_data = MitreAttackData("data/enterprise-attack.json")
+
+    install_plugins()
+
+    db_session = refetch_db_session(organization)
+
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=ProjectRead(name=project)
+    )
+
+    tactic_tag_type = tag_type_service.get_or_create(
+        db_session=db_session,
+        tag_type_in=TagTypeCreate(
+            name="MitreTactic",
+            project=project,
+            description="Tags of this type can be described as tactics as defined by Mitre ATT&CK.",
+        ),
+    )
+
+    tactics = mitre_attack_data.get_tactics(remove_revoked_deprecated=True)
+    for t in tactics:
+        ref = t.external_references[0]
+        tag_in = TagCreate(
+            name=t.name,
+            source=ref.source_name,
+            description=t.description,
+            uri=ref.url,
+            external_id=ref.external_id,
+            project=project,
+            tag_type=tactic_tag_type,
+        )
+        tag_service.get_or_create(db_session=db_session, tag_in=tag_in)
+
+    technique_tag_type = tag_type_service.get_or_create(
+        db_session=db_session,
+        tag_type_in=TagTypeCreate(
+            name="MitreTechnique",
+            project=project,
+            description="Tags of this type can be described as techniques as defined by the Mitre ATT&CK.",
+        ),
+    )
+
+    techniques = mitre_attack_data.get_techniques(remove_revoked_deprecated=True)
+    for t in techniques:
+        ref = t.external_references[0]
+        tag_in = TagCreate(
+            name=t.name,
+            source=ref.source_name,
+            description=t.description,
+            uri=ref.url,
+            external_id=ref.external_id,
+            project=project,
+            tag_type=technique_tag_type,
+        )
+        tag_service.get_or_create(db_session=db_session, tag_in=tag_in)
+
+    # create subtechnique tag type
+    subtechnique_tag_type = tag_type_service.get_or_create(
+        db_session=db_session,
+        tag_type_in=TagTypeCreate(
+            name="MitreSubTechnique",
+            project=project,
+            description="Tags of this type can be described as subtechniques as defined by Mitre ATT&CK.",
+        ),
+    )
+
+    # create subtechnique tags
+    subtechniques = mitre_attack_data.get_subtechniques(remove_revoked_deprecated=True)
+    for t in subtechniques:
+        tag_in = TagCreate(
+            name=t.name,
+            description=t.description,
+            source=ref.source_name,
+            uri=ref.url,
+            external_id=ref.external_id,
+            project=project,
+            tag_type=subtechnique_tag_type,
+        )
+        tag_service.get_or_create(db_session=db_session, tag_in=tag_in)
+
+
 def entrypoint():
     """The entry that the CLI is executed from"""
     from .exceptions import DispatchException
