@@ -409,6 +409,7 @@ setup(
             "dispatch_pkce_auth = dispatch.plugins.dispatch_core.plugin:PKCEAuthProviderPlugin",
             "dispatch_header_auth = dispatch.plugins.dispatch_core.plugin:HeaderAuthProviderPlugin",
             "dispatch_ticket = dispatch.plugins.dispatch_core.plugin:DispatchTicketPlugin",
+            "duo_auth_mfa = dispatch.plugins.dispatch_duo.plugin:DuoMfaPlugin",
             "generic_workflow = dispatch.plugins.generic_workflow.plugin:GenericWorkflowPlugin",
             "github_monitor = dispatch.plugins.dispatch_github.plugin:GithubMonitorPlugin",
             "google_calendar_conference = dispatch.plugins.dispatch_google.calendar.plugin:GoogleCalendarConferencePlugin",
