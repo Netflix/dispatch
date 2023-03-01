@@ -4,7 +4,6 @@
 #
 #    pip-compile requirements-base.in
 #
---index-url https://smartiproxy.mgmt.netflix.net/pypi
 
 aiocache==0.12.0
     # via -r requirements-base.in
