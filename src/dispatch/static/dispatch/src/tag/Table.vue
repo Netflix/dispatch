@@ -91,6 +91,7 @@ export default {
         { text: "Type", value: "tag_type.name", sortable: true },
         { text: "Source", value: "source", sortable: true },
         { text: "URI", value: "uri", sortable: false },
+        { text: "External ID", value: "external_id", sortable: false },
         { text: "Discoverable", value: "discoverable", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
