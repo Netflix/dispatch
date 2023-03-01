@@ -2,7 +2,6 @@ from dispatch.enums import DispatchEnum
 
 
 class CaseNotificationActions(DispatchEnum):
-    snooze = "case-notification-snooze"
     escalate = "case-notification-escalate"
     resolve = "case-notification-resolve"
     reopen = "case-notification-reopen"
@@ -13,10 +12,6 @@ class CaseNotificationActions(DispatchEnum):
 
 class CaseEditActions(DispatchEnum):
     submit = "case-notification-edit-submit"
-
-
-class CaseSnoozeActions(DispatchEnum):
-    submit = "case-notification-snooze-submit"
 
 
 class CaseResolveActions(DispatchEnum):

@@ -9,7 +9,7 @@ from dispatch.plugins.base import Plugin
 
 
 class MultiFactorAuthenticationPlugin(Plugin):
-    type = "mfa"
+    type = "auth-mfa"
 
     def send_push_notification(self, items, **kwargs):
         raise NotImplementedError

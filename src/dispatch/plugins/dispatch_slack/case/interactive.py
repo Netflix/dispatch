@@ -14,7 +14,6 @@ from dispatch.case.enums import CaseStatus
 from dispatch.case.models import CaseCreate, CaseUpdate
 from dispatch.incident import flows as incident_flows
 from dispatch.participant import service as participant_service
-from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.bolt import app
 from dispatch.plugins.dispatch_slack.case.enums import (
@@ -23,7 +22,6 @@ from dispatch.plugins.dispatch_slack.case.enums import (
     CaseReportActions,
     CaseResolveActions,
     CaseShortcutCallbacks,
-    CaseSnoozeActions,
 )
 from dispatch.plugins.dispatch_slack.case.messages import create_case_message
 from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
@@ -396,91 +394,6 @@ def join_incident_button_click(
     incident_flows.add_participants_to_conversation(
         db_session=db_session, participant_emails=[user.email], incident=case.incidents[0]
     )
-
-
-@app.action(CaseNotificationActions.snooze, middleware=[button_context_middleware, db_middleware])
-def snooze_button_click(
-    ack: Ack, body: dict, db_session: Session, context: BoltContext, client: WebClient
-):
-    ack()
-
-    blocks = [
-        Context(elements=[MarkdownText(text="Use this form to create a snooze filter.")]),
-        description_input(),
-    ]
-
-    modal = Modal(
-        title="Snooze Signal",
-        blocks=blocks,
-        submit="Update",
-        close="Close",
-        callback_id=CaseSnoozeActions.submit,
-        private_metadata=context["subject"].json(),
-    ).build()
-    client.views_open(trigger_id=body["trigger_id"], view=modal)
-
-
-def ack_snooze_submission_event(ack: Ack) -> None:
-    """Handles the add snooze submission event acknowledgement."""
-    modal = Modal(
-        title="Add Snooze",
-        close="Close",
-        blocks=[Section(text="Adding snooze submission event...")],
-    ).build()
-    ack(response_action="update", view=modal)
-
-
-@app.view(
-    CaseSnoozeActions.submit,
-    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
-)
-def handle_snooze_submission_event(
-    ack: Ack,
-    body,
-    client: WebClient,
-    context: BoltContext,
-    db_session: Session,
-    form_data: dict,
-    user: DispatchUser,
-):
-    ack_snooze_submission_event(ack=ack)
-
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
-
-    mfa_plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=case.project.id, plugin_type="mfa"
-    )
-    if not mfa_plugin:
-        print("Case assignee not mfa'd. No plugin of type mfa enabled.")
-    else:
-        email = context["user"].email
-        username, _ = email.split("@")
-        response = mfa_plugin.instance.send_push_notification(
-            username=username, type="Are you creating a signal filter in Dispatch?"
-        )
-
-        if response.get("result") == "allow":
-            modal = Modal(
-                title="Add Snooze",
-                close="Close",
-                blocks=[Section(text="Adding Snooze... Success!")],
-            ).build()
-
-            client.views_update(
-                view_id=body["view"]["id"],
-                view=modal,
-            )
-        else:
-            modal = Modal(
-                title="Add Snooze",
-                close="Close",
-                blocks=[Section(text="Adding Snooze failed, you must accept the MFA prompt.")],
-            ).build()
-
-            client.views_update(
-                view_id=body["view"]["id"],
-                view=modal,
-            )
 
 
 @app.action(CaseNotificationActions.edit, middleware=[button_context_middleware, db_middleware])

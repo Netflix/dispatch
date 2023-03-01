@@ -81,12 +81,6 @@ def create_case_message(case: Case, channel_id: str):
                 Actions(
                     elements=[
                         Button(
-                            text="Snooze",
-                            action_id=CaseNotificationActions.snooze,
-                            style="primary",
-                            value=button_metadata,
-                        ),
-                        Button(
                             text="Edit",
                             action_id=CaseNotificationActions.edit,
                             style="primary",

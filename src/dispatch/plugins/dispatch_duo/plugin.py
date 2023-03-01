@@ -30,7 +30,7 @@ DuoAuthResponse = NewType(
 @apply(counter, exclude=["__init__"])
 class DuoMfaPlugin(MultiFactorAuthenticationPlugin):
     title = "Duo Plugin - Multi Factor Authentication"
-    slug = "duo-mfa"
+    slug = "duo-auth-mfa"
     description = "Uses Duo to validate user actions with multi-factor authentication."
     version = __version__
 
