@@ -405,11 +405,7 @@ def snooze_button_click(
     ack()
 
     blocks = [
-        Context(
-            elements=[
-                MarkdownText(text="Use this form to create a snooze filter.")
-            ]
-        ),
+        Context(elements=[MarkdownText(text="Use this form to create a snooze filter.")]),
         description_input(),
     ]
 
@@ -427,7 +423,9 @@ def snooze_button_click(
 def ack_snooze_submission_event(ack: Ack) -> None:
     """Handles the add snooze submission event acknowledgement."""
     modal = Modal(
-        title="Add Snooze", close="Close", blocks=[Section(text="Adding snooze submission event...")]
+        title="Add Snooze",
+        close="Close",
+        blocks=[Section(text="Adding snooze submission event...")],
     ).build()
     ack(response_action="update", view=modal)
 
@@ -458,8 +456,7 @@ def handle_snooze_submission_event(
         email = context["user"].email
         username, _ = email.split("@")
         response = mfa_plugin.instance.send_push_notification(
-            username=username,
-            type="Are you creating a signal filter in Dispatch?"
+            username=username, type="Are you creating a signal filter in Dispatch?"
         )
 
         if response.get("result") == "allow":

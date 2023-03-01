@@ -9,7 +9,8 @@ class DuoConfiguration(BaseConfigurationModel):
         title="Integration Key", description="Admin API integration key ('DI...'):"
     )
     integration_secret_key: SecretStr = Field(
-        title="Integration Secret Key", description="Secret token used in conjunction with integration key."
+        title="Integration Secret Key",
+        description="Secret token used in conjunction with integration key.",
     )
     host: str = Field(
         title="API Hostname",

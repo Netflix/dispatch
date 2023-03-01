@@ -9,5 +9,5 @@ def create_duo_auth_client(config: DuoConfiguration) -> Auth:
     return duo_client.Auth(
         ikey=config.integration_key.get_secret_value(),
         skey=config.integration_secret_key.get_secret_value(),
-        host=config.host
+        host=config.host,
     )
