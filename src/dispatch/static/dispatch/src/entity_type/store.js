@@ -13,6 +13,7 @@ const getDefaultSelectedState = () => {
     jpath: null,
     enabled: true,
     global_find: false,
+    signal_definitions: [],
     project: null,
     default: false,
   }
@@ -25,23 +26,6 @@ const state = {
   dialogs: {
     showCreateEdit: false,
     showRemove: false,
-  },
-  table: {
-    rows: {
-      items: [],
-      total: null,
-    },
-    options: {
-      q: "",
-      page: 1,
-      itemsPerPage: 10,
-      sortBy: ["name"],
-      descending: [true],
-      filters: {
-        project: [],
-      },
-    },
-    loading: false,
   },
 }
 

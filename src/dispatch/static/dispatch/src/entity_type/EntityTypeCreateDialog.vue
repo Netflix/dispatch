@@ -1,120 +1,102 @@
 <template>
-  <ValidationObserver ref="observer">
-    <v-dialog v-model="showCreateEdit" persistent max-width="1080px">
-      <template v-slot:activator="{ on }">
-        <v-btn elevation="1" v-on="on" small><v-icon>add</v-icon>Add entity type</v-btn>
-      </template>
-      <v-card>
-        <v-window v-model="step">
-          <v-window-item :value="1">
-            <v-card class="px-6" color="grey lighten-5">
-              <v-card-title class="text-h6 font-weight-regular justify-space-between">
-                <span>New entity type</span>
-                <v-spacer></v-spacer>
-                <v-btn icon @click="closeCreateEditDialog()">
-                  <v-icon>close</v-icon>
-                </v-btn>
-              </v-card-title>
-              <v-row>
-                <v-col cols="4">
-                  <ValidationProvider rules="regexp" name="Regular Expression" immediate>
-                    <v-textarea
-                      v-model="regular_expression"
-                      class="pb-4 pt-16"
-                      rows="7"
-                      background-color="white"
-                      color="black"
-                      slot-scope="{ errors }"
-                      label="Regular Expression"
-                      hint="A regular expression pattern for your entity type. The first capture group will be used."
-                      :error-messages="errors"
-                      outlined
-                    />
-                  </ValidationProvider>
-                  <ValidationProvider rules="jpath" name="Field" immediate>
-                    <v-textarea
-                      v-model="jpath"
-                      background-color="white"
-                      color="black"
-                      class="pb-4 pt-18"
-                      rows="7"
-                      slot-scope="{ errors }"
-                      label="JSON Path"
-                      hint="The field where the entity will be present. Supports JSON Path expressions."
-                      :error-messages="errors"
-                      outlined
-                    />
-                  </ValidationProvider>
-                </v-col>
-                <v-col cols="8">
-                  <PlaygroundTextBox :text="editorValue" />
-                </v-col>
-              </v-row>
-              <v-card-actions class="pt-6">
-                <v-btn icon fab @click="show_signals = !show_signals">
-                  <v-icon>{{ show_signals ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
-                </v-btn>
-                <v-hover v-slot="{ hover }">
-                  <v-chip
-                    class="ma-2"
-                    :color="chipColor"
-                    :class="{ 'on-hover': hover }"
-                    @click="show_signals = !show_signals"
-                    outlined
-                  >
-                    <v-icon left>{{ chipIcon }}</v-icon>
-                    <span>
-                      <animated-number :number="totalEntities" /> entities in
-                      <animated-number :number="matchedSignals.total" /> signals
-                    </span>
-                  </v-chip>
-                </v-hover>
-                <v-spacer />
-                <v-btn color="info" @click="step = 2"> Continue </v-btn>
-              </v-card-actions>
-              <v-expand-transition>
-                <div v-show="show_signals" style="height: 620px">
-                  <v-divider></v-divider>
-                  <v-spacer></v-spacer>
-                  <v-card class="mt-3" outlined rounded="xl">
-                    <v-data-table
-                      style="height: 570px"
-                      :headers="previewFields"
-                      :items="matchedSignals.items"
-                      item-key="id"
-                      :loading="previewRowsLoading"
-                      id="signal-table"
-                      :footer-props="{ 'disable-items-per-page': true }"
-                    >
-                      <template id="sortable-row" v-slot:item.data-table-actions="{ item }">
-                        <raw-signal-viewer v-model="item.signal.raw" />
-                        <v-tooltip bottom>
-                          <template v-slot:activator="{ on, attrs }">
-                            <v-icon v-bind="attrs" v-on="on" class="mr-2"> mdi-fingerprint </v-icon>
-                          </template>
-                          <span>{{ item.signal.fingerprint }}</span>
-                        </v-tooltip>
-                      </template>
-                    </v-data-table>
-                    <v-card-actions> </v-card-actions>
-                  </v-card>
-                </div>
-              </v-expand-transition>
-            </v-card>
-          </v-window-item>
-
-          <v-window-item :value="2">
-            <ValidationObserver disabled v-slot="{ invalid, validated }">
-              <v-card>
-                <v-card-title class="text-h6 font-weight-regular justify-space-between">
-                  <span>New entity type</span>
-                  <v-spacer></v-spacer>
-                  <v-btn icon @click="closeCreateEditDialog()">
-                    <v-icon>close</v-icon>
-                  </v-btn>
-                </v-card-title>
+  <v-dialog v-model="showCreateEdit" max-width="1000px" persistent>
+    <template v-slot:activator="{ on }">
+      <v-btn v-on="on" icon><v-icon>add</v-icon></v-btn>
+    </template>
+    <v-card>
+      <v-card-title>Create Entity Type </v-card-title>
+      <ValidationObserver v-slot="{ invalid, validated }">
+        <v-stepper v-model="step">
+          <v-stepper-header>
+            <v-stepper-step :complete="step > 1" step="1" editable> Define Filter </v-stepper-step>
+            <v-divider />
+            <v-stepper-step step="2" editable> Save </v-stepper-step>
+          </v-stepper-header>
+          <v-stepper-items>
+            <v-stepper-content step="1">
+              <v-card flat height="100%">
                 <v-card-text>
-                  <v-spacer></v-spacer>
+                  Entity types are used to extract useful metadata out of signals. Define either a
+                  RegEx or JSON Path expression to pull entities out of a signals raw json.
+                  <v-radio-group label="Type" v-model="type" row>
+                    <v-radio label="Regular Expression" value="regex"></v-radio>
+                    <v-radio label="JSON Path" value="json"></v-radio>
+                  </v-radio-group>
+                  <v-text-field
+                    v-if="type === 'regex'"
+                    v-model="regular_expression"
+                    label="Regular Expression"
+                    hint="A regular expression pattern for your entity type. The first capture group will be used."
+                  >
+                    <template v-slot:append-outer>
+                      <v-btn
+                        icon
+                        href="https://cheatography.com/davechild/cheat-sheets/regular-expressions/"
+                        target="_blank"
+                      >
+                        <v-icon> mdi-help-circle-outline </v-icon>
+                      </v-btn>
+                    </template>
+                  </v-text-field>
+                  <v-text-field
+                    v-if="type === 'json'"
+                    v-model="jpath"
+                    label="JSON Path"
+                    hint="The field where the entity will be present. Supports JSON Path expressions."
+                  >
+                    <template v-slot:append-outer>
+                      <v-btn
+                        icon
+                        href="https://github.com/json-path/JsonPath#path-examples"
+                        target="_blank"
+                      >
+                        <v-icon> mdi-help-circle-outline </v-icon>
+                      </v-btn>
+                    </template>
+                  </v-text-field>
+                  Example signals:
+                  <v-row>
+                    <v-col cols="4">
+                      <v-list>
+                        <template
+                          v-for="(instance, index) in signalInstances"
+                          v-if="signalInstances.length"
+                        >
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>{{ instance.id }}</v-list-item-title>
+                            </v-list-item-content>
+                            <v-list-item-action>
+                              <v-btn icon @click="updateEditorValue(instance.raw)">
+                                <v-icon>mdi-arrow-right</v-icon>
+                              </v-btn>
+                            </v-list-item-action>
+                          </v-list-item>
+                          <v-divider v-if="index < signalInstances.length - 1"></v-divider>
+                        </template>
+                        <template v-else>
+                          No signals are currently available for this definition.
+                        </template>
+                      </v-list>
+                    </v-col>
+                    <v-col cols="8">
+                      <playground-text-box :text="editorValue" />
+                    </v-col>
+                  </v-row>
+                </v-card-text>
+              </v-card>
+              <v-card-actions>
+                <v-spacer />
+                <v-btn @click="closeCreateEditDialog()" text> Cancel </v-btn>
+                <v-btn color="info" @click="step = 2" :loading="loading"> Continue </v-btn>
+              </v-card-actions>
+            </v-stepper-content>
+            <v-stepper-content step="2">
+              <v-card>
+                <v-card-text>
+                  <v-card-text>
+                    Provide a name and a description for your entity type:
+                  </v-card-text>
                   <ValidationProvider name="Name" rules="required" immediate>
                     <v-text-field
                       v-model="name"
@@ -139,14 +121,13 @@
                       auto-grow
                     />
                   </ValidationProvider>
-                  <signal-definition-combobox></signal-definition-combobox>
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer />
-                  <v-btn :disabled="step === 1" text @click="step--"> Back </v-btn>
+                  <v-btn @click="closeCreateEditDialog()" text> Cancel </v-btn>
                   <v-btn
                     color="info"
-                    @click="saveEntityType(selected.project)"
+                    @click="saveFilter()"
                     :loading="loading"
                     :disabled="invalid || !validated"
                   >
@@ -154,29 +135,23 @@
                   </v-btn>
                 </v-card-actions>
               </v-card>
-            </ValidationObserver>
-          </v-window-item>
-        </v-window>
-      </v-card>
-    </v-dialog>
-  </ValidationObserver>
+            </v-stepper-content>
+          </v-stepper-items>
+        </v-stepper>
+      </ValidationObserver>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script>
-import jsonpath from "jsonpath"
 import { mapActions, mapMutations } from "vuex"
 import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
-import draggable from "vuedraggable"
-import { Sortable } from "sortablejs"
-
-import AnimatedNumber from "@/components/AnimatedNumber.vue"
 import PlaygroundTextBox from "@/entity_type/playground/PlaygroundTextBox.vue"
 import SearchUtils from "@/search/utils"
 import SignalApi from "@/signal/api"
 import SignalDefinitionCombobox from "@/signal/SignalDefinitionCombobox.vue"
-import RawSignalViewer from "@/signal/RawSignalViewer.vue"
 import { isValidJsonPath, isValidRegex } from "@/entity_type/utils.js"
 
 extend("required", {
@@ -202,45 +177,42 @@ export default {
       type: Object,
       required: true,
     },
+    signalDefinition: {
+      type: Object,
+      required: true,
+    },
   },
   data() {
     return {
-      show_signals: false,
-      show_playground: false,
-      text: "",
-      editorValue: "",
-      previewFields: [
-        { text: "Signal", value: "signal.signal.name", sortable: false },
-        { text: "Case", value: "signal.case.name", sortable: false },
+      type: "json",
+      signalInstances: [],
+      filters: {
+        signal_definition: [],
+      },
+      editorValue: JSON.stringify(
         {
-          text: "",
-          value: "data-table-actions",
-          sortable: false,
-          align: "end",
+          name: "process_events",
+          hostIdentifier: "host1",
+          calendarTime: "2022-10-19T10:35:01Z",
+          time: 1618698901,
+          columns: {
+            pid: 888,
+            path: "/bin/process",
+            cmdline: "/bin/process -arg1 value1 -arg2 value2",
+            state: "running",
+            parent: 555,
+            created_at: 1918698901,
+            updated_at: 2118698901,
+          },
         },
-      ],
-      totalEntities: 0,
-      matchedSignals: {
-        items: [],
-        fingerprints: [],
-        total: 0,
-      },
-      signalSample: {
-        items: [],
-        total: null,
-      },
-      sampleFilter: {
-        created_at: [],
-      },
-      previewRowsLoading: false,
+        null,
+        2
+      ),
       step: 1,
     }
   },
   components: {
-    AnimatedNumber,
-    draggable,
     PlaygroundTextBox,
-    RawSignalViewer,
     SignalDefinitionCombobox,
     ValidationObserver,
     ValidationProvider,
@@ -251,26 +223,12 @@ export default {
       "selected.description",
       "selected.regular_expression",
       "selected.jpath",
+      "selected.signal_definitions",
       "selected.name",
       "loading",
       "dialogs.showCreateEdit",
     ]),
     ...mapFields("route", ["query"]),
-    /**
-     * Returns the color for the chip based on the total number of entities
-     * @return {string} the color class to use for the chip
-     */
-    chipColor() {
-      return this.totalEntities === 0 ? "grey lighten-1" : "red darken-3"
-    },
-
-    /**
-     * Returns the icon for the chip based on the total number of entities
-     * @return {string} the icon class to use for the chip
-     */
-    chipIcon() {
-      return this.totalEntities === 0 ? "mdi-information" : "mdi-fire"
-    },
   },
   methods: {
     ...mapMutations("playground", ["updatePattern", "updateJsonPath"]),
@@ -282,137 +240,21 @@ export default {
     },
     isValidRegex,
     isValidJsonPath,
-    resetTotalFound() {
-      this.totalEntities = 0
-      this.matchedSignals.total = 0
-      this.matchedSignals.items = []
-    },
-    getPreviewData() {
-      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-      const today = new Date()
-
-      this.sampleFilter.created_at = {
-        start: this.dateToStringISO(thirtyDaysAgo),
-        end: this.dateToStringISO(today),
-      }
-
-      const expression = SearchUtils.createFilterExpression(this.sampleFilter, "SignalInstance")
+    getSignalData() {
+      //this.filters.signal_definition = [this.signalDefinition]
+      // TODO
+      const expression = SearchUtils.createFilterExpression(this.filter, "SignalInstance")
       if (!expression) return
 
-      const params = { filter: JSON.stringify(expression), itemsPerPage: 100 }
-      this.previewRowsLoading = "error"
+      const params = { filter: JSON.stringify(expression), itemsPerPage: 5 }
 
       return SignalApi.getAllInstances(params)
         .then((response) => {
-          this.signalSample = response.data
+          this.signalInstances = response.data.items
         })
         .catch((error) => {
           console.error(error)
         })
-        .finally(() => {
-          this.previewRowsLoading = false
-        })
-    },
-    /**
-     * Convert a date to a string in ISO format
-     * @param {Date} date
-     */
-    dateToStringISO(date) {
-      return date.toISOString().replace("T", " ").replace("Z", "")
-    },
-    /**
-     * Finds entities in the given `signalInstance` that match the `entityType` definition.
-     *
-     * @param {object} signalInstance - An object representing a signal instance.
-     * @param {object} entityType - An object containing the definition of the entity type to match against.
-     *
-     * @returns {array} - An array of unique entity objects that match the given `entityType` definition.
-     */
-    async findEntities(signalInstance, entityType) {
-      // Initialize variables
-      let signalHadEntity = false
-      const entityResults = new Set()
-
-      // Loop through each entity type pair
-      const { entity_type, entity_regex, jpath } = {
-        entity_regex: entityType.regular_expression
-          ? new RegExp(entityType.regular_expression)
-          : null,
-        jpath: entityType.jpath,
-      }
-
-      const fingerprint = signalInstance.fingerprint
-
-      // Check if the jpath is present in the signalInstance
-      if (jpath) {
-        const jpathValue = jsonpath.query(signalInstance.raw, jpath)[0]
-        if (typeof jpathValue === "string") {
-          if (!entity_regex) {
-            entityResults.add({
-              entity: jpathValue,
-              entity_type: entity_type,
-              signal: signalInstance,
-            })
-            signalHadEntity = true
-          } else {
-            const matchResult = entity_regex.exec(jpathValue)
-            if (matchResult) {
-              entityResults.add({
-                entity: matchResult[0],
-                entity_type: entity_type,
-                signal: signalInstance,
-              })
-              signalHadEntity = true
-            }
-          }
-        }
-      } else {
-        // Recursively search the signalInstance for matches using the entity regex
-        function findEntitiesByRegex(val) {
-          if (typeof val === "object" && val !== null) {
-            for (const key in val) {
-              if (Object.prototype.hasOwnProperty.call(val, key)) {
-                findEntitiesByRegex(val[key])
-              }
-            }
-          } else if (Array.isArray(val)) {
-            for (const item of val) {
-              findEntitiesByRegex(item)
-            }
-          } else if (typeof val === "string") {
-            if (entity_regex) {
-              const matchResult = entity_regex.exec(val)
-              if (matchResult) {
-                entityResults.add({
-                  entity: matchResult[0],
-                  entity_type: entity_type,
-                  signal: signalInstance,
-                })
-                signalHadEntity = true
-              }
-            }
-          }
-        }
-
-        // Loop through each key in the signalInstance and search for matches using the entity regex
-        for (const key in signalInstance.raw) {
-          if (Object.prototype.hasOwnProperty.call(signalInstance.raw, key)) {
-            findEntitiesByRegex(signalInstance.raw[key])
-          }
-        }
-      }
-
-      if (signalHadEntity) {
-        this.matchedSignals.total += 1
-        this.totalEntities += entityResults.size
-        if (!this.matchedSignals.items.find((s) => s.fingerprint === fingerprint)) {
-          this.matchedSignals.fingerprints.push(fingerprint)
-          this.matchedSignals.items.push({
-            signal: signalInstance,
-            entities: Array.from(entityResults),
-          })
-        }
-      }
     },
     onSelectedChange(selector, newVal, oldVal) {
       this.$nextTick(() => {
@@ -426,6 +268,7 @@ export default {
             this.updatePattern(newVal)
           }
           if (selector === "jpath") {
+            console.log("here")
             if (!newVal) {
               // Ensures we reset the jsonpath
               this.updateJsonPath(newVal)
@@ -438,26 +281,6 @@ export default {
             jpath: this.selected.jpath,
           }
           entityType[selector] = newVal
-
-          this.resetTotalFound()
-
-          // Keep track of already matched signals to avoid duplicates
-          const matchedFingerprints = new Set(this.matchedSignals.items.map((s) => s.fingerprint))
-
-          // Loop through signalSample items and find matching entities
-          this.signalSample.items.forEach((signal) => {
-            if (!matchedFingerprints.has(signal.fingerprint)) {
-              this.findEntities(signal, entityType)
-            } else {
-              // If the signal has already been matched, increment match count
-              this.matchedSignals.total += 1
-              this.matchedSignals.items.push(signal)
-              const matchedSignal = this.matchedSignals.items.find(
-                (signal) => signal.signal.fingerprint === signalFingerprint
-              )
-              this.totalEntities += matchedSignal.entities.length
-            }
-          })
         }
       })
     },
@@ -465,87 +288,27 @@ export default {
      * This function sets up the draggable feature for the signal table and the playground editor.
      * Updates the editor value with the selected signal raw JSON when dragging ends.
      */
-    setupDraggable() {
-      this.$nextTick(() => {
-        const playgroundEditorEl = document.getElementById("playground-editor")
-        const signalTable = document.getElementById("signal-table")
-
-        if (!playgroundEditorEl || !signalTable) {
-          return
-        }
-
-        const tableBody = signalTable.getElementsByTagName("tbody")[0]
-
-        const sortableOptions = {
-          animation: 150,
-          onEnd: (event) => {
-            // DOM location of the playground editor element
-            const playgroundTextBoxRect = playgroundEditorEl.getBoundingClientRect()
-            // Location of the mouse cursor
-            const mouseX = event.originalEvent.clientX
-            const mouseY = event.originalEvent.clientY
-            // If the mouse cursor is over the playground box
-            if (
-              mouseX >= playgroundTextBoxRect.left &&
-              mouseX <= playgroundTextBoxRect.right &&
-              mouseY >= playgroundTextBoxRect.top &&
-              mouseY <= playgroundTextBoxRect.bottom
-            ) {
-              // Update the editor value to the raw signal data of the dragged row
-              const item = this.signalSample.items[event.oldIndex]
-              const stringSignal = JSON.stringify(item.raw, null, 2)
-              this.updateEditorValue(stringSignal)
-            }
-          },
-        }
-        Sortable.create(tableBody, sortableOptions)
-      })
-    },
     updateEditorValue(newValue) {
-      this.editorValue = newValue
+      this.editorValue = JSON.stringify(newValue, null, 2)
     },
   },
   created() {
     if (this.project) {
       this.selected.project = this.project
     }
-    this.getPreviewData()
+
+    if (this.signalDefinition) {
+      this.selected.signal_definition = this.signalDefinition
+      this.getSignalData()
+    }
   },
   watch: {
     "selected.regular_expression": function (newVal, oldVal) {
-      if (!this.signalSample.items.length) return
       this.onSelectedChange("regular_expression", newVal, oldVal)
     },
     "selected.jpath": function (newVal, oldVal) {
-      if (!this.signalSample.items.length) return
       this.onSelectedChange("jpath", newVal, oldVal)
-    },
-    matchedSignals: {
-      handler(newVal) {
-        // We need the table to have rows to setup draggable
-        if (newVal.items.length > 1) {
-          this.setupDraggable()
-        }
-      },
-      deep: true,
     },
   },
 }
 </script>
-
-<style scoped>
-.v-chip {
-  transition: opacity 0.4s ease-in-out;
-}
-
-.v-chip.on-hover {
-  opacity: 1;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 8px rgba(0, 0, 0, 0.3);
-  transition: all 0.4s ease-in-out;
-}
-
-.v-chip:not(.on-hover) {
-  opacity: 0.8;
-}
-</style>

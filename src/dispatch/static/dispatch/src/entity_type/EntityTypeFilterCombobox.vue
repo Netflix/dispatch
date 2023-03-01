@@ -45,6 +45,13 @@
         </v-list-item-content>
       </v-list-item>
     </template>
+    <template slot="append-outer">
+      <entity-type-create-dialog
+        v-model="createdEntityType"
+        :project="project"
+        :signalDefinition="signalDefinition"
+      />
+    </template>
   </v-combobox>
 </template>
 
@@ -53,9 +60,10 @@ import { cloneDeep, debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import EntityTypeApi from "@/entity_type/api"
+import EntityTypeCreateDialog from "@/entity_type/EntityTypeCreateDialog.vue"
 
 export default {
-  name: "EntityTypeCombobox",
+  name: "EntityTypeFilterCombobox",
 
   props: {
     value: {
@@ -76,9 +84,15 @@ export default {
     },
     project: {
       type: Object,
-      default: null,
+      required: true,
+    },
+    signalDefinition: {
+      type: Object,
+      required: true,
     },
   },
+
+  components: { EntityTypeCreateDialog },
 
   data() {
     return {
@@ -86,6 +100,7 @@ export default {
       items: [],
       more: false,
       numItems: 5,
+      createdEntityType: null,
       search: null,
     }
   },
@@ -93,10 +108,10 @@ export default {
   computed: {
     entity_types: {
       get() {
-        return this.value;
+        return this.value
       },
       set(value) {
-        this.$emit("input", value);
+        this.$emit("input", value)
       },
     },
   },
@@ -152,6 +167,5 @@ export default {
       this.fetchData()
     }, 500),
   },
-
 }
 </script>

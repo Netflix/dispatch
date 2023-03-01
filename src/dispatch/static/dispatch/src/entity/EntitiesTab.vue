@@ -1,40 +1,32 @@
 <template>
-  <v-container fill-height fluid>
-    <v-row v-if="entities.length >= 1">
+  <v-container>
+    <v-row justify="end">
       <date-chip-group-relative
         class="pl-6 mt-6"
         label="Time Range"
         v-model="selectedDateTime"
         @input="onSelectedDateTimeChange"
       />
-      <entity-type-create-dialog
-        class="mt-8"
-        :project="selected.project"
-      ></entity-type-create-dialog>
+    </v-row>
+    <v-row v-if="entities.length >= 1">
       <v-col class="pl-6 mt-6" v-for="entity in entities" :key="entity.id" cols="6">
         <entity-card :entity="entity" :selectedDateTime="selectedDateTime" />
       </v-col>
     </v-row>
-    <v-row v-else>
-      <v-col cols="12">
-        <v-card>
-          <v-card-title>No entities found</v-card-title>
-        </v-card>
-      </v-col>
-    </v-row>
+    <div v-else>
+      <p class="text-center">No entity data available.</p>
+    </div>
   </v-container>
 </template>
 
 <script>
 import EntityCard from "@/entity/EntityCard.vue"
 import DateChipGroupRelative from "@/components/DateChipGroupRelative.vue"
-import EntityTypeCreateDialog from "@/entity_type/EntityTypeCreateDialog.vue"
 
 export default {
   name: "EntitiesTab",
   components: {
     EntityCard,
-    EntityTypeCreateDialog,
     DateChipGroupRelative,
   },
   props: {

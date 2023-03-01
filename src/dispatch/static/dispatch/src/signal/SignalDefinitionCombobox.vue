@@ -1,82 +1,78 @@
 <template>
-  <v-container>
-    <v-row no-gutter>
-      <v-combobox
-        :items="items"
-        :label="label"
-        :loading="loading"
-        :menu-props="{ maxHeight: '400' }"
-        :search-input.sync="search"
-        @update:search-input="getFilteredData({ q: $event })"
-        chips
-        clearable
-        close
-        deletable-chips
-        hide-selected
-        item-text="name"
-        item-value="id"
-        multiple
-        no-filter
-        v-model="filters"
-      >
-        <template v-slot:selection="{ attr, item, selected }">
-          <v-menu v-model="menu" bottom right transition="scale-transition" origin="top left">
-            <template v-slot:activator="{ on }">
-              <v-chip v-bind="attr" :input-value="selected" pill v-on="on">
-                {{ item.name }}
-              </v-chip>
-            </template>
-            <v-card>
-              <v-list dark>
-                <v-list-item>
-                  <v-list-item-avatar color="teal">
-                    <span class="white--text">{{ item.name | initials }}</span>
-                  </v-list-item-avatar>
-                  <v-list-item-content>
-                    <v-list-item-title>{{ item.name }}</v-list-item-title>
-                    <v-list-item-subtitle>{{ item.type }}</v-list-item-subtitle>
-                  </v-list-item-content>
-                  <v-list-item-action>
-                    <v-btn icon @click="menu = false">
-                      <v-icon>mdi-close-circle</v-icon>
-                    </v-btn>
-                  </v-list-item-action>
-                </v-list-item>
-              </v-list>
-              <v-list>
-                <v-list-item>
-                  <v-list-item-action>
-                    <v-icon>mdi-text-box</v-icon>
-                  </v-list-item-action>
-                  <v-list-item-subtitle>{{ item.description }}</v-list-item-subtitle>
-                </v-list-item>
-              </v-list>
-            </v-card>
-          </v-menu>
+  <v-combobox
+    :items="items"
+    :label="label"
+    :loading="loading"
+    :menu-props="{ maxHeight: '400' }"
+    :search-input.sync="search"
+    @update:search-input="getFilteredData({ q: $event })"
+    chips
+    clearable
+    close
+    deletable-chips
+    hide-selected
+    item-text="name"
+    item-value="id"
+    multiple
+    no-filter
+    v-model="filters"
+  >
+    <template v-slot:selection="{ attr, item, selected }">
+      <v-menu v-model="menu" bottom right transition="scale-transition" origin="top left">
+        <template v-slot:activator="{ on }">
+          <v-chip v-bind="attr" :input-value="selected" pill v-on="on">
+            {{ item.name }}
+          </v-chip>
         </template>
-        <template v-slot:item="{ item }">
-          <v-list-item-content>
-            <v-list-item-title v-text="item.name" />
-            <v-list-item-subtitle
-              style="width: 200px"
-              class="text-truncate"
-              v-text="item.description"
-            />
-          </v-list-item-content>
-        </template>
-        <template v-slot:no-data>
-          <v-list-item>
-            <v-list-item-content>
-              <v-list-item-title>
-                No signal definition matching "
-                <strong>{{ search }}</strong>
-              </v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </template>
-      </v-combobox>
-    </v-row>
-  </v-container>
+        <v-card>
+          <v-list dark>
+            <v-list-item>
+              <v-list-item-avatar color="teal">
+                <span class="white--text">{{ item.name | initials }}</span>
+              </v-list-item-avatar>
+              <v-list-item-content>
+                <v-list-item-title>{{ item.name }}</v-list-item-title>
+                <v-list-item-subtitle>{{ item.type }}</v-list-item-subtitle>
+              </v-list-item-content>
+              <v-list-item-action>
+                <v-btn icon @click="menu = false">
+                  <v-icon>mdi-close-circle</v-icon>
+                </v-btn>
+              </v-list-item-action>
+            </v-list-item>
+          </v-list>
+          <v-list>
+            <v-list-item>
+              <v-list-item-action>
+                <v-icon>mdi-text-box</v-icon>
+              </v-list-item-action>
+              <v-list-item-subtitle>{{ item.description }}</v-list-item-subtitle>
+            </v-list-item>
+          </v-list>
+        </v-card>
+      </v-menu>
+    </template>
+    <template v-slot:item="{ item }">
+      <v-list-item-content>
+        <v-list-item-title v-text="item.name" />
+        <v-list-item-subtitle
+          style="width: 200px"
+          class="text-truncate"
+          v-text="item.description"
+        />
+      </v-list-item-content>
+    </template>
+    <template v-slot:no-data>
+      <v-list-item>
+        <v-list-item-content>
+          <v-list-item-title>
+            No signal definition matching "
+            <strong>{{ search }}</strong>
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+    </template>
+  </v-combobox>
 </template>
 
 <script>

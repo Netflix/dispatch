@@ -9,6 +9,8 @@ const getDefaultSelectedState = () => {
     id: null,
     name: null,
     regular_expression: null,
+    jpath: null,
+    signal_instances: [],
     project: null,
     default: false,
   }

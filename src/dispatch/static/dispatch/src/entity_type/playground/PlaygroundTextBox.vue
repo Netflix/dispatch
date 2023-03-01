@@ -1,10 +1,6 @@
 <template>
-  <div class="playground-editor">
-    <v-card style="height: 600px" elevation="4" outlined>
-      <v-card-text>
-        <div id="playground-editor" style="height: 560px"></div>
-      </v-card-text>
-    </v-card>
+  <div class="playground-editor" style="height: 300px">
+    <div id="playground-editor" style="height: 300px"></div>
   </div>
 </template>
 
