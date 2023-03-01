@@ -72,7 +72,7 @@ class DuoMfaPlugin(MultiFactorAuthenticationPlugin):
             {'response': {'result': 'allow', 'status': 'allow', 'status_msg': 'Success. Logging you in...'}, 'stat': 'OK'}
 
         Notes:
-            For more information, see https://duo.com/docs/authapi#/auth.
+            For more information, see https://duo.com/docs/authapi#/auth
         """
         duo_client = duo_service.create_duo_auth_client(self.configuration)
         return duo_client.auth(
