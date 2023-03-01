@@ -6,13 +6,12 @@
 .. moduleauthor:: Will Sheldon <wshel@netflix.com>
 """
 import logging
-from typing import Optional
 
 from dispatch.decorators import apply, counter, timer
-from dispatch.plugins import dispatch_duo as duo_plugin
 from dispatch.plugins.bases import MultiFactorAuthenticationPlugin
 from dispatch.plugins.dispatch_duo import service as duo_service
 from dispatch.plugins.dispatch_duo.config import DuoConfiguration
+from . import __version__
 
 log = logging.getLogger(__name__)
 
@@ -23,7 +22,7 @@ class DuoMfaPlugin(MultiFactorAuthenticationPlugin):
     title = "Duo Plugin - Multi Factor Authentication"
     slug = "duo-mfa"
     description = "Uses Duo to validate user actions with multi-factor authentication."
-    version = duo_plugin.__version__
+    version = __version__
 
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
@@ -32,23 +31,17 @@ class DuoMfaPlugin(MultiFactorAuthenticationPlugin):
         self.configuration_schema = DuoConfiguration
 
     def send_push_notification(
-        *,
         self,
         username: str,
+        type: str,
         device: str = "auto",
-        type: Optional[str],
-        ipaddr: Optional[str] = None,
-        hostname: Optional[str] = None,
-        _async: Optional[int] = None,
     ):
         """Create a new push notification for authentication."""
         duo_client = duo_service.create_duo_auth_client(self.configuration)
-        duo_client.auth(
+        result = duo_client.auth(
             factor="push",
             username=username,
-            ipaddr=ipaddr,
-            hostname=hostname,
-            async_txn=_async,
-            type=type,
             device=device,
+            type=type,
         )
+        return result
