@@ -1,7 +1,7 @@
 """Adds unique constraint in task model
 
 Revision ID: 65db2acae3ea
-Revises: 20d3801ad5b7
+Revises: 5955ed5f76b4
 Create Date: 2023-03-02 11:16:27.810635
 
 """
@@ -9,7 +9,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "65db2acae3ea"
-down_revision = "20d3801ad5b7"
+down_revision = "5955ed5f76b4"
 branch_labels = None
 depends_on = None
 
