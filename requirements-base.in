@@ -7,6 +7,7 @@ bcrypt
 cachetools
 chardet
 click
+duo-client
 email-validator
 emails
 fastapi
