@@ -15,6 +15,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
@@ -47,6 +48,7 @@ assoc_task_assignees = Table(
 
 
 class Task(Base, ResourceMixin):
+    __table_args__ = (UniqueConstraint("resource_id", "incident_id"),)
     id = Column(Integer, primary_key=True)
     resolved_at = Column(DateTime)
     resolve_by = Column(DateTime, default=default_resolution_time)
