@@ -1,29 +1,27 @@
 <template>
-  <v-container fill-height fluid>
-    <v-row justify="center" align="center" v-if="entities.length >= 1">
+  <v-container>
+    <v-row justify="end">
       <date-chip-group-relative
-        class="mt-6"
+        class="pl-6 mt-6"
         label="Time Range"
         v-model="selectedDateTime"
         @input="onSelectedDateTimeChange"
       />
-      <v-col v-for="entity in entities" :key="entity.id" cols="6">
+    </v-row>
+    <v-row v-if="entities.length >= 1">
+      <v-col class="pl-6 mt-6" v-for="entity in entities" :key="entity.id" cols="6">
         <entity-card :entity="entity" :selectedDateTime="selectedDateTime" />
       </v-col>
     </v-row>
-    <v-row v-else>
-      <v-col cols="12">
-        <v-card>
-          <v-card-title>No entities found</v-card-title>
-        </v-card>
-      </v-col>
-    </v-row>
+    <div v-else>
+      <p class="text-center">No entity data available.</p>
+    </div>
   </v-container>
 </template>
 
 <script>
-import EntityCard from "@/entity/EntityCard.vue";
-import DateChipGroupRelative from "@/components/DateChipGroupRelative.vue";
+import EntityCard from "@/entity/EntityCard.vue"
+import DateChipGroupRelative from "@/components/DateChipGroupRelative.vue"
 
 export default {
   name: "EntitiesTab",
@@ -40,7 +38,7 @@ export default {
   data() {
     return {
       selectedDateTime: 30,
-    };
+    }
   },
   computed: {
     entities() {
@@ -51,18 +49,18 @@ export default {
             entity_type: entity.entity_type,
             value: entity.value,
             id: entity.id,
-          }));
-          return acc.concat(entities);
-        }, []);
+          }))
+          return acc.concat(entities)
+        }, [])
       } else {
-        return [];
+        return []
       }
     },
   },
   methods: {
     onSelectedDateTimeChange(newValue) {
-      this.selectedDateTime = newValue;
+      this.selectedDateTime = newValue
     },
   },
-};
+}
 </script>

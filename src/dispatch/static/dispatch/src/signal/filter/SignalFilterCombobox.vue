@@ -20,7 +20,7 @@
         v-model="filters"
       >
         <template v-slot:selection="{ attr, item, selected }">
-          <v-menu v-model="menu" bottom right transition="scale-transition" origin="top left">
+          <v-menu bottom right transition="scale-transition" origin="top left">
             <template v-slot:activator="{ on }">
               <v-chip v-bind="attr" :input-value="selected" pill v-on="on">
                 {{ item.name }}
@@ -37,7 +37,7 @@
                     <v-list-item-subtitle>{{ item.type }}</v-list-item-subtitle>
                   </v-list-item-content>
                   <v-list-item-action>
-                    <v-btn icon @click="menu = false">
+                    <v-btn icon>
                       <v-icon>mdi-close-circle</v-icon>
                     </v-btn>
                   </v-list-item-action>
@@ -83,7 +83,11 @@
           </v-list-item>
         </template>
         <template slot="append-outer">
-          <signal-filter-create-dialog v-model="createdFilter" />
+          <signal-filter-create-dialog
+            v-model="createdFilter"
+            :project="project"
+            :signalDefinition="signalDefinition"
+          />
         </template>
       </v-combobox>
     </v-row>
@@ -111,8 +115,12 @@ export default {
       default: "Signal Filters",
     },
     project: {
-      type: [Object],
-      default: null,
+      type: Object,
+      required: true,
+    },
+    signalDefinition: {
+      type: Object,
+      required: true,
     },
   },
 
@@ -124,7 +132,6 @@ export default {
       items: [],
       search: null,
       createdFilter: null,
-      menu: false,
     }
   },
 

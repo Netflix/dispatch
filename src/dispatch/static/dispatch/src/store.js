@@ -21,6 +21,7 @@ import individual from "@/individual/store"
 import notification from "@/notification/store"
 import notification_backend from "@/app/notificationStore"
 import organization from "@/organization/store"
+import playground from "@/entity_type/playground/store"
 import plugin from "@/plugin/store"
 import project from "@/project/store"
 import query from "@/data/query/store"
@@ -67,6 +68,7 @@ export default new Vuex.Store({
     notification,
     notification_backend,
     organization,
+    playground,
     plugin,
     project,
     query,

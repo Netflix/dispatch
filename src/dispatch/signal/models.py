@@ -29,6 +29,7 @@ from dispatch.project.models import ProjectRead
 from dispatch.database.core import Base
 from dispatch.entity.models import EntityRead
 from dispatch.entity_type.models import EntityTypeCreate, EntityTypeRead
+from dispatch.tag.models import TagRead
 from dispatch.enums import DispatchEnum
 from dispatch.models import (
     DispatchBase,
@@ -214,7 +215,8 @@ class SignalBase(DispatchBase):
     source: Optional[SourceBase]
     created_at: Optional[datetime] = None
     filters: Optional[List[SignalFilterRead]] = []
-    entity_types: Optional[List[EntityTypeRead]]
+    entity_types: Optional[List[EntityTypeRead]] = []
+    tags: Optional[List[TagRead]] = []
     project: ProjectRead
 
 
