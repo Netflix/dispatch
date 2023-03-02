@@ -120,6 +120,7 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     source_id = Column(Integer, ForeignKey("source.id"))
     variant = Column(String)
     loopin_signal_identity = Column(Boolean, default=False)
+    enabled = Column(Boolean, default=False)
     case_type_id = Column(Integer, ForeignKey(CaseType.id))
     case_type = relationship("CaseType", backref="signals")
     case_priority_id = Column(Integer, ForeignKey(CasePriority.id))
@@ -211,6 +212,7 @@ class SignalBase(DispatchBase):
     case_type: Optional[CaseTypeRead]
     case_priority: Optional[CasePriorityRead]
     external_id: str
+    enabled: Optional[bool] = False
     external_url: Optional[str]
     source: Optional[SourceBase]
     created_at: Optional[datetime] = None
