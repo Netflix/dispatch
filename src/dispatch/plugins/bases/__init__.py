@@ -6,6 +6,7 @@ from .definition import DefinitionPlugin  # noqa
 from .document import DocumentPlugin  # noqa
 from .document_resolver import DocumentResolverPlugin  # noqa
 from .email import EmailPlugin  # noqa
+from .auth_mfa import MultiFactorAuthenticationPlugin  # noqa
 from .oncall import OncallPlugin  # noqa
 from .participant import ParticipantPlugin  # noqa
 from .participant_group import ParticipantGroupPlugin  # noqa

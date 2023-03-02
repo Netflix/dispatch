@@ -9,6 +9,8 @@ const getDefaultSelectedState = () => {
     id: null,
     name: null,
     regular_expression: null,
+    jpath: null,
+    signal_instances: [],
     project: null,
     default: false,
   }
@@ -63,6 +65,10 @@ const actions = {
     if (entity) {
       commit("SET_SELECTED", entity)
     }
+  },
+  closeCreateEditDialog({ commit }) {
+    commit("SET_DIALOG_CREATE_EDIT", false)
+    commit("RESET_SELECTED")
   },
   removeShow({ commit }, entity) {
     commit("SET_DIALOG_DELETE", true)
