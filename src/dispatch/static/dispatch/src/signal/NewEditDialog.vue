@@ -114,6 +114,13 @@
                   </ValidationProvider>
                 </v-col>
                 <v-col cols="12">
+                  <v-checkbox
+                    v-model="enabled"
+                    label="Enabled"
+                    hint="Determines whether this signal definition is currently active and should be used to process signals."
+                  />
+                </v-col>
+                <v-col cols="12">
                   <tag-filter-auto-complete
                     label="Tags"
                     v-model="tags"
@@ -235,6 +242,7 @@ export default {
       "selected.id",
       "selected.name",
       "selected.description",
+      "selected.enabled",
       "selected.variant",
       "selected.owner",
       "selected.external_id",
