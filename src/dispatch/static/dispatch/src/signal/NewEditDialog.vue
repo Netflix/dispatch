@@ -113,6 +113,14 @@
                     />
                   </ValidationProvider>
                 </v-col>
+                <v-col cols="12">
+                  <tag-filter-auto-complete
+                    label="Tags"
+                    v-model="tags"
+                    model="signal"
+                    :model-id="id"
+                  />
+                </v-col>
               </v-row>
             </v-card-text>
           </v-card>
@@ -178,7 +186,11 @@
               </v-tooltip>
             </v-app-bar>
             <v-card-text>
-              <signal-filter-combobox v-model="filters" :project="project"></signal-filter-combobox>
+              <signal-filter-combobox
+                v-model="filters"
+                :project="project"
+                :signalDefinition="selected"
+              ></signal-filter-combobox>
             </v-card-text>
           </v-card>
         </v-col>
@@ -197,6 +209,7 @@ import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
 import EntityTypeFilterCombobox from "@/entity_type/EntityTypeFilterCombobox.vue"
 import SignalFilterCombobox from "@/signal/filter/SignalFilterCombobox.vue"
+import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 
 extend("required", {
   ...required,
@@ -212,6 +225,7 @@ export default {
     CasePrioritySelect,
     SignalFilterCombobox,
     EntityTypeFilterCombobox,
+    TagFilterAutoComplete,
   },
 
   computed: {
@@ -230,6 +244,7 @@ export default {
       "selected.filters",
       "selected.entity_types",
       "selected.source",
+      "selected.tags",
       "selected.project",
       "selected.loading",
     ]),

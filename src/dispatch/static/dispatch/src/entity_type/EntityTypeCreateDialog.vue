@@ -127,7 +127,7 @@
                   <v-btn @click="closeCreateEditDialog()" text> Cancel </v-btn>
                   <v-btn
                     color="info"
-                    @click="saveFilter()"
+                    @click="saveEntityType()"
                     :loading="loading"
                     :disabled="invalid || !validated"
                   >

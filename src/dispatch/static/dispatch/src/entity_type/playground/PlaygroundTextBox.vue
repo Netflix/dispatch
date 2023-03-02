@@ -373,6 +373,6 @@ export default {
 
 <style>
 .highlight {
-  background-color: rgb(176, 227, 243);
+  background-color: rgb(238, 176, 176);
 }
 </style>

@@ -14,6 +14,49 @@
     no-filter
     v-model="entity_types"
   >
+    <template v-slot:selection="{ attr, item, selected }">
+      <v-menu bottom right transition="scale-transition" origin="top left">
+        <template v-slot:activator="{ on }">
+          <v-chip v-bind="attr" :input-value="selected" pill v-on="on">
+            {{ item.name }}
+          </v-chip>
+        </template>
+        <v-card>
+          <v-list dark>
+            <v-list-item>
+              <v-list-item-avatar color="teal">
+                <span class="white--text">{{ item.name | initials }}</span>
+              </v-list-item-avatar>
+              <v-list-item-content>
+                <v-list-item-title>{{ item.name }}</v-list-item-title>
+                <v-list-item-subtitle>{{ item.type }}</v-list-item-subtitle>
+              </v-list-item-content>
+              <v-list-item-action>
+                <v-btn icon>
+                  <v-icon>mdi-close-circle</v-icon>
+                </v-btn>
+              </v-list-item-action>
+            </v-list-item>
+          </v-list>
+          <v-list>
+            <v-list-item>
+              <v-list-item-action>
+                <v-icon>mdi-text-box</v-icon>
+              </v-list-item-action>
+              <v-list-item-subtitle>{{ item.description }}</v-list-item-subtitle>
+            </v-list-item>
+            <v-list-item v-if="item.jpath">
+              <v-list-item-action>
+                <v-icon>mdi-code-json</v-icon>
+              </v-list-item-action>
+              <v-list-item-subtitle>
+                <pre>{{ item.jpath }}</pre>
+              </v-list-item-subtitle>
+            </v-list-item>
+          </v-list>
+        </v-card>
+      </v-menu>
+    </template>
     <template v-slot:no-data>
       <v-list-item>
         <v-list-item-content>
@@ -25,16 +68,11 @@
         </v-list-item-content>
       </v-list-item>
     </template>
-    <template v-slot:selection="{ item, index }">
-      <v-chip close @click:close="entity_types.splice(index, 1)">
-        <span v-if="item.entity_type"> {{ item.name }} </span>{{ item.name }}
-      </v-chip>
-    </template>
     <template v-slot:item="data">
       <v-list-item-content>
         <v-list-item-title> {{ data.item.name }} </v-list-item-title>
         <v-list-item-subtitle style="width: 200px" class="text-truncate">
-          {{ data.item.regular_expression }}
+          {{ data.item.description }}
         </v-list-item-subtitle>
       </v-list-item-content>
     </template>
@@ -124,6 +162,13 @@ export default {
         this.fetchData()
       }
     )
+  },
+
+  watch: {
+    createdEntityType: function (newVal) {
+      this.items.push(newVal)
+      this.entity_types = [newVal]
+    },
   },
 
   methods: {
