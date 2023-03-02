@@ -15,6 +15,7 @@ const getDefaultSelectedState = () => {
     external_url: null,
     case_type: null,
     case_priority: null,
+    enabled: false,
     filters: null,
     entity_types: null,
     tags: null,
