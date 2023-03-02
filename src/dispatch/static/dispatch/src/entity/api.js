@@ -23,7 +23,7 @@ export default {
     return API.delete(`${resource}/${entityId}`)
   },
 
-  async getCasesCount(entityId, daysBack) {
+  async getCases(entityId, daysBack) {
     return await API.get(`${resource}/${entityId}/cases/${daysBack}`)
   },
 

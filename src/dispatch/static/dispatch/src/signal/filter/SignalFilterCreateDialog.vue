@@ -45,6 +45,7 @@
                         <v-list-item-content>
                           <entity-type-filter-combobox
                             :project="project"
+                            :signalDefinition="signalDefinition"
                             v-model="filters.entity_type"
                             label="Entity Types"
                           />
@@ -126,7 +127,6 @@
                       :success="valid"
                       clearable
                       auto-grow
-                      required
                     />
                   </ValidationProvider>
                   <ValidationProvider name="Action" rules="required" immediate>
@@ -192,6 +192,10 @@ export default {
     value: {
       type: Object,
       default: null,
+    },
+    signalDefinition: {
+      type: Object,
+      required: true,
     },
   },
   data() {

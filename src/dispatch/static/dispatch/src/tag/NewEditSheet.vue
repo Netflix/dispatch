@@ -88,6 +88,19 @@
                   />
                 </ValidationProvider>
               </v-flex>
+              <v-flex xs12>
+                <ValidationProvider name="external_id" immediate>
+                  <v-text-field
+                    v-model="external_id"
+                    slot-scope="{ errors, valid }"
+                    :error-messages="errors"
+                    :success="valid"
+                    label="External ID"
+                    hint="A tags external id."
+                    clearable
+                  />
+                </ValidationProvider>
+              </v-flex>
               <v-flex>
                 <v-checkbox
                   v-model="discoverable"
@@ -134,6 +147,7 @@ export default {
       "selected.source",
       "selected.project",
       "selected.discoverable",
+      "selected.external_id",
       "selected.loading",
       "dialogs.showCreateEdit",
     ]),

@@ -29,6 +29,7 @@ from dispatch.project.models import ProjectRead
 from dispatch.database.core import Base
 from dispatch.entity.models import EntityRead
 from dispatch.entity_type.models import EntityTypeCreate, EntityTypeRead
+from dispatch.tag.models import TagRead
 from dispatch.enums import DispatchEnum
 from dispatch.models import (
     DispatchBase,
@@ -119,6 +120,7 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     source_id = Column(Integer, ForeignKey("source.id"))
     variant = Column(String)
     loopin_signal_identity = Column(Boolean, default=False)
+    enabled = Column(Boolean, default=False)
     case_type_id = Column(Integer, ForeignKey(CaseType.id))
     case_type = relationship("CaseType", backref="signals")
     case_priority_id = Column(Integer, ForeignKey(CasePriority.id))
@@ -210,11 +212,13 @@ class SignalBase(DispatchBase):
     case_type: Optional[CaseTypeRead]
     case_priority: Optional[CasePriorityRead]
     external_id: str
+    enabled: Optional[bool] = False
     external_url: Optional[str]
     source: Optional[SourceBase]
     created_at: Optional[datetime] = None
     filters: Optional[List[SignalFilterRead]] = []
-    entity_types: Optional[List[EntityTypeRead]]
+    entity_types: Optional[List[EntityTypeRead]] = []
+    tags: Optional[List[TagRead]] = []
     project: ProjectRead
 
 
