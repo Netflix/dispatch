@@ -126,7 +126,6 @@
                       :success="valid"
                       clearable
                       auto-grow
-                      required
                     />
                   </ValidationProvider>
                   <ValidationProvider name="Action" rules="required" immediate>

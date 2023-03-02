@@ -120,6 +120,28 @@
         <v-col cols="12">
           <v-card flat tile>
             <v-app-bar color="white" flat>
+              <v-toolbar-title class="subtitle-2"> Entity Configuration </v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-tooltip max-width="250px" bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
+                </template>
+                The follow options allow you to control which entities should be pulled from the
+                signal.
+              </v-tooltip>
+            </v-app-bar>
+            <v-card-text>
+              <entity-type-filter-combobox
+                v-model="entity_types"
+                :signalDefinition="selected"
+                :project="project"
+              ></entity-type-filter-combobox>
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <v-col cols="12">
+          <v-card flat tile>
+            <v-app-bar color="white" flat>
               <v-toolbar-title class="subtitle-2"> Case Configuration </v-toolbar-title>
               <v-spacer></v-spacer>
               <v-tooltip max-width="250px" bottom>
@@ -173,7 +195,7 @@ import { required } from "vee-validate/dist/rules"
 
 import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
-
+import EntityTypeFilterCombobox from "@/entity_type/EntityTypeFilterCombobox.vue"
 import SignalFilterCombobox from "@/signal/filter/SignalFilterCombobox.vue"
 
 extend("required", {
@@ -189,11 +211,13 @@ export default {
     CaseTypeSelect,
     CasePrioritySelect,
     SignalFilterCombobox,
+    EntityTypeFilterCombobox,
   },
 
   computed: {
     ...mapFields("signal", [
       "dialogs.showCreateEdit",
+      "selected",
       "selected.id",
       "selected.name",
       "selected.description",
