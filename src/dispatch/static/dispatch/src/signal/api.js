@@ -25,6 +25,12 @@ export default {
     return API.delete(`${resource}/${signalId}`)
   },
 
+  getAllFilters(options) {
+    return API.get(`${resource}/filters`, {
+      params: { ...options },
+    })
+  },
+
   getAllInstances(options) {
     return API.get(`${resource}/instances`, {
       params: { ...options },

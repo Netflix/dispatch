@@ -30,18 +30,6 @@
                 {{ item.project.name }}
               </v-chip>
             </template>
-            <template v-slot:item.duplication_rule="{ item }">
-              <v-simple-checkbox
-                :value="item.duplication_rule || false"
-                disabled
-              ></v-simple-checkbox>
-            </template>
-            <template v-slot:item.suppression_rule="{ item }">
-              <v-simple-checkbox
-                :value="item.supression_rule || false"
-                disabled
-              ></v-simple-checkbox>
-            </template>
             <template v-slot:item.created_at="{ item }">
               <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
@@ -91,8 +79,6 @@ export default {
         { text: "Signal", value: "signal", sortable: false },
         { text: "Project", value: "project.name", sortable: true },
         { text: "Tags", value: "tags", sortable: false },
-        { text: "Duplicate", value: "duplication_rule", sortable: false },
-        { text: "Supressed", value: "suppression_rule", sortable: false },
         { text: "Created At", value: "created_at" },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],

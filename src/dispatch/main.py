@@ -194,6 +194,12 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 content={"detail": [{"msg": "Unknown", "loc": ["Unknown"], "type": "Unknown"}]},
             )
+        except Exception as e:
+            log.exception(e)
+            response = JSONResponse(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content={"detail": [{"msg": "Unknown", "loc": ["Unknown"], "type": "Unknown"}]},
+            )
 
         return response
 

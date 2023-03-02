@@ -33,6 +33,7 @@ from dispatch.individual.models import IndividualContact
 from dispatch.participant.models import Participant
 from dispatch.plugin.models import Plugin, PluginInstance
 from dispatch.search.fulltext.composite_search import CompositeSearch
+from dispatch.signal.models import SignalInstance
 from dispatch.task.models import Task
 
 from .core import Base, get_class_by_tablename, get_db, get_model_name_by_tablename
@@ -347,7 +348,8 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (Incident, "Tag"): (Incident.tags, True),
         (Incident, "TagType"): (Incident.tags, True),
         (Incident, "Term"): (Incident.terms, True),
-        (Case, "Tag"): (Case.tags, True),
+        (SignalInstance, "Entity"): (SignalInstance.entities, True),
+        (SignalInstance, "EntityType"): (SignalInstance.entities, True),
     }
     filters = build_filters(filter_spec)
     filter_models = get_named_models(filters)[0]
@@ -485,6 +487,8 @@ def search_filter_sort_paginate(
         raise ValidationError(
             [ErrorWrapper(InvalidFilterError(msg=str(e)), loc="filter")], model=BaseModel
         ) from None
+    except Exception as e:
+        log.exception(e)
 
     if items_per_page == -1:
         items_per_page = None
