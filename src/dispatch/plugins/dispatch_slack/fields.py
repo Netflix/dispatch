@@ -1,10 +1,13 @@
+from datetime import timedelta
 from typing import List
+
 from blockkit import (
     PlainTextInput,
     StaticSelect,
     PlainOption,
     Input,
     DatePicker,
+    MultiStaticSelect,
     MultiExternalSelect,
 )
 
@@ -16,10 +19,12 @@ from dispatch.case.enums import CaseStatus
 from dispatch.case.type import service as case_type_service
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.severity import service as case_severity_service
+from dispatch.entity import service as entity_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.type import service as incident_type_service
 from dispatch.incident.priority import service as incident_priority_service
 from dispatch.incident.severity import service as incident_severity_service
+from dispatch.signal.models import Signal
 
 
 class DefaultBlockIds(DispatchEnum):
@@ -27,6 +32,7 @@ class DefaultBlockIds(DispatchEnum):
     project_select = "project-select"
     description_input = "description-input"
     resolution_input = "resolution-input"
+    relative_date_picker_input = "relative-date-picker-input"
     datetime_picker_input = "datetime-picker-input"
     date_picker_input = "date-picker-input"
     minute_picker_input = "minute-picker-input"
@@ -45,7 +51,16 @@ class DefaultBlockIds(DispatchEnum):
     case_severity_select = "case-severity-select"
     case_type_select = "case-type-select"
 
+    # entities
+    entity_select = "entity-select"
+
+    # participants
     participant_select = "participant-select"
+
+    # signals
+    signal_definition_select = "signal-definition-select"
+
+    # tags
     tags_multi_select = "tag-multi-select"
 
 
@@ -55,6 +70,7 @@ class DefaultActionIds(DispatchEnum):
     description_input = "description-input"
     resolution_input = "resolution-input"
     datetime_picker_input = "datetime-picker-input"
+    relative_date_picker_input = "relative-date-picker-input"
     date_picker_input = "date-picker-input"
     minute_picker_input = "minute-picker-input"
     hour_picker_input = "hour-picker-input"
@@ -72,13 +88,50 @@ class DefaultActionIds(DispatchEnum):
     case_severity_select = "case-severity-select"
     case_type_select = "case-type-select"
 
+    # entities
+    entity_select = "entity-select"
+
+    # participants
     participant_select = "participant-select"
+
+    # signals
+    signal_definition_select = "signal-definition-select"
+
+    # tags
     tags_multi_select = "tag-multi-select"
 
 
 class TimezoneOptions(DispatchEnum):
     local = "Local Time (based on your Slack profile)"
     utc = "UTC"
+
+
+def relative_date_picker_input(
+    action_id: str = DefaultActionIds.relative_date_picker_input,
+    block_id: str = DefaultBlockIds.relative_date_picker_input,
+    initial_option: dict = None,
+    label: str = "Date",
+    **kwargs,
+):
+    """Builds a relative date picker input."""
+    relative_dates = [
+        {"text": "1 hour", "value": str(timedelta(hours=1))},
+        {"text": "3 hours", "value": str(timedelta(hours=3))},
+        {"text": "1 day", "value": str(timedelta(days=1))},
+        {"text": "3 days", "value": str(timedelta(days=3))},
+        {"text": "1 week", "value": str(timedelta(weeks=1))},
+        {"text": "2 weeks", "value": str(timedelta(weeks=2))},
+    ]
+
+    return static_select_block(
+        action_id=action_id,
+        block_id=block_id,
+        initial_option=initial_option,
+        options=relative_dates,
+        label=label,
+        placeholder="Relative Time",
+        **kwargs,
+    )
 
 
 def date_picker_input(
@@ -199,6 +252,27 @@ def static_select_block(
     )
 
 
+def multi_select_block(
+    options: List[str],
+    placeholder: str,
+    action_id: str = None,
+    block_id: str = None,
+    label: str = None,
+    **kwargs,
+):
+    """Builds a multi select block."""
+    return Input(
+        element=MultiStaticSelect(
+            placeholder=placeholder,
+            options=[PlainOption(**x) for x in options],
+            action_id=action_id,
+        ),
+        block_id=block_id,
+        label=label,
+        **kwargs,
+    )
+
+
 def project_select(
     db_session: SessionLocal,
     action_id: str = DefaultActionIds.project_select,
@@ -224,6 +298,7 @@ def project_select(
 
 def title_input(
     label: str = "Title",
+    placeholder: str = "A brief explanatory title. You can change this later.",
     action_id: str = DefaultActionIds.title_input,
     block_id: str = DefaultBlockIds.title_input,
     initial_value: str = None,
@@ -232,7 +307,7 @@ def title_input(
     """Builds a title input."""
     return Input(
         element=PlainTextInput(
-            placeholder="A brief explanatory title. You can change this later.",
+            placeholder=placeholder,
             initial_value=initial_value,
             action_id=action_id,
         ),
@@ -244,6 +319,7 @@ def title_input(
 
 def description_input(
     label: str = "Description",
+    placeholder: str = "A summary of what you know so far. It's okay if this is incomplete.",
     action_id: str = DefaultActionIds.description_input,
     block_id: str = DefaultBlockIds.description_input,
     initial_value: str = None,
@@ -252,7 +328,7 @@ def description_input(
     """Builds a description input."""
     return Input(
         element=PlainTextInput(
-            placeholder="A summary of what you know so far. It's okay if this is incomplete.",
+            placeholder=placeholder,
             initial_value=initial_value,
             multiline=True,
             action_id=action_id,
@@ -496,6 +572,30 @@ def case_type_select(
     )
 
 
+def entity_select(
+    db_session: SessionLocal,
+    action_id: str = DefaultActionIds.entity_select,
+    block_id: str = DefaultBlockIds.entity_select,
+    label="Entities",
+    project_id: int = None,
+    **kwargs,
+):
+    """Creates an entity select."""
+    entity_options = [
+        {"text": entity.value, "value": entity.id}
+        for entity in entity_service.get_all(db_session=db_session, project_id=project_id).all()
+    ]
+
+    return multi_select_block(
+        placeholder="Select Entities",
+        options=entity_options,
+        action_id=action_id,
+        block_id=block_id,
+        label=label,
+        **kwargs,
+    )
+
+
 def participant_select(
     participants: List[Participant],
     action_id: str = DefaultActionIds.participant_select,
@@ -509,6 +609,27 @@ def participant_select(
     return static_select_block(
         placeholder="Select Participant",
         options=participants,
+        initial_option=initial_option,
+        action_id=action_id,
+        block_id=block_id,
+        label=label,
+        **kwargs,
+    )
+
+
+def signal_definition_select(
+    signals: list[Signal],
+    action_id: str = DefaultActionIds.signal_definition_select,
+    block_id: str = DefaultBlockIds.signal_definition_select,
+    label: str = "Signal Defintions",
+    initial_option: Participant = None,
+    **kwargs,
+):
+    """Creates a static select of available signal definitions."""
+    signals = [{"text": s.name, "value": s.id} for s in signals]
+    return static_select_block(
+        placeholder="Select Signal Definition",
+        options=signals,
         initial_option=initial_option,
         action_id=action_id,
         block_id=block_id,
