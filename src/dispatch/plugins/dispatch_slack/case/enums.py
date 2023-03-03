@@ -25,6 +25,7 @@ class CaseResolveActions(DispatchEnum):
 
 
 class CaseSnoozeActions(DispatchEnum):
+    preview = "case-notification-snooze-preview"
     submit = "case-notification-snooze-submit"
 
 

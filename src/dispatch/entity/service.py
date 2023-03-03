@@ -164,6 +164,27 @@ def get_signal_instances_with_entity(
     return signal_instances
 
 
+def get_signal_instances_with_entities(
+    db_session: Session, signal_id: int, entity_ids: list[int], days_back: int
+) -> list[SignalInstance]:
+    """Searches a signal instance with the same entities within a given timeframe."""
+    # Calculate the datetime for the start of the search window
+    start_date = datetime.utcnow() - timedelta(days=days_back)
+
+    # Query for signal instances containing the entity within the search window
+    signal_instances = (
+        db_session.query(SignalInstance)
+        .options(joinedload(SignalInstance.signal))
+        .join(SignalInstance.entities)
+        .filter(SignalInstance.created_at >= start_date)
+        .filter(SignalInstance.signal_id == signal_id)
+        .filter(Entity.id.in_(entity_ids))
+        .all()
+    )
+
+    return signal_instances
+
+
 EntityTypePair = NewType(
     "EntityTypePair",
     NamedTuple(

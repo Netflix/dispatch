@@ -24,6 +24,7 @@ from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
 from dispatch.case.enums import CaseStatus
 from dispatch.case.models import CaseCreate, CaseUpdate
+from dispatch.entity import service as entity_service
 from dispatch.exceptions import ExistsError
 from dispatch.incident import flows as incident_flows
 from dispatch.participant import service as participant_service
@@ -220,7 +221,7 @@ def _build_signal_list_modal_blocks(
     Example:
         >>> blocks = _build_signal_list_modal_blocks(db_session, "conversation_name", 1, 2)
         >>> len(blocks)
-    26
+            26
     """
 
     blocks = []
@@ -258,7 +259,7 @@ def _build_signal_list_modal_blocks(
                         action_id=CaseNotificationActions.snooze,
                     ),
                 ),
-                Context(elements=[MarkdownText(text=f"{signal.variant}")]),
+                Context(elements=[MarkdownText(text=f"{signal.variant}" if signal.variant else "N/A")]),
             ]
         )
         # Don't add a divider if we are at the last signal
@@ -271,12 +272,12 @@ def _build_signal_list_modal_blocks(
             elements=[
                 Button(
                     text="Previous",
-                    action_id="previous",
+                    action_id=CasePaginateActions.list_signal_previous,
                     style="danger" if current_page == 0 else "primary",
                 ),
                 Button(
                     text="Next",
-                    action_id="next",
+                    action_id=CasePaginateActions.list_signal_next,
                     style="danger" if current_page == total_pages - 1 else "primary",
                 ),
             ],
@@ -379,19 +380,82 @@ def snooze_button_click(
                 )
             ]
         ),
-        relative_date_picker_input(),
+        relative_date_picker_input(label="Expiration"),
     ]
 
     modal = Modal(
         title="Snooze Signal",
         blocks=blocks,
-        submit="Update",
+        submit="Preview",
         close="Close",
-        callback_id=CaseSnoozeActions.submit,
+        callback_id=CaseSnoozeActions.preview,
         private_metadata=context["subject"].json(),
     ).build()
 
     client.views_update(view_id=body["view"]["id"], view=modal)
+
+
+@app.view(
+    CaseSnoozeActions.preview,
+    middleware=[
+        action_context_middleware,
+        db_middleware,
+        modal_submit_middleware,
+    ],
+)
+def handle_snooze_preview_event(
+    ack: Ack,
+    context: BoltContext,
+    db_session: Session,
+    form_data: dict,
+) -> None:
+    if form_data.get(DefaultBlockIds.title_input):
+        title = form_data[DefaultBlockIds.title_input]
+
+    name_taken = signal_service.get_signal_filter_by_name(db_session=db_session, project_id=context["subject"].project_id, name=title)
+    if name_taken:
+        modal = Modal(
+            title="Name Taken",
+            close="Close",
+            blocks=[Context(elements=[MarkdownText(text=f"A signal filter with the name '{title}' already exists.")])],
+        ).build()
+        return ack(response_action="update", view=modal)
+
+    if form_data.get(DefaultBlockIds.entity_select):
+        entity_ids = [entity["value"] for entity in form_data[DefaultBlockIds.entity_select]]
+
+    preview_signal_instances = entity_service.get_signal_instances_with_entities(
+        db_session=db_session, signal_id=context["subject"].id, entity_ids=entity_ids, days_back=90
+    )
+
+    text = "Examples matching your filter:" if preview_signal_instances else "No signals matching your filter."
+
+    blocks = [
+        Context(elements=[MarkdownText(text=text)])
+    ]
+
+    if preview_signal_instances:
+        # Only show 5 examples
+        for signal_instance in preview_signal_instances[:5]:
+            blocks.extend(
+                [
+                    Section(
+                        text=signal_instance.signal.name
+                    ),
+                    Context(elements=[MarkdownText(text=f" Case: {signal_instance.case.name if signal_instance.case else 'N/A'}")]),
+                    Context(elements=[MarkdownText(text=f" Created: {signal_instance.case.created_at if signal_instance.case else 'N/A'}")]),
+                ]
+            )
+
+    modal = Modal(
+        title="Add Snooze",
+        submit="Create",
+        close="Close",
+        blocks=blocks,
+        callback_id=CaseSnoozeActions.submit,
+        private_metadata=json.dumps({"form_data": form_data, "subject": context["subject"].json()}),
+    ).build()
+    ack(response_action="update", view=modal)
 
 
 def ack_snooze_submission_event(ack: Ack, mfa_enabled: bool) -> None:
@@ -445,8 +509,11 @@ def handle_snooze_submission_event(
         form_data (dict): The form data submitted by the user.
         user (DispatchUser): The Dispatch user who submitted the form.
     """
+    metadata = json.loads(body["view"]["private_metadata"])
+    subject = json.loads(metadata["subject"])
+
     mfa_plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=context["subject"].project_id, plugin_type="auth-mfa"
+        db_session=db_session, project_id=subject["project_id"], plugin_type="auth-mfa"
     )
     mfa_enabled = True if mfa_plugin else False
 
@@ -455,11 +522,11 @@ def handle_snooze_submission_event(
     def _create_snooze_filter(
         db_session: Session,
         form_data: dict,
-        subject_metadata: SubjectMetadata,
+        subject: dict,
         user: DispatchUser,
     ) -> None:
         # Get the existing filters for the signal
-        signal = signal_service.get(db_session=db_session, signal_id=subject_metadata.id)
+        signal = signal_service.get(db_session=db_session, signal_id=subject["id"])
 
         # Create the new filter from the form data
         if form_data.get(DefaultBlockIds.entity_select):
@@ -478,7 +545,7 @@ def handle_snooze_submission_event(
             date: str = form_data[DefaultBlockIds.relative_date_picker_input]["value"]
             date: datetime = datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
 
-        project = project_service.get(db_session=db_session, project_id=subject_metadata.project_id)
+        project = project_service.get(db_session=db_session, project_id=subject["project_id"])
         filters = {
             "entity": entities,
         }
@@ -514,9 +581,9 @@ def handle_snooze_submission_event(
     if mfa_enabled is False:
         _create_snooze_filter(
             db_session=db_session,
-            form_data=form_data,
+            form_data=metadata["form_data"],
             user=user,
-            subject_metadata=context["subject"],
+            subject=subject,
         )
 
         modal = Modal(
@@ -552,9 +619,9 @@ def handle_snooze_submission_event(
             # Get the existing filters for the signal
             _create_snooze_filter(
                 db_session=db_session,
-                form_data=form_data,
+                form_data=metadata["form_data"],
                 user=user,
-                subject_metadata=context["subject"],
+                subject=subject,
             )
 
             modal = Modal(

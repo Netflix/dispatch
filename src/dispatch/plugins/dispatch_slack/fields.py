@@ -110,7 +110,7 @@ def relative_date_picker_input(
     action_id: str = DefaultActionIds.relative_date_picker_input,
     block_id: str = DefaultBlockIds.relative_date_picker_input,
     initial_option: dict = None,
-    label: str = "Hour",
+    label: str = "Date",
     time_format: str = "%Y-%m-%d %H:%M:%S",
     **kwargs,
 ):
