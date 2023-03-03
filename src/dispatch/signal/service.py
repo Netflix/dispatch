@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.type import service as case_type_service
+from dispatch.case.type.models import CaseType
 from dispatch.database.service import apply_filter_specific_joins, apply_filters
 from dispatch.entity_type import service as entity_type_service
 from dispatch.exceptions import NotFoundError
