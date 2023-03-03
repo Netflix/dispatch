@@ -21,6 +21,7 @@ class SearchTypes(DispatchEnum):
     plugin = "Plugin"
     query = "Query"
     search_filter = "SearchFilter"
+    case = "Case"
     service = "Service"
     source = "Source"
     tag = "Tag"

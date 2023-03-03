@@ -827,9 +827,14 @@ class SignalInstanceFactory(BaseFactory):
         "action": [{"type": "AWS_API_CALL", "value": {"Api": "assumerole", "ServiceName": "sts"}}],
         "additionalMetadata": [],
         "asset": [
-            {"id": "arn:aws:iam::123456789012:role/Test", "type": "AwsIamRole", "details": {}}
+            {"id": "arn:aws:iam::123456789012:role/Test", "type": "AwsIamRole", "details": {}},
+            {
+                "id": "arn:aws:s3:::ap-northeast-3-123456789012-s3-server-access-logs",
+                "type": "AwsS3Bucket",
+                "details": {},
+            },
         ],
-        "identity": {"id": "123456789012", "type": "AWS Principal"},
+        "identity": {"id": "923456789012", "type": "AWS Principal"},
         "originLocation": [],
         "variant": "TEST:1.A",
         "created_at": None,

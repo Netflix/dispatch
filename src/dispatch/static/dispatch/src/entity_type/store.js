@@ -10,8 +10,10 @@ const getDefaultSelectedState = () => {
     name: null,
     description: null,
     regular_expression: null,
-    enabled: false,
+    jpath: null,
+    enabled: true,
     global_find: false,
+    signal_definitions: [],
     project: null,
     default: false,
   }
@@ -24,23 +26,6 @@ const state = {
   dialogs: {
     showCreateEdit: false,
     showRemove: false,
-  },
-  table: {
-    rows: {
-      items: [],
-      total: null,
-    },
-    options: {
-      q: "",
-      page: 1,
-      itemsPerPage: 10,
-      sortBy: ["name"],
-      descending: [true],
-      filters: {
-        project: [],
-      },
-    },
-    loading: false,
   },
 }
 
@@ -72,6 +57,10 @@ const actions = {
     commit("SET_SELECTED", entity_type)
   },
   closeCreateEdit({ commit }) {
+    commit("SET_DIALOG_CREATE_EDIT", false)
+    commit("RESET_SELECTED")
+  },
+  closeCreateEditDialog({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
     commit("RESET_SELECTED")
   },

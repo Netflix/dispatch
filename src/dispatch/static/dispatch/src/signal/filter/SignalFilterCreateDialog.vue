@@ -31,26 +31,34 @@
                   <v-tab>Basic</v-tab>
                   <v-tab>Advanced</v-tab>
                   <v-tab-item>
-                    <v-list dense>
-                      <v-list-item>
-                        <v-list-item-content>
-                          <entity-filter-combobox
-                            :project="project"
-                            v-model="filters.entity"
-                            label="Entities"
-                          />
-                        </v-list-item-content>
-                      </v-list-item>
-                      <v-list-item>
-                        <v-list-item-content>
-                          <entity-type-filter-combobox
-                            :project="project"
-                            v-model="filters.entity_type"
-                            label="Entity Types"
-                          />
-                        </v-list-item-content>
-                      </v-list-item>
-                    </v-list>
+                    <ValidationProvider name="Action" rules="required" immediate>
+                      <v-radio-group label="Action" v-model="action" row class="justify-right">
+                        <v-radio label="Snooze" value="snooze"></v-radio>
+                        <v-radio label="Deduplicate" value="deduplicate"></v-radio>
+                      </v-radio-group>
+                    </ValidationProvider>
+                    <span v-if="action === 'deduplicate'">
+                      <entity-type-filter-combobox
+                        :project="project"
+                        :signalDefinition="signalDefinition"
+                        v-model="filters.entity_type"
+                        label="Entity Types"
+                      />
+                      <v-select
+                        persistent-hint
+                        label="Window (minutes)"
+                        :items="windows"
+                        v-model="window"
+                      ></v-select>
+                    </span>
+                    <span v-if="action == 'snooze'">
+                      <entity-filter-combobox
+                        :project="project"
+                        v-model="filters.entity"
+                        label="Entities"
+                      />
+                      <expiration-input persistent-hint v-model="expiration"></expiration-input>
+                    </span>
                   </v-tab-item>
                   <v-tab-item>
                     <div style="height: 400px">
@@ -126,27 +134,8 @@
                       :success="valid"
                       clearable
                       auto-grow
-                      required
                     />
                   </ValidationProvider>
-                  <ValidationProvider name="Action" rules="required" immediate>
-                    <v-radio-group label="Action" v-model="action" class="justify-right">
-                      <v-radio label="Snooze" value="snooze"></v-radio>
-                      <v-radio label="Deduplicate" value="deduplicate"></v-radio>
-                    </v-radio-group>
-                  </ValidationProvider>
-                  <v-select
-                    v-if="action === 'deduplicate'"
-                    persistent-hint
-                    label="Window (minutes)"
-                    :items="windows"
-                    v-model="window"
-                  ></v-select>
-                  <expiration-input
-                    v-if="action == 'snooze'"
-                    persistent-hint
-                    v-model="expiration"
-                  ></expiration-input>
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer />
@@ -192,6 +181,10 @@ export default {
     value: {
       type: Object,
       default: null,
+    },
+    signalDefinition: {
+      type: Object,
+      required: true,
     },
   },
   data() {

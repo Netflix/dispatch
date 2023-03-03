@@ -493,6 +493,8 @@ def update_document(document_resource_id: str, incident: Incident, db_session: S
         ticket_weblink=resolve_attr(incident, "ticket.weblink"),
         title=incident.title,
         type=incident.incident_type.name,
+        stable_at_time=incident.stable_at,
+        reported_at_time=incident.reported_at,
     )
 
 
