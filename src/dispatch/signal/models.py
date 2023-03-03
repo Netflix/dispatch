@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 
 from pydantic import Field
 from sqlalchemy import (
@@ -245,7 +245,7 @@ class SignalPagination(DispatchBase):
 
 class AdditionalMetadata(DispatchBase):
     name: Optional[str]
-    value: Optional[str]
+    value: Optional[Any]
     type: Optional[str]
     important: Optional[bool]
 
