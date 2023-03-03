@@ -74,7 +74,7 @@ colorama==0.4.6
     # via schemathesis
 confection==0.0.4
     # via thinc
-cryptography==39.0.1
+cryptography==39.0.2
     # via oauthlib
 cssselect==1.2.0
     # via premailer
@@ -117,7 +117,7 @@ google-api-core==2.11.0
     # via google-api-python-client
 google-api-python-client==2.80.0
     # via -r requirements-base.in
-google-auth==2.16.1
+google-auth==2.16.2
     # via
     #   google-api-core
     #   google-api-python-client
@@ -284,7 +284,7 @@ pyparsing==3.0.9
     #   httplib2
 pyrsistent==0.19.3
     # via jsonschema
-pytest==7.2.1
+pytest==7.2.2
     # via
     #   pytest-subtests
     #   schemathesis
@@ -398,7 +398,7 @@ sqlalchemy-filters==0.12.0
     # via -r requirements-base.in
 sqlalchemy-utils==0.40.0
     # via -r requirements-base.in
-srsly==2.4.5
+srsly==2.4.6
     # via
     #   confection
     #   spacy
@@ -418,13 +418,13 @@ tenacity==8.2.2
     # via -r requirements-base.in
 text-unidecode==1.3
     # via python-slugify
-thinc==8.1.7
+thinc==8.1.8
     # via spacy
 tomli==2.0.1
     # via schemathesis
 tomli-w==1.0.0
     # via schemathesis
-tqdm==4.64.1
+tqdm==4.65.0
     # via spacy
 typer==0.7.0
     # via
@@ -453,7 +453,7 @@ wasabi==1.1.1
     #   thinc
 werkzeug==2.2.3
     # via schemathesis
-wrapt==1.14.1
+wrapt==1.15.0
     # via deprecated
 yarl==1.8.2
     # via

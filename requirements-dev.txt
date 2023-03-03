@@ -30,7 +30,7 @@ executing==1.2.0
     #   stack-data
 factory-boy==3.2.1
     # via -r requirements-dev.in
-faker==17.5.0
+faker==17.6.0
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -56,11 +56,11 @@ pexpect==4.8.0
     # via ipython
 pickleshare==0.7.5
     # via ipython
-platformdirs==3.0.0
+platformdirs==3.1.0
     # via black
 pluggy==1.0.0
     # via pytest
-prompt-toolkit==3.0.37
+prompt-toolkit==3.0.38
     # via ipython
 ptyprocess==0.7.0
     # via pexpect
@@ -68,7 +68,7 @@ pure-eval==0.2.2
     # via stack-data
 pygments==2.14.0
     # via ipython
-pytest==7.2.1
+pytest==7.2.2
     # via -r requirements-dev.in
 python-dateutil==2.8.2
     # via faker
