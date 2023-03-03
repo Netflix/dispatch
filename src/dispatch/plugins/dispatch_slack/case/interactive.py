@@ -1,6 +1,6 @@
 import json
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytz
 from blockkit import (
@@ -542,8 +542,13 @@ def handle_snooze_submission_event(
             name = form_data[DefaultBlockIds.title_input]
 
         if form_data.get(DefaultBlockIds.relative_date_picker_input):
-            date: str = form_data[DefaultBlockIds.relative_date_picker_input]["value"]
-            date: datetime = datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
+            delta: str = form_data[DefaultBlockIds.relative_date_picker_input]["value"]
+            delta = timedelta(
+                hours=int(delta.split(':')[0]),
+                minutes=int(delta.split(':')[1]),
+                seconds=int(delta.split(':')[2])
+            )
+            date = datetime.now() + delta
 
         project = project_service.get(db_session=db_session, project_id=subject["project_id"])
         filters = {

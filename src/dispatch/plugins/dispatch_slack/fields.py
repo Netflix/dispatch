@@ -111,25 +111,17 @@ def relative_date_picker_input(
     block_id: str = DefaultBlockIds.relative_date_picker_input,
     initial_option: dict = None,
     label: str = "Date",
-    time_format: str = "%Y-%m-%d %H:%M:%S",
     **kwargs,
 ):
     """Builds a relative date picker input."""
-    now = datetime.now()
-
     relative_dates = [
-        {"text": "1 hour", "value": now + timedelta(hours=1)},
-        {"text": "3 hours", "value": now + timedelta(hours=3)},
-        {"text": "1 day", "value": now + timedelta(days=1)},
-        {"text": "3 days", "value": now + timedelta(days=3)},
-        {"text": "1 week", "value": now + timedelta(weeks=1)},
-        {"text": "2 weeks", "value": now + timedelta(weeks=2)},
+        {"text": "1 hour", "value": str(timedelta(hours=1))},
+        {"text": "3 hours", "value": str(timedelta(hours=3))},
+        {"text": "1 day", "value": str(timedelta(days=1))},
+        {"text": "3 days", "value": str(timedelta(days=3))},
+        {"text": "1 week", "value": str(timedelta(weeks=1))},
+        {"text": "2 weeks", "value": str(timedelta(weeks=2))},
     ]
-
-    for i, _ in enumerate(relative_dates):
-        # `options` cannot hold datetime values, strftime returns a str, and gives
-        # users of the method the ability to configure the time format string.
-        relative_dates[i]["value"] = relative_dates[i]["value"].strftime(time_format)
 
     return static_select_block(
         action_id=action_id,
@@ -138,6 +130,7 @@ def relative_date_picker_input(
         options=relative_dates,
         label=label,
         placeholder="Relative Time",
+        **kwargs,
     )
 
 
