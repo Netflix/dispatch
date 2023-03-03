@@ -6,6 +6,7 @@ from typing import List
 
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.incident.enums import IncidentStatus
+from dispatch.enums import Visibility
 
 from dispatch.enums import DispatchEnum, DocumentResourceTypes, DocumentResourceReferenceTypes
 
@@ -34,6 +35,10 @@ INCIDENT_STATUS_DESCRIPTIONS = {
     IncidentStatus.closed: "This no longer requires additional involvement, long term incident action items have been assigned to their respective owners.",
 }
 
+INCIDENT_VISIBILITY_DESCRIPTIONS = {
+    Visibility.open: "We ask that you use your best judgment while sharing details about this incident outside of the dedicated channels of communication. Please reach out to the Incident Commander if you have any questions.",
+    Visibility.restricted: "This incident is restricted to immediate participants of this incident. We ask that you exercise extra caution and discretion while talking about this incident outside of the dedicated channels of communication. Only invite new participants that are strictly necessary. Please reach out to the Incident Commander if you have any questions.",
+}
 EVERGREEN_REMINDER_DESCRIPTION = """
 You are the owner of the following resources in Dispatch.
 This is a reminder that these resources should be kept up to date in order to effectively
@@ -373,6 +378,11 @@ INCIDENT_STATUS = {
     "status_mapping": INCIDENT_STATUS_DESCRIPTIONS,
 }
 
+INCIDENT_VISIBILITY = {
+    "title": "Visibility - {{visibility}}",
+    "visibility_mapping": INCIDENT_VISIBILITY_DESCRIPTIONS,
+}
+
 INCIDENT_TYPE = {"title": "Type - {{type}}", "text": "{{type_description}}"}
 
 INCIDENT_SEVERITY = {
@@ -475,6 +485,7 @@ INCIDENT_PARTICIPANT_WELCOME_MESSAGE = [
     INCIDENT_PARTICIPANT_WELCOME,
     INCIDENT_TITLE,
     INCIDENT_DESCRIPTION,
+    INCIDENT_VISIBILITY,
     INCIDENT_STATUS,
     INCIDENT_TYPE,
     INCIDENT_SEVERITY,
@@ -747,6 +758,9 @@ def render_message_template(message_template: List[dict], **kwargs):
 
                 if button.get("button_url"):
                     button["button_url"] = Template(button["button_url"]).render(**kwargs)
+
+        if d.get("visibility_mapping"):
+            d["text"] = d["visibility_mapping"][kwargs["visibility"]]
 
         if d.get("status_mapping"):
             d["text"] = d["status_mapping"][kwargs["status"]]
