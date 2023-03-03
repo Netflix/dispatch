@@ -73,6 +73,11 @@ class SlackConversationConfiguration(SlackConfiguration):
         title="List Participants Command String",
         description="Defines the string used to list all incident participants. Must match what is defined in Slack.",
     )
+    slack_command_list_signals: str = Field(
+        "/dispatch-list-signals",
+        title="List Signals Command String",
+        description="Defines the string used to list all signals for the conversation where the command was ran. Must match what is defined in Slack.",
+    )
     slack_command_assign_role: str = Field(
         "/dispatch-assign-role",
         title="Assign Role Command String",

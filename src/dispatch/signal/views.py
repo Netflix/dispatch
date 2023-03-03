@@ -65,7 +65,7 @@ def create_filter(
     signal_filter_in: SignalFilterCreate,
     current_user: DispatchUser = Depends(get_current_user),
 ):
-    """Create a new signal."""
+    """Create a new signal filter."""
     try:
         return create_signal_filter(
             db_session=db_session, creator=current_user, signal_filter_in=signal_filter_in
