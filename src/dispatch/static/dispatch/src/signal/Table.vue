@@ -146,6 +146,14 @@ export default {
   created() {
     this.project = [{ name: this.query.project }]
     this.getAll()
+
+    this.$watch(
+      (vm) => [vm.page],
+      () => {
+        this.getAll()
+      }
+    )
+
     this.$watch(
       (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending, vm.project],
       () => {

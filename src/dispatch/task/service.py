@@ -14,13 +14,13 @@ from .models import Task, TaskUpdate, TaskCreate
 
 
 def get(*, db_session, task_id: int) -> Optional[Task]:
-    """Get a single task by ID."""
+    """Get a single task by id."""
     return db_session.query(Task).filter(Task.id == task_id).first()
 
 
 def get_by_resource_id(*, db_session, resource_id: str) -> Optional[Task]:
     """Get a single task by resource id."""
-    return db_session.query(Task).filter(Task.resource_id == resource_id).first()
+    return db_session.query(Task).filter(Task.resource_id == resource_id).one_or_none()
 
 
 def get_all(*, db_session) -> List[Optional[Task]]:

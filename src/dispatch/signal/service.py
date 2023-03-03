@@ -2,13 +2,18 @@ import json
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy import asc
+from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.type import service as case_type_service
-from dispatch.database.service import apply_filters, apply_filter_specific_joins
+from dispatch.database.service import apply_filter_specific_joins, apply_filters
+from dispatch.entity_type import service as entity_type_service
+from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
+from dispatch.tag import service as tag_service
 
 from .models import (
     Signal,
@@ -17,6 +22,7 @@ from .models import (
     SignalFilterAction,
     SignalFilterCreate,
     SignalFilterMode,
+    SignalFilterRead,
     SignalFilterUpdate,
     SignalInstance,
     SignalInstanceCreate,
@@ -74,6 +80,28 @@ def delete_signal_filter(*, db_session, signal_filter_id: int) -> int:
     return signal_filter_id
 
 
+def get_signal_filter_by_name_or_raise(
+    *, db_session: Session, project_id: int, signal_filter_in=SignalFilterRead
+) -> SignalFilter:
+    signal_filter = get_signal_filter_by_name(
+        db_session=db_session, project_id=project_id, name=signal_filter_in.name
+    )
+
+    if not signal_filter:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    NotFoundError(
+                        msg="Signal Filter not found.", entity_type=signal_filter_in.name
+                    ),
+                    loc="signalFilter",
+                )
+            ],
+            model=SignalFilterRead,
+        )
+    return signal_filter
+
+
 def get_signal_filter_by_name(*, db_session, project_id: int, name: str) -> Optional[SignalFilter]:
     """Gets a signal filter by it's name."""
     return (
@@ -125,14 +153,35 @@ def create(*, db_session, signal_in: SignalCreate) -> Signal:
                 "case_priority",
                 "source",
                 "filters",
+                "tags",
+                "entity_types",
             }
         ),
         project=project,
     )
 
+    tags = []
+    for t in signal_in.tags:
+        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
+    signal.tags = tags
+
+    entity_types = []
+    for e in signal_in.entity_types:
+        entity_type = entity_type_service.get_by_name_or_raise(
+            db_session=db_session, project_id=project.id, entity_type_in=e
+        )
+        entity_types.append(entity_type)
+
+    signal.entity_types = entity_types
+
+    filters = []
     for f in signal_in.filters:
-        signal_filter = get_signal_filter_by_name(db_session=db_session, signal_filter_in=f)
-        signal.filters.append(signal_filter)
+        signal_filter = get_signal_filter_by_name(
+            db_session=db_session, project_id=project.id, signal_filter_in=f
+        )
+        filters.append(signal_filter)
+
+    signal.filters = filters
 
     if signal_in.case_priority:
         case_priority = case_priority_service.get_by_name_or_default(
@@ -162,6 +211,8 @@ def update(*, db_session, signal: Signal, signal_in: SignalUpdate) -> Signal:
             "case_priority",
             "source",
             "filters",
+            "entity_types",
+            "tags",
         },
     )
 
@@ -169,11 +220,28 @@ def update(*, db_session, signal: Signal, signal_in: SignalUpdate) -> Signal:
         if field in update_data:
             setattr(signal, field, update_data[field])
 
-    for f in signal_in.filters:
-        signal_filter = get_signal_filter_by_name(
-            db_session=db_session, project_id=signal.project.id, name=f.name
+    tags = []
+    for t in signal_in.tags:
+        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
+    signal.tags = tags
+
+    entity_types = []
+    for e in signal_in.entity_types:
+        entity_type = entity_type_service.get_by_name_or_raise(
+            db_session=db_session, project_id=signal.project.id, entity_type_in=e
         )
-        signal.filters.append(signal_filter)
+        entity_types.append(entity_type)
+
+    signal.entity_types = entity_types
+
+    filters = []
+    for f in signal_in.filters:
+        signal_filter = get_signal_filter_by_name_or_raise(
+            db_session=db_session, project_id=signal.project.id, signal_filter_in=f
+        )
+        filters.append(signal_filter)
+
+    signal.filters = filters
 
     if signal_in.case_priority:
         case_priority = case_priority_service.get_by_name_or_default(
