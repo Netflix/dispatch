@@ -110,6 +110,17 @@ MJML_PATH = config(
     "MJML_PATH",
     default=f"{os.path.dirname(os.path.realpath(__file__))}/static/dispatch/node_modules/.bin",
 )
+DISPATCH_MARKDOWN_IN_INCIDENT_DESC = config(
+    "DISPATCH_MARKDOWN_IN_INCIDENT_DESC", cast=bool, default=False
+)
+DISPATCH_ESCAPE_HTML = config("DISPATCH_ESCAPE_HTML", cast=bool, default=None)
+if DISPATCH_ESCAPE_HTML and DISPATCH_MARKDOWN_IN_INCIDENT_DESC:
+    log.warning(
+        "HTML escape and Markdown are both explicitly enabled, this may cause unexpected notification markup."
+    )
+elif DISPATCH_ESCAPE_HTML is None and DISPATCH_MARKDOWN_IN_INCIDENT_DESC:
+    log.info("Disabling HTML escaping, due to Markdown was enabled explicitly.")
+    DISPATCH_ESCAPE_HTML = False
 
 DISPATCH_JWT_AUDIENCE = config("DISPATCH_JWT_AUDIENCE", default=None)
 DISPATCH_JWT_EMAIL_OVERRIDE = config("DISPATCH_JWT_EMAIL_OVERRIDE", default=None)
