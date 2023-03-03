@@ -136,7 +136,9 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
         secondary=assoc_signal_tags,
         backref="signals",
     )
-    search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
+    search_vector = Column(
+        TSVectorType("name", "description", "variant", regconfig="pg_catalog.simple")
+    )
 
 
 class SignalFilter(Base, ProjectMixin, EvergreenMixin, TimeStampMixin):
