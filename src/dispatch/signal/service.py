@@ -1,6 +1,6 @@
 import json
 from datetime import datetime, timedelta, timezone
-from typing import Optional
+from typing import Optional, Literal
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy import asc
@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.type import service as case_type_service
+from dispatch.case.type.models import CaseType
 from dispatch.database.service import apply_filter_specific_joins, apply_filters
 from dispatch.entity_type import service as entity_type_service
 from dispatch.exceptions import NotFoundError
@@ -31,7 +32,7 @@ from .models import (
 
 
 def create_signal_filter(
-    *, db_session, creator: DispatchUser, signal_filter_in: SignalFilterCreate
+    *, db_session: Session, creator: DispatchUser, signal_filter_in: SignalFilterCreate
 ) -> SignalFilter:
     """Creates a new signal filter."""
     project = project_service.get_by_name_or_raise(
@@ -53,7 +54,7 @@ def create_signal_filter(
 
 
 def update_signal_filter(
-    *, db_session, signal_filter: SignalFilter, signal_filter_in: SignalFilterUpdate
+    *, db_session: Session, signal_filter: SignalFilter, signal_filter_in: SignalFilterUpdate
 ) -> SignalFilter:
     """Updates an existing signal filter."""
 
@@ -72,7 +73,7 @@ def update_signal_filter(
     return signal_filter
 
 
-def delete_signal_filter(*, db_session, signal_filter_id: int) -> int:
+def delete_signal_filter(*, db_session: Session, signal_filter_id: int) -> int:
     """Deletes an existing signal filter."""
     signal_filter = db_session.query(SignalFilter).filter(SignalFilter.id == signal_filter_id).one()
     db_session.delete(signal_filter)
@@ -112,18 +113,18 @@ def get_signal_filter_by_name(*, db_session, project_id: int, name: str) -> Opti
     )
 
 
-def get_signal_filter(*, db_session, signal_filter_id: int) -> SignalFilter:
+def get_signal_filter(*, db_session: Session, signal_filter_id: int) -> SignalFilter:
     """Gets a single signal filter."""
     return db_session.query(SignalFilter).filter(SignalFilter.id == signal_filter_id).one_or_none()
 
 
-def get(*, db_session, signal_id: int) -> Optional[Signal]:
+def get(*, db_session: Session, signal_id: int) -> Optional[Signal]:
     """Gets a signal by id."""
     return db_session.query(Signal).filter(Signal.id == signal_id).one_or_none()
 
 
 def get_by_variant_or_external_id(
-    *, db_session, project_id: int, external_id: str = None, variant: str = None
+    *, db_session: Session, project_id: int, external_id: str = None, variant: str = None
 ) -> Optional[Signal]:
     """Gets a signal it's external id (and variant if supplied)."""
     if variant:
@@ -139,7 +140,23 @@ def get_by_variant_or_external_id(
     )
 
 
-def create(*, db_session, signal_in: SignalCreate) -> Signal:
+def get_all_by_conversation_target(
+    *, db_session: Session, project_id: int, conversation_target: str
+) -> list[Signal]:
+    """Gets all signals for a given conversation target. (e.g. #conversation-channel)"""
+    return (
+        db_session.query(Signal)
+        .join(CaseType)
+        .filter(
+            CaseType.project_id == project_id,
+            CaseType.conversation_target == conversation_target,
+            Signal.case_type_id == CaseType.id,
+        )
+        .all()
+    )
+
+
+def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
     """Creates a new signal."""
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=signal_in.project
@@ -200,8 +217,8 @@ def create(*, db_session, signal_in: SignalCreate) -> Signal:
     return signal
 
 
-def update(*, db_session, signal: Signal, signal_in: SignalUpdate) -> Signal:
-    """Creates a new signal."""
+def update(*, db_session: Session, signal: Signal, signal_in: SignalUpdate) -> Signal:
+    """Updates a signal."""
     signal_data = signal.dict()
     update_data = signal_in.dict(
         skip_defaults=True,
@@ -261,7 +278,7 @@ def update(*, db_session, signal: Signal, signal_in: SignalUpdate) -> Signal:
     return signal
 
 
-def delete(*, db_session, signal_id: int):
+def delete(*, db_session: Session, signal_id: int):
     """Deletes a signal definition."""
     signal = db_session.query(Signal).filter(Signal.id == signal_id).one()
     db_session.delete(signal)
@@ -269,7 +286,9 @@ def delete(*, db_session, signal_id: int):
     return signal_id
 
 
-def create_instance(*, db_session, signal_instance_in: SignalInstanceCreate) -> SignalInstance:
+def create_instance(
+    *, db_session: Session, signal_instance_in: SignalInstanceCreate
+) -> SignalInstance:
     """Creates a new signal instance."""
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=signal_instance_in.project
@@ -287,7 +306,9 @@ def create_instance(*, db_session, signal_instance_in: SignalInstanceCreate) -> 
     return signal_instance
 
 
-def apply_filter_actions(*, db_session, signal_instance: SignalInstance):
+def apply_filter_actions(
+    *, db_session: Session, signal_instance: SignalInstance
+) -> Literal[True] | None:
     """Applies any matching filter actions associated with this instance."""
 
     for f in signal_instance.signal.filters:
