@@ -471,7 +471,6 @@ def handle_snooze_submission_event(
                     username=email, type="Are you creating a signal filter in Dispatch?"
                 )
             else:
-                print(response)
                 raise e from None
 
         if response.get("result") == "allow":
