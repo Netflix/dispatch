@@ -1,8 +1,5 @@
 def create_filter_expression(filters: dict, model: str) -> list[dict]:
-    """
-    This function takes in filters and the model being filtered as inputs and returns a list of filter expressions.
-    The filter expression is a list of dictionaries that describe the filters that are being applied to the model.
-    """
+    """Python implementation of @/search/utils/createFilterExpression"""
 
     filter_expression = []
     for key, value in filters.items():

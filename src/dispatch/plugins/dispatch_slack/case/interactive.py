@@ -140,6 +140,37 @@ def _draw_list_signal_modal(
     total_pages: int,
     first_render: bool,
 ) -> None:
+    """Draw the signal definition list modal.
+
+    Args:
+        client (WebClient): A Slack WebClient object that provides a convenient interface to the Slack API.
+        body (dict): A dictionary that contains the original request payload from Slack.
+        db_session (Session): A SQLAlchemy database session.
+        conversation_name (str): The name of the Slack conversation.
+        current_page (int): The current page number.
+        total_pages (int): The total number of pages.
+        first_render (bool): A boolean indicating whether the modal is being rendered for the first time.
+
+    Returns:
+        None
+
+    Raises:
+        None
+
+    Example:
+        client = WebClient(token=<SLACK_APP_TOKEN>)
+        body = {
+            "trigger_id": "836215173894.4768581721.6f8ab1fcee0478f0e6c0c2b0dc9f0c7a",
+        }
+        db_session = Session()
+        conversation_name = "test_conversation"
+        current_page = 0
+        total_pages = 3
+        first_render = True
+        _draw_list_signal_modal(
+            client, body, db_session, conversation_name, current_page, total_pages, first_render
+        )
+    """
     modal = Modal(
         title="Signal Definition List",
         blocks=_build_signal_list_modal_blocks(
@@ -169,6 +200,28 @@ def _build_signal_list_modal_blocks(
     current_page: int,
     total_pages: int,
 ) -> list:
+    """Builds a list of blocks for a modal view displaying signals.
+
+    This function creates a list of blocks that represent signals that are filtered by conversation_name. The list of signals
+    is paginated and limited to 25 signals per page.
+
+    The function returns the blocks with pagination controls that display the current page and allows navigation to the previous
+    and next pages.
+
+    Args:
+        db_session (Session): The database session.
+        conversation_name (str): The name of the conversation to filter signals by.
+        current_page (int): The current page being displayed.
+        total_pages (int): The total number of pages.
+
+    Returns:
+        list: A list of blocks representing the signals and pagination controls.
+
+    Example:
+        >>> blocks = _build_signal_list_modal_blocks(db_session, "conversation_name", 1, 2)
+        >>> len(blocks)
+    26
+    """
 
     blocks = []
     limit = 25
@@ -236,7 +289,18 @@ def _build_signal_list_modal_blocks(
 @app.action(
     CasePaginateActions.list_signal_next, middleware=[action_context_middleware, db_middleware]
 )
-def handle_next_action(ack, db_session, body, client):
+def handle_next_action(ack: Ack, body: dict, client: WebClient, db_session: Session):
+    """Handle the 'next' action in the signal list modal.
+
+    This function is called when the user clicks the 'next' button in the signal list modal. It increments the current page
+    of the modal and updates the view with the new page.
+
+    Args:
+        ack (function): The function to acknowledge the action request.
+        db_session (Session): The database session to query for signal data.
+        body (dict): The request payload from the action.
+        client (WebClient): The Slack API WebClient to interact with the Slack API.
+    """
     ack()
 
     metadata = json.loads(body["view"]["private_metadata"])
@@ -262,7 +326,18 @@ def handle_next_action(ack, db_session, body, client):
 @app.action(
     CasePaginateActions.list_signal_previous, middleware=[action_context_middleware, db_middleware]
 )
-def handle_previous_action(ack, body, db_session, client):
+def handle_previous_action(ack: Ack, body: dict, client: WebClient, db_session: Session):
+    """Handle the 'previous' action in the signal list modal.
+
+    This function is called when the user clicks the 'previous' button in the signal list modal. It decrements the current page
+    of the modal and updates the view with the new page.
+
+    Args:
+        ack (function): The function to acknowledge the action request.
+        db_session (Session): The database session to query for signal data.
+        body (dict): The request payload from the action.
+        client (WebClient): The Slack API WebClient to interact with the Slack API.
+    """
     ack()
 
     metadata = json.loads(body["view"]["private_metadata"])
@@ -287,7 +362,7 @@ def handle_previous_action(ack, body, db_session, client):
 
 @app.action(CaseNotificationActions.snooze, middleware=[button_context_middleware, db_middleware])
 def snooze_button_click(
-    ack: Ack, body: dict, db_session: Session, context: BoltContext, client: WebClient
+    ack: Ack, body: dict, client: WebClient, context: BoltContext, db_session: Session
 ) -> None:
     ack()
 
