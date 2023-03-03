@@ -9,7 +9,7 @@ from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.type import service as case_type_service
 from dispatch.case.type.models import CaseType
-from dispatch.database.service import apply_filters, apply_filter_specific_joins
+from dispatch.database.service import apply_filter_specific_joins, apply_filters
 from dispatch.project import service as project_service
 
 from .models import (
