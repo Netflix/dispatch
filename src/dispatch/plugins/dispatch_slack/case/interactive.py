@@ -259,7 +259,9 @@ def _build_signal_list_modal_blocks(
                         action_id=CaseNotificationActions.snooze,
                     ),
                 ),
-                Context(elements=[MarkdownText(text=f"{signal.variant}" if signal.variant else "N/A")]),
+                Context(
+                    elements=[MarkdownText(text=f"{signal.variant}" if signal.variant else "N/A")]
+                ),
             ]
         )
         # Don't add a divider if we are at the last signal
@@ -412,12 +414,22 @@ def handle_snooze_preview_event(
     if form_data.get(DefaultBlockIds.title_input):
         title = form_data[DefaultBlockIds.title_input]
 
-    name_taken = signal_service.get_signal_filter_by_name(db_session=db_session, project_id=context["subject"].project_id, name=title)
+    name_taken = signal_service.get_signal_filter_by_name(
+        db_session=db_session, project_id=context["subject"].project_id, name=title
+    )
     if name_taken:
         modal = Modal(
             title="Name Taken",
             close="Close",
-            blocks=[Context(elements=[MarkdownText(text=f"A signal filter with the name '{title}' already exists.")])],
+            blocks=[
+                Context(
+                    elements=[
+                        MarkdownText(
+                            text=f"A signal filter with the name '{title}' already exists."
+                        )
+                    ]
+                )
+            ],
         ).build()
         return ack(response_action="update", view=modal)
 
@@ -428,22 +440,34 @@ def handle_snooze_preview_event(
         db_session=db_session, signal_id=context["subject"].id, entity_ids=entity_ids, days_back=90
     )
 
-    text = "Examples matching your filter:" if preview_signal_instances else "No signals matching your filter."
+    text = (
+        "Examples matching your filter:"
+        if preview_signal_instances
+        else "No signals matching your filter."
+    )
 
-    blocks = [
-        Context(elements=[MarkdownText(text=text)])
-    ]
+    blocks = [Context(elements=[MarkdownText(text=text)])]
 
     if preview_signal_instances:
         # Only show 5 examples
         for signal_instance in preview_signal_instances[:5]:
             blocks.extend(
                 [
-                    Section(
-                        text=signal_instance.signal.name
+                    Section(text=signal_instance.signal.name),
+                    Context(
+                        elements=[
+                            MarkdownText(
+                                text=f" Case: {signal_instance.case.name if signal_instance.case else 'N/A'}"
+                            )
+                        ]
                     ),
-                    Context(elements=[MarkdownText(text=f" Case: {signal_instance.case.name if signal_instance.case else 'N/A'}")]),
-                    Context(elements=[MarkdownText(text=f" Created: {signal_instance.case.created_at if signal_instance.case else 'N/A'}")]),
+                    Context(
+                        elements=[
+                            MarkdownText(
+                                text=f" Created: {signal_instance.case.created_at if signal_instance.case else 'N/A'}"
+                            )
+                        ]
+                    ),
                 ]
             )
 
@@ -544,9 +568,9 @@ def handle_snooze_submission_event(
         if form_data.get(DefaultBlockIds.relative_date_picker_input):
             delta: str = form_data[DefaultBlockIds.relative_date_picker_input]["value"]
             delta = timedelta(
-                hours=int(delta.split(':')[0]),
-                minutes=int(delta.split(':')[1]),
-                seconds=int(delta.split(':')[2])
+                hours=int(delta.split(":")[0]),
+                minutes=int(delta.split(":")[1]),
+                seconds=int(delta.split(":")[2]),
             )
             date = datetime.now() + delta
 
