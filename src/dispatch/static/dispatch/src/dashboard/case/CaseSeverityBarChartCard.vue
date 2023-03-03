@@ -44,7 +44,10 @@ export default {
   },
 
   created: function () {
-    CaseSeverityApi.getAll().then((response) => {
+    let filterOptions = {
+      itemsPerPage: -1,
+    }
+    CaseSeverityApi.getAll(filterOptions).then((response) => {
       this.severities = [
         ...new Set(
           map(
