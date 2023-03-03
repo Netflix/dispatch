@@ -44,7 +44,10 @@ export default {
   },
 
   created: function () {
-    IncidentSeverityApi.getAll().then((response) => {
+    let filterOptions = {
+      itemsPerPage: -1,
+    }
+    IncidentSeverityApi.getAll(filterOptions).then((response) => {
       this.severities = [
         ...new Set(
           map(

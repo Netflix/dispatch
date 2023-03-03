@@ -18,9 +18,9 @@ from .service import create, get, update
 router = APIRouter()
 
 
-@router.get("", response_model=IncidentSeverityPagination, tags=["case_severities"])
-def get_case_severities(*, common: dict = Depends(common_parameters)):
-    """Returns all case severities."""
+@router.get("", response_model=IncidentSeverityPagination, tags=["incident_severities"])
+def get_incident_severities(*, common: dict = Depends(common_parameters)):
+    """Returns all incident severities."""
     return search_filter_sort_paginate(model="IncidentSeverity", **common)
 
 
