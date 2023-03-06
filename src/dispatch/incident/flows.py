@@ -1,7 +1,7 @@
 import logging
 
 from datetime import datetime
-from typing import Any, List
+from typing import List
 
 from dispatch.decorators import timer
 from dispatch.conference import service as conference_service
@@ -15,8 +15,9 @@ from dispatch.document.models import DocumentCreate
 from dispatch.enums import DocumentResourceTypes
 from dispatch.enums import Visibility
 from dispatch.event import service as event_service
+from dispatch.group import flows as group_flows
 from dispatch.group import service as group_service
-from dispatch.group.models import GroupCreate
+from dispatch.group.enums import GroupType
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentRead
 from dispatch.incident.type import service as incident_type_service
@@ -179,56 +180,6 @@ def update_external_incident_ticket(
         description=f"Ticket updated. Status: {incident.status}",
         incident_id=incident.id,
     )
-
-
-def create_participant_groups(
-    incident: Incident,
-    direct_participants: List[Any],
-    indirect_participants: List[Any],
-    db_session: SessionLocal,
-):
-    """Create external participant groups."""
-    plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
-    )
-
-    group_name = f"{incident.name}"
-    notifications_group_name = f"{group_name}-notifications"
-
-    direct_participant_emails = [x.email for x, _ in direct_participants]
-    tactical_group = plugin.instance.create(
-        group_name, direct_participant_emails
-    )  # add participants to core group
-
-    indirect_participant_emails = [x.email for x in indirect_participants]
-    indirect_participant_emails.append(
-        tactical_group["email"]
-    )  # add all those already in the tactical group
-    notifications_group = plugin.instance.create(
-        notifications_group_name, indirect_participant_emails
-    )
-
-    tactical_group.update(
-        {
-            "resource_type": f"{plugin.plugin.slug}-tactical-group",
-            "resource_id": tactical_group["id"],
-        }
-    )
-    notifications_group.update(
-        {
-            "resource_type": f"{plugin.plugin.slug}-notifications-group",
-            "resource_id": notifications_group["id"],
-        }
-    )
-
-    event_service.log_incident_event(
-        db_session=db_session,
-        source=plugin.plugin.title,
-        description="Tactical and notifications groups created",
-        incident_id=incident.id,
-    )
-
-    return tactical_group, notifications_group
 
 
 def create_conference(incident: Incident, participants: List[str], db_session: SessionLocal):
@@ -728,59 +679,26 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
     # we create the incident ticket
     ticket_flows.create_incident_ticket(incident=incident, db_session=db_session)
 
+    # we resolve individual and team participants
     individual_participants, team_participants = get_incident_participants(incident, db_session)
 
-    tactical_group = notifications_group = None
-    group_plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
+    # we create the tactical group
+    tactical_participant_emails = [i.email for i, _ in individual_participants]
+    tactical_group = group_flows.create_group(
+        subject=incident,
+        group_type=GroupType.tactical,
+        group_participants=tactical_participant_emails,
+        db_session=db_session,
     )
-    if group_plugin:
-        try:
-            tactical_group_external, notifications_group_external = create_participant_groups(
-                incident, individual_participants, team_participants, db_session
-            )
 
-            if tactical_group_external and notifications_group_external:
-                tactical_group_in = GroupCreate(
-                    name=tactical_group_external["name"],
-                    email=tactical_group_external["email"],
-                    resource_type=tactical_group_external["resource_type"],
-                    resource_id=tactical_group_external["resource_id"],
-                    weblink=tactical_group_external["weblink"],
-                )
-                tactical_group = group_service.create(
-                    db_session=db_session, group_in=tactical_group_in
-                )
-                incident.groups.append(tactical_group)
-                incident.tactical_group_id = tactical_group.id
-
-                notifications_group_in = GroupCreate(
-                    name=notifications_group_external["name"],
-                    email=notifications_group_external["email"],
-                    resource_type=notifications_group_external["resource_type"],
-                    resource_id=notifications_group_external["resource_id"],
-                    weblink=notifications_group_external["weblink"],
-                )
-                notifications_group = group_service.create(
-                    db_session=db_session, group_in=notifications_group_in
-                )
-                incident.groups.append(notifications_group)
-                incident.notifications_group_id = notifications_group.id
-
-                event_service.log_incident_event(
-                    db_session=db_session,
-                    source="Dispatch Core App",
-                    description="Tactical and notifications groups added to incident",
-                    incident_id=incident.id,
-                )
-        except Exception as e:
-            event_service.log_incident_event(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description=f"Creation of tactical and notifications groups failed. Reason: {e}",
-                incident_id=incident.id,
-            )
-            log.exception(e)
+    # we create the notifications group
+    notification_participant_emails = [t.email for t in team_participants]
+    notifications_group = group_flows.create_group(
+        subject=incident,
+        group_type=GroupType.notifications,
+        group_participants=notification_participant_emails,
+        db_session=db_session,
+    )
 
     storage_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="storage"
