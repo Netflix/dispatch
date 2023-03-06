@@ -126,7 +126,7 @@ authenticated_organization_api_router.include_router(
 )
 
 authenticated_organization_api_router.include_router(
-    signal_router, prefix="/signals", tags="signals"
+    signal_router, prefix="/signals", tags=["signals"]
 )
 
 authenticated_organization_api_router.include_router(user_router, prefix="/users", tags=["users"])

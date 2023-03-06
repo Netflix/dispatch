@@ -1,12 +1,13 @@
 import copy
 
-from jinja2 import Template
-
 from typing import List
 
+from dispatch.messaging.email.filters import env
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.incident.enums import IncidentStatus
+from dispatch.enums import Visibility
 
+from dispatch import config
 from dispatch.enums import DispatchEnum, DocumentResourceTypes, DocumentResourceReferenceTypes
 
 
@@ -34,6 +35,10 @@ INCIDENT_STATUS_DESCRIPTIONS = {
     IncidentStatus.closed: "This no longer requires additional involvement, long term incident action items have been assigned to their respective owners.",
 }
 
+INCIDENT_VISIBILITY_DESCRIPTIONS = {
+    Visibility.open: "We ask that you use your best judgment while sharing details about this incident outside of the dedicated channels of communication. Please reach out to the Incident Commander if you have any questions.",
+    Visibility.restricted: "This incident is restricted to immediate participants of this incident. We ask that you exercise extra caution and discretion while talking about this incident outside of the dedicated channels of communication. Only invite new participants that are strictly necessary. Please reach out to the Incident Commander if you have any questions.",
+}
 EVERGREEN_REMINDER_DESCRIPTION = """
 You are the owner of the following resources in Dispatch.
 This is a reminder that these resources should be kept up to date in order to effectively
@@ -366,11 +371,19 @@ INCIDENT_NAME = {
 
 INCIDENT_TITLE = {"title": "Title", "text": "{{title}}"}
 
-INCIDENT_DESCRIPTION = {"title": "Description", "text": "{{description}}"}
+if config.DISPATCH_MARKDOWN_IN_INCIDENT_DESC:
+    INCIDENT_DESCRIPTION = {"title": "Description", "text": "{{description | markdown}}"}
+else:
+    INCIDENT_DESCRIPTION = {"title": "Description", "text": "{{description}}"}
 
 INCIDENT_STATUS = {
     "title": "Status - {{status}}",
     "status_mapping": INCIDENT_STATUS_DESCRIPTIONS,
+}
+
+INCIDENT_VISIBILITY = {
+    "title": "Visibility - {{visibility}}",
+    "visibility_mapping": INCIDENT_VISIBILITY_DESCRIPTIONS,
 }
 
 INCIDENT_TYPE = {"title": "Type - {{type}}", "text": "{{type_description}}"}
@@ -475,6 +488,7 @@ INCIDENT_PARTICIPANT_WELCOME_MESSAGE = [
     INCIDENT_PARTICIPANT_WELCOME,
     INCIDENT_TITLE,
     INCIDENT_DESCRIPTION,
+    INCIDENT_VISIBILITY,
     INCIDENT_STATUS,
     INCIDENT_TYPE,
     INCIDENT_SEVERITY,
@@ -714,13 +728,13 @@ def render_message_template(message_template: List[dict], **kwargs):
     new_copy = copy.deepcopy(message_template)
     for d in new_copy:
         if d.get("header"):
-            d["header"] = Template(d["header"]).render(**kwargs)
+            d["header"] = env.from_string(d["header"]).render(**kwargs)
 
         if d.get("title"):
-            d["title"] = Template(d["title"]).render(**kwargs)
+            d["title"] = env.from_string(d["title"]).render(**kwargs)
 
         if d.get("title_link"):
-            d["title_link"] = Template(d["title_link"]).render(**kwargs)
+            d["title_link"] = env.from_string(d["title_link"]).render(**kwargs)
 
             if d["title_link"] == "None":  # skip blocks with no content
                 continue
@@ -730,7 +744,7 @@ def render_message_template(message_template: List[dict], **kwargs):
                 continue
 
         if d.get("text"):
-            d["text"] = Template(d["text"]).render(**kwargs)
+            d["text"] = env.from_string(d["text"]).render(**kwargs)
 
             # NOTE: we truncate the string to 2500 characters
             # to prevent hitting limits on SaaS integrations (e.g. Slack)
@@ -739,23 +753,28 @@ def render_message_template(message_template: List[dict], **kwargs):
         # render a new button array given the template
         if d.get("buttons"):
             for button in d["buttons"]:
-                button["button_text"] = Template(button["button_text"]).render(**kwargs)
-                button["button_value"] = Template(button["button_value"]).render(**kwargs)
+                button["button_text"] = env.from_string(button["button_text"]).render(**kwargs)
+                button["button_value"] = env.from_string(button["button_value"]).render(**kwargs)
 
                 if button.get("button_action"):
-                    button["button_action"] = Template(button["button_action"]).render(**kwargs)
+                    button["button_action"] = env.from_string(button["button_action"]).render(
+                        **kwargs
+                    )
 
                 if button.get("button_url"):
-                    button["button_url"] = Template(button["button_url"]).render(**kwargs)
+                    button["button_url"] = env.from_string(button["button_url"]).render(**kwargs)
+
+        if d.get("visibility_mapping"):
+            d["text"] = d["visibility_mapping"][kwargs["visibility"]]
 
         if d.get("status_mapping"):
             d["text"] = d["status_mapping"][kwargs["status"]]
 
         if d.get("datetime"):
-            d["datetime"] = Template(d["datetime"]).render(**kwargs)
+            d["datetime"] = env.from_string(d["datetime"]).render(**kwargs)
 
         if d.get("context"):
-            d["context"] = Template(d["context"]).render(**kwargs)
+            d["context"] = env.from_string(d["context"]).render(**kwargs)
 
         data.append(d)
 

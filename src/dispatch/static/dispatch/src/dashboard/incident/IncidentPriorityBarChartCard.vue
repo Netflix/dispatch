@@ -44,7 +44,10 @@ export default {
   },
 
   created: function () {
-    IncidentPriorityApi.getAll().then((response) => {
+    let filterOptions = {
+      itemsPerPage: -1,
+    }
+    IncidentPriorityApi.getAll(filterOptions).then((response) => {
       this.priorities = [
         ...new Set(
           map(

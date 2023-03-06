@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 
 from pydantic import Field
 from sqlalchemy import (
@@ -120,6 +120,7 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     source_id = Column(Integer, ForeignKey("source.id"))
     variant = Column(String)
     loopin_signal_identity = Column(Boolean, default=False)
+    enabled = Column(Boolean, default=False)
     case_type_id = Column(Integer, ForeignKey(CaseType.id))
     case_type = relationship("CaseType", backref="signals")
     case_priority_id = Column(Integer, ForeignKey(CasePriority.id))
@@ -135,7 +136,9 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
         secondary=assoc_signal_tags,
         backref="signals",
     )
-    search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
+    search_vector = Column(
+        TSVectorType("name", "description", "variant", regconfig="pg_catalog.simple")
+    )
 
 
 class SignalFilter(Base, ProjectMixin, EvergreenMixin, TimeStampMixin):
@@ -211,6 +214,7 @@ class SignalBase(DispatchBase):
     case_type: Optional[CaseTypeRead]
     case_priority: Optional[CasePriorityRead]
     external_id: str
+    enabled: Optional[bool] = False
     external_url: Optional[str]
     source: Optional[SourceBase]
     created_at: Optional[datetime] = None
@@ -241,7 +245,7 @@ class SignalPagination(DispatchBase):
 
 class AdditionalMetadata(DispatchBase):
     name: Optional[str]
-    value: Optional[str]
+    value: Optional[Any]
     type: Optional[str]
     important: Optional[bool]
 
