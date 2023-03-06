@@ -15,7 +15,6 @@
         <settings-breadcrumbs v-model="project" />
       </v-col>
       <v-col class="text-right">
-        <table-filter-dialog :project="project" />
         <v-btn color="info" class="ml-2" @click="createEditShow()"> New </v-btn>
       </v-col>
     </v-row>
@@ -104,10 +103,9 @@ import { mapActions } from "vuex"
 
 import NewEditDialog from "@/signal/NewEditDialog.vue"
 import DeleteDialog from "@/signal/DeleteDialog.vue"
-import TableFilterDialog from "@/signal/TableFilterDialog.vue"
 export default {
   name: "SignalTable",
-  components: { NewEditDialog, DeleteDialog, TableFilterDialog },
+  components: { NewEditDialog, DeleteDialog },
   props: {
     name: {
       type: String,
