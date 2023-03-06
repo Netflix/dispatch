@@ -37,6 +37,7 @@ from dispatch.service import service as service_service
 from dispatch.storage import service as storage_service
 from dispatch.storage.models import StorageCreate
 from dispatch.task.enums import TaskStatus
+from dispatch.ticket import flows as ticket_flows
 from dispatch.ticket import service as ticket_service
 from dispatch.ticket.models import TicketCreate
 
@@ -113,45 +114,6 @@ def inactivate_incident_participants(incident: Incident, db_session: SessionLoca
         description="Incident participants inactivated",
         incident_id=incident.id,
     )
-
-
-def create_incident_ticket(incident: Incident, db_session: SessionLocal):
-    """Create an external ticket for tracking."""
-    plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="ticket"
-    )
-    if not plugin:
-        log.warning("Incident ticket not created. No ticket plugin enabled.")
-        return
-
-    title = incident.title
-    if incident.visibility == Visibility.restricted:
-        title = incident.incident_type.name
-
-    incident_type_plugin_metadata = incident_type_service.get_by_name_or_raise(
-        db_session=db_session,
-        project_id=incident.project.id,
-        incident_type_in=incident.incident_type,
-    ).get_meta(plugin.plugin.slug)
-
-    ticket = plugin.instance.create(
-        incident.id,
-        title,
-        incident.commander.individual.email,
-        incident.reporter.individual.email,
-        incident_type_plugin_metadata,
-        db_session=db_session,
-    )
-    ticket.update({"resource_type": plugin.plugin.slug})
-
-    event_service.log_incident_event(
-        db_session=db_session,
-        source=plugin.plugin.title,
-        description="Ticket created",
-        incident_id=incident.id,
-    )
-
-    return ticket
 
 
 def update_external_incident_ticket(
@@ -750,17 +712,11 @@ def incident_create_closed_flow(
 @background_task
 def incident_create_flow(*, organization_slug: str, incident_id: int, db_session=None):
     """Creates all resources required for new incidents."""
+    # we get the incident
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    # create the incident ticket
-    ticket = create_incident_ticket(incident, db_session)
-    if ticket:
-        incident.ticket = ticket_service.create(
-            db_session=db_session, ticket_in=TicketCreate(**ticket)
-        )
-
-        # we set the incident name
-        incident.name = ticket["resource_id"]
+    # we create the incident ticket
+    ticket_flows.create_incident_ticket(incident=incident, db_session=db_session)
 
     individual_participants, team_participants = get_incident_participants(incident, db_session)
 
