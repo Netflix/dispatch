@@ -15,7 +15,8 @@
         <settings-breadcrumbs v-model="project" />
       </v-col>
       <v-col class="text-right">
-        <v-btn color="info" class="mr-2" @click="createEditShow()"> New </v-btn>
+        <table-filter-dialog :project="project" />
+        <v-btn color="info" class="ml-2" @click="createEditShow()"> New </v-btn>
       </v-col>
     </v-row>
     <v-row no-gutters>
@@ -42,6 +43,9 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
+            <template v-slot:item.enabled="{ item }">
+              <v-simple-checkbox v-model="item.enabled" disabled />
+            </template>
             <template v-slot:item.status="{ item }">
               <case-status :status="item.status" :id="item.id" />
             </template>
@@ -100,9 +104,10 @@ import { mapActions } from "vuex"
 
 import NewEditDialog from "@/signal/NewEditDialog.vue"
 import DeleteDialog from "@/signal/DeleteDialog.vue"
+import TableFilterDialog from "@/signal/TableFilterDialog.vue"
 export default {
   name: "SignalTable",
-  components: { NewEditDialog, DeleteDialog },
+  components: { NewEditDialog, DeleteDialog, TableFilterDialog },
   props: {
     name: {
       type: String,
@@ -115,7 +120,7 @@ export default {
         { text: "Name", value: "name", align: "left", width: "10%" },
         { text: "Variant", value: "variant", sortable: true },
         { text: "Description", value: "description", sortable: false },
-        { text: "Project", value: "project.name", sortable: true },
+        { text: "Enabled", value: "enabled", sortable: true },
         { text: "Owner", value: "owner" },
         { text: "Case Type", value: "case_type" },
         { text: "Case Priority", value: "case_priority" },

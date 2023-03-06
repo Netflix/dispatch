@@ -19,11 +19,11 @@ def create_signal_instance(
         variant=signal_instance_data.variant,
     )
 
-    if not signal.enabled:
-        raise Exception("Signal definition is not enabled.")
-
     if not signal:
         raise Exception("No signal definition defined.")
+
+    if not signal.enabled:
+        raise Exception("Signal definition is not enabled.")
 
     signal_instance_in = SignalInstanceCreate(raw=signal_instance_data, project=signal.project)
 
