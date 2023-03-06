@@ -5,7 +5,7 @@ description: Configuration page for Atlassian Confluence.
 # Configuring Atlassian Confluence
 
 {% hint style="info" %}
-Dispatch ships with Atlassian Confluence storage and document plugin. This page descirbes the available configurations for the plugins.
+Dispatch ships with Atlassian Confluence storage and document plugin. This page describes the available configurations for the plugins.
 {% endhint %}
 
 ## Dispatch Configuration Variables for storage plugin
