@@ -42,10 +42,12 @@ const state = {
     },
     options: {
       filters: {
-        created_at: {
-          start: null,
-          end: null,
-        },
+        case_priority: [],
+        case_severity: [],
+        case_type: [],
+        project: [],
+        tag: [],
+        tag_type: [],
       },
       q: "",
       page: 1,
@@ -55,6 +57,26 @@ const state = {
     },
     loading: false,
     bulkEditLoading: false,
+  },
+  instanceTable: {
+    rows: {
+      items: [],
+      total: null,
+    },
+    options: {
+      filters: {
+        created_at: {
+          start: null,
+          end: null,
+        },
+      },
+      q: "",
+      page: 1,
+      itemsPerPage: 10,
+      sortBy: ["created_at"],
+      descending: [true],
+    },
+    loading: false,
   },
 }
 
