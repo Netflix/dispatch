@@ -3,13 +3,14 @@ import logging
 from datetime import datetime
 from typing import List
 
-from dispatch.decorators import timer
 from dispatch.conference import service as conference_service
 from dispatch.conference.models import ConferenceCreate
 from dispatch.conversation import service as conversation_service
 from dispatch.conversation.models import ConversationCreate
 from dispatch.database.core import SessionLocal, resolve_attr
 from dispatch.decorators import background_task
+from dispatch.decorators import timer
+from dispatch.document import flows as document_flows
 from dispatch.document import service as document_service
 from dispatch.document.models import DocumentCreate
 from dispatch.enums import DocumentResourceTypes
@@ -22,10 +23,6 @@ from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentRead
 from dispatch.incident.type import service as incident_type_service
 from dispatch.individual import service as individual_service
-from dispatch.messaging.strings import (
-    INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION,
-    INCIDENT_INVESTIGATION_SHEET_DESCRIPTION,
-)
 from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import Participant
@@ -35,8 +32,7 @@ from dispatch.plugin import service as plugin_service
 from dispatch.report.enums import ReportTypes
 from dispatch.report.messaging import send_incident_report_reminder
 from dispatch.service import service as service_service
-from dispatch.storage import service as storage_service
-from dispatch.storage.models import StorageCreate
+from dispatch.storage import flows as storage_flows
 from dispatch.task.enums import TaskStatus
 from dispatch.ticket import flows as ticket_flows
 from dispatch.ticket import service as ticket_service
@@ -199,116 +195,6 @@ def create_conference(incident: Incident, participants: List[str], db_session: S
     )
 
     return conference
-
-
-def create_incident_storage(
-    incident: Incident, participant_group_emails: List[str], db_session: SessionLocal
-):
-    """Create an external file store for incident storage."""
-    plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="storage"
-    )
-    storage_root_id = plugin.configuration.root_id
-    storage = plugin.instance.create_file(storage_root_id, incident.name, participant_group_emails)
-    storage.update({"resource_type": plugin.plugin.slug, "resource_id": storage["id"]})
-    return storage
-
-
-def create_incident_documents(incident: Incident, db_session: SessionLocal):
-    """Create incident documents."""
-    incident_documents = []
-
-    if not incident.storage:
-        return incident_documents
-
-    # we get the storage plugin
-    plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="storage"
-    )
-
-    if plugin:
-        # we create the investigation document
-        incident_document_name = f"{incident.name} - Incident Document"
-        incident_document_description = INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION
-
-        if incident.incident_type.incident_template_document:
-            incident_document_description = (
-                incident.incident_type.incident_template_document.description
-            )
-            document = plugin.instance.copy_file(
-                incident.storage.resource_id,
-                incident.incident_type.incident_template_document.resource_id,
-                incident_document_name,
-            )
-            plugin.instance.move_file(incident.storage.resource_id, document["id"])
-        else:
-            # we create a blank document if no template is defined
-            document = plugin.instance.create_file(
-                incident.storage.resource_id, incident_document_name, file_type="document"
-            )
-
-        document.update(
-            {
-                "name": incident_document_name,
-                "description": incident_document_description,
-                "resource_type": DocumentResourceTypes.incident,
-                "resource_id": document["id"],
-            }
-        )
-
-        incident_documents.append(document)
-
-        event_service.log_incident_event(
-            db_session=db_session,
-            source=plugin.plugin.title,
-            description="Incident document created",
-            incident_id=incident.id,
-        )
-
-        # we create the investigation sheet
-        incident_sheet_name = f"{incident.name} - Incident Tracking Sheet"
-        incident_sheet_description = INCIDENT_INVESTIGATION_SHEET_DESCRIPTION
-
-        if incident.incident_type.tracking_template_document:
-            incident_sheet_description = (
-                incident.incident_type.tracking_template_document.description
-            )
-            sheet = plugin.instance.copy_file(
-                incident.storage.resource_id,
-                incident.incident_type.tracking_template_document.resource_id,
-                incident_sheet_name,
-            )
-            plugin.instance.move_file(incident.storage.resource_id, sheet["id"])
-        else:
-            # we create a blank sheet if no template is defined
-            sheet = plugin.instance.create_file(
-                incident.storage.resource_id, incident_sheet_name, file_type="sheet"
-            )
-
-        if sheet:
-            sheet.update(
-                {
-                    "name": incident_sheet_name,
-                    "description": incident_sheet_description,
-                    "resource_type": DocumentResourceTypes.tracking,
-                    "resource_id": sheet["id"],
-                }
-            )
-
-            incident_documents.append(sheet)
-
-        event_service.log_incident_event(
-            db_session=db_session,
-            source=plugin.plugin.title,
-            description="Incident sheet created",
-            incident_id=incident.id,
-        )
-
-        # we create folders to store logs and screengrabs
-        plugin.instance.create_file(incident.storage.resource_id, "logs")
-        plugin.instance.create_file(incident.storage.resource_id, "screengrabs")
-
-    return incident_documents
 
 
 def create_post_incident_review_document(incident: Incident, db_session: SessionLocal):
@@ -700,83 +586,24 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
         db_session=db_session,
     )
 
-    storage_plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="storage"
+    # we create the storage folder
+    storage_members = []
+    if tactical_group and notifications_group:
+        storage_members = [tactical_group.email, notifications_group.email]
+    else:
+        storage_members = tactical_participant_emails
+
+    incident.storage = storage_flows.create_storage(
+        subject=incident, storage_members=storage_members, db_session=db_session
     )
-    if storage_plugin:
-        # we create the storage resource
-        try:
-            if group_plugin:
-                group_emails = []
-                if tactical_group and notifications_group:
-                    group_emails = [tactical_group.email, notifications_group.email]
 
-                storage = create_incident_storage(incident, group_emails, db_session)
-            else:
-                participant_emails = [x.email for x, _ in individual_participants]
-
-                # we don't have a group so add participants directly
-                storage = create_incident_storage(incident, participant_emails, db_session)
-
-            storage_in = StorageCreate(
-                resource_id=storage["resource_id"],
-                resource_type=storage["resource_type"],
-                weblink=storage["weblink"],
-            )
-
-            incident.storage = storage_service.create(
-                db_session=db_session,
-                storage_in=storage_in,
-            )
-
-            event_service.log_incident_event(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description="Storage added to incident",
-                incident_id=incident.id,
-            )
-        except Exception as e:
-            event_service.log_incident_event(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description=f"Creation of incident storage failed. Reason: {e}",
-                incident_id=incident.id,
-            )
-            log.exception(e)
-
-        # we create collaboration documents, don't fail the whole flow if this fails
-        try:
-            incident_documents = create_incident_documents(incident, db_session)
-
-            for d in incident_documents:
-                document_in = DocumentCreate(
-                    name=d["name"],
-                    description=d["description"],
-                    resource_id=d["resource_id"],
-                    project={"name": incident.project.name},
-                    resource_type=d["resource_type"],
-                    weblink=d["weblink"],
-                )
-                document = document_service.create(db_session=db_session, document_in=document_in)
-                incident.documents.append(document)
-
-                if document.resource_type == DocumentResourceTypes.incident:
-                    incident.incident_document_id = document.id
-
-            event_service.log_incident_event(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description="Collaboration documents added to incident",
-                incident_id=incident.id,
-            )
-        except Exception as e:
-            event_service.log_incident_event(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description=f"Creation of collaboration documents failed. Reason: {e}",
-                incident_id=incident.id,
-            )
-            log.exception(e)
+    # we create the incident document
+    document_flows.create_document(
+        subject=incident,
+        document_type=DocumentResourceTypes.incident,
+        document_template=incident.incident_type.incident_template_document,
+        db_session=db_session,
+    )
 
     conference_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conference"
