@@ -63,7 +63,10 @@ log = logging.getLogger(__name__)
 
 
 def get_incident_participants(incident: Incident, db_session: SessionLocal):
-    """Get additional incident participants based on priority, type, and description."""
+    """
+    Get additional participants (individuals and teams) based on
+    incident description, type, and priority.
+    """
     individual_contacts = []
     team_contacts = []
 
@@ -77,13 +80,20 @@ def get_incident_participants(incident: Incident, db_session: SessionLocal):
                 project_id=incident.project.id,
                 db_session=db_session,
             )
-
             event_service.log_incident_event(
                 db_session=db_session,
                 source=plugin.plugin.title,
                 description="Incident participants resolved",
                 incident_id=incident.id,
             )
+        else:
+            event_service.log_incident_event(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description="Incident participants not resolved",
+                incident_id=incident.id,
+            )
+            log.warning("Incident participants not resolved. No participant plugin enabled.")
 
     return individual_contacts, team_contacts
 
