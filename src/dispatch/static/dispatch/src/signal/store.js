@@ -18,6 +18,7 @@ const getDefaultSelectedState = () => {
     enabled: false,
     filters: null,
     entity_types: null,
+    signal_definition: null,
     tags: null,
     source: null,
     project: null,

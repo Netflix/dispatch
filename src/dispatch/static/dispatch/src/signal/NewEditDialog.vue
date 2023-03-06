@@ -251,6 +251,7 @@ export default {
       "selected.case_priority",
       "selected.filters",
       "selected.entity_types",
+      "selected.signal_definition",
       "selected.source",
       "selected.tags",
       "selected.project",
