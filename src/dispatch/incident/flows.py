@@ -1,12 +1,9 @@
 import logging
 
 from datetime import datetime
-from typing import List
 
-from dispatch.conference import service as conference_service
-from dispatch.conference.models import ConferenceCreate
-from dispatch.conversation import service as conversation_service
-from dispatch.conversation.models import ConversationCreate
+from dispatch.conference import flows as conference_flows
+from dispatch.conversation import flows as conversation_flows
 from dispatch.database.core import SessionLocal, resolve_attr
 from dispatch.decorators import background_task
 from dispatch.document import flows as document_flows
@@ -14,8 +11,7 @@ from dispatch.enums import DocumentResourceTypes
 from dispatch.enums import Visibility
 from dispatch.event import service as event_service
 from dispatch.group import flows as group_flows
-from dispatch.group import service as group_service
-from dispatch.group.enums import GroupType
+from dispatch.group.enums import GroupType, GroupAction
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentRead
 from dispatch.individual import service as individual_service
@@ -117,269 +113,6 @@ def inactivate_incident_participants(incident: Incident, db_session: SessionLoca
     )
 
 
-def create_conference(incident: Incident, participants: List[str], db_session: SessionLocal):
-    """Create external conference room."""
-    plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="conference"
-    )
-    conference = plugin.instance.create(incident.name, participants=participants)
-
-    conference.update({"resource_type": plugin.plugin.slug, "resource_id": conference["id"]})
-
-    event_service.log_incident_event(
-        db_session=db_session,
-        source=plugin.plugin.title,
-        description="Incident conference created",
-        incident_id=incident.id,
-    )
-
-    return conference
-
-
-def create_conversation(incident: Incident, db_session: SessionLocal):
-    """Create external communication conversation."""
-    plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
-    )
-    conversation = plugin.instance.create(incident.name)
-    conversation.update({"resource_type": plugin.plugin.slug, "resource_id": conversation["name"]})
-
-    event_service.log_incident_event(
-        db_session=db_session,
-        source=plugin.plugin.title,
-        description="Incident conversation created",
-        incident_id=incident.id,
-    )
-
-    return conversation
-
-
-def set_conversation_topic(incident: Incident, db_session: SessionLocal):
-    """Sets the conversation topic."""
-    if not incident.conversation:
-        log.warning("Conversation topic not set. No conversation available for this incident.")
-        return
-
-    conversation_topic = (
-        f":helmet_with_white_cross: {incident.commander.individual.name}, {incident.commander.team} | "
-        f"Status: {incident.status} | "
-        f"Type: {incident.incident_type.name} | "
-        f"Severity: {incident.incident_severity.name} | "
-        f"Priority: {incident.incident_priority.name}"
-    )
-
-    plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
-    )
-
-    try:
-        plugin.instance.set_topic(incident.conversation.channel_id, conversation_topic)
-    except Exception as e:
-        event_service.log_incident_event(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description=f"Setting the incident conversation topic failed. Reason: {e}",
-            incident_id=incident.id,
-        )
-        log.exception(e)
-
-
-def set_conversation_bookmarks(incident: Incident, db_session: SessionLocal):
-    """Sets the conversation bookmarks."""
-    if not incident.conversation:
-        log.warning("Conversation bookmark not set. No conversation available for this incident.")
-        return
-
-    plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
-    )
-    if not plugin:
-        log.warning("Bookmarks not created. No conversation plugin enabled.")
-        return
-
-    try:
-        plugin.instance.set_bookmark(
-            incident.conversation.channel_id,
-            resolve_attr(incident, "incident_document.weblink"),
-            title="Incident Document",
-        ) if incident.documents else log.warning(
-            "Document bookmark not set. No document available for this incident."
-        )
-
-        plugin.instance.set_bookmark(
-            incident.conversation.channel_id,
-            resolve_attr(incident, "conference.weblink"),
-            title="Video Conference",
-        ) if incident.conference else log.warning(
-            "Conference bookmark not set. No conference available for this incident."
-        )
-
-        plugin.instance.set_bookmark(
-            incident.conversation.channel_id,
-            resolve_attr(incident, "storage.weblink"),
-            title="Storage",
-        ) if incident.storage else log.warning(
-            "Storage bookmark not set. No storage available for this incident."
-        )
-
-        plugin.instance.set_bookmark(
-            incident.conversation.channel_id,
-            resolve_attr(incident, "ticket.weblink"),
-            title="Ticket",
-        ) if incident.ticket else log.warning(
-            "Ticket bookmark not set. No ticket available for this incident."
-        )
-
-    except Exception as e:
-        event_service.log_incident_event(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description=f"Setting the incident conversation bookmarks failed. Reason: {e}",
-            incident_id=incident.id,
-        )
-        log.exception(e)
-
-
-def add_participants_to_conversation(
-    participant_emails: List[str], incident: Incident, db_session: SessionLocal
-):
-    """Adds one or more participants to the conversation."""
-    if not incident.conversation:
-        log.warning(
-            "Incident participant(s) not added to conversation. No conversation available for this incident."
-        )
-        return
-
-    plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
-    )
-    if not plugin:
-        log.warning(
-            "Incident participant(s) not added to conversation. No conversation plugin enabled."
-        )
-        return
-
-    try:
-        plugin.instance.add(incident.conversation.channel_id, participant_emails)
-    except Exception as e:
-        event_service.log_incident_event(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description=f"Adding participant(s) to incident conversation failed. Reason: {e}",
-            incident_id=incident.id,
-        )
-        log.exception(e)
-
-
-def add_participant_to_tactical_group(
-    user_email: str, incident: Incident, db_session: SessionLocal
-):
-    """Adds participant to the tactical group."""
-    plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
-    )
-
-    if not plugin:
-        log.warning("Incident participant not added to tactical group. No group plugin enabled.")
-        return
-
-    tactical_group = group_service.get_by_incident_id_and_resource_type(
-        db_session=db_session,
-        incident_id=incident.id,
-        resource_type=f"{plugin.plugin.slug}-tactical-group",
-    )
-
-    if not tactical_group:
-        log.warning(
-            "Incident participant not added to tactical group. No tactical group available for this incident."
-        )
-        return
-
-    try:
-        plugin.instance.add(tactical_group.email, [user_email])
-    except Exception as e:
-        event_service.log_incident_event(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description=f"Adding participant(s) to incident tactical group failed. Reason: {e}",
-            incident_id=incident.id,
-        )
-        log.exception(e)
-
-
-def remove_participant_from_tactical_group(
-    user_email: str, incident: Incident, db_session: SessionLocal
-):
-    """Removes participant from the tactical group."""
-    plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
-    )
-
-    if not plugin:
-        log.warning(
-            "Incident participant not removed from tactical group. No group plugin enabled."
-        )
-        return
-
-    tactical_group = group_service.get_by_incident_id_and_resource_type(
-        db_session=db_session,
-        incident_id=incident.id,
-        resource_type=f"{plugin.plugin.slug}-tactical-group",
-    )
-
-    if not tactical_group:
-        log.warning(
-            "Incident participant not removed from tactical group. No tactical group available for this incident."
-        )
-        return
-
-    try:
-        plugin.instance.remove(tactical_group.email, [user_email])
-    except Exception as e:
-        event_service.log_incident_event(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description=f"Removing participant(s) from incident tactical group failed. Reason: {e}",
-            incident_id=incident.id,
-        )
-        log.exception(e)
-
-
-@background_task
-def incident_create_stable_flow(
-    *, incident_id: int, organization_slug: str = None, db_session=None
-):
-    """Creates all resources necessary when an incident is created as 'stable'."""
-    incident_create_flow(
-        incident_id=incident_id, organization_slug=organization_slug, db_session=db_session
-    )
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-    incident_stable_status_flow(incident=incident, db_session=db_session)
-
-
-@background_task
-def incident_create_closed_flow(
-    *, incident_id: int, organization_slug: str = None, db_session=None
-):
-    """Creates all resources necessary when an incident is created as 'closed'."""
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
-    # we inactivate all participants
-    inactivate_incident_participants(incident, db_session)
-
-    # we set the stable and close times to the reported time
-    incident.stable_at = incident.closed_at = incident.reported_at
-
-    # we create the incident ticket
-    ticket_flows.create_incident_ticket(incident=incident, db_session=db_session)
-
-    # we update the incident ticket
-    ticket_flows.update_incident_ticket(incident_id=incident.id, db_session=db_session)
-
-    db_session.add(incident)
-    db_session.commit()
-
-
 @background_task
 def incident_create_flow(*, organization_slug: str, incident_id: int, db_session=None):
     """Creates all resources required for new incidents."""
@@ -429,78 +162,19 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
         db_session=db_session,
     )
 
-    conference_plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="conference"
+    # we create the conference room
+    conference_participants = []
+    if tactical_group and notifications_group:
+        conference_participants = [tactical_group.email, notifications_group.email]
+    else:
+        conference_participants = tactical_participant_emails
+
+    conference_flows.create_conference(
+        incident=incident, participants=conference_participants, db_session=db_session
     )
-    if conference_plugin:
-        try:
-            participant_emails = [x.email for x, _ in individual_participants]
 
-            if tactical_group:
-                # we use the tactical group email if the group plugin is enabled
-                participant_emails = [tactical_group.email]
-
-            conference = create_conference(incident, participant_emails, db_session)
-
-            conference_in = ConferenceCreate(
-                resource_id=conference["resource_id"],
-                resource_type=conference["resource_type"],
-                weblink=conference["weblink"],
-                conference_id=conference["id"],
-                conference_challenge=conference["challenge"],
-            )
-            incident.conference = conference_service.create(
-                db_session=db_session, conference_in=conference_in
-            )
-
-            event_service.log_incident_event(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description="Conference added to incident",
-                incident_id=incident.id,
-            )
-        except Exception as e:
-            event_service.log_incident_event(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description=f"Creation of incident conference failed. Reason: {e}",
-                incident_id=incident.id,
-            )
-            log.exception(e)
-
-    # we create the conversation for real-time communications
-
-    conversation_plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
-    )
-    if conversation_plugin:
-        try:
-            conversation = create_conversation(incident, db_session)
-
-            conversation_in = ConversationCreate(
-                resource_id=conversation["resource_id"],
-                resource_type=conversation["resource_type"],
-                weblink=conversation["weblink"],
-                channel_id=conversation["id"],
-            )
-            incident.conversation = conversation_service.create(
-                db_session=db_session, conversation_in=conversation_in
-            )
-
-            event_service.log_incident_event(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description="Conversation added to incident",
-                incident_id=incident.id,
-            )
-        except Exception as e:
-            event_service.log_incident_event(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description=f"Creation of incident conversation failed. Reason: {e}",
-                incident_id=incident.id,
-            )
-            log.exception(e)
+    # we create the conversation
+    conversation_flows.create_conversation(incident=incident, db_session=db_session)
 
     # we update the incident ticket
     ticket_flows.update_incident_ticket(incident_id=incident.id, db_session=db_session)
@@ -511,9 +185,10 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
     )
 
     # we set the conversation topic
-    set_conversation_topic(incident, db_session)
+    conversation_flows.set_conversation_topic(incident, db_session)
+
     # we set the conversation bookmarks
-    set_conversation_bookmarks(incident, db_session)
+    conversation_flows.add_conversation_bookmarks(incident, db_session)
 
     # we defer this setup for all resolved incident roles until after resources have been created
     roles = ["reporter", "commander", "liaison", "scribe"]
@@ -527,10 +202,18 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
 
     for user_email in user_emails:
         # we add the participant to the tactical group
-        add_participant_to_tactical_group(user_email, incident, db_session)
+        group_flows.update_group(
+            subject=incident,
+            group=incident.tactical_group,
+            group_action=GroupAction.add_member,
+            group_member=user_email,
+            db_session=db_session,
+        )
 
         # we add the participant to the conversation
-        add_participants_to_conversation([user_email], incident, db_session)
+        conversation_flows.add_participants(
+            incident=incident, participant_emails=[user_email], db_session=db_session
+        )
 
         # we announce the participant in the conversation
         send_incident_participant_announcement_message(user_email, incident, db_session)
@@ -600,6 +283,41 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
     return incident
 
 
+@background_task
+def incident_create_stable_flow(
+    *, incident_id: int, organization_slug: str = None, db_session=None
+):
+    """Creates all resources necessary when an incident is created as 'stable'."""
+    incident_create_flow(
+        incident_id=incident_id, organization_slug=organization_slug, db_session=db_session
+    )
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+    incident_stable_status_flow(incident=incident, db_session=db_session)
+
+
+@background_task
+def incident_create_closed_flow(
+    *, incident_id: int, organization_slug: str = None, db_session=None
+):
+    """Creates all resources necessary when an incident is created as 'closed'."""
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    # we inactivate all participants
+    inactivate_incident_participants(incident, db_session)
+
+    # we set the stable and close times to the reported time
+    incident.stable_at = incident.closed_at = incident.reported_at
+
+    # we create the incident ticket
+    ticket_flows.create_incident_ticket(incident=incident, db_session=db_session)
+
+    # we update the incident ticket
+    ticket_flows.update_incident_ticket(incident_id=incident.id, db_session=db_session)
+
+    db_session.add(incident)
+    db_session.commit()
+
+
 def incident_active_status_flow(incident: Incident, db_session=None):
     """Runs the incident active flow."""
     # we un-archive the conversation
@@ -655,28 +373,10 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
             db_session,
         )
 
-        # we bookmark the incident review document
-        plugin = plugin_service.get_active_instance(
-            db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+        # we bookmark the incident review document in the conversation
+        conversation_flows.add_conversation_bookmark(
+            incident=incident, resource=incident.incident_review_document, db_session=db_session
         )
-        if not plugin:
-            log.warning("Incident review document not bookmarked. No conversation plugin enabled.")
-            return
-
-        try:
-            plugin.instance.set_bookmark(
-                incident.conversation.channel_id,
-                resolve_attr(incident, "incident_review_document.weblink"),
-                title="Incident Review Document",
-            )
-        except Exception as e:
-            event_service.log_incident_event(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description=f"Bookmarking the incident review document failed. Reason: {e}",
-                incident_id=incident.id,
-            )
-            log.exception(e)
 
 
 def incident_closed_status_flow(incident: Incident, db_session=None):
@@ -813,7 +513,7 @@ def conversation_topic_dispatcher(
 
     if conversation_topic_change:
         if incident.status != IncidentStatus.closed:
-            set_conversation_topic(incident, db_session)
+            conversation_flows.set_conversation_topic(incident, db_session)
 
 
 def status_flow_dispatcher(
@@ -1001,7 +701,7 @@ def incident_assign_role_flow(
 
         if assignee_role == ParticipantRoleType.incident_commander:
             # we update the conversation topic
-            set_conversation_topic(incident, db_session)
+            conversation_flows.set_conversation_topic(incident, db_session)
 
             # we send a message to the incident commander with tips on how to manage the incident
             send_incident_management_help_tips_message(incident, db_session)
@@ -1084,18 +784,23 @@ def incident_engage_oncall_flow(
 
 
 @background_task
-def incident_add_participant_to_tactical_group_flow(
+def incident_subscribe_participant_flow(
     user_email: str,
-    incident_id: Incident,
+    incident_id: int,
     organization_slug: str,
     db_session: SessionLocal,
 ):
-    """Adds participant to the tactical group."""
-    # we get the tactical group
+    """Subscribes a participant to the incident."""
+    # we get the incident
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    add_participant_to_tactical_group(
-        db_session=db_session, incident=incident, user_email=user_email
+    # we add the participant to the tactical group
+    group_flows.update_group(
+        subject=incident,
+        group=incident.tactical_group,
+        group_action=GroupAction.add_member,
+        group_member=user_email,
+        db_session=db_session,
     )
 
 
@@ -1143,11 +848,19 @@ def incident_add_or_reactivate_participant_flow(
         )
 
     # we add the participant to the tactical group
-    add_participant_to_tactical_group(user_email, incident, db_session)
+    group_flows.update_group(
+        subject=incident,
+        group=incident.tactical_group,
+        group_action=GroupAction.add_member,
+        group_member=user_email,
+        db_session=db_session,
+    )
 
     if incident.status != IncidentStatus.closed:
         # we add the participant to the conversation
-        add_participants_to_conversation([user_email], incident, db_session)
+        conversation_flows.add_participants(
+            incident=incident, participant_emails=[user_email], db_session=db_session
+        )
 
         # we announce the participant in the conversation
         send_incident_participant_announcement_message(user_email, incident, db_session)
@@ -1184,8 +897,10 @@ def incident_remove_participant_flow(
         if task.status == TaskStatus.open:
             for assignee in task.assignees:
                 if assignee == participant:
-                    # we add the participant back to the conversation
-                    add_participants_to_conversation([user_email], incident, db_session)
+                    # we add the participant to the conversation
+                    conversation_flows.add_participants(
+                        incident=incident, participant_emails=[user_email], db_session=db_session
+                    )
 
                     # we ask the participant to resolve or re-assign
                     # their tasks before leaving the incident conversation
@@ -1194,8 +909,10 @@ def incident_remove_participant_flow(
                     return
 
     if user_email == incident.commander.individual.email:
-        # we add the incident commander back to the conversation
-        add_participants_to_conversation([user_email], incident, db_session)
+        # we add the participant to the conversation
+        conversation_flows.add_participants(
+            incident=incident, participant_emails=[user_email], db_session=db_session
+        )
 
         # we send a notification to the channel
         send_incident_commander_readded_notification(incident, db_session)
@@ -1205,5 +922,11 @@ def incident_remove_participant_flow(
     # we remove the participant from the incident
     participant_flows.remove_participant(user_email, incident, db_session)
 
-    # we remove the participant to the tactical group
-    remove_participant_from_tactical_group(user_email, incident, db_session)
+    # we remove the participant from the tactical group
+    group_flows.update_group(
+        subject=incident,
+        group=incident.tactical_group,
+        group_action=GroupAction.remove_member,
+        group_member=user_email,
+        db_session=db_session,
+    )
