@@ -257,7 +257,7 @@ def _build_signal_list_modal_blocks(
                     accessory=Button(
                         text="Snooze",
                         value=button_metadata,
-                        action_id=CaseNotificationActions.snooze,
+                        action_id=SignalNotificationActions.snooze,
                     ),
                 ),
                 Context(
@@ -364,7 +364,7 @@ def handle_previous_action(ack: Ack, body: dict, client: WebClient, db_session: 
     )
 
 
-@app.action(CaseNotificationActions.snooze, middleware=[button_context_middleware, db_middleware])
+@app.action(SignalNotificationActions.snooze, middleware=[button_context_middleware, db_middleware])
 def snooze_button_click(
     ack: Ack, body: dict, client: WebClient, context: BoltContext, db_session: Session
 ) -> None:

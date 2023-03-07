@@ -148,7 +148,7 @@ def create_signal_messages(case: Case, channel_id: str) -> List[Message]:
                 elements=[
                     Button(
                         text="Snooze",
-                        action_id=CaseNotificationActions.snooze,
+                        action_id=SignalNotificationActions.snooze,
                         style="primary",
                         value=button_metadata,
                     )
