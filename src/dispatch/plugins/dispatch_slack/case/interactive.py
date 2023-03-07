@@ -374,7 +374,7 @@ def snooze_button_click(
 
     if subject.type == SignalSubjects.signal_instance:
         instance = signal_service.get_signal_instance(
-            db_session=db_session, signal_instance_id=context["subject"].id
+            db_session=db_session, signal_instance_id=subject.id
         )
         signal = signal_service.get(db_session=db_session, signal_id=instance.signal.id)
         subject.id = signal.id
