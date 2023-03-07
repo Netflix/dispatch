@@ -17,6 +17,7 @@ const getDefaultSelectedState = () => {
     working_signal: null,
     project: null,
     default: false,
+    loading: false,
   }
 }
 
@@ -73,15 +74,16 @@ const actions = {
     commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
       return EntityTypeApi.create(state.selected)
-        .then(() => {
-          commit("SET_SELECTED_LOADING", false)
-          dispatch("closeCreateEdit")
-          dispatch("getAll")
+        .then((resp) => {
           commit(
             "notification_backend/addBeNotification",
             { text: "Entity type created successfully.", type: "success" },
             { root: true }
           )
+          commit("SET_SELECTED_LOADING", false)
+          commit("RESET_SELECTED")
+          commit("SET_DIALOG_CREATE_EDIT", false)
+          return resp.data
         })
         .catch(() => {
           commit("SET_SELECTED_LOADING", false)
