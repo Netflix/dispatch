@@ -1,3 +1,6 @@
+import json
+
+
 def test_get(session, signal):
     from dispatch.signal.service import get
 
@@ -49,11 +52,11 @@ def test_delete(session, signal):
 
 # instance tests
 def test_create_instance(session, case, signal, project):
-    from dispatch.signal.models import RawSignal, SignalInstanceCreate
+    from dispatch.signal.models import SignalInstanceCreate
     from dispatch.signal.service import create_instance
 
     signal_instance_in = SignalInstanceCreate(
-        raw=RawSignal(id="foo"),
+        raw={"id": "foo"},
         project=project,
     )
     signal_instance = create_instance(db_session=session, signal_instance_in=signal_instance_in)
@@ -62,7 +65,6 @@ def test_create_instance(session, case, signal, project):
 
 def test_filter_actions_deduplicate(session, signal, project):
     from dispatch.signal.models import (
-        RawSignal,
         SignalFilter,
         SignalInstance,
         SignalFilterAction,
@@ -84,12 +86,12 @@ def test_filter_actions_deduplicate(session, signal, project):
 
     # create instance
     signal_instance_1 = SignalInstance(
-        raw=RawSignal(id="foo").json(), project=project, signal=signal, entities=[entity]
+        raw=json.dumps({"id": "foo"}), project=project, signal=signal, entities=[entity]
     )
     session.add(signal_instance_1)
 
     signal_instance_2 = SignalInstance(
-        raw=RawSignal(id="foo").json(), project=project, signal=signal, entities=[entity]
+        raw=json.dumps({"id": "foo"}), project=project, signal=signal, entities=[entity]
     )
     session.add(signal_instance_2)
     signal.entity_types.append(entity_type)
@@ -117,7 +119,6 @@ def test_filter_actions_deduplicate(session, signal, project):
 def test_filter_actions_snooze(session, signal, project):
     from datetime import datetime, timedelta, timezone
     from dispatch.signal.models import (
-        RawSignal,
         SignalFilter,
         SignalInstance,
         SignalFilterAction,
@@ -140,7 +141,7 @@ def test_filter_actions_snooze(session, signal, project):
 
     # create instance
     signal_instance_1 = SignalInstance(
-        raw=RawSignal(id="foo").json(), project=project, signal=signal, entities=[entity]
+        raw=json.dumps({"id": "foo"}), project=project, signal=signal, entities=[entity]
     )
     session.add(signal_instance_1)
     session.commit()
@@ -164,7 +165,6 @@ def test_filter_actions_snooze(session, signal, project):
 def test_filter_actions_snooze_expired(session, signal, project):
     from datetime import datetime, timedelta, timezone
     from dispatch.signal.models import (
-        RawSignal,
         SignalFilter,
         SignalInstance,
         SignalFilterAction,
@@ -186,7 +186,7 @@ def test_filter_actions_snooze_expired(session, signal, project):
 
     # create instance
     signal_instance_1 = SignalInstance(
-        raw=RawSignal(id="foo").json(), project=project, signal=signal, entities=[entity]
+        raw=json.dumps({"id": "foo"}), project=project, signal=signal, entities=[entity]
     )
     session.add(signal_instance_1)
 
