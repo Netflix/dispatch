@@ -402,7 +402,12 @@ def snooze_button_click(
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=body["view"]["id"], view=modal)
+    # We are not in a modal
+    if trigger_id := body.get("trigger_id"):
+        client.views_open(trigger_id=trigger_id, view=modal)
+    else:
+        # We are inside of a modal
+        client.views_update(view_id=body["view"]["id"], view=modal)
 
 
 @app.view(
