@@ -7,7 +7,6 @@ from typing import Optional, Literal
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy import asc, String
 from sqlalchemy.orm import Session
-from sqlalchemy.dialects.postgresql import UUID
 
 
 from dispatch.auth.models import DispatchUser
