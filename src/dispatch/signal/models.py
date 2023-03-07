@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Dict, List, Optional, Any
+from typing import List, Optional, Any
 
 from pydantic import Field
 from sqlalchemy import (
@@ -248,17 +248,6 @@ class AdditionalMetadata(DispatchBase):
     value: Optional[Any]
     type: Optional[str]
     important: Optional[bool]
-
-
-class RawSignal(DispatchBase):
-    action: Optional[List[Dict]] = []
-    additional_metadata: Optional[List[AdditionalMetadata]] = Field([], alias="additionalMetadata")
-    asset: Optional[List[Dict]] = []
-    identity: Optional[Dict] = {}
-    origin_location: Optional[List[Dict]] = Field([], alias="originLocation")
-    variant: Optional[str] = None
-    created_at: Optional[datetime] = Field(None, fields="createdAt")
-    id: Optional[str]
 
 
 class SignalInstanceBase(DispatchBase):
