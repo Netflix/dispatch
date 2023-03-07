@@ -8,7 +8,7 @@ description: Configuration page for Atlassian Confluence.
 Dispatch ships with Atlassian Confluence storage and document plugins. This page describes the available configurations for the plugins.
 {% endhint %}
 
-## Dispatch Configuration Variables for storage plugin
+## Dispatch configuration variables for storage plugin
 
 ### `API URL` \[Required\]
 
