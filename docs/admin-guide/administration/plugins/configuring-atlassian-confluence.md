@@ -42,7 +42,7 @@ Dispatch ships with Atlassian Confluence storage and document plugins. This page
 
 ### `Username` \[Required\]
 
-> Username for accessing the confluence instance, this user should have permission to create pages in the space.
+> Username for accessing the confluence instance. This user should have permission to create pages in the space.
 
 ### `Password` \[Required\]
 
