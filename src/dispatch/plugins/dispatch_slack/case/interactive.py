@@ -1310,9 +1310,7 @@ def handle_report_submission_event(
     )
 
 
-@app.action(
-    SignalNotificationActions.resolve, middleware=[button_context_middleware, db_middleware]
-)
+@app.action(SignalNotificationActions.view, middleware=[button_context_middleware, db_middleware])
 def signal_button_click(
     ack: Ack, body: dict, db_session: Session, context: BoltContext, client: WebClient
 ):
