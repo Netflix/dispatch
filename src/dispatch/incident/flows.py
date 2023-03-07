@@ -436,7 +436,7 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
         try:
             participant_emails = [x.email for x, _ in individual_participants]
 
-            if group_plugin and tactical_group:
+            if tactical_group:
                 # we use the tactical group email if the group plugin is enabled
                 participant_emails = [tactical_group.email]
 
