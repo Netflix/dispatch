@@ -67,7 +67,7 @@
           />
         </v-tab-item>
         <v-tab-item key="signal_instances">
-          <signal-instance-tab v-model="signal_instances" />
+          <signal-instance-tab v-model="signal_instances" v-if="selected.signal_instances" />
         </v-tab-item>
       </v-tabs-items>
     </v-navigation-drawer>
