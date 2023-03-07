@@ -2,9 +2,11 @@ import logging
 
 from datetime import datetime
 
+from sqlalchemy.orm import Session
+
 from dispatch.conference import flows as conference_flows
 from dispatch.conversation import flows as conversation_flows
-from dispatch.database.core import SessionLocal, resolve_attr
+from dispatch.database.core import resolve_attr
 from dispatch.decorators import background_task
 from dispatch.document import flows as document_flows
 from dispatch.enums import DocumentResourceTypes
@@ -49,7 +51,9 @@ from .models import Incident, IncidentStatus
 log = logging.getLogger(__name__)
 
 
-def get_incident_participants(incident: Incident, db_session: SessionLocal):
+def get_incident_participants(
+    incident: Incident, db_session: Session
+) -> tuple[list[Participant | None], list[Participant | None]]:
     """
     Get additional participants (individuals and teams) based on
     incident description, type, and priority.
@@ -85,7 +89,7 @@ def get_incident_participants(incident: Incident, db_session: SessionLocal):
     return individual_contacts, team_contacts
 
 
-def reactivate_incident_participants(incident: Incident, db_session: SessionLocal):
+def reactivate_incident_participants(incident: Incident, db_session: Session):
     """Reactivates all incident participants."""
     for participant in incident.participants:
         incident_add_or_reactivate_participant_flow(
@@ -100,7 +104,7 @@ def reactivate_incident_participants(incident: Incident, db_session: SessionLoca
     )
 
 
-def inactivate_incident_participants(incident: Incident, db_session: SessionLocal):
+def inactivate_incident_participants(incident: Incident, db_session: Session):
     """Inactivates all incident participants."""
     for participant in incident.participants:
         participant_flows.inactivate_participant(participant.individual.email, incident, db_session)
@@ -447,7 +451,7 @@ def conversation_topic_dispatcher(
     user_email: str,
     incident: Incident,
     previous_incident: dict,
-    db_session: SessionLocal,
+    db_session: Session,
 ):
     """Determines if the conversation topic needs to be updated."""
     # we load the individual
@@ -528,7 +532,7 @@ def status_flow_dispatcher(
     incident: Incident,
     current_status: IncidentStatus,
     previous_status: IncidentStatus,
-    db_session=SessionLocal,
+    db_session: Session,
 ):
     """Runs the correct flows depending on the incident's current and previous status."""
     # we have a currently active incident
@@ -604,12 +608,10 @@ def incident_update_flow(
         )
 
     # we run the active, stable or closed flows based on incident status change
-    status_flow_dispatcher(
-        incident, incident.status, previous_incident.status, db_session=db_session
-    )
+    status_flow_dispatcher(incident, incident.status, previous_incident.status, db_session)
 
     # we update the conversation topic
-    conversation_topic_dispatcher(user_email, incident, previous_incident, db_session=db_session)
+    conversation_topic_dispatcher(user_email, incident, previous_incident, db_session)
 
     # we update the external ticket
     ticket_flows.update_incident_ticket(incident_id=incident.id, db_session=db_session)
@@ -646,7 +648,7 @@ def incident_assign_role_flow(
     assigner_email: str,
     assignee_email: str,
     assignee_role: str,
-    db_session: SessionLocal,
+    db_session: Session,
 ):
     """Runs the incident participant role assignment flow."""
     # we load the incident instance
@@ -796,7 +798,7 @@ def incident_subscribe_participant_flow(
     user_email: str,
     incident_id: int,
     organization_slug: str,
-    db_session: SessionLocal,
+    db_session=None,
 ):
     """Subscribes a participant to the incident."""
     # we get the incident
