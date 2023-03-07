@@ -122,7 +122,7 @@ def create_case_message(case: Case, channel_id: str):
     return Message(blocks=blocks).build()["blocks"]
 
 
-def create_signal_messages(case: Case) -> List[Message]:
+def create_signal_messages(case: Case, channel_id: str) -> List[Message]:
     """Creates the signal instance message."""
     messages = []
 
@@ -132,7 +132,7 @@ def create_signal_messages(case: Case) -> List[Message]:
             organization_slug=case.project.organization.slug,
             id=str(instance.id),
             project_id=case.project.id,
-            channel_id=case.conversation.channel_id,
+            channel_id=channel_id,
         ).json()
 
         signal_metadata_blocks = [
