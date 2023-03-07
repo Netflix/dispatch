@@ -33,7 +33,7 @@ from dispatch.individual.models import IndividualContact
 from dispatch.participant.models import Participant
 from dispatch.plugin.models import Plugin, PluginInstance
 from dispatch.search.fulltext.composite_search import CompositeSearch
-from dispatch.signal.models import SignalInstance
+from dispatch.signal.models import Signal, SignalInstance
 from dispatch.task.models import Task
 
 from .core import Base, get_class_by_tablename, get_db, get_model_name_by_tablename
@@ -348,6 +348,8 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (Incident, "Tag"): (Incident.tags, True),
         (Incident, "TagType"): (Incident.tags, True),
         (Incident, "Term"): (Incident.terms, True),
+        (Signal, "Tag"): (Signal.tags, True),
+        (Signal, "TagType"): {Signal.tags, True},
         (SignalInstance, "Entity"): (SignalInstance.entities, True),
         (SignalInstance, "EntityType"): (SignalInstance.entities, True),
     }
