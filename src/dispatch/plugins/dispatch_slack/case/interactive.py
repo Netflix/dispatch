@@ -16,8 +16,8 @@ from blockkit import (
 )
 from slack_bolt import Ack, BoltContext, Respond
 from slack_sdk.web.client import WebClient
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
 from dispatch.case import flows as case_flows
@@ -71,7 +71,7 @@ from dispatch.plugins.dispatch_slack.service import get_user_email
 from dispatch.project import service as project_service
 from dispatch.search.utils import create_filter_expression
 from dispatch.signal import service as signal_service
-from dispatch.signal.models import SignalUpdate, SignalFilterCreate, SignalFilterRead
+from dispatch.signal.models import SignalFilterCreate, SignalFilterRead, SignalUpdate
 
 
 def configure(config: SlackConversationConfiguration):
@@ -1315,7 +1315,9 @@ def signal_button_click(
     ack: Ack, body: dict, db_session: Session, context: BoltContext, client: WebClient
 ):
     ack()
-    signal = signal_service.get(db_session=db_session, signal_id=context["subject"].id)
+    signal = signal_service.get_signal_instance(
+        db_session=db_session, signal_instance_id=context["subject"].id
+    )
 
     blocks = [Section(text=f"```{json.dumps(signal.raw, indent=2)}```")]
 
