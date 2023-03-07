@@ -34,7 +34,6 @@ Dispatch ships with Atlassian Confluence storage and document plugins. This page
 
 > This is the page id, where all the new pages and subpages will be created.
 
-
 ## Dispatch Configuration Variables for document plugin
 
 
