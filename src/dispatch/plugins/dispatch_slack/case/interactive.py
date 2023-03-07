@@ -39,6 +39,7 @@ from dispatch.plugins.dispatch_slack.case.enums import (
     CaseResolveActions,
     CaseShortcutCallbacks,
     CaseSnoozeActions,
+    SignalNotificationActions,
 )
 from dispatch.plugins.dispatch_slack.case.messages import create_case_message
 from dispatch.plugins.dispatch_slack.config import SlackConversationConfiguration
@@ -1307,3 +1308,22 @@ def handle_report_submission_event(
         trigger_id=result["trigger_id"],
         view=modal,
     )
+
+
+@app.action(
+    SignalNotificationActions.resolve, middleware=[button_context_middleware, db_middleware]
+)
+def signal_button_click(
+    ack: Ack, body: dict, db_session: Session, context: BoltContext, client: WebClient
+):
+    ack()
+    signal = signal_service.get(db_session=db_session, signal_id=context["subject"].id)
+
+    blocks = [Section(text=f"```{json.dumps(signal.raw, indent=2)}```")]
+
+    modal = Modal(
+        title="Raw Signal",
+        blocks=blocks,
+        close="Close",
+    ).build()
+    client.views_open(trigger_id=body["trigger_id"], view=modal)

@@ -297,7 +297,7 @@ def create_instance(
     # we round trip the raw data to json-ify date strings
     signal_instance = SignalInstance(
         **signal_instance_in.dict(exclude={"case", "signal", "project", "entities", "raw"}),
-        raw=json.loads(signal_instance_in.raw.json()),
+        raw=json.loads(json.dumps(signal_instance_in.raw)),
         project=project,
     )
 
