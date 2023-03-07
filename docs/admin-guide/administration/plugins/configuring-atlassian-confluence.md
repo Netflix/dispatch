@@ -36,7 +36,6 @@ Dispatch ships with Atlassian Confluence storage and document plugins. This page
 
 ## Dispatch Configuration Variables for document plugin
 
-
 ### `API URL` \[Required\]
 
 > URL of the confluence cloud instance.
