@@ -66,6 +66,56 @@ def create_conversation(incident: Incident, db_session: SessionLocal):
     return conversation
 
 
+def archive_conversation(incident: Incident, db_session: SessionLocal):
+    """Archives a conversation."""
+    if not incident.conversation:
+        log.warning("Conversation not archived. No conversation available for this incident.")
+        return
+
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+    )
+    if not plugin:
+        log.warning("Conversation not archived. No conversation plugin enabled.")
+        return
+
+    try:
+        plugin.instance.archive(incident.conversation.channel_id)
+    except Exception as e:
+        event_service.log_incident_event(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"Archiving conversation failed. Reason: {e}",
+            incident_id=incident.id,
+        )
+        log.exception(e)
+
+
+def unarchive_conversation(incident: Incident, db_session: SessionLocal):
+    """Unarchives a conversation."""
+    if not incident.conversation:
+        log.warning("Conversation not unarchived. No conversation available for this incident.")
+        return
+
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+    )
+    if not plugin:
+        log.warning("Conversation not unarchived. No conversation plugin enabled.")
+        return
+
+    try:
+        plugin.instance.unarchive(incident.conversation.channel_id)
+    except Exception as e:
+        event_service.log_incident_event(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"Unarchiving conversation failed. Reason: {e}",
+            incident_id=incident.id,
+        )
+        log.exception(e)
+
+
 def set_conversation_topic(incident: Incident, db_session: SessionLocal):
     """Sets the conversation topic."""
     if not incident.conversation:

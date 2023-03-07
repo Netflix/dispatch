@@ -280,6 +280,7 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
 
     db_session.add(incident)
     db_session.commit()
+
     return incident
 
 
@@ -287,7 +288,7 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
 def incident_create_stable_flow(
     *, incident_id: int, organization_slug: str = None, db_session=None
 ):
-    """Creates all resources necessary when an incident is created as 'stable'."""
+    """Creates all resources necessary when an incident is created with a stable status."""
     incident_create_flow(
         incident_id=incident_id, organization_slug=organization_slug, db_session=db_session
     )
@@ -299,7 +300,7 @@ def incident_create_stable_flow(
 def incident_create_closed_flow(
     *, incident_id: int, organization_slug: str = None, db_session=None
 ):
-    """Creates all resources necessary when an incident is created as 'closed'."""
+    """Creates all resources necessary when an incident is created with a closed status."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     # we inactivate all participants
@@ -321,11 +322,7 @@ def incident_create_closed_flow(
 def incident_active_status_flow(incident: Incident, db_session=None):
     """Runs the incident active flow."""
     # we un-archive the conversation
-    convo_plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
-    )
-    if convo_plugin:
-        convo_plugin.instance.unarchive(incident.conversation.channel_id)
+    conversation_flows.unarchive_conversation(incident=incident, db_session=db_session)
 
 
 def incident_stable_status_flow(incident: Incident, db_session=None):
@@ -344,9 +341,7 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
         )
 
     if incident.incident_review_document:
-        log.debug(
-            "The post-incident review document has already been created. Skipping creation..."
-        )
+        log.info("The post-incident review document has already been created. Skipping creation...")
         return
 
     # we create the post-incident review document
@@ -390,41 +385,54 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
     db_session.commit()
 
     # we archive the conversation
-    convo_plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
-    )
-    if convo_plugin:
-        convo_plugin.instance.archive(incident.conversation.channel_id)
+    conversation_flows.archive_conversation(incident=incident, db_session=db_session)
 
-    # storage for incidents with restricted visibility is never opened
     if incident.visibility == Visibility.open:
-        # add organization wide permission
         storage_plugin = plugin_service.get_active_instance(
             db_session=db_session, project_id=incident.project.id, plugin_type="storage"
         )
         if storage_plugin:
             if storage_plugin.configuration.open_on_close:
-                # typically only broad access to the incident document itself is required.
-                storage_plugin.instance.open(incident.incident_document.resource_id)
-
-                event_service.log_incident_event(
-                    db_session=db_session,
-                    source="Dispatch Core App",
-                    description="Incident document opened to anyone in the domain",
-                    incident_id=incident.id,
-                )
+                # we add organization wide permission to the incident document as
+                # typically that's the only resource that requires it.
+                try:
+                    storage_plugin.instance.open(incident.incident_document.resource_id)
+                except Exception as e:
+                    event_service.log_incident_event(
+                        db_session=db_session,
+                        source="Dispatch Core App",
+                        description=f"Opening incident document to anyone in the domain failed. Reason: {e}",
+                        incident_id=incident.id,
+                    )
+                    log.exception(e)
+                else:
+                    event_service.log_incident_event(
+                        db_session=db_session,
+                        source="Dispatch Core App",
+                        description="Incident document opened to anyone in the domain",
+                        incident_id=incident.id,
+                    )
 
             if storage_plugin.configuration.read_only:
                 # unfortunately this can't be applied at the folder level
-                # so we just mark the incident doc as available.
-                storage_plugin.instance.mark_readonly(incident.incident_document.resource_id)
-
-                event_service.log_incident_event(
-                    db_session=db_session,
-                    source="Dispatch Core App",
-                    description="Incident document marked as readonly",
-                    incident_id=incident.id,
-                )
+                # so we just mark the incident doc as readonly.
+                try:
+                    storage_plugin.instance.mark_readonly(incident.incident_document.resource_id)
+                except Exception as e:
+                    event_service.log_incident_event(
+                        db_session=db_session,
+                        source="Dispatch Core App",
+                        description=f"Marking incident document as readonly failed. Reason: {e}",
+                        incident_id=incident.id,
+                    )
+                    log.exception(e)
+                else:
+                    event_service.log_incident_event(
+                        db_session=db_session,
+                        source="Dispatch Core App",
+                        description="Incident document marked as readonly",
+                        incident_id=incident.id,
+                    )
 
     # we send a direct message to the incident commander asking to review
     # the incident's information and to tag the incident if appropiate
@@ -825,7 +833,7 @@ def incident_add_or_reactivate_participant_flow(
         )
 
         if participant:
-            log.debug("Skipping resolved participant. Oncall service member already engaged.")
+            log.info("Skipping resolved participant. Oncall service member already engaged.")
             return
 
     participant = participant_service.get_by_incident_id_and_email(
