@@ -28,7 +28,7 @@ from dispatch.project.models import ProjectRead
 
 from dispatch.database.core import Base
 from dispatch.entity.models import EntityRead
-from dispatch.entity_type.models import EntityTypeCreate, EntityTypeRead
+from dispatch.entity_type.models import EntityTypeRead
 from dispatch.tag.models import TagRead
 from dispatch.enums import DispatchEnum
 from dispatch.models import (
