@@ -5,12 +5,10 @@ from dispatch.case import service as case_service
 from dispatch.case import flows as case_flows
 from dispatch.entity import service as entity_service
 from dispatch.signal import service as signal_service
-from dispatch.signal.models import SignalInstanceCreate, RawSignal
+from dispatch.signal.models import SignalInstanceCreate
 
 
-def create_signal_instance(
-    db_session: SessionLocal, project: Project, signal_instance_data: RawSignal
-):
+def create_signal_instance(db_session: SessionLocal, project: Project, signal_instance_data: dict):
     """Creates a signal and a case if necessary."""
     signal = signal_service.get_by_variant_or_external_id(
         db_session=db_session,
