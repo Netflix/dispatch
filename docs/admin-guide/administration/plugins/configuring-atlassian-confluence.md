@@ -20,7 +20,7 @@ Dispatch ships with Atlassian Confluence storage and document plugins. This page
 
 ### `Password` \[Required\]
 
-> API token to access the confluence instance, please refer to the [link](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/) on creating a new API token.
+> API token to access the confluence instance. Please refer to the [link](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/) on creating a new API token.
 
 ### `Incident template ID` \[Required\]
 
