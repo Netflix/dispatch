@@ -265,7 +265,7 @@ class SignalInstanceBase(DispatchBase):
     project: ProjectRead
     case: Optional[CaseRead]
     entities: Optional[List[EntityRead]] = []
-    raw: RawSignal
+    raw: dict[str, Any]
     filter_action: SignalFilterAction = None
     created_at: Optional[datetime] = None
 

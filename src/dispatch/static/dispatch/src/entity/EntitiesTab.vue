@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-row justify="end">
+    <v-row justify="center">
       <date-chip-group-relative
         class="pl-6 mt-6"
         label="Time Range"

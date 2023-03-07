@@ -88,7 +88,7 @@ class SlackConversationPlugin(ConversationPlugin):
             ts=response["timestamp"],
         )
         if case.signal_instances:
-            messages = create_signal_messages(case=case)
+            messages = create_signal_messages(case=case, channel_id=conversation_id)
             for m in messages:
                 send_message(
                     client=client,
