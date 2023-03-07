@@ -41,3 +41,7 @@ class CaseReportActions(DispatchEnum):
 
 class CaseShortcutCallbacks(DispatchEnum):
     report = "case-report"
+
+
+class SignalNotificationActions(DispatchEnum):
+    view = "signal-notification-view"

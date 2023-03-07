@@ -7,8 +7,9 @@ from dispatch.case.models import Case
 from dispatch.plugins.dispatch_slack.models import SubjectMetadata
 from dispatch.plugins.dispatch_slack.case.enums import (
     CaseNotificationActions,
+    SignalNotificationActions,
 )
-from dispatch.plugins.dispatch_slack.service import chunks
+from collections import defaultdict
 
 
 def create_case_message(case: Case, channel_id: str):
@@ -124,70 +125,36 @@ def create_case_message(case: Case, channel_id: str):
 def create_signal_messages(case: Case) -> List[Message]:
     """Creates the signal instance message."""
     messages = []
+
     for instance in case.signal_instances:
+        button_metadata = SubjectMetadata(
+            type="signalInstance",
+            organization_slug=case.project.organization.slug,
+            id=str(instance.id),
+            project_id=case.project.id,
+            channel_id=case.conversation.channel_id,
+        ).json()
+
         signal_metadata_blocks = [
             Section(
-                text="*Signal Details*",
+                text=f"*Signal Entities* - {instance.id}",
                 accessory=Button(
-                    text="View",
-                    url=f"{DISPATCH_UI_URL}/{case.project.organization.slug}/signals/{instance.id}",
+                    text="View Raw",
+                    action_id=SignalNotificationActions.view,
+                    value=button_metadata,
                 ),
-            ),
-        ]
-        if instance.raw.get("identity"):
-            signal_metadata_blocks.append(Context(elements=["*Identity*"]))
-
-            signal_metadata_blocks.append(
-                Section(
-                    fields=[
-                        f"*{k.strip()}* \n {v.strip()}" for k, v in instance.raw["identity"].items()
-                    ]
-                )
             )
+        ]
+
+        # group entities by entity type
+        entity_groups = defaultdict(list)
+        for e in instance.entities:
+            entity_groups[e.entity_type.name].append(e.value)
+
+        for k, v in entity_groups.items():
+            if v:
+                signal_metadata_blocks.append(Section(text=f"*{k}*", fields=v))
             signal_metadata_blocks.append(Divider())
 
-        if instance.raw.get("action"):
-            signal_metadata_blocks.append(Context(elements=["*Actions*"]))
-            for item in instance.raw["action"]:
-                signal_metadata_blocks.append(Context(elements=[f"*{item['type']}*"]))
-                for chunk in chunks([(k, v) for k, v in item["value"].items()], 10):
-                    signal_metadata_blocks.append(
-                        Section(fields=[f"*{k.strip()}* \n {v.strip()}" for k, v in chunk]),
-                    )
-            signal_metadata_blocks.append(Divider())
-
-        if instance.raw.get("origin_location"):
-            signal_metadata_blocks.append(Context(elements=["*Origin Location*"]))
-            for item in instance.raw["origin_location"]:
-                signal_metadata_blocks.append(
-                    Section(fields=[f"*{item['type'].strip()}* \n {item['value'].strip()}"]),
-                )
-            signal_metadata_blocks.append(Divider())
-
-        if instance.raw.get("asset"):
-            signal_metadata_blocks.append(Context(elements=["*Assets*"]))
-            for item in instance.raw["asset"]:
-                signal_metadata_blocks.append(
-                    Section(fields=[f"*{item['type'].strip()}* \n {item['id'].strip()}"]),
-                )
-            signal_metadata_blocks.append(Divider())
-
-        for item in instance.raw.get("additional_metadata", []):
-            signal_metadata_blocks.append(Context(elements=[f"*{item['name']}*"]))
-
-            if isinstance(item["value"], dict):
-                # sections have a hard limit of 10 fields
-                for chunk in chunks([(k, v) for k, v in item["value"].items()], 10):
-                    signal_metadata_blocks.append(
-                        Section(fields=[f"*{k.strip()}* \n {v.strip()}" for k, v in chunk]),
-                    )
-            else:
-                # remove empty strings
-                if item["value"]:
-                    signal_metadata_blocks.append(
-                        Section(text=str(item["value"]).strip()),
-                    )
-
-        # limit the number of total messages
         messages.append(Message(blocks=signal_metadata_blocks[:50]).build()["blocks"])
     return messages
