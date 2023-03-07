@@ -13,7 +13,7 @@ def create_signal_instance(db_session: SessionLocal, project: Project, signal_in
     signal = signal_service.get_by_variant_or_external_id(
         db_session=db_session,
         project_id=project.id,
-        external_id=signal_instance_data.id,
+        external_id=signal_instance_data["id"],
         variant=signal_instance_data.variant,
     )
 
