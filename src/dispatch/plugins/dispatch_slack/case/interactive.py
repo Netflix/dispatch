@@ -66,7 +66,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     shortcut_context_middleware,
     user_middleware,
 )
-from dispatch.plugins.dispatch_slack.models import SubjectMetadata
+from dispatch.plugins.dispatch_slack.models import SubjectMetadata, CaseSubjects, SignalSubjects
 from dispatch.plugins.dispatch_slack.service import get_user_email
 from dispatch.project import service as project_service
 from dispatch.search.utils import create_filter_expression
@@ -244,7 +244,7 @@ def _build_signal_list_modal_blocks(
         limited_signals.append(signal)
 
         button_metadata = SubjectMetadata(
-            type="signal",
+            type=SignalSubjects.signal,
             organization_slug=signal.project.organization.slug,
             id=signal.id,
             project_id=signal.project.id,
@@ -371,6 +371,10 @@ def snooze_button_click(
     ack()
 
     subject = context["subject"]
+
+    if subject.type == SignalSubjects.signal_instance:
+        # TODO: Get signal
+        pass
 
     blocks = [
         title_input(placeholder="A name for your snooze filter."),
@@ -702,7 +706,7 @@ def assignee_select(
 
 
 @message_dispatcher.add(
-    subject="case", exclude={"subtype": ["channel_join", "channel_leave"]}
+    subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
 def handle_new_participant_message(
     ack: Ack, user: DispatchUser, context: BoltContext, db_session: Session, client: WebClient
@@ -719,7 +723,7 @@ def handle_new_participant_message(
 
 
 @message_dispatcher.add(
-    subject="case", exclude={"subtype": ["channel_join", "channel_leave"]}
+    subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
 def handle_new_participant_added(
     ack: Ack, payload: dict, context: BoltContext, db_session: Session, client: WebClient
@@ -740,7 +744,7 @@ def handle_new_participant_added(
 
 
 @message_dispatcher.add(
-    subject="case", exclude={"subtype": ["channel_join", "channel_leave"]}
+    subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
 def handle_case_participant_role_activity(
     ack: Ack, db_session: Session, context: BoltContext, user: DispatchUser
@@ -764,7 +768,7 @@ def handle_case_participant_role_activity(
 
 
 @message_dispatcher.add(
-    subject="case", exclude={"subtype": ["channel_join", "group_join"]}
+    subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "group_join"]}
 )  # we ignore user channel and group join messages
 def handle_case_after_hours_message(
     ack: Ack,
