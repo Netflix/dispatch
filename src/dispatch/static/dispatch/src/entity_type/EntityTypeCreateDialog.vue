@@ -298,7 +298,6 @@ export default {
     if (this.project) {
       this.selected.project = this.project
     }
-    this.getSignalData()
   },
   watch: {
     "selected.regular_expression": function (newVal, oldVal) {
