@@ -1,10 +1,13 @@
 import json
+from sqlalchemy_utils import cast_if
+
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Literal
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from sqlalchemy import asc
+from sqlalchemy import asc, String
 from sqlalchemy.orm import Session
+
 
 from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
@@ -116,6 +119,15 @@ def get_signal_filter_by_name(*, db_session, project_id: int, name: str) -> Opti
 def get_signal_filter(*, db_session: Session, signal_filter_id: int) -> SignalFilter:
     """Gets a single signal filter."""
     return db_session.query(SignalFilter).filter(SignalFilter.id == signal_filter_id).one_or_none()
+
+
+def get_signal_instance(*, db_session: Session, signal_instance_id: int | str):
+    """Gets a signal instance by it's UUID."""
+    return (
+        db_session.query(SignalInstance)
+        .filter(SignalInstance.id == cast_if(signal_instance_id, String))
+        .one_or_none()
+    )
 
 
 def get(*, db_session: Session, signal_id: int) -> Optional[Signal]:
