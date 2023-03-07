@@ -34,10 +34,6 @@ export default {
       type: Object,
       required: true,
     },
-    inputSignalInstances: {
-      type: Array,
-      default: () => [],
-    },
   },
   data() {
     return {
