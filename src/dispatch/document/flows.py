@@ -151,13 +151,15 @@ def update_document(document: Document, project_id: int, db_session: SessionLoca
             "reported_at": document.incident.reported_at.strftime("%m/%d/%Y %H:%M:%S"),
             "resolution": document.incident.resolution,
             "severity": document.incident.incident_severity.name,
-            "stable_at": document.incident.stable_at.strftime("%m/%d/%Y %H:%M:%S"),
             "status": document.incident.status,
             "storage_weblink": resolve_attr(document.incident, "storage.weblink"),
             "ticket_weblink": resolve_attr(document.incident, "ticket.weblink"),
             "title": document.incident.title,
             "type": document.incident.incident_type.name,
         }
+
+    if document.resource_type == DocumentResourceTypes.review:
+        document_kwargs["stable_at"] = document.incident.stable_at.strftime("%m/%d/%Y %H:%M:%S")
 
     plugin.instance.update(document.resource_id, **document_kwargs)
 

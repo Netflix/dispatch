@@ -65,7 +65,7 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
     db_session.add(incident)
     db_session.commit()
 
-    event_service.log(
+    event_service.log_incident_event(
         db_session=db_session,
         source=plugin.plugin.title,
         description="Incident ticket created",

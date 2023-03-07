@@ -167,7 +167,7 @@ def add_conversation_bookmark(incident: Incident, resource: Any, db_session: Ses
         return
 
     try:
-        plugin.instance.set_bookmark(
+        plugin.instance.add_bookmark(
             incident.conversation.channel_id,
             resource.weblink,
             title=resource.name,
@@ -200,7 +200,7 @@ def add_conversation_bookmarks(incident: Incident, db_session: SessionLocal):
         return
 
     try:
-        plugin.instance.set_bookmark(
+        plugin.instance.add_bookmark(
             incident.conversation.channel_id,
             resolve_attr(incident, "incident_document.weblink"),
             title="Incident Document",
@@ -208,7 +208,7 @@ def add_conversation_bookmarks(incident: Incident, db_session: SessionLocal):
             "Incident document bookmark not added. No document available for this incident."
         )
 
-        plugin.instance.set_bookmark(
+        plugin.instance.add_bookmark(
             incident.conversation.channel_id,
             resolve_attr(incident, "conference.weblink"),
             title="Video Conference",
@@ -216,7 +216,7 @@ def add_conversation_bookmarks(incident: Incident, db_session: SessionLocal):
             "Conference bookmark not added. No conference available for this incident."
         )
 
-        plugin.instance.set_bookmark(
+        plugin.instance.add_bookmark(
             incident.conversation.channel_id,
             resolve_attr(incident, "storage.weblink"),
             title="Storage Folder",
