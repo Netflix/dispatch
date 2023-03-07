@@ -60,7 +60,11 @@
           <workflow-instance-tab v-model="workflow_instances" />
         </v-tab-item>
         <v-tab-item key="entities">
-          <entities-tab :selected="selected" v-model="signal_instances" />
+          <entities-tab
+            :selected="selected"
+            v-model="signal_instances"
+            v-if="selected.signal_instances"
+          />
         </v-tab-item>
         <v-tab-item key="signal_instances">
           <signal-instance-tab v-model="signal_instances" />
