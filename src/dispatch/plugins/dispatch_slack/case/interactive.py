@@ -1316,7 +1316,7 @@ def signal_button_click(
 ):
     ack()
     signal = signal_service.get_signal_instance(
-        db_session=db_session, signal_id=context["subject"].id
+        db_session=db_session, signal_instance_id=context["subject"].id
     )
 
     blocks = [Section(text=f"```{json.dumps(signal.raw, indent=2)}```")]
