@@ -14,8 +14,10 @@ const getDefaultSelectedState = () => {
     enabled: true,
     global_find: false,
     signal_definitions: [],
+    working_signal: null,
     project: null,
     default: false,
+    loading: false,
   }
 }
 
@@ -46,11 +48,11 @@ const actions = {
         commit("SET_TABLE_LOADING", false)
       })
   }, 500),
-  createEditShow({ commit }, entity_type) {
-    commit("SET_DIALOG_CREATE_EDIT", true)
-    if (entity_type) {
-      commit("SET_SELECTED", entity_type)
+  createEditShow({ commit }, signal) {
+    if (signal) {
+      commit("SET_SELECTED_DEFINITION", signal)
     }
+    commit("SET_DIALOG_CREATE_EDIT", true)
   },
   removeShow({ commit }, entity_type) {
     commit("SET_DIALOG_DELETE", true)
@@ -72,15 +74,16 @@ const actions = {
     commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
       return EntityTypeApi.create(state.selected)
-        .then(() => {
-          commit("SET_SELECTED_LOADING", false)
-          dispatch("closeCreateEdit")
-          dispatch("getAll")
+        .then((resp) => {
           commit(
             "notification_backend/addBeNotification",
             { text: "Entity type created successfully.", type: "success" },
             { root: true }
           )
+          commit("SET_SELECTED_LOADING", false)
+          commit("RESET_SELECTED")
+          commit("SET_DIALOG_CREATE_EDIT", false)
+          return resp.data
         })
         .catch(() => {
           commit("SET_SELECTED_LOADING", false)
@@ -119,6 +122,9 @@ const mutations = {
   updateField,
   SET_SELECTED(state, value) {
     state.selected = Object.assign(state.selected, value)
+  },
+  SET_SELECTED_DEFINITION(state, value) {
+    state.selected.working_signal = value
   },
   SET_SELECTED_LOADING(state, value) {
     state.selected.loading = value

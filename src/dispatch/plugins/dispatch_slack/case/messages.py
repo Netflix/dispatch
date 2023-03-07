@@ -182,9 +182,12 @@ def create_signal_messages(case: Case) -> List[Message]:
                         Section(fields=[f"*{k.strip()}* \n {v.strip()}" for k, v in chunk]),
                     )
             else:
-                signal_metadata_blocks.append(
-                    Section(text=item["value"]),
-                )
-        messages.append(Message(blocks=signal_metadata_blocks).build()["blocks"])
+                # remove empty strings
+                if item["value"]:
+                    signal_metadata_blocks.append(
+                        Section(text=str(item["value"]).strip()),
+                    )
 
+        # limit the number of total messages
+        messages.append(Message(blocks=signal_metadata_blocks[:50]).build()["blocks"])
     return messages

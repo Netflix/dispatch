@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="showCreateEdit" max-width="1000px" persistent>
     <template v-slot:activator="{ on }">
-      <v-btn v-on="on" icon><v-icon>add</v-icon></v-btn>
+      <v-btn @click="createEditShow(signalDefinition)" v-on="on" icon><v-icon>add</v-icon></v-btn>
     </template>
     <v-card>
       <v-card-title>Create Entity Type </v-card-title>
@@ -187,7 +187,7 @@ export default {
       type: "json",
       signalInstances: [],
       filters: {
-        signal_definition: [],
+        signal: [],
       },
       editorValue: JSON.stringify(
         {
@@ -219,20 +219,21 @@ export default {
   },
   computed: {
     ...mapFields("entity_type", [
+      "dialogs.showCreateEdit",
       "selected",
       "selected.description",
       "selected.regular_expression",
       "selected.jpath",
-      "selected.signal_definitions",
+      "selected.signal",
+      "selected.working_signal",
       "selected.name",
       "loading",
-      "dialogs.showCreateEdit",
     ]),
     ...mapFields("route", ["query"]),
   },
   methods: {
     ...mapMutations("playground", ["updatePattern", "updateJsonPath"]),
-    ...mapActions("entity_type", ["closeCreateEditDialog", "save"]),
+    ...mapActions("entity_type", ["createEditShow", "closeCreateEditDialog", "save"]),
     saveEntityType() {
       this.save().then((entityType) => {
         this.$emit("input", entityType)
@@ -240,10 +241,12 @@ export default {
     },
     isValidRegex,
     isValidJsonPath,
-    getSignalData() {
-      //this.filters.signal_definition = [this.signalDefinition]
-      // TODO
-      const expression = SearchUtils.createFilterExpression(this.filter, "SignalInstance")
+    getSignalData(definition) {
+      if (definition) {
+        this.filters.signal = [definition]
+      }
+
+      const expression = SearchUtils.createFilterExpression(this.filters)
       if (!expression) return
 
       const params = { filter: JSON.stringify(expression), itemsPerPage: 5 }
@@ -268,7 +271,6 @@ export default {
             this.updatePattern(newVal)
           }
           if (selector === "jpath") {
-            console.log("here")
             if (!newVal) {
               // Ensures we reset the jsonpath
               this.updateJsonPath(newVal)
@@ -296,11 +298,7 @@ export default {
     if (this.project) {
       this.selected.project = this.project
     }
-
-    if (this.signalDefinition) {
-      this.selected.signal_definition = this.signalDefinition
-      this.getSignalData()
-    }
+    this.getSignalData()
   },
   watch: {
     "selected.regular_expression": function (newVal, oldVal) {
@@ -308,6 +306,9 @@ export default {
     },
     "selected.jpath": function (newVal, oldVal) {
       this.onSelectedChange("jpath", newVal, oldVal)
+    },
+    "selected.working_signal": function (newVal) {
+      this.getSignalData(newVal)
     },
   },
 }
