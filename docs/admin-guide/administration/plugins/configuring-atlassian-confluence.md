@@ -26,7 +26,6 @@ Dispatch ships with Atlassian Confluence storage and document plugins. This page
 
 > This is the page id of the template that contains the post incident review document details. Plugin uses this template to create new page and then replace the supported variables with the incident details.
 
-
 ### `Default Space ID` \[Required\]
 
 > This is the default space [key](https://confluence.atlassian.com/doc/space-keys-829076188.html) where all the pages will be created in confluence.
