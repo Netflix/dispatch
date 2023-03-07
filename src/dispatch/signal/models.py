@@ -218,14 +218,13 @@ class SignalBase(DispatchBase):
     external_url: Optional[str]
     source: Optional[SourceBase]
     created_at: Optional[datetime] = None
-    filters: Optional[List[SignalFilterRead]] = []
-    entity_types: Optional[List[EntityTypeRead]] = []
-    tags: Optional[List[TagRead]] = []
     project: ProjectRead
 
 
 class SignalCreate(SignalBase):
-    entity_types: Optional[EntityTypeCreate] = []
+    filters: Optional[List[SignalFilterRead]] = []
+    entity_types: Optional[List[EntityTypeRead]] = []
+    tags: Optional[List[TagRead]] = []
 
 
 class SignalUpdate(SignalBase):

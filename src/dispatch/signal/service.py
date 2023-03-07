@@ -195,12 +195,11 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
     signal.tags = tags
 
     entity_types = []
-    if signal_in.entity_types:
-        for e in signal_in.entity_types:
-            entity_type = entity_type_service.get_by_name_or_raise(
-                db_session=db_session, project_id=project.id, entity_type_in=e
-            )
-            entity_types.append(entity_type)
+    for e in signal_in.entity_types:
+        entity_type = entity_type_service.get_by_name_or_raise(
+            db_session=db_session, project_id=project.id, entity_type_in=e
+        )
+        entity_types.append(entity_type)
 
     signal.entity_types = entity_types
 

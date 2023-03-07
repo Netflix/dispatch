@@ -16,10 +16,10 @@ const getDefaultSelectedState = () => {
     case_type: null,
     case_priority: null,
     enabled: false,
-    filters: null,
-    entity_types: null,
+    filters: [],
+    entity_types: [],
+    tags: [],
     signal_definition: null,
-    tags: null,
     source: null,
     project: null,
     created_at: null,
@@ -141,6 +141,7 @@ const actions = {
     commit("RESET_SELECTED")
   },
   save({ commit, dispatch }) {
+    console.log("Saving state: %O", state)
     commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
       return SignalApi.create(state.selected)
