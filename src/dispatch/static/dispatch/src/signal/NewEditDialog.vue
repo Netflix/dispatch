@@ -148,8 +148,8 @@
             <v-card-text>
               <entity-type-filter-combobox
                 v-model="entity_types"
-                :signalDefinition="selected"
                 :project="project"
+                :signalDefinition="selected"
               ></entity-type-filter-combobox>
             </v-card-text>
           </v-card>
