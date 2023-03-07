@@ -104,23 +104,28 @@ def update_incident_ticket(
     if incident.total_cost:
         total_cost = incident.total_cost
 
-    plugin.instance.update(
-        incident.ticket.resource_id,
-        title,
-        description,
-        incident.incident_type.name,
-        incident.incident_severity.name,
-        incident.incident_priority.name,
-        incident.status.lower(),
-        incident.commander.individual.email,
-        incident.reporter.individual.email,
-        resolve_attr(incident, "conversation.weblink"),
-        resolve_attr(incident, "incident_document.weblink"),
-        resolve_attr(incident, "storage.weblink"),
-        resolve_attr(incident, "conference.weblink"),
-        total_cost,
-        incident_type_plugin_metadata=incident_type_plugin_metadata,
-    )
+    # we update the external incident ticket
+    try:
+        plugin.instance.update(
+            incident.ticket.resource_id,
+            title,
+            description,
+            incident.incident_type.name,
+            incident.incident_severity.name,
+            incident.incident_priority.name,
+            incident.status.lower(),
+            incident.commander.individual.email,
+            incident.reporter.individual.email,
+            resolve_attr(incident, "conversation.weblink"),
+            resolve_attr(incident, "incident_document.weblink"),
+            resolve_attr(incident, "storage.weblink"),
+            resolve_attr(incident, "conference.weblink"),
+            total_cost,
+            incident_type_plugin_metadata=incident_type_plugin_metadata,
+        )
+    except Exception as e:
+        log.exception(e)
+        return
 
     event_service.log_incident_event(
         db_session=db_session,
