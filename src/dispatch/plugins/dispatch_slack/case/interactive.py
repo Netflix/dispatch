@@ -373,8 +373,11 @@ def snooze_button_click(
     subject = context["subject"]
 
     if subject.type == SignalSubjects.signal_instance:
-        # TODO: Get signal
-        pass
+        instance = signal_service.get_signal_instance(
+            db_session=db_session, signal_instance_id=context["subject"].id
+        )
+        signal = signal_service.get(db_session=db_session, signal_id=instance.signal.id)
+        subject.id = signal.id
 
     blocks = [
         title_input(placeholder="A name for your snooze filter."),
