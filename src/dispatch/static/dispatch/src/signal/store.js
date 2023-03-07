@@ -141,7 +141,6 @@ const actions = {
     commit("RESET_SELECTED")
   },
   save({ commit, dispatch }) {
-    console.log("Saving state: %O", state)
     commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
       return SignalApi.create(state.selected)
