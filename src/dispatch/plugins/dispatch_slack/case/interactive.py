@@ -38,7 +38,7 @@ from dispatch.plugins.dispatch_slack.case.enums import (
     CaseReportActions,
     CaseResolveActions,
     CaseShortcutCallbacks,
-    CaseSnoozeActions,
+    SignalSnoozeActions,
     SignalNotificationActions,
 )
 from dispatch.plugins.dispatch_slack.case.messages import create_case_message
@@ -66,7 +66,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     shortcut_context_middleware,
     user_middleware,
 )
-from dispatch.plugins.dispatch_slack.models import SubjectMetadata
+from dispatch.plugins.dispatch_slack.models import SubjectMetadata, CaseSubjects, SignalSubjects
 from dispatch.plugins.dispatch_slack.service import get_user_email
 from dispatch.project import service as project_service
 from dispatch.search.utils import create_filter_expression
@@ -244,7 +244,7 @@ def _build_signal_list_modal_blocks(
         limited_signals.append(signal)
 
         button_metadata = SubjectMetadata(
-            type="signal",
+            type=SignalSubjects.signal,
             organization_slug=signal.project.organization.slug,
             id=signal.id,
             project_id=signal.project.id,
@@ -257,7 +257,7 @@ def _build_signal_list_modal_blocks(
                     accessory=Button(
                         text="Snooze",
                         value=button_metadata,
-                        action_id=CaseNotificationActions.snooze,
+                        action_id=SignalNotificationActions.snooze,
                     ),
                 ),
                 Context(
@@ -364,13 +364,20 @@ def handle_previous_action(ack: Ack, body: dict, client: WebClient, db_session: 
     )
 
 
-@app.action(CaseNotificationActions.snooze, middleware=[button_context_middleware, db_middleware])
+@app.action(SignalNotificationActions.snooze, middleware=[button_context_middleware, db_middleware])
 def snooze_button_click(
     ack: Ack, body: dict, client: WebClient, context: BoltContext, db_session: Session
 ) -> None:
     ack()
 
     subject = context["subject"]
+
+    if subject.type == SignalSubjects.signal_instance:
+        instance = signal_service.get_signal_instance(
+            db_session=db_session, signal_instance_id=subject.id
+        )
+        signal = signal_service.get(db_session=db_session, signal_id=instance.signal.id)
+        subject.id = signal.id
 
     blocks = [
         title_input(placeholder="A name for your snooze filter."),
@@ -391,15 +398,20 @@ def snooze_button_click(
         blocks=blocks,
         submit="Preview",
         close="Close",
-        callback_id=CaseSnoozeActions.preview,
+        callback_id=SignalSnoozeActions.preview,
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=body["view"]["id"], view=modal)
+    # We are not in a modal
+    if trigger_id := body.get("trigger_id"):
+        client.views_open(trigger_id=trigger_id, view=modal)
+    else:
+        # We are inside of a modal
+        client.views_update(view_id=body["view"]["id"], view=modal)
 
 
 @app.view(
-    CaseSnoozeActions.preview,
+    SignalSnoozeActions.preview,
     middleware=[
         action_context_middleware,
         db_middleware,
@@ -477,7 +489,7 @@ def handle_snooze_preview_event(
         submit="Create",
         close="Close",
         blocks=blocks,
-        callback_id=CaseSnoozeActions.submit,
+        callback_id=SignalSnoozeActions.submit,
         private_metadata=json.dumps({"form_data": form_data, "subject": context["subject"].json()}),
     ).build()
     ack(response_action="update", view=modal)
@@ -499,7 +511,7 @@ def ack_snooze_submission_event(ack: Ack, mfa_enabled: bool) -> None:
 
 
 @app.view(
-    CaseSnoozeActions.submit,
+    SignalSnoozeActions.submit,
     middleware=[
         action_context_middleware,
         db_middleware,
@@ -702,7 +714,7 @@ def assignee_select(
 
 
 @message_dispatcher.add(
-    subject="case", exclude={"subtype": ["channel_join", "channel_leave"]}
+    subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
 def handle_new_participant_message(
     ack: Ack, user: DispatchUser, context: BoltContext, db_session: Session, client: WebClient
@@ -719,7 +731,7 @@ def handle_new_participant_message(
 
 
 @message_dispatcher.add(
-    subject="case", exclude={"subtype": ["channel_join", "channel_leave"]}
+    subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
 def handle_new_participant_added(
     ack: Ack, payload: dict, context: BoltContext, db_session: Session, client: WebClient
@@ -740,7 +752,7 @@ def handle_new_participant_added(
 
 
 @message_dispatcher.add(
-    subject="case", exclude={"subtype": ["channel_join", "channel_leave"]}
+    subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
 def handle_case_participant_role_activity(
     ack: Ack, db_session: Session, context: BoltContext, user: DispatchUser
@@ -764,7 +776,7 @@ def handle_case_participant_role_activity(
 
 
 @message_dispatcher.add(
-    subject="case", exclude={"subtype": ["channel_join", "group_join"]}
+    subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "group_join"]}
 )  # we ignore user channel and group join messages
 def handle_case_after_hours_message(
     ack: Ack,

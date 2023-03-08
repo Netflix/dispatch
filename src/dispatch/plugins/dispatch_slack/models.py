@@ -1,6 +1,8 @@
 from typing import Optional
 from pydantic import BaseModel
 
+from dispatch.enums import DispatchEnum
+
 
 class SubjectMetadata(BaseModel):
     id: Optional[str]
@@ -29,3 +31,12 @@ class SubjectMetadata(BaseModel):
 
     project_id: Optional[str]
     channel_id: Optional[str]
+
+
+class CaseSubjects(DispatchEnum):
+    case = "case"
+
+
+class SignalSubjects(DispatchEnum):
+    signal = "signal"
+    signal_instance = "signal_instance"

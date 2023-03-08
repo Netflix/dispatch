@@ -30,8 +30,9 @@ from .case.messages import create_case_message, create_signal_messages
 from .endpoints import router as slack_event_router
 from .messaging import create_message_blocks
 from .service import (
-    add_users_to_conversation_thread,
+    add_conversation_bookmark,
     add_users_to_conversation,
+    add_users_to_conversation_thread,
     archive_conversation,
     chunks,
     conversation_archived,
@@ -47,7 +48,6 @@ from .service import (
     resolve_user,
     send_ephemeral_message,
     send_message,
-    set_conversation_bookmark,
     set_conversation_topic,
     unarchive_conversation,
     update_message,
@@ -219,10 +219,10 @@ class SlackConversationPlugin(ConversationPlugin):
         client = create_slack_client(self.configuration)
         return set_conversation_topic(client, conversation_id, topic)
 
-    def set_bookmark(self, conversation_id: str, weblink: str, title: str):
-        """Sets the conversation bookmark."""
+    def add_bookmark(self, conversation_id: str, weblink: str, title: str):
+        """Adds a bookmark to the conversation."""
         client = create_slack_client(self.configuration)
-        return set_conversation_bookmark(client, conversation_id, weblink, title)
+        return add_conversation_bookmark(client, conversation_id, weblink, title)
 
     def get_command_name(self, command: str):
         """Gets the command name."""

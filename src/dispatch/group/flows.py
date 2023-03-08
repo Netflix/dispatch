@@ -25,9 +25,13 @@ def create_group(
         log.warning("Group not created. No group plugin enabled.")
         return
 
+    group_name = subject.name
+    if group_type == GroupType.notifications:
+        group_name = f"{subject.name}-{GroupType.notifications}"
+
     # we create the external group
     try:
-        external_group = plugin.instance.create(name=subject.name, participants=group_participants)
+        external_group = plugin.instance.create(name=group_name, participants=group_participants)
     except Exception as e:
         log.exception(e)
         return
@@ -56,7 +60,7 @@ def create_group(
 
     if group_type == GroupType.tactical:
         subject.tactical_group_id = group.id
-    else:
+    if group_type == GroupType.notifications:
         subject.notifications_group_id = group.id
 
     db_session.add(subject)
@@ -67,14 +71,14 @@ def create_group(
         event_service.log_case_event(
             db_session=db_session,
             source=plugin.plugin.title,
-            description="Case group created",
+            description=f"Case {group_type} group created",
             case_id=subject.id,
         )
     if subject_type == "incident":
         event_service.log_incident_event(
             db_session=db_session,
             source=plugin.plugin.title,
-            description="Incident group created",
+            description=f"Incident {group_type} group created",
             incident_id=subject.id,
         )
 

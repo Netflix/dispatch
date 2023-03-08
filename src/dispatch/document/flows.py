@@ -86,6 +86,9 @@ def create_document(
     if document_type == DocumentResourceTypes.incident:
         subject.incident_document_id = document.id
 
+    if document_type == DocumentResourceTypes.review:
+        subject.incident_review_document_id = document.id
+
     db_session.add(subject)
     db_session.commit()
 
@@ -132,7 +135,10 @@ def update_document(document: Document, project_id: int, db_session: SessionLoca
             "case_type": document.case.case_type.name,
         }
 
-    if document.resource_type == DocumentResourceTypes.incident:
+    if (
+        document.resource_type == DocumentResourceTypes.incident
+        or document.resource_type == DocumentResourceTypes.review
+    ):
         document_kwargs = {
             "commander_fullname": document.incident.commander.individual.name,
             "conference_challenge": resolve_attr(document.incident, "conference.challenge"),
@@ -142,6 +148,7 @@ def update_document(document: Document, project_id: int, db_session: SessionLoca
             "document_weblink": resolve_attr(document.incident, "incident_document.weblink"),
             "name": document.incident.name,
             "priority": document.incident.incident_priority.name,
+            "reported_at": document.incident.reported_at.strftime("%m/%d/%Y %H:%M:%S"),
             "resolution": document.incident.resolution,
             "severity": document.incident.incident_severity.name,
             "status": document.incident.status,
@@ -150,6 +157,9 @@ def update_document(document: Document, project_id: int, db_session: SessionLoca
             "title": document.incident.title,
             "type": document.incident.incident_type.name,
         }
+
+    if document.resource_type == DocumentResourceTypes.review:
+        document_kwargs["stable_at"] = document.incident.stable_at.strftime("%m/%d/%Y %H:%M:%S")
 
     plugin.instance.update(document.resource_id, **document_kwargs)
 
