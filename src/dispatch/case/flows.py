@@ -152,7 +152,7 @@ def create_conversation(case: Case, db_session: SessionLocal):
         db_session=db_session, project_id=case.project.id, plugin_type="conversation"
     )
     conversation = plugin.instance.create_threaded(
-        case=case, conversation_id=case.case_type.conversation_target
+        case=case, conversation_id=case.case_type.conversation_target, db_session=db_session
     )
     conversation.update({"resource_type": plugin.plugin.slug, "resource_id": conversation["id"]})
 
