@@ -38,7 +38,7 @@ from dispatch.plugins.dispatch_slack.case.enums import (
     CaseReportActions,
     CaseResolveActions,
     CaseShortcutCallbacks,
-    CaseSnoozeActions,
+    SignalSnoozeActions,
     SignalNotificationActions,
 )
 from dispatch.plugins.dispatch_slack.case.messages import create_case_message
@@ -398,7 +398,7 @@ def snooze_button_click(
         blocks=blocks,
         submit="Preview",
         close="Close",
-        callback_id=CaseSnoozeActions.preview,
+        callback_id=SignalSnoozeActions.preview,
         private_metadata=context["subject"].json(),
     ).build()
 
@@ -411,7 +411,7 @@ def snooze_button_click(
 
 
 @app.view(
-    CaseSnoozeActions.preview,
+    SignalSnoozeActions.preview,
     middleware=[
         action_context_middleware,
         db_middleware,
@@ -489,7 +489,7 @@ def handle_snooze_preview_event(
         submit="Create",
         close="Close",
         blocks=blocks,
-        callback_id=CaseSnoozeActions.submit,
+        callback_id=SignalSnoozeActions.submit,
         private_metadata=json.dumps({"form_data": form_data, "subject": context["subject"].json()}),
     ).build()
     ack(response_action="update", view=modal)
@@ -511,7 +511,7 @@ def ack_snooze_submission_event(ack: Ack, mfa_enabled: bool) -> None:
 
 
 @app.view(
-    CaseSnoozeActions.submit,
+    SignalSnoozeActions.submit,
     middleware=[
         action_context_middleware,
         db_middleware,
