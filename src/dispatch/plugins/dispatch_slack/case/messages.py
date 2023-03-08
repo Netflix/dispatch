@@ -156,7 +156,6 @@ def create_signal_messages(case: Case, channel_id: str, db_session: Session) -> 
                     ),
                 ]
             ),
-            Divider(),
             Section(text="*Entities*"),
         ]
 
@@ -207,12 +206,18 @@ def create_signal_messages(case: Case, channel_id: str, db_session: Session) -> 
                     case _:
                         case_message = f"Seen in *{related_instance_count}* other cases."
 
+                # dynamically allocate space for the entity type name and entity type values
+                entity_type_name_length = len(k)
+                entity_type_value_length = len(", ".join(item.value for item in v))
+                entity_type_name_spaces = " " * (55 - entity_type_name_length)
+                entity_type_value_spaces = " " * (50 - entity_type_value_length)
+
+                # Threaded messages do not overflow text fields, so we hack together the same UI with spaces
                 signal_metadata_blocks.append(
-                    Section(
-                        fields=[
-                            f"{k} \n `{', '.join(item.value for item in v)}`",
-                            f"{signal_message} \n {case_message}",
-                        ],
+                    Context(
+                        elements=[
+                            f"*{k}*{entity_type_name_spaces}{signal_message}\n`{', '.join(item.value for item in v)}`{entity_type_value_spaces}{case_message}"
+                        ]
                     ),
                 )
             signal_metadata_blocks.append(Divider())
