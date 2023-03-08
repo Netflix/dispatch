@@ -11,6 +11,7 @@
     - [Configuring PagerDuty](admin-guide/administration/plugins/configuring-pagerduty.md)
     - [Configuring Slack](admin-guide/administration/plugins/configuring-slack.md)
     - [Configuring Zoom](admin-guide/administration/plugins/configuring-zoom.md)
+    - [Configuring Atlassian Confluence](admin-guide/administration/plugins/configuring-atlassian-confluence.md)
   - [Templates](admin-guide/administration/templates.md)
   - [Contacts](admin-guide/administration/contact/README.md)
     - [Services](admin-guide/administration/contact/service.md)
