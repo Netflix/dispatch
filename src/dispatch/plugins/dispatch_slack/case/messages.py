@@ -4,7 +4,7 @@ from blockkit import Actions, Button, Context, Message, Section, Divider, Overfl
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.case.enums import CaseStatus
 from dispatch.case.models import Case
-from dispatch.plugins.dispatch_slack.models import SubjectMetadata
+from dispatch.plugins.dispatch_slack.models import SubjectMetadata, CaseSubjects, SignalSubjects
 from dispatch.plugins.dispatch_slack.case.enums import (
     CaseNotificationActions,
     SignalNotificationActions,
@@ -38,7 +38,7 @@ def create_case_message(case: Case, channel_id: str):
     ]
 
     button_metadata = SubjectMetadata(
-        type="case",
+        type=CaseSubjects.case,
         organization_slug=case.project.organization.slug,
         id=case.id,
         project_id=case.project.id,
@@ -128,7 +128,7 @@ def create_signal_messages(case: Case, channel_id: str) -> List[Message]:
 
     for instance in case.signal_instances:
         button_metadata = SubjectMetadata(
-            type="signalInstance",
+            type=SignalSubjects.signal_instance,
             organization_slug=case.project.organization.slug,
             id=str(instance.id),
             project_id=case.project.id,
@@ -143,7 +143,17 @@ def create_signal_messages(case: Case, channel_id: str) -> List[Message]:
                     action_id=SignalNotificationActions.view,
                     value=button_metadata,
                 ),
-            )
+            ),
+            Actions(
+                elements=[
+                    Button(
+                        text="Snooze",
+                        action_id=SignalNotificationActions.snooze,
+                        style="primary",
+                        value=button_metadata,
+                    )
+                ]
+            ),
         ]
 
         # group entities by entity type
