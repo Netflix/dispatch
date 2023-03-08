@@ -116,7 +116,7 @@ class ProjectFactory(BaseFactory):
 
     name = Sequence(lambda n: f"project{n}")
     description = FuzzyText()
-    default = Faker().pybool()
+    default = False
     color = Faker().color()
 
     class Meta:
@@ -810,6 +810,7 @@ class SignalFactory(BaseFactory):
     external_url = "https://test.com"
     external_id = "1234"
     variant = "Test Variant"
+    enabled = True
     loopin_signal_identity = False
     project = SubFactory(ProjectFactory)
 
