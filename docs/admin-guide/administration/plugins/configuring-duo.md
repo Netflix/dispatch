@@ -16,7 +16,7 @@ Dispatch ships with Duo support for additional multi-factor authentication check
 
 > Secret token used in conjunction with integration key.
 
-## `API_HOSTNAME` \[Required\]
+## `API Hostname` \[Required\]
 
 > API hostname ('api-....duosecurity.com')
 
