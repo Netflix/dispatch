@@ -229,7 +229,9 @@ class SignalCreate(SignalBase):
 
 class SignalUpdate(SignalBase):
     id: PrimaryKey
+    filters: Optional[List[SignalFilterRead]] = []
     entity_types: Optional[List[EntityTypeRead]] = []
+    tags: Optional[List[TagRead]] = []
 
 
 class SignalRead(SignalBase):
