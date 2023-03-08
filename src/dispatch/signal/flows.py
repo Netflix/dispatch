@@ -51,6 +51,7 @@ def create_signal_instance(
             title=signal.name,
             description=signal.description,
             case_priority=signal.case_priority,
+            project=project,
             case_type=signal.case_type,
         )
         case = case_service.create(

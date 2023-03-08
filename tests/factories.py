@@ -1,7 +1,14 @@
 import uuid
 from datetime import datetime
 
-from factory import LazyAttribute, LazyFunction, Sequence, SubFactory, post_generation
+from factory import (
+    LazyAttribute,
+    LazyFunction,
+    Sequence,
+    SubFactory,
+    post_generation,
+    SelfAttribute,
+)
 from factory.alchemy import SQLAlchemyModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyDateTime, FuzzyInteger, FuzzyText
 from faker import Faker
@@ -678,6 +685,7 @@ class CaseTypeFactory(BaseFactory):
 
     name = FuzzyText()
     description = FuzzyText()
+
     project = SubFactory(ProjectFactory)
 
     class Meta:
@@ -813,6 +821,7 @@ class SignalFactory(BaseFactory):
     enabled = True
     loopin_signal_identity = False
     project = SubFactory(ProjectFactory)
+    case_type = SubFactory(CaseTypeFactory, project=SelfAttribute("..project"))
 
     class Meta:
         model = Signal
