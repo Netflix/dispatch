@@ -1,5 +1,5 @@
 import pytest
-from sqlalchemy_utils import drop_database
+from sqlalchemy_utils import drop_database, database_exists
 from starlette.config import environ
 from starlette.testclient import TestClient
 
@@ -101,6 +101,9 @@ def testapp():
 
 @pytest.fixture(scope="session")
 def db():
+    if database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
+        drop_database(str(config.SQLALCHEMY_DATABASE_URI))
+
     init_database(engine)
     schema_engine = engine.execution_options(
         schema_translate_map={
