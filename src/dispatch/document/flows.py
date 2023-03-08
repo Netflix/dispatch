@@ -117,7 +117,7 @@ def update_document(document: Document, project_id: int, db_session: SessionLoca
         db_session=db_session, project_id=project_id, plugin_type="document"
     )
     if not plugin:
-        log.warning(f"Document {document.name} not updated. No document plugin enabled.")
+        log.warning("Document not updated. No document plugin enabled.")
         return
 
     document_kwargs = {}
