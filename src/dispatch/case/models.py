@@ -86,7 +86,7 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     )
 
     # relationships
-    assignee_id = Column(Integer, ForeignKey(Participant.id))
+    assignee_id = Column(Integer, ForeignKey("participant.id", ondelete="CASCADE"))
     assignee = relationship(
         Participant, foreign_keys=[assignee_id], lazy="subquery", post_update=True
     )

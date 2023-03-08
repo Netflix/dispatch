@@ -29,10 +29,10 @@ from dispatch.report.models import ExecutiveReportCreate, TacticalReportCreate
 
 from .flows import (
     incident_add_or_reactivate_participant_flow,
-    incident_add_participant_to_tactical_group_flow,
     incident_create_closed_flow,
     incident_create_flow,
     incident_create_stable_flow,
+    incident_subscribe_participant_flow,
     incident_update_flow,
 )
 from .metrics import create_incident_metric_query, make_forecast
@@ -229,7 +229,7 @@ def subscribe_to_incident(
 ):
     """Subscribes an individual to an incident."""
     background_tasks.add_task(
-        incident_add_participant_to_tactical_group_flow,
+        incident_subscribe_participant_flow,
         current_user.email,
         incident_id=current_incident.id,
         organization_slug=organization,
