@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Dict, List, Optional, Any
+from typing import List, Optional, Any
 
 from pydantic import Field
 from sqlalchemy import (
@@ -28,7 +28,7 @@ from dispatch.project.models import ProjectRead
 
 from dispatch.database.core import Base
 from dispatch.entity.models import EntityRead
-from dispatch.entity_type.models import EntityTypeCreate, EntityTypeRead
+from dispatch.entity_type.models import EntityTypeRead
 from dispatch.tag.models import TagRead
 from dispatch.enums import DispatchEnum
 from dispatch.models import (
@@ -218,19 +218,20 @@ class SignalBase(DispatchBase):
     external_url: Optional[str]
     source: Optional[SourceBase]
     created_at: Optional[datetime] = None
-    filters: Optional[List[SignalFilterRead]] = []
-    entity_types: Optional[List[EntityTypeRead]] = []
-    tags: Optional[List[TagRead]] = []
     project: ProjectRead
 
 
 class SignalCreate(SignalBase):
-    entity_types: Optional[EntityTypeCreate] = []
+    filters: Optional[List[SignalFilterRead]] = []
+    entity_types: Optional[List[EntityTypeRead]] = []
+    tags: Optional[List[TagRead]] = []
 
 
 class SignalUpdate(SignalBase):
     id: PrimaryKey
+    filters: Optional[List[SignalFilterRead]] = []
     entity_types: Optional[List[EntityTypeRead]] = []
+    tags: Optional[List[TagRead]] = []
 
 
 class SignalRead(SignalBase):
@@ -248,17 +249,6 @@ class AdditionalMetadata(DispatchBase):
     value: Optional[Any]
     type: Optional[str]
     important: Optional[bool]
-
-
-class RawSignal(DispatchBase):
-    action: Optional[List[Dict]] = []
-    additional_metadata: Optional[List[AdditionalMetadata]] = Field([], alias="additionalMetadata")
-    asset: Optional[List[Dict]] = []
-    identity: Optional[Dict] = {}
-    origin_location: Optional[List[Dict]] = Field([], alias="originLocation")
-    variant: Optional[str] = None
-    created_at: Optional[datetime] = Field(None, fields="createdAt")
-    id: Optional[str]
 
 
 class SignalInstanceBase(DispatchBase):

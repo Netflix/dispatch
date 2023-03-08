@@ -2,7 +2,6 @@ from dispatch.enums import DispatchEnum
 
 
 class CaseNotificationActions(DispatchEnum):
-    snooze = "case-notification-snooze"
     escalate = "case-notification-escalate"
     resolve = "case-notification-resolve"
     reopen = "case-notification-reopen"
@@ -24,11 +23,6 @@ class CaseResolveActions(DispatchEnum):
     submit = "case-notification-resolve-submit"
 
 
-class CaseSnoozeActions(DispatchEnum):
-    preview = "case-notification-snooze-preview"
-    submit = "case-notification-snooze-submit"
-
-
 class CaseEscalateActions(DispatchEnum):
     submit = "case-notification-escalate-submit"
     project_select = "case-notification-escalate-project-select"
@@ -44,4 +38,10 @@ class CaseShortcutCallbacks(DispatchEnum):
 
 
 class SignalNotificationActions(DispatchEnum):
+    snooze = "signal-notification-snooze"
     view = "signal-notification-view"
+
+
+class SignalSnoozeActions(DispatchEnum):
+    preview = "case-notification-snooze-preview"
+    submit = "case-notification-snooze-submit"
