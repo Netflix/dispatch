@@ -72,7 +72,6 @@ export default {
         { text: "Case", value: "case", sortable: false },
         { text: "Signal", value: "signal", sortable: false },
         { text: "Project", value: "project.name", sortable: true },
-        { text: "Entities", value: "entities", sortable: false },
         { text: "Created At", value: "created_at" },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
