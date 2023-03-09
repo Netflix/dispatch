@@ -17,7 +17,7 @@ from .service import create
 log = logging.getLogger(__name__)
 
 
-Resource = TypeVar("Subject", Document, Conference, Storage, Ticket)
+Resource = TypeVar("Resource", Document, Conference, Storage, Ticket)
 
 
 def create_conversation(incident: Incident, db_session: SessionLocal):
