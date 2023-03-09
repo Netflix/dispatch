@@ -243,10 +243,10 @@ def update_case_ticket(
     )
 
 
-def delete_ticket(ticket: Ticket, db_session: SessionLocal):
+def delete_ticket(ticket: Ticket, project_id: int, db_session: SessionLocal):
     """Deletes a ticket."""
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=ticket.case.project.id, plugin_type="ticket"
+        db_session=db_session, project_id=project_id, plugin_type="ticket"
     )
     if plugin:
         try:

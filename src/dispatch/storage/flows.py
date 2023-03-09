@@ -1,20 +1,23 @@
-from typing import Any, List
+from typing import TypeVar, List
 import logging
 
+from dispatch.case.models import Case
 from dispatch.database.core import SessionLocal
 from dispatch.database.core import get_table_name_by_class_instance
 from dispatch.event import service as event_service
+from dispatch.incident.models import Incident
 from dispatch.plugin import service as plugin_service
 
 from .enums import StorageAction
 from .models import Storage, StorageCreate
 from .service import create
 
-
 log = logging.getLogger(__name__)
 
+Subject = TypeVar("Subject", Case, Incident)
 
-def create_storage(subject: Any, storage_members: List[str], db_session: SessionLocal):
+
+def create_storage(subject: Subject, storage_members: List[str], db_session: SessionLocal):
     """Creates a storage."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=subject.project.id, plugin_type="storage"
@@ -77,7 +80,7 @@ def create_storage(subject: Any, storage_members: List[str], db_session: Session
 
 
 def update_storage(
-    subject: Any,
+    subject: Subject,
     storage_action: StorageAction,
     storage_members: List[str],
     db_session: SessionLocal,
@@ -127,10 +130,10 @@ def update_storage(
         )
 
 
-def delete_storage(storage: Storage, db_session: SessionLocal):
+def delete_storage(storage: Storage, project_id: int, db_session: SessionLocal):
     """Deletes an existing storage."""
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=storage.case.project.id, plugin_type="storage"
+        db_session=db_session, project_id=project_id, plugin_type="storage"
     )
     if plugin:
         try:

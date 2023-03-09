@@ -45,6 +45,7 @@ from .service import (
     list_conversation_messages,
     list_conversations,
     message_filter,
+    rename_conversation,
     resolve_user,
     send_ephemeral_message,
     send_message,
@@ -200,14 +201,19 @@ class SlackConversationPlugin(ConversationPlugin):
         add_users_to_conversation_thread(client, conversation_id, thread_id, participants)
 
     def archive(self, conversation_id: str):
-        """Archives conversation."""
+        """Archives a conversation."""
         client = create_slack_client(self.configuration)
         return archive_conversation(client, conversation_id)
 
     def unarchive(self, conversation_id: str):
-        """Unarchives conversation."""
+        """Unarchives a conversation."""
         client = create_slack_client(self.configuration)
         return unarchive_conversation(client, conversation_id)
+
+    def rename(self, conversation_id: str, name: str):
+        """Renames a conversation."""
+        client = create_slack_client(self.configuration)
+        return rename_conversation(client, conversation_id, name)
 
     def get_participant_avatar_url(self, participant_id: str):
         """Gets the participant's avatar url."""

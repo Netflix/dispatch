@@ -323,6 +323,11 @@ def unarchive_conversation(client: Any, conversation_id: str):
             raise e
 
 
+def rename_conversation(client: Any, conversation_id: str, name: str):
+    """Renames an existing conversation."""
+    return make_call(client, "conversations.rename", channel=conversation_id, name=name)
+
+
 def conversation_archived(client: Any, conversation_id: str):
     """Returns whether a given conversation has been archived or not."""
     try:

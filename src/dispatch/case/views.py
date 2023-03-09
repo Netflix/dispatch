@@ -225,22 +225,18 @@ def escalate_case(
 @router.delete(
     "/{case_id}",
     response_model=None,
-    summary="Deletes an existing case.",
+    summary="Deletes an existing case and its external resources.",
     dependencies=[Depends(PermissionsDependency([CaseEditPermission]))],
 )
 def delete_case(
     *,
-    db_session: Session = Depends(get_db),
-    organization: OrganizationSlug,
     case_id: PrimaryKey,
-    background_tasks: BackgroundTasks,
+    db_session: Session = Depends(get_db),
+    current_case: Case = Depends(get_current_case),
 ):
-    """Deletes an existing case."""
-    # we get the internal case
-    case = get(db_session=db_session, case_id=case_id)
-
+    """Deletes an existing case and its external resources."""
     # we run the case delete flow
-    case_delete_flow(case=case, db_session=db_session)
+    case_delete_flow(case=current_case, db_session=db_session)
 
     # we delete the internal case
     try:
@@ -252,7 +248,7 @@ def delete_case(
             detail=[
                 {
                     "msg": (
-                        f"Case {case.name} could not be deleted. Make sure the case has no "
+                        f"Case {current_case.name} could not be deleted. Make sure the case has no "
                         "relationships to other cases or incidents before deleting it.",
                     )
                 }
