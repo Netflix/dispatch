@@ -5,6 +5,7 @@
 - [Administration Guide](user-guide/administration/README.md)
   - [Project](admin-guide/administration/project.md)
   - [Plugins](admin-guide/administration/plugins/README.md)
+    - [Configuring Duo](admin-guide/administration/plugins/configuring-duo.md)
     - [Configuring G Suite](admin-guide/administration/plugins/configuring-g-suite.md)
     - [Configuring Jira](admin-guide/administration/plugins/configuring-jira.md)
     - [Configuring Opsgenie](admin-guide/administration/plugins/configuring-opsgenie.md)
