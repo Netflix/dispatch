@@ -191,9 +191,6 @@ def delete_incident(
     current_incident: Incident = Depends(get_current_incident),
 ):
     """Deletes an incident and its external resources."""
-    # # we get the internal incident
-    # incident = get(db_session=db_session, incident_id=incident_id)
-
     # we run the incident delete flow
     incident_delete_flow(incident=current_incident, db_session=db_session)
 
