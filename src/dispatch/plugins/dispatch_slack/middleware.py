@@ -1,4 +1,5 @@
 import logging
+import json
 from typing import Callable, NamedTuple, Optional
 
 from slack_bolt import BoltContext, BoltRequest
@@ -83,7 +84,13 @@ def button_context_middleware(payload: dict, context: BoltContext, next: Callabl
 
 def action_context_middleware(body: dict, context: BoltContext, next: Callable) -> None:
     """Attempt to determine the current context of the event."""
-    context.update({"subject": SubjectMetadata.parse_raw(body["view"]["private_metadata"])})
+    private_metadata = body["view"]["private_metadata"]
+    metadata = json.loads(private_metadata)
+
+    # Subject may be passed in it's own key to allow other data within private_metadata,
+    # to move between views, such as form_data.
+    subject = metadata.get("subject")
+    context["subject"] = SubjectMetadata.parse_raw(subject or private_metadata)
     next()
 
 
