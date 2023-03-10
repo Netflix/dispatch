@@ -12,6 +12,7 @@ from typing import List, Optional
 
 from blockkit import Message
 from joblib import Memory
+from sqlalchemy.orm import Session
 
 from dispatch.case.models import Case
 from dispatch.conversation.enums import ConversationCommands
@@ -77,7 +78,7 @@ class SlackConversationPlugin(ConversationPlugin):
         client = create_slack_client(self.configuration)
         return create_conversation(client, name, self.configuration.private_channels)
 
-    def create_threaded(self, case: Case, conversation_id: str):
+    def create_threaded(self, case: Case, conversation_id: str, db_session: Session):
         """Creates a new threaded conversation."""
         client = create_slack_client(self.configuration)
         blocks = create_case_message(case=case, channel_id=conversation_id)
@@ -89,7 +90,9 @@ class SlackConversationPlugin(ConversationPlugin):
             ts=response["timestamp"],
         )
         if case.signal_instances:
-            messages = create_signal_messages(case=case, channel_id=conversation_id)
+            messages = create_signal_messages(
+                case=case, channel_id=conversation_id, db_session=db_session
+            )
             for m in messages:
                 send_message(
                     client=client,
