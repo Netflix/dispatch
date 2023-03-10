@@ -513,7 +513,6 @@ def ack_snooze_submission_event(ack: Ack, mfa_enabled: bool) -> None:
 @app.view(
     SignalSnoozeActions.submit,
     middleware=[
-        action_context_middleware,
         db_middleware,
         user_middleware,
         modal_submit_middleware,
@@ -525,7 +524,6 @@ def handle_snooze_submission_event(
     client: WebClient,
     context: BoltContext,
     db_session: Session,
-    form_data: dict,
     user: DispatchUser,
 ) -> None:
     """Handle the submission event of the snooze modal.
@@ -543,14 +541,13 @@ def handle_snooze_submission_event(
         client (WebClient): The Slack API client.
         context (BoltContext): The context data.
         db_session (Session): The database session.
-        form_data (dict): The form data submitted by the user.
         user (DispatchUser): The Dispatch user who submitted the form.
     """
     metadata = json.loads(body["view"]["private_metadata"])
-    subject = json.loads(metadata["subject"])
+    subject = SubjectMetadata.parse_raw(metadata["subject"])
 
     mfa_plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=subject["project_id"], plugin_type="auth-mfa"
+        db_session=db_session, project_id=subject.project_id, plugin_type="auth-mfa"
     )
     mfa_enabled = True if mfa_plugin else False
 
@@ -563,7 +560,7 @@ def handle_snooze_submission_event(
         user: DispatchUser,
     ) -> None:
         # Get the existing filters for the signal
-        signal = signal_service.get(db_session=db_session, signal_id=subject["id"])
+        signal = signal_service.get(db_session=db_session, signal_id=subject.id)
 
         # Create the new filter from the form data
         if form_data.get(DefaultBlockIds.entity_select):
@@ -587,7 +584,7 @@ def handle_snooze_submission_event(
             )
             date = datetime.now() + delta
 
-        project = project_service.get(db_session=db_session, project_id=subject["project_id"])
+        project = project_service.get(db_session=db_session, project_id=signal.project_id)
         filters = {
             "entity": entities,
         }
