@@ -69,6 +69,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
 )
 from dispatch.plugins.dispatch_slack.models import (
     SubjectMetadata,
+    FormData,
     FormMetadata,
     CaseSubjects,
     SignalSubjects,
@@ -562,7 +563,7 @@ def handle_snooze_submission_event(
 
     def _create_snooze_filter(
         db_session: Session,
-        form_data: FormMetadata,
+        form_data: FormData,
         subject: SubjectMetadata,
         user: DispatchUser,
     ) -> None:

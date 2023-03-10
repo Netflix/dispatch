@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, NewType
 
 from pydantic import BaseModel
 
@@ -39,8 +39,17 @@ class BlockSelection(BaseModel):
     value: str
 
 
+FormData = NewType(
+    "FormData",
+    dict[
+        str,
+        str | BlockSelection | list[BlockSelection],
+    ],
+)
+
+
 class FormMetadata(SubjectMetadata):
-    form_data: dict[str, str | BlockSelection | list[BlockSelection]]
+    form_data: FormData
 
 
 class CaseSubjects(DispatchEnum):
