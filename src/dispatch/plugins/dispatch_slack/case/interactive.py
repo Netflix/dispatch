@@ -571,12 +571,12 @@ def handle_snooze_submission_event(
         signal = signal_service.get(db_session=db_session, signal_id=subject.id)
         # Create the new filter from the form data
         entities = [
-            BlockSelection(name=entity.name, value=entity.value)
-            for entity in form_data.entity_select
+            {"name": entity.name, "value": entity.value}
+            for entity in form_data[DefaultBlockIds.entity_select]
         ]
-        description = form_data.description_input
-        name = form_data.title_input
-        delta: str = form_data.relative_date_picker_input.value
+        description = form_data[DefaultBlockIds.description_input]
+        name = form_data[DefaultBlockIds.title_input]
+        delta: str = form_data[DefaultBlockIds.relative_date_picker_input].value
         delta = timedelta(
             hours=int(delta.split(":")[0]),
             minutes=int(delta.split(":")[1]),

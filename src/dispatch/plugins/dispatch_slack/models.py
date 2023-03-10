@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, root_validator
 
 from dispatch.enums import DispatchEnum
 
@@ -39,12 +39,8 @@ class BlockSelection(BaseModel):
     value: str
 
 
-class FormData(BaseModel):
-    __root__: dict[str, str | BlockSelection | list[BlockSelection]]
-
-
 class FormMetadata(SubjectMetadata):
-    form_data: FormData
+    form_data: dict[str, str | BlockSelection | list[BlockSelection]]
 
 
 class CaseSubjects(DispatchEnum):
