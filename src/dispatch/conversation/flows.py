@@ -1,16 +1,23 @@
 import logging
 
-from typing import Any, List
+from typing import TypeVar, List
 
+from dispatch.conference.models import Conference
 from dispatch.database.core import SessionLocal, resolve_attr
+from dispatch.document.models import Document
 from dispatch.event import service as event_service
 from dispatch.incident.models import Incident
 from dispatch.plugin import service as plugin_service
+from dispatch.storage.models import Storage
+from dispatch.ticket.models import Ticket
 
-from .models import ConversationCreate
+from .models import Conversation, ConversationCreate
 from .service import create
 
 log = logging.getLogger(__name__)
+
+
+Resource = TypeVar("Resource", Document, Conference, Storage, Ticket)
 
 
 def create_conversation(incident: Incident, db_session: SessionLocal):
@@ -149,7 +156,7 @@ def set_conversation_topic(incident: Incident, db_session: SessionLocal):
         log.exception(e)
 
 
-def add_conversation_bookmark(incident: Incident, resource: Any, db_session: SessionLocal):
+def add_conversation_bookmark(incident: Incident, resource: Resource, db_session: SessionLocal):
     """Adds a conversation bookmark."""
     if not incident.conversation:
         log.warning(
@@ -268,3 +275,25 @@ def add_participants(incident: Incident, participant_emails: List[str], db_sessi
             incident_id=incident.id,
         )
         log.exception(e)
+
+
+def delete_conversation(conversation: Conversation, project_id: int, db_session: SessionLocal):
+    """
+    Renames and archives an existing conversation. Deleting a conversation
+    requires admin permissions in some SaaS products.
+    """
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=project_id, plugin_type="conversation"
+    )
+    if plugin:
+        try:
+            # we rename the conversation to avoid future naming collisions
+            plugin.instance.rename(
+                conversation.channel_id, f"{conversation.incident.name.lower()}-deleted"
+            )
+            # we archive the conversation
+            plugin.instance.archive(conversation.channel_id)
+        except Exception as e:
+            log.exception(e)
+    else:
+        log.warning("Conversation not deleted. No conversation plugin enabled.")

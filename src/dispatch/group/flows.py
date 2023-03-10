@@ -1,21 +1,24 @@
-from typing import Any, List
+from typing import List, TypeVar
 import logging
 
+from dispatch.case.models import Case
 from dispatch.database.core import SessionLocal
 from dispatch.database.core import get_table_name_by_class_instance
 from dispatch.event import service as event_service
+from dispatch.incident.models import Incident
 from dispatch.plugin import service as plugin_service
 
 from .enums import GroupType, GroupAction
 from .models import Group, GroupCreate
 from .service import create
 
-
 log = logging.getLogger(__name__)
+
+Subject = TypeVar("Subject", Case, Incident)
 
 
 def create_group(
-    subject: Any, group_type: str, group_participants: List[str], db_session: SessionLocal
+    subject: Subject, group_type: str, group_participants: List[str], db_session: SessionLocal
 ):
     """Creates a group."""
     plugin = plugin_service.get_active_instance(
@@ -86,7 +89,7 @@ def create_group(
 
 
 def update_group(
-    subject: Any,
+    subject: Subject,
     group: Group,
     group_action: GroupAction,
     group_member: str,
@@ -124,10 +127,10 @@ def update_group(
             return
 
 
-def delete_group(group: Group, db_session: SessionLocal):
+def delete_group(group: Group, project_id: int, db_session: SessionLocal):
     """Deletes an existing group."""
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=group.case.project.id, plugin_type="participant-group"
+        db_session=db_session, project_id=project_id, plugin_type="participant-group"
     )
     if plugin:
         try:
