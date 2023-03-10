@@ -29,7 +29,9 @@ class Tag(Base, TimeStampMixin, ProjectMixin):
     tag_type = relationship("TagType", backref="tag")
 
     # the catalog here is simple to help matching "named entities"
-    search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
+    search_vector = Column(
+        TSVectorType("name", "description", "external_id", regconfig="pg_catalog.simple")
+    )
 
 
 # Pydantic models

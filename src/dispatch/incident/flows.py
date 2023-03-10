@@ -643,6 +643,36 @@ def incident_update_flow(
     send_incident_update_notifications(incident, previous_incident, db_session)
 
 
+def incident_delete_flow(incident: Incident, db_session: Session):
+    """Deletes all external incident resources."""
+    # we delete the external ticket
+    if incident.ticket:
+        ticket_flows.delete_ticket(
+            ticket=incident.ticket, project_id=incident.project.id, db_session=db_session
+        )
+
+    # we delete the external groups
+    if incident.groups:
+        for group in incident.groups:
+            group_flows.delete_group(
+                group=group, project_id=incident.project.id, db_session=db_session
+            )
+
+    # we delete the external storage
+    if incident.storage:
+        storage_flows.delete_storage(
+            storage=incident.storage, project_id=incident.project.id, db_session=db_session
+        )
+
+    # we delete the conversation
+    if incident.conversation:
+        conversation_flows.delete_conversation(
+            conversation=incident.conversation,
+            project_id=incident.project.id,
+            db_session=db_session,
+        )
+
+
 def incident_assign_role_flow(
     incident_id: int,
     assigner_email: str,

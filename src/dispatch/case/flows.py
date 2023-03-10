@@ -434,16 +434,20 @@ def case_delete_flow(case: Case, db_session: SessionLocal):
     """Runs the case delete flow."""
     # we delete the external ticket
     if case.ticket:
-        ticket_flows.delete_ticket(ticket=case.ticket, db_session=db_session)
+        ticket_flows.delete_ticket(
+            ticket=case.ticket, project_id=case.project.id, db_session=db_session
+        )
 
     # we delete the external groups
     if case.groups:
         for group in case.groups:
-            group_flows.delete_group(group=group, db_session=db_session)
+            group_flows.delete_group(group=group, project_id=case.project.id, db_session=db_session)
 
     # we delete the external storage
     if case.storage:
-        storage_flows.delete_storage(storage=case.storage, db_session=db_session)
+        storage_flows.delete_storage(
+            storage=case.storage, project_id=case.project.id, db_session=db_session
+        )
 
 
 def case_new_status_flow(case: Case, db_session=None):

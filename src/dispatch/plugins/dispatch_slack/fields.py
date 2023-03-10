@@ -15,7 +15,7 @@ from dispatch.enums import DispatchEnum
 from dispatch.database.core import SessionLocal
 from dispatch.project import service as project_service
 from dispatch.participant.models import Participant
-from dispatch.case.enums import CaseStatus
+from dispatch.case.enums import CaseStatus, CaseResolutionReason
 from dispatch.case.type import service as case_type_service
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.severity import service as case_severity_service
@@ -47,6 +47,7 @@ class DefaultBlockIds(DispatchEnum):
 
     # cases
     case_priority_select = "case-priority-select"
+    case_resolution_reason_select = "case-resolution-reason-select"
     case_status_select = "case-status-select"
     case_severity_select = "case-severity-select"
     case_type_select = "case-type-select"
@@ -83,6 +84,7 @@ class DefaultActionIds(DispatchEnum):
     incident_type_select = "incident-type-select"
 
     # cases
+    case_resolution_reason_select = "case-resolution-reason-select"
     case_priority_select = "case-priority-select"
     case_status_select = "case-status-select"
     case_severity_select = "case-severity-select"
@@ -355,6 +357,28 @@ def resolution_input(
             action_id=action_id,
         ),
         block_id=block_id,
+        label=label,
+        **kwargs,
+    )
+
+
+def case_resolution_reason_select(
+    db_session: SessionLocal,
+    action_id: str = DefaultActionIds.case_resolution_reason_select,
+    block_id: str = DefaultBlockIds.case_resolution_reason_select,
+    label: str = "",
+    initial_option: dict = None,
+    **kwargs,
+):
+    """Creates an incident priority select."""
+    reasons = [{"text": str(s), "value": str(s)} for s in CaseResolutionReason]
+
+    return static_select_block(
+        placeholder="Select Resolution Reason",
+        options=reasons,
+        initial_option=initial_option,
+        block_id=block_id,
+        action_id=action_id,
         label=label,
         **kwargs,
     )

@@ -237,6 +237,8 @@ class SignalUpdate(SignalBase):
 class SignalRead(SignalBase):
     id: PrimaryKey
     entity_types: Optional[List[EntityTypeRead]] = []
+    filters: Optional[List[SignalFilterRead]] = []
+    tags: Optional[List[TagRead]] = []
 
 
 class SignalPagination(DispatchBase):

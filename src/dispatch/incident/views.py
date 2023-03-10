@@ -5,9 +5,12 @@ from datetime import date
 from typing import List
 
 from dateutil.relativedelta import relativedelta
+
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
 from starlette.requests import Request
+
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.permissions import (
@@ -32,6 +35,7 @@ from .flows import (
     incident_create_closed_flow,
     incident_create_flow,
     incident_create_stable_flow,
+    incident_delete_flow,
     incident_subscribe_participant_flow,
     incident_update_flow,
 )
@@ -177,7 +181,7 @@ def update_incident(
 @router.delete(
     "/{incident_id}",
     response_model=None,
-    summary="Delete an incident.",
+    summary="Deletes an incident and its external resources.",
     dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
 )
 def delete_incident(
@@ -186,8 +190,26 @@ def delete_incident(
     db_session: Session = Depends(get_db),
     current_incident: Incident = Depends(get_current_incident),
 ):
-    """Deletes an incident."""
-    delete(db_session=db_session, incident_id=current_incident.id)
+    """Deletes an incident and its external resources."""
+    # we run the incident delete flow
+    incident_delete_flow(incident=current_incident, db_session=db_session)
+
+    # we delete the internal incident
+    try:
+        delete(incident_id=current_incident.id, db_session=db_session)
+    except IntegrityError as e:
+        log.exception(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=[
+                {
+                    "msg": (
+                        f"Incident {current_incident.name} could not be deleted. Make sure the incident has no "
+                        "relationships to other incidents or cases before deleting it.",
+                    )
+                }
+            ],
+        ) from None
 
 
 @router.post(

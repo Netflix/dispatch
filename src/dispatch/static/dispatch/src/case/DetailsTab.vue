@@ -29,6 +29,14 @@
           />
         </ValidationProvider>
       </v-flex>
+      <v-flex xs6>
+        <v-select
+          v-model="resolution_reason"
+          label="Resolution Reason"
+          :items="visibilities"
+          hint="The general reason why a given case was resolved."
+        />
+      </v-flex>
       <v-flex xs12>
         <v-textarea
           v-model="resolution"
@@ -150,6 +158,7 @@ export default {
     return {
       statuses: ["New", "Triage", "Escalated", "Closed"],
       visibilities: ["Open", "Restricted"],
+      resolutionReasons: ["False Positive", "User Acknowledged", "Mitigated", "Escalated"],
     }
   },
 
@@ -169,6 +178,7 @@ export default {
       "selected.project",
       "selected.related",
       "selected.reported_at",
+      "selected.resolution_reason",
       "selected.resolution",
       "selected.signals",
       "selected.status",
