@@ -1,7 +1,7 @@
 """Adds missing tag search columns
 
 Revision ID: 7db13bf5c5d7
-Revises: 1d21b28bc553
+Revises: ec78c132ab93
 Create Date: 2023-03-09 16:31:22.963497
 
 """
@@ -14,7 +14,7 @@ from dispatch.search.fulltext import sync_trigger
 
 # revision identifiers, used by Alembic.
 revision = "7db13bf5c5d7"
-down_revision = "1d21b28bc553"
+down_revision = "ec78c132ab93"
 branch_labels = None
 depends_on = None
 
