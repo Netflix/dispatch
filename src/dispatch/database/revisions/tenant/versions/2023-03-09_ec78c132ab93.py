@@ -1,7 +1,7 @@
 """Adds case resolution reason
 
 Revision ID: ec78c132ab93
-Revises: 1d21b28bc553
+Revises: 7db13bf5c5d7
 Create Date: 2023-03-09 10:16:54.885960
 
 """
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "ec78c132ab93"
-down_revision = "1d21b28bc553"
+down_revision = "7db13bf5c5d7"
 branch_labels = None
 depends_on = None
 
