@@ -369,6 +369,7 @@ def handle_previous_action(ack: Ack, body: dict, client: WebClient, db_session: 
 def snooze_button_click(
     ack: Ack, body: dict, client: WebClient, context: BoltContext, db_session: Session
 ) -> None:
+    """Handles the snooze button click event."""
     ack()
 
     subject = context["subject"]
@@ -403,12 +404,10 @@ def snooze_button_click(
         private_metadata=context["subject"].json(),
     ).build()
 
-    # We are not in a modal
-    if trigger_id := body.get("trigger_id"):
-        client.views_open(trigger_id=trigger_id, view=modal)
+    if view_id := body.get("view", {}).get("id"):
+        client.views_update(view_id=view_id, view=modal)
     else:
-        # We are inside of a modal
-        client.views_update(view_id=body["view"]["id"], view=modal)
+        client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 @app.view(
