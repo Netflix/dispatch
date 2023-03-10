@@ -1,4 +1,5 @@
-from typing import Optional
+from typing import Optional, NewType
+
 from pydantic import BaseModel
 
 from dispatch.enums import DispatchEnum
@@ -31,6 +32,24 @@ class SubjectMetadata(BaseModel):
 
     project_id: Optional[str]
     channel_id: Optional[str]
+
+
+class BlockSelection(BaseModel):
+    name: str
+    value: str
+
+
+FormData = NewType(
+    "FormData",
+    dict[
+        str,
+        str | BlockSelection | list[BlockSelection],
+    ],
+)
+
+
+class FormMetadata(SubjectMetadata):
+    form_data: FormData
 
 
 class CaseSubjects(DispatchEnum):

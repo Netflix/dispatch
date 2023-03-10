@@ -67,7 +67,13 @@ from dispatch.plugins.dispatch_slack.middleware import (
     shortcut_context_middleware,
     user_middleware,
 )
-from dispatch.plugins.dispatch_slack.models import SubjectMetadata, CaseSubjects, SignalSubjects
+from dispatch.plugins.dispatch_slack.models import (
+    SubjectMetadata,
+    FormData,
+    FormMetadata,
+    CaseSubjects,
+    SignalSubjects,
+)
 from dispatch.plugins.dispatch_slack.service import get_user_email
 from dispatch.project import service as project_service
 from dispatch.search.utils import create_filter_expression
@@ -369,6 +375,7 @@ def handle_previous_action(ack: Ack, body: dict, client: WebClient, db_session: 
 def snooze_button_click(
     ack: Ack, body: dict, client: WebClient, context: BoltContext, db_session: Session
 ) -> None:
+    """Handles the snooze button click event."""
     ack()
 
     subject = context["subject"]
@@ -403,12 +410,10 @@ def snooze_button_click(
         private_metadata=context["subject"].json(),
     ).build()
 
-    # We are not in a modal
-    if trigger_id := body.get("trigger_id"):
-        client.views_open(trigger_id=trigger_id, view=modal)
+    if view_id := body.get("view", {}).get("id"):
+        client.views_update(view_id=view_id, view=modal)
     else:
-        # We are inside of a modal
-        client.views_update(view_id=body["view"]["id"], view=modal)
+        client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 @app.view(
@@ -425,6 +430,7 @@ def handle_snooze_preview_event(
     db_session: Session,
     form_data: dict,
 ) -> None:
+    """Handles the snooze preview event."""
     if form_data.get(DefaultBlockIds.title_input):
         title = form_data[DefaultBlockIds.title_input]
 
@@ -485,13 +491,17 @@ def handle_snooze_preview_event(
                 ]
             )
 
+    private_metadata = FormMetadata(
+        form_data=form_data,
+        **context["subject"].dict(),
+    ).json()
     modal = Modal(
         title="Add Snooze",
         submit="Create",
         close="Close",
         blocks=blocks,
         callback_id=SignalSnoozeActions.submit,
-        private_metadata=json.dumps({"form_data": form_data, "subject": context["subject"].json()}),
+        private_metadata=private_metadata,
     ).build()
     ack(response_action="update", view=modal)
 
@@ -517,16 +527,14 @@ def ack_snooze_submission_event(ack: Ack, mfa_enabled: bool) -> None:
         action_context_middleware,
         db_middleware,
         user_middleware,
-        modal_submit_middleware,
     ],
 )
 def handle_snooze_submission_event(
     ack: Ack,
-    body,
+    body: dict,
     client: WebClient,
     context: BoltContext,
     db_session: Session,
-    form_data: dict,
     user: DispatchUser,
 ) -> None:
     """Handle the submission event of the snooze modal.
@@ -544,14 +552,10 @@ def handle_snooze_submission_event(
         client (WebClient): The Slack API client.
         context (BoltContext): The context data.
         db_session (Session): The database session.
-        form_data (dict): The form data submitted by the user.
         user (DispatchUser): The Dispatch user who submitted the form.
     """
-    metadata = json.loads(body["view"]["private_metadata"])
-    subject = json.loads(metadata["subject"])
-
     mfa_plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=subject["project_id"], plugin_type="auth-mfa"
+        db_session=db_session, project_id=context["subject"].project_id, plugin_type="auth-mfa"
     )
     mfa_enabled = True if mfa_plugin else False
 
@@ -559,36 +563,28 @@ def handle_snooze_submission_event(
 
     def _create_snooze_filter(
         db_session: Session,
-        form_data: dict,
-        subject: dict,
+        form_data: FormData,
+        subject: SubjectMetadata,
         user: DispatchUser,
     ) -> None:
         # Get the existing filters for the signal
-        signal = signal_service.get(db_session=db_session, signal_id=subject["id"])
-
+        signal = signal_service.get(db_session=db_session, signal_id=subject.id)
         # Create the new filter from the form data
-        if form_data.get(DefaultBlockIds.entity_select):
-            entities = [
-                {"name": entity["name"], "value": entity["value"]}
-                for entity in form_data[DefaultBlockIds.entity_select]
-            ]
+        entities = [
+            {"name": entity.name, "value": entity.value}
+            for entity in form_data[DefaultBlockIds.entity_select]
+        ]
+        description = form_data[DefaultBlockIds.description_input]
+        name = form_data[DefaultBlockIds.title_input]
+        delta: str = form_data[DefaultBlockIds.relative_date_picker_input].value
+        delta = timedelta(
+            hours=int(delta.split(":")[0]),
+            minutes=int(delta.split(":")[1]),
+            seconds=int(delta.split(":")[2]),
+        )
+        date = datetime.now() + delta
 
-        if form_data.get(DefaultBlockIds.description_input):
-            description = form_data[DefaultBlockIds.description_input]
-
-        if form_data.get(DefaultBlockIds.title_input):
-            name = form_data[DefaultBlockIds.title_input]
-
-        if form_data.get(DefaultBlockIds.relative_date_picker_input):
-            delta: str = form_data[DefaultBlockIds.relative_date_picker_input]["value"]
-            delta = timedelta(
-                hours=int(delta.split(":")[0]),
-                minutes=int(delta.split(":")[1]),
-                seconds=int(delta.split(":")[2]),
-            )
-            date = datetime.now() + delta
-
-        project = project_service.get(db_session=db_session, project_id=subject["project_id"])
+        project = project_service.get(db_session=db_session, project_id=signal.project_id)
         filters = {
             "entity": entities,
         }
@@ -624,9 +620,9 @@ def handle_snooze_submission_event(
     if mfa_enabled is False:
         _create_snooze_filter(
             db_session=db_session,
-            form_data=metadata["form_data"],
+            form_data=context["subject"].form_data,
             user=user,
-            subject=subject,
+            subject=context["subject"],
         )
 
         modal = Modal(
@@ -662,9 +658,9 @@ def handle_snooze_submission_event(
             # Get the existing filters for the signal
             _create_snooze_filter(
                 db_session=db_session,
-                form_data=metadata["form_data"],
+                form_data=context["subject"].form_data,
                 user=user,
-                subject=subject,
+                subject=context["subject"],
             )
 
             modal = Modal(

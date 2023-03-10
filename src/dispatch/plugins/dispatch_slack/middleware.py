@@ -1,4 +1,5 @@
 import logging
+import json
 from typing import Callable, NamedTuple, Optional
 
 from slack_bolt import BoltContext, BoltRequest
@@ -18,7 +19,7 @@ from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.project import service as project_service
 
 from .exceptions import BotNotPresentError, ContextError, RoleError
-from .models import SubjectMetadata
+from .models import SubjectMetadata, FormMetadata
 
 log = logging.getLogger(__file__)
 
@@ -83,7 +84,11 @@ def button_context_middleware(payload: dict, context: BoltContext, next: Callabl
 
 def action_context_middleware(body: dict, context: BoltContext, next: Callable) -> None:
     """Attempt to determine the current context of the event."""
-    context.update({"subject": SubjectMetadata.parse_raw(body["view"]["private_metadata"])})
+    private_metadata = json.loads(body["view"]["private_metadata"])
+    if private_metadata.get("form_data"):
+        context.update({"subject": FormMetadata(**private_metadata)})
+    else:
+        context.update({"subject": SubjectMetadata(**private_metadata)})
     next()
 
 
