@@ -129,14 +129,14 @@ def delete(*, db_session, entity_id: int):
     db_session.commit()
 
 
-def get_cases_with_entity(db: Session, entity_id: int, days_back: int) -> list[Case]:
+def get_cases_with_entity(db_session: Session, entity_id: int, days_back: int) -> list[Case]:
     """Searches for cases with the same entity within a given timeframe."""
     # Calculate the datetime for the start of the search window
     start_date = datetime.utcnow() - timedelta(days=days_back)
 
     # Query for signal instances containing the entity within the search window
     cases = (
-        db.query(Case)
+        db_session.query(Case)
         .join(Case.signal_instances)
         .join(SignalInstance.entities)
         .filter(Entity.id == entity_id, SignalInstance.created_at >= start_date)
@@ -146,7 +146,7 @@ def get_cases_with_entity(db: Session, entity_id: int, days_back: int) -> list[C
 
 
 def get_signal_instances_with_entity(
-    db: Session, entity_id: int, days_back: int
+    db_session: Session, entity_id: int, days_back: int
 ) -> list[SignalInstance]:
     """Searches for signal instances with the same entity within a given timeframe."""
     # Calculate the datetime for the start of the search window
@@ -154,7 +154,7 @@ def get_signal_instances_with_entity(
 
     # Query for signal instances containing the entity within the search window
     signal_instances = (
-        db.query(SignalInstance)
+        db_session.query(SignalInstance)
         .options(joinedload(SignalInstance.signal))
         .join(SignalInstance.entities)
         .filter(SignalInstance.created_at >= start_date, Entity.id == entity_id)

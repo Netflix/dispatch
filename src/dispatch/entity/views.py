@@ -74,7 +74,7 @@ def count_cases_with_entity(
     days_back: int = 7,
     entity_id: PrimaryKey,
 ):
-    cases = get_cases_with_entity(db=db_session, entity_id=entity_id, days_back=days_back)
+    cases = get_cases_with_entity(db_session=db_session, entity_id=entity_id, days_back=days_back)
     return {"cases": cases}
 
 
@@ -86,6 +86,6 @@ def get_signal_instances_by_entity(
     entity_id: PrimaryKey,
 ):
     instances = get_signal_instances_with_entity(
-        db=db_session, entity_id=entity_id, days_back=days_back
+        db_session=db_session, entity_id=entity_id, days_back=days_back
     )
     return {"instances": instances}
