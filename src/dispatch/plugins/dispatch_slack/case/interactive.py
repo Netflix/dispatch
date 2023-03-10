@@ -45,10 +45,10 @@ from dispatch.plugins.dispatch_slack.case.messages import create_case_message
 from dispatch.plugins.dispatch_slack.config import SlackConversationConfiguration
 from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
 from dispatch.plugins.dispatch_slack.fields import (
-    DefaultBlockIds,
     case_priority_select,
     case_status_select,
     case_type_select,
+    DefaultBlockIds,
     description_input,
     entity_select,
     incident_priority_select,
@@ -56,6 +56,7 @@ from dispatch.plugins.dispatch_slack.fields import (
     project_select,
     relative_date_picker_input,
     resolution_input,
+    case_resolution_reason_select,
     title_input,
 )
 from dispatch.plugins.dispatch_slack.middleware import (
@@ -1050,6 +1051,7 @@ def edit_button_click(
     blocks = [
         title_input(initial_value=case.title),
         description_input(initial_value=case.description),
+        case_resolution_reason_select(),
         resolution_input(initial_value=case.resolution),
         assignee_select(initial_user=assignee_initial_user),
         case_status_select(initial_option={"text": case.status, "value": case.status}),
@@ -1099,6 +1101,7 @@ def handle_edit_submission_event(
         title=form_data[DefaultBlockIds.title_input],
         description=form_data[DefaultBlockIds.description_input],
         resolution=form_data[DefaultBlockIds.resolution_input],
+        resolution_reason=form_data[DefaultBlockIds.case_resolution_reason_select],
         status=form_data[DefaultBlockIds.case_status_select],
         visibility=case.visibility,
         case_priority=case_priority,
