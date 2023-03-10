@@ -71,7 +71,6 @@ from dispatch.plugins.dispatch_slack.models import (
     SubjectMetadata,
     FormMetadata,
     CaseSubjects,
-    BlockSelection,
     SignalSubjects,
 )
 from dispatch.plugins.dispatch_slack.service import get_user_email
