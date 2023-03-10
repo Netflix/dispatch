@@ -89,8 +89,10 @@ def action_context_middleware(body: dict, context: BoltContext, next: Callable) 
 
     # Subject may be passed in it's own key to allow other data within private_metadata,
     # to move between views, such as form_data.
-    subject = metadata.get("subject")
-    context.update({"subject": SubjectMetadata.parse_raw(subject or private_metadata)})
+    if subject := metadata.get("subject"):
+        context.update({"subject": SubjectMetadata.parse_raw(subject)})
+    else:
+        context.update({"subject": SubjectMetadata.parse_raw(private_metadata)})
     next()
 
 
