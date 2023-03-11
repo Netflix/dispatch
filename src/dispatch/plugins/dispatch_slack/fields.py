@@ -363,7 +363,6 @@ def resolution_input(
 
 
 def case_resolution_reason_select(
-    db_session: SessionLocal,
     action_id: str = DefaultActionIds.case_resolution_reason_select,
     block_id: str = DefaultBlockIds.case_resolution_reason_select,
     label: str = "",
