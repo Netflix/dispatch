@@ -223,8 +223,10 @@ def create_signal_messages(case: Case, channel_id: str, db_session: Session) -> 
                 )
             signal_metadata_blocks.append(Divider())
 
-        signal_metadata_blocks.append(
-            Context(elements=["Correlation is based on two weeks of signal data."]),
-        )
+        if instance.entities:
+            signal_metadata_blocks.append(
+                Context(elements=["Correlation is based on two weeks of signal data."]),
+            )
+
         messages.append(Message(blocks=signal_metadata_blocks[:50]).build()["blocks"])
     return messages
