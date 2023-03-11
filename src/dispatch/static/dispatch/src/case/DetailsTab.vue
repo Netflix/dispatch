@@ -33,7 +33,7 @@
         <v-select
           v-model="resolution_reason"
           label="Resolution Reason"
-          :items="visibilities"
+          :items="resolutionReasons"
           hint="The general reason why a given case was resolved."
         />
       </v-flex>
