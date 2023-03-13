@@ -365,7 +365,7 @@ def resolution_input(
 def case_resolution_reason_select(
     action_id: str = DefaultActionIds.case_resolution_reason_select,
     block_id: str = DefaultBlockIds.case_resolution_reason_select,
-    label: str = "",
+    label: str = "Resolution Reason",
     initial_option: dict = None,
     **kwargs,
 ):
