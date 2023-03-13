@@ -737,7 +737,7 @@ def handle_new_participant_added(
     for user_id in participants:
         user_email = get_user_email(client=client, user_id=user_id)
 
-        participant = case_flows.case_add_or_reactive_participant_flow(
+        participant = case_flows.case_add_or_reactivate_participant_flow(
             case_id=context["subject"].id,
             user_email=user_email,
             db_session=db_session,
@@ -764,7 +764,7 @@ def handle_case_participant_role_activity(
     else:
         # we have a new active participant lets add them
         participant = case_flows.case_add_or_reactivate_participant_flow(
-            case_id=context["subject"].id, user_email=user.email
+            case_id=context["subject"].id, user_email=user.email, db_session=db_session
         )
         participant.user_conversation_id = context["user_id"]
     db_session.commit()
