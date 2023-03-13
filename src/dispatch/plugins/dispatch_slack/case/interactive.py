@@ -563,10 +563,10 @@ def handle_snooze_submission_event(
 
     def _create_snooze_filter(
         db_session: Session,
-        form_data: FormData,
         subject: SubjectMetadata,
         user: DispatchUser,
     ) -> None:
+        form_data: FormData = subject.form_data
         # Get the existing filters for the signal
         signal = signal_service.get(db_session=db_session, signal_id=subject.id)
         # Create the new filter from the form data
@@ -620,7 +620,6 @@ def handle_snooze_submission_event(
     if mfa_enabled is False:
         _create_snooze_filter(
             db_session=db_session,
-            form_data=context["subject"].form_data,
             user=user,
             subject=context["subject"],
         )
@@ -658,7 +657,6 @@ def handle_snooze_submission_event(
             # Get the existing filters for the signal
             _create_snooze_filter(
                 db_session=db_session,
-                form_data=context["subject"].form_data,
                 user=user,
                 subject=context["subject"],
             )
