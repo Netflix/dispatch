@@ -73,9 +73,5 @@ export default {
       },
     },
   },
-
-  created() {
-    console.log("value", this.value)
-  },
 }
 </script>
