@@ -47,6 +47,57 @@ export default {
 
     return { ...options, filter: JSON.stringify(expression) }
   },
+  /**
+   * Create a filter expression for searching for items in a database
+   *
+   * @param {Object} filters - An object containing the search filters
+   * @param {String} model - The name of the model used in the search
+   *
+   * @return {Array} filterExpression - An array of filter objects that can be used to search the database
+   *
+   * @example
+   * const filters = {
+   *   name: "Endpoint infected with Nanocore",
+   *   start_date: {
+   *     start: "2022-01-01",
+   *     end: "2022-12-31"
+   *   }
+   * }
+   * const model = "Case"
+   *
+   * const filterExpression = createFilterExpression(filters, model)
+   * console.log(filterExpression)
+   *
+   * // Output:
+   * // [
+   * //   {
+   * //     or: [
+   * //       {
+   * //         model: "Case",
+   * //         field: "name",
+   * //         op: "==",
+   * //         value: "Endpoint infected with Nanocore"
+   * //       }
+   * //     ]
+   * //   },
+   * //   {
+   * //     and: [
+   * //       {
+   * //         model: "Case",
+   * //         field: "start_date",
+   * //         op: ">=",
+   * //         value: "2022-01-01"
+   * //       },
+   * //       {
+   * //         model: "Case",
+   * //         field: "start_date",
+   * //         op: "<=",
+   * //         value: "2022-12-31"
+   * //       }
+   * //     ]
+   * //   }
+   * // ]
+   */
   createFilterExpression(filters, model) {
     let filterExpression = []
     forEach(filters, function (value, key) {
