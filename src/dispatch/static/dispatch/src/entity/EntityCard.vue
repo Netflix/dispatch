@@ -42,6 +42,7 @@
           rounded="xl"
           class="d-flex align-center mx-4 mt-3 mb-3"
           :elevation="hover ? 2 : 0"
+          @click="createCaseShow(getCaseTable())"
         >
           <v-card-text class="d-flex align-center">
             <v-progress-linear
@@ -66,12 +67,22 @@
       <template v-slot:activator="{ on }"></template>
       <signal-instance-tab :inputSignalInstances="signalInstances" />
     </v-dialog>
+    <v-dialog v-model="showCaseView" max-width="1080">
+      <template v-slot:activator="{ on }"></template>
+      <case-tab :inputCases="cases" />
+    </v-dialog>
   </v-card>
 </template>
 
 <script>
-import SignalInstanceTab from "@/signal/SignalInstanceTab.vue"
+import { mapActions } from "vuex"
+import { mapFields } from "vuex-map-fields"
+
+import CaseApi from "@/case/api"
+import CaseTab from "@/case/CaseTab.vue"
 import EntityApi from "@/entity/api"
+import SearchUtils from "@/search/utils"
+import SignalInstanceTab from "@/signal/SignalInstanceTab.vue"
 
 export default {
   name: "EntityCard",
@@ -87,6 +98,11 @@ export default {
   },
   components: {
     "signal-instance-tab": SignalInstanceTab,
+    "case-tab": CaseTab,
+  },
+  computed: {
+    ...mapFields("entity", ["dialogs.showCaseView"]),
+    ...mapFields("route", ["query"]),
   },
   data() {
     return {
@@ -95,6 +111,12 @@ export default {
       isLoading: true,
       dialog: false,
       signalInstances: [],
+      cases: [],
+      filters: {
+        entity: [],
+        start: null,
+        end: null,
+      },
     }
   },
   async mounted() {
@@ -106,6 +128,7 @@ export default {
     },
   },
   methods: {
+    ...mapActions("entity", ["createCaseShow"]),
     async refreshData() {
       try {
         this.isLoading = true
@@ -129,6 +152,26 @@ export default {
         this.entity.id,
         selectedDateTime
       ).then((response) => response.data.instances)
+    },
+    getCaseTable() {
+      this.filters.entities = [this.entity]
+      const startDate = new Date(Date.now() - this.selectedDateTime * 86400000)
+      const endDate = new Date().toISOString()
+      const dateString = startDate.toISOString()
+      this.filters.start = [dateString]
+      this.filters.end = [endDate]
+
+      const expression = SearchUtils.createFilterExpression(this.filters)
+      if (!expression) return
+
+      return CaseApi.getAll(expression)
+        .then((response) => {
+          this.cases = response.data.items
+          return response.data.items
+        })
+        .catch((error) => {
+          console.error(error)
+        })
     },
     async openSignalInstanceTab() {
       await this.getSignalInstances(this.selectedDateTime)

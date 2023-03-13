@@ -31,7 +31,7 @@
             <v-list-item-action>
               <v-icon>mdi-briefcase</v-icon>
             </v-list-item-action>
-            <v-list-item-subtitle>{{ value.assignee.email }}</v-list-item-subtitle>
+            <v-list-item-subtitle>{{ value.assignee.individual.email }}</v-list-item-subtitle>
           </v-list-item>
           <v-list-item>
             <v-list-item-action>
@@ -53,7 +53,7 @@
 
 <script>
 export default {
-  name: "SignalPopover",
+  name: "CasePopover",
 
   data: () => ({
     menu: false,

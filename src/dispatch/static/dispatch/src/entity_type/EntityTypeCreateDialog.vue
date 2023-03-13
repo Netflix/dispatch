@@ -286,10 +286,6 @@ export default {
         }
       })
     },
-    /**
-     * This function sets up the draggable feature for the signal table and the playground editor.
-     * Updates the editor value with the selected signal raw JSON when dragging ends.
-     */
     updateEditorValue(newValue) {
       this.editorValue = JSON.stringify(newValue, null, 2)
     },
