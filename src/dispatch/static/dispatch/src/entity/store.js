@@ -70,8 +70,6 @@ const actions = {
   createCaseShow({ commit }, cases) {
     commit("SET_DIALOG_CASE_VIEW", true)
     if (cases) {
-      console.log("store cases %O", cases)
-
       commit("SET_SELECTED", cases)
     }
   },

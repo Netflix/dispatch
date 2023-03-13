@@ -155,16 +155,17 @@ export default {
     },
     getCaseTable() {
       this.filters.entities = [this.entity]
-      const startDate = new Date(Date.now() - this.selectedDateTime * 86400000)
-      const endDate = new Date().toISOString()
-      const dateString = startDate.toISOString()
-      this.filters.start = [dateString]
+      const startDate = this.getStartDate()
+      const endDate = new Date()
+      this.filters.start = [startDate]
       this.filters.end = [endDate]
 
       const expression = SearchUtils.createFilterExpression(this.filters)
       if (!expression) return
 
-      return CaseApi.getAll(expression)
+      const params = { filter: expression, itemsPerPage: 50 }
+
+      return CaseApi.getAll(params)
         .then((response) => {
           this.cases = response.data.items
           return response.data.items
@@ -179,6 +180,9 @@ export default {
       this.$nextTick(() => {
         this.$refs.signalInstanceTab = this.signalInstances
       })
+    },
+    getStartDate() {
+      return new Date(Date.now() - this.selectedDateTime * 86400000).toISOString()
     },
   },
 }

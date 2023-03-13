@@ -7,7 +7,7 @@
     hide-default-footer
   >
     <template v-slot:item.case="{ item }">
-      <case-popover v-model="item.case" />
+      <case-popover v-model="item" />
     </template>
     <template v-slot:item.entities="{ item }">
       <v-row>
@@ -48,7 +48,8 @@ export default {
       menu: false,
       headers: [
         { text: "Case", value: "case", sortable: false },
-        { text: "Entities", value: "entities", sortable: false },
+        { text: "Priority", value: "case_priority.name", sortable: false },
+        { text: "Status", value: "status", sortable: false },
         { text: "Created At", value: "created_at" },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
