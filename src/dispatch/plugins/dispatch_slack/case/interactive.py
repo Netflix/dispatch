@@ -1119,6 +1119,7 @@ def resolve_button_click(
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
     blocks = [
+        case_resolution_reason_select(),
         resolution_input(initial_value=case.resolution),
     ]
 
