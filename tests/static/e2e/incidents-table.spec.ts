@@ -1,7 +1,7 @@
 import { test, expect } from "./fixtures/dispatch-fixtures"
 import register from "./utils/register"
 
-test.describe("Authenticated Dispatch App", () => {
+test.describe("IncidentTable", () => {
   test.beforeEach(async ({ authPage }) => {
     await register(authPage)
   }),
@@ -11,7 +11,6 @@ test.describe("Authenticated Dispatch App", () => {
       await incidentsPage.goto()
       await incidentsPage.EditKebab.click()
       await expect(incidentsPage.EditMenu).toBeVisible()
-      await expect.soft(incidentsPage.EditMenu).toBeVisible()
       await expect.soft(incidentsPage.EditViewEdit).toBeVisible()
       await expect.soft(incidentsPage.EditCreateReport).toBeVisible()
       await expect.soft(incidentsPage.EditRunWorkflow).toBeVisible()
