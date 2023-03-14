@@ -1329,7 +1329,16 @@ def signal_button_click(
         db_session=db_session, signal_instance_id=context["subject"].id
     )
 
-    blocks = [Section(text=f"```{json.dumps(signal.raw, indent=2)}```")]
+    # truncate text and redirect to ui
+    raw_text = json.dumps(signal.raw, indent=2)
+    if len(raw_text) > 2900:
+        blocks = [
+            Section(
+                text=f"```{raw_text[:2750]}... \n Signal text too long, please vist Dispatch UI for full details.```"
+            )
+        ]
+    else:
+        blocks = [Section(text=f"```{raw_text}```")]
 
     modal = Modal(
         title="Raw Signal",
