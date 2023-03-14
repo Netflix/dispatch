@@ -27,24 +27,30 @@
           </v-list-item>
         </v-list>
         <v-list>
-          <v-list-item>
-            <v-list-item-action>
-              <v-icon>mdi-briefcase</v-icon>
-            </v-list-item-action>
-            <v-list-item-subtitle>{{ value.assignee.email }}</v-list-item-subtitle>
-          </v-list-item>
+          <template
+            v-if="value.assignee && value.assignee.individual && value.assignee.individual.email"
+          >
+            <v-list-item>
+              <v-list-item-action>
+                <v-icon>mdi-briefcase</v-icon>
+              </v-list-item-action>
+              <v-list-item-subtitle>{{ value.assignee.individual.email }}</v-list-item-subtitle>
+            </v-list-item>
+          </template>
           <v-list-item>
             <v-list-item-action>
               <v-icon>business</v-icon>
             </v-list-item-action>
             <v-list-item-subtitle>{{ value.title }}</v-list-item-subtitle>
           </v-list-item>
-          <v-list-item>
-            <v-list-item-action>
-              <v-icon>business</v-icon>
-            </v-list-item-action>
-            <v-list-item-subtitle>{{ value.case_type.name }}</v-list-item-subtitle>
-          </v-list-item>
+          <template v-if="value.case_type && value.case_type.name">
+            <v-list-item>
+              <v-list-item-action>
+                <v-icon>business</v-icon>
+              </v-list-item-action>
+              <v-list-item-subtitle>{{ value.case_type.name }}</v-list-item-subtitle>
+            </v-list-item>
+          </template>
         </v-list>
       </v-card>
     </v-menu>
@@ -53,7 +59,7 @@
 
 <script>
 export default {
-  name: "SignalPopover",
+  name: "CasePopover",
 
   data: () => ({
     menu: false,
