@@ -45,3 +45,6 @@ def consume_signals(db_session: SessionLocal, project: Project):
             except Exception as e:
                 log.debug(signal_instance_data)
                 log.exception(e)
+
+        if signal_instances:
+            plugin.instance.delete()
