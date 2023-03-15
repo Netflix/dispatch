@@ -1,7 +1,10 @@
 from typing import List, Optional
 
+from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import true
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from dispatch.config import DISPATCH_UI_URL
+from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 from dispatch.plugin import service as plugin_service
 from dispatch.incident import service as incident_service
@@ -14,6 +17,7 @@ from .models import (
     Workflow,
     WorkflowInstance,
     WorkflowCreate,
+    WorkflowRead,
     WorkflowUpdate,
     WorkflowInstanceCreate,
     WorkflowInstanceUpdate,
@@ -28,6 +32,24 @@ def get(*, db_session, workflow_id: int) -> Optional[Workflow]:
 def get_by_name(*, db_session, name: str) -> Optional[Workflow]:
     """Returns a workflow based on the given workflow name."""
     return db_session.query(Workflow).filter(Workflow.name == name).one_or_none()
+
+
+def get_by_name_or_raise(
+    *, db_session: Session, project_id: int, workflow_in=WorkflowRead
+) -> Workflow:
+    workflow = get_by_name(db_session=db_session, project_id=project_id, name=workflow_in.name)
+
+    if not workflow:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    NotFoundError(msg="Workflow not found.", workflow=workflow_in.name),
+                    loc="workflow",
+                )
+            ],
+            model=WorkflowRead,
+        )
+    return workflow
 
 
 def get_all(*, db_session) -> List[Optional[Workflow]]:
