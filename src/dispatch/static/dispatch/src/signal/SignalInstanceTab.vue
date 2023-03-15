@@ -71,7 +71,6 @@ export default {
     ...mapFields("case_management", ["selected.signal_instances"]),
     signalInstances() {
       if (this.inputSignalInstances.length) {
-        console.log("%O", this.inputSignalInstances)
         return this.inputSignalInstances
       }
       console.log("%O", this.signal_instances)
