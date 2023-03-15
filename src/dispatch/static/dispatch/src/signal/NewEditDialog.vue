@@ -201,6 +201,26 @@
             </v-card-text>
           </v-card>
         </v-col>
+        <v-col cols="12">
+          <v-card flat tile>
+            <v-app-bar color="white" flat>
+              <v-toolbar-title class="subtitle-2"> Workflow(s) </v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-tooltip max-width="250px" bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
+                </template>
+                Defines a workflow.
+              </v-tooltip>
+            </v-app-bar>
+            <v-card-text>
+              <workflow-combobox
+                v-model="selected.workflows"
+                :project="project"
+              ></workflow-combobox>
+            </v-card-text>
+          </v-card>
+        </v-col>
       </v-row>
     </v-navigation-drawer>
   </ValidationObserver>
@@ -217,6 +237,8 @@ import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
 import EntityTypeFilterCombobox from "@/entity_type/EntityTypeFilterCombobox.vue"
 import SignalFilterCombobox from "@/signal/filter/SignalFilterCombobox.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
+import WorkflowSelect from "@/workflow/WorkflowSelect.vue"
+import WorkflowCombobox from "@/workflow/WorkflowCombobox.vue"
 
 extend("required", {
   ...required,
@@ -233,6 +255,8 @@ export default {
     SignalFilterCombobox,
     EntityTypeFilterCombobox,
     TagFilterAutoComplete,
+    WorkflowSelect,
+    WorkflowCombobox,
   },
 
   computed: {
@@ -254,6 +278,7 @@ export default {
       "selected.signal_definition",
       "selected.source",
       "selected.tags",
+      "selected.workflows",
       "selected.project",
       "selected.loading",
     ]),
