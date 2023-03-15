@@ -73,7 +73,6 @@ export default {
       if (this.inputSignalInstances.length) {
         return this.inputSignalInstances
       }
-      console.log("%O", this.signal_instances)
       return this.signal_instances
     },
   },
