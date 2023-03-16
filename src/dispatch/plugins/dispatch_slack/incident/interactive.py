@@ -122,6 +122,15 @@ from dispatch.task.models import Task
 log = logging.getLogger(__file__)
 
 
+def is_target_reaction(reaction: str) -> bool:
+    """Returns True if given reaction matches the events' reaction."""
+
+    def is_target(event) -> bool:
+        return event["reaction"] == reaction
+
+    return is_target
+
+
 def configure(config):
     """Maps commands/events to their functions."""
     middleware = [
@@ -190,9 +199,9 @@ def configure(config):
         handle_add_timeline_event_command
     )
 
-    # required to allow the user to change the reaction string
     app.event(
-        {"type": "reaction_added", "reaction": config.timeline_event_reaction},
+        event="reaction_added",
+        matchers=[is_target_reaction(config.timeline_event_reaction)],
         middleware=[reaction_context_middleware],
     )(handle_timeline_added_event)
 
