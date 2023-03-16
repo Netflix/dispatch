@@ -126,7 +126,6 @@ def is_target_reaction(reaction: str) -> bool:
     """Returns True if given reaction matches the events' reaction."""
 
     def is_target(event) -> bool:
-        print(f"{event['reaction']} {reaction}")
         return event["reaction"] == reaction
 
     return is_target
