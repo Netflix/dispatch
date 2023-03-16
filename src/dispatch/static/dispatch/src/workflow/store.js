@@ -92,6 +92,8 @@ const actions = {
       commit("SET_SELECTED_INSTANCE_INCIDENT", payload.data)
     } else if (payload.type === "case") {
       commit("SET_SELECTED_INSTANCE_CASE", payload.data)
+    } else if (payload.type === "signal") {
+      commit("SET_SELECTED_INSTANCE_SIGNAL", payload.data)
     }
   },
   removeShow({ commit }, workflow) {
@@ -218,6 +220,9 @@ const mutations = {
   },
   SET_SELECTED_INSTANCE_INCIDENT(state, value) {
     state.selectedInstance.incident = value
+  },
+  SET_SELECTED_INSTANCE_SIGNAL(state, value) {
+    state.selectedInstance.signal = value
   },
   RESET_SELECTED_INSTANCE(state) {
     // do not reset project

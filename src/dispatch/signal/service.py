@@ -18,6 +18,7 @@ from dispatch.entity_type import service as entity_type_service
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 from dispatch.tag import service as tag_service
+from dispatch.workflow import service as workflow_service
 
 from .models import (
     Signal,
@@ -184,6 +185,7 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
                 "filters",
                 "tags",
                 "entity_types",
+                "workflows",
             }
         ),
         project=project,
@@ -211,6 +213,15 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
         filters.append(signal_filter)
 
     signal.filters = filters
+
+    workflows = []
+    for w in signal_in.workflows:
+        workflow = workflow_service.get_by_name_or_raise(
+            db_session=db_session, project_id=signal.project.id, workflow_in=w
+        )
+        workflows.append(workflow)
+
+    signal.workflows = workflows
 
     if signal_in.case_priority:
         case_priority = case_priority_service.get_by_name_or_default(
@@ -271,6 +282,15 @@ def update(*, db_session: Session, signal: Signal, signal_in: SignalUpdate) -> S
         filters.append(signal_filter)
 
     signal.filters = filters
+
+    workflows = []
+    for w in signal_in.workflows:
+        workflow = workflow_service.get_by_name_or_raise(
+            db_session=db_session, project_id=signal.project.id, workflow_in=w
+        )
+        workflows.append(workflow)
+
+    signal.workflows = workflows
 
     if signal_in.case_priority:
         case_priority = case_priority_service.get_by_name_or_default(

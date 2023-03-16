@@ -41,7 +41,7 @@
         <v-tab key="timeline"> Timeline </v-tab>
         <v-tab key="workflows"> Workflows </v-tab>
         <v-tab key="entities"> Entities </v-tab>
-        <v-tab key="signals">Signals</v-tab>
+        <v-tab key="signals"> Signals </v-tab>
       </v-tabs>
       <v-tabs-items v-model="tab">
         <v-tab-item key="details">

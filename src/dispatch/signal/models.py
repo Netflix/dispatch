@@ -39,6 +39,7 @@ from dispatch.models import (
     ProjectMixin,
     TimeStampMixin,
 )
+from dispatch.workflow.models import WorkflowRead
 
 
 class RuleMode(DispatchEnum):
@@ -96,6 +97,14 @@ assoc_signal_entity_types = Table(
     PrimaryKeyConstraint("signal_id", "entity_type_id"),
 )
 
+assoc_signal_workflows = Table(
+    "assoc_signal_workflows",
+    Base.metadata,
+    Column("signal_id", Integer, ForeignKey("signal.id", ondelete="CASCADE")),
+    Column("workflow_id", Integer, ForeignKey("workflow.id", ondelete="CASCADE")),
+    PrimaryKeyConstraint("signal_id", "workflow_id"),
+)
+
 
 class SignalFilterMode(DispatchEnum):
     active = "active"
@@ -129,6 +138,11 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     entity_types = relationship(
         "EntityType",
         secondary=assoc_signal_entity_types,
+        backref="signals",
+    )
+    workflows = relationship(
+        "Workflow",
+        secondary=assoc_signal_workflows,
         backref="signals",
     )
     tags = relationship(
@@ -224,6 +238,7 @@ class SignalBase(DispatchBase):
 class SignalCreate(SignalBase):
     filters: Optional[List[SignalFilterRead]] = []
     entity_types: Optional[List[EntityTypeRead]] = []
+    workflows: Optional[List[WorkflowRead]] = []
     tags: Optional[List[TagRead]] = []
 
 
@@ -231,6 +246,7 @@ class SignalUpdate(SignalBase):
     id: PrimaryKey
     filters: Optional[List[SignalFilterRead]] = []
     entity_types: Optional[List[EntityTypeRead]] = []
+    workflows: Optional[List[WorkflowRead]] = []
     tags: Optional[List[TagRead]] = []
 
 
@@ -238,6 +254,7 @@ class SignalRead(SignalBase):
     id: PrimaryKey
     entity_types: Optional[List[EntityTypeRead]] = []
     filters: Optional[List[SignalFilterRead]] = []
+    workflows: Optional[List[WorkflowRead]] = []
     tags: Optional[List[TagRead]] = []
 
 
