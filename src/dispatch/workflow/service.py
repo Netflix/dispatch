@@ -34,10 +34,8 @@ def get_by_name(*, db_session, name: str) -> Optional[Workflow]:
     return db_session.query(Workflow).filter(Workflow.name == name).one_or_none()
 
 
-def get_by_name_or_raise(
-    *, db_session: Session, project_id: int, workflow_in=WorkflowRead
-) -> Workflow:
-    workflow = get_by_name(db_session=db_session, project_id=project_id, name=workflow_in.name)
+def get_by_name_or_raise(*, db_session: Session, workflow_in=WorkflowRead) -> Workflow:
+    workflow = get_by_name(db_session=db_session, name=workflow_in.name)
 
     if not workflow:
         raise ValidationError(

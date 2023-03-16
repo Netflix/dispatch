@@ -216,9 +216,7 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
 
     workflows = []
     for w in signal_in.workflows:
-        workflow = workflow_service.get_by_name_or_raise(
-            db_session=db_session, project_id=signal.project.id, workflow_in=w
-        )
+        workflow = workflow_service.get_by_name_or_raise(db_session=db_session, workflow_in=w)
         workflows.append(workflow)
 
     signal.workflows = workflows
@@ -285,9 +283,7 @@ def update(*, db_session: Session, signal: Signal, signal_in: SignalUpdate) -> S
 
     workflows = []
     for w in signal_in.workflows:
-        workflow = workflow_service.get_by_name_or_raise(
-            db_session=db_session, project_id=signal.project.id, workflow_in=w
-        )
+        workflow = workflow_service.get_by_name_or_raise(db_session=db_session, workflow_in=w)
         workflows.append(workflow)
 
     signal.workflows = workflows
