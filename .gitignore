@@ -165,6 +165,7 @@ dmypy.json
 # Recommended template: Node.gitignore
 
 assets.json
+components.d.ts
 node_modules*
 node_modules/
 npm-debug.log*
@@ -173,7 +174,6 @@ selenium-debug.log
 yarn-debug.log*
 yarn-error.log*
 yarn.lock
-
 
 # End of https://www.gitignore.io/api/macos,visualstudiocode,python
 
@@ -207,10 +207,11 @@ docker/.env
 *.dump
 
 .gitconfig
+
+# Playwright
 /test-results/
 /playwright-report/
 /playwright/.cache/
 /tests/static/e2e/artifacts/*
 src/dispatch/static/dispatch/tests/__snapshots__
 src/dispatch/static/dispatch/coverage
-src/dispatch/static/dispatch/components.d.ts
