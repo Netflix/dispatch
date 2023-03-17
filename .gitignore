@@ -165,7 +165,6 @@ dmypy.json
 # Recommended template: Node.gitignore
 
 assets.json
-components.d.ts
 node_modules*
 node_modules/
 npm-debug.log*
@@ -215,3 +214,6 @@ docker/.env
 /tests/static/e2e/artifacts/*
 src/dispatch/static/dispatch/tests/__snapshots__
 src/dispatch/static/dispatch/coverage
+
+# Typescript
+components.d.ts
