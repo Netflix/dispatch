@@ -10,6 +10,7 @@ from dispatch.incident.models import Incident
 from dispatch.plugin import service as plugin_service
 from dispatch.storage.models import Storage
 from dispatch.ticket.models import Ticket
+from dispatch.utils import deslug_and_capitalize_resource_type
 
 from .models import Conversation, ConversationCreate
 from .service import create
@@ -174,10 +175,11 @@ def add_conversation_bookmark(incident: Incident, resource: Resource, db_session
         return
 
     try:
+        title = deslug_and_capitalize_resource_type(resource.resource_type)
         plugin.instance.add_bookmark(
             incident.conversation.channel_id,
             resource.weblink,
-            title=resource.name,
+            title=title,
         ) if resource else log.warning(
             f"{resource.name} bookmark not added. No {resource.name.lower()} available for this incident."
         )

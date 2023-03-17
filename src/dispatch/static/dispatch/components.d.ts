@@ -9,6 +9,7 @@ declare module 'vue' {
     AnimatedNumber: typeof import('./src/components/AnimatedNumber.vue')['default']
     AppDrawer: typeof import('./src/components/AppDrawer.vue')['default']
     AppToolbar: typeof import('./src/components/AppToolbar.vue')['default']
+    BaseCombobox: typeof import('./src/components/BaseCombobox.vue')['default']
     BasicLayout: typeof import('./src/components/layouts/BasicLayout.vue')['default']
     ColorPickerInput: typeof import('./src/components/ColorPickerInput.vue')['default']
     DashboardLayout: typeof import('./src/components/layouts/DashboardLayout.vue')['default']
