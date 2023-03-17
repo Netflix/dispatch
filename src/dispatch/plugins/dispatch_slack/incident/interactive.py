@@ -205,6 +205,11 @@ def configure(config):
         middleware=[reaction_context_middleware],
     )(handle_timeline_added_event)
 
+    app.event(
+        event="reaction_added",
+        middleware=[reaction_context_middleware],
+    )(handle_not_configured_reaction_event)
+
 
 @app.options(
     DefaultActionIds.tags_multi_select, middleware=[action_context_middleware, db_middleware]
@@ -639,10 +644,17 @@ def draw_task_modal(
 # EVENTS
 
 
+def handle_not_configured_reaction_event(
+    ack: Ack, client: Any, context: BoltContext, payload: Any, db_session: Session
+) -> None:
+    """Ignores reaction_added events for reactions that are not configured and mapped to a handler function."""
+    ack()
+
+
 def handle_timeline_added_event(
     ack: Ack, client: Any, context: BoltContext, payload: Any, db_session: Session
 ) -> None:
-    """Handles an event where a reaction is added to a message."""
+    """Handles an event where the configured timeline reaction is added to a message."""
     ack()
 
     conversation_id = context["channel_id"]
