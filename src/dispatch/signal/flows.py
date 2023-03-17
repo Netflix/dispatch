@@ -46,6 +46,21 @@ def create_signal_instance(
     db_session.commit()
 
     if signal_service.apply_filter_actions(db_session=db_session, signal_instance=signal_instance):
+        # is_configured_workflow()
+        # is_autorun()
+        # is_entity_type_parametes()
+
+        # instance = workflow_service.create_instance(
+        #     db_session=db_session,
+        #     workflow=workflow,
+        #     instance_in=WorkflowInstanceCreate(
+        #         incident=incident, # TODO: to subject
+        #         creator="Dispatch",
+        #         run_reason="Automated",
+        #         parameters=
+        #     ),
+        # )
+
         # create a case if not duplicate or snoozed
         case_in = CaseCreate(
             title=signal.name,
