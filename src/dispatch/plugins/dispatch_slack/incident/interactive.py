@@ -118,6 +118,7 @@ from dispatch.tag.models import Tag
 from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
 from dispatch.task.models import Task
+from dispatch.ticket import flows as ticket_flows
 
 log = logging.getLogger(__file__)
 
@@ -204,6 +205,11 @@ def configure(config):
         matchers=[is_target_reaction(config.timeline_event_reaction)],
         middleware=[reaction_context_middleware],
     )(handle_timeline_added_event)
+
+    app.event(
+        event="reaction_added",
+        middleware=[reaction_context_middleware],
+    )(handle_not_configured_reaction_event)
 
 
 @app.options(
@@ -639,10 +645,17 @@ def draw_task_modal(
 # EVENTS
 
 
+def handle_not_configured_reaction_event(
+    ack: Ack, client: Any, context: BoltContext, payload: Any, db_session: Session
+) -> None:
+    """Ignores reaction_added events for reactions that are not configured and mapped to a handler function."""
+    ack()
+
+
 def handle_timeline_added_event(
     ack: Ack, client: Any, context: BoltContext, payload: Any, db_session: Session
 ) -> None:
-    """Handles an event where a reaction is added to a message."""
+    """Handles an event where the configured timeline reaction is added to a message."""
     ack()
 
     conversation_id = context["channel_id"]
@@ -1332,7 +1345,7 @@ def handle_assign_role_submission_event(
         or assignee_role == ParticipantRoleType.incident_commander  # noqa
     ):
         # we update the external ticket
-        incident_flows.update_external_incident_ticket(
+        ticket_flows.update_incident_ticket(
             incident_id=context["subject"].id, db_session=db_session
         )
 
