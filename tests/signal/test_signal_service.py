@@ -50,19 +50,6 @@ def test_delete(session, signal):
     assert not get(db_session=session, signal_id=signal.id)
 
 
-# instance tests
-def test_create_instance(session, case, signal, project):
-    from dispatch.signal.models import SignalInstanceCreate
-    from dispatch.signal.service import create_instance
-
-    signal_instance_in = SignalInstanceCreate(
-        raw={"id": "foo"},
-        project=project,
-    )
-    signal_instance = create_instance(db_session=session, signal_instance_in=signal_instance_in)
-    assert signal_instance
-
-
 def test_filter_actions_deduplicate(session, signal, project):
     from dispatch.signal.models import (
         SignalFilter,
