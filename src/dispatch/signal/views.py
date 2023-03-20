@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -25,7 +25,6 @@ from .models import (
 )
 from .service import (
     create,
-    create_instance,
     create_signal_filter,
     delete,
     delete_signal_filter,
@@ -34,6 +33,11 @@ from .service import (
     update,
     update_signal_filter,
 )
+from dispatch.signal import service as signal_service
+from dispatch.project import service as project_service
+from dispatch.signal.flows import signal_instance_create_flow
+from dispatch.models import OrganizationSlug
+
 
 router = APIRouter()
 
@@ -46,10 +50,49 @@ def get_signal_instances(*, common: dict = Depends(common_parameters)):
 
 @router.post("/{signal_id}/instances", response_model=SignalInstanceRead)
 def create_signal_instance(
-    *, db_session: Session = Depends(get_db), signal_instance_in: SignalInstanceCreate
+    *,
+    db_session: Session = Depends(get_db),
+    organization: OrganizationSlug,
+    signal_instance_in: SignalInstanceCreate,
+    background_tasks: BackgroundTasks,
 ):
     """Create a new signal instance."""
-    return create_instance(db_session=db_session, signal_instance_in=signal_instance_in)
+    project = project_service.get_by_name_or_default(
+        db_session=db_session, project_in=signal_instance_in.project
+    )
+
+    signal = signal_service.get_by_variant_or_external_id(
+        db_session=db_session,
+        project_id=project.id,
+        external_id=signal_instance_in.raw["id"],
+        variant=signal_instance_in["variant"],
+    )
+
+    if not signal:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "No signal definition found. Id: {id} Variant: {variant}"}],
+        ) from None
+
+    if not signal.enabled:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=[{"msg": f"Signal definition not enabled. SignalName: {signal.name}"}],
+        ) from None
+
+    signal_instance_in = SignalInstanceCreate(
+        signal_instance_in=signal_instance_in, project=signal.project
+    )
+
+    signal_instance = signal_service.create_instance(
+        db_session=db_session, signal_instance_in=signal_instance_in
+    )
+    signal_instance.signal = signal
+    db_session.commit()
+
+    background_tasks.add_task(
+        signal_instance_create_flow, signal_instance.id, organization_slug=organization
+    )
 
 
 @router.get("/filters", response_model=SignalFilterPagination)
