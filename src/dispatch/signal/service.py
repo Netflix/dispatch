@@ -1,11 +1,10 @@
 import json
-from sqlalchemy_utils import cast_if
 
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Literal
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from sqlalchemy import asc, String
+from sqlalchemy import asc
 from sqlalchemy.orm import Session
 
 
@@ -126,7 +125,7 @@ def get_signal_instance(*, db_session: Session, signal_instance_id: int | str):
     """Gets a signal instance by it's UUID."""
     return (
         db_session.query(SignalInstance)
-        .filter(SignalInstance.id == cast_if(signal_instance_id, String))
+        .filter(SignalInstance.id == signal_instance_id)
         .one_or_none()
     )
 
@@ -322,11 +321,14 @@ def create_instance(
         db_session=db_session, project_in=signal_instance_in.project
     )
 
+    signal = get(db_session=db_session, signal_id=signal_instance_in.signal.id)
+
     # we round trip the raw data to json-ify date strings
     signal_instance = SignalInstance(
         **signal_instance_in.dict(exclude={"case", "signal", "project", "entities", "raw"}),
         raw=json.loads(json.dumps(signal_instance_in.raw)),
         project=project,
+        signal=signal,
     )
 
     db_session.add(signal_instance)

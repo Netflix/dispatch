@@ -280,7 +280,7 @@ class SignalInstanceBase(DispatchBase):
 
 
 class SignalInstanceCreate(SignalInstanceBase):
-    pass
+    signal: Optional[SignalRead]
 
 
 class SignalInstanceRead(SignalInstanceBase):

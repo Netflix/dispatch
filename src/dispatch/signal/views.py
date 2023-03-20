@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+import logging
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -8,7 +10,10 @@ from dispatch.auth.service import get_current_user
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.exceptions import ExistsError
-from dispatch.models import PrimaryKey
+from dispatch.models import OrganizationSlug, PrimaryKey
+from dispatch.project import service as project_service
+from dispatch.signal import service as signal_service
+from dispatch.signal.flows import signal_instance_create_flow
 
 from .models import (
     SignalCreate,
@@ -33,13 +38,10 @@ from .service import (
     update,
     update_signal_filter,
 )
-from dispatch.signal import service as signal_service
-from dispatch.project import service as project_service
-from dispatch.signal.flows import signal_instance_create_flow
-from dispatch.models import OrganizationSlug
-
 
 router = APIRouter()
+
+log = logging.getLogger(__name__)
 
 
 @router.get("/instances", response_model=SignalInstancePagination)
@@ -61,23 +63,33 @@ def create_signal_instance(
         db_session=db_session, project_in=signal_instance_in.project
     )
 
-    signal = signal_service.get_by_variant_or_external_id(
-        db_session=db_session,
-        project_id=project.id,
-        external_id=signal_instance_in.raw["id"],
-        variant=signal_instance_in["variant"],
-    )
+    if not signal_instance_in.signal:
+        external_id = signal_instance_in.raw["id"]
+        variant = signal_instance_in.raw["variant"]
+
+        signal = signal_service.get_by_variant_or_external_id(
+            db_session=db_session,
+            project_id=project.id,
+            external_id=external_id,
+            variant=variant,
+        )
+
+        signal_instance_in.signal = signal
 
     if not signal:
+        msg = f"No signal definition found. Id: {external_id} Variant: {variant}"
+        log.error(msg)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "No signal definition found. Id: {id} Variant: {variant}"}],
+            detail=[{"msg": msg}],
         ) from None
 
     if not signal.enabled:
+        msg = f"Signal definition not enabled. SignalName: {signal.name}"
+        log.warning(msg)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=[{"msg": f"Signal definition not enabled. SignalName: {signal.name}"}],
+            detail=[{"msg": msg}],
         ) from None
 
     signal_instance_in = SignalInstanceCreate(
