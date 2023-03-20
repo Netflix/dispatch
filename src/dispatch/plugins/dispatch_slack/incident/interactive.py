@@ -118,6 +118,7 @@ from dispatch.tag.models import Tag
 from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
 from dispatch.task.models import Task
+from dispatch.ticket import flows as ticket_flows
 
 log = logging.getLogger(__file__)
 
@@ -1344,7 +1345,7 @@ def handle_assign_role_submission_event(
         or assignee_role == ParticipantRoleType.incident_commander  # noqa
     ):
         # we update the external ticket
-        incident_flows.update_external_incident_ticket(
+        ticket_flows.update_incident_ticket(
             incident_id=context["subject"].id, db_session=db_session
         )
 
