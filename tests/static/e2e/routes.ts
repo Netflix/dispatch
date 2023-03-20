@@ -1,4 +1,5 @@
 export const orgSlug = "default"
+export const project = "default"
 
 export enum Routes {
   Login = "/auth/login",

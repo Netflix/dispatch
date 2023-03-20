@@ -1,5 +1,5 @@
 import { expect, Locator, Page } from "@playwright/test"
-import { Routes, orgSlug } from "../routes"
+import { Routes, orgSlug, project } from "../routes"
 
 export class CasesPage {
   readonly page: Page
@@ -13,7 +13,7 @@ export class CasesPage {
   readonly EditViewEdit: Locator
   readonly EditDelete: Locator
 
-  constructor(page: Page, caseManagement: string = `dispatch-${orgSlug}-${orgSlug}-2`) {
+  constructor(page: Page, caseManagement: string = `dispatch-${orgSlug}-${project}-2`) {
     this.page = page
     this.route = orgSlug + Routes.Cases
     this.Row = page.locator("tr")
