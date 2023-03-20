@@ -50,7 +50,7 @@ def get_signal_instances(*, common: dict = Depends(common_parameters)):
     return search_filter_sort_paginate(model="SignalInstance", **common)
 
 
-@router.post("/{signal_id}/instances", response_model=SignalInstanceRead)
+@router.post("/instances", response_model=SignalInstanceRead)
 def create_signal_instance(
     *,
     db_session: Session = Depends(get_db),
@@ -92,10 +92,6 @@ def create_signal_instance(
             detail=[{"msg": msg}],
         ) from None
 
-    signal_instance_in = SignalInstanceCreate(
-        signal_instance_in=signal_instance_in, project=signal.project
-    )
-
     signal_instance = signal_service.create_instance(
         db_session=db_session, signal_instance_in=signal_instance_in
     )
@@ -105,6 +101,8 @@ def create_signal_instance(
     background_tasks.add_task(
         signal_instance_create_flow, signal_instance.id, organization_slug=organization
     )
+
+    return signal_instance
 
 
 @router.get("/filters", response_model=SignalFilterPagination)

@@ -12,9 +12,9 @@ from dispatch.signal.models import SignalInstanceCreate
 
 @background_task
 def signal_instance_create_flow(
-    db_session: SessionLocal,
     signal_instance_id: int,
     organization_slug: str,
+    db_session: SessionLocal = None,
     current_user: DispatchUser = None,
 ):
     """Create flow used by the API."""
