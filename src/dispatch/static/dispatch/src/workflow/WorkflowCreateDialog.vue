@@ -21,7 +21,7 @@
           <v-stepper-content step="1">
             <v-card>
               <v-card-text>
-                Define the entity and entity types that will be used to paramterize the workflow.
+                Define the entity types that will be used to paramterize the workflow.
                 <v-flex xs12>
                   <plugin-instance-combobox
                     v-model="plugin_instance"
@@ -44,7 +44,7 @@
                   </ValidationProvider>
                 </v-flex>
                 <v-flex xs12>
-                  <workflow-parameters-input v-model="parameters" />
+                  <workflow-parameters-entity-input v-model="parameters" />
                 </v-flex>
               </v-card-text>
               <v-card-actions>
@@ -90,7 +90,7 @@
                   <v-btn @click="closeCreateEditDialog()" text> Cancel </v-btn>
                   <v-btn
                     color="info"
-                    @click="saveFilter()"
+                    @click="saveWorkflow()"
                     :loading="loading"
                     :disabled="invalid || !validated"
                   >
@@ -111,9 +111,9 @@ import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
-import EntityTypeFilterCombobox from "@/entity_type/EntityTypeFilterCombobox.vue"
+import EntityTypeSelect from "@/entity_type/EntityTypeSelect.vue"
 import PluginInstanceCombobox from "@/plugin/PluginInstanceCombobox.vue"
-import WorkflowParametersInput from "@/workflow/WorkflowParametersInput.vue"
+import WorkflowParametersEntityInput from "@/workflow/WorkflowParametersEntityInput.vue"
 
 extend("required", {
   ...required,
@@ -137,11 +137,11 @@ export default {
     }
   },
   components: {
-    EntityTypeFilterCombobox,
+    EntityTypeSelect,
     PluginInstanceCombobox,
     ValidationObserver,
     ValidationProvider,
-    WorkflowParametersInput,
+    WorkflowParametersEntityInput,
   },
   computed: {
     ...mapFields("workflow", [

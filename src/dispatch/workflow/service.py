@@ -220,6 +220,13 @@ def run(
             }
         )
 
+    if instance.siganl:
+        params.update(
+            {
+                "externalRef": f"{DISPATCH_UI_URL}/{instance.signal.project.organization.name}/signals/{instance.signal.name}?project={instance.signal.project.name}",
+            }
+        )
+
     params.update({"workflowInstanceId": instance.id})
     instance.workflow.plugin_instance.instance.run(instance.workflow.resource_id, params)
 
