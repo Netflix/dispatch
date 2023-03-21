@@ -38,6 +38,7 @@ const config: PlaywrightTestConfig = {
   reporter: "html",
   /* Configure projects for major browsers */
   projects: [
+    { name: 'setup', testMatch: /.*\.setup\.ts/ },
     {
       name: "chromium",
       use: {

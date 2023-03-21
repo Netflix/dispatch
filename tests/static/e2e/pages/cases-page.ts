@@ -6,9 +6,11 @@ import { Routes, orgSlug } from "../routes"
 export class CaseEscalateSubmissionModal {
   readonly page: Page
   readonly SubmitButton: Locator
+  readonly IncidentTitle: Locator
 
   constructor(page: Page) {
     this.SubmitButton = page.getByRole('button', { name: 'Escalate', exact: true })
+    this.IncidentTitle = page.getByText('incident')
   }
 }
 
