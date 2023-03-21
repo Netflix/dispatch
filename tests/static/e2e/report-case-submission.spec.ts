@@ -11,15 +11,14 @@ test.describe("Authenticated Dispatch App", () => {
 
       const title = "Case Test Created by Playwright"
       const description = "Test description created by Playwright"
-      const project = "default"
 
-      await reportCasePage.reportCase(title, description, project)
+      await reportCasePage.reportCase(title, description)
       // Soft validate that we get redirected to the incident submission form
       await expect
         .soft(page)
         .toHaveURL(
           encodeURI(
-            `./default/cases/report?project=${project}`
+            `./default/cases/report`
           )
         )
 

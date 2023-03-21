@@ -1,32 +1,50 @@
 import { expect, Locator, Page } from "@playwright/test"
-import { Routes, orgSlug, project } from "../routes"
+import { Routes, orgSlug } from "../routes"
+
+
+
+export class CaseEscalateSubmissionModal {
+  readonly page: Page
+  readonly SubmitButton: Locator
+
+  constructor(page: Page) {
+    this.SubmitButton = page.getByRole('button', { name: 'Escalate', exact: true })
+  }
+}
+
+export class CaseEscalateModal {
+  readonly page: Page
+  readonly SubmitButton: Locator
+
+  constructor(page: Page) {
+    this.SubmitButton = page.getByRole('button', { name: 'Escalate', exact: true })
+  }
+}
+
+export class CasesViewEditModal {
+  readonly page: Page
+  readonly EscalateButton: Locator
+
+  constructor(page: Page) {
+    this.EscalateButton = page.getByRole('button', { name: 'Escalate Case' })
+  }
+}
 
 export class CasesPage {
   readonly page: Page
   readonly route: string
-  readonly Row: Locator
-  readonly FirstRow: Locator
-  readonly OtherRow: Locator
-  readonly NextPage: Locator
-  readonly EditKebab: Locator
-  readonly EditMenu: Locator
-  readonly EditViewEdit: Locator
-  readonly EditDelete: Locator
+  readonly RowActionKebab: Locator
+  readonly ViewEditMenuItem: Locator
+  readonly DeleteMenuItem: Locator
 
-  constructor(page: Page, caseManagement: string = `dispatch-${orgSlug}-${project}-2`) {
+  constructor(page: Page) {
     this.page = page
     this.route = orgSlug + Routes.Cases
-    this.Row = page.locator("tr")
-    this.NextPage = page.getByRole("button", { name: "Next page" })
-    this.EditKebab = page
-      .getByRole("row", {
-        name: caseManagement,
-      })
+    this.RowActionKebab = page
+      .locator('td:nth-child(12)').first()
       .getByRole("button")
-      .nth(2)
-    this.EditMenu = page.getByTestId("case-table-edit")
-    this.EditViewEdit = page.getByRole("menuitem", { name: "View / Edit" })
-    this.EditDelete = page.getByRole("menuitem", { name: "Delete" })
+    this.ViewEditMenuItem = page.getByRole("menuitem", { name: "View / Edit" })
+    this.DeleteMenuItem = page.getByRole("menuitem", { name: "Delete" })
   }
 
   async goto() {

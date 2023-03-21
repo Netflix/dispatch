@@ -4,12 +4,7 @@ import { Routes, orgSlug } from "../routes"
 export class IncidentsPage {
   readonly page: Page
   readonly route: string
-  readonly Row: Locator
-  readonly FirstRow: Locator
-  readonly OtherRow: Locator
-  readonly NextPage: Locator
   readonly EditKebab: Locator
-  readonly EditMenu: Locator
   readonly EditViewEdit: Locator
   readonly EditCreateReport: Locator
   readonly EditRunWorkflow: Locator
@@ -18,15 +13,9 @@ export class IncidentsPage {
   constructor(page: Page, incident: string = `dispatch-${orgSlug}-${orgSlug}-2`) {
     this.page = page
     this.route = orgSlug + Routes.Incidents
-    this.Row = page.locator("tr")
-    this.NextPage = page.getByRole("button", { name: "Next page" })
     this.EditKebab = page
-      .getByRole("row", {
-        name: incident,
-      })
+      .locator('td:nth-child(12)').first()
       .getByRole("button")
-      .nth(2)
-    this.EditMenu = page.getByTestId("incident-table-edit")
     this.EditViewEdit = page.getByRole("menuitem", { name: "View / Edit" })
     this.EditCreateReport = page.getByRole("menuitem", { name: "Create Report" })
     this.EditRunWorkflow = page.getByRole("menuitem", { name: "Run Workflow" })

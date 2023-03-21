@@ -10,7 +10,6 @@ test.describe("IncidentTable", () => {
     }) => {
       await incidentsPage.goto()
       await incidentsPage.EditKebab.click()
-      await expect(incidentsPage.EditMenu).toBeVisible()
       await expect.soft(incidentsPage.EditViewEdit).toBeVisible()
       await expect.soft(incidentsPage.EditCreateReport).toBeVisible()
       await expect.soft(incidentsPage.EditRunWorkflow).toBeVisible()

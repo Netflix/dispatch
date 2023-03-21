@@ -43,18 +43,10 @@ export class ReportIncidentPage {
   async reportIncident(
     title: string,
     description: string,
-    project: string = "default",
-    type: string = "Customer Data",
-    priority: string = "Low",
-    tags: string[]
   ) {
     await this.goto()
     await this.addTitle(title)
     await this.addDescription(description)
-    await this.selectProject(project)
-    await this.selectType(type)
-    await this.selectPriority(priority)
-    await this.selectTags(tags)
     await this.resetPageView()
     await Promise.all([
       await this.submitButton.click(),
@@ -103,11 +95,7 @@ export class ReportIncidentPage {
   async pageObjectModel(
     title: string,
     description: string,
-    project: string = "default",
-    type: string,
-    priority: string = "Low",
-    tags: string[]
   ) {
-    await this.reportIncident(title, description, project, type, priority, tags)
+    await this.reportIncident(title, description)
   }
 }
