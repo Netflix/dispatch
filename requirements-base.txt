@@ -348,7 +348,7 @@ sentry-sdk==1.17.0
     # via
     #   -r requirements-base.in
     #   sentry-asgi
-sh==2.0.2
+sh==2.0.3
     # via -r requirements-base.in
 six==1.16.0
     # via
