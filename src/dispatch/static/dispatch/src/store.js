@@ -45,7 +45,7 @@ import team from "@/team/store"
 import template from "@/document/template/store"
 import term from "@/term/store"
 import workflow from "@/workflow/store"
-import workstream from "@/workstream/store"
+import workstream_type from "@/workstream/type/store"
 
 Vue.use(Vuex)
 
@@ -100,6 +100,6 @@ export default new Vuex.Store({
     template,
     term,
     workflow,
-    workstream,
+    workstream_type,
   },
 })
