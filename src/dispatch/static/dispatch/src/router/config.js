@@ -381,6 +381,12 @@ export const protectedRoute = [
             component: () => import("@/incident_role/Table.vue"),
           },
           {
+            path: "workstreamTypes",
+            name: "workstreamTypesTable",
+            meta: { title: "Workstream Types", subMenu: "project", group: "incident" },
+            component: () => import("@/workstream/types/Table.vue"),
+          },
+          {
             path: "caseTypes",
             name: "CaseTypeTable",
             meta: { title: "Types", subMenu: "project", group: "case" },
