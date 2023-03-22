@@ -37,20 +37,17 @@ from dispatch.notification.views import router as notification_router
 from dispatch.organization.views import router as organization_router
 from dispatch.plugin.views import router as plugin_router
 from dispatch.project.views import router as project_router
-
-
-from dispatch.signal.views import router as signal_router
-
-# from dispatch.route.views import router as route_router
 from dispatch.search.views import router as search_router
 from dispatch.search_filter.views import router as search_filter_router
 from dispatch.service.views import router as service_router
+from dispatch.signal.views import router as signal_router
 from dispatch.tag.views import router as tag_router
 from dispatch.tag_type.views import router as tag_type_router
 from dispatch.task.views import router as task_router
 from dispatch.team.views import router as team_contact_router
 from dispatch.term.views import router as term_router
 from dispatch.workflow.views import router as workflow_router
+from dispatch.workstream.type.views import router as workstream_type_router
 
 
 class ErrorMessage(BaseModel):
@@ -216,6 +213,9 @@ authenticated_organization_api_router.include_router(
 )
 authenticated_organization_api_router.include_router(
     incident_role_router, prefix="/incident_roles", tags=["role"]
+)
+authenticated_organization_api_router.include_router(
+    workstream_type_router, prefix="/workstream_types", tags=["workstream_types"]
 )
 
 
