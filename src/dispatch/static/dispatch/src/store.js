@@ -45,6 +45,7 @@ import team from "@/team/store"
 import template from "@/document/template/store"
 import term from "@/term/store"
 import workflow from "@/workflow/store"
+import workstream from "@/workstream/store"
 
 Vue.use(Vuex)
 
@@ -84,14 +85,14 @@ export default new Vuex.Store({
     runbook,
     search,
     service,
+    signal,
+    signalFilter,
     source,
     sourceDataFormat,
     sourceEnvironment,
     sourceStatus,
     sourceTransport,
     sourceType,
-    signal,
-    signalFilter,
     tag,
     tag_type,
     task,
@@ -99,5 +100,6 @@ export default new Vuex.Store({
     template,
     term,
     workflow,
+    workstream,
   },
 })
