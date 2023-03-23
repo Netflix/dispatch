@@ -282,6 +282,8 @@ pyparsing==3.0.9
     # via
     #   -r requirements-base.in
     #   httplib2
+pyrate-limiter==2.10.0
+    # via schemathesis
 pyrsistent==0.19.3
     # via jsonschema
 pytest==7.2.2
@@ -338,7 +340,7 @@ rsa==4.9
     #   python-jose
 schedule==1.1.0
     # via -r requirements-base.in
-schemathesis==3.18.5
+schemathesis==3.19.0
     # via -r requirements-base.in
 scipy==1.10.1
     # via statsmodels
