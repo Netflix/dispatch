@@ -32,20 +32,6 @@ def signal_instance_create_flow(
     signal_instance.entities = entities
     db_session.commit()
 
-    if workflows := signal_instance.signal.workflows:
-        for workflow in workflows:
-            instance = WorkflowInstanceCreate(
-                signal=signal_instance.signal,
-                creator="Dispatch",
-                run_reason="Automated",
-            )
-            workflow_flows.signal_workflow_run_flow(
-                db_session=db_session,
-                signal_instance=signal_instance,
-                workflow=workflow,
-                workflow_instance_in=instance,
-            )
-
     if signal_service.apply_filter_actions(db_session=db_session, signal_instance=signal_instance):
         # run workflows if not duplicate or snoozed
         if workflows := signal_instance.signal.workflows:
