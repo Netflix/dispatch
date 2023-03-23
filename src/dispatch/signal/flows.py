@@ -47,46 +47,21 @@ def signal_instance_create_flow(
             )
 
     if signal_service.apply_filter_actions(db_session=db_session, signal_instance=signal_instance):
-        # create a case if not duplicate or snoozed
-        case_in = CaseCreate(
-            title=signal_instance.signal.name,
-            description=signal_instance.signal.description,
-            case_priority=signal_instance.signal.case_priority,
-            project=signal_instance.project,
-            case_type=signal_instance.signal.case_type,
-        )
-        case = case_service.create(
-            db_session=db_session, case_in=case_in, current_user=current_user
-        )
+        # run workflows if not duplicate or snoozed
+        if workflows := signal_instance.signal.workflows:
+            for workflow in workflows:
+                instance = WorkflowInstanceCreate(
+                    signal=signal_instance.signal,
+                    creator="Dispatch",
+                    run_reason="Automated",
+                )
+                workflow_flows.signal_workflow_run_flow(
+                    db_session=db_session,
+                    signal_instance=signal_instance,
+                    workflow=workflow,
+                    workflow_instance_in=instance,
+                )
 
-        signal_instance.case = case
-        db_session.commit()
-        return case_flows.case_new_create_flow(
-            db_session=db_session, organization_slug=None, case_id=case.id
-        )
-
-
-@background_task
-def signal_instance_create_flow(
-    signal_instance_id: int,
-    organization_slug: str,
-    db_session: SessionLocal = None,
-    current_user: DispatchUser = None,
-):
-    """Create flow used by the API."""
-    signal_instance = signal_service.get_signal_instance(
-        db_session=db_session, signal_instance_id=signal_instance_id
-    )
-
-    entities = entity_service.find_entities(
-        db_session=db_session,
-        signal_instance=signal_instance,
-        entity_types=signal_instance.signal.entity_types,
-    )
-    signal_instance.entities = entities
-    db_session.commit()
-
-    if signal_service.apply_filter_actions(db_session=db_session, signal_instance=signal_instance):
         # create a case if not duplicate or snoozed
         case_in = CaseCreate(
             title=signal_instance.signal.name,
