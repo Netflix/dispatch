@@ -78,7 +78,16 @@ def app_error_handler(
 
     # the user is in a message flow
     if body.get("response_url"):
-        respond(text=message, response_type="ephemeral", replace_original=False)
+        # the user is in a thread
+        if thread := body.get("container", {}).get("thread_ts"):
+            client.chat_postEphemeral(
+                channel=context["channel_id"],
+                text=message,
+                thread_ts=thread,
+                user=context["user_id"],
+            )
+        else:
+            respond(text=message, response_type="ephemeral", replace_original=False)
 
     if not isinstance(error, DispatchException):
         return BoltResponse(body=body, status=HTTPStatus.INTERNAL_SERVER_ERROR.value)
