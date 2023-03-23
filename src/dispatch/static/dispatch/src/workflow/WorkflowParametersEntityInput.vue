@@ -32,8 +32,9 @@
         </v-col>
         <v-col cols="12" sm="6">
           <entity-type-select
-            v-model="entity_types"
+            v-model="param.value"
             :project="project"
+            @input="updateItemValue(idx, $event)"
             :signalDefinition="selected"
           ></entity-type-select>
         </v-col>
@@ -82,7 +83,7 @@ export default {
       this.$emit("input", this.parameters)
     },
     updateItemValue(idx, event) {
-      this.parameters[idx]["value"] = event
+      this.parameters[idx]["value"] = event["name"]
       this.$emit("input", this.parameters)
     },
   },

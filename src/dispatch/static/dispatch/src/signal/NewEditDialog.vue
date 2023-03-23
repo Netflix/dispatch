@@ -215,8 +215,9 @@
             </v-app-bar>
             <v-card-text>
               <workflow-combobox
-                v-model="selected.workflows"
+                v-model="workflows"
                 :project="project"
+                :signalDefinition="selected"
               ></workflow-combobox>
             </v-card-text>
           </v-card>
