@@ -1,14 +1,12 @@
-import { test, expect } from "./fixtures/dispatch-fixtures"
-import { setStorageState } from './helpers'
-import * as adminState from '.auth/admin.json';
+import { test as base, expect } from '@playwright/test';
+import { myAccount, DispatchUserFixtures } from './fixtures/user-fixtures';
+import { myPage, DispatchPageFixtures } from './fixtures/page-fixtures';
 
+const test = base.extend<DispatchUserFixtures & DispatchPageFixtures>({ ...myAccount, ...myPage });
 
 test.describe("CaseTable", () => {
-  test.beforeEach(async ({ page }) => {
-    await setStorageState(page, { cookies: adminState.cookies, origins: adminState.origins })
-  }),
   test("The edit list should appear after clicking the case edit kebab.", async ({
-    casesPage,
+    adminAccount, casesPage,
   }) => {
     await casesPage.goto()
     await casesPage.RowActionKebab.click()
