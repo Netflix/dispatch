@@ -388,6 +388,26 @@ def snooze_button_click(
         signal = signal_service.get(db_session=db_session, signal_id=instance.signal.id)
         subject.id = signal.id
 
+    entities = entity_service.get_all(db_session=db_session, project_id=subject.project_id).all()
+    if not entities:
+        modal = Modal(
+            title="Unable to snooze",
+            close="Close",
+            blocks=[
+                Context(
+                    elements=[
+                        MarkdownText(
+                            text="No entities found for this signal. Entity types are configured in the Dispatch UI."
+                        )
+                    ]
+                )
+            ],
+        ).build()
+        if view_id := body.get("view", {}).get("id"):
+            client.views_update(view_id=view_id, view=modal)
+        else:
+            client.views_open(trigger_id=body["trigger_id"], view=modal)
+
     blocks = [
         title_input(placeholder="A name for your snooze filter."),
         description_input(placeholder="Provide a description for your snooze filter."),
