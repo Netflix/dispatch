@@ -170,10 +170,14 @@
             <v-card-text>
               <v-row no-gutters>
                 <v-col cols="12">
-                  <case-type-select label="Case Type" v-model="case_type" />
+                  <case-type-select label="Case Type" :project="project" v-model="case_type" />
                 </v-col>
                 <v-col cols="12">
-                  <case-priority-select label="Case Priority" v-model="case_priority" />
+                  <case-priority-select
+                    label="Case Priority"
+                    :project="project"
+                    v-model="case_priority"
+                  />
                 </v-col>
               </v-row>
             </v-card-text>

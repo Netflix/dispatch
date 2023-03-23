@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 from fastapi import HTTPException
 from starlette.requests import Request
-from starlette.status import HTTP_403_FORBIDDEN
+from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
 from dispatch.enums import UserRoles, Visibility
 from dispatch.auth.service import get_current_user
@@ -47,8 +47,19 @@ class BasePermission(ABC):
 
     """
 
-    error_msg = [{"msg": "You don't have permission to access or modify this resource."}]
-    status_code = HTTP_403_FORBIDDEN
+    org_error_msg = [{"msg": "Organization not found. Please, contact your Dispatch admin."}]
+    org_error_code = HTTP_404_NOT_FOUND
+
+    user_error_msg = [{"msg": "User not found. Please, contact your Dispatch admin"}]
+    user_error_code = HTTP_404_NOT_FOUND
+
+    user_role_error_msg = [
+        {
+            "msg": "Your user doesn't have permissions to create, update, or delete this resource. Please, contact your Dispatch admin."
+        }
+    ]
+    user_role_error_code = HTTP_403_FORBIDDEN
+
     role = None
 
     @abstractmethod
@@ -71,17 +82,17 @@ class BasePermission(ABC):
             )
 
         if not organization:
-            raise HTTPException(status_code=self.status_code, detail=self.error_msg)
+            raise HTTPException(status_code=self.org_error_code, detail=self.org_error_msg)
 
         user = get_current_user(request=request)
-
         if not user:
-            raise HTTPException(status_code=self.status_code, detail=self.error_msg)
+            raise HTTPException(status_code=self.user_error_code, detail=self.user_error_msg)
 
         self.role = user.get_organization_role(organization.slug)
-
         if not self.has_required_permissions(request):
-            raise HTTPException(status_code=self.status_code, detail=self.error_msg)
+            raise HTTPException(
+                status_code=self.user_role_error_code, detail=self.user_role_error_msg
+            )
 
 
 class PermissionsDependency(object):
