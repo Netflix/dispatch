@@ -79,11 +79,12 @@ def app_error_handler(
     # the user is in a message flow
     if body.get("response_url"):
         # the user is in a thread
-        if body.get("thread_ts"):
+        thread = body.get("container", {}).get("thread_ts")
+        if thread:
             client.chat_postEphemeral(
-                channel=body["channel_id"],
+                channel=context["channel_id"],
                 text=message,
-                thread_ts=body["thread_ts"],
+                thread_ts=thread,
                 user=context["user_id"],
             )
         else:
