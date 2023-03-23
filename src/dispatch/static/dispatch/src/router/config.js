@@ -369,22 +369,22 @@ export const protectedRoute = [
             component: () => import("@/incident/severity/Table.vue"),
           },
           {
+            path: "incidentRoles",
+            name: "IncidentRolesTable",
+            meta: { title: "Role Policies", subMenu: "project", group: "incident" },
+            component: () => import("@/incident_role/Table.vue"),
+          },
+          {
             path: "incidentCostTypes",
             name: "IncidentCostTypesTable",
             meta: { title: "Cost Types", subMenu: "project", group: "incident" },
             component: () => import("@/incident_cost_type/Table.vue"),
           },
           {
-            path: "incidentRoles",
-            name: "IncidentRolesTable",
-            meta: { title: "Roles", subMenu: "project", group: "incident" },
-            component: () => import("@/incident_role/Table.vue"),
-          },
-          {
             path: "workstreamTypes",
-            name: "workstreamTypesTable",
+            name: "workstreamTypeTable",
             meta: { title: "Workstream Types", subMenu: "project", group: "incident" },
-            component: () => import("@/workstream/types/Table.vue"),
+            component: () => import("@/workstream/type/Table.vue"),
           },
           {
             path: "caseTypes",

@@ -61,9 +61,9 @@
                 <ValidationObserver disabled>
                   <template-select
                     :project="project"
-                    label="Workstream Template"
+                    label="Workstream Document Template"
                     v-model="document_template"
-                    resource-type="dispatch-workstream-document-template"
+                    resource-type="dispatch-incident-document-template"
                   />
                 </ValidationObserver>
               </v-flex>
