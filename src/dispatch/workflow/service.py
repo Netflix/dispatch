@@ -9,6 +9,7 @@ from dispatch.project import service as project_service
 from dispatch.plugin import service as plugin_service
 from dispatch.incident import service as incident_service
 from dispatch.case import service as case_service
+from dispatch.signal import service as signal_service
 from dispatch.participant import service as participant_service
 from dispatch.document import service as document_service
 from dispatch.workflow.enums import WorkflowInstanceStatus
@@ -140,7 +141,7 @@ def create_instance(
 ) -> WorkflowInstance:
     """Creates a new workflow instance."""
     instance = WorkflowInstance(
-        **instance_in.dict(exclude={"incident", "case", "creator", "artifacts"})
+        **instance_in.dict(exclude={"incident", "case", "signal", "creator", "artifacts"})
     )
 
     if instance_in.incident:
@@ -150,6 +151,10 @@ def create_instance(
     if instance_in.case:
         case = case_service.get(db_session=db_session, case_id=instance_in.case.id)
         instance.case = case
+
+    if instance_in.signal:
+        signal = signal_service.get(db_session=db_session, signal_id=instance_in.signal.id)
+        instance.signal = signal
 
     instance.workflow = workflow
 
