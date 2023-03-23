@@ -618,6 +618,7 @@ def list_tasks():
 @click.option("--eager", is_flag=True, default=False, help="Run the tasks immediately.")
 def start_tasks(tasks, exclude, eager):
     """Starts the scheduler."""
+    import signal
     from dispatch.common.utils.cli import install_plugins
 
     install_plugins()
@@ -641,6 +642,11 @@ def start_tasks(tasks, exclude, eager):
                     break
             else:
                 click.secho(f"Task not found. TaskName: {task}", fg="red")
+
+    # registers a handler to stop future scheduling when encountering sigterm
+    signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
+    for s in signals:
+        signal.signal(s, scheduler.stop)
 
     click.secho("Starting scheduler...", fg="blue")
     scheduler.start()

@@ -1,6 +1,7 @@
 import json
 import re
 from datetime import datetime, timedelta
+from uuid import UUID
 
 import pytz
 from blockkit import (
@@ -38,17 +39,18 @@ from dispatch.plugins.dispatch_slack.case.enums import (
     CaseReportActions,
     CaseResolveActions,
     CaseShortcutCallbacks,
-    SignalSnoozeActions,
     SignalNotificationActions,
+    SignalSnoozeActions,
 )
 from dispatch.plugins.dispatch_slack.case.messages import create_case_message
 from dispatch.plugins.dispatch_slack.config import SlackConversationConfiguration
 from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
 from dispatch.plugins.dispatch_slack.fields import (
+    DefaultBlockIds,
     case_priority_select,
+    case_resolution_reason_select,
     case_status_select,
     case_type_select,
-    DefaultBlockIds,
     description_input,
     entity_select,
     incident_priority_select,
@@ -56,7 +58,6 @@ from dispatch.plugins.dispatch_slack.fields import (
     project_select,
     relative_date_picker_input,
     resolution_input,
-    case_resolution_reason_select,
     title_input,
 )
 from dispatch.plugins.dispatch_slack.middleware import (
@@ -68,11 +69,11 @@ from dispatch.plugins.dispatch_slack.middleware import (
     user_middleware,
 )
 from dispatch.plugins.dispatch_slack.models import (
-    SubjectMetadata,
+    CaseSubjects,
     FormData,
     FormMetadata,
-    CaseSubjects,
     SignalSubjects,
+    SubjectMetadata,
 )
 from dispatch.plugins.dispatch_slack.service import get_user_email
 from dispatch.project import service as project_service
@@ -1346,7 +1347,7 @@ def signal_button_click(
 ):
     ack()
     signal = signal_service.get_signal_instance(
-        db_session=db_session, signal_instance_id=context["subject"].id
+        db_session=db_session, signal_instance_id=UUID(context["subject"].id)
     )
 
     # truncate text and redirect to ui

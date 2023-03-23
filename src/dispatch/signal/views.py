@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+import logging
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -8,7 +10,10 @@ from dispatch.auth.service import get_current_user
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.exceptions import ExistsError
-from dispatch.models import PrimaryKey
+from dispatch.models import OrganizationSlug, PrimaryKey
+from dispatch.project import service as project_service
+from dispatch.signal import service as signal_service
+from dispatch.signal.flows import signal_instance_create_flow
 
 from .models import (
     SignalCreate,
@@ -25,7 +30,6 @@ from .models import (
 )
 from .service import (
     create,
-    create_instance,
     create_signal_filter,
     delete,
     delete_signal_filter,
@@ -37,6 +41,8 @@ from .service import (
 
 router = APIRouter()
 
+log = logging.getLogger(__name__)
+
 
 @router.get("/instances", response_model=SignalInstancePagination)
 def get_signal_instances(*, common: dict = Depends(common_parameters)):
@@ -44,12 +50,59 @@ def get_signal_instances(*, common: dict = Depends(common_parameters)):
     return search_filter_sort_paginate(model="SignalInstance", **common)
 
 
-@router.post("/{signal_id}/instances", response_model=SignalInstanceRead)
+@router.post("/instances", response_model=SignalInstanceRead)
 def create_signal_instance(
-    *, db_session: Session = Depends(get_db), signal_instance_in: SignalInstanceCreate
+    *,
+    db_session: Session = Depends(get_db),
+    organization: OrganizationSlug,
+    signal_instance_in: SignalInstanceCreate,
+    background_tasks: BackgroundTasks,
 ):
     """Create a new signal instance."""
-    return create_instance(db_session=db_session, signal_instance_in=signal_instance_in)
+    project = project_service.get_by_name_or_default(
+        db_session=db_session, project_in=signal_instance_in.project
+    )
+
+    if not signal_instance_in.signal:
+        external_id = signal_instance_in.raw["id"]
+        variant = signal_instance_in.raw["variant"]
+
+        signal = signal_service.get_by_variant_or_external_id(
+            db_session=db_session,
+            project_id=project.id,
+            external_id=external_id,
+            variant=variant,
+        )
+
+        signal_instance_in.signal = signal
+
+    if not signal:
+        msg = f"No signal definition found. Id: {external_id} Variant: {variant}"
+        log.error(msg)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": msg}],
+        ) from None
+
+    if not signal.enabled:
+        msg = f"Signal definition not enabled. SignalName: {signal.name}"
+        log.warning(msg)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=[{"msg": msg}],
+        ) from None
+
+    signal_instance = signal_service.create_instance(
+        db_session=db_session, signal_instance_in=signal_instance_in
+    )
+    signal_instance.signal = signal
+    db_session.commit()
+
+    background_tasks.add_task(
+        signal_instance_create_flow, signal_instance.id, organization_slug=organization
+    )
+
+    return signal_instance
 
 
 @router.get("/filters", response_model=SignalFilterPagination)

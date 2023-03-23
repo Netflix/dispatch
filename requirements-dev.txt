@@ -30,7 +30,7 @@ executing==1.2.0
     #   stack-data
 factory-boy==3.2.1
     # via -r requirements-dev.in
-faker==17.6.0
+faker==18.3.0
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -72,7 +72,7 @@ pytest==7.2.2
     # via -r requirements-dev.in
 python-dateutil==2.8.2
     # via faker
-ruff==0.0.256
+ruff==0.0.257
     # via -r requirements-dev.in
 six==1.16.0
     # via

@@ -172,27 +172,27 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
         case_id=case.id,
     )
 
+    assignee_email = None
     if case_in.assignee:
         # we assign the case to the assignee provided
         assignee_email = case_in.assignee.individual.email
-    else:
-        if case_type.oncall_service:
-            # we assign the case to the oncall person for the given case type
-            assignee_email = service_flows.resolve_oncall(
-                service=case_type.oncall_service, db_session=db_session
-            )
-        else:
-            # we assign the case to the current user
-            if current_user:
-                assignee_email = current_user.email
+    elif case_type.oncall_service:
+        # we assign the case to the oncall person for the given case type
+        assignee_email = service_flows.resolve_oncall(
+            service=case_type.oncall_service, db_session=db_session
+        )
+    elif current_user:
+        # we fall back to assign the case to the current user
+        assignee_email = current_user.email
 
     # add assignee
-    participant_flows.add_participant(
-        assignee_email,
-        case,
-        db_session,
-        role=ParticipantRoleType.assignee,
-    )
+    if assignee_email:
+        participant_flows.add_participant(
+            assignee_email,
+            case,
+            db_session,
+            role=ParticipantRoleType.assignee,
+        )
 
     # add reporter
     if case_in.reporter:

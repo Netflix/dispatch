@@ -27,6 +27,7 @@ class Scheduler(object):
     """Simple scheduler class that holds all scheduled functions."""
 
     registered_tasks = []
+    running = True
 
     def add(self, job, *args, **kwargs):
         """Adds a task to the scheduler."""
@@ -49,9 +50,15 @@ class Scheduler(object):
 
     def start(self):
         """Runs all scheduled tasks."""
-        while True:
+        log.info("Starting scheduler...")
+        while self.running:
             schedule.run_pending()
             time.sleep(1)
+
+    def stop(self, signum, frame):
+        """Stops the scheduler (letting existing threads finish)."""
+        log.debug("Stopping scheduler...")
+        self.running = False
 
 
 scheduler = Scheduler()

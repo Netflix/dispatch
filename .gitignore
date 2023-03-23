@@ -174,7 +174,6 @@ yarn-debug.log*
 yarn-error.log*
 yarn.lock
 
-
 # End of https://www.gitignore.io/api/macos,visualstudiocode,python
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
@@ -207,9 +206,14 @@ docker/.env
 *.dump
 
 .gitconfig
+
+# Playwright
 /test-results/
 /playwright-report/
 /playwright/.cache/
 /tests/static/e2e/artifacts/*
 src/dispatch/static/dispatch/tests/__snapshots__
 src/dispatch/static/dispatch/coverage
+
+# Typescript
+components.d.ts
