@@ -189,7 +189,7 @@ lxml==4.9.2
     #   premailer
 mako==1.2.4
     # via alembic
-markdown==3.4.1
+markdown==3.4.2
     # via -r requirements-base.in
 markupsafe==2.1.2
     # via
