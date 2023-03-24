@@ -390,7 +390,7 @@ def snooze_button_click(
         subject.id = signal.id
 
     entities = entity_service.get_all(db_session=db_session, project_id=subject.project_id).all()
-    if entities:
+    if not entities:
         modal = Modal(
             title="Unable to snooze",
             close="Close",
