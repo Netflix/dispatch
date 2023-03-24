@@ -26,6 +26,7 @@ atlassian-python-api==3.32.0
     # via -r requirements-base.in
 attrs==22.1.0
     # via
+    #   -r requirements-base.in
     #   aiohttp
     #   hypothesis
     #   hypothesis-graphql
@@ -439,8 +440,9 @@ typer==0.7.0
     # via
     #   pathy
     #   spacy
-typing-extensions==4.5.0
+typing-extensions==4.4.0
     # via
+    #   -r requirements-base.in
     #   alembic
     #   pydantic
     #   schemathesis
