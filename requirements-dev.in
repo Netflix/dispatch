@@ -1,3 +1,4 @@
+attrs==22.1.0
 black
 click
 coverage
@@ -5,6 +6,6 @@ devtools
 factory-boy
 faker
 ipython
-ruff
 pytest
+ruff
 vulture

@@ -10,8 +10,10 @@ asttokens==2.2.1
     # via
     #   devtools
     #   stack-data
-attrs==22.2.0
-    # via pytest
+attrs==22.1.0
+    # via
+    #   -r requirements-dev.in
+    #   pytest
 backcall==0.2.0
     # via ipython
 black==23.1.0

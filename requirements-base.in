@@ -3,6 +3,7 @@ aiofiles
 aiohttp
 alembic
 atlassian-python-api==3.32.0
+attrs==22.1.0
 bcrypt
 blockkit
 cachetools
