@@ -10,7 +10,7 @@
 fail_fast: false
 
 default_language_version:
-  python: python3
+  python: python3.11.2
 
 repos:
   # Black
