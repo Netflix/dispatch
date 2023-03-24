@@ -2,8 +2,10 @@ aiocache
 aiofiles
 aiohttp
 alembic
-blockkit
+atlassian-python-api==3.32.0
+attrs==22.1.0
 bcrypt
+blockkit
 cachetools
 chardet
 click
@@ -17,11 +19,12 @@ h11
 httpx
 jinja2
 jira==2.0.0
-atlassian-python-api==3.32.0
 joblib
 jsonpath_ng
+markdown
 numpy
 oauth2client
+openai
 pandas
 pdpyras
 protobuf
@@ -38,8 +41,8 @@ schemathesis
 sentry-asgi
 sentry-sdk
 sh
-slack_sdk
 slack-bolt
+slack_sdk
 spacy
 sqlalchemy-filters
 sqlalchemy-utils
@@ -47,7 +50,7 @@ sqlalchemy<1.4  # NOTE temporarily until https://github.com/kvesteri/sqlalchemy-
 statsmodels
 tabulate
 tenacity
+typing-extensions==4.4.0
 uvicorn
 uvloop
 validators==0.18.2
-markdown
