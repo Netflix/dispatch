@@ -1,8 +1,8 @@
 """
 .. module: dispatch.plugins.openai.plugin
-	:platform: Unix
-	:copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
-	:license: Apache, see LICENSE for more details.
+    :platform: Unix
+    :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
+    :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Marc Vilanova <mvilanova@netflix.com>
 """
 import json
