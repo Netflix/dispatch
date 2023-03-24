@@ -7,9 +7,11 @@
 # To Skip Checks:
 #
 # git commit --no-verify
-fail_fast: true
+fail_fast: false
+
 default_language_version:
-    python: python3.11.2
+  python: python3
+
 repos:
   # Black
   - repo: https://github.com/psf/black
@@ -19,17 +21,16 @@ repos:
 
   # Ruff
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: "v0.0.245"
+    rev: "v0.0.259"
     hooks:
       - id: ruff
-        args: [check, src, tests]
 
   # Pytest
   - repo: local
     hooks:
+      - id: tests
         name: run tests
         entry: pytest -v
         language: system
         types: [python]
         stages: [push]
-        - id: tests
