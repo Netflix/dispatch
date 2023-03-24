@@ -6,7 +6,9 @@
 .. moduleauthor:: Marc Vilanova <mvilanova@netflix.com>
 """
 import logging
+
 import openai
+from openai import util
 
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_openai as openai_plugin
@@ -32,7 +34,7 @@ class OpenAIPlugin(ArtificialIntelligencePlugin):
     def __init__(self):
         self.configuration_schema = OpenAIConfiguration
 
-    def ask(self, prompt: str) -> str:
+    def ask(self, prompt: str) -> dict:
         openai.api_key = self.api_key
 
         try:
@@ -48,4 +50,4 @@ class OpenAIPlugin(ArtificialIntelligencePlugin):
             logger.error(e)
             raise
 
-        return response
+        return util.convert_to_dict(response)
