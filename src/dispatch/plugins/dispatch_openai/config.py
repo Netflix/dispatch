@@ -1,4 +1,4 @@
-from pydantic import Field, SecretStr, HttpUrl
+from pydantic import Field, SecretStr
 from typing import List, TypeVar
 
 from dispatch.config import BaseConfigurationModel
@@ -9,12 +9,8 @@ Stop = TypeVar("Stop", str, List)
 class OpenAIConfiguration(BaseConfigurationModel):
     """OpenAI configuration description."""
 
-    api_url: HttpUrl = Field(
-        "https://api.openai.com/v1/engines/text-davinci-002/completions",
-        title="API URL",
-        description="OpenAI's API URL.",
-    )
     api_key: SecretStr = Field(title="API Key", description="Your secret OpenAI API key.")
+    model: str = Field("text-davinci-003", title="Model", description="")
     max_tokens: int = Field(
         50,
         title="Max Tokens",

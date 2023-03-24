@@ -1,13 +1,12 @@
 """
 .. module: dispatch.plugins.openai.plugin
-    :platform: Unix
-    :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
-    :license: Apache, see LICENSE for more details.
+	:platform: Unix
+	:copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
+	:license: Apache, see LICENSE for more details.
 .. moduleauthor:: Marc Vilanova <mvilanova@netflix.com>
 """
-import json
 import logging
-import requests
+import openai
 
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_openai as openai_plugin
@@ -33,23 +32,20 @@ class OpenAIPlugin(ArtificialIntelligencePlugin):
     def __init__(self):
         self.configuration_schema = OpenAIConfiguration
 
-    def _generate_headers(self):
-        return {"Content-Type": "application/json", "Authorization": f"Bearer {self.api_key}"}
+    def ask(self, prompt: str) -> str:
+        openai.api_key = self.api_key
 
-    def ask(self, prompt):
-        payload = {
-            "prompt": prompt,
-            "max_tokens": self.max_tokens,
-            "n": self.n,
-            "stop": self.stop,
-            "temperature": self.temperature,
-        }
-        headers = self._generate_headers()
-        response = requests.post(self.base_url, headers=headers, data=json.dumps(payload))
+        try:
+            response = openai.Completion.create(
+                max_tokens=self.max_tokens,
+                model=self.model,
+                n=self.n,
+                prompt=prompt,
+                stop=self.stop,
+                temperature=self.temperature,
+            )
+        except Exception as e:
+            logger.error(e)
+            raise
 
-        if response.status_code == 200:
-            return response.json()["choices"]
-        else:
-            error_message = f"Error {response.status_code}: {response.text}"
-            logger.error(error_message)
-            raise Exception(error_message)
+        return response
