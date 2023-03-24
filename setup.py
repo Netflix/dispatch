@@ -403,7 +403,7 @@ setup(
         "console_scripts": ["dispatch = dispatch.cli:entrypoint"],
         "dispatch.plugins": [
             "dispatch_atlassian_confluence = dispatch.plugins.dispatch_atlassian_confluence.plugin:ConfluencePagePlugin",
-            "dispatch_atlassian_confluence_document = dispatch.plugins.dispatch_atlassian_confluence_docs.plugin:ConfluencePageDocPlugin",
+            "dispatch_atlassian_confluence_document = dispatch.plugins.dispatch_atlassian_confluence.docs.plugin:ConfluencePageDocPlugin",
             "dispatch_basic_auth = dispatch.plugins.dispatch_core.plugin:BasicAuthProviderPlugin",
             "dispatch_contact = dispatch.plugins.dispatch_core.plugin:DispatchContactPlugin",
             "dispatch_document_resolver = dispatch.plugins.dispatch_core.plugin:DispatchDocumentResolverPlugin",
