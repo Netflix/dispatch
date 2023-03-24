@@ -439,7 +439,7 @@ typer==0.7.0
     # via
     #   pathy
     #   spacy
-typing-extensions==4.4.0
+typing-extensions==4.5.0
     # via
     #   -r requirements-base.in
     #   alembic
