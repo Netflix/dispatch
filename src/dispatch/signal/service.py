@@ -121,7 +121,9 @@ def get_signal_filter(*, db_session: Session, signal_filter_id: int) -> SignalFi
     return db_session.query(SignalFilter).filter(SignalFilter.id == signal_filter_id).one_or_none()
 
 
-def get_signal_instance(*, db_session: Session, signal_instance_id: int | str):
+def get_signal_instance(
+    *, db_session: Session, signal_instance_id: int | str
+) -> Optional[SignalInstance]:
     """Gets a signal instance by it's UUID."""
     return (
         db_session.query(SignalInstance)

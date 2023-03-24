@@ -144,6 +144,8 @@ def create_instance(
         **instance_in.dict(exclude={"incident", "case", "signal", "creator", "artifacts"})
     )
 
+    instance.workflow = workflow
+
     if instance_in.incident:
         incident = incident_service.get(db_session=db_session, incident_id=instance_in.incident.id)
         instance.incident = incident
@@ -156,15 +158,21 @@ def create_instance(
         signal = signal_service.get(db_session=db_session, signal_id=instance_in.signal.id)
         instance.signal = signal
 
-    instance.workflow = workflow
-
     if instance_in.creator:
-        creator = participant_service.get_by_incident_id_and_email(
-            db_session=db_session,
-            incident_id=incident.id,
-            email=instance_in.creator.individual.email,
-        )
-        instance.creator = creator
+        if incident:
+            creator = participant_service.get_by_incident_id_and_email(
+                db_session=db_session,
+                incident_id=incident.id,
+                email=instance_in.creator.individual.email,
+            )
+            instance.creator = creator
+        if case:
+            creator = participant_service.get_by_case_id_and_email(
+                db_session=db_session,
+                incident_id=case.id,
+                email=instance_in.creator.individual.email,
+            )
+            instance.creator = creator
 
     for a in instance_in.artifacts:
         artifact_document = document_service.create(db_session=db_session, document_in=a)
@@ -180,7 +188,8 @@ def update_instance(*, db_session, instance: WorkflowInstance, instance_in: Work
     """Updates an existing workflow instance."""
     instance_data = instance.dict()
     update_data = instance_in.dict(
-        skip_defaults=True, exclude={"incident", "workflow", "creator", "artifacts"}
+        skip_defaults=True,
+        exclude={"incident", "case", "signal", "workflow", "creator", "artifacts"},
     )
 
     for a in instance_in.artifacts:

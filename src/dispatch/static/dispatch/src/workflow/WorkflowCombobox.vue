@@ -8,6 +8,7 @@
         :project="project"
         v-bind="$attrs"
         v-on="$listeners"
+        v-model="workflows"
       >
         <template #selection="{ attr, item, selected }">
           <v-menu bottom right transition="scale-transition" origin="top left">
@@ -92,6 +93,16 @@ export default {
       workflowApi: WorkflowApi,
       createdItem: null,
     }
+  },
+  computed: {
+    workflows: {
+      get() {
+        return this.value
+      },
+      set(value) {
+        this.$emit("input", value)
+      },
+    },
   },
   methods: {
     // ...

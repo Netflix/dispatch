@@ -23,17 +23,12 @@ def send_workflow_notification(project_id, conversation_id, message_template, db
 
 @background_task
 def signal_workflow_run_flow(
+    current_user,
     db_session: Session,
     workflow: Workflow,
-    workflow_instance_in: WorkflowInstanceCreate,
     signal_instance: SignalInstance,
 ) -> WorkflowInstance:
     """Runs a workflow with the given parameters."""
-    instance = workflow_serivce.create_instance(
-        db_session=db_session,
-        workflow=workflow,
-        instance_in=WorkflowInstanceCreate(**workflow_instance_in.dict()),
-    )
     entities = signal_instance.entities
 
     params = {}
@@ -43,6 +38,18 @@ def signal_workflow_run_flow(
                 if entity.entity_type.name == value:
                     params.update({p["key"]: entity.value})
 
+    named_params = [{"key": key, "value": value} for key, value in params.items()]
+    instance = workflow_serivce.create_instance(
+        db_session=db_session,
+        workflow=workflow,
+        instance_in=WorkflowInstanceCreate(
+            case=signal_instance.case,
+            signal=signal_instance.signal,
+            run_reason="Automatic signal workflow",
+            parameters=named_params,
+        ),
+    )
+
     params.update(
         {
             "externalRef": f"{DISPATCH_UI_URL}/{instance.signal.project.organization.name}/signals/{instance.signal.id}?project={instance.signal.project.name}",
@@ -50,6 +57,5 @@ def signal_workflow_run_flow(
         }
     )
 
-    workflow.plugin_instance.instance.run(workflow.resource_id, params)
-
+    instance.workflow.plugin_instance.instance.run(workflow.resource_id, params)
     return instance

@@ -33,21 +33,6 @@ def signal_instance_create_flow(
     db_session.commit()
 
     if signal_service.apply_filter_actions(db_session=db_session, signal_instance=signal_instance):
-        # run workflows if not duplicate or snoozed
-        if workflows := signal_instance.signal.workflows:
-            for workflow in workflows:
-                instance = WorkflowInstanceCreate(
-                    signal=signal_instance.signal,
-                    creator="Dispatch",
-                    run_reason="Automated",
-                )
-                workflow_flows.signal_workflow_run_flow(
-                    db_session=db_session,
-                    signal_instance=signal_instance,
-                    workflow=workflow,
-                    workflow_instance_in=instance,
-                )
-
         # create a case if not duplicate or snoozed
         case_in = CaseCreate(
             title=signal_instance.signal.name,
@@ -62,6 +47,17 @@ def signal_instance_create_flow(
 
         signal_instance.case = case
         db_session.commit()
+
+        # run workflows if not duplicate or snoozed
+        if workflows := signal_instance.signal.workflows:
+            for workflow in workflows:
+                workflow_flows.signal_workflow_run_flow(
+                    current_user=current_user,
+                    db_session=db_session,
+                    signal_instance=signal_instance,
+                    workflow=workflow,
+                )
+
         return case_flows.case_new_create_flow(
             db_session=db_session, organization_slug=None, case_id=case.id
         )
@@ -96,5 +92,7 @@ def create_signal_instance(
     )
 
     return signal_instance_create_flow(
-        db_session=db_session, signal_instance_id=signal_instance.id, organization_slug=None
+        db_session=db_session,
+        signal_instance_id=signal_instance.id,
+        organization_slug=None,
     )

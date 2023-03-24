@@ -145,6 +145,10 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
         secondary=assoc_signal_workflows,
         backref="signals",
     )
+    workflow_instances = relationship(
+        "WorkflowInstance", backref="signal", cascade="all, delete-orphan"
+    )
+
     tags = relationship(
         "Tag",
         secondary=assoc_signal_tags,

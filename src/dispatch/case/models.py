@@ -163,6 +163,7 @@ class SignalRead(DispatchBase):
     variant: Optional[str]
     external_id: str
     external_url: Optional[str]
+    workflow_instances: Optional[List[WorkflowInstanceRead]] = []
 
 
 class SignalInstanceRead(DispatchBase):

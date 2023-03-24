@@ -92,7 +92,9 @@ def get_by_value_or_create(*, db_session, entity_in: EntityCreate) -> Entity:
     if entity_in.id:
         q = db_session.query(Entity).filter(Entity.id == entity_in.id)
     else:
-        q = db_session.query(Entity).filter_by(value=entity_in.value)
+        q = db_session.query(Entity).filter_by(
+            value=entity_in.value, entity_type_id=entity_in.entity_type.id
+        )
 
     instance = q.first()
     if instance:

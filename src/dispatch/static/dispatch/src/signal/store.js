@@ -20,6 +20,8 @@ const getDefaultSelectedState = () => {
     entity_types: [],
     tags: [],
     signal_definition: null,
+    workflow_instances: null,
+    workflows: null,
     source: null,
     project: null,
     created_at: null,
