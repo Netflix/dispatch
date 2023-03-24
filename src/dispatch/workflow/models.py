@@ -91,6 +91,7 @@ class WorkflowInstance(Base, ResourceMixin):
     creator_id = Column(Integer, ForeignKey("participant.id"))
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
     case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"))
+    signal_id = Column(Integer, ForeignKey("signal.id", ondelete="CASCADE"))
     creator = relationship(
         "Participant", backref="created_workflow_instances", foreign_keys=[creator_id]
     )
@@ -106,6 +107,11 @@ class WorkflowIncident(DispatchBase):
 
 
 class WorkflowCase(DispatchBase):
+    id: PrimaryKey
+    name: Optional[NameStr]
+
+
+class WorkflowSignal(DispatchBase):
     id: PrimaryKey
     name: Optional[NameStr]
 
@@ -155,12 +161,14 @@ class WorkflowInstanceBase(ResourceBase):
     updated_at: Optional[datetime] = None
     incident: Optional[WorkflowIncident]
     case: Optional[WorkflowCase]
+    signal: Optional[WorkflowSignal]
 
 
 class WorkflowInstanceCreate(WorkflowInstanceBase):
     creator: Optional[ParticipantRead]
     incident: Optional[WorkflowIncident]
     case: Optional[WorkflowCase]
+    signal: Optional[WorkflowSignal]
 
 
 class WorkflowInstanceUpdate(WorkflowInstanceBase):

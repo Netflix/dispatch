@@ -31,12 +31,12 @@
           />
         </v-col>
         <v-col cols="12" sm="6">
-          <v-text-field
-            label="Default Value"
-            :value="param.value"
+          <entity-type-select
+            v-model="param.value"
+            :project="project"
             @input="updateItemValue(idx, $event)"
-            type="text"
-          />
+            :signalDefinition="selected"
+          ></entity-type-select>
         </v-col>
       </v-row>
     </span>
@@ -45,11 +45,12 @@
 
 <script>
 import { cloneDeep } from "lodash"
+import EntityTypeSelect from "@/entity_type/EntityTypeSelect.vue"
 
 export default {
-  name: "WorkflowParameterInput",
+  name: "WorkflowParametersEntityInput",
 
-  components: {},
+  components: { EntityTypeSelect },
 
   props: {
     value: {
@@ -82,7 +83,7 @@ export default {
       this.$emit("input", this.parameters)
     },
     updateItemValue(idx, event) {
-      this.parameters[idx]["value"] = event
+      this.parameters[idx]["value"] = event["name"]
       this.$emit("input", this.parameters)
     },
   },

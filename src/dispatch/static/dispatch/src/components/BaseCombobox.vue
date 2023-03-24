@@ -15,6 +15,13 @@
     v-model="selectedItems"
   >
     <slot name="selection" v-bind="{ attr, item, selected }"></slot>
+    <template v-slot:append-item>
+      <v-list-item v-if="more" @click="loadMore()">
+        <v-list-item-content>
+          <v-list-item-subtitle> Load More </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+    </template>
   </v-combobox>
 </template>
 

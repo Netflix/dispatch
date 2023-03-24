@@ -103,7 +103,7 @@ def test_filter_actions_deduplicate(session, signal, project):
     assert signal_instance_2.filter_action == SignalFilterAction.deduplicate
 
 
-def test_filter_actions_snooze(session, signal, project):
+def test_filter_actions_snooze(session, entity, signal, project):
     from datetime import datetime, timedelta, timezone
     from dispatch.signal.models import (
         SignalFilter,
@@ -112,7 +112,6 @@ def test_filter_actions_snooze(session, signal, project):
     )
     from dispatch.signal.service import apply_filter_actions
     from dispatch.entity_type.models import EntityType
-    from dispatch.entity.models import Entity
 
     entity_type = EntityType(
         name="test",
@@ -123,7 +122,6 @@ def test_filter_actions_snooze(session, signal, project):
     session.add(entity_type)
     signal.entity_types.append(entity_type)
 
-    entity = Entity(name="test", description="test", value="foo", entity_type=entity_type)
     session.add(entity)
 
     # create instance
@@ -149,7 +147,7 @@ def test_filter_actions_snooze(session, signal, project):
     assert signal_instance_1.filter_action == SignalFilterAction.snooze
 
 
-def test_filter_actions_snooze_expired(session, signal, project):
+def test_filter_actions_snooze_expired(session, entity, signal, project):
     from datetime import datetime, timedelta, timezone
     from dispatch.signal.models import (
         SignalFilter,
@@ -158,7 +156,6 @@ def test_filter_actions_snooze_expired(session, signal, project):
     )
     from dispatch.signal.service import apply_filter_actions
     from dispatch.entity_type.models import EntityType
-    from dispatch.entity.models import Entity
 
     entity_type = EntityType(
         name="test",
@@ -167,8 +164,6 @@ def test_filter_actions_snooze_expired(session, signal, project):
         project=project,
     )
     session.add(entity_type)
-
-    entity = Entity(name="test", description="test", value="foo", entity_type=entity_type)
     session.add(entity)
 
     # create instance

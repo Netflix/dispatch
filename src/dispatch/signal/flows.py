@@ -8,6 +8,7 @@ from dispatch.entity import service as entity_service
 from dispatch.project.models import Project
 from dispatch.signal import service as signal_service
 from dispatch.signal.models import SignalInstanceCreate
+from dispatch.workflow import flows as workflow_flows
 
 
 @background_task
@@ -45,6 +46,17 @@ def signal_instance_create_flow(
 
         signal_instance.case = case
         db_session.commit()
+
+        # run workflows if not duplicate or snoozed
+        if workflows := signal_instance.signal.workflows:
+            for workflow in workflows:
+                workflow_flows.signal_workflow_run_flow(
+                    current_user=current_user,
+                    db_session=db_session,
+                    signal_instance=signal_instance,
+                    workflow=workflow,
+                )
+
         return case_flows.case_new_create_flow(
             db_session=db_session, organization_slug=None, case_id=case.id
         )
@@ -79,5 +91,7 @@ def create_signal_instance(
     )
 
     return signal_instance_create_flow(
-        db_session=db_session, signal_instance_id=signal_instance.id, organization_slug=None
+        db_session=db_session,
+        signal_instance_id=signal_instance.id,
+        organization_slug=None,
     )
