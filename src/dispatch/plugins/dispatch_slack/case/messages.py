@@ -17,7 +17,7 @@ from dispatch.plugins.dispatch_slack.case.enums import (
 
 def create_case_message(case: Case, channel_id: str):
     blocks = [
-        Context(elements=["*Case Details*"]),
+        Context(elements=[f"* {case.name} - Case Details*"]),
         Section(
             text=f"*Title* \n {case.title}.",
             accessory=Button(
@@ -26,9 +26,7 @@ def create_case_message(case: Case, channel_id: str):
                 url=f"{DISPATCH_UI_URL}/{case.project.organization.slug}/cases/{case.name}",
             ),
         ),
-        Section(
-            text=f"*Description* \n {case.description} \n \n Additional information is available in the <{case.case_document.weblink}|case document>."
-        ),
+        Section(text=f"*Description* \n {case.description}"),
         Section(
             fields=[
                 f"*Assignee* \n {case.assignee.individual.email}",
@@ -145,7 +143,7 @@ def create_signal_messages(case: Case, channel_id: str, db_session: Session) -> 
             Actions(
                 elements=[
                     Button(
-                        text="View Raw Data",
+                        text="Raw Data",
                         action_id=SignalNotificationActions.view,
                         value=button_metadata,
                     ),
@@ -153,6 +151,11 @@ def create_signal_messages(case: Case, channel_id: str, db_session: Session) -> 
                         text="Snooze",
                         action_id=SignalNotificationActions.snooze,
                         value=button_metadata,
+                    ),
+                    Button(
+                        text="Response Plan",
+                        action_id="button-link",
+                        url=instance.signal.external_url,
                     ),
                 ]
             ),
