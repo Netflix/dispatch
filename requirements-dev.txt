@@ -88,8 +88,6 @@ traitlets==5.9.0
     # via
     #   ipython
     #   matplotlib-inline
-typing-extensions==4.4.0
-    # via -r requirements-dev.in
 vulture==2.7
     # via -r requirements-dev.in
 wcwidth==0.2.6
