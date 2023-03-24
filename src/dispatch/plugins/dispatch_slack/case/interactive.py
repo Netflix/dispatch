@@ -390,7 +390,7 @@ def snooze_button_click(
         subject.id = signal.id
 
     entities = entity_service.get_all(db_session=db_session, project_id=subject.project_id).all()
-    if not entities:
+    if entities:
         modal = Modal(
             title="Unable to snooze",
             close="Close",
@@ -398,8 +398,11 @@ def snooze_button_click(
                 Context(
                     elements=[
                         MarkdownText(
-                            text=f"No entities found for this signal. At least one entity is required to snooze a signal.\n\nNew entity types are configured in the <{DISPATCH_UI_URL}|Dispatch UI>"
-                        )
+                            text="No entities found for this signal. At least one entity is required to snooze a signal.\n"
+                        ),
+                        MarkdownText(
+                            text=f"\n\nNew entity types are configured in the <{DISPATCH_UI_URL}|Dispatch UI>"
+                        ),
                     ]
                 )
             ],
