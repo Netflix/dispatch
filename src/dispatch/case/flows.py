@@ -134,9 +134,15 @@ def case_add_or_reactivate_participant_flow(
         participant = participant_flows.add_participant(
             user_email, case, db_session, service_id=service_id, role=participant_role
         )
-
-    # we add the participant to the tactical group
-    # add_participant_to_tactical_group(user_email, case, db_session)
+    if case.tactical_group:
+        # we add the participant to the tactical group
+        group_flows.update_group(
+            subject=case,
+            group=case.tactical_group,
+            group_action=GroupAction.add_member,
+            group_member=case.assignee.individual.email,
+            db_session=db_session,
+        )
 
     if case.status != CaseStatus.closed:
         # we add the participant to the conversation

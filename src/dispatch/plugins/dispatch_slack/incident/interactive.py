@@ -1,8 +1,8 @@
+import logging
 from datetime import datetime
 from typing import Any
-import logging
-import pytz
 
+import pytz
 from blockkit import (
     Actions,
     Button,
@@ -22,7 +22,6 @@ from blockkit import (
 from slack_bolt import Ack, BoltContext, BoltRequest, Respond
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
-
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -32,6 +31,8 @@ from dispatch.database.service import search_filter_sort_paginate
 from dispatch.enums import Visibility
 from dispatch.event import service as event_service
 from dispatch.exceptions import DispatchException
+from dispatch.group import flows as group_flows
+from dispatch.group.enums import GroupAction
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
@@ -50,8 +51,6 @@ from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.bolt import app
 from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
 from dispatch.plugins.dispatch_slack.exceptions import CommandError
-from dispatch.plugins.dispatch_slack.models import MonitorMetadata, TaskMetadata
-from dispatch.plugins.dispatch_slack.service import get_user_email, get_user_profile_by_email
 from dispatch.plugins.dispatch_slack.fields import (
     DefaultActionIds,
     DefaultBlockIds,
@@ -107,6 +106,8 @@ from dispatch.plugins.dispatch_slack.middleware import (
     subject_middleware,
     user_middleware,
 )
+from dispatch.plugins.dispatch_slack.models import MonitorMetadata, TaskMetadata
+from dispatch.plugins.dispatch_slack.service import get_user_email, get_user_profile_by_email
 from dispatch.project import service as project_service
 from dispatch.report import flows as report_flows
 from dispatch.report import service as report_service
@@ -2105,9 +2106,15 @@ def handle_incident_notification_subscribe_button_click(
     else:
         user_id = context["user_id"]
         user_email = get_user_email(client=client, user_id=user_id)
-        incident_flows.add_participant_to_tactical_group(
-            user_email=user_email, incident=incident, db_session=db_session
-        )
+
+        if incident.tactical_group:
+            group_flows.update_group(
+                subject=incident,
+                group=incident.tactical_group,
+                group_action=GroupAction.add_member,
+                group_member=user_email,
+                db_session=db_session,
+            )
         message = f"Success! We've subscribed you to incident {incident.name}. You will start receiving all tactical reports about this incident via email."
 
     respond(text=message, response_type="ephemeral", replace_original=False, delete_original=False)
