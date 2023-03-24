@@ -25,6 +25,7 @@ from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
 from dispatch.case.enums import CaseStatus
 from dispatch.case.models import CaseCreate, CaseUpdate
+from dispatch.config import DISPATCH_UI_URL
 from dispatch.entity import service as entity_service
 from dispatch.exceptions import ExistsError
 from dispatch.incident import flows as incident_flows
@@ -397,7 +398,7 @@ def snooze_button_click(
                 Context(
                     elements=[
                         MarkdownText(
-                            text="No entities found for this signal. Entity types are configured in the Dispatch UI."
+                            text=f"No entities found for this signal. At least one entity is required to snooze a signal.\n\nNew entity types are configured in the <{DISPATCH_UI_URL}|Dispatch UI>"
                         )
                     ]
                 )
@@ -407,6 +408,7 @@ def snooze_button_click(
             client.views_update(view_id=view_id, view=modal)
         else:
             client.views_open(trigger_id=body["trigger_id"], view=modal)
+        return
 
     blocks = [
         title_input(placeholder="A name for your snooze filter."),
