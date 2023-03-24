@@ -159,14 +159,14 @@ def create_instance(
         instance.signal = signal
 
     if instance_in.creator:
-        if incident:
+        if instance.incident:
             creator = participant_service.get_by_incident_id_and_email(
                 db_session=db_session,
                 incident_id=incident.id,
                 email=instance_in.creator.individual.email,
             )
             instance.creator = creator
-        if case:
+        if instance.case:
             creator = participant_service.get_by_case_id_and_email(
                 db_session=db_session,
                 incident_id=case.id,

@@ -41,7 +41,7 @@ class EntityTypeBase(DispatchBase):
 
 
 class EntityTypeCreate(EntityTypeBase):
-    id: PrimaryKey
+    id: Optional[PrimaryKey]
     project: ProjectRead
 
 
