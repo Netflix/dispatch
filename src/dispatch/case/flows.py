@@ -152,13 +152,13 @@ def case_add_or_reactivate_participant_flow(
     return participant
 
 
-def create_conversation(case: Case, db_session: SessionLocal):
+def create_conversation(case: Case, conversation_target: str, db_session: SessionLocal):
     """Create external communication conversation."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=case.project.id, plugin_type="conversation"
     )
     conversation = plugin.instance.create_threaded(
-        case=case, conversation_id=case.case_type.conversation_target, db_session=db_session
+        case=case, conversation_id=conversation_target, db_session=db_session
     )
     conversation.update({"resource_type": plugin.plugin.slug, "resource_id": conversation["id"]})
 
@@ -190,7 +190,14 @@ def update_conversation(case: Case, db_session: SessionLocal):
 
 
 @background_task
-def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, db_session=None):
+def case_new_create_flow(
+    *,
+    case_id: int,
+    organization_slug: OrganizationSlug,
+    conversation_target: str = None,
+    service_id: int = None,
+    db_session=None,
+):
     """Runs the case new creation flow."""
     # we get the case
     case = get(db_session=db_session, case_id=case_id)
@@ -246,8 +253,14 @@ def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, d
     )
 
     if case.case_priority.page_assignee:
-        if case.case_type.oncall_service:
-            service_id = case.case_type.oncall_service.external_id
+        if not service_id:
+            if case.case_type.oncall_service:
+                service_id = case.case_type.oncall_service.external_id
+            else:
+                log.warning(
+                    "Case assignee not paged. No relationship between case type and an oncall service."
+                )
+        else:
             oncall_plugin = plugin_service.get_active_instance(
                 db_session=db_session, project_id=case.project.id, plugin_type="oncall"
             )
@@ -260,18 +273,16 @@ def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, d
                 )
             else:
                 log.warning("Case assignee not paged. No plugin of type oncall enabled.")
-        else:
-            log.warning(
-                "Case assignee not paged. No relationship between case type and an oncall service."
-            )
 
     conversation_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=case.project.id, plugin_type="conversation"
     )
     if conversation_plugin:
-        if case.case_type.conversation_target:
+        if not conversation_target:
+            conversation_target = case.case_type.conversation_target
+        if conversation_target:
             try:
-                conversation = create_conversation(case, db_session)
+                conversation = create_conversation(case, conversation_target, db_session)
                 conversation_in = ConversationCreate(
                     resource_id=conversation["resource_id"],
                     resource_type=conversation["resource_type"],
