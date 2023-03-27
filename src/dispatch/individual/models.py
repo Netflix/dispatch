@@ -46,9 +46,10 @@ class IndividualContact(Base, ContactMixin, ProjectMixin):
         TSVectorType(
             "name",
             "title",
+            "email",
             "company",
             "notes",
-            weights={"name": "A", "title": "B", "company": "C", "notes": "D"},
+            weights={"name": "A", "email": "B", "title": "C", "company": "D", "notes": "E"},
         )
     )
 
