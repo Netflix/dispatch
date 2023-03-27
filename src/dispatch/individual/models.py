@@ -49,7 +49,7 @@ class IndividualContact(Base, ContactMixin, ProjectMixin):
             "email",
             "company",
             "notes",
-            weights={"name": "A", "email": "B", "title": "C", "company": "D", "notes": "E"},
+            weights={"name": "A", "email": "B", "title": "C", "company": "D"},
         )
     )
 
