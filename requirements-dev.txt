@@ -4,8 +4,6 @@
 #
 #    pip-compile requirements-dev.in
 #
-appnope==0.1.3
-    # via ipython
 asttokens==2.2.1
     # via
     #   devtools
@@ -76,7 +74,7 @@ platformdirs==3.1.1
     #   virtualenv
 pluggy==1.0.0
     # via pytest
-pre-commit==3.2.0
+pre-commit==3.2.1
     # via -r requirements-dev.in
 prompt-toolkit==3.0.38
     # via ipython
