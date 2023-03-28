@@ -742,7 +742,7 @@ def handle_new_participant_message(
 ) -> None:
     """Looks for new participants that have starting chatting for the first time."""
     ack()
-    participant = case_flows.case_add_or_reactive_participant_flow(
+    participant = case_flows.case_add_or_reactivate_participant_flow(
         case_id=context["subject"].id,
         user_email=user.email,
         db_session=db_session,
