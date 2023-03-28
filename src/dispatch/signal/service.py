@@ -1,12 +1,10 @@
 import json
-
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Literal
+from typing import Literal, Optional
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy import asc
 from sqlalchemy.orm import Session
-
 
 from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
@@ -16,6 +14,7 @@ from dispatch.database.service import apply_filter_specific_joins, apply_filters
 from dispatch.entity_type import service as entity_type_service
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
+from dispatch.service import service as service_service
 from dispatch.tag import service as tag_service
 from dispatch.workflow import service as workflow_service
 
@@ -228,6 +227,12 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
         )
         signal.case_priority = case_priority
 
+    if signal_in.oncall_service:
+        oncall_service = service_service.get(
+            db_session=db_session, service_id=signal_in.oncall_service.id
+        )
+        signal.oncall_service = oncall_service
+
     if signal_in.case_type:
         case_type = case_type_service.get_by_name_or_default(
             db_session=db_session, project_id=project.id, case_type_in=signal_in.case_type
@@ -288,6 +293,12 @@ def update(*, db_session: Session, signal: Signal, signal_in: SignalUpdate) -> S
         workflows.append(workflow)
 
     signal.workflows = workflows
+
+    if signal_in.oncall_service:
+        oncall_service = service_service.get(
+            db_session=db_session, service_id=signal_in.oncall_service.id
+        )
+        signal.oncall_service = oncall_service
 
     if signal_in.case_priority:
         case_priority = case_priority_service.get_by_name_or_default(

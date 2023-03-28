@@ -267,6 +267,7 @@ import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 
 import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
+import ServiceSelect from "@/service/ServiceSelect.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
 import EntityTypeFilterCombobox from "@/entity_type/EntityTypeFilterCombobox.vue"
 import SignalFilterCombobox from "@/signal/filter/SignalFilterCombobox.vue"
@@ -284,6 +285,7 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
+    ServiceSelect,
     CaseTypeSelect,
     CasePrioritySelect,
     SignalFilterCombobox,
