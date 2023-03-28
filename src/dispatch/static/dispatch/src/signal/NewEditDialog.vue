@@ -121,6 +121,35 @@
                   />
                 </v-col>
                 <v-col cols="12">
+                  <v-checkbox
+                    v-model="create_case"
+                    label="Create Case"
+                    hint="Determines whether this signal is eligible for case creation (signals could still be associated with existing cases via SignalFilters)."
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <ValidationObserver disabled>
+                    <service-select
+                      :project="project"
+                      label="Oncall Service"
+                      v-model="oncall_service"
+                    />
+                  </ValidationObserver>
+                </v-col>
+                <v-col cols="12">
+                  <ValidationProvider name="ConversationTarget" immediate>
+                    <v-text-field
+                      v-model="conversation_target"
+                      slot-scope="{ errors, valid }"
+                      :error-messages="errors"
+                      :success="valid"
+                      label="Conversation Target"
+                      hint="The conversation identifier that new case messages will be sent to."
+                      clearable
+                    />
+                  </ValidationProvider>
+                </v-col>
+                <v-col cols="12">
                   <tag-filter-auto-complete
                     label="Tags"
                     v-model="tags"
@@ -238,6 +267,7 @@ import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 
 import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
+import ServiceSelect from "@/service/ServiceSelect.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
 import EntityTypeFilterCombobox from "@/entity_type/EntityTypeFilterCombobox.vue"
 import SignalFilterCombobox from "@/signal/filter/SignalFilterCombobox.vue"
@@ -255,6 +285,7 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
+    ServiceSelect,
     CaseTypeSelect,
     CasePrioritySelect,
     SignalFilterCombobox,
@@ -281,6 +312,9 @@ export default {
       "selected.filters",
       "selected.entity_types",
       "selected.signal_definition",
+      "selected.oncall_service",
+      "selected.conversation_target",
+      "selected.create_case",
       "selected.source",
       "selected.tags",
       "selected.workflows",

@@ -134,6 +134,11 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     case_type = relationship("CaseType", backref="signals")
     case_priority_id = Column(Integer, ForeignKey(CasePriority.id))
     case_priority = relationship("CasePriority", backref="signals")
+    create_case = Column(Boolean, default=True)
+    conversation_target = Column(String)
+    oncall_service_id = Column(Integer, ForeignKey("service.id"))
+    oncall_service = relationship("Service", foreign_keys=[oncall_service_id])
+
     filters = relationship("SignalFilter", secondary=assoc_signal_filters, backref="signals")
     entity_types = relationship(
         "EntityType",
@@ -197,6 +202,15 @@ class SignalInstance(Base, TimeStampMixin, ProjectMixin):
 
 
 # Pydantic models...
+class Service(DispatchBase):
+    id: PrimaryKey
+    description: Optional[str] = Field(None, nullable=True)
+    external_id: str
+    is_active: Optional[bool] = None
+    name: NameStr
+    type: Optional[str] = Field(None, nullable=True)
+
+
 class SignalFilterBase(DispatchBase):
     mode: Optional[SignalFilterMode] = SignalFilterMode.active
     expression: List[dict]
@@ -227,6 +241,7 @@ class SignalFilterPagination(DispatchBase):
 class SignalBase(DispatchBase):
     name: str
     owner: str
+    conversation_target: Optional[str]
     description: Optional[str]
     variant: Optional[str]
     case_type: Optional[CaseTypeRead]
@@ -234,6 +249,8 @@ class SignalBase(DispatchBase):
     external_id: str
     enabled: Optional[bool] = False
     external_url: Optional[str]
+    create_case: Optional[bool] = True
+    oncall_service: Optional[Service]
     source: Optional[SourceBase]
     created_at: Optional[datetime] = None
     project: ProjectRead
