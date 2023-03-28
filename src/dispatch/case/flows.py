@@ -209,11 +209,11 @@ def case_new_create_flow(
         case=case, db_session=db_session
     )
 
+    if case.assignee:
+        individual_participants.append(case.assignee.individual)
+
     # we create the tactical group
     direct_participant_emails = [i.email for i, _ in individual_participants]
-
-    if case.assignee:
-        direct_participant_emails.append(case.assignee.individual.email)
 
     indirect_participant_emails = [t.email for t in team_participants]
     group = group_flows.create_group(
