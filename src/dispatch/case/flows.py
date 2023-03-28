@@ -421,7 +421,9 @@ def case_update_flow(
 
     if case.status in [CaseStatus.escalated, CaseStatus.closed]:
         # we update the document
-        document_flows.update_document(document=case.case_document, db_session=db_session)
+        document_flows.update_document(
+            document=case.case_document, project_id=case.project.id, db_session=db_session
+        )
 
     # we update the tactical group if we have a new assignee
     if previous_case.assignee.individual.email != assignee_email:
