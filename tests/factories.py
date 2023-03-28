@@ -1215,7 +1215,7 @@ class PluginFactory(BaseFactory):
 class PluginInstanceFactory(BaseFactory):
     """PluginInstance Factory."""
 
-    enabled = Faker().pybool()
+    enabled = True
     project = SubFactory(ProjectFactory)
     plugin = SubFactory(PluginFactory)
 

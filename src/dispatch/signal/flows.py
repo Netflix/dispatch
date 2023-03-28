@@ -66,13 +66,15 @@ def signal_instance_create_flow(
         if signal_instance.signal.conversation_target:
             conversation_target = signal_instance.signal.conversation_target
 
-        return case_flows.case_new_create_flow(
+        case_flows.case_new_create_flow(
             db_session=db_session,
             organization_slug=None,
             service_id=service_id,
             conversation_target=conversation_target,
             case_id=case.id,
         )
+
+        return signal_instance
 
 
 def create_signal_instance(
