@@ -1437,7 +1437,7 @@ def handle_engage_oncall_submission_event(
     """Handles the engage oncall submission"""
     ack_engage_oncall_submission_event(ack=ack)
     oncall_service_external_id = form_data[EngageOncallBlockIds.service]["value"]
-    page = form_data.get(EngageOncallBlockIds.page, {"value": None})["value"]
+    page = form_data.get(EngageOncallBlockIds.page, {"value": None})[0]["value"]
 
     oncall_individual, oncall_service = incident_flows.incident_engage_oncall_flow(
         user.email,
