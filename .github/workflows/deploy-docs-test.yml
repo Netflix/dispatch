@@ -17,7 +17,8 @@ jobs:
         with:
           node-version: 18
           cache: npm
+          cache-dependency-path: docs/package-lock.json
 
       - name: Install and Build
         run: pwd && npm install && npm run build
-        working-directory: ./docs
+        working-directory: docs
