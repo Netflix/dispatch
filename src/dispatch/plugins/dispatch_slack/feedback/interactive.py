@@ -34,7 +34,6 @@ from .enums import (
     IncidentFeedbackNotificationBlockIds,
     # OncallShiftFeedbackNotificationActionIds,
     OncallShiftFeedbackNotificationActions,
-    OncallShiftFeedbackNotificationBlockIds,
 )
 
 
@@ -275,30 +274,24 @@ def handle_oncall_shift_feedback_direct_message_button_click(
     db_session: Session,
     context: BoltContext,
 ):
-    """Handles the feedback button in the feedback direct message."""
+    """Handles the feedback button in the oncall shift feedback direct message."""
     ack()
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
-
-    if not incident:
-        message = (
-            "Sorry, you cannot submit feedback about this incident. The incident does not exist."
-        )
-        respond(message=message, ephemeral=True)
-        return
 
     blocks = [
         Context(
             elements=[
-                MarkdownText(text="Use this form to rate your experience about the incident.")
+                MarkdownText(
+                    text="Use this form to provide feedback about your oncall shift experience."
+                )
             ]
         ),
-        rating_select(),
-        feedback_input(),
-        anonymous_checkbox(),
+        # rating_select(),
+        # feedback_input(),
+        # anonymous_checkbox(),
     ]
 
     modal = Modal(
-        title="Incident Feedback",
+        title="Oncall Shift Feedback",
         blocks=blocks,
         submit="Submit",
         close="Cancel",
@@ -310,9 +303,11 @@ def handle_oncall_shift_feedback_direct_message_button_click(
 
 
 def ack_oncall_shift_feedback_submission_event(ack: Ack) -> None:
-    """Handles the feedback submission event acknowledgement."""
+    """Handles the oncall shift feedback submission event acknowledgement."""
     modal = Modal(
-        title="Incident Feedback", close="Close", blocks=[Section(text="Submitting feedback...")]
+        title="Oncall Shift Feedback",
+        close="Close",
+        blocks=[Section(text="Submitting feedback...")],
     ).build()
     ack(response_action="update", view=modal)
 
@@ -332,30 +327,30 @@ def handle_oncall_shift_feedback_submission_event(
 ):
     # TODO: handle multiple organizations during submission
     ack_oncall_shift_feedback_submission_event(ack=ack)
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
-
-    feedback = form_data.get(OncallShiftFeedbackNotificationBlockIds.feedback_input)
-    rating = form_data.get(OncallShiftFeedbackNotificationBlockIds.rating_select, {}).get("value")
-
-    feedback_in = FeedbackCreate(
-        rating=rating, feedback=feedback, project=incident.project, incident=incident
-    )
-    feedback = feedback_service.create(db_session=db_session, feedback_in=feedback_in)
-    incident.feedback.append(feedback)
-
-    # we only really care if this exists, if it doesn't then flag is false
-    if not form_data.get(OncallShiftFeedbackNotificationBlockIds.anonymous_checkbox):
-        participant = participant_service.get_by_incident_id_and_email(
-            db_session=db_session, incident_id=context["subject"].id, email=user.email
-        )
-        participant.feedback.append(feedback)
-        db_session.add(participant)
-
-    db_session.add(incident)
-    db_session.commit()
+    # incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    #
+    # feedback = form_data.get(OncallShiftFeedbackNotificationBlockIds.feedback_input)
+    # rating = form_data.get(OncallShiftFeedbackNotificationBlockIds.rating_select, {}).get("value")
+    #
+    # feedback_in = FeedbackCreate(
+    # 	  rating=rating, feedback=feedback, project=incident.project, incident=incident
+    # )
+    # feedback = feedback_service.create(db_session=db_session, feedback_in=feedback_in)
+    # incident.feedback.append(feedback)
+    #
+    # # we only really care if this exists, if it doesn't then flag is false
+    # if not form_data.get(OncallShiftFeedbackNotificationBlockIds.anonymous_checkbox):
+    # 	  participant = participant_service.get_by_incident_id_and_email(
+    # 		  db_session=db_session, incident_id=context["subject"].id, email=user.email
+    # 	  )
+    # 	  participant.feedback.append(feedback)
+    # 	  db_session.add(participant)
+    #
+    # db_session.add(incident)
+    # db_session.commit()
 
     modal = Modal(
-        title="Incident Feedback",
+        title="Oncall Shift Feedback",
         close="Close",
         blocks=[Section(text="Submitting feedback... Success!")],
     ).build()

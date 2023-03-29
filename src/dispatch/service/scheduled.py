@@ -10,8 +10,8 @@ from dispatch.plugin import service as plugin_service
 from dispatch.project.models import Project
 from dispatch.scheduler import scheduler
 
+from .messaging import send_oncall_shift_feedback_message
 from .service import get_all_by_health_metrics
-
 
 log = logging.getLogger(__name__)
 
@@ -56,6 +56,10 @@ def collect_health_metrics(db_session: SessionLocal, project: Project):
             # we send the current commander a direct message asking to provide mental and emotional effort
             # and number of off hours spent on incident response tasks
 
-            individual_service.get_by_email_and_project(
+            individual = individual_service.get_by_email_and_project(
                 db_session=db_session, email=current_oncall_info["email"], project_id=project.id
+            )
+
+            send_oncall_shift_feedback_message(
+                service=oncall_service, individual=individual, db_session=db_session
             )

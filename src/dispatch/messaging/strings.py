@@ -27,6 +27,7 @@ class MessageType(DispatchEnum):
     incident_tactical_report = "incident-tactical-report"
     incident_task_list = "incident-task-list"
     incident_task_reminder = "incident-task-reminder"
+    oncall_shift_feedback = "oncall-shift-feedback"
 
 
 INCIDENT_STATUS_DESCRIPTIONS = {

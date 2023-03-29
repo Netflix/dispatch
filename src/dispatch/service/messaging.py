@@ -2,7 +2,7 @@ import logging
 
 from sqlalchemy.orm import Session
 
-from dispatch.individual import IndividualContact
+from dispatch.individual.models import IndividualContact
 from dispatch.messaging.strings import (
     ONCALL_SHIFT_FEEDBACK_NOTIFICATION,
     MessageType,
@@ -44,7 +44,7 @@ def send_oncall_shift_feedback_message(
             individual.email,
             notification_text,
             notification_template,
-            MessageType.oncall_shift_health_metrics_feedback,
+            MessageType.oncall_shift_feedback,
             items=items,
         )
     except Exception as e:
