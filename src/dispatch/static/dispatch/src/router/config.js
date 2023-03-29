@@ -447,10 +447,10 @@ export const protectedRoute = [
             component: () => import("@/document/reference/ReferenceTable.vue"),
           },
           {
-            path: "services",
-            name: "ServiceTable",
-            meta: { title: "Services", subMenu: "project", group: "contact" },
-            component: () => import("@/service/Table.vue"),
+            path: "teams",
+            name: "TeamTable",
+            meta: { title: "Teams", subMenu: "project", group: "contact" },
+            component: () => import("@/team/Table.vue"),
           },
           {
             path: "individuals",
@@ -459,10 +459,10 @@ export const protectedRoute = [
             component: () => import("@/individual/Table.vue"),
           },
           {
-            path: "teams",
-            name: "TeamTable",
-            meta: { title: "Teams", subMenu: "project", group: "contact" },
-            component: () => import("@/team/Table.vue"),
+            path: "services",
+            name: "ServiceTable",
+            meta: { title: "Oncall Services", subMenu: "project", group: "contact" },
+            component: () => import("@/service/Table.vue"),
           },
           {
             path: "tagTypes",
