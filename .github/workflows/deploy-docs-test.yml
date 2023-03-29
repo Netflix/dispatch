@@ -1,5 +1,10 @@
 name: Test documentation deployment
 
+defaults:
+  run:
+    shell: bash
+    working-directory: docs
+
 on:
   pull_request:
     branches:
