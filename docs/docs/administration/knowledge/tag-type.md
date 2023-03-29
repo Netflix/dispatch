@@ -1,0 +1,11 @@
+## Tag Types
+
+Within Dispatch, tag types are a way to categorize collections of tags (e.g. actor, action, asset, result, etc.).
+
+![](/img/admin-ui-knowledge-tag-types.png)
+
+**Name:** The name for the tag type.
+
+**Description:** A short description of the tag type.
+
+**Exclusive:** Whether an incident should only have a tag of this type or not.
