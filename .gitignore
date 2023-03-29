@@ -102,7 +102,7 @@ db.sqlite3
 .idea
 
 # Sphinx documentation
-docs/_build/
+docs/.docusaurus
 
 # PyBuilder
 target/
