@@ -1,4 +1,4 @@
-name: Test deployment
+name: Test documentation deployment
 
 on:
   pull_request:
@@ -19,6 +19,6 @@ jobs:
           cache: yarn
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install
       - name: Test build website
         run: yarn build
