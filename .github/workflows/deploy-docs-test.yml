@@ -19,7 +19,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: pwd
         working-directory: './docs'
       - name: Test build website
         run: npm run build
