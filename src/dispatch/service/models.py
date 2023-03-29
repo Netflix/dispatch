@@ -32,6 +32,7 @@ class Service(Base, TimeStampMixin, ProjectMixin, EvergreenMixin):
     type = Column(String, default="pagerduty-oncall")
     description = Column(String)
     external_id = Column(String)
+    health_metrics = Column(Boolean, default=False)
 
     # Relationships
     filters = relationship("SearchFilter", secondary=assoc_service_filters, backref="services")
@@ -41,10 +42,11 @@ class Service(Base, TimeStampMixin, ProjectMixin, EvergreenMixin):
 
 # Pydantic models...
 class ServiceBase(EvergreenBase):
-    name: Optional[str] = Field(None, nullable=True)
-    external_id: Optional[str] = Field(None, nullable=True)
     description: Optional[str] = Field(None, nullable=True)
+    external_id: Optional[str] = Field(None, nullable=True)
+    health_metrics: Optional[bool] = None
     is_active: Optional[bool] = None
+    name: Optional[str] = Field(None, nullable=True)
     type: Optional[str] = Field(None, nullable=True)
 
 

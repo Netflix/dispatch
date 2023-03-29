@@ -4,7 +4,7 @@
     <v-divider />
     <v-list>
       <v-list-group prepend-icon="room_service" no-action color="info">
-        <template v-slot:activator>
+        <template #activator>
           <v-list-item>
             <v-list-item-content>
               <v-list-item-title>Services ({{ items.length }})</v-list-item-title>
