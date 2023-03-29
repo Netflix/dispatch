@@ -9,10 +9,6 @@ on:
 
 jobs:
   test-deploy:
-    defaults:
-      run:
-        working-directory: ${{ env.working-directory }}/docs
-
     name: Test deployment
     runs-on: ubuntu-latest
     steps:
@@ -24,5 +20,7 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        working-directory: './docs'
       - name: Test build website
         run: npm run build
+        working-directory: './docs'
