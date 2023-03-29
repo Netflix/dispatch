@@ -6,6 +6,10 @@ import logging
 from pdpyras import APISession, PDHTTPError, PDClientError
 
 
+class PDNotFoundError(Exception):
+    """Raised when a PagerDuty object is not found."""
+
+
 log = logging.getLogger(__file__)
 
 
@@ -15,11 +19,14 @@ def get_user(client: APISession, user_id: str) -> dict:
         user = client.rget(f"/users/{user_id}")
     except PDHTTPError as e:
         if e.response.status_code == HTTPStatus.NOT_FOUND.value:
-            log.warn(f"User with id {user_id} not found.")
+            message = f"User with id {user_id} not found."
+            log.error(message)
+            raise PDNotFoundError(message) from e
         else:
             raise e
     except PDClientError as e:
-        log.warn(f"Non-transient network or client error: {e}")
+        log.error(f"Non-transient network or client error: {e}")
+        raise e
 
     return user
 
@@ -30,11 +37,14 @@ def get_service(client: APISession, service_id: str) -> dict:
         service = client.rget(f"/services/{service_id}")
     except PDHTTPError as e:
         if e.response.status_code == HTTPStatus.NOT_FOUND.value:
-            log.warn(f"Service with id {service_id} not found.")
+            message = f"Service with id {service_id} not found."
+            log.error(message)
+            raise PDNotFoundError(message) from e
         else:
             raise e
     except PDClientError as e:
-        log.warn(f"Non-transient network or client error: {e}")
+        log.error(f"Non-transient network or client error: {e}")
+        raise e
 
     return service
 
@@ -45,11 +55,14 @@ def get_escalation_policy(client: APISession, escalation_policy_id: str) -> dict
         escalation_policy = client.rget(f"/escalation_policies/{escalation_policy_id}")
     except PDHTTPError as e:
         if e.response.status_code == HTTPStatus.NOT_FOUND.value:
-            log.warn(f"Escalation policy with id {escalation_policy_id} not found.")
+            message = f"Escalation policy with id {escalation_policy_id} not found."
+            log.error(message)
+            raise PDNotFoundError(message) from e
         else:
             raise e
     except PDClientError as e:
-        log.warn(f"Non-transient network or client error: {e}")
+        log.error(f"Non-transient network or client error: {e}")
+        raise e
 
     return escalation_policy
 
