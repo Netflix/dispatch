@@ -18,9 +18,6 @@ jobs:
           node-version: 18
           cache: npm
 
-      - name: Install dependencies
-        run: pwd
-        working-directory: './docs'
-      - name: Test build website
-        run: npm run build
-        working-directory: './docs'
+      - name: Install and Build
+        run: pwd && npm install && npm run build
+        working-directory: ./docs
