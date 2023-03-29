@@ -65,11 +65,13 @@ If you wish to disable authentication set `DISPATCH_AUTHENTICATION_PROVIDER_SLUG
 
 #### Configuration for `dispatch-auth-provider-basic`
 
-{% hint style="warning" %}
+:::warning
 Today, basic authentication allows self-registration without approval.
+:::
 
-{% hint style="warning" %}
+:::info
 For this plugin to work, you need to set `DISPATCH_JWT_SECRET`.
+:::
 
 #### `DISPATCH_JWT_SECRET`
 
@@ -97,9 +99,10 @@ For this plugin to work, you need to set `DISPATCH_JWT_SECRET`.
 
 #### Configuration for `dispatch-auth-provider-pkce`
 
-{% hint style="warning" %}
+:::info
 For this plugin to work with your OIDC setup, you may need to set
 `DISPATCH_JWT_AUDIENCE` and `DISPATCH_PKCE_DONT_VERIFY_AT_HASH`.
+:::
 
 #### `DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS`
 
@@ -132,8 +135,9 @@ For this plugin to work with your OIDC setup, you may need to set
 
 #### `DISPATCH_AUTHENTICATION_PROVIDER_HEADER_NAME` \['default': remote-user\]
 
-{% hint style="warning" %}
+:::info
 Make sure the reverse proxy strips this header from incoming requests (i.e. user-provided). Failure to do so will result in authentication bypass.
+:::
 
 > The HTTP request header to use as the user name, this value is case-insensitive.
 

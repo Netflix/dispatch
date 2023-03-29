@@ -27,7 +27,7 @@ Note: Dispatch will not start without at least a few required configuration vari
 :::
 
 :::info
-Note: Dispatch does not contain any data by default. For evaluation purposes, we do provide an example data set located [here](https://github.com/Netflix/dispatch/blob/master/data/dispatch-sample-data.dump). For instructions on how to restore this data, see [here](administration/cli.md).
+Note: Dispatch does not contain any data by default. For evaluation purposes, we do provide an example data set located [here](https://github.com/Netflix/dispatch/blob/master/data/dispatch-sample-data.dump). For instructions on how to restore this data, see [here](administration/cli.mdx).
 :::
 
 To start, run the install script:
@@ -72,13 +72,13 @@ Because of the sensitivity of the information stored and maintained by Dispatch.
 
 Dispatch plugins require API tokens to communicate with third-party resources. These tokens are stored in either an environment variable or in the Dispatch `.env` file.
 
-By default, these strings are in plain text, but Dispatch does provide hooks that allow for these credentials to be decrypted on server start. See the [Secret Provider](configuration/app.md#general) configuration option.
+By default, these strings are in plain text, but Dispatch does provide hooks that allow for these credentials to be decrypted on server start. See the [Secret Provider](administration/server.mdx#general) configuration option.
 
 ### Authentication
 
 Dispatch provides a "Basic" authentication provider that controls access via a username and password combination to get going quickly. By default, this provider allows for **open registration**, which means that anyone will be able to create a Dispatch account if they have network access to your server.
 
-Dispatch provides a "PKCE" authentication method to integrate existing and more robust SSO solutions for more robust authentication. See the [Authentication Provider](configuration/app.md#authentication)
+Dispatch provides a "PKCE" authentication method to integrate existing and more robust SSO solutions for more robust authentication. See the [Authentication Provider](administration/server.mdx#authentication)
 
 ### TLS/SSL
 

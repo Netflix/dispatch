@@ -11,10 +11,10 @@ const config = {
   favicon: "img/favicon.ico",
 
   // Set the production url of your site here
-  url: "https://your-docusaurus-test-site.com",
+  url: "https://netflix.github.io/",
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: "/",
+  baseUrl: "/dispatch",
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
@@ -32,7 +32,6 @@ const config = {
     defaultLocale: "en",
     locales: ["en"],
   },
-
   presets: [
     [
       "classic",
@@ -43,21 +42,27 @@ const config = {
           editUrl: ({ docPath }) =>
             `https://github.com/netflix/dispatch/edit/master/docs/docs/${docPath}`,
         },
-        //exclude: ["**/*.wip"],
-        /*breadcrumbs: true,
-        //lastVersion: "current",
-        versions: {
-          current: {
-            label: "v2.x",
-            badge: true,
-            path: "latest",
-          },
-        },
-        */
         theme: {
           customCss: require.resolve("./src/css/custom.css"),
         },
       }),
+    ],
+    [
+      "redocusaurus",
+      {
+        // Plugin Options for loading OpenAPI files
+        specs: [
+          {
+            spec: "scripts/openapi.yaml",
+            route: "/docs/api/",
+          },
+        ],
+        // Theme Options for modifying how redoc renders them
+        theme: {
+          // Change with your site colors
+          primaryColor: "#1890ff",
+        },
+      },
     ],
   ],
 
@@ -68,29 +73,16 @@ const config = {
       image: "img/docusaurus-social-card.jpg",
       navbar: {
         title: "Dispatch",
-        logo: {
-          alt: "Dispatch Logo",
-          src: "img/logo.svg",
-        },
         items: [
           { to: "/docs/user-guide/introduction", label: "User Guide", position: "left" },
           { to: "/docs/administration/introduction", label: "Administration", position: "left" },
+          { to: "/docs/api", label: "API", position: "left" },
           {
             to: "/docs/changelog",
             label: "What's New",
             position: "left",
           },
-          {
-            type: "docsVersionDropdown",
-            position: "right",
-            dropdownActiveClassDisabled: true,
-            dropdownItemsAfter: [
-              {
-                href: "https://hasura.io/docs/1.0/graphql/core/index.html",
-                label: "v1.x",
-              },
-            ],
-          },
+
           {
             href: "https://github.com/Netflix/dispatch",
             label: "GitHub",
