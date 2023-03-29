@@ -21,11 +21,11 @@ jobs:
         with:
           node-version: 18
           cache: npm
+          cache-dependency-path: docs/package-lock.json
 
-      - name: Install dependencies
-        run: npm install
-      - name: Test build website
-        run: npm run build
+      - name: Install and Build
+        run: pwd && npm install && npm run build
+        working-directory: docs
 
       # Popular action to deploy to GitHub Pages:
       # Docs: https://github.com/peaceiris/actions-gh-pages#%EF%B8%8F-docusaurus
