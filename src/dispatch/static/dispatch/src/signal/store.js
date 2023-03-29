@@ -24,7 +24,7 @@ const getDefaultSelectedState = () => {
     oncall_service: null,
     conversation_target: null,
     create_case: true,
-    workflows: null,
+    workflows: [],
     source: null,
     project: null,
     created_at: null,
