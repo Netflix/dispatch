@@ -46,7 +46,24 @@ def signal_instance_create_flow(
             )
 
             signal_instance.case = case
+
             db_session.commit()
+
+            service_id = None
+            if signal_instance.signal.oncall_service:
+                service_id = signal_instance.signal.oncall_service.external_id
+
+            conversation_target = None
+            if signal_instance.signal.conversation_target:
+                conversation_target = signal_instance.signal.conversation_target
+
+            case_flows.case_new_create_flow(
+                db_session=db_session,
+                organization_slug=None,
+                service_id=service_id,
+                conversation_target=conversation_target,
+                case_id=case.id,
+            )
 
         # run workflows if not duplicate or snoozed
         if workflows := signal_instance.signal.workflows:
@@ -57,22 +74,6 @@ def signal_instance_create_flow(
                     signal_instance=signal_instance,
                     workflow=workflow,
                 )
-
-        service_id = None
-        if signal_instance.signal.oncall_service:
-            service_id = signal_instance.signal.oncall_service.external_id
-
-        conversation_target = None
-        if signal_instance.signal.conversation_target:
-            conversation_target = signal_instance.signal.conversation_target
-
-        case_flows.case_new_create_flow(
-            db_session=db_session,
-            organization_slug=None,
-            service_id=service_id,
-            conversation_target=conversation_target,
-            case_id=case.id,
-        )
 
         return signal_instance
 
