@@ -307,6 +307,9 @@ Hey, I see you're the Incident Commander for {{name}} ("{{title}}"). Here are a 
 To find a Slack command, simply type `/` in the message field or click the lightning bolt icon to the left of the message field.
 """
 
+ONCALL_SHIFT_FEEDBACK_DESCRIPTION = """
+Congrats on finishing your {{ oncall_service_name }} oncall shift, {{ individual_name }}! We would appreciate if you could provide feedback about your experience."""
+
 INCIDENT_STATUS_CHANGE_DESCRIPTION = """
 The incident status has been changed from {{ incident_status_old }} to {{ incident_status_new }}.""".replace(
     "\n", " "
@@ -718,6 +721,20 @@ INCIDENT_OPEN_TASKS = [
     {
         "title": "{{title}}",
         "text": INCIDENT_OPEN_TASKS_DESCRIPTION,
+    }
+]
+
+ONCALL_SHIFT_FEEDBACK_NOTIFICATION = [
+    {
+        "title": "Oncall Shift Feedback",
+        "text": ONCALL_SHIFT_FEEDBACK_DESCRIPTION,
+        "buttons": [
+            {
+                "button_text": "Provide Feedback",
+                "button_value": "{{organization_slug}}-{{incident_id}}",  # TODO(mvilanova): replace incident_id with another variable
+                "button_action": ConversationButtonActions.oncall_shift_feedback,
+            }
+        ],
     }
 ]
 
