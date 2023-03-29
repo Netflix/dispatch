@@ -279,8 +279,8 @@ def set_conversation_topic(client: Any, conversation_id: str, topic: str):
     return make_call(client, "conversations.setTopic", channel=conversation_id, topic=topic)
 
 
-def set_conversation_bookmark(client: Any, conversation_id: str, weblink: str, title: str):
-    """Sets a bookmark for the specified conversation."""
+def add_conversation_bookmark(client: Any, conversation_id: str, weblink: str, title: str):
+    """Adds a bookmark for the specified conversation."""
     return make_call(
         client,
         "bookmarks.add",
@@ -321,6 +321,11 @@ def unarchive_conversation(client: Any, conversation_id: str):
         # if the channel isn't archived thats okay
         if e.response["error"] != "not_archived":
             raise e
+
+
+def rename_conversation(client: Any, conversation_id: str, name: str):
+    """Renames an existing conversation."""
+    return make_call(client, "conversations.rename", channel=conversation_id, name=name)
 
 
 def conversation_archived(client: Any, conversation_id: str):

@@ -6,7 +6,9 @@
       </v-card-title>
       <v-card-text>
         <v-container grid-list-md>
-          <v-layout wrap> Are you sure you want to delete this incident? </v-layout>
+          <v-layout wrap>
+            Are you sure you want to delete this incident and all its external resources?
+          </v-layout>
         </v-container>
       </v-card-text>
       <v-card-actions>

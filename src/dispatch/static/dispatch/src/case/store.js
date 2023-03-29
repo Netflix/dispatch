@@ -25,6 +25,7 @@ const getDefaultSelectedState = () => {
     project: null,
     related: [],
     reported_at: null,
+    resolution_reason: null,
     resolution: null,
     signals: [],
     status: null,

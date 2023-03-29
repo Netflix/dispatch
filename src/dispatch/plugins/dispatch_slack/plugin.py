@@ -12,6 +12,7 @@ from typing import List, Optional
 
 from blockkit import Message
 from joblib import Memory
+from sqlalchemy.orm import Session
 
 from dispatch.case.models import Case
 from dispatch.conversation.enums import ConversationCommands
@@ -30,8 +31,9 @@ from .case.messages import create_case_message, create_signal_messages
 from .endpoints import router as slack_event_router
 from .messaging import create_message_blocks
 from .service import (
-    add_users_to_conversation_thread,
+    add_conversation_bookmark,
     add_users_to_conversation,
+    add_users_to_conversation_thread,
     archive_conversation,
     chunks,
     conversation_archived,
@@ -44,10 +46,10 @@ from .service import (
     list_conversation_messages,
     list_conversations,
     message_filter,
+    rename_conversation,
     resolve_user,
     send_ephemeral_message,
     send_message,
-    set_conversation_bookmark,
     set_conversation_topic,
     unarchive_conversation,
     update_message,
@@ -76,7 +78,7 @@ class SlackConversationPlugin(ConversationPlugin):
         client = create_slack_client(self.configuration)
         return create_conversation(client, name, self.configuration.private_channels)
 
-    def create_threaded(self, case: Case, conversation_id: str):
+    def create_threaded(self, case: Case, conversation_id: str, db_session: Session):
         """Creates a new threaded conversation."""
         client = create_slack_client(self.configuration)
         blocks = create_case_message(case=case, channel_id=conversation_id)
@@ -88,7 +90,9 @@ class SlackConversationPlugin(ConversationPlugin):
             ts=response["timestamp"],
         )
         if case.signal_instances:
-            messages = create_signal_messages(case=case)
+            messages = create_signal_messages(
+                case=case, channel_id=conversation_id, db_session=db_session
+            )
             for m in messages:
                 send_message(
                     client=client,
@@ -200,14 +204,19 @@ class SlackConversationPlugin(ConversationPlugin):
         add_users_to_conversation_thread(client, conversation_id, thread_id, participants)
 
     def archive(self, conversation_id: str):
-        """Archives conversation."""
+        """Archives a conversation."""
         client = create_slack_client(self.configuration)
         return archive_conversation(client, conversation_id)
 
     def unarchive(self, conversation_id: str):
-        """Unarchives conversation."""
+        """Unarchives a conversation."""
         client = create_slack_client(self.configuration)
         return unarchive_conversation(client, conversation_id)
+
+    def rename(self, conversation_id: str, name: str):
+        """Renames a conversation."""
+        client = create_slack_client(self.configuration)
+        return rename_conversation(client, conversation_id, name)
 
     def get_participant_avatar_url(self, participant_id: str):
         """Gets the participant's avatar url."""
@@ -219,10 +228,10 @@ class SlackConversationPlugin(ConversationPlugin):
         client = create_slack_client(self.configuration)
         return set_conversation_topic(client, conversation_id, topic)
 
-    def set_bookmark(self, conversation_id: str, weblink: str, title: str):
-        """Sets the conversation bookmark."""
+    def add_bookmark(self, conversation_id: str, weblink: str, title: str):
+        """Adds a bookmark to the conversation."""
         client = create_slack_client(self.configuration)
-        return set_conversation_bookmark(client, conversation_id, weblink, title)
+        return add_conversation_bookmark(client, conversation_id, weblink, title)
 
     def get_command_name(self, command: str):
         """Gets the command name."""

@@ -93,6 +93,7 @@ export default {
       "selected",
       "selectedInstance.case",
       "selectedInstance.incident",
+      "selectedInstance.signal",
       "selectedInstance.id",
       "selectedInstance.status",
       "selectedInstance.loading",

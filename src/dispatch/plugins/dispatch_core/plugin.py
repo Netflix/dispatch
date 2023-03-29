@@ -153,7 +153,7 @@ class HeaderAuthProviderPlugin(AuthenticationProviderPlugin):
 class DispatchTicketPlugin(TicketPlugin):
     title = "Dispatch Plugin - Ticket Management"
     slug = "dispatch-ticket"
-    description = "Uses dispatch itself to create a ticket."
+    description = "Uses Dispatch itself to create a ticket."
     version = dispatch_plugin.__version__
 
     author = "Netflix"
@@ -199,6 +199,13 @@ class DispatchTicketPlugin(TicketPlugin):
         incident_type_plugin_metadata: dict = None,
     ):
         """Updates a Dispatch incident ticket."""
+        return
+
+    def delete(
+        self,
+        ticket_id: str,
+    ):
+        """Deletes a Dispatch ticket."""
         return
 
     def create_case_ticket(

@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Dict, List, Optional, Any
+from typing import List, Optional, Any
 
 from pydantic import Field
 from sqlalchemy import (
@@ -28,7 +28,7 @@ from dispatch.project.models import ProjectRead
 
 from dispatch.database.core import Base
 from dispatch.entity.models import EntityRead
-from dispatch.entity_type.models import EntityTypeCreate, EntityTypeRead
+from dispatch.entity_type.models import EntityTypeRead
 from dispatch.tag.models import TagRead
 from dispatch.enums import DispatchEnum
 from dispatch.models import (
@@ -39,6 +39,7 @@ from dispatch.models import (
     ProjectMixin,
     TimeStampMixin,
 )
+from dispatch.workflow.models import WorkflowRead
 
 
 class RuleMode(DispatchEnum):
@@ -96,6 +97,14 @@ assoc_signal_entity_types = Table(
     PrimaryKeyConstraint("signal_id", "entity_type_id"),
 )
 
+assoc_signal_workflows = Table(
+    "assoc_signal_workflows",
+    Base.metadata,
+    Column("signal_id", Integer, ForeignKey("signal.id", ondelete="CASCADE")),
+    Column("workflow_id", Integer, ForeignKey("workflow.id", ondelete="CASCADE")),
+    PrimaryKeyConstraint("signal_id", "workflow_id"),
+)
+
 
 class SignalFilterMode(DispatchEnum):
     active = "active"
@@ -125,12 +134,26 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     case_type = relationship("CaseType", backref="signals")
     case_priority_id = Column(Integer, ForeignKey(CasePriority.id))
     case_priority = relationship("CasePriority", backref="signals")
+    create_case = Column(Boolean, default=True)
+    conversation_target = Column(String)
+    oncall_service_id = Column(Integer, ForeignKey("service.id"))
+    oncall_service = relationship("Service", foreign_keys=[oncall_service_id])
+
     filters = relationship("SignalFilter", secondary=assoc_signal_filters, backref="signals")
     entity_types = relationship(
         "EntityType",
         secondary=assoc_signal_entity_types,
         backref="signals",
     )
+    workflows = relationship(
+        "Workflow",
+        secondary=assoc_signal_workflows,
+        backref="signals",
+    )
+    workflow_instances = relationship(
+        "WorkflowInstance", backref="signal", cascade="all, delete-orphan"
+    )
+
     tags = relationship(
         "Tag",
         secondary=assoc_signal_tags,
@@ -179,6 +202,15 @@ class SignalInstance(Base, TimeStampMixin, ProjectMixin):
 
 
 # Pydantic models...
+class Service(DispatchBase):
+    id: PrimaryKey
+    description: Optional[str] = Field(None, nullable=True)
+    external_id: str
+    is_active: Optional[bool] = None
+    name: NameStr
+    type: Optional[str] = Field(None, nullable=True)
+
+
 class SignalFilterBase(DispatchBase):
     mode: Optional[SignalFilterMode] = SignalFilterMode.active
     expression: List[dict]
@@ -209,6 +241,7 @@ class SignalFilterPagination(DispatchBase):
 class SignalBase(DispatchBase):
     name: str
     owner: str
+    conversation_target: Optional[str]
     description: Optional[str]
     variant: Optional[str]
     case_type: Optional[CaseTypeRead]
@@ -216,26 +249,34 @@ class SignalBase(DispatchBase):
     external_id: str
     enabled: Optional[bool] = False
     external_url: Optional[str]
+    create_case: Optional[bool] = True
+    oncall_service: Optional[Service]
     source: Optional[SourceBase]
     created_at: Optional[datetime] = None
-    filters: Optional[List[SignalFilterRead]] = []
-    entity_types: Optional[List[EntityTypeRead]] = []
-    tags: Optional[List[TagRead]] = []
     project: ProjectRead
 
 
 class SignalCreate(SignalBase):
-    entity_types: Optional[EntityTypeCreate] = []
+    filters: Optional[List[SignalFilterRead]] = []
+    entity_types: Optional[List[EntityTypeRead]] = []
+    workflows: Optional[List[WorkflowRead]] = []
+    tags: Optional[List[TagRead]] = []
 
 
 class SignalUpdate(SignalBase):
     id: PrimaryKey
+    filters: Optional[List[SignalFilterRead]] = []
     entity_types: Optional[List[EntityTypeRead]] = []
+    workflows: Optional[List[WorkflowRead]] = []
+    tags: Optional[List[TagRead]] = []
 
 
 class SignalRead(SignalBase):
     id: PrimaryKey
     entity_types: Optional[List[EntityTypeRead]] = []
+    filters: Optional[List[SignalFilterRead]] = []
+    workflows: Optional[List[WorkflowRead]] = []
+    tags: Optional[List[TagRead]] = []
 
 
 class SignalPagination(DispatchBase):
@@ -250,28 +291,17 @@ class AdditionalMetadata(DispatchBase):
     important: Optional[bool]
 
 
-class RawSignal(DispatchBase):
-    action: Optional[List[Dict]] = []
-    additional_metadata: Optional[List[AdditionalMetadata]] = Field([], alias="additionalMetadata")
-    asset: Optional[List[Dict]] = []
-    identity: Optional[Dict] = {}
-    origin_location: Optional[List[Dict]] = Field([], alias="originLocation")
-    variant: Optional[str] = None
-    created_at: Optional[datetime] = Field(None, fields="createdAt")
-    id: Optional[str]
-
-
 class SignalInstanceBase(DispatchBase):
     project: ProjectRead
     case: Optional[CaseRead]
     entities: Optional[List[EntityRead]] = []
-    raw: RawSignal
+    raw: dict[str, Any]
     filter_action: SignalFilterAction = None
     created_at: Optional[datetime] = None
 
 
 class SignalInstanceCreate(SignalInstanceBase):
-    pass
+    signal: Optional[SignalRead]
 
 
 class SignalInstanceRead(SignalInstanceBase):

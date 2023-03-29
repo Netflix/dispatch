@@ -16,9 +16,15 @@ const getDefaultSelectedState = () => {
     case_type: null,
     case_priority: null,
     enabled: false,
-    filters: null,
-    entity_types: null,
-    tags: null,
+    filters: [],
+    entity_types: [],
+    tags: [],
+    signal_definition: null,
+    workflow_instances: null,
+    oncall_service: null,
+    conversation_target: null,
+    create_case: true,
+    workflows: null,
     source: null,
     project: null,
     created_at: null,
@@ -42,10 +48,12 @@ const state = {
     },
     options: {
       filters: {
-        created_at: {
-          start: null,
-          end: null,
-        },
+        case_priority: [],
+        case_severity: [],
+        case_type: [],
+        project: [],
+        tag: [],
+        tag_type: [],
       },
       q: "",
       page: 1,
@@ -55,6 +63,26 @@ const state = {
     },
     loading: false,
     bulkEditLoading: false,
+  },
+  instanceTable: {
+    rows: {
+      items: [],
+      total: null,
+    },
+    options: {
+      filters: {
+        created_at: {
+          start: null,
+          end: null,
+        },
+      },
+      q: "",
+      page: 1,
+      itemsPerPage: 10,
+      sortBy: ["created_at"],
+      descending: [true],
+    },
+    loading: false,
   },
 }
 

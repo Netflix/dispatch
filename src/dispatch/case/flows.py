@@ -134,9 +134,15 @@ def case_add_or_reactivate_participant_flow(
         participant = participant_flows.add_participant(
             user_email, case, db_session, service_id=service_id, role=participant_role
         )
-
-    # we add the participant to the tactical group
-    # add_participant_to_tactical_group(user_email, case, db_session)
+    if case.tactical_group:
+        # we add the participant to the tactical group
+        group_flows.update_group(
+            subject=case,
+            group=case.tactical_group,
+            group_action=GroupAction.add_member,
+            group_member=case.assignee.individual.email,
+            db_session=db_session,
+        )
 
     if case.status != CaseStatus.closed:
         # we add the participant to the conversation
@@ -146,13 +152,13 @@ def case_add_or_reactivate_participant_flow(
     return participant
 
 
-def create_conversation(case: Case, db_session: SessionLocal):
+def create_conversation(case: Case, conversation_target: str, db_session: SessionLocal):
     """Create external communication conversation."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=case.project.id, plugin_type="conversation"
     )
     conversation = plugin.instance.create_threaded(
-        case=case, conversation_id=case.case_type.conversation_target
+        case=case, conversation_id=conversation_target, db_session=db_session
     )
     conversation.update({"resource_type": plugin.plugin.slug, "resource_id": conversation["id"]})
 
@@ -184,7 +190,14 @@ def update_conversation(case: Case, db_session: SessionLocal):
 
 
 @background_task
-def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, db_session=None):
+def case_new_create_flow(
+    *,
+    case_id: int,
+    organization_slug: OrganizationSlug,
+    conversation_target: str = None,
+    service_id: int = None,
+    db_session=None,
+):
     """Runs the case new creation flow."""
     # we get the case
     case = get(db_session=db_session, case_id=case_id)
@@ -196,9 +209,11 @@ def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, d
         case=case, db_session=db_session
     )
 
+    if case.assignee:
+        individual_participants.append(case.assignee.individual)
+
     # we create the tactical group
     direct_participant_emails = [i.email for i, _ in individual_participants]
-    direct_participant_emails.append(case.assignee.individual.email)
 
     indirect_participant_emails = [t.email for t in team_participants]
     group = group_flows.create_group(
@@ -238,8 +253,14 @@ def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, d
     )
 
     if case.case_priority.page_assignee:
-        if case.case_type.oncall_service:
-            service_id = case.case_type.oncall_service.external_id
+        if not service_id:
+            if case.case_type.oncall_service:
+                service_id = case.case_type.oncall_service.external_id
+            else:
+                log.warning(
+                    "Case assignee not paged. No relationship between case type and an oncall service."
+                )
+        else:
             oncall_plugin = plugin_service.get_active_instance(
                 db_session=db_session, project_id=case.project.id, plugin_type="oncall"
             )
@@ -252,18 +273,16 @@ def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, d
                 )
             else:
                 log.warning("Case assignee not paged. No plugin of type oncall enabled.")
-        else:
-            log.warning(
-                "Case assignee not paged. No relationship between case type and an oncall service."
-            )
 
     conversation_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=case.project.id, plugin_type="conversation"
     )
     if conversation_plugin:
-        if case.case_type.conversation_target:
+        if not conversation_target:
+            conversation_target = case.case_type.conversation_target
+        if conversation_target:
             try:
-                conversation = create_conversation(case, db_session)
+                conversation = create_conversation(case, conversation_target, db_session)
                 conversation_in = ConversationCreate(
                     resource_id=conversation["resource_id"],
                     resource_type=conversation["resource_type"],
@@ -400,6 +419,12 @@ def case_update_flow(
     # we update the ticket
     ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
+    if case.status in [CaseStatus.escalated, CaseStatus.closed]:
+        # we update the document
+        document_flows.update_document(
+            document=case.case_document, project_id=case.project.id, db_session=db_session
+        )
+
     # we update the tactical group if we have a new assignee
     if previous_case.assignee.individual.email != assignee_email:
         log.debug(
@@ -434,16 +459,20 @@ def case_delete_flow(case: Case, db_session: SessionLocal):
     """Runs the case delete flow."""
     # we delete the external ticket
     if case.ticket:
-        ticket_flows.delete_ticket(ticket=case.ticket, db_session=db_session)
+        ticket_flows.delete_ticket(
+            ticket=case.ticket, project_id=case.project.id, db_session=db_session
+        )
 
     # we delete the external groups
     if case.groups:
         for group in case.groups:
-            group_flows.delete_group(group=group, db_session=db_session)
+            group_flows.delete_group(group=group, project_id=case.project.id, db_session=db_session)
 
     # we delete the external storage
     if case.storage:
-        storage_flows.delete_storage(storage=case.storage, db_session=db_session)
+        storage_flows.delete_storage(
+            storage=case.storage, project_id=case.project.id, db_session=db_session
+        )
 
 
 def case_new_status_flow(case: Case, db_session=None):

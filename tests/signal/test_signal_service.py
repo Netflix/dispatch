@@ -1,3 +1,6 @@
+import json
+
+
 def test_get(session, signal):
     from dispatch.signal.service import get
 
@@ -47,22 +50,8 @@ def test_delete(session, signal):
     assert not get(db_session=session, signal_id=signal.id)
 
 
-# instance tests
-def test_create_instance(session, case, signal, project):
-    from dispatch.signal.models import RawSignal, SignalInstanceCreate
-    from dispatch.signal.service import create_instance
-
-    signal_instance_in = SignalInstanceCreate(
-        raw=RawSignal(id="foo"),
-        project=project,
-    )
-    signal_instance = create_instance(db_session=session, signal_instance_in=signal_instance_in)
-    assert signal_instance
-
-
 def test_filter_actions_deduplicate(session, signal, project):
     from dispatch.signal.models import (
-        RawSignal,
         SignalFilter,
         SignalInstance,
         SignalFilterAction,
@@ -84,12 +73,12 @@ def test_filter_actions_deduplicate(session, signal, project):
 
     # create instance
     signal_instance_1 = SignalInstance(
-        raw=RawSignal(id="foo").json(), project=project, signal=signal, entities=[entity]
+        raw=json.dumps({"id": "foo"}), project=project, signal=signal, entities=[entity]
     )
     session.add(signal_instance_1)
 
     signal_instance_2 = SignalInstance(
-        raw=RawSignal(id="foo").json(), project=project, signal=signal, entities=[entity]
+        raw=json.dumps({"id": "foo"}), project=project, signal=signal, entities=[entity]
     )
     session.add(signal_instance_2)
     signal.entity_types.append(entity_type)
@@ -114,17 +103,15 @@ def test_filter_actions_deduplicate(session, signal, project):
     assert signal_instance_2.filter_action == SignalFilterAction.deduplicate
 
 
-def test_filter_actions_snooze(session, signal, project):
+def test_filter_actions_snooze(session, entity, signal, project):
     from datetime import datetime, timedelta, timezone
     from dispatch.signal.models import (
-        RawSignal,
         SignalFilter,
         SignalInstance,
         SignalFilterAction,
     )
     from dispatch.signal.service import apply_filter_actions
     from dispatch.entity_type.models import EntityType
-    from dispatch.entity.models import Entity
 
     entity_type = EntityType(
         name="test",
@@ -135,12 +122,11 @@ def test_filter_actions_snooze(session, signal, project):
     session.add(entity_type)
     signal.entity_types.append(entity_type)
 
-    entity = Entity(name="test", description="test", value="foo", entity_type=entity_type)
     session.add(entity)
 
     # create instance
     signal_instance_1 = SignalInstance(
-        raw=RawSignal(id="foo").json(), project=project, signal=signal, entities=[entity]
+        raw=json.dumps({"id": "foo"}), project=project, signal=signal, entities=[entity]
     )
     session.add(signal_instance_1)
     session.commit()
@@ -161,17 +147,15 @@ def test_filter_actions_snooze(session, signal, project):
     assert signal_instance_1.filter_action == SignalFilterAction.snooze
 
 
-def test_filter_actions_snooze_expired(session, signal, project):
+def test_filter_actions_snooze_expired(session, entity, signal, project):
     from datetime import datetime, timedelta, timezone
     from dispatch.signal.models import (
-        RawSignal,
         SignalFilter,
         SignalInstance,
         SignalFilterAction,
     )
     from dispatch.signal.service import apply_filter_actions
     from dispatch.entity_type.models import EntityType
-    from dispatch.entity.models import Entity
 
     entity_type = EntityType(
         name="test",
@@ -180,13 +164,11 @@ def test_filter_actions_snooze_expired(session, signal, project):
         project=project,
     )
     session.add(entity_type)
-
-    entity = Entity(name="test", description="test", value="foo", entity_type=entity_type)
     session.add(entity)
 
     # create instance
     signal_instance_1 = SignalInstance(
-        raw=RawSignal(id="foo").json(), project=project, signal=signal, entities=[entity]
+        raw=json.dumps({"id": "foo"}), project=project, signal=signal, entities=[entity]
     )
     session.add(signal_instance_1)
 

@@ -121,6 +121,35 @@
                   />
                 </v-col>
                 <v-col cols="12">
+                  <v-checkbox
+                    v-model="create_case"
+                    label="Create Case"
+                    hint="Determines whether this signal is eligible for case creation (signals could still be associated with existing cases via SignalFilters)."
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <ValidationObserver disabled>
+                    <service-select
+                      :project="project"
+                      label="Oncall Service"
+                      v-model="oncall_service"
+                    />
+                  </ValidationObserver>
+                </v-col>
+                <v-col cols="12">
+                  <ValidationProvider name="ConversationTarget" immediate>
+                    <v-text-field
+                      v-model="conversation_target"
+                      slot-scope="{ errors, valid }"
+                      :error-messages="errors"
+                      :success="valid"
+                      label="Conversation Target"
+                      hint="The conversation identifier that new case messages will be sent to."
+                      clearable
+                    />
+                  </ValidationProvider>
+                </v-col>
+                <v-col cols="12">
                   <tag-filter-auto-complete
                     label="Tags"
                     v-model="tags"
@@ -148,8 +177,8 @@
             <v-card-text>
               <entity-type-filter-combobox
                 v-model="entity_types"
-                :signalDefinition="selected"
                 :project="project"
+                :signalDefinition="selected"
               ></entity-type-filter-combobox>
             </v-card-text>
           </v-card>
@@ -170,10 +199,14 @@
             <v-card-text>
               <v-row no-gutters>
                 <v-col cols="12">
-                  <case-type-select label="Case Type" v-model="case_type" />
+                  <case-type-select label="Case Type" :project="project" v-model="case_type" />
                 </v-col>
                 <v-col cols="12">
-                  <case-priority-select label="Case Priority" v-model="case_priority" />
+                  <case-priority-select
+                    label="Case Priority"
+                    :project="project"
+                    v-model="case_priority"
+                  />
                 </v-col>
               </v-row>
             </v-card-text>
@@ -201,6 +234,27 @@
             </v-card-text>
           </v-card>
         </v-col>
+        <v-col cols="12">
+          <v-card flat tile>
+            <v-app-bar color="white" flat>
+              <v-toolbar-title class="subtitle-2"> Workflow(s) </v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-tooltip max-width="250px" bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
+                </template>
+                Defines a workflow.
+              </v-tooltip>
+            </v-app-bar>
+            <v-card-text>
+              <workflow-combobox
+                v-model="workflows"
+                :project="project"
+                :signalDefinition="selected"
+              ></workflow-combobox>
+            </v-card-text>
+          </v-card>
+        </v-col>
       </v-row>
     </v-navigation-drawer>
   </ValidationObserver>
@@ -213,10 +267,13 @@ import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 
 import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
+import ServiceSelect from "@/service/ServiceSelect.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
 import EntityTypeFilterCombobox from "@/entity_type/EntityTypeFilterCombobox.vue"
 import SignalFilterCombobox from "@/signal/filter/SignalFilterCombobox.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
+import WorkflowSelect from "@/workflow/WorkflowSelect.vue"
+import WorkflowCombobox from "@/workflow/WorkflowCombobox.vue"
 
 extend("required", {
   ...required,
@@ -228,11 +285,14 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
+    ServiceSelect,
     CaseTypeSelect,
     CasePrioritySelect,
     SignalFilterCombobox,
     EntityTypeFilterCombobox,
     TagFilterAutoComplete,
+    WorkflowSelect,
+    WorkflowCombobox,
   },
 
   computed: {
@@ -251,8 +311,13 @@ export default {
       "selected.case_priority",
       "selected.filters",
       "selected.entity_types",
+      "selected.signal_definition",
+      "selected.oncall_service",
+      "selected.conversation_target",
+      "selected.create_case",
       "selected.source",
       "selected.tags",
+      "selected.workflows",
       "selected.project",
       "selected.loading",
     ]),

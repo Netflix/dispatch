@@ -21,6 +21,7 @@ const state = {
     ...getDefaultSelectedState(),
   },
   dialogs: {
+    showCaseView: false,
     showCreateEdit: false,
     showRemove: false,
   },
@@ -64,6 +65,12 @@ const actions = {
     commit("SET_DIALOG_CREATE_EDIT", true)
     if (entity) {
       commit("SET_SELECTED", entity)
+    }
+  },
+  createCaseShow({ commit }, cases) {
+    commit("SET_DIALOG_CASE_VIEW", true)
+    if (cases) {
+      commit("SET_SELECTED", cases)
     }
   },
   closeCreateEditDialog({ commit }) {
@@ -142,6 +149,9 @@ const mutations = {
   },
   SET_TABLE_ROWS(state, value) {
     state.table.rows = value
+  },
+  SET_DIALOG_CASE_VIEW(state, value) {
+    state.dialogs.showCaseView = value
   },
   SET_DIALOG_CREATE_EDIT(state, value) {
     state.dialogs.showCreateEdit = value

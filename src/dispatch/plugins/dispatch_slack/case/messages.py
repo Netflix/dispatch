@@ -1,19 +1,23 @@
+from collections import defaultdict, namedtuple
 from typing import List
+
 from blockkit import Actions, Button, Context, Message, Section, Divider, Overflow, PlainOption
+from sqlalchemy.orm import Session
 
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.case.enums import CaseStatus
 from dispatch.case.models import Case
-from dispatch.plugins.dispatch_slack.models import SubjectMetadata
+from dispatch.entity import service as entity_service
+from dispatch.plugins.dispatch_slack.models import SubjectMetadata, CaseSubjects, SignalSubjects
 from dispatch.plugins.dispatch_slack.case.enums import (
     CaseNotificationActions,
+    SignalNotificationActions,
 )
-from dispatch.plugins.dispatch_slack.service import chunks
 
 
 def create_case_message(case: Case, channel_id: str):
     blocks = [
-        Context(elements=["*Case Details*"]),
+        Context(elements=[f"* {case.name} - Case Details*"]),
         Section(
             text=f"*Title* \n {case.title}.",
             accessory=Button(
@@ -22,9 +26,7 @@ def create_case_message(case: Case, channel_id: str):
                 url=f"{DISPATCH_UI_URL}/{case.project.organization.slug}/cases/{case.name}",
             ),
         ),
-        Section(
-            text=f"*Description* \n {case.description} \n \n Additional information is available in the <{case.case_document.weblink}|case document>."
-        ),
+        Section(text=f"*Description* \n {case.description}"),
         Section(
             fields=[
                 f"*Assignee* \n {case.assignee.individual.email}",
@@ -37,7 +39,7 @@ def create_case_message(case: Case, channel_id: str):
     ]
 
     button_metadata = SubjectMetadata(
-        type="case",
+        type=CaseSubjects.case,
         organization_slug=case.project.organization.slug,
         id=case.id,
         project_id=case.project.id,
@@ -121,70 +123,113 @@ def create_case_message(case: Case, channel_id: str):
     return Message(blocks=blocks).build()["blocks"]
 
 
-def create_signal_messages(case: Case) -> List[Message]:
+def create_signal_messages(case: Case, channel_id: str, db_session: Session) -> List[Message]:
     """Creates the signal instance message."""
     messages = []
+
     for instance in case.signal_instances:
+        button_metadata = SubjectMetadata(
+            type=SignalSubjects.signal_instance,
+            organization_slug=case.project.organization.slug,
+            id=str(instance.id),
+            project_id=case.project.id,
+            channel_id=channel_id,
+        ).json()
+
         signal_metadata_blocks = [
             Section(
-                text="*Signal Details*",
-                accessory=Button(
-                    text="View",
-                    url=f"{DISPATCH_UI_URL}/{case.project.organization.slug}/signals/{instance.id}",
-                ),
+                text=f"*{instance.signal.name}* - {instance.signal.variant}",
             ),
+            Actions(
+                elements=[
+                    Button(
+                        text="Raw Data",
+                        action_id=SignalNotificationActions.view,
+                        value=button_metadata,
+                    ),
+                    Button(
+                        text="Snooze",
+                        action_id=SignalNotificationActions.snooze,
+                        value=button_metadata,
+                    ),
+                    Button(
+                        text="Response Plan",
+                        action_id="button-link",
+                        url=instance.signal.external_url,
+                    ),
+                ]
+            ),
+            Section(text="*Entities*"),
+            Divider(),
         ]
-        if instance.raw.get("identity"):
-            signal_metadata_blocks.append(Context(elements=["*Identity*"]))
 
+        if not instance.entities:
             signal_metadata_blocks.append(
                 Section(
-                    fields=[
-                        f"*{k.strip()}* \n {v.strip()}" for k, v in instance.raw["identity"].items()
-                    ]
+                    text="No entities found.",
+                ),
+            )
+        EntityGroup = namedtuple(
+            "EntityGroup", ["value", "related_instance_count", "related_case_count"]
+        )
+        entity_groups = defaultdict(list)
+        for e in instance.entities:
+            related_instances = entity_service.get_signal_instances_with_entity(
+                db_session=db_session, entity_id=e.id, days_back=14
+            )
+            related_instance_count = len(related_instances)
+
+            related_cases = entity_service.get_cases_with_entity(
+                db_session=db_session, entity_id=e.id, days_back=14
+            )
+            related_case_count = len(related_cases)
+            entity_groups[e.entity_type.name].append(
+                EntityGroup(
+                    value=e.value,
+                    related_instance_count=related_instance_count,
+                    related_case_count=related_case_count,
                 )
             )
-            signal_metadata_blocks.append(Divider())
+        for k, v in entity_groups.items():
+            if v:
+                related_instance_count = v[0].related_instance_count
+                match related_instance_count:
+                    case 0:
+                        signal_message = "First time this entity has been seen in a signal."
+                    case 1:
+                        signal_message = f"Seen in *{related_instance_count}* other signal."
+                    case _:
+                        signal_message = f"Seen in *{related_instance_count}* other signals."
 
-        if instance.raw.get("action"):
-            signal_metadata_blocks.append(Context(elements=["*Actions*"]))
-            for item in instance.raw["action"]:
-                signal_metadata_blocks.append(Context(elements=[f"*{item['type']}*"]))
-                for chunk in chunks([(k, v) for k, v in item["value"].items()], 10):
-                    signal_metadata_blocks.append(
-                        Section(fields=[f"*{k.strip()}* \n {v.strip()}" for k, v in chunk]),
-                    )
-            signal_metadata_blocks.append(Divider())
+                related_case_count = v[0].related_case_count
+                match related_case_count:
+                    case 0:
+                        case_message = "First time this entity has been seen in a case."
+                    case 1:
+                        case_message = f"Seen in *{related_instance_count}* other case."
+                    case _:
+                        case_message = f"Seen in *{related_instance_count}* other cases."
 
-        if instance.raw.get("origin_location"):
-            signal_metadata_blocks.append(Context(elements=["*Origin Location*"]))
-            for item in instance.raw["origin_location"]:
+                # dynamically allocate space for the entity type name and entity type values
+                entity_type_name_length = len(k)
+                entity_type_value_length = len(", ".join(item.value for item in v))
+                entity_type_name_spaces = " " * (55 - entity_type_name_length)
+                entity_type_value_spaces = " " * (50 - entity_type_value_length)
+
+                # Threaded messages do not overflow text fields, so we hack together the same UI with spaces
                 signal_metadata_blocks.append(
-                    Section(fields=[f"*{item['type'].strip()}* \n {item['value'].strip()}"]),
+                    Context(
+                        elements=[
+                            f"*{k}*{entity_type_name_spaces}{signal_message}\n`{', '.join(item.value for item in v)}`{entity_type_value_spaces}{case_message}"
+                        ]
+                    ),
                 )
             signal_metadata_blocks.append(Divider())
 
-        if instance.raw.get("asset"):
-            signal_metadata_blocks.append(Context(elements=["*Assets*"]))
-            for item in instance.raw["asset"]:
-                signal_metadata_blocks.append(
-                    Section(fields=[f"*{item['type'].strip()}* \n {item['id'].strip()}"]),
-                )
-            signal_metadata_blocks.append(Divider())
+        if instance.entities:
+            signal_metadata_blocks.append(
+                Context(elements=["Correlation is based on two weeks of signal data."]),
+            )
 
-        for item in instance.raw.get("additional_metadata", []):
-            signal_metadata_blocks.append(Context(elements=[f"*{item['name']}*"]))
-
-            if isinstance(item["value"], dict):
-                # sections have a hard limit of 10 fields
-                for chunk in chunks([(k, v) for k, v in item["value"].items()], 10):
-                    signal_metadata_blocks.append(
-                        Section(fields=[f"*{k.strip()}* \n {v.strip()}" for k, v in chunk]),
-                    )
-            else:
-                signal_metadata_blocks.append(
-                    Section(text=item["value"]),
-                )
-        messages.append(Message(blocks=signal_metadata_blocks).build()["blocks"])
-
+        messages.append(Message(blocks=signal_metadata_blocks[:50]).build()["blocks"])
     return messages

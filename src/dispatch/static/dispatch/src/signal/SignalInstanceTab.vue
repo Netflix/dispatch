@@ -25,28 +25,29 @@
       </v-tooltip>
     </template>
     <template v-slot:item.data-table-actions="{ item }">
+      <v-btn icon @click="showRun({ type: 'signal', data: item })">
+        <v-icon>mdi-play-circle-outline</v-icon>
+      </v-btn>
+      <workflow-run-modal />
       <raw-signal-viewer v-model="item.raw" />
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on, attrs }">
-          <v-icon v-bind="attrs" v-on="on" class="mr-2"> mdi-fingerprint </v-icon>
-        </template>
-        <span>{{ item.fingerprint }}</span>
-      </v-tooltip>
     </template>
   </v-data-table>
 </template>
 
 <script>
 import { mapFields } from "vuex-map-fields"
+import { mapActions } from "vuex"
 
 import SignalPopover from "@/signal/SignalPopover.vue"
 import RawSignalViewer from "@/signal/RawSignalViewer.vue"
+import WorkflowRunModal from "@/workflow/RunModal.vue"
 
 export default {
   name: "SignalInstanceTab",
   components: {
     SignalPopover,
     RawSignalViewer,
+    WorkflowRunModal,
   },
   props: {
     inputSignalInstances: {
@@ -57,6 +58,7 @@ export default {
   data() {
     return {
       menu: false,
+      workflowRunDialog: false,
       headers: [
         { text: "Signal", value: "signal", sortable: false },
         { text: "Entities", value: "entities", sortable: false },
@@ -73,6 +75,9 @@ export default {
       }
       return this.signal_instances
     },
+  },
+  methods: {
+    ...mapActions("workflow", ["showRun"]),
   },
 }
 </script>

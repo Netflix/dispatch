@@ -308,17 +308,22 @@ def dump_database(dump_file):
 @click.option("--yes", is_flag=True, help="Silences all confirmation prompts.")
 def drop_database(yes):
     """Drops all data in database."""
-    from sqlalchemy_utils import drop_database
+    from sqlalchemy_utils import drop_database, database_exists
 
-    if yes:
-        drop_database(str(config.SQLALCHEMY_DATABASE_URI))
-        click.secho("Success.", fg="green")
+    if database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
+        if yes:
+            drop_database(str(config.SQLALCHEMY_DATABASE_URI))
+            click.secho("Success.", fg="green")
 
-    if click.confirm(
-        f"Are you sure you want to drop: '{config.DATABASE_HOSTNAME}:{config.DATABASE_NAME}'?"
-    ):
-        drop_database(str(config.SQLALCHEMY_DATABASE_URI))
-        click.secho("Success.", fg="green")
+        if click.confirm(
+            f"Are you sure you want to drop: '{config.DATABASE_HOSTNAME}:{config.DATABASE_NAME}'?"
+        ):
+            drop_database(str(config.SQLALCHEMY_DATABASE_URI))
+            click.secho("Success.", fg="green")
+    else:
+        click.secho(
+            f"'{config.DATABASE_HOSTNAME}:{config.DATABASE_NAME}' does not exist!!!", fg="red"
+        )
 
 
 @dispatch_database.command("upgrade")
@@ -614,6 +619,7 @@ def list_tasks():
 @click.option("--eager", is_flag=True, default=False, help="Run the tasks immediately.")
 def start_tasks(tasks, exclude, eager):
     """Starts the scheduler."""
+    import signal
     from dispatch.common.utils.cli import install_plugins
 
     install_plugins()
@@ -637,6 +643,11 @@ def start_tasks(tasks, exclude, eager):
                     break
             else:
                 click.secho(f"Task not found. TaskName: {task}", fg="red")
+
+    # registers a handler to stop future scheduling when encountering sigterm
+    signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
+    for s in signals:
+        signal.signal(s, scheduler.stop)
 
     click.secho("Starting scheduler...", fg="blue")
     scheduler.start()

@@ -1,0 +1,36 @@
+# Quick Start:
+#
+# pip install pre-commit
+# pre-commit install && pre-commit install -t pre-push
+# pre-commit run --all-files
+#
+# To Skip Checks:
+#
+# git commit --no-verify
+fail_fast: false
+
+default_language_version:
+  python: python3.11.2
+
+repos:
+  # Black
+  - repo: https://github.com/psf/black
+    rev: 23.1.0
+    hooks:
+      - id: black
+
+  # Ruff
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: "v0.0.259"
+    hooks:
+      - id: ruff
+
+  # Pytest
+  - repo: local
+    hooks:
+      - id: tests
+        name: run tests
+        entry: pytest -v
+        language: system
+        types: [python]
+        stages: [push]

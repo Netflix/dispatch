@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <v-row no-gutter>
-      <span class="subtitle-2">Workflow Configuration</span>
+      <span class="subtitle-2">Workflow Parameters</span>
       <v-spacer />
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
@@ -9,7 +9,7 @@
             <v-icon>add</v-icon>
           </v-btn>
         </template>
-        <span>Add Configuration Item</span>
+        <span>Add Parameters</span>
       </v-tooltip>
     </v-row>
     <span v-for="(param, idx) in parameters" :key="idx">

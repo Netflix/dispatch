@@ -39,7 +39,7 @@ from dispatch.tag.models import TagRead
 from dispatch.ticket.models import TicketRead
 from dispatch.workflow.models import WorkflowInstanceRead
 
-from .enums import CaseStatus
+from .enums import CaseStatus, CaseResolutionReason
 
 
 # Assoc table for case and tags
@@ -69,6 +69,7 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
     resolution = Column(String, default=CASE_RESOLUTION_DEFAULT, nullable=False)
+    resolution_reason = Column(String)
     status = Column(String, default=CaseStatus.new, nullable=False)
     visibility = Column(String, default=Visibility.open, nullable=False)
     participants_team = Column(String)
@@ -86,7 +87,7 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     )
 
     # relationships
-    assignee_id = Column(Integer, ForeignKey(Participant.id))
+    assignee_id = Column(Integer, ForeignKey("participant.id", ondelete="CASCADE"))
     assignee = relationship(
         Participant, foreign_keys=[assignee_id], lazy="subquery", post_update=True
     )
@@ -162,6 +163,7 @@ class SignalRead(DispatchBase):
     variant: Optional[str]
     external_id: str
     external_url: Optional[str]
+    workflow_instances: Optional[List[WorkflowInstanceRead]] = []
 
 
 class SignalInstanceRead(DispatchBase):
@@ -184,6 +186,7 @@ class CaseBase(DispatchBase):
     title: str
     description: Optional[str]
     resolution: Optional[str]
+    resolution_reason: Optional[CaseResolutionReason]
     status: Optional[CaseStatus]
     visibility: Optional[Visibility]
 

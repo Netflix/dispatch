@@ -1,11 +1,15 @@
 from typing import List, Optional
 
+from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import true
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from dispatch.config import DISPATCH_UI_URL
+from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 from dispatch.plugin import service as plugin_service
 from dispatch.incident import service as incident_service
 from dispatch.case import service as case_service
+from dispatch.signal import service as signal_service
 from dispatch.participant import service as participant_service
 from dispatch.document import service as document_service
 from dispatch.workflow.enums import WorkflowInstanceStatus
@@ -14,6 +18,7 @@ from .models import (
     Workflow,
     WorkflowInstance,
     WorkflowCreate,
+    WorkflowRead,
     WorkflowUpdate,
     WorkflowInstanceCreate,
     WorkflowInstanceUpdate,
@@ -28,6 +33,22 @@ def get(*, db_session, workflow_id: int) -> Optional[Workflow]:
 def get_by_name(*, db_session, name: str) -> Optional[Workflow]:
     """Returns a workflow based on the given workflow name."""
     return db_session.query(Workflow).filter(Workflow.name == name).one_or_none()
+
+
+def get_by_name_or_raise(*, db_session: Session, workflow_in=WorkflowRead) -> Workflow:
+    workflow = get_by_name(db_session=db_session, name=workflow_in.name)
+
+    if not workflow:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    NotFoundError(msg="Workflow not found.", workflow=workflow_in.name),
+                    loc="workflow",
+                )
+            ],
+            model=WorkflowRead,
+        )
+    return workflow
 
 
 def get_all(*, db_session) -> List[Optional[Workflow]]:
@@ -120,8 +141,10 @@ def create_instance(
 ) -> WorkflowInstance:
     """Creates a new workflow instance."""
     instance = WorkflowInstance(
-        **instance_in.dict(exclude={"incident", "case", "creator", "artifacts"})
+        **instance_in.dict(exclude={"incident", "case", "signal", "creator", "artifacts"})
     )
+
+    instance.workflow = workflow
 
     if instance_in.incident:
         incident = incident_service.get(db_session=db_session, incident_id=instance_in.incident.id)
@@ -131,15 +154,25 @@ def create_instance(
         case = case_service.get(db_session=db_session, case_id=instance_in.case.id)
         instance.case = case
 
-    instance.workflow = workflow
+    if instance_in.signal:
+        signal = signal_service.get(db_session=db_session, signal_id=instance_in.signal.id)
+        instance.signal = signal
 
     if instance_in.creator:
-        creator = participant_service.get_by_incident_id_and_email(
-            db_session=db_session,
-            incident_id=incident.id,
-            email=instance_in.creator.individual.email,
-        )
-        instance.creator = creator
+        if instance.incident:
+            creator = participant_service.get_by_incident_id_and_email(
+                db_session=db_session,
+                incident_id=incident.id,
+                email=instance_in.creator.individual.email,
+            )
+            instance.creator = creator
+        if instance.case:
+            creator = participant_service.get_by_case_id_and_email(
+                db_session=db_session,
+                incident_id=case.id,
+                email=instance_in.creator.individual.email,
+            )
+            instance.creator = creator
 
     for a in instance_in.artifacts:
         artifact_document = document_service.create(db_session=db_session, document_in=a)
@@ -155,7 +188,8 @@ def update_instance(*, db_session, instance: WorkflowInstance, instance_in: Work
     """Updates an existing workflow instance."""
     instance_data = instance.dict()
     update_data = instance_in.dict(
-        skip_defaults=True, exclude={"incident", "workflow", "creator", "artifacts"}
+        skip_defaults=True,
+        exclude={"incident", "case", "signal", "workflow", "creator", "artifacts"},
     )
 
     for a in instance_in.artifacts:
@@ -197,6 +231,13 @@ def run(
         params.update(
             {
                 "externalRef": f"{DISPATCH_UI_URL}/{instance.case.project.organization.name}/cases/{instance.case.name}?project={instance.case.project.name}",
+            }
+        )
+
+    if instance.siganl:
+        params.update(
+            {
+                "externalRef": f"{DISPATCH_UI_URL}/{instance.signal.project.organization.name}/signals/{instance.signal.id}?project={instance.signal.project.name}",
             }
         )
 

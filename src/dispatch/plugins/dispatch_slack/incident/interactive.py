@@ -1,8 +1,8 @@
+import logging
 from datetime import datetime
 from typing import Any
-import logging
-import pytz
 
+import pytz
 from blockkit import (
     Actions,
     Button,
@@ -22,7 +22,6 @@ from blockkit import (
 from slack_bolt import Ack, BoltContext, BoltRequest, Respond
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
-
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -32,6 +31,8 @@ from dispatch.database.service import search_filter_sort_paginate
 from dispatch.enums import Visibility
 from dispatch.event import service as event_service
 from dispatch.exceptions import DispatchException
+from dispatch.group import flows as group_flows
+from dispatch.group.enums import GroupAction
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
@@ -50,8 +51,6 @@ from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.bolt import app
 from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
 from dispatch.plugins.dispatch_slack.exceptions import CommandError
-from dispatch.plugins.dispatch_slack.models import MonitorMetadata, TaskMetadata
-from dispatch.plugins.dispatch_slack.service import get_user_email, get_user_profile_by_email
 from dispatch.plugins.dispatch_slack.fields import (
     DefaultActionIds,
     DefaultBlockIds,
@@ -107,6 +106,8 @@ from dispatch.plugins.dispatch_slack.middleware import (
     subject_middleware,
     user_middleware,
 )
+from dispatch.plugins.dispatch_slack.models import MonitorMetadata, TaskMetadata
+from dispatch.plugins.dispatch_slack.service import get_user_email, get_user_profile_by_email
 from dispatch.project import service as project_service
 from dispatch.report import flows as report_flows
 from dispatch.report import service as report_service
@@ -118,8 +119,18 @@ from dispatch.tag.models import Tag
 from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
 from dispatch.task.models import Task
+from dispatch.ticket import flows as ticket_flows
 
 log = logging.getLogger(__file__)
+
+
+def is_target_reaction(reaction: str) -> bool:
+    """Returns True if given reaction matches the events' reaction."""
+
+    def is_target(event) -> bool:
+        return event["reaction"] == reaction
+
+    return is_target
 
 
 def configure(config):
@@ -190,11 +201,16 @@ def configure(config):
         handle_add_timeline_event_command
     )
 
-    # required to allow the user to change the reaction string
     app.event(
-        {"type": "reaction_added", "reaction": config.timeline_event_reaction},
+        event="reaction_added",
+        matchers=[is_target_reaction(config.timeline_event_reaction)],
         middleware=[reaction_context_middleware],
     )(handle_timeline_added_event)
+
+    app.event(
+        event="reaction_added",
+        middleware=[reaction_context_middleware],
+    )(handle_not_configured_reaction_event)
 
 
 @app.options(
@@ -630,10 +646,17 @@ def draw_task_modal(
 # EVENTS
 
 
+def handle_not_configured_reaction_event(
+    ack: Ack, client: Any, context: BoltContext, payload: Any, db_session: Session
+) -> None:
+    """Ignores reaction_added events for reactions that are not configured and mapped to a handler function."""
+    ack()
+
+
 def handle_timeline_added_event(
     ack: Ack, client: Any, context: BoltContext, payload: Any, db_session: Session
 ) -> None:
-    """Handles an event where a reaction is added to a message."""
+    """Handles an event where the configured timeline reaction is added to a message."""
     ack()
 
     conversation_id = context["channel_id"]
@@ -1323,7 +1346,7 @@ def handle_assign_role_submission_event(
         or assignee_role == ParticipantRoleType.incident_commander  # noqa
     ):
         # we update the external ticket
-        incident_flows.update_external_incident_ticket(
+        ticket_flows.update_incident_ticket(
             incident_id=context["subject"].id, db_session=db_session
         )
 
@@ -1414,7 +1437,7 @@ def handle_engage_oncall_submission_event(
     """Handles the engage oncall submission"""
     ack_engage_oncall_submission_event(ack=ack)
     oncall_service_external_id = form_data[EngageOncallBlockIds.service]["value"]
-    page = form_data.get(EngageOncallBlockIds.page, {"value": None})["value"]
+    page = form_data.get(EngageOncallBlockIds.page, {"value": None})[0]["value"]
 
     oncall_individual, oncall_service = incident_flows.incident_engage_oncall_flow(
         user.email,
@@ -2083,9 +2106,15 @@ def handle_incident_notification_subscribe_button_click(
     else:
         user_id = context["user_id"]
         user_email = get_user_email(client=client, user_id=user_id)
-        incident_flows.add_participant_to_tactical_group(
-            user_email=user_email, incident=incident, db_session=db_session
-        )
+
+        if incident.tactical_group:
+            group_flows.update_group(
+                subject=incident,
+                group=incident.tactical_group,
+                group_action=GroupAction.add_member,
+                group_member=user_email,
+                db_session=db_session,
+            )
         message = f"Success! We've subscribed you to incident {incident.name}. You will start receiving all tactical reports about this incident via email."
 
     respond(text=message, response_type="ephemeral", replace_original=False, delete_original=False)

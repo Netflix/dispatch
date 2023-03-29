@@ -1,97 +1,97 @@
 <template>
   <v-dialog v-model="showCreateEdit" max-width="1000px" persistent>
     <template v-slot:activator="{ on }">
-      <v-btn v-on="on" icon><v-icon>add</v-icon></v-btn>
+      <v-btn @click="createEditShow(signalDefinition)" v-on="on" icon><v-icon>add</v-icon></v-btn>
     </template>
     <v-card>
       <v-card-title>Create Entity Type </v-card-title>
-      <ValidationObserver v-slot="{ invalid, validated }">
-        <v-stepper v-model="step">
-          <v-stepper-header>
-            <v-stepper-step :complete="step > 1" step="1" editable> Define Filter </v-stepper-step>
-            <v-divider />
-            <v-stepper-step step="2" editable> Save </v-stepper-step>
-          </v-stepper-header>
-          <v-stepper-items>
-            <v-stepper-content step="1">
-              <v-card flat height="100%">
-                <v-card-text>
-                  Entity types are used to extract useful metadata out of signals. Define either a
-                  RegEx or JSON Path expression to pull entities out of a signals raw json.
-                  <v-radio-group label="Type" v-model="type" row>
-                    <v-radio label="Regular Expression" value="regex"></v-radio>
-                    <v-radio label="JSON Path" value="json"></v-radio>
-                  </v-radio-group>
-                  <v-text-field
-                    v-if="type === 'regex'"
-                    v-model="regular_expression"
-                    label="Regular Expression"
-                    hint="A regular expression pattern for your entity type. The first capture group will be used."
-                  >
-                    <template v-slot:append-outer>
-                      <v-btn
-                        icon
-                        href="https://cheatography.com/davechild/cheat-sheets/regular-expressions/"
-                        target="_blank"
+      <v-stepper v-model="step">
+        <v-stepper-header>
+          <v-stepper-step :complete="step > 1" step="1" editable> Define Filter </v-stepper-step>
+          <v-divider />
+          <v-stepper-step step="2" editable> Save </v-stepper-step>
+        </v-stepper-header>
+        <v-stepper-items>
+          <v-stepper-content step="1">
+            <v-card flat height="100%">
+              <v-card-text>
+                Entity types are used to extract useful metadata out of signals. Define either a
+                RegEx or JSON Path expression to pull entities out of a signals raw json.
+                <v-radio-group label="Type" v-model="type" row>
+                  <v-radio label="Regular Expression" value="regex"></v-radio>
+                  <v-radio label="JSON Path" value="json"></v-radio>
+                </v-radio-group>
+                <v-text-field
+                  v-if="type === 'regex'"
+                  v-model="regular_expression"
+                  label="Regular Expression"
+                  hint="A regular expression pattern for your entity type. The first capture group will be used."
+                >
+                  <template v-slot:append-outer>
+                    <v-btn
+                      icon
+                      href="https://cheatography.com/davechild/cheat-sheets/regular-expressions/"
+                      target="_blank"
+                    >
+                      <v-icon> mdi-help-circle-outline </v-icon>
+                    </v-btn>
+                  </template>
+                </v-text-field>
+                <v-text-field
+                  v-if="type === 'json'"
+                  v-model="jpath"
+                  label="JSON Path"
+                  hint="The field where the entity will be present. Supports JSON Path expressions."
+                >
+                  <template v-slot:append-outer>
+                    <v-btn
+                      icon
+                      href="https://github.com/json-path/JsonPath#path-examples"
+                      target="_blank"
+                    >
+                      <v-icon> mdi-help-circle-outline </v-icon>
+                    </v-btn>
+                  </template>
+                </v-text-field>
+                Example signals:
+                <v-row>
+                  <v-col cols="4">
+                    <v-list>
+                      <template
+                        v-for="(instance, index) in signalInstances"
+                        v-if="signalInstances.length"
                       >
-                        <v-icon> mdi-help-circle-outline </v-icon>
-                      </v-btn>
-                    </template>
-                  </v-text-field>
-                  <v-text-field
-                    v-if="type === 'json'"
-                    v-model="jpath"
-                    label="JSON Path"
-                    hint="The field where the entity will be present. Supports JSON Path expressions."
-                  >
-                    <template v-slot:append-outer>
-                      <v-btn
-                        icon
-                        href="https://github.com/json-path/JsonPath#path-examples"
-                        target="_blank"
-                      >
-                        <v-icon> mdi-help-circle-outline </v-icon>
-                      </v-btn>
-                    </template>
-                  </v-text-field>
-                  Example signals:
-                  <v-row>
-                    <v-col cols="4">
-                      <v-list>
-                        <template
-                          v-for="(instance, index) in signalInstances"
-                          v-if="signalInstances.length"
-                        >
-                          <v-list-item>
-                            <v-list-item-content>
-                              <v-list-item-title>{{ instance.id }}</v-list-item-title>
-                            </v-list-item-content>
-                            <v-list-item-action>
-                              <v-btn icon @click="updateEditorValue(instance.raw)">
-                                <v-icon>mdi-arrow-right</v-icon>
-                              </v-btn>
-                            </v-list-item-action>
-                          </v-list-item>
-                          <v-divider v-if="index < signalInstances.length - 1"></v-divider>
-                        </template>
-                        <template v-else>
-                          No signals are currently available for this definition.
-                        </template>
-                      </v-list>
-                    </v-col>
-                    <v-col cols="8">
-                      <playground-text-box :text="editorValue" />
-                    </v-col>
-                  </v-row>
-                </v-card-text>
-              </v-card>
+                        <v-list-item>
+                          <v-list-item-content>
+                            <v-list-item-title>{{ instance.id }}</v-list-item-title>
+                          </v-list-item-content>
+                          <v-list-item-action>
+                            <v-btn icon @click="updateEditorValue(instance.raw)">
+                              <v-icon>mdi-arrow-right</v-icon>
+                            </v-btn>
+                          </v-list-item-action>
+                        </v-list-item>
+                        <v-divider v-if="index < signalInstances.length - 1"></v-divider>
+                      </template>
+                      <template v-else>
+                        No signals are currently available for this definition.
+                      </template>
+                    </v-list>
+                  </v-col>
+                  <v-col cols="8">
+                    <playground-text-box :text="editorValue" />
+                  </v-col>
+                </v-row>
+              </v-card-text>
               <v-card-actions>
                 <v-spacer />
                 <v-btn @click="closeCreateEditDialog()" text> Cancel </v-btn>
                 <v-btn color="info" @click="step = 2" :loading="loading"> Continue </v-btn>
               </v-card-actions>
-            </v-stepper-content>
-            <v-stepper-content step="2">
+            </v-card>
+          </v-stepper-content>
+          <v-stepper-content step="2">
+            <ValidationObserver disabled v-slot="{ invalid, validated }">
               <v-card>
                 <v-card-text>
                   <v-card-text>
@@ -135,10 +135,10 @@
                   </v-btn>
                 </v-card-actions>
               </v-card>
-            </v-stepper-content>
-          </v-stepper-items>
-        </v-stepper>
-      </ValidationObserver>
+            </ValidationObserver>
+          </v-stepper-content>
+        </v-stepper-items>
+      </v-stepper>
     </v-card>
   </v-dialog>
 </template>
@@ -187,7 +187,7 @@ export default {
       type: "json",
       signalInstances: [],
       filters: {
-        signal_definition: [],
+        signal: [],
       },
       editorValue: JSON.stringify(
         {
@@ -219,20 +219,21 @@ export default {
   },
   computed: {
     ...mapFields("entity_type", [
+      "dialogs.showCreateEdit",
       "selected",
       "selected.description",
       "selected.regular_expression",
       "selected.jpath",
-      "selected.signal_definitions",
+      "selected.signal",
+      "selected.working_signal",
       "selected.name",
       "loading",
-      "dialogs.showCreateEdit",
     ]),
     ...mapFields("route", ["query"]),
   },
   methods: {
     ...mapMutations("playground", ["updatePattern", "updateJsonPath"]),
-    ...mapActions("entity_type", ["closeCreateEditDialog", "save"]),
+    ...mapActions("entity_type", ["createEditShow", "closeCreateEditDialog", "save"]),
     saveEntityType() {
       this.save().then((entityType) => {
         this.$emit("input", entityType)
@@ -240,10 +241,12 @@ export default {
     },
     isValidRegex,
     isValidJsonPath,
-    getSignalData() {
-      //this.filters.signal_definition = [this.signalDefinition]
-      // TODO
-      const expression = SearchUtils.createFilterExpression(this.filter, "SignalInstance")
+    getSignalData(definition) {
+      if (definition) {
+        this.filters.signal = [definition]
+      }
+
+      const expression = SearchUtils.createFilterExpression(this.filters)
       if (!expression) return
 
       const params = { filter: JSON.stringify(expression), itemsPerPage: 5 }
@@ -268,7 +271,6 @@ export default {
             this.updatePattern(newVal)
           }
           if (selector === "jpath") {
-            console.log("here")
             if (!newVal) {
               // Ensures we reset the jsonpath
               this.updateJsonPath(newVal)
@@ -284,10 +286,6 @@ export default {
         }
       })
     },
-    /**
-     * This function sets up the draggable feature for the signal table and the playground editor.
-     * Updates the editor value with the selected signal raw JSON when dragging ends.
-     */
     updateEditorValue(newValue) {
       this.editorValue = JSON.stringify(newValue, null, 2)
     },
@@ -296,11 +294,6 @@ export default {
     if (this.project) {
       this.selected.project = this.project
     }
-
-    if (this.signalDefinition) {
-      this.selected.signal_definition = this.signalDefinition
-      this.getSignalData()
-    }
   },
   watch: {
     "selected.regular_expression": function (newVal, oldVal) {
@@ -308,6 +301,9 @@ export default {
     },
     "selected.jpath": function (newVal, oldVal) {
       this.onSelectedChange("jpath", newVal, oldVal)
+    },
+    "selected.working_signal": function (newVal) {
+      this.getSignalData(newVal)
     },
   },
 }

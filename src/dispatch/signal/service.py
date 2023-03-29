@@ -1,6 +1,6 @@
 import json
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Literal
+from typing import Literal, Optional
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy import asc
@@ -14,7 +14,9 @@ from dispatch.database.service import apply_filter_specific_joins, apply_filters
 from dispatch.entity_type import service as entity_type_service
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
+from dispatch.service import service as service_service
 from dispatch.tag import service as tag_service
+from dispatch.workflow import service as workflow_service
 
 from .models import (
     Signal,
@@ -118,6 +120,17 @@ def get_signal_filter(*, db_session: Session, signal_filter_id: int) -> SignalFi
     return db_session.query(SignalFilter).filter(SignalFilter.id == signal_filter_id).one_or_none()
 
 
+def get_signal_instance(
+    *, db_session: Session, signal_instance_id: int | str
+) -> Optional[SignalInstance]:
+    """Gets a signal instance by it's UUID."""
+    return (
+        db_session.query(SignalInstance)
+        .filter(SignalInstance.id == signal_instance_id)
+        .one_or_none()
+    )
+
+
 def get(*, db_session: Session, signal_id: int) -> Optional[Signal]:
     """Gets a signal by id."""
     return db_session.query(Signal).filter(Signal.id == signal_id).one_or_none()
@@ -172,6 +185,7 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
                 "filters",
                 "tags",
                 "entity_types",
+                "workflows",
             }
         ),
         project=project,
@@ -200,11 +214,24 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
 
     signal.filters = filters
 
+    workflows = []
+    for w in signal_in.workflows:
+        workflow = workflow_service.get_by_name_or_raise(db_session=db_session, workflow_in=w)
+        workflows.append(workflow)
+
+    signal.workflows = workflows
+
     if signal_in.case_priority:
         case_priority = case_priority_service.get_by_name_or_default(
             db_session=db_session, project_id=project.id, case_priority_in=signal_in.case_priority
         )
         signal.case_priority = case_priority
+
+    if signal_in.oncall_service:
+        oncall_service = service_service.get(
+            db_session=db_session, service_id=signal_in.oncall_service.id
+        )
+        signal.oncall_service = oncall_service
 
     if signal_in.case_type:
         case_type = case_type_service.get_by_name_or_default(
@@ -260,6 +287,19 @@ def update(*, db_session: Session, signal: Signal, signal_in: SignalUpdate) -> S
 
     signal.filters = filters
 
+    workflows = []
+    for w in signal_in.workflows:
+        workflow = workflow_service.get_by_name_or_raise(db_session=db_session, workflow_in=w)
+        workflows.append(workflow)
+
+    signal.workflows = workflows
+
+    if signal_in.oncall_service:
+        oncall_service = service_service.get(
+            db_session=db_session, service_id=signal_in.oncall_service.id
+        )
+        signal.oncall_service = oncall_service
+
     if signal_in.case_priority:
         case_priority = case_priority_service.get_by_name_or_default(
             db_session=db_session,
@@ -294,11 +334,14 @@ def create_instance(
         db_session=db_session, project_in=signal_instance_in.project
     )
 
+    signal = get(db_session=db_session, signal_id=signal_instance_in.signal.id)
+
     # we round trip the raw data to json-ify date strings
     signal_instance = SignalInstance(
         **signal_instance_in.dict(exclude={"case", "signal", "project", "entities", "raw"}),
-        raw=json.loads(signal_instance_in.raw.json()),
+        raw=json.loads(json.dumps(signal_instance_in.raw)),
         project=project,
+        signal=signal,
     )
 
     db_session.add(signal_instance)

@@ -1,6 +1,7 @@
 import json
 import re
 from datetime import datetime, timedelta
+from uuid import UUID
 
 import pytz
 from blockkit import (
@@ -16,14 +17,15 @@ from blockkit import (
 )
 from slack_bolt import Ack, BoltContext, Respond
 from slack_sdk.web.client import WebClient
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
 from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
 from dispatch.case.enums import CaseStatus
 from dispatch.case.models import CaseCreate, CaseUpdate
+from dispatch.config import DISPATCH_UI_URL
 from dispatch.entity import service as entity_service
 from dispatch.exceptions import ExistsError
 from dispatch.incident import flows as incident_flows
@@ -38,7 +40,8 @@ from dispatch.plugins.dispatch_slack.case.enums import (
     CaseReportActions,
     CaseResolveActions,
     CaseShortcutCallbacks,
-    CaseSnoozeActions,
+    SignalNotificationActions,
+    SignalSnoozeActions,
 )
 from dispatch.plugins.dispatch_slack.case.messages import create_case_message
 from dispatch.plugins.dispatch_slack.config import SlackConversationConfiguration
@@ -46,6 +49,7 @@ from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
 from dispatch.plugins.dispatch_slack.fields import (
     DefaultBlockIds,
     case_priority_select,
+    case_resolution_reason_select,
     case_status_select,
     case_type_select,
     description_input,
@@ -65,12 +69,18 @@ from dispatch.plugins.dispatch_slack.middleware import (
     shortcut_context_middleware,
     user_middleware,
 )
-from dispatch.plugins.dispatch_slack.models import SubjectMetadata
+from dispatch.plugins.dispatch_slack.models import (
+    CaseSubjects,
+    FormData,
+    FormMetadata,
+    SignalSubjects,
+    SubjectMetadata,
+)
 from dispatch.plugins.dispatch_slack.service import get_user_email
 from dispatch.project import service as project_service
 from dispatch.search.utils import create_filter_expression
 from dispatch.signal import service as signal_service
-from dispatch.signal.models import SignalUpdate, SignalFilterCreate, SignalFilterRead
+from dispatch.signal.models import SignalFilterCreate, SignalFilterRead, SignalUpdate
 
 
 def configure(config: SlackConversationConfiguration):
@@ -243,7 +253,7 @@ def _build_signal_list_modal_blocks(
         limited_signals.append(signal)
 
         button_metadata = SubjectMetadata(
-            type="signal",
+            type=SignalSubjects.signal,
             organization_slug=signal.project.organization.slug,
             id=signal.id,
             project_id=signal.project.id,
@@ -256,7 +266,7 @@ def _build_signal_list_modal_blocks(
                     accessory=Button(
                         text="Snooze",
                         value=button_metadata,
-                        action_id=CaseNotificationActions.snooze,
+                        action_id=SignalNotificationActions.snooze,
                     ),
                 ),
                 Context(
@@ -363,13 +373,45 @@ def handle_previous_action(ack: Ack, body: dict, client: WebClient, db_session: 
     )
 
 
-@app.action(CaseNotificationActions.snooze, middleware=[button_context_middleware, db_middleware])
+@app.action(SignalNotificationActions.snooze, middleware=[button_context_middleware, db_middleware])
 def snooze_button_click(
     ack: Ack, body: dict, client: WebClient, context: BoltContext, db_session: Session
 ) -> None:
+    """Handles the snooze button click event."""
     ack()
 
     subject = context["subject"]
+
+    if subject.type == SignalSubjects.signal_instance:
+        instance = signal_service.get_signal_instance(
+            db_session=db_session, signal_instance_id=subject.id
+        )
+        signal = signal_service.get(db_session=db_session, signal_id=instance.signal.id)
+        subject.id = signal.id
+
+    entities = entity_service.get_all(db_session=db_session, project_id=subject.project_id).all()
+    if not entities:
+        modal = Modal(
+            title="Unable to snooze",
+            close="Close",
+            blocks=[
+                Context(
+                    elements=[
+                        MarkdownText(
+                            text="No entities found for this signal. At least one entity is required to snooze a signal.\n"
+                        ),
+                        MarkdownText(
+                            text=f"\n\nNew entity types are configured in the <{DISPATCH_UI_URL}|Dispatch UI>"
+                        ),
+                    ]
+                )
+            ],
+        ).build()
+        if view_id := body.get("view", {}).get("id"):
+            client.views_update(view_id=view_id, view=modal)
+        else:
+            client.views_open(trigger_id=body["trigger_id"], view=modal)
+        return
 
     blocks = [
         title_input(placeholder="A name for your snooze filter."),
@@ -390,15 +432,18 @@ def snooze_button_click(
         blocks=blocks,
         submit="Preview",
         close="Close",
-        callback_id=CaseSnoozeActions.preview,
+        callback_id=SignalSnoozeActions.preview,
         private_metadata=context["subject"].json(),
     ).build()
 
-    client.views_update(view_id=body["view"]["id"], view=modal)
+    if view_id := body.get("view", {}).get("id"):
+        client.views_update(view_id=view_id, view=modal)
+    else:
+        client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 @app.view(
-    CaseSnoozeActions.preview,
+    SignalSnoozeActions.preview,
     middleware=[
         action_context_middleware,
         db_middleware,
@@ -411,6 +456,7 @@ def handle_snooze_preview_event(
     db_session: Session,
     form_data: dict,
 ) -> None:
+    """Handles the snooze preview event."""
     if form_data.get(DefaultBlockIds.title_input):
         title = form_data[DefaultBlockIds.title_input]
 
@@ -471,13 +517,17 @@ def handle_snooze_preview_event(
                 ]
             )
 
+    private_metadata = FormMetadata(
+        form_data=form_data,
+        **context["subject"].dict(),
+    ).json()
     modal = Modal(
         title="Add Snooze",
         submit="Create",
         close="Close",
         blocks=blocks,
-        callback_id=CaseSnoozeActions.submit,
-        private_metadata=json.dumps({"form_data": form_data, "subject": context["subject"].json()}),
+        callback_id=SignalSnoozeActions.submit,
+        private_metadata=private_metadata,
     ).build()
     ack(response_action="update", view=modal)
 
@@ -498,21 +548,19 @@ def ack_snooze_submission_event(ack: Ack, mfa_enabled: bool) -> None:
 
 
 @app.view(
-    CaseSnoozeActions.submit,
+    SignalSnoozeActions.submit,
     middleware=[
         action_context_middleware,
         db_middleware,
         user_middleware,
-        modal_submit_middleware,
     ],
 )
 def handle_snooze_submission_event(
     ack: Ack,
-    body,
+    body: dict,
     client: WebClient,
     context: BoltContext,
     db_session: Session,
-    form_data: dict,
     user: DispatchUser,
 ) -> None:
     """Handle the submission event of the snooze modal.
@@ -530,14 +578,10 @@ def handle_snooze_submission_event(
         client (WebClient): The Slack API client.
         context (BoltContext): The context data.
         db_session (Session): The database session.
-        form_data (dict): The form data submitted by the user.
         user (DispatchUser): The Dispatch user who submitted the form.
     """
-    metadata = json.loads(body["view"]["private_metadata"])
-    subject = json.loads(metadata["subject"])
-
     mfa_plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=subject["project_id"], plugin_type="auth-mfa"
+        db_session=db_session, project_id=context["subject"].project_id, plugin_type="auth-mfa"
     )
     mfa_enabled = True if mfa_plugin else False
 
@@ -545,36 +589,28 @@ def handle_snooze_submission_event(
 
     def _create_snooze_filter(
         db_session: Session,
-        form_data: dict,
-        subject: dict,
+        subject: SubjectMetadata,
         user: DispatchUser,
     ) -> None:
+        form_data: FormData = subject.form_data
         # Get the existing filters for the signal
-        signal = signal_service.get(db_session=db_session, signal_id=subject["id"])
-
+        signal = signal_service.get(db_session=db_session, signal_id=subject.id)
         # Create the new filter from the form data
-        if form_data.get(DefaultBlockIds.entity_select):
-            entities = [
-                {"name": entity["name"], "value": entity["value"]}
-                for entity in form_data[DefaultBlockIds.entity_select]
-            ]
+        entities = [
+            {"name": entity.name, "value": entity.value}
+            for entity in form_data[DefaultBlockIds.entity_select]
+        ]
+        description = form_data[DefaultBlockIds.description_input]
+        name = form_data[DefaultBlockIds.title_input]
+        delta: str = form_data[DefaultBlockIds.relative_date_picker_input].value
+        delta = timedelta(
+            hours=int(delta.split(":")[0]),
+            minutes=int(delta.split(":")[1]),
+            seconds=int(delta.split(":")[2]),
+        )
+        date = datetime.now() + delta
 
-        if form_data.get(DefaultBlockIds.description_input):
-            description = form_data[DefaultBlockIds.description_input]
-
-        if form_data.get(DefaultBlockIds.title_input):
-            name = form_data[DefaultBlockIds.title_input]
-
-        if form_data.get(DefaultBlockIds.relative_date_picker_input):
-            delta: str = form_data[DefaultBlockIds.relative_date_picker_input]["value"]
-            delta = timedelta(
-                hours=int(delta.split(":")[0]),
-                minutes=int(delta.split(":")[1]),
-                seconds=int(delta.split(":")[2]),
-            )
-            date = datetime.now() + delta
-
-        project = project_service.get(db_session=db_session, project_id=subject["project_id"])
+        project = project_service.get(db_session=db_session, project_id=signal.project_id)
         filters = {
             "entity": entities,
         }
@@ -610,9 +646,8 @@ def handle_snooze_submission_event(
     if mfa_enabled is False:
         _create_snooze_filter(
             db_session=db_session,
-            form_data=metadata["form_data"],
             user=user,
-            subject=subject,
+            subject=context["subject"],
         )
 
         modal = Modal(
@@ -648,9 +683,8 @@ def handle_snooze_submission_event(
             # Get the existing filters for the signal
             _create_snooze_filter(
                 db_session=db_session,
-                form_data=metadata["form_data"],
                 user=user,
-                subject=subject,
+                subject=context["subject"],
             )
 
             modal = Modal(
@@ -701,14 +735,14 @@ def assignee_select(
 
 
 @message_dispatcher.add(
-    subject="case", exclude={"subtype": ["channel_join", "channel_leave"]}
+    subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
 def handle_new_participant_message(
     ack: Ack, user: DispatchUser, context: BoltContext, db_session: Session, client: WebClient
 ) -> None:
     """Looks for new participants that have starting chatting for the first time."""
     ack()
-    participant = case_flows.case_add_or_reactive_participant_flow(
+    participant = case_flows.case_add_or_reactivate_participant_flow(
         case_id=context["subject"].id,
         user_email=user.email,
         db_session=db_session,
@@ -718,7 +752,7 @@ def handle_new_participant_message(
 
 
 @message_dispatcher.add(
-    subject="case", exclude={"subtype": ["channel_join", "channel_leave"]}
+    subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
 def handle_new_participant_added(
     ack: Ack, payload: dict, context: BoltContext, db_session: Session, client: WebClient
@@ -729,7 +763,7 @@ def handle_new_participant_added(
     for user_id in participants:
         user_email = get_user_email(client=client, user_id=user_id)
 
-        participant = case_flows.case_add_or_reactive_participant_flow(
+        participant = case_flows.case_add_or_reactivate_participant_flow(
             case_id=context["subject"].id,
             user_email=user_email,
             db_session=db_session,
@@ -739,7 +773,7 @@ def handle_new_participant_added(
 
 
 @message_dispatcher.add(
-    subject="case", exclude={"subtype": ["channel_join", "channel_leave"]}
+    subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
 def handle_case_participant_role_activity(
     ack: Ack, db_session: Session, context: BoltContext, user: DispatchUser
@@ -756,14 +790,14 @@ def handle_case_participant_role_activity(
     else:
         # we have a new active participant lets add them
         participant = case_flows.case_add_or_reactivate_participant_flow(
-            case_id=context["subject"].id, user_email=user.email
+            case_id=context["subject"].id, user_email=user.email, db_session=db_session
         )
         participant.user_conversation_id = context["user_id"]
     db_session.commit()
 
 
 @message_dispatcher.add(
-    subject="case", exclude={"subtype": ["channel_join", "group_join"]}
+    subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "group_join"]}
 )  # we ignore user channel and group join messages
 def handle_case_after_hours_message(
     ack: Ack,
@@ -1037,6 +1071,7 @@ def edit_button_click(
     blocks = [
         title_input(initial_value=case.title),
         description_input(initial_value=case.description),
+        case_resolution_reason_select(),
         resolution_input(initial_value=case.resolution),
         assignee_select(initial_user=assignee_initial_user),
         case_status_select(initial_option={"text": case.status, "value": case.status}),
@@ -1086,6 +1121,7 @@ def handle_edit_submission_event(
         title=form_data[DefaultBlockIds.title_input],
         description=form_data[DefaultBlockIds.description_input],
         resolution=form_data[DefaultBlockIds.resolution_input],
+        resolution_reason=form_data[DefaultBlockIds.case_resolution_reason_select],
         status=form_data[DefaultBlockIds.case_status_select],
         visibility=case.visibility,
         case_priority=case_priority,
@@ -1107,6 +1143,7 @@ def resolve_button_click(
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
     blocks = [
+        case_resolution_reason_select(),
         resolution_input(initial_value=case.resolution),
     ]
 
@@ -1307,3 +1344,31 @@ def handle_report_submission_event(
         trigger_id=result["trigger_id"],
         view=modal,
     )
+
+
+@app.action(SignalNotificationActions.view, middleware=[button_context_middleware, db_middleware])
+def signal_button_click(
+    ack: Ack, body: dict, db_session: Session, context: BoltContext, client: WebClient
+):
+    ack()
+    signal = signal_service.get_signal_instance(
+        db_session=db_session, signal_instance_id=UUID(context["subject"].id)
+    )
+
+    # truncate text and redirect to ui
+    raw_text = json.dumps(signal.raw, indent=2)
+    if len(raw_text) > 2900:
+        blocks = [
+            Section(
+                text=f"```{raw_text[:2750]}... \n Signal text too long, please vist Dispatch UI for full details.```"
+            )
+        ]
+    else:
+        blocks = [Section(text=f"```{raw_text}```")]
+
+    modal = Modal(
+        title="Raw Signal",
+        blocks=blocks,
+        close="Close",
+    ).build()
+    client.views_open(trigger_id=body["trigger_id"], view=modal)

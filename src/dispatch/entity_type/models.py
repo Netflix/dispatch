@@ -34,13 +34,14 @@ class EntityType(Base, TimeStampMixin, ProjectMixin):
 class EntityTypeBase(DispatchBase):
     name: Optional[NameStr]
     description: Optional[str] = Field(None, nullable=True)
-    field: Optional[str] = Field(None, nullable=True)
+    field: Optional[str] = Field(None, nullable=True, alias="jpath")
     global_find: Optional[StrictBool]
     enabled: Optional[bool]
     regular_expression: Optional[str] = Field(None, nullable=True)
 
 
 class EntityTypeCreate(EntityTypeBase):
+    id: Optional[PrimaryKey]
     project: ProjectRead
 
 
