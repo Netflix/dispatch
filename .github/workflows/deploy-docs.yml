@@ -16,12 +16,12 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: yarn
+          cache: npm
 
       - name: Install dependencies
-        run: yarn install
-      - name: Build website
-        run: yarn build
+        run: npm install
+      - name: Test build website
+        run: npm run build
 
       # Popular action to deploy to GitHub Pages:
       # Docs: https://github.com/peaceiris/actions-gh-pages#%EF%B8%8F-docusaurus
