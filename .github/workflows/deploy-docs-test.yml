@@ -1,10 +1,5 @@
 name: Test documentation deployment
 
-defaults:
-  run:
-    shell: bash
-    working-directory: docs
-
 on:
   pull_request:
     branches:
@@ -14,6 +9,10 @@ on:
 
 jobs:
   test-deploy:
+    defaults:
+      run:
+        shell: bash
+        working-directory: docs
     name: Test deployment
     runs-on: ubuntu-latest
     steps:

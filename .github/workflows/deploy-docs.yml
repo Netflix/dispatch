@@ -1,8 +1,5 @@
 name: Deploy to GitHub Pages
-defaults:
-  run:
-    shell: bash
-    working-directory: docs
+
 on:
   push:
     branches:
@@ -12,6 +9,10 @@ on:
 
 jobs:
   deploy:
+    defaults:
+      run:
+        shell: bash
+        working-directory: docs
     name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
     steps:
