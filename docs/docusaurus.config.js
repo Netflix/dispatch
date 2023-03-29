@@ -73,8 +73,8 @@ const config = {
           src: "img/logo.svg",
         },
         items: [
-          { to: "/docs/user-guide", label: "User Guide", position: "left" },
-          { to: "/docs/administration", label: "Administration", position: "left" },
+          { to: "/docs/user-guide/introduction", label: "User Guide", position: "left" },
+          { to: "/docs/administration/introduction", label: "Administration", position: "left" },
           {
             to: "/docs/changelog",
             label: "What's New",
