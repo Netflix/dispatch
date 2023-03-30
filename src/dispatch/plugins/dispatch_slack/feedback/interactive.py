@@ -13,6 +13,7 @@ from slack_sdk.web.client import WebClient
 from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
+from dispatch.enums import DispatchEnum
 from dispatch.feedback import service as feedback_service
 from dispatch.feedback.enums import FeedbackRating
 from dispatch.feedback.models import FeedbackCreate
@@ -32,9 +33,19 @@ from .enums import (
     IncidentFeedbackNotificationActionIds,
     IncidentFeedbackNotificationActions,
     IncidentFeedbackNotificationBlockIds,
-    # OncallShiftFeedbackNotificationActionIds,
+    OncallShiftFeedbackNotificationActionIds,
     OncallShiftFeedbackNotificationActions,
+    OncallShiftFeedbackNotificationBlockIds,
 )
+
+
+class OncallShiftFeedbackRating(DispatchEnum):
+    no_effort = "No effort"
+    little_effort = "Little effort"
+    moderate_effort = "Moderate effort"
+    lots_of_effort = "Lots of effort"
+    very_high_effort = "Very high effort"
+    all_out_effort = "All out effort"
 
 
 def configure(config):
@@ -206,60 +217,81 @@ def handle_incident_feedback_submission_event(
 
 # Oncall Shift Feedback
 
-# def rating_select(
-# 	  action_id: str = IncidentFeedbackNotificationActionIds.rating_select,
-# 	  block_id: str = IncidentFeedbackNotificationBlockIds.rating_select,
-# 	  initial_option: dict = None,
-# 	  label: str = "Rate your experience",
-# 	  **kwargs,
-# ):
-# 	  rating_options = [{"text": r.value, "value": r.value} for r in FeedbackRating]
-# 	  return static_select_block(
-# 		  action_id=action_id,
-# 		  block_id=block_id,
-# 		  initial_option=initial_option,
-# 		  label=label,
-# 		  options=rating_options,
-# 		  placeholder="Select a rating",
-# 		  **kwargs,
-# 	  )
-#
-#
-# def feedback_input(
-# 	  action_id: str = IncidentFeedbackNotificationActionIds.feedback_input,
-# 	  block_id: str = IncidentFeedbackNotificationBlockIds.feedback_input,
-# 	  initial_value: str = None,
-# 	  label: str = "Give us feedback",
-# 	  **kwargs,
-# ):
-# 	  return Input(
-# 		  block_id=block_id,
-# 		  element=PlainTextInput(
-# 			  action_id=action_id,
-# 			  initial_value=initial_value,
-# 			  multiline=True,
-# 			  placeholder="How would you describe your experience?",
-# 		  ),
-# 		  label=label,
-# 		  **kwargs,
-# 	  )
-#
-#
-# def anonymous_checkbox(
-# 	  action_id: str = IncidentFeedbackNotificationActionIds.anonymous_checkbox,
-# 	  block_id: str = IncidentFeedbackNotificationBlockIds.anonymous_checkbox,
-# 	  initial_value: str = None,
-# 	  label: str = "Check the box if you wish to provide your feedback anonymously",
-# 	  **kwargs,
-# ):
-# 	  options = [PlainOption(text="Anonymize my feedback", value="anonymous")]
-# 	  return Input(
-# 		  block_id=block_id,
-# 		  element=Checkboxes(options=options, action_id=action_id),
-# 		  label=label,
-# 		  optional=True,
-# 		  **kwargs,
-# 	  )
+
+def oncall_shift_feeback_rating_select(
+    action_id: str = OncallShiftFeedbackNotificationActionIds.rating_select,
+    block_id: str = OncallShiftFeedbackNotificationBlockIds.rating_select,
+    initial_option: dict = None,
+    label: str = "Provide an estimate on how much mental and emotional effort did you dedicate toward incident response",
+    **kwargs,
+):
+    rating_options = [{"text": r.value, "value": r.value} for r in OncallShiftFeedbackRating]
+    return static_select_block(
+        action_id=action_id,
+        block_id=block_id,
+        initial_option=initial_option,
+        label=label,
+        options=rating_options,
+        placeholder="Select a rating",
+        **kwargs,
+    )
+
+
+def oncall_shift_feedback_hours_input(
+    action_id: str = OncallShiftFeedbackNotificationActionIds.hours_input,
+    block_id: str = OncallShiftFeedbackNotificationBlockIds.hours_input,
+    initial_value: str = None,
+    label: str = "Provide an estimate on the number of off hours you spent on incident response tasks",
+    **kwargs,
+):
+    return Input(
+        block_id=block_id,
+        element=PlainTextInput(
+            action_id=action_id,
+            initial_value=initial_value,
+            multiline=False,
+            # placeholder="How would you describe your experience?",
+        ),
+        label=label,
+        **kwargs,
+    )
+
+
+def oncall_shift_feedback_input(
+    action_id: str = OncallShiftFeedbackNotificationActionIds.feedback_input,
+    block_id: str = OncallShiftFeedbackNotificationBlockIds.feedback_input,
+    initial_value: str = None,
+    label: str = "Give us feedback",
+    **kwargs,
+):
+    return Input(
+        block_id=block_id,
+        element=PlainTextInput(
+            action_id=action_id,
+            initial_value=initial_value,
+            multiline=True,
+            placeholder="How would you describe your experience?",
+        ),
+        label=label,
+        **kwargs,
+    )
+
+
+def oncall_shift_feeback_anonymous_checkbox(
+    action_id: str = OncallShiftFeedbackNotificationActionIds.anonymous_checkbox,
+    block_id: str = OncallShiftFeedbackNotificationBlockIds.anonymous_checkbox,
+    initial_value: str = None,
+    label: str = "Check the box if you wish to provide your feedback anonymously",
+    **kwargs,
+):
+    options = [PlainOption(text="Anonymize my feedback", value="anonymous")]
+    return Input(
+        block_id=block_id,
+        element=Checkboxes(options=options, action_id=action_id),
+        label=label,
+        optional=True,
+        **kwargs,
+    )
 
 
 @app.action(
@@ -285,9 +317,10 @@ def handle_oncall_shift_feedback_direct_message_button_click(
                 )
             ]
         ),
-        # rating_select(),
-        # feedback_input(),
-        # anonymous_checkbox(),
+        oncall_shift_feeback_rating_select(),
+        oncall_shift_feedback_hours_input(),
+        oncall_shift_feedback_input(),
+        oncall_shift_feeback_anonymous_checkbox(),
     ]
 
     modal = Modal(
