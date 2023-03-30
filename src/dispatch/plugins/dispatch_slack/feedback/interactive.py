@@ -313,7 +313,7 @@ def handle_oncall_shift_feedback_direct_message_button_click(
         Context(
             elements=[
                 MarkdownText(
-                    text="Use this form to provide feedback about your oncall shift experience."
+                    text="Help us understand the impact of your on-call shift. Use this form to provide feedback."
                 )
             ]
         ),
