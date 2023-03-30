@@ -241,7 +241,8 @@ def oncall_shift_feedback_hours_input(
     action_id: str = OncallShiftFeedbackNotificationActionIds.hours_input,
     block_id: str = OncallShiftFeedbackNotificationBlockIds.hours_input,
     initial_value: str = None,
-    label: str = "Provide an estimate on the number of off hours you spent on incident response tasks",
+    label: str = "Please estimate the number of 'off hours' you spent on incident response tasks during this shift. (In this context, 'off hours' are hours outside of your 'normal' desired workday.)",
+    placeholder="Provide a number",
     **kwargs,
 ):
     return Input(
