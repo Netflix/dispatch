@@ -1,7 +1,8 @@
 import functools
 import re
-from typing import Any
+from typing import Annotated, Any
 
+from fastapi import Depends
 from pydantic import BaseModel
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy import create_engine, inspect
@@ -123,6 +124,9 @@ make_searchable(Base.metadata)
 
 def get_db(request: Request):
     return request.state.db
+
+
+DbSession = Annotated[Session, Depends(get_db)]
 
 
 def get_model_name_by_tablename(table_fullname: str) -> str:
