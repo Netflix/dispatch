@@ -37,6 +37,7 @@ const config = {
       require.resolve("@cmfcmf/docusaurus-search-local"),
       {
         indexPages: true,
+        style: undefined,
       },
     ],
   ],
@@ -69,7 +70,7 @@ const config = {
         // Theme Options for modifying how redoc renders them
         theme: {
           // Change with your site colors
-          primaryColor: "#1890ff",
+          primaryColor: "#E50914",
         },
       },
     ],
@@ -83,8 +84,8 @@ const config = {
       navbar: {
         title: "Dispatch",
         items: [
-          { to: "/docs/user-guide/introduction", label: "User Guide", position: "left" },
-          { to: "/docs/administration/introduction", label: "Administration", position: "left" },
+          { to: "/docs/user-guide", label: "User Guide", position: "left" },
+          { to: "/docs/administration", label: "Administration", position: "left" },
           { to: "/docs/api", label: "API", position: "left" },
           {
             to: "/docs/changelog",
@@ -94,8 +95,9 @@ const config = {
 
           {
             href: "https://github.com/Netflix/dispatch",
-            label: "GitHub",
             position: "right",
+            className: "header-github-link",
+            "aria-label": "GitHub repository",
           },
         ],
       },
