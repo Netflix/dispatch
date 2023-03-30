@@ -1,7 +1,0 @@
----
-description: View and manage all cases.
----
-
-Cases are meant to triage events that do not raise to the level of incidents, but can be escalated to incidents if necessary. If you map a case type to an incident type and you escalate the case, then Dispatch will automatically create an incident and link the two.
-
-While Dispatch holds some strong opinions about _how_ to run cases. It does allow for quite a lot of flexibility. Below you will find several different areas that allow you to make the case experience fit your organization.

@@ -1,3 +1,0 @@
-## Cases
-
-Most participants will never have to use the Dispatch Case UI. But for commanders and power users, this view provides a way to search, filter, and interact with cases even if they are closed.

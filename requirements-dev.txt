@@ -14,7 +14,7 @@ attrs==22.1.0
     #   pytest
 backcall==0.2.0
     # via ipython
-black==23.1.0
+black==23.3.0
     # via -r requirements-dev.in
 cfgv==3.3.1
     # via pre-commit

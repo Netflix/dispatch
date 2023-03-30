@@ -1,7 +1,0 @@
----
-description: Learning about Dispatch's knowledge base.
----
-
-# Knowledge
-
-Along with incident orchestration, Dispatch is adept at building a knowledge base of incident data. Below we outline the primitives at your disposal and describe how you can manually add to the incident knowledge base.
