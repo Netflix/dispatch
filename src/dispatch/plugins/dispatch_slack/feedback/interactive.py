@@ -222,7 +222,7 @@ def oncall_shift_feeback_rating_select(
     action_id: str = OncallShiftFeedbackNotificationActionIds.rating_select,
     block_id: str = OncallShiftFeedbackNotificationBlockIds.rating_select,
     initial_option: dict = None,
-    label: str = "Provide an estimate on how much mental and emotional effort did you dedicate toward incident response",
+    label: str = "When you consider the whole of the past shift, how much 'mental and emotional effort' did you dedicate toward incident response?",
     **kwargs,
 ):
     rating_options = [{"text": r.value, "value": r.value} for r in OncallShiftFeedbackRating]
