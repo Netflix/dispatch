@@ -16,6 +16,6 @@ class ConversationButtonActions(DispatchEnum):
     feedback_notification_provide = "feedback-notification-provide"
     invite_user = "invite-user"
     monitor_link = "monitor-link"
-    oncall_shift_feedback = "oncall-shift-feedback"
+    service_feedback = "service-feedback"
     subscribe_user = "subscribe-user"
     update_task_status = "update-task-status"

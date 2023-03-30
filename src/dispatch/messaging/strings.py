@@ -27,7 +27,7 @@ class MessageType(DispatchEnum):
     incident_tactical_report = "incident-tactical-report"
     incident_task_list = "incident-task-list"
     incident_task_reminder = "incident-task-reminder"
-    oncall_shift_feedback = "oncall-shift-feedback"
+    service_feedback = "service-feedback"
 
 
 INCIDENT_STATUS_DESCRIPTIONS = {
@@ -733,7 +733,7 @@ ONCALL_SHIFT_FEEDBACK_NOTIFICATION = [
             {
                 "button_text": "Provide Feedback",
                 "button_value": "{{organization_slug}}-{{incident_id}}",  # TODO(mvilanova): replace incident_id with another variable
-                "button_action": ConversationButtonActions.oncall_shift_feedback,
+                "button_action": ConversationButtonActions.service_feedback,
             }
         ],
     }

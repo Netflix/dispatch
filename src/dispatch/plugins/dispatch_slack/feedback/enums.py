@@ -19,20 +19,20 @@ class IncidentFeedbackNotificationActions(DispatchEnum):
     provide = ConversationButtonActions.feedback_notification_provide
 
 
-class OncallShiftFeedbackNotificationBlockIds(DispatchEnum):
-    anonymous_checkbox = "oncall-shift-feedback-notification-anonymous-checkbox"
-    feedback_input = "oncall-shift-feedback-notification-feedback-input"
-    hours_input = "oncall-shift-feedback-notification-hours-input"
-    rating_select = "oncall-shift-feedback-notification-rating-select"
+class ServiceFeedbackNotificationBlockIds(DispatchEnum):
+    anonymous_checkbox = "service-feedback-notification-anonymous-checkbox"
+    feedback_input = "service-feedback-notification-feedback-input"
+    hours_input = "service-feedback-notification-hours-input"
+    rating_select = "service-feedback-notification-rating-select"
 
 
-class OncallShiftFeedbackNotificationActionIds(DispatchEnum):
-    anonymous_checkbox = "oncall-shift-feedback-notification-anonymous-checkbox"
-    feedback_input = "oncall-shift-feedback-notification-feedback-input"
-    hours_input = "oncall-shift-feedback-notification-hours-input"
-    rating_select = "oncall-shift-feedback-notification-rating-select"
+class ServiceFeedbackNotificationActionIds(DispatchEnum):
+    anonymous_checkbox = "service-feedback-notification-anonymous-checkbox"
+    feedback_input = "service-feedback-notification-feedback-input"
+    hours_input = "service-feedback-notification-hours-input"
+    rating_select = "service-feedback-notification-rating-select"
 
 
-class OncallShiftFeedbackNotificationActions(DispatchEnum):
-    provide = ConversationButtonActions.oncall_shift_feedback
-    submit = "oncall-shift-feedback-notification-submit"
+class ServiceFeedbackNotificationActions(DispatchEnum):
+    provide = ConversationButtonActions.service_feedback
+    submit = "service-feedback-notification-submit"

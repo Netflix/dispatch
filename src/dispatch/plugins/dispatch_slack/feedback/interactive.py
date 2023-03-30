@@ -13,10 +13,10 @@ from slack_sdk.web.client import WebClient
 from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
-from dispatch.enums import DispatchEnum
 from dispatch.feedback.incident import service as incident_feedback_service
 from dispatch.feedback.incident.enums import FeedbackRating
 from dispatch.feedback.incident.models import FeedbackCreate
+from dispatch.feedback.service.models import ServiceFeedbackRating
 from dispatch.incident import service as incident_service
 from dispatch.participant import service as participant_service
 from dispatch.plugins.dispatch_slack.bolt import app
@@ -33,19 +33,10 @@ from .enums import (
     IncidentFeedbackNotificationActionIds,
     IncidentFeedbackNotificationActions,
     IncidentFeedbackNotificationBlockIds,
-    OncallShiftFeedbackNotificationActionIds,
-    OncallShiftFeedbackNotificationActions,
-    OncallShiftFeedbackNotificationBlockIds,
+    ServiceFeedbackNotificationActionIds,
+    ServiceFeedbackNotificationActions,
+    ServiceFeedbackNotificationBlockIds,
 )
-
-
-class OncallShiftFeedbackRating(DispatchEnum):
-    no_effort = "No effort"
-    little_effort = "Little effort"
-    moderate_effort = "Moderate effort"
-    lots_of_effort = "Lots of effort"
-    very_high_effort = "Very high effort"
-    extreme_effort = "Extreme effort, everything I could give"
 
 
 def configure(config):
@@ -219,13 +210,13 @@ def handle_incident_feedback_submission_event(
 
 
 def oncall_shift_feeback_rating_select(
-    action_id: str = OncallShiftFeedbackNotificationActionIds.rating_select,
-    block_id: str = OncallShiftFeedbackNotificationBlockIds.rating_select,
+    action_id: str = ServiceFeedbackNotificationActionIds.rating_select,
+    block_id: str = ServiceFeedbackNotificationBlockIds.rating_select,
     initial_option: dict = None,
     label: str = "When you consider the whole of the past shift, how much 'mental and emotional effort' did you dedicate toward incident response?",
     **kwargs,
 ):
-    rating_options = [{"text": r.value, "value": r.value} for r in OncallShiftFeedbackRating]
+    rating_options = [{"text": r.value, "value": r.value} for r in ServiceFeedbackRating]
     return static_select_block(
         action_id=action_id,
         block_id=block_id,
@@ -238,8 +229,8 @@ def oncall_shift_feeback_rating_select(
 
 
 def oncall_shift_feedback_hours_input(
-    action_id: str = OncallShiftFeedbackNotificationActionIds.hours_input,
-    block_id: str = OncallShiftFeedbackNotificationBlockIds.hours_input,
+    action_id: str = ServiceFeedbackNotificationActionIds.hours_input,
+    block_id: str = ServiceFeedbackNotificationBlockIds.hours_input,
     initial_value: str = None,
     label: str = "Please estimate the number of 'off hours' you spent on incident response tasks during this shift.",
     placeholder: str = "Provide a number of hours",
@@ -259,8 +250,8 @@ def oncall_shift_feedback_hours_input(
 
 
 def oncall_shift_feedback_input(
-    action_id: str = OncallShiftFeedbackNotificationActionIds.feedback_input,
-    block_id: str = OncallShiftFeedbackNotificationBlockIds.feedback_input,
+    action_id: str = ServiceFeedbackNotificationActionIds.feedback_input,
+    block_id: str = ServiceFeedbackNotificationBlockIds.feedback_input,
     initial_value: str = None,
     label: str = "Give us feedback",
     **kwargs,
@@ -279,8 +270,8 @@ def oncall_shift_feedback_input(
 
 
 def oncall_shift_feeback_anonymous_checkbox(
-    action_id: str = OncallShiftFeedbackNotificationActionIds.anonymous_checkbox,
-    block_id: str = OncallShiftFeedbackNotificationBlockIds.anonymous_checkbox,
+    action_id: str = ServiceFeedbackNotificationActionIds.anonymous_checkbox,
+    block_id: str = ServiceFeedbackNotificationBlockIds.anonymous_checkbox,
     initial_value: str = None,
     label: str = "Check this box if you wish to provide your feedback anonymously.",
     **kwargs,
@@ -296,7 +287,7 @@ def oncall_shift_feeback_anonymous_checkbox(
 
 
 @app.action(
-    OncallShiftFeedbackNotificationActions.provide,
+    ServiceFeedbackNotificationActions.provide,
     middleware=[button_context_middleware, db_middleware],
 )
 def handle_oncall_shift_feedback_direct_message_button_click(
@@ -329,7 +320,7 @@ def handle_oncall_shift_feedback_direct_message_button_click(
         blocks=blocks,
         submit="Submit",
         close="Cancel",
-        callback_id=OncallShiftFeedbackNotificationActions.submit,
+        callback_id=ServiceFeedbackNotificationActions.submit,
         private_metadata=context["subject"].json(),
     ).build()
 
@@ -347,7 +338,7 @@ def ack_oncall_shift_feedback_submission_event(ack: Ack) -> None:
 
 
 @app.view(
-    OncallShiftFeedbackNotificationActions.submit,
+    ServiceFeedbackNotificationActions.submit,
     middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
 )
 def handle_oncall_shift_feedback_submission_event(
@@ -363,8 +354,8 @@ def handle_oncall_shift_feedback_submission_event(
     ack_oncall_shift_feedback_submission_event(ack=ack)
     # incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
     #
-    # feedback = form_data.get(OncallShiftFeedbackNotificationBlockIds.feedback_input)
-    # rating = form_data.get(OncallShiftFeedbackNotificationBlockIds.rating_select, {}).get("value")
+    # feedback = form_data.get(ServiceFeedbackNotificationBlockIds.feedback_input)
+    # rating = form_data.get(ServiceFeedbackNotificationBlockIds.rating_select, {}).get("value")
     #
     # feedback_in = FeedbackCreate(
     # 	  rating=rating, feedback=feedback, project=incident.project, incident=incident
@@ -373,7 +364,7 @@ def handle_oncall_shift_feedback_submission_event(
     # incident.feedback.append(feedback)
     #
     # # we only really care if this exists, if it doesn't then flag is false
-    # if not form_data.get(OncallShiftFeedbackNotificationBlockIds.anonymous_checkbox):
+    # if not form_data.get(ServiceFeedbackNotificationBlockIds.anonymous_checkbox):
     # 	  participant = participant_service.get_by_incident_id_and_email(
     # 		  db_session=db_session, incident_id=context["subject"].id, email=user.email
     # 	  )
