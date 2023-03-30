@@ -15,7 +15,7 @@ from dispatch.project.models import ProjectRead
 from .enums import ServiceFeedbackRating
 
 
-class Feedback(TimeStampMixin, Base):
+class ServiceFeedback(TimeStampMixin, Base):
     # Columns
     id = Column(Integer, primary_key=True)
     rating = Column(String)
@@ -39,7 +39,7 @@ class Feedback(TimeStampMixin, Base):
 
 
 # Pydantic models
-class FeedbackBase(DispatchBase):
+class ServiceFeedbackBase(DispatchBase):
     created_at: Optional[datetime]
     rating: ServiceFeedbackRating = ServiceFeedbackRating.extreme_effort
     feedback: Optional[str] = Field(None, nullable=True)
@@ -47,19 +47,19 @@ class FeedbackBase(DispatchBase):
     participant: Optional[ParticipantRead]
 
 
-class FeedbackCreate(FeedbackBase):
+class ServiceFeedbackCreate(ServiceFeedbackBase):
     pass
 
 
-class FeedbackUpdate(FeedbackBase):
+class ServiceFeedbackUpdate(ServiceFeedbackBase):
     id: PrimaryKey = None
 
 
-class FeedbackRead(FeedbackBase):
+class ServiceFeedbackRead(ServiceFeedbackBase):
     id: PrimaryKey
     project: Optional[ProjectRead]
 
 
-class FeedbackPagination(DispatchBase):
-    items: List[FeedbackRead]
+class ServiceFeedbackPagination(DispatchBase):
+    items: List[ServiceFeedbackRead]
     total: int
