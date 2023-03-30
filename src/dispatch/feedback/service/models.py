@@ -12,7 +12,7 @@ from dispatch.models import DispatchBase, TimeStampMixin, PrimaryKey
 from dispatch.participant.models import ParticipantRead
 from dispatch.project.models import ProjectRead
 
-from .enums import FeedbackRating
+from .enums import ServiceFeedbackRating
 
 
 class Feedback(TimeStampMixin, Base):
@@ -41,7 +41,7 @@ class Feedback(TimeStampMixin, Base):
 # Pydantic models
 class FeedbackBase(DispatchBase):
     created_at: Optional[datetime]
-    rating: FeedbackRating = FeedbackRating.very_satisfied
+    rating: ServiceFeedbackRating = ServiceFeedbackRating.extreme_effort
     feedback: Optional[str] = Field(None, nullable=True)
     incident: Optional[IncidentReadMinimal]
     participant: Optional[ParticipantRead]
