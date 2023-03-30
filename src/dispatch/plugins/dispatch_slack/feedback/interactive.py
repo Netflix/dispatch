@@ -45,7 +45,7 @@ class OncallShiftFeedbackRating(DispatchEnum):
     moderate_effort = "Moderate effort"
     lots_of_effort = "Lots of effort"
     very_high_effort = "Very high effort"
-    all_out_effort = "All out effort"
+    extreme_effort = "Extreme effort, everything I could give"
 
 
 def configure(config):
@@ -222,7 +222,7 @@ def oncall_shift_feeback_rating_select(
     action_id: str = OncallShiftFeedbackNotificationActionIds.rating_select,
     block_id: str = OncallShiftFeedbackNotificationBlockIds.rating_select,
     initial_option: dict = None,
-    label: str = "Provide an estimate on how much mental and emotional effort did you dedicate toward incident response",
+    label: str = "When you consider the whole of the past shift, how much 'mental and emotional effort' did you dedicate toward incident response?",
     **kwargs,
 ):
     rating_options = [{"text": r.value, "value": r.value} for r in OncallShiftFeedbackRating]
@@ -241,7 +241,8 @@ def oncall_shift_feedback_hours_input(
     action_id: str = OncallShiftFeedbackNotificationActionIds.hours_input,
     block_id: str = OncallShiftFeedbackNotificationBlockIds.hours_input,
     initial_value: str = None,
-    label: str = "Provide an estimate on the number of off hours you spent on incident response tasks",
+    label: str = "Please estimate the number of 'off hours' you spent on incident response tasks during this shift. (In this context, 'off hours' are hours outside of your 'normal' desired workday.)",
+    placeholder="Provide a number",
     **kwargs,
 ):
     return Input(
@@ -281,7 +282,7 @@ def oncall_shift_feeback_anonymous_checkbox(
     action_id: str = OncallShiftFeedbackNotificationActionIds.anonymous_checkbox,
     block_id: str = OncallShiftFeedbackNotificationBlockIds.anonymous_checkbox,
     initial_value: str = None,
-    label: str = "Check the box if you wish to provide your feedback anonymously",
+    label: str = "Check this box if you wish to provide your feedback anonymously.",
     **kwargs,
 ):
     options = [PlainOption(text="Anonymize my feedback", value="anonymous")]
@@ -313,7 +314,7 @@ def handle_oncall_shift_feedback_direct_message_button_click(
         Context(
             elements=[
                 MarkdownText(
-                    text="Use this form to provide feedback about your oncall shift experience."
+                    text="Help us understand the impact of your on-call shift. Use this form to provide feedback."
                 )
             ]
         ),
