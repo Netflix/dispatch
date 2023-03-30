@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from sqlalchemy.orm import Session
 
 from dispatch.config import DISPATCH_AUTH_REGISTRATION_ENABLED
 
@@ -8,19 +7,19 @@ from dispatch.auth.permissions import (
     OrganizationMemberPermission,
     PermissionsDependency,
 )
+from dispatch.auth.service import CurrentUser
 from dispatch.exceptions import (
     InvalidConfigurationError,
     InvalidPasswordError,
     InvalidUsernameError,
 )
-from dispatch.database.core import get_db
+from dispatch.database.core import DbSession
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.enums import UserRoles
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.organization.models import OrganizationRead
 
 from .models import (
-    DispatchUser,
     UserLogin,
     UserLoginResponse,
     UserOrganization,
@@ -30,7 +29,7 @@ from .models import (
     UserRegisterResponse,
     UserUpdate,
 )
-from .service import get, get_by_email, update, create, get_current_user
+from .service import get, get_by_email, update, create
 
 
 auth_router = APIRouter()
@@ -74,7 +73,7 @@ def get_users(*, organization: OrganizationSlug, common: dict = Depends(common_p
 
 
 @user_router.get("/{user_id}", response_model=UserRead)
-def get_user(*, db_session: Session = Depends(get_db), user_id: PrimaryKey):
+def get_user(*, db_session: DbSession, user_id: PrimaryKey):
     """Get a user."""
     user = get(db_session=db_session, user_id=user_id)
     if not user:
@@ -92,11 +91,11 @@ def get_user(*, db_session: Session = Depends(get_db), user_id: PrimaryKey):
 )
 def update_user(
     *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     user_id: PrimaryKey,
     organization: OrganizationSlug,
     user_in: UserUpdate,
-    current_user: DispatchUser = Depends(get_current_user),
+    current_user: CurrentUser,
 ):
     """Update a user."""
     user = get(db_session=db_session, user_id=user_id)
@@ -131,8 +130,8 @@ def update_user(
 @auth_router.get("/me", response_model=UserRead)
 def get_me(
     *,
-    db_session: Session = Depends(get_db),
-    current_user: DispatchUser = Depends(get_current_user),
+    db_session: DbSession,
+    current_user: CurrentUser,
 ):
     return current_user
 
@@ -141,7 +140,7 @@ def get_me(
 def login_user(
     user_in: UserLogin,
     organization: OrganizationSlug,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
 ):
     user = get_by_email(db_session=db_session, email=user_in.email)
     if user and user.check_password(user_in.password):
@@ -174,7 +173,7 @@ def login_user(
 def register_user(
     user_in: UserRegister,
     organization: OrganizationSlug,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
 ):
     user = get_by_email(db_session=db_session, email=user_in.email)
     if user:

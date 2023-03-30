@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from sqlalchemy.orm import Session
 
-from dispatch.database.core import get_db
+from dispatch.database.core import DbSession
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 
@@ -25,7 +24,7 @@ def get_source_types(*, common: dict = Depends(common_parameters)):
 
 
 @router.get("/{source_type_id}", response_model=SourceTypeRead)
-def get_source_type(*, db_session: Session = Depends(get_db), source_type_id: PrimaryKey):
+def get_source_type(*, db_session: DbSession, source_type_id: PrimaryKey):
     """Given its unique id, retrieve details about a single source type."""
     source_type = get(db_session=db_session, source_type_id=source_type_id)
     if not source_type:
@@ -37,7 +36,7 @@ def get_source_type(*, db_session: Session = Depends(get_db), source_type_id: Pr
 
 
 @router.post("", response_model=SourceTypeRead)
-def create_source_type(*, db_session: Session = Depends(get_db), source_type_in: SourceTypeCreate):
+def create_source_type(*, db_session: DbSession, source_type_in: SourceTypeCreate):
     """Creates a new source type."""
     return create(db_session=db_session, source_type_in=source_type_in)
 
@@ -45,7 +44,7 @@ def create_source_type(*, db_session: Session = Depends(get_db), source_type_in:
 @router.put("/{source_type_id}", response_model=SourceTypeRead)
 def update_source_type(
     *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     source_type_id: PrimaryKey,
     source_type_in: SourceTypeUpdate,
 ):
@@ -60,7 +59,7 @@ def update_source_type(
 
 
 @router.delete("/{source_type_id}", response_model=None)
-def delete_source_type(*, db_session: Session = Depends(get_db), source_type_id: PrimaryKey):
+def delete_source_type(*, db_session: DbSession, source_type_id: PrimaryKey):
     """Deletes a source type, returning only an HTTP 200 OK if successful."""
     source_type = get(db_session=db_session, source_type_id=source_type_id)
     if not source_type:

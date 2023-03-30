@@ -1,7 +1,6 @@
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
-from sqlalchemy.orm import Session
 
 from dispatch.auth.permissions import (
     PermissionsDependency,
@@ -9,7 +8,7 @@ from dispatch.auth.permissions import (
     ProjectUpdatePermission,
 )
 
-from dispatch.database.core import get_db
+from dispatch.database.core import DbSession
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.exceptions import ExistsError
 from dispatch.models import OrganizationSlug, PrimaryKey
@@ -41,7 +40,7 @@ def get_projects(common: dict = Depends(common_parameters)):
 )
 def create_project(
     *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     organization: OrganizationSlug,
     project_in: ProjectCreate,
     background_tasks: BackgroundTasks,
@@ -66,7 +65,7 @@ def create_project(
     response_model=ProjectRead,
     summary="Get a project.",
 )
-def get_project(*, db_session: Session = Depends(get_db), project_id: PrimaryKey):
+def get_project(*, db_session: DbSession, project_id: PrimaryKey):
     """Get a project."""
     project = get(db_session=db_session, project_id=project_id)
     if not project:
@@ -84,7 +83,7 @@ def get_project(*, db_session: Session = Depends(get_db), project_id: PrimaryKey
 )
 def update_project(
     *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     project_id: PrimaryKey,
     project_in: ProjectUpdate,
 ):
@@ -104,7 +103,7 @@ def update_project(
     response_model=None,
     dependencies=[Depends(PermissionsDependency([ProjectUpdatePermission]))],
 )
-def delete_project(*, db_session: Session = Depends(get_db), project_id: PrimaryKey):
+def delete_project(*, db_session: DbSession, project_id: PrimaryKey):
     """Delete a project."""
     project = get(db_session=db_session, project_id=project_id)
     if not project:

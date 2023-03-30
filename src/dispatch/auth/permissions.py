@@ -5,8 +5,8 @@ from fastapi import HTTPException
 from starlette.requests import Request
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
-from dispatch.enums import UserRoles, Visibility
 from dispatch.auth.service import get_current_user
+from dispatch.enums import UserRoles, Visibility
 from dispatch.case import service as case_service
 from dispatch.case.models import Case
 from dispatch.incident import service as incident_service

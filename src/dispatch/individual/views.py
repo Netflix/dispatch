@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from sqlalchemy.orm import Session
 
 from dispatch.auth.permissions import PermissionsDependency, SensitiveProjectActionPermission
-from dispatch.database.core import get_db
+from dispatch.database.core import DbSession
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.exceptions import ExistsError
 from dispatch.models import PrimaryKey
@@ -21,7 +20,7 @@ router = APIRouter()
 
 
 @router.get("/{individual_contact_id}", response_model=IndividualContactRead)
-def get_individual(*, db_session: Session = Depends(get_db), individual_contact_id: PrimaryKey):
+def get_individual(*, db_session: DbSession, individual_contact_id: PrimaryKey):
     """Gets an individual contact."""
     individual = get(db_session=db_session, individual_contact_id=individual_contact_id)
     if not individual:
@@ -39,9 +38,7 @@ def get_individuals(*, common: dict = Depends(common_parameters)):
 
 
 @router.post("", response_model=IndividualContactRead)
-def create_individual(
-    *, db_session: Session = Depends(get_db), individual_contact_in: IndividualContactCreate
-):
+def create_individual(*, db_session: DbSession, individual_contact_in: IndividualContactCreate):
     """Creates a new individual contact."""
     individual = get_by_email_and_project(
         db_session=db_session,
@@ -69,7 +66,7 @@ def create_individual(
 )
 def update_individual(
     *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     individual_contact_id: PrimaryKey,
     individual_contact_in: IndividualContactUpdate,
 ):
@@ -93,7 +90,7 @@ def update_individual(
     summary="Deletes an individual contact.",
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
-def delete_individual(*, db_session: Session = Depends(get_db), individual_contact_id: PrimaryKey):
+def delete_individual(*, db_session: DbSession, individual_contact_id: PrimaryKey):
     """Deletes an individual contact."""
     individual = get(db_session=db_session, individual_contact_id=individual_contact_id)
     if not individual:
