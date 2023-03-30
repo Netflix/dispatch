@@ -43,7 +43,7 @@ def update(
     *,
     service_feedback: ServiceFeedback,
     service_feedback_in: ServiceFeedbackUpdate,
-    db_session: Session
+    db_session: Session,
 ) -> ServiceFeedback:
     """Updates a piece of service feedback."""
     service_feedback_data = service_feedback.dict()
