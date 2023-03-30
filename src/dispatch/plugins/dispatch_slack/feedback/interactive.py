@@ -282,7 +282,7 @@ def oncall_shift_feeback_anonymous_checkbox(
     action_id: str = OncallShiftFeedbackNotificationActionIds.anonymous_checkbox,
     block_id: str = OncallShiftFeedbackNotificationBlockIds.anonymous_checkbox,
     initial_value: str = None,
-    label: str = "Check the box if you wish to provide your feedback anonymously",
+    label: str = "Check this box if you wish to provide your feedback anonymously.",
     **kwargs,
 ):
     options = [PlainOption(text="Anonymize my feedback", value="anonymous")]
