@@ -59,10 +59,17 @@ def oncall_shift_feedback(project: Project, db_session: Session):
             db_session=db_session, email=current_oncall_info["email"], project_id=project.id
         )
 
-        log.debug(
-            f"Collecting oncall shift feedback from {individual.name} for the {oncall_service.name} oncall service."
-        )
+        shift_start_at = current_oncall_info["start"]
+        shift_end_at = current_oncall_info["end"]
 
         send_oncall_shift_feedback_message(
-            service=oncall_service, individual=individual, db_session=db_session
+            individual=individual,
+            service=oncall_service,
+            shift_end_at=shift_end_at,
+            shift_start_at=shift_start_at,
+            db_session=db_session,
+        )
+
+        print(
+            f"Requesting oncall shift feedback from {individual.name} for the {oncall_service.name} oncall service."
         )

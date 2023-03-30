@@ -15,27 +15,36 @@ log = logging.getLogger(__name__)
 
 
 def send_oncall_shift_feedback_message(
-    service: Service, individual: IndividualContact, db_session: Session
+    service: Service,
+    individual: IndividualContact,
+    shift_start_at: str,
+    shift_end_at: str,
+    db_session: Session,
 ):
     """
     Sends a direct message to the oncall about to end their shift
     asking to provide feedback about their experience.
     """
-    notification_text = "Oncall Shift Feedback"
+    notification_text = "Oncall Shift Feedback Request"
     notification_template = ONCALL_SHIFT_FEEDBACK_NOTIFICATION
 
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=service.project.id, plugin_type="conversation"
     )
     if not plugin:
-        log.warning("Oncall shift feedback notification not sent. No conversation plugin enabled.")
+        log.warning(
+            "Oncall shift feedback request notification not sent. No conversation plugin enabled."
+        )
         return
 
     items = [
         {
             "individual_name": individual.name,
+            "oncall_service_id": service.id,
             "oncall_service_name": service.name,
             "organization_slug": service.project.organization.slug,
+            "shift_end_at": shift_end_at,
+            "shift_start_at": shift_start_at,
         }
     ]
 
@@ -49,5 +58,3 @@ def send_oncall_shift_feedback_message(
         )
     except Exception as e:
         log.exception(e)
-
-    log.debug(f"Oncall shift message sent to {individual.name}.")

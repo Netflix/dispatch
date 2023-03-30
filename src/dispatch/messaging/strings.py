@@ -732,7 +732,7 @@ ONCALL_SHIFT_FEEDBACK_NOTIFICATION = [
         "buttons": [
             {
                 "button_text": "Provide Feedback",
-                "button_value": "{{organization_slug}}-{{incident_id}}",  # TODO(mvilanova): replace incident_id with another variable
+                "button_value": "{{organization_slug}}-{{service_id}}-{{shift_start_at}}-{{shift_end_at}}",
                 "button_action": ConversationButtonActions.service_feedback,
             }
         ],

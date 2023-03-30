@@ -2,15 +2,15 @@ from datetime import datetime
 from pydantic import Field
 from typing import Optional, List
 
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.incident.models import IncidentReadMinimal
+from dispatch.individual.models import IndividualContactRead
 from dispatch.models import DispatchBase, TimeStampMixin, PrimaryKey
-from dispatch.participant.models import ParticipantRead
 from dispatch.project.models import ProjectRead
+from dispatch.service.models import ServiceRead
 
 from .enums import ServiceFeedbackRating
 
@@ -19,11 +19,14 @@ class ServiceFeedback(TimeStampMixin, Base):
     # Columns
     id = Column(Integer, primary_key=True)
     rating = Column(String)
+    hours = Column(Integer)
     feedback = Column(String)
+    shift_start_at = Column(DateTime)
+    shift_end_at = Column(DateTime)
 
     # Relationships
-    incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
-    participant_id = Column(Integer, ForeignKey("participant.id"))
+    service_id = Column(Integer, ForeignKey("service.id"))
+    individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))
 
     search_vector = Column(
         TSVectorType(
@@ -35,16 +38,18 @@ class ServiceFeedback(TimeStampMixin, Base):
 
     @hybrid_property
     def project(self):
-        return self.incident.project
+        return self.service.project
 
 
 # Pydantic models
 class ServiceFeedbackBase(DispatchBase):
-    created_at: Optional[datetime]
-    rating: ServiceFeedbackRating = ServiceFeedbackRating.extreme_effort
     feedback: Optional[str] = Field(None, nullable=True)
-    incident: Optional[IncidentReadMinimal]
-    participant: Optional[ParticipantRead]
+    hours: Optional[int]
+    individual: Optional[IndividualContactRead]
+    rating: ServiceFeedbackRating = ServiceFeedbackRating.little_effort
+    service: Optional[ServiceRead]
+    shift_end_at: Optional[datetime]
+    shift_start_at: Optional[datetime]
 
 
 class ServiceFeedbackCreate(ServiceFeedbackBase):
