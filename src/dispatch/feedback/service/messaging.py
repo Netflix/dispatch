@@ -44,7 +44,7 @@ def send_oncall_shift_feedback_message(
             individual.email,
             notification_text,
             notification_template,
-            MessageType.oncall_shift_feedback,
+            MessageType.service_feedback,
             items=items,
         )
     except Exception as e:
