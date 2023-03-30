@@ -210,7 +210,7 @@ def case_new_create_flow(
     )
 
     if case.assignee:
-        individual_participants.append(case.assignee.individual, None)
+        individual_participants.append((case.assignee.individual, None))
 
     # we create the tactical group
     direct_participant_emails = [i.email for i, _ in individual_participants]
