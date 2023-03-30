@@ -29,7 +29,7 @@
           />
         </ValidationProvider>
       </v-flex>
-      <v-flex xs6>
+      <v-flex xs12>
         <v-select
           v-model="resolution_reason"
           label="Resolution Reason"
