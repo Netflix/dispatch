@@ -303,7 +303,7 @@ def update(*, db_session: Session, signal: Signal, signal_in: SignalUpdate) -> S
     if signal_in.case_priority:
         case_priority = case_priority_service.get_by_name_or_default(
             db_session=db_session,
-            project_id=signal.case_type.project.id,
+            project_id=signal.project.id,
             case_priority_in=signal_in.case_priority,
         )
         signal.case_priority = case_priority
