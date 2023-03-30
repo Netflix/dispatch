@@ -45,7 +45,7 @@ class OncallShiftFeedbackRating(DispatchEnum):
     moderate_effort = "Moderate effort"
     lots_of_effort = "Lots of effort"
     very_high_effort = "Very high effort"
-    all_out_effort = "All out effort"
+    extreme_effort = "Extreme effort, everything I could give"
 
 
 def configure(config):
