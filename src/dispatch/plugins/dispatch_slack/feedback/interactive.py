@@ -14,9 +14,9 @@ from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
 from dispatch.enums import DispatchEnum
-from dispatch.feedback import service as feedback_service
-from dispatch.feedback.enums import FeedbackRating
-from dispatch.feedback.models import FeedbackCreate
+from dispatch.feedback.incident import service as incident_feedback_service
+from dispatch.feedback.incident.enums import FeedbackRating
+from dispatch.feedback.incident.models import FeedbackCreate
 from dispatch.incident import service as incident_service
 from dispatch.participant import service as participant_service
 from dispatch.plugins.dispatch_slack.bolt import app
@@ -189,7 +189,7 @@ def handle_incident_feedback_submission_event(
     feedback_in = FeedbackCreate(
         rating=rating, feedback=feedback, project=incident.project, incident=incident
     )
-    feedback = feedback_service.create(db_session=db_session, feedback_in=feedback_in)
+    feedback = incident_feedback_service.create(db_session=db_session, feedback_in=feedback_in)
     incident.feedback.append(feedback)
 
     # we only really care if this exists, if it doesn't then flag is false
@@ -241,8 +241,8 @@ def oncall_shift_feedback_hours_input(
     action_id: str = OncallShiftFeedbackNotificationActionIds.hours_input,
     block_id: str = OncallShiftFeedbackNotificationBlockIds.hours_input,
     initial_value: str = None,
-    label: str = "Please estimate the number of 'off hours' you spent on incident response tasks during this shift. (In this context, 'off hours' are hours outside of your 'normal' desired workday.)",
-    placeholder="Provide a number",
+    label: str = "Please estimate the number of 'off hours' you spent on incident response tasks during this shift.",
+    placeholder: str = "Provide a number of hours",
     **kwargs,
 ):
     return Input(
@@ -251,7 +251,7 @@ def oncall_shift_feedback_hours_input(
             action_id=action_id,
             initial_value=initial_value,
             multiline=False,
-            # placeholder="How would you describe your experience?",
+            placeholder=placeholder,
         ),
         label=label,
         **kwargs,

@@ -7,11 +7,12 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.feedback.enums import FeedbackRating
 from dispatch.incident.models import IncidentReadMinimal
 from dispatch.models import DispatchBase, TimeStampMixin, PrimaryKey
 from dispatch.participant.models import ParticipantRead
 from dispatch.project.models import ProjectRead
+
+from .enums import FeedbackRating
 
 
 class Feedback(TimeStampMixin, Base):

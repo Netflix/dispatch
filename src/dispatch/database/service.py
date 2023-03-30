@@ -26,7 +26,7 @@ from dispatch.data.query.models import Query as QueryModel
 from dispatch.data.source.models import Source
 from dispatch.enums import UserRoles, Visibility
 from dispatch.exceptions import FieldNotFoundError, InvalidFilterError
-from dispatch.feedback.models import Feedback
+from dispatch.feedback.incident.models import Feedback
 from dispatch.incident.models import Incident
 from dispatch.incident.type.models import IncidentType
 from dispatch.individual.models import IndividualContact

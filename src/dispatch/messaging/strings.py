@@ -309,7 +309,7 @@ To find a Slack command, simply type `/` in the message field or click the light
 """
 
 ONCALL_SHIFT_FEEDBACK_DESCRIPTION = """
-{{ individual_name }}, it appears that your {{ oncall_service_name }} shift has completed. To help us understand the impact on our responders, we would appreciate your feedback."""
+{{ individual_name }}, it appears that your {{ oncall_service_name }} shift has or is about to be completed. To help us understand the impact on our responders, we would appreciate your feedback."""
 
 INCIDENT_STATUS_CHANGE_DESCRIPTION = """
 The incident status has been changed from {{ incident_status_old }} to {{ incident_status_new }}.""".replace(

@@ -8,8 +8,8 @@ from dispatch.messaging.strings import (
     MessageType,
 )
 from dispatch.plugin import service as plugin_service
+from dispatch.service.models import Service
 
-from .service import Service
 
 log = logging.getLogger(__name__)
 
