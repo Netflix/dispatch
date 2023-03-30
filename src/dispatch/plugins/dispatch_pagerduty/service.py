@@ -102,7 +102,7 @@ def get_oncall_info(client: APISession, service: dict, type: Literal["current", 
 
     if not oncalls:
         raise Exception(
-            f"No users could be found for this PagerDuty escalation policy ({escalation_policy_id}). Is there a schedule associated to it?"
+            f"No users could be found for this PagerDuty escalation policy ({escalation_policy_id}). Is there a schedule associated with it?"
         )
 
     oncalls_info = []
