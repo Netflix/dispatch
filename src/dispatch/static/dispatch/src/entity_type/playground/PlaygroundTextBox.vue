@@ -54,7 +54,6 @@ export default {
     })
   },
   beforeDestroy() {
-    console.log("destroying")
     this.editor.dispose()
     this.model.dispose()
   },
