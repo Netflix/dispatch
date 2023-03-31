@@ -427,12 +427,12 @@ def get_all(*, db_session, model):
 def common_parameters(
     current_user: CurrentUser,
     db_session: DbSession,
-    page: Annotated[int, Query(gt=0, lt=2147483647)] = 1,
-    items_per_page: Annotated[int, Query(alias="itemsPerPage", gt=-2, lt=2147483647)] = 5,
-    query_str: Annotated[QueryStr, Query(alias="q")] = None,
-    filter_spec: Annotated[Json, Query(alias="filter")] = [],  # noqa
-    sort_by: Annotated[List[str], Query(alias="sortBy[]")] = [],  # noqa
-    descending: Annotated[List[bool], Query(alias="descending[]")] = [],  # noqa
+    page: int = Query(1, gt=0, lt=2147483647),
+    items_per_page: int = Query(5, alias="itemsPerPage", gt=-2, lt=2147483647),
+    query_str: QueryStr = Query(None, alias="q"),
+    filter_spec: Json = Query([], alias="filter"),
+    sort_by: List[str] = Query([], alias="sortBy[]"),
+    descending: List[bool] = Query([], alias="descending[]"),
     role: UserRoles = Depends(get_current_role),
 ):
     return {
