@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from starlette.responses import JSONResponse
 
-from dispatch.auth.service import CurrentUser
+from dispatch.auth.service import get_current_user
 from dispatch.auth.views import user_router, auth_router
 from dispatch.case.priority.views import router as case_priority_router
 from dispatch.case.severity.views import router as case_severity_router
@@ -224,9 +224,11 @@ def healthcheck():
     return {"status": "ok"}
 
 
-api_router.include_router(authenticated_organization_api_router, dependencies=[CurrentUser])
+api_router.include_router(
+    authenticated_organization_api_router, dependencies=[Depends(get_current_user)]
+)
 
 api_router.include_router(
     authenticated_api_router,
-    dependencies=[CurrentUser],
+    dependencies=[Depends(get_current_user)],
 )
