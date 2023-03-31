@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from dispatch.database.core import DbSession
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 from dispatch.models import PrimaryKey
 
@@ -18,7 +18,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=IncidentCostTypePagination)
-def get_incident_cost_types(*, common: dict = Depends(common_parameters)):
+def get_incident_cost_types(*, common: CommonParameters):
     """Get all incident cost types, or only those matching a given search term."""
     return search_filter_sort_paginate(model="IncidentCostType", **common)
 

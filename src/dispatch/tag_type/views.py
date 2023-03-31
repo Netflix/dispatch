@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from dispatch.database.core import DbSession
 from dispatch.exceptions import ExistsError
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 
 from .models import (
@@ -19,7 +19,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=TagTypePagination)
-def get_tag_types(*, common: dict = Depends(common_parameters)):
+def get_tag_types(*, common: CommonParameters):
     """Get all tag types, or only those matching a given search term."""
     return search_filter_sort_paginate(model="TagType", **common)
 

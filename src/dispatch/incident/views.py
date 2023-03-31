@@ -20,7 +20,7 @@ from dispatch.auth.permissions import (
 from dispatch.auth.service import CurrentUser
 from dispatch.common.utils.views import create_pydantic_include
 from dispatch.database.core import DbSession
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.incident.enums import IncidentStatus
 from dispatch.individual.models import IndividualContactRead
 from dispatch.models import OrganizationSlug, PrimaryKey
@@ -67,7 +67,7 @@ def get_current_incident(*, db_session: DbSession, request: Request) -> Incident
 @router.get("", summary="Retrieve a list of incidents.")
 def get_incidents(
     *,
-    common: dict = Depends(common_parameters),
+    common: CommonParameters,
     include: List[str] = Query([], alias="include[]"),
     expand: bool = Query(default=False),
 ):
@@ -319,7 +319,7 @@ def get_month_range(relative):
 def get_incident_forecast(
     *,
     db_session: DbSession,
-    common: dict = Depends(common_parameters),
+    common: CommonParameters,
 ):
     """Gets incident forecast data."""
     categories = []

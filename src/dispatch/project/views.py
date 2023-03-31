@@ -9,7 +9,7 @@ from dispatch.auth.permissions import (
 )
 
 from dispatch.database.core import DbSession
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.exceptions import ExistsError
 from dispatch.models import OrganizationSlug, PrimaryKey
 
@@ -27,7 +27,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=ProjectPagination)
-def get_projects(common: dict = Depends(common_parameters)):
+def get_projects(common: CommonParameters):
     """Get all projects."""
     return search_filter_sort_paginate(model="Project", **common)
 

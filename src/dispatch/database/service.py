@@ -4,7 +4,7 @@ from collections import namedtuple
 from collections.abc import Iterable
 from inspect import signature
 from itertools import chain
-from typing import List
+from typing import Annotated, Any, List
 
 from fastapi import Depends, Query
 from pydantic import BaseModel
@@ -427,12 +427,12 @@ def get_all(*, db_session, model):
 def common_parameters(
     current_user: CurrentUser,
     db_session: DbSession,
-    page: int = Query(1, gt=0, lt=2147483647),
-    items_per_page: int = Query(5, alias="itemsPerPage", gt=-2, lt=2147483647),
-    query_str: QueryStr = Query(None, alias="q"),
-    filter_spec: Json = Query([], alias="filter"),
-    sort_by: List[str] = Query([], alias="sortBy[]"),
-    descending: List[bool] = Query([], alias="descending[]"),
+    page: Annotated[int, Query(1, gt=0, lt=2147483647)],
+    items_per_page: Annotated[int, Query(5, alias="itemsPerPage", gt=-2, lt=2147483647)],
+    query_str: Annotated[QueryStr, Query(None, alias="q")],
+    filter_spec: Annotated[Json, Query([], alias="filter")],
+    sort_by: Annotated[List[str], Query([], alias="sortBy[]")],
+    descending: Annotated[List[bool], Query([], alias="descending[]")],
     role: UserRoles = Depends(get_current_role),
 ):
     return {
@@ -446,6 +446,9 @@ def common_parameters(
         "current_user": current_user,
         "role": role,
     }
+
+
+CommonParameters = Annotated[dict[str, Any], Depends(common_parameters)]
 
 
 def search_filter_sort_paginate(

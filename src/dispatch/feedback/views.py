@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 
 from dispatch.database.core import DbSession
-from dispatch.database.service import search_filter_sort_paginate, common_parameters
+from dispatch.database.service import search_filter_sort_paginate, CommonParameters
 from dispatch.models import PrimaryKey
 
 
@@ -18,7 +18,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=FeedbackPagination)
-def get_feedback_entries(*, commons: dict = Depends(common_parameters)):
+def get_feedback_entries(*, commons: CommonParameters):
     """Get all feedback entries, or only those matching a given search term."""
     return search_filter_sort_paginate(model="Feedback", **commons)
 

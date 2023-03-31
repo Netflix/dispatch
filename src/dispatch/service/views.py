@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Body, Depends, HTTPException, status
+from fastapi import APIRouter, Body, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from sqlalchemy.exc import IntegrityError
 
 from dispatch.database.core import DbSession
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.exceptions import ExistsError
 from dispatch.models import PrimaryKey
 
@@ -16,7 +16,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=ServicePagination)
-def get_services(*, common: dict = Depends(common_parameters)):
+def get_services(*, common: CommonParameters):
     """Retrieves all services."""
     return search_filter_sort_paginate(model="Service", **common)
 

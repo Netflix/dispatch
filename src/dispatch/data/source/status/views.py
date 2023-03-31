@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 
 
 from dispatch.database.core import DbSession
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 
 from .models import (
@@ -18,7 +18,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=SourceStatusPagination)
-def get_source_statuses(*, common: dict = Depends(common_parameters)):
+def get_source_statuses(*, common: CommonParameters):
     """Get all source statuses, or only those matching a given search term."""
     return search_filter_sort_paginate(model="SourceStatus", **common)
 

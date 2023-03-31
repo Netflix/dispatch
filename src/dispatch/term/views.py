@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.database.core import DbSession
 from dispatch.exceptions import ExistsError
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 
 from .models import TermCreate, TermPagination, TermRead, TermUpdate
@@ -13,7 +13,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=TermPagination)
-def get_terms(*, common: dict = Depends(common_parameters)):
+def get_terms(*, common: CommonParameters):
     """Retrieve all terms."""
     return search_filter_sort_paginate(model="Term", **common)
 

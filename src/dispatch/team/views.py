@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.database.core import DbSession
 from dispatch.exceptions import ExistsError
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 
 from .models import (
@@ -18,7 +18,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=TeamPagination)
-def get_teams(*, common: dict = Depends(common_parameters)):
+def get_teams(*, common: CommonParameters):
     """Get all team contacts."""
     return search_filter_sort_paginate(model="TeamContact", **common)
 

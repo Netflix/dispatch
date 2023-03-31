@@ -1,12 +1,12 @@
 import logging
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from dispatch.auth.service import CurrentUser
 from dispatch.database.core import DbSession
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.exceptions import ExistsError
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.project import service as project_service
@@ -43,7 +43,7 @@ log = logging.getLogger(__name__)
 
 
 @router.get("/instances", response_model=SignalInstancePagination)
-def get_signal_instances(*, common: dict = Depends(common_parameters)):
+def get_signal_instances(*, common: CommonParameters):
     """Get all signal instances."""
     return search_filter_sort_paginate(model="SignalInstance", **common)
 
@@ -104,7 +104,7 @@ def create_signal_instance(
 
 
 @router.get("/filters", response_model=SignalFilterPagination)
-def get_signal_filters(*, common: dict = Depends(common_parameters)):
+def get_signal_filters(*, common: CommonParameters):
     """Get all signal filters."""
     return search_filter_sort_paginate(model="SignalFilter", **common)
 
@@ -177,7 +177,7 @@ def delete_filter(*, db_session: DbSession, signal_filter_id: PrimaryKey):
 
 
 @router.get("", response_model=SignalPagination)
-def get_signals(*, common: dict = Depends(common_parameters)):
+def get_signals(*, common: CommonParameters):
     """Get all signal definitions."""
     return search_filter_sort_paginate(model="Signal", **common)
 

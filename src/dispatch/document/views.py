@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 
 from dispatch.database.core import DbSession
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 
 from .models import DocumentCreate, DocumentPagination, DocumentRead, DocumentUpdate
@@ -11,7 +11,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=DocumentPagination)
-def get_documents(*, common: dict = Depends(common_parameters)):
+def get_documents(*, common: CommonParameters):
     """Get all documents."""
     return search_filter_sort_paginate(model="Document", **common)
 

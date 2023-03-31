@@ -1,12 +1,12 @@
 import json
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, status
 
 
 from dispatch.auth.service import CurrentUser
 from dispatch.common.utils.views import create_pydantic_include
 from dispatch.database.core import DbSession
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 
 from .models import TaskCreate, TaskUpdate, TaskRead, TaskPagination
@@ -17,9 +17,7 @@ router = APIRouter()
 
 
 @router.get("", summary="Retrieve a list of all tasks.")
-def get_tasks(
-    *, common: dict = Depends(common_parameters), include: List[str] = Query([], alias="include[]")
-):
+def get_tasks(*, common: CommonParameters, include: List[str] = Query([], alias="include[]")):
     """Retrieve all tasks."""
     pagination = search_filter_sort_paginate(model="Task", **common)
 

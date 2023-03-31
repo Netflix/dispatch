@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 
 from dispatch.database.core import DbSession
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.entity.service import get_cases_with_entity, get_signal_instances_with_entity
 from dispatch.models import PrimaryKey
 
@@ -17,7 +17,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=EntityPagination)
-def get_entities(*, common: dict = Depends(common_parameters)):
+def get_entities(*, common: CommonParameters):
     """Get all entitys, or only those matching a given search term."""
     return search_filter_sort_paginate(model="Entity", **common)
 

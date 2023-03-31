@@ -3,7 +3,7 @@ from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.auth.permissions import PermissionsDependency, SensitiveProjectActionPermission
 from dispatch.database.core import DbSession
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.exceptions import ExistsError
 from dispatch.models import PrimaryKey
 
@@ -32,7 +32,7 @@ def get_individual(*, db_session: DbSession, individual_contact_id: PrimaryKey):
 
 
 @router.get("", response_model=IndividualContactPagination)
-def get_individuals(*, common: dict = Depends(common_parameters)):
+def get_individuals(*, common: CommonParameters):
     """Retrieve individual contacts."""
     return search_filter_sort_paginate(model="IndividualContact", **common)
 

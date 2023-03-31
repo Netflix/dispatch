@@ -19,7 +19,7 @@ from dispatch.auth.service import CurrentUser
 from dispatch.case.enums import CaseStatus
 from dispatch.common.utils.views import create_pydantic_include
 from dispatch.database.core import DbSession
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.incident.models import IncidentCreate, IncidentRead
 from dispatch.incident import service as incident_service
@@ -75,9 +75,7 @@ def get_case(
 
 @router.get("", summary="Retrieves a list of cases.")
 def get_cases(
-    *,
-    common: dict = Depends(common_parameters),
-    include: List[str] = Query([], alias="include[]"),
+    common: CommonParameters, include: Annotated[List[str], Query([], alias="include[]")]
 ):
     """Retrieves all cases."""
     pagination = search_filter_sort_paginate(model="Case", **common)

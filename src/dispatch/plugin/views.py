@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from dispatch.database.core import DbSession
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 from dispatch.models import PrimaryKey
 
@@ -19,7 +19,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=PluginPagination)
-def get_plugins(*, common: dict = Depends(common_parameters)):
+def get_plugins(*, common: CommonParameters):
     """Get all plugins."""
     return search_filter_sort_paginate(model="Plugin", **common)
 
@@ -29,7 +29,7 @@ def get_plugins(*, common: dict = Depends(common_parameters)):
     response_model=PluginInstancePagination,
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
-def get_plugin_instances(*, common: dict = Depends(common_parameters)):
+def get_plugin_instances(*, common: CommonParameters):
     """Get all plugin instances."""
     return search_filter_sort_paginate(model="PluginInstance", **common)
 

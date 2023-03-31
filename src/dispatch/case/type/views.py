@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 from dispatch.database.core import DbSession
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 
 from .models import CaseTypeCreate, CaseTypePagination, CaseTypeRead, CaseTypeUpdate
@@ -13,7 +13,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=CaseTypePagination, tags=["case_types"])
-def get_case_types(*, common: dict = Depends(common_parameters)):
+def get_case_types(*, common: CommonParameters):
     """Returns all case types."""
     return search_filter_sort_paginate(model="CaseType", **common)
 

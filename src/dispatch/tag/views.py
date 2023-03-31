@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 
 from dispatch.database.core import DbSession, get_class_by_tablename
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 from dispatch.tag.recommender import get_recommendations
 
@@ -17,7 +17,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=TagPagination)
-def get_tags(*, common: dict = Depends(common_parameters)):
+def get_tags(*, common: CommonParameters):
     """Get all tags, or only those matching a given search term."""
     return search_filter_sort_paginate(model="Tag", **common)
 

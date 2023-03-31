@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.database.core import DbSession
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.exceptions import NotFoundError
 from dispatch.models import PrimaryKey
 from dispatch.plugin import service as plugin_service
@@ -22,7 +22,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=WorkflowPagination)
-def get_workflows(*, common: dict = Depends(common_parameters)):
+def get_workflows(*, common: CommonParameters):
     """Get all workflows."""
     return search_filter_sort_paginate(model="Workflow", **common)
 
