@@ -29,7 +29,6 @@ export default {
       let uuid = crypto.randomUUID()
       // Create a unique URI for the in-memory model
       const modelUri = monaco.Uri.parse(`inmemory://playground-${uuid}`)
-      console.log("%O", modelUri)
       // Create the model with an osquery log as the initial value
       const model = monaco.editor.createModel(this.getDefaultValue(), "json", modelUri)
       // Create the editor and pass the model to the options
