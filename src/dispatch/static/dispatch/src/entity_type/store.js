@@ -52,7 +52,6 @@ const actions = {
     if (signal) {
       commit("SET_SELECTED_DEFINITION", signal)
     }
-    commit("SET_DIALOG_CREATE_EDIT", true)
   },
   removeShow({ commit }, entity_type) {
     commit("SET_DIALOG_DELETE", true)
