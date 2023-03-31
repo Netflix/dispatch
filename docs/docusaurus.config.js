@@ -88,8 +88,8 @@ const config = {
           { to: "/docs/administration", label: "Administration", position: "left" },
           { to: "/docs/api", label: "API", position: "left" },
           {
-            to: "/docs/changelog",
-            label: "What's New",
+            to: "/docs/support",
+            label: "Support",
             position: "left",
           },
 
