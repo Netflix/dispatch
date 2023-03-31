@@ -26,7 +26,7 @@ To install Dispatch from the repository, clone the repository locally:
 git clone https://github.com/Netflix/dispatch-docker.git
 ```
 
-Before starting the installation, we strongly recommend you check out [how to configure your Dispatch instance](server.mdx) as you'd need to rebuild your images \(`docker-compose build`\) if you want to change your configuration settings. You may copy and edit the example configs provided in the repository. If none exists, the install script will use these examples as actual configurations.
+Before starting the installation, we strongly recommend you check out [how to configure your Dispatch instance](./settings/server.mdx) as you'd need to rebuild your images \(`docker-compose build`\) if you want to change your configuration settings. You may copy and edit the example configs provided in the repository. If none exists, the install script will use these examples as actual configurations.
 
 :::info
 Note: Dispatch will not start without at least a few required configuration variables. See the example [.env](https://github.com/Netflix/dispatch/blob/latest/docker/.env.example) configuration file.
@@ -78,13 +78,13 @@ Because of the sensitivity of the information stored and maintained by Dispatch.
 
 Dispatch plugins require API tokens to communicate with third-party resources. These tokens are stored in either an environment variable or in the Dispatch `.env` file.
 
-By default, these strings are in plain text, but Dispatch does provide hooks that allow for these credentials to be decrypted on server start. See the [Secret Provider](server.mdx#general) configuration option.
+By default, these strings are in plain text, but Dispatch does provide hooks that allow for these credentials to be decrypted on server start. See the [Secret Provider](./settings/server.mdx#general) configuration option.
 
 ### Authentication
 
 Dispatch provides a "Basic" authentication provider that controls access via a username and password combination to get going quickly. By default, this provider allows for **open registration**, which means that anyone will be able to create a Dispatch account if they have network access to your server.
 
-Dispatch provides a "PKCE" authentication method to integrate existing and more robust SSO solutions for more robust authentication. See the [Authentication Provider](server.mdx#authentication)
+Dispatch provides a "PKCE" authentication method to integrate existing and more robust SSO solutions for more robust authentication. See the [Authentication Provider](./settings/server.mdx#authentication)
 
 ### TLS/SSL
 
