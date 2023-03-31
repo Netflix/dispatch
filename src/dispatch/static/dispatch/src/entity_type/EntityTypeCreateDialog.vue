@@ -244,7 +244,6 @@ export default {
     isValidJsonPath,
     forceRerender() {
       this.componentKey += 1
-      console.log(this.componentKey)
     },
     getSignalData(definition) {
       if (definition) {
