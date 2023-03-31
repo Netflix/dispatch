@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import Annotated, List
 
 import json
 
@@ -44,7 +44,7 @@ log = logging.getLogger(__name__)
 router = APIRouter()
 
 
-def get_current_case(*, db_session: DbSession, request: Request) -> Case:
+def get_current_case(db_session: DbSession, request: Request) -> Case:
     """Fetches a case or returns an HTTP 404."""
     case = get(db_session=db_session, case_id=request.path_params["case_id"])
     if not case:
@@ -55,6 +55,9 @@ def get_current_case(*, db_session: DbSession, request: Request) -> Case:
     return case
 
 
+CurrentCase = Annotated[Case, Depends(get_current_case)]
+
+
 @router.get(
     "/{case_id}",
     response_model=CaseRead,
@@ -62,10 +65,9 @@ def get_current_case(*, db_session: DbSession, request: Request) -> Case:
     dependencies=[Depends(PermissionsDependency([CaseViewPermission]))],
 )
 def get_case(
-    *,
     case_id: PrimaryKey,
     db_session: DbSession,
-    current_case: Case = Depends(get_current_case),
+    current_case: CurrentCase,
 ):
     """Retrieves the details of a single case."""
     return current_case
@@ -96,7 +98,6 @@ def get_cases(
 
 @router.post("", response_model=CaseRead, summary="Creates a new case.")
 def create_case(
-    *,
     db_session: DbSession,
     organization: OrganizationSlug,
     case_in: CaseCreate,
@@ -147,9 +148,8 @@ def create_case(
     dependencies=[Depends(PermissionsDependency([CaseEditPermission]))],
 )
 def update_case(
-    *,
     db_session: DbSession,
-    current_case: Case = Depends(get_current_case),
+    current_case: CurrentCase,
     organization: OrganizationSlug,
     case_id: PrimaryKey,
     case_in: CaseUpdate,
@@ -185,9 +185,8 @@ def update_case(
     dependencies=[Depends(PermissionsDependency([CaseEditPermission]))],
 )
 def escalate_case(
-    *,
     db_session: DbSession,
-    current_case: Case = Depends(get_current_case),
+    current_case: CurrentCase,
     organization: OrganizationSlug,
     incident_in: IncidentCreate,
     current_user: CurrentUser,
@@ -227,10 +226,9 @@ def escalate_case(
     dependencies=[Depends(PermissionsDependency([CaseEditPermission]))],
 )
 def delete_case(
-    *,
     case_id: PrimaryKey,
     db_session: DbSession,
-    current_case: Case = Depends(get_current_case),
+    current_case: CurrentCase,
 ):
     """Deletes an existing case and its external resources."""
     # we run the case delete flow
