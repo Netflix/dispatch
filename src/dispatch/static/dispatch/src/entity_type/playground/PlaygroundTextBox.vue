@@ -9,6 +9,7 @@ import { mapMutations, mapGetters } from "vuex"
 import loader from "@monaco-editor/loader"
 import jsonpath from "jsonpath"
 import json_to_ast from "json-to-ast"
+import { v4 as uuidv4 } from "uuid"
 
 export default {
   name: "PlaygroundTextBox",
@@ -27,7 +28,7 @@ export default {
         value: this.getDefaultValue(),
       }
       // Create a unique URI for the in-memory model
-      const modelUri = monaco.Uri.parse("inmemory://playground")
+      const modelUri = monaco.Uri.parse(`inmemory://playground-${uuidv4()}`)
       // Create the model with an osquery log as the initial value
       const model = monaco.editor.createModel(this.getDefaultValue(), "json", modelUri)
       // Create the editor and pass the model to the options
