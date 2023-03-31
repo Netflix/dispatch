@@ -52,7 +52,6 @@ def create_notification(db_session: DbSession, notification_in: NotificationCrea
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_notification(
-    *,
     db_session: DbSession,
     notification_id: PrimaryKey,
     notification_in: NotificationUpdate,

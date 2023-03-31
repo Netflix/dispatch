@@ -51,7 +51,6 @@ def get_team(db_session: DbSession, team_contact_id: PrimaryKey):
 
 @router.put("/{team_contact_id}", response_model=TeamContactRead)
 def update_team(
-    *,
     db_session: DbSession,
     team_contact_id: PrimaryKey,
     team_contact_in: TeamContactUpdate,

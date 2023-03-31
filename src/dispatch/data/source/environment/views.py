@@ -37,7 +37,7 @@ def get_source_environment(db_session: DbSession, source_environment_id: Primary
 
 @router.post("", response_model=SourceEnvironmentRead)
 def create_source_environment(
-    *, db_session: DbSession, source_environment_in: SourceEnvironmentCreate
+    db_session: DbSession, source_environment_in: SourceEnvironmentCreate
 ):
     """Creates a new source environment."""
     return create(db_session=db_session, source_environment_in=source_environment_in)
@@ -45,7 +45,6 @@ def create_source_environment(
 
 @router.put("/{source_environment_id}", response_model=SourceEnvironmentRead)
 def update_source_environment(
-    *,
     db_session: DbSession,
     source_environment_id: PrimaryKey,
     source_environment_in: SourceEnvironmentUpdate,

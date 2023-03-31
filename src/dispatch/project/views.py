@@ -39,7 +39,6 @@ def get_projects(common: CommonParameters):
     dependencies=[Depends(PermissionsDependency([ProjectCreatePermission]))],
 )
 def create_project(
-    *,
     db_session: DbSession,
     organization: OrganizationSlug,
     project_in: ProjectCreate,
@@ -82,7 +81,6 @@ def get_project(db_session: DbSession, project_id: PrimaryKey):
     dependencies=[Depends(PermissionsDependency([ProjectUpdatePermission]))],
 )
 def update_project(
-    *,
     db_session: DbSession,
     project_id: PrimaryKey,
     project_in: ProjectUpdate,

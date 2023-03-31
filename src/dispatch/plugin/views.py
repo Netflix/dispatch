@@ -66,7 +66,6 @@ def create_plugin_instance(db_session: DbSession, plugin_instance_in: PluginInst
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_plugin_instance(
-    *,
     db_session: DbSession,
     plugin_instance_id: PrimaryKey,
     plugin_instance_in: PluginInstanceUpdate,
@@ -94,7 +93,6 @@ def update_plugin_instance(
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def delete_plugin_instances(
-    *,
     db_session: DbSession,
     plugin_instance_id: PrimaryKey,
 ):

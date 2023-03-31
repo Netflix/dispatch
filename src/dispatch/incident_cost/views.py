@@ -52,7 +52,6 @@ def create_incident_cost(db_session: DbSession, incident_cost_in: IncidentCostCr
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_incident_cost(
-    *,
     db_session: DbSession,
     incident_cost_id: PrimaryKey,
     incident_cost_in: IncidentCostUpdate,

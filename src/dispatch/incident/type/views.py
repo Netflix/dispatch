@@ -24,7 +24,6 @@ def get_incident_types(common: CommonParameters):
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def create_incident_type(
-    *,
     db_session: DbSession,
     incident_type_in: IncidentTypeCreate,
 ):
@@ -39,7 +38,6 @@ def create_incident_type(
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_incident_type(
-    *,
     db_session: DbSession,
     incident_type_id: PrimaryKey,
     incident_type_in: IncidentTypeUpdate,

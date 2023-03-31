@@ -29,7 +29,6 @@ def get_incident_priorities(common: CommonParameters):
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def create_incident_priority(
-    *,
     db_session: DbSession,
     incident_priority_in: IncidentPriorityCreate,
 ):
@@ -44,7 +43,6 @@ def create_incident_priority(
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_incident_priority(
-    *,
     db_session: DbSession,
     incident_priority_id: PrimaryKey,
     incident_priority_in: IncidentPriorityUpdate,

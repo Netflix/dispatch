@@ -19,7 +19,6 @@ router = APIRouter()
 
 @router.get("/{role}", response_model=IncidentRoles)
 def get_incident_roles(
-    *,
     db_session: DbSession,
     role: ParticipantRoleType,
     project_name: str = Query(..., alias="projectName"),
@@ -38,11 +37,10 @@ def get_incident_roles(
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_incident_role(
-    *,
     db_session: DbSession,
     role: ParticipantRoleType,
-    project_name: str = Query(..., alias="projectName"),
     incident_roles_in: IncidentRolesCreateUpdate,
+    project_name: str = Query(..., alias="projectName"),
 ):
     """Update a incident role mapping by its id."""
     return {

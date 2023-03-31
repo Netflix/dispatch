@@ -2,7 +2,7 @@ import calendar
 import json
 import logging
 from datetime import date
-from typing import List
+from typing import Annotated, List
 
 from dateutil.relativedelta import relativedelta
 
@@ -64,9 +64,11 @@ def get_current_incident(db_session: DbSession, request: Request) -> Incident:
     return incident
 
 
+CurrentIncident = Annotated[Incident, Depends(get_current_incident)]
+
+
 @router.get("", summary="Retrieve a list of incidents.")
 def get_incidents(
-    *,
     common: CommonParameters,
     include: List[str] = Query([], alias="include[]"),
     expand: bool = Query(default=False),
@@ -98,10 +100,9 @@ def get_incidents(
     dependencies=[Depends(PermissionsDependency([IncidentViewPermission]))],
 )
 def get_incident(
-    *,
     incident_id: PrimaryKey,
     db_session: DbSession,
-    current_incident: Incident = Depends(get_current_incident),
+    current_incident: CurrentIncident,
 ):
     """Retrieves the details of a single incident."""
     return current_incident
@@ -109,7 +110,6 @@ def get_incident(
 
 @router.post("", response_model=IncidentRead, summary="Creates a new incident.")
 def create_incident(
-    *,
     db_session: DbSession,
     organization: OrganizationSlug,
     incident_in: IncidentCreate,
@@ -146,9 +146,8 @@ def create_incident(
     dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
 )
 def update_incident(
-    *,
     db_session: DbSession,
-    current_incident: Incident = Depends(get_current_incident),
+    current_incident: CurrentIncident,
     organization: OrganizationSlug,
     incident_id: PrimaryKey,
     incident_in: IncidentUpdate,
@@ -183,10 +182,9 @@ def update_incident(
     dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
 )
 def delete_incident(
-    *,
     incident_id: PrimaryKey,
     db_session: DbSession,
-    current_incident: Incident = Depends(get_current_incident),
+    current_incident: CurrentIncident,
 ):
     """Deletes an incident and its external resources."""
     # we run the incident delete flow
@@ -216,11 +214,10 @@ def delete_incident(
     dependencies=[Depends(PermissionsDependency([IncidentJoinOrSubscribePermission]))],
 )
 def join_incident(
-    *,
     db_session: DbSession,
     organization: OrganizationSlug,
     incident_id: PrimaryKey,
-    current_incident: Incident = Depends(get_current_incident),
+    current_incident: CurrentIncident,
     current_user: CurrentUser,
     background_tasks: BackgroundTasks,
 ):
@@ -239,11 +236,10 @@ def join_incident(
     dependencies=[Depends(PermissionsDependency([IncidentJoinOrSubscribePermission]))],
 )
 def subscribe_to_incident(
-    *,
     db_session: DbSession,
     organization: OrganizationSlug,
     incident_id: PrimaryKey,
-    current_incident: Incident = Depends(get_current_incident),
+    current_incident: CurrentIncident,
     current_user: CurrentUser,
     background_tasks: BackgroundTasks,
 ):
@@ -262,13 +258,12 @@ def subscribe_to_incident(
     dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
 )
 def create_tactical_report(
-    *,
     db_session: DbSession,
     organization: OrganizationSlug,
     incident_id: PrimaryKey,
     tactical_report_in: TacticalReportCreate,
     current_user: CurrentUser,
-    current_incident: Incident = Depends(get_current_incident),
+    current_incident: CurrentIncident,
     background_tasks: BackgroundTasks,
 ):
     """Creates a tactical report."""
@@ -287,11 +282,10 @@ def create_tactical_report(
     dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
 )
 def create_executive_report(
-    *,
     db_session: DbSession,
     organization: OrganizationSlug,
     incident_id: PrimaryKey,
-    current_incident: Incident = Depends(get_current_incident),
+    current_incident: CurrentIncident,
     executive_report_in: ExecutiveReportCreate,
     current_user: CurrentUser,
     background_tasks: BackgroundTasks,
@@ -317,7 +311,6 @@ def get_month_range(relative):
 
 @router.get("/metric/forecast", summary="Gets incident forecast data.")
 def get_incident_forecast(
-    *,
     db_session: DbSession,
     common: CommonParameters,
 ):

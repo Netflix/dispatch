@@ -43,7 +43,6 @@ def create_source_type(db_session: DbSession, source_type_in: SourceTypeCreate):
 
 @router.put("/{source_type_id}", response_model=SourceTypeRead)
 def update_source_type(
-    *,
     db_session: DbSession,
     source_type_id: PrimaryKey,
     source_type_in: SourceTypeUpdate,

@@ -40,7 +40,6 @@ def get_organizations(common: CommonParameters):
     response_model=OrganizationRead,
 )
 def create_organization(
-    *,
     db_session: DbSession,
     organization_in: OrganizationCreate,
     current_user: CurrentUser,
@@ -96,7 +95,6 @@ def get_organization(db_session: DbSession, organization_id: PrimaryKey):
     dependencies=[Depends(PermissionsDependency([OrganizationOwnerPermission]))],
 )
 def update_organization(
-    *,
     db_session: DbSession,
     organization_id: PrimaryKey,
     organization_in: OrganizationUpdate,

@@ -43,7 +43,6 @@ def create_source_status(db_session: DbSession, source_status_in: SourceStatusCr
 
 @router.put("/{source_status_id}", response_model=SourceStatusRead)
 def update_source_status(
-    *,
     db_session: DbSession,
     source_status_id: PrimaryKey,
     source_status_in: SourceStatusUpdate,

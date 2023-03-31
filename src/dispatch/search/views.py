@@ -18,7 +18,6 @@ router = APIRouter()
 
 @router.get("", response_class=JSONResponse)
 def search(
-    *,
     common: CommonParameters,
     type: List[SearchTypes] = Query(..., alias="type[]"),
 ):

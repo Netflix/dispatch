@@ -54,7 +54,6 @@ def create_definition(db_session: DbSession, definition_in: DefinitionCreate):
 
 @router.put("/{definition_id}", response_model=DefinitionRead)
 def update_definition(
-    *,
     db_session: DbSession,
     definition_id: PrimaryKey,
     definition_in: DefinitionUpdate,

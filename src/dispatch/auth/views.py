@@ -90,7 +90,6 @@ def get_user(db_session: DbSession, user_id: PrimaryKey):
     response_model=UserRead,
 )
 def update_user(
-    *,
     db_session: DbSession,
     user_id: PrimaryKey,
     organization: OrganizationSlug,

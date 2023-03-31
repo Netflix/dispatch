@@ -38,7 +38,6 @@ def get_tasks(common: CommonParameters, include: List[str] = Query([], alias="in
 
 @router.post("", response_model=TaskRead, tags=["tasks"])
 def create_task(
-    *,
     db_session: DbSession,
     task_in: TaskCreate,
     current_user: CurrentUser,

@@ -50,7 +50,6 @@ def get_signal_instances(common: CommonParameters):
 
 @router.post("/instances", response_model=SignalInstanceRead)
 def create_signal_instance(
-    *,
     db_session: DbSession,
     organization: OrganizationSlug,
     signal_instance_in: SignalInstanceCreate,
@@ -111,7 +110,6 @@ def get_signal_filters(common: CommonParameters):
 
 @router.post("/filters", response_model=SignalFilterRead)
 def create_filter(
-    *,
     db_session: DbSession,
     signal_filter_in: SignalFilterCreate,
     current_user: CurrentUser,
@@ -134,7 +132,6 @@ def create_filter(
 
 @router.put("/filters/{signal_filter_id}", response_model=SignalRead)
 def update_filter(
-    *,
     db_session: DbSession,
     signal_filter_id: PrimaryKey,
     signal_filter_in: SignalFilterUpdate,

@@ -23,7 +23,6 @@ def get_services(common: CommonParameters):
 
 @router.post("", response_model=ServiceRead)
 def create_service(
-    *,
     db_session: DbSession,
     service_in: ServiceCreate = Body(
         ...,

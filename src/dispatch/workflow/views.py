@@ -92,7 +92,6 @@ def delete_workflow(db_session: DbSession, workflow_id: PrimaryKey):
 
 @router.post("/{workflow_id}/run", response_model=WorkflowInstanceRead)
 def run_workflow(
-    *,
     db_session: DbSession,
     workflow_id: PrimaryKey,
     workflow_instance_in: WorkflowInstanceCreate,

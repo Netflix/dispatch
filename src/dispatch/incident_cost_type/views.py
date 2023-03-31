@@ -40,9 +40,7 @@ def get_incident_cost_type(db_session: DbSession, incident_cost_type_id: Primary
     response_model=IncidentCostTypeRead,
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
-def create_incident_cost_type(
-    *, db_session: DbSession, incident_cost_type_in: IncidentCostTypeCreate
-):
+def create_incident_cost_type(db_session: DbSession, incident_cost_type_in: IncidentCostTypeCreate):
     """Create an incident cost type."""
     incident_cost_type = create(db_session=db_session, incident_cost_type_in=incident_cost_type_in)
     return incident_cost_type
@@ -54,7 +52,6 @@ def create_incident_cost_type(
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_incident_cost_type(
-    *,
     db_session: DbSession,
     incident_cost_type_id: PrimaryKey,
     incident_cost_type_in: IncidentCostTypeUpdate,
@@ -87,7 +84,6 @@ def update_incident_cost_type(
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def delete_incident_cost_type(
-    *,
     db_session: DbSession,
     incident_cost_type_id: PrimaryKey,
 ):

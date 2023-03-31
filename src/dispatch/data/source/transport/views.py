@@ -43,7 +43,6 @@ def create_source_transport(db_session: DbSession, source_transport_in: SourceTr
 
 @router.put("/{source_transport_id}", response_model=SourceTransportRead)
 def update_source_transport(
-    *,
     db_session: DbSession,
     source_transport_id: PrimaryKey,
     source_transport_in: SourceTransportUpdate,

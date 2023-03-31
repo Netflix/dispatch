@@ -36,16 +36,13 @@ def get_source_data_format(db_session: DbSession, source_data_format_id: Primary
 
 
 @router.post("", response_model=SourceDataFormatRead)
-def create_source_data_format(
-    *, db_session: DbSession, source_data_format_in: SourceDataFormatCreate
-):
+def create_source_data_format(db_session: DbSession, source_data_format_in: SourceDataFormatCreate):
     """Creates a new source data format."""
     return create(db_session=db_session, source_data_format_in=source_data_format_in)
 
 
 @router.put("/{source_data_format_id}", response_model=SourceDataFormatRead)
 def update_source_data_format(
-    *,
     db_session: DbSession,
     source_data_format_id: PrimaryKey,
     source_data_format_in: SourceDataFormatUpdate,

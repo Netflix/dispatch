@@ -29,7 +29,6 @@ def get_case_priorities(common: CommonParameters):
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def create_case_priority(
-    *,
     db_session: DbSession,
     case_priority_in: CasePriorityCreate,
 ):

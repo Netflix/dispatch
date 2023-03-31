@@ -51,7 +51,6 @@ def create_entity_type(db_session: DbSession, entity_type_in: EntityTypeCreate):
 
 @router.put("/{entity_type_id}", response_model=EntityTypeRead)
 def update_entity_type(
-    *,
     db_session: DbSession,
     entity_type_id: PrimaryKey,
     entity_type_in: EntityTypeUpdate,
@@ -82,7 +81,6 @@ def update_entity_type(
 
 @router.put("/{entity_type_id}/process", response_model=EntityTypeRead)
 def process_entity_type(
-    *,
     db_session: DbSession,
     entity_type_id: PrimaryKey,
     entity_type_in: EntityTypeUpdate,

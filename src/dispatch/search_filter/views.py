@@ -28,7 +28,6 @@ def get_filters(common: CommonParameters):
 
 @router.post("", response_model=SearchFilterRead)
 def create_search_filter(
-    *,
     db_session: DbSession,
     search_filter_in: SearchFilterCreate,
     current_user: CurrentUser,
@@ -51,7 +50,6 @@ def create_search_filter(
 
 @router.put("/{search_filter_id}", response_model=SearchFilterRead)
 def update_search_filter(
-    *,
     db_session: DbSession,
     search_filter_id: PrimaryKey,
     search_filter_in: SearchFilterUpdate,

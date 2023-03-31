@@ -29,7 +29,6 @@ def get_incident_severities(common: CommonParameters):
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def create_incident_severity(
-    *,
     db_session: DbSession,
     incident_severity_in: IncidentSeverityCreate,
 ):
@@ -44,7 +43,6 @@ def create_incident_severity(
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_incident_severity(
-    *,
     db_session: DbSession,
     incident_severity_id: PrimaryKey,
     incident_severity_in: IncidentSeverityUpdate,

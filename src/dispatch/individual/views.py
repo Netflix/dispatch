@@ -65,7 +65,6 @@ def create_individual(db_session: DbSession, individual_contact_in: IndividualCo
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_individual(
-    *,
     db_session: DbSession,
     individual_contact_id: PrimaryKey,
     individual_contact_in: IndividualContactUpdate,
