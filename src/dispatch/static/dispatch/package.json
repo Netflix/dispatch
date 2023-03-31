@@ -31,7 +31,6 @@
     "register-service-worker": "^1.7.2",
     "roboto-fontface": "*",
     "sortablejs": "^1.15.0",
-    "uuid": "^9.0.0",
     "vee-validate": "^3.4.5",
     "vue": "^2.6.12",
     "vue-apexcharts": "^1.6.1",
