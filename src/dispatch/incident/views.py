@@ -10,18 +10,16 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, s
 from starlette.requests import Request
 
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
 
-from dispatch.auth.models import DispatchUser
 from dispatch.auth.permissions import (
     IncidentEditPermission,
     IncidentJoinOrSubscribePermission,
     IncidentViewPermission,
     PermissionsDependency,
 )
-from dispatch.auth.service import get_current_user
+from dispatch.auth.service import CurrentUser
 from dispatch.common.utils.views import create_pydantic_include
-from dispatch.database.core import get_db
+from dispatch.database.core import DbSession
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.incident.enums import IncidentStatus
 from dispatch.individual.models import IndividualContactRead
@@ -55,7 +53,7 @@ log = logging.getLogger(__name__)
 router = APIRouter()
 
 
-def get_current_incident(*, db_session: Session = Depends(get_db), request: Request) -> Incident:
+def get_current_incident(*, db_session: DbSession, request: Request) -> Incident:
     """Fetches incident or returns a 404."""
     incident = get(db_session=db_session, incident_id=request.path_params["incident_id"])
     if not incident:
@@ -102,7 +100,7 @@ def get_incidents(
 def get_incident(
     *,
     incident_id: PrimaryKey,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     current_incident: Incident = Depends(get_current_incident),
 ):
     """Retrieves the details of a single incident."""
@@ -112,10 +110,10 @@ def get_incident(
 @router.post("", response_model=IncidentRead, summary="Creates a new incident.")
 def create_incident(
     *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     organization: OrganizationSlug,
     incident_in: IncidentCreate,
-    current_user: DispatchUser = Depends(get_current_user),
+    current_user: CurrentUser,
     background_tasks: BackgroundTasks,
 ):
     """Creates a new incident."""
@@ -149,12 +147,12 @@ def create_incident(
 )
 def update_incident(
     *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     current_incident: Incident = Depends(get_current_incident),
     organization: OrganizationSlug,
     incident_id: PrimaryKey,
     incident_in: IncidentUpdate,
-    current_user: DispatchUser = Depends(get_current_user),
+    current_user: CurrentUser,
     background_tasks: BackgroundTasks,
 ):
     """Updates an existing incident."""
@@ -187,7 +185,7 @@ def update_incident(
 def delete_incident(
     *,
     incident_id: PrimaryKey,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     current_incident: Incident = Depends(get_current_incident),
 ):
     """Deletes an incident and its external resources."""
@@ -219,11 +217,11 @@ def delete_incident(
 )
 def join_incident(
     *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     organization: OrganizationSlug,
     incident_id: PrimaryKey,
     current_incident: Incident = Depends(get_current_incident),
-    current_user: DispatchUser = Depends(get_current_user),
+    current_user: CurrentUser,
     background_tasks: BackgroundTasks,
 ):
     """Adds an individual to an incident."""
@@ -242,11 +240,11 @@ def join_incident(
 )
 def subscribe_to_incident(
     *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     organization: OrganizationSlug,
     incident_id: PrimaryKey,
     current_incident: Incident = Depends(get_current_incident),
-    current_user: DispatchUser = Depends(get_current_user),
+    current_user: CurrentUser,
     background_tasks: BackgroundTasks,
 ):
     """Subscribes an individual to an incident."""
@@ -265,11 +263,11 @@ def subscribe_to_incident(
 )
 def create_tactical_report(
     *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     organization: OrganizationSlug,
     incident_id: PrimaryKey,
     tactical_report_in: TacticalReportCreate,
-    current_user: DispatchUser = Depends(get_current_user),
+    current_user: CurrentUser,
     current_incident: Incident = Depends(get_current_incident),
     background_tasks: BackgroundTasks,
 ):
@@ -290,12 +288,12 @@ def create_tactical_report(
 )
 def create_executive_report(
     *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     organization: OrganizationSlug,
     incident_id: PrimaryKey,
     current_incident: Incident = Depends(get_current_incident),
     executive_report_in: ExecutiveReportCreate,
-    current_user: DispatchUser = Depends(get_current_user),
+    current_user: CurrentUser,
     background_tasks: BackgroundTasks,
 ):
     """Creates an executive report."""
@@ -320,7 +318,7 @@ def get_month_range(relative):
 @router.get("/metric/forecast", summary="Gets incident forecast data.")
 def get_incident_forecast(
     *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     common: dict = Depends(common_parameters),
 ):
     """Gets incident forecast data."""

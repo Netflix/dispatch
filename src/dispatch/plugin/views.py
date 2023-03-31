@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 
-from dispatch.database.core import get_db
+from dispatch.database.core import DbSession
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 from dispatch.models import PrimaryKey
@@ -40,7 +39,7 @@ def get_plugin_instances(*, common: dict = Depends(common_parameters)):
     response_model=PluginInstanceRead,
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
-def get_plugin_instance(*, db_session: Session = Depends(get_db), plugin_instance_id: PrimaryKey):
+def get_plugin_instance(*, db_session: DbSession, plugin_instance_id: PrimaryKey):
     """Get a plugin instance."""
     plugin = get_instance(db_session=db_session, plugin_instance_id=plugin_instance_id)
     if not plugin:
@@ -56,9 +55,7 @@ def get_plugin_instance(*, db_session: Session = Depends(get_db), plugin_instanc
     response_model=PluginInstanceRead,
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
-def create_plugin_instance(
-    *, db_session: Session = Depends(get_db), plugin_instance_in: PluginInstanceCreate
-):
+def create_plugin_instance(*, db_session: DbSession, plugin_instance_in: PluginInstanceCreate):
     """Create a new plugin instance."""
     return create_instance(db_session=db_session, plugin_instance_in=plugin_instance_in)
 
@@ -70,7 +67,7 @@ def create_plugin_instance(
 )
 def update_plugin_instance(
     *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     plugin_instance_id: PrimaryKey,
     plugin_instance_in: PluginInstanceUpdate,
 ):
@@ -98,7 +95,7 @@ def update_plugin_instance(
 )
 def delete_plugin_instances(
     *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     plugin_instance_id: PrimaryKey,
 ):
     """Deletes an existing plugin instance."""

@@ -5,7 +5,7 @@
     :license: Apache, see LICENSE for more details.
 """
 import logging
-from typing import Optional
+from typing import Annotated, Optional
 
 from fastapi import HTTPException, Depends
 from starlette.requests import Request
@@ -246,6 +246,9 @@ def get_current_user(request: Request) -> DispatchUser:
         organization=request.state.organization,
         user_in=UserRegister(email=user_email),
     )
+
+
+CurrentUser = Annotated[DispatchUser, Depends(get_current_user)]
 
 
 def get_current_role(

@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 
-from dispatch.database.core import get_db
+from dispatch.database.core import DbSession
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 from dispatch.models import PrimaryKey
@@ -31,7 +30,7 @@ def get_case_priorities(*, common: dict = Depends(common_parameters)):
 )
 def create_case_priority(
     *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     case_priority_in: CasePriorityCreate,
 ):
     """Creates a new case priority."""
@@ -46,7 +45,7 @@ def create_case_priority(
 )
 def update_case_priority(
     *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     case_priority_id: PrimaryKey,
     case_priority_in: CasePriorityUpdate,
 ):
@@ -67,7 +66,7 @@ def update_case_priority(
 
 
 @router.get("/{case_priority_id}", response_model=CasePriorityRead)
-def get_case_priority(*, db_session: Session = Depends(get_db), case_priority_id: PrimaryKey):
+def get_case_priority(*, db_session: DbSession, case_priority_id: PrimaryKey):
     """Gets a case priority."""
     case_priority = get(db_session=db_session, case_priority_id=case_priority_id)
     if not case_priority:

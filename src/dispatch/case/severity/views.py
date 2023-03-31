@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 
-from dispatch.database.core import get_db
+from dispatch.database.core import DbSession
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 from dispatch.models import PrimaryKey
@@ -31,7 +30,7 @@ def get_case_severities(*, common: dict = Depends(common_parameters)):
 )
 def create_case_severity(
     *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     case_severity_in: CaseSeverityCreate,
 ):
     """Creates a new case severity."""
@@ -46,7 +45,7 @@ def create_case_severity(
 )
 def update_case_severity(
     *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     case_severity_id: PrimaryKey,
     case_severity_in: CaseSeverityUpdate,
 ):
@@ -67,7 +66,7 @@ def update_case_severity(
 
 
 @router.get("/{case_severity_id}", response_model=CaseSeverityRead)
-def get_case_severity(*, db_session: Session = Depends(get_db), case_severity_id: PrimaryKey):
+def get_case_severity(*, db_session: DbSession, case_severity_id: PrimaryKey):
     """Gets a case severity."""
     case_severity = get(db_session=db_session, case_severity_id=case_severity_id)
     if not case_severity:

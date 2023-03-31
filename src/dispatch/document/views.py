@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 
-from dispatch.database.core import get_db
+from dispatch.database.core import DbSession
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 
@@ -18,7 +17,7 @@ def get_documents(*, common: dict = Depends(common_parameters)):
 
 
 @router.get("/{document_id}", response_model=DocumentRead)
-def get_document(*, db_session: Session = Depends(get_db), document_id: PrimaryKey):
+def get_document(*, db_session: DbSession, document_id: PrimaryKey):
     """Update a document."""
     document = get(db_session=db_session, document_id=document_id)
     if not document:
@@ -30,15 +29,13 @@ def get_document(*, db_session: Session = Depends(get_db), document_id: PrimaryK
 
 
 @router.post("", response_model=DocumentRead)
-def create_document(*, db_session: Session = Depends(get_db), document_in: DocumentCreate):
+def create_document(*, db_session: DbSession, document_in: DocumentCreate):
     """Create a new document."""
     return create(db_session=db_session, document_in=document_in)
 
 
 @router.put("/{document_id}", response_model=DocumentRead)
-def update_document(
-    *, db_session: Session = Depends(get_db), document_id: PrimaryKey, document_in: DocumentUpdate
-):
+def update_document(*, db_session: DbSession, document_id: PrimaryKey, document_in: DocumentUpdate):
     """Update a document."""
     document = get(db_session=db_session, document_id=document_id)
     if not document:
@@ -51,7 +48,7 @@ def update_document(
 
 
 @router.delete("/{document_id}", response_model=None)
-def delete_document(*, db_session: Session = Depends(get_db), document_id: PrimaryKey):
+def delete_document(*, db_session: DbSession, document_id: PrimaryKey):
     """Delete a document."""
     document = get(db_session=db_session, document_id=document_id)
     if not document:

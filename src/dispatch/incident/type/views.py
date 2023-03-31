@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 
-from dispatch.database.core import get_db
+from dispatch.database.core import DbSession
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 from dispatch.models import PrimaryKey
@@ -26,7 +25,7 @@ def get_incident_types(*, common: dict = Depends(common_parameters)):
 )
 def create_incident_type(
     *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     incident_type_in: IncidentTypeCreate,
 ):
     """Create a new incident type."""
@@ -41,7 +40,7 @@ def create_incident_type(
 )
 def update_incident_type(
     *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     incident_type_id: PrimaryKey,
     incident_type_in: IncidentTypeUpdate,
 ):
@@ -60,7 +59,7 @@ def update_incident_type(
 
 
 @router.get("/{incident_type_id}", response_model=IncidentTypeRead)
-def get_incident_type(*, db_session: Session = Depends(get_db), incident_type_id: PrimaryKey):
+def get_incident_type(*, db_session: DbSession, incident_type_id: PrimaryKey):
     """Get an incident type."""
     incident_type = get(db_session=db_session, incident_type_id=incident_type_id)
     if not incident_type:
