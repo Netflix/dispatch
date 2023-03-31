@@ -65,7 +65,7 @@ def create_project(
     response_model=ProjectRead,
     summary="Get a project.",
 )
-def get_project(*, db_session: DbSession, project_id: PrimaryKey):
+def get_project(db_session: DbSession, project_id: PrimaryKey):
     """Get a project."""
     project = get(db_session=db_session, project_id=project_id)
     if not project:
@@ -103,7 +103,7 @@ def update_project(
     response_model=None,
     dependencies=[Depends(PermissionsDependency([ProjectUpdatePermission]))],
 )
-def delete_project(*, db_session: DbSession, project_id: PrimaryKey):
+def delete_project(db_session: DbSession, project_id: PrimaryKey):
     """Delete a project."""
     project = get(db_session=db_session, project_id=project_id)
     if not project:

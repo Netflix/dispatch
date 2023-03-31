@@ -17,7 +17,7 @@ router = APIRouter()
 
 
 @router.get("", summary="Retrieve a list of all tasks.")
-def get_tasks(*, common: CommonParameters, include: List[str] = Query([], alias="include[]")):
+def get_tasks(common: CommonParameters, include: List[str] = Query([], alias="include[]")):
     """Retrieve all tasks."""
     pagination = search_filter_sort_paginate(model="Task", **common)
 
@@ -49,7 +49,7 @@ def create_task(
 
 
 @router.put("/{task_id}", response_model=TaskRead, tags=["tasks"])
-def update_task(*, db_session: DbSession, task_id: PrimaryKey, task_in: TaskUpdate):
+def update_task(db_session: DbSession, task_id: PrimaryKey, task_in: TaskUpdate):
     """Updates an existing task."""
     task = get(db_session=db_session, task_id=task_id)
     if not task:
@@ -61,7 +61,7 @@ def update_task(*, db_session: DbSession, task_id: PrimaryKey, task_in: TaskUpda
 
 
 @router.delete("/{task_id}", response_model=None, tags=["tasks"])
-def delete_task(*, db_session: DbSession, task_id: PrimaryKey):
+def delete_task(db_session: DbSession, task_id: PrimaryKey):
     """Deletes an existing task."""
     task = get(db_session=db_session, task_id=task_id)
     if not task:

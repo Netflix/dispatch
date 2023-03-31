@@ -13,7 +13,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=IncidentTypePagination, tags=["incident_types"])
-def get_incident_types(*, common: CommonParameters):
+def get_incident_types(common: CommonParameters):
     """Returns all incident types."""
     return search_filter_sort_paginate(model="IncidentType", **common)
 
@@ -59,7 +59,7 @@ def update_incident_type(
 
 
 @router.get("/{incident_type_id}", response_model=IncidentTypeRead)
-def get_incident_type(*, db_session: DbSession, incident_type_id: PrimaryKey):
+def get_incident_type(db_session: DbSession, incident_type_id: PrimaryKey):
     """Get an incident type."""
     incident_type = get(db_session=db_session, incident_type_id=incident_type_id)
     if not incident_type:

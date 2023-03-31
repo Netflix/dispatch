@@ -18,13 +18,13 @@ router = APIRouter()
 
 
 @router.get("", response_model=IncidentCostTypePagination)
-def get_incident_cost_types(*, common: CommonParameters):
+def get_incident_cost_types(common: CommonParameters):
     """Get all incident cost types, or only those matching a given search term."""
     return search_filter_sort_paginate(model="IncidentCostType", **common)
 
 
 @router.get("/{incident_cost_type_id}", response_model=IncidentCostTypeRead)
-def get_incident_cost_type(*, db_session: DbSession, incident_cost_type_id: PrimaryKey):
+def get_incident_cost_type(db_session: DbSession, incident_cost_type_id: PrimaryKey):
     """Get an incident cost type by its id."""
     incident_cost_type = get(db_session=db_session, incident_cost_type_id=incident_cost_type_id)
     if not incident_cost_type:

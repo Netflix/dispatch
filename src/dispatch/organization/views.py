@@ -79,7 +79,7 @@ def create_organization(
 
 
 @router.get("/{organization_id}", response_model=OrganizationRead)
-def get_organization(*, db_session: DbSession, organization_id: PrimaryKey):
+def get_organization(db_session: DbSession, organization_id: PrimaryKey):
     """Get an organization."""
     organization = get(db_session=db_session, organization_id=organization_id)
     if not organization:

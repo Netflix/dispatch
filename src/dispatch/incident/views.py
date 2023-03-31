@@ -53,7 +53,7 @@ log = logging.getLogger(__name__)
 router = APIRouter()
 
 
-def get_current_incident(*, db_session: DbSession, request: Request) -> Incident:
+def get_current_incident(db_session: DbSession, request: Request) -> Incident:
     """Fetches incident or returns a 404."""
     incident = get(db_session=db_session, incident_id=request.path_params["incident_id"])
     if not incident:

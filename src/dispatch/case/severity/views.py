@@ -18,7 +18,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=CaseSeverityPagination, tags=["case_severities"])
-def get_case_severities(*, common: CommonParameters):
+def get_case_severities(common: CommonParameters):
     """Returns all case severities."""
     return search_filter_sort_paginate(model="CaseSeverity", **common)
 
@@ -66,7 +66,7 @@ def update_case_severity(
 
 
 @router.get("/{case_severity_id}", response_model=CaseSeverityRead)
-def get_case_severity(*, db_session: DbSession, case_severity_id: PrimaryKey):
+def get_case_severity(db_session: DbSession, case_severity_id: PrimaryKey):
     """Gets a case severity."""
     case_severity = get(db_session=db_session, case_severity_id=case_severity_id)
     if not case_severity:

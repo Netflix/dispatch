@@ -73,7 +73,7 @@ def get_users(organization: OrganizationSlug, common: CommonParameters):
 
 
 @user_router.get("/{user_id}", response_model=UserRead)
-def get_user(*, db_session: DbSession, user_id: PrimaryKey):
+def get_user(db_session: DbSession, user_id: PrimaryKey):
     """Get a user."""
     user = get(db_session=db_session, user_id=user_id)
     if not user:

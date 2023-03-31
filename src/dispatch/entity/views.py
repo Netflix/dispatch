@@ -17,13 +17,13 @@ router = APIRouter()
 
 
 @router.get("", response_model=EntityPagination)
-def get_entities(*, common: CommonParameters):
+def get_entities(common: CommonParameters):
     """Get all entitys, or only those matching a given search term."""
     return search_filter_sort_paginate(model="Entity", **common)
 
 
 @router.get("/{entity_id}", response_model=EntityRead)
-def get_entity(*, db_session: DbSession, entity_id: PrimaryKey):
+def get_entity(db_session: DbSession, entity_id: PrimaryKey):
     """Given its unique id, retrieve details about a single entity."""
     entity = get(db_session=db_session, entity_id=entity_id)
     if not entity:
@@ -35,13 +35,13 @@ def get_entity(*, db_session: DbSession, entity_id: PrimaryKey):
 
 
 @router.post("", response_model=EntityRead)
-def create_entity(*, db_session: DbSession, entity_in: EntityCreate):
+def create_entity(db_session: DbSession, entity_in: EntityCreate):
     """Creates a new entity."""
     return create(db_session=db_session, entity_in=entity_in)
 
 
 @router.put("/{entity_id}", response_model=EntityRead)
-def update_entity(*, db_session: DbSession, entity_id: PrimaryKey, entity_in: EntityUpdate):
+def update_entity(db_session: DbSession, entity_id: PrimaryKey, entity_in: EntityUpdate):
     """Updates an exisiting entity."""
     entity = get(db_session=db_session, entity_id=entity_id)
     if not entity:
@@ -53,7 +53,7 @@ def update_entity(*, db_session: DbSession, entity_id: PrimaryKey, entity_in: En
 
 
 @router.delete("/{entity_id}", response_model=None)
-def delete_entity(*, db_session: DbSession, entity_id: PrimaryKey):
+def delete_entity(db_session: DbSession, entity_id: PrimaryKey):
     """Deletes a entity, returning only an HTTP 200 OK if successful."""
     entity = get(db_session=db_session, entity_id=entity_id)
     if not entity:

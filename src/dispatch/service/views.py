@@ -16,7 +16,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=ServicePagination)
-def get_services(*, common: CommonParameters):
+def get_services(common: CommonParameters):
     """Retrieves all services."""
     return search_filter_sort_paginate(model="Service", **common)
 
@@ -56,7 +56,7 @@ def create_service(
 
 
 @router.put("/{service_id}", response_model=ServiceRead)
-def update_service(*, db_session: DbSession, service_id: PrimaryKey, service_in: ServiceUpdate):
+def update_service(db_session: DbSession, service_id: PrimaryKey, service_in: ServiceUpdate):
     """Updates an existing service."""
     service = get(db_session=db_session, service_id=service_id)
     if not service:
@@ -77,7 +77,7 @@ def update_service(*, db_session: DbSession, service_id: PrimaryKey, service_in:
 
 
 @router.get("/{service_id}", response_model=ServiceRead)
-def get_service(*, db_session: DbSession, service_id: PrimaryKey):
+def get_service(db_session: DbSession, service_id: PrimaryKey):
     """Gets a service."""
     service = get(db_session=db_session, service_id=service_id)
     if not service:
@@ -89,7 +89,7 @@ def get_service(*, db_session: DbSession, service_id: PrimaryKey):
 
 
 @router.delete("/{service_id}", response_model=None)
-def delete_service(*, db_session: DbSession, service_id: PrimaryKey):
+def delete_service(db_session: DbSession, service_id: PrimaryKey):
     """Deletes a service."""
     service = get(db_session=db_session, service_id=service_id)
     if not service:

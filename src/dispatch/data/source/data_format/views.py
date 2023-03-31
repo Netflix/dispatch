@@ -18,13 +18,13 @@ router = APIRouter()
 
 
 @router.get("", response_model=SourceDataFormatPagination)
-def get_source_data_formats(*, common: CommonParameters):
+def get_source_data_formats(common: CommonParameters):
     """Get all source data formats, or only those matching a given search term."""
     return search_filter_sort_paginate(model="SourceDataFormat", **common)
 
 
 @router.get("/{source_data_format_id}", response_model=SourceDataFormatRead)
-def get_source_data_format(*, db_session: DbSession, source_data_format_id: PrimaryKey):
+def get_source_data_format(db_session: DbSession, source_data_format_id: PrimaryKey):
     """Given its unique id, retrieve details about a source data format."""
     source_data_format = get(db_session=db_session, source_data_format_id=source_data_format_id)
     if not source_data_format:
@@ -65,7 +65,7 @@ def update_source_data_format(
 
 
 @router.delete("/{source_data_format_id}", response_model=None)
-def delete_source_data_format(*, db_session: DbSession, source_data_format_id: PrimaryKey):
+def delete_source_data_format(db_session: DbSession, source_data_format_id: PrimaryKey):
     """Delete a source data format, returning only an HTTP 200 OK if successful."""
     source_data_format = get(db_session=db_session, source_data_format_id=source_data_format_id)
     if not source_data_format:

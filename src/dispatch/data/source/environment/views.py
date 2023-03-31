@@ -18,13 +18,13 @@ router = APIRouter()
 
 
 @router.get("", response_model=SourceEnvironmentPagination)
-def get_source_environments(*, common: CommonParameters):
+def get_source_environments(common: CommonParameters):
     """Get all source_environment environments, or only those matching a given search term."""
     return search_filter_sort_paginate(model="SourceEnvironment", **common)
 
 
 @router.get("/{source_environment_id}", response_model=SourceEnvironmentRead)
-def get_source_environment(*, db_session: DbSession, source_environment_id: PrimaryKey):
+def get_source_environment(db_session: DbSession, source_environment_id: PrimaryKey):
     """Given its unique id, retrieve details about a single source_environment environment."""
     source_environment = get(db_session=db_session, source_environment_id=source_environment_id)
     if not source_environment:
@@ -65,7 +65,7 @@ def update_source_environment(
 
 
 @router.delete("/{source_environment_id}", response_model=None)
-def delete_source_environment(*, db_session: DbSession, source_environment_id: PrimaryKey):
+def delete_source_environment(db_session: DbSession, source_environment_id: PrimaryKey):
     """Delete a source environment, returning only an HTTP 200 OK if successful."""
     source_environment = get(db_session=db_session, source_environment_id=source_environment_id)
     if not source_environment:
