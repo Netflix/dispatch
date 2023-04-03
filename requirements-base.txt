@@ -262,7 +262,7 @@ protobuf==4.22.1
     #   -r requirements-base.in
     #   google-api-core
     #   googleapis-common-protos
-psycopg2-binary==2.9.5
+psycopg2-binary==2.9.6
     # via -r requirements-base.in
 pyasn1==0.4.8
     # via
