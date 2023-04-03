@@ -2,7 +2,7 @@ import functools
 import logging
 import time
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, NoReturn
 
 from blockkit import Message, Section
 from slack_sdk.errors import SlackApiError
@@ -70,7 +70,7 @@ def paginated(data_key):
     return decorator
 
 
-def handle_slack_error(exception: SlackApiError, endpoint: str, kwargs: dict):
+def handle_slack_error(exception: SlackApiError, endpoint: str, kwargs: dict) -> NoReturn:
     message = (
         f"SlackAPIError. Response: {exception.response}. Endpoint: {endpoint}. Kwargs: {kwargs}"
     )
