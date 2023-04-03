@@ -4,24 +4,16 @@ import time
 
 from typing import Dict, List, Optional, NoReturn
 
+from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
+
 from blockkit import Message, Section
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
 from slack_sdk.web.slack_response import SlackResponse
 
-from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
-
 from .config import SlackConversationConfiguration
+from .enums import SlackAPIGetEndpoints, SlackAPIPostEndpoints
 
-# List of Slack endpoints that require HTTP GET method
-SLACK_GET_ENDPOINTS = [
-    "conversations.history",
-    "conversations.info",
-    "users.conversations",
-    "users.info",
-    "users.lookupByEmail",
-    "users.profile.get",
-]
 
 Conversation = dict[str, str]
 
@@ -98,7 +90,7 @@ def handle_slack_error(exception: SlackApiError, endpoint: str, kwargs: dict) ->
 def make_call(client: WebClient, endpoint: str, **kwargs) -> SlackResponse:
     """Makes a Slack client API call."""
     try:
-        if endpoint in SLACK_GET_ENDPOINTS:
+        if endpoint in set(SlackAPIGetEndpoints):
             response = client.api_call(endpoint, http_verb="GET", params=kwargs)
         else:
             response = client.api_call(endpoint, json=kwargs)
@@ -107,33 +99,36 @@ def make_call(client: WebClient, endpoint: str, **kwargs) -> SlackResponse:
     return response
 
 
-@paginated("channels")
-def list_conversations(client: WebClient, **kwargs) -> SlackResponse:
-    return make_call(client, "conversations.list", types="private_channel", **kwargs)
-
-
 def list_conversation_messages(client: WebClient, conversation_id: str, **kwargs) -> SlackResponse:
     """Returns a list of conversation messages."""
-    return make_call(client, "conversations.history", channel=conversation_id, **kwargs)
+    return make_call(
+        client, SlackAPIGetEndpoints.conversations_history, channel=conversation_id, **kwargs
+    )
 
 
 @functools.lru_cache()
-def get_user_info_by_id(client: WebClient, user_id: str) -> SlackResponse:
+def get_user_info_by_id(client: WebClient, user_id: str) -> dict:
     """Gets profile information about a user by id."""
-    return make_call(client, "users.info", user=user_id)["user"]
+    return make_call(client, SlackAPIGetEndpoints.users_info, user=user_id)["user"]
 
 
 @functools.lru_cache()
-def get_user_info_by_email(client: WebClient, email: str) -> SlackResponse:
+def get_user_info_by_email(client: WebClient, email: str) -> dict:
     """Gets profile information about a user by email."""
-    return make_call(client, "users.lookupByEmail", email=email)["user"]
+    return make_call(client, SlackAPIGetEndpoints.users_lookup_by_email, email=email)["user"]
+
+
+@functools.lru_cache()
+def get_user_profile_by_id(client: WebClient, user_id: str) -> dict:
+    """Gets profile information about a user by id."""
+    return make_call(client, SlackAPIGetEndpoints.users_profile_get, user_id=user_id)["profile"]
 
 
 @functools.lru_cache()
 def get_user_profile_by_email(client: WebClient, email: str) -> SlackResponse:
     """Gets extended profile information about a user by email."""
-    user = make_call(client, "users.lookupByEmail", email=email)["user"]
-    profile = make_call(client, "users.profile.get", user=user["id"])["profile"]
+    user = get_user_info_by_email(client, email)
+    profile = get_user_profile_by_id(client, user["id"])
     profile["tz"] = user["tz"]
     return profile
 
@@ -152,7 +147,7 @@ def get_user_avatar_url(client: WebClient, email: str) -> str:
 def get_conversations_by_user_id(client: WebClient, user_id: str, type: str) -> List[Conversation]:
     result = make_call(
         client,
-        "users.conversations",
+        SlackAPIGetEndpoints.users_conversations,
         user=user_id,
         types=f"{type}_channel",
         exclude_archived="true",
@@ -166,17 +161,12 @@ def get_conversations_by_user_id(client: WebClient, user_id: str, type: str) -> 
 
 
 # note this will get slower over time, we might exclude archived to make it sane
-def get_conversation_by_name(client: WebClient, name: str) -> Conversation:
-    """Fetches a conversation by name."""
-    for c in list_conversations(client):
-        if c["name"] == name:
-            return c
-
-
 def get_conversation_name_by_id(client: WebClient, conversation_id: str) -> SlackResponse:
     """Fetches a conversation by id and returns its name."""
     try:
-        return make_call(client, "conversations.info", channel=conversation_id)["channel"]["name"]
+        return make_call(client, SlackAPIGetEndpoints.conversations_info, channel=conversation_id)[
+            "channel"
+        ]["name"]
     except SlackApiError as e:
         if e.response["error"] == "channel_not_found":
             return None
@@ -186,7 +176,9 @@ def get_conversation_name_by_id(client: WebClient, conversation_id: str) -> Slac
 
 def set_conversation_topic(client: WebClient, conversation_id: str, topic: str) -> SlackResponse:
     """Sets the topic of the specified conversation."""
-    return make_call(client, "conversations.setTopic", channel=conversation_id, topic=topic)
+    return make_call(
+        client, SlackAPIPostEndpoints.conversations_set_topic, channel=conversation_id, topic=topic
+    )
 
 
 def add_conversation_bookmark(
@@ -195,7 +187,7 @@ def add_conversation_bookmark(
     """Adds a bookmark for the specified conversation."""
     return make_call(
         client,
-        "bookmarks.add",
+        SlackAPIPostEndpoints.bookmarks_add,
         channel_id=conversation_id,
         title=title,
         type="link",
@@ -207,7 +199,7 @@ def create_conversation(client: WebClient, name: str, is_private: bool = False) 
     """Make a new Slack conversation."""
     response = make_call(
         client,
-        "conversations.create",
+        SlackAPIPostEndpoints.conversations_create,
         name=name.lower(),  # slack disallows upperCase
         is_group=is_private,
         is_private=is_private,
@@ -222,13 +214,15 @@ def create_conversation(client: WebClient, name: str, is_private: bool = False) 
 
 def archive_conversation(client: WebClient, conversation_id: str) -> SlackResponse:
     """Archives an existing conversation."""
-    return make_call(client, "conversations.archive", channel=conversation_id)
+    return make_call(client, SlackAPIPostEndpoints.conversations_archive, channel=conversation_id)
 
 
 def unarchive_conversation(client: WebClient, conversation_id: str) -> SlackResponse:
     """Unarchives an existing conversation."""
     try:
-        return make_call(client, "conversations.unarchive", channel=conversation_id)
+        return make_call(
+            client, SlackAPIPostEndpoints.conversations_unarchive, channel=conversation_id
+        )
     except SlackApiError as e:
         # if the channel isn't archived thats okay
         if e.response["error"] != "not_archived":
@@ -237,15 +231,17 @@ def unarchive_conversation(client: WebClient, conversation_id: str) -> SlackResp
 
 def rename_conversation(client: WebClient, conversation_id: str, name: str) -> SlackResponse:
     """Renames an existing conversation."""
-    return make_call(client, "conversations.rename", channel=conversation_id, name=name)
+    return make_call(
+        client, SlackAPIPostEndpoints.conversations_rename, channel=conversation_id, name=name
+    )
 
 
-def conversation_archived(client: WebClient, conversation_id: str):
+def conversation_archived(client: WebClient, conversation_id: str) -> bool | None:
     """Returns whether a given conversation has been archived or not."""
     try:
-        return make_call(client, "conversations.info", channel=conversation_id)["channel"][
-            "is_archived"
-        ]
+        return make_call(client, SlackAPIGetEndpoints.conversations_info, channel=conversation_id)[
+            "channel"
+        ]["is_archived"]
     except SlackApiError as e:
         if e.response["error"] == "channel_not_found":
             return None
@@ -255,7 +251,7 @@ def conversation_archived(client: WebClient, conversation_id: str):
 
 def add_users_to_conversation_thread(
     client: WebClient, conversation_id: str, thread_id, user_ids: List[str]
-):
+) -> NoReturn:
     """Adds user to a threaded conversation."""
     users = [f"<@{user_id}>" for user_id in user_ids]
     if users:
@@ -267,13 +263,17 @@ def add_users_to_conversation_thread(
         send_message(client=client, conversation_id=conversation_id, blocks=blocks, ts=thread_id)
 
 
-def add_users_to_conversation(client: WebClient, conversation_id: str, user_ids: List[str]):
+def add_users_to_conversation(
+    client: WebClient, conversation_id: str, user_ids: List[str]
+) -> NoReturn:
     """Add users to conversation."""
     # NOTE this will trigger a member_joined_channel event, which we will capture and run
     # the incident.incident_add_or_reactivate_participant_flow() as a result
     for c in chunks(user_ids, 30):  # NOTE api only allows 30 at a time.
         try:
-            make_call(client, "conversations.invite", users=c, channel=conversation_id)
+            make_call(
+                client, SlackAPIPostEndpoints.conversations_invite, users=c, channel=conversation_id
+            )
         except SlackApiError as e:
             # sometimes slack sends duplicate member_join events
             # that result in folks already existing in the channel.
@@ -291,7 +291,12 @@ def send_message(
 ) -> dict:
     """Sends a message to the given conversation."""
     response = make_call(
-        client, "chat.postMessage", channel=conversation_id, text=text, thread_ts=ts, blocks=blocks
+        client,
+        SlackAPIPostEndpoints.chat_post_message,
+        channel=conversation_id,
+        text=text,
+        thread_ts=ts,
+        blocks=blocks,
     )
 
     if persist:
@@ -313,7 +318,12 @@ def update_message(
 ) -> dict:
     """Updates a message for the given conversation."""
     response = make_call(
-        client, "chat.update", channel=conversation_id, text=text, ts=ts, blocks=blocks
+        client,
+        SlackAPIPostEndpoints.chat_update,
+        channel=conversation_id,
+        text=text,
+        ts=ts,
+        blocks=blocks,
     )
 
     return {
@@ -331,11 +341,11 @@ def send_ephemeral_message(
     blocks: Optional[List] = None,
     thread_ts: Optional[str] = None,
 ) -> dict:
-    """Sends an ephemeral message to a user in a channel."""
+    """Sends an ephemeral message to a user in a channel or thread."""
     if thread_ts:
         response = make_call(
             client,
-            "chat.postEphemeral",
+            SlackAPIPostEndpoints.chat_post_ephemeral,
             channel=conversation_id,
             user=user_id,
             text=text,
@@ -345,7 +355,7 @@ def send_ephemeral_message(
     else:
         response = make_call(
             client,
-            "chat.postEphemeral",
+            SlackAPIPostEndpoints.chat_post_ephemeral,
             channel=conversation_id,
             user=user_id,
             text=text,
@@ -357,7 +367,9 @@ def send_ephemeral_message(
 
 def add_pin(client: WebClient, conversation_id: str, timestamp: str) -> SlackResponse:
     """Adds a pin to a conversation."""
-    return make_call(client, "pins.add", channel=conversation_id, timestamp=timestamp)
+    return make_call(
+        client, SlackAPIPostEndpoints.pins_add, channel=conversation_id, timestamp=timestamp
+    )
 
 
 def message_filter(message) -> dict | None:
@@ -378,5 +390,5 @@ def message_filter(message) -> dict | None:
 
 
 def is_user(config: SlackConversationConfiguration, user_id: str) -> bool:
-    """Returns true if it's a regular user, false if Dispatch or Slackbot bot'."""
+    """Returns true if it's a regular user, false if Dispatch or Slackbot bot."""
     return user_id != config.app_user_slug and user_id != "USLACKBOT"
