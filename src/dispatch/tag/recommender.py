@@ -169,7 +169,7 @@ def get_recommendations(
         tags.append(tag_service.get(db_session=db_session, tag_id=int(t)))
 
     log.debug(
-        f"Recommening the following tag(s) for model name {model_name}: {','.join([t.name for t in tags])}"
+        f"Recommending the following tag(s) for model name {model_name}: {','.join([t.name for t in tags])}"
     )
     return tags
 
