@@ -2,7 +2,7 @@ import functools
 import logging
 import time
 
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
 from blockkit import Message, Section
 from slack_sdk.errors import SlackApiError
@@ -360,7 +360,7 @@ def add_pin(client: WebClient, conversation_id: str, timestamp: str) -> SlackRes
     return make_call(client, "pins.add", channel=conversation_id, timestamp=timestamp)
 
 
-def message_filter(message) -> Union[str, None]:
+def message_filter(message) -> dict | None:
     """Some messages are not useful, we filter them here."""
     if not message["text"]:  # sometimes for file upload there is no text only files
         return
