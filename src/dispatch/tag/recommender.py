@@ -147,7 +147,9 @@ def get_recommendations(
     try:
         correlation_dataframe = load_model(organization_slug, project_slug, model_name)
     except FileNotFoundError:
-        log.warning(f"No model file found. ProjectName: {project_slug} ModelName: {model_name}")
+        log.warning(
+            f"Unable to recommend tag(s). No correlation dataframe file found for project name {project_slug} and model name {model_name}."
+        )
         return []
 
     recommendations_dataframe = pd.DataFrame()
@@ -167,7 +169,7 @@ def get_recommendations(
         tags.append(tag_service.get(db_session=db_session, tag_id=int(t)))
 
     log.debug(
-        f"Making tag recommendation. RecommendedTags: {','.join([t.name for t in tags])} ModelName: {model_name}"
+        f"Recommending the following tag(s) for model name {model_name}: {','.join([t.name for t in tags])}"
     )
     return tags
 
