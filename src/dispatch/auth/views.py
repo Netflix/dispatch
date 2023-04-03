@@ -14,7 +14,7 @@ from dispatch.exceptions import (
     InvalidUsernameError,
 )
 from dispatch.database.core import DbSession
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.enums import UserRoles
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.organization.models import OrganizationRead
@@ -49,7 +49,7 @@ user_router = APIRouter()
     ],
     response_model=UserPagination,
 )
-def get_users(*, organization: OrganizationSlug, common: dict = Depends(common_parameters)):
+def get_users(organization: OrganizationSlug, common: CommonParameters):
     """Get all users."""
     common["filter_spec"] = {
         "and": [{"model": "Organization", "op": "==", "field": "slug", "value": organization}]
@@ -73,7 +73,7 @@ def get_users(*, organization: OrganizationSlug, common: dict = Depends(common_p
 
 
 @user_router.get("/{user_id}", response_model=UserRead)
-def get_user(*, db_session: DbSession, user_id: PrimaryKey):
+def get_user(db_session: DbSession, user_id: PrimaryKey):
     """Get a user."""
     user = get(db_session=db_session, user_id=user_id)
     if not user:
@@ -90,7 +90,6 @@ def get_user(*, db_session: DbSession, user_id: PrimaryKey):
     response_model=UserRead,
 )
 def update_user(
-    *,
     db_session: DbSession,
     user_id: PrimaryKey,
     organization: OrganizationSlug,

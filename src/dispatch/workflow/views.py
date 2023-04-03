@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.database.core import DbSession
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.exceptions import NotFoundError
 from dispatch.models import PrimaryKey
 from dispatch.plugin import service as plugin_service
@@ -22,13 +22,13 @@ router = APIRouter()
 
 
 @router.get("", response_model=WorkflowPagination)
-def get_workflows(*, common: dict = Depends(common_parameters)):
+def get_workflows(common: CommonParameters):
     """Get all workflows."""
     return search_filter_sort_paginate(model="Workflow", **common)
 
 
 @router.get("/{workflow_id}", response_model=WorkflowRead)
-def get_workflow(*, db_session: DbSession, workflow_id: PrimaryKey):
+def get_workflow(db_session: DbSession, workflow_id: PrimaryKey):
     """Get a workflow."""
     workflow = get(db_session=db_session, workflow_id=workflow_id)
     if not workflow:
@@ -40,7 +40,7 @@ def get_workflow(*, db_session: DbSession, workflow_id: PrimaryKey):
 
 
 @router.get("/instances/{workflow_instance_id}", response_model=WorkflowInstanceRead)
-def get_workflow_instance(*, db_session: DbSession, workflow_instance_id: PrimaryKey):
+def get_workflow_instance(db_session: DbSession, workflow_instance_id: PrimaryKey):
     """Get a workflow instance."""
     workflow_instance = get_instance(db_session=db_session, instance_id=workflow_instance_id)
     if not workflow_instance:
@@ -52,7 +52,7 @@ def get_workflow_instance(*, db_session: DbSession, workflow_instance_id: Primar
 
 
 @router.post("", response_model=WorkflowRead)
-def create_workflow(*, db_session: DbSession, workflow_in: WorkflowCreate):
+def create_workflow(db_session: DbSession, workflow_in: WorkflowCreate):
     """Create a new workflow."""
     plugin_instance = plugin_service.get_instance(
         db_session=db_session, plugin_instance_id=workflow_in.plugin_instance.id
@@ -67,7 +67,7 @@ def create_workflow(*, db_session: DbSession, workflow_in: WorkflowCreate):
 
 
 @router.put("/{workflow_id}", response_model=WorkflowRead)
-def update_workflow(*, db_session: DbSession, workflow_id: PrimaryKey, workflow_in: WorkflowUpdate):
+def update_workflow(db_session: DbSession, workflow_id: PrimaryKey, workflow_in: WorkflowUpdate):
     """Update a workflow."""
     workflow = get(db_session=db_session, workflow_id=workflow_id)
     if not workflow:
@@ -79,7 +79,7 @@ def update_workflow(*, db_session: DbSession, workflow_id: PrimaryKey, workflow_
 
 
 @router.delete("/{workflow_id}", response_model=None)
-def delete_workflow(*, db_session: DbSession, workflow_id: PrimaryKey):
+def delete_workflow(db_session: DbSession, workflow_id: PrimaryKey):
     """Delete a workflow."""
     workflow = get(db_session=db_session, workflow_id=workflow_id)
     if not workflow:
@@ -92,7 +92,6 @@ def delete_workflow(*, db_session: DbSession, workflow_id: PrimaryKey):
 
 @router.post("/{workflow_id}/run", response_model=WorkflowInstanceRead)
 def run_workflow(
-    *,
     db_session: DbSession,
     workflow_id: PrimaryKey,
     workflow_instance_in: WorkflowInstanceCreate,

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from dispatch.database.core import DbSession
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 from dispatch.models import PrimaryKey
 
@@ -18,7 +18,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=CasePriorityPagination, tags=["case_priorities"])
-def get_case_priorities(*, common: dict = Depends(common_parameters)):
+def get_case_priorities(common: CommonParameters):
     """Returns all case priorities."""
     return search_filter_sort_paginate(model="CasePriority", **common)
 
@@ -29,7 +29,6 @@ def get_case_priorities(*, common: dict = Depends(common_parameters)):
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def create_case_priority(
-    *,
     db_session: DbSession,
     case_priority_in: CasePriorityCreate,
 ):
@@ -66,7 +65,7 @@ def update_case_priority(
 
 
 @router.get("/{case_priority_id}", response_model=CasePriorityRead)
-def get_case_priority(*, db_session: DbSession, case_priority_id: PrimaryKey):
+def get_case_priority(db_session: DbSession, case_priority_id: PrimaryKey):
     """Gets a case priority."""
     case_priority = get(db_session=db_session, case_priority_id=case_priority_id)
     if not case_priority:

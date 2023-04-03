@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from dispatch.database.core import DbSession
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 from dispatch.models import PrimaryKey
 
@@ -19,7 +19,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=PluginPagination)
-def get_plugins(*, common: dict = Depends(common_parameters)):
+def get_plugins(common: CommonParameters):
     """Get all plugins."""
     return search_filter_sort_paginate(model="Plugin", **common)
 
@@ -29,7 +29,7 @@ def get_plugins(*, common: dict = Depends(common_parameters)):
     response_model=PluginInstancePagination,
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
-def get_plugin_instances(*, common: dict = Depends(common_parameters)):
+def get_plugin_instances(common: CommonParameters):
     """Get all plugin instances."""
     return search_filter_sort_paginate(model="PluginInstance", **common)
 
@@ -39,7 +39,7 @@ def get_plugin_instances(*, common: dict = Depends(common_parameters)):
     response_model=PluginInstanceRead,
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
-def get_plugin_instance(*, db_session: DbSession, plugin_instance_id: PrimaryKey):
+def get_plugin_instance(db_session: DbSession, plugin_instance_id: PrimaryKey):
     """Get a plugin instance."""
     plugin = get_instance(db_session=db_session, plugin_instance_id=plugin_instance_id)
     if not plugin:
@@ -55,7 +55,7 @@ def get_plugin_instance(*, db_session: DbSession, plugin_instance_id: PrimaryKey
     response_model=PluginInstanceRead,
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
-def create_plugin_instance(*, db_session: DbSession, plugin_instance_in: PluginInstanceCreate):
+def create_plugin_instance(db_session: DbSession, plugin_instance_in: PluginInstanceCreate):
     """Create a new plugin instance."""
     return create_instance(db_session=db_session, plugin_instance_in=plugin_instance_in)
 
@@ -66,7 +66,6 @@ def create_plugin_instance(*, db_session: DbSession, plugin_instance_in: PluginI
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_plugin_instance(
-    *,
     db_session: DbSession,
     plugin_instance_id: PrimaryKey,
     plugin_instance_in: PluginInstanceUpdate,
@@ -94,7 +93,6 @@ def update_plugin_instance(
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def delete_plugin_instances(
-    *,
     db_session: DbSession,
     plugin_instance_id: PrimaryKey,
 ):

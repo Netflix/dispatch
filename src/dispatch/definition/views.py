@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.database.core import DbSession
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.exceptions import ExistsError
 from dispatch.models import PrimaryKey
 
@@ -18,13 +18,13 @@ router = APIRouter()
 
 
 @router.get("", response_model=DefinitionPagination)
-def get_definitions(*, common: dict = Depends(common_parameters)):
+def get_definitions(common: CommonParameters):
     """Get all definitions."""
     return search_filter_sort_paginate(model="Definition", **common)
 
 
 @router.get("/{definition_id}", response_model=DefinitionRead)
-def get_definition(*, db_session: DbSession, definition_id: PrimaryKey):
+def get_definition(db_session: DbSession, definition_id: PrimaryKey):
     """Update a definition."""
     definition = get(db_session=db_session, definition_id=definition_id)
     if not definition:
@@ -36,7 +36,7 @@ def get_definition(*, db_session: DbSession, definition_id: PrimaryKey):
 
 
 @router.post("", response_model=DefinitionRead)
-def create_definition(*, db_session: DbSession, definition_in: DefinitionCreate):
+def create_definition(db_session: DbSession, definition_in: DefinitionCreate):
     """Create a new definition."""
     definition = get_by_text(db_session=db_session, text=definition_in.text)
     if definition:
@@ -54,7 +54,6 @@ def create_definition(*, db_session: DbSession, definition_in: DefinitionCreate)
 
 @router.put("/{definition_id}", response_model=DefinitionRead)
 def update_definition(
-    *,
     db_session: DbSession,
     definition_id: PrimaryKey,
     definition_in: DefinitionUpdate,
@@ -70,7 +69,7 @@ def update_definition(
 
 
 @router.delete("/{definition_id}", response_model=None)
-def delete_definition(*, db_session: DbSession, definition_id: PrimaryKey):
+def delete_definition(db_session: DbSession, definition_id: PrimaryKey):
     """Delete a definition."""
     definition = get(db_session=db_session, definition_id=definition_id)
     if not definition:

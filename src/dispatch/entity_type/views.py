@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from dispatch.database.core import DbSession
 from dispatch.exceptions import ExistsError
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 
 from .models import (
@@ -19,13 +19,13 @@ router = APIRouter()
 
 
 @router.get("", response_model=EntityTypePagination)
-def get_entity_types(*, common: dict = Depends(common_parameters)):
+def get_entity_types(common: CommonParameters):
     """Get all entities, or only those matching a given search term."""
     return search_filter_sort_paginate(model="EntityType", **common)
 
 
 @router.get("/{entity_type_id}", response_model=EntityTypeRead)
-def get_entity_type(*, db_session: DbSession, entity_type_id: PrimaryKey):
+def get_entity_type(db_session: DbSession, entity_type_id: PrimaryKey):
     """Get a entity by its id."""
     entity_type = get(db_session=db_session, entity_type_id=entity_type_id)
     if not entity_type:
@@ -37,7 +37,7 @@ def get_entity_type(*, db_session: DbSession, entity_type_id: PrimaryKey):
 
 
 @router.post("", response_model=EntityTypeRead)
-def create_entity_type(*, db_session: DbSession, entity_type_in: EntityTypeCreate):
+def create_entity_type(db_session: DbSession, entity_type_in: EntityTypeCreate):
     """Create a new entity."""
     try:
         entity = create(db_session=db_session, entity_type_in=entity_type_in)
@@ -51,7 +51,6 @@ def create_entity_type(*, db_session: DbSession, entity_type_in: EntityTypeCreat
 
 @router.put("/{entity_type_id}", response_model=EntityTypeRead)
 def update_entity_type(
-    *,
     db_session: DbSession,
     entity_type_id: PrimaryKey,
     entity_type_in: EntityTypeUpdate,
@@ -82,7 +81,6 @@ def update_entity_type(
 
 @router.put("/{entity_type_id}/process", response_model=EntityTypeRead)
 def process_entity_type(
-    *,
     db_session: DbSession,
     entity_type_id: PrimaryKey,
     entity_type_in: EntityTypeUpdate,
@@ -112,7 +110,7 @@ def process_entity_type(
 
 
 @router.delete("/{entity_type_id}", response_model=None)
-def delete_entity_type(*, db_session: DbSession, entity_type_id: PrimaryKey):
+def delete_entity_type(db_session: DbSession, entity_type_id: PrimaryKey):
     """Delete an entity."""
     entity_type = get(db_session=db_session, entity_type_id=entity_type_id)
     if not entity_type:

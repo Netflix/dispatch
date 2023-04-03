@@ -1,11 +1,11 @@
 from typing import List
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from fastapi.params import Query
 from starlette.responses import JSONResponse
 
 from dispatch.database.core import get_class_by_tablename
 from dispatch.database.service import composite_search
-from dispatch.database.service import common_parameters
+from dispatch.database.service import CommonParameters
 from dispatch.enums import SearchTypes, UserRoles
 from dispatch.enums import Visibility
 
@@ -18,8 +18,7 @@ router = APIRouter()
 
 @router.get("", response_class=JSONResponse)
 def search(
-    *,
-    common: dict = Depends(common_parameters),
+    common: CommonParameters,
     type: List[SearchTypes] = Query(..., alias="type[]"),
 ):
     """Perform a search."""
