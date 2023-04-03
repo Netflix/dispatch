@@ -24,6 +24,7 @@ export default {
         minimap: { enabled: false },
         renderLineHighlight: "none",
         language: "json",
+        automaticLayout: true,
         value: this.getDefaultValue(),
       }
       let uuid = crypto.randomUUID()
@@ -49,6 +50,7 @@ export default {
         // Call the updateDecorations method and pass the current pattern and jpath
         this.updateDecorations(this.pattern, this.jpath)
       })
+      this.editor.layout()
     })
   },
   beforeDestroy() {
