@@ -75,7 +75,7 @@ def signal_instance_create_flow(
                     workflow=workflow,
                 )
 
-        return signal_instance
+    return signal_instance
 
 
 def create_signal_instance(

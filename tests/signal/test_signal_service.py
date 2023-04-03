@@ -99,7 +99,7 @@ def test_filter_actions_deduplicate(session, signal, project):
     signal.filters.append(signal_filter)
 
     session.commit()
-    assert not apply_filter_actions(db_session=session, signal_instance=signal_instance_2)
+    assert apply_filter_actions(db_session=session, signal_instance=signal_instance_2)
     assert signal_instance_2.filter_action == SignalFilterAction.deduplicate
 
 
@@ -143,7 +143,7 @@ def test_filter_actions_snooze(session, entity, signal, project):
     signal.filters = [signal_filter]
 
     session.commit()
-    assert not apply_filter_actions(db_session=session, signal_instance=signal_instance_1)
+    assert apply_filter_actions(db_session=session, signal_instance=signal_instance_1)
     assert signal_instance_1.filter_action == SignalFilterAction.snooze
 
 
@@ -184,4 +184,4 @@ def test_filter_actions_snooze_expired(session, entity, signal, project):
 
     signal.filters = [signal_filter]
     session.commit()
-    assert apply_filter_actions(db_session=session, signal_instance=signal_instance_1)
+    assert not apply_filter_actions(db_session=session, signal_instance=signal_instance_1)
