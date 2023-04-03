@@ -148,7 +148,7 @@ def get_recommendations(
         correlation_dataframe = load_model(organization_slug, project_slug, model_name)
     except FileNotFoundError:
         log.warning(
-            f"Unable to recommmed tag(s). No correlation dataframe file found for project name {project_slug} and model name {model_name}."
+            f"Unable to recommend tag(s). No correlation dataframe file found for project name {project_slug} and model name {model_name}."
         )
         return []
 
