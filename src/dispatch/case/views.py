@@ -74,9 +74,7 @@ def get_case(
 
 
 @router.get("", summary="Retrieves a list of cases.")
-def get_cases(
-    common: CommonParameters, include: Annotated[List[str], Query([], alias="include[]")]
-):
+def get_cases(common: CommonParameters, include: List[str] = Query([], alias="include[]")):
     """Retrieves all cases."""
     pagination = search_filter_sort_paginate(model="Case", **common)
 
