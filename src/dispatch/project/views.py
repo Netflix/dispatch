@@ -9,7 +9,7 @@ from dispatch.auth.permissions import (
 )
 
 from dispatch.database.core import DbSession
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.exceptions import ExistsError
 from dispatch.models import OrganizationSlug, PrimaryKey
 
@@ -27,7 +27,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=ProjectPagination)
-def get_projects(common: dict = Depends(common_parameters)):
+def get_projects(common: CommonParameters):
     """Get all projects."""
     return search_filter_sort_paginate(model="Project", **common)
 
@@ -39,7 +39,6 @@ def get_projects(common: dict = Depends(common_parameters)):
     dependencies=[Depends(PermissionsDependency([ProjectCreatePermission]))],
 )
 def create_project(
-    *,
     db_session: DbSession,
     organization: OrganizationSlug,
     project_in: ProjectCreate,
@@ -65,7 +64,7 @@ def create_project(
     response_model=ProjectRead,
     summary="Get a project.",
 )
-def get_project(*, db_session: DbSession, project_id: PrimaryKey):
+def get_project(db_session: DbSession, project_id: PrimaryKey):
     """Get a project."""
     project = get(db_session=db_session, project_id=project_id)
     if not project:
@@ -82,7 +81,6 @@ def get_project(*, db_session: DbSession, project_id: PrimaryKey):
     dependencies=[Depends(PermissionsDependency([ProjectUpdatePermission]))],
 )
 def update_project(
-    *,
     db_session: DbSession,
     project_id: PrimaryKey,
     project_in: ProjectUpdate,
@@ -103,7 +101,7 @@ def update_project(
     response_model=None,
     dependencies=[Depends(PermissionsDependency([ProjectUpdatePermission]))],
 )
-def delete_project(*, db_session: DbSession, project_id: PrimaryKey):
+def delete_project(db_session: DbSession, project_id: PrimaryKey):
     """Delete a project."""
     project = get(db_session=db_session, project_id=project_id)
     if not project:

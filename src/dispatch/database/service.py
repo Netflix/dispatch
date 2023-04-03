@@ -4,7 +4,7 @@ from collections import namedtuple
 from collections.abc import Iterable
 from inspect import signature
 from itertools import chain
-from typing import List
+from typing import Annotated, List
 
 from fastapi import Depends, Query
 from pydantic import BaseModel
@@ -446,6 +446,12 @@ def common_parameters(
         "current_user": current_user,
         "role": role,
     }
+
+
+CommonParameters = Annotated[
+    dict[str, int | CurrentUser | DbSession | QueryStr | Json | List[str] | List[bool] | UserRoles],
+    Depends(common_parameters),
+]
 
 
 def search_filter_sort_paginate(
