@@ -235,7 +235,7 @@ packaging==23.0
     #   spacy
     #   statsmodels
     #   thinc
-pandas==1.5.3
+pandas==2.0.0
     # via
     #   -r requirements-base.in
     #   statsmodels
@@ -448,6 +448,8 @@ typing-extensions==4.4.0
     #   alembic
     #   pydantic
     #   schemathesis
+tzdata==2023.3
+    # via pandas
 uritemplate==4.1.1
     # via google-api-python-client
 urllib3==1.26.15
