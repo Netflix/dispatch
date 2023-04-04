@@ -28,16 +28,15 @@ from dispatch.signal.models import Signal
 
 
 class DefaultBlockIds(DispatchEnum):
-    title_input = "title-input"
-    project_select = "project-select"
-    description_input = "description-input"
-    resolution_input = "resolution-input"
-    relative_date_picker_input = "relative-date-picker-input"
-    datetime_picker_input = "datetime-picker-input"
     date_picker_input = "date-picker-input"
-    minute_picker_input = "minute-picker-input"
+    description_input = "description-input"
     hour_picker_input = "hour-picker-input"
+    minute_picker_input = "minute-picker-input"
+    project_select = "project-select"
+    relative_date_picker_input = "relative-date-picker-input"
+    resolution_input = "resolution-input"
     timezone_picker_input = "timezone-picker-input"
+    title_input = "title-input"
 
     # incidents
     incident_priority_select = "incident-priority-select"
@@ -66,16 +65,15 @@ class DefaultBlockIds(DispatchEnum):
 
 
 class DefaultActionIds(DispatchEnum):
-    title_input = "title-input"
-    project_select = "project-select"
-    description_input = "description-input"
-    resolution_input = "resolution-input"
-    datetime_picker_input = "datetime-picker-input"
-    relative_date_picker_input = "relative-date-picker-input"
     date_picker_input = "date-picker-input"
-    minute_picker_input = "minute-picker-input"
+    description_input = "description-input"
     hour_picker_input = "hour-picker-input"
+    minute_picker_input = "minute-picker-input"
+    project_select = "project-select"
+    relative_date_picker_input = "relative-date-picker-input"
+    resolution_input = "resolution-input"
     timezone_picker_input = "timezone-picker-input"
+    title_input = "title-input"
 
     # incidents
     incident_priority_select = "incident-priority-select"

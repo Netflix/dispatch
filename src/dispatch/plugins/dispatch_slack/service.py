@@ -38,30 +38,6 @@ def chunks(ids, n):
         yield ids[i : i + n]
 
 
-def paginated(data_key):
-    def decorator(func):
-        @functools.wraps(func)
-        def decorated_function(*args, **kwargs):
-            results = []
-
-            while True:
-                response = func(*args, **kwargs)
-                results += response[data_key]
-
-                # stop if we hit an empty string
-                next_cursor = response["response_metadata"]["next_cursor"]
-                if not next_cursor:
-                    break
-
-                kwargs.update({"cursor": next_cursor})
-
-            return results
-
-        return decorated_function
-
-    return decorator
-
-
 def handle_slack_error(exception: SlackApiError, endpoint: str, kwargs: dict) -> NoReturn:
     message = (
         f"SlackAPIError. Response: {exception.response}. Endpoint: {endpoint}. Kwargs: {kwargs}"
@@ -370,23 +346,6 @@ def add_pin(client: WebClient, conversation_id: str, timestamp: str) -> SlackRes
     return make_call(
         client, SlackAPIPostEndpoints.pins_add, channel=conversation_id, timestamp=timestamp
     )
-
-
-def message_filter(message) -> dict | None:
-    """Some messages are not useful, we filter them here."""
-    if not message["text"]:  # sometimes for file upload there is no text only files
-        return
-
-    if message["type"] != "message":
-        return
-
-    if message.get("subtype"):
-        return
-
-    if message.get("bot_id"):
-        return
-
-    return message
 
 
 def is_user(config: SlackConversationConfiguration, user_id: str) -> bool:
