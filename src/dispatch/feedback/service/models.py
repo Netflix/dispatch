@@ -2,25 +2,23 @@ from datetime import datetime
 from pydantic import Field
 from typing import Optional, List
 
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, ForeignKey, DateTime
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.individual.models import IndividualContactRead
-from dispatch.models import DispatchBase, TimeStampMixin, PrimaryKey
+from dispatch.models import DispatchBase, TimeStampMixin, FeedbackMixin, PrimaryKey
 from dispatch.project.models import ProjectRead
 from dispatch.service.models import ServiceRead
 
 from .enums import ServiceFeedbackRating
 
 
-class ServiceFeedback(TimeStampMixin, Base):
+class ServiceFeedback(TimeStampMixin, FeedbackMixin, Base):
     # Columns
     id = Column(Integer, primary_key=True)
-    rating = Column(String)
     hours = Column(Integer)
-    feedback = Column(String)
     shift_start_at = Column(DateTime)
     shift_end_at = Column(DateTime)
 

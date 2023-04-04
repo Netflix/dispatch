@@ -94,6 +94,13 @@ class EvergreenMixin(object):
         )
 
 
+class FeedbackMixin(object):
+    """Feedback mixin."""
+
+    rating = Column(String)
+    feedback = Column(String)
+
+
 # Pydantic models...
 class DispatchBase(BaseModel):
     class Config:

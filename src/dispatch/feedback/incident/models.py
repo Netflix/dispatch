@@ -2,24 +2,22 @@ from datetime import datetime
 from pydantic import Field
 from typing import Optional, List
 
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.incident.models import IncidentReadMinimal
-from dispatch.models import DispatchBase, TimeStampMixin, PrimaryKey
+from dispatch.models import DispatchBase, TimeStampMixin, FeedbackMixin, PrimaryKey
 from dispatch.participant.models import ParticipantRead
 from dispatch.project.models import ProjectRead
 
 from .enums import FeedbackRating
 
 
-class Feedback(TimeStampMixin, Base):
+class Feedback(TimeStampMixin, FeedbackMixin, Base):
     # Columns
     id = Column(Integer, primary_key=True)
-    rating = Column(String)
-    feedback = Column(String)
 
     # Relationships
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
