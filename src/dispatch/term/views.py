@@ -1,10 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from sqlalchemy.orm import Session
 
-from dispatch.database.core import get_db
+from dispatch.database.core import DbSession
 from dispatch.exceptions import ExistsError
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 
 from .models import TermCreate, TermPagination, TermRead, TermUpdate
@@ -14,13 +13,13 @@ router = APIRouter()
 
 
 @router.get("", response_model=TermPagination)
-def get_terms(*, common: dict = Depends(common_parameters)):
+def get_terms(common: CommonParameters):
     """Retrieve all terms."""
     return search_filter_sort_paginate(model="Term", **common)
 
 
 @router.post("", response_model=TermRead)
-def create_term(*, db_session: Session = Depends(get_db), term_in: TermCreate):
+def create_term(db_session: DbSession, term_in: TermCreate):
     """Create a new term."""
     term = get_by_text(db_session=db_session, text=term_in.text)
     if term:
@@ -33,7 +32,7 @@ def create_term(*, db_session: Session = Depends(get_db), term_in: TermCreate):
 
 
 @router.get("/{term_id}", response_model=TermRead)
-def get_term(*, db_session: Session = Depends(get_db), term_id: PrimaryKey):
+def get_term(db_session: DbSession, term_id: PrimaryKey):
     """Get a term."""
     term = get(db_session=db_session, term_id=term_id)
     if not term:
@@ -45,7 +44,7 @@ def get_term(*, db_session: Session = Depends(get_db), term_id: PrimaryKey):
 
 
 @router.put("/{term_id}", response_model=TermRead)
-def update_term(*, db_session: Session = Depends(get_db), term_id: PrimaryKey, term_in: TermUpdate):
+def update_term(db_session: DbSession, term_id: PrimaryKey, term_in: TermUpdate):
     """Update a term."""
     term = get(db_session=db_session, term_id=term_id)
     if not term:
@@ -58,7 +57,7 @@ def update_term(*, db_session: Session = Depends(get_db), term_id: PrimaryKey, t
 
 
 @router.delete("/{term_id}", response_model=None)
-def delete_term(*, db_session: Session = Depends(get_db), term_id: PrimaryKey):
+def delete_term(db_session: DbSession, term_id: PrimaryKey):
     """Delete a term."""
     term = get(db_session=db_session, term_id=term_id)
     if not term:

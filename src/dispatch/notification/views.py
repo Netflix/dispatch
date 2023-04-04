@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 
-from dispatch.database.core import get_db
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.core import DbSession
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 from dispatch.models import PrimaryKey
 
@@ -19,13 +18,13 @@ router = APIRouter()
 
 
 @router.get("", response_model=NotificationPagination)
-def get_notifications(*, common: dict = Depends(common_parameters)):
+def get_notifications(common: CommonParameters):
     """Get all notifications, or only those matching a given search term."""
     return search_filter_sort_paginate(model="Notification", **common)
 
 
 @router.get("/{notification_id}", response_model=NotificationRead)
-def get_notification(*, db_session: Session = Depends(get_db), notification_id: PrimaryKey):
+def get_notification(db_session: DbSession, notification_id: PrimaryKey):
     """Get a notification by its id."""
     notification = get(db_session=db_session, notification_id=notification_id)
     if not notification:
@@ -41,9 +40,7 @@ def get_notification(*, db_session: Session = Depends(get_db), notification_id: 
     response_model=NotificationRead,
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
-def create_notification(
-    *, db_session: Session = Depends(get_db), notification_in: NotificationCreate
-):
+def create_notification(db_session: DbSession, notification_in: NotificationCreate):
     """Create a notification."""
     notification = create(db_session=db_session, notification_in=notification_in)
     return notification
@@ -55,8 +52,7 @@ def create_notification(
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_notification(
-    *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     notification_id: PrimaryKey,
     notification_in: NotificationUpdate,
 ):
@@ -78,7 +74,7 @@ def update_notification(
     response_model=None,
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
-def delete_notification(*, db_session: Session = Depends(get_db), notification_id: PrimaryKey):
+def delete_notification(db_session: DbSession, notification_id: PrimaryKey):
     """Delete a notification, returning only an HTTP 200 OK if successful."""
     notification = get(db_session=db_session, notification_id=notification_id)
     if not notification:

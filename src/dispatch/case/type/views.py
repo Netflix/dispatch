@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
-from dispatch.database.core import get_db
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.core import DbSession
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 
 from .models import CaseTypeCreate, CaseTypePagination, CaseTypeRead, CaseTypeUpdate
@@ -14,7 +13,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=CaseTypePagination, tags=["case_types"])
-def get_case_types(*, common: dict = Depends(common_parameters)):
+def get_case_types(common: CommonParameters):
     """Returns all case types."""
     return search_filter_sort_paginate(model="CaseType", **common)
 
@@ -26,7 +25,7 @@ def get_case_types(*, common: dict = Depends(common_parameters)):
 )
 def create_case_type(
     *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     case_type_in: CaseTypeCreate,
 ):
     """Creates a new case type."""
@@ -40,7 +39,7 @@ def create_case_type(
 )
 def update_case_type(
     *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     case_type_id: PrimaryKey,
     case_type_in: CaseTypeUpdate,
 ):
@@ -55,7 +54,7 @@ def update_case_type(
 
 
 @router.get("/{case_type_id}", response_model=CaseTypeRead)
-def get_case_type(*, db_session: Session = Depends(get_db), case_type_id: PrimaryKey):
+def get_case_type(db_session: DbSession, case_type_id: PrimaryKey):
     """Gets a case type."""
     case_type = get(db_session=db_session, case_type_id=case_type_id)
     if not case_type:

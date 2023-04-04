@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import Annotated, List
 
 import json
 
@@ -7,7 +7,6 @@ from starlette.requests import Request
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
 
 # NOTE: define permissions before enabling the code block below
 from dispatch.auth.permissions import (
@@ -16,12 +15,11 @@ from dispatch.auth.permissions import (
     PermissionsDependency,
     CaseViewPermission,
 )
-from dispatch.auth import service as auth_service
-from dispatch.auth.models import DispatchUser
+from dispatch.auth.service import CurrentUser
 from dispatch.case.enums import CaseStatus
 from dispatch.common.utils.views import create_pydantic_include
-from dispatch.database.core import get_db
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.core import DbSession
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.incident.models import IncidentCreate, IncidentRead
 from dispatch.incident import service as incident_service
@@ -46,7 +44,7 @@ log = logging.getLogger(__name__)
 router = APIRouter()
 
 
-def get_current_case(*, db_session: Session = Depends(get_db), request: Request) -> Case:
+def get_current_case(db_session: DbSession, request: Request) -> Case:
     """Fetches a case or returns an HTTP 404."""
     case = get(db_session=db_session, case_id=request.path_params["case_id"])
     if not case:
@@ -57,6 +55,9 @@ def get_current_case(*, db_session: Session = Depends(get_db), request: Request)
     return case
 
 
+CurrentCase = Annotated[Case, Depends(get_current_case)]
+
+
 @router.get(
     "/{case_id}",
     response_model=CaseRead,
@@ -64,21 +65,16 @@ def get_current_case(*, db_session: Session = Depends(get_db), request: Request)
     dependencies=[Depends(PermissionsDependency([CaseViewPermission]))],
 )
 def get_case(
-    *,
     case_id: PrimaryKey,
-    db_session: Session = Depends(get_db),
-    current_case: Case = Depends(get_current_case),
+    db_session: DbSession,
+    current_case: CurrentCase,
 ):
     """Retrieves the details of a single case."""
     return current_case
 
 
 @router.get("", summary="Retrieves a list of cases.")
-def get_cases(
-    *,
-    common: dict = Depends(common_parameters),
-    include: List[str] = Query([], alias="include[]"),
-):
+def get_cases(common: CommonParameters, include: List[str] = Query([], alias="include[]")):
     """Retrieves all cases."""
     pagination = search_filter_sort_paginate(model="Case", **common)
 
@@ -98,11 +94,10 @@ def get_cases(
 
 @router.post("", response_model=CaseRead, summary="Creates a new case.")
 def create_case(
-    *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     organization: OrganizationSlug,
     case_in: CaseCreate,
-    current_user: DispatchUser = Depends(auth_service.get_current_user),
+    current_user: CurrentUser,
     background_tasks: BackgroundTasks,
 ):
     """Creates a new case."""
@@ -149,13 +144,12 @@ def create_case(
     dependencies=[Depends(PermissionsDependency([CaseEditPermission]))],
 )
 def update_case(
-    *,
-    db_session: Session = Depends(get_db),
-    current_case: Case = Depends(get_current_case),
+    db_session: DbSession,
+    current_case: CurrentCase,
     organization: OrganizationSlug,
     case_id: PrimaryKey,
     case_in: CaseUpdate,
-    current_user: DispatchUser = Depends(auth_service.get_current_user),
+    current_user: CurrentUser,
     background_tasks: BackgroundTasks,
 ):
     """Updates an existing case."""
@@ -187,12 +181,11 @@ def update_case(
     dependencies=[Depends(PermissionsDependency([CaseEditPermission]))],
 )
 def escalate_case(
-    *,
-    db_session: Session = Depends(get_db),
-    current_case: Case = Depends(get_current_case),
+    db_session: DbSession,
+    current_case: CurrentCase,
     organization: OrganizationSlug,
     incident_in: IncidentCreate,
-    current_user: DispatchUser = Depends(auth_service.get_current_user),
+    current_user: CurrentUser,
     background_tasks: BackgroundTasks,
 ):
     """Escalates an existing case."""
@@ -229,10 +222,9 @@ def escalate_case(
     dependencies=[Depends(PermissionsDependency([CaseEditPermission]))],
 )
 def delete_case(
-    *,
     case_id: PrimaryKey,
-    db_session: Session = Depends(get_db),
-    current_case: Case = Depends(get_current_case),
+    db_session: DbSession,
+    current_case: CurrentCase,
 ):
     """Deletes an existing case and its external resources."""
     # we run the case delete flow

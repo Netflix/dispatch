@@ -24,10 +24,12 @@ export default {
         minimap: { enabled: false },
         renderLineHighlight: "none",
         language: "json",
+        automaticLayout: true,
         value: this.getDefaultValue(),
       }
+      let uuid = crypto.randomUUID()
       // Create a unique URI for the in-memory model
-      const modelUri = monaco.Uri.parse("inmemory://playground")
+      const modelUri = monaco.Uri.parse(`inmemory://playground-${uuid}`)
       // Create the model with an osquery log as the initial value
       const model = monaco.editor.createModel(this.getDefaultValue(), "json", modelUri)
       // Create the editor and pass the model to the options
@@ -48,6 +50,7 @@ export default {
         // Call the updateDecorations method and pass the current pattern and jpath
         this.updateDecorations(this.pattern, this.jpath)
       })
+      this.editor.layout()
     })
   },
   beforeDestroy() {

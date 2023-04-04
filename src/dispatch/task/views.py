@@ -1,14 +1,12 @@
 import json
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, status
 
-from sqlalchemy.orm import Session
 
-from dispatch.auth.models import DispatchUser
-from dispatch.auth.service import get_current_user
+from dispatch.auth.service import CurrentUser
 from dispatch.common.utils.views import create_pydantic_include
-from dispatch.database.core import get_db
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.core import DbSession
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 
 from .models import TaskCreate, TaskUpdate, TaskRead, TaskPagination
@@ -19,9 +17,7 @@ router = APIRouter()
 
 
 @router.get("", summary="Retrieve a list of all tasks.")
-def get_tasks(
-    *, common: dict = Depends(common_parameters), include: List[str] = Query([], alias="include[]")
-):
+def get_tasks(common: CommonParameters, include: List[str] = Query([], alias="include[]")):
     """Retrieve all tasks."""
     pagination = search_filter_sort_paginate(model="Task", **common)
 
@@ -42,10 +38,9 @@ def get_tasks(
 
 @router.post("", response_model=TaskRead, tags=["tasks"])
 def create_task(
-    *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     task_in: TaskCreate,
-    current_user: DispatchUser = Depends(get_current_user),
+    current_user: CurrentUser,
 ):
     """Creates a new task."""
     task_in.creator = {"individual": {"email": current_user.email}}
@@ -53,7 +48,7 @@ def create_task(
 
 
 @router.put("/{task_id}", response_model=TaskRead, tags=["tasks"])
-def update_task(*, db_session: Session = Depends(get_db), task_id: PrimaryKey, task_in: TaskUpdate):
+def update_task(db_session: DbSession, task_id: PrimaryKey, task_in: TaskUpdate):
     """Updates an existing task."""
     task = get(db_session=db_session, task_id=task_id)
     if not task:
@@ -65,7 +60,7 @@ def update_task(*, db_session: Session = Depends(get_db), task_id: PrimaryKey, t
 
 
 @router.delete("/{task_id}", response_model=None, tags=["tasks"])
-def delete_task(*, db_session: Session = Depends(get_db), task_id: PrimaryKey):
+def delete_task(db_session: DbSession, task_id: PrimaryKey):
     """Deletes an existing task."""
     task = get(db_session=db_session, task_id=task_id)
     if not task:

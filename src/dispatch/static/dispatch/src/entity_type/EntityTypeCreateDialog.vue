@@ -1,7 +1,7 @@
 <template>
-  <v-dialog v-model="showCreateEdit" max-width="1000px" persistent>
-    <template v-slot:activator="{ on }">
-      <v-btn @click="createEditShow(signalDefinition)" v-on="on" icon><v-icon>add</v-icon></v-btn>
+  <v-dialog v-model="dialog" max-width="1000px" persistent :key="componentKey">
+    <template v-slot:activator="{ on, attrs }">
+      <v-btn v-bind="attrs" v-on="on" icon><v-icon>add</v-icon></v-btn>
     </template>
     <v-card>
       <v-card-title>Create Entity Type </v-card-title>
@@ -85,7 +85,7 @@
               </v-card-text>
               <v-card-actions>
                 <v-spacer />
-                <v-btn @click="closeCreateEditDialog()" text> Cancel </v-btn>
+                <v-btn @click="dialog = false" text> Cancel </v-btn>
                 <v-btn color="info" @click="step = 2" :loading="loading"> Continue </v-btn>
               </v-card-actions>
             </v-card>
@@ -124,7 +124,7 @@
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer />
-                  <v-btn @click="closeCreateEditDialog()" text> Cancel </v-btn>
+                  <v-btn @click="dialog = false" text> Cancel </v-btn>
                   <v-btn
                     color="info"
                     @click="saveEntityType()"
@@ -185,7 +185,9 @@ export default {
   data() {
     return {
       type: "json",
+      componentKey: 0,
       signalInstances: [],
+      dialog: false,
       filters: {
         signal: [],
       },
@@ -219,7 +221,6 @@ export default {
   },
   computed: {
     ...mapFields("entity_type", [
-      "dialogs.showCreateEdit",
       "selected",
       "selected.description",
       "selected.regular_expression",
@@ -233,7 +234,7 @@ export default {
   },
   methods: {
     ...mapMutations("playground", ["updatePattern", "updateJsonPath"]),
-    ...mapActions("entity_type", ["createEditShow", "closeCreateEditDialog", "save"]),
+    ...mapActions("entity_type", ["createdSignalDefinition", "save"]),
     saveEntityType() {
       this.save().then((entityType) => {
         this.$emit("input", entityType)
@@ -241,6 +242,9 @@ export default {
     },
     isValidRegex,
     isValidJsonPath,
+    forceRerender() {
+      this.componentKey += 1
+    },
     getSignalData(definition) {
       if (definition) {
         this.filters.signal = [definition]
@@ -304,6 +308,11 @@ export default {
     },
     "selected.working_signal": function (newVal) {
       this.getSignalData(newVal)
+    },
+    dialog: function (newVal) {
+      if (newVal) {
+        this.forceRerender()
+      }
     },
   },
 }

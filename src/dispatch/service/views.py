@@ -1,11 +1,10 @@
-from fastapi import APIRouter, Body, Depends, HTTPException, status
+from fastapi import APIRouter, Body, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
 
-from dispatch.database.core import get_db
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.core import DbSession
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.exceptions import ExistsError
 from dispatch.models import PrimaryKey
 
@@ -17,15 +16,14 @@ router = APIRouter()
 
 
 @router.get("", response_model=ServicePagination)
-def get_services(*, common: dict = Depends(common_parameters)):
+def get_services(common: CommonParameters):
     """Retrieves all services."""
     return search_filter_sort_paginate(model="Service", **common)
 
 
 @router.post("", response_model=ServiceRead)
 def create_service(
-    *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     service_in: ServiceCreate = Body(
         ...,
         example={
@@ -57,9 +55,7 @@ def create_service(
 
 
 @router.put("/{service_id}", response_model=ServiceRead)
-def update_service(
-    *, db_session: Session = Depends(get_db), service_id: PrimaryKey, service_in: ServiceUpdate
-):
+def update_service(db_session: DbSession, service_id: PrimaryKey, service_in: ServiceUpdate):
     """Updates an existing service."""
     service = get(db_session=db_session, service_id=service_id)
     if not service:
@@ -80,7 +76,7 @@ def update_service(
 
 
 @router.get("/{service_id}", response_model=ServiceRead)
-def get_service(*, db_session: Session = Depends(get_db), service_id: PrimaryKey):
+def get_service(db_session: DbSession, service_id: PrimaryKey):
     """Gets a service."""
     service = get(db_session=db_session, service_id=service_id)
     if not service:
@@ -92,7 +88,7 @@ def get_service(*, db_session: Session = Depends(get_db), service_id: PrimaryKey
 
 
 @router.delete("/{service_id}", response_model=None)
-def delete_service(*, db_session: Session = Depends(get_db), service_id: PrimaryKey):
+def delete_service(db_session: DbSession, service_id: PrimaryKey):
     """Deletes a service."""
     service = get(db_session=db_session, service_id=service_id)
     if not service:

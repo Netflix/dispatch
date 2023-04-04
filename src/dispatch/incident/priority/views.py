@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 
-from dispatch.database.core import get_db
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.database.core import DbSession
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 from dispatch.models import PrimaryKey
 
@@ -19,7 +18,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=IncidentPriorityPagination, tags=["incident_priorities"])
-def get_incident_priorities(*, common: dict = Depends(common_parameters)):
+def get_incident_priorities(common: CommonParameters):
     """Returns all incident priorities."""
     return search_filter_sort_paginate(model="IncidentPriority", **common)
 
@@ -30,8 +29,7 @@ def get_incident_priorities(*, common: dict = Depends(common_parameters)):
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def create_incident_priority(
-    *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     incident_priority_in: IncidentPriorityCreate,
 ):
     """Create a new incident priority."""
@@ -45,8 +43,7 @@ def create_incident_priority(
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_incident_priority(
-    *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     incident_priority_id: PrimaryKey,
     incident_priority_in: IncidentPriorityUpdate,
 ):
@@ -67,9 +64,7 @@ def update_incident_priority(
 
 
 @router.get("/{incident_priority_id}", response_model=IncidentPriorityRead)
-def get_incident_priority(
-    *, db_session: Session = Depends(get_db), incident_priority_id: PrimaryKey
-):
+def get_incident_priority(db_session: DbSession, incident_priority_id: PrimaryKey):
     """Get an incident priority."""
     incident_priority = get(db_session=db_session, incident_priority_id=incident_priority_id)
     if not incident_priority:

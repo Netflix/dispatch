@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy.orm import Session
 
 
-from dispatch.database.core import get_db
+from dispatch.database.core import DbSession
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.project.models import ProjectRead
@@ -20,8 +19,7 @@ router = APIRouter()
 
 @router.get("/{role}", response_model=IncidentRoles)
 def get_incident_roles(
-    *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     role: ParticipantRoleType,
     project_name: str = Query(..., alias="projectName"),
 ):
@@ -39,11 +37,10 @@ def get_incident_roles(
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_incident_role(
-    *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     role: ParticipantRoleType,
-    project_name: str = Query(..., alias="projectName"),
     incident_roles_in: IncidentRolesCreateUpdate,
+    project_name: str = Query(..., alias="projectName"),
 ):
     """Update a incident role mapping by its id."""
     return {

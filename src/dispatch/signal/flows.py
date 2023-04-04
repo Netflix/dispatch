@@ -31,7 +31,9 @@ def signal_instance_create_flow(
     signal_instance.entities = entities
     db_session.commit()
 
-    if signal_service.apply_filter_actions(db_session=db_session, signal_instance=signal_instance):
+    if not signal_service.apply_filter_actions(
+        db_session=db_session, signal_instance=signal_instance
+    ):
         if signal_instance.signal.create_case:
             # create a case if not duplicate or snoozed
             case_in = CaseCreate(
@@ -75,7 +77,7 @@ def signal_instance_create_flow(
                     workflow=workflow,
                 )
 
-        return signal_instance
+    return signal_instance
 
 
 def create_signal_instance(

@@ -6,22 +6,17 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import logging
-import os
-import re
 from typing import List, Optional
 
 from blockkit import Message
-from joblib import Memory
 from sqlalchemy.orm import Session
 
 from dispatch.case.models import Case
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.decorators import apply, counter, timer
-from dispatch.exceptions import DispatchPluginException
 from dispatch.plugins import dispatch_slack as slack_plugin
-from dispatch.plugins.bases import ContactPlugin, ConversationPlugin, DocumentPlugin
+from dispatch.plugins.bases import ContactPlugin, ConversationPlugin
 from dispatch.plugins.dispatch_slack.config import (
-    SlackConfiguration,
     SlackContactConfiguration,
     SlackConversationConfiguration,
 )
@@ -39,13 +34,8 @@ from .service import (
     conversation_archived,
     create_conversation,
     create_slack_client,
-    get_conversation_by_name,
     get_user_avatar_url,
-    get_user_info_by_id,
     get_user_profile_by_email,
-    list_conversation_messages,
-    list_conversations,
-    message_filter,
     rename_conversation,
     resolve_user,
     send_ephemeral_message,
@@ -290,70 +280,3 @@ class SlackContactPlugin(ContactPlugin):
             "weblink": weblink,
             "thumbnail": profile["image_512"],
         }
-
-
-class SlackDocumentPlugin(DocumentPlugin):
-    title = "Slack Plugin - Document Interrogator"
-    slug = "slack-document"
-    description = "Uses Slack as a document source."
-    version = slack_plugin.__version__
-
-    author = "Netflix"
-    author_url = "https://github.com/netflix/dispatch.git"
-
-    def __init__(self):
-        self.configuration_schema = SlackConfiguration
-        self.cachedir = os.path.dirname(os.path.realpath(__file__))
-        self.memory = Memory(cachedir=self.cachedir, verbose=0)
-
-    def get(self, **kwargs) -> dict:
-        """Queries slack for documents."""
-        client = create_slack_client(self.configuration)
-        conversations = []
-
-        if kwargs["channels"]:
-            logger.debug(f"Querying slack for documents. Channels: {kwargs['channels']}")
-
-            channels = kwargs["channels"].split(",")
-            for c in channels:
-                conversations.append(get_conversation_by_name(client, c))
-
-        if kwargs["channel_match_pattern"]:
-            try:
-                regex = kwargs["channel_match_pattern"]
-                pattern = re.compile(regex)
-            except re.error as e:
-                raise DispatchPluginException(
-                    message=f"Invalid regex. Is everything escaped properly? Regex: '{regex}' Message: {e}"
-                ) from None
-
-            logger.debug(
-                f"Querying slack for documents. ChannelsPattern: {kwargs['channel_match_pattern']}"
-            )
-            for c in list_conversations(client):
-                if pattern.match(c["name"]):
-                    conversations.append(c)
-
-        for c in conversations:
-            logger.info(f'Fetching channel messages. Channel Name: {c["name"]}')
-
-            messages = list_conversation_messages(client, c["id"], lookback=kwargs["lookback"])
-
-            logger.info(f'Found {len(messages)} messages in slack. Channel Name: {c["name"]}')
-
-            for m in messages:
-                if not message_filter(m):
-                    continue
-
-                user_email = get_user_info_by_id(client, m["user"])["user"]["profile"]["email"]
-
-                yield {
-                    "person": {"email": user_email},
-                    "doc": {
-                        "text": m["text"],
-                        "is_private": c["is_private"],
-                        "subject": c["name"],
-                        "source": "slack",
-                    },
-                    "ref": {"timestamp": m["ts"]},
-                }

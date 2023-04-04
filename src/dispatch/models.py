@@ -90,7 +90,7 @@ class EvergreenMixin(object):
     def overdue(cls):
         return (
             func.date_part("day", func.now() - cls.evergreen_last_reminder_at)
-            >= cls.evergreen_reminder_interval
+            >= cls.evergreen_reminder_interval  # noqa
         )
 
 

@@ -4,7 +4,7 @@ from collections import namedtuple
 from collections.abc import Iterable
 from inspect import signature
 from itertools import chain
-from typing import List
+from typing import Annotated, List
 
 from fastapi import Depends, Query
 from pydantic import BaseModel
@@ -20,8 +20,9 @@ from sqlalchemy_filters.exceptions import BadFilterFormat, FieldNotFound
 from sqlalchemy_filters.models import Field, get_model_from_spec
 
 from dispatch.auth.models import DispatchUser
-from dispatch.auth.service import get_current_role, get_current_user
+from dispatch.auth.service import CurrentUser, get_current_role
 from dispatch.case.models import Case
+from dispatch.database.core import DbSession
 from dispatch.data.query.models import Query as QueryModel
 from dispatch.data.source.models import Source
 from dispatch.enums import UserRoles, Visibility
@@ -36,7 +37,7 @@ from dispatch.search.fulltext.composite_search import CompositeSearch
 from dispatch.signal.models import Signal, SignalInstance
 from dispatch.task.models import Task
 
-from .core import Base, get_class_by_tablename, get_db, get_model_name_by_tablename
+from .core import Base, get_class_by_tablename, get_model_name_by_tablename
 
 log = logging.getLogger(__file__)
 
@@ -424,14 +425,14 @@ def get_all(*, db_session, model):
 
 
 def common_parameters(
-    db_session: orm.Session = Depends(get_db),
+    current_user: CurrentUser,
+    db_session: DbSession,
     page: int = Query(1, gt=0, lt=2147483647),
     items_per_page: int = Query(5, alias="itemsPerPage", gt=-2, lt=2147483647),
     query_str: QueryStr = Query(None, alias="q"),
     filter_spec: Json = Query([], alias="filter"),
     sort_by: List[str] = Query([], alias="sortBy[]"),
     descending: List[bool] = Query([], alias="descending[]"),
-    current_user: DispatchUser = Depends(get_current_user),
     role: UserRoles = Depends(get_current_role),
 ):
     return {
@@ -445,6 +446,12 @@ def common_parameters(
         "current_user": current_user,
         "role": role,
     }
+
+
+CommonParameters = Annotated[
+    dict[str, int | CurrentUser | DbSession | QueryStr | Json | List[str] | List[bool] | UserRoles],
+    Depends(common_parameters),
+]
 
 
 def search_filter_sort_paginate(

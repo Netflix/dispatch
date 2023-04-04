@@ -1,14 +1,12 @@
 import logging
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
 
-from dispatch.auth.models import DispatchUser
-from dispatch.auth.service import get_current_user
-from dispatch.database.core import get_db
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.auth.service import CurrentUser
+from dispatch.database.core import DbSession
+from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.exceptions import ExistsError
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.project import service as project_service
@@ -45,15 +43,14 @@ log = logging.getLogger(__name__)
 
 
 @router.get("/instances", response_model=SignalInstancePagination)
-def get_signal_instances(*, common: dict = Depends(common_parameters)):
+def get_signal_instances(common: CommonParameters):
     """Get all signal instances."""
     return search_filter_sort_paginate(model="SignalInstance", **common)
 
 
 @router.post("/instances", response_model=SignalInstanceRead)
 def create_signal_instance(
-    *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     organization: OrganizationSlug,
     signal_instance_in: SignalInstanceCreate,
     background_tasks: BackgroundTasks,
@@ -106,17 +103,16 @@ def create_signal_instance(
 
 
 @router.get("/filters", response_model=SignalFilterPagination)
-def get_signal_filters(*, common: dict = Depends(common_parameters)):
+def get_signal_filters(common: CommonParameters):
     """Get all signal filters."""
     return search_filter_sort_paginate(model="SignalFilter", **common)
 
 
 @router.post("/filters", response_model=SignalFilterRead)
 def create_filter(
-    *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     signal_filter_in: SignalFilterCreate,
-    current_user: DispatchUser = Depends(get_current_user),
+    current_user: CurrentUser,
 ):
     """Create a new signal filter."""
     try:
@@ -136,8 +132,7 @@ def create_filter(
 
 @router.put("/filters/{signal_filter_id}", response_model=SignalRead)
 def update_filter(
-    *,
-    db_session: Session = Depends(get_db),
+    db_session: DbSession,
     signal_filter_id: PrimaryKey,
     signal_filter_in: SignalFilterUpdate,
 ):
@@ -167,7 +162,7 @@ def update_filter(
 
 
 @router.delete("/filters/{signal_filter_id}", response_model=None)
-def delete_filter(*, db_session: Session = Depends(get_db), signal_filter_id: PrimaryKey):
+def delete_filter(db_session: DbSession, signal_filter_id: PrimaryKey):
     """Deletes a signal filter."""
     signal_filter = get(db_session=db_session, signal_filter_id=signal_filter_id)
     if not signal_filter:
@@ -179,13 +174,13 @@ def delete_filter(*, db_session: Session = Depends(get_db), signal_filter_id: Pr
 
 
 @router.get("", response_model=SignalPagination)
-def get_signals(*, common: dict = Depends(common_parameters)):
+def get_signals(common: CommonParameters):
     """Get all signal definitions."""
     return search_filter_sort_paginate(model="Signal", **common)
 
 
 @router.get("/{signal_id}", response_model=SignalRead)
-def get_signal(*, db_session: Session = Depends(get_db), signal_id: PrimaryKey):
+def get_signal(db_session: DbSession, signal_id: PrimaryKey):
     """Get a signal by it's ID."""
     signal = get(db_session=db_session, signal_id=signal_id)
     if not signal:
@@ -197,15 +192,13 @@ def get_signal(*, db_session: Session = Depends(get_db), signal_id: PrimaryKey):
 
 
 @router.post("", response_model=SignalRead)
-def create_signal(*, db_session: Session = Depends(get_db), signal_in: SignalCreate):
+def create_signal(db_session: DbSession, signal_in: SignalCreate):
     """Create a new signal."""
     return create(db_session=db_session, signal_in=signal_in)
 
 
 @router.put("/{signal_id}", response_model=SignalRead)
-def update_signal(
-    *, db_session: Session = Depends(get_db), signal_id: PrimaryKey, signal_in: SignalUpdate
-):
+def update_signal(db_session: DbSession, signal_id: PrimaryKey, signal_in: SignalUpdate):
     """Updates an existing signal."""
     signal = get(db_session=db_session, signal_id=signal_id)
     if not signal:
@@ -226,7 +219,7 @@ def update_signal(
 
 
 @router.delete("/{signal_id}", response_model=None)
-def delete_signal(*, db_session: Session = Depends(get_db), signal_id: PrimaryKey):
+def delete_signal(db_session: DbSession, signal_id: PrimaryKey):
     """Deletes a signal."""
     signal = get(db_session=db_session, signal_id=signal_id)
     if not signal:
