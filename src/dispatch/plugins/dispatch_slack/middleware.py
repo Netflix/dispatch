@@ -6,19 +6,18 @@ from slack_bolt import BoltContext, BoltRequest
 from slack_sdk.web import WebClient
 from sqlalchemy.orm.session import Session
 
-from dispatch.decorators import timer
 from dispatch.auth import service as user_service
 from dispatch.auth.models import DispatchUser, UserRegister
 from dispatch.conversation import service as conversation_service
 from dispatch.database.core import SessionLocal, refetch_db_session
+from dispatch.decorators import timer
 from dispatch.organization import service as organization_service
 from dispatch.participant import service as participant_service
 from dispatch.participant_role.enums import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
-from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.project import service as project_service
 
-from .exceptions import BotNotPresentError, ContextError, RoleError
+from .exceptions import ContextError, RoleError
 from .models import SubjectMetadata, FormMetadata
 
 log = logging.getLogger(__file__)
@@ -326,40 +325,6 @@ def configuration_middleware(context: BoltContext, next: Callable):
     )
 
     context["config"] = plugin.configuration
-    next()
-
-
-# This middleware has a dependency on configuration_middleware()
-def non_incident_command_middlware(
-    client: WebClient,
-    context: BoltContext,
-    next: Callable,
-):
-    """Attempts to resolve a conversation based on the channel id or message_ts."""
-    # We get the list of public and private conversations the Dispatch bot is a member of
-    public_conversations = dispatch_slack_service.get_conversations_by_user_id(
-        client, context["config"].app_user_slug, type="public"
-    )
-    private_conversations = dispatch_slack_service.get_conversations_by_user_id(
-        client, context["config"].app_user_slug, type="private"
-    )
-
-    public_conversation_names = [c["name"] for c in public_conversations]
-    private_conversation_names = [c["name"] for c in private_conversations]
-
-    # We get the name of conversation where the command was run
-    conversation_name = dispatch_slack_service.get_conversation_name_by_id(
-        client, context.channel_id
-    )
-
-    if (
-        not conversation_name
-        or conversation_name not in public_conversation_names + private_conversation_names  # noqa
-    ):
-        # We let the user know in which public conversations they can run the command
-        context["conversations"] = public_conversations
-        raise BotNotPresentError("User ran a command where the bot is not present.")
-
     next()
 
 

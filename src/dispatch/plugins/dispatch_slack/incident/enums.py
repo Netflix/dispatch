@@ -2,31 +2,8 @@ from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.enums import DispatchEnum
 
 
-class AddTimelineEventBlockIds(DispatchEnum):
-    date = "add-timeline-event-date"
-    hour = "add-timeline-event-hour"
-    minute = "add-timeline-event-minute"
-    timezone = "add-timeline-event-timezone"
-
-
-class AddTimelineEventActionIds(DispatchEnum):
-    date = "add-timeline-event-date"
-    hour = "add-timeline-event-hour"
-    minute = "add-timeline-event-minute"
-    timezone = "add-timeline-event-timezone"
-
-
 class AddTimelineEventActions(DispatchEnum):
     submit = "add-timeline-event-submit"
-
-
-class IncidentNotificationBlockIds(DispatchEnum):
-    invite_user = ConversationButtonActions.invite_user
-    subscribe_user = ConversationButtonActions.subscribe_user
-
-
-class IncidentNotificationActionIds(DispatchEnum):
-    pass
 
 
 class IncidentNotificationActions(DispatchEnum):
@@ -34,20 +11,8 @@ class IncidentNotificationActions(DispatchEnum):
     subscribe_user = ConversationButtonActions.subscribe_user
 
 
-class TaskNotificationActions(DispatchEnum):
-    pass
-
-
 class TaskNotificationActionIds(DispatchEnum):
     update_status = "update-task-status"
-
-
-class TaskNotificationBlockIds(DispatchEnum):
-    pass
-
-
-class LinkMonitorActions(DispatchEnum):
-    submit = "link-monitor-submit"
 
 
 class LinkMonitorActionIds(DispatchEnum):
@@ -63,10 +28,6 @@ class UpdateParticipantActions(DispatchEnum):
     submit = "update-participant-submit"
 
 
-class UpdateParticipantActionIds(DispatchEnum):
-    pass
-
-
 class UpdateParticipantBlockIds(DispatchEnum):
     reason = "update-participant-reason"
     participant = "update-participant-participant"
@@ -74,10 +35,6 @@ class UpdateParticipantBlockIds(DispatchEnum):
 
 class AssignRoleActions(DispatchEnum):
     submit = "assign-role-submit"
-
-
-class AssignRoleActionIds(DispatchEnum):
-    pass
 
 
 class AssignRoleBlockIds(DispatchEnum):
@@ -103,10 +60,6 @@ class ReportTacticalActions(DispatchEnum):
     submit = "report-tactical-submit"
 
 
-class ReportTacticalActionIds(DispatchEnum):
-    pass
-
-
 class ReportTacticalBlockIds(DispatchEnum):
     needs = "report-tactical-needs"
     actions = "report-tactical-actions"
@@ -115,10 +68,6 @@ class ReportTacticalBlockIds(DispatchEnum):
 
 class ReportExecutiveActions(DispatchEnum):
     submit = "report-executive-submit"
-
-
-class ReportExecutiveActionIds(DispatchEnum):
-    pass
 
 
 class ReportExecutiveBlockIds(DispatchEnum):
@@ -132,10 +81,6 @@ class IncidentUpdateActions(DispatchEnum):
     project_select = "incident-update-project-select"
 
 
-class IncidentUpdateActionIds(DispatchEnum):
-    tags_multi_select = "incident-update-tags-multi-select"
-
-
 class IncidentUpdateBlockIds(DispatchEnum):
     tags_multi_select = "incident-update-tags-multi-select"
 
@@ -143,14 +88,6 @@ class IncidentUpdateBlockIds(DispatchEnum):
 class IncidentReportActions(DispatchEnum):
     submit = "incident-report-submit"
     project_select = "incident-report-project-select"
-
-
-class IncidentReportActionIds(DispatchEnum):
-    tags_multi_select = "incident-report-tags-multi-select"
-
-
-class IncidentReportBlockIds(DispatchEnum):
-    tags_multi_select = "incident-report-tags-multi-select"
 
 
 class UpdateNotificationGroupActions(DispatchEnum):
