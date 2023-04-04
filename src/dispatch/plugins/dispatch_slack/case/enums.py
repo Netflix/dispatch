@@ -2,21 +2,16 @@ from dispatch.enums import DispatchEnum
 
 
 class CaseNotificationActions(DispatchEnum):
-    escalate = "case-notification-escalate"
-    resolve = "case-notification-resolve"
-    reopen = "case-notification-reopen"
-    acknowledge = "case-notification-acknowledge"
     edit = "case-notification-edit"
+    escalate = "case-notification-escalate"
     join_incident = "case-notification-join-incident"
+    reopen = "case-notification-reopen"
+    resolve = "case-notification-resolve"
 
 
 class CasePaginateActions(DispatchEnum):
     list_signal_next = "case-list-signal-next"
     list_signal_previous = "case-list-signal-previous"
-
-
-class CaseEditActions(DispatchEnum):
-    submit = "case-notification-edit-submit"
 
 
 class CaseResolveActions(DispatchEnum):
