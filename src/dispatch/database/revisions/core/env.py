@@ -1,5 +1,5 @@
 from alembic import context
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import engine_from_config, pool, text
 
 from dispatch.logging import logging
 from dispatch.config import SQLALCHEMY_DATABASE_URI
@@ -51,7 +51,8 @@ def run_migrations_online():
     log.info("Migrating dispatch core schema...")
     # migrate common tables
     with connectable.connect() as connection:
-        connection.execute(f'set search_path to "{CORE_SCHEMA_NAME}"')
+        set_search_path = text(f'set search_path to "{CORE_SCHEMA_NAME}"')
+        connection.execute(set_search_path)
         connection.dialect.default_schema_name = CORE_SCHEMA_NAME
         context.configure(
             connection=connection,

@@ -4,8 +4,9 @@ import logging
 from alembic import command as alembic_command
 from alembic.config import Config as AlembicConfig
 
-from sqlalchemy import text
-from sqlalchemy.schema import CreateSchema
+from sqlalchemy import Engine, text
+from sqlalchemy.engine import Connection
+from sqlalchemy.schema import CreateSchema, Table
 from sqlalchemy_utils import create_database, database_exists
 
 from dispatch import config
@@ -33,7 +34,7 @@ def version_schema(script_location: str):
     alembic_command.stamp(alembic_cfg, "head")
 
 
-def get_core_tables():
+def get_core_tables() -> list[Table]:
     """Fetches tables that belong to the 'dispatch_core' schema."""
     core_tables = []
     for _, table in Base.metadata.tables.items():
@@ -42,7 +43,7 @@ def get_core_tables():
     return core_tables
 
 
-def get_tenant_tables():
+def get_tenant_tables() -> list[Table]:
     """Fetches tables that belong to their own tenant tables."""
     tenant_tables = []
     for _, table in Base.metadata.tables.items():
@@ -51,14 +52,14 @@ def get_tenant_tables():
     return tenant_tables
 
 
-def init_database(engine):
+def init_database(engine: Engine) -> None:
     """Initializes the database."""
     if not database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
         create_database(str(config.SQLALCHEMY_DATABASE_URI))
 
     schema_name = "dispatch_core"
-    if not engine.dialect.has_schema(engine, schema_name):
-        with engine.connect() as connection:
+    with engine.begin() as connection:
+        if not engine.dialect.has_schema(connection, schema_name):
             connection.execute(CreateSchema(schema_name))
 
     tables = get_core_tables()
@@ -66,7 +67,8 @@ def init_database(engine):
     Base.metadata.create_all(engine, tables=tables)
 
     version_schema(script_location=config.ALEMBIC_CORE_REVISION_PATH)
-    setup_fulltext_search(engine, tables)
+    with engine.connect() as connection:
+        setup_fulltext_search(connection, tables)
 
     # setup an required database functions
     session = sessionmaker(bind=engine)
@@ -133,7 +135,7 @@ def init_database(engine):
         )
 
 
-def init_schema(*, engine, organization: Organization):
+def init_schema(*, engine, organization: Organization) -> Organization:
     """Initializes a new schema."""
     schema_name = f"{DISPATCH_ORGANIZATION_SCHEMA_PREFIX}_{organization.slug}"
 
@@ -172,7 +174,7 @@ def init_schema(*, engine, organization: Organization):
     return organization
 
 
-def setup_fulltext_search(connection, tables):
+def setup_fulltext_search(connection: Connection, tables: list[Table]) -> None:
     """Syncs any required fulltext table triggers and functions."""
     # parsing functions
     function_path = os.path.join(

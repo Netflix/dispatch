@@ -4,9 +4,11 @@ https://github.com/kvesteri/sqlalchemy-searchable/blob/master/sqlalchemy_searcha
 """
 import os
 from functools import reduce
+from typing import Any
 
 from sqlalchemy import event, inspect, func, desc, text, MetaData, Table, Index, orm
 from sqlalchemy.dialects.postgresql.base import RESERVED_WORDS
+from sqlalchemy.engine import Connection
 from sqlalchemy.schema import DDL
 from sqlalchemy_utils import TSVectorType
 
@@ -295,7 +297,14 @@ class SearchManager:
 search_manager = SearchManager()
 
 
-def sync_trigger(conn, table, tsvector_column, indexed_columns, metadata=None, options=None):
+def sync_trigger(
+    conn: Connection,
+    table: Table,
+    tsvector_column: str,
+    indexed_columns: list[str],
+    metadata: MetaData | None = None,
+    options: dict[str, Any] | None = None,
+) -> None:
     """
     Synchronizes search trigger and trigger function for given table and given
     search index column. Internally this function executes the following SQL
@@ -402,7 +411,7 @@ def sync_trigger(conn, table, tsvector_column, indexed_columns, metadata=None, o
     ]
     for class_ in classes:
         sql = class_(**params)
-        conn.execute(str(sql), **sql.params)
+        conn.execute(text(str(sql)), **sql.params)
     update_sql = table.update().values({indexed_columns[0]: text(indexed_columns[0])})
     conn.execute(update_sql)
 
