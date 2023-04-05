@@ -349,9 +349,7 @@ def create_instance(
     return signal_instance
 
 
-def apply_filter_actions(
-    *, db_session: Session, signal_instance: SignalInstance
-) -> Literal[True] | None:
+def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bool:
     """Applies any matching filter actions associated with this instance."""
 
     filtered = False

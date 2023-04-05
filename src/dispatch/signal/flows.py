@@ -31,41 +31,41 @@ def signal_instance_create_flow(
     signal_instance.entities = entities
     db_session.commit()
 
-    if signal_service.apply_filter_actions(db_session=db_session, signal_instance=signal_instance):
+    if not signal_instance.signal.create_case:
         return signal_instance
 
-    if signal_instance.signal.create_case:
-        # create a case if not duplicate or snoozed
-        case_in = CaseCreate(
-            title=signal_instance.signal.name,
-            description=signal_instance.signal.description,
-            case_priority=signal_instance.signal.case_priority,
-            project=signal_instance.project,
-            case_type=signal_instance.signal.case_type,
-        )
-        case = case_service.create(
-            db_session=db_session, case_in=case_in, current_user=current_user
-        )
+    # we don't need to continue if a filter action took place
+    if signal_service.filter_signal(db_session=db_session, signal_instance=signal_instance):
+        return signal_instance
 
-        signal_instance.case = case
+    # create a case if not duplicate or snoozed
+    case_in = CaseCreate(
+        title=signal_instance.signal.name,
+        description=signal_instance.signal.description,
+        case_priority=signal_instance.signal.case_priority,
+        project=signal_instance.project,
+        case_type=signal_instance.signal.case_type,
+    )
+    case = case_service.create(db_session=db_session, case_in=case_in, current_user=current_user)
+    signal_instance.case = case
 
-        db_session.commit()
+    db_session.commit()
 
-        service_id = None
-        if signal_instance.signal.oncall_service:
-            service_id = signal_instance.signal.oncall_service.external_id
+    service_id = None
+    if signal_instance.signal.oncall_service:
+        service_id = signal_instance.signal.oncall_service.external_id
 
-        conversation_target = None
-        if signal_instance.signal.conversation_target:
-            conversation_target = signal_instance.signal.conversation_target
+    conversation_target = None
+    if signal_instance.signal.conversation_target:
+        conversation_target = signal_instance.signal.conversation_target
 
-        case_flows.case_new_create_flow(
-            db_session=db_session,
-            organization_slug=None,
-            service_id=service_id,
-            conversation_target=conversation_target,
-            case_id=case.id,
-        )
+    case_flows.case_new_create_flow(
+        db_session=db_session,
+        organization_slug=None,
+        service_id=service_id,
+        conversation_target=conversation_target,
+        case_id=case.id,
+    )
 
     # run workflows if not duplicate or snoozed
     if workflows := signal_instance.signal.workflows:
