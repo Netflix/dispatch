@@ -1,6 +1,6 @@
 import json
 from datetime import datetime, timedelta, timezone
-from typing import Literal, Optional
+from typing import Optional
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy import asc
