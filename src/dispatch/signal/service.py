@@ -185,6 +185,7 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
                 "filters",
                 "tags",
                 "entity_types",
+                "oncall_service",
                 "workflows",
             }
         ),
@@ -225,6 +226,8 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
         case_priority = case_priority_service.get_by_name_or_default(
             db_session=db_session, project_id=project.id, case_priority_in=signal_in.case_priority
         )
+        print(signal)
+        print(case_priority)
         signal.case_priority = case_priority
 
     if signal_in.oncall_service:
