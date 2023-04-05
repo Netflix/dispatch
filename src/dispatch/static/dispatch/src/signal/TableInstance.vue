@@ -36,9 +36,9 @@
                 text-color="white"
                 :color="
                   item.filter_action === 'snooze'
-                    ? 'red'
+                    ? 'blue-accent-4'
                     : item.filter_action === 'deduplicate'
-                    ? 'light-red'
+                    ? 'blue-accent-2'
                     : ''
                 "
               >
