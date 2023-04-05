@@ -233,7 +233,7 @@ class SearchManager:
     def search_function_ddl(self, column):
         def after_create(target, connection, **kw):
             clause = CreateSearchFunctionSQL(column, conn=connection)
-            connection.execute(str(clause), **clause.params)
+            connection.exec_driver_sql(str(clause), clause.params)
 
         return after_create
 
@@ -411,12 +411,18 @@ def sync_trigger(
     ]
     for class_ in classes:
         sql = class_(**params)
-        conn.execute(text(str(sql)), **sql.params)
+        conn.exec_driver_sql(str(sql), sql.params)
     update_sql = table.update().values({indexed_columns[0]: text(indexed_columns[0])})
     conn.execute(update_sql)
 
 
-def drop_trigger(conn, table_name, tsvector_column, metadata=None, options=None):
+def drop_trigger(
+    conn: Connection,
+    table_name: str,
+    tsvector_column: str,
+    metadata: MetaData | None = None,
+    options: dict[str, Any] | None = None,
+) -> None:
     """
     * Drops search trigger for given table (if it exists)
     * Drops search function for given table (if it exists)
@@ -459,7 +465,7 @@ def drop_trigger(conn, table_name, tsvector_column, metadata=None, options=None)
     ]
     for class_ in classes:
         sql = class_(**params)
-        conn.execute(str(sql), **sql.params)
+        conn.exec_driver_sql(str(sql), sql.params)
 
 
 path = os.path.dirname(os.path.abspath(__file__))

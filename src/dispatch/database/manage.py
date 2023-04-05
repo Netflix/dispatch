@@ -59,8 +59,7 @@ def init_database(engine: Engine) -> None:
 
     schema_name = "dispatch_core"
     with engine.begin() as connection:
-        if not engine.dialect.has_schema(connection, schema_name):
-            connection.execute(CreateSchema(schema_name))
+        connection.execute(CreateSchema(schema_name, if_not_exists=True))
 
     tables = get_core_tables()
 
@@ -135,13 +134,12 @@ def init_database(engine: Engine) -> None:
         )
 
 
-def init_schema(*, engine, organization: Organization) -> Organization:
+def init_schema(*, engine: Engine, organization: Organization) -> Organization:
     """Initializes a new schema."""
     schema_name = f"{DISPATCH_ORGANIZATION_SCHEMA_PREFIX}_{organization.slug}"
 
-    if not engine.dialect.has_schema(engine, schema_name):
-        with engine.connect() as connection:
-            connection.execute(CreateSchema(schema_name))
+    with engine.begin() as connection:
+        connection.execute(CreateSchema(schema_name, if_not_exists=True))
 
     # set the schema for table creation
     tables = get_tenant_tables()
