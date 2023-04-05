@@ -185,6 +185,7 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
                 "filters",
                 "tags",
                 "entity_types",
+                "oncall_service",
                 "workflows",
             }
         ),
