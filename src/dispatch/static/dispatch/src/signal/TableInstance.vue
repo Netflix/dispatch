@@ -42,7 +42,13 @@
                     : ''
                 "
               >
-                {{ item.filter_action ? item.filter_action : "Not Filtered" }}
+                {{
+                  item.filter_action === "snooze"
+                    ? "Snoozed"
+                    : item.filter_action === "deduplicate"
+                    ? "Duplicate"
+                    : "Not Filtered"
+                }}
               </v-chip>
             </template>
             <template v-slot:item.created_at="{ item }">
