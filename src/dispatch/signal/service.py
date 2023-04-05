@@ -1,6 +1,6 @@
 import json
 from datetime import datetime, timedelta, timezone
-from typing import Literal, Optional
+from typing import Optional
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy import asc
@@ -349,12 +349,10 @@ def create_instance(
     return signal_instance
 
 
-def apply_filter_actions(
-    *, db_session: Session, signal_instance: SignalInstance
-) -> Literal[True] | None:
+def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bool:
     """Applies any matching filter actions associated with this instance."""
 
-    action = False
+    filtered = False
     for f in signal_instance.signal.filters:
         if f.mode != SignalFilterMode.active:
             continue
@@ -375,7 +373,7 @@ def apply_filter_actions(
 
             if instances:
                 signal_instance.filter_action = SignalFilterAction.snooze
-                action = True
+                filtered = True
                 break
 
         elif f.action == SignalFilterAction.deduplicate:
@@ -390,8 +388,8 @@ def apply_filter_actions(
                 # associate with existing case
                 signal_instance.case_id = instances[0].case_id
                 signal_instance.filter_action = SignalFilterAction.deduplicate
-                action = True
+                filtered = True
                 break
 
     db_session.commit()
-    return action
+    return filtered
