@@ -20,7 +20,8 @@ depends_on = None
 
 def upgrade():
     conn = op.get_context().connection
-    metadata = MetaData(bind=conn, schema=conn.dialect.default_schema_name)
+    metadata = MetaData(schema=conn.dialect.default_schema_name)
+    metadata.bind = conn
     table = sa.Table("signal", metadata, autoload=True)
     sync_trigger(conn, table, "search_vector", ["name", "description", "variant"])
 
