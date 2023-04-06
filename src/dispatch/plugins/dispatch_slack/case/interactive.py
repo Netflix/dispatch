@@ -389,7 +389,7 @@ def snooze_button_click(
         signal = signal_service.get(db_session=db_session, signal_id=instance.signal.id)
         subject.id = signal.id
 
-    entities = entity_service.get_all(db_session=db_session, project_id=subject.project_id).all()
+    entities = entity_service.get_all_by_signal(db_session=db_session, signal_id=subject.id)
     if not entities:
         modal = Modal(
             title="Unable to snooze",
