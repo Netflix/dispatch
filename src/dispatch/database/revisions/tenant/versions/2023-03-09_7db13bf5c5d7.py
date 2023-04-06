@@ -21,8 +21,9 @@ depends_on = None
 
 def upgrade():
     conn = op.get_context().connection
-    metadata = MetaData(bind=conn, schema=conn.dialect.default_schema_name)
-    table = sa.Table("tag", metadata, autoload=True)
+    metadata = MetaData(schema=conn.dialect.default_schema_name)
+    metadata.bind = conn
+    table = sa.Table("tag", metadata, autoload_with=conn)
     sync_trigger(conn, table, "search_vector", ["name", "description", "external_id"])
 
 
