@@ -12,10 +12,10 @@ from dispatch.case.models import Case
 from dispatch.entity.models import Entity, EntityCreate, EntityUpdate, EntityRead
 from dispatch.entity_type import service as entity_type_service
 from dispatch.entity_type.models import EntityType
-from dispatch.signal.models import SignalInstance
+from dispatch.signal.models import Signal, SignalInstance
 
 
-def get(*, db_session, entity_id: int) -> Optional[Entity]:
+def get(*, db_session: Session, entity_id: int) -> Optional[Entity]:
     """Gets a entity by its id."""
     return db_session.query(Entity).filter(Entity.id == entity_id).one_or_none()
 
@@ -30,7 +30,9 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Entity]:
     )
 
 
-def get_by_name_or_raise(*, db_session, project_id: int, entity_in=EntityRead) -> EntityRead:
+def get_by_name_or_raise(
+    *, db_session: Session, project_id: int, entity_in=EntityRead
+) -> EntityRead:
     """Returns the entity specified or raises ValidationError."""
     entity = get_by_name(db_session=db_session, project_id=project_id, name=entity_in.name)
 
@@ -51,7 +53,7 @@ def get_by_name_or_raise(*, db_session, project_id: int, entity_in=EntityRead) -
     return entity
 
 
-def get_by_value(*, db_session, project_id: int, value: str) -> Optional[Entity]:
+def get_by_value(*, db_session: Session, project_id: int, value: str) -> Optional[Entity]:
     """Gets a entity by its value."""
     return (
         db_session.query(Entity)
@@ -61,12 +63,23 @@ def get_by_value(*, db_session, project_id: int, value: str) -> Optional[Entity]
     )
 
 
-def get_all(*, db_session, project_id: int):
+def get_all(*, db_session: Session, project_id: int):
     """Gets all entities by their project."""
     return db_session.query(Entity).filter(Entity.project_id == project_id)
 
 
-def create(*, db_session, entity_in: EntityCreate) -> Entity:
+def get_all_by_signal(*, db_session: Session, signal_id: int) -> list[Entity]:
+    """Gets all entities for a specific signal."""
+    return (
+        db_session.query(Entity)
+        .join(Entity.signal_instances)
+        .join(SignalInstance.signal)
+        .filter(Signal.id == signal_id)
+        .all()
+    )
+
+
+def create(*, db_session: Session, entity_in: EntityCreate) -> Entity:
     """Creates a new entity."""
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=entity_in.project
@@ -86,7 +99,7 @@ def create(*, db_session, entity_in: EntityCreate) -> Entity:
     return entity
 
 
-def get_by_value_or_create(*, db_session, entity_in: EntityCreate) -> Entity:
+def get_by_value_or_create(*, db_session: Session, entity_in: EntityCreate) -> Entity:
     """Gets or creates a new entity."""
     # prefer the entity id if available
     if entity_in.id:
@@ -103,7 +116,7 @@ def get_by_value_or_create(*, db_session, entity_in: EntityCreate) -> Entity:
     return create(db_session=db_session, entity_in=entity_in)
 
 
-def update(*, db_session, entity: Entity, entity_in: EntityUpdate) -> Entity:
+def update(*, db_session: Session, entity: Entity, entity_in: EntityUpdate) -> Entity:
     """Updates an existing entity."""
     entity_data = entity.dict()
     update_data = entity_in.dict(skip_defaults=True, exclude={"entity_type"})
@@ -124,7 +137,7 @@ def update(*, db_session, entity: Entity, entity_in: EntityUpdate) -> Entity:
     return entity
 
 
-def delete(*, db_session, entity_id: int):
+def delete(*, db_session: Session, entity_id: int):
     """Deletes an existing entity."""
     entity = db_session.query(Entity).filter(Entity.id == entity_id).one()
     db_session.delete(entity)
