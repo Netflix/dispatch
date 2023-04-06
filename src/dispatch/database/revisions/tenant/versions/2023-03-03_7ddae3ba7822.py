@@ -22,7 +22,7 @@ def upgrade():
     conn = op.get_context().connection
     metadata = MetaData(schema=conn.dialect.default_schema_name)
     metadata.bind = conn
-    table = sa.Table("signal", metadata, autoload=True)
+    table = sa.Table("signal", metadata, autoload_with=conn)
     sync_trigger(conn, table, "search_vector", ["name", "description", "variant"])
 
 
