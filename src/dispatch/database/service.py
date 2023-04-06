@@ -418,7 +418,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (Incident, "TagType"): (Incident.tags, True),
         (Incident, "Term"): (Incident.terms, True),
         (Signal, "Tag"): (Signal.tags, True),
-        (Signal, "TagType"): {Signal.tags, True},
+        (Signal, "TagType"): (Signal.tags, True),
         (SignalInstance, "Entity"): (SignalInstance.entities, True),
         (SignalInstance, "EntityType"): (SignalInstance.entities, True),
     }
