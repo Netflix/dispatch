@@ -26,7 +26,7 @@ coverage==7.2.2
     # via -r requirements-dev.in
 decorator==5.1.1
     # via ipython
-devtools==0.10.0
+devtools==0.11.0
     # via -r requirements-dev.in
 distlib==0.3.6
     # via virtualenv
