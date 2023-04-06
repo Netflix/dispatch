@@ -144,27 +144,20 @@ def init_schema(*, engine: Engine, organization: Organization) -> Organization:
     # set the schema for table creation
     tables = get_tenant_tables()
 
-    schema_engine = engine.execution_options(
-        schema_translate_map={
-            None: schema_name,
-            "dispatch_core": "dispatch_core",
-        }
-    )
+    # alter each table's schema
+    for t in tables:
+        t.schema = schema_name
 
-    Base.metadata.create_all(schema_engine, tables=tables)
+    # create tables with the altered schema
+    Base.metadata.create_all(engine, tables=tables)
 
     # put schema under version control
     version_schema(script_location=config.ALEMBIC_TENANT_REVISION_PATH)
 
     with engine.connect() as connection:
-        # we need to map this for full text search as it uses sql literal strings
-        # and schema translate map does not apply
-        for t in tables:
-            t.schema = schema_name
-
         setup_fulltext_search(connection, tables)
 
-    session = sessionmaker(bind=schema_engine)
+    session = sessionmaker(bind=engine)
     db_session = session()
 
     organization = db_session.merge(organization)
