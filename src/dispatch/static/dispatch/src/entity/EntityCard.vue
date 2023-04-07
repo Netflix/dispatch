@@ -58,7 +58,7 @@
           rounded="xl"
           class="d-flex align-center mx-4 mt-3 mb-3"
           :elevation="hover ? 2 : 0"
-          @click="createCaseShow(getCaseTable())"
+          @click="openCaseTab"
         >
           <v-card-text class="d-flex align-center">
             <v-progress-linear
@@ -79,11 +79,11 @@
         </v-card>
       </template>
     </v-hover>
-    <v-dialog v-model="dialog" max-width="1080">
+    <v-dialog v-model="signalDialog" max-width="1080">
       <template v-slot:activator="{ on }"></template>
       <signal-instance-tab :inputSignalInstances="signalInstances" />
     </v-dialog>
-    <v-dialog v-model="showCaseView" max-width="1080">
+    <v-dialog v-model="caseDialog" max-width="1080">
       <template v-slot:activator="{ on }"></template>
       <case-tab :inputCases="cases" />
     </v-dialog>
@@ -98,6 +98,7 @@ import CaseApi from "@/case/api"
 import CaseTab from "@/case/CaseTab.vue"
 import EntityApi from "@/entity/api"
 import SearchUtils from "@/search/utils"
+import SignalInstanceApi from "@/signal/api"
 import SignalInstanceTab from "@/signal/SignalInstanceTab.vue"
 
 export default {
@@ -123,20 +124,19 @@ export default {
   computed: {
     ...mapFields("entity", ["dialogs.showCaseView"]),
     ...mapFields("route", ["query"]),
+    badgeCount() {
+      return this.count >= 100 ? "x99+" : `x${this.count}`
+    },
   },
   data() {
     return {
       caseCount: null,
       signalInstanceCount: null,
       isLoading: true,
-      dialog: false,
+      signalDialog: false,
+      caseDialog: false,
       signalInstances: [],
       cases: [],
-      filters: {
-        entity: [],
-        start: null,
-        end: null,
-      },
     }
   },
   async mounted() {
@@ -147,16 +147,11 @@ export default {
       this.refreshData()
     },
   },
-  computed: {
-    badgeCount() {
-      return this.count >= 100 ? "x99+" : `x${this.count}`
-    },
-  },
   methods: {
-    ...mapActions("entity", ["createCaseShow"]),
     async refreshData() {
       try {
         this.isLoading = true
+
         const casePromise = EntityApi.getCases(this.entity.id, this.selectedDateTime).then(
           (response) => response.data
         )
@@ -164,46 +159,30 @@ export default {
           this.entity.id,
           this.selectedDateTime
         ).then((response) => response.data)
+
         const [casesResponse, signalResponse] = await Promise.all([casePromise, signalPromise])
-        this.caseCount = casesResponse.cases.length
-        this.signalInstanceCount = signalResponse.instances.length
+
+        this.cases = casesResponse.cases
+        this.caseCount = this.cases.length
+
+        this.signalInstances = signalResponse.instances
+        this.signalInstanceCount = this.signalInstances.length
+
         this.isLoading = false
       } catch (error) {
         console.error("Error in refreshData:", error)
       }
     },
-    async getSignalInstances(selectedDateTime) {
-      this.signalInstances = await EntityApi.getSignalInstances(
-        this.entity.id,
-        selectedDateTime
-      ).then((response) => response.data.instances)
-    },
-    getCaseTable() {
-      this.filters.entities = [this.entity]
-      const startDate = this.getStartDate()
-      const endDate = new Date()
-      this.filters.start = [startDate]
-      this.filters.end = [endDate]
-
-      const expression = SearchUtils.createFilterExpression(this.filters)
-      if (!expression) return
-
-      const params = { filter: expression, itemsPerPage: 50 }
-
-      return CaseApi.getAll(params)
-        .then((response) => {
-          this.cases = response.data.items
-          return response.data.items
-        })
-        .catch((error) => {
-          console.error(error)
-        })
-    },
     async openSignalInstanceTab() {
-      await this.getSignalInstances(this.selectedDateTime)
-      this.dialog = true
+      this.signalDialog = true
       this.$nextTick(() => {
         this.$refs.signalInstanceTab = this.signalInstances
+      })
+    },
+    async openCaseTab() {
+      this.caseDialog = true
+      this.$nextTick(() => {
+        this.$refs.caseTab = this.cases
       })
     },
     getStartDate() {
