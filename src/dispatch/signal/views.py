@@ -11,7 +11,6 @@ from dispatch.exceptions import ExistsError
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.project import service as project_service
 from dispatch.signal import service as signal_service
-from dispatch.signal.flows import signal_instance_create_flow
 
 from .models import (
     SignalCreate,

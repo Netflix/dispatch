@@ -6,7 +6,6 @@
 """
 import logging
 from schedule import every
-from datetime import datetime, timedelta
 from dispatch.database.core import SessionLocal
 from dispatch.scheduler import scheduler
 from dispatch.project.models import Project
@@ -59,7 +58,7 @@ def process_signals(db_session: SessionLocal, project: Project):
     signal_instances = (
         db_session.query(SignalInstance)
         .filter(SignalInstance.project_id == project.id)
-        .filter(SignalInstance.filter_action == None)
+        .filter(SignalInstance.filter_action == None)  # noqa
     )
     for signal_instance in signal_instances:
         log.info(f"Attempting to process the following signal: {signal_instance.id}")
