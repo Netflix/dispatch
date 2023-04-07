@@ -362,13 +362,12 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
         query = db_session.query(SignalInstance).filter(
             SignalInstance.signal_id == signal_instance.signal_id
         )
+        query = apply_filter_specific_joins(SignalInstance, f.expression, query)
+        query = apply_filters(query, f.expression)
 
         # order matters, check for snooze before deduplication
         # we check to see if the current instances match's it's signals snooze filter
         if f.action == SignalFilterAction.snooze:
-            query = apply_filter_specific_joins(SignalInstance, f.expression, query)
-            query = apply_filters(query, f.expression)
-
             if f.expiration.replace(tzinfo=timezone.utc) <= datetime.now(timezone.utc):
                 continue
 
@@ -396,6 +395,9 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
                 signal_instance.filter_action = SignalFilterAction.deduplicate
                 filtered = True
                 break
+
+    if not filtered:
+        signal_instance.filter_action = SignalFilterAction.none
 
     db_session.commit()
     return filtered

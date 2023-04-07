@@ -52,23 +52,14 @@ def consume_signals(db_session: SessionLocal, project: Project):
             plugin.instance.delete()
 
 
-def _get_process_window():
-    "Creates a sliding window that contains the previous whole min regardless of when the function is run."
-    now = datetime.utcnow()
-    window_start = now - timedelta(minutes=2)
-    window_end = now - timedelta(minutes=1)
-    return window_start, window_end
-
-
 @scheduler.add(every(1).minutes, name="signal-process")
 @scheduled_project_task
 def process_signals(db_session: SessionLocal, project: Project):
-    """Processes signals and create cases if appropriate"""
-    window_start, window_end = _get_process_window()
+    """Processes signals and create cases if appropriate."""
     signal_instances = (
         db_session.query(SignalInstance)
         .filter(SignalInstance.project_id == project.id)
-        .filter(SignalInstance.created_at >= window_start, SignalInstance.created_at <= window_end)
+        .filter(SignalInstance.filter_action == None)
     )
     for signal_instance in signal_instances:
         log.info(f"Attempting to process the following signal: {signal_instance.id}")
