@@ -1,6 +1,22 @@
 <template>
   <v-card elevation="1" outlined class="position-relative">
-    <v-card-title>{{ entity.entity_type.name }}</v-card-title>
+    <v-row>
+      <v-col cols="8" style="align-self: center">
+        <v-card-title class="pb-0 mb-0">{{ entity.entity_type.name }}</v-card-title>
+      </v-col>
+      <v-col class="text-right" cols="4" v-if="count > 1" style="align-self: center">
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <span v-bind="attrs" v-on="on">
+              <v-badge color="grey" :content="badgeCount" overlap offset-x="45" offset-y="37">
+                <v-card-subtitle></v-card-subtitle>
+              </v-badge>
+            </span>
+          </template>
+          <span>This entity has been seen {{ count }} times in this case</span>
+        </v-tooltip>
+      </v-col>
+    </v-row>
     <v-card-text style="font-size: 18px">{{ entity.value }}</v-card-text>
     <v-divider></v-divider>
     <v-hover>
@@ -91,6 +107,10 @@ export default {
       type: Object,
       required: true,
     },
+    count: {
+      type: Number,
+      default: 1,
+    },
     selectedDateTime: {
       type: Number,
       required: true,
@@ -125,6 +145,11 @@ export default {
   watch: {
     selectedDateTime() {
       this.refreshData()
+    },
+  },
+  computed: {
+    badgeCount() {
+      return this.count >= 100 ? "x99+" : `x${this.count}`
     },
   },
   methods: {

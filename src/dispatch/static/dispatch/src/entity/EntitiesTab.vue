@@ -8,9 +8,9 @@
         @input="onSelectedDateTimeChange"
       />
     </v-row>
-    <v-row v-if="entities.length >= 1">
-      <v-col class="pl-6 mt-6" v-for="entity in entities" :key="entity.id" cols="6">
-        <entity-card :entity="entity" :selectedDateTime="selectedDateTime" />
+    <v-row v-if="uniqueEntities.length >= 1">
+      <v-col class="pl-6 mt-6" v-for="entity in uniqueEntities" :key="entity.id" cols="6">
+        <entity-card :entity="entity" :count="entity.count" :selectedDateTime="selectedDateTime" />
       </v-col>
     </v-row>
     <div v-else>
@@ -41,20 +41,27 @@ export default {
     }
   },
   computed: {
-    entities() {
+    uniqueEntities() {
+      const uniqueEntities = {}
+
       if (this.selected.signal_instances.length) {
-        // Concatenate all the entities associated with each SignalInstance
-        return this.selected.signal_instances.reduce((acc, curr) => {
-          const entities = curr.entities.map((entity) => ({
-            entity_type: entity.entity_type,
-            value: entity.value,
-            id: entity.id,
-          }))
-          return acc.concat(entities)
-        }, [])
-      } else {
-        return []
+        this.selected.signal_instances.forEach((instance) => {
+          instance.entities.forEach((entity) => {
+            const key = `${entity.entity_type}_${entity.value}`
+
+            if (uniqueEntities[key]) {
+              uniqueEntities[key].count++
+            } else {
+              uniqueEntities[key] = {
+                ...entity,
+                count: 1,
+              }
+            }
+          })
+        })
       }
+
+      return Object.values(uniqueEntities)
     },
   },
   methods: {
