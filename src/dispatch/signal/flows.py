@@ -11,10 +11,8 @@ from dispatch.signal.models import SignalInstanceCreate
 from dispatch.workflow import flows as workflow_flows
 
 
-@background_task
 def signal_instance_create_flow(
     signal_instance_id: int,
-    organization_slug: str,
     db_session: SessionLocal = None,
     current_user: DispatchUser = None,
 ):

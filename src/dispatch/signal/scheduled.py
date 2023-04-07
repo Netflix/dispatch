@@ -65,7 +65,6 @@ def process_signals(db_session: SessionLocal, project: Project):
         try:
             signal_flows.signal_instance_create_flow(
                 db_session=db_session,
-                project=project,
                 signal_instance_id=signal_instance.id,
             )
         except Exception as e:
