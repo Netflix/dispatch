@@ -56,7 +56,7 @@
               </v-list-item-icon>
             </v-list-item-action>
           </v-list-item>
-          <v-list-item href="https://hawkins.gitbook.io/dispatch/" target="_blank">
+          <v-list-item href="https://netflix.github.io/dispatch/" target="_blank">
             <v-list-item-title>App Documentation</v-list-item-title>
             <v-list-item-action>
               <v-list-item-icon>
@@ -177,8 +177,7 @@ export default {
       localStorage.setItem("dark_theme", this.$vuetify.theme.dark.toString())
     },
     switchOrganizations(slug) {
-      this.$router.push({ params: { organization: slug } })
-      .then(() => {
+      this.$router.push({ params: { organization: slug } }).then(() => {
         this.$router.go()
       })
     },
