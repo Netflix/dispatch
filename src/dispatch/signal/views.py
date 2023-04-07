@@ -94,11 +94,6 @@ def create_signal_instance(
     )
     signal_instance.signal = signal
     db_session.commit()
-
-    background_tasks.add_task(
-        signal_instance_create_flow, signal_instance.id, organization_slug=organization
-    )
-
     return signal_instance
 
 

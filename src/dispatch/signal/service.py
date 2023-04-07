@@ -17,6 +17,7 @@ from dispatch.project import service as project_service
 from dispatch.service import service as service_service
 from dispatch.tag import service as tag_service
 from dispatch.workflow import service as workflow_service
+from dispatch.entity.models import Entity
 
 from .models import (
     Signal,
@@ -361,12 +362,13 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
         query = db_session.query(SignalInstance).filter(
             SignalInstance.signal_id == signal_instance.signal_id
         )
-        query = apply_filter_specific_joins(SignalInstance, f.expression, query)
-        query = apply_filters(query, f.expression)
 
         # order matters, check for snooze before deduplication
         # we check to see if the current instances match's it's signals snooze filter
         if f.action == SignalFilterAction.snooze:
+            query = apply_filter_specific_joins(SignalInstance, f.expression, query)
+            query = apply_filters(query, f.expression)
+
             if f.expiration.replace(tzinfo=timezone.utc) <= datetime.now(timezone.utc):
                 continue
 
@@ -378,8 +380,11 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
                 break
 
         elif f.action == SignalFilterAction.deduplicate:
-            window = datetime.now(timezone.utc) - timedelta(seconds=f.window)
+            window = datetime.now(timezone.utc) - timedelta(minutes=f.window)
             query = query.filter(SignalInstance.created_at >= window)
+            query = query.join(SignalInstance.entities).filter(
+                Entity.id.in_([e.id for e in signal_instance.entities])
+            )
 
             # get the earliest instance
             query = query.order_by(asc(SignalInstance.created_at))

@@ -107,9 +107,4 @@ def create_signal_instance(
     signal_instance = signal_service.create_instance(
         db_session=db_session, signal_instance_in=signal_instance_in
     )
-
-    return signal_instance_create_flow(
-        db_session=db_session,
-        signal_instance_id=signal_instance.id,
-        organization_slug=None,
-    )
+    return signal_instance
