@@ -384,6 +384,7 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
             query = query.join(SignalInstance.entities).filter(
                 Entity.id.in_([e.id for e in signal_instance.entities])
             )
+            query = query.filter(SignalInstance.id != signal_instance.id)
 
             # get the earliest instance
             query = query.order_by(asc(SignalInstance.created_at))
