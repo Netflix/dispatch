@@ -17,6 +17,7 @@ from dispatch.project import service as project_service
 from dispatch.service import service as service_service
 from dispatch.tag import service as tag_service
 from dispatch.workflow import service as workflow_service
+from dispatch.entity.models import Entity
 
 from .models import (
     Signal,
@@ -378,8 +379,12 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
                 break
 
         elif f.action == SignalFilterAction.deduplicate:
-            window = datetime.now(timezone.utc) - timedelta(seconds=f.window)
+            window = datetime.now(timezone.utc) - timedelta(minutes=f.window)
             query = query.filter(SignalInstance.created_at >= window)
+            query = query.join(SignalInstance.entities).filter(
+                Entity.id.in_([e.id for e in signal_instance.entities])
+            )
+            query = query.filter(SignalInstance.id != signal_instance.id)
 
             # get the earliest instance
             query = query.order_by(asc(SignalInstance.created_at))
@@ -391,6 +396,9 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
                 signal_instance.filter_action = SignalFilterAction.deduplicate
                 filtered = True
                 break
+
+    if not filtered:
+        signal_instance.filter_action = SignalFilterAction.none
 
     db_session.commit()
     return filtered
