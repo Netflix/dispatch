@@ -4,7 +4,7 @@ from typing import Optional
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy import asc
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session
 
 from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
@@ -394,3 +394,72 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
 
     db_session.commit()
     return filtered
+
+
+def deduplicate_signal(*, db_session: Session, signal_instance: SignalInstance) -> bool:
+    """Deduplicates a signal instance."""
+
+    dedup_filters = (
+        f
+        for f in signal_instance.signal.filters
+        if _is_active_filter(filter=f, action=SignalFilterAction.deduplicate)
+    )
+
+    for filter in dedup_filters:
+        window = datetime.now(timezone.utc) - timedelta(minutes=filter.window)
+
+        if instances := (
+            _build_filter_query(db_session, signal_instance, filter)
+            .filter(SignalInstance.created_at >= window)
+            .filter(SignalInstance.id != signal_instance.id)
+            .order_by(asc(SignalInstance.created_at))
+            .all()
+        ):
+            # associate with existing case
+            signal_instance.case_id = instances[0].case_id
+            signal_instance.filter_action = SignalFilterAction.deduplicate
+            db_session.commit()
+            return True
+
+    # No matching filters were found
+    return False
+
+
+def snooze_signal(*, db_session: Session, signal_instance: SignalInstance) -> bool:
+    """Snoozes a signal instance."""
+
+    snooze_filters = (
+        f
+        for f in signal_instance.signal.filters
+        if _is_active_filter(filter=f, action=SignalFilterAction.snooze)
+        and f.expiration.replace(tzinfo=timezone.utc) > datetime.now(timezone.utc)  # noqa: W503
+    )
+
+    for filter in snooze_filters:
+        if (
+            _build_filter_query(db_session, signal_instance, filter)
+            .filter(SignalInstance.id == signal_instance.id)
+            .all()
+        ):
+            signal_instance.filter_action = SignalFilterAction.snooze
+            db_session.commit()
+            return True
+
+    # No matching filters were found
+    return False
+
+
+def _build_filter_query(
+    db_session: Session, signal_instance: SignalInstance, f: SignalFilter
+) -> Query:
+    query = db_session.query(SignalInstance).filter(
+        SignalInstance.signal_id == signal_instance.signal_id
+    )
+    query = apply_filter_specific_joins(SignalInstance, f.expression, query)
+    query = apply_filters(query, f.expression)
+    return query
+
+
+def _is_active_filter(filter: SignalFilter, action: SignalFilterAction) -> bool:
+    """Check if the filter is active and the correct action type."""
+    return filter.mode == SignalFilterMode.active and filter.action == action

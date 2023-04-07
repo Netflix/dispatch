@@ -35,7 +35,11 @@ def signal_instance_create_flow(
         return signal_instance
 
     # we don't need to continue if a filter action took place
-    if signal_service.filter_signal(db_session=db_session, signal_instance=signal_instance):
+    if signal_service.snooze_signal(db_session=db_session, signal_instance=signal_instance):
+        return signal_instance
+
+    # we don't need to continue if a filter action took place
+    if signal_service.deduplicate_signal(db_session=db_session, signal_instance=signal_instance):
         return signal_instance
 
     # create a case if not duplicate or snoozed
