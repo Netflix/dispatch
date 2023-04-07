@@ -11,7 +11,6 @@ from dispatch.exceptions import ExistsError
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.project import service as project_service
 from dispatch.signal import service as signal_service
-from dispatch.signal.flows import signal_instance_create_flow
 
 from .models import (
     SignalCreate,
@@ -94,11 +93,6 @@ def create_signal_instance(
     )
     signal_instance.signal = signal
     db_session.commit()
-
-    background_tasks.add_task(
-        signal_instance_create_flow, signal_instance.id, organization_slug=organization
-    )
-
     return signal_instance
 
 

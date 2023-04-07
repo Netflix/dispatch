@@ -6,13 +6,13 @@
 """
 import logging
 from schedule import every
-
 from dispatch.database.core import SessionLocal
 from dispatch.scheduler import scheduler
 from dispatch.project.models import Project
 from dispatch.plugin import service as plugin_service
 from dispatch.signal import flows as signal_flows
 from dispatch.decorators import scheduled_project_task
+from dispatch.signal.models import SignalInstance
 
 log = logging.getLogger(__name__)
 
@@ -49,3 +49,25 @@ def consume_signals(db_session: SessionLocal, project: Project):
 
         if signal_instances:
             plugin.instance.delete()
+
+
+@scheduler.add(every(1).minutes, name="signal-process")
+@scheduled_project_task
+def process_signals(db_session: SessionLocal, project: Project):
+    """Processes signals and create cases if appropriate."""
+    signal_instances = (
+        db_session.query(SignalInstance)
+        .filter(SignalInstance.project_id == project.id)
+        .filter(SignalInstance.filter_action == None)  # noqa
+    )
+    for signal_instance in signal_instances:
+        log.info(f"Attempting to process the following signal: {signal_instance.id}")
+        try:
+            signal_flows.signal_instance_create_flow(
+                db_session=db_session,
+                project=project,
+                signal_instance_id=signal_instance.id,
+            )
+        except Exception as e:
+            log.debug(signal_instance)
+            log.exception(e)

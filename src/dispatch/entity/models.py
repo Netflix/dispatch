@@ -21,7 +21,7 @@ class Entity(Base, TimeStampMixin, ProjectMixin):
     __table_args__ = (UniqueConstraint("name", "project_id"),)
 
     # Columns
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String)
     description = Column(String)
     value = Column(String)

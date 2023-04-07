@@ -116,6 +116,7 @@ class SignalFilterMode(DispatchEnum):
 class SignalFilterAction(DispatchEnum):
     deduplicate = "deduplicate"
     snooze = "snooze"
+    none = "none"
 
 
 class Signal(Base, TimeStampMixin, ProjectMixin):
