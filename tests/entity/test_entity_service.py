@@ -9,6 +9,30 @@ def test_get(session, entity):
     assert t_entity.id == entity.id
 
 
+def test_get_all_by_signal(session, entity, signal_instance):
+    from dispatch.entity.service import get_all_by_signal
+
+    # Associate the entity with the signal_instance
+    signal_instance.entities.append(entity)
+    session.add(signal_instance)
+    session.commit()
+
+    # Get the signal_id for the test
+    signal_id = signal_instance.signal_id
+
+    # Call the function to get all entities by signal
+    entities = get_all_by_signal(db_session=session, signal_id=signal_id)
+
+    # Check if the entity is in the list of entities returned by the function
+    assert entity in entities
+
+    # Check that the number of entities returned is correct
+    assert len(entities) == 1
+
+    # Check that the entity returned is the one appended to the signal instance
+    assert entities[0].id == entity.id
+
+
 def test_create(session, entity_type, project):
     from dispatch.entity.models import EntityCreate
     from dispatch.entity.service import create
