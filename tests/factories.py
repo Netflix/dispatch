@@ -801,7 +801,6 @@ class EntityTypeFactory(BaseFactory):
 
 
 class EntityFactory(BaseFactory):
-    id = Sequence(lambda n: f"1{n}")
     name = FuzzyText()
     description = FuzzyText()
     value = FuzzyText()

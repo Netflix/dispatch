@@ -71,7 +71,7 @@ def test_filter_actions_deduplicate_different_entities(session, signal, project)
     entity_0 = Entity(name="dedupe2", description="test", value="foo", entity_type=entity_type_0)
     session.add(entity_0)
 
-    entity_1 = Entity(name="dedupe2", description="test", value="foo", entity_type=entity_type_0)
+    entity_1 = Entity(name="dedupe2-1", description="test", value="foo", entity_type=entity_type_0)
     session.add(entity_1)
 
     signal_instance_0 = SignalInstance(
@@ -134,7 +134,7 @@ def test_filter_actions_deduplicate_different_entities_types(session, signal, pr
         project=project,
     )
     session.add(entity_type_1)
-    entity_1 = Entity(name="dedupe0", description="test", value="foo", entity_type=entity_type_1)
+    entity_1 = Entity(name="dedupe0-1", description="test", value="foo", entity_type=entity_type_1)
     session.add(entity_1)
 
     signal_instance_1 = SignalInstance(
