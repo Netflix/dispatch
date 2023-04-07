@@ -50,6 +50,59 @@ def test_delete(session, signal):
     assert not get(db_session=session, signal_id=signal.id)
 
 
+def test_filter_actions_deduplicate_different_entities(session, signal, project):
+    from dispatch.signal.models import (
+        SignalFilter,
+        SignalInstance,
+        SignalFilterAction,
+    )
+    from dispatch.signal.service import filter_signal
+    from dispatch.entity_type.models import EntityType
+    from dispatch.entity.models import Entity
+
+    entity_type = EntityType(
+        name="test",
+        field="id",
+        regular_expression=None,
+        project=project,
+    )
+    session.add(entity_type)
+
+    entity = Entity(name="test", description="test", value="foo", entity_type=entity_type)
+    session.add(entity)
+
+    entity_1 = Entity(name="test1", description="test", value="foo", entity_type=entity_type)
+    session.add(entity_1)
+
+    # create instance
+    signal_instance = SignalInstance(
+        raw=json.dumps({"id": "foo"}), project=project, signal=signal, entities=[entity]
+    )
+    session.add(signal_instance)
+
+    signal_instance_1 = SignalInstance(
+        raw=json.dumps({"id": "foo"}), project=project, signal=signal, entities=[entity_1]
+    )
+    session.add(signal_instance_1)
+
+    # create deduplicate signal filter
+    signal_filter = SignalFilter(
+        name="test",
+        description="test",
+        expression=[
+            {"or": [{"model": "EntityType", "field": "id", "op": "==", "value": entity_type.id}]}
+        ],
+        action=SignalFilterAction.deduplicate,
+        window=5,
+        project=project,
+    )
+    signal.filters.append(signal_filter)
+
+    session.commit()
+    assert not filter_signal(db_session=session, signal_instance=signal_instance_1)
+    assert signal_instance_1.filter_action == SignalFilterAction.none
+
+
 def test_filter_actions_deduplicate(session, signal, project):
     from dispatch.signal.models import (
         SignalFilter,
@@ -81,9 +134,6 @@ def test_filter_actions_deduplicate(session, signal, project):
         raw=json.dumps({"id": "foo"}), project=project, signal=signal, entities=[entity]
     )
     session.add(signal_instance_2)
-    signal.entity_types.append(entity_type)
-
-    session.commit()
 
     # create deduplicate signal filter
     signal_filter = SignalFilter(
