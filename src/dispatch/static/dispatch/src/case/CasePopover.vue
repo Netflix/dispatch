@@ -20,7 +20,13 @@
               <v-list-item-subtitle>{{ value.status }}</v-list-item-subtitle>
             </v-list-item-content>
             <v-list-item-action>
-              <v-btn icon @click="goToCase()">
+              <v-btn
+                icon
+                :to="{
+                  name: 'CaseTableEdit',
+                  params: { name: value.name },
+                }"
+              >
                 <v-icon>mdi-arrow-right-bold-circle</v-icon>
               </v-btn>
             </v-list-item-action>
@@ -71,16 +77,6 @@ export default {
       default: function () {
         return {}
       },
-    },
-  },
-
-  methods: {
-    goToCase() {
-      this.menu = false
-      this.$router.push({
-        name: "CaseTableEdit",
-        params: { name: this.value.name },
-      })
     },
   },
 }
