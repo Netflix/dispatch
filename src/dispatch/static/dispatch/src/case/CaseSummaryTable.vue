@@ -1,13 +1,6 @@
 <template>
   <div>
-    <v-data-table
-      :headers="headers"
-      :items="items"
-      :loading="loading"
-      :items-per-page="-1"
-      disabled-pagination
-      hide-default-footer
-    >
+    <v-data-table :headers="headers" :items="items" :loading="loading" :items-per-page="-1">
       <template v-slot:item.case_priority.name="{ item }">
         <case-priority :priority="item.case_priority.name" />
       </template>
