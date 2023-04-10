@@ -1,6 +1,13 @@
 <template>
   <ValidationObserver v-slot="{ invalid, validated }">
-    <v-navigation-drawer v-model="showCreateEdit" app clipped right width="800">
+    <v-navigation-drawer
+      v-model="showCreateEdit"
+      app
+      clipped
+      right
+      width="800"
+      :permanent="$vuetify.breakpoint.mdAndDown"
+    >
       <template v-slot:prepend>
         <v-list-item two-line>
           <v-list-item-content>
