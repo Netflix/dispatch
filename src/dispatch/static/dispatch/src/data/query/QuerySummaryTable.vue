@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-data-table :headers="headers" :items="items" hide-default-footer>
+    <v-data-table :headers="headers" :items="items">
       <template v-slot:item.project.name="{ item }">
         <v-chip small :color="item.project.color" text-color="white">
           {{ item.project.name }}
