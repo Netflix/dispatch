@@ -155,12 +155,6 @@ def configure(config):
         command_context_middleware,
     ]
 
-    middleware = [
-        subject_middleware,
-        configuration_middleware,
-        command_context_middleware,
-    ]
-
     app.command(config.slack_command_list_tasks, middleware=middleware)(handle_list_tasks_command)
     app.command(config.slack_command_list_my_tasks, middleware=middleware)(
         handle_list_tasks_command

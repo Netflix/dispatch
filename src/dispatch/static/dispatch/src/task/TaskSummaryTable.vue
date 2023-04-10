@@ -1,7 +1,7 @@
 <template>
   <div>
     <new-edit-sheet />
-    <v-data-table :headers="headers" :items="items" :loading="loading" hide-default-footer>
+    <v-data-table :headers="headers" :items="items" :loading="loading">
       <template v-slot:item.description="{ item }">
         <div class="text-truncate" style="max-width: 400px">
           {{ item.description }}
