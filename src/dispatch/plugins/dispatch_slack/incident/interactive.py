@@ -1428,10 +1428,28 @@ def handle_engage_oncall_submission_event(
     form_data: dict,
     user: DispatchUser,
 ) -> None:
-    """Handles the engage oncall submission"""
+    """Handles the engage oncall submission.
+
+    Notes:
+        If the page checkbox is checked, form_data will contain the `engage-oncall-page` key. For example:
+
+        "engage-oncall-service": {
+            "name": "Security Incident Response Team (SIRT) - TEST",
+            "value": "1337WOW",
+        },
+        "engage-oncall-page": [{"name": "Page", "value": "Yes"}],
+
+        Otherwise, the `engage-oncall-page` key is omitted. For example:
+
+        "engage-oncall-service": {
+            "name": "Security Incident Response Team (SIRT)",
+            "value": "1337WOW",
+        }
+    """
     ack_engage_oncall_submission_event(ack=ack)
     oncall_service_external_id = form_data[EngageOncallBlockIds.service]["value"]
-    page = form_data.get(EngageOncallBlockIds.page, {"value": None})[0]["value"]
+    page_block = form_data.get(EngageOncallBlockIds.page)
+    page = page_block[0]["value"] if page_block else None  # page_block[0]["value"] == "Yes"
 
     oncall_individual, oncall_service = incident_flows.incident_engage_oncall_flow(
         user.email,
