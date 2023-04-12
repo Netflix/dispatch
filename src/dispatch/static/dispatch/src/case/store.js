@@ -53,6 +53,7 @@ const state = {
     showEscalateDialog: false,
     showExport: false,
     showHandoffDialog: false,
+    showClosedDialog: false,
     showNewSheet: false,
   },
   report: {
@@ -196,6 +197,14 @@ const actions = {
   },
   closeHandoffDialog({ commit }) {
     commit("SET_DIALOG_SHOW_HANDOFF", false)
+    commit("RESET_SELECTED")
+  },
+  showClosedDialog({ commit }, value) {
+    commit("SET_DIALOG_SHOW_CLOSED", true)
+    commit("SET_SELECTED", value)
+  },
+  closeClosedDialog({ commit }) {
+    commit("SET_DIALOG_SHOW_CLOSED", false)
     commit("RESET_SELECTED")
   },
   showExport({ commit }) {
@@ -345,6 +354,9 @@ const mutations = {
   },
   SET_DIALOG_SHOW_HANDOFF(state, value) {
     state.dialogs.showHandoffDialog = value
+  },
+  SET_DIALOG_SHOW_CLOSED(state, value) {
+    state.dialogs.showClosedDialog = value
   },
   SET_DIALOG_DELETE(state, value) {
     state.dialogs.showDeleteDialog = value
