@@ -59,7 +59,7 @@ def process_signals(db_session: SessionLocal, project: Project):
         db_session.query(SignalInstance)
         .filter(SignalInstance.project_id == project.id)
         .filter(SignalInstance.filter_action == None)  # noqa
-    )
+    ).limit(100)
     for signal_instance in signal_instances:
         log.info(f"Attempting to process the following signal: {signal_instance.id}")
         try:
