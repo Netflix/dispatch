@@ -1,12 +1,18 @@
 <template>
-  <v-select
+  <v-combobox
     v-model="case_type"
     :items="items"
+    :search-input.sync="search"
     :menu-props="{ maxHeight: '400' }"
     item-text="name"
     label="Type"
+    item-value="id"
+    :label="label"
+    placeholder="Start typing to search"
+    :hint="hint"
     return-object
     :loading="loading"
+    no-filter
   >
     <template v-slot:item="data">
       <v-list-item-content>
@@ -25,7 +31,7 @@
         </v-list-item-content>
       </v-list-item>
     </template>
-  </v-select>
+  </v-combobox>
 </template>
 
 <script>
@@ -48,10 +54,16 @@ export default {
       type: [Object],
       default: null,
     },
+    hint: {
+      type: String,
+      default: function () {
+        return "Case Type to associate"
+      },
+    },
     label: {
       type: String,
       default: function () {
-        return "Type"
+        return "Case Type"
       },
     },
   },
@@ -60,6 +72,7 @@ export default {
     return {
       loading: false,
       items: [],
+      search: null,
       more: false,
       numItems: 5,
     }
@@ -86,6 +99,7 @@ export default {
       this.loading = "error"
 
       let filterOptions = {
+        q: this.search,
         sortBy: ["name"],
         descending: [false],
         itemsPerPage: this.numItems,
@@ -122,6 +136,16 @@ export default {
           this.more = false
         }
       })
+    },
+  },
+
+  watch: {
+    search(val) {
+      val && val !== this.select && this.fetchData()
+    },
+    value(val) {
+      if (!val) return
+      this.items.push(val)
     },
   },
 
