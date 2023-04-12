@@ -28,11 +28,11 @@ def signal_instance_create_flow(
     signal_instance.entities = entities
     db_session.commit()
 
-    if not signal_instance.signal.create_case:
-        return signal_instance
-
     # we don't need to continue if a filter action took place
     if signal_service.filter_signal(db_session=db_session, signal_instance=signal_instance):
+        return signal_instance
+
+    if not signal_instance.signal.create_case:
         return signal_instance
 
     # create a case if not duplicate or snoozed
