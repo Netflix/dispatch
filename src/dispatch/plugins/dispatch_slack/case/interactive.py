@@ -889,7 +889,9 @@ def escalate_button_click(
             initial_option={
                 "text": case.case_type.incident_type.name,
                 "value": case.case_type.incident_type.id,
-            },
+            }
+            if case.case_type.incident_type
+            else None,
             project_id=case.project.id,
         ),
         incident_priority_select(db_session=db_session, project_id=case.project.id, optional=True),
