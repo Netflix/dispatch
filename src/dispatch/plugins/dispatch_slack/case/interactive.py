@@ -25,7 +25,6 @@ from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
 from dispatch.case.enums import CaseStatus
 from dispatch.case.models import CaseCreate, CaseUpdate
-from dispatch.config import DISPATCH_UI_URL
 from dispatch.entity import service as entity_service
 from dispatch.exceptions import ExistsError
 from dispatch.incident import flows as incident_flows
@@ -392,7 +391,11 @@ def snooze_button_click(
     blocks = [
         title_input(placeholder="A name for your snooze filter."),
         description_input(placeholder="Provide a description for your snooze filter."),
-        entity_select(db_session=db_session, project_id=subject.project_id),
+        entity_select(
+            db_session=db_session,
+            project_id=subject.project_id,
+            optional=True,
+        ),
         Context(
             elements=[
                 MarkdownText(
