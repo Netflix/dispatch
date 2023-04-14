@@ -231,6 +231,8 @@ def add_users_to_conversation_thread(
     """Adds user to a threaded conversation."""
     users = [f"<@{user_id}>" for user_id in user_ids]
     if users:
+        # @'ing them isn't enough if they aren't already in the channel
+        add_users_to_conversation(client=client, conversation_id=conversation_id, user_ids=user_ids)
         blocks = Message(
             blocks=[
                 Section(text="Looping in individuals to help resolve this case...", fields=users)
