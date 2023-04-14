@@ -236,6 +236,7 @@ export default {
     ...mapMutations("playground", ["updatePattern", "updateJsonPath"]),
     ...mapActions("entity_type", ["createdSignalDefinition", "save"]),
     saveEntityType() {
+      this.dialog = false
       this.save().then((entityType) => {
         this.$emit("input", entityType)
       })
