@@ -20,11 +20,14 @@ from dispatch.plugins.dispatch_slack.config import (
     SlackContactConfiguration,
     SlackConversationConfiguration,
 )
+from dispatch.signal.enums import SignalEngagementStatus
+from dispatch.signal.models import SignalEngagement, SignalInstance
 
 from .case.messages import create_case_message, create_signal_messages
 
 from .endpoints import router as slack_event_router
 from .messaging import create_message_blocks
+from .case.messages import create_signal_engagement_message
 from .service import (
     add_conversation_bookmark,
     add_users_to_conversation,
@@ -91,6 +94,30 @@ class SlackConversationPlugin(ConversationPlugin):
                     blocks=m,
                 )
         return response
+
+    def create_engagement_threaded(
+        self,
+        case: Case,
+        conversation_id: str,
+        thread_id: str,
+        user: str,
+        engagement: SignalEngagement,
+        signal_instance: SignalInstance,
+        engagement_status: SignalEngagementStatus = SignalEngagementStatus.new,
+    ):
+        """Creates a new engagement message."""
+        client = create_slack_client(self.configuration)
+        blocks = create_signal_engagement_message(
+            case=case,
+            channel_id=conversation_id,
+            user=user,
+            engagement=engagement,
+            signal_instance=signal_instance,
+            engagement_status=engagement_status,
+        )
+        return send_message(
+            client=client, conversation_id=conversation_id, blocks=blocks, ts=thread_id
+        )
 
     def update_thread(self, case: Case, conversation_id: str, ts: str):
         """Updates an existing threaded conversation."""

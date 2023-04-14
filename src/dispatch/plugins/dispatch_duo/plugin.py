@@ -10,6 +10,7 @@ from typing import NewType
 
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins.bases import MultiFactorAuthenticationPlugin
+from dispatch.plugins.dispatch_duo.enums import PushResponseResult
 from dispatch.plugins.dispatch_duo import service as duo_service
 from dispatch.plugins.dispatch_duo.config import DuoConfiguration
 from . import __version__
@@ -75,9 +76,20 @@ class DuoMfaPlugin(MultiFactorAuthenticationPlugin):
             For more information, see https://duo.com/docs/authapi#/auth
         """
         duo_client = duo_service.create_duo_auth_client(self.configuration)
-        return duo_client.auth(
-            factor="push",
-            username=username,
-            device=device,
-            type=type,
-        )
+        try:
+            response = duo_client.auth(factor="push", username=username, device=device, type=type)
+        except RuntimeError as e:
+            if "Invalid request parameters (username)" in str(e):
+                response = duo_client.auth(
+                    factor="push", username=username.split("@"), device=device, type=type
+                )
+        else:
+            raise Exception from None
+
+        if response.get("result") == PushResponseResult.allow:
+            return PushResponseResult.allow
+
+        if response.get("status") == PushResponseResult.timeout:
+            return PushResponseResult.timeout
+
+        return response

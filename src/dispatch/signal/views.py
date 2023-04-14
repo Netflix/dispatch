@@ -14,6 +14,9 @@ from dispatch.signal import service as signal_service
 
 from .models import (
     SignalCreate,
+    SignalEngagementCreate,
+    SignalEngagementPagination,
+    SignalEngagementRead,
     SignalFilterCreate,
     SignalFilterPagination,
     SignalFilterRead,
@@ -27,6 +30,7 @@ from .models import (
 )
 from .service import (
     create,
+    create_signal_engagement,
     create_signal_filter,
     delete,
     delete_signal_filter,
@@ -100,6 +104,50 @@ def create_signal_instance(
 def get_signal_filters(common: CommonParameters):
     """Get all signal filters."""
     return search_filter_sort_paginate(model="SignalFilter", **common)
+
+
+@router.get("/engagements", response_model=SignalEngagementPagination)
+def get_signal_engagements(common: CommonParameters):
+    """Get all signal engagements."""
+    return search_filter_sort_paginate(model="SignalEngagement", **common)
+
+
+@router.get("/engagements/{engagement_id}", response_model=SignalEngagementRead)
+def get_signal_engagement(
+    db_session: DbSession,
+    signal_engagement_id: PrimaryKey,
+):
+    """Get a signal engagement by it's ID."""
+    engagement = get(db_session=db_session, signal_engagement_id=signal_engagement_id)
+    if not engagement:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A signal engagement with this id does not exist."}],
+        )
+    return engagement
+
+
+@router.post("/engagements", response_model=SignalEngagementRead)
+def create_engagement(
+    db_session: DbSession,
+    signal_engagement_in: SignalEngagementCreate,
+    current_user: CurrentUser,
+):
+    """Create a new signal engagement."""
+    try:
+        return create_signal_engagement(
+            db_session=db_session, creator=current_user, signal_engagement_in=signal_engagement_in
+        )
+    except IntegrityError:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    ExistsError(msg="A signal engagement with this name already exists."),
+                    loc="name",
+                )
+            ],
+            model=SignalEngagementRead,
+        ) from None
 
 
 @router.post("/filters", response_model=SignalFilterRead)
@@ -194,6 +242,7 @@ def create_signal(db_session: DbSession, signal_in: SignalCreate):
 @router.put("/{signal_id}", response_model=SignalRead)
 def update_signal(db_session: DbSession, signal_id: PrimaryKey, signal_in: SignalUpdate):
     """Updates an existing signal."""
+    print(f"{signal_in.__dict__=}")
     signal = get(db_session=db_session, signal_id=signal_id)
     if not signal:
         raise HTTPException(

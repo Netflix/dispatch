@@ -1,21 +1,39 @@
 from collections import defaultdict, namedtuple
 from typing import List
 
-from blockkit import Actions, Button, Context, Message, Section, Divider, Overflow, PlainOption
+from blockkit import (
+    Actions,
+    Button,
+    Context,
+    Message,
+    Section,
+    Divider,
+    Overflow,
+    PlainOption,
+)
+from blockkit.surfaces import Block
 from sqlalchemy.orm import Session
 
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.case.enums import CaseStatus
 from dispatch.case.models import Case
 from dispatch.entity import service as entity_service
-from dispatch.plugins.dispatch_slack.models import SubjectMetadata, CaseSubjects, SignalSubjects
+from dispatch.plugins.dispatch_slack.models import (
+    CaseSubjects,
+    EngagementMetadata,
+    SubjectMetadata,
+    SignalSubjects,
+)
 from dispatch.plugins.dispatch_slack.case.enums import (
     CaseNotificationActions,
     SignalNotificationActions,
+    SignalEngagementActions,
 )
+from dispatch.signal.models import SignalEngagement, SignalInstance
+from dispatch.signal.enums import SignalEngagementStatus
 
 
-def create_case_message(case: Case, channel_id: str):
+def create_case_message(case: Case, channel_id: str) -> list[Block]:
     blocks = [
         Context(elements=[f"* {case.name} - Case Details*"]),
         Section(
@@ -233,3 +251,85 @@ def create_signal_messages(case: Case, channel_id: str, db_session: Session) -> 
 
         messages.append(Message(blocks=signal_metadata_blocks[:50]).build()["blocks"])
     return messages
+
+
+def create_signal_engagement_message(
+    case: Case,
+    channel_id: str,
+    engagement: SignalEngagement,
+    signal_instance: SignalInstance,
+    user: str,
+    engagement_status: SignalEngagementStatus = SignalEngagementStatus.new,
+) -> list[Block]:
+    """
+    Generate a list of blocks for a signal engagement message.
+
+    Args:
+        case (Case): The case object related to the signal instance.
+        channel_id (str): The ID of the Slack channel where the message will be sent.
+        message (str): Additional context information to include in the message.
+        signal_instance (SignalInstance): The signal instance object related to the engagement.
+        user (str): The username of the user being engaged. Example: will@netflix.com
+        engagement (SignalEngagement): The engagement object.
+
+    Returns:
+        list[Block]: A list of blocks representing the message structure for the engagement message.
+    """
+    button_metadata = EngagementMetadata(
+        id=case.id,
+        type=CaseSubjects.case,
+        organization_slug=case.project.organization.slug,
+        project_id=case.project.id,
+        channel_id=channel_id,
+        signal_instance_id=str(signal_instance.id),
+        engagement_id=engagement.id,
+        user=user,
+    ).json()
+
+    username, _ = user.split("@")
+    blocks = [
+        Context(elements=[f"Engaged {user} associated with {signal_instance.signal.name}"]),
+        Section(text=f"Hi @{username}, the security team could use your help with this case."),
+        Section(
+            text=f"*Additional Context*\n\n {engagement.message if engagement.message else 'None provided for this signal.'}"
+        ),
+        Divider(),
+    ]
+
+    if engagement_status == SignalEngagementStatus.new:
+        blocks.extend(
+            [
+                Section(text="Please confirm this is you and the behavior is expected."),
+                Actions(
+                    elements=[
+                        Button(
+                            text="Approve",
+                            style="primary",
+                            action_id=SignalEngagementActions.approve,
+                            value=button_metadata,
+                        ),
+                        Button(
+                            text="Deny",
+                            style="danger",
+                            action_id=SignalEngagementActions.deny,
+                            value=button_metadata,
+                        ),
+                    ]
+                ),
+            ]
+        )
+
+    elif engagement_status == SignalEngagementStatus.approved:
+        blocks.extend(
+            [
+                Section(text=":white_check_mark: This engagement confirmation has been approved."),
+            ]
+        )
+    else:
+        blocks.extend(
+            [
+                Section(text=":warning: This engagement confirmation has been denied."),
+            ]
+        )
+
+    return Message(blocks=blocks).build()["blocks"]
