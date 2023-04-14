@@ -57,8 +57,8 @@ export default {
 
   data() {
     return {
-      resolutionReason: null,
-      resolution: null,
+      resolutionReason: "False Positive",
+      resolution: "Description of the actions taken to resolve the case.",
       resolutionReasons: ["False Positive", "User Acknowledged", "Mitigated", "Escalated"],
     }
   },
