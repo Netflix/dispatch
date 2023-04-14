@@ -83,8 +83,8 @@ class DuoMfaPlugin(MultiFactorAuthenticationPlugin):
                 response = duo_client.auth(
                     factor="push", username=username.split("@"), device=device, type=type
                 )
-        else:
-            raise Exception from None
+        except Exception as e:
+            raise e from None
 
         if response.get("result") == PushResponseResult.allow:
             return PushResponseResult.allow
