@@ -371,9 +371,15 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
             if f.expiration.replace(tzinfo=timezone.utc) <= datetime.now(timezone.utc):
                 continue
 
-            instances = query.filter(SignalInstance.id == signal_instance.id).all()
+            # an expression is not required for snoozing, if absent we snooze regardless of entity
+            if f.expression:
+                instances = query.filter(SignalInstance.id == signal_instance.id).all()
 
-            if instances:
+                if instances:
+                    signal_instance.filter_action = SignalFilterAction.snooze
+                    filtered = True
+                    break
+            else:
                 signal_instance.filter_action = SignalFilterAction.snooze
                 filtered = True
                 break
