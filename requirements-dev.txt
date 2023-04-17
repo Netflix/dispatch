@@ -9,9 +9,7 @@ asttokens==2.2.1
     #   devtools
     #   stack-data
 attrs==22.1.0
-    # via
-    #   -r requirements-dev.in
-    #   pytest
+    # via -r requirements-dev.in
 backcall==0.2.0
     # via ipython
 black==23.3.0
@@ -84,7 +82,7 @@ pure-eval==0.2.2
     # via stack-data
 pygments==2.14.0
     # via ipython
-pytest==7.2.2
+pytest==7.3.0
     # via -r requirements-dev.in
 python-dateutil==2.8.2
     # via faker

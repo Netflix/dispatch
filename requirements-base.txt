@@ -31,7 +31,6 @@ attrs==22.1.0
     #   hypothesis
     #   hypothesis-graphql
     #   jsonschema
-    #   pytest
     #   schemathesis
 backoff==2.2.1
     # via schemathesis
@@ -293,7 +292,7 @@ pyrate-limiter==2.10.0
     # via schemathesis
 pyrsistent==0.19.3
     # via jsonschema
-pytest==7.2.2
+pytest==7.3.0
     # via
     #   pytest-subtests
     #   schemathesis
