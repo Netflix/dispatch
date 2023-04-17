@@ -25,7 +25,6 @@ from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
 from dispatch.case.enums import CaseStatus
 from dispatch.case.models import CaseCreate, CaseUpdate
-from dispatch.config import DISPATCH_UI_URL
 from dispatch.entity import service as entity_service
 from dispatch.exceptions import ExistsError
 from dispatch.incident import flows as incident_flows
@@ -386,37 +385,17 @@ def snooze_button_click(
         instance = signal_service.get_signal_instance(
             db_session=db_session, signal_instance_id=subject.id
         )
-        signal = signal_service.get(db_session=db_session, signal_id=instance.signal.id)
-        subject.id = signal.id
+        subject.id = instance.signal.id
 
-    entities = entity_service.get_all_by_signal(db_session=db_session, signal_id=subject.id)
-    if not entities:
-        modal = Modal(
-            title="Unable to snooze",
-            close="Close",
-            blocks=[
-                Context(
-                    elements=[
-                        MarkdownText(
-                            text="No entities found for this signal. At least one entity is required to snooze a signal.\n"
-                        ),
-                        MarkdownText(
-                            text=f"\n\nNew entity types are configured in the <{DISPATCH_UI_URL}|Dispatch UI>"
-                        ),
-                    ]
-                )
-            ],
-        ).build()
-        if view_id := body.get("view", {}).get("id"):
-            client.views_update(view_id=view_id, view=modal)
-        else:
-            client.views_open(trigger_id=body["trigger_id"], view=modal)
-        return
-
+    signal = signal_service.get(db_session=db_session, signal_id=subject.signal.id)
     blocks = [
         title_input(placeholder="A name for your snooze filter."),
         description_input(placeholder="Provide a description for your snooze filter."),
-        entity_select(db_session=db_session, project_id=subject.project_id),
+        entity_select(
+            db_session=db_session,
+            project_id=subject.project_id,
+            optional=True,
+        ),
         Context(
             elements=[
                 MarkdownText(
@@ -428,7 +407,7 @@ def snooze_button_click(
     ]
 
     modal = Modal(
-        title="Snooze Signal",
+        title=f"Snooze Signal - {signal.name}",
         blocks=blocks,
         submit="Preview",
         close="Close",
