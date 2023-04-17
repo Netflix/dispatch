@@ -128,7 +128,8 @@
     <template v-slot:append>
       <div class="pa-3">
         <v-btn color="error" block :to="{ name: 'report' }">
-          <v-icon left> error_outline </v-icon>
+          <v-icon v-if="mini"> mdi-fire </v-icon>
+          <v-icon v-else left> mdi-fire </v-icon>
           <span v-if="!mini">Report Incident</span>
         </v-btn>
       </div>

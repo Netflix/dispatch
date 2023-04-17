@@ -2,7 +2,10 @@
   <v-dialog v-model="display" max-width="600px">
     <template v-slot:activator="{ on }">
       <v-badge :value="numFilters" bordered overlap color="info" :content="numFilters">
-        <v-btn color="secondary" v-on="on"> Filter </v-btn>
+        <v-btn color="secondary" outlined v-on="on">
+          <v-icon left> mdi-filter </v-icon>
+          Filter
+        </v-btn>
       </v-badge>
     </template>
     <v-card>

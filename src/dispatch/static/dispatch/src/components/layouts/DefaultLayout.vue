@@ -7,7 +7,7 @@
     <notification-snackbars-wrapper />
 
     <refresh />
-    <v-main>
+    <v-main class="light-grey-background">
       <div>
         <v-container ma-0 pa-0 fluid>
           <router-view />
@@ -33,15 +33,15 @@ export default {
     NotificationSnackbarsWrapper,
     OrganizationBanner,
   },
-
-  created() {
-    this.$vuetify.theme.light = true
-  },
 }
 </script>
 
 <style scoped>
 .page-wrapper {
   min-height: calc(100vh - 64px - 50px - 81px);
+}
+
+.light-grey-background {
+  background-color: #f4f4f4; /* Adjust the color as needed */
 }
 </style>

@@ -3,7 +3,7 @@
     <div v-if="showEditSheet">
       <router-view />
     </div>
-    <v-row no-gutters>
+    <v-row no-gutters class="mr-2">
       <new-sheet />
       <workflow-run-modal />
       <escalate-dialog />
@@ -14,12 +14,15 @@
       <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
         <table-export-dialog />
-        <v-btn color="info" class="ml-2" @click="showNewSheet()"> New </v-btn>
+        <v-btn class="ml-2" fab dark x-small color="black" @click="showNewSheet()">
+          <v-icon dark> mdi-plus </v-icon>
+        </v-btn>
       </v-col>
     </v-row>
-    <v-row no-gutters>
+
+    <v-row no-gutters class="mt-3">
       <v-col>
-        <v-card elevation="0">
+        <v-card elevation="1" rounded="xl">
           <v-card-title>
             <v-text-field
               v-model="q"
@@ -164,8 +167,7 @@ export default {
       headers: [
         { text: "Name", value: "name", align: "left", width: "10%" },
         { text: "Title", value: "title", sortable: false },
-        { text: "Status", value: "status" },
-        { text: "Type", value: "case_type.name", sortable: true },
+        { text: "Status", value: "status", sortable: true },
         { text: "Severity", value: "case_severity.name", sortable: true },
         { text: "Priority", value: "case_priority.name", sortable: true },
         { text: "Project", value: "project.name", sortable: true },

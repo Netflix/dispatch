@@ -10,7 +10,10 @@
     <organization-create-edit-dialog />
     <!--<v-app-bar-nav-icon @click="handleDrawerToggle" />-->
     <router-link :to="{ name: 'IncidentOverview' }" style="text-decoration: none">
-      <span class="button font-weight-bold">D I S P A T C H</span>
+      <div style="display: flex; align-items: center">
+        <img :src="computeLogo()" style="height: 50px" />
+        <span class="button font-weight-bold">D I S P A T C H</span>
+      </div>
     </router-link>
     <v-spacer />
     <v-text-field
@@ -139,6 +142,8 @@
 <script>
 import { mapActions, mapMutations, mapState } from "vuex"
 
+import DispatchLogo from "@/assets/DispatchLogoBlack.png"
+
 import Util from "@/util"
 import OrganizationApi from "@/organization/api"
 import OrganizationCreateEditDialog from "@/organization/CreateEditDialog.vue"
@@ -162,6 +167,9 @@ export default {
     },
   },
   methods: {
+    computeLogo() {
+      return DispatchLogo
+    },
     handleDrawerToggle() {
       this.$store.dispatch("app/toggleDrawer")
     },
