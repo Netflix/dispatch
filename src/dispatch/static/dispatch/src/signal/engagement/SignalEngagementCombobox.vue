@@ -6,8 +6,6 @@
         :label="label"
         :api="signalEngagementApi"
         :project="project"
-        v-bind="$attrs"
-        v-on="$listeners"
         v-model="engagements"
       >
         <template #selection="{ attr, item, selected }">
@@ -92,6 +90,7 @@ export default {
     return {
       signalEngagementApi: SignalEngagementApi,
       createdItem: null,
+      items: [],
     }
   },
   computed: {
@@ -104,6 +103,14 @@ export default {
       },
     },
   },
+
+  watch: {
+    createdItem: function (newVal) {
+      this.items.push(newVal)
+      this.engagements = [newVal]
+    },
+  },
+
   methods: {
     // ...
     initials(item) {
