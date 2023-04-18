@@ -1,6 +1,6 @@
 import logging
-import re
 
+from email_validator import validate_email, EmailNotValidError
 from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser, UserRegister
@@ -131,9 +131,12 @@ def engage_signal_identity(db_session: Session, signal_instance: SignalInstance)
     for engagement in engagements:
         for entity in signal_instance.entities:
             if engagement.entity_type_id == entity.entity_type_id:
-                if not re.fullmatch(r"[^@]+@[^@]+\.[^@]+", entity.value):
+                try:
+                    email = validate_email(entity.value, check_deliverability=False)
+                    email = email.normalized
+                except EmailNotValidError as e:
                     log.warning(
-                        f"Discovered entity value in Signal {signal_instance.signal.id} that did not appear to be a valid email"
+                        f"Discovered entity value in Signal {signal_instance.signal.id} that did not appear to be a valid email: {e}"
                     )
                 else:
                     users_to_engage.append(
