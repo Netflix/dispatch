@@ -18,7 +18,7 @@ from dispatch.plugin import service as plugin_service
 from dispatch.project import service as project_service
 
 from .exceptions import ContextError, RoleError
-from .models import SubjectMetadata, FormMetadata
+from .models import EngagementMetadata, SubjectMetadata, FormMetadata
 
 log = logging.getLogger(__file__)
 
@@ -77,6 +77,15 @@ def button_context_middleware(payload: dict, context: BoltContext, next: Callabl
             organization_slug=organization_slug, id=incident_id, type="Incident"
         )
 
+    context.update({"subject": subject_data})
+    next()
+
+
+def engagement_button_context_middleware(
+    payload: dict, context: BoltContext, next: Callable
+) -> None:
+    """Attempt to determine the current context of the event."""
+    subject_data = EngagementMetadata.parse_raw(payload["value"])
     context.update({"subject": subject_data})
     next()
 
