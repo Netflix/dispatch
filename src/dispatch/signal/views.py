@@ -242,7 +242,6 @@ def create_signal(db_session: DbSession, signal_in: SignalCreate):
 @router.put("/{signal_id}", response_model=SignalRead)
 def update_signal(db_session: DbSession, signal_id: PrimaryKey, signal_in: SignalUpdate):
     """Updates an existing signal."""
-    print(f"{signal_in.__dict__=}")
     signal = get(db_session=db_session, signal_id=signal_id)
     if not signal:
         raise HTTPException(

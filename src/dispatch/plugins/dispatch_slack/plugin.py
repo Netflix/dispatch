@@ -11,6 +11,7 @@ from typing import List, Optional
 from blockkit import Message
 from sqlalchemy.orm import Session
 
+from dispatch.auth.models import DispatchUser
 from dispatch.case.models import Case
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.decorators import apply, counter, timer
@@ -100,7 +101,7 @@ class SlackConversationPlugin(ConversationPlugin):
         case: Case,
         conversation_id: str,
         thread_id: str,
-        user: str,
+        user: DispatchUser,
         engagement: SignalEngagement,
         signal_instance: SignalInstance,
         engagement_status: SignalEngagementStatus = SignalEngagementStatus.new,

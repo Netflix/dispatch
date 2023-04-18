@@ -77,14 +77,15 @@ class DuoMfaPlugin(MultiFactorAuthenticationPlugin):
         """
         duo_client = duo_service.create_duo_auth_client(self.configuration)
         try:
-            response = duo_client.auth(factor="push", username=username, device=device, type=type)
+            response = duo_client.auth(
+                factor="push", username=username.split("@"), device=device, type=type
+            )
         except RuntimeError as e:
             if "Invalid request parameters (username)" in str(e):
+                username, _ = username.split("@")
                 response = duo_client.auth(
-                    factor="push", username=username.split("@"), device=device, type=type
+                    factor="push", username=username, device=device, type=type
                 )
-        except Exception as e:
-            raise e from None
 
         if response.get("result") == PushResponseResult.allow:
             return PushResponseResult.allow

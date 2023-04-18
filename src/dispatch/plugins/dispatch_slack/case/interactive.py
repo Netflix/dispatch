@@ -24,7 +24,8 @@ from dispatch.auth.models import DispatchUser
 from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
 from dispatch.case.enums import CaseStatus
-from dispatch.case.models import CaseCreate, CaseUpdate
+from dispatch.case.models import Case, CaseCreate, CaseUpdate
+from dispatch.enums import UserRoles
 from dispatch.entity import service as entity_service
 from dispatch.exceptions import ExistsError
 from dispatch.incident import flows as incident_flows
@@ -1381,11 +1382,19 @@ def engagement_button_approve_click(
 
     engaged_user = context["subject"].user
 
-    if engaged_user != user.email:
+    role = user.get_organization_role(organization_slug=context["subject"].organization_slug)
+    if engaged_user != user.email and role not in (
+        UserRoles.admin,
+        UserRoles.owner,
+    ):
         modal = Modal(
             title="Not Authorized",
             close="Close",
-            blocks=[Section(text=f"Sorry, only {engaged_user} can approve this signal.")],
+            blocks=[
+                Section(
+                    text=f"Sorry, only {engaged_user} or Dispatch administrators can approve this signal."
+                )
+            ],
         ).build()
         return client.views_open(trigger_id=body["trigger_id"], view=modal)
 
@@ -1460,7 +1469,7 @@ def handle_engagement_submission_event(
         DefaultBlockIds.description_input
     ]["value"]
 
-    def _send_response(success: bool):
+    def _send_response(success: bool) -> None:
         if success:
             title = "Approve"
             text = "Confirmation... Success!"
@@ -1495,13 +1504,36 @@ def handle_engagement_submission_event(
             channel_id=case.conversation.channel_id,
             engagement=engagement,
             signal_instance=signal_instance,
-            user=user.email,
+            user=user,
             engagement_status=engagement_status,
         )
         client.chat_update(
             blocks=blocks,
             channel=case.conversation.channel_id,
             ts=signal_instance.engagement_thread_ts,
+        )
+
+        if success:
+            _resolve_case(case)
+
+    def _resolve_case(case: Case) -> None:
+        case_in = CaseUpdate(
+            title=case.title,
+            resolution=f"Automatically resolved through signal engagement. Context: {context_from_user}",
+            visibility=case.visibility,
+            status=CaseStatus.closed,
+        )
+        case = case_service.update(
+            db_session=db_session, case=case, case_in=case_in, current_user=user
+        )
+        blocks = create_case_message(case=case, channel_id=context["subject"].channel_id)
+        client.chat_update(
+            blocks=blocks, ts=case.conversation.thread_id, channel=case.conversation.channel_id
+        )
+        client.chat_postMessage(
+            text="Automatically resolved case.",
+            channel=case.conversation.channel_id,
+            thread_ts=case.conversation.thread_id,
         )
 
     # Check if last_mfa_time was within the last hour
@@ -1511,12 +1543,14 @@ def handle_engagement_submission_event(
 
     # Send the MFA push notification
     response = mfa_plugin.instance.send_push_notification(
-        username=context.user, type="Are you confirming suspicious behavior in Dispatch?"
+        username=engaged_user, type="Are you confirming suspicious behavior in Dispatch?"
     )
     if response == "allow":
         _send_response(success=True)
         user.last_mfa_time = datetime.now()
         db_session.commit()
+
+        _resolve_case(case)
         return
     else:
         return _send_response(success=False)
@@ -1536,11 +1570,19 @@ def engagement_button_deny_click(
     ack()
     engaged_user = context["subject"].user
 
-    if engaged_user != user.email:
+    role = user.get_organization_role(organization_slug=context["subject"].organization_slug)
+    if engaged_user != user.email and role not in (
+        UserRoles.admin,
+        UserRoles.owner,
+    ):
         modal = Modal(
             title="Not Authorized",
             close="Close",
-            blocks=[Section(text=f"Sorry, only {engaged_user} can approve this signal.")],
+            blocks=[
+                Section(
+                    text=f"Sorry, only {engaged_user} or Dispatch administrators can deny this signal."
+                )
+            ],
         ).build()
         return client.views_open(trigger_id=body["trigger_id"], view=modal)
 
@@ -1622,7 +1664,7 @@ def handle_engagement_deny_submission_event(
         channel_id=case.conversation.channel_id,
         engagement=engagement,
         signal_instance=signal_instance,
-        user=user.email,
+        user=user,
         engagement_status=SignalEngagementStatus.denied,
     )
     client.chat_update(

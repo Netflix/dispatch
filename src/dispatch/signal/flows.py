@@ -1,8 +1,10 @@
 import logging
+import re
 
 from sqlalchemy.orm import Session
 
-from dispatch.auth.models import DispatchUser
+from dispatch.auth.models import DispatchUser, UserRegister
+from dispatch.auth import service as user_service
 from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
 from dispatch.case.models import CaseCreate
@@ -129,12 +131,17 @@ def engage_signal_identity(db_session: Session, signal_instance: SignalInstance)
     for engagement in engagements:
         for entity in signal_instance.entities:
             if engagement.entity_type_id == entity.entity_type_id:
-                users_to_engage.append(
-                    {
-                        "user": entity.value,
-                        "engagement": engagement,
-                    }
-                )
+                if not re.fullmatch(r"[^@]+@[^@]+\.[^@]+", entity.value):
+                    log.warning(
+                        f"Discovered entity value in Signal {signal_instance.signal.id} that did not appear to be a valid email"
+                    )
+                else:
+                    users_to_engage.append(
+                        {
+                            "user": entity.value,
+                            "engagement": engagement,
+                        }
+                    )
 
     if not users_to_engage:
         log.warning(
@@ -152,22 +159,27 @@ def engage_signal_identity(db_session: Session, signal_instance: SignalInstance)
         return
 
     for reachout in users_to_engage:
+        email = reachout.get("user")
         case_flows.case_add_or_reactivate_participant_flow(
             db_session=db_session,
-            user_email=reachout.get("user"),
+            user_email=email,
             case_id=signal_instance.case.id,
             add_to_conversation=True,
         )
 
-        user = reachout.get("user")
-        engagement = reachout.get("engagement")
+        user = user_service.get_or_create(
+            db_session=db_session,
+            organization=signal_instance.case.project.organization.slug,
+            user_in=UserRegister(email=email),
+        )
+
         response = plugin.instance.create_engagement_threaded(
             signal_instance=signal_instance,
             case=signal_instance.case,
             conversation_id=signal_instance.case.conversation.channel_id,
             thread_id=signal_instance.case.conversation.thread_id,
             user=user,
-            engagement=engagement,
+            engagement=reachout.get("engagement"),
             engagement_status=SignalEngagementStatus.new,
         )
         signal_instance.engagement_thread_ts = response.get("timestamp")
