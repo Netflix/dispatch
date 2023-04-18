@@ -1,21 +1,5 @@
 import Vue from "vue"
 import { parseISO, formatISO } from "date-fns"
-import enGB from "date-fns/locale/en-GB"
-import formatRelative from "date-fns/formatRelative"
-
-const formatRelativeLocale = {
-  lastWeek: "'Last' eeee",
-  yesterday: "'Yesterday'",
-  today: "'Today'",
-  tomorrow: "'Tomorrow'",
-  nextWeek: "'Next' eeee",
-  other: "yyyy/MM/dd",
-}
-
-const locale = {
-  ...enGB,
-  formatRelative: (token) => formatRelativeLocale[token],
-}
 
 Vue.filter("formatDate", function (value) {
   if (value) {
@@ -25,7 +9,37 @@ Vue.filter("formatDate", function (value) {
 
 Vue.filter("formatRelativeDate", function (value) {
   if (value) {
-    return formatRelative(parseISO(value), new Date(), { locale })
+    var units = {
+      year: 24 * 60 * 60 * 1000 * 365,
+      month: (24 * 60 * 60 * 1000 * 365) / 12,
+      week: 24 * 60 * 60 * 1000 * 7,
+      day: 24 * 60 * 60 * 1000,
+      hour: 60 * 60 * 1000,
+      minute: 60 * 1000,
+      second: 1000,
+    }
+
+    const rtf = new Intl.RelativeTimeFormat("en", {
+      localeMatcher: "best fit", // other values: "lookup"
+      numeric: "always", // other values: "auto"
+      style: "long", // other values: "short" or "narrow"
+    })
+    rtf.format(-1, "day") // "1 day ago"
+    rtf.format(-1, "hour") // "1 hour ago"
+    rtf.format(-1, "minute") // "1 minute ago"
+    rtf.format(-1, "second") // "1 second ago"
+    rtf.format(-1, "week") // "1 week ago"
+    rtf.format(-1, "month") // "1 month ago"
+
+    var getRelativeTime = (d1, d2 = new Date()) => {
+      var elapsed = d1 - d2
+
+      // "Math.abs" accounts for both "past" & "future" scenarios
+      for (var u in units)
+        if (Math.abs(elapsed) > units[u] || u == "second")
+          return rtf.format(Math.round(elapsed / units[u]), u)
+    }
+    return getRelativeTime(parseISO(value))
   }
 })
 
