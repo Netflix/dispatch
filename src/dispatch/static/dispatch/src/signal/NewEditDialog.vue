@@ -237,6 +237,27 @@
         <v-col cols="12">
           <v-card flat tile>
             <v-app-bar color="white" flat>
+              <v-toolbar-title class="subtitle-2"> Engagement(s) </v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-tooltip max-width="250px" bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
+                </template>
+                Defines an Engagement filter.
+              </v-tooltip>
+            </v-app-bar>
+            <v-card-text>
+              <signal-engagement-combobox
+                v-model="engagements"
+                :project="project"
+                :signalDefinition="selected"
+              ></signal-engagement-combobox>
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <v-col cols="12">
+          <v-card flat tile>
+            <v-app-bar color="white" flat>
               <v-toolbar-title class="subtitle-2"> Workflow(s) </v-toolbar-title>
               <v-spacer></v-spacer>
               <v-tooltip max-width="250px" bottom>
@@ -270,6 +291,7 @@ import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import ServiceSelect from "@/service/ServiceSelect.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
 import EntityTypeFilterCombobox from "@/entity_type/EntityTypeFilterCombobox.vue"
+import SignalEngagementCombobox from "@/signal/engagement/SignalEngagementCombobox.vue"
 import SignalFilterCombobox from "@/signal/filter/SignalFilterCombobox.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 import WorkflowSelect from "@/workflow/WorkflowSelect.vue"
@@ -288,6 +310,7 @@ export default {
     ServiceSelect,
     CaseTypeSelect,
     CasePrioritySelect,
+    SignalEngagementCombobox,
     SignalFilterCombobox,
     EntityTypeFilterCombobox,
     TagFilterAutoComplete,
@@ -310,6 +333,7 @@ export default {
       "selected.case_type",
       "selected.case_priority",
       "selected.filters",
+      "selected.engagements",
       "selected.entity_types",
       "selected.signal_definition",
       "selected.oncall_service",

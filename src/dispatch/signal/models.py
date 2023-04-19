@@ -24,6 +24,7 @@ from dispatch.case.models import CaseRead
 from dispatch.case.priority.models import CasePriority, CasePriorityRead
 from dispatch.case.type.models import CaseType, CaseTypeRead
 from dispatch.data.source.models import SourceBase
+from dispatch.entity_type.models import EntityType
 from dispatch.project.models import ProjectRead
 
 from dispatch.database.core import Base
@@ -67,6 +68,14 @@ assoc_signal_tags = Table(
     Column("signal_id", Integer, ForeignKey("signal.id", ondelete="CASCADE")),
     Column("tag_id", Integer, ForeignKey("tag.id", ondelete="CASCADE")),
     PrimaryKeyConstraint("signal_id", "tag_id"),
+)
+
+assoc_signal_engagements = Table(
+    "assoc_signal_engagements",
+    Base.metadata,
+    Column("signal_id", Integer, ForeignKey("signal.id", ondelete="CASCADE")),
+    Column("signal_engagement_id", Integer, ForeignKey("signal_engagement.id", ondelete="CASCADE")),
+    PrimaryKeyConstraint("signal_id", "signal_engagement_id"),
 )
 
 assoc_signal_filters = Table(
@@ -139,7 +148,9 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     conversation_target = Column(String)
     oncall_service_id = Column(Integer, ForeignKey("service.id"))
     oncall_service = relationship("Service", foreign_keys=[oncall_service_id])
-
+    engagements = relationship(
+        "SignalEngagement", secondary=assoc_signal_engagements, backref="signals"
+    )
     filters = relationship("SignalFilter", secondary=assoc_signal_filters, backref="signals")
     entity_types = relationship(
         "EntityType",
@@ -162,6 +173,23 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     )
     search_vector = Column(
         TSVectorType("name", "description", "variant", regconfig="pg_catalog.simple")
+    )
+
+
+class SignalEngagement(Base, ProjectMixin, TimeStampMixin):
+    __table_args__ = (UniqueConstraint("name", "project_id"),)
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    description = Column(String)
+    message = Column(String, nullable=True)
+    require_mfa = Column(Boolean, default=False)
+    entity_type_id = Column(Integer, ForeignKey(EntityType.id))
+    entity_type = relationship("EntityType", backref="signal_engagements")
+    creator_id = Column(Integer, ForeignKey(DispatchUser.id))
+    creator = relationship("DispatchUser", backref="signal_engagements")
+
+    search_vector = Column(
+        TSVectorType("name", "description", weights={"name": "A", "description": "B"})
     )
 
 
@@ -190,6 +218,7 @@ class SignalInstance(Base, TimeStampMixin, ProjectMixin):
     id = Column(UUID(as_uuid=True), primary_key=True, default=lambda: str(uuid.uuid4()))
     case = relationship("Case", backref="signal_instances")
     case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"))
+    engagement_thread_ts = Column(String, nullable=True)
     entities = relationship(
         "Entity",
         secondary=assoc_signal_instance_entities,
@@ -212,6 +241,14 @@ class Service(DispatchBase):
     type: Optional[str] = Field(None, nullable=True)
 
 
+class SignalEngagementBase(DispatchBase):
+    name: NameStr
+    description: Optional[str] = Field(None, nullable=True)
+    require_mfa: Optional[bool] = False
+    entity_type: Optional[EntityTypeRead] = None
+    message: Optional[str] = Field(None, nullable=True)
+
+
 class SignalFilterBase(DispatchBase):
     mode: Optional[SignalFilterMode] = SignalFilterMode.active
     expression: List[dict]
@@ -224,6 +261,19 @@ class SignalFilterBase(DispatchBase):
 
 class SignalFilterUpdate(SignalFilterBase):
     id: PrimaryKey
+
+
+class SignalEngagementCreate(SignalEngagementBase):
+    project: ProjectRead
+
+
+class SignalEngagementRead(SignalEngagementBase):
+    id: PrimaryKey
+
+
+class SignalEngagementPagination(DispatchBase):
+    items: List[SignalEngagementRead]
+    total: int
 
 
 class SignalFilterCreate(SignalFilterBase):
@@ -259,6 +309,7 @@ class SignalBase(DispatchBase):
 
 class SignalCreate(SignalBase):
     filters: Optional[List[SignalFilterRead]] = []
+    engagements: Optional[List[SignalEngagementRead]] = []
     entity_types: Optional[List[EntityTypeRead]] = []
     workflows: Optional[List[WorkflowRead]] = []
     tags: Optional[List[TagRead]] = []
@@ -266,6 +317,7 @@ class SignalCreate(SignalBase):
 
 class SignalUpdate(SignalBase):
     id: PrimaryKey
+    engagements: Optional[List[SignalEngagementRead]] = []
     filters: Optional[List[SignalFilterRead]] = []
     entity_types: Optional[List[EntityTypeRead]] = []
     workflows: Optional[List[WorkflowRead]] = []
@@ -274,6 +326,7 @@ class SignalUpdate(SignalBase):
 
 class SignalRead(SignalBase):
     id: PrimaryKey
+    engagements: Optional[List[SignalEngagementRead]] = []
     entity_types: Optional[List[EntityTypeRead]] = []
     filters: Optional[List[SignalFilterRead]] = []
     workflows: Optional[List[WorkflowRead]] = []

@@ -31,6 +31,7 @@ import runbook from "@/document/runbook/store"
 import search from "@/search/store"
 import service from "@/service/store"
 import signal from "@/signal/store"
+import signalEngagement from "@/signal/engagement/store"
 import signalFilter from "@/signal/filter/store"
 import source from "@/data/source/store"
 import sourceDataFormat from "@/data/source/dataFormat/store"
@@ -91,6 +92,7 @@ export default new Vuex.Store({
     sourceTransport,
     sourceType,
     signal,
+    signalEngagement,
     signalFilter,
     tag,
     tag_type,

@@ -22,6 +22,9 @@ from dispatch.entity.models import Entity
 from .models import (
     Signal,
     SignalCreate,
+    SignalEngagement,
+    SignalEngagementCreate,
+    SignalEngagementRead,
     SignalFilter,
     SignalFilterAction,
     SignalFilterCreate,
@@ -32,6 +35,78 @@ from .models import (
     SignalInstanceCreate,
     SignalUpdate,
 )
+
+
+def create_signal_engagement(
+    *, db_session: Session, creator: DispatchUser, signal_engagement_in: SignalEngagementCreate
+) -> SignalEngagement:
+    """Creates a new signal filter."""
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=signal_engagement_in.project
+    )
+
+    entity_type = entity_type_service.get(
+        db_session=db_session, entity_type_id=signal_engagement_in.entity_type.id
+    )
+
+    signal_engagement = SignalEngagement(
+        name=signal_engagement_in.name,
+        description=signal_engagement_in.description,
+        message=signal_engagement_in.message,
+        require_mfa=signal_engagement_in.require_mfa,
+        entity_type=entity_type,
+        creator=creator,
+        project=project,
+    )
+    db_session.add(signal_engagement)
+    db_session.commit()
+    return signal_engagement
+
+
+def get_signal_engagement(
+    *, db_session: Session, signal_engagement_id: int
+) -> Optional[SignalEngagement]:
+    """Gets a signal engagement by id."""
+    return (
+        db_session.query(SignalEngagement)
+        .filter(SignalEngagement.id == signal_engagement_id)
+        .one_or_none()
+    )
+
+
+def get_signal_engagement_by_name(
+    *, db_session, project_id: int, name: str
+) -> Optional[SignalEngagement]:
+    """Gets a signal engagement by it's name."""
+    return (
+        db_session.query(SignalEngagement)
+        .filter(SignalEngagement.project_id == project_id)
+        .filter(SignalEngagement.name == name)
+        .first()
+    )
+
+
+def get_signal_engagement_by_name_or_raise(
+    *, db_session: Session, project_id: int, signal_engagement_in=SignalEngagementRead
+) -> SignalEngagement:
+    signal_engagement = get_signal_engagement_by_name(
+        db_session=db_session, project_id=project_id, name=signal_engagement_in.name
+    )
+
+    if not signal_engagement:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    NotFoundError(
+                        msg="Signal Engagement not found.",
+                        signal_engagement=signal_engagement_in.name,
+                    ),
+                    loc="signalEngagement",
+                )
+            ],
+            model=SignalEngagementRead,
+        )
+    return signal_engagement
 
 
 def create_signal_filter(
@@ -207,6 +282,15 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
 
     signal.entity_types = entity_types
 
+    engagements = []
+    for eng in signal_in.engagements:
+        signal_engagement = get_signal_engagement_by_name(
+            db_session=db_session, project_id=project.id, signal_engagement_in=eng
+        )
+        engagements.append(signal_engagement)
+
+    signal.engagements = engagements
+
     filters = []
     for f in signal_in.filters:
         signal_filter = get_signal_filter_by_name(
@@ -256,6 +340,7 @@ def update(*, db_session: Session, signal: Signal, signal_in: SignalUpdate) -> S
             "case_type",
             "case_priority",
             "source",
+            "engagements",
             "filters",
             "entity_types",
             "tags",
@@ -279,6 +364,15 @@ def update(*, db_session: Session, signal: Signal, signal_in: SignalUpdate) -> S
         entity_types.append(entity_type)
 
     signal.entity_types = entity_types
+
+    engagements = []
+    for eng in signal_in.engagements:
+        signal_engagement = get_signal_engagement_by_name_or_raise(
+            db_session=db_session, project_id=signal.project.id, signal_engagement_in=eng
+        )
+        engagements.append(signal_engagement)
+
+    signal.engagements = engagements
 
     filters = []
     for f in signal_in.filters:
@@ -371,9 +465,15 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
             if f.expiration.replace(tzinfo=timezone.utc) <= datetime.now(timezone.utc):
                 continue
 
-            instances = query.filter(SignalInstance.id == signal_instance.id).all()
+            # an expression is not required for snoozing, if absent we snooze regardless of entity
+            if f.expression:
+                instances = query.filter(SignalInstance.id == signal_instance.id).all()
 
-            if instances:
+                if instances:
+                    signal_instance.filter_action = SignalFilterAction.snooze
+                    filtered = True
+                    break
+            else:
                 signal_instance.filter_action = SignalFilterAction.snooze
                 filtered = True
                 break
