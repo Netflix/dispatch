@@ -22,7 +22,6 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.auth.models import DispatchUser
 from dispatch.case.models import CaseRead
 from dispatch.case.priority.models import CasePriority, CasePriorityRead
-from dispatch.case.severity.models import CaseSeverityRead
 from dispatch.case.type.models import CaseType, CaseTypeRead
 from dispatch.data.source.models import SourceBase
 from dispatch.entity_type.models import EntityType
