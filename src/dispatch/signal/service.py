@@ -359,18 +359,18 @@ def create_instance(
     if signal_instance_in.case_priority:
         case_priority = case_priority_service.get_by_name_or_default(
             db_session=db_session,
-            project_id=signal.project.id,
+            project_id=project.id,
             case_priority_in=signal_instance_in.case_priority,
         )
-        signal.case_priority = case_priority
+        signal_instance.case_priority = case_priority
 
     if signal_instance_in.case_type:
         case_type = case_type_service.get_by_name_or_default(
             db_session=db_session,
-            project_id=signal.project.id,
+            project_id=project.id,
             case_type_in=signal_instance_in.case_type,
         )
-        signal.case_type = case_type
+        signal_instance.case_type = case_type
 
     db_session.add(signal_instance)
     db_session.commit()
