@@ -434,11 +434,37 @@ def create_instance(
 
     # we round trip the raw data to json-ify date strings
     signal_instance = SignalInstance(
-        **signal_instance_in.dict(exclude={"case", "signal", "project", "entities", "raw"}),
+        **signal_instance_in.dict(
+            exclude={
+                "case",
+                "case_type",
+                "case_priority",
+                "signal",
+                "project",
+                "entities",
+                "raw",
+            }
+        ),
         raw=json.loads(json.dumps(signal_instance_in.raw)),
         project=project,
         signal=signal,
     )
+
+    if signal_instance_in.case_priority:
+        case_priority = case_priority_service.get_by_name_or_default(
+            db_session=db_session,
+            project_id=signal.project.id,
+            case_priority_in=signal_instance_in.case_priority,
+        )
+        signal.case_priority = case_priority
+
+    if signal_instance_in.case_type:
+        case_type = case_type_service.get_by_name_or_default(
+            db_session=db_session,
+            project_id=signal.project.id,
+            case_type_in=signal_instance_in.case_type,
+        )
+        signal.case_type = case_type
 
     db_session.add(signal_instance)
     db_session.commit()
