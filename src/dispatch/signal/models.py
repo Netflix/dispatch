@@ -224,6 +224,10 @@ class SignalInstance(Base, TimeStampMixin, ProjectMixin):
         secondary=assoc_signal_instance_entities,
         backref="signal_instances",
     )
+    case_type_id = Column(Integer, ForeignKey(CaseType.id))
+    case_type = relationship("CaseType", backref="signal_instances")
+    case_priority_id = Column(Integer, ForeignKey(CasePriority.id))
+    case_priority = relationship("CasePriority", backref="signal_instances")
     fingerprint = Column(String)
     filter_action = Column(String)
     raw = Column(JSONB)
@@ -356,6 +360,8 @@ class SignalInstanceBase(DispatchBase):
 
 class SignalInstanceCreate(SignalInstanceBase):
     signal: Optional[SignalRead]
+    case_priority: Optional[CasePriorityRead]
+    case_type: Optional[CaseTypeRead]
 
 
 class SignalInstanceRead(SignalInstanceBase):
