@@ -394,8 +394,10 @@ def snooze_button_click(
         )
         subject.id = instance.signal.id
 
-    signal = signal_service.get(db_session=db_session, signal_id=subject.signal.id)
+    signal = signal_service.get(db_session=db_session, signal_id=subject.id)
     blocks = [
+        Context(elements=[MarkdownText(text=f"{signal.name}")]),
+        Divider(),
         title_input(placeholder="A name for your snooze filter."),
         description_input(placeholder="Provide a description for your snooze filter."),
         entity_select(
@@ -414,7 +416,7 @@ def snooze_button_click(
     ]
 
     modal = Modal(
-        title=f"Snooze Signal - {signal.name}",
+        title="Snooze Signal",
         blocks=blocks,
         submit="Preview",
         close="Close",
