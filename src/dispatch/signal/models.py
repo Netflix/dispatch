@@ -362,7 +362,6 @@ class SignalInstanceBase(DispatchBase):
 class SignalInstanceCreate(SignalInstanceBase):
     signal: Optional[SignalRead]
     case_priority: Optional[CasePriorityRead]
-    case_severity: Optional[CaseSeverityRead]
     case_type: Optional[CaseTypeRead]
 
 
