@@ -10,7 +10,6 @@ from typing import Annotated, Optional
 from fastapi import HTTPException, Depends
 from starlette.requests import Request
 from starlette.status import HTTP_401_UNAUTHORIZED
-
 from sqlalchemy.exc import IntegrityError
 
 from dispatch.config import (
