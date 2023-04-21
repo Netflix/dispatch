@@ -1,7 +1,7 @@
 """Adds a thread_ts column for a signal message in a case so it can be updated by conversation plugin
 
 Revision ID: 930eb80028d2
-Revises: 38a7fb709167
+Revises: 56eb1c0a3a92
 Create Date: 2023-04-20 16:55:33.901449
 
 """
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "930eb80028d2"
-down_revision = "38a7fb709167"
+down_revision = "56eb1c0a3a92"
 branch_labels = None
 depends_on = None
 
