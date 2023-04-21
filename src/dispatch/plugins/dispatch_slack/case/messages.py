@@ -188,7 +188,7 @@ def create_signal_messages(case: Case, channel_id: str, db_session: Session) -> 
     for instance in case.signal_instances:
         EntityGroup = namedtuple(
             "EntityGroup",
-            ["value", "related_instance_count", "related_case_count", "in_this_case_count"],
+            ["value", "related_case_count"],
         )
         entity_groups = defaultdict(list)
 
@@ -199,52 +199,34 @@ def create_signal_messages(case: Case, channel_id: str, db_session: Session) -> 
 
             processed_entities.add(e.value)
 
-            related_instances = entity_service.get_signal_instances_with_entity(
-                db_session=db_session, entity_id=e.id, days_back=14
-            )
-            related_instance_count = len(related_instances)
-
-            related_cases = entity_service.get_cases_with_entity(
-                db_session=db_session, entity_id=e.id, days_back=14
-            )
-            related_case_count = len(related_cases)
-
-            in_this_case_count = sum(
-                1 for i in case.signal_instances for ent in i.entities if ent.value == e.value
+            related_case_count = len(
+                entity_service.get_cases_with_entity(
+                    db_session=db_session, entity_id=e.id, days_back=14
+                )
             )
 
             # Deduplicate the entity_groups by checking if the value is already in the set
             entity_groups[e.entity_type.name].append(
                 EntityGroup(
                     value=e.value,
-                    related_instance_count=related_instance_count,
                     related_case_count=related_case_count,
-                    in_this_case_count=in_this_case_count,
                 )
             )
 
         for k, v in entity_groups.items():
             if v:
                 entity_group = v[0]
-                signal_message = (
-                    "First time this entity has been seen in a signal."
-                    if entity_group.related_instance_count == 0
-                    else f"Seen in *{entity_group.related_instance_count}* other signal(s)."
-                )
-
                 case_message = (
                     "First time this entity has been seen in a case."
                     if entity_group.related_case_count == 0
                     else f"Seen in *{entity_group.related_case_count}* other case(s)."
                 )
 
-                in_this_case_message = f"Seen *{in_this_case_count}* time(s) in this case."
-
                 # Threaded messages do not overflow text fields, so we hack together the same UI with spaces
                 signal_metadata_blocks.append(
                     Context(
                         elements=[
-                            f"*{k}*\n`{', '.join(item.value for item in v)}`\n\n{in_this_case_message}\n{signal_message}\n{case_message}"
+                            f"*{k}*\n`{', '.join(item.value for item in v)}`\n\n{case_message}"
                         ]
                     ),
                 )
