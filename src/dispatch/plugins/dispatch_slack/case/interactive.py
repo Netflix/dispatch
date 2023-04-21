@@ -31,6 +31,7 @@ from dispatch.exceptions import ExistsError
 from dispatch.incident import flows as incident_flows
 from dispatch.participant import service as participant_service
 from dispatch.plugin import service as plugin_service
+from dispatch.plugins.dispatch_duo.enums import PushResponseResult
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.bolt import app
 from dispatch.plugins.dispatch_slack.case.enums import (
@@ -631,7 +632,9 @@ def handle_snooze_submission_event(
 
         signal = signal_service.update(db_session=db_session, signal=signal, signal_in=signal_in)
 
-    if mfa_enabled is False:
+    # Check if last_mfa_time was within the last hour
+    last_hour = datetime.now() - timedelta(hours=1)
+    if (user.last_mfa_time and user.last_mfa_time < last_hour) or mfa_enabled is False:
         _create_snooze_filter(
             db_session=db_session,
             user=user,
@@ -648,26 +651,13 @@ def handle_snooze_submission_event(
             view_id=body["view"]["id"],
             view=modal,
         )
-
-    if mfa_enabled is True:
+    else:
         # Send the MFA push notification
-        email = context["user"].email
-        username, _ = email.split("@")
-        # In Duo it seems the username here can either be an email or regular username
-        # depending on how your Duo instance is setup. We try to manage both cases here.
-        try:
-            response = mfa_plugin.instance.send_push_notification(
-                username=username, type="Are you creating a signal filter in Dispatch?"
-            )
-        except RuntimeError as e:
-            if "Invalid request parameters (username)" in str(e):
-                response = mfa_plugin.instance.send_push_notification(
-                    username=email, type="Are you creating a signal filter in Dispatch?"
-                )
-            else:
-                raise e from None
-
-        if response.get("result") == "allow":
+        response = mfa_plugin.instance.send_push_notification(
+            username=context["user"].email,
+            type="Are you creating a snooze filter in Dispatch?",
+        )
+        if response == PushResponseResult.allow:
             # Get the existing filters for the signal
             _create_snooze_filter(
                 db_session=db_session,
@@ -685,10 +675,12 @@ def handle_snooze_submission_event(
                 view_id=body["view"]["id"],
                 view=modal,
             )
+            user.last_mfa_time = datetime.now()
+            db_session.commit()
         else:
             text = (
                 "Adding Snooze failed, the MFA request timed out."
-                if response.get("status") == "timeout"
+                if response == PushResponseResult.timeout
                 else "Adding Snooze failed, you must accept the MFA prompt."
             )
             modal = Modal(
@@ -1481,7 +1473,7 @@ def handle_engagement_submission_event(
             title = "MFA Failed"
             text = (
                 "Confirmation failed, the MFA request timed out."
-                if response == "timeout"
+                if response == PushResponseResult.timeout
                 else "Confirmation failed, you must accept the MFA prompt."
             )
             message_text = f":warning: {engaged_user} attempt to confirmed the behavior *as expected*. But, the MFA validation failed, reason: {response}\n\n *Context Provided* \n```{context_from_user}```"
@@ -1547,7 +1539,7 @@ def handle_engagement_submission_event(
     response = mfa_plugin.instance.send_push_notification(
         username=engaged_user, type="Are you confirming suspicious behavior in Dispatch?"
     )
-    if response == "allow":
+    if response == PushResponseResult.allow:
         _send_response(success=True)
         user.last_mfa_time = datetime.now()
         db_session.commit()
