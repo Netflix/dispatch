@@ -84,16 +84,17 @@ class SlackConversationPlugin(ConversationPlugin):
             ts=response["timestamp"],
         )
         if case.signal_instances:
-            messages = create_signal_messages(
+            message = create_signal_messages(
                 case=case, channel_id=conversation_id, db_session=db_session
             )
-            for m in messages:
-                send_message(
-                    client=client,
-                    conversation_id=conversation_id,
-                    ts=response["timestamp"],
-                    blocks=m,
-                )
+            signal_response = send_message(
+                client=client,
+                conversation_id=conversation_id,
+                ts=response["timestamp"],
+                blocks=message,
+            )
+            case.signal_thread_ts = signal_response.get("timestamp")
+            db_session.commit()
         return response
 
     def create_engagement_threaded(
@@ -125,6 +126,22 @@ class SlackConversationPlugin(ConversationPlugin):
         client = create_slack_client(self.configuration)
         blocks = create_case_message(case=case, channel_id=conversation_id)
         return update_message(client=client, conversation_id=conversation_id, ts=ts, blocks=blocks)
+
+    def update_signal_message(
+        self,
+        case: Case,
+        conversation_id: str,
+        db_session: Session,
+        thread_id: str,
+    ):
+        """Updates the signal message."""
+        client = create_slack_client(self.configuration)
+        blocks = create_signal_messages(
+            case=case, channel_id=conversation_id, db_session=db_session
+        )
+        return update_message(
+            client=client, conversation_id=conversation_id, blocks=blocks, ts=thread_id
+        )
 
     def send(
         self,
