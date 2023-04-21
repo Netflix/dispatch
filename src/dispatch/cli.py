@@ -144,6 +144,43 @@ def dispatch_user():
     pass
 
 
+@dispatch_user.command("register")
+@click.argument("email")
+@click.option(
+    "--organization",
+    "-o",
+    required=True,
+    help="Organization to set role for.",
+)
+@click.password_option()
+@click.option(
+    "--role",
+    "-r",
+    required=True,
+    type=click.Choice(UserRoles),
+    help="Role to be assigned to the user.",
+)
+def register_user(email: str, role: str, password: str, organization: str):
+    """Registers a new user."""
+    from dispatch.database.core import refetch_db_session
+    from dispatch.auth import service as user_service
+    from dispatch.auth.models import UserRegister, UserOrganization
+
+    db_session = refetch_db_session(organization_slug=organization)
+    user = user_service.get_by_email(email=email, db_session=db_session)
+    if user:
+        click.secho(f"User already exists. Email: {email}", fg="red")
+        return
+
+    user_organization = UserOrganization(role=role, organization={"name": organization})
+    user_service.create(
+        user_in=UserRegister(email=email, password=password, organizations=[user_organization]),
+        db_session=db_session,
+        organization=organization,
+    )
+    click.secho("User registered successfully.", fg="green")
+
+
 @dispatch_user.command("update")
 @click.argument("email")
 @click.option(
