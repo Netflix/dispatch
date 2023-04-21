@@ -153,7 +153,6 @@ def engage_signal_identity(db_session: Session, signal_instance: SignalInstance)
             if engagement.entity_type_id == entity.entity_type_id:
                 try:
                     validated_email = validate_email(entity.value, check_deliverability=False)
-                    email = validated_email.email
                 except EmailNotValidError as e:
                     log.warning(
                         f"Discovered entity value in Signal {signal_instance.signal.id} that did not appear to be a valid email: {e}"
@@ -161,7 +160,7 @@ def engage_signal_identity(db_session: Session, signal_instance: SignalInstance)
                 else:
                     users_to_engage.append(
                         {
-                            "user": entity.value,
+                            "user": validated_email.email,
                             "engagement": engagement,
                         }
                     )
