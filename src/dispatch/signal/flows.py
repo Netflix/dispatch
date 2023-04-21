@@ -55,13 +55,23 @@ def signal_instance_create_flow(
     if not signal_instance.signal.create_case:
         return signal_instance
 
+    if signal_instance.case_priority:
+        case_priority = signal_instance.case_priority
+    else:
+        case_priority = signal_instance.signal.case_priority
+
+    if signal_instance.case_type:
+        case_type = signal_instance.case_type
+    else:
+        case_type = signal_instance.signal.case_type
+
     # create a case if not duplicate or snoozed and case creation is enabled
     case_in = CaseCreate(
         title=signal_instance.signal.name,
         description=signal_instance.signal.description,
-        case_priority=signal_instance.signal.case_priority,
+        case_priority=case_priority,
         project=signal_instance.project,
-        case_type=signal_instance.signal.case_type,
+        case_type=case_type,
     )
     case = case_service.create(db_session=db_session, case_in=case_in, current_user=current_user)
     signal_instance.case = case

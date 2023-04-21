@@ -401,7 +401,7 @@ sqlalchemy==1.3.24
     #   alembic
     #   sqlalchemy-filters
     #   sqlalchemy-utils
-sqlalchemy-filters==0.12.0
+sqlalchemy-filters==0.13.0
     # via -r requirements-base.in
 sqlalchemy-utils==0.40.0
     # via -r requirements-base.in
