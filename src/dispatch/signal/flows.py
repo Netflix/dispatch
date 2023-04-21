@@ -14,7 +14,7 @@ from dispatch.project.models import Project
 from dispatch.signal import service as signal_service
 from dispatch.signal import flows as signal_flows
 from dispatch.signal.enums import SignalEngagementStatus
-from dispatch.signal.models import SignalInstance, SignalInstanceCreate
+from dispatch.signal.models import SignalInstance, SignalInstanceCreate, SignalFilterAction
 from dispatch.workflow import flows as workflow_flows
 
 log = logging.getLogger(__name__)
@@ -40,12 +40,22 @@ def signal_instance_create_flow(
 
     # we don't need to continue if a filter action took place
     if signal_service.filter_signal(db_session=db_session, signal_instance=signal_instance):
+        # If the signal was deduplicated, we can assume a case exists,
+        # and we need to update the corresponding signal message
+        if (
+            signal_instance.filter_action == SignalFilterAction.deduplicate
+            and signal_instance.case.signal_thread_ts  # noqa
+        ):
+            update_signal_message(
+                db_session=db_session,
+                signal_instance=signal_instance,
+            )
         return signal_instance
 
     if not signal_instance.signal.create_case:
         return signal_instance
 
-    # create a case if not duplicate or snoozed
+    # create a case if not duplicate or snoozed and case creation is enabled
     case_in = CaseCreate(
         title=signal_instance.signal.name,
         description=signal_instance.signal.description,
@@ -132,8 +142,8 @@ def engage_signal_identity(db_session: Session, signal_instance: SignalInstance)
         for entity in signal_instance.entities:
             if engagement.entity_type_id == entity.entity_type_id:
                 try:
-                    email = validate_email(entity.value, check_deliverability=False)
-                    email = email.normalized
+                    validated_email = validate_email(entity.value, check_deliverability=False)
+                    email = validated_email.email
                 except EmailNotValidError as e:
                     log.warning(
                         f"Discovered entity value in Signal {signal_instance.signal.id} that did not appear to be a valid email: {e}"
@@ -158,7 +168,7 @@ def engage_signal_identity(db_session: Session, signal_instance: SignalInstance)
         plugin_type="conversation",
     )
     if not plugin:
-        log.warning("No contact plugin is active.")
+        log.warning("No conversation plugin is active.")
         return
 
     for reachout in users_to_engage:
@@ -187,3 +197,21 @@ def engage_signal_identity(db_session: Session, signal_instance: SignalInstance)
         )
         signal_instance.engagement_thread_ts = response.get("timestamp")
         db_session.commit()
+
+
+def update_signal_message(db_session: Session, signal_instance: SignalInstance) -> None:
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session,
+        project_id=signal_instance.case.project.id,
+        plugin_type="conversation",
+    )
+    if not plugin:
+        log.warning("No conversation plugin is active.")
+        return
+
+    plugin.instance.update_signal_message(
+        case=signal_instance.case,
+        conversation_id=signal_instance.case.conversation.channel_id,
+        db_session=db_session,
+        thread_id=signal_instance.case.signal_thread_ts,
+    )

@@ -139,6 +139,8 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     related_id = Column(Integer, ForeignKey("case.id"))
     related = relationship("Case", remote_side=[id], uselist=True, foreign_keys=[related_id])
 
+    signal_thread_ts = Column(String, nullable=True)
+
     storage = relationship("Storage", uselist=False, backref="case", cascade="all, delete-orphan")
 
     tags = relationship(
