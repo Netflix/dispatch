@@ -16,12 +16,9 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType, observes
 
-from dispatch.case.priority.models import (
-    CasePriorityRead,
-    CasePriorityBase,
-)
-from dispatch.case.severity.models import CaseSeverityBase, CaseSeverityRead
-from dispatch.case.type.models import CaseTypeBase, CaseTypeRead
+from dispatch.case.priority.models import CasePriorityRead, CasePriorityBase, CasePriorityCreate
+from dispatch.case.severity.models import CaseSeverityBase, CaseSeverityRead, CaseSeverityCreate
+from dispatch.case.type.models import CaseTypeBase, CaseTypeRead, CaseTypeCreate
 from dispatch.database.core import Base
 from dispatch.document.models import Document, DocumentRead
 from dispatch.enums import Visibility
@@ -207,9 +204,9 @@ class CaseBase(DispatchBase):
 
 class CaseCreate(CaseBase):
     assignee: Optional[ParticipantUpdate]
-    case_priority: Optional[CasePriorityRead]
-    case_severity: Optional[CaseSeverityRead]
-    case_type: Optional[CaseTypeRead]
+    case_priority: Optional[CasePriorityCreate]
+    case_severity: Optional[CaseSeverityCreate]
+    case_type: Optional[CaseTypeCreate]
     project: Optional[ProjectRead]
     reporter: Optional[ParticipantUpdate]
     tags: Optional[List[TagRead]] = []

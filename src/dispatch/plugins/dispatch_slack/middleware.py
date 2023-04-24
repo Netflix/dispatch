@@ -211,14 +211,19 @@ def user_middleware(
         )
         db_session = refetch_db_session(slug)
 
-    if context["subject"].type == "incident":
-        participant = participant_service.get_by_incident_id_and_conversation_id(
-            db_session=db_session, incident_id=context["subject"].id, user_conversation_id=user_id
-        )
-    else:
-        participant = participant_service.get_by_case_id_and_conversation_id(
-            db_session=db_session, case_id=context["subject"].id, user_conversation_id=user_id
-        )
+    participant = None
+    # in the case of creating new incidents or cases we don't have a subject yet
+    if context["subject"].id:
+        if context["subject"].type == "incident":
+            participant = participant_service.get_by_incident_id_and_conversation_id(
+                db_session=db_session,
+                incident_id=context["subject"].id,
+                user_conversation_id=user_id,
+            )
+        else:
+            participant = participant_service.get_by_case_id_and_conversation_id(
+                db_session=db_session, case_id=context["subject"].id, user_conversation_id=user_id
+            )
 
     if participant:
         context["user"] = user_service.get_or_create(
