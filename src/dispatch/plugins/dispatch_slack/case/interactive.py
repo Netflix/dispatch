@@ -1266,6 +1266,16 @@ def handle_report_project_select_action(
     )
 
 
+def ack_report_case_submission_event(ack: Ack) -> None:
+    """Handles the report case submission event acknowledgment."""
+    modal = Modal(
+        title="Report Issue",
+        close="Close",
+        blocks=[Section(text="Creating case resources...")],
+    ).build()
+    ack(response_action="update", view=modal)
+
+
 @app.view(
     CaseReportActions.submit,
     middleware=[db_middleware, action_context_middleware, modal_submit_middleware, user_middleware],
@@ -1279,7 +1289,7 @@ def handle_report_submission_event(
     user: DispatchUser,
     client: WebClient,
 ):
-    ack()
+    ack_report_case_submission_event(ack=ack)
 
     case_priority = None
     if form_data.get(DefaultBlockIds.case_priority_select):
@@ -1302,7 +1312,7 @@ def handle_report_submission_event(
     modal = Modal(
         title="Case Created",
         close="Close",
-        blocks=[Section(text="Your case has been created. Running case execution flows now...")],
+        blocks=[Section(text="Running case execution flows...")],
     ).build()
 
     result = client.views_update(
@@ -1318,7 +1328,7 @@ def handle_report_submission_event(
     modal = Modal(
         title="Case Created",
         close="Close",
-        blocks=[Section(text="Your case has been created.")],
+        blocks=[Section(text="Success! Your case has been created.")],
     ).build()
 
     client.views_update(
