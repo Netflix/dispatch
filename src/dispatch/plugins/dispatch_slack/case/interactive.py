@@ -471,15 +471,21 @@ def handle_snooze_preview_event(
     if form_data.get(DefaultBlockIds.entity_select):
         entity_ids = [entity["value"] for entity in form_data[DefaultBlockIds.entity_select]]
 
-    preview_signal_instances = entity_service.get_signal_instances_with_entities(
-        db_session=db_session, signal_id=context["subject"].id, entity_ids=entity_ids, days_back=90
-    )
+        preview_signal_instances = entity_service.get_signal_instances_with_entities(
+            db_session=db_session,
+            signal_id=context["subject"].id,
+            entity_ids=entity_ids,
+            days_back=90,
+        )
 
-    text = (
-        "Examples matching your filter:"
-        if preview_signal_instances
-        else "No signals matching your filter."
-    )
+        text = (
+            "Examples matching your filter:"
+            if preview_signal_instances
+            else "No signals matching your filter."
+        )
+    else:
+        preview_signal_instances = None
+        text = "No entities selected. All signals will be snoozed."
 
     blocks = [Context(elements=[MarkdownText(text=text)])]
 
@@ -1422,7 +1428,7 @@ def ack_engagement_submission_event(ack: Ack, mfa_enabled: bool) -> None:
     text = (
         "Confirming suspicious event..."
         if mfa_enabled is False
-        else "Sending MFA push notification, please confirm to create Snooze filter..."
+        else "Sending MFA push notification, please confirm to create Engagement filter..."
     )
     modal = Modal(
         title="Confirm",
