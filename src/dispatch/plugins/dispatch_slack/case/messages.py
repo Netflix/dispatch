@@ -218,7 +218,7 @@ def create_signal_messages(case: Case, channel_id: str, db_session: Session) -> 
                 entity_group = v[0]
                 case_message = (
                     "First time this entity has been seen in a case."
-                    if entity_group.related_case_count == 0
+                    if entity_group.related_case_count == 1  # the current case counts as 1
                     else f"Seen in *{entity_group.related_case_count}* other case(s)."
                 )
 
