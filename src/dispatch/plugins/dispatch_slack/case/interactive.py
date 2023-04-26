@@ -485,7 +485,7 @@ def handle_snooze_preview_event(
         )
     else:
         preview_signal_instances = None
-        text = "No entities selected. All signals will be snoozed."
+        text = "No entities selected. All instaces of this signal will be snoozed."
 
     blocks = [Context(elements=[MarkdownText(text=text)])]
 
