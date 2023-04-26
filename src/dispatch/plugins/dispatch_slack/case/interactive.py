@@ -591,10 +591,14 @@ def handle_snooze_submission_event(
         # Get the existing filters for the signal
         signal = signal_service.get(db_session=db_session, signal_id=subject.id)
         # Create the new filter from the form data
-        entities = [
-            {"name": entity.name, "value": entity.value}
-            for entity in form_data[DefaultBlockIds.entity_select]
-        ]
+        if form_data.get(DefaultBlockIds.entity_select):
+            entities = [
+                {"name": entity.name, "value": entity.value}
+                for entity in form_data[DefaultBlockIds.entity_select]
+            ]
+        else:
+            entities = []
+
         description = form_data[DefaultBlockIds.description_input]
         name = form_data[DefaultBlockIds.title_input]
         delta: str = form_data[DefaultBlockIds.relative_date_picker_input].value
@@ -606,11 +610,16 @@ def handle_snooze_submission_event(
         date = datetime.now() + delta
 
         project = project_service.get(db_session=db_session, project_id=signal.project_id)
-        filters = {
-            "entity": entities,
-        }
 
-        expression = create_filter_expression(filters, "Entity")
+        # None expression is for cases when no entities are selected, in which case
+        # the filter will apply to all instances of the signal
+        if entities:
+            filters = {
+                "entity": entities,
+            }
+            expression = create_filter_expression(filters, "Entity")
+        else:
+            expression = []
 
         # Create a new filter with the selected entities and entity types
         filter_in = SignalFilterCreate(
