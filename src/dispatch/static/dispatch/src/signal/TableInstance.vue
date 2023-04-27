@@ -14,6 +14,9 @@
             :server-items-length="total"
             :page.sync="page"
             :items-per-page.sync="itemsPerPage"
+            :footer-props="{
+              'items-per-page-options': [10, 25, 50, 100],
+            }"
             :sort-by.sync="sortBy"
             :sort-desc.sync="descending"
             :loading="loading"
