@@ -31,7 +31,6 @@ attrs==22.1.0
     #   hypothesis
     #   hypothesis-graphql
     #   jsonschema
-    #   schemathesis
 backoff==2.2.1
     # via schemathesis
 bcrypt==4.0.1
@@ -345,7 +344,7 @@ rsa==4.9
     #   python-jose
 schedule==1.2.0
     # via -r requirements-base.in
-schemathesis==3.19.0
+schemathesis==3.19.1
     # via -r requirements-base.in
 scipy==1.10.1
     # via statsmodels
