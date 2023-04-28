@@ -10,7 +10,7 @@ def get(*, db_session, conversation_id: int) -> Optional[Conversation]:
 
 def get_by_channel_id_ignoring_channel_type(db_session, channel_id: str) -> Optional[Conversation]:
     """
-    Gets a conversation by its id ignoring the channel type, and update the
+    Gets a conversation by its id ignoring the channel type, and updates the
     channel id in the database if the channel type has changed.
     """
     channel_id_without_type = channel_id[1:]
