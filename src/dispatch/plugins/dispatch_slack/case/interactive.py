@@ -602,11 +602,37 @@ def handle_snooze_submission_event(
         description = form_data[DefaultBlockIds.description_input]
         name = form_data[DefaultBlockIds.title_input]
         delta: str = form_data[DefaultBlockIds.relative_date_picker_input].value
+        # Check if the 'delta' string contains days
+        # Example: '1 day, 0:00:00' contains days, while '0:01:00' does not
+        if ", " in delta:
+            # Split the 'delta' string into days and time parts
+            # Example: '1 day, 0:00:00' -> days: '1 day' and time_str: '0:00:00'
+            days, time_str = delta.split(", ")
+
+            # Extract the integer value of days from the days string
+            # Example: '1 day' -> 1
+            days = int(days.split(" ")[0])
+        else:
+            # If the 'delta' string does not contain days, set days to 0
+            days = 0
+
+            # Directly assign the 'delta' string to the time_str variable
+            time_str = delta
+
+        # Split the 'time_str' variable into hours, minutes, and seconds
+        # Convert each part to an integer
+        # Example: '0:01:00' -> hours: 0, minutes: 1, seconds: 0
+        hours, minutes, seconds = [int(x) for x in time_str.split(":")]
+
+        # Create a timedelta object using the extracted days, hours, minutes, and seconds
         delta = timedelta(
-            hours=int(delta.split(":")[0]),
-            minutes=int(delta.split(":")[1]),
-            seconds=int(delta.split(":")[2]),
+            days=days,
+            hours=hours,
+            minutes=minutes,
+            seconds=seconds,
         )
+
+        # Calculate the new date by adding the timedelta object to the current date and time
         date = datetime.now() + delta
 
         project = project_service.get(db_session=db_session, project_id=signal.project_id)

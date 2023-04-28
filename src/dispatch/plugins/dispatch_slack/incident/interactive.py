@@ -780,15 +780,14 @@ def handle_thread_creation(
     if not context["config"].ban_threads:
         return
 
-    if context["subject"].type == "incident":
-        if payload.get("thread_ts") and not is_bot(request):
-            message = "Please refrain from using threads in incident channels. Threads make it harder for incident participants to maintain context."
-            client.chat_postEphemeral(
-                text=message,
-                channel=payload["channel"],
-                thread_ts=payload["thread_ts"],
-                user=payload["user"],
-            )
+    if payload.get("thread_ts") and not is_bot(request):
+        message = "Please refrain from using threads in incident channels. Threads make it harder for incident participants to maintain context."
+        client.chat_postEphemeral(
+            text=message,
+            channel=payload["channel"],
+            thread_ts=payload["thread_ts"],
+            user=payload["user"],
+        )
 
 
 @message_dispatcher.add(subject="incident")

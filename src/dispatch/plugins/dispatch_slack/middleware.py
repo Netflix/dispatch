@@ -27,33 +27,33 @@ Subject = NamedTuple("Subject", subject=SubjectMetadata, db_session=Session)
 
 
 @timer
-def resolve_context_from_conversation(
-    channel_id: str, thread_id: Optional[str] = None
-) -> Optional[Subject]:
-    """Attempts to resolve a conversation based on the channel id or message_ts."""
+def resolve_context_from_conversation(channel_id: str) -> Optional[Subject]:
+    """Attempts to resolve a conversation based on the channel id."""
     db_session = SessionLocal()
     organization_slugs = [o.slug for o in organization_service.get_all(db_session=db_session)]
     db_session.close()
+
     for slug in organization_slugs:
         scoped_db_session = refetch_db_session(slug)
 
         conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
-            db_session=scoped_db_session, channel_id=channel_id, thread_id=thread_id
+            db_session=scoped_db_session, channel_id=channel_id
         )
+
         if conversation:
-            if thread_id:
-                subject = SubjectMetadata(
-                    type="case",
-                    id=conversation.case_id,
-                    organization_slug=slug,
-                    project_id=conversation.case.project_id,
-                )
-            else:
+            if conversation.incident:
                 subject = SubjectMetadata(
                     type="incident",
                     id=conversation.incident_id,
                     organization_slug=slug,
                     project_id=conversation.incident.project_id,
+                )
+            else:
+                subject = SubjectMetadata(
+                    type="case",
+                    id=conversation.case_id,
+                    organization_slug=slug,
+                    project_id=conversation.case.project_id,
                 )
             return Subject(subject, db_session=scoped_db_session)
 
@@ -107,9 +107,7 @@ def message_context_middleware(
     if is_bot(request):
         return context.ack()
 
-    if subject := resolve_context_from_conversation(
-        channel_id=context.channel_id, thread_id=payload.get("thread_ts")
-    ):
+    if subject := resolve_context_from_conversation(channel_id=context.channel_id):
         context.update(subject._asdict())
     else:
         raise ContextError("Unable to determine context for message.")

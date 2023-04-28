@@ -282,6 +282,7 @@ def case_new_create_flow(
             conversation_target = case.case_type.conversation_target
         if conversation_target:
             try:
+                # TODO: Refactor conversation creation using conversation_flows module
                 conversation = create_conversation(case, conversation_target, db_session)
                 conversation_in = ConversationCreate(
                     resource_id=conversation["resource_id"],
@@ -320,7 +321,7 @@ def case_new_create_flow(
                 event_service.log_case_event(
                     db_session=db_session,
                     source="Dispatch Core App",
-                    description="Incident participants added to case conversation.",
+                    description="Case participants added to conversation.",
                     case_id=case.id,
                 )
             except Exception as e:
