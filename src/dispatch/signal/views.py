@@ -86,7 +86,7 @@ def create_signal_instance(
 
     if not signal.enabled:
         msg = f"Signal definition not enabled. SignalName: {signal.name}"
-        log.warning(msg)
+        log.info(msg)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=[{"msg": msg}],
