@@ -450,6 +450,11 @@ def create_instance(
         signal=signal,
     )
 
+    # if the signal has an existing uuid we propgate it as our primary key
+    if signal_instance_in.raw:
+        if signal_instance_in.raw.get("id"):
+            signal_instance.id = signal_instance_in.raw["id"]
+
     if signal_instance_in.case_priority:
         case_priority = case_priority_service.get_by_name_or_default(
             db_session=db_session,
@@ -553,6 +558,7 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
                     SignalInstance.signal_id == signal_instance.signal_id,
                     SignalInstance.created_at >= default_dedup_window,
                     SignalInstance.id != signal_instance.id,
+                    SignalInstance.case_id.isnot(None),
                 )
                 .order_by(asc(SignalInstance.created_at))
                 .all()
