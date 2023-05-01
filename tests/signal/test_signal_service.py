@@ -55,6 +55,8 @@ def test_filter_actions_default_deduplicate(session, signal, project):
     from dispatch.signal.service import filter_signal
     from dispatch.entity_type.models import EntityType
     from dispatch.entity.models import Entity
+    from dispatch.enums import Visibility
+    from dispatch.case.models import Case
     from datetime import datetime, timedelta
 
     entity_type = EntityType(
@@ -68,8 +70,23 @@ def test_filter_actions_default_deduplicate(session, signal, project):
     entity = Entity(name="default_dedupe", description="test", value="foo", entity_type=entity_type)
     session.add(entity)
 
+    # Create a case for the first signal instance
+    case = Case(
+        title="test",
+        description="B",
+        resolution=None,
+        visibility=Visibility.open,
+        project=project,
+    )
+    session.add(case)
+    session.commit()
+
     signal_instance_1 = SignalInstance(
-        raw=json.dumps({"id": "foo"}), project=project, signal=signal, entities=[entity]
+        raw=json.dumps({"id": "foo"}),
+        project=project,
+        signal=signal,
+        entities=[entity],
+        case_id=case.id,
     )
     session.add(signal_instance_1)
 
