@@ -50,6 +50,53 @@ def test_delete(session, signal):
     assert not get(db_session=session, signal_id=signal.id)
 
 
+def test_filter_actions_default_deduplicate(session, signal, project):
+    from dispatch.signal.models import SignalInstance, SignalFilterAction
+    from dispatch.signal.service import filter_signal
+    from dispatch.entity_type.models import EntityType
+    from dispatch.entity.models import Entity
+    from datetime import datetime, timedelta
+
+    entity_type = EntityType(
+        name="default_dedupe",
+        field="id",
+        regular_expression=None,
+        project=project,
+    )
+    session.add(entity_type)
+
+    entity = Entity(name="default_dedupe", description="test", value="foo", entity_type=entity_type)
+    session.add(entity)
+
+    signal_instance_1 = SignalInstance(
+        raw=json.dumps({"id": "foo"}), project=project, signal=signal, entities=[entity]
+    )
+    session.add(signal_instance_1)
+
+    signal_instance_2 = SignalInstance(
+        raw=json.dumps({"id": "foo"}), project=project, signal=signal, entities=[entity]
+    )
+    session.add(signal_instance_2)
+    session.commit()
+
+    assert filter_signal(db_session=session, signal_instance=signal_instance_2)
+    assert signal_instance_2.filter_action == SignalFilterAction.deduplicate
+
+    # Test default deduplication logic within the 1-hour window
+    signal_instance_3 = SignalInstance(
+        raw=json.dumps({"id": "foo"}),
+        project=project,
+        signal=signal,
+        entities=[entity],
+        created_at=datetime.now() - timedelta(minutes=30),
+    )
+    session.add(signal_instance_3)
+    session.commit()
+
+    assert filter_signal(db_session=session, signal_instance=signal_instance_3)
+    assert signal_instance_3.filter_action == SignalFilterAction.deduplicate
+
+
 def test_filter_actions_deduplicate_different_entities(session, signal, project):
     from dispatch.signal.models import (
         SignalFilter,
