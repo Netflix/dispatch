@@ -314,7 +314,7 @@ pytz==2023.3
     #   pandas
 pyyaml==6.0
     # via schemathesis
-requests==2.28.1
+requests==2.28.2
     # via
     #   -r requirements-base.in
     #   atlassian-python-api
@@ -350,7 +350,7 @@ scipy==1.10.1
     # via statsmodels
 sentry-asgi==0.2.0
     # via -r requirements-base.in
-sentry-sdk==1.21.0
+sentry-sdk==1.21.1
     # via
     #   -r requirements-base.in
     #   sentry-asgi
@@ -373,7 +373,7 @@ six==1.16.0
     #   validators
 slack-bolt==1.18.0
     # via -r requirements-base.in
-slack-sdk==3.21.2
+slack-sdk==3.21.3
     # via
     #   -r requirements-base.in
     #   slack-bolt
@@ -453,7 +453,7 @@ urllib3==1.26.15
     #   pdpyras
     #   requests
     #   sentry-sdk
-uvicorn==0.21.1
+uvicorn==0.22.0
     # via -r requirements-base.in
 uvloop==0.17.0
     # via -r requirements-base.in
