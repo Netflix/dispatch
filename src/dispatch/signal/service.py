@@ -489,11 +489,6 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
         bool: True if the signal instance is filtered, False otherwise.
     """
 
-    # Check if there's a deduplication rule set on the signal
-    has_dedup_filter = any(
-        f.action == SignalFilterAction.deduplicate for f in signal_instance.signal.filters
-    )
-
     filtered = False
     for f in signal_instance.signal.filters:
         if f.mode != SignalFilterMode.active:
@@ -543,6 +538,10 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
                 filtered = True
                 break
     else:
+        # Check if there's a deduplication rule set on the signal
+        has_dedup_filter = any(
+            f.action == SignalFilterAction.deduplicate for f in signal_instance.signal.filters
+        )
         # Apply the default deduplication rule if there's no deduplication rule set on the signal
         # and the signal instance is not snoozed
         if not has_dedup_filter and not filtered:
