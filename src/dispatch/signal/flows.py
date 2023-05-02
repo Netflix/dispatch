@@ -9,6 +9,7 @@ from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
 from dispatch.case.models import CaseCreate
 from dispatch.entity import service as entity_service
+from dispatch.exceptions import DispatchException
 from dispatch.plugin import service as plugin_service
 from dispatch.project.models import Project
 from dispatch.signal import service as signal_service
@@ -129,10 +130,10 @@ def create_signal_instance(
     )
 
     if not signal:
-        raise Exception("No signal definition defined.")
+        raise DispatchException("No signal definition defined.")
 
     if not signal.enabled:
-        raise Exception("Signal definition is not enabled.")
+        raise DispatchException("Signal definition is not enabled.")
 
     signal_instance_in = SignalInstanceCreate(
         raw=signal_instance_data, signal=signal, project=signal.project
