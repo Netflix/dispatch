@@ -4,6 +4,7 @@
 #
 #    pip-compile requirements-base.in
 #
+
 aiocache==0.12.1
     # via -r requirements-base.in
 aiofiles==23.1.0
@@ -99,7 +100,9 @@ decorator==5.1.1
 defusedxml==0.7.1
     # via jira
 deprecated==1.2.13
-    # via atlassian-python-api
+    # via
+    #   atlassian-python-api
+    #   limits
 dnspython==2.3.0
     # via email-validator
 duo-client==4.7.1
@@ -166,6 +169,8 @@ idna==3.4
     #   httpx
     #   requests
     #   yarl
+importlib-resources==5.12.0
+    # via limits
 iniconfig==2.0.0
     # via pytest
 jinja2==3.1.2
@@ -186,6 +191,8 @@ junit-xml==1.9
     # via schemathesis
 langcodes==3.3.0
     # via spacy
+limits==3.4.0
+    # via slowapi
 lxml==4.9.2
     # via
     #   emails
@@ -229,6 +236,7 @@ openai==0.27.5
     # via -r requirements-base.in
 packaging==23.0
     # via
+    #   limits
     #   pytest
     #   spacy
     #   statsmodels
@@ -377,6 +385,8 @@ slack-sdk==3.21.3
     # via
     #   -r requirements-base.in
     #   slack-bolt
+slowapi==0.1.8
+    # via -r requirements-base.in
 smart-open==6.3.0
     # via
     #   pathy
@@ -442,6 +452,7 @@ typing-extensions==4.4.0
     # via
     #   -r requirements-base.in
     #   alembic
+    #   limits
     #   pydantic
     #   schemathesis
 tzdata==2023.3
