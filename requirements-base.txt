@@ -102,7 +102,7 @@ deprecated==1.2.13
     # via atlassian-python-api
 dnspython==2.3.0
     # via email-validator
-duo-client==4.7.1
+duo-client==5.0.0
     # via -r requirements-base.in
 ecdsa==0.18.0
     # via python-jose
