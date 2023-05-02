@@ -604,12 +604,14 @@ def entity_select(
     """Creates an entity select."""
     entity_options = [
         {"text": entity.value, "value": entity.id}
-        for entity in entity_service.get_all_by_signal(db_session=db_session, signal_id=signal_id)
+        for entity in entity_service.get_all_desc_by_signal(
+            db_session=db_session, signal_id=signal_id
+        )
     ]
 
     return multi_select_block(
         placeholder="Select Entities",
-        options=entity_options[:100],  # Limit the entities to the first 100
+        options=entity_options[:100],  # Limit the entities to the first 100 most recent
         action_id=action_id,
         block_id=block_id,
         label=label,
