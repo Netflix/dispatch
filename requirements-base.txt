@@ -100,6 +100,8 @@ defusedxml==0.7.1
     # via jira
 deprecated==1.2.13
     # via atlassian-python-api
+deprecation==2.1.0
+    # via pdpyras
 dnspython==2.3.0
     # via email-validator
 duo-client==5.0.0
@@ -229,6 +231,7 @@ openai==0.27.6
     # via -r requirements-base.in
 packaging==23.0
     # via
+    #   deprecation
     #   pytest
     #   spacy
     #   statsmodels
@@ -243,7 +246,7 @@ patsy==0.5.3
     # via statsmodels
 pbr==5.11.1
     # via jira
-pdpyras==4.5.2
+pdpyras==5.0.1
     # via -r requirements-base.in
 pluggy==1.0.0
     # via pytest
