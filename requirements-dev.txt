@@ -72,7 +72,7 @@ platformdirs==3.1.1
     #   virtualenv
 pluggy==1.0.0
     # via pytest
-pre-commit==3.2.2
+pre-commit==3.3.0
     # via -r requirements-dev.in
 prompt-toolkit==3.0.38
     # via ipython
@@ -88,7 +88,7 @@ python-dateutil==2.8.2
     # via faker
 pyyaml==6.0
     # via pre-commit
-ruff==0.0.261
+ruff==0.0.264
     # via -r requirements-dev.in
 six==1.16.0
     # via
