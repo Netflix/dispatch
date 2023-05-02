@@ -231,7 +231,11 @@ def user_middleware(
         )
         return next()
 
-    email = client.users_info(user=user_id)["user"]["profile"]["email"]
+    try:
+        email = client.users_info(user=user_id)["user"]["profile"]["email"]
+    except KeyError as e:
+        log.error(e)
+        raise ContextError("Unable to determine user from context.") from None
 
     context["user"] = user_service.get_or_create(
         db_session=db_session,
