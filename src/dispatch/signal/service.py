@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from sqlalchemy import asc
+from sqlalchemy import desc, asc
 from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
@@ -552,13 +552,11 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
                     SignalInstance.signal_id == signal_instance.signal_id,
                     SignalInstance.created_at >= default_dedup_window,
                     SignalInstance.id != signal_instance.id,
-                    SignalInstance.case_id.isnot(None),
+                    SignalInstance.case_id.isnot(None),  # noqa
                 )
-                .order_by(asc(SignalInstance.created_at))
-                .all()
+                .order_by(desc(SignalInstance.created_at))
             )
-
-            if default_dedup_query:
+            if default_dedup_query.all():
                 signal_instance.case_id = default_dedup_query[0].case_id
                 signal_instance.filter_action = SignalFilterAction.deduplicate
                 filtered = True
