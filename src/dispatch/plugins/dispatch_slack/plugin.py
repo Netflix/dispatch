@@ -317,8 +317,7 @@ class SlackContactPlugin(ContactPlugin):
 
         return {
             "fullname": profile["real_name"],
-            # https://api.slack.com/methods/users.profile.get#email-addresses
-            "email": profile.get("email", email),
+            "email": profile.get("email", email),   # https://api.slack.com/methods/users.profile.get#email-addresses
             "title": profile["title"],
             "team": team,
             "department": department,
