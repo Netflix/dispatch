@@ -13,7 +13,7 @@ from dispatch.incident import service as incident_service
 from dispatch.participant import service as participant_service
 from dispatch.plugin import service as plugin_service
 from dispatch.project import service as project_service
-from dispatch.project.models.py import Project
+from dispatch.project.models import Project
 from dispatch.signal import service as signal_service
 from dispatch.workflow.enums import WorkflowInstanceStatus
 
