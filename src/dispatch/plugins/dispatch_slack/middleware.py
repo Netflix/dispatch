@@ -151,11 +151,16 @@ def restricted_command_middleware(
 
 # filter out member join bot events as the built in slack-bolt doesn't catch these events
 # https://github.com/slackapi/bolt-python/blob/main/slack_bolt/middleware/ignoring_self_events/ignoring_self_events.py#L37
-def is_bot(request: BoltRequest):
+def is_bot(request: BoltRequest) -> bool:
+    body = request.body
+    user = body.get("event", {}).get("user")
+    if user == "USLACKBOT":
+        return True
+
     auth_result = request.context.authorize_result
     user_id = request.context.user_id
-    bot_id = request.body.get("event", {}).get("bot_id")
-    body = request.body
+    bot_id = body.get("event", {}).get("bot_id")
+
     return (
         auth_result is not None
         and (  # noqa
