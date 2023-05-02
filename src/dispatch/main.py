@@ -10,8 +10,7 @@ from fastapi.responses import JSONResponse
 from pydantic.error_wrappers import ValidationError
 
 from sentry_asgi import SentryMiddleware
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import inspect
 from sqlalchemy.orm import scoped_session
@@ -31,6 +30,7 @@ from .database.core import engine, sessionmaker
 from .extensions import configure_extensions
 from .logging import configure_logging
 from .metrics import provider as metric_provider
+from .rate_limiter import limiter
 
 
 log = logging.getLogger(__name__)
@@ -51,8 +51,6 @@ async def not_found(request, exc):
 exception_handlers = {404: not_found}
 
 # we create the ASGI for the app
-limiter = Limiter(key_func=get_remote_address)
-
 app = FastAPI(exception_handlers=exception_handlers, openapi_url="")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)

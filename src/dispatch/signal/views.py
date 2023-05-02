@@ -8,7 +8,7 @@ from dispatch.auth.service import CurrentUser
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.exceptions import ExistsError
-from dispatch.main import limiter
+from dispatch.rate_limiter import limiter
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.project import service as project_service
 from dispatch.signal import service as signal_service
