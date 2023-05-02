@@ -155,8 +155,8 @@ def download_google_document(client: Any, file_id: str, mime_type: str = "text/p
             _, response = downloader.next_chunk()
         return fp.getvalue().decode("utf-8")
     except (HttpError, OSError):
-        # Do no retry. Log the error fail.
-        raise Exception(f"Failed to export the file. Id: {file_id} MimeType: {mime_type}") from None
+        # Do no retry and raise exception
+        raise Exception("Failed to export the file. Id: {file_id} MimeType: {mime_type}") from None
 
 
 def create_file(
