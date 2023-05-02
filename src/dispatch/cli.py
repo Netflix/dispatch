@@ -701,7 +701,6 @@ def start_tasks(tasks, exclude, eager):
 )
 @click.option(
     "--api-token",
-    default="http://localhost:8080/api/v1/default/signals/instances",
     required=True,
     help="API token to use.",
 )
