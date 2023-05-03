@@ -77,18 +77,18 @@ def create_signal_instance(
         signal_instance_in.signal = signal
 
     if not signal:
-        msg = f"No signal definition found. Id: {external_id} Variant: {variant}"
-        log.error(msg)
+        msg = f"No signal definition found. External Id: {external_id} Variant: {variant}"
+        log.warn(msg)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=[{"msg": msg}],
         ) from None
 
     if not signal.enabled:
-        msg = f"Signal definition not enabled. SignalName: {signal.name}"
+        msg = f"Signal definition not enabled. Signal Name: {signal.name}"
         log.info(msg)
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail=[{"msg": msg}],
         ) from None
 
