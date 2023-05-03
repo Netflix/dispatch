@@ -1,0 +1,29 @@
+# Signal Definition
+
+Signal Defintions are your starting point for onboarding a new Signal into Dispatch and allow a number of different configuration options.
+
+## Creating a Signal Definition
+
+At a high level, you'll need to configure some basic metadata about your Signal such as the name, description, and variant.
+You can also configure whether a Signal should create a case or not. Choosing not to create a Case can be useful for contextual Signals that
+don't necessarily warrant triage and investigation on their own. But, you can still use these Signals to enrich other Signals and Cases.
+
+![](/img/admin-ui-signal-definition.png)
+
+```json title="Signal Instance Example"
+{
+  "name": "process_events",
+  "hostIdentifier": "host1",
+  "calendarTime": "2022-10-19T10:35:01Z",
+  "time": 1618698901,
+  "columns": {
+    "pid": 888,
+    "path": "/usr/bin/security",
+    "cmdline": "/usr/bin/security dump-keychain",
+    "state": "running",
+    "parent": 555,
+    "created_at": 1918698901,
+    "updated_at": 2118698901
+  }
+}
+```

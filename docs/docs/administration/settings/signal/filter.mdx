@@ -1,0 +1,28 @@
+# Filter
+
+Signal Filters are used to define how Signals should be grouped together or when they should be snoozed.
+
+## Snooze Filter
+
+Snooze filters make use of entities extracted from Signals to define when a Signal should be snoozed.
+For example, you can create a Snooze Filter that will snooze all incoming Signals that contain a specific JA3 hash.
+You also have the option to create a Snooze Filter without specifiyng any entities, which will snooze all incoming Signals.
+This feature is useful when an influx of Signals is expected and you want to avoid being overwhelmed by them.
+
+![](/img/admin-ui-signal-filter-snooze.png)
+
+## Deduplication Filter
+
+Deduplication filters leverage Entity Types to deduplicate Signals over a period of time. When a Signal is deduplicated a new
+Case will not be created for it. Instead, the Signal will be added to the existing Case that was created for the earliest Signal
+within the deduplication window.
+
+:::info
+By default, all Signals are deduplicated over a one hour window unless a custom Deduplication Filter is defined.
+:::
+
+### Creating a Deduplication Filter
+
+To create a Deduplication Filter, you must first define the Entity Types that will be used to deduplicate Signals.
+
+![](/img/admin-ui-signal-filter-dedupe.png)
