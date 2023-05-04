@@ -208,10 +208,6 @@ def case_new_create_flow(
     # we create the ticket
     ticket_flows.create_case_ticket(case=case, db_session=db_session)
 
-    individual_participants, team_participants = get_case_participants(
-        case=case, db_session=db_session
-    )
-
     if create_resources:
         case_create_resources_flow(db_session=db_session, case_id=case.id)
 
@@ -264,6 +260,8 @@ def case_new_create_flow(
                     description="Conversation added to case",
                     case_id=case.id,
                 )
+                individual_participants, _ = get_case_participants(case=case, db_session=db_session)
+
                 # wait until all resources are created before adding suggested participants
                 individual_participants = [x.email for x, _ in individual_participants]
 
