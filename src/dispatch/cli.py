@@ -6,6 +6,7 @@ import click
 import requests
 import uvicorn
 from dispatch import __version__, config
+from dispatch.config import DISPATCH_UI_URL
 from dispatch.enums import UserRoles
 from dispatch.plugin.models import PluginInstance
 
@@ -693,9 +694,10 @@ def start_tasks(tasks, exclude, eager):
 
 @dispatch_scheduler.command("perf-test")
 @click.option("--num-instances", default=1000, help="Number of signal instances to send.")
+@click.option("--num-workers", default=1000, help="Number of threads to use.")
 @click.option(
     "--api-endpoint",
-    default="http://localhost:8080/api/v1/default/signals/instances",
+    default=f"{DISPATCH_UI_URL}/api/v1/default/signals/instances",
     required=True,
     help="API endpoint to send the signal instances.",
 )
@@ -708,15 +710,17 @@ def start_tasks(tasks, exclude, eager):
     "--project",
     default="Test",
     required=True,
-    help="The Dispatch project to send to send the instances to",
+    help="The Dispatch project to send the instances to",
 )
-def perf_test(num_instances: int, api_endpoint: str, api_token: str, project: str) -> None:
+def perf_test(
+    num_instances: int, num_workers: int, api_endpoint: str, api_token: str, project: str
+) -> None:
     """Performance testing utility for creating signal instances."""
     import concurrent.futures
     from fastapi import status
 
     NUM_SIGNAL_INSTANCES = num_instances
-    NUM_WORKERS = 10
+    NUM_WORKERS = num_workers
 
     session = requests.Session()
     session.headers.update(
@@ -752,7 +756,7 @@ def perf_test(num_instances: int, api_endpoint: str, api_token: str, project: st
 
         except requests.exceptions.RequestException as e:
             log.error(f"Unable to send finding. Reason: {e} Response: {r.json() if r else 'N/A'}")
-        finally:
+        else:
             log.info(f"{signal_instance.get('raw', {}).get('id')} created succesfully")
 
     def send_signal_instances(
@@ -783,7 +787,7 @@ def perf_test(num_instances: int, api_endpoint: str, api_token: str, project: st
     send_signal_instances(api_endpoint, api_token, signal_instances)
 
     elapsed_time = time.time() - start_time
-    print(f"Elapsed time: {elapsed_time:.2f} seconds")
+    click.echo(f"Elapsed time: {elapsed_time:.2f} seconds")
 
 
 @dispatch_cli.group("server")
