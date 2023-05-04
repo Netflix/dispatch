@@ -44,7 +44,7 @@
             </template>
             <template v-slot:item.data-table-actions="{ item }">
               <v-menu bottom left>
-                <template v-slot:activator="{ on }">
+                <template #activator="{ on }">
                   <v-btn icon v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>
@@ -70,9 +70,9 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
-import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
 import DeleteDialog from "@/tag/DeleteDialog.vue"
 import NewEditSheet from "@/tag/NewEditSheet.vue"
+import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
 
 export default {
   name: "TagTable",

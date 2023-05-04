@@ -14,7 +14,7 @@
     no-filter
     v-model="tags"
   >
-    <template v-slot:no-data>
+    <template #no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
@@ -47,7 +47,7 @@
         </v-list-item-subtitle>
       </v-list-item-content>
     </template>
-    <template v-slot:append-item>
+    <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
         <v-list-item-content>
           <v-list-item-subtitle> Load More </v-list-item-subtitle>
@@ -65,6 +65,7 @@ import TagApi from "@/tag/api"
 
 export default {
   name: "TagAutoComplete",
+
   props: {
     value: {
       type: Array,
@@ -89,6 +90,7 @@ export default {
       default: null,
     },
   },
+
   data() {
     return {
       loading: false,
@@ -137,18 +139,18 @@ export default {
       this.loading = "error"
 
       // fetch recommendations model and ID are provided
-      if (!this.search) {
-        if (this.model && this.modelId) {
-          TagApi.getRecommendations(this.model, this.modelId).then((response) => {
-            this.items = response.data.items
-            this.total = response.data.total
-            // we don't support more for suggestions (limited)
-            this.more = false
-            this.loading = false
-          })
-          return
-        }
-      }
+      // if (!this.search) {
+      //   if (this.model && this.modelId) {
+      //     TagApi.getRecommendations(this.model, this.modelId).then((response) => {
+      //       this.items = response.data.items
+      //       this.total = response.data.total
+      //       // we don't support more for suggestions (limited)
+      //       this.more = false
+      //       this.loading = false
+      //     })
+      //     return
+      //   }
+      // }
 
       let filterOptions = {
         q: this.search,

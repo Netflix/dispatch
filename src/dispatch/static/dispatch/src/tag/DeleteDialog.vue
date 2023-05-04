@@ -6,7 +6,7 @@
       </v-card-title>
       <v-card-text>
         <v-container grid-list-md>
-          <v-layout wrap> Are you sure you would like to delete this tag? </v-layout>
+          <v-layout wrap> Are you sure you want to delete this tag? </v-layout>
         </v-container>
       </v-card-text>
       <v-card-actions>
@@ -21,11 +21,14 @@
 <script>
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
+
 export default {
   name: "TagDeleteDialog",
+
   data() {
     return {}
   },
+
   computed: {
     ...mapFields("tag", ["dialogs.showRemove"]),
   },
