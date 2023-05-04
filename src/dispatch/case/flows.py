@@ -208,8 +208,17 @@ def case_new_create_flow(
     # we create the ticket
     ticket_flows.create_case_ticket(case=case, db_session=db_session)
 
+    individual_participants, team_participants = get_case_participants(
+        case=case, db_session=db_session
+    )
+
     if create_resources:
-        case_create_resources_flow(db_session=db_session, case_id=case.id)
+        case_create_resources_flow(
+            db_session=db_session,
+            case_id=case.id,
+            individual_participants=individual_participants,
+            team_participants=team_participants,
+        )
 
     if case.case_priority.page_assignee:
         if not service_id:
@@ -260,8 +269,6 @@ def case_new_create_flow(
                     description="Conversation added to case",
                     case_id=case.id,
                 )
-                individual_participants, _ = get_case_participants(case=case, db_session=db_session)
-
                 # wait until all resources are created before adding suggested participants
                 individual_participants = [x.email for x, _ in individual_participants]
 
@@ -669,13 +676,11 @@ def case_assign_role_flow(
     role_flow.assign_role_flow(case, assignee_email, assignee_role, db_session)
 
 
-def case_create_resources_flow(db_session: Session, case_id: int) -> None:
+def case_create_resources_flow(
+    db_session: Session, case_id: int, individual_participants: list, team_participants: list
+) -> None:
     """Runs the case resource creation flow."""
     case = get(db_session=db_session, case_id=case_id)
-
-    individual_participants, team_participants = get_case_participants(
-        case=case, db_session=db_session
-    )
 
     if case.assignee:
         individual_participants.append((case.assignee.individual, None))
