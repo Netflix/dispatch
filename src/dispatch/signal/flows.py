@@ -1,4 +1,6 @@
+from datetime import timedelta
 import logging
+from cachetools import TTLCache
 
 from email_validator import validate_email, EmailNotValidError
 from sqlalchemy.orm import Session
@@ -9,6 +11,7 @@ from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
 from dispatch.case.models import CaseCreate
 from dispatch.entity import service as entity_service
+from dispatch.exceptions import DispatchException
 from dispatch.plugin import service as plugin_service
 from dispatch.project.models import Project
 from dispatch.signal import service as signal_service
@@ -39,13 +42,13 @@ def signal_instance_create_flow(
     db_session.commit()
 
     # we don't need to continue if a filter action took place
-    if signal_service.filter_signal(db_session=db_session, signal_instance=signal_instance):
+    if signal_service.filter_signal(
+        db_session=db_session,
+        signal_instance=signal_instance,
+    ):
         # If the signal was deduplicated, we can assume a case exists,
         # and we need to update the corresponding signal message
-        if (
-            signal_instance.filter_action == SignalFilterAction.deduplicate
-            and signal_instance.case.signal_thread_ts  # noqa
-        ):
+        if _should_update_signal_message(signal_instance):
             update_signal_message(
                 db_session=db_session,
                 signal_instance=signal_instance,
@@ -92,6 +95,7 @@ def signal_instance_create_flow(
         service_id=service_id,
         conversation_target=conversation_target,
         case_id=case.id,
+        create_resources=False,
     )
 
     if signal_instance.signal.engagements and entities:
@@ -128,10 +132,10 @@ def create_signal_instance(
     )
 
     if not signal:
-        raise Exception("No signal definition defined.")
+        raise DispatchException("No signal definition defined.")
 
     if not signal.enabled:
-        raise Exception("Signal definition is not enabled.")
+        raise DispatchException("Signal definition is not enabled.")
 
     signal_instance_in = SignalInstanceCreate(
         raw=signal_instance_data, signal=signal, project=signal.project
@@ -224,3 +228,32 @@ def update_signal_message(db_session: Session, signal_instance: SignalInstance) 
         db_session=db_session,
         thread_id=signal_instance.case.signal_thread_ts,
     )
+
+
+_last_nonupdated_signal_cache = TTLCache(maxsize=4, ttl=60)
+
+
+def _should_update_signal_message(signal_instance: SignalInstance) -> bool:
+    """
+    Determine if the signal message should be updated based on the filter action and time since the last update.
+    """
+    global _last_nonupdated_signal_cache
+
+    case_id = str(signal_instance.case_id)
+
+    if case_id not in _last_nonupdated_signal_cache:
+        _last_nonupdated_signal_cache[case_id] = signal_instance
+        return True
+
+    last_nonupdated_signal = _last_nonupdated_signal_cache[case_id]
+    time_since_last_update = signal_instance.created_at - last_nonupdated_signal.created_at
+
+    if (
+        signal_instance.filter_action == SignalFilterAction.deduplicate
+        and signal_instance.case.signal_thread_ts  # noqa
+        and time_since_last_update >= timedelta(seconds=5)  # noqa
+    ):
+        _last_nonupdated_signal_cache[case_id] = signal_instance
+        return True
+    else:
+        return False

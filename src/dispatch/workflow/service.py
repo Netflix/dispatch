@@ -2,16 +2,19 @@ from typing import List, Optional
 
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import true
+
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from dispatch.config import DISPATCH_UI_URL
-from dispatch.exceptions import NotFoundError
-from dispatch.project import service as project_service
-from dispatch.plugin import service as plugin_service
-from dispatch.incident import service as incident_service
+
 from dispatch.case import service as case_service
-from dispatch.signal import service as signal_service
-from dispatch.participant import service as participant_service
+from dispatch.config import DISPATCH_UI_URL
 from dispatch.document import service as document_service
+from dispatch.exceptions import NotFoundError
+from dispatch.incident import service as incident_service
+from dispatch.participant import service as participant_service
+from dispatch.plugin import service as plugin_service
+from dispatch.project import service as project_service
+from dispatch.project.models import Project
+from dispatch.signal import service as signal_service
 from dispatch.workflow.enums import WorkflowInstanceStatus
 
 from .models import (
@@ -119,10 +122,11 @@ def get_instance(*, db_session, instance_id: int) -> WorkflowInstance:
     )
 
 
-def get_running_instances(*, db_session) -> List[WorkflowInstance]:
+def get_running_instances(*, db_session, project: Project) -> List[WorkflowInstance]:
     """Fetches all running instances."""
     return (
         db_session.query(WorkflowInstance)
+        .filter(WorkflowInstance.workflow.project.id == project.id)
         .filter(
             WorkflowInstance.status.in_(
                 (

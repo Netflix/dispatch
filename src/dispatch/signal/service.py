@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from sqlalchemy import asc
+from sqlalchemy import desc, asc
 from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
@@ -472,7 +472,22 @@ def create_instance(
 
 
 def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bool:
-    """Applies any matching filter actions associated with this instance."""
+    """
+    Apply filter actions to the signal instance.
+
+    The function first checks if the signal instance is snoozed. If not snoozed,
+    it checks for a deduplication rule set on the signal instance. If no
+    deduplication rule is set, a default deduplication rule is applied,
+    grouping all signal instances together for a 1-hour window, regardless of
+    the entities in the signal instance.
+
+    Args:
+        db_session (Session): Database session.
+        signal_instance (SignalInstance): Signal instance to be filtered.
+
+    Returns:
+        bool: True if the signal instance is filtered, False otherwise.
+    """
 
     filtered = False
     for f in signal_instance.signal.filters:
@@ -522,6 +537,29 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
                 signal_instance.filter_action = SignalFilterAction.deduplicate
                 filtered = True
                 break
+    else:
+        # Check if there's a deduplication rule set on the signal
+        has_dedup_filter = any(
+            f.action == SignalFilterAction.deduplicate for f in signal_instance.signal.filters
+        )
+        # Apply the default deduplication rule if there's no deduplication rule set on the signal
+        # and the signal instance is not snoozed
+        if not has_dedup_filter and not filtered:
+            default_dedup_window = datetime.now(timezone.utc) - timedelta(hours=1)
+            default_dedup_query = (
+                db_session.query(SignalInstance)
+                .filter(
+                    SignalInstance.signal_id == signal_instance.signal_id,
+                    SignalInstance.created_at >= default_dedup_window,
+                    SignalInstance.id != signal_instance.id,
+                    SignalInstance.case_id.isnot(None),  # noqa
+                )
+                .order_by(desc(SignalInstance.created_at))
+            )
+            if default_dedup_query.all():
+                signal_instance.case_id = default_dedup_query[0].case_id
+                signal_instance.filter_action = SignalFilterAction.deduplicate
+                filtered = True
 
     if not filtered:
         signal_instance.filter_action = SignalFilterAction.none
