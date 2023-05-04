@@ -624,9 +624,6 @@ def case_to_incident_endpoint_escalate_flow(
     incident = incident_flows.incident_create_flow(
         incident_id=incident_id, organization_slug=organization_slug, db_session=db_session
     )
-
-    # fetch the incident from the database after the background task has completed
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
     case.incidents.append(incident)
 
     db_session.add(case)
