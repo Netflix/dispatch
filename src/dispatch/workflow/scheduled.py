@@ -102,7 +102,7 @@ def sync_all_workflows(db_session: Session, project: Project):
 
     if not workflow_plugin:
         log.warning(
-            f"Workflows not synced. No workflow plugin enabled in {project.name} project and {project.organization.name} organization."
+            f"Incident workflows not synced. No workflow plugin enabled. Project: {project.name}. Organization: {project.organization.name}"
         )
         return
 

@@ -4,6 +4,7 @@ import re
 
 import jsonpath_ng
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from sqlalchemy import desc
 from sqlalchemy.orm import Session, joinedload
 
 from dispatch.exceptions import NotFoundError
@@ -75,6 +76,18 @@ def get_all_by_signal(*, db_session: Session, signal_id: int) -> list[Entity]:
         .join(Entity.signal_instances)
         .join(SignalInstance.signal)
         .filter(Signal.id == signal_id)
+        .all()
+    )
+
+
+def get_all_desc_by_signal(*, db_session: Session, signal_id: int) -> list[Entity]:
+    """Gets all entities for a specific signal in descending order."""
+    return (
+        db_session.query(Entity)
+        .join(Entity.signal_instances)
+        .join(SignalInstance.signal)
+        .filter(Signal.id == signal_id)
+        .order_by(desc(Entity.created_at))
         .all()
     )
 

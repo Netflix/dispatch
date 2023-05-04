@@ -403,7 +403,7 @@ def snooze_button_click(
         description_input(placeholder="Provide a description for your snooze filter."),
         entity_select(
             db_session=db_session,
-            project_id=subject.project_id,
+            signal_id=signal.id,
             optional=True,
         ),
         Context(
