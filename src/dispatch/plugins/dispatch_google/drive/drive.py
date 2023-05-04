@@ -10,15 +10,15 @@ import io
 import json
 import logging
 from typing import Any, List
-
 from datetime import datetime, timedelta, timezone
 
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseDownload
+from http import HTTPStatus
+from ssl import SSLError
 from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from dispatch.enums import DispatchEnum
-
 
 log = logging.getLogger(__name__)
 
@@ -82,26 +82,35 @@ def paginated(data_key):
     return decorator
 
 
-# google sometimes has transient errors
 @retry(
     stop=stop_after_attempt(5),
     retry=retry_if_exception_type(TryAgain),
     wait=wait_exponential(multiplier=1, min=2, max=5),
 )
 def make_call(client: Any, func: Any, propagate_errors: bool = False, **kwargs):
-    """Make an Google client api call."""
+    """Makes a Google API call."""
     try:
         return getattr(client, func)(**kwargs).execute()
     except HttpError as e:
-        if e.resp.status in [300, 429, 500, 502, 503, 504]:
-            log.debug("Google encountered an error retrying...")
+        if e.resp.status in [
+            HTTPStatus.MULTIPLE_CHOICES,
+            HTTPStatus.TOO_MANY_REQUESTS,
+            HTTPStatus.INTERNAL_SERVER_ERROR,
+            HTTPStatus.BAD_GATEWAY,
+            HTTPStatus.SERVICE_UNAVAILABLE,
+            HTTPStatus.GATEWAY_TIMEOUT,
+        ]:
+            log.debug("We encountered an HTTP error. Retrying...")
             raise TryAgain from None
 
         if propagate_errors:
             raise HttpError from None
 
-        errors = json.loads(e.content.decode())
-        raise Exception(f"Request failed. Errors: {errors}") from None
+        error = json.loads(e.content.decode())
+        raise Exception(f"Google request failed. Error: {error}") from None
+    except SSLError as e:
+        log.debug("We encountered an SSL error. Error: {e}")
+        raise Exception(f"Google request failed. Error: {e}") from None
 
 
 @retry(wait=wait_exponential(multiplier=1, max=10))
@@ -110,7 +119,12 @@ def upload_chunk(request: Any):
     try:
         return request.next_chunk()
     except HttpError as e:
-        if e.resp.status in [500, 502, 503, 504]:
+        if e.resp.status in [
+            HTTPStatus.INTERNAL_SERVER_ERROR,
+            HTTPStatus.BAD_GATEWAY,
+            HTTPStatus.SERVICE_UNAVAILABLE,
+            HTTPStatus.GATEWAY_TIMEOUT,
+        ]:
             # Call next_chunk() agai, but use an exponential backoff for repeated errors.
             raise e
 
