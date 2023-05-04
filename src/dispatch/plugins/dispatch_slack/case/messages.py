@@ -33,6 +33,17 @@ from dispatch.signal.enums import SignalEngagementStatus
 
 
 def create_case_message(case: Case, channel_id: str) -> list[Block]:
+    fields = [
+        f"*Assignee* \n {case.assignee.individual.email}",
+        f"*Status* \n {case.status}",
+        f"*Severity* \n {case.case_severity.name}",
+        f"*Type* \n {case.case_type.name}",
+        f"*Priority* \n {case.case_priority.name}",
+    ]
+
+    if case.signal_instances:
+        fields.append(f"*Variant* \n {case.signal_instances[0].signal.variant}")
+
     blocks = [
         Context(elements=[f"* {case.name} - Case Details*"]),
         Section(
@@ -44,15 +55,7 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
             ),
         ),
         Section(text=f"*Description* \n {case.description}"),
-        Section(
-            fields=[
-                f"*Assignee* \n {case.assignee.individual.email}",
-                f"*Status* \n {case.status}",
-                f"*Severity* \n {case.case_severity.name}",
-                f"*Type* \n {case.case_type.name}",
-                f"*Priority* \n {case.case_priority.name}",
-            ]
-        ),
+        Section(fields=fields),
     ]
 
     button_metadata = SubjectMetadata(
