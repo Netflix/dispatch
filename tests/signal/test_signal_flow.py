@@ -1,5 +1,7 @@
 import pytest
 
+from dispatch.exceptions import DispatchException
+
 
 def test_create_signal_instance(session, signal, case_severity, case_priority, user):
     from dispatch.signal.flows import create_signal_instance
@@ -30,7 +32,7 @@ def test_create_signal_instance_no_variant(session, signal, case_severity, case_
     case_severity.project_id = signal.project_id
 
     instance_data = {"variant": "unknown"}
-    with pytest.raises(Exception):
+    with pytest.raises(DispatchException):
         create_signal_instance(
             db_session=session,
             project=signal.project,
@@ -50,7 +52,7 @@ def test_create_signal_instance_not_enabled(session, signal, case_severity, case
 
     signal.enabled = False
     instance_data = {"variant": signal.variant}
-    with pytest.raises(Exception):
+    with pytest.raises(DispatchException):
         create_signal_instance(
             db_session=session,
             project=signal.project,
