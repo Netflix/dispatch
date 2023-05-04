@@ -56,7 +56,11 @@ def sync_tasks(db_session, task_plugin, incidents, lookback: int = 60, notify: b
                 break
 
             # we get the list of tasks in the document
-            tasks = task_plugin.instance.list(file_id=document.resource_id, lookback=lookback)
+            try:
+                tasks = task_plugin.instance.list(file_id=document.resource_id, lookback=lookback)
+            except Exception as e:
+                log.warn(f"Unable to list tasks in document {document.resource_id}. Error: {e}")
+                continue
 
             for task in tasks:
                 # we get the task information
