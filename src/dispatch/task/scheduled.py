@@ -78,7 +78,9 @@ def daily_sync_task(db_session: SessionLocal, project: Project):
     )
 
     if not task_plugin:
-        log.warning(f"Skipping task sync no task plugin enabled. ProjectId: {project.id}")
+        log.warning(
+            f"Daily incident tasks sync skipped. No task plugin enabled. Project: {project.name}. Organization: {project.organization.name}"
+        )
         return
 
     lookback = 60 * 60 * 24  # 24hrs
@@ -94,7 +96,9 @@ def sync_active_stable_tasks(db_session: SessionLocal, project: Project):
     )
 
     if not task_plugin:
-        log.warning(f"Skipping task sync no task plugin enabled. ProjectId: {project.id}")
+        log.warning(
+            f"Active and stable incident tasks sync skipped. No task plugin enabled. Project: {project.name}. Organization: {project.organization.name}"
+        )
         return
 
     # we get all active and stable incidents

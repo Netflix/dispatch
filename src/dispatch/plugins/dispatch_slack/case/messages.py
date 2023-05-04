@@ -8,8 +8,6 @@ from blockkit import (
     Message,
     Section,
     Divider,
-    Overflow,
-    PlainOption,
 )
 from blockkit.surfaces import Block
 from sqlalchemy.orm import Session
@@ -121,21 +119,6 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
                             action_id=CaseNotificationActions.escalate,
                             style="danger",
                             value=button_metadata,
-                        ),
-                        Overflow(
-                            options=[
-                                PlainOption(
-                                    text="Storage",
-                                    url=case.storage.weblink,
-                                    value="option-1",
-                                ),
-                                PlainOption(
-                                    text="Document",
-                                    url=case.case_document.weblink,
-                                    value="option-2",
-                                ),
-                            ],
-                            action_id="button-link",
                         ),
                     ]
                 )
