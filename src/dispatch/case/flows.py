@@ -623,23 +623,23 @@ def case_to_incident_endpoint_escalate_flow(
     case.status = CaseStatus.escalated
 
     # we run the incident create flow
-    incident_flows.incident_create_flow(
+    incident = incident_flows.incident_create_flow(
         incident_id=incident_id, organization_slug=organization_slug, db_session=db_session
     )
 
     # fetch the incident from the database after the background task has completed
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-    if incident:
-        case.incidents.append(incident)
-        db_session.add(case)
-        db_session.commit()
+    case.incidents.append(incident)
 
-        event_service.log_case_event(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description=f"The case has been linked to incident {incident.name} in the {incident.project.name} project",
-            case_id=case.id,
-        )
+    db_session.add(case)
+    db_session.commit()
+
+    event_service.log_case_event(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description=f"The case has been linked to incident {incident.name} in the {incident.project.name} project",
+        case_id=case.id,
+    )
 
     # we add the incident's tactical group to the case's storage folder
     # to allow incident participants to access the case's artifacts in the folder
