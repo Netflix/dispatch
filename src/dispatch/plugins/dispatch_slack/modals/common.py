@@ -29,5 +29,5 @@ def send_success_modal(
         )
     except SlackApiError as e:
         if e.response["error"] == "not_found":
-            e.add_note("This error usually indiciates that user closed the loading modal early.")
+            e.add_note("This error usually indicates that the user closed the loading modal early and is transparent.")
             log.warning(f"Failed to send success Modal: {e}")
