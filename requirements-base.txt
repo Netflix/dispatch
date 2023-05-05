@@ -104,7 +104,7 @@ deprecated==1.2.13
     #   limits
 dnspython==2.3.0
     # via email-validator
-duo-client==5.0.0
+duo-client==5.0.1
     # via -r requirements-base.in
 ecdsa==0.18.0
     # via python-jose
