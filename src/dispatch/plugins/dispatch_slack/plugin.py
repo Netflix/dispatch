@@ -85,7 +85,7 @@ class SlackConversationPlugin(ConversationPlugin):
         )
         if case.signal_instances:
             message = create_signal_messages(
-                case=case, channel_id=conversation_id, db_session=db_session
+                case_id=case.id, channel_id=conversation_id, db_session=db_session
             )
             signal_response = send_message(
                 client=client,
@@ -129,7 +129,7 @@ class SlackConversationPlugin(ConversationPlugin):
 
     def update_signal_message(
         self,
-        case: Case,
+        case_id: int,
         conversation_id: str,
         db_session: Session,
         thread_id: str,
@@ -137,7 +137,7 @@ class SlackConversationPlugin(ConversationPlugin):
         """Updates the signal message."""
         client = create_slack_client(self.configuration)
         blocks = create_signal_messages(
-            case=case, channel_id=conversation_id, db_session=db_session
+            case_id=case_id, channel_id=conversation_id, db_session=db_session
         )
         return update_message(
             client=client, conversation_id=conversation_id, blocks=blocks, ts=thread_id

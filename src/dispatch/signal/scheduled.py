@@ -8,15 +8,14 @@ from datetime import datetime, timedelta, timezone
 import logging
 import queue
 from sqlalchemy import asc
-from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import Session
 
 from schedule import every
-from dispatch.database.core import SessionLocal, sessionmaker, engine
 from dispatch.scheduler import scheduler
 from dispatch.project.models import Project
 from dispatch.plugin import service as plugin_service
 from dispatch.signal import flows as signal_flows
-from dispatch.decorators import scheduled_project_task, timer
+from dispatch.decorators import scoped_scheduled_project_task
 from dispatch.signal.models import SignalInstance
 
 log = logging.getLogger(__name__)
@@ -24,8 +23,8 @@ log = logging.getLogger(__name__)
 
 # TODO do we want per signal source flexibility?
 @scheduler.add(every(1).minutes, name="signal-consume")
-@scheduled_project_task
-def consume_signals(db_session: SessionLocal, project: Project):
+@scoped_scheduled_project_task
+def consume_signals(db_session: Session, project: Project):
     """Consume signals from external sources."""
     plugins = plugin_service.get_active_instances(
         db_session=db_session, plugin_type="signal-consumer", project_id=project.id
@@ -53,8 +52,8 @@ def consume_signals(db_session: SessionLocal, project: Project):
                 log.exception(e)
 
 
-@timer
-def process_signal_instance(db_session: SessionLocal, signal_instance: SignalInstance) -> None:
+def process_signal_instance(db_session: Session, signal_instance: SignalInstance) -> None:
+    signal_instance = db_session.merge(signal_instance)
     try:
         signal_flows.signal_instance_create_flow(
             db_session=db_session,
@@ -71,10 +70,9 @@ MAX_SIGNAL_INSTANCES = 500
 signal_queue = queue.Queue(maxsize=MAX_SIGNAL_INSTANCES)
 
 
-@timer
-@scheduler.add(every(1).minutes, name="signal-process")
-@scheduled_project_task
-def process_signals(db_session: SessionLocal, project: Project):
+@scheduler.add(every(20).seconds, name="signal-process")
+@scoped_scheduled_project_task
+def process_signals(db_session: Session, project: Project):
     """
     Process signals and create cases if appropriate.
 
@@ -98,14 +96,14 @@ def process_signals(db_session: SessionLocal, project: Project):
         This ensures that each signal instance is processed using its own separate database connection,
         preventing potential issues with concurrent connections.
     """
-    one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
+    half_hour_ago = datetime.now(timezone.utc) - timedelta(minutes=30)
     signal_instances = (
         (
             db_session.query(SignalInstance)
             .filter(SignalInstance.project_id == project.id)
             .filter(SignalInstance.filter_action == None)  # noqa
             .filter(SignalInstance.case_id == None)  # noqa
-            .filter(SignalInstance.created_at >= one_hour_ago)
+            .filter(SignalInstance.created_at >= half_hour_ago)
         )
         .order_by(asc(SignalInstance.created_at))
         .limit(MAX_SIGNAL_INSTANCES)
@@ -114,15 +112,7 @@ def process_signals(db_session: SessionLocal, project: Project):
     for signal_instance in signal_instances:
         signal_queue.put(signal_instance)
 
-    schema_engine = engine.execution_options(
-        schema_translate_map={
-            None: "dispatch_organization_default",
-        }
-    )
-    session = scoped_session(sessionmaker(bind=schema_engine))
-
     # Process each signal instance in the queue
     while not signal_queue.empty():
         signal_instance = signal_queue.get()
-        db_session = session()
         process_signal_instance(db_session, signal_instance)

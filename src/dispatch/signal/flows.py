@@ -33,13 +33,14 @@ def signal_instance_create_flow(
         db_session=db_session, signal_instance_id=signal_instance_id
     )
 
-    entities = entity_service.find_entities(
-        db_session=db_session,
-        signal_instance=signal_instance,
-        entity_types=signal_instance.signal.entity_types,
-    )
-    signal_instance.entities = entities
-    db_session.commit()
+    if signal_instance.signal.entity_types:
+        entities = entity_service.find_entities(
+            db_session=db_session,
+            signal_instance=signal_instance,
+            entity_types=signal_instance.signal.entity_types,
+        )
+        signal_instance.entities = entities
+        db_session.commit()
 
     # we don't need to continue if a filter action took place
     if signal_service.filter_signal(
@@ -223,7 +224,7 @@ def update_signal_message(db_session: Session, signal_instance: SignalInstance) 
         return
 
     plugin.instance.update_signal_message(
-        case=signal_instance.case,
+        case_id=signal_instance.case_id,
         conversation_id=signal_instance.case.conversation.channel_id,
         db_session=db_session,
         thread_id=signal_instance.case.signal_thread_ts,

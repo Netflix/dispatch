@@ -546,7 +546,7 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
         # and the signal instance is not snoozed
         if not has_dedup_filter and not filtered:
             default_dedup_window = datetime.now(timezone.utc) - timedelta(hours=1)
-            default_dedup_query = (
+            instance = (
                 db_session.query(SignalInstance)
                 .filter(
                     SignalInstance.signal_id == signal_instance.signal_id,
@@ -554,10 +554,12 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
                     SignalInstance.id != signal_instance.id,
                     SignalInstance.case_id.isnot(None),  # noqa
                 )
+                .with_entities(SignalInstance.case_id)
                 .order_by(desc(SignalInstance.created_at))
+                .first()
             )
-            if default_dedup_query.all():
-                signal_instance.case_id = default_dedup_query[0].case_id
+            if instance:
+                signal_instance.case_id = instance.case_id
                 signal_instance.filter_action = SignalFilterAction.deduplicate
                 filtered = True
 
