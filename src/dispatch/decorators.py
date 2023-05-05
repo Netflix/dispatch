@@ -66,29 +66,34 @@ def _execute_task_in_project_context(
             except Exception as e:
                 log.exception(e)
 
-    # iterate for all schema
-    for organization in organization_service.get_all(db_session=db_session):
-        schema_engine = engine.execution_options(
-            schema_translate_map={None: f"dispatch_organization_{organization.slug}"}
-        )
-        if not is_scoped:
-            with _session(
-                engine=schema_engine,
-                is_scoped=False,
-            ) as __session:
-                __execute_task_within_session_context(__session)
-        else:
-            with _session(
-                engine=schema_engine,
-                is_scoped=True,
-            ) as __session:
-                __execute_task_within_session_context(__session)
+    try:
+        # iterate for all schema
+        for organization in organization_service.get_all(db_session=db_session):
+            schema_engine = engine.execution_options(
+                schema_translate_map={None: f"dispatch_organization_{organization.slug}"}
+            )
+            if not is_scoped:
+                with _session(
+                    engine=schema_engine,
+                    is_scoped=False,
+                ) as __session:
+                    __execute_task_within_session_context(__session)
+            else:
+                with _session(
+                    engine=schema_engine,
+                    is_scoped=True,
+                ) as __session:
+                    __execute_task_within_session_context(__session)
 
-    elapsed_time = time.perf_counter() - start
-    metrics_provider.timer(
-        "function.elapsed.time", value=elapsed_time, tags={"function": fullname(func)}
-    )
-    db_session.close()
+        elapsed_time = time.perf_counter() - start
+        metrics_provider.timer(
+            "function.elapsed.time", value=elapsed_time, tags={"function": fullname(func)}
+        )
+    except Exception as e:
+        # No rollback necessary as we only read from the database
+        log.exception(e)
+    finally:
+        db_session.close()
 
 
 def scheduled_project_task(func: Callable):
