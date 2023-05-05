@@ -3,6 +3,8 @@ from blockkit import Modal, Section
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
 
+from dispatch.plugins.dispatch_slack.enums import SlackAPIErrorCode
+
 log = logging.getLogger(__file__)
 
 
@@ -60,7 +62,7 @@ def send_success_modal(
             view=modal,
         )
     except SlackApiError as e:
-        if e.response["error"] == "not_found":
+        if e.response["error"] == SlackAPIErrorCode.VIEW_NOT_FOUND:
             e.add_note(
                 "This error usually indicates that the user closed the loading modal early and is transparent."
             )

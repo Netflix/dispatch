@@ -20,6 +20,7 @@ from dispatch.messaging.strings import (
     render_message_template,
 )
 from dispatch.plugins.dispatch_slack.config import SlackConfiguration
+from dispatch.plugins.dispatch_slack.enums import SlackAPIErrorCode
 
 log = logging.getLogger(__name__)
 
@@ -158,7 +159,7 @@ def build_bot_not_present_message(client: WebClient, command: str, conversations
 def build_slack_api_error_message(error: SlackApiError) -> str:
     return (
         "Sorry, the request to Slack timed out. Try running your command again."
-        if error.response.get("error") == "expired_trigger_id"
+        if error.response.get("error") == SlackAPIErrorCode.VIEW_EXPIRED
         else "Sorry, we've run into an unexpected error with Slack."
     )
 

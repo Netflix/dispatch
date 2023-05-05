@@ -50,6 +50,7 @@ from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.bolt import app
 from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
+from dispatch.plugins.dispatch_slack.enums import SlackAPIErrorCode
 from dispatch.plugins.dispatch_slack.exceptions import CommandError
 from dispatch.plugins.dispatch_slack.fields import (
     DefaultActionIds,
@@ -759,7 +760,7 @@ def handle_after_hours_message(
     try:
         owner_tz = (dispatch_slack_service.get_user_info_by_email(client, email=owner_email))["tz"]
     except SlackApiError as e:
-        if e.response["error"] == "users_not_found":
+        if e.response["error"] == SlackAPIErrorCode.USER_NOT_FOUND:
             e.add_note(
                 "This error usually indiciates that the incident commanders Slack account is deactivated."
             )
@@ -2085,7 +2086,7 @@ def handle_incident_notification_join_button_click(
             client.conversations_invite(channel=incident.conversation.channel_id, users=[user_id])
             message = f"Success! We've added you to incident {incident.name}. Please, check your Slack sidebar for the new incident channel."
         except SlackApiError as e:
-            if e.response.get("error") == "already_in_channel":
+            if e.response.get("error") == SlackAPIErrorCode.ALREADY_IN_CHANNEL:
                 message = f"Sorry, we can't invite you to this incident - you're already a member. Search for a channel called {incident.name.lower()} in your Slack sidebar."
 
     respond(text=message, response_type="ephemeral", replace_original=False, delete_original=False)
