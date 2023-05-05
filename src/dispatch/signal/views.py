@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.exc import IntegrityError
 
@@ -8,6 +8,7 @@ from dispatch.auth.service import CurrentUser
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.exceptions import ExistsError
+from dispatch.rate_limiter import limiter
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.project import service as project_service
 from dispatch.signal import service as signal_service
@@ -52,11 +53,14 @@ def get_signal_instances(common: CommonParameters):
 
 
 @router.post("/instances", response_model=SignalInstanceRead)
+@limiter.limit("250/minute")
 def create_signal_instance(
     db_session: DbSession,
     organization: OrganizationSlug,
     signal_instance_in: SignalInstanceCreate,
     background_tasks: BackgroundTasks,
+    request: Request,
+    response: Response,
 ):
     """Create a new signal instance."""
     project = project_service.get_by_name_or_default(
