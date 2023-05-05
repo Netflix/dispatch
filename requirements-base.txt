@@ -4,7 +4,6 @@
 #
 #    pip-compile requirements-base.in
 #
-
 aiocache==0.12.1
     # via -r requirements-base.in
 aiofiles==23.1.0
@@ -263,7 +262,7 @@ preshed==3.0.8
     # via
     #   spacy
     #   thinc
-protobuf==4.22.3
+protobuf==4.22.4
     # via
     #   -r requirements-base.in
     #   google-api-core
