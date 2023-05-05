@@ -1,5 +1,6 @@
 import logging
 from blockkit import Modal, Section
+from pydantic.error_wrappers import ValidationError
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
 
@@ -49,11 +50,21 @@ def send_success_modal(
             close_title="Close",
         )
     """
-    modal = Modal(
-        title=title,
-        close=close_title,
-        blocks=[Section(text=message)] if not blocks else blocks,
-    ).build()
+    try:
+        modal = Modal(
+            title=title,
+            close=close_title,
+            blocks=[Section(text=message)] if not blocks else blocks,
+        ).build()
+    except ValidationError as e:
+        log.error(
+            f"Blockkit raised an exception building success modal, falling back to default: {e}"
+        )
+        modal = Modal(
+            title="Done",
+            close="Close",
+            blocks=[Section(text="Success!")],
+        ).build()
 
     try:
         client.views_update(
