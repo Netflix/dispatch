@@ -34,7 +34,7 @@ def sync_tags(db_session: SessionLocal, project: Project) -> NoReturn:
 
     if not plugin:
         log.warning(
-            f"Tags not synced using external sources. No tag plugin enabled in {project.name} project."
+            f"Tags not synced using external sources. No tag plugin enabled. Project: {project.name}. Organization: {project.organization.name}"
         )
         return
 

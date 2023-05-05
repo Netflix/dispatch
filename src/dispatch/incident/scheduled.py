@@ -40,29 +40,32 @@ log = logging.getLogger(__name__)
 @scheduled_project_task
 def auto_tagger(db_session: SessionLocal, project: Project):
     """Attempts to take existing tags and associate them with incidents."""
-    tags = tag_service.get_all(db_session=db_session, project_id=project.id).all()
-    log.debug(f"Fetched {len(tags)} tags from database.")
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=project.id, plugin_type="storage"
+    )
 
+    if not plugin:
+        log.warning(
+            f"Incident tags not updated. No storage plugin enabled. Project: {project.name}. Organization: {project.organization.name}"
+        )
+        return
+
+    tags = tag_service.get_all(db_session=db_session, project_id=project.id).all()
     tag_strings = [t.name.lower() for t in tags if t.discoverable]
     phrases = build_term_vocab(tag_strings)
     matcher = build_phrase_matcher("dispatch-tag", phrases)
 
-    for incident in get_all(db_session=db_session, project_id=project.id).all():
-        plugin = plugin_service.get_active_instance(
-            db_session=db_session, project_id=incident.project.id, plugin_type="storage"
-        )
+    incidents = get_all(db_session=db_session, project_id=project.id).all()
 
-        log.debug(f"Processing incident. Name: {incident.name}")
+    for incident in incidents:
+        log.debug(f"Processing incident {incident.name}...")
 
-        doc = incident.incident_document
-
-        if doc:
+        if incident.incident_document:
             try:
                 mime_type = "text/plain"
-                text = plugin.instance.get(doc.resource_id, mime_type)
+                text = plugin.instance.get(incident.incident_document.resource_id, mime_type)
             except Exception as e:
-                log.debug(f"Failed to get document. Reason: {e}")
-                log.exception(e)
+                log.warn(e)
                 continue
 
             extracted_tags = list(set(extract_terms_from_text(text, matcher)))
@@ -76,9 +79,7 @@ def auto_tagger(db_session: SessionLocal, project: Project):
             incident.tags.extend(matched_tags)
             db_session.commit()
 
-            log.debug(
-                f"Associating tags with incident. Incident: {incident.name}, Tags: {extracted_tags}"
-            )
+            log.debug(f"Associating tags with incident {incident.name}. Tags: {extracted_tags}")
 
 
 @scheduler.add(every(1).day.at("18:00"), name="incident-daily-report")
