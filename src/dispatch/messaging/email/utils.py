@@ -3,6 +3,7 @@ import os
 import subprocess
 import tempfile
 
+import jinja2.exceptions
 from dispatch.config import MJML_PATH
 
 
@@ -53,7 +54,7 @@ def get_template(message_type: MessageType, project_id: int):
     template_path = os.path.join("templates", "project_id", f"{project_id}", template_key)
     try:
         template = env.get_template(template_path)
-    except FileNotFoundError:
+    except jinja2.exceptions.TemplateNotFound:
         template_path = os.path.join("templates", template_key)
         template = env.get_template(template_path)
 
