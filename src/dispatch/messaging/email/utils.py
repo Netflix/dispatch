@@ -51,10 +51,10 @@ def get_template(message_type: MessageType, project_id: int):
     if not template_key:
         raise Exception(f"Unable to determine template. MessageType: {message_type}")
 
-    template_path = os.path.join("templates", "project_id", f"{project_id}", template_key)
     try:
+        template_path = os.path.join("templates", "project_id", f"{project_id}", template_key)
         template = env.get_template(template_path)
-    except Exception:
+    except jinja2.exceptions.TemplateNotFound:
         template_path = os.path.join("templates", template_key)
         template = env.get_template(template_path)
 
