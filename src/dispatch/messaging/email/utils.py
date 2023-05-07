@@ -4,7 +4,6 @@ import subprocess
 import tempfile
 
 from dispatch.config import MJML_PATH
-from dispatch.project.models import Project
 
 
 from dispatch.messaging.strings import (
@@ -21,7 +20,7 @@ from .filters import env
 log = logging.getLogger(__name__)
 
 
-def get_template(message_type: MessageType, project: Project):
+def get_template(message_type: MessageType, project_id: int):
     """Fetches the correct template based on the message type."""
     template_map = {
         MessageType.incident_executive_report: ("executive_report.mjml", None),
@@ -51,7 +50,7 @@ def get_template(message_type: MessageType, project: Project):
     if not template_key:
         raise Exception(f"Unable to determine template. MessageType: {message_type}")
 
-    template_path = os.path.join("templates", "project_id", f"{project.id}", template_key)
+    template_path = os.path.join("templates", "project_id", f"{project_id}", template_key)
     try:
         template = env.get_template(template_path)
     except FileNotFoundError:
@@ -62,10 +61,10 @@ def get_template(message_type: MessageType, project: Project):
 
 
 def create_multi_message_body(
-        message_template: dict, message_type: MessageType, items: list, project: Project, **kwargs
+        message_template: dict, message_type: MessageType, items: list, project_id: int, **kwargs
 ):
     """Creates a multi message message body based on message type."""
-    template, description = get_template(message_type, project)
+    template, description = get_template(message_type, project_id)
 
     master_map = []
     for item in items:
@@ -75,9 +74,9 @@ def create_multi_message_body(
     return render_html(template.render(**kwargs))
 
 
-def create_message_body(message_template: dict, message_type: MessageType, project: Project, **kwargs):
+def create_message_body(message_template: dict, message_type: MessageType, project_id: int, **kwargs):
     """Creates the correct message body based on message type."""
-    template, description = get_template(message_type, project)
+    template, description = get_template(message_type, project_id)
 
     items_grouped_rendered = []
     if kwargs.get("items_grouped"):
