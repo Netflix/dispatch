@@ -71,7 +71,7 @@ def create_signal_instance(
         external_id = signal_instance_in.raw["externalId"]
         variant = signal_instance_in.raw["variant"]
 
-        signal = signal_service.get_by_variant(
+        signal = signal_service.get_by_variant_or_external_id(
             db_session=db_session,
             project_id=project.id,
             external_id=external_id,
