@@ -594,22 +594,24 @@ def case_type_select(
 
 
 def entity_select(
+    signal_id: int,
     db_session: SessionLocal,
     action_id: str = DefaultActionIds.entity_select,
     block_id: str = DefaultBlockIds.entity_select,
     label="Entities",
-    project_id: int = None,
     **kwargs,
 ):
     """Creates an entity select."""
     entity_options = [
         {"text": entity.value, "value": entity.id}
-        for entity in entity_service.get_all(db_session=db_session, project_id=project_id).all()
+        for entity in entity_service.get_all_desc_by_signal(
+            db_session=db_session, signal_id=signal_id
+        )
     ]
 
     return multi_select_block(
         placeholder="Select Entities",
-        options=entity_options,
+        options=entity_options[:100],  # Limit the entities to the first 100 most recent
         action_id=action_id,
         block_id=block_id,
         label=label,

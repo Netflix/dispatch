@@ -107,7 +107,10 @@ from dispatch.plugins.dispatch_slack.middleware import (
     user_middleware,
 )
 from dispatch.plugins.dispatch_slack.models import MonitorMetadata, TaskMetadata
-from dispatch.plugins.dispatch_slack.service import get_user_email, get_user_profile_by_email
+from dispatch.plugins.dispatch_slack.service import (
+    get_user_email,
+    get_user_profile_by_email,
+)
 from dispatch.project import service as project_service
 from dispatch.report import flows as report_flows
 from dispatch.report import service as report_service
@@ -752,7 +755,19 @@ def handle_after_hours_message(
         db_session=db_session, incident_id=context["subject"].id, email=user.email
     )
     # get their timezone from slack
-    owner_tz = (dispatch_slack_service.get_user_info_by_email(client, email=owner_email))["tz"]
+    try:
+        owner_tz = (dispatch_slack_service.get_user_info_by_email(client, email=owner_email))["tz"]
+    except SlackApiError as e:
+        if e.response["error"] == "users_not_found":
+            e.add_note(
+                "This error usually indiciates that the incident commanders Slack account is deactivated."
+            )
+
+        log.warning(f"Failed to fetch timezone from Slack API: {e}")
+        owner_tz = (
+            "UTC"  # set a default timezone value (change this to your preferred default timezone)
+        )
+
     message = f"Responses may be delayed. The current incident priority is *{incident.incident_priority.name}* and your message was sent outside of the Incident Commander's working hours (Weekdays, 9am-5pm, {owner_tz} timezone)."
 
     now = datetime.now(pytz.timezone(owner_tz))
@@ -780,15 +795,14 @@ def handle_thread_creation(
     if not context["config"].ban_threads:
         return
 
-    if context["subject"].type == "incident":
-        if payload.get("thread_ts") and not is_bot(request):
-            message = "Please refrain from using threads in incident channels. Threads make it harder for incident participants to maintain context."
-            client.chat_postEphemeral(
-                text=message,
-                channel=payload["channel"],
-                thread_ts=payload["thread_ts"],
-                user=payload["user"],
-            )
+    if payload.get("thread_ts") and not is_bot(request):
+        message = "Please refrain from using threads in incident channels. Threads make it harder for incident participants to maintain context."
+        client.chat_postEphemeral(
+            text=message,
+            channel=payload["channel"],
+            thread_ts=payload["thread_ts"],
+            user=payload["user"],
+        )
 
 
 @message_dispatcher.add(subject="incident")

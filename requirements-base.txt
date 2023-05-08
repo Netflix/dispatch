@@ -14,7 +14,7 @@ aiohttp==3.8.4
     #   openai
 aiosignal==1.3.1
     # via aiohttp
-alembic==1.10.3
+alembic==1.10.4
     # via -r requirements-base.in
 anyio==3.6.2
     # via
@@ -31,7 +31,6 @@ attrs==22.1.0
     #   hypothesis
     #   hypothesis-graphql
     #   jsonschema
-    #   schemathesis
 backoff==2.2.1
     # via schemathesis
 bcrypt==4.0.1
@@ -100,10 +99,12 @@ decorator==5.1.1
 defusedxml==0.7.1
     # via jira
 deprecated==1.2.13
-    # via atlassian-python-api
+    # via
+    #   atlassian-python-api
+    #   limits
 dnspython==2.3.0
     # via email-validator
-duo-client==4.7.1
+duo-client==5.0.1
     # via -r requirements-base.in
 ecdsa==0.18.0
     # via python-jose
@@ -167,6 +168,8 @@ idna==3.4
     #   httpx
     #   requests
     #   yarl
+importlib-resources==5.12.0
+    # via limits
 iniconfig==2.0.0
     # via pytest
 jinja2==3.1.2
@@ -187,6 +190,8 @@ junit-xml==1.9
     # via schemathesis
 langcodes==3.3.0
     # via spacy
+limits==3.4.0
+    # via slowapi
 lxml==4.9.2
     # via
     #   emails
@@ -209,7 +214,7 @@ murmurhash==1.0.9
     #   preshed
     #   spacy
     #   thinc
-numpy==1.24.2
+numpy==1.24.3
     # via
     #   -r requirements-base.in
     #   blis
@@ -226,15 +231,16 @@ oauthlib[signedtoken]==3.2.2
     #   atlassian-python-api
     #   jira
     #   requests-oauthlib
-openai==0.27.4
+openai==0.27.6
     # via -r requirements-base.in
 packaging==23.0
     # via
+    #   limits
     #   pytest
     #   spacy
     #   statsmodels
     #   thinc
-pandas==2.0.0
+pandas==2.0.1
     # via
     #   -r requirements-base.in
     #   statsmodels
@@ -256,7 +262,7 @@ preshed==3.0.8
     # via
     #   spacy
     #   thinc
-protobuf==4.22.3
+protobuf==4.22.4
     # via
     #   -r requirements-base.in
     #   google-api-core
@@ -315,7 +321,7 @@ pytz==2023.3
     #   pandas
 pyyaml==6.0
     # via schemathesis
-requests==2.28.1
+requests==2.28.2
     # via
     #   -r requirements-base.in
     #   atlassian-python-api
@@ -345,13 +351,13 @@ rsa==4.9
     #   python-jose
 schedule==1.2.0
     # via -r requirements-base.in
-schemathesis==3.19.0
+schemathesis==3.19.1
     # via -r requirements-base.in
 scipy==1.10.1
     # via statsmodels
 sentry-asgi==0.2.0
     # via -r requirements-base.in
-sentry-sdk==1.20.0
+sentry-sdk==1.22.0
     # via
     #   -r requirements-base.in
     #   sentry-asgi
@@ -372,12 +378,14 @@ six==1.16.0
     #   python-dateutil
     #   sqlalchemy-filters
     #   validators
-slack-bolt==1.17.0
+slack-bolt==1.18.0
     # via -r requirements-base.in
-slack-sdk==3.21.2
+slack-sdk==3.21.3
     # via
     #   -r requirements-base.in
     #   slack-bolt
+slowapi==0.1.8
+    # via -r requirements-base.in
 smart-open==6.3.0
     # via
     #   pathy
@@ -403,7 +411,7 @@ sqlalchemy==1.3.24
     #   sqlalchemy-utils
 sqlalchemy-filters==0.13.0
     # via -r requirements-base.in
-sqlalchemy-utils==0.41.0
+sqlalchemy-utils==0.41.1
     # via -r requirements-base.in
 srsly==2.4.6
     # via
@@ -417,7 +425,7 @@ starlette==0.26.1
     #   starlette-testclient
 starlette-testclient==0.2.0
     # via schemathesis
-statsmodels==0.13.5
+statsmodels==0.14.0
     # via -r requirements-base.in
 tabulate==0.9.0
     # via -r requirements-base.in
@@ -443,6 +451,7 @@ typing-extensions==4.4.0
     # via
     #   -r requirements-base.in
     #   alembic
+    #   limits
     #   pydantic
     #   schemathesis
 tzdata==2023.3
@@ -454,7 +463,7 @@ urllib3==1.26.15
     #   pdpyras
     #   requests
     #   sentry-sdk
-uvicorn==0.21.1
+uvicorn==0.22.0
     # via -r requirements-base.in
 uvloop==0.17.0
     # via -r requirements-base.in

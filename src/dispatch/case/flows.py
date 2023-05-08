@@ -2,6 +2,8 @@ import logging
 from datetime import datetime
 from typing import List
 
+from sqlalchemy.orm import Session
+
 from dispatch.case import service as case_service
 from dispatch.case.models import CaseRead
 from dispatch.conversation import service as conversation_service
@@ -197,6 +199,7 @@ def case_new_create_flow(
     conversation_target: str = None,
     service_id: int = None,
     db_session=None,
+    create_resources: bool = True,
 ):
     """Runs the case new creation flow."""
     # we get the case
@@ -209,48 +212,13 @@ def case_new_create_flow(
         case=case, db_session=db_session
     )
 
-    if case.assignee:
-        individual_participants.append((case.assignee.individual, None))
-
-    # we create the tactical group
-    direct_participant_emails = [i.email for i, _ in individual_participants]
-
-    indirect_participant_emails = [t.email for t in team_participants]
-    group = group_flows.create_group(
-        subject=case,
-        group_type=GroupType.tactical,
-        group_participants=list(set(direct_participant_emails + indirect_participant_emails)),
-        db_session=db_session,
-    )
-
-    # we create the storage folder
-    storage_members = []
-    if group:
-        storage_members = [group.email]
-
-    # direct add members if not group exists
-    else:
-        storage_members = direct_participant_emails
-
-    case.storage = storage_flows.create_storage(
-        subject=case, storage_members=storage_members, db_session=db_session
-    )
-
-    # we create the investigation document
-    document = document_flows.create_document(
-        subject=case,
-        document_type=DocumentResourceTypes.case,
-        document_template=case.case_type.case_template_document,
-        db_session=db_session,
-    )
-
-    # we update the ticket
-    ticket_flows.update_case_ticket(case=case, db_session=db_session)
-
-    # we update the case document
-    document_flows.update_document(
-        document=document, project_id=case.project.id, db_session=db_session
-    )
+    if create_resources:
+        case_create_resources_flow(
+            db_session=db_session,
+            case_id=case.id,
+            individual_participants=individual_participants,
+            team_participants=team_participants,
+        )
 
     if case.case_priority.page_assignee:
         if not service_id:
@@ -282,6 +250,7 @@ def case_new_create_flow(
             conversation_target = case.case_type.conversation_target
         if conversation_target:
             try:
+                # TODO: Refactor conversation creation using conversation_flows module
                 conversation = create_conversation(case, conversation_target, db_session)
                 conversation_in = ConversationCreate(
                     resource_id=conversation["resource_id"],
@@ -320,7 +289,7 @@ def case_new_create_flow(
                 event_service.log_case_event(
                     db_session=db_session,
                     source="Dispatch Core App",
-                    description="Incident participants added to case conversation.",
+                    description="Case participants added to conversation.",
                     case_id=case.id,
                 )
             except Exception as e:
@@ -705,3 +674,54 @@ def case_assign_role_flow(
     case_add_or_reactivate_participant_flow(assignee_email, case.id, db_session=db_session)
 
     role_flow.assign_role_flow(case, assignee_email, assignee_role, db_session)
+
+
+def case_create_resources_flow(
+    db_session: Session, case_id: int, individual_participants: list, team_participants: list
+) -> None:
+    """Runs the case resource creation flow."""
+    case = get(db_session=db_session, case_id=case_id)
+
+    if case.assignee:
+        individual_participants.append((case.assignee.individual, None))
+
+    # we create the tactical group
+    direct_participant_emails = [i.email for i, _ in individual_participants]
+
+    indirect_participant_emails = [t.email for t in team_participants]
+
+    group = group_flows.create_group(
+        subject=case,
+        group_type=GroupType.tactical,
+        group_participants=list(set(direct_participant_emails + indirect_participant_emails)),
+        db_session=db_session,
+    )
+
+    # we create the storage folder
+    storage_members = []
+    if group:
+        storage_members = [group.email]
+
+    # direct add members if not group exists
+    else:
+        storage_members = direct_participant_emails
+
+    case.storage = storage_flows.create_storage(
+        subject=case, storage_members=storage_members, db_session=db_session
+    )
+
+    # we create the investigation document
+    document = document_flows.create_document(
+        subject=case,
+        document_type=DocumentResourceTypes.case,
+        document_template=case.case_type.case_template_document,
+        db_session=db_session,
+    )
+
+    # we update the ticket
+    ticket_flows.update_case_ticket(case=case, db_session=db_session)
+
+    # we update the case document
+    document_flows.update_document(
+        document=document, project_id=case.project.id, db_session=db_session
+    )

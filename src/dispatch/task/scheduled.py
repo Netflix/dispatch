@@ -56,7 +56,11 @@ def sync_tasks(db_session, task_plugin, incidents, lookback: int = 60, notify: b
                 break
 
             # we get the list of tasks in the document
-            tasks = task_plugin.instance.list(file_id=document.resource_id, lookback=lookback)
+            try:
+                tasks = task_plugin.instance.list(file_id=document.resource_id, lookback=lookback)
+            except Exception as e:
+                log.warn(f"Unable to list tasks in document {document.resource_id}. Error: {e}")
+                continue
 
             for task in tasks:
                 # we get the task information
@@ -78,7 +82,9 @@ def daily_sync_task(db_session: SessionLocal, project: Project):
     )
 
     if not task_plugin:
-        log.warning(f"Skipping task sync no task plugin enabled. ProjectId: {project.id}")
+        log.warning(
+            f"Daily incident tasks sync skipped. No task plugin enabled. Project: {project.name}. Organization: {project.organization.name}"
+        )
         return
 
     lookback = 60 * 60 * 24  # 24hrs
@@ -94,7 +100,9 @@ def sync_active_stable_tasks(db_session: SessionLocal, project: Project):
     )
 
     if not task_plugin:
-        log.warning(f"Skipping task sync no task plugin enabled. ProjectId: {project.id}")
+        log.warning(
+            f"Active and stable incident tasks sync skipped. No task plugin enabled. Project: {project.name}. Organization: {project.organization.name}"
+        )
         return
 
     # we get all active and stable incidents
