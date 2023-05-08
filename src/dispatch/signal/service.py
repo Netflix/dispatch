@@ -453,7 +453,7 @@ def create_instance(
     # if the signal has an existing uuid we propgate it as our primary key
     if signal_instance_in.raw:
         if signal_instance_in.raw.get("id"):
-            signal_instance.id = signal_instance_in.raw.id
+            signal_instance.id = signal_instance_in.raw["id"]
 
     if signal_instance_in.case_priority:
         case_priority = case_priority_service.get_by_name_or_default(
