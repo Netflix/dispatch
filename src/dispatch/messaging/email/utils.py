@@ -62,7 +62,7 @@ def get_template(message_type: MessageType, project_id: int):
 
 
 def create_multi_message_body(
-        message_template: dict, message_type: MessageType, items: list, project_id: int, **kwargs
+    message_template: dict, message_type: MessageType, items: list, project_id: int, **kwargs
 ):
     """Creates a multi message message body based on message type."""
     template, description = get_template(message_type, project_id)
@@ -75,7 +75,9 @@ def create_multi_message_body(
     return render_html(template.render(**kwargs))
 
 
-def create_message_body(message_template: dict, message_type: MessageType, project_id: int, **kwargs):
+def create_message_body(
+    message_template: dict, message_type: MessageType, project_id: int, **kwargs
+):
     """Creates the correct message body based on message type."""
     template, description = get_template(message_type, project_id)
 
