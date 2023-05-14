@@ -57,6 +57,7 @@ def get_template(message_type: MessageType, project_id: int):
     except jinja2.exceptions.TemplateNotFound:
         template_path = os.path.join("templates", template_key)
         template = env.get_template(template_path)
+    log.debug("Resolved template path: %s", template_path)
 
     return template, description
 
