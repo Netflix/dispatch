@@ -68,7 +68,7 @@ def create_signal_instance(
     )
 
     if not signal_instance_in.signal:
-        external_id = signal_instance_in.raw["id"]
+        external_id = signal_instance_in.raw["externalId"]
         variant = signal_instance_in.raw["variant"]
 
         signal = signal_service.get_by_variant_or_external_id(
