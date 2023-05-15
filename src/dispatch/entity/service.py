@@ -162,7 +162,6 @@ def get_cases_with_entity(db_session: Session, entity_id: int, days_back: int) -
     # Calculate the datetime for the start of the search window
     start_date = datetime.utcnow() - timedelta(days=days_back)
 
-    # Query for signal instances containing the entity within the search window
     cases = (
         db_session.query(Case)
         .join(Case.signal_instances)
@@ -171,6 +170,21 @@ def get_cases_with_entity(db_session: Session, entity_id: int, days_back: int) -
         .all()
     )
     return cases
+
+
+def get_case_count_with_entity(db_session: Session, entity_id: int, days_back: int) -> int:
+    """Calculate the count of cases with a given Entity by it's ID."""
+    # Calculate the datetime for the start of the search window
+    start_date = datetime.utcnow() - timedelta(days=days_back)
+
+    count = (
+        db_session.query(Case)
+        .join(Case.signal_instances)
+        .join(SignalInstance.entities)
+        .filter(Entity.id == entity_id, SignalInstance.created_at >= start_date)
+        .count()
+    )
+    return count
 
 
 def get_signal_instances_with_entity(

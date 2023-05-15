@@ -53,7 +53,7 @@ def get_signal_instances(common: CommonParameters):
 
 
 @router.post("/instances", response_model=SignalInstanceRead)
-@limiter.limit("250/minute")
+@limiter.limit("1000/minute")
 def create_signal_instance(
     db_session: DbSession,
     organization: OrganizationSlug,

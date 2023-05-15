@@ -1,5 +1,6 @@
-from collections import defaultdict, namedtuple
-from typing import List
+from collections import defaultdict
+from typing import NamedTuple
+
 
 from blockkit import (
     Actions,
@@ -16,6 +17,8 @@ from dispatch.auth.models import DispatchUser
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.case.enums import CaseStatus
 from dispatch.case.models import Case
+from dispatch.entity.models import Entity
+from dispatch.entity_type.models import EntityType
 from dispatch.entity import service as entity_service
 from dispatch.plugins.dispatch_slack.models import (
     CaseSubjects,
@@ -28,7 +31,12 @@ from dispatch.plugins.dispatch_slack.case.enums import (
     SignalNotificationActions,
     SignalEngagementActions,
 )
-from dispatch.signal.models import SignalEngagement, SignalInstance
+from dispatch.signal.models import (
+    Signal,
+    SignalEngagement,
+    SignalInstance,
+    assoc_signal_instance_entities,
+)
 from dispatch.signal.enums import SignalEngagementStatus
 
 
@@ -128,22 +136,38 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
     return Message(blocks=blocks).build()["blocks"]
 
 
-def create_signal_messages(case: Case, channel_id: str, db_session: Session) -> List[Message]:
-    """Creates the signal instance message."""
-    num_of_instances = len(case.signal_instances)
-    first_instance = case.signal_instances[0]
+class EntityGroup(NamedTuple):
+    value: str
+    related_case_count: int
 
+
+def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -> list[Message]:
+    """Creates the signal instance message."""
+
+    signal_instances_query = (
+        db_session.query(SignalInstance, Signal)
+        .join(Signal)
+        .with_entities(SignalInstance.id, Signal)
+        .filter(SignalInstance.case_id == case_id)
+        .order_by(SignalInstance.created_at)
+    )
+
+    (first_instance_id, first_instance_signal) = signal_instances_query.first()
+    num_of_instances = signal_instances_query.count()
+
+    organization_slug = first_instance_signal.project.organization.slug
+    project_id = first_instance_signal.project.id
     button_metadata = SubjectMetadata(
         type=SignalSubjects.signal_instance,
-        organization_slug=case.project.organization.slug,
-        id=str(first_instance.id),
-        project_id=case.project.id,
+        organization_slug=organization_slug,
+        id=str(first_instance_id),
+        project_id=project_id,
         channel_id=channel_id,
     ).json()
 
     signal_metadata_blocks = [
         Section(
-            text=f"*{first_instance.signal.name}* - {first_instance.signal.variant}",
+            text=f"*{first_instance_signal.name}* - {first_instance_signal.variant}",
         ),
         Actions(
             elements=[
@@ -160,7 +184,7 @@ def create_signal_messages(case: Case, channel_id: str, db_session: Session) -> 
                 Button(
                     text="Response Plan",
                     action_id="button-link",
-                    url=first_instance.signal.external_url,
+                    url=first_instance_signal.external_url,
                 ),
             ]
         ),
@@ -169,66 +193,64 @@ def create_signal_messages(case: Case, channel_id: str, db_session: Session) -> 
         Divider(),
     ]
 
-    processed_entities = set()
-
-    for instance in case.signal_instances:
-        EntityGroup = namedtuple(
-            "EntityGroup",
-            ["value", "related_case_count"],
+    entities_query = (
+        db_session.query(Entity.id, Entity.value, EntityType.name)
+        .join(EntityType, Entity.entity_type_id == EntityType.id)
+        .join(
+            assoc_signal_instance_entities, assoc_signal_instance_entities.c.entity_id == Entity.id
         )
-        entity_groups = defaultdict(list)
-
-        for e in instance.entities:
-            # prevent duplicate entities from appearing in the message
-            if e.value in processed_entities:
-                continue
-
-            processed_entities.add(e.value)
-
-            related_case_count = len(
-                entity_service.get_cases_with_entity(
-                    db_session=db_session, entity_id=e.id, days_back=14
-                )
-            )
-
-            # Deduplicate the entity_groups by checking if the value is already in the set
-            entity_groups[e.entity_type.name].append(
-                EntityGroup(
-                    value=e.value,
-                    related_case_count=related_case_count,
-                )
-            )
-
-        for k, v in entity_groups.items():
-            if v:
-                entity_group = v[0]
-                case_message = (
-                    "First time this entity has been seen in a case."
-                    if entity_group.related_case_count == 1  # the current case counts as 1
-                    else f"Seen in *{entity_group.related_case_count}* other case(s)."
-                )
-
-                # Threaded messages do not overflow text fields, so we hack together the same UI with spaces
-                signal_metadata_blocks.append(
-                    Context(
-                        elements=[
-                            f"*{k}*\n`{', '.join(item.value for item in v)}`\n\n{case_message}"
-                        ]
-                    ),
-                )
-            signal_metadata_blocks.append(Divider())
-
-    if any(instance.entities for instance in case.signal_instances):
-        signal_metadata_blocks.append(
-            Context(elements=["Correlation is based on two weeks of signal data."]),
+        .join(
+            SignalInstance, assoc_signal_instance_entities.c.signal_instance_id == SignalInstance.id
         )
-    else:
+        .filter(SignalInstance.case_id == case_id)
+    )
+
+    has_entities = db_session.query(entities_query.exists()).scalar()
+    if not has_entities:
         signal_metadata_blocks.append(
             Section(
                 text="No entities found.",
             ),
         )
+        return Message(blocks=signal_metadata_blocks).build()["blocks"]
 
+    entity_groups = defaultdict(list)
+    processed_entities = set()
+
+    for entity_id, entity_value, entity_type_name in entities_query:
+        if entity_value not in processed_entities:
+            processed_entities.add(entity_value)
+            # Fetch the count of related cases with entities in the past 14 days
+            entity_case_counts = entity_service.get_case_count_with_entity(
+                db_session=db_session, entity_id=entity_id, days_back=14
+            )
+            entity_groups[entity_type_name].append(
+                EntityGroup(
+                    value=entity_value,
+                    related_case_count=entity_case_counts,
+                )
+            )
+
+    for k, v in entity_groups.items():
+        if v:
+            entity_group = v[0]
+            case_message = (
+                "First time this entity has been seen in a case."
+                if entity_group.related_case_count == 1  # the current case counts as 1
+                else f"Seen in *{entity_group.related_case_count}* other case(s)."
+            )
+
+            # Threaded messages do not overflow text fields, so we hack together the same UI with spaces
+            signal_metadata_blocks.append(
+                Context(
+                    elements=[f"*{k}*\n`{', '.join(item.value for item in v)}`\n\n{case_message}"]
+                ),
+            )
+        signal_metadata_blocks.append(Divider())
+
+    signal_metadata_blocks.append(
+        Context(elements=["Correlation is based on two weeks of signal data."]),
+    )
     return Message(blocks=signal_metadata_blocks).build()["blocks"]
 
 

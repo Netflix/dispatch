@@ -191,7 +191,6 @@ def update_conversation(case: Case, db_session: SessionLocal):
     )
 
 
-@background_task
 def case_new_create_flow(
     *,
     case_id: int,
