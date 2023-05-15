@@ -50,6 +50,7 @@ from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.bolt import app
 from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
+from dispatch.plugins.dispatch_slack.enums import SlackAPIErrorCode
 from dispatch.plugins.dispatch_slack.exceptions import CommandError
 from dispatch.plugins.dispatch_slack.fields import (
     DefaultActionIds,
@@ -106,6 +107,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     subject_middleware,
     user_middleware,
 )
+from dispatch.plugins.dispatch_slack.modals.common import send_success_modal
 from dispatch.plugins.dispatch_slack.models import MonitorMetadata, TaskMetadata
 from dispatch.plugins.dispatch_slack.service import (
     get_user_email,
@@ -758,7 +760,7 @@ def handle_after_hours_message(
     try:
         owner_tz = (dispatch_slack_service.get_user_info_by_email(client, email=owner_email))["tz"]
     except SlackApiError as e:
-        if e.response["error"] == "users_not_found":
+        if e.response["error"] == SlackAPIErrorCode.USER_NOT_FOUND:
             e.add_note(
                 "This error usually indiciates that the incident commanders Slack account is deactivated."
             )
@@ -1057,15 +1059,11 @@ def handle_add_timeline_submission_event(
         individual_id=participant.individual.id,
     )
 
-    modal = Modal(
-        title="Add Timeline Event",
-        close="Close",
-        blocks=[Section(text="Adding timeline event... Success!")],
-    ).build()
-
-    client.views_update(
+    send_success_modal(
+        client=client,
         view_id=body["view"]["id"],
-        view=modal,
+        title="Add Timeline Event",
+        message="Timeline event added successfully.",
     )
 
 
@@ -1149,14 +1147,11 @@ def handle_update_participant_submission_event(
         participant_in=ParticipantUpdate(added_reason=added_reason),
     )
 
-    modal = Modal(
-        title="Update Participant",
-        close="Close",
-        blocks=[Section(text="Updating participant...Success!")],
-    ).build()
-    client.views_update(
+    send_success_modal(
+        client=client,
         view_id=body["view"]["id"],
-        view=modal,
+        title="Update Participant",
+        message="Participant added successfully.",
     )
 
 
@@ -1260,15 +1255,11 @@ def handle_update_notifications_group_submission_event(
     group_plugin.instance.add(incident.notifications_group.email, members_added)
     group_plugin.instance.remove(incident.notifications_group.email, members_removed)
 
-    modal = Modal(
-        title="Update Group Members",
-        blocks=[Section(text="Updating notification group members... Success!")],
-        close="Close",
-    ).build()
-
-    client.views_update(
+    send_success_modal(
+        client=client,
         view_id=body["view"]["id"],
-        view=modal,
+        title="Update Group Members",
+        message="Notification group members added successfully.",
     )
 
 
@@ -1358,10 +1349,12 @@ def handle_assign_role_submission_event(
             incident_id=context["subject"].id, db_session=db_session
         )
 
-    modal = Modal(
-        title="Assign Role", blocks=[Section(text="Assigning role... Success!")], close="Close"
-    ).build()
-    client.views_update(view_id=body["view"]["id"], view=modal)
+    send_success_modal(
+        client=client,
+        view_id=body["view"]["id"],
+        title="Assign Role",
+        message="Role assigned successfully.",
+    )
 
 
 def handle_engage_oncall_command(
@@ -1482,10 +1475,11 @@ def handle_engage_oncall_submission_event(
     if oncall_individual and oncall_service:
         message = f"You have successfully engaged {oncall_individual.name} from the {oncall_service.name} oncall rotation."
 
-    modal = Modal(title="Engagement", blocks=[Section(text=message)], close="Close").build()
-    client.views_update(
+    send_success_modal(
+        client=client,
         view_id=body["view"]["id"],
-        view=modal,
+        title="Engagement",
+        message=message,
     )
 
 
@@ -1585,15 +1579,12 @@ def handle_report_tactical_submission_event(
         tactical_report_in=tactical_report_in,
         organization_slug=context["subject"].organization_slug,
     )
-    modal = Modal(
-        title="Tactical Report",
-        blocks=[Section(text="Creating tactical report... Success!")],
-        close="Close",
-    ).build()
 
-    client.views_update(
+    send_success_modal(
+        client=client,
         view_id=body["view"]["id"],
-        view=modal,
+        title="Tactical Report",
+        message="Tactical report successfully created.",
     )
 
 
@@ -1729,15 +1720,11 @@ def handle_report_executive_submission_event(
             ),
         ]
 
-    modal = Modal(
+    send_success_modal(
+        client=client,
+        view_id=body["view"]["id"],
         title="Executive Report",
         blocks=blocks,
-        close="Close",
-    ).build()
-
-    client.views_update(
-        view_id=body["view"]["id"],
-        view=modal,
     )
 
 
@@ -1871,15 +1858,12 @@ def handle_update_incident_submission_event(
         previous_incident,
         db_session=db_session,
     )
-    modal = Modal(
-        title="Incident Update",
-        close="Close",
-        blocks=[Section(text="Updating incident... Success!")],
-    ).build()
 
-    client.views_update(
+    send_success_modal(
+        client=client,
         view_id=body["view"]["id"],
-        view=modal,
+        title="Executive Report",
+        message="Incident updated successfully.",
     )
 
 
@@ -2102,7 +2086,7 @@ def handle_incident_notification_join_button_click(
             client.conversations_invite(channel=incident.conversation.channel_id, users=[user_id])
             message = f"Success! We've added you to incident {incident.name}. Please, check your Slack sidebar for the new incident channel."
         except SlackApiError as e:
-            if e.response.get("error") == "already_in_channel":
+            if e.response.get("error") == SlackAPIErrorCode.ALREADY_IN_CHANNEL:
                 message = f"Sorry, we can't invite you to this incident - you're already a member. Search for a channel called {incident.name.lower()} in your Slack sidebar."
 
     respond(text=message, response_type="ephemeral", replace_original=False, delete_original=False)

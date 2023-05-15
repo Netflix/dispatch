@@ -12,7 +12,7 @@ from slack_sdk.web.client import WebClient
 from slack_sdk.web.slack_response import SlackResponse
 
 from .config import SlackConversationConfiguration
-from .enums import SlackAPIGetEndpoints, SlackAPIPostEndpoints
+from .enums import SlackAPIErrorCode, SlackAPIGetEndpoints, SlackAPIPostEndpoints
 
 
 Conversation = dict[str, str]
@@ -44,11 +44,11 @@ def handle_slack_error(exception: SlackApiError, endpoint: str, kwargs: dict) ->
     )
     error = exception.response["error"]
 
-    if error in {"channel_not_found", "user_not_in_channel"}:
+    if error in {SlackAPIErrorCode.CHANNEL_NOT_FOUND, SlackAPIErrorCode.USER_NOT_IN_CHANNEL}:
         # NOTE we've seen some consistency problems with channel creation, adding users to channels or messaging them.
         log.warn(message)
         raise TryAgain from None
-    elif error == "fatal_error":
+    elif error == SlackAPIErrorCode.FATAL_ERROR:
         # NOTE we've experienced a wide range of issues when Slack's performance is degraded
         log.error(message)
         time.sleep(300)
@@ -144,7 +144,7 @@ def get_conversation_name_by_id(client: WebClient, conversation_id: str) -> Slac
             "channel"
         ]["name"]
     except SlackApiError as e:
-        if e.response["error"] == "channel_not_found":
+        if e.response["error"] == SlackAPIErrorCode.CHANNEL_NOT_FOUND:
             return None
         else:
             raise e
@@ -201,7 +201,7 @@ def unarchive_conversation(client: WebClient, conversation_id: str) -> SlackResp
         )
     except SlackApiError as e:
         # if the channel isn't archived thats okay
-        if e.response["error"] != "not_archived":
+        if e.response["error"] != SlackAPIErrorCode.CHANNEL_NOT_ARCHIVED:
             raise e
 
 
@@ -219,7 +219,7 @@ def conversation_archived(client: WebClient, conversation_id: str) -> bool | Non
             "channel"
         ]["is_archived"]
     except SlackApiError as e:
-        if e.response["error"] == "channel_not_found":
+        if e.response["error"] == SlackAPIErrorCode.CHANNEL_NOT_FOUND:
             return None
         else:
             raise e
@@ -255,7 +255,7 @@ def add_users_to_conversation(
         except SlackApiError as e:
             # sometimes slack sends duplicate member_join events
             # that result in folks already existing in the channel.
-            if e.response["error"] == "already_in_channel":
+            if e.response["error"] == SlackAPIErrorCode.USER_IN_CHANNEL:
                 pass
 
 
