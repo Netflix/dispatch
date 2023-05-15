@@ -75,6 +75,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     shortcut_context_middleware,
     user_middleware,
 )
+from dispatch.plugins.dispatch_slack.modals.common import send_success_modal
 from dispatch.plugins.dispatch_slack.models import (
     CaseSubjects,
     FormData,
@@ -471,15 +472,21 @@ def handle_snooze_preview_event(
     if form_data.get(DefaultBlockIds.entity_select):
         entity_ids = [entity["value"] for entity in form_data[DefaultBlockIds.entity_select]]
 
-    preview_signal_instances = entity_service.get_signal_instances_with_entities(
-        db_session=db_session, signal_id=context["subject"].id, entity_ids=entity_ids, days_back=90
-    )
+        preview_signal_instances = entity_service.get_signal_instances_with_entities(
+            db_session=db_session,
+            signal_id=context["subject"].id,
+            entity_ids=entity_ids,
+            days_back=90,
+        )
 
-    text = (
-        "Examples matching your filter:"
-        if preview_signal_instances
-        else "No signals matching your filter."
-    )
+        text = (
+            "Examples matching your filter:"
+            if preview_signal_instances
+            else "No signals matching your filter."
+        )
+    else:
+        preview_signal_instances = None
+        text = "No entities selected. All instances of this signal will be snoozed."
 
     blocks = [Context(elements=[MarkdownText(text=text)])]
 
@@ -585,10 +592,14 @@ def handle_snooze_submission_event(
         # Get the existing filters for the signal
         signal = signal_service.get(db_session=db_session, signal_id=subject.id)
         # Create the new filter from the form data
-        entities = [
-            {"name": entity.name, "value": entity.value}
-            for entity in form_data[DefaultBlockIds.entity_select]
-        ]
+        if form_data.get(DefaultBlockIds.entity_select):
+            entities = [
+                {"name": entity.name, "value": entity.value}
+                for entity in form_data[DefaultBlockIds.entity_select]
+            ]
+        else:
+            entities = []
+
         description = form_data[DefaultBlockIds.description_input]
         name = form_data[DefaultBlockIds.title_input]
         delta: str = form_data[DefaultBlockIds.relative_date_picker_input].value
@@ -626,11 +637,16 @@ def handle_snooze_submission_event(
         date = datetime.now() + delta
 
         project = project_service.get(db_session=db_session, project_id=signal.project_id)
-        filters = {
-            "entity": entities,
-        }
 
-        expression = create_filter_expression(filters, "Entity")
+        # None expression is for cases when no entities are selected, in which case
+        # the filter will apply to all instances of the signal
+        if entities:
+            filters = {
+                "entity": entities,
+            }
+            expression = create_filter_expression(filters, "Entity")
+        else:
+            expression = []
 
         # Create a new filter with the selected entities and entity types
         filter_in = SignalFilterCreate(
@@ -666,16 +682,11 @@ def handle_snooze_submission_event(
             user=user,
             subject=context["subject"],
         )
-
-        modal = Modal(
-            title="Add Snooze",
-            close="Close",
-            blocks=[Section(text="Adding Snooze... Success!")],
-        ).build()
-
-        client.views_update(
+        send_success_modal(
+            client=client,
             view_id=body["view"]["id"],
-            view=modal,
+            title="Add Snooze",
+            message="Snooze Filter added successfully.",
         )
     else:
         # Send the MFA push notification
@@ -690,16 +701,11 @@ def handle_snooze_submission_event(
                 user=user,
                 subject=context["subject"],
             )
-
-            modal = Modal(
-                title="Add Snooze",
-                close="Close",
-                blocks=[Section(text="Adding Snooze... Success!")],
-            ).build()
-
-            client.views_update(
+            send_success_modal(
+                client=client,
                 view_id=body["view"]["id"],
-                view=modal,
+                title="Add Snooze",
+                message="Snooze Filter added successfully.",
             )
             user.last_mfa_time = datetime.now()
             db_session.commit()
@@ -1351,16 +1357,12 @@ def handle_report_submission_event(
         case_id=case.id, organization_slug=context["subject"].organization_slug
     )
 
-    modal = Modal(
-        title="Case Created",
-        close="Close",
-        blocks=[Section(text="Success! Your case has been created.")],
-    ).build()
-
-    client.views_update(
-        view_id=result["view"]["id"],
+    send_success_modal(
+        client=client,
+        view_id=body["view"]["id"],
         trigger_id=result["trigger_id"],
-        view=modal,
+        title="Case Created",
+        message="Case created successfully.",
     )
 
 
@@ -1448,7 +1450,7 @@ def ack_engagement_submission_event(ack: Ack, mfa_enabled: bool) -> None:
     text = (
         "Confirming suspicious event..."
         if mfa_enabled is False
-        else "Sending MFA push notification, please confirm to create Snooze filter..."
+        else "Sending MFA push notification, please confirm to create Engagement filter..."
     )
     modal = Modal(
         title="Confirm",
@@ -1515,14 +1517,11 @@ def handle_engagement_submission_event(
             message_text = f":warning: {engaged_user} attempt to confirmed the behavior *as expected*. But, the MFA validation failed, reason: {response}\n\n *Context Provided* \n```{context_from_user}```"
             engagement_status = SignalEngagementStatus.denied
 
-        modal = Modal(
-            title=title,
-            close="Close",
-            blocks=[Section(text=text)],
-        ).build()
-        client.views_update(
+        send_success_modal(
+            client=client,
             view_id=body["view"]["id"],
-            view=modal,
+            title=title,
+            message=text,
         )
         client.chat_postMessage(
             text=message_text,
@@ -1670,14 +1669,11 @@ def handle_engagement_deny_submission_event(
         db_session=db_session,
         signal_engagement_id=metadata["engagement_id"],
     )
-    modal = Modal(
-        title="Confirm",
-        close="Close",
-        blocks=[Section(text="Confirming event is not expected... success!")],
-    ).build()
-    client.views_update(
+    send_success_modal(
+        client=client,
         view_id=body["view"]["id"],
-        view=modal,
+        title="Confirm",
+        message="Event has been confirmed as not expected.",
     )
 
     context_from_user = body["view"]["state"]["values"][DefaultBlockIds.description_input][

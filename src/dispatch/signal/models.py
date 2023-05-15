@@ -255,7 +255,7 @@ class SignalEngagementBase(DispatchBase):
 
 class SignalFilterBase(DispatchBase):
     mode: Optional[SignalFilterMode] = SignalFilterMode.active
-    expression: List[dict]
+    expression: Optional[List[dict]] = Field([], nullable=True)
     name: NameStr
     action: SignalFilterAction = SignalFilterAction.snooze
     description: Optional[str] = Field(None, nullable=True)
