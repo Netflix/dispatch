@@ -125,13 +125,14 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import VueMarkdown from "vue-markdown"
+import MonacoEditor from "monaco-editor-vue"
 
 export default {
   name: "SourceDetailsTab",
 
   components: {
     VueMarkdown,
-    MonacoEditor: () => import("monaco-editor-vue"),
+    MonacoEditor,
   },
 
   computed: {
