@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "serve": "cross-env NODE_ENV=dev NODE_OPTIONS='--max-http-header-size=100000' vite",
-    "build": "vite build --base=./ --out-dir dist",
+    "build": "vite build --out-dir dist",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "preview": "vite preview --open --port 8080"
