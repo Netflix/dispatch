@@ -13,9 +13,7 @@ This feature is useful when an influx of signals is expected for a given period 
 
 ## Deduplication Filter
 
-Deduplication filters leverage Entity Types to deduplicate Signals over a period of time. When a Signal is deduplicated a new
-Case will not be created for it. Instead, the Signal will be added to the existing Case that was created for the earliest Signal
-within the deduplication window.
+In order to perform signal duplication, a duplication filter must be created. Deduplication filters leverage extracted signal entity types and a sliding time window in order to determine if a signal should be marked as a duplicate. If a match is found, the current signal is marked as duplicate and it is associated with the existing case.
 
 :::info
 By default, all Signals are deduplicated over a one hour window unless a custom Deduplication Filter is defined.
