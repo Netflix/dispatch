@@ -68,17 +68,25 @@ def create_signal_instance(
     )
 
     if not signal_instance_in.signal:
-        external_id = signal_instance_in.raw["externalId"]
-        variant = signal_instance_in.raw["variant"]
+        external_id = signal_instance_in.raw.get("externalId")
+        variant = signal_instance_in.raw.get("variant")
 
-        signal = signal_service.get_by_variant_or_external_id(
-            db_session=db_session,
-            project_id=project.id,
-            external_id=external_id,
-            variant=variant,
-        )
+        if external_id or variant:
+            signal = signal_service.get_by_variant_or_external_id(
+                db_session=db_session,
+                project_id=project.id,
+                external_id=external_id,
+                variant=variant,
+            )
 
-        signal_instance_in.signal = signal
+            signal_instance_in.signal = signal
+        else:
+            msg = "An externalId or variant must be provided."
+            log.warn(msg)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=[{"msg": msg}],
+            ) from None
 
     if not signal:
         msg = f"No signal definition found. External Id: {external_id} Variant: {variant}"
