@@ -21,6 +21,8 @@
 </template>
 
 <script>
+import MonacoEditor from "monaco-editor-vue"
+
 export default {
   name: "RawSignalDialog",
 
@@ -34,7 +36,7 @@ export default {
   },
 
   components: {
-    MonacoEditor: () => import("monaco-editor-vue"),
+    MonacoEditor,
   },
 
   computed: {
