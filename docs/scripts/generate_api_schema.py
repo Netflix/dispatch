@@ -15,7 +15,7 @@ os.environ["DATABASE_HOSTNAME"] = DATABASE_HOSTNAME
 os.environ["DATABASE_CREDENTIALS"] = DATABASE_CREDENTIALS
 os.environ["DISPATCH_ENCRYPTION_KEY"] = DISPATCH_ENCRYPTION_KEY
 
-from dispatch.main import api as app
+from dispatch.main import api as app  # noqa
 
 
 with open("openapi.yaml", "w") as f:

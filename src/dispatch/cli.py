@@ -1,12 +1,9 @@
 import logging
 import os
-import time
 
 import click
-import requests
 import uvicorn
 from dispatch import __version__, config
-from dispatch.config import DISPATCH_UI_URL
 from dispatch.enums import UserRoles
 from dispatch.plugin.models import PluginInstance
 
