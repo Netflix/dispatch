@@ -1,0 +1,50 @@
+# Messaging
+
+Dispatch supports sending email notifications to participants of, for example, an incident.
+
+## Notification templates
+
+Templates for emails are [part](https://github.com/Netflix/dispatch/tree/master/src/dispatch/messaging/email/templates) of Dispatch
+and are [Jinja](https://jinja.palletsprojects.com/) templates that during runtime are compiled into [MJML](https://mjml.io/) format.
+
+There is a way to customize these templates. To do this, if you run Dispatch with [Docker Compose](https://github.com/Netflix/dispatch-docker/),
+mount a volume with a customized templates dir as part of the docker compose:
+
+```
+  web:
+    image: dispatch-local
+    ...
+    volumes:
+      - "../dispatch-templates/messaging-email-templates:/usr/local/lib/python3.11/site-packages/dispatch/messaging/email/templates"
+```
+
+Such approach allows you to customize the common template for *all projects*.
+
+You can also "patch" the templates *per project*. Create a folder per project (identified by project id):
+
+```
+dispatch/messaging/email/templates/project_id/<project_id>/base.mjml
+```
+
+This will be used at the first place if exists,
+otherwise the resolution process will gracefully fall back to the default template:
+
+```
+dispatch/messaging/email/templates/base.mjml
+```
+
+
+## Markdown in the notifications
+
+:::warning
+Watch out for security implications related to unescaped HTML that may propagate through the system.
+:::
+
+By default, notification text is just a plain text with special characters and HTML escaped.
+
+It is possible, however, to enable Markdown syntax with a server setting:
+
+```
+DISPATCH_MARKDOWN_IN_INCIDENT_DESC=True
+DISPATCH_ESCAPE_HTML=False
+```
