@@ -115,25 +115,6 @@ def scheduled_project_task(func: Callable):
     return wrapper
 
 
-def scoped_scheduled_project_task(func: Callable):
-    """Decorator that sets up a background task function with
-    a scoped database session and exception tracking.
-
-    Each task is executed in a specific project context.
-    """
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        _execute_task_in_project_context(
-            func,
-            *args,
-            **kwargs,
-            is_scoped=True,
-        )
-
-    return wrapper
-
-
 def background_task(func):
     """Decorator that sets up the a background task function
     with a database session and exception tracking.
