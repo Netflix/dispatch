@@ -671,7 +671,7 @@ def handle_snooze_submission_event(
             client=client,
             view_id=body["view"]["id"],
             title="Add Snooze",
-            message="Snooze Filter added succesfully.",
+            message="Snooze Filter added successfully.",
         )
     else:
         # Send the MFA push notification
