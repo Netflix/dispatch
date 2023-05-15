@@ -1658,7 +1658,7 @@ def handle_engagement_deny_submission_event(
         client=client,
         view_id=body["view"]["id"],
         title="Confirm",
-        message="Confirmed event is not expected.",
+        message="Event has been confirmed as not expected.",
     )
 
     context_from_user = body["view"]["state"]["values"][DefaultBlockIds.description_input][
