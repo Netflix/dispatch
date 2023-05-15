@@ -7,7 +7,7 @@ Signal Filters are used to define how Signals should be grouped together or when
 Snooze filters make use of entities extracted from signals to define when a signal should be snoozed.
 For example, you can create a Snooze Filter that will snooze all incoming Signals that contain a specific JA3 hash.
 You also have the option to create a `Snooze Filter` without specifying any entities, which will snooze all incoming signals matching that filter.
-This feature is useful when an influx of Signals is expected and you want to avoid being overwhelmed by them.
+This feature is useful when an influx of signals is expected for a given period of time (e.g. some known administration activities) and you want to temporarily stop cases from being created. Even when a signal is snoozed it will still be processed and associated entities will be created.
 
 ![](/img/admin-ui-signal-filter-snooze.png)
 
