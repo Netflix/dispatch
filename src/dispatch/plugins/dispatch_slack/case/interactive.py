@@ -471,15 +471,21 @@ def handle_snooze_preview_event(
     if form_data.get(DefaultBlockIds.entity_select):
         entity_ids = [entity["value"] for entity in form_data[DefaultBlockIds.entity_select]]
 
-    preview_signal_instances = entity_service.get_signal_instances_with_entities(
-        db_session=db_session, signal_id=context["subject"].id, entity_ids=entity_ids, days_back=90
-    )
+        preview_signal_instances = entity_service.get_signal_instances_with_entities(
+            db_session=db_session,
+            signal_id=context["subject"].id,
+            entity_ids=entity_ids,
+            days_back=90,
+        )
 
-    text = (
-        "Examples matching your filter:"
-        if preview_signal_instances
-        else "No signals matching your filter."
-    )
+        text = (
+            "Examples matching your filter:"
+            if preview_signal_instances
+            else "No signals matching your filter."
+        )
+    else:
+        preview_signal_instances = None
+        text = "No entities selected. All instances of this signal will be snoozed."
 
     blocks = [Context(elements=[MarkdownText(text=text)])]
 
@@ -585,10 +591,14 @@ def handle_snooze_submission_event(
         # Get the existing filters for the signal
         signal = signal_service.get(db_session=db_session, signal_id=subject.id)
         # Create the new filter from the form data
-        entities = [
-            {"name": entity.name, "value": entity.value}
-            for entity in form_data[DefaultBlockIds.entity_select]
-        ]
+        if form_data.get(DefaultBlockIds.entity_select):
+            entities = [
+                {"name": entity.name, "value": entity.value}
+                for entity in form_data[DefaultBlockIds.entity_select]
+            ]
+        else:
+            entities = []
+
         description = form_data[DefaultBlockIds.description_input]
         name = form_data[DefaultBlockIds.title_input]
         delta: str = form_data[DefaultBlockIds.relative_date_picker_input].value
@@ -626,11 +636,16 @@ def handle_snooze_submission_event(
         date = datetime.now() + delta
 
         project = project_service.get(db_session=db_session, project_id=signal.project_id)
-        filters = {
-            "entity": entities,
-        }
 
-        expression = create_filter_expression(filters, "Entity")
+        # None expression is for cases when no entities are selected, in which case
+        # the filter will apply to all instances of the signal
+        if entities:
+            filters = {
+                "entity": entities,
+            }
+            expression = create_filter_expression(filters, "Entity")
+        else:
+            expression = []
 
         # Create a new filter with the selected entities and entity types
         filter_in = SignalFilterCreate(
@@ -1448,7 +1463,7 @@ def ack_engagement_submission_event(ack: Ack, mfa_enabled: bool) -> None:
     text = (
         "Confirming suspicious event..."
         if mfa_enabled is False
-        else "Sending MFA push notification, please confirm to create Snooze filter..."
+        else "Sending MFA push notification, please confirm to create Engagement filter..."
     )
     modal = Modal(
         title="Confirm",
