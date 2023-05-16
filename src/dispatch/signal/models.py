@@ -20,7 +20,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.auth.models import DispatchUser
-from dispatch.case.models import CaseRead
+from dispatch.case.models import CaseReadMinimal
 from dispatch.case.priority.models import CasePriority, CasePriorityRead
 from dispatch.case.type.models import CaseType, CaseTypeRead
 from dispatch.data.source.models import SourceBase
@@ -337,6 +337,20 @@ class SignalRead(SignalBase):
     tags: Optional[List[TagRead]] = []
 
 
+class SignalReadMinimal(DispatchBase):
+    id: PrimaryKey
+    name: str
+    owner: str
+    conversation_target: Optional[str]
+    description: Optional[str]
+    variant: Optional[str]
+    external_id: str
+    enabled: Optional[bool] = False
+    external_url: Optional[str]
+    create_case: Optional[bool] = True
+    created_at: Optional[datetime] = None
+
+
 class SignalPagination(DispatchBase):
     items: List[SignalRead]
     total: int
@@ -351,7 +365,7 @@ class AdditionalMetadata(DispatchBase):
 
 class SignalInstanceBase(DispatchBase):
     project: ProjectRead
-    case: Optional[CaseRead]
+    case: Optional[CaseReadMinimal]
     entities: Optional[List[EntityRead]] = []
     raw: dict[str, Any]
     filter_action: SignalFilterAction = None
