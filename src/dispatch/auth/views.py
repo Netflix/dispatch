@@ -4,7 +4,6 @@ from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from dispatch.config import DISPATCH_AUTH_REGISTRATION_ENABLED
 
 from dispatch.auth.permissions import (
-    OrganizationAdminPermission,
     OrganizationMemberPermission,
     PermissionsDependency,
 )
