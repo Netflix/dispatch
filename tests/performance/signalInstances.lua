@@ -4,7 +4,6 @@
 local wrk = require("wrk")
 
 local requestJson = [[{"project": {"name": "Test"}, "raw": {
-	"id": "DA:1040.A",
 	"variant": "DA:1040.A",
 	"createdAt": "1681332053916",
 	"additionalMetadata": {
