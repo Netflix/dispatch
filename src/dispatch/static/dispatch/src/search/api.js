@@ -6,6 +6,7 @@ export default {
   search(query, type) {
     return API.get(`${resource}`, { params: { q: query, type: type } })
   },
+
   getAllFilters(options) {
     return API.get(`${resource}/filters`, { params: { ...options } })
   },
