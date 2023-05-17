@@ -12,6 +12,7 @@ const getDefaultSelectedState = () => {
     loading: false,
     projects: null,
     role: null,
+    password: null,
   }
 }
 
@@ -28,7 +29,7 @@ const state = {
   },
   loading: false,
   dialogs: {
-    showEdit: false,
+    showCreateEdit: false,
   },
   table: {
     rows: {
@@ -54,21 +55,23 @@ const actions = {
       commit("SET_TABLE_ROWS", response.data)
     })
   }, 500),
-  editShow({ commit }, plugin) {
-    commit("SET_DIALOG_EDIT", true)
+  createEditShow({ commit }, plugin) {
+    commit("SET_DIALOG_CREATE_EDIT", true)
     if (plugin) {
       commit("SET_SELECTED", plugin)
     }
   },
-  closeEdit({ commit }) {
-    commit("SET_DIALOG_EDIT", false)
+  closeCreateEdit({ commit }) {
+    commit("SET_DIALOG_CREATE_EDIT", false)
     commit("RESET_SELECTED")
   },
   save({ commit, dispatch }) {
+    commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
       return UserApi.create(state.selected).then(() => {
-        dispatch("closeEdit")
+        dispatch("closeCreateEdit")
         dispatch("getAll")
+        commit("SET_SELECTED_LOADING", false)
         commit(
           "notification_backend/addBeNotification",
           { text: "User created successfully.", type: "success" },
@@ -78,8 +81,9 @@ const actions = {
     } else {
       return UserApi.update(state.selected.id, state.selected).then(() => {
         commit("SET_USER_PROJECTS", state.selected.projects)
-        dispatch("closeEdit")
+        dispatch("closeCreateEdit")
         dispatch("getAll")
+        commit("SET_SELECTED_LOADING", false)
         commit(
           "notification_backend/addBeNotification",
           { text: "User updated successfully.", type: "success" },
@@ -162,14 +166,17 @@ const mutations = {
   SET_SELECTED(state, value) {
     state.selected = Object.assign(state.selected, value)
   },
+  SET_SELECTED_LOADING(state, value) {
+    state.selected.loading = value
+  },
   SET_TABLE_LOADING(state, value) {
     state.table.loading = value
   },
   SET_TABLE_ROWS(state, value) {
     state.table.rows = value
   },
-  SET_DIALOG_EDIT(state, value) {
-    state.dialogs.showEdit = value
+  SET_DIALOG_CREATE_EDIT(state, value) {
+    state.dialogs.showCreateEdit = value
   },
   RESET_SELECTED(state) {
     state.selected = Object.assign(state.selected, getDefaultSelectedState())
