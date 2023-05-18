@@ -12,6 +12,9 @@ export default {
   update(userId, payload) {
     return API.put(`/${resource}/${userId}`, payload)
   },
+  create(payload) {
+    return API.post(`/${resource}`, payload)
+  },
   getUserInfo() {
     return API.get(`/auth/me`)
   },

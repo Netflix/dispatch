@@ -171,6 +171,18 @@ class UserUpdate(DispatchBase):
         return hash_password(str(v))
 
 
+class UserCreate(DispatchBase):
+    email: EmailStr
+    password: Optional[str] = Field(None, nullable=True)
+    projects: Optional[List[UserProject]]
+    organizations: Optional[List[UserOrganization]]
+    role: Optional[str] = Field(None, nullable=True)
+
+    @validator("password", pre=True)
+    def hash(cls, v):
+        return hash_password(str(v))
+
+
 class UserRegisterResponse(DispatchBase):
     token: Optional[str] = Field(None, nullable=True)
 
