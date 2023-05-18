@@ -11,6 +11,7 @@ const getDefaultSelectedState = () => {
     individuals: null,
     loading: false,
     name: null,
+    notifications: null,
     project: null,
     services: null,
     subject: "incident",

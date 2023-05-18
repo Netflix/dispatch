@@ -51,6 +51,10 @@ class ServiceRead(DispatchBase):
     id: Optional[PrimaryKey]
 
 
+class NotificationRead(DispatchBase):
+    id: Optional[PrimaryKey]
+
+
 class SearchFilterBase(DispatchBase):
     description: Optional[str] = Field(None, nullable=True)
     enabled: Optional[bool]
@@ -74,6 +78,7 @@ class SearchFilterRead(SearchFilterBase):
     project: Optional[ProjectRead]
     creator: Optional[UserRead]
     individuals: Optional[List[IndividualContactRead]] = []
+    notifications: Optional[List[NotificationRead]] = []
     services: Optional[List[ServiceRead]] = []
     teams: Optional[List[TeamRead]] = []
 

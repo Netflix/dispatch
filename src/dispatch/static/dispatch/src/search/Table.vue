@@ -51,6 +51,9 @@
             <template #[`item.services`]="{ item }">
               <v-chip small color="info" text-color="white">{{ item.services.length }}</v-chip>
             </template>
+            <template #[`item.notifications`]="{ item }">
+              <v-chip small color="info" text-color="white">{{ item.notifications.length }}</v-chip>
+            </template>
             <template #[`item.enabled`]="{ item }">
               <v-simple-checkbox v-model="item.enabled" disabled />
             </template>
@@ -113,6 +116,7 @@ export default {
         { text: "Individuals", value: "individuals" },
         { text: "Teams", value: "teams" },
         { text: "Services", value: "services" },
+        { text: "Notifications", value: "notifications" },
         { text: "Creator", value: "creator.email" },
         { text: "Created At", value: "created_at" },
         { text: "Updated At", value: "updated_at" },
