@@ -1,18 +1,20 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
+
 from sqlalchemy.exc import IntegrityError
 
+from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
+from dispatch.auth.service import CurrentUser
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.exceptions import ExistsError
 from dispatch.models import PrimaryKey
-from dispatch.auth.service import CurrentUser
 
 from .models import (
     SearchFilterCreate,
-    SearchFilterUpdate,
-    SearchFilterRead,
     SearchFilterPagination,
+    SearchFilterRead,
+    SearchFilterUpdate,
 )
 from .service import create, delete, get, update
 
@@ -77,7 +79,11 @@ def update_search_filter(
     return search_filter
 
 
-@router.delete("/{search_filter_id}", response_model=None)
+@router.delete(
+    "/{search_filter_id}",
+    response_model=None,
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+)
 def delete_filter(db_session: DbSession, search_filter_id: PrimaryKey):
     """Delete a search filter."""
     search_filter = get(db_session=db_session, search_filter_id=search_filter_id)
