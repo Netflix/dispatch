@@ -42,6 +42,7 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
+            <!-- TODO(mvilanova): Allow to view the list of individuals, teams, services, and notifications upon clicking on the chip -->
             <template #[`item.individuals`]="{ item }">
               <v-chip small color="info" text-color="white">{{ item.individuals.length }}</v-chip>
             </template>
