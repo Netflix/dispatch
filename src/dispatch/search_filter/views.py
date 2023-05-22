@@ -3,7 +3,7 @@ from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from sqlalchemy.exc import IntegrityError
 
-from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
+from dispatch.auth.permissions import PermissionsDependency
 from dispatch.auth.service import CurrentUser
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
@@ -16,6 +16,7 @@ from .models import (
     SearchFilterRead,
     SearchFilterUpdate,
 )
+from .permissions import SearchFilterEditDeletePermission
 from .service import create, delete, get, update
 
 
@@ -50,7 +51,11 @@ def create_search_filter(
         ) from None
 
 
-@router.put("/{search_filter_id}", response_model=SearchFilterRead)
+@router.put(
+    "/{search_filter_id}",
+    response_model=SearchFilterRead,
+    dependencies=[Depends(PermissionsDependency([SearchFilterEditDeletePermission]))],
+)
 def update_search_filter(
     db_session: DbSession,
     search_filter_id: PrimaryKey,
@@ -82,7 +87,7 @@ def update_search_filter(
 @router.delete(
     "/{search_filter_id}",
     response_model=None,
-    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+    dependencies=[Depends(PermissionsDependency([SearchFilterEditDeletePermission]))],
 )
 def delete_filter(db_session: DbSession, search_filter_id: PrimaryKey):
     """Delete a search filter."""
