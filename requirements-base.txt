@@ -102,6 +102,8 @@ deprecated==1.2.13
     # via
     #   atlassian-python-api
     #   limits
+deprecation==2.1.0
+    # via pdpyras
 dnspython==2.3.0
     # via email-validator
 duo-client==5.0.1
@@ -235,6 +237,7 @@ openai==0.27.7
     # via -r requirements-base.in
 packaging==23.0
     # via
+    #   deprecation
     #   limits
     #   pytest
     #   spacy
@@ -250,7 +253,7 @@ patsy==0.5.3
     # via statsmodels
 pbr==5.11.1
     # via jira
-pdpyras==4.5.2
+pdpyras==5.0.3
     # via -r requirements-base.in
 pluggy==1.0.0
     # via pytest
