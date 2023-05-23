@@ -79,7 +79,6 @@ from dispatch.plugins.dispatch_slack.incident.enums import (
     IncidentNotificationActions,
     IncidentReportActions,
     IncidentUpdateActions,
-    IncidentUpdateBlockIds,
     LinkMonitorActionIds,
     LinkMonitorBlockIds,
     ReportExecutiveActions,
@@ -1818,7 +1817,7 @@ def handle_update_incident_submission_event(
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
     tags = []
-    for t in form_data.get(IncidentUpdateBlockIds.tags_multi_select, []):
+    for t in form_data.get(DefaultBlockIds.tags_multi_select, []):
         # we have to fetch as only the IDs are embedded in slack
         tag = tag_service.get(db_session=db_session, tag_id=int(t["value"]))
         tags.append(tag)
