@@ -6,7 +6,7 @@
       <v-col>
         <v-alert dismissible icon="mdi-school" prominent text type="info">
           Search filters enable you to define under which conditions an individual, oncall service,
-          or team need to be engage in an incident.
+          or team need to be engaged in an incident, or when a notification needs to be sent.
         </v-alert>
       </v-col>
     </v-row>
