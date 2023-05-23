@@ -36,9 +36,9 @@ from .service import (
 log = logging.getLogger(__name__)
 
 
-@scheduler.add(every(1).hours, name="incident-tagger")
+@scheduler.add(every(1).hours, name="incident-auto-tagger")
 @scheduled_project_task
-def auto_tagger(db_session: SessionLocal, project: Project):
+def incident_auto_tagger(db_session: SessionLocal, project: Project):
     """Attempts to take existing tags and associate them with incidents."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project.id, plugin_type="storage"
@@ -82,9 +82,9 @@ def auto_tagger(db_session: SessionLocal, project: Project):
             log.debug(f"Associating tags with incident {incident.name}. Tags: {extracted_tags}")
 
 
-@scheduler.add(every(1).day.at("18:00"), name="incident-daily-report")
+@scheduler.add(every(1).day.at("18:00"), name="incident-report-daily")
 @scheduled_project_task
-def daily_report(db_session: SessionLocal, project: Project):
+def incident_report_daily(db_session: SessionLocal, project: Project):
     """Creates and sends incident daily reports based on notifications."""
     # we fetch all active, stable and closed incidents
     active_incidents = get_all_by_status(

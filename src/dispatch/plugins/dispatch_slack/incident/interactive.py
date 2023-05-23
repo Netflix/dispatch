@@ -759,7 +759,7 @@ def handle_after_hours_message(
     try:
         owner_tz = (dispatch_slack_service.get_user_info_by_email(client, email=owner_email))["tz"]
     except SlackApiError as e:
-        if e.response["error"] == SlackAPIErrorCode.USER_NOT_FOUND:
+        if e.response["error"] == SlackAPIErrorCode.USERS_NOT_FOUND:
             e.add_note(
                 "This error usually indiciates that the incident commanders Slack account is deactivated."
             )

@@ -44,7 +44,11 @@ def handle_slack_error(exception: SlackApiError, endpoint: str, kwargs: dict) ->
     )
     error = exception.response["error"]
 
-    if error in {SlackAPIErrorCode.CHANNEL_NOT_FOUND, SlackAPIErrorCode.USER_NOT_IN_CHANNEL}:
+    if error in {
+        SlackAPIErrorCode.CHANNEL_NOT_FOUND,
+        SlackAPIErrorCode.USER_NOT_IN_CHANNEL,
+        SlackAPIErrorCode.USERS_NOT_FOUND,
+    }:
         # NOTE we've seen some consistency problems with channel creation, adding users to channels or messaging them.
         log.warn(message)
         raise TryAgain from None

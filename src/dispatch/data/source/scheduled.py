@@ -17,7 +17,7 @@ from dispatch.decorators import scheduled_project_task
 log = logging.getLogger(__name__)
 
 
-@scheduler.add(every(1).hour, name="source-sync")
+@scheduler.add(every(1).hour, name="sync-sources")
 @scheduled_project_task
 def sync_sources(db_session: SessionLocal, project: Project):
     """Syncs sources from external sources."""

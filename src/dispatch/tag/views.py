@@ -75,7 +75,7 @@ def get_tag_recommendations(db_session: DbSession, model_name: str, id: int):
     if not model:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": f"No model found. ModelName: {model_name} Id: {id}"}],
+            detail=[{"msg": f"No model with id {id} and name {model_name} found."}],
         )
 
     tags = get_recommendations(

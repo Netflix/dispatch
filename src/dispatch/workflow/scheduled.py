@@ -92,17 +92,17 @@ def sync_workflow(
                 )
 
 
-@scheduler.add(every(WORKFLOW_SYNC_INTERVAL).seconds, name="workflow-sync")
+@scheduler.add(every(WORKFLOW_SYNC_INTERVAL).seconds, name="sync-workflows")
 @scheduled_project_task
-def sync_all_workflows(db_session: Session, project: Project):
-    """Syncs all incident workflows."""
+def sync_workflows(db_session: Session, project: Project):
+    """Syncs all workflows."""
     workflow_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project.id, plugin_type="workflow"
     )
 
     if not workflow_plugin:
         log.warning(
-            f"Incident workflows not synced. No workflow plugin enabled. Project: {project.name}. Organization: {project.organization.name}"
+            f"Workflows not synced. No workflow plugin enabled. Project: {project.name}. Organization: {project.organization.name}"
         )
         return
 

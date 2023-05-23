@@ -68,10 +68,10 @@ def run_monitors(db_session, project, monitor_plugin, incidents, notify: bool = 
                 )
 
 
-@scheduler.add(every(MONITOR_SYNC_INTERVAL).seconds, name="incident-monitor-sync")
+@scheduler.add(every(MONITOR_SYNC_INTERVAL).seconds, name="sync-active-stable-monitors")
 @scheduled_project_task
 def sync_active_stable_monitors(db_session: SessionLocal, project: Project):
-    """Syncs incident monitors."""
+    """Syncs incident monitors for active and stable incidents."""
     monitor_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project.id, plugin_type="monitor"
     )
