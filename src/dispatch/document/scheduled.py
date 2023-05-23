@@ -17,7 +17,7 @@ from .service import get_all
 log = logging.getLogger(__name__)
 
 
-@scheduler.add(every(1).day, name="document-term-sync")
+@scheduler.add(every(1).day, name="sync-document-terms")
 @scheduled_project_task
 def sync_document_terms(db_session: SessionLocal, project: Project):
     """Performs term extraction from known documents."""

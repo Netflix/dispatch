@@ -90,7 +90,7 @@ def group_items_by_owner_and_type(items):
     return grouped
 
 
-@scheduler.add(every().monday.at("18:00"), name="evergreen-reminder")
+@scheduler.add(every().monday.at("18:00"), name="create-evergreen-reminders")
 @scheduled_project_task
 def create_evergreen_reminders(db_session: SessionLocal, project: Project):
     """Sends reminders for items that have evergreen enabled."""

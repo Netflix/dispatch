@@ -22,9 +22,9 @@ def group_feedback_by_commander(feedback):
     return grouped
 
 
-@scheduler.add(every(1).day.at("17:00"), name="incident-feedback-daily-report")
+@scheduler.add(every(1).day.at("17:00"), name="feedback-report-daily")
 @scheduled_project_task
-def daily_report(db_session: SessionLocal, project: Project):
+def feedback_report_daily(db_session: SessionLocal, project: Project):
     """
     Fetches all incident feedback provided in the last 24 hours
     and sends a daily report to the commanders who handled the incidents.

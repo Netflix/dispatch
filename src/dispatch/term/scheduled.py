@@ -19,7 +19,7 @@ from dispatch.term.models import TermCreate
 log = logging.getLogger(__name__)
 
 
-@scheduler.add(every(1).hour, name="term-sync")
+@scheduler.add(every(1).hour, name="sync-terms")
 @scheduled_project_task
 def sync_terms(db_session: SessionLocal, project: Project):
     """Syncs terms from external sources."""
