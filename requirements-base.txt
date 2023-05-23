@@ -360,7 +360,7 @@ scipy==1.10.1
     # via statsmodels
 sentry-asgi==0.2.0
     # via -r requirements-base.in
-sentry-sdk==1.23.1
+sentry-sdk==1.24.0
     # via
     #   -r requirements-base.in
     #   sentry-asgi
