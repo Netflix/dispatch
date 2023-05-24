@@ -288,9 +288,7 @@ def delete_conversation(conversation: Conversation, project_id: int, db_session:
         db_session=db_session, project_id=project_id, plugin_type="conversation"
     )
     if not plugin:
-        log.warning(
-            "Conversation not renamed and archived. No conversation plugin enabled. Project: {project.name}. Organization: {project.organization.name}"
-        )
+        log.warning("Conversation not renamed and archived. No conversation plugin enabled.")
         return
 
     try:
