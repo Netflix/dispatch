@@ -4,7 +4,7 @@ from schedule import every
 from sqlalchemy import func
 
 from dispatch.database.core import SessionLocal
-from dispatch.decorators import scheduled_project_task
+from dispatch.decorators import scheduled_project_task, timer
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
 from dispatch.plugin import service as plugin_service
 from dispatch.project.models import Project
@@ -18,6 +18,7 @@ log = logging.getLogger(__name__)
 
 
 @scheduler.add(every(1).day, name="sync-document-terms")
+@timer
 @scheduled_project_task
 def sync_document_terms(db_session: SessionLocal, project: Project):
     """Performs term extraction from known documents."""
@@ -26,7 +27,9 @@ def sync_document_terms(db_session: SessionLocal, project: Project):
     )
 
     if not plugin:
-        log.warn(f"Document terms not synced. No storage plugin enabled in {project.name} project.")
+        log.warn(
+            f"Document terms not synced. No storage plugin enabled. Project: {project.name}. Organization: {project.organization.name}"
+        )
         return
 
     terms = term_service.get_all(db_session=db_session, project_id=project.id).all()

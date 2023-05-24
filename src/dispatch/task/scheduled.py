@@ -11,11 +11,11 @@ import logging
 from schedule import every
 
 from dispatch.database.core import SessionLocal
-from dispatch.decorators import scheduled_project_task
+from dispatch.decorators import scheduled_project_task, timer
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
-from dispatch.project.models import Project
 from dispatch.plugin import service as plugin_service
+from dispatch.project.models import Project
 from dispatch.scheduler import scheduler
 from dispatch.task import service as task_service
 
@@ -72,6 +72,7 @@ def sync_tasks(db_session, task_plugin, incidents, lookback: int = 60, notify: b
 
 
 @scheduler.add(every(1).day, name="sync-incident-tasks-daily")
+@timer
 @scheduled_project_task
 def sync_incident_tasks_daily(db_session: SessionLocal, project: Project):
     """Syncs all incident tasks daily."""
@@ -91,6 +92,7 @@ def sync_incident_tasks_daily(db_session: SessionLocal, project: Project):
 
 
 @scheduler.add(every(TASK_SYNC_INTERVAL).seconds, name="sync-active-stable-incident-tasks")
+@timer
 @scheduled_project_task
 def sync_active_stable_incident_tasks(db_session: SessionLocal, project: Project):
     """Syncs active and stable incident tasks."""

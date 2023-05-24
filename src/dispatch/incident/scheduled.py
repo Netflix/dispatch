@@ -8,7 +8,7 @@ from sqlalchemy import func
 
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.database.core import SessionLocal, resolve_attr
-from dispatch.decorators import scheduled_project_task
+from dispatch.decorators import scheduled_project_task, timer
 from dispatch.messaging.strings import (
     INCIDENT,
     INCIDENT_DAILY_REPORT,
@@ -37,6 +37,7 @@ log = logging.getLogger(__name__)
 
 
 @scheduler.add(every(1).hours, name="incident-auto-tagger")
+@timer
 @scheduled_project_task
 def incident_auto_tagger(db_session: SessionLocal, project: Project):
     """Attempts to take existing tags and associate them with incidents."""
@@ -83,6 +84,7 @@ def incident_auto_tagger(db_session: SessionLocal, project: Project):
 
 
 @scheduler.add(every(1).day.at("18:00"), name="incident-report-daily")
+@timer
 @scheduled_project_task
 def incident_report_daily(db_session: SessionLocal, project: Project):
     """Creates and sends incident daily reports based on notifications."""
@@ -199,6 +201,7 @@ def incident_report_daily(db_session: SessionLocal, project: Project):
 
 
 @scheduler.add(every(1).day.at("18:00"), name="incident-close-reminder")
+@timer
 @scheduled_project_task
 def incident_close_reminder(db_session: SessionLocal, project: Project):
     """Sends a reminder to the incident commander to close out their incident."""

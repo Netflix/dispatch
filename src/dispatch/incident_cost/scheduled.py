@@ -3,7 +3,7 @@ import logging
 from schedule import every
 
 from dispatch.database.core import SessionLocal
-from dispatch.decorators import scheduled_project_task
+from dispatch.decorators import scheduled_project_task, timer
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident_cost.models import IncidentCostCreate
@@ -23,6 +23,7 @@ log = logging.getLogger(__name__)
 
 
 @scheduler.add(every(5).minutes, name="calculate-incidents-response-cost")
+@timer
 @scheduled_project_task
 def calculate_incidents_response_cost(db_session: SessionLocal, project: Project):
     """Calculates and saves the response cost for all incidents."""
@@ -31,7 +32,7 @@ def calculate_incidents_response_cost(db_session: SessionLocal, project: Project
     )
     if response_cost_type is None:
         log.warning(
-            f"A default cost type for response cost does not exist in the {project.name} project. Response costs won't be calculated."
+            f"A default cost type for response cost doesn't exist in the {project.name} project and organization {project.organization.name}. Response costs for incidents won't be calculated."
         )
         return
 
@@ -76,9 +77,6 @@ def calculate_incidents_response_cost(db_session: SessionLocal, project: Project
             incident.incident_costs.append(incident_response_cost)
             db_session.add(incident)
             db_session.commit()
-
-            log.debug(f"{incident.name}'s response cost has been updated to ${amount:,.2f}")
-
         except Exception as e:
             # we shouldn't fail to update all incidents when one fails
             log.exception(e)
