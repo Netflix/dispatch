@@ -287,15 +287,18 @@ def delete_conversation(conversation: Conversation, project_id: int, db_session:
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project_id, plugin_type="conversation"
     )
-    if plugin:
-        try:
-            # we rename the conversation to avoid future naming collisions
-            plugin.instance.rename(
-                conversation.channel_id, f"{conversation.incident.name.lower()}-deleted"
-            )
-            # we archive the conversation
-            plugin.instance.archive(conversation.channel_id)
-        except Exception as e:
-            log.exception(e)
-    else:
-        log.warning("Conversation not deleted. No conversation plugin enabled.")
+    if not plugin:
+        log.warning(
+            "Conversation not renamed and archived. No conversation plugin enabled. Project: {project.name}. Organization: {project.organization.name}"
+        )
+        return
+
+    try:
+        # we rename the conversation to avoid future naming collisions
+        plugin.instance.rename(
+            conversation.channel_id, f"{conversation.incident.name.lower()}-deleted"
+        )
+        # we archive the conversation
+        plugin.instance.archive(conversation.channel_id)
+    except Exception as e:
+        log.exception(e)

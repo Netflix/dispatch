@@ -241,7 +241,10 @@ class SlackConversationPlugin(ConversationPlugin):
     def archive(self, conversation_id: str):
         """Archives a conversation."""
         client = create_slack_client(self.configuration)
-        return archive_conversation(client, conversation_id)
+
+        archived = conversation_archived(client, conversation_id)
+        if not archived:
+            archive_conversation(client, conversation_id)
 
     def unarchive(self, conversation_id: str):
         """Unarchives a conversation."""
