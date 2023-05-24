@@ -3,7 +3,7 @@ import logging
 from schedule import every
 from sqlalchemy.orm import Session
 
-from dispatch.decorators import scheduled_project_task
+from dispatch.decorators import scheduled_project_task, timer
 from dispatch.messaging.strings import (
     INCIDENT_WORKFLOW_COMPLETE_NOTIFICATION,
     INCIDENT_WORKFLOW_UPDATE_NOTIFICATION,
@@ -93,6 +93,7 @@ def sync_workflow(
 
 
 @scheduler.add(every(WORKFLOW_SYNC_INTERVAL).seconds, name="sync-workflows")
+@timer
 @scheduled_project_task
 def sync_workflows(db_session: Session, project: Project):
     """Syncs all workflows."""

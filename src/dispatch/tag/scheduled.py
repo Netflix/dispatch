@@ -10,7 +10,7 @@ from schedule import every
 from typing import NoReturn
 
 from dispatch.database.core import SessionLocal
-from dispatch.decorators import scheduled_project_task
+from dispatch.decorators import scheduled_project_task, timer
 from dispatch.incident import service as incident_service
 from dispatch.plugin import service as plugin_service
 from dispatch.project.models import Project
@@ -23,6 +23,7 @@ log = logging.getLogger(__name__)
 
 
 @scheduler.add(every(1).hour, name="sync-tags")
+@timer
 @scheduled_project_task
 def sync_tags(db_session: SessionLocal, project: Project) -> NoReturn:
     """Syncs tags from external sources."""
@@ -49,6 +50,7 @@ def sync_tags(db_session: SessionLocal, project: Project) -> NoReturn:
 
 
 @scheduler.add(every(1).day, name="build-tag-models")
+@timer
 @scheduled_project_task
 def build_tag_models(db_session: SessionLocal, project: Project) -> NoReturn:
     """Builds the incident tag recommendation models."""
