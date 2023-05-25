@@ -36,7 +36,7 @@ from .flows import (
     case_update_flow,
 )
 from .models import Case, CaseCreate, CasePagination, CaseRead, CaseUpdate
-from .service import create, delete, get, update
+from .service import create, delete, get, get_count_of_case_types, update
 
 
 log = logging.getLogger(__name__)
@@ -246,3 +246,16 @@ def delete_case(
                 }
             ],
         ) from None
+
+
+@router.get(
+    "/type/count",
+    summary="Retrieves a count of case types.",
+    response_model=None,
+)
+def get_case_type_count(
+    db_session: DbSession,
+):
+    """Retrieves all cases."""
+    counts = get_count_of_case_types(db_session=db_session)
+    return counts

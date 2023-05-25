@@ -13,6 +13,10 @@ export default {
     return API.get(`/${resource}/${caseId}`)
   },
 
+  getTypeCount() {
+    return API.get(`/${resource}/type/count`)
+  },
+
   create(payload) {
     return API.post(`/${resource}`, payload)
   },

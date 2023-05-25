@@ -9,9 +9,9 @@
 </template>
 
 <script>
-import { map, filter } from "lodash"
+import { map } from "lodash"
 
-import CaseTypeApi from "@/case/type/api"
+import CaseApi from "@/case/api"
 import DashboardCard from "@/dashboard/DashboardCard.vue"
 import DashboardUtils from "@/dashboard/utils"
 
@@ -40,17 +40,15 @@ export default {
   data() {
     return {
       types: [],
+      counts: [],
     }
   },
 
   created: function () {
-    CaseTypeApi.getAll({ itemsPerPage: -1 }).then((response) => {
-      this.types = map(
-        filter(response.data.items, function (item) {
-          return !item.exclude_from_metrics
-        }),
-        "name"
-      )
+    CaseApi.getTypeCount().then((response) => {
+      console.log(response)
+      this.types = map(response.data, (item) => item[0])
+      this.counts = map(response.data, (item) => item[1])
     })
   },
 
@@ -82,9 +80,9 @@ export default {
           },
         ],
         xaxis: {
-          categories: this.categoryData || [],
+          categories: this.types || [],
           title: {
-            text: "Month",
+            text: "Types",
           },
         },
         fill: {
@@ -96,10 +94,12 @@ export default {
       }
     },
     series() {
-      return DashboardUtils.createCountedSeriesData(this.value, "case_type.name", this.types)
-    },
-    categoryData() {
-      return Object.keys(this.value)
+      return [
+        {
+          name: "Types",
+          data: this.counts,
+        },
+      ]
     },
   },
 }

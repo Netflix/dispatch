@@ -5,10 +5,13 @@ from datetime import datetime, timedelta
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from typing import List, Optional
 
+from sqlalchemy import func
+
 from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.severity import service as case_severity_service
 from dispatch.case.type import service as case_type_service
+from dispatch.case.type.models import CaseType
 from dispatch.event import service as event_service
 from dispatch.exceptions import NotFoundError
 from dispatch.incident import service as incident_service
@@ -76,6 +79,16 @@ def get_all_by_status(*, db_session, project_id: int, status: str) -> List[Optio
         db_session.query(Case)
         .filter(Case.project_id == project_id)
         .filter(Case.status == status)
+        .all()
+    )
+
+
+def get_count_of_case_types(*, db_session) -> list[tuple[str, int]]:
+    """Returns count of cases per case type."""
+    return (
+        db_session.query(CaseType.name, func.count(Case.id))
+        .outerjoin(Case, Case.case_type_id == CaseType.id)
+        .group_by(CaseType.name)
         .all()
     )
 
