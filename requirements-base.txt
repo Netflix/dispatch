@@ -324,7 +324,7 @@ pytz==2023.3
     #   pandas
 pyyaml==6.0
     # via schemathesis
-requests==2.28.2
+requests==2.31.0
     # via
     #   -r requirements-base.in
     #   atlassian-python-api
