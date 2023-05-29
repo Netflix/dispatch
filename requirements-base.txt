@@ -39,7 +39,7 @@ blis==0.7.9
     # via thinc
 blockkit==1.5.2
     # via -r requirements-base.in
-cachetools==5.3.0
+cachetools==5.3.1
     # via
     #   -r requirements-base.in
     #   google-auth
