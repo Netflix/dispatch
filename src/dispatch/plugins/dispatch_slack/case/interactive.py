@@ -1354,7 +1354,9 @@ def handle_report_submission_event(
     )
 
     case_flows.case_new_create_flow(
-        case_id=case.id, organization_slug=context["subject"].organization_slug
+        case_id=case.id,
+        db_session=db_session,
+        organization_slug=context["subject"].organization_slug,
     )
 
     send_success_modal(
