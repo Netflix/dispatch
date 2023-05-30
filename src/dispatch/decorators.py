@@ -36,14 +36,15 @@ def _execute_task_in_project_context(
                 schema_translate_map={None: f"dispatch_organization_{organization.slug}"}
             )
             schema_session = sessionmaker(bind=schema_engine)()
-            kwargs["db_session"] = schema_session
-            for project in project_service.get_all(db_session=schema_session):
-                kwargs["project"] = project
-                try:
+            try:
+                kwargs["db_session"] = schema_session
+                for project in project_service.get_all(db_session=schema_session):
+                    kwargs["project"] = project
                     func(*args, **kwargs)
-                except Exception as e:
-                    log.exception(e)
-            schema_session.close()
+            except Exception as e:
+                log.exception(e)
+            finally:
+                schema_session.close()
 
         elapsed_time = time.perf_counter() - start
         metrics_provider.timer(
