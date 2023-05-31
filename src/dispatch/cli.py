@@ -623,9 +623,9 @@ def dispatch_scheduler():
     from .evergreen.scheduled import create_evergreen_reminders  # noqa
     from .feedback.scheduled import feedback_report_daily  # noqa
     from .incident.scheduled import (  # noqa
-        incident_report_daily,
-        # incident_auto_tagger,
+        incident_auto_tagger,
         incident_close_reminder,
+        incident_report_daily,
     )
     from .incident_cost.scheduled import calculate_incidents_response_cost  # noqa
     from .monitor.scheduled import sync_active_stable_monitors  # noqa
