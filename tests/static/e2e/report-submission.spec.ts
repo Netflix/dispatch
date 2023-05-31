@@ -14,7 +14,7 @@ test.describe("Authenticated Dispatch App", () => {
       const project = "default"
       const type = "Denial of Service"
       const priority = "Low"
-      const tags = ["default/ExampleTag"]
+      const tags = ["ExampleTag"]
 
       await reportIncidentPage.reportIncident(title, description, project, type, priority, tags)
       // Soft validate that we get redirected to the incident submission form
@@ -22,7 +22,7 @@ test.describe("Authenticated Dispatch App", () => {
         .soft(page)
         .toHaveURL(
           encodeURI(
-            `./default/incidents/report?project=${project}&incident_priority=${priority}&incident_type=${type}`
+            `./default/incidents/report?project=${project}&incident_priority=${priority}&incident_type=${type}&title=${title}&description=${description}` + tags.map((tag) => "&tag=" + tag).join("")
           )
         )
 
