@@ -185,10 +185,15 @@ def create_conversation(client: WebClient, name: str, is_private: bool = False) 
         is_private=is_private,
     )["channel"]
 
+    domain = make_call(
+        client,
+        SlackAPIGetEndpoints.team_info
+    )["team"]["domain"]
+
     return {
         "id": response["id"],
         "name": response["name"],
-        "weblink": f"https://slack.com/app_redirect?channel={response['id']}",
+        "weblink": f"https://{domain}.slack.com/app_redirect?channel={response['id']}",
     }
 
 
@@ -281,13 +286,18 @@ def send_message(
         blocks=blocks,
     )
 
+    domain = make_call(
+        client,
+        SlackAPIGetEndpoints.team_info
+    )["team"]["domain"]
+
     if persist:
         add_pin(client, response["channel"], response["ts"])
 
     return {
         "id": response["channel"],
         "timestamp": response["ts"],
-        "weblink": f"https://slack.com/app_redirect?channel={response['id']}",  # TODO should we fetch the permalink?
+        "weblink": f"https://{domain}.slack.com/app_redirect?channel={response['id']}",  # TODO should we fetch the permalink?
     }
 
 
@@ -308,10 +318,15 @@ def update_message(
         blocks=blocks,
     )
 
+    domain = make_call(
+        client,
+        SlackAPIGetEndpoints.team_info
+    )["team"]["domain"]
+
     return {
         "id": response["channel"],
         "timestamp": response["ts"],
-        "weblink": f"https://slack.com/app_redirect?channel={response['id']}",  # TODO should we fetch the permalink?
+        "weblink": f"https://{domain}.slack.com/app_redirect?channel={response['id']}",  # TODO should we fetch the permalink?
     }
 
 
