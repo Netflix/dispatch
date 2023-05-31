@@ -197,7 +197,7 @@ def case_new_create_flow(
     organization_slug: OrganizationSlug,
     conversation_target: str = None,
     service_id: int = None,
-    db_session=None,
+    db_session: Session,
     create_resources: bool = True,
 ):
     """Runs the case new creation flow."""
