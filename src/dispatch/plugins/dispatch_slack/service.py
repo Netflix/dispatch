@@ -185,10 +185,7 @@ def create_conversation(client: WebClient, name: str, is_private: bool = False) 
         is_private=is_private,
     )["channel"]
 
-    domain = make_call(
-        client,
-        SlackAPIGetEndpoints.team_info
-    )["team"]["domain"]
+    domain = make_call(client, SlackAPIGetEndpoints.team_info)["team"]["domain"]
 
     return {
         "id": response["id"],
