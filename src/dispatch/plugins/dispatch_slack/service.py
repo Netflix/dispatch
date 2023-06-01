@@ -264,6 +264,13 @@ def add_users_to_conversation(
             if e.response["error"] == SlackAPIErrorCode.USER_IN_CHANNEL:
                 pass
 
+def get_message_permalink(client: WebClient, conversation_id: str, ts: str) -> str:
+    return make_call(
+        client,
+        SlackAPIGetEndpoints.chat_permalink,
+        channel=conversation_id,
+        message_ts=ts,
+    )
 
 def send_message(
     client: WebClient,
@@ -283,20 +290,13 @@ def send_message(
         blocks=blocks,
     )
 
-    weblink = make_call(
-        client,
-        SlackAPIGetEndpoints.chat_permalink,
-        channel=response["channel"],
-        message_ts=response["ts"],
-    )
-
     if persist:
         add_pin(client, response["channel"], response["ts"])
 
     return {
         "id": response["channel"],
         "timestamp": response["ts"],
-        "weblink": weblink,
+        "weblink": get_message_permalink(client, response["channel"], response["ts"]),
     }
 
 
@@ -317,17 +317,10 @@ def update_message(
         blocks=blocks,
     )
 
-    weblink = make_call(
-        client,
-        SlackAPIGetEndpoints.chat_permalink,
-        channel=response["channel"],
-        message_ts=response["ts"],
-    )
-
     return {
         "id": response["channel"],
         "timestamp": response["ts"],
-        "weblink": weblink,
+        "weblink": get_message_permalink(client, response["channel"], response["ts"]),
     }
 
 
