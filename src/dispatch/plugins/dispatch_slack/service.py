@@ -264,6 +264,7 @@ def add_users_to_conversation(
             if e.response["error"] == SlackAPIErrorCode.USER_IN_CHANNEL:
                 pass
 
+
 def get_message_permalink(client: WebClient, conversation_id: str, ts: str) -> str:
     return make_call(
         client,
@@ -271,6 +272,7 @@ def get_message_permalink(client: WebClient, conversation_id: str, ts: str) -> s
         channel=conversation_id,
         message_ts=ts,
     )
+
 
 def send_message(
     client: WebClient,
