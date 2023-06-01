@@ -286,10 +286,12 @@ def send_message(
         blocks=blocks,
     )
 
-    domain = make_call(
+    weblink = make_call(
         client,
-        SlackAPIGetEndpoints.team_info
-    )["team"]["domain"]
+        SlackAPIGetEndpoints.chat_permalink,
+        channel=response["channel"],
+        message_ts=response["ts"],
+    )
 
     if persist:
         add_pin(client, response["channel"], response["ts"])
@@ -297,7 +299,7 @@ def send_message(
     return {
         "id": response["channel"],
         "timestamp": response["ts"],
-        "weblink": f"https://{domain}.slack.com/app_redirect?channel={response['id']}",  # TODO should we fetch the permalink?
+        "weblink": weblink,
     }
 
 
@@ -318,15 +320,17 @@ def update_message(
         blocks=blocks,
     )
 
-    domain = make_call(
+    weblink = make_call(
         client,
-        SlackAPIGetEndpoints.team_info
-    )["team"]["domain"]
+        SlackAPIGetEndpoints.chat_permalink,
+        channel=response["channel"],
+        message_ts=response["ts"],
+    )
 
     return {
         "id": response["channel"],
         "timestamp": response["ts"],
-        "weblink": f"https://{domain}.slack.com/app_redirect?channel={response['id']}",  # TODO should we fetch the permalink?
+        "weblink": weblink,
     }
 
 
