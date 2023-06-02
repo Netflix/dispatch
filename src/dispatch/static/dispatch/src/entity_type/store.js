@@ -12,9 +12,8 @@ const getDefaultSelectedState = () => {
     regular_expression: null,
     jpath: null,
     enabled: true,
-    global_find: false,
-    signal_definitions: [],
-    working_signal: null,
+    scope: "single",
+    signals: [],
     project: null,
     default: false,
     loading: false,
@@ -28,6 +27,23 @@ const state = {
   dialogs: {
     showCreateEdit: false,
     showRemove: false,
+  },
+  table: {
+    rows: {
+      items: [],
+      total: null,
+    },
+    options: {
+      q: "",
+      page: 1,
+      itemsPerPage: 10,
+      sortBy: ["name"],
+      descending: [true],
+      filters: {
+        project: [],
+      },
+    },
+    loading: false,
   },
 }
 
@@ -48,9 +64,10 @@ const actions = {
         commit("SET_TABLE_LOADING", false)
       })
   }, 500),
-  createEditShow({ commit }, signal) {
-    if (signal) {
-      commit("SET_SELECTED_DEFINITION", signal)
+  createEditShow({ commit }, entity_type) {
+    commit("SET_DIALOG_CREATE_EDIT", true)
+    if (entity_type) {
+      commit("SET_SELECTED_ENTITY_TYPE", entity_type)
     }
   },
   removeShow({ commit }, entity_type) {
@@ -122,8 +139,8 @@ const mutations = {
   SET_SELECTED(state, value) {
     state.selected = Object.assign(state.selected, value)
   },
-  SET_SELECTED_DEFINITION(state, value) {
-    state.selected.working_signal = value
+  SET_SELECTED_ENTITY_TYPE(state, value) {
+    state.selected.entity_type = value
   },
   SET_SELECTED_LOADING(state, value) {
     state.selected.loading = value

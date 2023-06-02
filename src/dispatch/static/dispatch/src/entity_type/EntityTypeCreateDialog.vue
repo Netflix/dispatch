@@ -7,7 +7,9 @@
       <v-card-title>Create Entity Type </v-card-title>
       <v-stepper v-model="step">
         <v-stepper-header>
-          <v-stepper-step :complete="step > 1" step="1" editable> Define Filter </v-stepper-step>
+          <v-stepper-step :complete="step > 1" step="1" editable>
+            Define Expression
+          </v-stepper-step>
           <v-divider />
           <v-stepper-step step="2" editable> Save </v-stepper-step>
         </v-stepper-header>
