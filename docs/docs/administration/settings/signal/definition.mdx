@@ -1,0 +1,68 @@
+# Signal Definition
+
+Signal Defintions are your starting point for onboarding a new Signal into Dispatch and allow a number of different configuration options.
+
+## Sending Signals to Dispatch
+
+You can send a signal to Dispatch by making a `POST` request to the `/{organization}/signals/instances` API endpoint.
+
+```python
+import requests
+
+API_TOKEN = ""
+API_ENDPOINT = "http://localhost:8080/api/v1/default/signals/instances"
+
+signal_instance = {
+  "project": "Test",
+  "raw": {
+    "name": "process_events",
+    "externalId": "someExternalValue",
+    "id": "<uuid>", # this will be used as the instance's uuid if provided
+    "variant": "A" , # an additional indicator for signal subtypes
+    "hostIdentifier": "host1",
+    "calendarTime": "2022-10-19T10:35:01Z",
+    "time": 1618698901,
+    "columns": {
+      "pid": 888,
+      "path": "/usr/bin/security",
+      "cmdline": "/usr/bin/security dump-keychain",
+      "state": "running",
+      "parent": 555,
+      "created_at": 1918698901,
+      "updated_at": 2118698901
+    }
+  }
+}
+
+requests.Session()
+r = session.post(
+    API_ENDPOINT,
+    json=signal_instance,
+    headers={
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {API_TOKEN}",
+    },
+)
+```
+
+:::note
+
+You can view the full API documentation for the `/instances` endpoint in the [API Reference](https://netflix.github.io/dispatch/docs/api#tag/signals/operation/create_signal_instance__organization__signals_instances_post).
+
+:::
+
+## Creating a Signal Definition
+
+At a high level, you'll need to configure some basic metadata about your `signal` such as the name, description, and variant.
+You can also configure whether a `signal` should create a case or not. Choosing not to create a case can be useful for contextual signals that
+don't necessarily warrant triage and investigation on their own. But, you can still use these signals to enrich other signals and cases.
+
+![](/img/admin-ui-signal-definition.png)
+
+**Variant**: The same signal can have multiple varitants with different defintions.
+
+**Owner**: Typically the team or owner that produces the Siganl.
+
+**External ID**: This ID will be used to correctly associate incoming signals to this definition. This ID should be unique across all Signal Definitions.
+
+**Conversation Target**: Defines the channel name where the Case for the Signal will be created.
