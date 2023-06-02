@@ -1,5 +1,5 @@
 <template>
-  <v-select
+  <v-combobox
     v-model="entity"
     :items="items"
     :menu-props="{ maxHeight: '400' }"
@@ -27,7 +27,7 @@
         </v-list-item-content>
       </v-list-item>
     </template>
-  </v-select>
+  </v-combobox>
 </template>
 
 <script>
