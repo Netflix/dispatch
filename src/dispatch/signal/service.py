@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from sqlalchemy import asc
+from sqlalchemy import desc, asc
 from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
@@ -450,6 +450,11 @@ def create_instance(
         signal=signal,
     )
 
+    # if the signal has an existing uuid we propgate it as our primary key
+    if signal_instance_in.raw:
+        if signal_instance_in.raw.get("id"):
+            signal_instance.id = signal_instance_in.raw["id"]
+
     if signal_instance_in.case_priority:
         case_priority = case_priority_service.get_by_name_or_default(
             db_session=db_session,
@@ -546,20 +551,20 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
         # and the signal instance is not snoozed
         if not has_dedup_filter and not filtered:
             default_dedup_window = datetime.now(timezone.utc) - timedelta(hours=1)
-            default_dedup_query = (
+            instance = (
                 db_session.query(SignalInstance)
                 .filter(
                     SignalInstance.signal_id == signal_instance.signal_id,
                     SignalInstance.created_at >= default_dedup_window,
                     SignalInstance.id != signal_instance.id,
-                    SignalInstance.case_id.isnot(None),
+                    SignalInstance.case_id.isnot(None),  # noqa
                 )
-                .order_by(asc(SignalInstance.created_at))
-                .all()
+                .with_entities(SignalInstance.case_id)
+                .order_by(desc(SignalInstance.created_at))
+                .first()
             )
-
-            if default_dedup_query:
-                signal_instance.case_id = default_dedup_query[0].case_id
+            if instance:
+                signal_instance.case_id = instance.case_id
                 signal_instance.filter_action = SignalFilterAction.deduplicate
                 filtered = True
 

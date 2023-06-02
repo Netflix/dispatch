@@ -22,6 +22,8 @@ from dispatch.organization.models import OrganizationRead
 from dispatch.plugins.base import plugins
 from dispatch.project import service as project_service
 
+from dispatch.project.models import ProjectBase
+
 from .models import (
     DispatchUser,
     DispatchUserOrganization,
@@ -30,6 +32,7 @@ from .models import (
     UserProject,
     UserRegister,
     UserUpdate,
+    UserCreate,
 )
 
 
@@ -141,14 +144,14 @@ def create_or_update_organization_role(
     return organization_role
 
 
-def create(*, db_session, organization: str, user_in: UserRegister) -> DispatchUser:
+def create(*, db_session, organization: str, user_in: (UserRegister | UserCreate)) -> DispatchUser:
     """Creates a new dispatch user."""
     # pydantic forces a string password, but we really want bytes
     password = bytes(user_in.password, "utf-8")
 
     # create the user
     user = DispatchUser(
-        **user_in.dict(exclude={"password", "organizations", "projects"}), password=password
+        **user_in.dict(exclude={"password", "organizations", "projects", "role"}), password=password
     )
 
     org = organization_service.get_by_slug_or_raise(
@@ -156,16 +159,37 @@ def create(*, db_session, organization: str, user_in: UserRegister) -> DispatchU
         organization_in=OrganizationRead(name=organization, slug=organization),
     )
 
-    # add the user to the default organization
-    user.organizations.append(DispatchUserOrganization(organization=org, role=UserRoles.member))
+    # add user to the current organization
+    role = UserRoles.member
+    if hasattr(user_in, "role"):
+        role = user_in.role
 
-    # get the default project
-    default_project = project_service.get_default_or_raise(db_session=db_session)
+    user.organizations.append(DispatchUserOrganization(organization=org, role=role))
 
-    # add the user to the default project
-    user.projects.append(
-        DispatchUserProject(project=default_project, default=True, role=UserRoles.member)
-    )
+    projects = []
+    if user_in.projects:
+        # we reset the default value for all user projects
+        for user_project in user.projects:
+            user_project.default = False
+
+        for user_project in user_in.projects:
+            projects.append(
+                create_or_update_project_default(
+                    db_session=db_session, user=user, user_project_in=user_project
+                )
+            )
+    else:
+        # get the default project
+        default_project = project_service.get_default_or_raise(db_session=db_session)
+        projects.append(
+            create_or_update_project_default(
+                db_session=db_session,
+                user=user,
+                user_project_in=UserProject(project=ProjectBase(**default_project.dict())),
+            )
+        )
+    user.projects = projects
+
     db_session.add(user)
     db_session.commit()
     return user

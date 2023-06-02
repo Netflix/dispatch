@@ -4,7 +4,7 @@
     <v-divider />
     <v-list>
       <v-list-group prepend-icon="label" no-action color="info">
-        <template v-slot:activator>
+        <template #activator>
           <v-list-item>
             <v-list-item-content>
               <v-list-item-title>Tags ({{ items.length }})</v-list-item-title>
@@ -29,6 +29,7 @@
 import { mapActions } from "vuex"
 
 import NewEditSheet from "@/tag/NewEditSheet.vue"
+
 export default {
   name: "TagList",
 

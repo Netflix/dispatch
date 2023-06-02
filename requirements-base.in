@@ -44,6 +44,7 @@ sentry-sdk
 sh
 slack-bolt
 slack_sdk
+slowapi
 spacy
 sqlalchemy-filters
 sqlalchemy-utils

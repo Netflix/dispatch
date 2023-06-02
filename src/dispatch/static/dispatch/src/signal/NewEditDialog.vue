@@ -93,7 +93,7 @@
                       :error-messages="errors"
                       :success="valid"
                       label="External ID"
-                      hint="This ID will be used to correctly associate incomming signals to this definition."
+                      hint="This ID will be used to correctly associate incoming signals to this definition."
                       persistent-hint
                       clearable
                     />

@@ -3,7 +3,7 @@ import logging
 from schedule import every
 from sqlalchemy.orm import Session
 
-from dispatch.decorators import scheduled_project_task
+from dispatch.decorators import scheduled_project_task, timer
 from dispatch.messaging.strings import (
     INCIDENT_WORKFLOW_COMPLETE_NOTIFICATION,
     INCIDENT_WORKFLOW_UPDATE_NOTIFICATION,
@@ -92,22 +92,23 @@ def sync_workflow(
                 )
 
 
-@scheduler.add(every(WORKFLOW_SYNC_INTERVAL).seconds, name="workflow-sync")
+@scheduler.add(every(WORKFLOW_SYNC_INTERVAL).seconds, name="sync-workflows")
+@timer
 @scheduled_project_task
-def sync_all_workflows(db_session: Session, project: Project):
-    """Syncs all incident workflows."""
+def sync_workflows(db_session: Session, project: Project):
+    """Syncs all workflows."""
     workflow_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project.id, plugin_type="workflow"
     )
 
     if not workflow_plugin:
         log.warning(
-            f"Workflows not synced. No workflow plugin enabled in {project.name} project and {project.organization.name} organization."
+            f"Workflows not synced. No workflow plugin enabled. Project: {project.name}. Organization: {project.organization.name}"
         )
         return
 
     workflow_instances = workflow_service.get_running_instances(
-        db_session=db_session, project=project
+        db_session=db_session, project_id=project.id
     )
     for instance in workflow_instances:
         sync_workflow(db_session, project, workflow_plugin, instance)

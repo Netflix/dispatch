@@ -5,11 +5,12 @@
     :license: Apache, see LICENSE for more details.
 """
 import logging
+from schedule import every
 
 from typing import NoReturn
 
 from dispatch.database.core import SessionLocal
-from dispatch.decorators import scheduled_project_task
+from dispatch.decorators import scheduled_project_task, timer
 from dispatch.incident import service as incident_service
 from dispatch.plugin import service as plugin_service
 from dispatch.project.models import Project
@@ -17,12 +18,12 @@ from dispatch.scheduler import scheduler
 from dispatch.tag import service as tag_service
 from dispatch.tag.models import TagCreate
 from dispatch.tag.recommender import build_model
-from schedule import every
 
 log = logging.getLogger(__name__)
 
 
-@scheduler.add(every(1).hour, name="tag-sync")
+@scheduler.add(every(1).hour, name="sync-tags")
+@timer
 @scheduled_project_task
 def sync_tags(db_session: SessionLocal, project: Project) -> NoReturn:
     """Syncs tags from external sources."""
@@ -34,7 +35,7 @@ def sync_tags(db_session: SessionLocal, project: Project) -> NoReturn:
 
     if not plugin:
         log.warning(
-            f"Tags not synced using external sources. No tag plugin enabled in {project.name} project."
+            f"Tags not synced using external sources. No tag plugin enabled. Project: {project.name}. Organization: {project.organization.name}"
         )
         return
 
@@ -48,12 +49,18 @@ def sync_tags(db_session: SessionLocal, project: Project) -> NoReturn:
         tag_service.get_or_create(db_session=db_session, tag_in=tag_in)
 
 
-@scheduler.add(every(1).hour, name="tag-model-builder")
+@scheduler.add(every(1).day, name="build-tag-models")
+@timer
 @scheduled_project_task
 def build_tag_models(db_session: SessionLocal, project: Project) -> NoReturn:
-    """Builds the intensive tag recommendation models."""
-    # incident model
+    """Builds the incident tag recommendation models."""
     incidents = incident_service.get_all(db_session=db_session, project_id=project.id).all()
-    log.debug("Starting to build the incident/tag model for ...")
-    build_model(incidents, project.organization.slug, project.slug, "incident")
-    log.debug("Successfully built the incident/tag model.")
+
+    log.debug(f"Building the incident tag recommendation models for project {project.name}...")
+
+    try:
+        build_model(incidents, project.organization.slug, project.slug, "incident")
+    except Exception as e:
+        log.exception(e)
+
+    log.debug("Successfully built the incident tag recommendation models.")

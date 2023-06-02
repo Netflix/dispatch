@@ -3,13 +3,12 @@ from schedule import every
 import logging
 
 from dispatch.database.core import SessionLocal
-from dispatch.decorators import scheduled_project_task
+from dispatch.decorators import scheduled_project_task, timer
 from dispatch.project.models import Project
 from dispatch.scheduler import scheduler
 
 from .messaging import send_incident_feedback_daily_report
 from .service import get_all_last_x_hours_by_project_id
-
 
 log = logging.getLogger(__name__)
 
@@ -22,9 +21,10 @@ def group_feedback_by_commander(feedback):
     return grouped
 
 
-@scheduler.add(every(1).day.at("17:00"), name="incident-feedback-daily-report")
+@scheduler.add(every(1).day.at("18:00"), name="feedback-report-daily")
+@timer
 @scheduled_project_task
-def daily_report(db_session: SessionLocal, project: Project):
+def feedback_report_daily(db_session: SessionLocal, project: Project):
     """
     Fetches all incident feedback provided in the last 24 hours
     and sends a daily report to the commanders who handled the incidents.

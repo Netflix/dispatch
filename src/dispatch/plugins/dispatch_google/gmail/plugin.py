@@ -103,10 +103,12 @@ class GoogleGmailEmailPlugin(EmailPlugin):
             cc = kwargs["cc"]
 
         if not items:
-            message_body = create_message_body(notification_template, notification_type, **kwargs)
+            message_body = create_message_body(
+                notification_template, notification_type, self.project_id, **kwargs
+            )
         else:
             message_body = create_multi_message_body(
-                notification_template, notification_type, items, **kwargs
+                notification_template, notification_type, items, self.project_id, **kwargs
             )
 
         html_message = create_html_message(

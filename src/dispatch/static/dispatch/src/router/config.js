@@ -345,6 +345,12 @@ export const protectedRoute = [
             component: () => import("@/notification/Table.vue"),
           },
           {
+            path: "searchFilters",
+            name: "SearchFilterTable",
+            meta: { title: "Search Filters", subMenu: "project", group: "general" },
+            component: () => import("@/search/Table.vue"),
+          },
+          {
             path: "workflows",
             name: "WorkflowTable",
             meta: { title: "Workflows", subMenu: "project", group: "general" },
