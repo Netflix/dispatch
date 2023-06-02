@@ -167,7 +167,7 @@ export default {
   watch: {
     createdEntityType: function (newVal) {
       this.items.push(newVal)
-      this.entity_types = [newVal]
+      this.entity_types.push(newVal)
     },
   },
 
