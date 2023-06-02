@@ -11,7 +11,14 @@
         <template #selection="{ attr, item, selected }">
           <v-menu bottom right transition="scale-transition" origin="top left">
             <template v-slot:activator="{ on }">
-              <v-chip v-bind="attr" :input-value="selected" pill v-on="on">
+              <v-chip
+                v-bind="attr"
+                :input-value="selected"
+                pill
+                v-on="on"
+                close
+                @click:close="remove(item)"
+              >
                 {{ item ? item.name : "Unknown" }}
               </v-chip>
             </template>
@@ -107,7 +114,7 @@ export default {
   watch: {
     createdItem: function (newVal) {
       this.items.push(newVal)
-      this.engagements = [newVal]
+      this.engagements.push(newVal)
     },
   },
 
@@ -118,6 +125,9 @@ export default {
         return "Unknown"
       }
       return this.$options.filters.initials(item.name)
+    },
+    remove(item) {
+      this.engagements.splice(this.engagements.indexOf(item), 1)
     },
   },
 }

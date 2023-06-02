@@ -17,7 +17,7 @@
     v-model="incident"
   >
     <template v-slot:selection="{ attr, on, item, selected }">
-      <v-chip v-bind="attr" :input-value="selected" v-on="on">
+      <v-chip v-bind="attr" :input-value="selected" v-on="on" close @click:close="remove(item)">
         <span v-text="item.name" />
       </v-chip>
     </template>
@@ -92,6 +92,9 @@ export default {
   },
 
   methods: {
+    remove(item) {
+      this.incident.splice(this.incident.indexOf(item), 1)
+    },
     fetchData(filterOptions) {
       this.error = null
       this.loading = "error"

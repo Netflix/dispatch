@@ -12,6 +12,7 @@
     item-value="id"
     multiple
     no-filter
+    deletable-chips
     v-model="selectedItems"
   >
     <slot name="selection" v-bind="{ attr, item, selected }"></slot>
