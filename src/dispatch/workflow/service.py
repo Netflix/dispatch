@@ -13,7 +13,6 @@ from dispatch.incident import service as incident_service
 from dispatch.participant import service as participant_service
 from dispatch.plugin import service as plugin_service
 from dispatch.project import service as project_service
-from dispatch.project.models import Project
 from dispatch.signal import service as signal_service
 from dispatch.workflow.enums import WorkflowInstanceStatus
 
@@ -122,11 +121,12 @@ def get_instance(*, db_session, instance_id: int) -> WorkflowInstance:
     )
 
 
-def get_running_instances(*, db_session, project: Project) -> List[WorkflowInstance]:
+def get_running_instances(*, db_session, project_id: int) -> List[WorkflowInstance]:
     """Fetches all running instances."""
     return (
         db_session.query(WorkflowInstance)
-        .filter(WorkflowInstance.workflow.project.id == project.id)
+        .join(Workflow)
+        .filter(Workflow.project_id == project_id)
         .filter(
             WorkflowInstance.status.in_(
                 (

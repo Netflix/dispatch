@@ -15,12 +15,19 @@
     item-value="id"
     multiple
     no-filter
-    v-model="filters"
+    v-model="signalDefinitions"
   >
     <template v-slot:selection="{ attr, item, selected }">
       <v-menu v-model="menu" bottom right transition="scale-transition" origin="top left">
         <template v-slot:activator="{ on }">
-          <v-chip v-bind="attr" :input-value="selected" pill v-on="on">
+          <v-chip
+            v-bind="attr"
+            :input-value="selected"
+            pill
+            v-on="on"
+            close
+            @click:close="remove(item)"
+          >
             {{ item.name }}
           </v-chip>
         </template>
@@ -115,24 +122,27 @@ export default {
   },
 
   computed: {
-    filters: {
+    signalDefinitions: {
       get() {
         return cloneDeep(this.value)
       },
       set(value) {
         this.search = null
-        this._filters = value.filter((v) => {
+        this._signalDefinitions = value.filter((v) => {
           if (typeof v === "string") {
             return false
           }
           return true
         })
-        this.$emit("input", this._filters)
+        this.$emit("input", this._signalDefinitions)
       },
     },
   },
 
   methods: {
+    remove(item) {
+      this.signalDefinitions.splice(this.signalDefinitions.indexOf(item), 1)
+    },
     fetchData() {
       this.error = null
       this.loading = "error"

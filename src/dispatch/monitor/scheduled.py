@@ -3,7 +3,7 @@ import logging
 from schedule import every
 
 from dispatch.database.core import SessionLocal, resolve_attr
-from dispatch.decorators import scheduled_project_task
+from dispatch.decorators import scheduled_project_task, timer
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.messaging.strings import (
@@ -68,15 +68,18 @@ def run_monitors(db_session, project, monitor_plugin, incidents, notify: bool = 
                 )
 
 
-@scheduler.add(every(MONITOR_SYNC_INTERVAL).seconds, name="incident-monitor-sync")
+@scheduler.add(every(MONITOR_SYNC_INTERVAL).seconds, name="sync-active-stable-monitors")
+@timer
 @scheduled_project_task
 def sync_active_stable_monitors(db_session: SessionLocal, project: Project):
-    """Syncs incident monitors."""
+    """Syncs incident monitors for active and stable incidents."""
     monitor_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project.id, plugin_type="monitor"
     )
     if not monitor_plugin:
-        log.warning(f"No monitor plugin is enabled. ProjectId: {project.id}")
+        log.warning(
+            f"Incident monitors not synced. No monitor plugin enabled. Project: {project.name}. Organization: {project.organization.name}"
+        )
         return
 
     # we get all active and stable incidents

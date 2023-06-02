@@ -37,12 +37,14 @@
 <script>
 import { mapActions } from "vuex"
 import NewEditSheet from "@/tag/NewEditSheet.vue"
+
 export default {
   name: "TagSummaryTable",
 
   components: {
     NewEditSheet,
   },
+
   data() {
     return {
       headers: [

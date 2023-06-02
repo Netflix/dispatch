@@ -3,7 +3,7 @@ from datetime import datetime
 from schedule import every
 
 from dispatch.database.core import SessionLocal
-from dispatch.decorators import scheduled_project_task
+from dispatch.decorators import scheduled_project_task, timer
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.project.models import Project
@@ -17,6 +17,7 @@ log = logging.getLogger(__name__)
 
 
 @scheduler.add(every(1).hours, name="incident-report-reminders")
+@timer
 @scheduled_project_task
 def incident_report_reminders(db_session: SessionLocal, project: Project):
     """Sends report reminders to incident commanders for active incidents."""

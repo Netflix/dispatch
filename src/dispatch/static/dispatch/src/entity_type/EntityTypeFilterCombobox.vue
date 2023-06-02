@@ -7,6 +7,7 @@
     @update:search-input="getFilteredData()"
     chips
     clearable
+    deletable-chips
     hide-selected
     item-text="name"
     item-value="id"
@@ -17,7 +18,15 @@
     <template v-slot:selection="{ attr, item, selected }">
       <v-menu bottom right transition="scale-transition" origin="top left">
         <template v-slot:activator="{ on }">
-          <v-chip v-bind="attr" :input-value="selected" pill v-on="on">
+          <v-chip
+            v-bind="attr"
+            :input-value="selected"
+            pill
+            v-on="on"
+            close
+            @click="select"
+            @click:close="remove(item)"
+          >
             {{ item.name }}
           </v-chip>
         </template>
@@ -167,7 +176,7 @@ export default {
   watch: {
     createdEntityType: function (newVal) {
       this.items.push(newVal)
-      this.entity_types = [newVal]
+      this.entity_types.push(newVal)
     },
   },
 
@@ -207,6 +216,9 @@ export default {
 
         this.loading = false
       })
+    },
+    remove(item) {
+      this.entity_types.splice(this.entity_types.indexOf(item), 1)
     },
     getFilteredData: debounce(function () {
       this.fetchData()

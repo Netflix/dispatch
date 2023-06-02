@@ -324,12 +324,12 @@ class IncidentUpdate(IncidentBase):
     def find_exclusive(cls, v):
         if v:
             exclusive_tags = defaultdict(list)
-            for t in v:
-                if t.tag_type.exclusive:
-                    exclusive_tags[t.tag_type.id].append(t)
+            for tag in v:
+                if tag.tag_type.exclusive:
+                    exclusive_tags[tag.tag_type.id].append(tag)
 
-            for v in exclusive_tags.values():
-                if len(v) > 1:
+            for tag_types in exclusive_tags.values():
+                if len(tag_types) > 1:
                     raise ValueError(
                         f"Found multiple exclusive tags. Please ensure that only one tag of a given type is applied. Tags: {','.join([t.name for t in v])}"  # noqa: E501
                     )

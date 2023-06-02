@@ -1,8 +1,9 @@
 from functools import wraps
-from typing import Any, List
+from typing import Any, Callable, List
 import inspect
 import logging
 import time
+
 
 from dispatch.metrics import provider as metrics_provider
 from dispatch.organization import service as organization_service
@@ -19,7 +20,44 @@ def fullname(o):
     return f"{module.__name__}.{o.__qualname__}"
 
 
-def scheduled_project_task(func):
+def _execute_task_in_project_context(
+    func: Callable,
+    *args,
+    **kwargs,
+) -> None:
+    db_session = SessionLocal()
+    metrics_provider.counter("function.call.counter", tags={"function": fullname(func)})
+    start = time.perf_counter()
+
+    try:
+        # iterate for all schema
+        for organization in organization_service.get_all(db_session=db_session):
+            schema_engine = engine.execution_options(
+                schema_translate_map={None: f"dispatch_organization_{organization.slug}"}
+            )
+            schema_session = sessionmaker(bind=schema_engine)()
+            try:
+                kwargs["db_session"] = schema_session
+                for project in project_service.get_all(db_session=schema_session):
+                    kwargs["project"] = project
+                    func(*args, **kwargs)
+            except Exception as e:
+                log.exception(e)
+            finally:
+                schema_session.close()
+
+        elapsed_time = time.perf_counter() - start
+        metrics_provider.timer(
+            "function.elapsed.time", value=elapsed_time, tags={"function": fullname(func)}
+        )
+    except Exception as e:
+        # No rollback necessary as we only read from the database
+        log.exception(e)
+    finally:
+        db_session.close()
+
+
+def scheduled_project_task(func: Callable):
     """Decorator that sets up a background task function with
     a database session and exception tracking.
 
@@ -28,29 +66,11 @@ def scheduled_project_task(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        db_session = SessionLocal()
-        metrics_provider.counter("function.call.counter", tags={"function": fullname(func)})
-        start = time.perf_counter()
-
-        # iterate for all schema
-        for organization in organization_service.get_all(db_session=db_session):
-            schema_engine = engine.execution_options(
-                schema_translate_map={None: f"dispatch_organization_{organization.slug}"}
-            )
-            schema_session = sessionmaker(bind=schema_engine)()
-            kwargs["db_session"] = schema_session
-            for project in project_service.get_all(db_session=schema_session):
-                kwargs["project"] = project
-                try:
-                    func(*args, **kwargs)
-                except Exception as e:
-                    log.exception(e)
-            schema_session.close()
-        elapsed_time = time.perf_counter() - start
-        metrics_provider.timer(
-            "function.elapsed.time", value=elapsed_time, tags={"function": fullname(func)}
+        _execute_task_in_project_context(
+            func,
+            *args,
+            **kwargs,
         )
-        db_session.close()
 
     return wrapper
 

@@ -1,9 +1,12 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <new-edit-sheet />
     <v-row no-gutters>
       <v-col>
-        <div class="headline">Organization Members</div>
+        <div class="headline">Members</div>
+      </v-col>
+      <v-col class="text-right">
+        <v-btn color="info" class="mr-2" @click="createEditShow()"> New </v-btn>
       </v-col>
     </v-row>
     <v-row no-gutters>
@@ -38,7 +41,7 @@
                   </v-btn>
                 </template>
                 <v-list>
-                  <v-list-item @click="editShow(item)">
+                  <v-list-item @click="createEditShow(item)">
                     <v-list-item-title>View / Edit</v-list-item-title>
                   </v-list-item>
                 </v-list>
@@ -54,7 +57,7 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import NewEditSheet from "@/organization/OrganizationMemberEdit.vue"
+import NewEditSheet from "@/organization/OrganizationMemberNewEdit.vue"
 
 export default {
   name: "OrganizationUserTable",
@@ -106,7 +109,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("auth", ["getAll", "editShow"]),
+    ...mapActions("auth", ["getAll", "createEditShow"]),
   },
 }
 </script>

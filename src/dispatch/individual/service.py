@@ -1,7 +1,10 @@
+from functools import lru_cache
 from typing import List, Optional
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from sqlalchemy.orm import Session
 
+from dispatch.plugin.models import PluginInstance
 from dispatch.project.models import Project
 from dispatch.database.core import SessionLocal
 from dispatch.exceptions import NotFoundError
@@ -74,6 +77,11 @@ def get_all(*, db_session) -> List[Optional[IndividualContact]]:
     return db_session.query(IndividualContact)
 
 
+@lru_cache(maxsize=1000)
+def fetch_individual_info(contact_plugin: PluginInstance, email: str, db_session: Session):
+    return contact_plugin.instance.get(email, db_session=db_session)
+
+
 def get_or_create(*, db_session, email: str, project: Project, **kwargs) -> IndividualContact:
     """Gets or creates an individual."""
     # we fetch the individual contact from the database
@@ -88,7 +96,7 @@ def get_or_create(*, db_session, email: str, project: Project, **kwargs) -> Indi
 
     individual_info = {}
     if contact_plugin:
-        individual_info = contact_plugin.instance.get(email, db_session=db_session)
+        individual_info = fetch_individual_info(contact_plugin, email, db_session)
 
     kwargs["email"] = individual_info.get("email", email)
     kwargs["name"] = individual_info.get("fullname", "Unknown")

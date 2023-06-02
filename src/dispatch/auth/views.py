@@ -27,6 +27,7 @@ from .models import (
     UserRead,
     UserRegister,
     UserRegisterResponse,
+    UserCreate,
     UserUpdate,
 )
 from .service import get, get_by_email, update, create
@@ -70,6 +71,44 @@ def get_users(organization: OrganizationSlug, common: CommonParameters):
             for u in items["items"]
         ],
     }
+
+
+@user_router.post(
+    "",
+    response_model=UserRead,
+)
+def create_user(
+    user_in: UserCreate,
+    organization: OrganizationSlug,
+    db_session: DbSession,
+    current_user: CurrentUser,
+):
+    """Creates a new user."""
+    user = get_by_email(db_session=db_session, email=user_in.email)
+    if user:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    InvalidConfigurationError(msg="A user with this email already exists."),
+                    loc="email",
+                )
+            ],
+            model=UserCreate,
+        )
+
+    current_user_organization_role = current_user.get_organization_role(organization)
+    if current_user_organization_role != UserRoles.owner:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=[
+                {
+                    "msg": "You don't have permissions to create a new user for this organization. Please, contact the organization's owner."
+                }
+            ],
+        )
+
+    user = create(db_session=db_session, organization=organization, user_in=user_in)
+    return user
 
 
 @user_router.get("/{user_id}", response_model=UserRead)

@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.exc import IntegrityError
 
@@ -8,6 +8,7 @@ from dispatch.auth.service import CurrentUser
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.exceptions import ExistsError
+from dispatch.rate_limiter import limiter
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.project import service as project_service
 from dispatch.signal import service as signal_service
@@ -52,11 +53,14 @@ def get_signal_instances(common: CommonParameters):
 
 
 @router.post("/instances", response_model=SignalInstanceRead)
+@limiter.limit("1000/minute")
 def create_signal_instance(
     db_session: DbSession,
     organization: OrganizationSlug,
     signal_instance_in: SignalInstanceCreate,
     background_tasks: BackgroundTasks,
+    request: Request,
+    response: Response,
 ):
     """Create a new signal instance."""
     project = project_service.get_by_name_or_default(
@@ -64,17 +68,25 @@ def create_signal_instance(
     )
 
     if not signal_instance_in.signal:
-        external_id = signal_instance_in.raw["id"]
-        variant = signal_instance_in.raw["variant"]
+        external_id = signal_instance_in.raw.get("externalId")
+        variant = signal_instance_in.raw.get("variant")
 
-        signal = signal_service.get_by_variant_or_external_id(
-            db_session=db_session,
-            project_id=project.id,
-            external_id=external_id,
-            variant=variant,
-        )
+        if external_id or variant:
+            signal = signal_service.get_by_variant_or_external_id(
+                db_session=db_session,
+                project_id=project.id,
+                external_id=external_id,
+                variant=variant,
+            )
 
-        signal_instance_in.signal = signal
+            signal_instance_in.signal = signal
+        else:
+            msg = "An externalId or variant must be provided."
+            log.warn(msg)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=[{"msg": msg}],
+            ) from None
 
     if not signal:
         msg = f"No signal definition found. External Id: {external_id} Variant: {variant}"

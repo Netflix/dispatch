@@ -618,23 +618,27 @@ def revision_database(
 def dispatch_scheduler():
     """Container for all dispatch scheduler commands."""
     # we need scheduled tasks to be imported
+    from .data.source.scheduled import sync_sources  # noqa
     from .document.scheduled import sync_document_terms  # noqa
     from .evergreen.scheduled import create_evergreen_reminders  # noqa
-    from .feedback.scheduled import daily_report  # noqa
-    from .incident.scheduled import daily_report, auto_tagger, incident_close_reminder  # noqa
+    from .feedback.scheduled import feedback_report_daily  # noqa
+    from .incident.scheduled import (  # noqa
+        incident_auto_tagger,
+        incident_close_reminder,
+        incident_report_daily,
+    )
     from .incident_cost.scheduled import calculate_incidents_response_cost  # noqa
+    from .monitor.scheduled import sync_active_stable_monitors  # noqa
     from .report.scheduled import incident_report_reminders  # noqa
+    from .signal.scheduled import consume_signals  # noqa
     from .tag.scheduled import sync_tags, build_tag_models  # noqa
     from .task.scheduled import (  # noqa
-        create_task_reminders,
-        daily_sync_task,
-        sync_active_stable_tasks,
+        create_incident_tasks_reminders,
+        sync_incident_tasks_daily,
+        sync_active_stable_incident_tasks,
     )
     from .term.scheduled import sync_terms  # noqa
-    from .workflow.scheduled import sync_workflow  # noqa
-    from .monitor.scheduled import sync_active_stable_monitors  # noqa
-    from .data.source.scheduled import sync_sources  # noqa
-    from .signal.scheduled import consume_signals  # noqa
+    from .workflow.scheduled import sync_workflows  # noqa
 
 
 @dispatch_scheduler.command("list")
@@ -678,7 +682,7 @@ def start_tasks(tasks, exclude, eager):
                     r_task["func"]()
                     break
             else:
-                click.secho(f"Task not found. TaskName: {task}", fg="red")
+                click.secho(f"A scheduled task/job named {task} does not exist", fg="red")
 
     # registers a handler to stop future scheduling when encountering sigterm
     signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
@@ -764,6 +768,52 @@ dispatch_server.add_command(uvicorn.main, name="start")
 def signals_group():
     """All commands for signal consumer manipulation."""
     pass
+
+
+@signals_group.command("process")
+def process_signals():
+    """Runs a continuous process that does additional processing on newly created signals."""
+    from datetime import datetime, timedelta, timezone
+    from sqlalchemy import asc
+    from dispatch.database.core import sessionmaker, engine, SessionLocal
+    from dispatch.signal.models import SignalInstance
+    from dispatch.organization.service import get_all as get_all_organizations
+    from dispatch.signal import flows as signal_flows
+    from dispatch.common.utils.cli import install_plugins
+
+    install_plugins()
+
+    organizations = get_all_organizations(db_session=SessionLocal())
+    while True:
+        for organization in organizations:
+            schema_engine = engine.execution_options(
+                schema_translate_map={
+                    None: f"dispatch_organization_{organization.slug}",
+                }
+            )
+            db_session = sessionmaker(bind=schema_engine)()
+            one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
+            signal_instances = (
+                (
+                    db_session.query(SignalInstance)
+                    # .filter(SignalInstance.project_id == project.id) can this be a group by? does it even matter?
+                    .filter(SignalInstance.filter_action == None)  # noqa
+                    .filter(SignalInstance.case_id == None)  # noqa
+                    .filter(SignalInstance.created_at >= one_hour_ago)
+                )
+                .order_by(asc(SignalInstance.created_at))
+                .limit(500)
+            )
+            for signal_instance in signal_instances:
+                try:
+                    signal_flows.signal_instance_create_flow(
+                        db_session=db_session,
+                        signal_instance_id=signal_instance.id,
+                    )
+                except Exception as e:
+                    log.debug(signal_instance)
+                    log.exception(e)
+            db_session.close()
 
 
 @dispatch_server.command("slack")

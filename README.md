@@ -17,6 +17,5 @@ This means you can let Dispatch focus on creating resources, assembling particip
 - [Dispatch Blog Post](https://medium.com/@NetflixTechBlog/introducing-dispatch-da4b8a2a8072)
 - [Source Code](https://github.com/netflix/dispatch)
 - [Docs](https://netflix.github.io/dispatch/)
-- [Gitter](https://gitter.im/netflix-dispatch/community)
 - [Issue tracker](https://github.com/netflix/dispatch/issues)
 - [Docker](https://github.com/Netflix/dispatch-docker)

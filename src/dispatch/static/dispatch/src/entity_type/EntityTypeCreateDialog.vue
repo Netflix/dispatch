@@ -57,10 +57,10 @@
                 <v-row>
                   <v-col cols="4">
                     <v-list>
-                      <template
-                        v-for="(instance, index) in signalInstances"
-                        v-if="signalInstances.length"
-                      >
+                      <template v-if="!signalInstances.length">
+                        No example signals are currently available for this definition.
+                      </template>
+                      <template v-for="(instance, index) in signalInstances" v-else>
                         <v-list-item>
                           <v-list-item-content>
                             <v-list-item-title>{{ instance.id }}</v-list-item-title>
@@ -73,9 +73,7 @@
                         </v-list-item>
                         <v-divider v-if="index < signalInstances.length - 1"></v-divider>
                       </template>
-                      <template v-else>
-                        No signals are currently available for this definition.
-                      </template>
+                      <template v-else> </template>
                     </v-list>
                   </v-col>
                   <v-col cols="8">
@@ -226,7 +224,6 @@ export default {
       "selected.regular_expression",
       "selected.jpath",
       "selected.signal",
-      "selected.working_signal",
       "selected.name",
       "loading",
     ]),
@@ -307,11 +304,11 @@ export default {
     "selected.jpath": function (newVal, oldVal) {
       this.onSelectedChange("jpath", newVal, oldVal)
     },
-    "selected.working_signal": function (newVal) {
-      this.getSignalData(newVal)
-    },
+
     dialog: function (newVal) {
       if (newVal) {
+        // only get new data on open
+        this.getSignalData(this.signalDefinition)
         this.forceRerender()
       }
     },
