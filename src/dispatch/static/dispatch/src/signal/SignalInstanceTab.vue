@@ -2,9 +2,10 @@
   <v-data-table
     :headers="headers"
     :items="signalInstances"
-    :items-per-page="-1"
-    disabled-pagination
-    hide-default-footer
+    :items-per-page="25"
+    :footer-props="{
+      'items-per-page-options': [25, 50, 100],
+    }"
   >
     <template v-slot:item.signal="{ item }">
       <signal-popover v-model="item.signal" />
