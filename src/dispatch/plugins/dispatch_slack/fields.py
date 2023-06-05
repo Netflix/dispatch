@@ -603,10 +603,11 @@ def entity_select(
 ):
     """Creates an entity select."""
     entity_options = [
-        {"text": entity.value, "value": entity.id}
+        {"text": str(entity.value), "value": entity.id}
         for entity in entity_service.get_all_desc_by_signal(
             db_session=db_session, signal_id=signal_id
         )
+        if entity.value
     ]
 
     return multi_select_block(
