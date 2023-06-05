@@ -1,23 +1,24 @@
-from datetime import timedelta
 import logging
-from cachetools import TTLCache
+from datetime import timedelta
 
-from email_validator import validate_email, EmailNotValidError
+from cachetools import TTLCache
+from email_validator import EmailNotValidError, validate_email
 from sqlalchemy.orm import Session
 
-from dispatch.auth.models import DispatchUser, UserRegister
 from dispatch.auth import service as user_service
+from dispatch.auth.models import DispatchUser, UserRegister
 from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
 from dispatch.case.models import CaseCreate
 from dispatch.entity import service as entity_service
+from dispatch.entity_type import service as entity_type_service
 from dispatch.exceptions import DispatchException
 from dispatch.plugin import service as plugin_service
 from dispatch.project.models import Project
-from dispatch.signal import service as signal_service
 from dispatch.signal import flows as signal_flows
+from dispatch.signal import service as signal_service
 from dispatch.signal.enums import SignalEngagementStatus
-from dispatch.signal.models import SignalInstance, SignalInstanceCreate, SignalFilterAction
+from dispatch.signal.models import SignalFilterAction, SignalInstance, SignalInstanceCreate
 from dispatch.workflow import flows as workflow_flows
 
 log = logging.getLogger(__name__)
@@ -32,12 +33,15 @@ def signal_instance_create_flow(
     signal_instance = signal_service.get_signal_instance(
         db_session=db_session, signal_instance_id=signal_instance_id
     )
+    # fetch `all` entities that should be associated with all signal definitions
+    entity_types = entity_type_service.get_all(db_session=db_session, scope="all").all()
+    entity_types = signal_instance.signal.entity_types + entity_types
 
-    if signal_instance.signal.entity_types:
+    if entity_types:
         entities = entity_service.find_entities(
             db_session=db_session,
             signal_instance=signal_instance,
-            entity_types=signal_instance.signal.entity_types,
+            entity_types=entity_types,
         )
         signal_instance.entities = entities
         db_session.commit()
