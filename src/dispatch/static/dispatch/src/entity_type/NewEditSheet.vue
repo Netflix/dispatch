@@ -51,16 +51,7 @@
               auto-grow
             />
           </ValidationProvider>
-          <v-radio-group model="scope" label="Scope" row>
-            <v-tooltip max-width="250px" left>
-              <template v-slot:activator="{ on, attrs }">
-                <v-radio v-bind="attrs" v-on="on" label="Single" value="single"></v-radio>
-              </template>
-              <span>
-                An entity type with a definition scope of 'single' will only every be associated
-                with a single entity. This is most useful for definition specific entities.
-              </span>
-            </v-tooltip>
+          <v-radio-group v-model="scope" label="Scope" row>
             <v-tooltip max-width="250px" left>
               <template v-slot:activator="{ on, attrs }">
                 <v-radio v-bind="attrs" v-on="on" label="Multiple" value="multiple"></v-radio>
@@ -87,6 +78,7 @@
             label="Signal Definitions"
             hint="The signal definitions that will be associated with your entity type."
             :project="project"
+            v-if="scope === 'multiple'"
           />
         </v-card-text>
       </v-card>
@@ -224,7 +216,6 @@ export default {
         null,
         2
       ),
-      step: 1,
     }
   },
   components: {
@@ -238,6 +229,7 @@ export default {
       "dialogs.showCreateEdit",
       "selected.id",
       "selected.name",
+      "selected.scope",
       "selected.description",
       "selected.signals",
       "selected.regular_expression",
@@ -248,21 +240,12 @@ export default {
   },
   methods: {
     ...mapMutations("playground", ["updatePattern", "updateJsonPath"]),
-    ...mapActions("entity_type", ["createdSignalDefinition", "save"]),
-    saveEntityType() {
-      this.save().then((entityType) => {
-        this.dialog = false
-        this.$emit("input", entityType)
-      })
-    },
+    ...mapActions("entity_type", ["createdSignalDefinition", "closeCreateEdit", "save"]),
     isValidRegex,
     isValidJsonPath,
-    forceRerender() {
-      this.componentKey += 1
-    },
-    getSignalData(definition) {
-      if (definition) {
-        this.filters.signal = [definition]
+    getSignalData(definitions) {
+      if (definitions) {
+        this.filters.signal = definitions
       }
 
       const expression = SearchUtils.createFilterExpression(this.filters)
@@ -319,15 +302,12 @@ export default {
       this.onSelectedChange("regular_expression", newVal, oldVal)
     },
     "selected.jpath": function (newVal, oldVal) {
+      console.log(newVal)
       this.onSelectedChange("jpath", newVal, oldVal)
     },
-
-    dialog: function (newVal) {
-      if (newVal) {
-        // only get new data on open
-        //this.getSignalData(this.signalDefinition)
-        this.forceRerender()
-      }
+    "selected.signals": function (newVal, oldVal) {
+      console.log("more signals" + newVal)
+      this.getSignalData(this.newVal)
     },
   },
 }

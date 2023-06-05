@@ -9,6 +9,8 @@ import { mapMutations, mapGetters } from "vuex"
 import loader from "@monaco-editor/loader"
 import jsonpath from "jsonpath"
 import json_to_ast from "json-to-ast"
+import * as monaco from "monaco-editor"
+import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker"
 
 export default {
   name: "PlaygroundTextBox",
@@ -19,7 +21,15 @@ export default {
     },
   },
   created() {
-    loader.init().then((monaco) => {
+    MonacoEnvironment = {
+      getWorker(_, label) {
+        if (label === "json") {
+          return new jsonWorker()
+        }
+      },
+    }
+
+    loader.init().then(() => {
       const editorOptions = {
         minimap: { enabled: false },
         renderLineHighlight: "none",
