@@ -25,7 +25,7 @@ class EntityType(Base, TimeStampMixin, ProjectMixin):
     description = Column(String)
     field = Column(String)
     regular_expression = Column(String)
-    scope = Column(String, default=EntityScopeEnum.single)
+    scope = Column(String, default=EntityScopeEnum.single, nullable=False)
     enabled = Column(Boolean, default=False)
     search_vector = Column(
         TSVectorType(
