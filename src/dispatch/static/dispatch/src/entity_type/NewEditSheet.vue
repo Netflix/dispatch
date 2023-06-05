@@ -312,7 +312,7 @@ export default {
     },
     localSignals: function (newVal, oldVal) {
       this.getSignalData(this.newVal)
-      this.signals = this.newVal
+      this.signals = newVal
     },
   },
 }

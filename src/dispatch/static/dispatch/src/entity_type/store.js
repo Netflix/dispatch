@@ -67,19 +67,14 @@ const actions = {
   createEditShow({ commit }, entity_type) {
     commit("SET_DIALOG_CREATE_EDIT", true)
     if (entity_type) {
-      commit("SET_SELECTED_ENTITY_TYPE", entity_type)
+      commit("SET_SELECTED", entity_type)
     }
   },
   removeShow({ commit }, entity_type) {
     commit("SET_DIALOG_DELETE", true)
     commit("SET_SELECTED", entity_type)
   },
-  closeCreateEdit({ commit, dispatch }) {
-    commit("SET_DIALOG_CREATE_EDIT", false)
-    commit("RESET_SELECTED")
-    dispatch("getAll")
-  },
-  closeCreateEditDialog({ commit }) {
+  closeCreateEdit({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
     commit("RESET_SELECTED")
   },
@@ -91,16 +86,15 @@ const actions = {
     commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
       return EntityTypeApi.create(state.selected)
-        .then((resp) => {
+        .then(() => {
+          dispatch("closeCreateEdit")
+          dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
             { text: "Entity type created successfully.", type: "success" },
             { root: true }
           )
           commit("SET_SELECTED_LOADING", false)
-          commit("RESET_SELECTED")
-          commit("SET_DIALOG_CREATE_EDIT", false)
-          return resp.data
         })
         .catch(() => {
           commit("SET_SELECTED_LOADING", false)
@@ -108,7 +102,6 @@ const actions = {
     } else {
       return EntityTypeApi.update(state.selected.id, state.selected)
         .then(() => {
-          commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
@@ -116,6 +109,7 @@ const actions = {
             { text: "Entity type updated successfully.", type: "success" },
             { root: true }
           )
+          commit("SET_SELECTED_LOADING", false)
         })
         .catch(() => {
           commit("SET_SELECTED_LOADING", false)
@@ -139,9 +133,6 @@ const mutations = {
   updateField,
   SET_SELECTED(state, value) {
     state.selected = Object.assign(state.selected, value)
-  },
-  SET_SELECTED_ENTITY_TYPE(state, value) {
-    state.selected.entity_type = value
   },
   SET_SELECTED_LOADING(state, value) {
     state.selected.loading = value

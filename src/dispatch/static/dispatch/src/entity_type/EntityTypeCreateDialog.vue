@@ -187,6 +187,14 @@ export default {
       type: "json",
       componentKey: 0,
       signalInstances: [],
+      name: null,
+      description: null,
+      regular_expression: null,
+      jpath: null,
+      enabled: true,
+      scope: "signel",
+      signals: [],
+      project: null,
       dialog: false,
       filters: {
         signal: [],
@@ -220,24 +228,13 @@ export default {
     ValidationProvider,
   },
   computed: {
-    ...mapFields("entity_type", [
-      "selected",
-      "selected.description",
-      "selected.regular_expression",
-      "selected.jpath",
-      "selected.signal",
-      "selected.name",
-      "loading",
-    ]),
     ...mapFields("route", ["query"]),
   },
   methods: {
     ...mapMutations("playground", ["updatePattern", "updateJsonPath"]),
-    ...mapActions("entity_type", ["createdSignalDefinition", "save"]),
     saveEntityType() {
-      this.save().then((entityType) => {
-        this.dialog = false
-        this.$emit("input", entityType)
+      return EntityTypeApi.create(state.selected).then((resp) => {
+        this.$emit("input", resp)
       })
     },
     isValidRegex,

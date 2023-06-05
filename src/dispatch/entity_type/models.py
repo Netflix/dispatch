@@ -19,7 +19,6 @@ class EntityScopeEnum(DispatchEnum):
 
 
 class EntityType(Base, TimeStampMixin, ProjectMixin):
-    __table_args__ = (UniqueConstraint("name", "project_id"),)
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
@@ -38,12 +37,24 @@ class EntityType(Base, TimeStampMixin, ProjectMixin):
 
 
 # Pydantic models
+
+
+class SignalRead(DispatchBase):
+    id: PrimaryKey
+    name: str
+    owner: str
+    conversation_target: Optional[str]
+    description: Optional[str]
+    variant: Optional[str]
+
+
 class EntityTypeBase(DispatchBase):
     name: Optional[NameStr]
     description: Optional[str] = Field(None, nullable=True)
     field: Optional[str] = Field(None, nullable=True, alias="jpath")
     scope: Optional[EntityScopeEnum] = Field(EntityScopeEnum.single, nullable=False)
     enabled: Optional[bool]
+    signals: Optional[List[SignalRead]] = Field([], nullable=True)
     regular_expression: Optional[str] = Field(None, nullable=True)
 
 
