@@ -234,6 +234,7 @@ export default {
       "selected.scope",
       "selected.description",
       "selected.signals",
+      "selected.project",
       "selected.regular_expression",
       "selected.jpath",
       "loading",
@@ -258,6 +259,7 @@ export default {
       return SignalApi.getAllInstances(params)
         .then((response) => {
           this.signalInstances = response.data.items
+          this.updateEditorValue(this.signalInstances[0].raw)
         })
         .catch((error) => {
           console.error(error)
