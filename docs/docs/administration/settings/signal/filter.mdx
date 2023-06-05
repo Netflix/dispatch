@@ -1,0 +1,46 @@
+# Filter
+
+Signal Filters are used to define how Signals should be grouped together or when they should be snoozed.
+
+:::note
+To create a Signal Filter, you must first define the Entity Types that will be used to deduplicate or snooze Signals.
+:::
+
+## Snooze Filter
+
+Snooze filters make use of entities extracted from signals to define when a signal should be snoozed. This feature is useful when an influx of signals is expected for a given period of time (e.g. some known administration activities) and you want to temporarily stop cases from being created. Even when a signal is snoozed it will still be processed and associated entities will be created.
+
+For example, you can create a `Snooze Filter` that will snooze all incoming signals that contain a specific JA3 hash.
+
+:::info
+You also have the option to create a `Snooze Filter` without specifying any entities, which will snooze all incoming signals matching that filter.
+:::
+
+### Creating a Snooze Filter
+
+To create an Snooze Filter, follow these steps:
+
+1. Navigate to a Signal Definition edit page.
+2. Click on the '+' icon adjacent to the 'Signal Filter(s)' dropdown menu.
+3. Select the `Snooze` radio button under the `BASIC` tab.
+
+
+![](/img/admin-ui-signal-filter-snooze.png)
+
+## Deduplication Filter
+
+In order to perform signal duplication, a duplication filter must be created. Deduplication filters leverage extracted signal entity types and a sliding time window in order to determine if a signal should be marked as a duplicate. If a match is found, the current signal is marked as duplicate and it is associated with the existing case.
+
+:::info
+By default, all Signals are deduplicated over a one hour window unless a custom Deduplication Filter is defined.
+:::
+
+### Creating a Deduplication Filter
+
+To create an Deduplication Filter, follow these steps:
+
+1. Navigate to a Signal Definition edit page.
+2. Click on the '+' icon adjacent to the 'Signal Filter(s)' dropdown menu.
+3. Select the `Deduplication` radio button under the `BASIC` tab.
+
+![](/img/admin-ui-signal-filter-dedupe.png)
