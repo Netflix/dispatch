@@ -22,7 +22,7 @@ class EntityType(Base, TimeStampMixin, ProjectMixin):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
-    field = Column(String)
+    jpath = Column(String)
     regular_expression = Column(String)
     scope = Column(String, default=EntityScopeEnum.single, nullable=False)
     enabled = Column(Boolean, default=False)
@@ -51,7 +51,7 @@ class SignalRead(DispatchBase):
 class EntityTypeBase(DispatchBase):
     name: Optional[NameStr]
     description: Optional[str] = Field(None, nullable=True)
-    field: Optional[str] = Field(None, nullable=True, alias="jpath")
+    jpath: Optional[str] = Field(None, nullable=True)
     scope: Optional[EntityScopeEnum] = Field(EntityScopeEnum.single, nullable=False)
     enabled: Optional[bool]
     signals: Optional[List[SignalRead]] = Field([], nullable=True)

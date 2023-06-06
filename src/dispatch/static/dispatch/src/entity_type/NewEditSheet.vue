@@ -74,7 +74,7 @@
             </v-tooltip>
           </v-radio-group>
           <signal-definition-combobox
-            v-model="localSignals"
+            v-model="signals"
             label="Signal Definitions"
             hint="The signal definitions that will be associated with your entity type."
             :project="project"
@@ -96,7 +96,7 @@
           </v-radio-group>
           <v-text-field
             v-if="type === 'regex'"
-            v-model="localRegularExpression"
+            v-model="regular_expression"
             label="Regular Expression"
             hint="A regular expression pattern for your entity type. The first capture group will be used."
           >
@@ -112,7 +112,7 @@
           </v-text-field>
           <v-text-field
             v-if="type === 'json'"
-            v-model="localJpath"
+            v-model="jpath"
             label="JSON Path"
             hint="The field where the entity will be present. Supports JSON Path expressions."
           >
@@ -193,9 +193,6 @@ export default {
       type: "json",
       componentKey: 0,
       signalInstances: [],
-      localSignals: [],
-      localJpath: "",
-      localRegularExpression: "",
       filters: {
         signal: [],
       },
@@ -268,7 +265,7 @@ export default {
     onSelectedChange(selector, newVal, oldVal) {
       this.$nextTick(() => {
         if (newVal !== oldVal) {
-          if (selector === "localRegularExpression") {
+          if (selector === "regular_expression") {
             if (!newVal) {
               // Ensures we reset the pattern
               this.updatePattern(newVal)
@@ -276,7 +273,7 @@ export default {
             if (!this.isValidRegex(newVal)) return
             this.updatePattern(newVal)
           }
-          if (selector === "localJpath") {
+          if (selector === "jpath") {
             if (!newVal) {
               // Ensures we reset the jsonpath
               this.updateJsonPath(newVal)
@@ -285,8 +282,8 @@ export default {
             this.updateJsonPath(newVal)
           }
           let entityType = {
-            localRegularExpression: this.localRegularExpression,
-            localJpath: this.localJpath,
+            regular_expression: this.regular_expression,
+            jpath: this.jpath,
           }
           entityType[selector] = newVal
         }
@@ -302,17 +299,14 @@ export default {
     }
   },
   watch: {
-    localRegularExpression: function (newVal, oldVal) {
-      this.onSelectedChange("localRegularExpression", newVal, oldVal)
-      this.regular_expression = newVal
+    regular_expression: function (newVal, oldVal) {
+      this.onSelectedChange("regular_expression", newVal, oldVal)
     },
-    localJpath: function (newVal, oldVal) {
-      this.onSelectedChange("localJpath", newVal, oldVal)
-      this.jpath = newVal
+    jpath: function (newVal, oldVal) {
+      this.onSelectedChange("jpath", newVal, oldVal)
     },
-    localSignals: function (newVal, oldVal) {
+    signals: function (newVal, oldVal) {
       this.getSignalData(this.newVal)
-      this.signals = newVal
     },
   },
 }
