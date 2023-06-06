@@ -31,7 +31,7 @@
             <v-text-field
               v-model="name"
               label="Name"
-              hint="A name for your saved search."
+              hint="A name for your entity type."
               slot-scope="{ errors, valid }"
               :error-messages="errors"
               :success="valid"
