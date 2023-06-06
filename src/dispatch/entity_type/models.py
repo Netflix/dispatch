@@ -2,7 +2,6 @@ from typing import List, Optional
 from pydantic import Field
 
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy.sql.sqltypes import Boolean
 from sqlalchemy_utils import TSVectorType
 
