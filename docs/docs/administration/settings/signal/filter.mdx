@@ -2,12 +2,28 @@
 
 Signal Filters are used to define how Signals should be grouped together or when they should be snoozed.
 
+:::note
+To create a Signal Filter, you must first define the Entity Types that will be used to deduplicate or snooze Signals.
+:::
+
 ## Snooze Filter
 
-Snooze filters make use of entities extracted from signals to define when a signal should be snoozed.
+Snooze filters make use of entities extracted from signals to define when a signal should be snoozed. This feature is useful when an influx of signals is expected for a given period of time (e.g. some known administration activities) and you want to temporarily stop cases from being created. Even when a signal is snoozed it will still be processed and associated entities will be created.
+
 For example, you can create a `Snooze Filter` that will snooze all incoming signals that contain a specific JA3 hash.
+
+:::info
 You also have the option to create a `Snooze Filter` without specifying any entities, which will snooze all incoming signals matching that filter.
-This feature is useful when an influx of signals is expected for a given period of time (e.g. some known administration activities) and you want to temporarily stop cases from being created. Even when a signal is snoozed it will still be processed and associated entities will be created.
+:::
+
+### Creating a Snooze Filter
+
+To create an Snooze Filter, follow these steps:
+
+1. Navigate to a Signal Definition edit page.
+2. Click on the '+' icon adjacent to the 'Signal Filter(s)' dropdown menu.
+3. Select the `Snooze` radio button under the `BASIC` tab.
+
 
 ![](/img/admin-ui-signal-filter-snooze.png)
 
@@ -21,6 +37,10 @@ By default, all Signals are deduplicated over a one hour window unless a custom 
 
 ### Creating a Deduplication Filter
 
-To create a Deduplication Filter, you must first define the Entity Types that will be used to deduplicate Signals.
+To create an Deduplication Filter, follow these steps:
+
+1. Navigate to a Signal Definition edit page.
+2. Click on the '+' icon adjacent to the 'Signal Filter(s)' dropdown menu.
+3. Select the `Deduplication` radio button under the `BASIC` tab.
 
 ![](/img/admin-ui-signal-filter-dedupe.png)
