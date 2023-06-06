@@ -35,7 +35,7 @@ def signal_instance_create_flow(
         db_session=db_session, signal_instance_id=signal_instance_id
     )
     # fetch `all` entities that should be associated with all signal definitions
-    entity_types = entity_type_service.get_all(db_session=db_session, scope="all").all()
+    entity_types = entity_type_service.get_all(db_session=db_session, scope= EntityScopeEnum.all).all()
     entity_types = signal_instance.signal.entity_types + entity_types
 
     if entity_types:
