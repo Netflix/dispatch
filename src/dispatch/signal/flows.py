@@ -15,6 +15,7 @@ from dispatch.entity_type import service as entity_type_service
 from dispatch.exceptions import DispatchException
 from dispatch.plugin import service as plugin_service
 from dispatch.project.models import Project
+from dispatch.service import flows as service_flows
 from dispatch.signal import flows as signal_flows
 from dispatch.signal import service as signal_service
 from dispatch.signal.enums import SignalEngagementStatus
@@ -63,6 +64,7 @@ def signal_instance_create_flow(
     if not signal_instance.signal.create_case:
         return signal_instance
 
+    # process signal <-> case overrides
     if signal_instance.case_priority:
         case_priority = signal_instance.case_priority
     else:
@@ -73,6 +75,16 @@ def signal_instance_create_flow(
     else:
         case_type = signal_instance.signal.case_type
 
+    service_id = None
+    if signal_instance.signal.oncall_service:
+        assignee_email = service_flows.resolve_oncall(
+            service=signal_instance.signal.oncall_service, db_session=db_session
+        )
+
+    conversation_target = None
+    if signal_instance.signal.conversation_target:
+        conversation_target = signal_instance.signal.conversation_target
+
     # create a case if not duplicate or snoozed and case creation is enabled
     case_in = CaseCreate(
         title=signal_instance.signal.name,
@@ -80,19 +92,12 @@ def signal_instance_create_flow(
         case_priority=case_priority,
         project=signal_instance.project,
         case_type=case_type,
+        assignee={"individual": {"email": assignee_email}},
     )
     case = case_service.create(db_session=db_session, case_in=case_in, current_user=current_user)
     signal_instance.case = case
 
     db_session.commit()
-
-    service_id = None
-    if signal_instance.signal.oncall_service:
-        service_id = signal_instance.signal.oncall_service.external_id
-
-    conversation_target = None
-    if signal_instance.signal.conversation_target:
-        conversation_target = signal_instance.signal.conversation_target
 
     case_flows.case_new_create_flow(
         db_session=db_session,

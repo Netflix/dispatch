@@ -354,13 +354,13 @@ rsa==4.9
     #   python-jose
 schedule==1.2.0
     # via -r requirements-base.in
-schemathesis==3.19.3
+schemathesis==3.19.5
     # via -r requirements-base.in
 scipy==1.10.1
     # via statsmodels
 sentry-asgi==0.2.0
     # via -r requirements-base.in
-sentry-sdk==1.24.0
+sentry-sdk==1.25.0
     # via
     #   -r requirements-base.in
     #   sentry-asgi
