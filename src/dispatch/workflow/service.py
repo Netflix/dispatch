@@ -154,6 +154,9 @@ def create_instance(
         incident = incident_service.get(db_session=db_session, incident_id=instance_in.incident.id)
         instance.incident = incident
 
+    if instance_in.run_reason:
+        instance.run_reason = instance_in.run_reason
+
     if instance_in.case:
         case = case_service.get(db_session=db_session, case_id=instance_in.case.id)
         instance.case = case

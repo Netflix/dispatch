@@ -215,7 +215,7 @@ def handle_workflow_submission_event(
     named_params = []
     for i in form_data.keys():
         if i.startswith(RunWorkflowBlockIds.param_input):
-            key = i.split("-")[1]
+            key = i.split(RunWorkflowBlockIds.param_input + "-")[1]
             value = form_data[i]
             params.update({key: value})
             named_params.append({"key": key, "value": value})
@@ -243,6 +243,10 @@ def handle_workflow_submission_event(
         {
             "externalRef": f"{DISPATCH_UI_URL}/{instance.incident.project.organization.name}/incidents/{instance.incident.name}?project={instance.incident.project.name}",
             "workflowInstanceId": instance.id,
+            "incident_name": instance.incident.name,
+            "incident_title": instance.incident.title,
+            "incident_severity": instance.incident.incident_severity.name,
+            "incident_status": instance.incident.status,
         }
     )
 
