@@ -130,7 +130,7 @@ export default {
     update(data) {
       this.items = data.filter(function (item) {
         return (
-          !item.incident_type.exclude_from_metrics &&
+          !item.case_type.exclude_from_metrics &&
           !item.duplicates.filter((d) => data.includes(d)).length
         )
       })
