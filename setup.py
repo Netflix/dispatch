@@ -427,6 +427,7 @@ setup(
             "slack_contact = dispatch.plugins.dispatch_slack.plugin:SlackContactPlugin",
             "slack_conversation = dispatch.plugins.dispatch_slack.plugin:SlackConversationPlugin",
             "zoom_conference = dispatch.plugins.dispatch_zoom.plugin:ZoomConferencePlugin",
+            "teams_conference = dispatch.plugins.dispatch_microsoft_teams.conference.plugin:TeamsConferencePlugin",
         ],
     },
 )

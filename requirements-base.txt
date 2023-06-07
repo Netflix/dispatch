@@ -78,7 +78,9 @@ confection==0.0.4
 cryptography==39.0.2
     # via
     #   -r requirements-base.in
+    #   msal
     #   oauthlib
+    #   pyjwt
 cssselect==1.2.0
     # via premailer
 cssutils==2.6.0
@@ -207,6 +209,8 @@ markupsafe==2.1.2
     #   jinja2
     #   mako
     #   werkzeug
+msal==1.22.0
+    # via -r requirements-base.in
 multidict==6.0.4
     # via
     #   aiohttp
@@ -291,8 +295,10 @@ pydantic==1.10.7
     #   fastapi
     #   spacy
     #   thinc
-pyjwt==2.6.0
-    # via oauthlib
+pyjwt[crypto]==2.6.0
+    # via
+    #   msal
+    #   oauthlib
 pyparsing==3.0.9
     # via
     #   -r requirements-base.in
@@ -332,6 +338,7 @@ requests==2.31.0
     #   emails
     #   google-api-core
     #   jira
+    #   msal
     #   openai
     #   pdpyras
     #   premailer
