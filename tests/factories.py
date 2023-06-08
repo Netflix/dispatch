@@ -790,7 +790,7 @@ class CaseReadFactory(BaseFactory):
 class EntityTypeFactory(BaseFactory):
     name = FuzzyText()
     description = FuzzyText()
-    field = FuzzyText()
+    scope = FuzzyChoice(choices=["single", "multiple", "all"])
     regular_expression = r"[a-zA-Z]+"
     global_find = Faker().pybool()
     enabled = Faker().pybool()
