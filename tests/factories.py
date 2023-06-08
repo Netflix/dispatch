@@ -792,7 +792,6 @@ class EntityTypeFactory(BaseFactory):
     description = FuzzyText()
     jpath = FuzzyText()
     regular_expression = r"[a-zA-Z]+"
-    global_find = Faker().pybool()
     enabled = Faker().pybool()
     project = SubFactory(ProjectFactory)
 
