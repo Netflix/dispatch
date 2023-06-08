@@ -131,6 +131,7 @@ def create_case(
         background_tasks.add_task(
             case_new_create_flow,
             case_id=case.id,
+            db_session=db_session,
             organization_slug=organization,
         )
 

@@ -1,12 +1,12 @@
-from datetime import timedelta
 import logging
-from cachetools import TTLCache
+from datetime import timedelta
 
-from email_validator import validate_email, EmailNotValidError
+from cachetools import TTLCache
+from email_validator import EmailNotValidError, validate_email
 from sqlalchemy.orm import Session
 
-from dispatch.auth.models import DispatchUser, UserRegister
 from dispatch.auth import service as user_service
+from dispatch.auth.models import DispatchUser, UserRegister
 from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
 from dispatch.case.models import CaseCreate
@@ -14,10 +14,11 @@ from dispatch.entity import service as entity_service
 from dispatch.exceptions import DispatchException
 from dispatch.plugin import service as plugin_service
 from dispatch.project.models import Project
-from dispatch.signal import service as signal_service
+from dispatch.service import flows as service_flows
 from dispatch.signal import flows as signal_flows
+from dispatch.signal import service as signal_service
 from dispatch.signal.enums import SignalEngagementStatus
-from dispatch.signal.models import SignalInstance, SignalInstanceCreate, SignalFilterAction
+from dispatch.signal.models import SignalFilterAction, SignalInstance, SignalInstanceCreate
 from dispatch.workflow import flows as workflow_flows
 
 log = logging.getLogger(__name__)
@@ -59,6 +60,7 @@ def signal_instance_create_flow(
     if not signal_instance.signal.create_case:
         return signal_instance
 
+    # process signal <-> case overrides
     if signal_instance.case_priority:
         case_priority = signal_instance.case_priority
     else:
@@ -69,6 +71,17 @@ def signal_instance_create_flow(
     else:
         case_type = signal_instance.signal.case_type
 
+    assignee = None
+    if signal_instance.signal.oncall_service:
+        email = service_flows.resolve_oncall(
+            service=signal_instance.signal.oncall_service, db_session=db_session
+        )
+        assignee = {"individual": {"email": email}}
+
+    conversation_target = None
+    if signal_instance.signal.conversation_target:
+        conversation_target = signal_instance.signal.conversation_target
+
     # create a case if not duplicate or snoozed and case creation is enabled
     case_in = CaseCreate(
         title=signal_instance.signal.name,
@@ -76,24 +89,17 @@ def signal_instance_create_flow(
         case_priority=case_priority,
         project=signal_instance.project,
         case_type=case_type,
+        assignee=assignee,
     )
     case = case_service.create(db_session=db_session, case_in=case_in, current_user=current_user)
     signal_instance.case = case
 
     db_session.commit()
 
-    service_id = None
-    if signal_instance.signal.oncall_service:
-        service_id = signal_instance.signal.oncall_service.external_id
-
-    conversation_target = None
-    if signal_instance.signal.conversation_target:
-        conversation_target = signal_instance.signal.conversation_target
-
     case_flows.case_new_create_flow(
         db_session=db_session,
         organization_slug=None,
-        service_id=service_id,
+        service_id=None,
         conversation_target=conversation_target,
         case_id=case.id,
         create_resources=False,

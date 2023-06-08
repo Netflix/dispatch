@@ -95,6 +95,7 @@
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
+import { isNavigationFailure, NavigationFailureType } from "vue-router"
 import { required } from "vee-validate/dist/rules"
 
 import router from "@/router"
@@ -216,29 +217,13 @@ export default {
       this.incident_priority = { name: this.query.incident_priority }
     }
 
-    this.getFAQ()
+    if (this.query.title) {
+      this.title = this.query.title
+    }
 
-    this.$watch(
-      (vm) => [vm.project],
-      () => {
-        this.getFAQ()
-      }
-    )
-
-    this.$watch(
-      (vm) => [vm.project, vm.incident_priority, vm.incident_type],
-      () => {
-        var queryParams = {
-          project: this.project ? this.project.name : null,
-          incident_priority: this.incident_priority ? this.incident_priority.name : null,
-          incident_type: this.incident_type ? this.incident_type.name : null,
-        }
-        Object.keys(queryParams).forEach((key) => (queryParams[key] ? {} : delete queryParams[key]))
-        router.replace({
-          query: queryParams,
-        })
-      }
-    )
+    if (this.query.description) {
+      this.description = this.query.description
+    }
 
     if (this.query.tag) {
       if (Array.isArray(this.query.tag)) {
@@ -249,6 +234,42 @@ export default {
         this.tags = [{ name: this.query.tag }]
       }
     }
+
+    this.getFAQ()
+
+    this.$watch(
+      (vm) => [vm.project],
+      () => {
+        this.getFAQ()
+      }
+    )
+
+    this.$watch(
+      (vm) => [vm.project, vm.incident_priority, vm.incident_type, vm.title, vm.description, vm.tags],
+      () => {
+        var queryParams = {
+          project: this.project ? this.project.name : null,
+          incident_priority: this.incident_priority ? this.incident_priority.name : null,
+          incident_type: this.incident_type ? this.incident_type.name : null,
+          title: this.title,
+          description: this.description,
+          tag: this.tags ? this.tags.map((tag) => tag.name) : null,
+        }
+        Object.keys(queryParams).forEach((key) => (queryParams[key] ? {} : delete queryParams[key]))
+        router.replace({
+          query: queryParams,
+        }).catch(err => {
+          // Updating the query fields also updates the URL.
+          // Frequent updates to these fields throws navigation cancelled failures.
+          if (isNavigationFailure(err, NavigationFailureType.cancelled)){
+            // resolve error
+            return err
+          }
+          // rethrow error
+          return Promise.reject(err)
+        })
+      }
+    )
   },
 }
 </script>

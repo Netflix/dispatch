@@ -91,7 +91,7 @@ export class ReportIncidentPage {
     await this.tagsDropdown.click()
     for (const tag of tags) {
       if (!(await this.page.getByText("No tags matching").isVisible())) {
-        await this.page.getByText(tag, { exact: true }).click()
+        await this.page.getByText(tag).first().click()
       }
     }
   }

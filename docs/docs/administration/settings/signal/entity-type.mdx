@@ -1,0 +1,20 @@
+# Entity Type
+
+Entity Types enable the extraction of entities from the raw Signal Instance data. Once extracted, these entities are stored for further use, enabling features like automatic correlations, engagement filters, and signal filters.
+
+### Creating an Entity Type
+
+To create an Entity Type, follow these steps:
+
+1. Navigate to a Signal Definition edit page.
+2. Click on the '+' icon adjacent to the 'Entity Type(s)' dropdown menu.
+
+Upon clicking, the Entity Type playground will be launched in a modal window. This playground is an interactive tool designed to aid you in creating and validating your Entity Type. Entity Types can be constructed using either regular expressions or the JSON Path format.
+
+![](/img/admin-ui-signal-entity-type.png)
+
+In the illustrated example, a new Entity Type is defined using the JSON Path format. The JSON Path expression, columns.cmdline, is used to extract the value of the cmdline column from the raw Signal Instance data. The playground editor accentuates the extracted value within the raw Signal Instance data, validating a successful match with the desired value.
+
+Once you are satisfied with your Entity Type, proceed through the playground to the naming and description stage. Here, you'll provide a suitable name and a brief description for the Entity Type. By clicking 'Save', the Entity Type gets successfully created and is then linked with the corresponding Signal Definition.
+
+![](/img/admin-ui-signal-entity-type-name.png)

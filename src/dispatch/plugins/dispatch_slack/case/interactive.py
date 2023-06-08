@@ -1085,7 +1085,7 @@ def edit_button_click(
     blocks = [
         title_input(initial_value=case.title),
         description_input(initial_value=case.description),
-        case_resolution_reason_select(),
+        case_resolution_reason_select(optional=True),
         resolution_input(initial_value=case.resolution),
         assignee_select(initial_user=assignee_initial_user),
         case_status_select(initial_option={"text": case.status, "value": case.status}),
@@ -1354,7 +1354,9 @@ def handle_report_submission_event(
     )
 
     case_flows.case_new_create_flow(
-        case_id=case.id, organization_slug=context["subject"].organization_slug
+        case_id=case.id,
+        db_session=db_session,
+        organization_slug=context["subject"].organization_slug,
     )
 
     send_success_modal(
