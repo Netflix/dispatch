@@ -54,6 +54,9 @@ export default {
         automaticLayout: true,
         renderValidationDecorations: "on",
         readOnly: true,
+        minimap: {
+          enabled: false,
+        },
       },
     }
   },
