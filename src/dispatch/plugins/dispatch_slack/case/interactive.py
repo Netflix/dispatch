@@ -1195,6 +1195,8 @@ def handle_resolve_submission_event(
     )
 
     case = case_service.update(db_session=db_session, case=case, case_in=case_in, current_user=user)
+    case_flows.case_closed_status_flow(case=case, db_session=db_session)
+
     blocks = create_case_message(case=case, channel_id=context["subject"].channel_id)
     client.chat_update(
         blocks=blocks, ts=case.conversation.thread_id, channel=case.conversation.channel_id
