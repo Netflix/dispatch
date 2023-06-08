@@ -82,7 +82,7 @@ def test_find_entities_with_field_and_regex(session, signal_instance, project):
     entity_types = [
         EntityType(
             name="AWS IAM Role ARN",
-            field="asset[*].id",
+            jpath="asset[*].id",
             regular_expression=r"^arn:aws:iam::\d{12}:role\/[a-zA-Z_0-9+=,.@\-_/]+$",
             project=project,
         ),
@@ -95,7 +95,7 @@ def test_find_entities_with_regex_only(session, signal_instance, project):
     entity_types = [
         EntityType(
             name="AWS IAM Role ARN",
-            field=None,
+            jpath=None,
             regular_expression=r"^arn:aws:iam::\d{12}:role\/[a-zA-Z_0-9+=,.@\-_/]+$",
             project=project,
         ),
@@ -107,7 +107,7 @@ def test_find_entities_with_regex_only(session, signal_instance, project):
     entity_types = [
         EntityType(
             name="AWS Account ID",
-            field=None,
+            jpath=None,
             regular_expression=r"\d{12}",
             project=project,
         ),
@@ -120,7 +120,7 @@ def test_find_entities_with_field_only(session, signal_instance, project):
     entity_types = [
         EntityType(
             name="AWS IAM Role ARN",
-            field="id",
+            jpath="id",
             regular_expression=None,
             project=project,
         ),
@@ -132,7 +132,7 @@ def test_find_entities_with_field_only(session, signal_instance, project):
     entity_types = [
         EntityType(
             name="Entire Obj",
-            field="identity",
+            jpath="identity",
             regular_expression=None,
             project=project,
         ),
@@ -144,7 +144,7 @@ def test_find_entities_with_field_only(session, signal_instance, project):
     entity_types = [
         EntityType(
             name="AWS IAM Role ARN",
-            field="asset[*].id",
+            jpath="asset[*].id",
             regular_expression=None,
             project=project,
         ),
@@ -157,7 +157,7 @@ def test_find_entities_with_no_regex_or_field(session, signal_instance, project)
     entity_types = [
         EntityType(
             name="AWS IAM Role ARN",
-            field=None,
+            jpath=None,
             regular_expression=None,
             project=project,
         ),

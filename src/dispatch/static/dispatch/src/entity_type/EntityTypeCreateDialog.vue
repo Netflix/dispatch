@@ -7,7 +7,9 @@
       <v-card-title>Create Entity Type </v-card-title>
       <v-stepper v-model="step">
         <v-stepper-header>
-          <v-stepper-step :complete="step > 1" step="1" editable> Define Filter </v-stepper-step>
+          <v-stepper-step :complete="step > 1" step="1" editable>
+            Define Expression
+          </v-stepper-step>
           <v-divider />
           <v-stepper-step step="2" editable> Save </v-stepper-step>
         </v-stepper-header>
@@ -185,6 +187,14 @@ export default {
       type: "json",
       componentKey: 0,
       signalInstances: [],
+      name: null,
+      description: null,
+      regular_expression: null,
+      jpath: null,
+      enabled: true,
+      scope: "signel",
+      signals: [],
+      project: null,
       dialog: false,
       filters: {
         signal: [],
@@ -218,24 +228,13 @@ export default {
     ValidationProvider,
   },
   computed: {
-    ...mapFields("entity_type", [
-      "selected",
-      "selected.description",
-      "selected.regular_expression",
-      "selected.jpath",
-      "selected.signal",
-      "selected.name",
-      "loading",
-    ]),
     ...mapFields("route", ["query"]),
   },
   methods: {
     ...mapMutations("playground", ["updatePattern", "updateJsonPath"]),
-    ...mapActions("entity_type", ["createdSignalDefinition", "save"]),
     saveEntityType() {
-      this.save().then((entityType) => {
-        this.dialog = false
-        this.$emit("input", entityType)
+      return EntityTypeApi.create(state.selected).then((resp) => {
+        this.$emit("input", resp)
       })
     },
     isValidRegex,
@@ -256,6 +255,7 @@ export default {
       return SignalApi.getAllInstances(params)
         .then((response) => {
           this.signalInstances = response.data.items
+          this.updateEditorValue(this.signalInstances[0].raw)
         })
         .catch((error) => {
           console.error(error)

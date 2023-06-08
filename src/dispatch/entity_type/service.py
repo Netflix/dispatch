@@ -5,6 +5,7 @@ from sqlalchemy.orm import Query, Session
 
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
+from dispatch.signal import service as signal_service
 from .models import EntityType, EntityTypeCreate, EntityTypeRead, EntityTypeUpdate
 
 
@@ -45,8 +46,10 @@ def get_by_name_or_raise(
     return entity_type
 
 
-def get_all(*, db_session: Session) -> Query:
+def get_all(*, db_session: Session, scope: str = None) -> Query:
     """Gets all entity types."""
+    if scope:
+        return db_session.query(EntityType).filter(EntityType.scope == scope)
     return db_session.query(EntityType)
 
 
@@ -55,7 +58,17 @@ def create(*, db_session: Session, entity_type_in: EntityTypeCreate) -> EntityTy
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=entity_type_in.project
     )
-    entity_type = EntityType(**entity_type_in.dict(exclude={"project"}), project=project)
+    entity_type = EntityType(**entity_type_in.dict(exclude={"project", "signals"}), project=project)
+
+    signals = []
+    for signal in entity_type_in.signals:
+        signal = signal_service.get(
+            db_session=db_session, project_id=project.id, signal_id=signal.id
+        )
+        signals.append(signal)
+
+    entity_type.signals = signals
+
     db_session.add(entity_type)
     db_session.commit()
     return entity_type
@@ -86,6 +99,13 @@ def update(
     for field in entity_type_data:
         if field in update_data:
             setattr(entity_type, field, update_data[field])
+
+    signals = []
+    for signal in entity_type_in.signals:
+        signal = signal_service.get(db_session=db_session, signal_id=signal.id)
+        signals.append(signal)
+
+    entity_type.signals = signals
 
     db_session.commit()
     return entity_type

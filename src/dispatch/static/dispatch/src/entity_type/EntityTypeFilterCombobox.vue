@@ -199,6 +199,7 @@ export default {
           ...filterOptions,
           filters: {
             project: [this.project],
+            scope: ["multiple"],
           },
         }
         filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })

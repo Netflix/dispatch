@@ -12,9 +12,8 @@ const getDefaultSelectedState = () => {
     regular_expression: null,
     jpath: null,
     enabled: true,
-    global_find: false,
-    signal_definitions: [],
-    working_signal: null,
+    scope: "multiple",
+    signals: [],
     project: null,
     default: false,
     loading: false,
@@ -28,6 +27,23 @@ const state = {
   dialogs: {
     showCreateEdit: false,
     showRemove: false,
+  },
+  table: {
+    rows: {
+      items: [],
+      total: null,
+    },
+    options: {
+      q: "",
+      page: 1,
+      itemsPerPage: 10,
+      sortBy: ["name"],
+      descending: [true],
+      filters: {
+        project: [],
+      },
+    },
+    loading: false,
   },
 }
 
@@ -48,9 +64,10 @@ const actions = {
         commit("SET_TABLE_LOADING", false)
       })
   }, 500),
-  createEditShow({ commit }, signal) {
-    if (signal) {
-      commit("SET_SELECTED_DEFINITION", signal)
+  createEditShow({ commit }, entity_type) {
+    commit("SET_DIALOG_CREATE_EDIT", true)
+    if (entity_type) {
+      commit("SET_SELECTED", entity_type)
     }
   },
   removeShow({ commit }, entity_type) {
@@ -58,10 +75,6 @@ const actions = {
     commit("SET_SELECTED", entity_type)
   },
   closeCreateEdit({ commit }) {
-    commit("SET_DIALOG_CREATE_EDIT", false)
-    commit("RESET_SELECTED")
-  },
-  closeCreateEditDialog({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
     commit("RESET_SELECTED")
   },
@@ -73,16 +86,15 @@ const actions = {
     commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
       return EntityTypeApi.create(state.selected)
-        .then((resp) => {
+        .then(() => {
+          dispatch("closeCreateEdit")
+          dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
             { text: "Entity type created successfully.", type: "success" },
             { root: true }
           )
           commit("SET_SELECTED_LOADING", false)
-          commit("RESET_SELECTED")
-          commit("SET_DIALOG_CREATE_EDIT", false)
-          return resp.data
         })
         .catch(() => {
           commit("SET_SELECTED_LOADING", false)
@@ -90,7 +102,6 @@ const actions = {
     } else {
       return EntityTypeApi.update(state.selected.id, state.selected)
         .then(() => {
-          commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
@@ -98,6 +109,7 @@ const actions = {
             { text: "Entity type updated successfully.", type: "success" },
             { root: true }
           )
+          commit("SET_SELECTED_LOADING", false)
         })
         .catch(() => {
           commit("SET_SELECTED_LOADING", false)
@@ -121,9 +133,6 @@ const mutations = {
   updateField,
   SET_SELECTED(state, value) {
     state.selected = Object.assign(state.selected, value)
-  },
-  SET_SELECTED_DEFINITION(state, value) {
-    state.selected.working_signal = value
   },
   SET_SELECTED_LOADING(state, value) {
     state.selected.loading = value
