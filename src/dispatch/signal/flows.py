@@ -78,11 +78,12 @@ def signal_instance_create_flow(
     else:
         case_type = signal_instance.signal.case_type
 
-    service_id = None
+    assignee = None
     if signal_instance.signal.oncall_service:
-        assignee_email = service_flows.resolve_oncall(
+        email = service_flows.resolve_oncall(
             service=signal_instance.signal.oncall_service, db_session=db_session
         )
+        assignee = {"individual": {"email": email}}
 
     conversation_target = None
     if signal_instance.signal.conversation_target:
@@ -95,7 +96,7 @@ def signal_instance_create_flow(
         case_priority=case_priority,
         project=signal_instance.project,
         case_type=case_type,
-        assignee={"individual": {"email": assignee_email}},
+        assignee=assignee,
     )
     case = case_service.create(db_session=db_session, case_in=case_in, current_user=current_user)
     signal_instance.case = case
@@ -105,7 +106,7 @@ def signal_instance_create_flow(
     case_flows.case_new_create_flow(
         db_session=db_session,
         organization_slug=None,
-        service_id=service_id,
+        service_id=None,
         conversation_target=conversation_target,
         case_id=case.id,
         create_resources=False,
