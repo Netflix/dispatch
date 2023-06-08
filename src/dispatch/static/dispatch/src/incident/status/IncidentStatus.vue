@@ -6,7 +6,7 @@
       </v-badge>
       <v-tooltip bottom>
         <template v-slot:activator="{ on, attrs }">
-          <v-btn icon v-bind="attrs" v-on="on" @click="joinIncident(id)">
+          <v-btn icon v-bind="attrs" v-on="on" @click.stop="joinIncident(id)">
             <v-icon> mdi-account-plus </v-icon>
           </v-btn>
         </template>
@@ -14,7 +14,7 @@
       </v-tooltip>
       <v-tooltip bottom>
         <template v-slot:activator="{ on, attrs }">
-          <v-btn icon v-bind="attrs" v-on="on" @click="subscribeToIncident(id)">
+          <v-btn icon v-bind="attrs" v-on="on" @click.stop="subscribeToIncident(id)">
             <v-icon> mdi-email-plus </v-icon>
           </v-btn>
         </template>
@@ -27,7 +27,7 @@
       </v-badge>
       <v-tooltip bottom>
         <template v-slot:activator="{ on, attrs }">
-          <v-btn icon v-bind="attrs" v-on="on" @click="joinIncident(id)">
+          <v-btn icon v-bind="attrs" v-on="on" @click.stop="joinIncident(id)">
             <v-icon> mdi-account-plus </v-icon>
           </v-btn>
         </template>
@@ -35,7 +35,7 @@
       </v-tooltip>
       <v-tooltip bottom>
         <template v-slot:activator="{ on, attrs }">
-          <v-btn icon v-bind="attrs" v-on="on" @click="subscribeToIncident(id)">
+          <v-btn icon v-bind="attrs" v-on="on" @click.stop="subscribeToIncident(id)">
             <v-icon> mdi-email-plus </v-icon>
           </v-btn>
         </template>

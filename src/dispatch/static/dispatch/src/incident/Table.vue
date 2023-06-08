@@ -46,6 +46,7 @@
             v-model="selected"
             loading-text="Loading... Please wait"
             show-select
+            @click:row="showIncidentEditSheet"
           >
             <template v-slot:item.project.name="{ item }">
               <v-chip small :color="item.project.color" text-color="white">
@@ -103,7 +104,10 @@
                   <v-list-item @click="showReportDialog(item)" :disabled="item.status == 'Closed'">
                     <v-list-item-title>Create Report</v-list-item-title>
                   </v-list-item>
-                  <v-list-item @click="showRun({ type: 'incident', data: item })" :disabled="item.status == 'Closed'">
+                  <v-list-item
+                    @click="showRun({ type: 'incident', data: item })"
+                    :disabled="item.status == 'Closed'"
+                  >
                     <v-list-item-title>Run Workflow</v-list-item-title>
                   </v-list-item>
                   <v-list-item @click="showDeleteDialog(item)">
@@ -224,6 +228,9 @@ export default {
   methods: {
     ...mapActions("incident", ["getAll", "showNewSheet", "showDeleteDialog", "showReportDialog"]),
     ...mapActions("workflow", ["showRun"]),
+    showIncidentEditSheet(item) {
+      this.$router.push({ name: "IncidentTableEdit", params: { name: item.name } })
+    },
   },
 
   watch: {
