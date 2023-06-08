@@ -21,6 +21,7 @@ from dispatch.signal import service as signal_service
 from dispatch.signal.enums import SignalEngagementStatus
 from dispatch.signal.models import SignalFilterAction, SignalInstance, SignalInstanceCreate
 from dispatch.workflow import flows as workflow_flows
+from dispatch.entity_type.models import EntityScopeEnum
 
 log = logging.getLogger(__name__)
 
