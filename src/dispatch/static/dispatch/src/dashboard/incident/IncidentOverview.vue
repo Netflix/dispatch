@@ -177,8 +177,11 @@ export default {
 
   methods: {
     update(data) {
-      this.items = filter(data, function (item) {
-        return !item.incident_type.exclude_from_metrics && !item.duplicates.length
+      this.items = data.filter(function (item) {
+        return (
+          !item.incident_type.exclude_from_metrics &&
+          !item.duplicates.filter((d) => data.includes(d)).length
+        )
       })
     },
     detailsSelected(event) {
