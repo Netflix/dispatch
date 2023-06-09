@@ -42,7 +42,7 @@
             <v-tab-item key="entities">
               <!-- <entities-tab :selected="_case" v-model="signal_instances" /> -->
             </v-tab-item>
-            <v-tab-item key="signals">
+            <v-tab-item key="signals" class="tab full-height">
               <signal-instance-card-viewer :caseId="_case.id" />
             </v-tab-item>
           </v-tabs-items>
