@@ -22,7 +22,14 @@
         <template v-slot:selection="{ attr, item, selected }">
           <v-menu v-model="menu" bottom right transition="scale-transition" origin="top left">
             <template v-slot:activator="{ on }">
-              <v-chip v-bind="attr" :input-value="selected" pill v-on="on">
+              <v-chip
+                v-bind="attr"
+                :input-value="selected"
+                pill
+                v-on="on"
+                close
+                @click:close="remove(item)"
+              >
                 {{ item.name }}
               </v-chip>
             </template>
@@ -149,11 +156,14 @@ export default {
   watch: {
     createdFilter: function (newVal) {
       this.items.push(newVal)
-      this.searchFilters = [newVal]
+      this.searchFilters.push(newVal)
     },
   },
 
   methods: {
+    remove(item) {
+      this.searchFilters.splice(this.searchFilters.indexOf(item), 1)
+    },
     fetchData() {
       this.error = null
       this.loading = "error"
