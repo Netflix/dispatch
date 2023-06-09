@@ -95,16 +95,49 @@
             <v-textarea outlined name="input-7-4" label="Resolution" value=""></v-textarea>
           </div>
           <v-divider class="mt-6 mb-6"></v-divider>
-          <div>
-            <b>Timestamps</b>
-          </div>
-          <div>Created at {{ _case.created_at | formatRelativeDate }}</div>
-          <div>Triaged at {{ _case.triage_at | formatRelativeDate }}</div>
-          <div>Resolved at {{ _case.closed_at | formatRelativeDate }}</div>
-          <div>Escalated at {{ _case.escalated_at | formatRelativeDate }}</div>
-          <div>
-            <b>Metrics</b>
-          </div>
+
+          <v-row no-gutters justify="space-between" align="center" class="pb-6">
+            <v-col cols="auto">
+              <div><v-icon dense small class="mr-2"> mdi-calendar-clock </v-icon>Created</div>
+            </v-col>
+            <v-col cols="auto">
+              <div>
+                {{ _case.created_at }}
+              </div>
+            </v-col>
+          </v-row>
+
+          <v-row no-gutters justify="space-between" align="center" class="pb-6">
+            <v-col cols="auto">
+              <div><v-icon dense small class="mr-2"> mdi-timer-sand </v-icon>Triaged</div>
+            </v-col>
+            <v-col cols="auto">
+              <div>{{ _case.triage_at | formatRelativeDate }}</div>
+            </v-col>
+          </v-row>
+
+          <v-row no-gutters justify="space-between" align="center" class="pb-6">
+            <v-col cols="auto">
+              <div>
+                <v-icon dense small class="mr-2" color="green"> mdi-check-all </v-icon>Resolved
+              </div>
+            </v-col>
+            <v-col cols="auto">
+              <div>{{ _case.closed_at | formatRelativeDate }}</div>
+            </v-col>
+          </v-row>
+
+          <v-row no-gutters justify="space-between" align="center">
+            <v-col cols="auto">
+              <div><v-icon dense small class="mr-2" color="red"> mdi-fire </v-icon>Escalated</div>
+            </v-col>
+            <v-col cols="auto">
+              <div>{{ _case.escalated_at | formatRelativeDate }}</div>
+            </v-col>
+          </v-row>
+          <v-divider class="mt-6 mb-6"></v-divider>
+
+          <CaseTimeline :events="_case.events" :caseName="_case.name" />
         </v-card>
       </v-col>
     </v-row>
@@ -112,6 +145,7 @@
 </template>
 
 <script>
+import CaseTimeline from "@/case/CaseTimeline.vue"
 import CaseTimelineTab from "@/case/TimelineTab.vue"
 import NewParticipant from "@/case/NewParticipant.vue"
 import NewParticipantSelect from "@/case/NewParticipantSelect.vue"
@@ -123,6 +157,7 @@ import EntitiesTab from "@/entity/EntitiesTab.vue"
 export default {
   name: "CasePage",
   components: {
+    CaseTimeline,
     CaseTimelineTab,
     NewParticipant,
     NewParticipantSelect,

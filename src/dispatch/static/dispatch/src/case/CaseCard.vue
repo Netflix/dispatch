@@ -47,6 +47,8 @@
 </template>
 
 <script>
+import CaseApi from "@/case/api"
+
 export default {
   name: "CaseCardFinished",
   props: {
@@ -58,7 +60,9 @@ export default {
   },
   methods: {
     openEditSheet(item) {
-      this.$router.push({ name: "CasePage", params: { name: item.name, _case: item } })
+      return CaseApi.get(item.id).then((response) => {
+        this.$router.push({ name: "CasePage", params: { name: item.name, _case: response.data } })
+      })
     },
     getPriorityColor(priority) {
       if (priority) {
