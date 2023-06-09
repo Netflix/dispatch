@@ -37,8 +37,6 @@ class MSTeamsClient:
         app = msal.ConfidentialClientApplication(
             self.client_id, authority=self.authority, client_credential=self.client_credential
         )
-
-        result = None
         """
         Contains the scopes requested. For confidential clients, this should use the format
         similar to {Application ID URI}/.default to indicate that the scopes being requested
@@ -47,6 +45,7 @@ class MSTeamsClient:
         For custom web APIs, {Application ID URI} is defined under the Expose an API section
         in App registrations in the Azure portal.
         """
+        result = None
         logger.info("Completed app initialization")
         result = app.acquire_token_silent([self.scope], account=None)
         logger.info(f"Masked Result is {result}")

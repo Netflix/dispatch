@@ -3,7 +3,7 @@ from dispatch.plugins.dispatch_microsoft_teams import conference as teams_plugin
 from typing import List
 
 
-from .config import TeamsConfiguration
+from .config import MicrosoftTeamsConfiguration
 import logging
 from .client import MSTeamsClient
 from dispatch.decorators import apply, counter, timer
@@ -12,9 +12,9 @@ from dispatch.decorators import apply, counter, timer
 logger = logging.getLogger(__name__)
 
 
-class TeamsConferencePlugin(ConferencePlugin):
-    title = "Microsoft teams Plugin - Conference Management"
-    slug = "teams-conference"
+class MicrosoftTeamsConferencePlugin(ConferencePlugin):
+    title = "Microsoft Teams Plugin - Conference Management"
+    slug = "microsoft-teams-conference"
     description = "Uses MS Teams to manage conference meetings."
     version = teams_plugin.__version__
 
@@ -22,7 +22,7 @@ class TeamsConferencePlugin(ConferencePlugin):
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
-        self.configuration_schema = TeamsConfiguration
+        self.configuration_schema = MicrosoftTeamsConfiguration
 
     @apply(counter, exclude=["__init__"])
     @apply(timer, exclude=["__init__"])
@@ -45,4 +45,4 @@ class TeamsConferencePlugin(ConferencePlugin):
                 "challenge": "",
             }
         except Exception as e:
-            logger.error(f"There is an error in creatig meeting {e}")
+            logger.error(f"There was an error when attempting to create the meeting {e}")
