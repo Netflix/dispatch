@@ -25,25 +25,26 @@
     <v-divider class="mt-6 mb-6"></v-divider>
     <v-row>
       <v-col cols="9">
-        <v-card>
-          <v-tabs v-model="tab" background-color="grey lighten-4" hide-slider>
-            <v-tab key="main" class="tab">
-              <v-icon dense class="pr-2"> mdi-cube </v-icon>
-            </v-tab>
-            <v-tab key="entities" class="tab"> Entities </v-tab>
-            <v-tab key="signals" class="tab">
+        <v-card class="rounded-b-0 rounded-lg">
+          <v-tabs
+            v-model="tab"
+            class="rounded-b-0 rounded-lg"
+            background-color="grey lighten-4"
+            hide-slider
+          >
+            <v-tab key="signals" class="tab rounded-b-0 rounded-lg">
               <v-icon dense small class="pr-2"> mdi-broadcast </v-icon> Signals
+            </v-tab>
+            <v-tab key="entities" class="tab rounded-b-0 rounded-lg">
+              <v-icon dense small class="pr-2"> mdi-account-group </v-icon> Entities
             </v-tab>
           </v-tabs>
           <v-tabs-items v-model="tab">
-            <v-tab-item key="main">
-              <!-- <entities-tab :selected="_case" v-model="signal_instances" /> -->
+            <v-tab-item key="signals" class="tab full-height">
+              <signal-instance-card-viewer :caseId="_case.id" />
             </v-tab-item>
             <v-tab-item key="entities">
               <!-- <entities-tab :selected="_case" v-model="signal_instances" /> -->
-            </v-tab-item>
-            <v-tab-item key="signals" class="tab full-height">
-              <signal-instance-card-viewer :caseId="_case.id" />
             </v-tab-item>
           </v-tabs-items>
         </v-card>
