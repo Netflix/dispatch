@@ -24,7 +24,6 @@
             pill
             v-on="on"
             close
-            @click="select"
             @click:close="remove(item)"
           >
             {{ item.name }}

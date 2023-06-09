@@ -62,9 +62,7 @@ def create(*, db_session: Session, entity_type_in: EntityTypeCreate) -> EntityTy
 
     signals = []
     for signal in entity_type_in.signals:
-        signal = signal_service.get(
-            db_session=db_session, project_id=project.id, signal_id=signal.id
-        )
+        signal = signal_service.get(db_session=db_session, signal_id=signal.id)
         signals.append(signal)
 
     entity_type.signals = signals
