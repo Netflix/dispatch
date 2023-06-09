@@ -275,9 +275,7 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
 
     entity_types = []
     for e in signal_in.entity_types:
-        entity_type = entity_type_service.get_by_name_or_raise(
-            db_session=db_session, project_id=project.id, entity_type_in=e
-        )
+        entity_type = entity_type_service.get(db_session=db_session, entity_type_id=e.id)
         entity_types.append(entity_type)
 
     signal.entity_types = entity_types
@@ -358,9 +356,7 @@ def update(*, db_session: Session, signal: Signal, signal_in: SignalUpdate) -> S
 
     entity_types = []
     for e in signal_in.entity_types:
-        entity_type = entity_type_service.get_by_name_or_raise(
-            db_session=db_session, project_id=signal.project.id, entity_type_in=e
-        )
+        entity_type = entity_type_service.get(db_session=db_session, entity_type_id=e.id)
         entity_types.append(entity_type)
 
     signal.entity_types = entity_types
