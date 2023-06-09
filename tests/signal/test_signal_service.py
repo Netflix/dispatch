@@ -61,7 +61,7 @@ def test_filter_actions_default_deduplicate(session, signal, project):
 
     entity_type = EntityType(
         name="default_dedupe",
-        field="id",
+        jpath="id",
         regular_expression=None,
         project=project,
     )
@@ -126,7 +126,7 @@ def test_filter_actions_deduplicate_different_entities(session, signal, project)
 
     entity_type_0 = EntityType(
         name="dedupe2-0",
-        field="id",
+        jpath="id",
         regular_expression=None,
         project=project,
     )
@@ -179,7 +179,7 @@ def test_filter_actions_deduplicate_different_entities_types(session, signal, pr
 
     entity_type_0 = EntityType(
         name="dedupe0-0",
-        field="id",
+        jpath="id",
         regular_expression=None,
         project=project,
     )
@@ -193,7 +193,7 @@ def test_filter_actions_deduplicate_different_entities_types(session, signal, pr
 
     entity_type_1 = EntityType(
         name="dedupe0-1",
-        field="id",
+        jpath="id",
         regular_expression=None,
         project=project,
     )
@@ -237,7 +237,7 @@ def test_filter_actions_deduplicate(session, signal, project):
 
     entity_type = EntityType(
         name="dedupe1",
-        field="id",
+        jpath="id",
         regular_expression=None,
         project=project,
     )
@@ -287,7 +287,7 @@ def test_filter_actions_snooze(session, entity, signal, project):
 
     entity_type = EntityType(
         name="test",
-        field="id",
+        jpath="id",
         regular_expression=None,
         project=project,
     )
@@ -331,7 +331,7 @@ def test_filter_actions_snooze_expired(session, entity, signal, project):
 
     entity_type = EntityType(
         name="test",
-        field="id",
+        jpath="id",
         regular_expression=None,
         project=project,
     )

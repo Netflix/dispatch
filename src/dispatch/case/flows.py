@@ -280,10 +280,12 @@ def case_new_create_flow(
                         case_id=case.id,
                         add_to_conversation=False,
                     )
+                # explicitly add the assignee to the conversation
+                all_participants = individual_participants + [case.assignee.individual.email]
                 conversation_plugin.instance.add_to_thread(
                     case.conversation.channel_id,
                     case.conversation.thread_id,
-                    individual_participants,
+                    all_participants,
                 )
                 event_service.log_case_event(
                     db_session=db_session,

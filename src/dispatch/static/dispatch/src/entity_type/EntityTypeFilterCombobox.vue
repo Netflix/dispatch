@@ -24,7 +24,6 @@
             pill
             v-on="on"
             close
-            @click="select"
             @click:close="remove(item)"
           >
             {{ item.name }}
@@ -199,6 +198,7 @@ export default {
           ...filterOptions,
           filters: {
             project: [this.project],
+            scope: ["multiple"],
           },
         }
         filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
