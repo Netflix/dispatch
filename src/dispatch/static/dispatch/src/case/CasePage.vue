@@ -55,12 +55,21 @@
               <div class="pb-6">Assignee</div>
             </v-col>
             <v-col cols="auto">
-              <new-participant :participant="_case.assignee" />
+              <new-participant-select :project="_case.project" :participant="_case.assignee" />
             </v-col>
           </v-row>
-          <div class="pb-6">
-            Reporter {{ _case.reporter ? _case.reporter.individual.name : "N/A" }}
-          </div>
+          <v-row no-gutters justify="space-between" align="center">
+            <v-col cols="auto">
+              <div class="pb-6">Reporter</div>
+            </v-col>
+            <v-col cols="auto">
+              <new-participant-select
+                :project="_case.project"
+                :label="Reporter"
+                :participant="_case.assignee"
+              />
+            </v-col>
+          </v-row>
           <v-row no-gutters justify="space-between" align="center">
             <v-col cols="auto">
               <div class="pb-6">Status</div>
@@ -105,6 +114,7 @@
 <script>
 import CaseTimelineTab from "@/case/TimelineTab.vue"
 import NewParticipant from "@/case/NewParticipant.vue"
+import NewParticipantSelect from "@/case/NewParticipantSelect.vue"
 import NewCasePrioritySelect from "@/case/priority/NewCasePrioritySelect.vue"
 import SignalInstanceTab from "@/signal/SignalInstanceTab.vue"
 import SignalInstanceCardViewer from "@/signal/SignalInstanceCardViewer.vue"
@@ -115,6 +125,7 @@ export default {
   components: {
     CaseTimelineTab,
     NewParticipant,
+    NewParticipantSelect,
     NewCasePrioritySelect,
     SignalInstanceTab,
     SignalInstanceCardViewer,
