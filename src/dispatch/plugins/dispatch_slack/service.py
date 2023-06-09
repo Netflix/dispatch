@@ -87,6 +87,12 @@ def list_conversation_messages(client: WebClient, conversation_id: str, **kwargs
 
 
 @functools.lru_cache()
+def get_domain(client: WebClient) -> str:
+    """Gets the team's Slack domain."""
+    return make_call(client, SlackAPIGetEndpoints.team_info)["team"]["domain"]
+
+
+@functools.lru_cache()
 def get_user_info_by_id(client: WebClient, user_id: str) -> dict:
     """Gets profile information about a user by id."""
     return make_call(client, SlackAPIGetEndpoints.users_info, user=user_id)["user"]
@@ -185,12 +191,10 @@ def create_conversation(client: WebClient, name: str, is_private: bool = False) 
         is_private=is_private,
     )["channel"]
 
-    domain = make_call(client, SlackAPIGetEndpoints.team_info)["team"]["domain"]
-
     return {
         "id": response["id"],
         "name": response["name"],
-        "weblink": f"https://{domain}.slack.com/app_redirect?channel={response['id']}",
+        "weblink": f"https://{get_domain(client)}.slack.com/app_redirect?channel={response['id']}",
     }
 
 
