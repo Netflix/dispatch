@@ -3,6 +3,7 @@ import logging
 from datetime import datetime, timedelta
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from sqlalchemy.orm import Query, Session
 from typing import List, Optional
 
 from dispatch.auth.models import DispatchUser
@@ -16,6 +17,7 @@ from dispatch.participant import flows as participant_flows
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.project import service as project_service
 from dispatch.service import flows as service_flows
+from dispatch.signal.models import Signal, SignalInstance
 from dispatch.tag import service as tag_service
 
 from .enums import CaseStatus
@@ -42,6 +44,16 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Case]:
         .filter(Case.project_id == project_id)
         .filter(Case.name == name)
         .first()
+    )
+
+
+def get_case_signal_instances(*, db_session: Session, case_id: int) -> Query:
+    """Returns all signal instances for a given case id."""
+    return (
+        db_session.query(SignalInstance, Signal)
+        .join(Signal)
+        .filter(SignalInstance.case_id == case_id)
+        .order_by(SignalInstance.created_at)
     )
 
 

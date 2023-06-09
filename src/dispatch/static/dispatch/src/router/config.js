@@ -184,7 +184,7 @@ export const protectedRoute = [
           component: () => import("@/case/Table.vue"),
           children: [
             {
-              path: "/:organization/cases/:name",
+              path: ":name",
               name: "CaseTableEdit",
               component: () => import("@/case/EditSheet.vue"),
               props: true,
@@ -193,6 +193,13 @@ export const protectedRoute = [
               },
             },
           ],
+        },
+        {
+          path: "/:organization/cases/:name/page",
+          name: "CasePage",
+          meta: { title: "Page" },
+          component: () => import("@/case/CasePage.vue"),
+          props: true,
         },
       ],
     },
@@ -319,7 +326,11 @@ export const protectedRoute = [
         {
           path: "members",
           name: "OrganizationMemberTable",
-          meta: { title: "Members", subMenu: "organization", group: "organization" },
+          meta: {
+            title: "Members",
+            subMenu: "organization",
+            group: "organization",
+          },
           component: () => import("@/organization/OrganizationMemberTable.vue"),
         },
         {
@@ -341,13 +352,21 @@ export const protectedRoute = [
           {
             path: "notifications",
             name: "NotificationTable",
-            meta: { title: "Notifications", subMenu: "project", group: "general" },
+            meta: {
+              title: "Notifications",
+              subMenu: "project",
+              group: "general",
+            },
             component: () => import("@/notification/Table.vue"),
           },
           {
             path: "searchFilters",
             name: "SearchFilterTable",
-            meta: { title: "Search Filters", subMenu: "project", group: "general" },
+            meta: {
+              title: "Search Filters",
+              subMenu: "project",
+              group: "general",
+            },
             component: () => import("@/search/Table.vue"),
           },
           {
@@ -365,19 +384,31 @@ export const protectedRoute = [
           {
             path: "incidentPriorities",
             name: "IncidentPriorityTable",
-            meta: { title: "Priorities", subMenu: "project", group: "incident" },
+            meta: {
+              title: "Priorities",
+              subMenu: "project",
+              group: "incident",
+            },
             component: () => import("@/incident/priority/Table.vue"),
           },
           {
             path: "incidentSeverities",
             name: "IncidentSeverityTable",
-            meta: { title: "Severities", subMenu: "project", group: "incident" },
+            meta: {
+              title: "Severities",
+              subMenu: "project",
+              group: "incident",
+            },
             component: () => import("@/incident/severity/Table.vue"),
           },
           {
             path: "incidentCostTypes",
             name: "IncidentCostTypesTable",
-            meta: { title: "Cost Types", subMenu: "project", group: "incident" },
+            meta: {
+              title: "Cost Types",
+              subMenu: "project",
+              group: "incident",
+            },
             component: () => import("@/incident_cost_type/Table.vue"),
           },
           {
@@ -400,21 +431,19 @@ export const protectedRoute = [
           },
           {
             path: "caseSeverities",
-            name: "CaseSeverityTable",
+            name: "caseSeverityTable",
             meta: { title: "Severities", subMenu: "project", group: "case" },
             component: () => import("@/case/severity/Table.vue"),
           },
           {
             path: "signals",
-            name: "SignalDefinitionTable",
-            meta: { title: "Definitions", subMenu: "project", group: "signal" },
+            name: "SignalTable",
+            meta: {
+              title: "Signal Definitions",
+              subMenu: "project",
+              group: "case",
+            },
             component: () => import("@/signal/Table.vue"),
-          },
-          {
-            path: "entity/types",
-            name: "EntityTypeTable",
-            meta: { title: "Entity Types", subMenu: "project", group: "signal" },
-            component: () => import("@/entity_type/Table.vue"),
           },
           {
             path: "source/types",
@@ -425,37 +454,61 @@ export const protectedRoute = [
           {
             path: "source/environments",
             name: "SourceEnvironmentTable",
-            meta: { title: "Source Environments", subMenu: "project", group: "data" },
+            meta: {
+              title: "Source Environments",
+              subMenu: "project",
+              group: "data",
+            },
             component: () => import("@/data/source/environment/Table.vue"),
           },
           {
             path: "source/statuses",
             name: "SourceStatusTable",
-            meta: { title: "Source Statuses", subMenu: "project", group: "data" },
+            meta: {
+              title: "Source Statuses",
+              subMenu: "project",
+              group: "data",
+            },
             component: () => import("@/data/source/status/Table.vue"),
           },
           {
             path: "source/transports",
             name: "SourceTransportTable",
-            meta: { title: "Source Transports", subMenu: "project", group: "data" },
+            meta: {
+              title: "Source Transports",
+              subMenu: "project",
+              group: "data",
+            },
             component: () => import("@/data/source/transport/Table.vue"),
           },
           {
             path: "source/dataFormats",
             name: "SourceDataFormatTable",
-            meta: { title: "Source Data Formats", subMenu: "project", group: "data" },
+            meta: {
+              title: "Source Data Formats",
+              subMenu: "project",
+              group: "data",
+            },
             component: () => import("@/data/source/dataFormat/Table.vue"),
           },
           {
             path: "templates",
             name: "TemplateTable",
-            meta: { title: "Templates", subMenu: "project", group: "documentation" },
+            meta: {
+              title: "Templates",
+              subMenu: "project",
+              group: "documentation",
+            },
             component: () => import("@/document/template/TemplateTable.vue"),
           },
           {
             path: "references",
             name: "ReferenceTable",
-            meta: { title: "References", subMenu: "project", group: "documentation" },
+            meta: {
+              title: "References",
+              subMenu: "project",
+              group: "documentation",
+            },
             component: () => import("@/document/reference/ReferenceTable.vue"),
           },
           {
@@ -467,7 +520,11 @@ export const protectedRoute = [
           {
             path: "individuals",
             name: "IndividualTable",
-            meta: { title: "Individuals", subMenu: "project", group: "contact" },
+            meta: {
+              title: "Individuals",
+              subMenu: "project",
+              group: "contact",
+            },
             component: () => import("@/individual/Table.vue"),
           },
           {
@@ -479,7 +536,11 @@ export const protectedRoute = [
           {
             path: "tagTypes",
             name: "TagTypeTable",
-            meta: { title: "Tag Types", subMenu: "project", group: "knowledge" },
+            meta: {
+              title: "Tag Types",
+              subMenu: "project",
+              group: "knowledge",
+            },
             component: () => import("@/tag_type/Table.vue"),
           },
           {
@@ -497,7 +558,11 @@ export const protectedRoute = [
           {
             path: "definitions",
             name: "DefinitionTable",
-            meta: { title: "Definitions", subMenu: "project", group: "knowledge" },
+            meta: {
+              title: "Definitions",
+              subMenu: "project",
+              group: "knowledge",
+            },
             component: () => import("@/definition/Table.vue"),
           },
           {

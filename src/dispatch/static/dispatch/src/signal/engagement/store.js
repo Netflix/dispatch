@@ -28,7 +28,6 @@ const getters = {
 const actions = {
   save({ commit, state }) {
     commit("SET_SELECTED_LOADING", true)
-    console.log("%O", state.selected)
     if (!state.selected.id) {
       return SignalEngagementApi.create(state.selected)
         .then((resp) => {

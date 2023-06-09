@@ -13,6 +13,10 @@ export default {
     return API.get(`/${resource}/${caseId}`)
   },
 
+  getAllSignalInstances(caseId) {
+    return API.get(`/${resource}/${caseId}/signal_instances`)
+  },
+
   create(payload) {
     return API.post(`/${resource}`, payload)
   },

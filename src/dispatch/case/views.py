@@ -36,7 +36,7 @@ from .flows import (
     case_update_flow,
 )
 from .models import Case, CaseCreate, CasePagination, CaseRead, CaseUpdate
-from .service import create, delete, get, update
+from .service import create, delete, get, update, get_case_signal_instances
 
 
 log = logging.getLogger(__name__)
@@ -71,6 +71,22 @@ def get_case(
 ):
     """Retrieves the details of a single case."""
     return current_case
+
+
+@router.get(
+    "/{case_id}/signal_instances",
+    summary="Retrieves all the instances associated with a Case.",
+    response_model=None,
+    dependencies=[Depends(PermissionsDependency([CaseViewPermission]))],
+)
+def get_all_case_signal_instances(
+    case_id: PrimaryKey,
+    db_session: DbSession,
+):
+    """Retrieves the details of a single case."""
+    instances = get_case_signal_instances(case_id=case_id, db_session=db_session).all()
+    print(f"{instances=}")
+    return {"instances": instances}
 
 
 @router.get("", summary="Retrieves a list of cases.")

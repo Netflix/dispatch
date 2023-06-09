@@ -17,6 +17,7 @@ from dispatch.auth.models import DispatchUser
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.case.enums import CaseStatus
 from dispatch.case.models import Case
+from dispatch.case.service import get_case_signal_instances
 from dispatch.entity.models import Entity
 from dispatch.entity_type.models import EntityType
 from dispatch.entity import service as entity_service
@@ -32,7 +33,6 @@ from dispatch.plugins.dispatch_slack.case.enums import (
     SignalEngagementActions,
 )
 from dispatch.signal.models import (
-    Signal,
     SignalEngagement,
     SignalInstance,
     assoc_signal_instance_entities,
@@ -144,13 +144,7 @@ class EntityGroup(NamedTuple):
 def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -> list[Message]:
     """Creates the signal instance message."""
 
-    signal_instances_query = (
-        db_session.query(SignalInstance, Signal)
-        .join(Signal)
-        .with_entities(SignalInstance.id, Signal)
-        .filter(SignalInstance.case_id == case_id)
-        .order_by(SignalInstance.created_at)
-    )
+    signal_instances_query = get_case_signal_instances(case_id=case_id, db_session=db_session)
 
     (first_instance_id, first_instance_signal) = signal_instances_query.first()
     num_of_instances = signal_instances_query.count()

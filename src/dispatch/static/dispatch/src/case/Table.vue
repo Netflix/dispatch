@@ -1,35 +1,64 @@
 <template>
   <v-container fluid>
+    <v-row class="align-center">
+      <v-col cols="6">
+        <div class="headline pl-4">Cases</div>
+      </v-col>
+      <v-col cols="6" class="text-right">
+        <v-row align="center" class="mt-2">
+          <v-col cols="12" class="d-flex align-center justify-end">
+            <!-- Expandable Search Bar -->
+            <v-text-field
+              v-model="table.options.q"
+              prepend-inner-icon="mdi-card-search"
+              class="pr-4"
+              label="Search cases"
+              hide-details
+              clearable
+              outlined
+              rows="1"
+              rounded
+              style="max-height: 200px"
+            />
+
+            <!-- Filter Dialog -->
+            <table-filter-dialog :projects="defaultUserProjects" />
+
+            <!-- Export Dialog -->
+            <table-export-dialog />
+
+            <!-- New Button -->
+            <v-btn color="info" class="ml-2" @click="showNewSheet()">New</v-btn>
+          </v-col>
+        </v-row>
+      </v-col>
+    </v-row>
+    <v-divider class="mt-6"></v-divider>
+    <v-col cols="6">
+      <div class="subtitle pl-6">
+        <v-badge bordered color="red" dot left offset-x="-10" offset-y="12">
+          <b>Open cases</b>
+        </v-badge>
+      </div>
+    </v-col>
+    <case-card-iterator
+      :items="openCases"
+      :items-per-page="3"
+      page.sync="page"
+    ></case-card-iterator>
+    <div class="pl-6 grey--text">View all 74 open cases...</div>
     <div v-if="showEditSheet">
       <router-view />
     </div>
-    <v-row no-gutters>
+    <v-row no-gutters class="pt-16">
       <new-sheet />
       <workflow-run-modal />
       <escalate-dialog />
       <delete-dialog />
-      <v-col>
-        <div class="headline">Cases</div>
-      </v-col>
-      <v-col class="text-right">
-        <table-filter-dialog :projects="defaultUserProjects" />
-        <table-export-dialog />
-        <v-btn color="info" class="ml-2" @click="showNewSheet()"> New </v-btn>
-      </v-col>
     </v-row>
     <v-row no-gutters>
       <v-col>
         <v-card elevation="0">
-          <v-card-title>
-            <v-text-field
-              v-model="q"
-              append-icon="search"
-              label="Search"
-              single-line
-              hide-details
-              clearable
-            />
-          </v-card-title>
           <v-data-table
             :headers="headers"
             :items="items"
@@ -45,6 +74,7 @@
             v-model="selected"
             loading-text="Loading... Please wait"
             show-select
+            @click:row="showCaseEditSheet"
           >
             <template v-slot:item.case_severity.name="{ item }">
               <case-severity :severity="item.case_severity.name" />
@@ -126,6 +156,8 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
 import BulkEditSheet from "@/case/BulkEditSheet.vue"
+import CaseCard from "@/case/CaseCard.vue"
+import CaseCardIterator from "@/case/CaseCardIterator.vue"
 import CaseParticipant from "@/case/Participant.vue"
 import CasePriority from "@/case/priority/CasePriority.vue"
 import CaseSeverity from "@/case/severity/CaseSeverity.vue"
@@ -142,6 +174,8 @@ export default {
   name: "CaseTable",
 
   components: {
+    CaseCard,
+    CaseCardIterator,
     BulkEditSheet,
     CaseParticipant,
     CasePriority,
@@ -175,9 +209,16 @@ export default {
         { text: "Assignee", value: "assignee", sortable: true },
         { text: "Reported At", value: "reported_at" },
         { text: "Closed At", value: "closed_at" },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        {
+          text: "",
+          value: "data-table-actions",
+          sortable: false,
+          align: "end",
+        },
       ],
       showEditSheet: false,
+      windowWidth: window.innerWidth,
+      searchExpanded: false,
     }
   },
 
@@ -202,6 +243,7 @@ export default {
       "table.rows.items",
       "table.rows.selected",
       "table.rows.total",
+      "table",
     ]),
     ...mapFields("route", ["query"]),
     ...mapFields("auth", ["currentUser.projects"]),
@@ -216,6 +258,24 @@ export default {
         return d
       },
     },
+    openCases() {
+      return this.items.filter((item) => item.status !== "Closed")
+    },
+    firstThreeOpenCases() {
+      // return the first three items from the openCases array
+      return this.openCases.slice(0, 3)
+    },
+    visibleCases() {
+      // Set the width of each card
+      const cardWidth = 300
+      // Compute the number of cards that will fit in the viewport
+      const numberOfCards = Math.floor(this.windowWidth / cardWidth)
+
+      console.log("numberOfCards", numberOfCards)
+
+      // Return the slice of openCases that fits
+      return this.openCases.slice(0, numberOfCards)
+    },
   },
 
   methods: {
@@ -226,6 +286,12 @@ export default {
       "showDeleteDialog",
       "showEscalateDialog",
     ]),
+    showCaseEditSheet(item) {
+      this.$router.push({ name: "CaseTableEdit", params: { name: item.name } })
+    },
+    handleResize() {
+      this.windowWidth = window.innerWidth
+    },
   },
 
   watch: {
@@ -243,6 +309,8 @@ export default {
       ...RouterUtils.deserializeFilters(this.query),
       project: this.defaultUserProjects,
     }
+
+    window.addEventListener("resize", this.handleResize)
 
     this.getAll()
 
@@ -276,5 +344,15 @@ export default {
       }
     )
   },
+
+  destroyed() {
+    window.removeEventListener("resize", this.handleResize)
+  },
 }
 </script>
+
+<style scoped>
+.align-center {
+  align-items: center;
+}
+</style>
