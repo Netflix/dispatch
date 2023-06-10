@@ -336,15 +336,15 @@ def find_entities(
 
         Args:
             signal_instance: The SignalInstance to extract entities from.
-            entity_type_pairs: A list of (entity_type, entity_regex, field) tuples to search for.
+            entity_type_pairs: A list of (entity_type, entity_regex, jpath) tuples to search for.
 
         Yields:
             EntityCreate: An entity found in the SignalInstance.
         """
-        for entity_type, entity_regex, field in entity_type_pairs:
-            if field:
+        for entity_type, entity_regex, jpath in entity_type_pairs:
+            if jpath:
                 try:
-                    matches = field.find(signal_instance.raw)
+                    matches = jpath.find(signal_instance.raw)
                     for match in matches:
                         if isinstance(match.value, str):
                             if entity_regex is None:
@@ -364,22 +364,22 @@ def find_entities(
                     # field not found in signal_instance.raw
                     pass
 
-    # Create a list of (entity type, regular expression, field) tuples
+    # Create a list of (entity type, regular expression, jpath) tuples
     entity_type_pairs = [
         (
             type,
             re.compile(type.regular_expression) if type.regular_expression else None,
-            jsonpath_ng.parse(type.field) if type.field else None,
+            jsonpath_ng.parse(type.jpath) if type.jpath else None,
         )
         for type in entity_types
-        if isinstance(type.regular_expression, str) or type.field is not None
+        if isinstance(type.regular_expression, str) or type.jpath is not None
     ]
 
     # Filter the entity type pairs based on the field
     filtered_entity_type_pairs = [
-        (entity_type, entity_regex, field)
-        for entity_type, entity_regex, field in entity_type_pairs
-        if not field
+        (entity_type, entity_regex, jpath)
+        for entity_type, entity_regex, jpath in entity_type_pairs
+        if not jpath
     ]
 
     # Use the recursive search function to find entities in the raw data
