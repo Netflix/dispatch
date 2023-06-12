@@ -234,7 +234,7 @@ export default {
       "selected.project",
       "selected.regular_expression",
       "selected.jpath",
-      "loading",
+      "selected.loading",
     ]),
     ...mapFields("route", ["query"]),
   },
