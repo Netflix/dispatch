@@ -48,7 +48,7 @@ class JiraConfiguration(BaseConfigurationModel):
         title="Username", description="Username to use to authenticate to Jira API."
     )
     password: SecretStr = Field(
-        title="Password", description="Password to authenticate to Jira API."
+        title="Password", description="Password to use to authenticate to Jira API."
     )
     api_url: HttpUrl = Field(
         title="API URL", description="This URL is used for communication with API."
