@@ -4,8 +4,11 @@
 :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
 :license: Apache, see LICENSE for more details.
 """
-from enum import Enum
 from typing import Any
+import json
+
+import requests
+from requests.auth import HTTPBasicAuth
 
 from pydantic import Field, SecretStr, HttpUrl
 
@@ -14,6 +17,7 @@ from jira import JIRA
 
 from dispatch.config import BaseConfigurationModel
 from dispatch.decorators import apply, counter, timer
+from dispatch.enums import DispatchEnum
 from dispatch.plugins import dispatch_jira as jira_plugin
 from dispatch.plugins.bases import TicketPlugin
 
@@ -24,7 +28,7 @@ from .templates import (
 )
 
 
-class HostingType(str, Enum):
+class HostingType(DispatchEnum):
     """Type of Jira deployment."""
 
     cloud = "cloud"
@@ -65,9 +69,31 @@ def get_email_username(email: str) -> str:
     return email
 
 
+def get_cloud_user_account_id_by_email(configuration: JiraConfiguration, user_email: str) -> dict:
+    """Gets the cloud Jira user account id by email address."""
+    endpoint = "groupuserpicker"
+    url = f"{configuration.api_url}/rest/api/2/{endpoint}?query={user_email}&maxResults=1"
+    auth = (configuration.username, configuration.password.get_secret_value())
+
+    headers = {"Accept": "application/json"}
+    response = requests.request("GET", url, headers=headers, auth=HTTPBasicAuth(*auth))
+
+    users = json.loads(response.text)
+    if users["users"]["users"]:
+        return users["users"]["users"][0]["accountId"]
+
+    # we get and return the account id of the default Jira account
+    url = (
+        f"{configuration.api_url}/rest/api/2/{endpoint}?query={configuration.username}&maxResults=1"
+    )
+    response = requests.request("GET", url, headers=headers, auth=HTTPBasicAuth(*auth))
+    users = json.loads(response.text)
+    return users["users"]["users"][0]["accountId"]
+
+
 def get_user_field(client: JIRA, configuration: JiraConfiguration, user_email: str) -> dict:
     """Returns correct Jira user field based on Jira hosting type."""
-    if configuration.hosting_type == "server":
+    if configuration.hosting_type == HostingType.server:
         username = get_email_username(user_email)
         users = client.search_users(user=username)
         for user in users:
@@ -77,21 +103,8 @@ def get_user_field(client: JIRA, configuration: JiraConfiguration, user_email: s
         # we default to the Jira user we use for managing issues
         # if we can't find the user in Jira
         return {"name": configuration.jira_username}
-    if configuration.hosting_type == "cloud":
-        import json
-        import requests
-        from requests.auth import HTTPBasicAuth
-
-        endpoint = "groupuserpicker"
-        url = f"{configuration.api_url}/rest/api/2/{endpoint}?query={user_email}&maxResults=1"
-        auth = (configuration.username, configuration.password.get_secret_value())
-
-        headers = {"Accept": "application/json"}
-        response = requests.request("GET", url, headers=headers, auth=HTTPBasicAuth(*auth))
-
-        users = json.loads(response.text)
-        user_account_id = users["users"]["users"][0]["accountId"]
-
+    if configuration.hosting_type == HostingType.cloud:
+        user_account_id = get_cloud_user_account_id_by_email(configuration, user_email)
         return {"id": user_account_id}
 
 
