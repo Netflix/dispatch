@@ -118,4 +118,4 @@ def delete_entity_type(db_session: DbSession, entity_type_id: PrimaryKey):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=[{"msg": "A entity type with this id does not exist."}],
         )
-    delete(db_session=db_session, entity_id=entity_type_id)
+    delete(db_session=db_session, entity_type_id=entity_type_id)
