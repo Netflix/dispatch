@@ -1580,8 +1580,6 @@ def handle_engagement_submission_event(
         _send_response(success=True)
         user.last_mfa_time = datetime.now()
         db_session.commit()
-
-        _resolve_case(case)
         return
     else:
         return _send_response(success=False)
