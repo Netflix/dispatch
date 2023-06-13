@@ -10,7 +10,7 @@ from typing import Any
 from pydantic import Field, SecretStr, HttpUrl
 
 from jinja2 import Template
-from jira import JIRA, User
+from jira import JIRA
 
 from dispatch.config import BaseConfigurationModel
 from dispatch.decorators import apply, counter, timer
@@ -34,14 +34,8 @@ class HostingType(str, Enum):
 class JiraConfiguration(BaseConfigurationModel):
     """Jira configuration description."""
 
-    api_url: HttpUrl = Field(
-        title="API URL", description="This URL is used for communication with API."
-    )
-    browser_url: HttpUrl = Field(
-        title="Browser URL", description="This URL is used to construct browser weblinks."
-    )
     default_project_id: str = Field(
-        title="Default Project ID", description="Defines the default Jira Project to use."
+        title="Default Project Id or Key", description="Defines the default Jira Project to use."
     )
     default_issue_type_name: str = Field(
         title="Default Issue Type Name",
@@ -54,7 +48,13 @@ class JiraConfiguration(BaseConfigurationModel):
         title="Username", description="Username to use to authenticate to Jira API."
     )
     password: SecretStr = Field(
-        title="Password", description="Password to use to authenticate to Jira API."
+        title="Password", description="Password to authenticate to Jira API."
+    )
+    api_url: HttpUrl = Field(
+        title="API URL", description="This URL is used for communication with API."
+    )
+    browser_url: HttpUrl = Field(
+        title="Browser URL", description="This URL is used to construct browser weblinks."
     )
 
 
@@ -65,9 +65,9 @@ def get_email_username(email: str) -> str:
     return email
 
 
-def get_user_field(client: JIRA, hosting_type: str, jira_username: str, user_email: str) -> dict:
+def get_user_field(client: JIRA, configuration: JiraConfiguration, user_email: str) -> dict:
     """Returns correct Jira user field based on Jira hosting type."""
-    if hosting_type == "server":
+    if configuration.hosting_type == "server":
         username = get_email_username(user_email)
         users = client.search_users(user=username)
         for user in users:
@@ -76,20 +76,23 @@ def get_user_field(client: JIRA, hosting_type: str, jira_username: str, user_ema
 
         # we default to the Jira user we use for managing issues
         # if we can't find the user in Jira
-        return {"name": jira_username}
-    if hosting_type == "cloud":
-        username = get_email_username(user_email)
-        user = next(
-            client._fetch_pages(
-                User,
-                None,
-                "user/search",
-                startAt=0,
-                maxResults=1,
-                params={"query": username},
-            )
-        )
-        return {"id": user.accountId}
+        return {"name": configuration.jira_username}
+    if configuration.hosting_type == "cloud":
+        import json
+        import requests
+        from requests.auth import HTTPBasicAuth
+
+        endpoint = "groupuserpicker"
+        url = f"{configuration.api_url}/rest/api/2/{endpoint}?query={user_email}&maxResults=1"
+        auth = (configuration.username, configuration.password.get_secret_value())
+
+        headers = {"Accept": "application/json"}
+        response = requests.request("GET", url, headers=headers, auth=HTTPBasicAuth(*auth))
+
+        users = json.loads(response.text)
+        user_account_id = users["users"]["users"][0]["accountId"]
+
+        return {"id": user_account_id}
 
 
 def process_plugin_metadata(plugin_metadata: dict):
@@ -110,10 +113,7 @@ def create_client(configuration: JiraConfiguration) -> JIRA:
     """Creates a Jira client."""
     return JIRA(
         configuration.api_url,
-        basic_auth=(
-            configuration.username,
-            configuration.password.get_secret_value(),
-        ),
+        basic_auth=(configuration.username, configuration.password.get_secret_value()),
     )
 
 
@@ -258,24 +258,27 @@ class JiraTicketPlugin(TicketPlugin):
         """Creates an incident Jira issue."""
         client = create_client(self.configuration)
 
-        assignee = get_user_field(
-            client, self.configuration.hosting_type, self.configuration.username, commander_email
-        )
-        reporter = get_user_field(
-            client, self.configuration.hosting_type, self.configuration.username, reporter_email
-        )
+        assignee = get_user_field(client, self.configuration, commander_email)
+        reporter = get_user_field(client, self.configuration, reporter_email)
 
         project_id, issue_type_name = process_plugin_metadata(incident_type_plugin_metadata)
 
         if not project_id:
             project_id = self.configuration.default_project_id
 
+        # NOTE: to support issue creation by project id or key
+        project = {"id": project_id}
+        if not isinstance(project_id, int):
+            project = {"key": project_id}
+
         if not issue_type_name:
             issue_type_name = self.configuration.default_issue_type_name
 
+        issuetype = {"name": issue_type_name}
+
         issue_fields = {
-            "project": {"id": project_id},
-            "issuetype": {"name": issue_type_name},
+            "project": project,
+            "issuetype": issuetype,
             "assignee": assignee,
             "reporter": reporter,
             "summary": title,
@@ -304,12 +307,8 @@ class JiraTicketPlugin(TicketPlugin):
         """Updates an incident Jira issue."""
         client = create_client(self.configuration)
 
-        assignee = get_user_field(
-            client, self.configuration.hosting_type, self.configuration.username, commander_email
-        )
-        reporter = get_user_field(
-            client, self.configuration.hosting_type, self.configuration.username, reporter_email
-        )
+        assignee = get_user_field(client, self.configuration, commander_email)
+        reporter = get_user_field(client, self.configuration, reporter_email)
 
         commander_username = get_email_username(commander_email)
 
@@ -344,25 +343,27 @@ class JiraTicketPlugin(TicketPlugin):
         """Creates a case Jira issue."""
         client = create_client(self.configuration)
 
-        assignee = get_user_field(
-            client, self.configuration.hosting_type, self.configuration.username, assignee_email
-        )
+        assignee = get_user_field(client, self.configuration, assignee_email)
         # TODO(mvilanova): enable reporter email and replace assignee email
-        reporter = get_user_field(
-            client, self.configuration.hosting_type, self.configuration.username, assignee_email
-        )
+        reporter = get_user_field(client, self.configuration, assignee_email)
 
         project_id, issue_type_name = process_plugin_metadata(case_type_plugin_metadata)
 
         if not project_id:
             project_id = self.configuration.default_project_id
 
+        project = {"id": project_id}
+        if not isinstance(project_id, int):
+            project = {"key": project_id}
+
         if not issue_type_name:
             issue_type_name = self.configuration.default_issue_type_name
 
+        issuetype = {"name": issue_type_name}
+
         issue_fields = {
-            "project": {"id": project_id},
-            "issuetype": {"name": issue_type_name},
+            "project": project,
+            "issuetype": issuetype,
             "assignee": assignee,
             "reporter": reporter,
             "summary": title,
@@ -389,13 +390,9 @@ class JiraTicketPlugin(TicketPlugin):
         """Updates a case Jira issue."""
         client = create_client(self.configuration)
 
-        assignee = get_user_field(
-            client, self.configuration.hosting_type, self.configuration.username, assignee_email
-        )
+        assignee = get_user_field(client, self.configuration, assignee_email)
         # TODO(mvilanova): enable reporter email and replace assignee email
-        reporter = get_user_field(
-            client, self.configuration.hosting_type, self.configuration.username, assignee_email
-        )
+        reporter = get_user_field(client, self.configuration, assignee_email)
 
         assignee_username = get_email_username(assignee_email)
 
