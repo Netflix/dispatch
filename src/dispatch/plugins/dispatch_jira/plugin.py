@@ -102,7 +102,7 @@ def get_user_field(client: JIRA, configuration: JiraConfiguration, user_email: s
 
         # we default to the Jira user we use for managing issues
         # if we can't find the user in Jira
-        return {"name": configuration.jira_username}
+        return {"name": configuration.username}
     if configuration.hosting_type == HostingType.cloud:
         user_account_id = get_cloud_user_account_id_by_email(configuration, user_email)
         return {"id": user_account_id}
