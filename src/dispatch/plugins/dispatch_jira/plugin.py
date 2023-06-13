@@ -272,7 +272,10 @@ class JiraTicketPlugin(TicketPlugin):
         client = create_client(self.configuration)
 
         assignee = get_user_field(client, self.configuration, commander_email)
-        reporter = get_user_field(client, self.configuration, reporter_email)
+
+        reporter = assignee
+        if reporter_email != commander_email:
+            reporter = get_user_field(client, self.configuration, reporter_email)
 
         project_id, issue_type_name = process_plugin_metadata(incident_type_plugin_metadata)
 
@@ -321,7 +324,10 @@ class JiraTicketPlugin(TicketPlugin):
         client = create_client(self.configuration)
 
         assignee = get_user_field(client, self.configuration, commander_email)
-        reporter = get_user_field(client, self.configuration, reporter_email)
+
+        reporter = assignee
+        if reporter_email != commander_email:
+            reporter = get_user_field(client, self.configuration, reporter_email)
 
         commander_username = get_email_username(commander_email)
 
@@ -358,7 +364,8 @@ class JiraTicketPlugin(TicketPlugin):
 
         assignee = get_user_field(client, self.configuration, assignee_email)
         # TODO(mvilanova): enable reporter email and replace assignee email
-        reporter = get_user_field(client, self.configuration, assignee_email)
+        # reporter = get_user_field(client, self.configuration, reporter_email)
+        reporter = assignee
 
         project_id, issue_type_name = process_plugin_metadata(case_type_plugin_metadata)
 
@@ -405,7 +412,8 @@ class JiraTicketPlugin(TicketPlugin):
 
         assignee = get_user_field(client, self.configuration, assignee_email)
         # TODO(mvilanova): enable reporter email and replace assignee email
-        reporter = get_user_field(client, self.configuration, assignee_email)
+        # reporter = get_user_field(client, self.configuration, reporter_email)
+        reporter = assignee
 
         assignee_username = get_email_username(assignee_email)
 
