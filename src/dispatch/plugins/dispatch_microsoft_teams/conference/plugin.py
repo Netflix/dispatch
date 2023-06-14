@@ -1,10 +1,9 @@
-from dispatch.plugins.bases import ConferencePlugin
-from dispatch.plugins.dispatch_microsoft_teams import conference as teams_plugin
+import logging
 from typing import List
 
-
+from dispatch.plugins.bases import ConferencePlugin
+from dispatch.plugins.dispatch_microsoft_teams import conference as teams_plugin
 from .config import MicrosoftTeamsConfiguration
-import logging
 from .client import MSTeamsClient
 from dispatch.decorators import apply, counter, timer
 
