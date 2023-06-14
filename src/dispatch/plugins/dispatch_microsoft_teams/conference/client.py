@@ -71,5 +71,5 @@ class MSTeamsClient:
             logger.info("Graph API call result: ")
             logger.info(json.dumps(graph_data, indent=2))
             return graph_data
-        else:
-            return dict()
+
+        return dict()
