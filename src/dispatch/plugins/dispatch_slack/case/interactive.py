@@ -1185,19 +1185,38 @@ def handle_resolve_submission_event(
     user: DispatchUser,
 ):
     ack()
+    # we get the current case, or 'previous_case'
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
+    # we run the case status transition flow
+    case_flows.case_status_transition_flow_dispatcher(
+        case=case,
+        current_status=CaseStatus.closed,
+        db_session=db_session,
+        previous_status=case.status,
+        organization_slug=context["subject"].organization_slug,
+    )
+
+    # we update the case with the new resolution and status
     case_in = CaseUpdate(
         title=case.title,
         resolution=form_data[DefaultBlockIds.resolution_input],
         visibility=case.visibility,
         status=CaseStatus.closed,
     )
+    case = case_service.update(
+        db_session=db_session,
+        case=case,
+        case_in=case_in,
+        current_user=user,
+    )
 
-    case = case_service.update(db_session=db_session, case=case, case_in=case_in, current_user=user)
+    # We update the case message with the new resolution and status
     blocks = create_case_message(case=case, channel_id=context["subject"].channel_id)
     client.chat_update(
-        blocks=blocks, ts=case.conversation.thread_id, channel=case.conversation.channel_id
+        blocks=blocks,
+        ts=case.conversation.thread_id,
+        channel=case.conversation.channel_id,
     )
 
 
@@ -1580,8 +1599,6 @@ def handle_engagement_submission_event(
         _send_response(success=True)
         user.last_mfa_time = datetime.now()
         db_session.commit()
-
-        _resolve_case(case)
         return
     else:
         return _send_response(success=False)
