@@ -41,12 +41,22 @@ from dispatch.signal.enums import SignalEngagementStatus
 
 
 def create_case_message(case: Case, channel_id: str) -> list[Block]:
+    # TODO we should probably restrict the possible colors to make this work
+    priority_color_mapping = {
+        "9E9E9E": "⚪",
+        "#8BC34A": "🟢",
+        "#FFEB3B": "🟡",
+        "#FF9800": "🟠",
+        "#F44336": "🔴",
+        "#9C27B0": "🟣",
+    }
+    priority_field = f"*Priority* \n {case.case_priority.name} {priority_color_mapping.get(case.case_priority.color,'')}"
+
     fields = [
         f"*Assignee* \n {case.assignee.individual.email}",
         f"*Status* \n {case.status}",
-        f"*Severity* \n {case.case_severity.name}",
         f"*Type* \n {case.case_type.name}",
-        f"*Priority* \n {case.case_priority.name}",
+        priority_field,
     ]
 
     if case.signal_instances:
