@@ -26,7 +26,7 @@ class MicrosoftTeamsConferencePlugin(ConferencePlugin):
     @apply(counter, exclude=["__init__"])
     @apply(timer, exclude=["__init__"])
     def create(
-        self, name: str, description: str = None, title: str = None, participants: List[str] = []
+        self, name: str, description: str = None, title: str = None, participants: List[str] = None
     ):
         try:
             client = MSTeamsClient(

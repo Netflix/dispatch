@@ -72,4 +72,4 @@ class MSTeamsClient:
             logger.info(json.dumps(graph_data, indent=2))
             return graph_data
 
-        return dict()
+        return {}
