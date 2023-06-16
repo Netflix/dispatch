@@ -610,6 +610,9 @@ def entity_select(
         if entity.value
     ]
 
+    if not entity_options:
+        return
+
     return multi_select_block(
         placeholder="Select Entities",
         options=entity_options[:100],  # Limit the entities to the first 100 most recent
