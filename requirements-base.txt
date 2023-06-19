@@ -293,7 +293,7 @@ pydantic==1.10.7
     #   thinc
 pyjwt==2.6.0
     # via oauthlib
-pyparsing==3.0.9
+pyparsing==3.1.0
     # via
     #   -r requirements-base.in
     #   httplib2
