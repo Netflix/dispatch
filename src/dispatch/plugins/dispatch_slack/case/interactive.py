@@ -402,20 +402,27 @@ def snooze_button_click(
         Divider(),
         title_input(placeholder="A name for your snooze filter."),
         description_input(placeholder="Provide a description for your snooze filter."),
-        entity_select(
-            db_session=db_session,
-            signal_id=signal.id,
-            optional=True,
-        ),
-        Context(
-            elements=[
-                MarkdownText(
-                    text="Signal's that contain all selected entities will be snoozed for the configured timeframe."
-                )
-            ]
-        ),
         relative_date_picker_input(label="Expiration"),
     ]
+
+    # not all signals will have entities and slack doesn't like empty selects
+    entity_select_block = entity_select(
+        db_session=db_session,
+        signal_id=signal.id,
+        optional=True,
+    )
+
+    if entity_select_block:
+        blocks.append(entity_select_block)
+        blocks.append(
+            Context(
+                elements=[
+                    MarkdownText(
+                        text="Signals that contain all selected entities will be snoozed for the configured timeframe."
+                    )
+                ]
+            )
+        )
 
     modal = Modal(
         title="Snooze Signal",
