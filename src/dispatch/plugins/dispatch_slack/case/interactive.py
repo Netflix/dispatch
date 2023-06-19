@@ -418,7 +418,7 @@ def snooze_button_click(
             Context(
                 elements=[
                     MarkdownText(
-                        text="Signal's that contain all selected entities will be snoozed for the configured timeframe."
+                        text="Signals that contain all selected entities will be snoozed for the configured timeframe."
                     )
                 ]
             )
