@@ -23,6 +23,7 @@ jira==2.0.0
 joblib
 jsonpath_ng
 markdown
+msal
 numpy
 oauth2client
 openai
