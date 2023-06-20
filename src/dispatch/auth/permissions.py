@@ -348,7 +348,7 @@ class CaseParticipantPermission(BasePermission):
         request: Request,
     ) -> bool:
         current_user = get_current_user(request=request)
-        pk = PrimaryKeyModel(id=request.path_params["incident_id"])
+        pk = PrimaryKeyModel(id=request.path_params["case_id"])
         current_case: Case = case_service.get(db_session=request.state.db, case_id=pk.id)
         participant_emails: list[str] = [
             participant.individual.email for participant in current_case.participants

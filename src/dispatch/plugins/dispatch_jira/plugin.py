@@ -284,7 +284,7 @@ class JiraTicketPlugin(TicketPlugin):
 
         # NOTE: to support issue creation by project id or key
         project = {"id": project_id}
-        if not isinstance(project_id, int):
+        if not project_id.isdigit():
             project = {"key": project_id}
 
         if not issue_type_name:
@@ -373,7 +373,7 @@ class JiraTicketPlugin(TicketPlugin):
             project_id = self.configuration.default_project_id
 
         project = {"id": project_id}
-        if not isinstance(project_id, int):
+        if not project_id.isdigit():
             project = {"key": project_id}
 
         if not issue_type_name:
