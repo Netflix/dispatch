@@ -2,23 +2,12 @@
   <v-container>
     <v-row justify="end">
       <v-switch v-model="showDetails" label="Show details" />
-      <v-btn
-        color="secondary"
-        class="ml-2 mr-2 mt-3"
-        @click="exportToCSV()"
-        :loading="exportLoading"
-      >
+      <v-btn color="secondary" class="ml-2 mr-2 mt-3" @click="exportToCSV()" :loading="exportLoading">
         Export
       </v-btn>
     </v-row>
     <v-timeline v-if="events && events.length" dense clipped>
-      <v-timeline-item
-        v-for="event in sortedEvents"
-        :key="event.id"
-        class="mb-4"
-        color="blue"
-        small
-      >
+      <v-timeline-item v-for="event in sortedEvents" :key="event.id" class="mb-4" color="blue" small>
         <v-row justify="space-between">
           <v-col cols="7">
             {{ event.description }}
@@ -37,7 +26,14 @@
             </div>
           </v-col>
           <v-col class="text-right" cols="5">
-            {{ event.started_at | formatRelativeDate }}
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <span v-bind="attrs" v-on="on" class="wavy-underline">{{
+                  event.started_at | formatRelativeDate
+                }}</span>
+              </template>
+              <div v-html="formatToTimeZones(event.started_at)"></div>
+            </v-tooltip>
           </v-col>
         </v-row>
       </v-timeline-item>
@@ -51,6 +47,7 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import Util from "@/util"
+import moment from "moment-timezone"
 
 export default {
   name: "IncidentTimelineTab",
@@ -76,6 +73,26 @@ export default {
       Util.exportCSV(items, this.name + "-timeline-export.csv")
       this.exportLoading = false
     },
+    formatToTimeZones(date) {
+      if (!date) return ""
+
+      let m = moment(date)
+      return `UTC: ${date}<br> PST: ${m
+        .tz("America/Los_Angeles")
+        .format("YYYY-MM-DD HH:mm:ss")}<br>EST: ${m
+          .tz("America/New_York")
+          .format("YYYY-MM-DD HH:mm:ss")}`
+    },
   },
 }
 </script>
+
+<style scoped>
+.wavy-underline {
+  text-decoration: underline;
+  text-decoration-style: wavy;
+  text-decoration-color: lightgray;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+</style>
