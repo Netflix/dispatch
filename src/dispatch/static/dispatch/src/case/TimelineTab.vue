@@ -2,12 +2,23 @@
   <v-container>
     <v-row justify="end">
       <v-switch v-model="showDetails" label="Show details" />
-      <v-btn color="secondary" class="ml-2 mr-2 mt-3" @click="exportToCSV()" :loading="exportLoading">
+      <v-btn
+        color="secondary"
+        class="ml-2 mr-2 mt-3"
+        @click="exportToCSV()"
+        :loading="exportLoading"
+      >
         Export
       </v-btn>
     </v-row>
     <v-timeline v-if="events && events.length" dense clipped>
-      <v-timeline-item v-for="event in sortedEvents" :key="event.id" class="mb-4" color="blue" small>
+      <v-timeline-item
+        v-for="event in sortedEvents"
+        :key="event.id"
+        class="mb-4"
+        color="blue"
+        small
+      >
         <v-row justify="space-between">
           <v-col cols="7">
             {{ event.description }}
@@ -47,7 +58,6 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import Util from "@/util"
-import moment from "moment-timezone"
 
 export default {
   name: "CaseTimelineTab",
