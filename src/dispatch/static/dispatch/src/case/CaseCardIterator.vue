@@ -33,12 +33,12 @@ export default {
     },
     itemsPerPage: {
       type: Number,
-      default: 4,
+      default: 1,
     },
   },
   data() {
     return {
-      itemsPerPageArray: [3],
+      itemsPerPageArray: [2],
       currentPage: 1,
     }
   },

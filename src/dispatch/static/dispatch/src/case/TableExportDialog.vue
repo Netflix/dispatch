@@ -1,7 +1,9 @@
 <template>
   <v-dialog v-model="showExport" persistent max-width="800px">
     <template v-slot:activator="{ on }">
-      <v-btn color="secondary" class="ml-2" v-on="on"> Export </v-btn>
+      <v-btn color="secondary" class="ml-2" v-on="on">
+        <v-icon small class="ml-n1"> mdi-export </v-icon> Export
+      </v-btn>
     </template>
     <v-card>
       <v-card-title>

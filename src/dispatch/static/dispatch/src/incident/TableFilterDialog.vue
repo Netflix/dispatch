@@ -27,6 +27,11 @@
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
+            <participant-select v-model="local_participant" />
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-content>
             <incident-type-combobox v-model="local_incident_type" />
           </v-list-item-content>
         </v-list-item>
@@ -69,6 +74,7 @@ import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
 
 import DateWindowInput from "@/components/DateWindowInput.vue"
+import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 import IncidentPriorityCombobox from "@/incident/priority/IncidentPriorityCombobox.vue"
 import IncidentSeverityCombobox from "@/incident/severity/IncidentSeverityCombobox.vue"
 import IncidentStatusMultiSelect from "@/incident/status/IncidentStatusMultiSelect.vue"
@@ -108,6 +114,7 @@ export default {
       local_incident_severity: [],
       local_incident_type: [],
       local_project: this.projects,
+      local_participant: [],
       local_reported_at: {},
       local_status: [],
       local_tag: [],
@@ -121,6 +128,7 @@ export default {
       "table.options.filters.incident_priority",
       "table.options.filters.incident_severity",
       "table.options.filters.incident_type",
+      "table.options.filters.commander",
       "table.options.filters.project",
       "table.options.filters.reported_at",
       "table.options.filters.status",
@@ -150,6 +158,7 @@ export default {
       this.project = this.local_project
       this.reported_at = this.local_reported_at
       this.status = this.local_status
+      this.commander = this.local_participant
       this.tag = this.local_tag
       this.tag_type = this.local_tag_type
 

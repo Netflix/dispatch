@@ -26,11 +26,11 @@
                 </template>
               </transition-group>
             </v-col>
-            <v-col class="text-right" cols="5">
-              {{ event.started_at | formatRelativeDate }}
-            </v-col>
           </v-row>
         </v-alert>
+        <div class="text-right caption mt-n4">
+          {{ event.started_at }}
+        </div>
       </v-timeline-item>
     </v-timeline>
     <div v-else>

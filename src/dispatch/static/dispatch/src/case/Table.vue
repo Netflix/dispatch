@@ -8,7 +8,7 @@
         <v-row align="center" class="mt-2">
           <v-col cols="12" class="d-flex align-center justify-end">
             <!-- Expandable Search Bar -->
-            <v-text-field
+            <!-- <v-text-field
               v-model="table.options.q"
               prepend-inner-icon="mdi-card-search"
               class="pr-4"
@@ -17,44 +17,125 @@
               clearable
               outlined
               rows="1"
-              rounded
+              dense
               style="max-height: 200px"
-            />
+            /> -->
 
             <!-- Filter Dialog -->
-            <table-filter-dialog :projects="defaultUserProjects" />
+            <!-- <table-filter-dialog :projects="defaultUserProjects" /> -->
 
             <!-- Export Dialog -->
-            <table-export-dialog />
+            <!-- <table-export-dialog /> -->
 
             <!-- New Button -->
-            <v-btn color="info" class="ml-2" @click="showNewSheet()">New</v-btn>
+            <!-- <v-btn
+              color="grey darken-1"
+              elevation="1"
+              outlined
+              small
+              class="ml-2"
+              @click="showNewSheet()"
+              ><v-icon small class="ml-n1"> mdi-plus </v-icon>New case</v-btn
+            > -->
           </v-col>
         </v-row>
       </v-col>
     </v-row>
-    <v-divider class="mt-6"></v-divider>
+    <!-- <v-divider class="mt-6"></v-divider>
     <v-col cols="6">
       <div class="subtitle pl-6">
         <v-badge bordered color="red" dot left offset-x="-10" offset-y="12">
           <b>Open cases</b>
         </v-badge>
       </div>
-    </v-col>
-    <case-card-iterator
-      :items="openCases"
-      :items-per-page="3"
-      page.sync="page"
-    ></case-card-iterator>
-    <div class="pl-6 grey--text">View all 74 open cases...</div>
+    </v-col> -->
+    <div>
+      <v-layout row wrap>
+        <v-flex lg4 sm6 xs12 class="pb-6 pt-6">
+          <case-stat-widget class="ml-6" icon="domain" title="129" sub-title="All Cases" />
+        </v-flex>
+        <v-flex lg4 sm6 xs12 class="pb-6 pt-6">
+          <case-stat-widget class="ml-6" icon="domain" title="7" sub-title="Open Cases" />
+        </v-flex>
+        <v-flex lg4 sm6 xs12 class="pb-6 pt-6 pr-6">
+          <case-stat-widget class="ml-6" icon="domain" title="1" sub-title="My Open Cases" />
+        </v-flex>
+      </v-layout>
+    </div>
+    <div>
+      <new-case-chart></new-case-chart>
+    </div>
     <div v-if="showEditSheet">
       <router-view />
     </div>
-    <v-row no-gutters class="pt-16">
+    <v-row no-gutters class="pt-0">
       <new-sheet />
       <workflow-run-modal />
       <escalate-dialog />
       <delete-dialog />
+    </v-row>
+    <v-row class="align-center pb-4">
+      <v-col cols="6">
+        <!-- Expandable Search Bar -->
+      </v-col>
+      <v-col cols="6" class="text-right">
+        <v-row align="center" class="pt-2 pb-2">
+          <v-col cols="12" class="d-flex align-center justify-end">
+            <transition name="slide-fade">
+              <v-text-field
+                v-if="searchExpanded"
+                v-model="table.options.q"
+                color="black"
+                prepend-inner-icon="mdi-magnify"
+                class="pr-4"
+                label="Search cases..."
+                hide-details
+                clearable
+                solo
+                outlined
+                dense
+              />
+            </transition>
+            <v-btn
+              color="grey darken-3"
+              elevation="1"
+              outlined
+              small
+              class="ml-2"
+              @click="searchExpanded = !searchExpanded"
+            >
+              <v-icon small class="ml-n1 mr-1"> mdi-magnify </v-icon>Search
+            </v-btn>
+
+            <!-- Filter Dialog -->
+            <v-btn
+              color="grey darken-3"
+              elevation="1"
+              outlined
+              small
+              class="ml-2"
+              @click="showNewSheet()"
+              ><v-icon small class="ml-n1 mr-1"> mdi-filter-variant </v-icon>Filter</v-btn
+            >
+
+            <!-- Export Dialog -->
+            <v-btn
+              color="grey darken-3"
+              elevation="1"
+              outlined
+              small
+              class="ml-2"
+              @click="showNewSheet()"
+              ><v-icon small class="ml-n1 mr-1"> mdi-export </v-icon>Export</v-btn
+            >
+
+            <!-- New Button -->
+            <v-btn color="info" elevation="1" small class="ml-2" @click="showNewSheet()"
+              ><v-icon small class="ml-n1 mr-1"> mdi-plus </v-icon>New</v-btn
+            >
+          </v-col>
+        </v-row>
+      </v-col>
     </v-row>
     <v-row no-gutters>
       <v-col>
@@ -144,6 +225,19 @@
               </v-menu>
             </template>
           </v-data-table>
+          <!-- <v-divider class="mt-6"></v-divider> -->
+          <v-col cols="6">
+            <div class="subtitle pl-6">
+              <v-badge bordered color="red" dot left offset-x="-10" offset-y="12">
+                <b>My Open Cases</b>
+              </v-badge>
+            </div>
+          </v-col>
+          <case-card-iterator
+            :items="openCases"
+            :items-per-page="2"
+            page.sync="page"
+          ></case-card-iterator>
         </v-card>
       </v-col>
     </v-row>
@@ -162,8 +256,10 @@ import CaseParticipant from "@/case/Participant.vue"
 import CasePriority from "@/case/priority/CasePriority.vue"
 import CaseSeverity from "@/case/severity/CaseSeverity.vue"
 import CaseStatus from "@/case/CaseStatus.vue"
+import NewCaseChart from "@/case/CaseChart.vue"
 import DeleteDialog from "@/case/DeleteDialog.vue"
 import EscalateDialog from "@/case/EscalateDialog.vue"
+import CaseStatWidget from "@/case/CaseStatWidget.vue"
 import NewSheet from "@/case/NewSheet.vue"
 import WorkflowRunModal from "@/workflow/RunModal.vue"
 import RouterUtils from "@/router/utils"
@@ -184,6 +280,8 @@ export default {
     DeleteDialog,
     EscalateDialog,
     NewSheet,
+    NewCaseChart,
+    CaseStatWidget,
     WorkflowRunModal,
     TableExportDialog,
     TableFilterDialog,
@@ -354,5 +452,25 @@ export default {
 <style scoped>
 .align-center {
   align-items: center;
+}
+
+.v-btn {
+  text-transform: none !important;
+  /* color: rgb(39, 39, 39) !important; */
+  font-weight: bold !important;
+  letter-spacing: normal !important;
+}
+
+/* Add these styles for the transition animation */
+.slide-fade-enter-active {
+  transition: all 0.2s ease;
+}
+.slide-fade-leave-active {
+  transition: all 0.2s cubic-bezier(1, 0.5, 0.8, 1);
+}
+.slide-fade-enter,
+.slide-fade-leave-to {
+  transform: translateX(100%);
+  opacity: 0;
 }
 </style>

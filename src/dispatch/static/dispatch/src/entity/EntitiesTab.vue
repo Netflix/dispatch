@@ -1,20 +1,43 @@
 <template>
   <v-container>
-    <v-row justify="center">
-      <date-chip-group-relative
-        class="pl-6 mt-6"
-        label="Time Range"
-        v-model="selectedDateTime"
-        @input="onSelectedDateTimeChange"
-      />
-    </v-row>
     <v-row v-if="uniqueEntities.length >= 1">
+      <v-row justify="center">
+        <date-chip-group-relative
+          class="pl-6 mt-6"
+          label="Time Range"
+          v-model="selectedDateTime"
+          @input="onSelectedDateTimeChange"
+        />
+      </v-row>
       <v-col class="pl-6 mt-6" v-for="entity in uniqueEntities" :key="entity.id" cols="6">
         <entity-card :entity="entity" :count="entity.count" :selectedDateTime="selectedDateTime" />
       </v-col>
     </v-row>
     <div v-else>
-      <p class="text-center">No entity data available.</p>
+      <v-row justify="center">
+        <v-card class="mt-16 pb-16" elevation="0" width="400px">
+          <v-btn disabled class="ml-4" color="grey lighten-5" elevation="0">
+            <v-icon color="grey darken-1"> mdi-drawing-box </v-icon>
+          </v-btn>
+          <v-card-title>Add your first entity type</v-card-title>
+          <v-card-subtitle
+            >Entity Types extract valuable information from your raw signal data. They automatically
+            identify and correlate entities across various signals and cases.
+          </v-card-subtitle>
+          <v-row>
+            <!-- New Button -->
+            <v-btn color="info" plain text small class="ml-4"
+              >Learn more <v-icon small class="ml-2 mr-1"> mdi-arrow-right </v-icon></v-btn
+            >
+          </v-row>
+          <v-row class="pt-6 pb-6">
+            <!-- New Button -->
+            <v-btn color="info" elevation="1" small class="ml-7"
+              ><v-icon small class="ml-n1 mr-1"> mdi-plus </v-icon>Add an entity type</v-btn
+            >
+          </v-row>
+        </v-card>
+      </v-row>
     </div>
   </v-container>
 </template>
@@ -71,3 +94,12 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.v-btn {
+  text-transform: none !important;
+  /* color: rgb(39, 39, 39) !important; */
+  font-weight: bold !important;
+  letter-spacing: normal !important;
+}
+</style>

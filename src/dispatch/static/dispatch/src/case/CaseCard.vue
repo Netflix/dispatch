@@ -61,6 +61,7 @@ export default {
   methods: {
     openEditSheet(item) {
       return CaseApi.get(item.id).then((response) => {
+        console.log("GOT RESPONSE: %O", response)
         this.$router.push({ name: "CasePage", params: { name: item.name, _case: response.data } })
       })
     },

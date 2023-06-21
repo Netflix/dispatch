@@ -17,7 +17,7 @@
     dense
     flat
     v-model="participant"
-    style="max-width: 250px"
+    style="max-width: 200px"
   >
     <template v-slot:no-data>
       <v-list-item>
