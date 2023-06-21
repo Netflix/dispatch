@@ -88,16 +88,4 @@ export default {
 }
 </script>
 
-<style scoped>
-.wavy-underline {
-  text-decoration: underline;
-  text-decoration-style: wavy;
-  text-decoration-color: lightgray;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
-}
-
-.pre-formatted {
-  white-space: pre;
-}
-</style>
+<style scoped src="@/assets/styles/timeline.css" />
