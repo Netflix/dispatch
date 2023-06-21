@@ -76,7 +76,9 @@ const actions = {
   createEditShow({ commit }, plugin) {
     commit("SET_DIALOG_EDIT", true)
     if (plugin) {
-      commit("SET_SELECTED", plugin)
+      PluginApi.getInstance(plugin.id).then((response) => {
+        commit("SET_SELECTED", response.data)
+      })
     }
   },
   closeCreateEdit({ commit }) {
