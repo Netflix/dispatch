@@ -346,6 +346,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (DispatchUser, "Organization"): (DispatchUser.organizations, True),
         (Case, "Tag"): (Case.tags, True),
         (Case, "TagType"): (Case.tags, True),
+        # (Incident, "Commander"): (Incident.commander_id, True),
         (Incident, "Tag"): (Incident.tags, True),
         (Incident, "TagType"): (Incident.tags, True),
         (Incident, "Term"): (Incident.terms, True),
@@ -429,6 +430,7 @@ def create_sort_spec(model, sort_by, descending):
 
 def get_all(*, db_session, model):
     """Fetches a query object based on the model class name."""
+    # i think this s where we get the model name?
     return db_session.query(get_class_by_tablename(model))
 
 

@@ -173,7 +173,7 @@ export default {
         { text: "Severity", value: "incident_severity.name", width: "10%" },
         { text: "Priority", value: "incident_priority.name", width: "10%" },
         { text: "Project", value: "project.name", sortable: true },
-        { text: "Commander", value: "commander", sortable: false },
+        { text: "Commander", value: "commander", sortable: true },
         { text: "Cost", value: "incident_costs", sortable: false },
         { text: "Reported At", value: "reported_at" },
         { text: "Closed At", value: "closed_at" },
@@ -238,7 +238,7 @@ export default {
   created() {
     this.filters = {
       ...this.filters,
-      ...RouterUtils.deserializeFilters(this.query),
+      ...RouterUtils.deserializeFilters(this.query), // here's the filters tuff?
       project: this.defaultUserProjects,
     }
 
@@ -253,6 +253,7 @@ export default {
 
     this.$watch(
       (vm) => [
+        vm.commander_id,
         vm.descending,
         vm.incident_priority,
         vm.incident_severity,
@@ -268,7 +269,10 @@ export default {
         vm.tag_type,
       ],
       () => {
+        console.log("watching the filters")
+        console.log(this.filters)
         this.page = 1
+
         RouterUtils.updateURLFilters(this.filters)
         this.getAll()
       }

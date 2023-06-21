@@ -47,6 +47,17 @@
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
+            <participant-select
+              v-model="local_commander"
+              label="Incident Commander"
+              hint="The participant acting as incident commander."
+              clearable
+            />
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-list-item>
+          <v-list-item-content>
             <tag-type-filter-combobox v-model="local_tag_type" label="Tag Types" />
           </v-list-item-content>
         </v-list-item>
@@ -67,12 +78,12 @@
 <script>
 import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
-
 import DateWindowInput from "@/components/DateWindowInput.vue"
 import IncidentPriorityCombobox from "@/incident/priority/IncidentPriorityCombobox.vue"
 import IncidentSeverityCombobox from "@/incident/severity/IncidentSeverityCombobox.vue"
 import IncidentStatusMultiSelect from "@/incident/status/IncidentStatusMultiSelect.vue"
 import IncidentTypeCombobox from "@/incident/type/IncidentTypeCombobox.vue"
+import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
@@ -86,6 +97,7 @@ export default {
     IncidentSeverityCombobox,
     IncidentStatusMultiSelect,
     IncidentTypeCombobox,
+    ParticipantSelect,
     ProjectCombobox,
     TagFilterAutoComplete,
     TagTypeFilterCombobox,
@@ -110,6 +122,7 @@ export default {
       local_project: this.projects,
       local_reported_at: {},
       local_status: [],
+      local_commander: null,
       local_tag: [],
       local_tag_type: [],
     }
@@ -124,16 +137,20 @@ export default {
       "table.options.filters.project",
       "table.options.filters.reported_at",
       "table.options.filters.status",
+      "table.options.filters.commander",
       "table.options.filters.tag",
       "table.options.filters.tag_type",
     ]),
     numFilters: function () {
+      console.log("commander is: ")
+      console.log(this.commander)
       return sum([
         this.incident_priority.length,
         this.incident_severity.length,
         this.incident_type.length,
         this.project.length,
         this.status.length,
+        // this.commander.length,
         this.tag.length,
         this.tag_type.length,
       ])
@@ -142,6 +159,8 @@ export default {
 
   methods: {
     applyFilters() {
+      console.log("local commander is ")
+      console.log(this.local_commander)
       // we set the filter values
       this.closed_at = this.local_closed_at
       this.incident_priority = this.local_incident_priority
@@ -150,6 +169,8 @@ export default {
       this.project = this.local_project
       this.reported_at = this.local_reported_at
       this.status = this.local_status
+      this.commander = this.local_commander
+      this.commander_id = this.local_commander
       this.tag = this.local_tag
       this.tag_type = this.local_tag_type
 

@@ -6,6 +6,10 @@ export default {
   serializeFilters(filters) {
     let flatFilters = {}
     forEach(filters, function (value, key) {
+      console.log("serializing filter: ")
+      console.log(key)
+      console.log(value)
+
       // handle filter windows
       if (has(value, "start")) {
         let startKey = `${key}.start`

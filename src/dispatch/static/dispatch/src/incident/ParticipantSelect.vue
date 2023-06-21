@@ -19,8 +19,7 @@
         <v-list-item-content>
           <v-list-item-title>
             No individuals matching "
-            <strong>{{ search }}</strong
-            >".
+            <strong>{{ search }}</strong>".
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
@@ -82,9 +81,13 @@ export default {
   computed: {
     participant: {
       get() {
+        console.log("getting participant")
+        console.log(this.value)
         return cloneDeep(this.value)
       },
       set(value) {
+        console.log("setting participant")
+        console.log(value)
         this.$emit("input", value)
       },
     },
@@ -100,6 +103,7 @@ export default {
       this.fetchData()
     },
     fetchData() {
+      console.log("fetching data")
       this.loading = "error"
       let filterOptions = {
         q: this.search,
@@ -118,12 +122,20 @@ export default {
         filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
       }
 
+      // gets all the response and makes it have an individual field that maps to the participant.
       IndividualApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items.map(function (x) {
+          console.log("filter options")
+          console.log(filterOptions)
+          console.log("response data")
+          console.log(x)
           return { individual: x }
         })
         this.total = response.data.total
-
+        console.log("total: " + this.total + ", items: ")
+        for (const item in this.items) {
+          console.log(this.items[item])
+        }
         if (this.items.length < this.total) {
           this.more = true
         } else {

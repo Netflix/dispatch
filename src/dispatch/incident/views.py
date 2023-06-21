@@ -75,6 +75,14 @@ def get_incidents(
 ):
     """Retrieves a list of incidents."""
     pagination = search_filter_sort_paginate(model="Incident", **common)
+    log.warn("includes are")
+    log.warn(include)
+
+    log.warn("the parameters are")
+    log.warn(common)
+
+    log.warn("list of oncidents are")
+    log.warn(pagination)
 
     if expand:
         return json.loads(IncidentExpandedPagination(**pagination).json())

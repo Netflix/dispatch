@@ -172,6 +172,12 @@ authenticated_organization_api_router.include_router(
     prefix="/incident_priorities",
     tags=["incident_priorities"],
 )
+
+# switch out the service router?? wahhh this don't work
+# authenticated_organization_api_router.include_router(
+#     individual_contact_router, prefix="/commander", tags=["commander"]
+# )
+
 authenticated_organization_api_router.include_router(
     incident_severity_router,
     prefix="/incident_severities",

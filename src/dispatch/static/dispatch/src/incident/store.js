@@ -81,7 +81,7 @@ const state = {
     options: {
       filters: {
         reporter: [],
-        commander: [],
+        commander: null,
         incident_type: [],
         incident_priority: [],
         incident_severity: [],
@@ -124,6 +124,8 @@ const actions = {
       { ...state.table.options },
       "Incident"
     )
+    console.log("params read")
+    console.log(params)
     return IncidentApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)
