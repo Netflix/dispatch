@@ -91,7 +91,7 @@ export default {
 <style scoped>
 .wavy-underline {
   text-decoration: underline;
-  text-decoration-style: wavy;
+  text-decoration-style: dotted;
   text-decoration-color: lightgray;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
