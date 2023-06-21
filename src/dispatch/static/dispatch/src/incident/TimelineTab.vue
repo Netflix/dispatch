@@ -7,7 +7,7 @@
       </v-btn>
     </v-row>
     <v-timeline v-if="events && events.length" dense clipped>
-      <v-timeline-item v-for="event in sortedEvents" :key="event.id" class="mb-4" color="blue" small>
+      <v-timeline-item v-for="event in  sortedEvents " :key="event.id" class="mb-4" color="blue" small>
         <v-row justify="space-between">
           <v-col cols="7">
             {{ event.description }}
@@ -32,7 +32,7 @@
                   event.started_at | formatRelativeDate
                 }}</span>
               </template>
-              <div v-html="formatToTimeZones(event.started_at)"></div>
+              <span class="pre-formatted">{{ event.started_at | formatToTimeZones }}</span>
             </v-tooltip>
           </v-col>
         </v-row>
@@ -73,16 +73,6 @@ export default {
       Util.exportCSV(items, this.name + "-timeline-export.csv")
       this.exportLoading = false
     },
-    formatToTimeZones(date) {
-      if (!date) return ""
-
-      let m = moment(date)
-      return `UTC: ${date}<br> PST: ${m
-        .tz("America/Los_Angeles")
-        .format("YYYY-MM-DD HH:mm:ss")}<br>EST: ${m
-          .tz("America/New_York")
-          .format("YYYY-MM-DD HH:mm:ss")}`
-    },
   },
 }
 </script>
@@ -94,5 +84,9 @@ export default {
   text-decoration-color: lightgray;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
+}
+
+.pre-formatted {
+  white-space: pre;
 }
 </style>

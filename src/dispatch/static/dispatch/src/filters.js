@@ -1,9 +1,21 @@
 import Vue from "vue"
 import { parseISO, formatISO } from "date-fns"
+import moment from "moment-timezone"
 
 Vue.filter("formatDate", function (value) {
   if (value) {
     return formatISO(parseISO(value))
+  }
+})
+
+Vue.filter("formatToTimeZones", function (value) {
+  if (value) {
+    let m = moment(value)
+    return `UTC: ${value}\nPST: ${m
+      .tz("America/Los_Angeles")
+      .format("YYYY-MM-DD HH:mm:ss")}\nEST: ${m
+        .tz("America/New_York")
+        .format("YYYY-MM-DD HH:mm:ss")}`
   }
 })
 
