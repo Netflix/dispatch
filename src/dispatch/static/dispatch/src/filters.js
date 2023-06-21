@@ -14,8 +14,8 @@ Vue.filter("formatToTimeZones", function (value) {
     return `UTC: ${value}\nPST: ${m
       .tz("America/Los_Angeles")
       .format("YYYY-MM-DD HH:mm:ss")}\nEST: ${m
-        .tz("America/New_York")
-        .format("YYYY-MM-DD HH:mm:ss")}`
+      .tz("America/New_York")
+      .format("YYYY-MM-DD HH:mm:ss")}`
   }
 })
 
