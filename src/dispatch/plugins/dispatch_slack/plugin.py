@@ -38,6 +38,7 @@ from .service import (
     conversation_archived,
     create_conversation,
     create_slack_client,
+    does_user_exist,
     get_user_avatar_url,
     get_user_profile_by_email,
     rename_conversation,
@@ -109,6 +110,17 @@ class SlackConversationPlugin(ConversationPlugin):
     ):
         """Creates a new engagement message."""
         client = create_slack_client(self.configuration)
+        if not does_user_exist(user.email):
+            not_found_msg = (
+                f"Attempted to engage user {user.email} who could not be found in workspace."
+            )
+            return send_message(
+                client=client,
+                conversation_id=conversation_id,
+                text=not_found_msg,
+                ts=thread_id,
+            )
+
         blocks = create_signal_engagement_message(
             case=case,
             channel_id=conversation_id,
