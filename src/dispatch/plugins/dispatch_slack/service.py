@@ -87,12 +87,6 @@ def list_conversation_messages(client: WebClient, conversation_id: str, **kwargs
 
 
 @functools.lru_cache()
-def get_domain(client: WebClient) -> str:
-    """Gets the team's Slack domain."""
-    return make_call(client, SlackAPIGetEndpoints.team_info)["team"]["domain"]
-
-
-@functools.lru_cache()
 def get_user_info_by_id(client: WebClient, user_id: str) -> dict:
     """Gets profile information about a user by id."""
     return make_call(client, SlackAPIGetEndpoints.users_info, user=user_id)["user"]
@@ -194,7 +188,7 @@ def create_conversation(client: WebClient, name: str, is_private: bool = False) 
     return {
         "id": response["id"],
         "name": response["name"],
-        "weblink": f"https://{get_domain(client)}.slack.com/app_redirect?channel={response['id']}",
+        "weblink": f"https://slack.com/app_redirect?channel={response['id']}",
     }
 
 
@@ -269,15 +263,6 @@ def add_users_to_conversation(
                 pass
 
 
-def get_message_permalink(client: WebClient, conversation_id: str, ts: str) -> str:
-    return make_call(
-        client,
-        SlackAPIGetEndpoints.chat_permalink,
-        channel=conversation_id,
-        message_ts=ts,
-    )
-
-
 def send_message(
     client: WebClient,
     conversation_id: str,
@@ -302,7 +287,7 @@ def send_message(
     return {
         "id": response["channel"],
         "timestamp": response["ts"],
-        "weblink": get_message_permalink(client, response["channel"], response["ts"]),
+        "weblink": f"https://slack.com/app_redirect?channel={response['id']}",  # TODO should we fetch the permalink?
     }
 
 
@@ -326,7 +311,7 @@ def update_message(
     return {
         "id": response["channel"],
         "timestamp": response["ts"],
-        "weblink": get_message_permalink(client, response["channel"], response["ts"]),
+        "weblink": f"https://slack.com/app_redirect?channel={response['id']}",  # TODO should we fetch the permalink?
     }
 
 
