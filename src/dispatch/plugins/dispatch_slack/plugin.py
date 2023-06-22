@@ -112,7 +112,7 @@ class SlackConversationPlugin(ConversationPlugin):
         client = create_slack_client(self.configuration)
         if not does_user_exist(user.email):
             not_found_msg = (
-                f"Attempted to engage user {user.email} who could not be found in workspace."
+                f"Unable to engage user ({user.email}). Not found in current slack workspace."
             )
             return send_message(
                 client=client,
