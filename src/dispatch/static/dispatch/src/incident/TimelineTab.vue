@@ -37,7 +37,14 @@
             </div>
           </v-col>
           <v-col class="text-right" cols="5">
-            {{ event.started_at | formatRelativeDate }}
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <span v-bind="attrs" v-on="on" class="wavy-underline">{{
+                  event.started_at | formatRelativeDate
+                }}</span>
+              </template>
+              <span class="pre-formatted">{{ event.started_at | formatToTimeZones }}</span>
+            </v-tooltip>
           </v-col>
         </v-row>
       </v-timeline-item>
@@ -79,3 +86,5 @@ export default {
   },
 }
 </script>
+
+<style scoped src="@/assets/styles/timeline.css" />

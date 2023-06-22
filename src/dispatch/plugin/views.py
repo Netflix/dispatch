@@ -27,7 +27,6 @@ def get_plugins(common: CommonParameters):
 @router.get(
     "/instances",
     response_model=PluginInstancePagination,
-    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def get_plugin_instances(common: CommonParameters):
     """Get all plugin instances."""

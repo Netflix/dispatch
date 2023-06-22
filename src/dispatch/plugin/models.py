@@ -123,6 +123,14 @@ class PluginInstanceRead(PluginBase):
     project: Optional[ProjectRead]
 
 
+class PluginInstanceReadMinimal(PluginBase):
+    id: PrimaryKey
+    enabled: Optional[bool]
+    configuration_schema: Any
+    plugin: PluginRead
+    project: Optional[ProjectRead]
+
+
 class PluginInstanceCreate(PluginBase):
     enabled: Optional[bool]
     configuration: Optional[dict]
@@ -153,4 +161,4 @@ class PluginPagination(DispatchBase):
 
 class PluginInstancePagination(DispatchBase):
     total: int
-    items: List[PluginInstanceRead] = []
+    items: List[PluginInstanceReadMinimal] = []
