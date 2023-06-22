@@ -2,20 +2,39 @@ import Vue from "vue"
 import { parseISO, formatISO } from "date-fns"
 import moment from "moment-timezone"
 
+const time_format = "YYYY-MM-DD HH:mm:ss"
+const zones_to_show = ["America/Los_Angeles", "America/New_York"]
+
 Vue.filter("formatDate", function (value) {
   if (value) {
     return formatISO(parseISO(value))
   }
 })
 
+Vue.filter("formatToUTC", function (value) {
+  if (value) {
+    return moment(value).utc().format(time_format)
+  }
+})
+
+function formatTimeZone(time) {
+  return `${time.format("z")}: ${time.format(time_format)}`
+}
+
 Vue.filter("formatToTimeZones", function (value) {
   if (value) {
-    let m = moment(value)
-    return `UTC: ${value}\nPST: ${m
-      .tz("America/Los_Angeles")
-      .format("YYYY-MM-DD HH:mm:ss")}\nEST: ${m
-      .tz("America/New_York")
-      .format("YYYY-MM-DD HH:mm:ss")}`
+    const m = moment(value)
+    if (!m.isValid()) return value
+    const local_zone_name = moment.tz.guess()
+    const local_time = m.tz(local_zone_name)
+    let tooltip_text = `${formatTimeZone(local_time)}`
+    zones_to_show.forEach((zone) => {
+      if (zone != local_zone_name) {
+        const zoned_time = m.tz(zone)
+        tooltip_text += `\n${formatTimeZone(zoned_time)}`
+      }
+    })
+    return tooltip_text
   }
 })
 
