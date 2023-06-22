@@ -25,7 +25,7 @@ Vue.filter("formatToTimeZones", function (value) {
   if (value) {
     const m = moment(value)
     if (!m.isValid()) return value
-    const local_zone_name = moment.tz.guess()
+    const local_zone_name = moment.tz.guess() || "America/Los_Angeles"
     const local_time = m.tz(local_zone_name)
     let tooltip_text = `${formatTimeZone(local_time)}`
     zones_to_show.forEach((zone) => {
