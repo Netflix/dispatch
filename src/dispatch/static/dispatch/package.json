@@ -26,6 +26,7 @@
     "jsonpath": "^1.1.1",
     "lodash": "^4.17.21",
     "mjml": "^4.9.3",
+    "moment-timezone": "^0.5.43",
     "monaco-editor": "^0.33.0",
     "monaco-editor-vue": "^1.0.10",
     "register-service-worker": "^1.7.2",
