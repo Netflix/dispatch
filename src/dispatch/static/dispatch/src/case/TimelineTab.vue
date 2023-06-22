@@ -12,6 +12,7 @@
       </v-btn>
     </v-row>
     <v-timeline v-if="events && events.length" dense clipped>
+      <v-col class="text-right caption">(times in UTC)</v-col>
       <v-timeline-item
         v-for="event in sortedEvents"
         :key="event.id"
@@ -40,7 +41,7 @@
             <v-tooltip bottom>
               <template v-slot:activator="{ on, attrs }">
                 <span v-bind="attrs" v-on="on" class="wavy-underline">{{
-                  event.started_at | formatRelativeDate
+                  event.started_at | formatToUTC
                 }}</span>
               </template>
               <span class="pre-formatted">{{ event.started_at | formatToTimeZones }}</span>
@@ -88,4 +89,4 @@ export default {
 }
 </script>
 
-<style scoped src="@/assets/styles/timeline.css" />
+<style scoped src="@/styles/timeline.css" />
