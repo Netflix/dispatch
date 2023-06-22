@@ -2,8 +2,10 @@ from dispatch.enums import DispatchEnum
 
 
 class SlackAPIGetEndpoints(DispatchEnum):
+    chat_permalink = "chat.getPermalink"
     conversations_history = "conversations.history"
     conversations_info = "conversations.info"
+    team_info = "team.info"
     users_conversations = "users.conversations"
     users_info = "users.info"
     users_lookup_by_email = "users.lookupByEmail"
