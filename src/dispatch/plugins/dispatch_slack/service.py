@@ -99,6 +99,13 @@ def get_user_info_by_email(client: WebClient, email: str) -> dict:
 
 
 @functools.lru_cache()
+def does_user_exist(client: WebClient, email: str) -> bool:
+    """Gets profile information about a user by email."""
+    user_info = get_user_info_by_email(client, email)
+    return False if user_info is None else True
+
+
+@functools.lru_cache()
 def get_user_profile_by_id(client: WebClient, user_id: str) -> dict:
     """Gets profile information about a user by id."""
     return make_call(client, SlackAPIGetEndpoints.users_profile_get, user_id=user_id)["profile"]
