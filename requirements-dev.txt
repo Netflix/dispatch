@@ -82,13 +82,13 @@ pure-eval==0.2.2
     # via stack-data
 pygments==2.14.0
     # via ipython
-pytest==7.3.2
+pytest==7.4.0
     # via -r requirements-dev.in
 python-dateutil==2.8.2
     # via faker
 pyyaml==6.0
     # via pre-commit
-ruff==0.0.274
+ruff==0.0.275
     # via -r requirements-dev.in
 six==1.16.0
     # via
