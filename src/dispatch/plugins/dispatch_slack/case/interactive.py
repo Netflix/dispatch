@@ -1559,7 +1559,7 @@ def handle_engagement_submission_event(
 
         if success:
             # We only update engagment message (which removes Confirm/Deny button) for success
-            # this allows the user to retry the confirmation
+            # this allows the user to retry the confirmation if the MFA check failed
             blocks = create_signal_engagement_message(
                 case=case,
                 channel_id=case.conversation.channel_id,
