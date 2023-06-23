@@ -1556,21 +1556,23 @@ def handle_engagement_submission_event(
             channel=case.conversation.channel_id,
             thread_ts=case.conversation.thread_id,
         )
-        blocks = create_signal_engagement_message(
-            case=case,
-            channel_id=case.conversation.channel_id,
-            engagement=engagement,
-            signal_instance=signal_instance,
-            user=user,
-            engagement_status=engagement_status,
-        )
-        client.chat_update(
-            blocks=blocks,
-            channel=case.conversation.channel_id,
-            ts=signal_instance.engagement_thread_ts,
-        )
 
         if success:
+            # We only update engagment message (which removes Confirm/Deny button) for success
+            # this allows the user to retry the confirmation
+            blocks = create_signal_engagement_message(
+                case=case,
+                channel_id=case.conversation.channel_id,
+                engagement=engagement,
+                signal_instance=signal_instance,
+                user=user,
+                engagement_status=engagement_status,
+            )
+            client.chat_update(
+                blocks=blocks,
+                channel=case.conversation.channel_id,
+                ts=signal_instance.engagement_thread_ts,
+            )
             _resolve_case(case)
 
     def _resolve_case(case: Case) -> None:
