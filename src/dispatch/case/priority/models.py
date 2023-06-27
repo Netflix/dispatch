@@ -16,6 +16,7 @@ class CasePriority(Base, ProjectMixin):
     __table_args__ = (UniqueConstraint("name", "project_id"),)
     id = Column(Integer, primary_key=True)
     name = Column(String)
+    original_priority = Column(String)
     description = Column(String)
     page_assignee = Column(Boolean, default=False)
     color = Column(String)
@@ -40,6 +41,7 @@ class CasePriorityBase(DispatchBase):
     description: Optional[str] = Field(None, nullable=True)
     enabled: Optional[bool]
     name: NameStr
+    original_priority: Optional[str] = Field(None, nullable=True)
     project: Optional[ProjectRead]
     view_order: Optional[int]
 

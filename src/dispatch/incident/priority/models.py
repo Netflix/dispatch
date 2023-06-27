@@ -16,6 +16,7 @@ class IncidentPriority(Base, ProjectMixin):
     __table_args__ = (UniqueConstraint("name", "project_id"),)
     id = Column(Integer, primary_key=True)
     name = Column(String)
+    original_priority = Column(String)
     description = Column(String)
     page_commander = Column(Boolean, default=False)
     color = Column(String)
@@ -39,6 +40,7 @@ listen(IncidentPriority.default, "set", ensure_unique_default_per_project)
 # Pydantic models...
 class IncidentPriorityBase(DispatchBase):
     name: NameStr
+    original_priority: Optional[str] = Field(None, nullable=True)
     description: Optional[str] = Field(None, nullable=True)
     page_commander: Optional[StrictBool]
     tactical_report_reminder: Optional[int]
@@ -65,6 +67,7 @@ class IncidentPriorityRead(IncidentPriorityBase):
 class IncidentPriorityReadMinimal(DispatchBase):
     id: PrimaryKey
     name: NameStr
+    original_priority: Optional[str] = Field(None, nullable=True)
     description: Optional[str] = Field(None, nullable=True)
     page_commander: Optional[StrictBool]
     tactical_report_reminder: Optional[int]

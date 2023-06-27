@@ -1,6 +1,7 @@
 default_incident_priorities = [
     {
         "name": "Low",
+        "original_priority": "Low",
         "description": "This incident may require your team's attention during working hours until the incident is stable.",
         "view_order": 1,
         "tactical_report_reminder": 12,
@@ -12,6 +13,7 @@ default_incident_priorities = [
     },
     {
         "name": "Medium",
+        "original_priority": "Medium",
         "description": "This incident may require your team's full attention during waking hours, including weekends, until the incident is stable.",
         "view_order": 2,
         "tactical_report_reminder": 6,
@@ -23,6 +25,7 @@ default_incident_priorities = [
     },
     {
         "name": "High",
+        "original_priority": "High",
         "description": "This incident may require your team's full attention 24x7, and should be prioritized over all other work, until the incident is stable.",
         "view_order": 3,
         "tactical_report_reminder": 2,

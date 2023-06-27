@@ -162,13 +162,15 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
     )
     case.case_priority = case_priority
 
+    case.case_priority.original_priority = case_priority.name
+
     db_session.add(case)
     db_session.commit()
 
     event_service.log_case_event(
         db_session=db_session,
         source="Dispatch Core App",
-        description="Case created",
+        description="Case created with priority: " + case_priority.name,
         case_id=case.id,
     )
 
@@ -206,7 +208,7 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
     return case
 
 
-def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: DispatchUser) -> Case:
+def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: DispatchUser, original_priority: Optional[str]) -> Case:
     """Updates an existing case."""
     update_data = case_in.dict(
         skip_defaults=True,
@@ -347,6 +349,8 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
     for i in case_in.incidents:
         incidents.append(incident_service.get(db_session=db_session, incident_id=i.id))
     case.incidents = incidents
+
+    case.case_priority.original_priority = original_priority
 
     db_session.commit()
 

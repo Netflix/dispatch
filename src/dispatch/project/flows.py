@@ -57,6 +57,7 @@ def project_init_flow(*, project_id: int, organization_slug: str, db_session=Non
     for priority in default_incident_priorities:
         incident_priority_in = IncidentPriorityCreate(
             name=priority["name"],
+            original_priority=priority["original_priority"],
             description=priority["description"],
             page_commander=priority["page_commander"],
             tactical_report_reminder=priority["tactical_report_reminder"],
@@ -121,6 +122,7 @@ def project_init_flow(*, project_id: int, organization_slug: str, db_session=Non
     for priority in default_case_priorities:
         case_priority_in = CasePriorityCreate(
             name=priority["name"],
+            original_priority=priority["original_priority"],
             description=priority["description"],
             page_assignee=priority["page_assignee"],
             project=project,

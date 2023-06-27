@@ -159,7 +159,12 @@ def update_incident(
     previous_incident = IncidentRead.from_orm(current_incident)
 
     # we update the incident
-    incident = update(db_session=db_session, incident=current_incident, incident_in=incident_in)
+    incident = update(
+        db_session=db_session,
+        incident=current_incident,
+        incident_in=incident_in,
+        original_priority=previous_incident.incident_priority.original_priority
+    )
 
     # we run the incident update flow
     background_tasks.add_task(

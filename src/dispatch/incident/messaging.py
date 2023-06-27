@@ -310,6 +310,7 @@ def send_incident_created_notifications(incident: Incident, db_session: SessionL
         "severity_description": incident.incident_severity.description,
         "priority": incident.incident_priority.name,
         "priority_description": incident.incident_priority.description,
+        "original_priority": incident.incident_priority.original_priority,
         "reporter_fullname": incident.reporter.individual.name,
         "reporter_team": incident.reporter.team,
         "reporter_weblink": incident.reporter.individual.weblink,

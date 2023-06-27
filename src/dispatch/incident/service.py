@@ -190,13 +190,15 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
         visibility=visibility,
     )
 
+    incident_priority.original_priority = incident_priority.name
+
     db_session.add(incident)
     db_session.commit()
 
     event_service.log_incident_event(
         db_session=db_session,
         source="Dispatch Core App",
-        description="Incident created",
+        description="Incident created with priority: " + incident_priority.name,
         incident_id=incident.id,
     )
 
@@ -266,7 +268,7 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
     return incident
 
 
-def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> Incident:
+def update(*, db_session, incident: Incident, incident_in: IncidentUpdate, original_priority: Optional[str]) -> Incident:
     """Updates an existing incident."""
     incident_type = incident_type_service.get_by_name_or_default(
         db_session=db_session,
@@ -342,6 +344,7 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
     incident.duplicates = duplicates
     incident.incident_costs = incident_costs
     incident.incident_priority = incident_priority
+    incident.incident_priority.original_priority = original_priority
     incident.incident_severity = incident_severity
     incident.incident_type = incident_type
     incident.status = incident_in.status

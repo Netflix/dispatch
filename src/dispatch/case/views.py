@@ -159,7 +159,11 @@ def update_case(
 
     # we update the case
     case = update(
-        db_session=db_session, case=current_case, case_in=case_in, current_user=current_user
+        db_session=db_session,
+        case=current_case,
+        case_in=case_in,
+        current_user=current_user,
+        original_priority=previous_case.case_priority.original_priority
     )
 
     # we run the case update flow

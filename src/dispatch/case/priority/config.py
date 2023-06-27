@@ -1,6 +1,7 @@
 default_case_priorities = [
     {
         "name": "Low",
+        "original_priority": "Low",
         "description": "This case should be triaged on a best-effort basis.",
         "view_order": 1,
         "color": "#8bc34a",
@@ -10,6 +11,7 @@ default_case_priorities = [
     },
     {
         "name": "Medium",
+        "original_priority": "Medium",
         "description": "This case should be triaged within 24hrs of case creation.",
         "view_order": 2,
         "color": "#ffeb3b",
@@ -19,6 +21,7 @@ default_case_priorities = [
     },
     {
         "name": "High",
+        "original_priority": "High",
         "description": "This case should be triaged within 8hrs of case creation.",
         "view_order": 3,
         "color": "#ff9800",
@@ -28,6 +31,7 @@ default_case_priorities = [
     },
     {
         "name": "Critical",
+        "original_priority": "Critical",
         "description": "This case should be triaged immediately.",
         "view_order": 4,
         "color": "#e53935",
@@ -37,6 +41,7 @@ default_case_priorities = [
     },
     {
         "name": "Optional",
+        "original_priority": "Optional",
         "description": "Triage of this case is optional.",
         "view_order": 5,
         "color": "#9e9e9e",
