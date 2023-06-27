@@ -1844,8 +1844,9 @@ def handle_update_incident_submission_event(
 
     updated_incident = incident_service.update(
         db_session=db_session,
-        incident=incident, incident_in=incident_in,
-        original_priority=previous_incident.incident_priority.original_priority
+        incident=incident,
+        incident_in=incident_in,
+        original_priority=previous_incident.incident_priority.original_priority,
     )
 
     commander_email = updated_incident.commander.individual.email

@@ -163,7 +163,7 @@ def update_case(
         case=current_case,
         case_in=case_in,
         current_user=current_user,
-        original_priority=previous_case.case_priority.original_priority
+        original_priority=previous_case.case_priority.original_priority,
     )
 
     # we run the case update flow

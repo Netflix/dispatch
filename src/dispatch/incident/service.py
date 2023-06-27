@@ -268,7 +268,9 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
     return incident
 
 
-def update(*, db_session, incident: Incident, incident_in: IncidentUpdate, original_priority: Optional[str]) -> Incident:
+def update(
+    *, db_session, incident: Incident, incident_in: IncidentUpdate, original_priority: Optional[str]
+) -> Incident:
     """Updates an existing incident."""
     incident_type = incident_type_service.get_by_name_or_default(
         db_session=db_session,

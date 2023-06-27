@@ -163,7 +163,7 @@ def update_incident(
         db_session=db_session,
         incident=current_incident,
         incident_in=incident_in,
-        original_priority=previous_incident.incident_priority.original_priority
+        original_priority=previous_incident.incident_priority.original_priority,
     )
 
     # we run the incident update flow

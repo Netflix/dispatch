@@ -208,7 +208,14 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
     return case
 
 
-def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: DispatchUser, original_priority: Optional[str]) -> Case:
+def update(
+    *,
+    db_session,
+    case: Case,
+    case_in: CaseUpdate,
+    current_user: DispatchUser,
+    original_priority: Optional[str],
+) -> Case:
     """Updates an existing case."""
     update_data = case_in.dict(
         skip_defaults=True,
