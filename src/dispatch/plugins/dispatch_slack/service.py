@@ -246,7 +246,11 @@ def add_users_to_conversation_thread(
     client: WebClient, conversation_id: str, thread_id, user_ids: List[str]
 ) -> NoReturn:
     """Adds user to a threaded conversation."""
-    users = [f"<@{user_id}>" for user_id in user_ids]
+    users = []
+
+    # generate user id list without duplicates
+    [users.append(f"<@{user_id}>") for user_id in user_ids if user_id not in users]
+
     if users:
         # @'ing them isn't enough if they aren't already in the channel
         add_users_to_conversation(client=client, conversation_id=conversation_id, user_ids=user_ids)
