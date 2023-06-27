@@ -98,13 +98,18 @@ def test_update(session, case: Case, project):
     )
 
     case_out = update_case(
-        db_session=session, case=case, case_in=case_in, current_user=current_user
+        db_session=session,
+        case=case,
+        case_in=case_in,
+        current_user=current_user,
+        original_priority="Low",
     )
     assert case_out.title == "XXX"
     assert case_out.description == "YYY"
     assert case_out.resolution == "True Positive"
     assert case_out.status == CaseStatus.closed
     assert case_out.visibility == Visibility.restricted
+    assert case_out.case_priority.original_priority == "Low"
 
 
 def test_delete(session, case: Case):
