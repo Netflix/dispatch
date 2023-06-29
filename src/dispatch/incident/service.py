@@ -203,7 +203,8 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
             "type": incident.incident_type.name,
             "severity": incident.incident_severity.name,
             "priority": incident.incident_priority.name,
-            "visibility": str(incident.visibility),
+            "status": incident.status,
+            "visibility": incident.visibility,
         },
         incident_id=incident.id,
     )

@@ -175,7 +175,8 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
             "type": case.case_type.name,
             "severity": case.case_severity.name,
             "priority": case.case_priority.name,
-            "visibility": str(case.visibility),
+            "status": case.status,
+            "visibility": case.visibility,
         },
         case_id=case.id,
     )
