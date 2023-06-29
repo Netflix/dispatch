@@ -197,6 +197,14 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
         db_session=db_session,
         source="Dispatch Core App",
         description="Incident created",
+        details={
+            "title": incident.title,
+            "description": incident.description,
+            "type": incident.incident_type.name,
+            "severity": incident.incident_severity.name,
+            "priority": incident.incident_priority.name,
+            "visibility": str(incident.visibility),
+        },
         incident_id=incident.id,
     )
 
