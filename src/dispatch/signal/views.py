@@ -1,6 +1,7 @@
 import logging
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response, status
+from psycopg2.errors import UniqueViolation
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.exc import IntegrityError
 
@@ -104,12 +105,24 @@ def create_signal_instance(
             detail=[{"msg": msg}],
         ) from None
 
-    signal_instance = signal_service.create_instance(
-        db_session=db_session, signal_instance_in=signal_instance_in
-    )
-    signal_instance.signal = signal
-    db_session.commit()
-    return signal_instance
+    try:
+        signal_instance = signal_service.create_instance(
+            db_session=db_session, signal_instance_in=signal_instance_in
+        )
+    except IntegrityError as e:
+        if type(e.orig) is UniqueViolation:
+            msg = f"The id: {signal_instance_in.id} already exists in the database. Please provide a unique id."
+            log.warn(msg)
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=[{"msg": msg}],
+            ) from None
+        else:
+            raise e
+    else:
+        signal_instance.signal = signal
+        db_session.commit()
+        return signal_instance
 
 
 @router.get("/filters", response_model=SignalFilterPagination)
