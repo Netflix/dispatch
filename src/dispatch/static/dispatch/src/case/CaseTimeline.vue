@@ -1,15 +1,12 @@
 <template>
   <v-container>
     <v-timeline v-if="events && events.length" dense class="ml-n12">
-      <v-timeline-item
-        v-for="event in sortedEvents"
-        :key="event.id"
-        class="mb-4"
-        color="red lighten-4"
-        small
-      >
+      <v-timeline-item v-for="event in sortedEvents" :key="event.id" color="red lighten-4" small>
         <div class="caption">
           {{ event.source }}
+        </div>
+        <div class="text-right caption mt-n4">
+          {{ event.started_at }}
         </div>
         <v-alert :value="true" color="grey lighten-4" class="black--text outlined">
           <v-row>
@@ -28,9 +25,6 @@
             </v-col>
           </v-row>
         </v-alert>
-        <div class="text-right caption mt-n4">
-          {{ event.started_at }}
-        </div>
       </v-timeline-item>
     </v-timeline>
     <div v-else>
@@ -40,19 +34,10 @@
 </template>
 
 <script>
+import { mapFields } from "vuex-map-fields"
+
 export default {
   name: "CaseTimeline",
-
-  props: {
-    events: {
-      type: Array,
-      required: true,
-    },
-    caseName: {
-      type: String,
-      required: true,
-    },
-  },
 
   data() {
     return {
@@ -62,6 +47,8 @@ export default {
   },
 
   computed: {
+    ...mapFields("case_management", ["selected.events", "selected.name"]),
+
     sortedEvents: function () {
       return this.events.slice().sort((a, b) => new Date(a.started_at) - new Date(b.started_at))
     },
