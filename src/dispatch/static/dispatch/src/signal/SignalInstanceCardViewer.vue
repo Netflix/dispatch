@@ -1,31 +1,45 @@
 <template>
   <v-skeleton-loader :loading="isLoading" type="table" height="500px">
-    <v-data-iterator
-      :items="signalInstances"
-      :items-per-page="1"
-      :footer-props="{
-        'items-per-page-options': [1, 5, 10],
-      }"
-    >
-      <template v-slot:default="props">
-        <v-row v-for="item in props.items" :key="item.id">
-          <div style="width: 100%">
-            <new-raw-signal-viewer :item="item" />
-          </div>
-        </v-row>
-      </template>
-    </v-data-iterator>
+    <v-row>
+      <v-col cols="3">
+        <v-list>
+          <template v-if="!signalInstances.length">
+            No example signals are currently available for this definition.
+          </template>
+          <template v-for="(instance, index) in signalInstances" v-else>
+            <v-list-item class="mt-n2 mb-n2">
+              <v-list-item-content>
+                <v-list-item-subtitle>{{ instance.created_at }}</v-list-item-subtitle>
+              </v-list-item-content>
+              <v-list-item-action>
+                <v-btn icon @click="updateEditorValue(instance)">
+                  <v-icon small>mdi-arrow-right</v-icon>
+                </v-btn>
+              </v-list-item-action>
+            </v-list-item>
+            <v-divider v-if="index < signalInstances.length - 1"></v-divider>
+          </template>
+          <template v-else> </template>
+        </v-list>
+      </v-col>
+      <v-divider vertical></v-divider>
+      <v-col cols="9">
+        <new-raw-signal-viewer v-if="selectedSignalInstance" :item="selectedSignalInstance" />
+      </v-col>
+    </v-row>
   </v-skeleton-loader>
 </template>
 
 <script>
-import CaseApi from "@/case/api"
+import SignalInstanceTab from "@/signal/SignalInstanceTab.vue"
 import NewRawSignalViewer from "@/signal/NewRawSignalViewer.vue"
+import CaseApi from "@/case/api"
 
 export default {
   name: "SignalInstanceCardViewer",
   components: {
     NewRawSignalViewer,
+    SignalInstanceTab,
   },
   props: {
     caseId: {
@@ -37,6 +51,7 @@ export default {
       menu: false,
       workflowRunDialog: false,
       signalInstances: [],
+      selectedSignalInstance: null, // add this line
       isLoading: true,
     }
   },
@@ -45,8 +60,12 @@ export default {
       this.isLoading = true
       return CaseApi.getAllSignalInstances(caseId).then((response) => {
         this.signalInstances = response.data.instances.flat()
+        this.updateEditorValue(this.signalInstances[0])
         this.isLoading = false
       })
+    },
+    updateEditorValue(instance) {
+      this.selectedSignalInstance = instance
     },
   },
   watch: {

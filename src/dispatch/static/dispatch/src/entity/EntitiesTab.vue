@@ -35,6 +35,7 @@
             <v-btn color="info" elevation="1" small class="ml-7"
               ><v-icon small class="ml-n1 mr-1"> mdi-plus </v-icon>Add an entity type</v-btn
             >
+            <!-- <entity-type-create-dialog></entity-type-create-dialog> -->
           </v-row>
         </v-card>
       </v-row>
@@ -44,12 +45,14 @@
 
 <script>
 import EntityCard from "@/entity/EntityCard.vue"
+import EntityTypeCreateDialog from "@/entity_type/EntityTypeCreateDialog.vue"
 import DateChipGroupRelative from "@/components/DateChipGroupRelative.vue"
 
 export default {
   name: "EntitiesTab",
   components: {
     EntityCard,
+    EntityTypeCreateDialog,
     DateChipGroupRelative,
   },
   props: {

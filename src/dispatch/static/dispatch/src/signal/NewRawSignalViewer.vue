@@ -2,10 +2,10 @@
   <v-card width="100%" elevation="0">
     <v-row no-gutters align="center">
       <v-col>
-        <v-card-subtitle class="mt-4 pl-6">
+        <v-card-subtitle class="pl-6">
           {{ item.id }}
         </v-card-subtitle>
-        <v-card-subtitle class="mt-n8 pl-6">
+        <v-card-subtitle class="mt-n8 mb-n4 pl-6">
           {{ item.created_at | formatRelativeDate }}
         </v-card-subtitle>
       </v-col>
@@ -16,8 +16,8 @@
       </v-col>
     </v-row>
     <v-card-text>
-      <div class="playground-editor" style="height: 500px">
-        <div id="playground-editor" style="height: 500px"></div>
+      <div class="playground-editor" style="height: 800px">
+        <div id="playground-editor" style="height: 800px"></div>
       </div>
     </v-card-text>
     <v-snackbar v-model="snackbar" elevation="24" color="green" :timeout="3000">
@@ -50,6 +50,16 @@ export default {
       },
     },
   },
+  watch: {
+    item: {
+      immediate: true, // This will run the handler immediately after the watcher is created
+      deep: true, // This will enable the watcher to track the nested properties of the object
+      handler(newValue, oldValue) {
+        // This function will be called whenever 'item' prop changes
+        this.editor.getModel().setValue(newValue.raw)
+      },
+    },
+  },
   data() {
     return {
       editor: null,
@@ -77,7 +87,7 @@ export default {
       const editorOptions = {
         minimap: { enabled: false },
         renderLineHighlight: "none",
-        language: "python",
+        language: "json",
         automaticLayout: true,
         value: this.raw_str,
         lineDecorationsWidth: 0,
@@ -90,7 +100,7 @@ export default {
       // Create a unique URI for the in-memory model
       const modelUri = monaco.Uri.parse(`inmemory://playground-${uuid}`)
       // Create the model with an osquery log as the initial value
-      const model = monaco.editor.createModel(this.raw_str, "python", modelUri)
+      const model = monaco.editor.createModel(this.raw_str, "json", modelUri)
       // Create the editor and pass the model to the options
       const editor = monaco.editor.create(
         document.getElementById("playground-editor"),
@@ -372,24 +382,6 @@ export default {
     },
     clearAllDecorations() {
       this.decoration = this.editor.deltaDecorations(this.decoration, this.noHighlight)
-    },
-    getDefaultValue() {
-      const defaultEditorValue = `{
-  "name": "process_events",
-  "hostIdentifier": "host1",
-  "calendarTime": "2022-10-19T10:35:01Z",
-  "time": 1618698901,
-  "columns": {
-    "pid": 888,
-    "path": "/bin/process",
-    "cmdline": "/bin/process -arg1 value1 -arg2 value2",
-    "state": "running",
-    "parent": 555,
-    "created_at": 1918698901,
-    "updated_at": 2118698901
-  }
-}`
-      return defaultEditorValue
     },
     copyToClipboard() {
       navigator.clipboard

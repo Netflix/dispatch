@@ -59,6 +59,7 @@
         </v-flex>
         <v-flex lg4 sm6 xs12 class="pb-6 pt-6 pr-6">
           <case-stat-widget class="ml-6" icon="domain" title="1" sub-title="My Open Cases" />
+          <!-- <v-btn @click="openCaseDrawer">View Cases</v-btn> -->
         </v-flex>
       </v-layout>
     </div>
@@ -200,11 +201,19 @@
                 <v-list>
                   <v-list-item
                     :to="{
+                      name: 'CasePage',
+                      params: { name: item.name },
+                    }"
+                  >
+                    <v-list-item-title>View</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item
+                    :to="{
                       name: 'CaseTableEdit',
                       params: { name: item.name },
                     }"
                   >
-                    <v-list-item-title>View / Edit</v-list-item-title>
+                    <v-list-item-title>Edit</v-list-item-title>
                   </v-list-item>
                   <v-list-item
                     @click="showRun({ type: 'case', data: item })"
@@ -226,21 +235,32 @@
             </template>
           </v-data-table>
           <!-- <v-divider class="mt-6"></v-divider> -->
-          <v-col cols="6">
-            <div class="subtitle pl-6">
-              <v-badge bordered color="red" dot left offset-x="-10" offset-y="12">
-                <b>My Open Cases</b>
-              </v-badge>
-            </div>
-          </v-col>
-          <case-card-iterator
-            :items="openCases"
-            :items-per-page="2"
-            page.sync="page"
-          ></case-card-iterator>
         </v-card>
       </v-col>
     </v-row>
+    <!-- <v-navigation-drawer v-model="isMyOpenCasesDrawerOpen" permanent app clipped right width="500">
+      <v-col cols="6">
+        <div class="subtitle pl-6">
+          <v-badge bordered color="red" dot left offset-x="-10" offset-y="12">
+            <b>My Open Cases</b>
+          </v-badge>
+        </div>
+      </v-col>
+      <v-lazy
+        v-model="isActive"
+        :options="{
+          threshold: 0.5,
+        }"
+        min-height="200"
+        transition="fade-transition"
+      >
+        <case-card-iterator
+          :items="openCases"
+          :items-per-page="10"
+          page.sync="page"
+        ></case-card-iterator>
+      </v-lazy>
+    </v-navigation-drawer> -->
     <bulk-edit-sheet />
   </v-container>
 </template>
@@ -317,6 +337,8 @@ export default {
       showEditSheet: false,
       windowWidth: window.innerWidth,
       searchExpanded: false,
+      isMyOpenCasesDrawerOpen: false,
+      isActive: false,
     }
   },
 
@@ -390,6 +412,10 @@ export default {
     handleResize() {
       this.windowWidth = window.innerWidth
     },
+    openCaseDrawer() {
+      console.log("open drawer")
+      this.isMyOpenCasesDrawerOpen = true
+    },
   },
 
   watch: {
@@ -398,6 +424,9 @@ export default {
       handler: function (newVal) {
         this.showEditSheet = newVal.meta && newVal.meta.showEditSheet
       },
+    },
+    isMyOpenCasesDrawerOpen: function (newVal, oldVal) {
+      console.log("Drawer state changed from " + oldVal + " to " + newVal)
     },
   },
 
