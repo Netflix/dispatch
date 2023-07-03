@@ -1,7 +1,7 @@
 <template>
   <ValidationObserver v-slot="{ invalid, validated }">
     <v-navigation-drawer v-model="showCreateEdit" app clipped right width="500">
-      <template v-slot:prepend>
+      <template #prepend>
         <v-list-item two-line>
           <v-list-item-content>
             <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
@@ -33,7 +33,7 @@
                 <ValidationProvider name="Email" rules="required" immediate>
                   <v-text-field
                     v-model="email"
-                    :disabled="id"
+                    :disabled="id !== null"
                     label="Email"
                     hint="Member's email."
                   />
@@ -57,7 +57,7 @@
               <v-flex xs12>
                 <v-radio-group v-model="role" column>
                   <v-tooltip max-width="250px" left>
-                    <template v-slot:activator="{ on, attrs }">
+                    <template #activator="{ on, attrs }">
                       <v-radio v-bind="attrs" v-on="on" label="Member" value="Member"> </v-radio>
                     </template>
                     <span>
@@ -66,7 +66,7 @@
                     </span>
                   </v-tooltip>
                   <v-tooltip max-width="250px" left>
-                    <template v-slot:activator="{ on, attrs }">
+                    <template #activator="{ on, attrs }">
                       <v-radio v-bind="attrs" v-on="on" label="Admin" value="Admin"> </v-radio>
                     </template>
                     <span>
@@ -77,7 +77,7 @@
                     </span>
                   </v-tooltip>
                   <v-tooltip max-width="250px" left>
-                    <template v-slot:activator="{ on, attrs }">
+                    <template #activator="{ on, attrs }">
                       <v-radio v-bind="attrs" v-on="on" label="Manager" value="Manager"> </v-radio>
                     </template>
                     <span>
@@ -86,7 +86,7 @@
                     </span>
                   </v-tooltip>
                   <v-tooltip max-width="250px" left>
-                    <template v-slot:activator="{ on, attrs }">
+                    <template #activator="{ on, attrs }">
                       <v-radio v-bind="attrs" v-on="on" label="Owner" value="Owner"> </v-radio>
                     </template>
                     <span
@@ -119,7 +119,7 @@ import { map } from "lodash"
 
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { ValidationObserver, ValidationProvider } from "vee-validate"
 
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 
