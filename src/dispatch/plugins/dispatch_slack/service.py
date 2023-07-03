@@ -282,7 +282,7 @@ def get_message_permalink(client: WebClient, conversation_id: str, ts: str) -> s
         SlackAPIGetEndpoints.chat_permalink,
         channel=conversation_id,
         message_ts=ts,
-    )
+    )["permalink"]
 
 
 def send_message(
