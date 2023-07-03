@@ -111,7 +111,7 @@ def create_signal_instance(
         )
     except IntegrityError as e:
         if type(e.orig) is UniqueViolation:
-            msg = f"The id: {signal_instance_in.id} already exists in the database. Please provide a unique id."
+            msg = f"Signal instance id {signal_instance_in.id} already exists in the database. Please provide a unique id."
             log.warn(msg)
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
