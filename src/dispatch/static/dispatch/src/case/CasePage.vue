@@ -1,144 +1,166 @@
 <template>
   <v-container fluid class="pt-6" style="width: 1920px">
-    <v-row no-gutters align="center">
-      <v-col>
-        <v-breadcrumbs class="ml-n6" :items="breadcrumbItems">
-          <template v-slot:divider>
-            <v-icon>mdi-chevron-right</v-icon>
-          </template>
-        </v-breadcrumbs>
+    <v-card elevation="0">
+      <v-row no-gutters align="center">
+        <v-col>
+          <v-breadcrumbs class="ml-n4" :items="breadcrumbItems">
+            <template v-slot:divider>
+              <v-icon>mdi-chevron-right</v-icon>
+            </template>
+          </v-breadcrumbs>
 
-        <div class="pt-2 headline font-weight-medium">
-          {{ selected.title }}
-        </div>
-        <div class="pt-2 subtitle font-weight-light">
-          <v-chip outlined small class="mr-2" :color="getPriorityColor(selected.case_priority)">
-            <v-icon dense small class="pr-2" :color="getPriorityColor(selected.case_priority)">
-              mdi-alert-plus-outline
-            </v-icon>
-            <b>{{ selected.case_priority.name }}</b>
-          </v-chip>
-          <span v-if="!fullText"> {{ trimmedDescription }} </span>
-          <span v-else> {{ selected.description }} </span>
-          <v-btn
-            x-small
-            text
-            elevation="0"
-            color="black"
-            @click="toggleText"
-            v-if="selected.description.length > 100"
-          >
-            <span color="black"> {{ fullText ? "Show Less" : "..." }} </span>
-          </v-btn>
-        </div>
-      </v-col>
-      <v-col class="d-flex flex-column align-end">
-        <div class="pr-6">
-          <participant-chips :participants="selected.participants"></participant-chips>
-        </div>
-        <div class="pt-11">
-          <v-btn outlined small elevation="1" color="secondary" class="mr-1 ml-2">
-            <v-icon small>mdi-dots-horizontal </v-icon>
-          </v-btn>
-          <v-btn outlined small color="secondary" elevation="1" class="ml-1 mr-2">
-            <v-icon small>mdi-bell-off</v-icon>
-          </v-btn>
-          <v-btn
-            outlined
-            small
-            color="primary"
-            elevation="1"
-            class="mr-4"
-            @click="showEscalateDialog(selected)"
-          >
-            <v-icon small class="mr-1">mdi-fire</v-icon>Escalate
-          </v-btn>
-        </div>
-      </v-col>
-    </v-row>
+          <div class="pt-2 pl-2 headline font-weight-medium">
+            {{ selected.title }}
+          </div>
+          <div class="pt-2 subtitle font-weight-light">
+            <v-row>
+              <v-col cols="12" sm="12">
+                <v-textarea
+                  v-model="selected.description"
+                  solo
+                  flat
+                  dense
+                  auto-grow
+                  rows="1"
+                  background-color="white"
+                  @keyup.enter="toggleEdit"
+                  class="hover-outline ml-n1 pl-1 mb-4"
+                >
+                </v-textarea>
+                <div class="pl-2">
+                  <case-priority-select-chip :_case="selected" v-bind="attrs" v-on="on" />
+
+                  <v-chip class="ml-2 mr-4" small text-color="black">
+                    {{ selected.case_type.name }}
+                  </v-chip>
+                  <v-btn-toggle v-model="toggle_exclusive" mandatory rounded>
+                    <v-btn small>
+                      <v-icon dense x-small class="mr-1 subtitle font-weight-light"
+                        >mdi-calendar-clock</v-icon
+                      >
+                      New
+                    </v-btn>
+                    <v-btn small>
+                      <v-icon dense x-small class="mr-2"> mdi-timer-sand </v-icon> Triaged
+                    </v-btn>
+                    <v-btn small>
+                      <v-icon dense x-small class="mr-2"> mdi-check-all </v-icon> Resolved
+                    </v-btn>
+                    <v-btn small> <v-icon x-small class="mr-1">mdi-fire</v-icon> Escalated </v-btn>
+                  </v-btn-toggle>
+
+                  <v-tabs v-model="tab" class="ml-n3 pt-6" background-color="transparent">
+                    <v-tabs-slider color="rgb(9, 19, 40"></v-tabs-slider>
+
+                    <v-tab key="main" class="tab custom-tab-text">
+                      <v-icon dense small class="pr-2"> mdi-cube </v-icon>
+                      Timeline
+                    </v-tab>
+                    <v-tab key="signals" class="tab custom-tab-text">
+                      <v-icon dense small class="pr-2"> mdi-broadcast </v-icon>
+                      <v-badge bordered inline content="6">Signals</v-badge>
+                    </v-tab>
+                    <v-tab key="entities" class="tab">
+                      <v-icon dense small class="pr-2"> mdi-account-group </v-icon>
+                      <v-badge bordered inline content="2">Entities</v-badge>
+                    </v-tab>
+                  </v-tabs>
+                </div>
+              </v-col>
+            </v-row>
+          </div>
+        </v-col>
+
+        <v-col class="d-flex flex-column align-end">
+          <div class="pr-6">
+            <participant-chips :participants="selected.participants"></participant-chips>
+          </div>
+          <div class="pt-11">
+            <v-btn outlined small elevation="1" color="secondary" class="mr-1 ml-2">
+              <v-icon small>mdi-dots-horizontal </v-icon>
+            </v-btn>
+            <v-btn outlined small color="secondary" elevation="1" class="ml-1 mr-2">
+              <v-icon small>mdi-bell-off</v-icon>
+            </v-btn>
+            <v-btn
+              outlined
+              small
+              color="primary"
+              elevation="1"
+              class="mr-4"
+              @click="showEscalateDialog(selected)"
+            >
+              <v-icon small class="mr-1">mdi-fire</v-icon>Escalate
+            </v-btn>
+          </div>
+        </v-col>
+      </v-row>
+    </v-card>
 
     <div>
       <!-- other elements... -->
       <escalate-dialog />
     </div>
-    <v-divider class="mt-6"></v-divider>
-    <v-card flat>
-      <v-card-text>
-        <v-row class="pt-4 pb-4" justify="left" align="center">
-          <v-btn-toggle v-model="toggle_exclusive" mandatory rounded>
-            <v-btn small> New </v-btn>
-            <v-btn small> Triaged </v-btn>
-            <v-btn small> Resolved </v-btn>
-            <v-btn small> Escalated </v-btn>
-          </v-btn-toggle>
-          <!-- <v-chip class="ml-6" small color="grey lighten-2" text-color="black">
-            Open for {{ openTime }}
-          </v-chip> -->
-          <v-chip class="ml-6" small text-color="black">
-            {{ selected.case_type.name }}
-          </v-chip>
-        </v-row>
-      </v-card-text>
-    </v-card>
+
     <v-row>
       <v-col cols="9">
-        <v-card class="rounded-b-2 rounded-lg ml-0">
-          <v-tabs
-            v-model="tab"
-            class="rounded-b-0 rounded-lg"
-            background-color="grey lighten-4"
-            hide-slider
-          >
-            <v-tab key="main" class="tab rounded-b-0 rounded-lg custom-tab-text">
-              <v-icon dense small> mdi-cube </v-icon>
-            </v-tab>
-            <v-tab key="signals" class="tab rounded-b-0 rounded-lg custom-tab-text">
-              <v-icon dense small class="pr-2"> mdi-broadcast </v-icon> Signals
-            </v-tab>
-            <v-tab key="entities" class="tab rounded-b-0 rounded-lg">
-              <v-icon dense small class="pr-2"> mdi-account-group </v-icon> Entities
-            </v-tab>
-          </v-tabs>
-          <v-tabs-items v-model="tab">
-            <v-tab-item key="main" class="tab">
-              <div class="pt-12 pb-12 pr-12 pl-12">
-                <v-card elevation="0" class="rounded-lg">
-                  <v-card-title>
-                    <v-icon class="mr-2">mdi-chart-timeline-variant </v-icon>Case Timeline </v-card-title
-                  ><CaseTimeline class="pl-8 mr-4" />
-                </v-card>
-                <!-- <rich-resolution></rich-resolution> -->
-              </div>
-            </v-tab-item>
-            <v-tab-item key="signals" class="tab">
-              <signal-instance-card-viewer :caseId="selected.id" />
-            </v-tab-item>
-            <v-tab-item key="entities">
-              <entities-tab :selected="selected" v-model="signal_instances" />
-            </v-tab-item>
-          </v-tabs-items>
-        </v-card>
+        <v-divider></v-divider>
+        <v-tabs-items v-model="tab">
+          <v-tab-item key="main" class="tab">
+            <div class="pt-12 pb-12 pr-12 pl-12">
+              <v-card elevation="0" class="rounded-lg">
+                <v-card-title>
+                  <v-icon class="mr-2">mdi-chart-timeline-variant </v-icon>Case Timeline </v-card-title
+                ><CaseTimeline class="pl-8 mr-4" />
+              </v-card>
+              <!-- <rich-resolution></rich-resolution> -->
+            </div>
+          </v-tab-item>
+          <v-tab-item key="signals" class="tab">
+            <signal-instance-card-viewer :caseId="selected.id" />
+          </v-tab-item>
+          <v-tab-item key="entities">
+            <entities-tab :selected="selected" v-model="signal_instances" />
+          </v-tab-item>
+        </v-tabs-items>
       </v-col>
       <!-- <v-divider vertical></v-divider> -->
-      <v-col cols="3">
-        <v-card class="px-6 pt-6 pb-6 mr-4 rounded-lg" elevation="1" color="grey lighten-5">
-          <v-row no-gutters justify="space-between" align="center">
-            <v-col cols="auto">
-              <div class="pb-6 subtitle font-weight-medium">Assignee</div>
-            </v-col>
-            <v-col cols="auto">
-              <new-participant-select :project="selected.project" :value="selected.assignee" />
-            </v-col>
-          </v-row>
-          <v-row no-gutters justify="space-between" align="center">
-            <v-col cols="auto">
-              <div class="pb-6 subtitle font-weight-medium">Reporter</div>
-            </v-col>
-            <v-col cols="auto">
-              <new-participant-select :project="selected.project" :value="selected.reporter" />
-            </v-col>
-          </v-row>
-          <!-- <v-row no-gutters justify="space-between" align="center">
+      <v-col cols="3" class="pt-16">
+        <div class="sticky-col">
+          <v-card
+            class="px-6 pt-6 pb-6 mr-4 rounded-lg"
+            elevation="3"
+            outlined
+            color="white lighten-5"
+          >
+            <span>Assignee</span>
+
+            <v-row no-gutters align="center">
+              <v-col cols="auto">
+                <v-icon dense class="pr-2 pb-6"> mdi-account-check </v-icon>
+              </v-col>
+              <v-col cols="auto">
+                <new-participant-select :project="selected.project" :value="selected.assignee" />
+              </v-col>
+            </v-row>
+            <span>Reporter</span>
+            <v-row no-gutters align="center">
+              <v-col cols="auto">
+                <v-icon dense class="pr-2 pb-6"> mdi-account </v-icon>
+              </v-col>
+              <v-col cols="auto">
+                <new-participant-select :project="selected.project" :value="selected.reporter" />
+              </v-col>
+            </v-row>
+            <!-- <v-row no-gutters justify="space-between" align="center">
+              <v-col cols="auto">
+                <div class="pb-6 subtitle font-weight-medium">Visibility</div>
+              </v-col>
+              <v-col cols="auto">
+                <div class="pb-6 subtitle font-weight-light">{{ selected.visibility }}</div>
+              </v-col>
+            </v-row> -->
+            <!-- <v-row no-gutters justify="space-between" align="center">
             <v-col cols="auto">
               <div class="pb-6 subtitle font-weight-light">Status</div>
             </v-col>
@@ -162,11 +184,11 @@
               />
             </v-col>
           </v-row> -->
-          <!-- <div>
+            <!-- <div>
             <v-textarea outlined name="input-7-4" label="Resolution" value=""></v-textarea>
             <rich-resolution></rich-resolution>
           </div> -->
-          <!-- <v-divider class="mb-6"></v-divider>
+            <!-- <v-divider class="mb-6"></v-divider>
 
           <v-row no-gutters justify="space-between" align="center" class="pb-2">
             <v-col cols="auto">
@@ -243,54 +265,88 @@
             </v-col>
           </v-row>
  -->
-          <!-- <v-divider class="mt-6 mb-6"></v-divider> -->
-          <v-card outlined class="rounded-lg">
-            <v-textarea
-              full-width
-              solo
-              flat
-              autogrow
-              rows="16"
-              placeholder="Document your findings and provide the rationale for any decisions you made as part of this investigation..."
-            ></v-textarea>
+            <!-- <v-divider class="mt-6 mb-6"></v-divider> -->
+            <v-card outlined class="rounded-lg">
+              <v-textarea
+                v-model="selected.resolution"
+                full-width
+                solo
+                flat
+                autogrow
+                rows="16"
+                placeholder="Document your findings and provide the rationale for any decisions you made as part of this investigation..."
+              ></v-textarea>
 
-            <v-row class="pb-2 pr-2 pl-2">
-              <v-col cols="8" class="d-flex align-center">
-                <v-menu offset-y bottom>
-                  <template v-slot:activator="{ on }">
-                    <v-chip v-on="on" outlined small> {{ currentReason }} </v-chip>
-                  </template>
+              <v-row class="pb-2 pr-2 pl-2">
+                <v-col cols="8" class="d-flex align-center">
+                  <v-menu offset-y bottom>
+                    <template v-slot:activator="{ on }">
+                      <v-chip v-on="on" small>
+                        <v-icon small left> mdi-label </v-icon>
+                        {{
+                          selected.resolution_reason
+                            ? selected.resolution_reason
+                            : "Select a reason"
+                        }}
+                      </v-chip>
+                    </template>
 
-                  <v-list>
-                    <v-list-item @click="onSelectReason('False Positive')">
-                      <v-list-item-title>False Positive</v-list-item-title>
-                    </v-list-item>
+                    <v-list>
+                      <v-list-item
+                        v-for="reason in resolutionReasons"
+                        :key="reason"
+                        @click="onSelectReason(reason)"
+                      >
+                        <v-list-item-title>{{ reason }}</v-list-item-title>
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
+                </v-col>
 
-                    <v-list-item @click="onSelectReason('User Acknowledged')">
-                      <v-list-item-title>User Acknowledged</v-list-item-title>
-                    </v-list-item>
-
-                    <v-list-item @click="onSelectReason('True Positive')">
-                      <v-list-item-title>True Positive</v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
-              </v-col>
-
-              <v-col cols="4" class="d-flex justify-end align-center">
-                <v-btn outlined small color="black" elevation="0"> Submit </v-btn>
-              </v-col>
-            </v-row>
+                <v-col cols="4" class="d-flex justify-end align-center">
+                  <v-btn outlined small color="black" elevation="0" @click="onSubmit()">
+                    Submit
+                  </v-btn>
+                </v-col>
+              </v-row>
+            </v-card>
           </v-card>
-        </v-card>
-        <div class="pt-8 pl-2 pr-2">
-          <h4 class="mb-2">Tags</h4>
-          <v-chip-group active-class="primary--text" column>
+          <div class="pt-8 pl-2 pr-2">
+            <h4 class="mb-2">Resources</h4>
+            <v-row class="pt-2" no-gutters justify="space-between" align="center">
+              <v-col cols="auto">
+                <v-icon dense small class="pr-2"> mdi-slack </v-icon> Conversation
+              </v-col>
+              <v-col cols="auto"> </v-col>
+            </v-row>
+            <v-row class="pt-6" no-gutters justify="space-between" align="center">
+              <v-col cols="auto">
+                <v-icon dense small class="pr-2"> mdi-jira </v-icon> Ticket
+              </v-col>
+              <v-col cols="auto"> </v-col>
+            </v-row>
+            <v-row class="pt-6" no-gutters justify="space-between" align="center">
+              <v-col cols="auto">
+                <v-icon dense small class="pr-2"> mdi-file-document </v-icon> Document
+              </v-col>
+              <v-col cols="auto"> </v-col>
+            </v-row>
+            <v-row class="pt-6" no-gutters justify="space-between" align="center">
+              <v-col cols="auto">
+                <v-icon dense small class="pr-2"> mdi-folder-google-drive </v-icon> Storage
+              </v-col>
+              <v-col cols="auto"> </v-col>
+            </v-row>
+            <h4 class="mt-8 mb-2">Tags</h4>
+            <!-- <v-chip-group active-class="primary--text" column>
             <v-chip flat close small v-for="tag in selected.tags" :key="tag">
               {{ tag }}
             </v-chip>
             <v-chip flat small> Add tag<v-icon class="ml-1" small>mdi-plus </v-icon> </v-chip>
-          </v-chip-group>
+          </v-chip-group> -->
+
+            <tag-chips :_case="selected"></tag-chips>
+          </div>
         </div>
       </v-col>
     </v-row>
@@ -303,9 +359,11 @@ import moment from "moment-timezone"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
+import CasePrioritySelectChip from "@/case//priority/CasePrioritySelectChip.vue"
 import CaseTimelineAdvanced from "@/case/CaseTimelineAdvanced.vue"
 import CaseTimeline from "@/case/CaseTimeline.vue"
 import CaseTimelineTab from "@/case/TimelineTab.vue"
+import TagChips from "@/case/TagChips.vue"
 import EscalateDialog from "@/case/EscalateDialog.vue"
 
 import NewParticipant from "@/case/NewParticipant.vue"
@@ -325,6 +383,7 @@ export default {
     CaseTimelineAdvanced,
     CaseTimeline,
     CaseTimelineTab,
+    CasePrioritySelectChip,
     NewParticipant,
     NewParticipantSelect,
     NewCasePrioritySelect,
@@ -333,6 +392,7 @@ export default {
     SignalInstanceTab,
     SignalInstanceCardViewer,
     EntitiesTab,
+    TagChips,
   },
 
   props: {
@@ -346,9 +406,13 @@ export default {
   data() {
     return {
       tab: null,
+      editing: false,
       statuses: ["New", "Triage", "Escalated", "Closed"],
       fullText: false,
       currentReason: "Resolution Reason",
+      priorities: ["High", "Medium", "Low"],
+      resolutionReasons: ["False Positive", "User Acknowledged", "Mitigated", "Escalated"],
+      visibilities: ["Open", "Restricted"],
     }
   },
 
@@ -409,17 +473,30 @@ export default {
       this.getDetails({ name: this.$route.params.name })
     },
 
+    onSubmit(resolution_reason, resolution) {
+      this.save_page()
+    },
+
+    toggleEdit() {
+      this.editing = !this.editing
+      if (!this.editing) {
+        // Save or do something with the description here.
+      }
+    },
+
+    changePriority(priority) {
+      this.selected.case_priority = priority // Update the selected priority.
+
+      // Here, you may want to call an API to update the priority in the backend.
+      // this.updateCasePriority(this.selected.case_priority);
+    },
+
     onSelectReason(reason) {
-      this.currentReason = reason
+      this.selected.resolution_reason = reason
       // other logic as necessary
     },
 
-    ...mapActions("case_management", [
-      "save",
-      "getDetails",
-      "closeEditSheet",
-      "showEscalateDialog",
-    ]),
+    ...mapActions("case_management", ["save", "getDetails", "save_page", "showEscalateDialog"]),
 
     toggleText() {
       this.fullText = !this.fullText
@@ -460,12 +537,12 @@ export default {
 </script>
 
 <style scoped>
-.v-tabs .v-tab.v-tab--active {
+/* .v-tabs .v-tab.v-tab--active {
   background: white;
   border: 1px solid #ccc;
   border-bottom: none;
   border-radius: 12px 12px 0 0;
-}
+} */
 
 .v-tab {
   text-transform: none !important;
@@ -490,5 +567,14 @@ export default {
   background-color: rgba(211, 211, 211, 0.8) !important; /* lightgrey with 80% opacity */
   color: black !important;
   border: 1px dotted black !important;
+}
+
+.hover-outline:hover {
+  border: 1px solid rgba(0, 0, 0, 0.87); /* Change color as per your requirement */
+}
+
+.sticky-col {
+  position: sticky;
+  top: 80px;
 }
 </style>

@@ -18,7 +18,7 @@
     <v-tooltip bottom>
       <template v-slot:activator="{ on, attrs }">
         <v-btn icon class="ml-4 plus-btn" @click="addParticipant" v-bind="attrs" v-on="on">
-          <v-icon>mdi-plus</v-icon>
+          <v-icon dense>mdi-account-multiple-plus-outline</v-icon>
         </v-btn>
       </template>
       <span>Add new participant</span>

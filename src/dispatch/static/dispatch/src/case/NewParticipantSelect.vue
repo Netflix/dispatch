@@ -5,17 +5,17 @@
     :loading="loading"
     :search-input.sync="search"
     @update:search-input="getFilteredData()"
+    cache-items="true"
     chips
-    clearable
     deletable-chips
     hide-selected
     item-text="individual.name"
     no-filter
     return-object
-    outlined
     solo
     dense
     flat
+    single-line
     v-model="participant"
     style="max-width: 250px"
   >
@@ -149,3 +149,9 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.participant-select:hover {
+  outline: 1px dotted black;
+}
+</style>

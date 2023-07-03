@@ -1,7 +1,25 @@
 <template>
   <v-container>
     <v-timeline v-if="events && events.length" dense class="ml-n12">
-      <v-timeline-item v-for="event in sortedEvents" :key="event.id" color="red lighten-4" small>
+      <v-timeline-item fill-dot class="white--text mb-12" color="rgb(43, 51, 67)" large>
+        <template v-slot:icon>
+          <span>JL</span>
+        </template>
+        <v-text-field
+          v-model="input"
+          hide-details
+          flat
+          label="Leave a comment..."
+          solo
+          @keydown.enter="comment"
+        >
+          <template v-slot:append>
+            <v-btn class="mx-0" depressed @click="comment"> Post </v-btn>
+          </template>
+        </v-text-field>
+      </v-timeline-item>
+
+      <v-timeline-item v-for="event in sortedEvents" :key="event.id" color="rgb(9, 19, 40)" small>
         <div class="caption">
           {{ event.source }}
         </div>
@@ -43,6 +61,8 @@ export default {
     return {
       showDetails: false,
       exportLoading: false,
+      input: null,
+      nonce: 0,
     }
   },
 
@@ -50,7 +70,29 @@ export default {
     ...mapFields("case_management", ["selected.events", "selected.name"]),
 
     sortedEvents: function () {
-      return this.events.slice().sort((a, b) => new Date(a.started_at) - new Date(b.started_at))
+      this.events = this.events
+        .slice()
+        .sort((a, b) => new Date(a.started_at) - new Date(b.started_at))
+
+      return this.events.slice().reverse()
+    },
+
+    methods: {
+      comment() {
+        const time = new Date().toTimeString()
+        this.events.push({
+          id: this.nonce++,
+          text: this.input,
+          time: time.replace(/:\d{2}\sGMT-\d{4}\s\((.*)\)/, (match, contents, offset) => {
+            return ` ${contents
+              .split(" ")
+              .map((v) => v.charAt(0))
+              .join("")}`
+          }),
+        })
+
+        this.input = null
+      },
     },
   },
 }

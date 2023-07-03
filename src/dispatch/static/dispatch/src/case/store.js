@@ -188,8 +188,8 @@ const actions = {
   },
   closeEscalateDialog({ commit }) {
     commit("SET_DIALOG_ESCALATE", false)
-    commit("RESET_SELECTED")
-    commit("incident/RESET_SELECTED", null, { root: true })
+    // commit("RESET_SELECTED")
+    // commit("incident/RESET_SELECTED", null, { root: true })
   },
   showHandoffDialog({ commit }, value) {
     commit("SET_DIALOG_SHOW_HANDOFF", true)
@@ -273,6 +273,36 @@ const actions = {
         .then(() => {
           dispatch("closeEditSheet")
           dispatch("getAll")
+          commit(
+            "notification_backend/addBeNotification",
+            { text: "Case updated successfully.", type: "success" },
+            { root: true }
+          )
+          commit("SET_SELECTED_LOADING", false)
+        })
+        .catch(() => {
+          commit("SET_SELECTED_LOADING", false)
+        })
+    }
+  },
+  save_page({ commit, dispatch }) {
+    commit("SET_SELECTED_LOADING", true)
+    if (!state.selected.id) {
+      return CaseApi.create(state.selected)
+        .then(() => {
+          commit(
+            "notification_backend/addBeNotification",
+            { text: "Case created successfully.", type: "success" },
+            { root: true }
+          )
+          commit("SET_SELECTED_LOADING", false)
+        })
+        .catch(() => {
+          commit("SET_SELECTED_LOADING", false)
+        })
+    } else {
+      return CaseApi.update(state.selected.id, state.selected)
+        .then(() => {
           commit(
             "notification_backend/addBeNotification",
             { text: "Case updated successfully.", type: "success" },
