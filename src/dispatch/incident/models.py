@@ -300,6 +300,7 @@ class IncidentReadMinimal(IncidentBase):
     reporters_location: Optional[str]
     stable_at: Optional[datetime] = None
     tags: Optional[List[TagRead]] = []
+    tasks: Optional[List[TaskRead]] = []
     total_cost: Optional[float]
 
 

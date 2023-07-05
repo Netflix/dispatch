@@ -2,7 +2,7 @@
   <v-dialog v-model="showReportDialog" persistent max-width="800px">
     <v-card>
       <v-card-title>
-        <span class="headline">Create Report - ASDF</span>
+        <span class="headline">Create Report</span>
       </v-card-title>
       <v-card-text>
         <v-tabs color="primary" v-model="type" right>
@@ -17,19 +17,17 @@
                 status reports.
                 <v-textarea
                   v-model="conditions"
-                  label="Conditions-asdf"
+                  label="Conditions"
                   hint="The current state of the incident."
                   clearable
                   auto-grow
-                  > 12345
-                </v-textarea>
+                />
                 <v-textarea
                   v-model="actions"
                   label="Actions"
                   hint="Any actions that are currently inflight."
                   clearable
                   auto-grow
-                  inner-text="Some sort of actions"
                 />
                 <v-textarea
                   v-model="needs"
@@ -37,8 +35,7 @@
                   hint="Any outstanding asks that you are waiting on."
                   clearable
                   auto-grow
-                  >{{ for (let i; i < 5; i++ ) {i} }}</v-textarea
-                >
+                />
               </v-card-text>
             </v-card>
           </v-tab-item>
