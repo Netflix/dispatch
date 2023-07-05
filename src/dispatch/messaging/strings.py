@@ -548,8 +548,8 @@ REMIND_AGAIN_OPTIONS = {
                 "option_value": "{{organization_slug}}-{{incident_id}}-{{report_type}}-" + key,
             }
             for key, value in reminder_select_values.items()
-        ]
-    }
+        ],
+    },
 }
 
 
