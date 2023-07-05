@@ -106,9 +106,19 @@ def get_user_info_by_email(client: WebClient, email: str) -> dict:
 
 @functools.lru_cache()
 def does_user_exist(client: WebClient, email: str) -> bool:
-    """Gets profile information about a user by email."""
-    user_info = get_user_info_by_email(client, email)
-    return False if user_info is None else True
+    """Checks if a user exists in the Slack workspace by their email."""
+    try:
+        client.api_call(
+            api_method=SlackAPIGetEndpoints.users_lookup_by_email,
+            http_verb="GET",
+            params={"email": email},
+        )
+        return True
+    except SlackApiError as e:
+        if e.response["error"] == SlackAPIErrorCode.USERS_NOT_FOUND:
+            return False
+        else:
+            raise
 
 
 @functools.lru_cache()
@@ -282,7 +292,7 @@ def get_message_permalink(client: WebClient, conversation_id: str, ts: str) -> s
         SlackAPIGetEndpoints.chat_permalink,
         channel=conversation_id,
         message_ts=ts,
-    )
+    )["permalink"]
 
 
 def send_message(

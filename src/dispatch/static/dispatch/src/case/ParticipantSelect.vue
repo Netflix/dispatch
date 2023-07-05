@@ -1,36 +1,49 @@
 <template>
-    <v-combobox :items="items" :label="label" :loading="loading" :search-input.sync="search"
-        @update:search-input="getFilteredData()" chips clearable deletable-chips hide-selected
-        item-text="individual.name" no-filter return-object v-model="participant">
-        <template v-slot:no-data>
-            <v-list-item>
-                <v-list-item-content>
-                    <v-list-item-title>
-                        No individuals matching "
-                        <strong>{{ search }}</strong>".
-                    </v-list-item-title>
-                </v-list-item-content>
-            </v-list-item>
-        </template>
-        <template v-slot:item="data">
-            <v-list-item-content>
-                <v-list-item-title v-text="data.item.individual.name" />
-                <v-list-item-subtitle v-text="data.item.individual.email" />
-            </v-list-item-content>
-        </template>
-        <template v-slot:selection="{ attr, on, item, selected }">
-            <v-chip v-bind="attr" :input-value="selected" v-on="on">
-                <span v-text="item.individual.name" />
-            </v-chip>
-        </template>
-        <template v-slot:append-item>
-            <v-list-item v-if="more" @click="loadMore()">
-                <v-list-item-content>
-                    <v-list-item-subtitle> Load More </v-list-item-subtitle>
-                </v-list-item-content>
-            </v-list-item>
-        </template>
-    </v-combobox>
+  <v-combobox
+    :items="items"
+    :label="label"
+    :loading="loading"
+    :search-input.sync="search"
+    @update:search-input="getFilteredData()"
+    chips
+    clearable
+    deletable-chips
+    hide-selected
+    item-text="individual.name"
+    no-filter
+    return-object
+    v-model="participant"
+  >
+    <template v-slot:no-data>
+      <v-list-item>
+        <v-list-item-content>
+          <v-list-item-title>
+            No individuals matching "
+            <strong>{{ search }}</strong
+            >".
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+    </template>
+    <template v-slot:item="data">
+      <v-list-item-content>
+        <v-list-item-title v-text="data.item.individual.name" />
+        <v-list-item-subtitle v-text="data.item.individual.email" />
+      </v-list-item-content>
+    </template>
+    <template v-slot:selection="{ attr, on, item, selected }">
+      <v-chip v-bind="attr" :input-value="selected" v-on="on">
+        <span v-text="item.individual.name" />
+      </v-chip>
+    </template>
+    <template v-slot:append-item>
+      <v-list-item v-if="more" @click="loadMore()">
+        <v-list-item-content>
+          <v-list-item-subtitle> Load More </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+    </template>
+  </v-combobox>
 </template>
 
 <script>

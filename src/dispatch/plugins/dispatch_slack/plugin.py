@@ -110,7 +110,7 @@ class SlackConversationPlugin(ConversationPlugin):
     ):
         """Creates a new engagement message."""
         client = create_slack_client(self.configuration)
-        if not does_user_exist(user.email):
+        if not does_user_exist(client=client, email=user.email):
             not_found_msg = (
                 f"Unable to engage user ({user.email}). Not found in current slack workspace."
             )
@@ -238,7 +238,7 @@ class SlackConversationPlugin(ConversationPlugin):
     def add(self, conversation_id: str, participants: List[str]):
         """Adds users to conversation."""
         client = create_slack_client(self.configuration)
-        participants = [resolve_user(client, p)["id"] for p in participants]
+        participants = [resolve_user(client, p)["id"] for p in set(participants)]
 
         archived = conversation_archived(client, conversation_id)
         if not archived:
@@ -247,7 +247,7 @@ class SlackConversationPlugin(ConversationPlugin):
     def add_to_thread(self, conversation_id: str, thread_id: str, participants: List[str]):
         """Adds users to a thread conversation."""
         client = create_slack_client(self.configuration)
-        participants = [resolve_user(client, p)["id"] for p in participants]
+        participants = [resolve_user(client, p)["id"] for p in set(participants)]
         add_users_to_conversation_thread(client, conversation_id, thread_id, participants)
 
     def archive(self, conversation_id: str):

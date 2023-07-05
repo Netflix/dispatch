@@ -1,16 +1,17 @@
 import logging
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response, status, Depends
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.exc import IntegrityError
 
+from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 from dispatch.auth.service import CurrentUser
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.exceptions import ExistsError
-from dispatch.rate_limiter import limiter
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.project import service as project_service
+from dispatch.rate_limiter import limiter
 from dispatch.signal import service as signal_service
 
 from .models import (
@@ -48,7 +49,7 @@ log = logging.getLogger(__name__)
 
 @router.get("/instances", response_model=SignalInstancePagination)
 def get_signal_instances(common: CommonParameters):
-    """Get all signal instances."""
+    """Gets all signal instances."""
     return search_filter_sort_paginate(model="SignalInstance", **common)
 
 
@@ -62,7 +63,7 @@ def create_signal_instance(
     request: Request,
     response: Response,
 ):
-    """Create a new signal instance."""
+    """Creates a new signal instance."""
     project = project_service.get_by_name_or_default(
         db_session=db_session, project_in=signal_instance_in.project
     )
@@ -81,7 +82,7 @@ def create_signal_instance(
 
             signal_instance_in.signal = signal
         else:
-            msg = "An externalId or variant must be provided."
+            msg = "An external id or variant must be provided."
             log.warn(msg)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -114,13 +115,13 @@ def create_signal_instance(
 
 @router.get("/filters", response_model=SignalFilterPagination)
 def get_signal_filters(common: CommonParameters):
-    """Get all signal filters."""
+    """Gets all signal filters."""
     return search_filter_sort_paginate(model="SignalFilter", **common)
 
 
 @router.get("/engagements", response_model=SignalEngagementPagination)
 def get_signal_engagements(common: CommonParameters):
-    """Get all signal engagements."""
+    """Gets all signal engagements."""
     return search_filter_sort_paginate(model="SignalEngagement", **common)
 
 
@@ -129,7 +130,7 @@ def get_signal_engagement(
     db_session: DbSession,
     signal_engagement_id: PrimaryKey,
 ):
-    """Get a signal engagement by it's ID."""
+    """Gets a signal engagement by its id."""
     engagement = get(db_session=db_session, signal_engagement_id=signal_engagement_id)
     if not engagement:
         raise HTTPException(
@@ -145,7 +146,7 @@ def create_engagement(
     signal_engagement_in: SignalEngagementCreate,
     current_user: CurrentUser,
 ):
-    """Create a new signal engagement."""
+    """Creates a new signal engagement."""
     try:
         return create_signal_engagement(
             db_session=db_session, creator=current_user, signal_engagement_in=signal_engagement_in
@@ -168,7 +169,7 @@ def create_filter(
     signal_filter_in: SignalFilterCreate,
     current_user: CurrentUser,
 ):
-    """Create a new signal filter."""
+    """Creates a new signal filter."""
     try:
         return create_signal_filter(
             db_session=db_session, creator=current_user, signal_filter_in=signal_filter_in
@@ -184,7 +185,11 @@ def create_filter(
         ) from None
 
 
-@router.put("/filters/{signal_filter_id}", response_model=SignalRead)
+@router.put(
+    "/filters/{signal_filter_id}",
+    response_model=SignalRead,
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+)
 def update_filter(
     db_session: DbSession,
     signal_filter_id: PrimaryKey,
@@ -215,7 +220,11 @@ def update_filter(
     return signal_filter
 
 
-@router.delete("/filters/{signal_filter_id}", response_model=None)
+@router.delete(
+    "/filters/{signal_filter_id}",
+    response_model=None,
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+)
 def delete_filter(db_session: DbSession, signal_filter_id: PrimaryKey):
     """Deletes a signal filter."""
     signal_filter = get(db_session=db_session, signal_filter_id=signal_filter_id)
@@ -229,13 +238,13 @@ def delete_filter(db_session: DbSession, signal_filter_id: PrimaryKey):
 
 @router.get("", response_model=SignalPagination)
 def get_signals(common: CommonParameters):
-    """Get all signal definitions."""
+    """Gets all signal definitions."""
     return search_filter_sort_paginate(model="Signal", **common)
 
 
 @router.get("/{signal_id}", response_model=SignalRead)
 def get_signal(db_session: DbSession, signal_id: PrimaryKey):
-    """Get a signal by it's ID."""
+    """Gets a signal by its id."""
     signal = get(db_session=db_session, signal_id=signal_id)
     if not signal:
         raise HTTPException(
@@ -247,11 +256,15 @@ def get_signal(db_session: DbSession, signal_id: PrimaryKey):
 
 @router.post("", response_model=SignalRead)
 def create_signal(db_session: DbSession, signal_in: SignalCreate):
-    """Create a new signal."""
+    """Creates a new signal."""
     return create(db_session=db_session, signal_in=signal_in)
 
 
-@router.put("/{signal_id}", response_model=SignalRead)
+@router.put(
+    "/{signal_id}",
+    response_model=SignalRead,
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+)
 def update_signal(db_session: DbSession, signal_id: PrimaryKey, signal_in: SignalUpdate):
     """Updates an existing signal."""
     signal = get(db_session=db_session, signal_id=signal_id)
@@ -272,7 +285,11 @@ def update_signal(db_session: DbSession, signal_id: PrimaryKey, signal_in: Signa
     return signal
 
 
-@router.delete("/{signal_id}", response_model=None)
+@router.delete(
+    "/{signal_id}",
+    response_model=None,
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+)
 def delete_signal(db_session: DbSession, signal_id: PrimaryKey):
     """Deletes a signal."""
     signal = get(db_session=db_session, signal_id=signal_id)

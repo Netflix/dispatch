@@ -29,7 +29,9 @@ from dispatch.enums import UserRoles
 from dispatch.entity import service as entity_service
 from dispatch.exceptions import ExistsError
 from dispatch.incident import flows as incident_flows
+from dispatch.individual.models import IndividualContactRead
 from dispatch.participant import service as participant_service
+from dispatch.participant.models import ParticipantUpdate
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_duo.enums import PushResponseResult
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
@@ -1363,6 +1365,7 @@ def handle_report_submission_event(
         status=CaseStatus.new,
         case_priority=case_priority,
         case_type=case_type,
+        reporter=ParticipantUpdate(individual=IndividualContactRead(email=user.email)),
     )
 
     case = case_service.create(db_session=db_session, case_in=case_in, current_user=user)

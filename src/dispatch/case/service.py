@@ -169,6 +169,15 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
         db_session=db_session,
         source="Dispatch Core App",
         description="Case created",
+        details={
+            "title": case.title,
+            "description": case.description,
+            "type": case.case_type.name,
+            "severity": case.case_severity.name,
+            "priority": case.case_priority.name,
+            "status": case.status,
+            "visibility": case.visibility,
+        },
         case_id=case.id,
     )
 
@@ -219,6 +228,7 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
             "incidents",
             "project",
             "related",
+            "reporter",
             "status",
             "tags",
             "visibility",
