@@ -73,8 +73,6 @@ class DispatchUser(Base, TimeStampMixin):
             "exp": exp,
             "email": self.email,
         }
-        print("JWT_ALG", DISPATCH_JWT_ALG)
-        print("JWT_SECRET", DISPATCH_JWT_SECRET)
         return jwt.encode(data, DISPATCH_JWT_SECRET, algorithm=DISPATCH_JWT_ALG)
 
     def get_organization_role(self, organization_slug: OrganizationSlug):
