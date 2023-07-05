@@ -4,12 +4,12 @@
       <v-chip
         v-bind="attrs"
         v-on="on"
-        outlined
         small
-        class="mr-2"
+        class="mr-2 hover-outline"
+        :text-color="getPriorityMetaColor(_case.case_priority)"
         :color="getPriorityColor(_case.case_priority)"
       >
-        <v-icon dense small class="pr-2" :color="getPriorityColor(_case.case_priority)">
+        <v-icon dense small class="pr-2" :color="getPriorityMetaColor(_case.case_priority)">
           mdi-alert-plus-outline
         </v-icon>
         <b>{{ _case.case_priority.name }}</b>
@@ -60,17 +60,41 @@ export default {
       if (priority) {
         switch (priority.name) {
           case "Low":
-            return "green lighten-1"
+            return "green lighten-5"
           case "Medium":
-            return "orange"
+            return "orange lighten-5"
           case "High":
-            return "red darken-2"
+            return "red lighten-5"
           case "Critical":
-            return "red darken-4"
+            return "red lighten-5"
         }
       }
       return "red darken-2"
     },
+    getPriorityMetaColor(priority) {
+      console.log("Got priority %O", priority.name)
+
+      if (priority) {
+        switch (priority.name) {
+          case "Low":
+            return "green"
+          case "Medium":
+            return "orange"
+          case "High":
+            return "red"
+          case "Critical":
+            return "red"
+        }
+      }
+      return "green"
+    },
   },
 }
 </script>
+
+<style scoped>
+.hover-outline:hover {
+  border: 1px dashed rgba(148, 148, 148, 0.87) !important;
+  border-radius: 20px;
+}
+</style>

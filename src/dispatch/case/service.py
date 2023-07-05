@@ -50,7 +50,7 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Case]:
 def get_case_signal_instances(*, db_session: Session, case_id: int) -> Query:
     """Returns all signal instances for a given case id."""
     return (
-        db_session.query(SignalInstance, Signal)
+        db_session.query(SignalInstance)
         .join(Signal)
         .filter(SignalInstance.case_id == case_id)
         .order_by(SignalInstance.created_at)

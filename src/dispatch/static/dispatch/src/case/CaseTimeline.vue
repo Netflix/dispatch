@@ -102,4 +102,8 @@ export default {
 .v-alert.outlined {
   border: 1px dotted rgb(188, 188, 188) !important;
 }
+
+.highlighted-chip {
+  background: linear-gradient(45deg, #5252ff 0%, #fad0c4 99%, #fad0c4 100%) !important;
+}
 </style>

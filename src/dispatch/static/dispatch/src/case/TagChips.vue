@@ -7,26 +7,36 @@
       <span v-if="!isAddingTag">Add tag <v-icon class="ml-1" small>mdi-plus</v-icon></span>
       <span v-else>Close <v-icon class="ml-1" small>mdi-close</v-icon></span>
     </v-chip>
-    <v-autocomplete
-      v-if="isAddingTag"
-      v-model="selectedTag"
-      :items="availableTags"
-      item-text="name"
-      item-value="name"
-      prepend-inner-icon="search"
-      return-object
-      clearable
-      dense
-      small
-      rounded
-      solo
-      @change="addTag"
-      placeholder="Search tags..."
-      cache-items="true"
-      class="autocomplete-menu pt-2 mx-2"
-      style="max-width: 250px"
-    >
-    </v-autocomplete>
+    <v-dialog v-model="isAddingTag" max-width="500">
+      <v-card>
+        <v-card-title>Update Case Tags</v-card-title>
+
+        <v-autocomplete
+          v-if="isAddingTag"
+          v-model="selectedTag"
+          :items="availableTags"
+          item-text="name"
+          item-value="name"
+          prepend-inner-icon="search"
+          return-object
+          clearable
+          dense
+          small
+          rounded
+          solo
+          multiple
+          @change="addTag"
+          placeholder="Search tags..."
+          cache-items
+          class="autocomplete-menu pt-2 mx-2"
+        >
+        </v-autocomplete>
+
+        <v-btn class="ml-6 mb-4" small color="info" elevation="1" @click="changeStatus(newStatus)">
+          Update
+        </v-btn>
+      </v-card>
+    </v-dialog>
   </v-chip-group>
 </template>
 
@@ -84,7 +94,6 @@ export default {
         this.availableTags = this.availableTags.filter((tag) => tag.name !== this.selectedTag.name)
 
         this.selectedTag = null
-        this.isAddingTag = false
         this.save_page(this._case)
       }
     },

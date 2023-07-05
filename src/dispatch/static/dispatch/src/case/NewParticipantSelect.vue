@@ -1,23 +1,20 @@
 <template>
-  <v-combobox
+  <v-autocomplete
     :items="items"
     :label="label"
     :loading="loading"
     :search-input.sync="search"
     @update:search-input="getFilteredData()"
-    cache-items="true"
-    chips
-    deletable-chips
-    hide-selected
-    item-text="individual.name"
+    cache-items
     no-filter
     return-object
+    flat
     solo
     dense
-    flat
-    single-line
     v-model="participant"
-    style="max-width: 250px"
+    style="max-width: 220px"
+    hide-details
+    class="rounded-xl hover-outline mx-n4"
   >
     <template v-slot:no-data>
       <v-list-item>
@@ -43,7 +40,7 @@
         </v-list-item-content>
       </v-list-item>
     </template>
-  </v-combobox>
+  </v-autocomplete>
 </template>
 
 <script>
@@ -81,7 +78,7 @@ export default {
       loading: false,
       items: [],
       more: false,
-      numItems: 5,
+      numItems: 5000,
       search: null,
     }
   },
@@ -151,7 +148,13 @@ export default {
 </script>
 
 <style scoped>
-.participant-select:hover {
-  outline: 1px dotted black;
+.hover-outline {
+  border: 1px dashed transparent;
+  border-radius: 0px;
+}
+
+.hover-outline:hover {
+  border: 1px dashed rgba(148, 148, 148, 0.87);
+  border-radius: 0px;
 }
 </style>

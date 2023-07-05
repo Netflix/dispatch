@@ -3,8 +3,8 @@
     <v-menu v-model="menu" bottom right transition="scale-transition" origin="top left">
       <template v-slot:activator="{ on }">
         <v-chip pill small v-on="on" v-if="participant.individual">
-          <v-avatar color="grey lighten-4" left>
-            <v-icon dense small color="black lighten-1"> mdi-account </v-icon>
+          <v-avatar class="grey lighten-4" left>
+            <span class="black--text">{{ participant.individual.name | initials }}</span>
           </v-avatar>
           {{ participant.individual.name }}
         </v-chip>
@@ -12,7 +12,7 @@
       <v-card width="300">
         <v-list dark>
           <v-list-item v-if="participant.individual">
-            <v-list-item-avatar color="teal">
+            <v-list-item-avatar class="highlighted-chip">
               <span class="white--text">{{ participant.individual.name | initials }}</span>
             </v-list-item-avatar>
             <v-list-item-content>
@@ -91,3 +91,9 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.highlighted-chip {
+  background: linear-gradient(45deg, #5252ff 0%, #fad0c4 99%, #fad0c4 100%) !important;
+}
+</style>

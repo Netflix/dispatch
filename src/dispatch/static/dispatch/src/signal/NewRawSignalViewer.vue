@@ -10,6 +10,9 @@
         </v-card-subtitle>
       </v-col>
       <v-col cols="auto">
+        <v-btn x-small outlined class="mr-6" @click="parseEditorJSON">
+          <v-icon dense small class="pr-2"> mdi-code-json </v-icon>Parse JSON
+        </v-btn>
         <v-btn x-small outlined class="mr-6" @click="copyToClipboard">
           <v-icon dense small class="pr-2"> mdi-content-cut </v-icon>Copy</v-btn
         >
@@ -50,6 +53,7 @@ export default {
       },
     },
   },
+
   watch: {
     item: {
       immediate: true, // This will run the handler immediately after the watcher is created
@@ -95,6 +99,7 @@ export default {
           vertical: "hidden",
           horizontal: "hidden",
         },
+        wordWrap: true,
       }
       let uuid = crypto.randomUUID()
       // Create a unique URI for the in-memory model
@@ -122,6 +127,41 @@ export default {
   },
 
   methods: {
+    parseEditorJSON() {
+      // Get the current value from the editor
+      const currentValue = this.editor.getValue()
+      // Attempt to parse the string as JSON
+      let jsonValue = JSON.parse(currentValue)
+      // Parse any stringified JSON properties within the JSON
+      this.parseJSONProperties(jsonValue)
+      // Convert the parsed and modified JSON back to a string
+      const updatedValue = JSON.stringify(jsonValue, null, "\t")
+      // Set the new value in the editor
+      this.editor.setValue(updatedValue)
+    },
+    // Updated parseJSONProperties method
+    parseJSONProperties(item) {
+      // Iterate over each property of the item
+      for (let key in item) {
+        // Check if the property's value is a string
+        if (typeof item[key] === "string") {
+          try {
+            // Attempt to parse the string as JSON
+            item[key] = JSON.parse(item[key])
+            // Check if the parsed JSON is an object or array and recursively parse its properties
+            if (typeof item[key] === "object") {
+              this.parseJSONProperties(item[key])
+            }
+          } catch (error) {
+            // If the string cannot be parsed as JSON, leave it as a string
+          }
+        } else if (typeof item[key] === "object") {
+          // If the property's value is an object or array, recursively parse its properties
+          this.parseJSONProperties(item[key])
+        }
+      }
+    },
+
     /**
      * Update the decorations in the editor
      *
