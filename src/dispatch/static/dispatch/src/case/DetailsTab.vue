@@ -54,6 +54,15 @@
           :project="project"
         />
       </v-flex>
+      <v-flex xs12>
+        <participant-select
+          v-model="reporter"
+          label="Reporter"
+          hint="The organization member who reported the case."
+          clearable
+          :project="project"
+        />
+      </v-flex>
       <v-flex xs6>
         <project-select v-model="project" />
       </v-flex>
@@ -177,6 +186,7 @@ export default {
       "selected.name",
       "selected.project",
       "selected.related",
+      "selected.reporter",
       "selected.reported_at",
       "selected.resolution_reason",
       "selected.resolution",
