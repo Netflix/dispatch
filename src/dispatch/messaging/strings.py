@@ -545,8 +545,7 @@ REMIND_AGAIN_OPTIONS = {
         "options": [
             {
                 "option_text": value["message"],
-                "option_value": "{{organization_slug}}-{{incident_id}}-{{report_type}}-" + key
-
+                "option_value": "{{organization_slug}}-{{incident_id}}-{{report_type}}-" + key,
             }
             for key, value in reminder_select_values.items()
         ]

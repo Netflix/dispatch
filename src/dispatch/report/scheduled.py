@@ -66,12 +66,16 @@ def incident_report_delayed_reminders(db_session: SessionLocal, project: Project
             if exec_report_time := incident.delay_executive_report_reminder:
                 if datetime.utcnow() - exec_report_time > timedelta(minutes=1):
                     # send exec report reminder now
-                    send_incident_report_reminder(incident, ReportTypes.executive_report, db_session, True)
+                    send_incident_report_reminder(
+                        incident, ReportTypes.executive_report, db_session, True
+                    )
 
             if tech_report_time := incident.delay_tactical_report_reminder:
                 if datetime.utcnow() - tech_report_time > timedelta(minutes=1):
                     # send tech report reminder now!
-                    send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session, True)
+                    send_incident_report_reminder(
+                        incident, ReportTypes.tactical_report, db_session, True
+                    )
 
         except Exception as e:
             # we shouldn't fail to send all reminders when one fails

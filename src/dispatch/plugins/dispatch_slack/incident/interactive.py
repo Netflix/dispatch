@@ -107,7 +107,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     restricted_command_middleware,
     subject_middleware,
     user_middleware,
-    select_context_middleware
+    select_context_middleware,
 )
 from dispatch.plugins.dispatch_slack.modals.common import send_success_modal
 from dispatch.plugins.dispatch_slack.models import MonitorMetadata, TaskMetadata
@@ -2312,9 +2312,7 @@ def handle_update_task_status_button_click(
     )
 
 
-@app.action(
-    RemindAgainActions.submit, middleware=[select_context_middleware, db_middleware]
-)
+@app.action(RemindAgainActions.submit, middleware=[select_context_middleware, db_middleware])
 def handle_remind_again_select_action(
     ack: Ack,
     body: dict,
@@ -2349,10 +2347,14 @@ def handle_remind_again_select_action(
         db_session.commit()
 
         message = f"Success! We'll remind you again in {selection_as_message}."
-        respond(text=message, response_type="ephemeral", replace_original=False, delete_original=False)
+        respond(
+            text=message, response_type="ephemeral", replace_original=False, delete_original=False
+        )
     except Exception as e:
         guid = str(uuid.uuid4())
         log.error(f"ERROR trying to save reminder delay with guid {guid}.")
         log.exception(e)
         message = build_unexpected_error_message(guid)
-        respond(text=message, response_type="ephemeral", replace_original=False, delete_original=False)
+        respond(
+            text=message, response_type="ephemeral", replace_original=False, delete_original=False
+        )

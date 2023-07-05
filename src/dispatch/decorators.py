@@ -42,7 +42,9 @@ def _execute_task_in_project_context(
                     kwargs["project"] = project
                     func(*args, **kwargs)
             except Exception as e:
-                log.error(f"ERROR trying to execute database for: {fullname(func)} with parameters {args} and {kwargs}")
+                log.error(
+                    f"ERROR trying to execute database for: {fullname(func)} with parameters {args} and {kwargs}"
+                )
                 log.exception(e)
             finally:
                 schema_session.close()

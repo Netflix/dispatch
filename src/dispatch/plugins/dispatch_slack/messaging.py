@@ -7,7 +7,16 @@
 import logging
 from typing import Any, List, Optional
 
-from blockkit import Actions, Button, Context, Divider, MarkdownText, Section, StaticSelect, PlainOption
+from blockkit import (
+    Actions,
+    Button,
+    Context,
+    Divider,
+    MarkdownText,
+    Section,
+    StaticSelect,
+    PlainOption,
+)
 from slack_sdk.web.client import WebClient
 from slack_sdk.errors import SlackApiError
 
@@ -36,10 +45,7 @@ def get_template(message_type: MessageType):
             default_notification,
             INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION,
         ),
-        MessageType.incident_task_list: (
-            default_notification,
-            INCIDENT_TASK_LIST_DESCRIPTION
-        ),
+        MessageType.incident_task_list: (default_notification, INCIDENT_TASK_LIST_DESCRIPTION),
         MessageType.incident_task_reminder: (
             default_notification,
             INCIDENT_TASK_REMINDER_DESCRIPTION,
@@ -231,9 +237,17 @@ def default_notification(items: list):
 
             static_select = []
             if select.get("placeholder"):
-                static_select.append(StaticSelect(placeholder=select["placeholder"], options=options, action_id=select["select_action"]))
+                static_select.append(
+                    StaticSelect(
+                        placeholder=select["placeholder"],
+                        options=options,
+                        action_id=select["select_action"],
+                    )
+                )
             else:
-                static_select.append(StaticSelect(options=options, action_id=select["select_action"]))
+                static_select.append(
+                    StaticSelect(options=options, action_id=select["select_action"])
+                )
             blocks.append(Actions(elements=static_select))
 
     return blocks
