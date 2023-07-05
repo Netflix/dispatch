@@ -96,3 +96,7 @@ class UpdateNotificationGroupActionIds(DispatchEnum):
 
 class UpdateNotificationGroupBlockIds(DispatchEnum):
     members = "update-notification-group-members"
+
+
+class RemindAgainActions(DispatchEnum):
+    submit = "remind-again"

@@ -9,6 +9,7 @@ from dispatch.enums import Visibility
 
 from dispatch import config
 from dispatch.enums import DispatchEnum, DocumentResourceTypes, DocumentResourceReferenceTypes
+from dispatch.incident.reminders import reminder_select_values
 
 
 class MessageType(DispatchEnum):
@@ -214,6 +215,11 @@ Please, contact {{assignee_fullname if assignee_fullname else assignee_email}} a
 ).strip()
 
 INCIDENT_REPORT_REMINDER_DESCRIPTION = """You have not provided a {{report_type}} for this incident recently.
+You can use `{{command}}` in the conversation to assist you in writing one.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_REPORT_REMINDER_DELAYED_DESCRIPTION = """You asked me to send you this reminder to write a {{report_type}} for this incident.
 You can use `{{command}}` in the conversation to assist you in writing one.""".replace(
     "\n", " "
 ).strip()
@@ -531,6 +537,23 @@ INCIDENT_EXECUTIVE_REPORT = [
     {"title": "Next Steps", "text": "{{next_steps}}"},
 ]
 
+REMIND_AGAIN_OPTIONS = {
+    "text": "[Optional] Remind me again in:",
+    "select": {
+        "placeholder": "Choose a time value",
+        "select_action": ConversationButtonActions.remind_again,
+        "options": [
+            {
+                "option_text": value["message"],
+                "option_value": "{{organization_slug}}-{{incident_id}}-{{report_type}}-" + key
+
+            }
+            for key, value in reminder_select_values.items()
+        ]
+    }
+}
+
+
 INCIDENT_REPORT_REMINDER = [
     {
         "title": "{{name}} Incident - {{report_type}} Reminder",
@@ -538,6 +561,18 @@ INCIDENT_REPORT_REMINDER = [
         "text": INCIDENT_REPORT_REMINDER_DESCRIPTION,
     },
     INCIDENT_TITLE,
+    REMIND_AGAIN_OPTIONS,
+]
+
+
+INCIDENT_REPORT_REMINDER_DELAYED = [
+    {
+        "title": "{{name}} Incident - {{report_type}} Reminder",
+        "title_link": "{{ticket_weblink}}",
+        "text": INCIDENT_REPORT_REMINDER_DELAYED_DESCRIPTION,
+    },
+    INCIDENT_TITLE,
+    REMIND_AGAIN_OPTIONS,
 ]
 
 
@@ -763,6 +798,17 @@ def render_message_template(message_template: List[dict], **kwargs):
 
                 if button.get("button_url"):
                     button["button_url"] = env.from_string(button["button_url"]).render(**kwargs)
+
+        # render drop-down list
+        if select := d.get("select"):
+            if placeholder := select.get("placeholder"):
+                select["placeholder"] = env.from_string(placeholder).render(**kwargs)
+
+            select["select_action"] = env.from_string(select["select_action"]).render(**kwargs)
+
+            for option in select["options"]:
+                option["option_text"] = env.from_string(option["option_text"]).render(**kwargs)
+                option["option_value"] = env.from_string(option["option_value"]).render(**kwargs)
 
         if d.get("visibility_mapping"):
             d["text"] = d["visibility_mapping"][kwargs["visibility"]]

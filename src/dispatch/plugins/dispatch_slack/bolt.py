@@ -27,6 +27,7 @@ from .middleware import (
     configuration_middleware,
     message_context_middleware,
     user_middleware,
+    select_context_middleware,
 )
 
 app = App(token="xoxb-valid", request_verification_enabled=False, token_verification_enabled=False)
@@ -139,6 +140,7 @@ def build_and_log_error(
         message_context_middleware,
         user_middleware,
         configuration_middleware,
+        select_context_middleware,
     ],
 )
 def handle_message_events(
