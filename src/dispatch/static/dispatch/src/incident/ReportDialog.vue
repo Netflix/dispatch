@@ -2,7 +2,7 @@
   <v-dialog v-model="showReportDialog" persistent max-width="800px">
     <v-card>
       <v-card-title>
-        <span class="headline">Create Report</span>
+        <span class="headline">Create Report - ASDF</span>
       </v-card-title>
       <v-card-text>
         <v-tabs color="primary" v-model="type" right>
@@ -17,7 +17,7 @@
                 status reports.
                 <v-textarea
                   v-model="conditions"
-                  label="Conditions"
+                  label="Conditions-asdf"
                   hint="The current state of the incident."
                   clearable
                   auto-grow
