@@ -110,7 +110,7 @@ class SlackConversationPlugin(ConversationPlugin):
     ):
         """Creates a new engagement message."""
         client = create_slack_client(self.configuration)
-        if not does_user_exist(user.email):
+        if not does_user_exist(client=client, email=user.email):
             not_found_msg = (
                 f"Unable to engage user ({user.email}). Not found in current slack workspace."
             )
