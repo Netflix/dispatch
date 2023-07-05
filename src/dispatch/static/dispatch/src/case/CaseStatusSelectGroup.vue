@@ -72,7 +72,7 @@
 
         <v-col cols="6" md="2">
           <v-item v-slot="{ active, toggle }">
-            <div class="overlap-card hover-card" @click="openDialog('Resolved')">
+            <div class="overlap-card hover-card" @click="openDialog('Closed')">
               <v-sheet outlined color="grey lighten-1" class="arrow">
                 <v-card
                   class="d-flex align-center arrow"
@@ -83,8 +83,8 @@
                   color="grey lighten-4"
                 >
                   <v-scroll-y-transition>
-                    <div v-if="isActiveStatus('Resolved')" class="flex-grow-1 text-center">
-                      <v-badge color="red" dot left offset-x="-10" offset-y="0"></v-badge>Resolved
+                    <div v-if="isActiveStatus('Closed')" class="flex-grow-1 text-center">
+                      <v-badge color="green" dot left offset-x="-10" offset-y="0"></v-badge>Resolved
                     </div>
                     <div v-else class="flex-grow-1 text-center text--disabled">Resolved</div>
                   </v-scroll-y-transition>

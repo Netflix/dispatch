@@ -90,11 +90,26 @@
       </template>
       <span>Add new participant</span>
     </v-tooltip>
+
+    <v-dialog v-model="addParticipantDialog" max-width="600">
+      <v-card>
+        <v-card-title>Add Case Participant</v-card-title>
+        <v-card-text>
+          By adding a new participant, they gain access to all Case resources. They'll also be able
+          to view the case, even when visibility is restricted.
+        </v-card-text>
+        <v-card-text> <new-participant-select /> </v-card-text>
+        <v-btn class="ml-6 mb-4" small color="info" elevation="1"> Submit </v-btn>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <script>
+import NewParticipantSelect from "@/case/NewParticipantSelect.vue"
+
 export default {
+  components: { NewParticipantSelect },
   name: "ParticipantChips",
   props: {
     participants: {
@@ -124,12 +139,16 @@ export default {
   },
   data() {
     return {
+      addParticipantDialog: false,
       hoverIndex: -1,
     }
   },
   methods: {
+    openAddParticipantDialog() {
+      this.addParticipantDialog = true
+    },
     addParticipant() {
-      // Method to handle adding a new participant
+      this.openAddParticipantDialog()
     },
     chipClasses(name) {
       console.log("GOT NAME: %O", name)

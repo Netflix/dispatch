@@ -1,5 +1,5 @@
 <template>
-  <v-autocomplete
+  <v-combobox
     :items="items"
     :label="label"
     :loading="loading"
@@ -40,7 +40,7 @@
         </v-list-item-content>
       </v-list-item>
     </template>
-  </v-autocomplete>
+  </v-combobox>
 </template>
 
 <script>
@@ -52,9 +52,11 @@ import IndividualApi from "@/individual/api"
 
 export default {
   name: "NewParticipantSelect",
+
   components: {
     CaseParticipant,
   },
+
   props: {
     value: {
       type: Object,
@@ -91,6 +93,18 @@ export default {
       set(value) {
         this.$emit("input", value)
       },
+    },
+  },
+
+  watch: {
+    participant: {
+      handler(newParticipant, oldParticipant) {
+        console.log(newParticipant, oldParticipant)
+        if (newParticipant !== oldParticipant) {
+          this.$emit("participant-change", newParticipant)
+        }
+      },
+      deep: true,
     },
   },
 

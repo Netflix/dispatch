@@ -206,7 +206,11 @@
                 <div class="subtitle-2">Assignee</div>
               </v-col>
               <v-col cols="8">
-                <new-participant-select :project="selected.project" :value="selected.assignee" />
+                <new-participant-select
+                  :project="selected.project"
+                  :value="selected.assignee"
+                  @participant-change="onParticipantChange"
+                />
               </v-col>
             </v-row>
 
@@ -460,6 +464,9 @@
                   </v-col>
                   <v-col cols="auto"> </v-col>
                 </v-row>
+
+                <h4 class="mt-8 mb-2">Tags</h4>
+                <tag-chips class="pb-16" :_case="selected"></tag-chips>
               </div>
             </v-expand-transition>
           </v-card>
@@ -493,8 +500,6 @@
           <tag-chips class="pb-16" :_case="selected"></tag-chips>
           <h4 class="mt-8 mb-2">Duplicates</h4>
           <tag-chips class="pb-16" :_case="selected"></tag-chips> -->
-          <h4 class="mt-8 mb-2">Tags</h4>
-          <tag-chips class="pb-16" :_case="selected"></tag-chips>
         </div>
       </v-col>
     </v-row>
@@ -656,6 +661,8 @@ export default {
     onSubmit(resolution_reason, resolution) {
       this.save_page()
     },
+
+    onParticipantChange(newParticipant) {},
 
     toggleEdit() {
       this.editing = !this.editing
