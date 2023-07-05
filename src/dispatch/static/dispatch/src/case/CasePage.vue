@@ -74,7 +74,7 @@
                   <v-tabs-slider color="rgb(9, 19, 40"></v-tabs-slider>
 
                   <v-tab key="main" class="tab custom-tab-text">
-                    <v-icon dense small class="pr-2"> mdi-cube </v-icon>
+                    <v-icon dense small class="pr-2"> mdi-clock-outline </v-icon>
                     Timeline
                   </v-tab>
                   <v-tab key="signals" class="tab custom-tab-text">

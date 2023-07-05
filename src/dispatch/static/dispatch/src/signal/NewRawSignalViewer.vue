@@ -10,8 +10,8 @@
         </v-card-subtitle>
       </v-col>
       <v-col cols="auto">
-        <v-btn x-small outlined class="mr-6" @click="parseEditorJSON">
-          <v-icon dense small class="pr-2"> mdi-code-json </v-icon>Parse JSON
+        <v-btn x-small outlined class="mr-2" @click="parseEditorJSON">
+          <v-icon dense small class="pr-2"> mdi-code-json </v-icon>Beautify
         </v-btn>
         <v-btn x-small outlined class="mr-6" @click="copyToClipboard">
           <v-icon dense small class="pr-2"> mdi-content-cut </v-icon>Copy</v-btn
