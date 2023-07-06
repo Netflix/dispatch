@@ -2339,7 +2339,7 @@ def handle_remind_again_select_action(
 
         # Store in incident
         if report_type == ReportTypes.tactical_report:
-            incident.delay.delay_tactical_report_reminder = delay_to_time
+            incident.delay_tactical_report_reminder = delay_to_time
         elif report_type == ReportTypes.executive_report:
             incident.delay_executive_report_reminder = delay_to_time
 
