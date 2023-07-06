@@ -210,7 +210,7 @@ const actions = {
       if (task.status == "Resolved") {
         return result
       }
-      return (result ? result + "\n" : result) + "- " + task.description
+      return (result ? result + "\n" : "") + "- " + task.description
     }, "")
   },
   closeReportDialog({ commit }) {
