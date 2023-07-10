@@ -552,7 +552,6 @@ REMIND_AGAIN_OPTIONS = {
     },
 }
 
-
 INCIDENT_REPORT_REMINDER = [
     {
         "title": "{{name}} Incident - {{report_type}} Reminder",
