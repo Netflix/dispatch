@@ -55,7 +55,7 @@ def _execute_task_in_project_context(
         )
     except Exception as e:
         # No rollback necessary as we only read from the database
-        log.error("ERROR trying to execute: " + fullname(func))
+        log.error(f"Error trying to execute task: {fullname(func)}")
         log.exception(e)
     finally:
         db_session.close()
