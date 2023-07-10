@@ -127,7 +127,7 @@ from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
 from dispatch.task.models import Task
 from dispatch.ticket import flows as ticket_flows
-from dispatch.report.messaging import reminder_select_values
+from dispatch.messaging.strings import reminder_select_values
 from dispatch.plugins.dispatch_slack.messaging import build_unexpected_error_message
 
 log = logging.getLogger(__file__)
