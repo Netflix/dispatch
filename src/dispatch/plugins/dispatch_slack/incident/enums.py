@@ -99,4 +99,4 @@ class UpdateNotificationGroupBlockIds(DispatchEnum):
 
 
 class RemindAgainActions(DispatchEnum):
-    submit = "remind-again"
+    submit = ConversationButtonActions.remind_again
