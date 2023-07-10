@@ -43,7 +43,7 @@ def _execute_task_in_project_context(
                     func(*args, **kwargs)
             except Exception as e:
                 log.error(
-                    f"ERROR trying to execute database for: {fullname(func)} with parameters {args} and {kwargs}"
+                    f"Error trying to execute task: {fullname(func)} with parameters {args} and {kwargs}"
                 )
                 log.exception(e)
             finally:
