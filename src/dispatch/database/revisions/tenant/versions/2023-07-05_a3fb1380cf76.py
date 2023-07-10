@@ -1,4 +1,4 @@
-"""empty message
+"""Adds reminder delay time to Incident model
 
 Revision ID: a3fb1380cf76
 Revises: fa23324d5679

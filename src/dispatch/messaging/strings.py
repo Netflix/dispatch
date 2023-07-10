@@ -9,7 +9,7 @@ from dispatch.enums import Visibility
 
 from dispatch import config
 from dispatch.enums import DispatchEnum, DocumentResourceTypes, DocumentResourceReferenceTypes
-from dispatch.incident.reminders import reminder_select_values
+from dispatch.report.messaging import reminder_select_values
 
 
 class MessageType(DispatchEnum):
