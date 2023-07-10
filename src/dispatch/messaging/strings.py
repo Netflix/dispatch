@@ -562,7 +562,6 @@ INCIDENT_REPORT_REMINDER = [
     REMIND_AGAIN_OPTIONS,
 ]
 
-
 INCIDENT_REPORT_REMINDER_DELAYED = [
     {
         "title": "{{name}} Incident - {{report_type}} Reminder",
