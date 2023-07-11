@@ -407,7 +407,7 @@ def create_sort_spec(model, sort_by, descending):
     """Creates sort_spec."""
     sort_spec = []
     if sort_by and descending:
-        for field, direction in zip(sort_by, descending):
+        for field, direction in zip(sort_by, descending, strict=False):
             direction = "desc" if direction else "asc"
 
             # we have a complex field, we may need to join

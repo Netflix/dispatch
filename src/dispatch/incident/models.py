@@ -83,6 +83,8 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     participants_location = Column(String)
     commanders_location = Column(String)
     reporters_location = Column(String)
+    delay_executive_report_reminder = Column(DateTime, nullable=True)
+    delay_tactical_report_reminder = Column(DateTime, nullable=True)
 
     # auto generated
     reported_at = Column(DateTime, default=datetime.utcnow)
@@ -309,6 +311,8 @@ IncidentReadMinimal.update_forward_refs()
 class IncidentUpdate(IncidentBase):
     cases: Optional[List[CaseRead]] = []
     commander: Optional[ParticipantUpdate]
+    delay_executive_report_reminder: Optional[datetime] = None
+    delay_tactical_report_reminder: Optional[datetime] = None
     duplicates: Optional[List[IncidentReadMinimal]] = []
     incident_costs: Optional[List[IncidentCostUpdate]] = []
     incident_priority: IncidentPriorityBase
@@ -345,6 +349,8 @@ class IncidentRead(IncidentBase):
     conference: Optional[ConferenceRead] = None
     conversation: Optional[ConversationRead] = None
     created_at: Optional[datetime] = None
+    delay_executive_report_reminder: Optional[datetime] = None
+    delay_tactical_report_reminder: Optional[datetime] = None
     documents: Optional[List[DocumentRead]] = []
     duplicates: Optional[List[IncidentReadMinimal]] = []
     events: Optional[List[EventRead]] = []
