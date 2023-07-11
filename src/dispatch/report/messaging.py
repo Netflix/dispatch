@@ -9,6 +9,7 @@ from dispatch.incident.models import Incident
 from dispatch.messaging.strings import (
     INCIDENT_EXECUTIVE_REPORT,
     INCIDENT_REPORT_REMINDER,
+    INCIDENT_REPORT_REMINDER_DELAYED,
     INCIDENT_TACTICAL_REPORT,
     MessageType,
 )
@@ -145,12 +146,21 @@ def send_executive_report_to_notifications_group(
 
 
 def send_incident_report_reminder(
-    incident: Incident, report_type: ReportTypes, db_session: SessionLocal
+    incident: Incident, report_type: ReportTypes, db_session: SessionLocal, reminder=False
 ):
     """Sends a direct message to the incident commander indicating that they should complete a report."""
     message_text = f"Incident {report_type} Reminder"
-    message_template = INCIDENT_REPORT_REMINDER
+    message_template = INCIDENT_REPORT_REMINDER_DELAYED if reminder else INCIDENT_REPORT_REMINDER
     command_name, message_type = get_report_reminder_settings(report_type)
+
+    # Null out db attribute if this is a delayed reminder
+    if reminder:
+        if report_type == ReportTypes.tactical_report:
+            incident.delay_tactical_report_reminder = None
+        elif report_type == ReportTypes.executive_report:
+            incident.delay_executive_report_reminder = None
+        db_session.add(incident)
+        db_session.commit()
 
     # check to see if there wasn't a recent report
     now = datetime.utcnow()
@@ -176,6 +186,8 @@ def send_incident_report_reminder(
             "report_type": report_type,
             "ticket_weblink": ticket_weblink,
             "title": incident.title,
+            "incident_id": incident.id,
+            "organization_slug": incident.project.organization.slug,
         }
     ]
 

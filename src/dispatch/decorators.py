@@ -42,6 +42,9 @@ def _execute_task_in_project_context(
                     kwargs["project"] = project
                     func(*args, **kwargs)
             except Exception as e:
+                log.error(
+                    f"Error trying to execute task: {fullname(func)} with parameters {args} and {kwargs}"
+                )
                 log.exception(e)
             finally:
                 schema_session.close()
@@ -52,6 +55,7 @@ def _execute_task_in_project_context(
         )
     except Exception as e:
         # No rollback necessary as we only read from the database
+        log.error(f"Error trying to execute task: {fullname(func)}")
         log.exception(e)
     finally:
         db_session.close()

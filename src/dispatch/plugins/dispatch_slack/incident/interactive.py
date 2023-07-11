@@ -1,5 +1,6 @@
 import logging
-from datetime import datetime
+import uuid
+from datetime import datetime, timedelta
 from typing import Any
 
 import pytz
@@ -79,6 +80,7 @@ from dispatch.plugins.dispatch_slack.incident.enums import (
     IncidentUpdateActions,
     LinkMonitorActionIds,
     LinkMonitorBlockIds,
+    RemindAgainActions,
     ReportExecutiveActions,
     ReportExecutiveBlockIds,
     ReportTacticalActions,
@@ -103,6 +105,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     restricted_command_middleware,
     subject_middleware,
     user_middleware,
+    select_context_middleware,
 )
 from dispatch.plugins.dispatch_slack.modals.common import send_success_modal
 from dispatch.plugins.dispatch_slack.models import MonitorMetadata, TaskMetadata
@@ -121,6 +124,8 @@ from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
 from dispatch.task.models import Task
 from dispatch.ticket import flows as ticket_flows
+from dispatch.messaging.strings import reminder_select_values
+from dispatch.plugins.dispatch_slack.messaging import build_unexpected_error_message
 
 log = logging.getLogger(__file__)
 
@@ -2278,3 +2283,51 @@ def handle_update_task_status_button_click(
         view_id=body["view"]["id"],
         tasks=tasks,
     )
+
+
+@app.action(RemindAgainActions.submit, middleware=[select_context_middleware, db_middleware])
+def handle_remind_again_select_action(
+    ack: Ack,
+    body: dict,
+    context: BoltContext,
+    db_session: Session,
+    respond: Respond,
+    user: DispatchUser,
+) -> None:
+    """Handles remind again select event."""
+    ack()
+    try:
+        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+
+        # User-selected option as org-id-report_type-delay
+        value = body["actions"][0]["selected_option"]["value"]
+
+        # Parse out report type and selected delay
+        *_, report_type, selection = value.split("-")
+        selection_as_message = reminder_select_values[selection]["message"]
+        hours = reminder_select_values[selection]["value"]
+
+        # Get new remind time
+        delay_to_time = datetime.utcnow() + timedelta(hours=hours)
+
+        # Store in incident
+        if report_type == ReportTypes.tactical_report:
+            incident.delay_tactical_report_reminder = delay_to_time
+        elif report_type == ReportTypes.executive_report:
+            incident.delay_executive_report_reminder = delay_to_time
+
+        db_session.add(incident)
+        db_session.commit()
+
+        message = f"Success! We'll remind you again in {selection_as_message}."
+        respond(
+            text=message, response_type="ephemeral", replace_original=False, delete_original=False
+        )
+    except Exception as e:
+        guid = str(uuid.uuid4())
+        log.error(f"ERROR trying to save reminder delay with guid {guid}.")
+        log.exception(e)
+        message = build_unexpected_error_message(guid)
+        respond(
+            text=message, response_type="ephemeral", replace_original=False, delete_original=False
+        )
