@@ -246,10 +246,16 @@ class TaskRead(DispatchBase):
     weblink: Optional[str]
 
 
+TaskReadMinimal = ForwardRef("TaskReadMinimal")
+
+
 class TaskReadMinimal(DispatchBase):
     id: PrimaryKey
     description: Optional[str] = Field(None, nullable=True)
-    status: Optional[bool]
+    status: TaskStatus = TaskStatus.open
+
+
+TaskReadMinimal.update_forward_refs()
 
 
 # Pydantic models...
