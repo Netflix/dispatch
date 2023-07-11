@@ -62,6 +62,9 @@ def resolve_context_from_conversation(channel_id: str) -> Optional[Subject]:
 
 def select_context_middleware(payload: dict, context: BoltContext, next: Callable) -> None:
     """Attempt to determine the current context of the selection."""
+    if not payload.get("selected_option"):
+        return next()
+
     organization_slug, incident_id, *_ = payload["selected_option"]["value"].split("-")
     subject_data = SubjectMetadata(
         organization_slug=organization_slug, id=incident_id, type="Incident"
