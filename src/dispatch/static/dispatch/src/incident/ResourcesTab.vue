@@ -11,6 +11,12 @@
         </v-list-item-icon>
       </v-list-item-action>
     </v-list-item>
+    <v-list-item v-else>
+      <v-list-item-content>
+        <v-list-item-title>Create Ticket</v-list-item-title>
+        <v-list-item-subtitle>insert text here</v-list-item-subtitle>
+      </v-list-item-content>
+    </v-list-item>
     <v-divider />
     <v-list-item v-if="conference" :href="conference.weblink" target="_blank">
       <v-list-item-content>
@@ -22,6 +28,12 @@
           <v-icon>open_in_new</v-icon>
         </v-list-item-icon>
       </v-list-item-action>
+    </v-list-item>
+    <v-list-item v-else>
+      <v-list-item-content>
+        <v-list-item-title>Create Vid Conference thing?</v-list-item-title>
+        <v-list-item-subtitle>insert text here</v-list-item-subtitle>
+      </v-list-item-content>
     </v-list-item>
     <v-divider />
     <v-list-item v-if="conversation" :href="conversation.weblink" target="_blank">
@@ -35,6 +47,12 @@
         </v-list-item-icon>
       </v-list-item-action>
     </v-list-item>
+    <v-list-item v-else>
+      <v-list-item-content>
+        <v-list-item-title>Create Conversation</v-list-item-title>
+        <v-list-item-subtitle>insert text here</v-list-item-subtitle>
+      </v-list-item-content>
+    </v-list-item>
     <v-divider />
     <v-list-item v-if="storage" :href="storage.weblink" target="_blank">
       <v-list-item-content>
@@ -47,10 +65,17 @@
         </v-list-item-icon>
       </v-list-item-action>
     </v-list-item>
+    <v-list-item v-else>
+      <v-list-item-content>
+        <v-list-item-title>Create Storage thing?</v-list-item-title>
+        <v-list-item-subtitle>insert text here</v-list-item-subtitle>
+      </v-list-item-content>
+    </v-list-item>
     <v-divider />
     <span v-for="document in documents" :key="document.resource_id">
       <v-list-item :href="document.weblink" target="_blank">
         <v-list-item-content>
+          <!-- here's where we can add the resource creation thing-->
           <v-list-item-title>{{ document.resource_type | deslug }}</v-list-item-title>
           <v-list-item-subtitle>{{ document.description }}</v-list-item-subtitle>
         </v-list-item-content>
@@ -61,6 +86,14 @@
         </v-list-item-action>
       </v-list-item>
       <v-divider />
+    </span>
+    <span>
+      <v-list-item>
+        <v-list-item-content>
+          <v-list-item-title>Create a Document???</v-list-item-title>
+          <v-list-item-subtitle>insert text here</v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
     </span>
   </v-list>
 </template>
