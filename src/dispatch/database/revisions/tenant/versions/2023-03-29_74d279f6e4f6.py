@@ -1,7 +1,7 @@
 """Adds column to indicate if health metrics need to be collected for the service
 
 Revision ID: 74d279f6e4f6
-Revises: d089d1d110f0
+Revises: a3fb1380cf76
 Create Date: 2023-03-29 13:51:11.269860
 
 """
