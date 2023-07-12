@@ -1,7 +1,6 @@
 import logging
 import uuid
 from datetime import datetime, timedelta
-from functools import reduce
 from typing import Any
 
 import pytz
