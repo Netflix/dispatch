@@ -14,6 +14,9 @@
             :server-items-length="total"
             :page.sync="page"
             :items-per-page.sync="itemsPerPage"
+            :footer-props="{
+              'items-per-page-options': [10, 25, 50, 100],
+            }"
             :sort-by.sync="sortBy"
             :sort-desc.sync="descending"
             :loading="loading"
@@ -28,6 +31,27 @@
             <template v-slot:item.project.name="{ item }">
               <v-chip small :color="item.project.color" text-color="white">
                 {{ item.project.name }}
+              </v-chip>
+            </template>
+            <template v-slot:item.filter_action="{ item }">
+              <v-chip
+                small
+                text-color="white"
+                :color="
+                  item.filter_action === 'snooze'
+                    ? 'blue-accent-4'
+                    : item.filter_action === 'deduplicate'
+                    ? 'blue-accent-2'
+                    : ''
+                "
+              >
+                {{
+                  item.filter_action === "snooze"
+                    ? "Snoozed"
+                    : item.filter_action === "deduplicate"
+                    ? "Duplicate"
+                    : "Not Filtered"
+                }}
               </v-chip>
             </template>
             <template v-slot:item.created_at="{ item }">
@@ -72,6 +96,7 @@ export default {
         { text: "Case", value: "case", sortable: false },
         { text: "Signal", value: "signal", sortable: false },
         { text: "Project", value: "project.name", sortable: true },
+        { text: "Filter Action", value: "filter_action", sortable: true },
         { text: "Created At", value: "created_at" },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],

@@ -12,9 +12,8 @@ from dispatch.participant_role.models import (
     ParticipantRoleType,
     ParticipantRoleCreate,
 )
+from dispatch.participant import service as participant_service
 from dispatch.service import service as service_service
-
-from .service import get_or_create, get_by_incident_id_and_email
 
 
 log = logging.getLogger(__name__)
@@ -38,7 +37,7 @@ def add_participant(
     # we get or create a new participant
     subject_type = get_table_name_by_class_instance(subject)
     participant_role = ParticipantRoleCreate(role=role)
-    participant = get_or_create(
+    participant = participant_service.get_or_create(
         db_session=db_session,
         subject_id=subject.id,
         subject_type=subject_type,
@@ -96,7 +95,7 @@ def remove_participant(user_email: str, incident: Incident, db_session: SessionL
     inactivated = inactivate_participant(user_email, incident, db_session)
 
     if inactivated:
-        participant = get_by_incident_id_and_email(
+        participant = participant_service.get_by_incident_id_and_email(
             db_session=db_session, incident_id=incident.id, email=user_email
         )
 
@@ -117,7 +116,7 @@ def remove_participant(user_email: str, incident: Incident, db_session: SessionL
 
 def inactivate_participant(user_email: str, incident: Incident, db_session: SessionLocal):
     """Inactivates a participant."""
-    participant = get_by_incident_id_and_email(
+    participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=incident.id, email=user_email
     )
 
@@ -151,7 +150,7 @@ def reactivate_participant(
     user_email: str, incident: Incident, db_session: SessionLocal, service_id: int = None
 ):
     """Reactivates a participant."""
-    participant = get_by_incident_id_and_email(
+    participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=incident.id, email=user_email
     )
 

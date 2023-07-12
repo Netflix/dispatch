@@ -14,6 +14,12 @@ class SubjectMetadata(BaseModel):
     channel_id: Optional[str]
 
 
+class EngagementMetadata(SubjectMetadata):
+    signal_instance_id: str
+    engagement_id: int
+    user: Optional[str]
+
+
 class TaskMetadata(SubjectMetadata):
     task_id: Optional[str]
     resource_id: Optional[str]
@@ -23,15 +29,6 @@ class TaskMetadata(SubjectMetadata):
 class MonitorMetadata(SubjectMetadata):
     weblink: str
     plugin_instance_id: int
-
-
-class SubjectMetadata(BaseModel):
-    id: Optional[str]
-    type: Optional[str]
-    organization_slug: str = "default"
-
-    project_id: Optional[str]
-    channel_id: Optional[str]
 
 
 class BlockSelection(BaseModel):

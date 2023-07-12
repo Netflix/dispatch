@@ -10,13 +10,12 @@ Dispatch helps us effectively manage security incidents by deeply integrating wi
 
 This means you can let Dispatch focus on creating resources, assembling participants, sending out notifications, tracking tasks, and assisting with post-incident reviews; allowing you to focus on actually fixing the issue!
 
- ![](https://github.com/Netflix/dispatch/raw/master/docs/images/screenshots/thumb-1.png) ![](https://github.com/Netflix/dispatch/raw/master/docs/images/screenshots/thumb-2.png) ![](https://github.com/Netflix/dispatch/raw/master/docs/images/screenshots/thumb-3.png) ![](https://github.com/Netflix/dispatch/raw/master/docs/images/screenshots/thumb-4.png)
+![](https://github.com/Netflix/dispatch/raw/master/docs/images/screenshots/thumb-1.png) ![](https://github.com/Netflix/dispatch/raw/master/docs/images/screenshots/thumb-2.png) ![](https://github.com/Netflix/dispatch/raw/master/docs/images/screenshots/thumb-3.png) ![](https://github.com/Netflix/dispatch/raw/master/docs/images/screenshots/thumb-4.png)
 
 ## Project resources
 
-* [Dispatch Blog Post](https://medium.com/@NetflixTechBlog/introducing-dispatch-da4b8a2a8072)
-* [Source Code](https://github.com/netflix/dispatch)
-* [Docs](https://hawkins.gitbook.io/dispatch/)
-* [Gitter](https://gitter.im/netflix-dispatch/community)
-* [Issue tracker](https://github.com/netflix/dispatch/issues)
-* [Docker](https://github.com/Netflix/dispatch-docker)
+- [Dispatch Blog Post](https://medium.com/@NetflixTechBlog/introducing-dispatch-da4b8a2a8072)
+- [Source Code](https://github.com/netflix/dispatch)
+- [Docs](https://netflix.github.io/dispatch/)
+- [Issue tracker](https://github.com/netflix/dispatch/issues)
+- [Docker](https://github.com/Netflix/dispatch-docker)

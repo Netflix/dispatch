@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-data-table :headers="headers" :items="items" :loading="loading" hide-default-footer>
+    <v-data-table :headers="headers" :items="items" :loading="loading">
       <template v-slot:item.incident_priority.name="{ item }">
         <incident-priority :priority="item.incident_priority.name" />
       </template>

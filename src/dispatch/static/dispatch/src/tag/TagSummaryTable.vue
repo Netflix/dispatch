@@ -1,7 +1,7 @@
 <template>
   <div>
     <new-edit-sheet />
-    <v-data-table :headers="headers" :items="items" hide-default-footer>
+    <v-data-table :headers="headers" :items="items">
       <template v-slot:item.discoverable="{ item }">
         <v-simple-checkbox v-model="item.discoverable" disabled />
       </template>
@@ -37,12 +37,14 @@
 <script>
 import { mapActions } from "vuex"
 import NewEditSheet from "@/tag/NewEditSheet.vue"
+
 export default {
   name: "TagSummaryTable",
 
   components: {
     NewEditSheet,
   },
+
   data() {
     return {
       headers: [

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-data-table :headers="headers" :items="items" hide-default-footer>
+    <v-data-table :headers="headers" :items="items">
       <template v-slot:item.name="{ item }">
         <router-link
           :to="{

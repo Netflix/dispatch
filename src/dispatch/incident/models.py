@@ -83,6 +83,8 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     participants_location = Column(String)
     commanders_location = Column(String)
     reporters_location = Column(String)
+    delay_executive_report_reminder = Column(DateTime, nullable=True)
+    delay_tactical_report_reminder = Column(DateTime, nullable=True)
 
     # auto generated
     reported_at = Column(DateTime, default=datetime.utcnow)
@@ -309,6 +311,8 @@ IncidentReadMinimal.update_forward_refs()
 class IncidentUpdate(IncidentBase):
     cases: Optional[List[CaseRead]] = []
     commander: Optional[ParticipantUpdate]
+    delay_executive_report_reminder: Optional[datetime] = None
+    delay_tactical_report_reminder: Optional[datetime] = None
     duplicates: Optional[List[IncidentReadMinimal]] = []
     incident_costs: Optional[List[IncidentCostUpdate]] = []
     incident_priority: IncidentPriorityBase
@@ -324,12 +328,12 @@ class IncidentUpdate(IncidentBase):
     def find_exclusive(cls, v):
         if v:
             exclusive_tags = defaultdict(list)
-            for t in v:
-                if t.tag_type.exclusive:
-                    exclusive_tags[t.tag_type.id].append(t)
+            for tag in v:
+                if tag.tag_type.exclusive:
+                    exclusive_tags[tag.tag_type.id].append(tag)
 
-            for v in exclusive_tags.values():
-                if len(v) > 1:
+            for tag_types in exclusive_tags.values():
+                if len(tag_types) > 1:
                     raise ValueError(
                         f"Found multiple exclusive tags. Please ensure that only one tag of a given type is applied. Tags: {','.join([t.name for t in v])}"  # noqa: E501
                     )
@@ -345,6 +349,8 @@ class IncidentRead(IncidentBase):
     conference: Optional[ConferenceRead] = None
     conversation: Optional[ConversationRead] = None
     created_at: Optional[datetime] = None
+    delay_executive_report_reminder: Optional[datetime] = None
+    delay_tactical_report_reminder: Optional[datetime] = None
     documents: Optional[List[DocumentRead]] = []
     duplicates: Optional[List[IncidentReadMinimal]] = []
     events: Optional[List[EventRead]] = []

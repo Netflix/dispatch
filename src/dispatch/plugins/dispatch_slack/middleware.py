@@ -18,7 +18,7 @@ from dispatch.plugin import service as plugin_service
 from dispatch.project import service as project_service
 
 from .exceptions import ContextError, RoleError
-from .models import SubjectMetadata, FormMetadata
+from .models import EngagementMetadata, SubjectMetadata, FormMetadata
 
 log = logging.getLogger(__file__)
 
@@ -27,37 +27,51 @@ Subject = NamedTuple("Subject", subject=SubjectMetadata, db_session=Session)
 
 
 @timer
-def resolve_context_from_conversation(
-    channel_id: str, thread_id: Optional[str] = None
-) -> Optional[Subject]:
-    """Attempts to resolve a conversation based on the channel id or message_ts."""
+def resolve_context_from_conversation(channel_id: str) -> Optional[Subject]:
+    """Attempts to resolve a conversation based on the channel id."""
     db_session = SessionLocal()
     organization_slugs = [o.slug for o in organization_service.get_all(db_session=db_session)]
     db_session.close()
+
     for slug in organization_slugs:
         scoped_db_session = refetch_db_session(slug)
 
         conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
-            db_session=scoped_db_session, channel_id=channel_id, thread_id=thread_id
+            db_session=scoped_db_session, channel_id=channel_id
         )
+
         if conversation:
-            if thread_id:
-                subject = SubjectMetadata(
-                    type="case",
-                    id=conversation.case_id,
-                    organization_slug=slug,
-                    project_id=conversation.case.project_id,
-                )
-            else:
+            if conversation.incident:
                 subject = SubjectMetadata(
                     type="incident",
                     id=conversation.incident_id,
                     organization_slug=slug,
                     project_id=conversation.incident.project_id,
                 )
+            else:
+                subject = SubjectMetadata(
+                    type="case",
+                    id=conversation.case_id,
+                    organization_slug=slug,
+                    project_id=conversation.case.project_id,
+                )
             return Subject(subject, db_session=scoped_db_session)
 
         scoped_db_session.close()
+
+
+def select_context_middleware(payload: dict, context: BoltContext, next: Callable) -> None:
+    """Attempt to determine the current context of the selection."""
+    if not payload.get("selected_option"):
+        return next()
+
+    organization_slug, incident_id, *_ = payload["selected_option"]["value"].split("-")
+    subject_data = SubjectMetadata(
+        organization_slug=organization_slug, id=incident_id, type="Incident"
+    )
+
+    context.update({"subject": subject_data})
+    next()
 
 
 def shortcut_context_middleware(context: BoltContext, next: Callable) -> None:
@@ -81,6 +95,15 @@ def button_context_middleware(payload: dict, context: BoltContext, next: Callabl
     next()
 
 
+def engagement_button_context_middleware(
+    payload: dict, context: BoltContext, next: Callable
+) -> None:
+    """Attempt to determine the current context of the event."""
+    subject_data = EngagementMetadata.parse_raw(payload["value"])
+    context.update({"subject": subject_data})
+    next()
+
+
 def action_context_middleware(body: dict, context: BoltContext, next: Callable) -> None:
     """Attempt to determine the current context of the event."""
     private_metadata = json.loads(body["view"]["private_metadata"])
@@ -98,9 +121,7 @@ def message_context_middleware(
     if is_bot(request):
         return context.ack()
 
-    if subject := resolve_context_from_conversation(
-        channel_id=context.channel_id, thread_id=payload.get("thread_ts")
-    ):
+    if subject := resolve_context_from_conversation(channel_id=context.channel_id):
         context.update(subject._asdict())
     else:
         raise ContextError("Unable to determine context for message.")
@@ -144,11 +165,16 @@ def restricted_command_middleware(
 
 # filter out member join bot events as the built in slack-bolt doesn't catch these events
 # https://github.com/slackapi/bolt-python/blob/main/slack_bolt/middleware/ignoring_self_events/ignoring_self_events.py#L37
-def is_bot(request: BoltRequest):
+def is_bot(request: BoltRequest) -> bool:
+    body = request.body
+    user = body.get("event", {}).get("user")
+    if user == "USLACKBOT":
+        return True
+
     auth_result = request.context.authorize_result
     user_id = request.context.user_id
-    bot_id = request.body.get("event", {}).get("bot_id")
-    body = request.body
+    bot_id = body.get("event", {}).get("bot_id")
+
     return (
         auth_result is not None
         and (  # noqa
@@ -202,14 +228,19 @@ def user_middleware(
         )
         db_session = refetch_db_session(slug)
 
-    if context["subject"].type == "incident":
-        participant = participant_service.get_by_incident_id_and_conversation_id(
-            db_session=db_session, incident_id=context["subject"].id, user_conversation_id=user_id
-        )
-    else:
-        participant = participant_service.get_by_case_id_and_conversation_id(
-            db_session=db_session, case_id=context["subject"].id, user_conversation_id=user_id
-        )
+    participant = None
+    # in the case of creating new incidents or cases we don't have a subject yet
+    if context["subject"].id:
+        if context["subject"].type == "incident":
+            participant = participant_service.get_by_incident_id_and_conversation_id(
+                db_session=db_session,
+                incident_id=context["subject"].id,
+                user_conversation_id=user_id,
+            )
+        else:
+            participant = participant_service.get_by_case_id_and_conversation_id(
+                db_session=db_session, case_id=context["subject"].id, user_conversation_id=user_id
+            )
 
     if participant:
         context["user"] = user_service.get_or_create(

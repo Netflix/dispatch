@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="dialog" persistent max-width="800px">
+  <v-dialog v-model="dialog" persistent max-width="1000px">
     <template v-slot:activator="{ on }">
       <v-btn class="mr-2" icon v-on="on"> <v-icon>mdi-card-search-outline</v-icon> </v-btn>
     </template>
@@ -8,7 +8,7 @@
         <span class="headline">Signal Data</span>
       </v-card-title>
       <v-card-text>
-        <div style="height: 400px">
+        <div style="height: 800px">
           <MonacoEditor v-model="raw_str" :options="editorOptions" language="json"></MonacoEditor>
         </div>
       </v-card-text>
@@ -21,8 +21,10 @@
 </template>
 
 <script>
+import MonacoEditor from "monaco-editor-vue"
+
 export default {
-  name: "RawSignalDialog",
+  name: "RawSignalViewer",
 
   props: {
     value: {
@@ -34,7 +36,7 @@ export default {
   },
 
   components: {
-    MonacoEditor: () => import("monaco-editor-vue"),
+    MonacoEditor,
   },
 
   computed: {
@@ -52,6 +54,9 @@ export default {
         automaticLayout: true,
         renderValidationDecorations: "on",
         readOnly: true,
+        minimap: {
+          enabled: false,
+        },
       },
     }
   },

@@ -23,6 +23,7 @@ jira==2.0.0
 joblib
 jsonpath_ng
 markdown
+msal
 numpy
 oauth2client
 openai
@@ -44,6 +45,7 @@ sentry-sdk
 sh
 slack-bolt
 slack_sdk
+slowapi
 spacy
 sqlalchemy-filters
 sqlalchemy-utils

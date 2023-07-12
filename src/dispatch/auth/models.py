@@ -9,7 +9,7 @@ from typing import Optional
 from pydantic import validator, Field
 from pydantic.networks import EmailStr
 
-from sqlalchemy import Column, String, LargeBinary, Integer, Boolean
+from sqlalchemy import DateTime, Column, String, LargeBinary, Integer, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy_utils import TSVectorType
@@ -53,6 +53,7 @@ class DispatchUser(Base, TimeStampMixin):
     id = Column(Integer, primary_key=True)
     email = Column(String, unique=True)
     password = Column(LargeBinary, nullable=False)
+    last_mfa_time = Column(DateTime, nullable=True)
 
     # relationships
     events = relationship("Event", backref="dispatch_user")
@@ -160,6 +161,18 @@ class UserRead(UserBase):
 
 class UserUpdate(DispatchBase):
     id: PrimaryKey
+    password: Optional[str] = Field(None, nullable=True)
+    projects: Optional[List[UserProject]]
+    organizations: Optional[List[UserOrganization]]
+    role: Optional[str] = Field(None, nullable=True)
+
+    @validator("password", pre=True)
+    def hash(cls, v):
+        return hash_password(str(v))
+
+
+class UserCreate(DispatchBase):
+    email: EmailStr
     password: Optional[str] = Field(None, nullable=True)
     projects: Optional[List[UserProject]]
     organizations: Optional[List[UserOrganization]]

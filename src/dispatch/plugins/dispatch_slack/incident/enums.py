@@ -81,10 +81,6 @@ class IncidentUpdateActions(DispatchEnum):
     project_select = "incident-update-project-select"
 
 
-class IncidentUpdateBlockIds(DispatchEnum):
-    tags_multi_select = "incident-update-tags-multi-select"
-
-
 class IncidentReportActions(DispatchEnum):
     submit = "incident-report-submit"
     project_select = "incident-report-project-select"
@@ -100,3 +96,7 @@ class UpdateNotificationGroupActionIds(DispatchEnum):
 
 class UpdateNotificationGroupBlockIds(DispatchEnum):
     members = "update-notification-group-members"
+
+
+class RemindAgainActions(DispatchEnum):
+    submit = ConversationButtonActions.remind_again

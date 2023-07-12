@@ -23,7 +23,7 @@
     v-if="showChildPane"
   >
     <v-layout fill-height no-gutters>
-      <v-navigation-drawer width="220" permanent :mini-variant="mini">
+      <v-navigation-drawer width="220" permanent :mini-variant="mini" mini-variant-width="80px">
         <v-list dense flat nav>
           <span v-for="(route, index) in routes" :key="index" :to="route.path">
             <v-list-item :to="{ name: route.name }">

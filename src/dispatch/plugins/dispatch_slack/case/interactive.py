@@ -24,13 +24,16 @@ from dispatch.auth.models import DispatchUser
 from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
 from dispatch.case.enums import CaseStatus
-from dispatch.case.models import CaseCreate, CaseUpdate
-from dispatch.config import DISPATCH_UI_URL
+from dispatch.case.models import Case, CaseCreate, CaseUpdate
+from dispatch.enums import UserRoles
 from dispatch.entity import service as entity_service
 from dispatch.exceptions import ExistsError
 from dispatch.incident import flows as incident_flows
+from dispatch.individual.models import IndividualContactRead
 from dispatch.participant import service as participant_service
+from dispatch.participant.models import ParticipantUpdate
 from dispatch.plugin import service as plugin_service
+from dispatch.plugins.dispatch_duo.enums import PushResponseResult
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.bolt import app
 from dispatch.plugins.dispatch_slack.case.enums import (
@@ -40,10 +43,14 @@ from dispatch.plugins.dispatch_slack.case.enums import (
     CaseReportActions,
     CaseResolveActions,
     CaseShortcutCallbacks,
+    SignalEngagementActions,
     SignalNotificationActions,
     SignalSnoozeActions,
 )
-from dispatch.plugins.dispatch_slack.case.messages import create_case_message
+from dispatch.plugins.dispatch_slack.case.messages import (
+    create_case_message,
+    create_signal_engagement_message,
+)
 from dispatch.plugins.dispatch_slack.config import SlackConversationConfiguration
 from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
 from dispatch.plugins.dispatch_slack.fields import (
@@ -65,10 +72,12 @@ from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
     button_context_middleware,
     db_middleware,
+    engagement_button_context_middleware,
     modal_submit_middleware,
     shortcut_context_middleware,
     user_middleware,
 )
+from dispatch.plugins.dispatch_slack.modals.common import send_success_modal
 from dispatch.plugins.dispatch_slack.models import (
     CaseSubjects,
     FormData,
@@ -80,6 +89,7 @@ from dispatch.plugins.dispatch_slack.service import get_user_email
 from dispatch.project import service as project_service
 from dispatch.search.utils import create_filter_expression
 from dispatch.signal import service as signal_service
+from dispatch.signal.enums import SignalEngagementStatus
 from dispatch.signal.models import SignalFilterCreate, SignalFilterRead, SignalUpdate
 
 
@@ -386,46 +396,35 @@ def snooze_button_click(
         instance = signal_service.get_signal_instance(
             db_session=db_session, signal_instance_id=subject.id
         )
-        signal = signal_service.get(db_session=db_session, signal_id=instance.signal.id)
-        subject.id = signal.id
+        subject.id = instance.signal.id
 
-    entities = entity_service.get_all(db_session=db_session, project_id=subject.project_id).all()
-    if not entities:
-        modal = Modal(
-            title="Unable to snooze",
-            close="Close",
-            blocks=[
-                Context(
-                    elements=[
-                        MarkdownText(
-                            text="No entities found for this signal. At least one entity is required to snooze a signal.\n"
-                        ),
-                        MarkdownText(
-                            text=f"\n\nNew entity types are configured in the <{DISPATCH_UI_URL}|Dispatch UI>"
-                        ),
-                    ]
-                )
-            ],
-        ).build()
-        if view_id := body.get("view", {}).get("id"):
-            client.views_update(view_id=view_id, view=modal)
-        else:
-            client.views_open(trigger_id=body["trigger_id"], view=modal)
-        return
-
+    signal = signal_service.get(db_session=db_session, signal_id=subject.id)
     blocks = [
+        Context(elements=[MarkdownText(text=f"{signal.name}")]),
+        Divider(),
         title_input(placeholder="A name for your snooze filter."),
         description_input(placeholder="Provide a description for your snooze filter."),
-        entity_select(db_session=db_session, project_id=subject.project_id),
-        Context(
-            elements=[
-                MarkdownText(
-                    text="Signal's that contain all selected entities will be snoozed for the configured timeframe."
-                )
-            ]
-        ),
         relative_date_picker_input(label="Expiration"),
     ]
+
+    # not all signals will have entities and slack doesn't like empty selects
+    entity_select_block = entity_select(
+        db_session=db_session,
+        signal_id=signal.id,
+        optional=True,
+    )
+
+    if entity_select_block:
+        blocks.append(entity_select_block)
+        blocks.append(
+            Context(
+                elements=[
+                    MarkdownText(
+                        text="Signals that contain all selected entities will be snoozed for the configured timeframe."
+                    )
+                ]
+            )
+        )
 
     modal = Modal(
         title="Snooze Signal",
@@ -482,15 +481,21 @@ def handle_snooze_preview_event(
     if form_data.get(DefaultBlockIds.entity_select):
         entity_ids = [entity["value"] for entity in form_data[DefaultBlockIds.entity_select]]
 
-    preview_signal_instances = entity_service.get_signal_instances_with_entities(
-        db_session=db_session, signal_id=context["subject"].id, entity_ids=entity_ids, days_back=90
-    )
+        preview_signal_instances = entity_service.get_signal_instances_with_entities(
+            db_session=db_session,
+            signal_id=context["subject"].id,
+            entity_ids=entity_ids,
+            days_back=90,
+        )
 
-    text = (
-        "Examples matching your filter:"
-        if preview_signal_instances
-        else "No signals matching your filter."
-    )
+        text = (
+            "Examples matching your filter:"
+            if preview_signal_instances
+            else "No signals matching your filter."
+        )
+    else:
+        preview_signal_instances = None
+        text = "No entities selected. All instances of this signal will be snoozed."
 
     blocks = [Context(elements=[MarkdownText(text=text)])]
 
@@ -596,26 +601,61 @@ def handle_snooze_submission_event(
         # Get the existing filters for the signal
         signal = signal_service.get(db_session=db_session, signal_id=subject.id)
         # Create the new filter from the form data
-        entities = [
-            {"name": entity.name, "value": entity.value}
-            for entity in form_data[DefaultBlockIds.entity_select]
-        ]
+        if form_data.get(DefaultBlockIds.entity_select):
+            entities = [
+                {"name": entity.name, "value": entity.value}
+                for entity in form_data[DefaultBlockIds.entity_select]
+            ]
+        else:
+            entities = []
+
         description = form_data[DefaultBlockIds.description_input]
         name = form_data[DefaultBlockIds.title_input]
         delta: str = form_data[DefaultBlockIds.relative_date_picker_input].value
+        # Check if the 'delta' string contains days
+        # Example: '1 day, 0:00:00' contains days, while '0:01:00' does not
+        if ", " in delta:
+            # Split the 'delta' string into days and time parts
+            # Example: '1 day, 0:00:00' -> days: '1 day' and time_str: '0:00:00'
+            days, time_str = delta.split(", ")
+
+            # Extract the integer value of days from the days string
+            # Example: '1 day' -> 1
+            days = int(days.split(" ")[0])
+        else:
+            # If the 'delta' string does not contain days, set days to 0
+            days = 0
+
+            # Directly assign the 'delta' string to the time_str variable
+            time_str = delta
+
+        # Split the 'time_str' variable into hours, minutes, and seconds
+        # Convert each part to an integer
+        # Example: '0:01:00' -> hours: 0, minutes: 1, seconds: 0
+        hours, minutes, seconds = [int(x) for x in time_str.split(":")]
+
+        # Create a timedelta object using the extracted days, hours, minutes, and seconds
         delta = timedelta(
-            hours=int(delta.split(":")[0]),
-            minutes=int(delta.split(":")[1]),
-            seconds=int(delta.split(":")[2]),
+            days=days,
+            hours=hours,
+            minutes=minutes,
+            seconds=seconds,
         )
+
+        # Calculate the new date by adding the timedelta object to the current date and time
         date = datetime.now() + delta
 
         project = project_service.get(db_session=db_session, project_id=signal.project_id)
-        filters = {
-            "entity": entities,
-        }
 
-        expression = create_filter_expression(filters, "Entity")
+        # None expression is for cases when no entities are selected, in which case
+        # the filter will apply to all instances of the signal
+        if entities:
+            filters = {
+                "entity": entities,
+            }
+            expression = create_filter_expression(filters, "Entity")
+        else:
+            expression = []
 
         # Create a new filter with the selected entities and entity types
         filter_in = SignalFilterCreate(
@@ -643,64 +683,45 @@ def handle_snooze_submission_event(
 
         signal = signal_service.update(db_session=db_session, signal=signal, signal_in=signal_in)
 
-    if mfa_enabled is False:
+    # Check if last_mfa_time was within the last hour
+    last_hour = datetime.now() - timedelta(hours=1)
+    if (user.last_mfa_time and user.last_mfa_time < last_hour) or mfa_enabled is False:
         _create_snooze_filter(
             db_session=db_session,
             user=user,
             subject=context["subject"],
         )
-
-        modal = Modal(
-            title="Add Snooze",
-            close="Close",
-            blocks=[Section(text="Adding Snooze... Success!")],
-        ).build()
-
-        client.views_update(
+        send_success_modal(
+            client=client,
             view_id=body["view"]["id"],
-            view=modal,
+            title="Add Snooze",
+            message="Snooze Filter added successfully.",
         )
-
-    if mfa_enabled is True:
+    else:
         # Send the MFA push notification
-        email = context["user"].email
-        username, _ = email.split("@")
-        # In Duo it seems the username here can either be an email or regular username
-        # depending on how your Duo instance is setup. We try to manage both cases here.
-        try:
-            response = mfa_plugin.instance.send_push_notification(
-                username=username, type="Are you creating a signal filter in Dispatch?"
-            )
-        except RuntimeError as e:
-            if "Invalid request parameters (username)" in str(e):
-                response = mfa_plugin.instance.send_push_notification(
-                    username=email, type="Are you creating a signal filter in Dispatch?"
-                )
-            else:
-                raise e from None
-
-        if response.get("result") == "allow":
+        response = mfa_plugin.instance.send_push_notification(
+            username=context["user"].email,
+            type="Are you creating a snooze filter in Dispatch?",
+        )
+        if response == PushResponseResult.allow:
             # Get the existing filters for the signal
             _create_snooze_filter(
                 db_session=db_session,
                 user=user,
                 subject=context["subject"],
             )
-
-            modal = Modal(
-                title="Add Snooze",
-                close="Close",
-                blocks=[Section(text="Adding Snooze... Success!")],
-            ).build()
-
-            client.views_update(
+            send_success_modal(
+                client=client,
                 view_id=body["view"]["id"],
-                view=modal,
+                title="Add Snooze",
+                message="Snooze Filter added successfully.",
             )
+            user.last_mfa_time = datetime.now()
+            db_session.commit()
         else:
             text = (
                 "Adding Snooze failed, the MFA request timed out."
-                if response.get("status") == "timeout"
+                if response == PushResponseResult.timeout
                 else "Adding Snooze failed, you must accept the MFA prompt."
             )
             modal = Modal(
@@ -889,7 +910,9 @@ def escalate_button_click(
             initial_option={
                 "text": case.case_type.incident_type.name,
                 "value": case.case_type.incident_type.id,
-            },
+            }
+            if case.case_type.incident_type
+            else None,
             project_id=case.project.id,
         ),
         incident_priority_select(db_session=db_session, project_id=case.project.id, optional=True),
@@ -1071,7 +1094,7 @@ def edit_button_click(
     blocks = [
         title_input(initial_value=case.title),
         description_input(initial_value=case.description),
-        case_resolution_reason_select(),
+        case_resolution_reason_select(optional=True),
         resolution_input(initial_value=case.resolution),
         assignee_select(initial_user=assignee_initial_user),
         case_status_select(initial_option={"text": case.status, "value": case.status}),
@@ -1171,19 +1194,38 @@ def handle_resolve_submission_event(
     user: DispatchUser,
 ):
     ack()
+    # we get the current case, or 'previous_case'
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
+    # we run the case status transition flow
+    case_flows.case_status_transition_flow_dispatcher(
+        case=case,
+        current_status=CaseStatus.closed,
+        db_session=db_session,
+        previous_status=case.status,
+        organization_slug=context["subject"].organization_slug,
+    )
+
+    # we update the case with the new resolution and status
     case_in = CaseUpdate(
         title=case.title,
         resolution=form_data[DefaultBlockIds.resolution_input],
         visibility=case.visibility,
         status=CaseStatus.closed,
     )
+    case = case_service.update(
+        db_session=db_session,
+        case=case,
+        case_in=case_in,
+        current_user=user,
+    )
 
-    case = case_service.update(db_session=db_session, case=case, case_in=case_in, current_user=user)
+    # We update the case message with the new resolution and status
     blocks = create_case_message(case=case, channel_id=context["subject"].channel_id)
     client.chat_update(
-        blocks=blocks, ts=case.conversation.thread_id, channel=case.conversation.channel_id
+        blocks=blocks,
+        ts=case.conversation.thread_id,
+        channel=case.conversation.channel_id,
     )
 
 
@@ -1284,6 +1326,16 @@ def handle_report_project_select_action(
     )
 
 
+def ack_report_case_submission_event(ack: Ack) -> None:
+    """Handles the report case submission event acknowledgment."""
+    modal = Modal(
+        title="Report Issue",
+        close="Close",
+        blocks=[Section(text="Creating case resources...")],
+    ).build()
+    ack(response_action="update", view=modal)
+
+
 @app.view(
     CaseReportActions.submit,
     middleware=[db_middleware, action_context_middleware, modal_submit_middleware, user_middleware],
@@ -1297,7 +1349,7 @@ def handle_report_submission_event(
     user: DispatchUser,
     client: WebClient,
 ):
-    ack()
+    ack_report_case_submission_event(ack=ack)
 
     case_priority = None
     if form_data.get(DefaultBlockIds.case_priority_select):
@@ -1313,6 +1365,7 @@ def handle_report_submission_event(
         status=CaseStatus.new,
         case_priority=case_priority,
         case_type=case_type,
+        reporter=ParticipantUpdate(individual=IndividualContactRead(email=user.email)),
     )
 
     case = case_service.create(db_session=db_session, case_in=case_in, current_user=user)
@@ -1320,7 +1373,7 @@ def handle_report_submission_event(
     modal = Modal(
         title="Case Created",
         close="Close",
-        blocks=[Section(text="Your case has been created. Running case execution flows now...")],
+        blocks=[Section(text="Running case execution flows...")],
     ).build()
 
     result = client.views_update(
@@ -1330,19 +1383,17 @@ def handle_report_submission_event(
     )
 
     case_flows.case_new_create_flow(
-        case_id=case.id, organization_slug=context["subject"].organization_slug
+        case_id=case.id,
+        db_session=db_session,
+        organization_slug=context["subject"].organization_slug,
     )
 
-    modal = Modal(
-        title="Case Created",
-        close="Close",
-        blocks=[Section(text="Your case has been created.")],
-    ).build()
-
-    client.views_update(
-        view_id=result["view"]["id"],
+    send_success_modal(
+        client=client,
+        view_id=body["view"]["id"],
         trigger_id=result["trigger_id"],
-        view=modal,
+        title="Case Created",
+        message="Case created successfully.",
     )
 
 
@@ -1372,3 +1423,309 @@ def signal_button_click(
         close="Close",
     ).build()
     client.views_open(trigger_id=body["trigger_id"], view=modal)
+
+
+@app.action(
+    SignalEngagementActions.approve,
+    middleware=[
+        engagement_button_context_middleware,
+        db_middleware,
+        user_middleware,
+    ],
+)
+def engagement_button_approve_click(
+    ack: Ack,
+    body: dict,
+    db_session: Session,
+    context: BoltContext,
+    client: WebClient,
+    user: DispatchUser,
+):
+    ack()
+
+    engaged_user = context["subject"].user
+
+    role = user.get_organization_role(organization_slug=context["subject"].organization_slug)
+    if engaged_user != user.email and role not in (
+        UserRoles.admin,
+        UserRoles.owner,
+    ):
+        modal = Modal(
+            title="Not Authorized",
+            close="Close",
+            blocks=[
+                Section(
+                    text=f"Sorry, only {engaged_user} or Dispatch administrators can approve this signal."
+                )
+            ],
+        ).build()
+        return client.views_open(trigger_id=body["trigger_id"], view=modal)
+
+    modal = Modal(
+        submit="Submit",
+        close="Cancel",
+        title="Confirmation",
+        callback_id=SignalEngagementActions.approve_submit,
+        private_metadata=context["subject"].json(),
+        blocks=[
+            Section(text="Confirm that this is expected and that it is not suspicious behavior."),
+            Divider(),
+            description_input(label="Additional Context", optional=False),
+        ],
+    ).build()
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
+
+
+def ack_engagement_submission_event(ack: Ack, mfa_enabled: bool) -> None:
+    """Handles the add engagement submission event acknowledgement."""
+    text = (
+        "Confirming suspicious event..."
+        if mfa_enabled is False
+        else "Sending MFA push notification, please confirm to create Engagement filter..."
+    )
+    modal = Modal(
+        title="Confirm",
+        close="Close",
+        blocks=[Section(text=text)],
+    ).build()
+    ack(response_action="update", view=modal)
+
+
+@app.view(
+    SignalEngagementActions.approve_submit,
+    middleware=[
+        action_context_middleware,
+        db_middleware,
+        user_middleware,
+    ],
+)
+def handle_engagement_submission_event(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+    user: DispatchUser,
+) -> None:
+    """Handles the add engagement submission event."""
+    metadata = json.loads(body["view"]["private_metadata"])
+    engaged_user = metadata["user"]
+    engagement = signal_service.get_signal_engagement(
+        db_session=db_session,
+        signal_engagement_id=metadata["engagement_id"],
+    )
+
+    mfa_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=context["subject"].project_id, plugin_type="auth-mfa"
+    )
+    mfa_enabled = True if mfa_plugin and engagement.require_mfa else False
+
+    ack_engagement_submission_event(ack=ack, mfa_enabled=mfa_enabled)
+
+    case = case_service.get(db_session=db_session, case_id=metadata["id"])
+    signal_instance = signal_service.get_signal_instance(
+        db_session=db_session, signal_instance_id=UUID(metadata["signal_instance_id"])
+    )
+
+    # Get context provided by the user
+    context_from_user = body["view"]["state"]["values"][DefaultBlockIds.description_input][
+        DefaultBlockIds.description_input
+    ]["value"]
+
+    def _send_response(success: bool) -> None:
+        if success:
+            title = "Approve"
+            text = "Confirmation... Success!"
+            message_text = f":white_check_mark: {engaged_user} confirmed the behavior *is expected*.\n\n *Context Provided* \n```{context_from_user}```"
+            engagement_status = SignalEngagementStatus.approved
+        else:
+            title = "MFA Failed"
+            text = (
+                "Confirmation failed, the MFA request timed out."
+                if response == PushResponseResult.timeout
+                else "Confirmation failed, you must accept the MFA prompt."
+            )
+            message_text = f":warning: {engaged_user} attempt to confirmed the behavior *as expected*. But, the MFA validation failed, reason: {response}\n\n *Context Provided* \n```{context_from_user}```"
+            engagement_status = SignalEngagementStatus.denied
+
+        send_success_modal(
+            client=client,
+            view_id=body["view"]["id"],
+            title=title,
+            message=text,
+        )
+        client.chat_postMessage(
+            text=message_text,
+            channel=case.conversation.channel_id,
+            thread_ts=case.conversation.thread_id,
+        )
+
+        if success:
+            # We only update engagment message (which removes Confirm/Deny button) for success
+            # this allows the user to retry the confirmation if the MFA check failed
+            blocks = create_signal_engagement_message(
+                case=case,
+                channel_id=case.conversation.channel_id,
+                engagement=engagement,
+                signal_instance=signal_instance,
+                user=user,
+                engagement_status=engagement_status,
+            )
+            client.chat_update(
+                blocks=blocks,
+                channel=case.conversation.channel_id,
+                ts=signal_instance.engagement_thread_ts,
+            )
+            _resolve_case(case)
+
+    def _resolve_case(case: Case) -> None:
+        case_in = CaseUpdate(
+            title=case.title,
+            resolution=f"Automatically resolved through signal engagement. Context: {context_from_user}",
+            visibility=case.visibility,
+            status=CaseStatus.closed,
+        )
+        case = case_service.update(
+            db_session=db_session, case=case, case_in=case_in, current_user=user
+        )
+        blocks = create_case_message(case=case, channel_id=context["subject"].channel_id)
+        client.chat_update(
+            blocks=blocks, ts=case.conversation.thread_id, channel=case.conversation.channel_id
+        )
+        client.chat_postMessage(
+            text="Automatically resolved case.",
+            channel=case.conversation.channel_id,
+            thread_ts=case.conversation.thread_id,
+        )
+
+    # Check if last_mfa_time was within the last hour
+    last_hour = datetime.now() - timedelta(hours=1)
+    if (user.last_mfa_time and user.last_mfa_time < last_hour) or mfa_enabled is False:
+        return _send_response(success=True)
+
+    # Send the MFA push notification
+    response = mfa_plugin.instance.send_push_notification(
+        username=engaged_user, type="Are you confirming suspicious behavior in Dispatch?"
+    )
+    if response == PushResponseResult.allow:
+        _send_response(success=True)
+        user.last_mfa_time = datetime.now()
+        db_session.commit()
+        return
+    else:
+        return _send_response(success=False)
+
+
+@app.action(
+    SignalEngagementActions.deny,
+    middleware=[engagement_button_context_middleware, db_middleware, user_middleware],
+)
+def engagement_button_deny_click(
+    ack: Ack,
+    body: dict,
+    context: BoltContext,
+    client: WebClient,
+    user: DispatchUser,
+):
+    ack()
+    engaged_user = context["subject"].user
+
+    role = user.get_organization_role(organization_slug=context["subject"].organization_slug)
+    if engaged_user != user.email and role not in (
+        UserRoles.admin,
+        UserRoles.owner,
+    ):
+        modal = Modal(
+            title="Not Authorized",
+            close="Close",
+            blocks=[
+                Section(
+                    text=f"Sorry, only {engaged_user} or Dispatch administrators can deny this signal."
+                )
+            ],
+        ).build()
+        return client.views_open(trigger_id=body["trigger_id"], view=modal)
+
+    modal = Modal(
+        submit="Submit",
+        close="Cancel",
+        title="Not expected",
+        callback_id=SignalEngagementActions.deny_submit,
+        private_metadata=context["subject"].json(),
+        blocks=[
+            Section(text="Confirm that this is not expected and that the activity is suspicious."),
+            Divider(),
+            description_input(label="Additional Context", optional=False),
+        ],
+    ).build()
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
+
+
+def ack_engagement_deny_submission_event(ack: Ack) -> None:
+    """Handles the deny engagement submission event acknowledgement."""
+    modal = Modal(
+        title="Confirm",
+        close="Close",
+        blocks=[Section(text="Confirming event is not expected...")],
+    ).build()
+    ack(response_action="update", view=modal)
+
+
+@app.view(
+    SignalEngagementActions.deny_submit,
+    middleware=[
+        action_context_middleware,
+        db_middleware,
+        user_middleware,
+    ],
+)
+def handle_engagement_deny_submission_event(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+    user: DispatchUser,
+) -> None:
+    """Handles the add engagement submission event."""
+    ack_engagement_deny_submission_event(ack=ack)
+
+    metadata = json.loads(body["view"]["private_metadata"])
+    engaged_user = metadata["user"]
+    case = case_service.get(db_session=db_session, case_id=metadata["id"])
+    signal_instance = signal_service.get_signal_instance(
+        db_session=db_session, signal_instance_id=UUID(metadata["signal_instance_id"])
+    )
+    engagement = signal_service.get_signal_engagement(
+        db_session=db_session,
+        signal_engagement_id=metadata["engagement_id"],
+    )
+    send_success_modal(
+        client=client,
+        view_id=body["view"]["id"],
+        title="Confirm",
+        message="Event has been confirmed as not expected.",
+    )
+
+    context_from_user = body["view"]["state"]["values"][DefaultBlockIds.description_input][
+        DefaultBlockIds.description_input
+    ]["value"]
+
+    client.chat_postMessage(
+        text=f":warning: {engaged_user} confirmed the behavior was *not expected*.\n\n *Context Provided* \n```{context_from_user}```",
+        channel=case.conversation.channel_id,
+        thread_ts=case.conversation.thread_id,
+    )
+    blocks = create_signal_engagement_message(
+        case=case,
+        channel_id=case.conversation.channel_id,
+        engagement=engagement,
+        signal_instance=signal_instance,
+        user=user,
+        engagement_status=SignalEngagementStatus.denied,
+    )
+    client.chat_update(
+        blocks=blocks,
+        channel=case.conversation.channel_id,
+        ts=signal_instance.engagement_thread_ts,
+    )

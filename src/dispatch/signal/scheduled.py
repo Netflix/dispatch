@@ -5,20 +5,22 @@
     :license: Apache, see LICENSE for more details.
 """
 import logging
+
 from schedule import every
 
 from dispatch.database.core import SessionLocal
-from dispatch.scheduler import scheduler
-from dispatch.project.models import Project
+from dispatch.decorators import scheduled_project_task, timer
 from dispatch.plugin import service as plugin_service
+from dispatch.project.models import Project
+from dispatch.scheduler import scheduler
 from dispatch.signal import flows as signal_flows
-from dispatch.decorators import scheduled_project_task
 
 log = logging.getLogger(__name__)
 
 
 # TODO do we want per signal source flexibility?
 @scheduler.add(every(1).minutes, name="signal-consume")
+@timer
 @scheduled_project_task
 def consume_signals(db_session: SessionLocal, project: Project):
     """Consume signals from external sources."""
@@ -28,15 +30,15 @@ def consume_signals(db_session: SessionLocal, project: Project):
 
     if not plugins:
         log.debug(
-            f"No active plugins were found. PluginType: 'signal-consumer' ProjectId: {project.id}"
+            "No signals consumed. No signal-consumer plugins enabled. Project: {project.name}. Organization: {project.organization.name}"
         )
         return
 
     for plugin in plugins:
-        log.debug(f"Consuming signals. Signal Consumer: {plugin.plugin.slug}")
+        log.debug(f"Consuming signals using signal-consumer plugin: {plugin.plugin.slug}")
         signal_instances = plugin.instance.consume()
         for signal_instance_data in signal_instances:
-            log.info(f"Attempting to process the following signal: {signal_instance_data['id']}")
+            log.info(f"Attempting to process the following signal: {signal_instance_data}")
             try:
                 signal_flows.create_signal_instance(
                     db_session=db_session,
@@ -46,6 +48,3 @@ def consume_signals(db_session: SessionLocal, project: Project):
             except Exception as e:
                 log.debug(signal_instance_data)
                 log.exception(e)
-
-        if signal_instances:
-            plugin.instance.delete()

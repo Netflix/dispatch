@@ -4,6 +4,7 @@ import re
 
 import jsonpath_ng
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from sqlalchemy import desc
 from sqlalchemy.orm import Session, joinedload
 
 from dispatch.exceptions import NotFoundError
@@ -12,10 +13,10 @@ from dispatch.case.models import Case
 from dispatch.entity.models import Entity, EntityCreate, EntityUpdate, EntityRead
 from dispatch.entity_type import service as entity_type_service
 from dispatch.entity_type.models import EntityType
-from dispatch.signal.models import SignalInstance
+from dispatch.signal.models import Signal, SignalInstance
 
 
-def get(*, db_session, entity_id: int) -> Optional[Entity]:
+def get(*, db_session: Session, entity_id: int) -> Optional[Entity]:
     """Gets a entity by its id."""
     return db_session.query(Entity).filter(Entity.id == entity_id).one_or_none()
 
@@ -30,7 +31,9 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Entity]:
     )
 
 
-def get_by_name_or_raise(*, db_session, project_id: int, entity_in=EntityRead) -> EntityRead:
+def get_by_name_or_raise(
+    *, db_session: Session, project_id: int, entity_in=EntityRead
+) -> EntityRead:
     """Returns the entity specified or raises ValidationError."""
     entity = get_by_name(db_session=db_session, project_id=project_id, name=entity_in.name)
 
@@ -51,7 +54,7 @@ def get_by_name_or_raise(*, db_session, project_id: int, entity_in=EntityRead) -
     return entity
 
 
-def get_by_value(*, db_session, project_id: int, value: str) -> Optional[Entity]:
+def get_by_value(*, db_session: Session, project_id: int, value: str) -> Optional[Entity]:
     """Gets a entity by its value."""
     return (
         db_session.query(Entity)
@@ -61,12 +64,35 @@ def get_by_value(*, db_session, project_id: int, value: str) -> Optional[Entity]
     )
 
 
-def get_all(*, db_session, project_id: int):
+def get_all(*, db_session: Session, project_id: int):
     """Gets all entities by their project."""
     return db_session.query(Entity).filter(Entity.project_id == project_id)
 
 
-def create(*, db_session, entity_in: EntityCreate) -> Entity:
+def get_all_by_signal(*, db_session: Session, signal_id: int) -> list[Entity]:
+    """Gets all entities for a specific signal."""
+    return (
+        db_session.query(Entity)
+        .join(Entity.signal_instances)
+        .join(SignalInstance.signal)
+        .filter(Signal.id == signal_id)
+        .all()
+    )
+
+
+def get_all_desc_by_signal(*, db_session: Session, signal_id: int) -> list[Entity]:
+    """Gets all entities for a specific signal in descending order."""
+    return (
+        db_session.query(Entity)
+        .join(Entity.signal_instances)
+        .join(SignalInstance.signal)
+        .filter(Signal.id == signal_id)
+        .order_by(desc(Entity.created_at))
+        .all()
+    )
+
+
+def create(*, db_session: Session, entity_in: EntityCreate) -> Entity:
     """Creates a new entity."""
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=entity_in.project
@@ -86,7 +112,7 @@ def create(*, db_session, entity_in: EntityCreate) -> Entity:
     return entity
 
 
-def get_by_value_or_create(*, db_session, entity_in: EntityCreate) -> Entity:
+def get_by_value_or_create(*, db_session: Session, entity_in: EntityCreate) -> Entity:
     """Gets or creates a new entity."""
     # prefer the entity id if available
     if entity_in.id:
@@ -103,7 +129,7 @@ def get_by_value_or_create(*, db_session, entity_in: EntityCreate) -> Entity:
     return create(db_session=db_session, entity_in=entity_in)
 
 
-def update(*, db_session, entity: Entity, entity_in: EntityUpdate) -> Entity:
+def update(*, db_session: Session, entity: Entity, entity_in: EntityUpdate) -> Entity:
     """Updates an existing entity."""
     entity_data = entity.dict()
     update_data = entity_in.dict(skip_defaults=True, exclude={"entity_type"})
@@ -124,7 +150,7 @@ def update(*, db_session, entity: Entity, entity_in: EntityUpdate) -> Entity:
     return entity
 
 
-def delete(*, db_session, entity_id: int):
+def delete(*, db_session: Session, entity_id: int):
     """Deletes an existing entity."""
     entity = db_session.query(Entity).filter(Entity.id == entity_id).one()
     db_session.delete(entity)
@@ -136,7 +162,6 @@ def get_cases_with_entity(db_session: Session, entity_id: int, days_back: int) -
     # Calculate the datetime for the start of the search window
     start_date = datetime.utcnow() - timedelta(days=days_back)
 
-    # Query for signal instances containing the entity within the search window
     cases = (
         db_session.query(Case)
         .join(Case.signal_instances)
@@ -145,6 +170,21 @@ def get_cases_with_entity(db_session: Session, entity_id: int, days_back: int) -
         .all()
     )
     return cases
+
+
+def get_case_count_with_entity(db_session: Session, entity_id: int, days_back: int) -> int:
+    """Calculate the count of cases with a given Entity by it's ID."""
+    # Calculate the datetime for the start of the search window
+    start_date = datetime.utcnow() - timedelta(days=days_back)
+
+    count = (
+        db_session.query(Case)
+        .join(Case.signal_instances)
+        .join(SignalInstance.entities)
+        .filter(Entity.id == entity_id, SignalInstance.created_at >= start_date)
+        .count()
+    )
+    return count
 
 
 def get_signal_instances_with_entity(
@@ -296,15 +336,15 @@ def find_entities(
 
         Args:
             signal_instance: The SignalInstance to extract entities from.
-            entity_type_pairs: A list of (entity_type, entity_regex, field) tuples to search for.
+            entity_type_pairs: A list of (entity_type, entity_regex, jpath) tuples to search for.
 
         Yields:
             EntityCreate: An entity found in the SignalInstance.
         """
-        for entity_type, entity_regex, field in entity_type_pairs:
-            if field:
+        for entity_type, entity_regex, jpath in entity_type_pairs:
+            if jpath:
                 try:
-                    matches = field.find(signal_instance.raw)
+                    matches = jpath.find(signal_instance.raw)
                     for match in matches:
                         if isinstance(match.value, str):
                             if entity_regex is None:
@@ -324,22 +364,22 @@ def find_entities(
                     # field not found in signal_instance.raw
                     pass
 
-    # Create a list of (entity type, regular expression, field) tuples
+    # Create a list of (entity type, regular expression, jpath) tuples
     entity_type_pairs = [
         (
             type,
             re.compile(type.regular_expression) if type.regular_expression else None,
-            jsonpath_ng.parse(type.field) if type.field else None,
+            jsonpath_ng.parse(type.jpath) if type.jpath else None,
         )
         for type in entity_types
-        if isinstance(type.regular_expression, str) or type.field is not None
+        if isinstance(type.regular_expression, str) or type.jpath is not None
     ]
 
     # Filter the entity type pairs based on the field
     filtered_entity_type_pairs = [
-        (entity_type, entity_regex, field)
-        for entity_type, entity_regex, field in entity_type_pairs
-        if not field
+        (entity_type, entity_regex, jpath)
+        for entity_type, entity_regex, jpath in entity_type_pairs
+        if not jpath
     ]
 
     # Use the recursive search function to find entities in the raw data

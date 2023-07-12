@@ -345,6 +345,12 @@ export const protectedRoute = [
             component: () => import("@/notification/Table.vue"),
           },
           {
+            path: "searchFilters",
+            name: "SearchFilterTable",
+            meta: { title: "Search Filters", subMenu: "project", group: "general" },
+            component: () => import("@/search/Table.vue"),
+          },
+          {
             path: "workflows",
             name: "WorkflowTable",
             meta: { title: "Workflows", subMenu: "project", group: "general" },
@@ -394,15 +400,21 @@ export const protectedRoute = [
           },
           {
             path: "caseSeverities",
-            name: "caseSeverityTable",
+            name: "CaseSeverityTable",
             meta: { title: "Severities", subMenu: "project", group: "case" },
             component: () => import("@/case/severity/Table.vue"),
           },
           {
             path: "signals",
-            name: "SignalTable",
-            meta: { title: "Signal Definitions", subMenu: "project", group: "case" },
+            name: "SignalDefinitionTable",
+            meta: { title: "Definitions", subMenu: "project", group: "signal" },
             component: () => import("@/signal/Table.vue"),
+          },
+          {
+            path: "entity/types",
+            name: "EntityTypeTable",
+            meta: { title: "Entity Types", subMenu: "project", group: "signal" },
+            component: () => import("@/entity_type/Table.vue"),
           },
           {
             path: "source/types",

@@ -7,7 +7,9 @@
       <v-card-title>Create Entity Type </v-card-title>
       <v-stepper v-model="step">
         <v-stepper-header>
-          <v-stepper-step :complete="step > 1" step="1" editable> Define Filter </v-stepper-step>
+          <v-stepper-step :complete="step > 1" step="1" editable>
+            Define Expression
+          </v-stepper-step>
           <v-divider />
           <v-stepper-step step="2" editable> Save </v-stepper-step>
         </v-stepper-header>
@@ -23,7 +25,7 @@
                 </v-radio-group>
                 <v-text-field
                   v-if="type === 'regex'"
-                  v-model="regular_expression"
+                  v-model="entityType.regular_expression"
                   label="Regular Expression"
                   hint="A regular expression pattern for your entity type. The first capture group will be used."
                 >
@@ -39,7 +41,7 @@
                 </v-text-field>
                 <v-text-field
                   v-if="type === 'json'"
-                  v-model="jpath"
+                  v-model="entityType.jpath"
                   label="JSON Path"
                   hint="The field where the entity will be present. Supports JSON Path expressions."
                 >
@@ -57,10 +59,10 @@
                 <v-row>
                   <v-col cols="4">
                     <v-list>
-                      <template
-                        v-for="(instance, index) in signalInstances"
-                        v-if="signalInstances.length"
-                      >
+                      <template v-if="!signalInstances.length">
+                        No example signals are currently available for this definition.
+                      </template>
+                      <template v-for="(instance, index) in signalInstances" v-else>
                         <v-list-item>
                           <v-list-item-content>
                             <v-list-item-title>{{ instance.id }}</v-list-item-title>
@@ -73,9 +75,7 @@
                         </v-list-item>
                         <v-divider v-if="index < signalInstances.length - 1"></v-divider>
                       </template>
-                      <template v-else>
-                        No signals are currently available for this definition.
-                      </template>
+                      <template v-else> </template>
                     </v-list>
                   </v-col>
                   <v-col cols="8">
@@ -99,7 +99,7 @@
                   </v-card-text>
                   <ValidationProvider name="Name" rules="required" immediate>
                     <v-text-field
-                      v-model="name"
+                      v-model="entityType.name"
                       label="Name"
                       hint="A name for your saved search."
                       slot-scope="{ errors, valid }"
@@ -111,7 +111,7 @@
                   </ValidationProvider>
                   <ValidationProvider name="Description" immediate>
                     <v-textarea
-                      v-model="description"
+                      v-model="entityType.description"
                       label="Description"
                       hint="A short description."
                       slot-scope="{ errors, valid }"
@@ -144,7 +144,7 @@
 </template>
 
 <script>
-import { mapActions, mapMutations } from "vuex"
+import { mapMutations } from "vuex"
 import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
@@ -152,6 +152,7 @@ import PlaygroundTextBox from "@/entity_type/playground/PlaygroundTextBox.vue"
 import SearchUtils from "@/search/utils"
 import SignalApi from "@/signal/api"
 import SignalDefinitionCombobox from "@/signal/SignalDefinitionCombobox.vue"
+import EntityTypeApi from "@/entity_type/api"
 import { isValidJsonPath, isValidRegex } from "@/entity_type/utils.js"
 
 extend("required", {
@@ -187,7 +188,18 @@ export default {
       type: "json",
       componentKey: 0,
       signalInstances: [],
+      entityType: {
+        name: null,
+        description: null,
+        regular_expression: null,
+        jpath: null,
+        enabled: true,
+        scope: "single",
+        signals: [this.signalDefinition],
+        project: this.project,
+      },
       dialog: false,
+      loading: false,
       filters: {
         signal: [],
       },
@@ -220,28 +232,31 @@ export default {
     ValidationProvider,
   },
   computed: {
-    ...mapFields("entity_type", [
-      "selected",
-      "selected.description",
-      "selected.regular_expression",
-      "selected.jpath",
-      "selected.signal",
-      "selected.working_signal",
-      "selected.name",
-      "loading",
-    ]),
     ...mapFields("route", ["query"]),
   },
   methods: {
     ...mapMutations("playground", ["updatePattern", "updateJsonPath"]),
-    ...mapActions("entity_type", ["createdSignalDefinition", "save"]),
     saveEntityType() {
-      this.save().then((entityType) => {
-        this.$emit("input", entityType)
+      this.loading = true
+      return EntityTypeApi.create(this.entityType).then((resp) => {
+        this.loading = false
+        this.dialog = false
+        this.reset()
+        this.$emit("input", resp.data)
       })
     },
     isValidRegex,
     isValidJsonPath,
+    reset() {
+      this.entityType = {
+        name: null,
+        description: null,
+        regular_expression: null,
+        jpath: null,
+        enabled: true,
+        scope: "single",
+      }
+    },
     forceRerender() {
       this.componentKey += 1
     },
@@ -258,6 +273,7 @@ export default {
       return SignalApi.getAllInstances(params)
         .then((response) => {
           this.signalInstances = response.data.items
+          this.updateEditorValue(this.signalInstances[0].raw)
         })
         .catch((error) => {
           console.error(error)
@@ -283,8 +299,8 @@ export default {
             this.updateJsonPath(newVal)
           }
           let entityType = {
-            regular_expression: this.selected.regular_expression,
-            jpath: this.selected.jpath,
+            regular_expression: this.entityType.regular_expression,
+            jpath: this.entityType.jpath,
           }
           entityType[selector] = newVal
         }
@@ -294,23 +310,18 @@ export default {
       this.editorValue = JSON.stringify(newValue, null, 2)
     },
   },
-  created() {
-    if (this.project) {
-      this.selected.project = this.project
-    }
-  },
   watch: {
-    "selected.regular_expression": function (newVal, oldVal) {
+    "entityType.regular_expression": function (newVal, oldVal) {
       this.onSelectedChange("regular_expression", newVal, oldVal)
     },
-    "selected.jpath": function (newVal, oldVal) {
+    "entityType.jpath": function (newVal, oldVal) {
       this.onSelectedChange("jpath", newVal, oldVal)
     },
-    "selected.working_signal": function (newVal) {
-      this.getSignalData(newVal)
-    },
+
     dialog: function (newVal) {
       if (newVal) {
+        // only get new data on open
+        this.getSignalData(this.signalDefinition)
         this.forceRerender()
       }
     },

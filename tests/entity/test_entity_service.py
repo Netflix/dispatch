@@ -9,6 +9,30 @@ def test_get(session, entity):
     assert t_entity.id == entity.id
 
 
+def test_get_all_by_signal(session, entity, signal_instance):
+    from dispatch.entity.service import get_all_by_signal
+
+    # Associate the entity with the signal_instance
+    signal_instance.entities.append(entity)
+    session.add(signal_instance)
+    session.commit()
+
+    # Get the signal_id for the test
+    signal_id = signal_instance.signal_id
+
+    # Call the function to get all entities by signal
+    entities = get_all_by_signal(db_session=session, signal_id=signal_id)
+
+    # Check if the entity is in the list of entities returned by the function
+    assert entity in entities
+
+    # Check that the number of entities returned is correct
+    assert len(entities) == 1
+
+    # Check that the entity returned is the one appended to the signal instance
+    assert entities[0].id == entity.id
+
+
 def test_create(session, entity_type, project):
     from dispatch.entity.models import EntityCreate
     from dispatch.entity.service import create
@@ -58,7 +82,7 @@ def test_find_entities_with_field_and_regex(session, signal_instance, project):
     entity_types = [
         EntityType(
             name="AWS IAM Role ARN",
-            field="asset[*].id",
+            jpath="asset[*].id",
             regular_expression=r"^arn:aws:iam::\d{12}:role\/[a-zA-Z_0-9+=,.@\-_/]+$",
             project=project,
         ),
@@ -71,7 +95,7 @@ def test_find_entities_with_regex_only(session, signal_instance, project):
     entity_types = [
         EntityType(
             name="AWS IAM Role ARN",
-            field=None,
+            jpath=None,
             regular_expression=r"^arn:aws:iam::\d{12}:role\/[a-zA-Z_0-9+=,.@\-_/]+$",
             project=project,
         ),
@@ -83,7 +107,7 @@ def test_find_entities_with_regex_only(session, signal_instance, project):
     entity_types = [
         EntityType(
             name="AWS Account ID",
-            field=None,
+            jpath=None,
             regular_expression=r"\d{12}",
             project=project,
         ),
@@ -96,7 +120,7 @@ def test_find_entities_with_field_only(session, signal_instance, project):
     entity_types = [
         EntityType(
             name="AWS IAM Role ARN",
-            field="id",
+            jpath="id",
             regular_expression=None,
             project=project,
         ),
@@ -108,7 +132,7 @@ def test_find_entities_with_field_only(session, signal_instance, project):
     entity_types = [
         EntityType(
             name="Entire Obj",
-            field="identity",
+            jpath="identity",
             regular_expression=None,
             project=project,
         ),
@@ -120,7 +144,7 @@ def test_find_entities_with_field_only(session, signal_instance, project):
     entity_types = [
         EntityType(
             name="AWS IAM Role ARN",
-            field="asset[*].id",
+            jpath="asset[*].id",
             regular_expression=None,
             project=project,
         ),
@@ -133,7 +157,7 @@ def test_find_entities_with_no_regex_or_field(session, signal_instance, project)
     entity_types = [
         EntityType(
             name="AWS IAM Role ARN",
-            field=None,
+            jpath=None,
             regular_expression=None,
             project=project,
         ),

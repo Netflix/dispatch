@@ -20,8 +20,14 @@
               <v-list-item-subtitle>{{ value.status }}</v-list-item-subtitle>
             </v-list-item-content>
             <v-list-item-action>
-              <v-btn icon @click="menu = false">
-                <v-icon>mdi-close-circle</v-icon>
+              <v-btn
+                icon
+                :to="{
+                  name: 'CaseTableEdit',
+                  params: { name: value.name },
+                }"
+              >
+                <v-icon>mdi-arrow-right-bold-circle</v-icon>
               </v-btn>
             </v-list-item-action>
           </v-list-item>

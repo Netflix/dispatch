@@ -36,12 +36,16 @@
             :server-items-length="total"
             :page.sync="page"
             :items-per-page.sync="itemsPerPage"
+            :footer-props="{
+              'items-per-page-options': [10, 25, 50, 100],
+            }"
             :sort-by.sync="sortBy"
             :sort-desc.sync="descending"
             :loading="loading"
             v-model="selected"
             loading-text="Loading... Please wait"
             show-select
+            @click:row="showCaseEditSheet"
           >
             <template v-slot:item.case_severity.name="{ item }">
               <case-severity :severity="item.case_severity.name" />
@@ -223,6 +227,9 @@ export default {
       "showDeleteDialog",
       "showEscalateDialog",
     ]),
+    showCaseEditSheet(item) {
+      this.$router.push({ name: "CaseTableEdit", params: { name: item.name } })
+    },
   },
 
   watch: {

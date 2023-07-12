@@ -11,6 +11,7 @@ from typing import List, Optional
 from blockkit import Message
 from sqlalchemy.orm import Session
 
+from dispatch.auth.models import DispatchUser
 from dispatch.case.models import Case
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.decorators import apply, counter, timer
@@ -20,11 +21,14 @@ from dispatch.plugins.dispatch_slack.config import (
     SlackContactConfiguration,
     SlackConversationConfiguration,
 )
+from dispatch.signal.enums import SignalEngagementStatus
+from dispatch.signal.models import SignalEngagement, SignalInstance
 
 from .case.messages import create_case_message, create_signal_messages
 
 from .endpoints import router as slack_event_router
 from .messaging import create_message_blocks
+from .case.messages import create_signal_engagement_message
 from .service import (
     add_conversation_bookmark,
     add_users_to_conversation,
@@ -34,6 +38,7 @@ from .service import (
     conversation_archived,
     create_conversation,
     create_slack_client,
+    does_user_exist,
     get_user_avatar_url,
     get_user_profile_by_email,
     rename_conversation,
@@ -80,23 +85,75 @@ class SlackConversationPlugin(ConversationPlugin):
             ts=response["timestamp"],
         )
         if case.signal_instances:
-            messages = create_signal_messages(
-                case=case, channel_id=conversation_id, db_session=db_session
+            message = create_signal_messages(
+                case_id=case.id, channel_id=conversation_id, db_session=db_session
             )
-            for m in messages:
-                send_message(
-                    client=client,
-                    conversation_id=conversation_id,
-                    ts=response["timestamp"],
-                    blocks=m,
-                )
+            signal_response = send_message(
+                client=client,
+                conversation_id=conversation_id,
+                ts=response["timestamp"],
+                blocks=message,
+            )
+            case.signal_thread_ts = signal_response.get("timestamp")
+            db_session.commit()
         return response
+
+    def create_engagement_threaded(
+        self,
+        case: Case,
+        conversation_id: str,
+        thread_id: str,
+        user: DispatchUser,
+        engagement: SignalEngagement,
+        signal_instance: SignalInstance,
+        engagement_status: SignalEngagementStatus = SignalEngagementStatus.new,
+    ):
+        """Creates a new engagement message."""
+        client = create_slack_client(self.configuration)
+        if not does_user_exist(client=client, email=user.email):
+            not_found_msg = (
+                f"Unable to engage user ({user.email}). Not found in current slack workspace."
+            )
+            return send_message(
+                client=client,
+                conversation_id=conversation_id,
+                text=not_found_msg,
+                ts=thread_id,
+            )
+
+        blocks = create_signal_engagement_message(
+            case=case,
+            channel_id=conversation_id,
+            user=user,
+            engagement=engagement,
+            signal_instance=signal_instance,
+            engagement_status=engagement_status,
+        )
+        return send_message(
+            client=client, conversation_id=conversation_id, blocks=blocks, ts=thread_id
+        )
 
     def update_thread(self, case: Case, conversation_id: str, ts: str):
         """Updates an existing threaded conversation."""
         client = create_slack_client(self.configuration)
         blocks = create_case_message(case=case, channel_id=conversation_id)
         return update_message(client=client, conversation_id=conversation_id, ts=ts, blocks=blocks)
+
+    def update_signal_message(
+        self,
+        case_id: int,
+        conversation_id: str,
+        db_session: Session,
+        thread_id: str,
+    ):
+        """Updates the signal message."""
+        client = create_slack_client(self.configuration)
+        blocks = create_signal_messages(
+            case_id=case_id, channel_id=conversation_id, db_session=db_session
+        )
+        return update_message(
+            client=client, conversation_id=conversation_id, blocks=blocks, ts=thread_id
+        )
 
     def send(
         self,
@@ -181,7 +238,7 @@ class SlackConversationPlugin(ConversationPlugin):
     def add(self, conversation_id: str, participants: List[str]):
         """Adds users to conversation."""
         client = create_slack_client(self.configuration)
-        participants = [resolve_user(client, p)["id"] for p in participants]
+        participants = [resolve_user(client, p)["id"] for p in set(participants)]
 
         archived = conversation_archived(client, conversation_id)
         if not archived:
@@ -190,13 +247,16 @@ class SlackConversationPlugin(ConversationPlugin):
     def add_to_thread(self, conversation_id: str, thread_id: str, participants: List[str]):
         """Adds users to a thread conversation."""
         client = create_slack_client(self.configuration)
-        participants = [resolve_user(client, p)["id"] for p in participants]
+        participants = [resolve_user(client, p)["id"] for p in set(participants)]
         add_users_to_conversation_thread(client, conversation_id, thread_id, participants)
 
     def archive(self, conversation_id: str):
         """Archives a conversation."""
         client = create_slack_client(self.configuration)
-        return archive_conversation(client, conversation_id)
+
+        archived = conversation_archived(client, conversation_id)
+        if not archived:
+            archive_conversation(client, conversation_id)
 
     def unarchive(self, conversation_id: str):
         """Unarchives a conversation."""
@@ -272,7 +332,8 @@ class SlackContactPlugin(ContactPlugin):
 
         return {
             "fullname": profile["real_name"],
-            "email": profile["email"],
+            # https://api.slack.com/methods/users.profile.get#email-addresses
+            "email": profile.get("email", email),
             "title": profile["title"],
             "team": team,
             "department": department,

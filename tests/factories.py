@@ -790,9 +790,8 @@ class CaseReadFactory(BaseFactory):
 class EntityTypeFactory(BaseFactory):
     name = FuzzyText()
     description = FuzzyText()
-    field = FuzzyText()
+    jpath = FuzzyText()
     regular_expression = r"[a-zA-Z]+"
-    global_find = Faker().pybool()
     enabled = Faker().pybool()
     project = SubFactory(ProjectFactory)
 
@@ -801,7 +800,6 @@ class EntityTypeFactory(BaseFactory):
 
 
 class EntityFactory(BaseFactory):
-    id = Sequence(lambda n: f"1{n}")
     name = FuzzyText()
     description = FuzzyText()
     value = FuzzyText()

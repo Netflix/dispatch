@@ -16,12 +16,9 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType, observes
 
-from dispatch.case.priority.models import (
-    CasePriorityRead,
-    CasePriorityBase,
-)
-from dispatch.case.severity.models import CaseSeverityBase, CaseSeverityRead
-from dispatch.case.type.models import CaseTypeBase, CaseTypeRead
+from dispatch.case.priority.models import CasePriorityRead, CasePriorityBase, CasePriorityCreate
+from dispatch.case.severity.models import CaseSeverityBase, CaseSeverityRead, CaseSeverityCreate
+from dispatch.case.type.models import CaseTypeBase, CaseTypeRead, CaseTypeCreate
 from dispatch.database.core import Base
 from dispatch.document.models import Document, DocumentRead
 from dispatch.enums import Visibility
@@ -92,6 +89,11 @@ class Case(Base, TimeStampMixin, ProjectMixin):
         Participant, foreign_keys=[assignee_id], lazy="subquery", post_update=True
     )
 
+    reporter_id = Column(Integer, ForeignKey("participant.id", ondelete="CASCADE"))
+    reporter = relationship(
+        Participant, foreign_keys=[reporter_id], lazy="subquery", post_update=True
+    )
+
     case_type = relationship("CaseType", backref="case")
     case_type_id = Column(Integer, ForeignKey("case_type.id"))
 
@@ -138,6 +140,8 @@ class Case(Base, TimeStampMixin, ProjectMixin):
 
     related_id = Column(Integer, ForeignKey("case.id"))
     related = relationship("Case", remote_side=[id], uselist=True, foreign_keys=[related_id])
+
+    signal_thread_ts = Column(String, nullable=True)
 
     storage = relationship("Storage", uselist=False, backref="case", cascade="all, delete-orphan")
 
@@ -205,9 +209,9 @@ class CaseBase(DispatchBase):
 
 class CaseCreate(CaseBase):
     assignee: Optional[ParticipantUpdate]
-    case_priority: Optional[CasePriorityRead]
-    case_severity: Optional[CaseSeverityRead]
-    case_type: Optional[CaseTypeRead]
+    case_priority: Optional[CasePriorityCreate]
+    case_severity: Optional[CaseSeverityCreate]
+    case_type: Optional[CaseTypeCreate]
     project: Optional[ProjectRead]
     reporter: Optional[ParticipantUpdate]
     tags: Optional[List[TagRead]] = []
@@ -230,6 +234,7 @@ class CaseReadMinimal(CaseBase):
     escalated_at: Optional[datetime] = None
     name: Optional[NameStr]
     project: ProjectRead
+    reporter: Optional[ParticipantReadMinimal]
     reported_at: Optional[datetime] = None
     triage_at: Optional[datetime] = None
 
@@ -254,6 +259,7 @@ class CaseRead(CaseBase):
     name: Optional[NameStr]
     project: ProjectRead
     related: Optional[List[CaseReadMinimal]] = []
+    reporter: Optional[ParticipantRead]
     reported_at: Optional[datetime] = None
     participants: Optional[List[ParticipantRead]] = []
     signal_instances: Optional[List[SignalInstanceRead]] = []
@@ -271,6 +277,7 @@ class CaseUpdate(CaseBase):
     case_type: Optional[CaseTypeBase]
     duplicates: Optional[List[CaseRead]] = []
     related: Optional[List[CaseRead]] = []
+    reporter: Optional[ParticipantUpdate]
     escalated_at: Optional[datetime] = None
     incidents: Optional[List[IncidentReadMinimal]] = []
     reported_at: Optional[datetime] = None

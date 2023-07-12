@@ -129,6 +129,6 @@ async def slack_actions(request: Request, organization: str, body: bytes = Depen
     "/slack/menu",
 )
 async def slack_menus(request: Request, organization: str, body: bytes = Depends(get_body)):
-    """Handle all incoming Slack actions."""
+    """Handle all incoming Slack menus."""
     handler = get_request_handler(request=request, body=body, organization=organization)
     return handler.handle(req=request, body=body)

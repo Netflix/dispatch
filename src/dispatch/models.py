@@ -116,6 +116,10 @@ class DispatchBase(BaseModel):
         }
 
 
+class PrimaryKeyModel(BaseModel):
+    id: PrimaryKey
+
+
 class EvergreenBase(DispatchBase):
     evergreen: Optional[bool] = False
     evergreen_owner: Optional[EmailStr]

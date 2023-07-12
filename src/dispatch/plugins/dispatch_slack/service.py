@@ -12,7 +12,7 @@ from slack_sdk.web.client import WebClient
 from slack_sdk.web.slack_response import SlackResponse
 
 from .config import SlackConversationConfiguration
-from .enums import SlackAPIGetEndpoints, SlackAPIPostEndpoints
+from .enums import SlackAPIErrorCode, SlackAPIGetEndpoints, SlackAPIPostEndpoints
 
 
 Conversation = dict[str, str]
@@ -44,11 +44,15 @@ def handle_slack_error(exception: SlackApiError, endpoint: str, kwargs: dict) ->
     )
     error = exception.response["error"]
 
-    if error in {"channel_not_found", "user_not_in_channel"}:
+    if error in {
+        SlackAPIErrorCode.CHANNEL_NOT_FOUND,
+        SlackAPIErrorCode.USER_NOT_IN_CHANNEL,
+        SlackAPIErrorCode.USERS_NOT_FOUND,
+    }:
         # NOTE we've seen some consistency problems with channel creation, adding users to channels or messaging them.
         log.warn(message)
         raise TryAgain from None
-    elif error == "fatal_error":
+    elif error == SlackAPIErrorCode.FATAL_ERROR:
         # NOTE we've experienced a wide range of issues when Slack's performance is degraded
         log.error(message)
         time.sleep(300)
@@ -83,6 +87,12 @@ def list_conversation_messages(client: WebClient, conversation_id: str, **kwargs
 
 
 @functools.lru_cache()
+def get_domain(client: WebClient) -> str:
+    """Gets the team's Slack domain."""
+    return make_call(client, SlackAPIGetEndpoints.team_info)["team"]["domain"]
+
+
+@functools.lru_cache()
 def get_user_info_by_id(client: WebClient, user_id: str) -> dict:
     """Gets profile information about a user by id."""
     return make_call(client, SlackAPIGetEndpoints.users_info, user=user_id)["user"]
@@ -92,6 +102,23 @@ def get_user_info_by_id(client: WebClient, user_id: str) -> dict:
 def get_user_info_by_email(client: WebClient, email: str) -> dict:
     """Gets profile information about a user by email."""
     return make_call(client, SlackAPIGetEndpoints.users_lookup_by_email, email=email)["user"]
+
+
+@functools.lru_cache()
+def does_user_exist(client: WebClient, email: str) -> bool:
+    """Checks if a user exists in the Slack workspace by their email."""
+    try:
+        client.api_call(
+            api_method=SlackAPIGetEndpoints.users_lookup_by_email,
+            http_verb="GET",
+            params={"email": email},
+        )
+        return True
+    except SlackApiError as e:
+        if e.response["error"] == SlackAPIErrorCode.USERS_NOT_FOUND:
+            return False
+        else:
+            raise
 
 
 @functools.lru_cache()
@@ -144,7 +171,7 @@ def get_conversation_name_by_id(client: WebClient, conversation_id: str) -> Slac
             "channel"
         ]["name"]
     except SlackApiError as e:
-        if e.response["error"] == "channel_not_found":
+        if e.response["error"] == SlackAPIErrorCode.CHANNEL_NOT_FOUND:
             return None
         else:
             raise e
@@ -184,7 +211,7 @@ def create_conversation(client: WebClient, name: str, is_private: bool = False) 
     return {
         "id": response["id"],
         "name": response["name"],
-        "weblink": f"https://slack.com/app_redirect?channel={response['id']}",
+        "weblink": f"https://{get_domain(client)}.slack.com/app_redirect?channel={response['id']}",
     }
 
 
@@ -201,7 +228,7 @@ def unarchive_conversation(client: WebClient, conversation_id: str) -> SlackResp
         )
     except SlackApiError as e:
         # if the channel isn't archived thats okay
-        if e.response["error"] != "not_archived":
+        if e.response["error"] != SlackAPIErrorCode.CHANNEL_NOT_ARCHIVED:
             raise e
 
 
@@ -219,7 +246,7 @@ def conversation_archived(client: WebClient, conversation_id: str) -> bool | Non
             "channel"
         ]["is_archived"]
     except SlackApiError as e:
-        if e.response["error"] == "channel_not_found":
+        if e.response["error"] == SlackAPIErrorCode.CHANNEL_NOT_FOUND:
             return None
         else:
             raise e
@@ -231,6 +258,8 @@ def add_users_to_conversation_thread(
     """Adds user to a threaded conversation."""
     users = [f"<@{user_id}>" for user_id in user_ids]
     if users:
+        # @'ing them isn't enough if they aren't already in the channel
+        add_users_to_conversation(client=client, conversation_id=conversation_id, user_ids=user_ids)
         blocks = Message(
             blocks=[
                 Section(text="Looping in individuals to help resolve this case...", fields=users)
@@ -253,8 +282,17 @@ def add_users_to_conversation(
         except SlackApiError as e:
             # sometimes slack sends duplicate member_join events
             # that result in folks already existing in the channel.
-            if e.response["error"] == "already_in_channel":
+            if e.response["error"] == SlackAPIErrorCode.USER_IN_CHANNEL:
                 pass
+
+
+def get_message_permalink(client: WebClient, conversation_id: str, ts: str) -> str:
+    return make_call(
+        client,
+        SlackAPIGetEndpoints.chat_permalink,
+        channel=conversation_id,
+        message_ts=ts,
+    )["permalink"]
 
 
 def send_message(
@@ -281,7 +319,7 @@ def send_message(
     return {
         "id": response["channel"],
         "timestamp": response["ts"],
-        "weblink": f"https://slack.com/app_redirect?channel={response['id']}",  # TODO should we fetch the permalink?
+        "weblink": get_message_permalink(client, response["channel"], response["ts"]),
     }
 
 
@@ -305,7 +343,7 @@ def update_message(
     return {
         "id": response["channel"],
         "timestamp": response["ts"],
-        "weblink": f"https://slack.com/app_redirect?channel={response['id']}",  # TODO should we fetch the permalink?
+        "weblink": get_message_permalink(client, response["channel"], response["ts"]),
     }
 
 

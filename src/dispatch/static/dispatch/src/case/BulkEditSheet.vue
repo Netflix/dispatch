@@ -1,6 +1,7 @@
 <template>
   <v-bottom-sheet v-model="showBulkEdit" hide-overlay persistent>
     <handoff-dialog />
+    <closed-dialog />
     <v-card :loading="bulkEditLoading" tile>
       <v-list>
         <v-list-item>
@@ -27,7 +28,7 @@
             </v-btn>
           </v-list-item-icon>
           <v-list-item-icon>
-            <v-btn text @click="saveBulk({ status: 'Closed' })">
+            <v-btn text @click="showClosedDialog()">
               <v-icon>mdi-close</v-icon>
               Mark Closed
             </v-btn>
@@ -49,12 +50,14 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
 import HandoffDialog from "@/case/HandoffDialog.vue"
+import ClosedDialog from "@/case/ClosedDialog.vue"
 
 export default {
   name: "CaseBulkEditSheet",
 
   components: {
     HandoffDialog,
+    ClosedDialog,
   },
 
   computed: {
@@ -66,7 +69,12 @@ export default {
   },
 
   methods: {
-    ...mapActions("case_management", ["saveBulk", "deleteBulk", "showHandoffDialog"]),
+    ...mapActions("case_management", [
+      "saveBulk",
+      "deleteBulk",
+      "showHandoffDialog",
+      "showClosedDialog",
+    ]),
   },
 }
 </script>

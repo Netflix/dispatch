@@ -1,9 +1,9 @@
 import json
 from datetime import datetime, timedelta, timezone
-from typing import Literal, Optional
+from typing import Optional
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from sqlalchemy import asc
+from sqlalchemy import desc, asc
 from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
@@ -17,10 +17,14 @@ from dispatch.project import service as project_service
 from dispatch.service import service as service_service
 from dispatch.tag import service as tag_service
 from dispatch.workflow import service as workflow_service
+from dispatch.entity.models import Entity
 
 from .models import (
     Signal,
     SignalCreate,
+    SignalEngagement,
+    SignalEngagementCreate,
+    SignalEngagementRead,
     SignalFilter,
     SignalFilterAction,
     SignalFilterCreate,
@@ -31,6 +35,78 @@ from .models import (
     SignalInstanceCreate,
     SignalUpdate,
 )
+
+
+def create_signal_engagement(
+    *, db_session: Session, creator: DispatchUser, signal_engagement_in: SignalEngagementCreate
+) -> SignalEngagement:
+    """Creates a new signal filter."""
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=signal_engagement_in.project
+    )
+
+    entity_type = entity_type_service.get(
+        db_session=db_session, entity_type_id=signal_engagement_in.entity_type.id
+    )
+
+    signal_engagement = SignalEngagement(
+        name=signal_engagement_in.name,
+        description=signal_engagement_in.description,
+        message=signal_engagement_in.message,
+        require_mfa=signal_engagement_in.require_mfa,
+        entity_type=entity_type,
+        creator=creator,
+        project=project,
+    )
+    db_session.add(signal_engagement)
+    db_session.commit()
+    return signal_engagement
+
+
+def get_signal_engagement(
+    *, db_session: Session, signal_engagement_id: int
+) -> Optional[SignalEngagement]:
+    """Gets a signal engagement by id."""
+    return (
+        db_session.query(SignalEngagement)
+        .filter(SignalEngagement.id == signal_engagement_id)
+        .one_or_none()
+    )
+
+
+def get_signal_engagement_by_name(
+    *, db_session, project_id: int, name: str
+) -> Optional[SignalEngagement]:
+    """Gets a signal engagement by it's name."""
+    return (
+        db_session.query(SignalEngagement)
+        .filter(SignalEngagement.project_id == project_id)
+        .filter(SignalEngagement.name == name)
+        .first()
+    )
+
+
+def get_signal_engagement_by_name_or_raise(
+    *, db_session: Session, project_id: int, signal_engagement_in=SignalEngagementRead
+) -> SignalEngagement:
+    signal_engagement = get_signal_engagement_by_name(
+        db_session=db_session, project_id=project_id, name=signal_engagement_in.name
+    )
+
+    if not signal_engagement:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    NotFoundError(
+                        msg="Signal Engagement not found.",
+                        signal_engagement=signal_engagement_in.name,
+                    ),
+                    loc="signalEngagement",
+                )
+            ],
+            model=SignalEngagementRead,
+        )
+    return signal_engagement
 
 
 def create_signal_filter(
@@ -185,6 +261,7 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
                 "filters",
                 "tags",
                 "entity_types",
+                "oncall_service",
                 "workflows",
             }
         ),
@@ -198,12 +275,19 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
 
     entity_types = []
     for e in signal_in.entity_types:
-        entity_type = entity_type_service.get_by_name_or_raise(
-            db_session=db_session, project_id=project.id, entity_type_in=e
-        )
+        entity_type = entity_type_service.get(db_session=db_session, entity_type_id=e.id)
         entity_types.append(entity_type)
 
     signal.entity_types = entity_types
+
+    engagements = []
+    for eng in signal_in.engagements:
+        signal_engagement = get_signal_engagement_by_name(
+            db_session=db_session, project_id=project.id, signal_engagement_in=eng
+        )
+        engagements.append(signal_engagement)
+
+    signal.engagements = engagements
 
     filters = []
     for f in signal_in.filters:
@@ -254,6 +338,7 @@ def update(*, db_session: Session, signal: Signal, signal_in: SignalUpdate) -> S
             "case_type",
             "case_priority",
             "source",
+            "engagements",
             "filters",
             "entity_types",
             "tags",
@@ -271,12 +356,19 @@ def update(*, db_session: Session, signal: Signal, signal_in: SignalUpdate) -> S
 
     entity_types = []
     for e in signal_in.entity_types:
-        entity_type = entity_type_service.get_by_name_or_raise(
-            db_session=db_session, project_id=signal.project.id, entity_type_in=e
-        )
+        entity_type = entity_type_service.get(db_session=db_session, entity_type_id=e.id)
         entity_types.append(entity_type)
 
     signal.entity_types = entity_types
+
+    engagements = []
+    for eng in signal_in.engagements:
+        signal_engagement = get_signal_engagement_by_name_or_raise(
+            db_session=db_session, project_id=signal.project.id, signal_engagement_in=eng
+        )
+        engagements.append(signal_engagement)
+
+    signal.engagements = engagements
 
     filters = []
     for f in signal_in.filters:
@@ -338,23 +430,78 @@ def create_instance(
 
     # we round trip the raw data to json-ify date strings
     signal_instance = SignalInstance(
-        **signal_instance_in.dict(exclude={"case", "signal", "project", "entities", "raw"}),
+        **signal_instance_in.dict(
+            exclude={
+                "case",
+                "case_type",
+                "case_priority",
+                "signal",
+                "project",
+                "entities",
+                "raw",
+            }
+        ),
         raw=json.loads(json.dumps(signal_instance_in.raw)),
         project=project,
         signal=signal,
     )
+
+    # if the signal has an existing uuid we propgate it as our primary key
+    if signal_instance_in.raw:
+        if signal_instance_in.raw.get("id"):
+            signal_instance.id = signal_instance_in.raw["id"]
+
+    if signal_instance_in.case_priority:
+        case_priority = case_priority_service.get_by_name_or_default(
+            db_session=db_session,
+            project_id=project.id,
+            case_priority_in=signal_instance_in.case_priority,
+        )
+        signal_instance.case_priority = case_priority
+
+    if signal_instance_in.case_type:
+        case_type = case_type_service.get_by_name_or_default(
+            db_session=db_session,
+            project_id=project.id,
+            case_type_in=signal_instance_in.case_type,
+        )
+        signal_instance.case_type = case_type
 
     db_session.add(signal_instance)
     db_session.commit()
     return signal_instance
 
 
-def apply_filter_actions(
-    *, db_session: Session, signal_instance: SignalInstance
-) -> Literal[True] | None:
-    """Applies any matching filter actions associated with this instance."""
+def update_instance(
+    *, db_session: Session, signal_instance_in: SignalInstanceCreate
+) -> SignalInstance:
+    """Updates an existing signal instance."""
+    signal_instance = get_signal_instance(signal_instance_id=signal_instance_in.id)
+    signal_instance.raw = json.loads(json.dumps(signal_instance_in.raw))
 
-    action = False
+    db_session.commit()
+    return signal_instance
+
+
+def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bool:
+    """
+    Apply filter actions to the signal instance.
+
+    The function first checks if the signal instance is snoozed. If not snoozed,
+    it checks for a deduplication rule set on the signal instance. If no
+    deduplication rule is set, a default deduplication rule is applied,
+    grouping all signal instances together for a 1-hour window, regardless of
+    the entities in the signal instance.
+
+    Args:
+        db_session (Session): Database session.
+        signal_instance (SignalInstance): Signal instance to be filtered.
+
+    Returns:
+        bool: True if the signal instance is filtered, False otherwise.
+    """
+
+    filtered = False
     for f in signal_instance.signal.filters:
         if f.mode != SignalFilterMode.active:
             continue
@@ -371,16 +518,26 @@ def apply_filter_actions(
             if f.expiration.replace(tzinfo=timezone.utc) <= datetime.now(timezone.utc):
                 continue
 
-            instances = query.filter(SignalInstance.id == signal_instance.id).all()
+            # an expression is not required for snoozing, if absent we snooze regardless of entity
+            if f.expression:
+                instances = query.filter(SignalInstance.id == signal_instance.id).all()
 
-            if instances:
+                if instances:
+                    signal_instance.filter_action = SignalFilterAction.snooze
+                    filtered = True
+                    break
+            else:
                 signal_instance.filter_action = SignalFilterAction.snooze
-                action = True
+                filtered = True
                 break
 
         elif f.action == SignalFilterAction.deduplicate:
-            window = datetime.now(timezone.utc) - timedelta(seconds=f.window)
+            window = datetime.now(timezone.utc) - timedelta(minutes=f.window)
             query = query.filter(SignalInstance.created_at >= window)
+            query = query.join(SignalInstance.entities).filter(
+                Entity.id.in_([e.id for e in signal_instance.entities])
+            )
+            query = query.filter(SignalInstance.id != signal_instance.id)
 
             # get the earliest instance
             query = query.order_by(asc(SignalInstance.created_at))
@@ -390,8 +547,36 @@ def apply_filter_actions(
                 # associate with existing case
                 signal_instance.case_id = instances[0].case_id
                 signal_instance.filter_action = SignalFilterAction.deduplicate
-                action = True
+                filtered = True
                 break
+    else:
+        # Check if there's a deduplication rule set on the signal
+        has_dedup_filter = any(
+            f.action == SignalFilterAction.deduplicate for f in signal_instance.signal.filters
+        )
+        # Apply the default deduplication rule if there's no deduplication rule set on the signal
+        # and the signal instance is not snoozed
+        if not has_dedup_filter and not filtered:
+            default_dedup_window = datetime.now(timezone.utc) - timedelta(hours=1)
+            instance = (
+                db_session.query(SignalInstance)
+                .filter(
+                    SignalInstance.signal_id == signal_instance.signal_id,
+                    SignalInstance.created_at >= default_dedup_window,
+                    SignalInstance.id != signal_instance.id,
+                    SignalInstance.case_id.isnot(None),  # noqa
+                )
+                .with_entities(SignalInstance.case_id)
+                .order_by(desc(SignalInstance.created_at))
+                .first()
+            )
+            if instance:
+                signal_instance.case_id = instance.case_id
+                signal_instance.filter_action = SignalFilterAction.deduplicate
+                filtered = True
+
+    if not filtered:
+        signal_instance.filter_action = SignalFilterAction.none
 
     db_session.commit()
-    return action
+    return filtered

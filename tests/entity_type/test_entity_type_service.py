@@ -15,9 +15,8 @@ def test_create(session, project):
     entity_type_in = EntityTypeCreate(
         name=name,
         description=description,
-        field="foo",
+        jpath="foo",
         regular_expression="*.",
-        global_find=True,
         enabled=False,
         project=project,
     )

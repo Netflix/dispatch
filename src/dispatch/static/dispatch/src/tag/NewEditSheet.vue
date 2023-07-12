@@ -1,7 +1,7 @@
 <template>
   <ValidationObserver v-slot="{ invalid, validated }">
     <v-navigation-drawer v-model="showCreateEdit" app clipped right width="500">
-      <template v-slot:prepend>
+      <template #prepend>
         <v-list-item two-line>
           <v-list-item-content>
             <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
@@ -117,10 +117,11 @@
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
-import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { mapActions } from "vuex"
+import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
+
 import TagTypeSelect from "@/tag_type/TagTypeSelect.vue"
 
 extend("required", {

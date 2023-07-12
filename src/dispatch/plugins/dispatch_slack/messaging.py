@@ -7,7 +7,16 @@
 import logging
 from typing import Any, List, Optional
 
-from blockkit import Actions, Button, Context, Divider, MarkdownText, Section
+from blockkit import (
+    Actions,
+    Button,
+    Context,
+    Divider,
+    MarkdownText,
+    Section,
+    StaticSelect,
+    PlainOption,
+)
 from slack_sdk.web.client import WebClient
 from slack_sdk.errors import SlackApiError
 
@@ -20,6 +29,7 @@ from dispatch.messaging.strings import (
     render_message_template,
 )
 from dispatch.plugins.dispatch_slack.config import SlackConfiguration
+from dispatch.plugins.dispatch_slack.enums import SlackAPIErrorCode
 
 log = logging.getLogger(__name__)
 
@@ -158,7 +168,7 @@ def build_bot_not_present_message(client: WebClient, command: str, conversations
 def build_slack_api_error_message(error: SlackApiError) -> str:
     return (
         "Sorry, the request to Slack timed out. Try running your command again."
-        if error.response.get("error") == "expired_trigger_id"
+        if error.response.get("error") == SlackAPIErrorCode.VIEW_EXPIRED
         else "Sorry, we've run into an unexpected error with Slack."
     )
 
@@ -218,6 +228,28 @@ def default_notification(items: list):
 
                     elements.append(element)
             blocks.append(Actions(elements=elements))
+
+        if select := item.get("select"):
+            options = []
+            for option in select["options"]:
+                element = PlainOption(text=option["option_text"], value=option["option_value"])
+                options.append(element)
+
+            static_select = []
+            if select.get("placeholder"):
+                static_select.append(
+                    StaticSelect(
+                        placeholder=select["placeholder"],
+                        options=options,
+                        action_id=select["select_action"],
+                    )
+                )
+            else:
+                static_select.append(
+                    StaticSelect(options=options, action_id=select["select_action"])
+                )
+            blocks.append(Actions(elements=static_select))
+
     return blocks
 
 

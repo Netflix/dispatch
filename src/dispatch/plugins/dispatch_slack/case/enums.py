@@ -40,3 +40,10 @@ class SignalNotificationActions(DispatchEnum):
 class SignalSnoozeActions(DispatchEnum):
     preview = "case-notification-snooze-preview"
     submit = "case-notification-snooze-submit"
+
+
+class SignalEngagementActions(DispatchEnum):
+    approve = "signal-engagement-approve"
+    deny = "signal-engagement-deny"
+    approve_submit = "signal-engagement-approve-submit"
+    deny_submit = "signal-engagement-deny-submit"

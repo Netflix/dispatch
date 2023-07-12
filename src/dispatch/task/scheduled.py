@@ -11,11 +11,11 @@ import logging
 from schedule import every
 
 from dispatch.database.core import SessionLocal
-from dispatch.decorators import scheduled_project_task
+from dispatch.decorators import scheduled_project_task, timer
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
-from dispatch.project.models import Project
 from dispatch.plugin import service as plugin_service
+from dispatch.project.models import Project
 from dispatch.scheduler import scheduler
 from dispatch.task import service as task_service
 
@@ -28,15 +28,14 @@ TASK_SYNC_INTERVAL = 30  # seconds
 log = logging.getLogger(__name__)
 
 
-@scheduler.add(every(TASK_REMINDERS_INTERVAL).seconds, name="incident-task-reminders")
+@scheduler.add(every(TASK_REMINDERS_INTERVAL).seconds, name="create-incident-tasks-reminders")
 @scheduled_project_task
-def create_task_reminders(db_session: SessionLocal, project: Project):
-    """Creates multiple task reminders."""
-    tasks = task_service.get_overdue_tasks(db_session=db_session, project_id=project.id)
-    log.debug(f"New tasks that need reminders. NumTasks: {len(tasks)}")
+def create_incident_tasks_reminders(db_session: SessionLocal, project: Project):
+    """Creates incident tasks reminders."""
+    overdue_tasks = task_service.get_overdue_tasks(db_session=db_session, project_id=project.id)
+    log.debug(f"Overdue tasks in {project.name} project that need reminders: {len(overdue_tasks)}")
 
-    # let's only remind for active incidents for now
-    tasks = [t for t in tasks if t.incident.status == IncidentStatus.active]
+    tasks = [t for t in overdue_tasks if t.incident.status == IncidentStatus.active]
 
     if tasks:
         grouped_tasks = group_tasks_by_assignee(tasks)
@@ -56,7 +55,11 @@ def sync_tasks(db_session, task_plugin, incidents, lookback: int = 60, notify: b
                 break
 
             # we get the list of tasks in the document
-            tasks = task_plugin.instance.list(file_id=document.resource_id, lookback=lookback)
+            try:
+                tasks = task_plugin.instance.list(file_id=document.resource_id, lookback=lookback)
+            except Exception as e:
+                log.warn(f"Unable to list tasks in document {document.resource_id}. Error: {e}")
+                continue
 
             for task in tasks:
                 # we get the task information
@@ -68,9 +71,10 @@ def sync_tasks(db_session, task_plugin, incidents, lookback: int = 60, notify: b
                     log.exception(e)
 
 
-@scheduler.add(every(1).day, name="incident-daily-task-sync")
+@scheduler.add(every(1).day, name="sync-incident-tasks-daily")
+@timer
 @scheduled_project_task
-def daily_sync_task(db_session: SessionLocal, project: Project):
+def sync_incident_tasks_daily(db_session: SessionLocal, project: Project):
     """Syncs all incident tasks daily."""
     incidents = incident_service.get_all(db_session=db_session, project_id=project.id).all()
     task_plugin = plugin_service.get_active_instance(
@@ -78,23 +82,28 @@ def daily_sync_task(db_session: SessionLocal, project: Project):
     )
 
     if not task_plugin:
-        log.warning(f"Skipping task sync no task plugin enabled. ProjectId: {project.id}")
+        log.warning(
+            f"Daily incident tasks sync skipped. No task plugin enabled. Project: {project.name}. Organization: {project.organization.name}"
+        )
         return
 
     lookback = 60 * 60 * 24  # 24hrs
     sync_tasks(db_session, task_plugin, incidents, lookback=lookback, notify=False)
 
 
-@scheduler.add(every(TASK_SYNC_INTERVAL).seconds, name="incident-task-sync")
+@scheduler.add(every(TASK_SYNC_INTERVAL).seconds, name="sync-active-stable-incident-tasks")
+@timer
 @scheduled_project_task
-def sync_active_stable_tasks(db_session: SessionLocal, project: Project):
-    """Syncs incident tasks."""
+def sync_active_stable_incident_tasks(db_session: SessionLocal, project: Project):
+    """Syncs active and stable incident tasks."""
     task_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project.id, plugin_type="task"
     )
 
     if not task_plugin:
-        log.warning(f"Skipping task sync no task plugin enabled. ProjectId: {project.id}")
+        log.warning(
+            f"Active and stable incident tasks sync skipped. No task plugin enabled. Project: {project.name}. Organization: {project.organization.name}"
+        )
         return
 
     # we get all active and stable incidents
