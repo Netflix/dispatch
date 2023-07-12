@@ -60,6 +60,20 @@ def resolve_context_from_conversation(channel_id: str) -> Optional[Subject]:
         scoped_db_session.close()
 
 
+def select_context_middleware(payload: dict, context: BoltContext, next: Callable) -> None:
+    """Attempt to determine the current context of the selection."""
+    if not payload.get("selected_option"):
+        return next()
+
+    organization_slug, incident_id, *_ = payload["selected_option"]["value"].split("-")
+    subject_data = SubjectMetadata(
+        organization_slug=organization_slug, id=incident_id, type="Incident"
+    )
+
+    context.update({"subject": subject_data})
+    next()
+
+
 def shortcut_context_middleware(context: BoltContext, next: Callable) -> None:
     """Attempts to determine the current context of the event."""
     context.update({"subject": SubjectMetadata(channel_id=context.channel_id)})

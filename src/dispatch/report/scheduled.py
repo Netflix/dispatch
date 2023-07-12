@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from schedule import every
 
 from dispatch.database.core import SessionLocal
@@ -50,3 +50,33 @@ def incident_report_reminders(db_session: SessionLocal, project: Project):
             except Exception as e:
                 # we shouldn't fail to send all reminders when one fails
                 log.exception(e)
+
+
+@scheduler.add(every(5).minutes, name="incident-report-delayed-reminders")
+@timer
+@scheduled_project_task
+def incident_report_delayed_reminders(db_session: SessionLocal, project: Project):
+    """Sends user-delayed report reminders to incident commanders for active incidents."""
+    incidents = incident_service.get_all_by_status(
+        db_session=db_session, project_id=project.id, status=IncidentStatus.active
+    )
+
+    for incident in incidents:
+        try:
+            if exec_report_time := incident.delay_executive_report_reminder:
+                if datetime.utcnow() - exec_report_time > timedelta(minutes=1):
+                    # send exec report reminder now
+                    send_incident_report_reminder(
+                        incident, ReportTypes.executive_report, db_session, True
+                    )
+
+            if tech_report_time := incident.delay_tactical_report_reminder:
+                if datetime.utcnow() - tech_report_time > timedelta(minutes=1):
+                    # send tech report reminder now!
+                    send_incident_report_reminder(
+                        incident, ReportTypes.tactical_report, db_session, True
+                    )
+
+        except Exception as e:
+            # we shouldn't fail to send all reminders when one fails
+            log.exception(e)
