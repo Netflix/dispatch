@@ -1,6 +1,7 @@
 import logging
 import uuid
 from datetime import datetime, timedelta
+from functools import reduce
 from typing import Any
 
 import pytz
@@ -1490,6 +1491,9 @@ def handle_report_tactical_command(
         conditions = tactical_report.details.get("conditions")
         actions = tactical_report.details.get("actions")
         needs = tactical_report.details.get("needs")
+    else:
+        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+        actions = "\n".join(["-" + task for task in incident.tasks if task.status != "Resolved"])
 
     blocks = [
         Input(
