@@ -5,9 +5,7 @@
         <v-list-item :href="participant.individual.weblink" target="_blank">
           <v-list-item-content>
             <v-list-item-title>
-              {{ participant.individual.name }} ({{
-                participant.participant_roles | activeRoles
-              }})
+              {{ participant.individual.name }} ({{ participant.participant_roles | activeRoles }})
             </v-list-item-title>
             <v-list-item-subtitle>
               {{ participant.team }} - {{ participant.location }}
