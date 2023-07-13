@@ -16,7 +16,6 @@ import {
   Heading,
   Bold,
   Italic,
-  Strike,
   Underline,
   Code,
   Paragraph,
@@ -37,25 +36,20 @@ export default {
   data: () => ({
     // declare extensions you want to use
     extensions: [
-      Blockquote,
-      Link,
-      Underline,
-      Strike,
+      Bold,
       Italic,
       ListItem,
       BulletList,
       OrderedList,
-      Bold,
+      Blockquote,
+      Link,
+
       Code,
       HardBreak,
     ],
     // starting editor's content
     content: `
-      <p>Document your findings and provide the rationale for any decisions you made as part of this investigation...</p>
-      <br></br>
-      <br></br>
-      <br></br>
-      <br></br>
+      <blockquote>Document your findings and provide the rationale for any decisions you made as part of this investigation...</blockquote>
       <br></br>
       <br></br>
     `,

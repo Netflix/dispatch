@@ -30,22 +30,32 @@
 </template>
 
 <script>
-import MonacoEditor from "monaco-editor-vue"
-import loader from "@monaco-editor/loader"
+import * as monaco from "monaco-editor"
 import jsonpath from "jsonpath"
 import json_to_ast from "json-to-ast"
 
 export default {
   name: "NewRawSignalViewer",
-  components: {
-    MonacoEditor,
+
+  data() {
+    return {
+      entityVals: [],
+      matches: [],
+      decoration: [],
+      noHighlight: [],
+      editor: null,
+      monaco: null,
+      model: null,
+    }
   },
+
   props: {
     item: {
       type: Object,
       required: true,
     },
   },
+
   computed: {
     raw_str: {
       get: function () {
@@ -56,77 +66,117 @@ export default {
 
   watch: {
     item: {
-      immediate: true, // This will run the handler immediately after the watcher is created
-      deep: true, // This will enable the watcher to track the nested properties of the object
       handler(newValue, oldValue) {
-        // This function will be called whenever 'item' prop changes
-        this.editor.getModel().setValue(newValue.raw)
+        console.log("NEW VAL %O", newValue)
+        oldValue.entities.forEach((entity) => {
+          console.log("GOT %O", entity)
+          console.log(entity.value)
+        })
+
+        this.editor.getModel().findMatches("sub_string", true, false, false, null, true)
+
+        this.editor.setValue(this.raw(newValue.raw))
       },
     },
   },
-  data() {
-    return {
-      editor: null,
-      monaco: null,
-      model: null,
-      snackbar: false,
-      editorOptions: {
-        automaticLayout: true,
-        renderValidationDecorations: "on",
-        readOnly: false,
-        minimap: {
-          enabled: false,
-        },
-        scrollbar: {
-          vertical: "hidden",
-          horizontal: "hidden",
-        },
-        lineDecorationsWidth: 0,
-        renderLineHighlight: "none",
-      },
-    }
-  },
-  created() {
-    loader.init().then((monaco) => {
-      const editorOptions = {
-        minimap: { enabled: false },
-        renderLineHighlight: "none",
-        language: "json",
-        automaticLayout: true,
-        value: this.raw_str,
-        lineDecorationsWidth: 0,
-        scrollbar: {
-          vertical: "hidden",
-          horizontal: "hidden",
-        },
-        wordWrap: true,
-      }
-      let uuid = crypto.randomUUID()
-      // Create a unique URI for the in-memory model
-      const modelUri = monaco.Uri.parse(`inmemory://playground-${uuid}`)
-      // Create the model with an osquery log as the initial value
-      const model = monaco.editor.createModel(this.raw_str, "json", modelUri)
-      // Create the editor and pass the model to the options
-      const editor = monaco.editor.create(
-        document.getElementById("playground-editor"),
-        editorOptions,
-        {
-          model,
-        }
-      )
-      // Store the references to the model and editor
-      this.model = model
-      this.editor = editor
-      this.monaco = monaco
 
-      this.editor.layout()
-      console.log(this.editor)
-      console.log(this.model)
-      console.log(this.item)
+  mounted() {
+    monaco.editor.defineTheme("myCustomTheme", {
+      base: "vs", // can also be vs-dark or hc-black
+      inherit: true, // can also be false to completely replace the builtin rules
+      rules: [
+        {
+          token: "string.value.json",
+          foreground: "#ef4444",
+        },
+        {
+          token: "string.key.json",
+          foreground: "#0a0a0a",
+        },
+      ],
+      colors: {
+        "editor.foreground": "#000000",
+      },
     })
+    const editorOptions = {
+      minimap: { enabled: false },
+      renderLineHighlight: "none",
+      automaticLayout: true,
+      value: this.raw_str,
+      lineDecorationsWidth: 0,
+      language: "json",
+      theme: "myCustomTheme",
+      overviewRulerLanes: 0,
+      hideCursorInOverviewRuler: true,
+      scrollbar: {
+        vertical: "hidden",
+        horizontal: "hidden",
+      },
+      wordWrap: true,
+    }
+    let uuid = crypto.randomUUID()
+    // Create a unique URI for the in-memory model
+    const modelUri = monaco.Uri.parse(`inmemory://playground-${uuid}`)
+    // Create the model with an osquery log as the initial value
+    const model = monaco.editor.createModel(this.raw_str, "json", modelUri)
+
+    // Create the editor and pass the model to the options
+    const editor = monaco.editor.create(
+      document.getElementById("playground-editor"),
+      editorOptions,
+      {
+        model,
+      }
+    )
+
+    // Store the references to the model and editor
+    this.model = model
+    this.editor = editor
+    this.monaco = monaco
+
+    this.item.entities.forEach((entity) => {
+      console.log("GOT ENTITY %O", entity)
+      console.log(entity.value)
+      console.log("JPATH %O", entity.entity_type.jpath)
+      const post = this.editor.getModel().findMatches(entity.value, true, false, false, null, true)
+      console.log("POST %O", post)
+
+      this.updateDecorations(null, entity.entity_type.jpath)
+    })
+
+    monaco.languages.registerHoverProvider("json", {
+      provideHover: (model, position) => {
+        const word = model.getWordAtPosition(position)
+        if (word) {
+          const hoveredWord = word.word
+          const entity = this.item.entities.find((entity) => entity.value === hoveredWord)
+          if (entity) {
+            const range = new monaco.Range(
+              position.lineNumber,
+              word.startColumn,
+              position.lineNumber,
+              word.endColumn
+            )
+            console.log(entity)
+            const content = `**Entity Type**: ${entity.entity_type.name}\n\n**Pattern**: ${entity.entity_type.jpath}\n\n**Value**: ${entity.value}`
+            return {
+              contents: [{ value: content }],
+              range: range,
+            }
+          }
+        }
+        return null
+      },
+    })
+
+    // this.updateDecorations(this.pattern, this.jpath)
+    this.editor.layout()
   },
 
   methods: {
+    raw() {
+      return JSON.stringify(this.item.raw, null, "\t") || "[]"
+    },
     parseEditorJSON() {
       // Get the current value from the editor
       const currentValue = this.editor.getValue()
@@ -138,6 +188,17 @@ export default {
       const updatedValue = JSON.stringify(jsonValue, null, "\t")
       // Set the new value in the editor
       this.editor.setValue(updatedValue)
+      this.item.entities.forEach((entity) => {
+        console.log("GOT ENTITY %O", entity)
+        console.log(entity.value)
+        console.log("JPATH %O", entity.entity_type.jpath)
+        const post = this.editor
+          .getModel()
+          .findMatches(entity.value, true, false, false, null, true)
+        console.log("POST %O", post)
+
+        this.updateDecorations(null, entity.entity_type.jpath)
+      })
     },
     // Updated parseJSONProperties method
     parseJSONProperties(item) {
@@ -172,6 +233,8 @@ export default {
       if (!pattern && !jpath) {
         return
       }
+
+      console.log("GOT JPATH %O", jpath)
 
       const model = this.editor.getModel()
       const editorText = model.getValue()
@@ -222,7 +285,7 @@ export default {
       const ast = json_to_ast(model.getValue())
 
       if (jpath) {
-        const nodes = jsonpath.nodes(JSON.parse(editorText), this.jpath)
+        const nodes = jsonpath.nodes(JSON.parse(editorText), jpath)
         const jpathTree = nodes.map((node) => node.path.filter((item) => item !== "$"))
 
         for (const p of jpathTree) {
@@ -411,7 +474,7 @@ export default {
               range,
               options: {
                 isWholeLine: false,
-                className: "highlight",
+                className: "decorate",
               },
             }
           })
@@ -436,3 +499,9 @@ export default {
   },
 }
 </script>
+
+<style>
+.decorate {
+  background-color: rgba(255, 199, 199, 0.726);
+}
+</style>

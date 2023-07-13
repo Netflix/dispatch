@@ -184,6 +184,7 @@ class ProjectRead(DispatchBase):
 class CaseBase(DispatchBase):
     title: str
     description: Optional[str]
+    updated_at: Optional[datetime]
     resolution: Optional[str]
     resolution_reason: Optional[CaseResolutionReason]
     status: Optional[CaseStatus]

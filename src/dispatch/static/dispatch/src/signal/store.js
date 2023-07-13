@@ -20,6 +20,7 @@ const getDefaultSelectedState = () => {
     filters: [],
     entity_types: [],
     tags: [],
+    signal_instances: [],
     signal_definition: null,
     workflow_instances: null,
     oncall_service: null,

@@ -8,7 +8,7 @@
           </template>
         </v-breadcrumbs>
 
-        <v-row align="vertical">
+        <v-row align="center">
           <v-col cols="auto" class="pl-4">
             <v-responsive :width="`${selected.title.length - 7}.5rem`">
               <v-text-field
@@ -23,10 +23,15 @@
               </v-text-field>
             </v-responsive>
           </v-col>
-
-          <v-col cols="auto" class="pt-5 ml-n5">
-            <case-priority-select-chip :_case="selected" v-bind="attrs" v-on="on" />
-          </v-col>
+          <!--
+          <v-col cols="auto">
+            <v-chip small text-color="black" color="#edf2f7">
+              {{ selected.project.name }}
+            </v-chip>
+            <v-chip small text-color="black" color="#edf2f7" class="ml-4">
+              {{ selected.case_type.name }}
+            </v-chip>
+          </v-col> -->
         </v-row>
 
         <div class="pt-2">
@@ -42,7 +47,7 @@
                   rows="1"
                   hide-details="auto"
                   background-color="transparent"
-                  @keyup.enter="toggleEdit"
+                  @input="autosave"
                   class="pl-1 mb-4 mr-16 pr-16 hover-outline"
                 >
                 </v-textarea>
@@ -63,25 +68,108 @@
               </div> -->
               <div>
                 <v-row no-gutters align="center">
-                  <v-col cols="24">
+                  <v-col cols="6" md="9">
                     <case-status-select-group :_case="selected"></case-status-select-group>
                   </v-col>
+                  <!-- <v-col cols="4" md="auto">
+                    <v-chip
+                      small
+                      text-color="black"
+                      color="#edf2f7"
+                      class="ml-4 chip-hover-outline"
+                    >
+                      <v-icon dense small class="pr-2"> mdi-content-duplicate </v-icon>
+                      Duplicates
+                      <v-icon small right>mdi-plus</v-icon>
+                    </v-chip>
+                    <v-badge
+                      bordered
+                      overlap
+                      color="rgb(43, 51, 67)"
+                      content="2"
+                      class="mr-2 mb-4 ml-1"
+                    ></v-badge>
+
+                    <v-chip
+                      small
+                      text-color="black"
+                      color="#edf2f7"
+                      class="ml-4 chip-hover-outline"
+                    >
+                      <v-icon dense small class="pr-2"> mdi-fire </v-icon>
+                      Incidents
+                      <v-icon small right>mdi-plus</v-icon>
+                    </v-chip>
+                    <v-badge
+                      bordered
+                      overlap
+                      color="rgb(43, 51, 67)"
+                      content="2"
+                      class="mr-2 mb-4 ml-1"
+                    ></v-badge>
+
+                    <v-chip
+                      small
+                      text-color="black"
+                      color="#edf2f7"
+                      class="ml-4 chip-hover-outline"
+                    >
+                      <v-icon dense small class="pr-2"> mdi-animation </v-icon>
+                      Related
+                      <v-icon small right>mdi-plus</v-icon>
+                    </v-chip>
+                    <v-badge
+                      bordered
+                      overlap
+                      color="rgb(43, 51, 67)"
+                      content="2"
+                      class="mr-2 mb-4 ml-1"
+                    ></v-badge>
+                    <v-chip
+                      small
+                      text-color="black"
+                      color="#edf2f7"
+                      class="ml-4 chip-hover-outline"
+                    >
+                      <v-icon dense small class="pr-2"> mdi-tag </v-icon>
+                      Tags
+                      <v-icon small right>mdi-plus</v-icon>
+                    </v-chip>
+                    <v-badge
+                      bordered
+                      overlap
+                      color="rgb(43, 51, 67)"
+                      content="2"
+                      class="mr-2 mb-4 ml-1"
+                    ></v-badge>
+                  </v-col> -->
                 </v-row>
               </div>
 
               <div class="pl-4">
                 <v-tabs v-model="tab" class="ml-n3 pt-6" background-color="transparent">
-                  <v-tabs-slider color="rgb(9, 19, 40"></v-tabs-slider>
+                  <v-tabs-slider color="transparent"></v-tabs-slider>
 
                   <v-tab key="main" class="tab custom-tab-text">
                     <v-icon dense small class="pr-2"> mdi-clock-outline </v-icon>
                     Timeline
                   </v-tab>
-                  <v-tab key="signals" class="tab custom-tab-text">
+                  <v-tab key="resources" class="tab custom-tab-text">
+                    <v-icon dense small class="pr-2"> mdi-semantic-web </v-icon>
+                    Resources
+                  </v-tab>
+                  <v-tab
+                    key="signals"
+                    class="tab custom-tab-text"
+                    :disabled="signal_instances.length === 0"
+                  >
                     <v-icon dense small class="pr-2"> mdi-broadcast </v-icon>
-                    <v-badge bordered color="rgb(43, 51, 67)" inline :content="totalSignalInstances"
-                      >Signals</v-badge
-                    >
+                    <template v-if="signal_instances.length > 0">
+                      <v-badge color="rgb(43, 51, 67)" inline :content="totalSignalInstances">
+                        Signals
+                      </v-badge>
+                    </template>
+                    <template v-else> Signals </template>
                   </v-tab>
                   <v-tab key="entities" class="tab">
                     <v-icon dense small class="pr-2"> mdi-account-group </v-icon>
@@ -89,18 +177,23 @@
                   </v-tab>
                 </v-tabs>
               </div>
-              <v-divider></v-divider>
+              <v-divider class="ml-2"></v-divider>
               <v-tabs-items v-model="tab">
                 <v-tab-item key="main" class="tab">
                   <div class="pt-12 pb-12 pr-12 pl-12">
                     <v-card elevation="0" class="rounded-lg">
-                      <v-card-title>
-                        <v-icon class="mr-2">mdi-chart-timeline-variant </v-icon>Case Timeline </v-card-title
-                      ><CaseTimeline class="pl-8 mr-4" />
+                      <CaseTimeline class="pl-8 mr-4" />
                     </v-card>
                     <!-- <rich-resolution></rich-resolution> -->
                   </div>
                 </v-tab-item>
+                <v-tab-item key="main" class="tab">
+                  <div class="pt-12 pb-12 pr-12 pl-12">
+                    <case-resources-tab></case-resources-tab>
+                    <!-- <rich-resolution></rich-resolution> -->
+                  </div>
+                </v-tab-item>
+
                 <v-tab-item key="signals" class="tab">
                   <signal-instance-card-viewer :caseId="selected.id" />
                 </v-tab-item>
@@ -138,7 +231,17 @@
       </v-col> -->
       <v-col cols="3">
         <div>
-          <v-row no-gutters align="center" justify="end" class="ml-8 pl-16">
+          <v-row no-gutters align="center" justify="end">
+            <v-col cols="3" md="auto">
+              <div class="last-updated-text grey--text">
+                <v-icon small left v-if="selected.loading" class="loading-icon">mdi-loading</v-icon>
+                <v-icon small left v-else>mdi-update</v-icon>
+                <span class="subtitle-2 mr-4">{{ lastUpdatedTime }}</span>
+              </div>
+            </v-col>
+
+            <v-spacer></v-spacer>
+
             <v-col cols="4" md="auto">
               <participant-chips
                 :participants="selected.participants"
@@ -146,7 +249,7 @@
               ></participant-chips>
             </v-col>
 
-            <v-col cols="4">
+            <v-col cols="5" md="auto" class="pr-2">
               <v-btn class="ml-2" icon @click="toggleVisibility()">
                 <v-icon dense v-if="this.selected.visibility == 'Open'">mdi-lock-open</v-icon>
                 <v-icon v-else>mdi-lock</v-icon>
@@ -175,7 +278,11 @@
                 <v-icon dense>mdi-delete</v-icon>
               </v-btn> -->
 
-              <v-btn icon>
+              <v-btn
+                v-if="selected.status == 'New' || selected.status == 'Triage'"
+                @click="showEscalateDialog(selected)"
+                icon
+              >
                 <v-icon dense>mdi-fire</v-icon>
               </v-btn>
 
@@ -187,23 +294,14 @@
                 </template>
                 <v-list>
                   <v-list-item> <v-icon left dense>mdi-delete</v-icon> Delete </v-list-item>
-                  <v-list-item> <v-icon left dense>mdi-fire</v-icon> Escalate </v-list-item>
                 </v-list>
               </v-menu>
             </v-col>
           </v-row>
           <v-card class="px-6 pb-6 mr-4 rounded-lg mt-8 refactoring-ui-shadow" outlined>
-            <!-- <span><v-icon dense class="pr-2"> mdi-account-check </v-icon>Assignee</span> -->
-
-            <!-- <v-row justify="end">
-              <v-col cols="auto" class="pt-2">
-                <v-icon dense class="pr-2"> mdi-cog-outline </v-icon>
-              </v-col>
-            </v-row> -->
-
             <v-row no-gutters align="center" class="pt-6">
               <v-col cols="4">
-                <div class="subtitle-2">Assignee</div>
+                <div class="subtitle-2">Assigned to</div>
               </v-col>
               <v-col cols="8">
                 <new-participant-select
@@ -216,7 +314,7 @@
 
             <v-row no-gutters align="center" class="pt-5">
               <v-col cols="4">
-                <div class="subtitle-2">Reporter</div>
+                <div class="subtitle-2">Reported by</div>
               </v-col>
               <v-col cols="8">
                 <new-participant-select :project="selected.project" :value="selected.reporter" />
@@ -238,11 +336,11 @@
                 <div class="subtitle-2">Severity</div>
               </v-col>
               <v-col cols="8">
-                <case-priority-select-chip :_case="selected" v-bind="attrs" v-on="on" />
+                <case-severity-select-chip :_case="selected" v-bind="attrs" v-on="on" />
               </v-col>
             </v-row>
 
-            <v-row no-gutters align="center" class="pt-8">
+            <!-- <v-row no-gutters align="center" class="pt-8">
               <v-col cols="4">
                 <div class="subtitle-2">Type</div>
               </v-col>
@@ -254,15 +352,18 @@
               </v-col>
             </v-row>
 
-            <!-- <v-divider class="mt-9"></v-divider>
+            <v-row no-gutters align="center" class="pt-8">
+              <v-col cols="4">
+                <div class="subtitle-2">Project</div>
+              </v-col>
 
-            <v-row no-gutters align="center" class="pt-2">
-              <div class="subtitle-2 pr-14">Visibility</div>
-              <v-switch v-model="switch2" color="rgb(43, 51, 67)" inset></v-switch>
-              <v-icon dense class="ml-n1">mdi-lock</v-icon>
-            </v-row>
+              <v-col cols="8">
+                <v-chip small text-color="black" color="#edf2f7">
+                  {{ selected.project.name }}
+                </v-chip>
+              </v-col>
+            </v-row> -->
 
-            <v-divider class="mt-6 mb-6"></v-divider> -->
             <v-card flat color="grey lighten-5" class="rounded-lg mt-8 hover-outline">
               <rich-editor></rich-editor>
 
@@ -305,12 +406,58 @@
                 </v-col>
 
                 <v-col cols="4" class="d-flex justify-end align-center">
-                  <v-btn small class="lower-btn" color="info" elevation="1" @click="onSubmit()">
+                  <v-btn
+                    small
+                    class="lower-btn white--text"
+                    color="info"
+                    elevation="1"
+                    @click="onSubmit()"
+                  >
                     Submit
                   </v-btn>
                 </v-col>
               </v-row>
+
+              <!-- <v-row align="center" class="pt-8 pb-8 pr-4 pl-4">
+                <v-divider></v-divider>
+                <v-chip v-on="on" small color="grey lighten-2" @click="show = !show">
+                  Additional Metadata
+                  <v-icon small>{{ show ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
+                </v-chip>
+                <v-divider></v-divider>
+              </v-row>
+              <v-row no-gutters align="center">
+                <v-col cols="2" md="9">
+                  <v-chip small text-color="black" color="white" class="ml-4 mt-4">
+                    <v-icon dense small class="pr-2"> mdi-content-duplicate </v-icon>
+                    Duplicates
+                    <v-icon small right>mdi-plus</v-icon>
+                  </v-chip>
+                  <v-chip small text-color="black" color="#edf2f7" class="ml-4 mt-4">
+                    <v-icon dense small class="pr-2"> mdi-fire </v-icon>
+                    Incidents
+                    <v-icon small right>mdi-plus</v-icon>
+                  </v-chip>
+                  <v-badge small color="rgb(43, 51, 67)" content="2" class="mr-4"></v-badge>
+                </v-col>
+
+                <v-col cols="2" md="9" class="mb-2">
+                  <v-chip small text-color="black" color="#edf2f7" class="ml-4 mt-4">
+                    <v-icon dense small class="pr-2"> mdi-animation </v-icon>
+                    Related
+                    <v-icon small right>mdi-plus</v-icon>
+                  </v-chip>
+                  <v-badge small color="rgb(43, 51, 67)" content="0" class="mr-4"></v-badge>
+                  <v-chip small text-color="black" color="#edf2f7" class="ml-4 mt-4">
+                    <v-icon dense small class="pr-2"> mdi-tag </v-icon>
+                    Tags
+                    <v-icon small right>mdi-plus</v-icon>
+                  </v-chip>
+                  <v-badge small color="rgb(43, 51, 67)" content="17"></v-badge>
+                </v-col>
+              </v-row> -->
             </v-card>
+
             <!-- <div class="pt-11">
               <v-btn outlined small elevation="1" color="secondary" class="mr-1 ml-2">
                 <v-icon small>mdi-dots-horizontal </v-icon>
@@ -329,176 +476,39 @@
                 <v-icon small class="mr-1">mdi-fire</v-icon>Escalate
               </v-btn>
             </div> -->
-            <!-- <v-row align="center" class="pt-8">
-              <v-divider></v-divider>
-              <v-chip v-on="on" small color="grey lighten-4" @click="show = !show">
-                Details
-                <v-icon small>{{ show ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
-              </v-chip>
-              <v-divider></v-divider>
-            </v-row> -->
-
-            <v-row align="center" class="pt-8 pr-2" justify="end">
-              <v-btn elevation="0" text @click="show = !show">
-                <div class="caption lower-btn">Details</div>
-                <v-icon small>{{ show ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
-              </v-btn>
-            </v-row>
-
-            <v-expand-transition>
-              <div v-show="show">
-                <v-row no-gutters align="center" class="pb-2 pt-8">
-                  <v-col cols="4">
-                    <div class="subtitle-2">
-                      <v-icon dense small class="mr-1 subtitle font-weight-light">
-                        mdi-calendar-clock
-                      </v-icon>
-                      Created
-                    </div>
-                  </v-col>
-                  <v-col cols="8">
-                    <v-tooltip right>
-                      <template v-slot:activator="{ on, attrs }">
-                        <span v-bind="attrs" v-on="on" class="wavy-underline">{{
-                          selected.created_at | formatRelativeDate
-                        }}</span>
-                      </template>
-                      <div v-html="formatToTimeZones(selected.created_at)"></div>
-                    </v-tooltip>
-                  </v-col>
-                </v-row>
-
-                <v-row no-gutters align="center" class="pb-2 pt-4">
-                  <v-col cols="4">
-                    <div class="subtitle-2">
-                      <v-icon dense small class="mr-2"> mdi-timer-sand </v-icon>Triaged
-                    </div>
-                  </v-col>
-                  <v-col cols="8">
-                    <v-tooltip right>
-                      <template v-slot:activator="{ on, attrs }">
-                        <span v-bind="attrs" v-on="on" class="wavy-underline">{{
-                          selected.triage_at | formatRelativeDate
-                        }}</span>
-                      </template>
-                      <div v-html="formatToTimeZones(selected.triage_at)"></div>
-                    </v-tooltip>
-                  </v-col>
-                </v-row>
-
-                <v-row no-gutters align="center" class="pb-2 pt-4">
-                  <v-col cols="4">
-                    <div class="subtitle-2">
-                      <v-icon dense small class="mr-2" color="green"> mdi-check-all </v-icon
-                      >Resolved
-                    </div>
-                  </v-col>
-                  <v-col cols="8">
-                    <v-tooltip right>
-                      <template v-slot:activator="{ on, attrs }">
-                        <span v-bind="attrs" v-on="on" class="wavy-underline">{{
-                          selected.closed_at | formatRelativeDate
-                        }}</span>
-                      </template>
-                      <div v-html="formatToTimeZones(selected.closed_at)"></div>
-                    </v-tooltip>
-                  </v-col>
-                </v-row>
-
-                <v-row no-gutters align="center" class="pt-4">
-                  <v-col cols="4">
-                    <div class="subtitle-2">
-                      <v-icon dense small class="mr-2" color="red"> mdi-fire </v-icon>Escalated
-                    </div>
-                  </v-col>
-                  <v-col cols="8">
-                    <v-tooltip right>
-                      <template v-slot:activator="{ on, attrs }">
-                        <span v-bind="attrs" v-on="on" class="wavy-underline">{{
-                          selected.escalated_at | formatRelativeDate
-                        }}</span>
-                      </template>
-                      <div v-html="formatToTimeZones(selected.escalated_at)"></div>
-                    </v-tooltip>
-                  </v-col>
-                </v-row>
-              </div>
-            </v-expand-transition>
-
-            <v-expand-transition>
-              <div v-show="show">
-                <v-row align="center" class="pt-8 pb-4">
-                  <v-divider></v-divider>
-                  <v-chip v-on="on" small color="grey lighten-4"> Resources </v-chip>
-                  <v-divider></v-divider>
-                </v-row>
-                <v-row class="pt-2" no-gutters justify="space-between" align="center">
-                  <v-col cols="auto">
-                    <div class="subtitle-2">
-                      <v-icon dense small class="pr-2"> mdi-slack </v-icon> Conversation
-                    </div>
-                  </v-col>
-                  <v-col cols="auto"> </v-col>
-                </v-row>
-                <v-row class="pt-6" no-gutters justify="space-between" align="center">
-                  <v-col cols="auto">
-                    <div class="subtitle-2">
-                      <v-icon dense small class="pr-2"> mdi-jira </v-icon> Ticket
-                    </div>
-                  </v-col>
-                  <v-col cols="auto"> </v-col>
-                </v-row>
-                <v-row class="pt-6" no-gutters justify="space-between" align="center">
-                  <v-col cols="auto">
-                    <div class="subtitle-2">
-                      <v-icon dense small class="pr-2"> mdi-file-document </v-icon> Document
-                    </div>
-                  </v-col>
-                  <v-col cols="auto"> </v-col>
-                </v-row>
-                <v-row class="pt-6" no-gutters justify="space-between" align="center">
-                  <v-col cols="auto">
-                    <div class="subtitle-2">
-                      <v-icon dense small class="pr-2"> mdi-folder-google-drive </v-icon> Storage
-                    </div>
-                  </v-col>
-                  <v-col cols="auto"> </v-col>
-                </v-row>
-
-                <h4 class="mt-8 mb-2">Tags</h4>
-                <tag-chips class="pb-16" :_case="selected"></tag-chips>
-              </div>
-            </v-expand-transition>
           </v-card>
-          <!-- <div class="pt-8 pl-2 pr-2">
-            <h4 class="mb-2">Resources</h4>
-            <v-row class="pt-2" no-gutters justify="space-between" align="center">
-              <v-col cols="auto">
-                <v-icon dense small class="pr-2"> mdi-slack </v-icon> Conversation
-              </v-col>
-              <v-col cols="auto"> </v-col>
-            </v-row>
-            <v-row class="pt-6" no-gutters justify="space-between" align="center">
-              <v-col cols="auto">
-                <v-icon dense small class="pr-2"> mdi-jira </v-icon> Ticket
-              </v-col>
-              <v-col cols="auto"> </v-col>
-            </v-row>
-            <v-row class="pt-6" no-gutters justify="space-between" align="center">
-              <v-col cols="auto">
-                <v-icon dense small class="pr-2"> mdi-file-document </v-icon> Document
-              </v-col>
-              <v-col cols="auto"> </v-col>
-            </v-row>
-            <v-row class="pt-6" no-gutters justify="space-between" align="center">
-              <v-col cols="auto">
-                <v-icon dense small class="pr-2"> mdi-folder-google-drive </v-icon> Storage
-              </v-col>
-              <v-col cols="auto"> </v-col>
-            </v-row> -->
-          <!-- <h4 class="mt-8 mb-2">Related Incidents</h4>
-          <tag-chips class="pb-16" :_case="selected"></tag-chips>
-          <h4 class="mt-8 mb-2">Duplicates</h4>
+
+          <v-row no-gutters align="center" class="pt-2">
+            <v-col cols="24" md="9">
+              <v-chip small text-color="black" color="#edf2f7" class="ml-2 mt-4 chip-hover-outline">
+                <v-icon dense small class="pr-2"> mdi-content-duplicate </v-icon>
+                Duplicates
+                <v-icon small right>mdi-plus</v-icon>
+              </v-chip>
+
+              <v-chip small text-color="black" color="#edf2f7" class="ml-4 mt-4 chip-hover-outline">
+                <v-icon dense small class="pr-2"> mdi-fire </v-icon>
+                Incidents
+                <v-icon small right>mdi-plus</v-icon>
+              </v-chip>
+              <v-badge color="rgb(43, 51, 67)" content="2" class="mr-4"></v-badge>
+
+              <v-chip small text-color="black" color="#edf2f7" class="ml-2 mt-4 chip-hover-outline">
+                <v-icon dense small class="pr-2"> mdi-animation </v-icon>
+                Related
+                <v-icon small right>mdi-plus</v-icon>
+              </v-chip>
+              <v-badge small color="rgb(43, 51, 67)" content="0" class="mr-4"></v-badge>
+              <v-chip small text-color="black" color="#edf2f7" class="ml-4 mt-4 chip-hover-outline">
+                <v-icon dense small class="pr-2"> mdi-tag </v-icon>
+                Tags
+                <v-icon small right>mdi-plus</v-icon>
+              </v-chip>
+              <v-badge small color="rgb(43, 51, 67)" content="17"></v-badge>
+            </v-col>
+          </v-row>
+
+          <!-- <h4 class="mt-4 mb-2">Tags</h4>
           <tag-chips class="pb-16" :_case="selected"></tag-chips> -->
         </div>
       </v-col>
@@ -517,6 +527,8 @@ import moment from "moment-timezone"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
+import CaseResourcesTab from "@/case/ResourcesTab.vue"
+import CaseSeveritySelectChip from "@/case/severity/CaseSeveritySelectChip.vue"
 import CaseStatusSelectGroup from "@/case/CaseStatusSelectGroup.vue"
 import CasePrioritySelectChip from "@/case/priority/CasePrioritySelectChip.vue"
 import CaseTimelineAdvanced from "@/case/CaseTimelineAdvanced.vue"
@@ -540,10 +552,12 @@ export default {
 
   components: {
     EscalateDialog,
+    CaseSeveritySelectChip,
     CaseStatusSelectGroup,
     CaseTimelineAdvanced,
     CaseTimeline,
     CaseTimelineTab,
+    CaseResourcesTab,
     CasePrioritySelectChip,
     NewParticipant,
     NewParticipantSelect,
@@ -566,17 +580,24 @@ export default {
   },
 
   data() {
+    const canvas = document.createElement("canvas")
+    const context = canvas.getContext("2d")
+
     return {
+      canvas,
+      context,
       tab: null,
       show: false,
       editing: false,
       visibilityDialog: false,
-      statuses: ["New", "Triage", "Escalated", "Closed"],
       fullText: false,
+      selectedLoading: false,
+      clientlastUpdatedTime: null,
       currentReason: "Resolution Reason",
-      priorities: ["High", "Medium", "Low"],
-      resolutionReasons: ["False Positive", "User Acknowledged", "Mitigated", "Escalated"],
       visibilities: ["Open", "Restricted"],
+      priorities: ["High", "Medium", "Low"],
+      statuses: ["New", "Triage", "Escalated", "Closed"],
+      resolutionReasons: ["False Positive", "User Acknowledged", "Mitigated", "Escalated"],
     }
   },
 
@@ -618,25 +639,35 @@ export default {
       ]
     },
 
+    lastUpdatedTime() {
+      if (this.selected.updated_at) {
+        if (this.clientlastUpdatedTime) {
+          const timestamp = moment(this.clientlastUpdatedTime)
+          return timestamp.fromNow()
+        }
+        const timestamp = moment(this.selected.updated_at)
+        return timestamp.fromNow()
+      } else {
+        return "N/A"
+      }
+    },
+
     totalSignalInstances() {
       return this.selected.signal_instances.length
-    },
-
-    trimmedDescription() {
-      return this.selected.description.length > 120
-        ? this.selected.description.slice(0, 120)
-        : this.selected.description
-    },
-
-    openTime() {
-      if (this.selected && this.selected.created_at) {
-        return moment().from(this.selected.created_at, true)
-      }
-      return ""
     },
   },
 
   methods: {
+    updateClientUpdateTime() {
+      this.clientlastUpdatedTime = new Date()
+    },
+
+    calculateTextWidth(text) {
+      // Use the existing context to measure the text
+      this.context.font = "300 2rem Roboto"
+      return this.context.measureText(text).width
+    },
+
     fetchDetails() {
       this.getDetails({ name: this.$route.params.name })
     },
@@ -655,6 +686,7 @@ export default {
       this.visibilityDialog = false
       console.log(newVisibility)
       this.selected.visibility = newVisibility
+      console.log(this.selected)
       this.save_page()
     },
 
@@ -662,13 +694,11 @@ export default {
       this.save_page()
     },
 
-    onParticipantChange(newParticipant) {},
-
-    toggleEdit() {
-      this.editing = !this.editing
-      if (!this.editing) {
-        // Save or do something with the description here.
-      }
+    autosave() {
+      this.selectedLoading = true
+      this.save_page()
+      this.updateClientUpdateTime()
+      this.selectedLoading = false
     },
 
     changePriority(priority) {
@@ -766,6 +796,12 @@ export default {
   border: 1px dashed rgba(148, 148, 148, 0.87);
   border-radius: 20px;
 }
+
+.chip-hover-outline:hover {
+  border: 1px dashed rgba(148, 148, 148, 0.87) !important;
+  border-radius: 20px;
+}
+
 .refactoring-ui-shadow {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
@@ -803,5 +839,23 @@ export default {
 .hover-card-three {
   position: relative;
   z-index: 3;
+}
+
+.last-updated-text {
+  display: flex;
+  align-items: center;
+}
+
+.loading-icon {
+  animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

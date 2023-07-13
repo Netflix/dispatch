@@ -3,13 +3,14 @@ import logging
 from datetime import datetime, timedelta
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Query, Session, selectinload
 from typing import List, Optional
 
 from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.severity import service as case_severity_service
 from dispatch.case.type import service as case_type_service
+from dispatch.entity.models import Entity
 from dispatch.event import service as event_service
 from dispatch.exceptions import NotFoundError
 from dispatch.incident import service as incident_service
@@ -48,10 +49,11 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Case]:
 
 
 def get_case_signal_instances(*, db_session: Session, case_id: int) -> Query:
-    """Returns all signal instances for a given case id."""
+    """Returns all signal instances for a given case id, including entities and entity types."""
     return (
         db_session.query(SignalInstance)
         .join(Signal)
+        .options(selectinload(SignalInstance.entities).selectinload(Entity.entity_type))
         .filter(SignalInstance.case_id == case_id)
         .order_by(SignalInstance.created_at)
     )
@@ -361,7 +363,6 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
     case.incidents = incidents
 
     db_session.commit()
-
     return case
 
 

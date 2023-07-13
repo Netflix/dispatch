@@ -2,25 +2,27 @@
   <v-skeleton-loader :loading="isLoading" type="table" height="500px">
     <v-row>
       <v-col cols="3">
-        <v-list>
-          <template v-if="!signalInstances.length">
-            No example signals are currently available for this definition.
-          </template>
-          <template v-for="(instance, index) in signalInstances" v-else>
-            <v-list-item class="mt-n2 mb-n2">
+        <template v-if="!signalInstances.length">
+          No example signals are currently available for this definition.
+        </template>
+        <v-virtual-scroll v-else :items="signalInstances" height="800" item-height="50">
+          <template v-slot="{ item, index }">
+            <v-list-item class="mb-n1">
               <v-list-item-content>
-                <v-list-item-subtitle>{{ instance.created_at }}</v-list-item-subtitle>
+                <v-list-item-subtitle>
+                  <b>{{ index + 1 }} </b> {{ item.created_at }}</v-list-item-subtitle
+                >
               </v-list-item-content>
               <v-list-item-action>
-                <v-btn icon @click="updateEditorValue(instance)">
+                <v-btn icon @click="updateEditorValue(item)">
                   <v-icon small>mdi-arrow-right</v-icon>
                 </v-btn>
               </v-list-item-action>
             </v-list-item>
             <v-divider v-if="index < signalInstances.length - 1"></v-divider>
           </template>
-          <template v-else> </template>
-        </v-list>
+        </v-virtual-scroll>
+        <template v-else> </template>
       </v-col>
       <v-divider vertical></v-divider>
       <v-col cols="9">
@@ -65,6 +67,7 @@ export default {
       })
     },
     updateEditorValue(instance) {
+      console.log(instance)
       this.selectedSignalInstance = instance
     },
   },

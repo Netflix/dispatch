@@ -54,6 +54,8 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 
+import UserApi from "@/auth/api"
+
 export default {
   name: "CaseTimeline",
 
@@ -64,6 +66,13 @@ export default {
       input: null,
       nonce: 0,
     }
+  },
+
+  created() {
+    UserApi.getUserInfo().then((response) => {
+      this.user = response.data
+      console.log(this.user)
+    })
   },
 
   computed: {

@@ -1,19 +1,24 @@
 <template>
   <div class="participant-chips">
     <div v-for="(participant, index) in orderedParticipants" :key="index" class="chip-container">
-      <v-menu v-model="menu" bottom right transition="scale-transition" origin="top left">
+      <v-menu v-model="menu" bottom rounded offset-y>
         <template v-slot:activator="{ on }">
-          <v-chip pill small :class="chipClasses(participant.individual.name)" v-on="on">
-            <v-avatar class="avatar ml-1">
+          <v-btn icon v-on="on">
+            <v-avatar
+              size="40"
+              color="black"
+              :class="chipClasses(participant.individual.name)"
+              :style="{ zIndex: calculateZIndex(index) }"
+              v-on="on"
+            >
               <span class="white--text">{{ participant.individual.name | initials }}</span>
             </v-avatar>
-            <span class="full-name white--text mr-4 ml-n6">{{ participant.individual.name }}</span>
-          </v-chip>
+          </v-btn>
         </template>
         <v-card width="300">
           <v-list dark>
             <v-list-item v-if="participant.individual">
-              <v-list-item-avatar :class="chipClasses(participant.individual.name)">
+              <v-list-item-avatar class="highlighted-chip">
                 <span class="white--text">{{ participant.individual.name | initials }}</span>
               </v-list-item-avatar>
               <v-list-item-content>
@@ -122,6 +127,9 @@ export default {
     },
   },
   computed: {
+    calculateZIndex() {
+      return (index) => 1000 - index
+    },
     orderedParticipants() {
       const assignee = this.participants.find((participant) =>
         this.highlightedParticipants.includes(participant.individual.name)
@@ -155,7 +163,7 @@ export default {
       console.log("GOT: %O", this.highlightedParticipants)
       console.log(this.highlightedParticipants.includes(name))
       return {
-        "name-chip": true,
+        bordered: true,
         "highlighted-chip": this.highlightedParticipants.includes(name),
       }
     },
@@ -173,62 +181,21 @@ export default {
 <style scoped>
 .chip-container {
   display: inline-block;
-  margin-right: -10px;
+  margin-right: -3px;
   transition: all 0.2s ease-in-out;
+}
+
+.border {
+  border: 4px solid rgba(255, 0, 0, 0.87);
+  border-radius: 50%;
 }
 
 .plus-btn {
   vertical-align: middle;
 }
 
-.name-chip .avatar span {
-  transition: opacity 0.2s ease-in-out; /* Add transition for smooth fade effect */
-}
-
-.name-chip .avatar {
-  transition: opacity 0.2s ease-in-out; /* Add transition for smooth fade effect */
-}
-
-.name-chip.expand .avatar {
-  opacity: 0; /* Hide avatar when chip is expanded */
-}
-
-.name-chip.expand .avatar span {
-  opacity: 0; /* Hide initials when chip is expanded */
-}
-
-.name-chip {
-  border-radius: 50%;
-  width: 35px;
-  height: 35px;
-  padding: 0;
-  justify-content: center;
-  overflow: hidden;
-  transition: all 0.2s ease-in-out;
-
-  color: white; /* Set the text color to white for better visibility against the gradient background */
-}
-
-.name-chip.expand {
-  border-radius: 28px;
-  width: auto;
-  padding: 0 12px;
-}
-
-.avatar {
-  width: 35px;
-  height: 35px;
-  background: transparent; /* Make the avatar background transparent so the chip's gradient shows through */
-}
-
-.full-name {
-  opacity: 0;
-  transition: opacity 0.2s ease-in-out 0.2s;
-  white-space: nowrap;
-}
-
-.name-chip.expand .full-name {
-  opacity: 1;
+.bordered {
+  border: 2px solid white !important;
 }
 
 .highlighted-chip {

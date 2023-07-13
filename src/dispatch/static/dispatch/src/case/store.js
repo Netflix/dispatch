@@ -36,6 +36,7 @@ const getDefaultSelectedState = () => {
     triage_at: null,
     visibility: null,
     workflow_instances: null,
+    updated_at: null,
   }
 }
 
@@ -122,6 +123,7 @@ const actions = {
     })
   },
   getDetails({ commit, state }, payload) {
+    commit("RESET_SELECTED", true)
     commit("SET_SELECTED_LOADING", true)
     if ("id" in payload) {
       return CaseApi.get(state.selected.id).then((response) => {
@@ -273,6 +275,36 @@ const actions = {
         .then(() => {
           dispatch("closeEditSheet")
           dispatch("getAll")
+          commit(
+            "notification_backend/addBeNotification",
+            { text: "Case updated successfully.", type: "success" },
+            { root: true }
+          )
+          commit("SET_SELECTED_LOADING", false)
+        })
+        .catch(() => {
+          commit("SET_SELECTED_LOADING", false)
+        })
+    }
+  },
+  autosave({ commit, dispatch }) {
+    commit("SET_SELECTED_LOADING", true)
+    if (!state.selected.id) {
+      return CaseApi.create(state.selected)
+        .then(() => {
+          commit(
+            "notification_backend/addBeNotification",
+            { text: "Case created successfully.", type: "success" },
+            { root: true }
+          )
+          commit("SET_SELECTED_LOADING", false)
+        })
+        .catch(() => {
+          commit("SET_SELECTED_LOADING", false)
+        })
+    } else {
+      return CaseApi.update(state.selected.id, state.selected)
+        .then(() => {
           commit(
             "notification_backend/addBeNotification",
             { text: "Case updated successfully.", type: "success" },

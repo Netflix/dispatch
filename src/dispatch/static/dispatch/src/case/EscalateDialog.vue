@@ -14,10 +14,12 @@
     </v-card>
     <v-card v-else>
       <v-card-title>
-        <span class="headline">Escalate Case?</span>
+        <span class="headline">Escalate to an Incident</span>
       </v-card-title>
-      <v-card-text>
+      <v-card-subtitle class="pt-2 pb-4">
         Update the fields or accept the pre-filled defaults.
+      </v-card-subtitle>
+      <v-card-text>
         <report-submission-form incident-type="this.incidentType" />
       </v-card-text>
       <v-card-actions>

@@ -2,8 +2,8 @@
   <div>
     <v-menu v-model="menu" bottom right transition="scale-transition" origin="top left">
       <template v-slot:activator="{ on }">
-        <v-chip pill small v-on="on" v-if="participant.individual">
-          <v-avatar class="grey lighten-4" left>
+        <v-chip pill small v-on="on" v-if="participant.individual" color="#edf2f7">
+          <v-avatar color="grey lighten-2" left>
             <span class="black--text">{{ participant.individual.name | initials }}</span>
           </v-avatar>
           {{ participant.individual.name }}
