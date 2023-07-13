@@ -792,14 +792,11 @@ def process_signals():
                 }
             )
             db_session = sessionmaker(bind=schema_engine)()
-            one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
             signal_instances = (
                 (
                     db_session.query(SignalInstance)
-                    # .filter(SignalInstance.project_id == project.id) can this be a group by? does it even matter?
                     .filter(SignalInstance.filter_action == None)  # noqa
                     .filter(SignalInstance.case_id == None)  # noqa
-                    .filter(SignalInstance.created_at >= one_hour_ago)
                 )
                 .order_by(asc(SignalInstance.created_at))
                 .limit(500)
