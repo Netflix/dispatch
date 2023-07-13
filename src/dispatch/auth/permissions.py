@@ -10,6 +10,7 @@ from dispatch.case import service as case_service
 from dispatch.case.models import Case
 from dispatch.enums import UserRoles, Visibility
 from dispatch.incident import service as incident_service
+from dispatch.individual import service as individual_contact_service
 from dispatch.models import PrimaryKeyModel
 from dispatch.organization import service as organization_service
 from dispatch.organization.models import OrganizationRead
@@ -189,6 +190,33 @@ class SensitiveProjectActionPermission(BasePermission):
             ],
             request=request,
         )
+
+
+class IndividualContactUpdatePermission(BasePermission):
+    def has_required_permissions(
+        self,
+        request: Request,
+    ) -> bool:
+        permission = any_permission(
+            permissions=[
+                SensitiveProjectActionPermission,
+            ],
+            request=request,
+        )
+        if not permission:
+            pk = PrimaryKeyModel(id=request.path_params["individual_contact_id"])
+            individual_contact = individual_contact_service.get(
+                db_session=request.state.db, individual_contact_id=pk.id
+            )
+
+            if not individual_contact:
+                return False
+
+            current_user = get_current_user(request=request)
+            if individual_contact.email == current_user.email:
+                return True
+
+        return permission
 
 
 class ProjectCreatePermission(BasePermission):
