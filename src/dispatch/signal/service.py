@@ -472,6 +472,17 @@ def create_instance(
     return signal_instance
 
 
+def update_instance(
+    *, db_session: Session, signal_instance_in: SignalInstanceCreate
+) -> SignalInstance:
+    """Updates an existing signal instance."""
+    signal_instance = get_signal_instance(signal_instance_id=signal_instance_in.id)
+    signal_instance.raw = json.loads(json.dumps(signal_instance_in.raw))
+
+    db_session.commit()
+    return signal_instance
+
+
 def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bool:
     """
     Apply filter actions to the signal instance.

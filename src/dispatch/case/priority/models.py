@@ -53,7 +53,7 @@ class CasePriorityUpdate(CasePriorityBase):
 
 
 class CasePriorityRead(CasePriorityBase):
-    id: PrimaryKey
+    id: Optional[PrimaryKey]
 
 
 class CasePriorityPagination(DispatchBase):
