@@ -1490,10 +1490,15 @@ def handle_report_tactical_command(
         conditions = tactical_report.details.get("conditions")
         actions = tactical_report.details.get("actions")
         needs = tactical_report.details.get("needs")
-    else:
-        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    if incident.tasks:
         actions = "\n".join(
-            ["-" + task.description for task in incident.tasks if task.status != "Resolved"]
+            [
+                "-" + task.description
+                for task in incident.tasks
+                if task.status != TaskStatus.resolved
+            ]
         )
 
     blocks = [
