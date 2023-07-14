@@ -1525,7 +1525,7 @@ def handle_engagement_submission_event(
 ) -> None:
     """Handles the add engagement submission event."""
     metadata = json.loads(body["view"]["private_metadata"])
-    engaged_user = metadata["user"]
+    engaged_user: str = metadata["user"]
 
     engagement = signal_service.get_signal_engagement(
         db_session=db_session,
@@ -1587,7 +1587,7 @@ def handle_engagement_submission_event(
                 channel_id=case.conversation.channel_id,
                 engagement=engagement,
                 signal_instance=signal_instance,
-                user=engaged_user,
+                user_email=engaged_user,
                 engagement_status=engagement_status,
             )
             client.chat_update(
@@ -1740,7 +1740,7 @@ def handle_engagement_deny_submission_event(
         channel_id=case.conversation.channel_id,
         engagement=engagement,
         signal_instance=signal_instance,
-        user=user,
+        user_email=user.email,
         engagement_status=SignalEngagementStatus.denied,
     )
     client.chat_update(
