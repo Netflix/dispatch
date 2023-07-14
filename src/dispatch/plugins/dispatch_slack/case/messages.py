@@ -43,7 +43,7 @@ from dispatch.signal.enums import SignalEngagementStatus
 def create_case_message(case: Case, channel_id: str) -> list[Block]:
     # TODO we should probably restrict the possible colors to make this work
     priority_color_mapping = {
-        "9e9e9e": "⚪",
+        "#9e9e9e": "⚪",
         "#8bc34a": "🟢",
         "#ffeb3b": "🟡",
         "#ff9800": "🟠",
