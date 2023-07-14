@@ -37,6 +37,7 @@ from dispatch.plugins.dispatch_duo.enums import PushResponseResult
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.bolt import app
 from dispatch.plugins.dispatch_slack.case.enums import (
+    CaseEditActions,
     CaseEscalateActions,
     CaseNotificationActions,
     CasePaginateActions,
@@ -1116,20 +1117,25 @@ def edit_button_click(
         blocks=blocks,
         submit="Update",
         close="Close",
-        callback_id=CaseResolveActions.submit,
+        callback_id=CaseEditActions.submit,
         private_metadata=context["subject"].json(),
     ).build()
     client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
-@app.action(CaseNotificationActions.edit, middleware=[button_context_middleware, db_middleware])
+@app.view(
+    CaseEditActions.submit,
+    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
+)
 def handle_edit_submission_event(
+    ack: Ack,
     client: WebClient,
     context: BoltContext,
     db_session: Session,
     form_data: dict,
     user: DispatchUser,
 ):
+    ack()
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
     case_priority = None
@@ -1145,7 +1151,7 @@ def handle_edit_submission_event(
         description=form_data[DefaultBlockIds.description_input],
         resolution=form_data[DefaultBlockIds.resolution_input],
         resolution_reason=form_data[DefaultBlockIds.case_resolution_reason_select],
-        status=form_data[DefaultBlockIds.case_status_select],
+        status=form_data[DefaultBlockIds.case_status_select]["name"],
         visibility=case.visibility,
         case_priority=case_priority,
         case_type=case_type,
@@ -1568,7 +1574,7 @@ def handle_engagement_submission_event(
                 channel_id=case.conversation.channel_id,
                 engagement=engagement,
                 signal_instance=signal_instance,
-                user=user,
+                user=engaged_user,
                 engagement_status=engagement_status,
             )
             client.chat_update(
