@@ -773,7 +773,6 @@ def signals_group():
 @signals_group.command("process")
 def process_signals():
     """Runs a continuous process that does additional processing on newly created signals."""
-    from datetime import datetime, timedelta, timezone
     from sqlalchemy import asc
     from dispatch.database.core import sessionmaker, engine, SessionLocal
     from dispatch.signal.models import SignalInstance
