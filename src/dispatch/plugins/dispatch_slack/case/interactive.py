@@ -1619,12 +1619,13 @@ def handle_engagement_submission_event(
 
     # Check if last_mfa_time was within the last hour
     last_hour = datetime.now() - timedelta(hours=1)
-    if (user.last_mfa_time and user.last_mfa_time < last_hour) or mfa_enabled is False:
+    if (user.last_mfa_time and user.last_mfa_time > last_hour) or mfa_enabled is False:
         return _send_response(success=True)
 
     # Send the MFA push notification
     response = mfa_plugin.instance.send_push_notification(
-        username=engaged_user, type="Are you confirming suspicious behavior in Dispatch?"
+        username=engaged_user,
+        type="Are you confirming suspicious behavior in Dispatch?",
     )
     if response == PushResponseResult.allow:
         _send_response(success=True)
