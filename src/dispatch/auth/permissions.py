@@ -8,6 +8,7 @@ from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 from dispatch.auth.service import get_current_user
 from dispatch.case import service as case_service
 from dispatch.case.models import Case
+from dispatch.incident.models import Incident
 from dispatch.enums import UserRoles, Visibility
 from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_contact_service
@@ -276,6 +277,7 @@ class IncidentViewPermission(BasePermission):
                     OrganizationAdminPermission,
                     IncidentCommanderPermission,
                     IncidentReporterPermission,
+                    IncidentParticipantPermission,
                 ],
                 request=request,
             )
@@ -328,6 +330,22 @@ class IncidentCommanderPermission(BasePermission):
         if current_incident.commander:
             if current_incident.commander.individual.email == current_user.email:
                 return True
+
+
+class IncidentParticipantPermission(BasePermission):
+    def has_required_permissions(
+        self,
+        request: Request,
+    ) -> bool:
+        current_user = get_current_user(request=request)
+        pk = PrimaryKeyModel(id=request.path_params["incident_id"])
+        current_incident: Incident = incident_service.get(
+            db_session=request.state.db, incident_id=pk.id
+        )
+        participant_emails: list[str] = [
+            participant.individual.email for participant in current_incident.participants
+        ]
+        return current_user.email in participant_emails
 
 
 # Cases
