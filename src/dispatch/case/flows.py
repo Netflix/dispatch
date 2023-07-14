@@ -389,7 +389,7 @@ def case_update_flow(
     # we update the ticket
     ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
-    if case.status in [CaseStatus.escalated, CaseStatus.closed]:
+    if case.status in [CaseStatus.escalated, CaseStatus.closed] and case.case_document:
         # we update the document
         document_flows.update_document(
             document=case.case_document, project_id=case.project.id, db_session=db_session
