@@ -342,6 +342,9 @@ class IncidentParticipantPermission(BasePermission):
         current_incident: Incident = incident_service.get(
             db_session=request.state.db, incident_id=pk.id
         )
+        if not current_incident:
+            return False
+
         participant_emails: list[str] = [
             participant.individual.email for participant in current_incident.participants
         ]
