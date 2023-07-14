@@ -3,6 +3,7 @@ from typing import List, Optional
 
 from sqlalchemy import or_
 
+from dispatch.config import DISPATCH_UI_URL
 from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
 from dispatch.incident.flows import incident_service
@@ -10,7 +11,7 @@ from dispatch.incident.models import Incident
 from dispatch.plugin import service as plugin_service
 
 from .enums import TaskStatus
-from .models import Task, TaskUpdate, TaskCreate
+from .models import Task, TaskCreate, TaskUpdate
 
 
 def get(*, db_session, task_id: int) -> Optional[Task]:
@@ -109,12 +110,19 @@ def create(*, db_session, task_in: TaskCreate) -> Task:
     else:
         owner = incident.commander
 
+    # set a reasonable default weblink for tasks
+    weblink = (f"{DISPATCH_UI_URL}/{incident.project.organization.name}/tasks",)
+
+    if task_in.weblink:
+        weblink = task_in.weblink
+
     task = Task(
-        **task_in.dict(exclude={"assignees", "owner", "incident", "creator"}),
+        **task_in.dict(exclude={"assignees", "weblink", "owner", "incident", "creator"}),
         creator=creator,
         owner=owner,
         assignees=assignees,
         incident=incident,
+        weblink=weblink,
     )
 
     event_service.log_incident_event(

@@ -267,7 +267,6 @@ def create_message_blocks(
         items.append(kwargs)  # combine items and kwargs
 
     template_func, description = get_template(message_type)
-
     blocks = []
     if description:  # include optional description text (based on message type)
         blocks.append(Section(text=description))
