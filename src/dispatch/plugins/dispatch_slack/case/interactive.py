@@ -1581,7 +1581,7 @@ def handle_engagement_submission_event(
                 channel_id=case.conversation.channel_id,
                 engagement=engagement,
                 signal_instance=signal_instance,
-                user=user,
+                user=engaged_user,
                 engagement_status=engagement_status,
             )
             client.chat_update(
