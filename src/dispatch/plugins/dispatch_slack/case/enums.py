@@ -14,6 +14,10 @@ class CasePaginateActions(DispatchEnum):
     list_signal_previous = "case-list-signal-previous"
 
 
+class CaseEditActions(DispatchEnum):
+    submit = "case-notification-edit-submit"
+
+
 class CaseResolveActions(DispatchEnum):
     submit = "case-notification-resolve-submit"
 
