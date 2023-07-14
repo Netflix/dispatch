@@ -81,9 +81,14 @@ class DuoMfaPlugin(MultiFactorAuthenticationPlugin):
         except RuntimeError as e:
             if "Invalid request parameters (username)" in str(e):
                 username, _ = username.split("@")
-                response = duo_client.auth(
-                    factor="push", username=username, device=device, type=type
-                )
+
+                try:
+                    response = duo_client.auth(
+                        factor="push", username=username, device=device, type=type
+                    )
+                except RuntimeError as e:
+                    if "Invalid request parameters (username)" in str(e):
+                        return PushResponseResult.user_not_found
 
         if response.get("result") == PushResponseResult.allow:
             return PushResponseResult.allow

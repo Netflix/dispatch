@@ -1443,10 +1443,20 @@ def engagement_button_approve_click(
 ):
     ack()
 
+    # Engaged user is extracted from the context of the engagement button, which stores the email
+    # address of the user who was engaged, and is parsed by the engagement_button_context_middleware.
     engaged_user = context["subject"].user
 
-    role = user.get_organization_role(organization_slug=context["subject"].organization_slug)
-    if engaged_user != user.email and role not in (
+    user_who_clicked_button = user
+
+    # We check the role of the user who clicked the button to ensure they are authorized to approve
+    role = user_who_clicked_button.get_organization_role(
+        organization_slug=context["subject"].organization_slug
+    )
+
+    # If the user who clicked the button is not the enaged user or a Dispatch admin,
+    # we return a modal informing them that they are not authorized to approve the signal.
+    if engaged_user != user_who_clicked_button.email and role not in (
         UserRoles.admin,
         UserRoles.owner,
     ):
@@ -1510,6 +1520,7 @@ def handle_engagement_submission_event(
     """Handles the add engagement submission event."""
     metadata = json.loads(body["view"]["private_metadata"])
     engaged_user = metadata["user"]
+
     engagement = signal_service.get_signal_engagement(
         db_session=db_session,
         signal_engagement_id=metadata["engagement_id"],
@@ -1540,13 +1551,15 @@ def handle_engagement_submission_event(
             engagement_status = SignalEngagementStatus.approved
         else:
             title = "MFA Failed"
-            text = (
-                "Confirmation failed, the MFA request timed out."
-                if response == PushResponseResult.timeout
-                else "Confirmation failed, you must accept the MFA prompt."
-            )
-            message_text = f":warning: {engaged_user} attempt to confirmed the behavior *as expected*. But, the MFA validation failed, reason: {response}\n\n *Context Provided* \n```{context_from_user}```"
+            message_text = f":warning: {engaged_user} attempted to confirm the behavior *as expected*. But, the MFA validation failed, reason: `{response}`\n\n *Context Provided* \n```{context_from_user}```"
             engagement_status = SignalEngagementStatus.denied
+
+            if response == PushResponseResult.timeout:
+                text = "Confirmation failed, the MFA request timed out."
+            elif response == PushResponseResult.user_not_found:
+                text = "User not found in MFA provider"
+            else:
+                text = "Confirmation failed, you must accept the MFA prompt."
 
         send_success_modal(
             client=client,
