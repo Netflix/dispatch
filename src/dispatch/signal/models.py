@@ -373,6 +373,7 @@ class SignalInstanceBase(DispatchBase):
 
 
 class SignalInstanceCreate(SignalInstanceBase):
+    id: uuid.UUID
     signal: Optional[SignalRead]
     case_priority: Optional[CasePriorityRead]
     case_type: Optional[CaseTypeRead]
