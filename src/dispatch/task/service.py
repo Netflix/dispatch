@@ -111,7 +111,7 @@ def create(*, db_session, task_in: TaskCreate) -> Task:
         owner = incident.commander
 
     # set a reasonable default weblink for tasks
-    weblink = (f"{DISPATCH_UI_URL}/{incident.project.organization.name}/tasks",)
+    weblink = f"{DISPATCH_UI_URL}/{incident.project.organization.name}/tasks"
 
     if task_in.weblink:
         weblink = task_in.weblink
