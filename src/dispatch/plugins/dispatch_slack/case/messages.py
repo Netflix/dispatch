@@ -13,7 +13,6 @@ from blockkit import (
 from blockkit.surfaces import Block
 from sqlalchemy.orm import Session
 
-from dispatch.auth.models import DispatchUser
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.case.enums import CaseStatus
 from dispatch.case.models import Case
@@ -40,7 +39,11 @@ from dispatch.signal.models import (
 from dispatch.signal.enums import SignalEngagementStatus
 
 
-def create_case_message(case: Case, channel_id: str) -> list[Block]:
+def map_priority_color(color: str) -> str:
+    """Maps a priority color to its corresponding emoji symbol."""
+    if not color:
+        return ""
+
     # TODO we should probably restrict the possible colors to make this work
     priority_color_mapping = {
         "#9e9e9e": "⚪",
@@ -50,13 +53,18 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
         "#f44336": "🔴",
         "#9c27b0": "🟣",
     }
-    priority_field = f"*Priority* \n {priority_color_mapping.get(case.case_priority.color.lower(),'')} {case.case_priority.name}"
+
+    return priority_color_mapping.get(color.lower(), "")
+
+
+def create_case_message(case: Case, channel_id: str) -> list[Block]:
+    priority_color = map_priority_color(color=case.case_priority.color)
 
     fields = [
         f"*Assignee* \n {case.assignee.individual.email}",
         f"*Status* \n {case.status}",
         f"*Type* \n {case.case_type.name}",
-        priority_field,
+        f"*Priority* \n {priority_color} {case.case_priority.name}",
     ]
 
     if case.signal_instances:
@@ -269,7 +277,7 @@ def create_signal_engagement_message(
     channel_id: str,
     engagement: SignalEngagement,
     signal_instance: SignalInstance,
-    user: DispatchUser,
+    user_email: str,
     engagement_status: SignalEngagementStatus = SignalEngagementStatus.new,
 ) -> list[Block]:
     """
@@ -280,7 +288,7 @@ def create_signal_engagement_message(
         channel_id (str): The ID of the Slack channel where the message will be sent.
         message (str): Additional context information to include in the message.
         signal_instance (SignalInstance): The signal instance object related to the engagement.
-        user (DispatchUser): The DispatchUser being engaged.
+        user_email (str): The email of the user being engaged.
         engagement (SignalEngagement): The engagement object.
 
     Returns:
@@ -294,12 +302,12 @@ def create_signal_engagement_message(
         channel_id=channel_id,
         signal_instance_id=str(signal_instance.id),
         engagement_id=engagement.id,
-        user=user.email,
+        user=user_email,
     ).json()
 
-    username, _ = user.email.split("@")
+    username, _ = user_email.split("@")
     blocks = [
-        Context(elements=[f"Engaged {user.email} associated with {signal_instance.signal.name}"]),
+        Context(elements=[f"Engaged {user_email} associated with {signal_instance.signal.name}"]),
         Section(text=f"Hi @{username}, the security team could use your help with this case."),
         Section(
             text=f"*Additional Context*\n\n {engagement.message if engagement.message else 'None provided for this signal.'}"

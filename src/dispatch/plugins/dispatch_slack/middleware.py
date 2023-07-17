@@ -98,7 +98,32 @@ def button_context_middleware(payload: dict, context: BoltContext, next: Callabl
 def engagement_button_context_middleware(
     payload: dict, context: BoltContext, next: Callable
 ) -> None:
-    """Attempt to determine the current context of the event."""
+    """Attempt to determine the current context of the event. Payload is populated by
+    the `create_signal_engagement_message` function in `dispatch_slack/case/messages.py`.
+
+    Example Payload:
+        {
+            'action_id': 'signal-engagement-approve',
+            'block_id': 'Zqr+v',
+            'text': {
+                'type': 'plain_text',
+                'text': 'Approve',
+                'emoji': True
+            },
+            'value': '{
+                "id": "5362",
+                "type": "case",
+                "organization_slug":
+                "default", "project_id": "1",
+                "channel_id": "C04KJP0BLUT",
+                "signal_instance_id": "21077511-c53c-4d10-a2eb-998a5c972e09",
+                "engagement_id": 5,
+                "user": "wshel@netflix.com"
+            }',
+            'style': 'primary',
+            'type': 'button', 'action_ts': '1689348164.534992'
+        }
+    """
     subject_data = EngagementMetadata.parse_raw(payload["value"])
     context.update({"subject": subject_data})
     next()
