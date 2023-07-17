@@ -29,6 +29,11 @@ class PagerdutyConfiguration(BaseConfigurationModel):
         title="From Email",
         description="This the email to put into the 'From' field of any page requests.",
     )
+    pagerduty_api_url: str = Field(
+        "https://api.pagerduty.com",
+        title="Instance API URL",
+        description="Enter the URL for your API (defaults to US)",
+    )
 
 
 @apply(counter, exclude=["__init__"])
@@ -47,6 +52,7 @@ class PagerDutyOncallPlugin(OncallPlugin):
     def get(self, service_id: str = None, **kwargs):
         """Gets the oncall person."""
         client = APISession(self.configuration.api_key.get_secret_value())
+        client.url = self.configuration.pagerduty_api_url
         return get_oncall(client=client, service_id=service_id)
 
     def page(
@@ -59,6 +65,7 @@ class PagerDutyOncallPlugin(OncallPlugin):
     ):
         """Pages the oncall person."""
         client = APISession(self.configuration.api_key.get_secret_value())
+        client.url = self.configuration.pagerduty_api_url
         return page_oncall(
             client=client,
             from_email=self.configuration.from_email,
