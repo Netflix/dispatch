@@ -58,7 +58,9 @@ class Plugin(Base):
             plugin = plugins.get(self.slug)
             return plugin.configuration_schema.schema()
         except Exception as e:
-            logger.info(f"Error trying to load configuration_schema for plugin with slug {self.slug}: {e}")
+            logger.info(
+                f"Error trying to load configuration_schema for plugin with slug {self.slug}: {e}"
+            )
             return None
 
 
@@ -102,7 +104,9 @@ class PluginInstance(Base, ProjectMixin):
             plugin = plugins.get(self.plugin.slug)
             return plugin.configuration_schema.schema()
         except Exception as e:
-            logger.info(f"Error trying to load plugin {self.plugin.title} {self.plugin.description} with error {e}")
+            logger.info(
+                f"Error trying to load plugin {self.plugin.title} {self.plugin.description} with error {e}"
+            )
             return None
 
     @hybrid_property
@@ -113,7 +117,9 @@ class PluginInstance(Base, ProjectMixin):
                 plugin = plugins.get(self.plugin.slug)
                 return plugin.configuration_schema.parse_raw(self._configuration)
         except Exception as e:
-            logger.info(f"Error trying to load plugin {self.plugin.title} {self.plugin.description} with error {e}")
+            logger.info(
+                f"Error trying to load plugin {self.plugin.title} {self.plugin.description} with error {e}"
+            )
             return None
 
     @configuration.setter
