@@ -16,7 +16,7 @@ black==23.7.0
     # via -r requirements-dev.in
 cfgv==3.3.1
     # via pre-commit
-click==8.1.5
+click==8.1.6
     # via
     #   -r requirements-dev.in
     #   black
@@ -32,7 +32,7 @@ executing==1.2.0
     # via
     #   devtools
     #   stack-data
-factory-boy==3.2.1
+factory-boy==3.3.0
     # via -r requirements-dev.in
 faker==19.1.0
     # via
