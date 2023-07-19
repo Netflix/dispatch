@@ -104,7 +104,7 @@ class PluginInstance(Base, ProjectMixin):
             plugin = plugins.get(self.plugin.slug)
             return plugin.configuration_schema.schema()
         except Exception as e:
-            logger.info(
+            logger.warning(
                 f"Error trying to load plugin {self.plugin.title} {self.plugin.description} with error {e}"
             )
             return None
