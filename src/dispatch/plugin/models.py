@@ -86,7 +86,7 @@ class PluginInstance(Base, ProjectMixin):
             plugin.project_id = self.project_id
             return plugin
         except Exception as e:
-            logger.info(f"Error trying to load plugin with slug {self.slug}: {e}")
+            logger.warning(f"Error trying to load plugin with slug {self.slug}: {e}")
             return self.plugin
 
     @property
