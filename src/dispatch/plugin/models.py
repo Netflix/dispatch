@@ -58,7 +58,7 @@ class Plugin(Base):
             plugin = plugins.get(self.slug)
             return plugin.configuration_schema.schema()
         except Exception as e:
-            logger.info(
+            logger.warning(
                 f"Error trying to load configuration_schema for plugin with slug {self.slug}: {e}"
             )
             return None
