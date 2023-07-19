@@ -78,7 +78,7 @@ const actions = {
     if (plugin && plugin.broken) {
       commit(
         "notification_backend/addBeNotification",
-        { text: "Plugin not installed correctly.", type: "error" },
+        { text: "Plugin not installed correctly. Please review the Dispatch logs or contact your Dispatch Administrator", type: "error" },
         { root: true }
       )
       return
