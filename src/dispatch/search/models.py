@@ -7,6 +7,7 @@ from dispatch.models import DispatchBase
 from dispatch.definition.models import DefinitionRead
 from dispatch.document.models import DocumentRead
 from dispatch.incident.models import IncidentRead
+from dispatch.case.models import CaseRead
 from dispatch.individual.models import IndividualContactRead
 from dispatch.service.models import ServiceRead
 from dispatch.tag.models import TagRead
@@ -38,6 +39,7 @@ class ContentResponse(DispatchBase):
     teams: Optional[List[TeamContactRead]] = Field([], alias="TeamContact")
     individuals: Optional[List[IndividualContactRead]] = Field([], alias="IndividualContact")
     services: Optional[List[ServiceRead]] = Field([], alias="Service")
+    cases: Optional[List[CaseRead]] = Field([], alias="Case")
 
     class Config:
         allow_population_by_field_name = True

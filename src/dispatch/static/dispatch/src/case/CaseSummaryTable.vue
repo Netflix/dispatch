@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-data-table :headers="headers" :items="items" :loading="loading" :items-per-page="-1">
+    <v-data-table :headers="headers" :items="items" :loading="loading">
       <template v-slot:item.case_priority.name="{ item }">
         <case-priority :priority="item.case_priority.name" />
       </template>
