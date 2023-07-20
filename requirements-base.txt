@@ -8,7 +8,7 @@ aiocache==0.12.1
     # via -r requirements-base.in
 aiofiles==23.1.0
     # via -r requirements-base.in
-aiohttp==3.8.4
+aiohttp==3.8.5
     # via
     #   -r requirements-base.in
     #   openai
