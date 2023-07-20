@@ -80,7 +80,7 @@ ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.2
     # via stack-data
-pygments==2.14.0
+pygments==2.15.1
     # via ipython
 pytest==7.4.0
     # via -r requirements-dev.in
