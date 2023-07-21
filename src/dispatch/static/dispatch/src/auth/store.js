@@ -203,7 +203,7 @@ const mutations = {
 
 const getters = {
   getField,
-  userAvatarURL: (state) => {
+  userAvatarUrl: (state) => {
     if (state.currentUser.userId) {
       return `${window.location.protocol}//${window.location.host}/avatar/${state.currentUser.userId}/${state.currentUser.userId}.json`
     }
