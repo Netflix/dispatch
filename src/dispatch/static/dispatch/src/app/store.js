@@ -8,8 +8,8 @@ const getDefaultRefreshState = () => {
   }
 }
 
-const latest_commit_hash = import.meta.env.VITE_DISPATCH_COMMIT_MESSAGE
-const latest_commit_message = import.meta.env.VITE_DISPATCH_COMMIT_MESSAGE
+const latestCommitHash = import.meta.env.VITE_DISPATCH_COMMIT_MESSAGE
+const latestCommitMessage = import.meta.env.VITE_DISPATCH_COMMIT_MESSAGE
 
 const state = {
   toggleDrawer: true,
