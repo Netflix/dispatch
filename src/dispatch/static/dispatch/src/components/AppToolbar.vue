@@ -64,7 +64,7 @@
               </v-list-item-icon>
             </v-list-item-action>
           </v-list-item>
-          <v-list-item v-if="current_version()" @click="showCommitMessage">
+          <v-list-item v-if="currentVersion()" @click="showCommitMessage">
             <v-list-item-title>
               Current version: {{ current_version() | formatHash }}
             </v-list-item-title>
