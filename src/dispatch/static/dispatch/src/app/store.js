@@ -17,7 +17,7 @@ const state = {
     ...getDefaultRefreshState(),
   },
   loading: false,
-  current_version: latest_commit_hash,
+  currentVersion: latestCommitHash,
 }
 
 const getters = {
