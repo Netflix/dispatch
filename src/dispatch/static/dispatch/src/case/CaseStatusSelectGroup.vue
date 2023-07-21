@@ -1,6 +1,6 @@
 <template>
   <v-item-group mandatory>
-    <v-dialog v-model="selectedStatus" max-width="500">
+    <v-dialog v-model="dialogVisable" max-width="600">
       <v-card>
         <v-card-title>Update Case Status</v-card-title>
         <v-card-text
@@ -8,7 +8,6 @@
           {{ selectedStatus }}</v-card-text
         >
 
-        <v-time-picker format="ampm" landscape scrollable></v-time-picker>
         <v-btn
           class="ml-6 mb-4"
           small
@@ -91,6 +90,7 @@ export default {
   data() {
     return {
       selectedStatus: null,
+      dialogVisable: false,
       statuses: [
         {
           name: "New",
@@ -132,10 +132,12 @@ export default {
     changeStatus(newStatus) {
       this._case.status = newStatus
       this.save_page()
+      this.dialogVisable = false
       this.selectedStatus = null
     },
     openDialog(newStatus) {
       this.selectedStatus = newStatus
+      this.dialogVisable = true
     },
     isActiveStatus(status) {
       return this._case.status === status

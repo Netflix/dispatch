@@ -1,6 +1,7 @@
 <template>
   <div class="participant-chips">
-    <div v-for="(participant, index) in orderedParticipants" :key="index" class="chip-container">
+    <!-- Display Visible Participants -->
+    <div v-for="(participant, index) in visibleParticipants" :key="index" class="chip-container">
       <v-menu v-model="menu" bottom rounded offset-y>
         <template v-slot:activator="{ on }">
           <v-btn icon v-on="on">
@@ -23,7 +24,9 @@
               </v-list-item-avatar>
               <v-list-item-content>
                 <v-list-item-title>{{ participant.individual.name }}</v-list-item-title>
-                <v-list-item-subtitle>{{ participant.individual.email }}</v-list-item-subtitle>
+                <v-list-item-subtitle>{{
+                  participant.participant_roles | activeRoles
+                }}</v-list-item-subtitle>
               </v-list-item-content>
               <v-list-item-action>
                 <v-btn icon @click="menu = false">
@@ -39,17 +42,12 @@
               </v-list-item-action>
               <v-list-item-subtitle>{{ participant.individual.email }}</v-list-item-subtitle>
             </v-list-item>
+
             <v-list-item v-if="participant.individual.company">
               <v-list-item-action>
                 <v-icon>business</v-icon>
               </v-list-item-action>
               <v-list-item-subtitle>{{ participant.individual.company }}</v-list-item-subtitle>
-            </v-list-item>
-            <v-list-item v-if="participant.location">
-              <v-list-item-action>
-                <v-icon>mdi-map-marker</v-icon>
-              </v-list-item-action>
-              <v-list-item-subtitle>{{ participant.location }}</v-list-item-subtitle>
             </v-list-item>
             <v-list-item v-if="participant.department">
               <v-list-item-action>
@@ -63,6 +61,13 @@
               </v-list-item-action>
               <v-list-item-subtitle>{{ participant.team }}</v-list-item-subtitle>
             </v-list-item>
+            <v-list-item v-if="participant.location">
+              <v-list-item-action>
+                <v-icon>mdi-map-marker</v-icon>
+              </v-list-item-action>
+              <v-list-item-subtitle>{{ participant.location }}</v-list-item-subtitle>
+            </v-list-item>
+
             <v-list-item
               v-if="participant.individual.weblink"
               :href="participant.individual.weblink"
@@ -77,7 +82,51 @@
         </v-card>
       </v-menu>
     </div>
-    <v-tooltip bottom>
+
+    <v-dialog v-model="participantDialogVisible" max-width="800">
+      <v-card>
+        <v-card-title>Other Participants</v-card-title>
+        <v-divider></v-divider>
+        <div class="ml-2">
+          <div v-if="hiddenParticipants && hiddenParticipants.length">
+            <span v-for="participant in hiddenParticipants" :key="participant.id">
+              <v-list-item :href="participant.individual.weblink" target="_blank">
+                <v-list-item-content>
+                  <v-list-item-title ref="participants">
+                    {{ participant.individual.name }} ({{
+                      participant.participant_roles | activeRoles
+                    }})
+                  </v-list-item-title>
+                  <v-list-item-subtitle>
+                    {{ participant.team }} - {{ participant.location }}
+                  </v-list-item-subtitle>
+                </v-list-item-content>
+                <v-list-item-action>
+                  <v-list-item-icon>
+                    <v-icon>open_in_new</v-icon>
+                  </v-list-item-icon>
+                </v-list-item-action>
+              </v-list-item>
+              <v-divider />
+            </span>
+          </div>
+          <div v-else>
+            <p class="text-center">No participant data available.</p>
+          </div>
+        </div>
+      </v-card>
+    </v-dialog>
+    <!-- Display Hidden Participants Chip -->
+    <div v-if="hiddenParticipants.length" class="chip-container">
+      <v-btn icon @click="participantDialogVisible = true">
+        <v-avatar size="32" color="grey lighten-3">
+          <span class="grey--text">+{{ hiddenParticipants.length }}</span>
+        </v-avatar>
+      </v-btn>
+    </div>
+
+    <!-- Add new participant button, saving for future release -->
+    <!-- <v-tooltip bottom>
       <template v-slot:activator="{ on, attrs }">
         <v-btn
           small
@@ -106,7 +155,7 @@
         <v-card-text> <new-participant-select /> </v-card-text>
         <v-btn class="ml-6 mb-4" small color="info" elevation="1"> Submit </v-btn>
       </v-card>
-    </v-dialog>
+    </v-dialog> -->
   </div>
 </template>
 
@@ -130,6 +179,12 @@ export default {
     calculateZIndex() {
       return (index) => 1000 - index
     },
+    visibleParticipants() {
+      return this.orderedParticipants.slice(0, 1)
+    },
+    hiddenParticipants() {
+      return this.orderedParticipants.slice(1)
+    },
     orderedParticipants() {
       const assignee = this.participants.find((participant) =>
         this.highlightedParticipants.includes(participant.individual.name)
@@ -149,6 +204,7 @@ export default {
     return {
       addParticipantDialog: false,
       hoverIndex: -1,
+      participantDialogVisible: false,
     }
   },
   methods: {

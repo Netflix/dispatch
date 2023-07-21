@@ -6,66 +6,11 @@
       </v-col>
       <v-col cols="6" class="text-right">
         <v-row align="center" class="mt-2">
-          <v-col cols="12" class="d-flex align-center justify-end">
-            <!-- Expandable Search Bar -->
-            <!-- <v-text-field
-              v-model="table.options.q"
-              prepend-inner-icon="mdi-card-search"
-              class="pr-4"
-              label="Search cases"
-              hide-details
-              clearable
-              outlined
-              rows="1"
-              dense
-              style="max-height: 200px"
-            /> -->
-
-            <!-- Filter Dialog -->
-            <!-- <table-filter-dialog :projects="defaultUserProjects" /> -->
-
-            <!-- Export Dialog -->
-            <!-- <table-export-dialog /> -->
-
-            <!-- New Button -->
-            <!-- <v-btn
-              color="grey darken-1"
-              elevation="1"
-              outlined
-              small
-              class="ml-2"
-              @click="showNewSheet()"
-              ><v-icon small class="ml-n1"> mdi-plus </v-icon>New case</v-btn
-            > -->
-          </v-col>
+          <v-col cols="12" class="d-flex align-center justify-end"> </v-col>
         </v-row>
       </v-col>
     </v-row>
-    <!-- <v-divider class="mt-6"></v-divider>
-    <v-col cols="6">
-      <div class="subtitle pl-6">
-        <v-badge bordered color="red" dot left offset-x="-10" offset-y="12">
-          <b>Open cases</b>
-        </v-badge>
-      </div>
-    </v-col> -->
-    <div>
-      <v-layout row wrap>
-        <v-flex lg4 sm6 xs12 class="pb-6 pt-6">
-          <case-stat-widget class="ml-6" icon="domain" title="129" sub-title="All Cases" />
-        </v-flex>
-        <v-flex lg4 sm6 xs12 class="pb-6 pt-6">
-          <case-stat-widget class="ml-6" icon="domain" title="7" sub-title="Open Cases" />
-        </v-flex>
-        <v-flex lg4 sm6 xs12 class="pb-6 pt-6 pr-6">
-          <case-stat-widget class="ml-6" icon="domain" title="1" sub-title="My Open Cases" />
-          <!-- <v-btn @click="openCaseDrawer">View Cases</v-btn> -->
-        </v-flex>
-      </v-layout>
-    </div>
-    <div>
-      <new-case-chart></new-case-chart>
-    </div>
+
     <div v-if="showEditSheet">
       <router-view />
     </div>
@@ -234,33 +179,10 @@
               </v-menu>
             </template>
           </v-data-table>
-          <!-- <v-divider class="mt-6"></v-divider> -->
         </v-card>
       </v-col>
     </v-row>
-    <!-- <v-navigation-drawer v-model="isMyOpenCasesDrawerOpen" permanent app clipped right width="500">
-      <v-col cols="6">
-        <div class="subtitle pl-6">
-          <v-badge bordered color="red" dot left offset-x="-10" offset-y="12">
-            <b>My Open Cases</b>
-          </v-badge>
-        </div>
-      </v-col>
-      <v-lazy
-        v-model="isActive"
-        :options="{
-          threshold: 0.5,
-        }"
-        min-height="200"
-        transition="fade-transition"
-      >
-        <case-card-iterator
-          :items="openCases"
-          :items-per-page="10"
-          page.sync="page"
-        ></case-card-iterator>
-      </v-lazy>
-    </v-navigation-drawer> -->
+
     <bulk-edit-sheet />
   </v-container>
 </template>

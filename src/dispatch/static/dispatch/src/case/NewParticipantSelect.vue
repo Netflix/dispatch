@@ -113,6 +113,12 @@ export default {
   },
 
   methods: {
+    changeParticipant(participant) {
+      this._case.case_severity.name = severity // Update the selected severity.
+      this.save_page()
+      // Here, you may want to call an API to update the severity in the backend.
+      // this.updateCaseSeverity(this.selected.case_priority);
+    },
     loadMore() {
       this.numItems = this.numItems + 5
       this.fetchData()

@@ -33,6 +33,7 @@
             </v-list-item-action>
             <v-list-item-subtitle>{{ participant.individual.email }}</v-list-item-subtitle>
           </v-list-item>
+
           <v-list-item v-if="participant.individual.company">
             <v-list-item-action>
               <v-icon>business</v-icon>
