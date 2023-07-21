@@ -8,7 +8,7 @@ const getDefaultRefreshState = () => {
   }
 }
 
-const latestCommitHash = import.meta.env.VITE_DISPATCH_COMMIT_MESSAGE
+const latestCommitHash = import.meta.env.VITE_DISPATCH_COMMIT_HASH
 const latestCommitMessage = import.meta.env.VITE_DISPATCH_COMMIT_MESSAGE
 
 const state = {
