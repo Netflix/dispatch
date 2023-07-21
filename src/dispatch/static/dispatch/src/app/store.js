@@ -39,7 +39,7 @@ const actions = {
     commit(
       "notification_backend/addBeNotification",
       {
-        text: `Hash: ${latest_commit_hash} | Message: ${latest_commit_message}`,
+        text: `Hash: ${latestCommitHash} | Message: ${latestCommitMessage}`,
         type: "success",
       },
       { root: true }
