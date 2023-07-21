@@ -192,7 +192,7 @@ export default {
       })
     },
     ...mapState("auth", ["currentUser", "userAvatarUrl"]),
-    ...mapState("app", ["current_version"]),
+    ...mapState("app", ["currentVersion"]),
     ...mapActions("auth", ["logout"]),
     ...mapActions("search", ["setQuery"]),
     ...mapActions("organization", ["showCreateEditDialog"]),
