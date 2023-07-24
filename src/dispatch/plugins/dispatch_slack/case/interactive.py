@@ -692,7 +692,7 @@ def handle_snooze_submission_event(
 
     # Check if last_mfa_time was within the last hour
     last_hour = datetime.now() - timedelta(hours=1)
-    if (user.last_mfa_time and user.last_mfa_time < last_hour) or mfa_enabled is False:
+    if (user.last_mfa_time and user.last_mfa_time > last_hour) or mfa_enabled is False:
         _create_snooze_filter(
             db_session=db_session,
             user=user,
@@ -726,11 +726,13 @@ def handle_snooze_submission_event(
             user.last_mfa_time = datetime.now()
             db_session.commit()
         else:
-            text = (
-                "Adding Snooze failed, the MFA request timed out."
-                if response == PushResponseResult.timeout
-                else "Adding Snooze failed, you must accept the MFA prompt."
-            )
+            if response == PushResponseResult.timeout:
+                text = "Adding Snooze failed, the MFA request timed out."
+            elif response == PushResponseResult.user_not_found:
+                text = "Adding Snooze failed, user not found in MFA provider."
+            else:
+                text = "Adding Snooze failed, you must accept the MFA prompt."
+
             modal = Modal(
                 title="Add Snooze",
                 close="Close",
