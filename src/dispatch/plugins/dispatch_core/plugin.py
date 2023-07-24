@@ -122,7 +122,7 @@ class PKCEAuthProviderPlugin(AuthenticationProviderPlugin):
                 data = jwt.decode(token, key, options=jwt_opts)
         except JWTError as err:
             log.debug("JWT Decode error: {}".format(err))
-            raise credentials_exception
+            raise credentials_exception from err
 
         # Support overriding where email is returned in the id token
         if DISPATCH_JWT_EMAIL_OVERRIDE:
