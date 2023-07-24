@@ -727,11 +727,11 @@ def handle_snooze_submission_event(
             db_session.commit()
         else:
             if response == PushResponseResult.timeout:
-                text = "Confirmation failed, the MFA request timed out."
+                text = "Adding Snooze failed, the MFA request timed out."
             elif response == PushResponseResult.user_not_found:
-                text = "User not found in MFA provider"
+                text = "Adding Snooze failed, user not found in MFA provider"
             else:
-                text = "Confirmation failed, you must accept the MFA prompt."
+                text = "Adding Snooze failed, you must accept the MFA prompt."
 
             modal = Modal(
                 title="Add Snooze",
