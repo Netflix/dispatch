@@ -224,7 +224,7 @@ def get_model_class_by_name(registry, name):
 def get_named_models(filters):
     models = []
     for filter in filters:
-        models.append(filter.get_named_models())
+        models.extend(filter.get_named_models())
     return models
 
 
@@ -310,11 +310,12 @@ def apply_filters(query, filter_spec, model_cls=None, do_auto_join=True):
                     The :class:`sqlalchemy.orm.Query` instance after all the filters
                     have been applied.
     """
-    filters = build_filters(filter_spec)
     default_model = get_default_model(query)
     if not default_model:
         default_model = model_cls
-    filter_models = get_named_models(filters)[0]
+
+    filters = build_filters(filter_spec)
+    filter_models = get_named_models(filters)
 
     if do_auto_join:
         query = auto_join(query, filter_models)
@@ -355,7 +356,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (SignalInstance, "EntityType"): (SignalInstance.entities, True),
     }
     filters = build_filters(filter_spec)
-    filter_models = get_named_models(filters)[0]
+    filter_models = get_named_models(filters)
     for filter_model in filter_models:
         if model_map.get((model, filter_model)):
             joined_model, is_outer = model_map[(model, filter_model)]
