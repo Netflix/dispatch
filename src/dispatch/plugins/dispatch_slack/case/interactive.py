@@ -729,7 +729,7 @@ def handle_snooze_submission_event(
             if response == PushResponseResult.timeout:
                 text = "Adding Snooze failed, the MFA request timed out."
             elif response == PushResponseResult.user_not_found:
-                text = "Adding Snooze failed, user not found in MFA provider"
+                text = "Adding Snooze failed, user not found in MFA provider."
             else:
                 text = "Adding Snooze failed, you must accept the MFA prompt."
 
