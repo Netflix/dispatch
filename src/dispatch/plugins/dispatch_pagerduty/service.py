@@ -1,3 +1,6 @@
+from datetime import datetime, timedelta
+
+
 def get_oncall_email(client, service: dict) -> str:
     """Fetches the oncall's email for a given service."""
     escalation_policy_id = service["escalation_policy"]["id"]
@@ -32,6 +35,38 @@ def get_oncall(client, service_id: str):
     """Gets the oncall for a given service id or name."""
     service = client.rget(f"/services/{service_id}")
     return get_oncall_email(client, service)
+
+
+def get_oncall_schedule(client, schedule_id: str, param={}) -> list[dict]:
+    """Gets the oncall schedule."""
+    if not param:
+        # Grabs the oncall schedule from the last 24 hour by default
+        param["until"] = datetime.now()
+        param["since"] = param["until"] - timedelta(days=1)
+
+    return client.rget(f"/schedules/{schedule_id}", param=param)
+
+
+def send_feedback_form(user):
+    """TODO(averyl): send the feedback form. There are more than one people on call during this time period."""
+    pass
+
+
+# @background_task
+# TODO: Set default trigger time.
+def oncall_shift_feedback_flow(client, schedule_id: str):
+    schedule = get_oncall_schedule(client, schedule_id)
+    schedule_layers = schedule["schedule"]["schedule_layers"]
+
+    # Adds the override layer
+    if schedule["overrides_subschedule"]:
+        schedule_layers += schedule["overrides_subschedule"]
+
+    for layer in schedule_layers:
+        unique_users = list(set([entry.user.id for entry in layer["rendered_schedule_entries"]]))
+        # Sends the feedback form to all users who have completed their oncall shifts.
+        for user in unique_users[:-1]:
+            send_feedback_form(user)
 
 
 def page_oncall(
