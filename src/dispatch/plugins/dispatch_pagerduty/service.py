@@ -48,7 +48,7 @@ def get_oncall_schedule(client, schedule_id: str, param={}) -> list[dict]:
 
 
 def send_feedback_form(user):
-    """TODO(averyl): send the feedback form. There are more than one people on call during this time period."""
+    """TODO: Send the feedback form. There are more than one people on call during this time period."""
     pass
 
 
