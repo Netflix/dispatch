@@ -391,9 +391,14 @@ def search(*, query_str: str, query: Query, model: str, sort=False):
 
     # determine if we have a name and use it for exact matching
     # TODO we could make the exact match field configurable in the future
+    # Also include searches formatted as "-xxxx" for Jira-created ticket names
     if hasattr(search_model, "name"):
         query = query.filter(
-            or_(vector.op("@@")(func.tsq_parse(query_str)), search_model.name == query_str)
+            or_(
+                vector.op("@@")(func.tsq_parse(query_str)),
+                search_model.name == query_str,
+                vector.op("@@")(f"-{query_str}"),
+            )
         )
     else:
         query = query.filter(vector.op("@@")(func.tsq_parse(query_str)))
