@@ -26,6 +26,7 @@
           <v-data-table
             :headers="headers"
             :items="items"
+            :item-class="row_class"
             :server-items-length="total"
             :page.sync="page"
             :items-per-page.sync="itemsPerPage"
@@ -144,6 +145,11 @@ export default {
 
   methods: {
     ...mapActions("plugin", ["getAllInstances", "createEditShow", "removeShow"]),
+    row_class(item) {
+      if (item.broken) {
+        return "red"
+      }
+    },
   },
 }
 </script>

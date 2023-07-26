@@ -64,6 +64,16 @@
               </v-list-item-icon>
             </v-list-item-action>
           </v-list-item>
+          <v-list-item v-if="currentVersion()" @click="showCommitMessage">
+            <v-list-item-title>
+              Current version: {{ currentVersion() | formatHash }}
+            </v-list-item-title>
+            <v-list-item-action>
+              <v-list-item-icon>
+                <v-icon small>read_more</v-icon>
+              </v-list-item-icon>
+            </v-list-item-action>
+          </v-list-item>
         </v-list>
       </v-menu>
       <v-menu offset-y>
@@ -182,9 +192,11 @@ export default {
       })
     },
     ...mapState("auth", ["currentUser", "userAvatarUrl"]),
+    ...mapState("app", ["currentVersion"]),
     ...mapActions("auth", ["logout"]),
     ...mapActions("search", ["setQuery"]),
     ...mapActions("organization", ["showCreateEditDialog"]),
+    ...mapActions("app", ["showCommitMessage"]),
     ...mapMutations("search", ["SET_QUERY"]),
   },
 
