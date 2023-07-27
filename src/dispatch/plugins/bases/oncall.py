@@ -23,3 +23,6 @@ class OncallPlugin(Plugin):
         **kwargs,
     ):
         raise NotImplementedError
+
+    def send_shift_feedback_form_message(client, service_id: str):
+        raise NotImplementedError

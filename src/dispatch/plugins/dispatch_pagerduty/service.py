@@ -4,21 +4,7 @@ from datetime import datetime, timedelta
 def get_oncall_email(client, service: dict) -> str:
     """Fetches the oncall's email for a given service."""
     escalation_policy_id = service["escalation_policy"]["id"]
-    escalation_policy = client.rget(f"/escalation_policies/{escalation_policy_id}")
-    filter_name = (
-        f"{escalation_policy['escalation_rules'][0]['targets'][0]['type'].split('_')[0]}_ids[]"
-    )
-    filter_value = escalation_policy["escalation_rules"][0]["targets"][0]["id"]
-
-    oncalls = list(
-        client.iter_all(
-            "oncalls",  # method
-            {
-                filter_name: [filter_value],
-                "escalation_policy_ids[]": [escalation_policy_id],
-            },  # params
-        )
-    )
+    oncalls = get_oncalls_from_escalation_policy(escalation_policy_id)
 
     if oncalls:
         user_id = list(oncalls)[0]["user"]["id"]
@@ -37,32 +23,69 @@ def get_oncall(client, service_id: str):
     return get_oncall_email(client, service)
 
 
-def get_oncall_schedule(client, service_id: str, param={}) -> list[dict]:
+def get_oncalls_from_escalation_policy(client, escalation_policy_id: str):
+    """Gets the oncalls for a given escalation policy id or name."""
+    escalation_policy = client.rget(f"/escalation_policies/{escalation_policy_id}")
+    filter_name = (
+        f"{escalation_policy['escalation_rules'][0]['targets'][0]['type'].split('_')[0]}_ids[]"
+    )
+    filter_value = escalation_policy["escalation_rules"][0]["targets"][0]["id"]
+
+    return list(
+        client.iter_all(
+            "oncalls",  # method
+            {
+                filter_name: [filter_value],
+                "escalation_policy_ids[]": [escalation_policy_id],
+            },  # params
+        )
+    )
+
+
+def get_oncall_schedule(client, service: dict, param={}) -> list[dict]:
     """Gets the oncall schedule."""
-    service = client.rget(f"/services/{service_id}")
-    schedule = client.rget("/schedules/", param={"include[]": "schedule_layers"})
+    escalation_policy_id = service["escalation_policy"]["id"]
+    oncalls = get_oncalls_from_escalation_policy(escalation_policy_id)
 
-    # schedule_id = service["schedule"]["id"]
+    if oncalls:
+        schedule_id = list(oncalls)[0]["schedule"]["id"]
+    else:
+        raise Exception(
+            f"No schedule could be found for this pagerduty escalation policy ({escalation_policy_id})."
+        )
 
+    # Grabs the oncall schedule from the last 24 hour by default
     if not param:
-        # Grabs the oncall schedule from the last 24 hour by default
         param["until"] = datetime.now()
         param["since"] = param["until"] - timedelta(days=1)
 
+    param["include[]"] = "schedule_layers"
     return client.rget(f"/schedules/{schedule_id}", param=param)
 
 
 def send_shift_feedback_form_message(client, service_id: str):
-    schedule = get_oncall_schedule(client, service_id)
-    schedule_layers = schedule["schedule"]["schedule_layers"]
+    service = client.rget(f"/services/{service_id}")
+    schedule = get_oncall_schedule(client, service)
 
-    # Adds the override layer
+    # TODO: How do we identify if an override has ended their shift? This could potentially go on indefinitely.
     if schedule["overrides_subschedule"]:
-        schedule_layers += schedule["overrides_subschedule"]
+        unique_users = list(
+            set(
+                entry.user.id
+                for entry in schedule["overrides_subschedule"]["rendered_schedule_entries"]
+            )
+        )
+        for user in unique_users:
+            # TODO: send_oncall_shift_feedback_message
+            pass
 
-    for layer in schedule_layers:
-        unique_users = list(set([entry.user.id for entry in layer["rendered_schedule_entries"]]))
+    # Handle the normal layers
+    for layer in schedule["schedule"]["schedule_layers"]:
+        if layer["rendered_coverage_percentage"] == 0:
+            continue
+
         # Sends the feedback form to all users who have completed their oncall shifts.
+        unique_users = list(set([entry.user.id for entry in layer["rendered_schedule_entries"]]))
         for user in unique_users[:-1]:
             # TODO: send_oncall_shift_feedback_message
             pass
