@@ -13,12 +13,12 @@ from dispatch.search_filter.models import SearchFilterRead
 from dispatch.models import (
     ContactBase,
     ContactMixin,
-    DispatchBase,
     EvergreenBase,
     EvergreenMixin,
     NameStr,
     ProjectMixin,
     PrimaryKey,
+    Pagination,
 )
 
 assoc_team_contact_incidents = Table(
@@ -73,6 +73,5 @@ class TeamContactRead(TeamContactBase):
     updated_at: datetime
 
 
-class TeamPagination(DispatchBase):
-    total: int
+class TeamPagination(Pagination):
     items: List[TeamContactRead] = []

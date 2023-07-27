@@ -8,11 +8,7 @@ from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import (
-    PrimaryKey,
-    DispatchBase,
-    ProjectMixin,
-)
+from dispatch.models import PrimaryKey, DispatchBase, ProjectMixin, Pagination
 from dispatch.project.models import ProjectRead
 
 # Association tables
@@ -73,6 +69,5 @@ class DefinitionRead(DefinitionBase):
     terms: Optional[List[DefinitionTerm]]
 
 
-class DefinitionPagination(DispatchBase):
-    total: int
+class DefinitionPagination(Pagination):
     items: List[DefinitionRead] = []
