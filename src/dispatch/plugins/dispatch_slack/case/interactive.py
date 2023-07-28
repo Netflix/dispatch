@@ -826,7 +826,8 @@ def handle_case_participant_role_activity(
 
     # if a participant is active mark the case as being in the triaged state
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
-    case.status = CaseStatus.triage
+    if case.status == CaseStatus.new:
+        case.status = CaseStatus.triage
     db_session.commit()
     case_flows.update_conversation(case, db_session)
 
