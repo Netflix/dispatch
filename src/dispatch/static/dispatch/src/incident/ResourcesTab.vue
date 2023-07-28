@@ -93,6 +93,11 @@
           <v-list-item-title>Create a Document???</v-list-item-title>
           <v-list-item-subtitle>insert text here</v-list-item-subtitle>
         </v-list-item-content>
+        <v-list-item-action>
+          <v-list-item-icon>
+            <v-icon>add</v-icon>
+          </v-list-item-icon>
+        </v-list-item-action>
       </v-list-item>
     </span>
   </v-list>
@@ -100,6 +105,8 @@
 
 <script>
 import { mapFields } from "vuex-map-fields"
+import DocumentApi from "@/document/api"
+// import { mapActions } from "vuex"
 
 export default {
   name: "IncidentResourcesTab",
@@ -111,7 +118,18 @@ export default {
       "selected.documents",
       "selected.conference",
       "selected.conversation",
+      "selected.id",
     ]),
+  },
+
+  methods: {
+    createDocument() {
+      console.log("create document")
+      console.log(this.$route.params.id)
+      DocumentApi.createDocument(this.$route.params.id)
+      // this.getDetails({ name: this.$route.params.name })
+    },
+    // ...mapActions("incident", ["save", "getDetails", "closeEditSheet"]),
   },
 }
 </script>

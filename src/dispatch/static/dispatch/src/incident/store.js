@@ -3,6 +3,7 @@ import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import IncidentApi from "@/incident/api"
+// import DocumentApi from "@/document/api" // not sure if this is good practice to put here, given that it reaches out to a diff api....
 import router from "@/router"
 
 const getDefaultSelectedState = () => {
@@ -337,6 +338,10 @@ const actions = {
       )
     })
   },
+  // TODO: I think this creates the document?
+  // createDocument() {
+  //   return DocumentApi.create(state.selected)
+  // },
   resetSelected({ commit }) {
     commit("RESET_SELECTED")
   },
