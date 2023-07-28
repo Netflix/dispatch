@@ -28,9 +28,16 @@
       </v-list-item>
     </template>
     <template v-slot:item="data">
-      <CaseParticipant :participant="data.item" />
+      <!-- Display only the chip without the menu -->
+      <v-chip pill small color="#edf2f7">
+        <v-avatar color="grey lighten-2" left>
+          <span class="black--text">{{ data.item.individual.name | initials }}</span>
+        </v-avatar>
+        {{ data.item.individual.name }}
+      </v-chip>
     </template>
     <template v-slot:selection="{ attr, on, item, selected }">
+      <!-- Display the CaseParticipant component with the menu for selected item -->
       <CaseParticipant :participant="item" />
     </template>
     <template v-slot:append-item>

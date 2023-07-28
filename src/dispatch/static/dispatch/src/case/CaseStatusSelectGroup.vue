@@ -91,7 +91,11 @@ export default {
     return {
       selectedStatus: null,
       dialogVisable: false,
-      statuses: [
+    }
+  },
+  computed: {
+    statuses() {
+      return [
         {
           name: "New",
           label: "New",
@@ -124,8 +128,8 @@ export default {
           sheetClass: "rounded-r-xl",
           tooltip: this._case.escalated_at,
         },
-      ],
-    }
+      ]
+    },
   },
   methods: {
     ...mapActions("case_management", ["save_page"]),

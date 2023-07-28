@@ -1,8 +1,5 @@
 <template>
   <v-dialog v-model="dialog" max-width="1000px" persistent :key="componentKey">
-    <template v-slot:activator="{ on, attrs }">
-      <v-btn v-bind="attrs" v-on="on" icon><v-icon>add</v-icon></v-btn>
-    </template>
     <v-card>
       <v-card-title>Create Entity Type </v-card-title>
       <v-stepper v-model="step">
@@ -239,6 +236,9 @@ export default {
     },
     isValidRegex,
     isValidJsonPath,
+    openDialog() {
+      this.dialog = true
+    },
     forceRerender() {
       this.componentKey += 1
     },

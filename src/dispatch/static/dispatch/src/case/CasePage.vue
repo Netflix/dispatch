@@ -258,6 +258,9 @@
               </v-col>
             </v-row>
 
+            <v-divider class="mt-8"></v-divider>
+
+            <div class="subtitle">Resolution Details</div>
             <v-card flat color="grey lighten-5" class="rounded-lg mt-8 hover-outline">
               <rich-editor></rich-editor>
 
@@ -556,6 +559,10 @@ export default {
       "selected.name",
       "selected.project",
       "selected.reported_at",
+      "selected.created_at",
+      "selected.triage_at",
+      "selected.closed_at",
+      "selected.escalated_at",
       "selected.case_type",
       "selected.status",
       "selected.loading",
@@ -678,6 +685,7 @@ export default {
 
     onSelectReason(reason) {
       this.selected.resolution_reason = reason
+      this.save_page()
       // other logic as necessary
     },
 

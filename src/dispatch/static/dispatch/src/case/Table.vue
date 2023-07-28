@@ -136,6 +136,9 @@
                 <span>{{ item.closed_at | formatDate }}</span>
               </v-tooltip>
             </template>
+            <v-btn icon v-on="on">
+              <v-icon>mdi-open-in-app</v-icon>
+            </v-btn>
             <template v-slot:item.data-table-actions="{ item }">
               <v-menu bottom left>
                 <template v-slot:activator="{ on }">

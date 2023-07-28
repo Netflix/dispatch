@@ -32,10 +32,13 @@
           </v-row>
           <v-row class="pt-6 pb-6">
             <!-- New Button -->
-            <v-btn color="info" elevation="1" small class="ml-7"
+            <v-btn color="info" elevation="1" small @click="showEntityTypeDialog" class="ml-7"
               ><v-icon small class="ml-n1 mr-1"> mdi-plus </v-icon>Add an entity type</v-btn
             >
-            <!-- <entity-type-create-dialog></entity-type-create-dialog> -->
+            <entity-type-create-dialog
+              ref="entityTypeDialog"
+              :signalDefinition="signalDef"
+            ></entity-type-create-dialog>
           </v-row>
         </v-card>
       </v-row>
@@ -67,6 +70,12 @@ export default {
     }
   },
   computed: {
+    signalDef() {
+      if (this.selected.signal_instances.length) {
+        console.log("GOT DEF %O", this.selected.signal_instances[0])
+        return this.selected.signal_instances[0].signal
+      }
+    },
     uniqueEntities() {
       const uniqueEntities = {}
 
@@ -93,6 +102,9 @@ export default {
   methods: {
     onSelectedDateTimeChange(newValue) {
       this.selectedDateTime = newValue
+    },
+    showEntityTypeDialog() {
+      this.$refs.entityTypeDialog.openDialog()
     },
   },
 }
