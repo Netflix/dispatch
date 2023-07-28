@@ -78,12 +78,11 @@ export default {
     return {}
   },
   created() {
-    console.log("Searching for " + this.$route.params.name)
     this.fetchDetails()
   },
   watch: {
     "$route.params.name": function () {
-      console.log("Searching for " + this.$route.params.name)
+      this.fetchDetails()
     },
   },
 
