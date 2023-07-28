@@ -105,8 +105,10 @@ const actions = {
   },
   getResults({ commit, state }) {
     commit("SET_LOADING", true)
+    console.log("Got query " + JSON.stringify(state.query))
     return SearchApi.search(state.query, state.type)
       .then((response) => {
+        console.log("HERE")
         commit("SET_RESULTS", response.data.results)
         commit("SET_LOADING", false)
       })

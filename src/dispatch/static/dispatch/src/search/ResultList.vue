@@ -54,6 +54,7 @@
 
 <script>
 import { mapState } from "vuex"
+import { mapActions } from "vuex"
 import IncidentSummaryTable from "@/incident/IncidentSummaryTable.vue"
 import CaseSummaryTable from "@/case/CaseSummaryTable.vue"
 import TaskSummaryTable from "@/task/TaskSummaryTable.vue"
@@ -76,9 +77,25 @@ export default {
   data() {
     return {}
   },
+  created() {
+    console.log("Searching for " + this.$route.params.name)
+    this.fetchDetails()
+  },
+  watch: {
+    "$route.params.name": function () {
+      console.log("Searching for " + this.$route.params.name)
+    },
+  },
 
   computed: {
     ...mapState("search", ["results", "query", "loading"]),
+  },
+  methods: {
+    fetchDetails() {
+      this.setQuery(this.$route.params.name)
+      this.getResults()
+    },
+    ...mapActions("search", ["setQuery", "getResults"]),
   },
 }
 </script>

@@ -157,6 +157,7 @@ export default {
   name: "AppToolbar",
   data: () => ({
     organizations: [],
+    query: "",
   }),
   components: {
     OrganizationCreateEditDialog,
@@ -165,6 +166,7 @@ export default {
     queryString: {
       set(query) {
         this.$store.dispatch("search/setQuery", query)
+        this.query = query
       },
       get() {
         return this.$store.state.query.q
@@ -179,8 +181,10 @@ export default {
       Util.toggleFullScreen()
     },
     performSearch() {
+      let query = this.query
+      //alert("The query is" + JSON.stringify(query))
       this.$store.dispatch("search/getResults", this.$store.state.query)
-      this.$router.push({ name: "GlobalSearch" })
+      this.$router.push({ name: "ResultListWithQuery", params: { name: query } })
     },
     toggleDarkTheme() {
       this.$vuetify.theme.dark = !this.$vuetify.theme.dark
