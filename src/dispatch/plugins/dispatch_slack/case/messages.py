@@ -124,32 +124,37 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
             ]
         )
     else:
-        blocks.extend(
-            [
-                Actions(
-                    elements=[
-                        Button(
-                            text="Edit",
-                            action_id=CaseNotificationActions.edit,
-                            style="primary",
-                            value=button_metadata,
-                        ),
-                        Button(
-                            text="Resolve",
-                            action_id=CaseNotificationActions.resolve,
-                            style="primary",
-                            value=button_metadata,
-                        ),
-                        Button(
-                            text="Escalate",
-                            action_id=CaseNotificationActions.escalate,
-                            style="danger",
-                            value=button_metadata,
-                        ),
-                    ]
-                )
-            ]
-        )
+        action_buttons = [
+            Button(
+                text="Resolve",
+                action_id=CaseNotificationActions.resolve,
+                style="primary",
+                value=button_metadata,
+            ),
+            Button(
+                text="Edit",
+                action_id=CaseNotificationActions.edit,
+                style="primary",
+                value=button_metadata,
+            ),
+            Button(
+                text="Escalate",
+                action_id=CaseNotificationActions.escalate,
+                style="danger",
+                value=button_metadata,
+            ),
+        ]
+        if case.status == CaseStatus.new:
+            action_buttons.insert(
+                0,
+                Button(
+                    text="Triage",
+                    action_id=CaseNotificationActions.triage,
+                    style="primary",
+                    value=button_metadata,
+                ),
+            )
+        blocks.extend([Actions(elements=action_buttons)])
 
     return Message(blocks=blocks).build()["blocks"]
 
