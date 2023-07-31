@@ -12,7 +12,7 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base, ensure_unique_default_per_project
 from dispatch.enums import Visibility
-from dispatch.models import DispatchBase, ProjectMixin
+from dispatch.models import DispatchBase, ProjectMixin, Pagination
 from dispatch.plugin.models import PluginMetadata
 from dispatch.project.models import ProjectRead
 
@@ -121,6 +121,5 @@ class IncidentTypeReadMinimal(DispatchBase):
     default: Optional[bool] = False
 
 
-class IncidentTypePagination(DispatchBase):
-    total: int
+class IncidentTypePagination(Pagination):
     items: List[IncidentTypeRead] = []

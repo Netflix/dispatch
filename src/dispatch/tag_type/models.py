@@ -7,7 +7,14 @@ from sqlalchemy.sql.sqltypes import Boolean
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, NameStr, TimeStampMixin, ProjectMixin, PrimaryKey
+from dispatch.models import (
+    DispatchBase,
+    NameStr,
+    TimeStampMixin,
+    ProjectMixin,
+    PrimaryKey,
+    Pagination,
+)
 from dispatch.project.models import ProjectRead
 
 
@@ -40,6 +47,5 @@ class TagTypeRead(TagTypeBase):
     project: ProjectRead
 
 
-class TagTypePagination(DispatchBase):
+class TagTypePagination(Pagination):
     items: List[TagTypeRead]
-    total: int
