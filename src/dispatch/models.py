@@ -109,6 +109,12 @@ class DispatchBase(BaseModel):
         }
 
 
+class Pagination(DispatchBase):
+    itemsPerPage: int
+    page: int
+    total: int
+
+
 class PrimaryKeyModel(BaseModel):
     id: PrimaryKey
 

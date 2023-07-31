@@ -1,15 +1,12 @@
 from typing import List, Optional
-from dispatch.models import PrimaryKey
 
-from sqlalchemy.orm import relationship
 from sqlalchemy import Column, ForeignKey, Integer, Numeric
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.orm import relationship
 
 from dispatch.database.core import Base
-from dispatch.incident_cost_type.models import (
-    IncidentCostTypeRead,
-)
-from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
+from dispatch.incident_cost_type.models import IncidentCostTypeRead
+from dispatch.models import DispatchBase, Pagination, PrimaryKey, ProjectMixin, TimeStampMixin
 from dispatch.project.models import ProjectRead
 
 
@@ -46,6 +43,5 @@ class IncidentCostRead(IncidentCostBase):
     incident_cost_type: IncidentCostTypeRead
 
 
-class IncidentCostPagination(DispatchBase):
-    total: int
+class IncidentCostPagination(Pagination):
     items: List[IncidentCostRead] = []

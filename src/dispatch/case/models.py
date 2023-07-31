@@ -28,13 +28,14 @@ from dispatch.event.models import EventRead
 from dispatch.group.models import Group, GroupRead
 from dispatch.incident.models import IncidentReadMinimal
 from dispatch.messaging.strings import CASE_RESOLUTION_DEFAULT
-from dispatch.models import DispatchBase, NameStr, PrimaryKey, ProjectMixin, TimeStampMixin
+from dispatch.models import DispatchBase, NameStr, PrimaryKey, ProjectMixin, TimeStampMixin, Pagination
 from dispatch.participant.models import (
     Participant,
     ParticipantRead,
     ParticipantReadMinimal,
     ParticipantUpdate,
 )
+
 from dispatch.storage.models import StorageRead
 from dispatch.tag.models import TagRead
 from dispatch.ticket.models import TicketRead
@@ -305,8 +306,5 @@ class CaseUpdate(CaseBase):
         return v
 
 
-class CasePagination(DispatchBase):
+class CasePagination(Pagination):
     items: List[CaseReadMinimal] = []
-    itemsPerPage: int
-    page: int
-    total: int

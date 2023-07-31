@@ -20,7 +20,7 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.incident.models import IncidentReadMinimal
-from dispatch.models import DispatchBase, ResourceBase, ResourceMixin, PrimaryKey
+from dispatch.models import ResourceBase, ResourceMixin, PrimaryKey, Pagination
 from dispatch.participant.models import ParticipantRead, ParticipantUpdate
 from dispatch.project.models import ProjectRead
 
@@ -123,6 +123,5 @@ class TaskRead(TaskBase):
     project: Optional[ProjectRead]
 
 
-class TaskPagination(DispatchBase):
-    total: int
+class TaskPagination(Pagination):
     items: List[TaskRead] = []

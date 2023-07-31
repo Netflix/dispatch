@@ -7,7 +7,7 @@ from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, TimeStampMixin, ProjectMixin, PrimaryKey
+from dispatch.models import DispatchBase, TimeStampMixin, ProjectMixin, PrimaryKey, Pagination
 from dispatch.project.models import ProjectRead
 from dispatch.tag_type.models import TagTypeRead, TagTypeCreate, TagTypeUpdate
 
@@ -61,6 +61,5 @@ class TagRead(TagBase):
     project: ProjectRead
 
 
-class TagPagination(DispatchBase):
+class TagPagination(Pagination):
     items: List[TagRead]
-    total: int

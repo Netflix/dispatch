@@ -823,7 +823,13 @@ def handle_case_participant_role_activity(
             case_id=context["subject"].id, user_email=user.email, db_session=db_session
         )
         participant.user_conversation_id = context["user_id"]
+
+    # if a participant is active mark the case as being in the triaged state
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    if case.status == CaseStatus.new:
+        case.status = CaseStatus.triage
     db_session.commit()
+    case_flows.update_conversation(case, db_session)
 
 
 @message_dispatcher.add(
@@ -1205,6 +1211,17 @@ def resolve_button_click(
         private_metadata=context["subject"].json(),
     ).build()
     client.views_open(trigger_id=body["trigger_id"], view=modal)
+
+
+@app.action(CaseNotificationActions.triage, middleware=[button_context_middleware, db_middleware])
+def triage_button_click(
+    ack: Ack, body: dict, db_session: Session, context: BoltContext, client: WebClient
+):
+    ack()
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    case.status = CaseStatus.triage
+    db_session.commit()
+    case_flows.update_conversation(case, db_session)
 
 
 @app.view(
