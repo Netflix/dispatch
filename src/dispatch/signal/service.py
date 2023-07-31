@@ -208,8 +208,11 @@ def get_signal_instance(
 
 
 def get(*, db_session: Session, signal_id: int) -> Optional[Signal]:
-    """Gets a signal by id."""
-    return db_session.query(Signal).filter(Signal.id == signal_id).one_or_none()
+    """Gets a signal by id or external_id."""
+    signal = db_session.query(Signal).filter(Signal.id == signal_id).one_or_none()
+    if not signal:
+        signal = db_session.query(Signal).filter(Signal.external_id == str(signal_id)).one_or_none()
+    return signal
 
 
 def get_by_variant_or_external_id(
