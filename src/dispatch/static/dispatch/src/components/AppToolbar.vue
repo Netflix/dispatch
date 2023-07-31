@@ -79,7 +79,10 @@
       <v-menu offset-y>
         <template v-slot:activator="{ on }">
           <v-btn icon large text v-on="on">
-            <v-avatar size="30px">
+            <v-avatar size="30px" v-if="userAvatarUrl(currentUser())">
+              <v-img :src="userAvatarUrl(currentUser())"></v-img>
+            </v-avatar>
+            <v-avatar size="30px" v-else>
               <v-icon> account_circle </v-icon>
             </v-avatar>
           </v-btn>
@@ -87,7 +90,10 @@
         <v-card width="400">
           <v-list>
             <v-list-item class="px-2">
-              <v-list-item-avatar>
+              <v-list-item-avatar v-if="userAvatarUrl(currentUser())">
+                <v-img :src="userAvatarUrl(currentUser())"></v-img>
+              </v-list-item-avatar>
+              <v-list-item-avatar v-else>
                 <v-icon size="30px"> account_circle </v-icon>
               </v-list-item-avatar>
               <v-list-item-content>
@@ -147,7 +153,7 @@
   </v-app-bar>
 </template>
 <script>
-import { mapActions, mapMutations, mapState } from "vuex"
+import { mapActions, mapGetters, mapMutations, mapState } from "vuex"
 
 import Util from "@/util"
 import OrganizationApi from "@/organization/api"
@@ -191,13 +197,14 @@ export default {
         this.$router.go()
       })
     },
-    ...mapState("auth", ["currentUser", "userAvatarUrl"]),
+    ...mapState("auth", ["currentUser"]),
     ...mapState("app", ["currentVersion"]),
     ...mapActions("auth", ["logout"]),
     ...mapActions("search", ["setQuery"]),
     ...mapActions("organization", ["showCreateEditDialog"]),
     ...mapActions("app", ["showCommitMessage"]),
     ...mapMutations("search", ["SET_QUERY"]),
+    ...mapGetters("auth", ["userAvatarUrl"]),
   },
 
   created() {
