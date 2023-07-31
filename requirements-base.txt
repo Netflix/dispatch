@@ -299,7 +299,7 @@ pyjwt[crypto]==2.6.0
     # via
     #   msal
     #   oauthlib
-pyparsing==3.1.0
+pyparsing==3.1.1
     # via
     #   -r requirements-base.in
     #   httplib2
@@ -367,7 +367,7 @@ scipy==1.10.1
     # via statsmodels
 sentry-asgi==0.2.0
     # via -r requirements-base.in
-sentry-sdk==1.28.1
+sentry-sdk==1.29.0
     # via
     #   -r requirements-base.in
     #   sentry-asgi
@@ -473,7 +473,7 @@ urllib3==1.26.15
     #   pdpyras
     #   requests
     #   sentry-sdk
-uvicorn==0.23.1
+uvicorn==0.23.2
     # via -r requirements-base.in
 uvloop==0.17.0
     # via -r requirements-base.in
