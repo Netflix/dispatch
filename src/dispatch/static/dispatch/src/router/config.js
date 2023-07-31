@@ -524,17 +524,10 @@ export const protectedRoute = [
       children: [
         {
           path: "results",
-          name: "ResultList",
           meta: { name: "Results" },
           component: () => import("@/search/ResultList.vue"),
-          children: [
-            {
-              path: "/:organization/search/results/:name",
-              name: "ResultListWithQuery",
-              component: () => import("@/search/ResultList.vue"),
-              props: true,
-            },
-          ],
+          name: "ResultList",
+          props: true,
         },
       ],
     },

@@ -182,9 +182,8 @@ export default {
     },
     performSearch() {
       let query = this.query
-      //alert("The query is" + JSON.stringify(query))
       this.$store.dispatch("search/getResults", this.$store.state.query)
-      this.$router.push({ name: "ResultListWithQuery", params: { name: query } })
+      this.$router.push({ name: "ResultList", query: { q: query } })
     },
     toggleDarkTheme() {
       this.$vuetify.theme.dark = !this.$vuetify.theme.dark

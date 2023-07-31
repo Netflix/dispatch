@@ -81,8 +81,11 @@ export default {
     this.fetchDetails()
   },
   watch: {
-    "$route.params.name": function () {
-      this.fetchDetails()
+    query: function (q) {
+      // update URL in browser and search for new query
+      this.$router.push({ name: "ResultList", query: { q: q } })
+      this.setQuery(q)
+      this.getResults()
     },
   },
 
@@ -91,7 +94,7 @@ export default {
   },
   methods: {
     fetchDetails() {
-      this.setQuery(this.$route.params.name)
+      this.setQuery(this.$route.query.q)
       this.getResults()
     },
     ...mapActions("search", ["setQuery", "getResults"]),
