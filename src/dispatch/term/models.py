@@ -10,6 +10,7 @@ from dispatch.models import (
     DispatchBase,
     ProjectMixin,
     PrimaryKey,
+    Pagination,
 )
 from dispatch.definition.models import DefinitionRead
 from dispatch.project.models import ProjectRead
@@ -50,6 +51,5 @@ class TermRead(TermBase):
     definitions: Optional[List[DefinitionRead]] = []
 
 
-class TermPagination(DispatchBase):
-    total: int
+class TermPagination(Pagination):
     items: List[TermRead] = []

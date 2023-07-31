@@ -15,7 +15,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 
 from dispatch.database.core import Base
 from dispatch.config import DISPATCH_ENCRYPTION_KEY
-from dispatch.models import DispatchBase, ProjectMixin, PrimaryKey
+from dispatch.models import DispatchBase, ProjectMixin, Pagination, PrimaryKey
 from dispatch.plugins.base import plugins
 from dispatch.project.models import ProjectRead
 
@@ -190,11 +190,9 @@ class PluginMetadata(DispatchBase):
     metadata: List[KeyValue] = []
 
 
-class PluginPagination(DispatchBase):
-    total: int
+class PluginPagination(Pagination):
     items: List[PluginRead] = []
 
 
-class PluginInstancePagination(DispatchBase):
-    total: int
+class PluginInstancePagination(Pagination):
     items: List[PluginInstanceReadMinimal] = []

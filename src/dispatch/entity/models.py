@@ -7,7 +7,13 @@ from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, TimeStampMixin, ProjectMixin, PrimaryKey
+from dispatch.models import (
+    DispatchBase,
+    TimeStampMixin,
+    ProjectMixin,
+    PrimaryKey,
+    Pagination,
+)
 from dispatch.project.models import ProjectRead
 from dispatch.entity_type.models import (
     EntityTypeCreate,
@@ -79,6 +85,5 @@ class EntityReadMinimal(DispatchBase):
     entity_type: Optional[EntityTypeReadMinimal]
 
 
-class EntityPagination(DispatchBase):
+class EntityPagination(Pagination):
     items: List[EntityRead]
-    total: int

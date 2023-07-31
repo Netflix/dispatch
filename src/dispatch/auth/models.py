@@ -21,7 +21,7 @@ from dispatch.config import (
 )
 from dispatch.database.core import Base
 from dispatch.enums import UserRoles
-from dispatch.models import OrganizationSlug, PrimaryKey, TimeStampMixin, DispatchBase
+from dispatch.models import OrganizationSlug, PrimaryKey, TimeStampMixin, DispatchBase, Pagination
 from dispatch.organization.models import Organization, OrganizationRead
 from dispatch.project.models import Project, ProjectRead
 
@@ -187,6 +187,5 @@ class UserRegisterResponse(DispatchBase):
     token: Optional[str] = Field(None, nullable=True)
 
 
-class UserPagination(DispatchBase):
-    total: int
+class UserPagination(Pagination):
     items: List[UserRead] = []
