@@ -28,7 +28,14 @@ from dispatch.event.models import EventRead
 from dispatch.group.models import Group, GroupRead
 from dispatch.incident.models import IncidentReadMinimal
 from dispatch.messaging.strings import CASE_RESOLUTION_DEFAULT
-from dispatch.models import DispatchBase, NameStr, PrimaryKey, ProjectMixin, TimeStampMixin, Pagination
+from dispatch.models import (
+    DispatchBase,
+    NameStr,
+    PrimaryKey,
+    ProjectMixin,
+    TimeStampMixin,
+    Pagination,
+)
 from dispatch.participant.models import (
     Participant,
     ParticipantRead,
