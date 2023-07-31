@@ -452,10 +452,11 @@ def case_new_status_flow(case: Case, db_session=None):
 
 def case_triage_status_flow(case: Case, db_session=None):
     """Runs the case triage transition flow."""
-    # we set the triage_at time
-    case.triage_at = datetime.utcnow()
-    db_session.add(case)
-    db_session.commit()
+    # we set the triage_at time during transitions if not already set
+    if not case.triage_at:
+        case.triage_at = datetime.utcnow()
+        db_session.add(case)
+        db_session.commit()
 
 
 def case_escalated_status_flow(case: Case, organization_slug: OrganizationSlug, db_session=None):
