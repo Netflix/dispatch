@@ -1,7 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
-from dispatch.auth.permissions import PermissionsDependency, SensitiveProjectActionPermission
+from dispatch.auth.permissions import (
+    PermissionsDependency,
+    SensitiveProjectActionPermission,
+    IndividualContactUpdatePermission,
+)
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.exceptions import ExistsError
@@ -62,7 +66,7 @@ def create_individual(db_session: DbSession, individual_contact_in: IndividualCo
     "/{individual_contact_id}",
     response_model=IndividualContactRead,
     summary="Updates an individual's contact information.",
-    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+    dependencies=[Depends(PermissionsDependency([IndividualContactUpdatePermission]))],
 )
 def update_individual(
     db_session: DbSession,

@@ -7,7 +7,16 @@
 import logging
 from typing import Any, List, Optional
 
-from blockkit import Actions, Button, Context, Divider, MarkdownText, Section
+from blockkit import (
+    Actions,
+    Button,
+    Context,
+    Divider,
+    MarkdownText,
+    Section,
+    StaticSelect,
+    PlainOption,
+)
 from slack_sdk.web.client import WebClient
 from slack_sdk.errors import SlackApiError
 
@@ -219,6 +228,28 @@ def default_notification(items: list):
 
                     elements.append(element)
             blocks.append(Actions(elements=elements))
+
+        if select := item.get("select"):
+            options = []
+            for option in select["options"]:
+                element = PlainOption(text=option["option_text"], value=option["option_value"])
+                options.append(element)
+
+            static_select = []
+            if select.get("placeholder"):
+                static_select.append(
+                    StaticSelect(
+                        placeholder=select["placeholder"],
+                        options=options,
+                        action_id=select["select_action"],
+                    )
+                )
+            else:
+                static_select.append(
+                    StaticSelect(options=options, action_id=select["select_action"])
+                )
+            blocks.append(Actions(elements=static_select))
+
     return blocks
 
 
@@ -236,7 +267,6 @@ def create_message_blocks(
         items.append(kwargs)  # combine items and kwargs
 
     template_func, description = get_template(message_type)
-
     blocks = []
     if description:  # include optional description text (based on message type)
         blocks.append(Section(text=description))

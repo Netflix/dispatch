@@ -3,7 +3,7 @@
     <v-card class="mx-auto ma-4" max-width="600" flat outlined :loading="loading">
       <v-card-text>
         <p class="display-1 text--primary">
-          Report Issue
+          Open a Case
           <v-tooltip bottom>
             <template v-slot:activator="{ on }">
               <v-btn icon v-on="on" @click="copyView"><v-icon>mdi-content-copy</v-icon></v-btn>
@@ -12,11 +12,13 @@
           </v-tooltip>
         </p>
         <p>
-          If you suspect a security issue and need help, please fill out this form to the best of
-          your abilities.
+          Cases are meant to triage events that do not raise to the level of incidents, but can be
+          escalated to incidents if necessary. If you suspect a security issue and need help, please
+          fill out this form to the best of your abilities.
         </p>
         <p v-if="project_faq">
-          If you have additional questions, please check out the following FAQ document:
+          If you have additional questions, such as whether to open a case or report an incident,
+          please check out the following FAQ document:
           <a :href="project_faq.weblink" target="_blank" style="text-decoration: none">
             {{ project_faq.name }}
             <v-icon small>open_in_new</v-icon>

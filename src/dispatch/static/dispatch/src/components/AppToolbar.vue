@@ -64,12 +64,25 @@
               </v-list-item-icon>
             </v-list-item-action>
           </v-list-item>
+          <v-list-item v-if="currentVersion()" @click="showCommitMessage">
+            <v-list-item-title>
+              Current version: {{ currentVersion() | formatHash }}
+            </v-list-item-title>
+            <v-list-item-action>
+              <v-list-item-icon>
+                <v-icon small>read_more</v-icon>
+              </v-list-item-icon>
+            </v-list-item-action>
+          </v-list-item>
         </v-list>
       </v-menu>
       <v-menu offset-y>
         <template v-slot:activator="{ on }">
           <v-btn icon large text v-on="on">
-            <v-avatar size="30px">
+            <v-avatar size="30px" v-if="userAvatarUrl(currentUser())">
+              <v-img :src="userAvatarUrl(currentUser())"></v-img>
+            </v-avatar>
+            <v-avatar size="30px" v-else>
               <v-icon> account_circle </v-icon>
             </v-avatar>
           </v-btn>
@@ -77,7 +90,10 @@
         <v-card width="400">
           <v-list>
             <v-list-item class="px-2">
-              <v-list-item-avatar>
+              <v-list-item-avatar v-if="userAvatarUrl(currentUser())">
+                <v-img :src="userAvatarUrl(currentUser())"></v-img>
+              </v-list-item-avatar>
+              <v-list-item-avatar v-else>
                 <v-icon size="30px"> account_circle </v-icon>
               </v-list-item-avatar>
               <v-list-item-content>
@@ -137,7 +153,7 @@
   </v-app-bar>
 </template>
 <script>
-import { mapActions, mapMutations, mapState } from "vuex"
+import { mapActions, mapGetters, mapMutations, mapState } from "vuex"
 
 import Util from "@/util"
 import OrganizationApi from "@/organization/api"
@@ -147,6 +163,7 @@ export default {
   name: "AppToolbar",
   data: () => ({
     organizations: [],
+    query: "",
   }),
   components: {
     OrganizationCreateEditDialog,
@@ -155,6 +172,7 @@ export default {
     queryString: {
       set(query) {
         this.$store.dispatch("search/setQuery", query)
+        this.query = query
       },
       get() {
         return this.$store.state.query.q
@@ -169,8 +187,9 @@ export default {
       Util.toggleFullScreen()
     },
     performSearch() {
+      let query = this.query
       this.$store.dispatch("search/getResults", this.$store.state.query)
-      this.$router.push({ name: "GlobalSearch" })
+      this.$router.push({ name: "ResultList", query: { q: query } })
     },
     toggleDarkTheme() {
       this.$vuetify.theme.dark = !this.$vuetify.theme.dark
@@ -181,11 +200,14 @@ export default {
         this.$router.go()
       })
     },
-    ...mapState("auth", ["currentUser", "userAvatarUrl"]),
+    ...mapState("auth", ["currentUser"]),
+    ...mapState("app", ["currentVersion"]),
     ...mapActions("auth", ["logout"]),
     ...mapActions("search", ["setQuery"]),
     ...mapActions("organization", ["showCreateEditDialog"]),
+    ...mapActions("app", ["showCommitMessage"]),
     ...mapMutations("search", ["SET_QUERY"]),
+    ...mapGetters("auth", ["userAvatarUrl"]),
   },
 
   created() {

@@ -92,9 +92,19 @@ def get_incident_participants(
 def reactivate_incident_participants(incident: Incident, db_session: Session):
     """Reactivates all incident participants."""
     for participant in incident.participants:
-        incident_add_or_reactivate_participant_flow(
-            participant.individual.email, incident.id, db_session=db_session
-        )
+        try:
+            incident_add_or_reactivate_participant_flow(
+                participant.individual.email, incident.id, db_session=db_session
+            )
+        except Exception as e:
+            # don't fail to reactivate all participants if one fails
+            event_service.log_incident_event(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description=f"Unable to reactivate participant with email {participant.individual.email}",
+                incident_id=incident.id,
+            )
+            log.exception(e)
 
     event_service.log_incident_event(
         db_session=db_session,
@@ -107,7 +117,19 @@ def reactivate_incident_participants(incident: Incident, db_session: Session):
 def inactivate_incident_participants(incident: Incident, db_session: Session):
     """Inactivates all incident participants."""
     for participant in incident.participants:
-        participant_flows.inactivate_participant(participant.individual.email, incident, db_session)
+        try:
+            participant_flows.inactivate_participant(
+                participant.individual.email, incident, db_session
+            )
+        except Exception as e:
+            # don't fail to inactivate all participants if one fails
+            event_service.log_incident_event(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description=f"Unable to inactivate participant with email {participant.individual.email}",
+                incident_id=incident.id,
+            )
+            log.exception(e)
 
     event_service.log_incident_event(
         db_session=db_session,

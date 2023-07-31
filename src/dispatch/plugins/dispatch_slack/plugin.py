@@ -124,7 +124,7 @@ class SlackConversationPlugin(ConversationPlugin):
         blocks = create_signal_engagement_message(
             case=case,
             channel_id=conversation_id,
-            user=user,
+            user_email=user.email,
             engagement=engagement,
             signal_instance=signal_instance,
             engagement_status=engagement_status,

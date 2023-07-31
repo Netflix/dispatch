@@ -5,6 +5,12 @@ import moment from "moment-timezone"
 const time_format = "YYYY-MM-DD HH:mm:ss"
 const zones_to_show = ["America/Los_Angeles", "America/New_York"]
 
+Vue.filter("formatHash", function (value) {
+  if (value) {
+    return value.slice(0, 7)
+  }
+})
+
 Vue.filter("formatDate", function (value) {
   if (value) {
     return formatISO(parseISO(value))
@@ -152,12 +158,17 @@ Vue.filter("commaString", function (value, key) {
 
 export const activeRoles = function (value) {
   if (value) {
-    return value
+    let active_roles = value
       .filter((role) => !role.renounced_at)
       .map(function (role) {
         return role.role
       })
       .join(", ")
+    if (active_roles) {
+      return active_roles
+    } else {
+      return "Inactive"
+    }
   }
 }
 

@@ -1,5 +1,6 @@
 import logging
-from datetime import datetime
+import uuid
+from datetime import datetime, timedelta
 from typing import Any
 
 import pytz
@@ -22,7 +23,6 @@ from blockkit import (
 from slack_bolt import Ack, BoltContext, BoltRequest, Respond
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
-from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
@@ -41,7 +41,6 @@ from dispatch.individual import service as individual_service
 from dispatch.individual.models import IndividualContactRead
 from dispatch.monitor import service as monitor_service
 from dispatch.monitor.models import MonitorCreate
-from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
 from dispatch.participant_role import service as participant_role_service
@@ -81,6 +80,7 @@ from dispatch.plugins.dispatch_slack.incident.enums import (
     IncidentUpdateActions,
     LinkMonitorActionIds,
     LinkMonitorBlockIds,
+    RemindAgainActions,
     ReportExecutiveActions,
     ReportExecutiveBlockIds,
     ReportTacticalActions,
@@ -105,6 +105,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     restricted_command_middleware,
     subject_middleware,
     user_middleware,
+    select_context_middleware,
 )
 from dispatch.plugins.dispatch_slack.modals.common import send_success_modal
 from dispatch.plugins.dispatch_slack.models import MonitorMetadata, TaskMetadata
@@ -119,11 +120,12 @@ from dispatch.report.enums import ReportTypes
 from dispatch.report.models import ExecutiveReportCreate, TacticalReportCreate
 from dispatch.service import service as service_service
 from dispatch.tag import service as tag_service
-from dispatch.tag.models import Tag
 from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
 from dispatch.task.models import Task
 from dispatch.ticket import flows as ticket_flows
+from dispatch.messaging.strings import reminder_select_values
+from dispatch.plugins.dispatch_slack.messaging import build_unexpected_error_message
 
 log = logging.getLogger(__file__)
 
@@ -804,30 +806,6 @@ def handle_thread_creation(
             thread_ts=payload["thread_ts"],
             user=payload["user"],
         )
-
-
-@message_dispatcher.add(subject="incident")
-def handle_message_tagging(
-    ack: Ack, db_session: Session, payload: dict, context: BoltContext
-) -> None:
-    """Looks for incident tags in incident messages."""
-    ack()
-    text = payload["text"]
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
-    tags = tag_service.get_all(db_session=db_session, project_id=incident.project.id).all()
-    tag_strings = [t.name.lower() for t in tags if t.discoverable]
-    phrases = build_term_vocab(tag_strings)
-    matcher = build_phrase_matcher("dispatch-tag", phrases)
-    extracted_tags = list(set(extract_terms_from_text(text, matcher)))
-
-    matched_tags = (
-        db_session.query(Tag)
-        .filter(func.upper(Tag.name).in_([func.upper(t) for t in extracted_tags]))
-        .all()
-    )
-
-    incident.tags.extend(matched_tags)
-    db_session.commit()
 
 
 @message_dispatcher.add(subject="incident")
@@ -2305,3 +2283,51 @@ def handle_update_task_status_button_click(
         view_id=body["view"]["id"],
         tasks=tasks,
     )
+
+
+@app.action(RemindAgainActions.submit, middleware=[select_context_middleware, db_middleware])
+def handle_remind_again_select_action(
+    ack: Ack,
+    body: dict,
+    context: BoltContext,
+    db_session: Session,
+    respond: Respond,
+    user: DispatchUser,
+) -> None:
+    """Handles remind again select event."""
+    ack()
+    try:
+        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+
+        # User-selected option as org-id-report_type-delay
+        value = body["actions"][0]["selected_option"]["value"]
+
+        # Parse out report type and selected delay
+        *_, report_type, selection = value.split("-")
+        selection_as_message = reminder_select_values[selection]["message"]
+        hours = reminder_select_values[selection]["value"]
+
+        # Get new remind time
+        delay_to_time = datetime.utcnow() + timedelta(hours=hours)
+
+        # Store in incident
+        if report_type == ReportTypes.tactical_report:
+            incident.delay_tactical_report_reminder = delay_to_time
+        elif report_type == ReportTypes.executive_report:
+            incident.delay_executive_report_reminder = delay_to_time
+
+        db_session.add(incident)
+        db_session.commit()
+
+        message = f"Success! We'll remind you again in {selection_as_message}."
+        respond(
+            text=message, response_type="ephemeral", replace_original=False, delete_original=False
+        )
+    except Exception as e:
+        guid = str(uuid.uuid4())
+        log.error(f"ERROR trying to save reminder delay with guid {guid}.")
+        log.exception(e)
+        message = build_unexpected_error_message(guid)
+        respond(
+            text=message, response_type="ephemeral", replace_original=False, delete_original=False
+        )

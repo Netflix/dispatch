@@ -203,9 +203,24 @@ const mutations = {
 
 const getters = {
   getField,
-  userAvatarURL: (state) => {
-    if (state.currentUser.userId) {
-      return `${window.location.protocol}//${window.location.host}/avatar/${state.currentUser.userId}/${state.currentUser.userId}.json`
+  userAvatarUrl: (state) => {
+    try {
+      const email = state.currentUser.email || ""
+      const userId = email.split("@")[0]
+      if (userId) {
+        const loc = `${window.location.protocol}//${window.location.host}/avatar/${userId}/32x32.jpg`
+        const response = fetch(loc)
+        // fetch synchronously
+        Promise.all(response)
+          .then(() => {
+            return loc
+          })
+          .catch(() => {
+            // ignore error
+          })
+      }
+    } catch {
+      // ignore error
     }
   },
 }

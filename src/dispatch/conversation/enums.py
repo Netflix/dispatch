@@ -18,3 +18,4 @@ class ConversationButtonActions(DispatchEnum):
     feedback_notification_provide = "feedback-notification-provide"
     update_task_status = "update-task-status"
     monitor_link = "monitor-link"
+    remind_again = "remind-again"
