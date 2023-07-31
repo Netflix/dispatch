@@ -24,9 +24,9 @@ from dispatch.auth.models import DispatchUser
 from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
 from dispatch.case.enums import CaseStatus
-from dispatch.case.models import Case, CaseCreate, CaseUpdate
-from dispatch.enums import UserRoles
+from dispatch.case.models import Case, CaseCreate, CaseRead, CaseUpdate
 from dispatch.entity import service as entity_service
+from dispatch.enums import UserRoles
 from dispatch.exceptions import ExistsError
 from dispatch.incident import flows as incident_flows
 from dispatch.individual.models import IndividualContactRead
@@ -692,7 +692,7 @@ def handle_snooze_submission_event(
 
     # Check if last_mfa_time was within the last hour
     last_hour = datetime.now() - timedelta(hours=1)
-    if (user.last_mfa_time and user.last_mfa_time < last_hour) or mfa_enabled is False:
+    if (user.last_mfa_time and user.last_mfa_time > last_hour) or mfa_enabled is False:
         _create_snooze_filter(
             db_session=db_session,
             user=user,
@@ -726,11 +726,13 @@ def handle_snooze_submission_event(
             user.last_mfa_time = datetime.now()
             db_session.commit()
         else:
-            text = (
-                "Adding Snooze failed, the MFA request timed out."
-                if response == PushResponseResult.timeout
-                else "Adding Snooze failed, you must accept the MFA prompt."
-            )
+            if response == PushResponseResult.timeout:
+                text = "Adding Snooze failed, the MFA request timed out."
+            elif response == PushResponseResult.user_not_found:
+                text = "Adding Snooze failed, user not found in MFA provider."
+            else:
+                text = "Adding Snooze failed, you must accept the MFA prompt."
+
             modal = Modal(
                 title="Add Snooze",
                 close="Close",
@@ -747,7 +749,7 @@ def assignee_select(
     placeholder: str = "Select Assignee",
     initial_user: str = None,
     action_id: str = None,
-    block_id: str = None,
+    block_id: str = DefaultBlockIds.case_assignee_select,
     label: str = "Assignee",
     **kwargs,
 ):
@@ -1143,6 +1145,7 @@ def handle_edit_submission_event(
 ):
     ack()
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    previous_case = CaseRead.from_orm(case)
 
     case_priority = None
     if form_data.get(DefaultBlockIds.case_priority_select):
@@ -1151,6 +1154,11 @@ def handle_edit_submission_event(
     case_type = None
     if form_data.get(DefaultBlockIds.case_type_select):
         case_type = {"name": form_data[DefaultBlockIds.case_type_select]["name"]}
+
+    if form_data.get(DefaultBlockIds.case_assignee_select):
+        assignee_email = client.users_info(
+            user=form_data[DefaultBlockIds.case_assignee_select]["value"]
+        )["user"]["profile"]["email"]
 
     case_in = CaseUpdate(
         title=form_data[DefaultBlockIds.title_input],
@@ -1164,10 +1172,16 @@ def handle_edit_submission_event(
     )
 
     case = case_service.update(db_session=db_session, case=case, case_in=case_in, current_user=user)
-    blocks = create_case_message(case=case, channel_id=context["subject"].channel_id)
-    client.chat_update(
-        blocks=blocks, ts=case.conversation.thread_id, channel=case.conversation.channel_id
+    case_flows.case_update_flow(
+        case_id=case.id,
+        previous_case=previous_case,
+        db_session=db_session,
+        assignee_email=assignee_email,
+        user_email=user.email,
+        organization_slug=context["subject"].organization_slug,
     )
+
+    return case
 
 
 @app.action(CaseNotificationActions.resolve, middleware=[button_context_middleware, db_middleware])
