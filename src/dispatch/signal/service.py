@@ -211,7 +211,7 @@ def get(*, db_session: Session, signal_id: int) -> Optional[Signal]:
     """Gets a signal by id or external_id."""
     signal = db_session.query(Signal).filter(Signal.id == signal_id).one_or_none()
     if not signal:
-        signal = db_session(Signal).filter(Signal.external_id == signal_id).one_or_none()
+        signal = db_session.query(Signal).filter(Signal.external_id == signal_id).one_or_none()
     return signal
 
 
