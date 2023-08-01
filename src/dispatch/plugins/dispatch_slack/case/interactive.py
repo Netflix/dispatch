@@ -94,9 +94,7 @@ from dispatch.signal.enums import SignalEngagementStatus
 from dispatch.signal.models import (
     SignalEngagement,
     SignalFilterCreate,
-    SignalFilterRead,
     SignalInstance,
-    SignalUpdate,
 )
 
 
@@ -679,16 +677,8 @@ def handle_snooze_submission_event(
         except IntegrityError:
             raise ExistsError("A signal filter with this name already exists.") from None
 
-        signal_in = SignalUpdate(
-            id=signal.id,
-            name=signal.name,
-            owner=signal.owner,
-            external_id=signal.external_id,
-            project=project,
-            filters=[SignalFilterRead.from_orm(new_filter)],
-        )
-
-        signal = signal_service.update(db_session=db_session, signal=signal, signal_in=signal_in)
+        signal.filters.append(new_filter)
+        db_session.commit()
 
     # Check if last_mfa_time was within the last hour
     last_hour = datetime.now() - timedelta(hours=1)
