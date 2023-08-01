@@ -16,6 +16,8 @@ const getDefaultSelectedState = () => {
   }
 }
 
+const avatarTemplate = import.meta.env.VITE_DISPATCH_AVATAR_TEMPLATE
+
 const state = {
   currentUser: {
     loggedIn: false,
@@ -204,23 +206,15 @@ const mutations = {
 const getters = {
   getField,
   userAvatarUrl: (state) => {
-    try {
-      const email = state.currentUser.email || ""
-      const userId = email.split("@")[0]
-      if (userId) {
-        const loc = `${window.location.protocol}//${window.location.host}/avatar/${userId}/32x32.jpg`
-        const response = fetch(loc)
-        // fetch synchronously
-        Promise.all(response)
-          .then(() => {
-            return loc
-          })
-          .catch(() => {
-            // ignore error
-          })
-      }
-    } catch {
-      // ignore error
+    if (!avatarTemplate) return ""
+    const email = state.currentUser.email || ""
+    const userId = email.split("@")[0]
+    if (userId) {
+      // to use avatar template, store in .env file and
+      // put * as a placeholder for the userid
+      const stem = avatarTemplate.replace("*", userId)
+      const loc = `${window.location.protocol}//${window.location.host}${stem}`
+      return loc
     }
   },
 }
