@@ -1851,7 +1851,9 @@ def handle_update_incident_submission_event(
     )
 
 
-@app.shortcut(IncidentShortcutCallbacks.report, middleware=[db_middleware, shortcut_context_middleware])
+@app.shortcut(
+    IncidentShortcutCallbacks.report, middleware=[db_middleware, shortcut_context_middleware]
+)
 def report_incident(
     ack: Ack,
     body: dict,
