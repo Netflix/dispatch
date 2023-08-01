@@ -315,3 +315,7 @@ class CaseUpdate(CaseBase):
 
 class CasePagination(Pagination):
     items: List[CaseReadMinimal] = []
+
+
+class CaseExpandedPagination(Pagination):
+    items: List[CaseRead] = []
