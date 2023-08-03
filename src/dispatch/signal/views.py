@@ -1,4 +1,5 @@
 import logging
+from typing import Union
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response, status, Depends
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
@@ -256,7 +257,7 @@ def get_signals(common: CommonParameters):
 
 
 @router.get("/{signal_id}", response_model=SignalRead)
-def get_signal(db_session: DbSession, signal_id: PrimaryKey):
+def get_signal(db_session: DbSession, signal_id: Union[str, PrimaryKey]):
     """Gets a signal by its id."""
     signal = get(db_session=db_session, signal_id=signal_id)
     if not signal:
