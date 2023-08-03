@@ -18,7 +18,6 @@ from dispatch.service import service as service_service
 from dispatch.tag import service as tag_service
 from dispatch.workflow import service as workflow_service
 from dispatch.entity.models import Entity
-from dispatch.models import PrimaryKey
 
 from .models import (
     Signal,
