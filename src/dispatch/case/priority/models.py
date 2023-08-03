@@ -8,7 +8,7 @@ from sqlalchemy.event import listen
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base, ensure_unique_default_per_project
-from dispatch.models import DispatchBase, NameStr, ProjectMixin, PrimaryKey
+from dispatch.models import DispatchBase, NameStr, ProjectMixin, PrimaryKey, Pagination
 from dispatch.project.models import ProjectRead
 
 
@@ -53,9 +53,8 @@ class CasePriorityUpdate(CasePriorityBase):
 
 
 class CasePriorityRead(CasePriorityBase):
-    id: PrimaryKey
+    id: Optional[PrimaryKey]
 
 
-class CasePriorityPagination(DispatchBase):
-    total: int
+class CasePriorityPagination(Pagination):
     items: List[CasePriorityRead] = []

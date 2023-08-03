@@ -20,7 +20,13 @@ from sqlalchemy import UniqueConstraint
 
 from sqlalchemy_utils import TSVectorType
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin, PrimaryKey
+from dispatch.models import (
+    DispatchBase,
+    ProjectMixin,
+    Pagination,
+    TimeStampMixin,
+    PrimaryKey,
+)
 from dispatch.project.models import ProjectRead
 from dispatch.data.source.environment.models import SourceEnvironmentRead
 from dispatch.data.source.data_format.models import SourceDataFormatRead
@@ -143,6 +149,5 @@ class SourceRead(SourceBase):
     id: PrimaryKey
 
 
-class SourcePagination(DispatchBase):
+class SourcePagination(Pagination):
     items: List[SourceRead]
-    total: int

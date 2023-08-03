@@ -1,4 +1,4 @@
-FROM python:3.11.3-slim-buster as sdist
+FROM python:3.11.4-slim-buster as sdist
 
 LABEL maintainer="oss@netflix.com"
 LABEL org.opencontainers.image.title="Dispatch PyPI Wheel"
@@ -39,6 +39,13 @@ ARG VITE_SENTRY_DSN
 ARG VITE_SENTRY_APP_KEY
 ARG VITE_SENTRY_ENABLED
 
+# Should be replaced in your build process script
+ARG VITE_DISPATCH_COMMIT_HASH
+ENV VITE_DISPATCH_COMMIT_HASH="Unknown"
+
+ARG VITE_DISPATCH_COMMIT_MESSAGE
+ENV VITE_DISPATCH_COMMIT_MESSAGE="Unknown"
+
 COPY . /usr/src/dispatch/
 RUN export YARN_CACHE_FOLDER="$(mktemp -d)" \
     && cd /usr/src/dispatch \
@@ -47,7 +54,7 @@ RUN export YARN_CACHE_FOLDER="$(mktemp -d)" \
     && mv /usr/src/dispatch/dist /dist
 
 # This is the image to be run
-FROM python:3.11.3-slim-buster
+FROM python:3.11.4-slim-buster
 
 LABEL maintainer="oss@dispatch.io"
 LABEL org.opencontainers.image.title="Dispatch"

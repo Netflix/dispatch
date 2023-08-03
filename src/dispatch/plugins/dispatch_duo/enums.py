@@ -7,3 +7,4 @@ class PushResponseResult(DispatchEnum):
     fraud = "fraud"
     failed = "push_failed"
     timeout = "timeout"
+    user_not_found = "user_not_found"

@@ -389,7 +389,7 @@ def case_update_flow(
     # we update the ticket
     ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
-    if case.status in [CaseStatus.escalated, CaseStatus.closed]:
+    if case.status in [CaseStatus.escalated, CaseStatus.closed] and case.case_document:
         # we update the document
         document_flows.update_document(
             document=case.case_document, project_id=case.project.id, db_session=db_session
@@ -452,10 +452,11 @@ def case_new_status_flow(case: Case, db_session=None):
 
 def case_triage_status_flow(case: Case, db_session=None):
     """Runs the case triage transition flow."""
-    # we set the triage_at time
-    case.triage_at = datetime.utcnow()
-    db_session.add(case)
-    db_session.commit()
+    # we set the triage_at time during transitions if not already set
+    if not case.triage_at:
+        case.triage_at = datetime.utcnow()
+        db_session.add(case)
+        db_session.commit()
 
 
 def case_escalated_status_flow(case: Case, organization_slug: OrganizationSlug, db_session=None):

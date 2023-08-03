@@ -36,7 +36,14 @@ from dispatch.incident.type.models import (
 )
 from dispatch.incident_cost.models import IncidentCostRead, IncidentCostUpdate
 from dispatch.messaging.strings import INCIDENT_RESOLUTION_DEFAULT
-from dispatch.models import DispatchBase, NameStr, PrimaryKey, ProjectMixin, TimeStampMixin
+from dispatch.models import (
+    DispatchBase,
+    NameStr,
+    PrimaryKey,
+    ProjectMixin,
+    TimeStampMixin,
+    Pagination,
+)
 from dispatch.participant.models import (
     Participant,
     ParticipantRead,
@@ -83,6 +90,8 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     participants_location = Column(String)
     commanders_location = Column(String)
     reporters_location = Column(String)
+    delay_executive_report_reminder = Column(DateTime, nullable=True)
+    delay_tactical_report_reminder = Column(DateTime, nullable=True)
 
     # auto generated
     reported_at = Column(DateTime, default=datetime.utcnow)
@@ -309,6 +318,8 @@ IncidentReadMinimal.update_forward_refs()
 class IncidentUpdate(IncidentBase):
     cases: Optional[List[CaseRead]] = []
     commander: Optional[ParticipantUpdate]
+    delay_executive_report_reminder: Optional[datetime] = None
+    delay_tactical_report_reminder: Optional[datetime] = None
     duplicates: Optional[List[IncidentReadMinimal]] = []
     incident_costs: Optional[List[IncidentCostUpdate]] = []
     incident_priority: IncidentPriorityBase
@@ -345,6 +356,8 @@ class IncidentRead(IncidentBase):
     conference: Optional[ConferenceRead] = None
     conversation: Optional[ConversationRead] = None
     created_at: Optional[datetime] = None
+    delay_executive_report_reminder: Optional[datetime] = None
+    delay_tactical_report_reminder: Optional[datetime] = None
     documents: Optional[List[DocumentRead]] = []
     duplicates: Optional[List[IncidentReadMinimal]] = []
     events: Optional[List[EventRead]] = []
@@ -372,15 +385,11 @@ class IncidentRead(IncidentBase):
     workflow_instances: Optional[List[WorkflowInstanceRead]] = []
 
 
-class IncidentExpandedPagination(DispatchBase):
-    total: int
+class IncidentExpandedPagination(Pagination):
     itemsPerPage: int
     page: int
     items: List[IncidentRead] = []
 
 
-class IncidentPagination(DispatchBase):
-    total: int
-    itemsPerPage: int
-    page: int
+class IncidentPagination(Pagination):
     items: List[IncidentReadMinimal] = []

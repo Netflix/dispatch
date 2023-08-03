@@ -8,17 +8,27 @@ def get(*, db_session, conversation_id: int) -> Optional[Conversation]:
     return db_session.query(Conversation).filter(Conversation.id == conversation_id).one_or_none()
 
 
-def get_by_channel_id_ignoring_channel_type(db_session, channel_id: str) -> Optional[Conversation]:
+def get_by_channel_id_ignoring_channel_type(
+    db_session, channel_id: str, thread_id: str = None
+) -> Optional[Conversation]:
     """
     Gets a conversation by its id ignoring the channel type, and updates the
     channel id in the database if the channel type has changed.
     """
     channel_id_without_type = channel_id[1:]
-    conversation = (
-        db_session.query(Conversation)
-        .filter(Conversation.channel_id.contains(channel_id_without_type))
-        .one_or_none()
-    )
+    if thread_id:
+        conversation = (
+            db_session.query(Conversation)
+            .filter(Conversation.channel_id.contains(channel_id_without_type))
+            .filter(Conversation.thread_id == thread_id)
+            .one_or_none()
+        )
+    else:
+        conversation = (
+            db_session.query(Conversation)
+            .filter(Conversation.channel_id.contains(channel_id_without_type))
+            .one_or_none()
+        )
 
     if conversation:
         if channel_id[0] != conversation.channel_id[0]:

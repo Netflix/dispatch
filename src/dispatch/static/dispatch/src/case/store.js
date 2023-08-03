@@ -24,6 +24,7 @@ const getDefaultSelectedState = () => {
     name: null,
     project: null,
     related: [],
+    reporter: null,
     reported_at: null,
     resolution_reason: null,
     resolution: null,
@@ -35,6 +36,7 @@ const getDefaultSelectedState = () => {
     title: null,
     triage_at: null,
     visibility: null,
+    conversation: null,
     workflow_instances: null,
   }
 }

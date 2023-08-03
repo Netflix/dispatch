@@ -1,3 +1,5 @@
+import logging
+
 from typing import Any, List, Optional
 from pydantic import Field, SecretStr
 from pydantic.json import pydantic_encoder
@@ -13,9 +15,11 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 
 from dispatch.database.core import Base
 from dispatch.config import DISPATCH_ENCRYPTION_KEY
-from dispatch.models import DispatchBase, ProjectMixin, PrimaryKey
+from dispatch.models import DispatchBase, ProjectMixin, Pagination, PrimaryKey
 from dispatch.plugins.base import plugins
 from dispatch.project.models import ProjectRead
+
+logger = logging.getLogger(__name__)
 
 
 def show_secrets_encoder(obj):
@@ -50,8 +54,14 @@ class Plugin(Base):
     @property
     def configuration_schema(self):
         """Renders the plugin's schema to JSON Schema."""
-        plugin = plugins.get(self.slug)
-        return plugin.configuration_schema.schema()
+        try:
+            plugin = plugins.get(self.slug)
+            return plugin.configuration_schema.schema()
+        except Exception as e:
+            logger.warning(
+                f"Error trying to load configuration_schema for plugin with slug {self.slug}: {e}"
+            )
+            return None
 
 
 class PluginInstance(Base, ProjectMixin):
@@ -70,23 +80,47 @@ class PluginInstance(Base, ProjectMixin):
     @property
     def instance(self):
         """Fetches a plugin instance that matches this record."""
-        plugin = plugins.get(self.plugin.slug)
-        plugin.configuration = self.configuration
-        plugin.project_id = self.project_id
-        return plugin
+        try:
+            plugin = plugins.get(self.plugin.slug)
+            plugin.configuration = self.configuration
+            plugin.project_id = self.project_id
+            return plugin
+        except Exception as e:
+            logger.warning(f"Error trying to load plugin with slug {self.slug}: {e}")
+            return self.plugin
+
+    @property
+    def broken(self):
+        try:
+            plugins.get(self.plugin.slug)
+            return False
+        except Exception:
+            return True
 
     @property
     def configuration_schema(self):
         """Renders the plugin's schema to JSON Schema."""
-        plugin = plugins.get(self.plugin.slug)
-        return plugin.configuration_schema.schema()
+        try:
+            plugin = plugins.get(self.plugin.slug)
+            return plugin.configuration_schema.schema()
+        except Exception as e:
+            logger.warning(
+                f"Error trying to load plugin {self.plugin.title} {self.plugin.description} with error {e}"
+            )
+            return None
 
     @hybrid_property
     def configuration(self):
         """Property that correctly returns a plugins configuration object."""
-        if self._configuration:
-            plugin = plugins.get(self.plugin.slug)
-            return plugin.configuration_schema.parse_raw(self._configuration)
+        try:
+            if self._configuration:
+                plugin = plugins.get(self.plugin.slug)
+                return plugin.configuration_schema.parse_raw(self._configuration)
+        except Exception as e:
+            logger.warning(
+                f"Error trying to load plugin {self.plugin.title} {self.plugin.description} with error {e}"
+            )
+            return None
 
     @configuration.setter
     def configuration(self, configuration):
@@ -121,6 +155,16 @@ class PluginInstanceRead(PluginBase):
     configuration_schema: Any
     plugin: PluginRead
     project: Optional[ProjectRead]
+    broken: Optional[bool]
+
+
+class PluginInstanceReadMinimal(PluginBase):
+    id: PrimaryKey
+    enabled: Optional[bool]
+    configuration_schema: Any
+    plugin: PluginRead
+    project: Optional[ProjectRead]
+    broken: Optional[bool]
 
 
 class PluginInstanceCreate(PluginBase):
@@ -146,11 +190,9 @@ class PluginMetadata(DispatchBase):
     metadata: List[KeyValue] = []
 
 
-class PluginPagination(DispatchBase):
-    total: int
+class PluginPagination(Pagination):
     items: List[PluginRead] = []
 
 
-class PluginInstancePagination(DispatchBase):
-    total: int
-    items: List[PluginInstanceRead] = []
+class PluginInstancePagination(Pagination):
+    items: List[PluginInstanceReadMinimal] = []

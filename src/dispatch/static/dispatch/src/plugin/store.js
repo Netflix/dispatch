@@ -10,6 +10,7 @@ const getDefaultSelectedState = () => {
     enabled: null,
     configuration: [],
     configuration_schema: {},
+    broken: false,
     project: null,
     plugin_instance: null,
     plugin: null,
@@ -74,9 +75,22 @@ const actions = {
       })
   }, 500),
   createEditShow({ commit }, plugin) {
+    if (plugin && plugin.broken) {
+      commit(
+        "notification_backend/addBeNotification",
+        {
+          text: "Plugin not installed correctly. Please review the Dispatch logs or contact your Dispatch Administrator",
+          type: "error",
+        },
+        { root: true }
+      )
+      return
+    }
     commit("SET_DIALOG_EDIT", true)
     if (plugin) {
-      commit("SET_SELECTED", plugin)
+      PluginApi.getInstance(plugin.id).then((response) => {
+        commit("SET_SELECTED", response.data)
+      })
     }
   },
   closeCreateEdit({ commit }) {

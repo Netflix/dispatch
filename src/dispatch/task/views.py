@@ -8,6 +8,12 @@ from dispatch.common.utils.views import create_pydantic_include
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
+from .enums import TaskStatus
+from .flows import send_task_notification
+from dispatch.messaging.strings import (
+    INCIDENT_TASK_NEW_NOTIFICATION,
+    INCIDENT_TASK_RESOLVED_NOTIFICATION,
+)
 
 from .models import TaskCreate, TaskUpdate, TaskRead, TaskPagination
 from .service import get, update, create, delete
@@ -44,7 +50,17 @@ def create_task(
 ):
     """Creates a new task."""
     task_in.creator = {"individual": {"email": current_user.email}}
-    return create(db_session=db_session, task_in=task_in)
+    task = create(db_session=db_session, task_in=task_in)
+    send_task_notification(
+        task.incident,
+        INCIDENT_TASK_NEW_NOTIFICATION,
+        task.creator,
+        task.assignees,
+        task.description,
+        task.weblink,
+        db_session,
+    )
+    return task
 
 
 @router.put("/{task_id}", response_model=TaskRead, tags=["tasks"])
@@ -56,7 +72,20 @@ def update_task(db_session: DbSession, task_id: PrimaryKey, task_in: TaskUpdate)
             status_code=status.HTTP_404_NOT_FOUND,
             detail=[{"msg": "A task with this id does not exist."}],
         )
-    return update(db_session=db_session, task=task, task_in=task_in)
+    existing_status = task.status
+    task = update(db_session=db_session, task=task, task_in=task_in)
+    if task.status == TaskStatus.resolved:
+        if existing_status != TaskStatus.resolved:
+            send_task_notification(
+                task.incident,
+                INCIDENT_TASK_RESOLVED_NOTIFICATION,
+                task.creator,
+                task.assignees,
+                task.description,
+                task.weblink,
+                db_session,
+            )
+    return task
 
 
 @router.delete("/{task_id}", response_model=None, tags=["tasks"])

@@ -1,6 +1,6 @@
-from datetime import datetime
 from collections import Counter, defaultdict
-from typing import List, Optional, Any, ForwardRef
+from datetime import datetime
+from typing import Any, ForwardRef, List, Optional
 
 from pydantic import validator
 from sqlalchemy import (
@@ -16,28 +16,39 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType, observes
 
-from dispatch.case.priority.models import CasePriorityRead, CasePriorityBase, CasePriorityCreate
-from dispatch.case.severity.models import CaseSeverityBase, CaseSeverityRead, CaseSeverityCreate
-from dispatch.case.type.models import CaseTypeBase, CaseTypeRead, CaseTypeCreate
+from dispatch.case.priority.models import CasePriorityBase, CasePriorityCreate, CasePriorityRead
+from dispatch.case.severity.models import CaseSeverityBase, CaseSeverityCreate, CaseSeverityRead
+from dispatch.case.type.models import CaseTypeBase, CaseTypeCreate, CaseTypeRead
+from dispatch.conversation.models import ConversationRead
 from dispatch.database.core import Base
 from dispatch.document.models import Document, DocumentRead
-from dispatch.enums import Visibility
 from dispatch.entity.models import EntityRead
+from dispatch.enums import Visibility
 from dispatch.event.models import EventRead
 from dispatch.group.models import Group, GroupRead
 from dispatch.incident.models import IncidentReadMinimal
 from dispatch.messaging.strings import CASE_RESOLUTION_DEFAULT
-from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
-from dispatch.models import NameStr, PrimaryKey
-from dispatch.participant.models import Participant
-from dispatch.participant.models import ParticipantRead, ParticipantReadMinimal, ParticipantUpdate
+from dispatch.models import (
+    DispatchBase,
+    NameStr,
+    PrimaryKey,
+    ProjectMixin,
+    TimeStampMixin,
+    Pagination,
+)
+from dispatch.participant.models import (
+    Participant,
+    ParticipantRead,
+    ParticipantReadMinimal,
+    ParticipantUpdate,
+)
+
 from dispatch.storage.models import StorageRead
 from dispatch.tag.models import TagRead
 from dispatch.ticket.models import TicketRead
 from dispatch.workflow.models import WorkflowInstanceRead
 
-from .enums import CaseStatus, CaseResolutionReason
-
+from .enums import CaseResolutionReason, CaseStatus
 
 # Assoc table for case and tags
 assoc_case_tags = Table(
@@ -87,6 +98,11 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     assignee_id = Column(Integer, ForeignKey("participant.id", ondelete="CASCADE"))
     assignee = relationship(
         Participant, foreign_keys=[assignee_id], lazy="subquery", post_update=True
+    )
+
+    reporter_id = Column(Integer, ForeignKey("participant.id", ondelete="CASCADE"))
+    reporter = relationship(
+        Participant, foreign_keys=[reporter_id], lazy="subquery", post_update=True
     )
 
     case_type = relationship("CaseType", backref="case")
@@ -229,6 +245,7 @@ class CaseReadMinimal(CaseBase):
     escalated_at: Optional[datetime] = None
     name: Optional[NameStr]
     project: ProjectRead
+    reporter: Optional[ParticipantReadMinimal]
     reported_at: Optional[datetime] = None
     triage_at: Optional[datetime] = None
 
@@ -250,9 +267,11 @@ class CaseRead(CaseBase):
     events: Optional[List[EventRead]] = []
     groups: Optional[List[GroupRead]] = []
     incidents: Optional[List[IncidentReadMinimal]] = []
+    conversation: Optional[ConversationRead] = None
     name: Optional[NameStr]
     project: ProjectRead
     related: Optional[List[CaseReadMinimal]] = []
+    reporter: Optional[ParticipantRead]
     reported_at: Optional[datetime] = None
     participants: Optional[List[ParticipantRead]] = []
     signal_instances: Optional[List[SignalInstanceRead]] = []
@@ -270,6 +289,7 @@ class CaseUpdate(CaseBase):
     case_type: Optional[CaseTypeBase]
     duplicates: Optional[List[CaseRead]] = []
     related: Optional[List[CaseRead]] = []
+    reporter: Optional[ParticipantUpdate]
     escalated_at: Optional[datetime] = None
     incidents: Optional[List[IncidentReadMinimal]] = []
     reported_at: Optional[datetime] = None
@@ -293,8 +313,9 @@ class CaseUpdate(CaseBase):
         return v
 
 
-class CasePagination(DispatchBase):
+class CasePagination(Pagination):
     items: List[CaseReadMinimal] = []
-    itemsPerPage: int
-    page: int
-    total: int
+
+
+class CaseExpandedPagination(Pagination):
+    items: List[CaseRead] = []

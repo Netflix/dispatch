@@ -9,7 +9,8 @@ from dispatch.metrics import provider as metrics_provider
 from dispatch.organization import service as organization_service
 from dispatch.project import service as project_service
 
-from .database.core import SessionLocal, engine, sessionmaker
+from .database.core import engine, sessionmaker
+from sqlalchemy.orm import scoped_session
 
 
 log = logging.getLogger(__name__)
@@ -25,7 +26,9 @@ def _execute_task_in_project_context(
     *args,
     **kwargs,
 ) -> None:
-    db_session = SessionLocal()
+    CoreSession = scoped_session(sessionmaker(bind=engine))
+    db_session = CoreSession()
+
     metrics_provider.counter("function.call.counter", tags={"function": fullname(func)})
     start = time.perf_counter()
 
@@ -35,16 +38,20 @@ def _execute_task_in_project_context(
             schema_engine = engine.execution_options(
                 schema_translate_map={None: f"dispatch_organization_{organization.slug}"}
             )
-            schema_session = sessionmaker(bind=schema_engine)()
+            OrgSession = scoped_session(sessionmaker(bind=schema_engine))
+            schema_session = OrgSession()
             try:
                 kwargs["db_session"] = schema_session
                 for project in project_service.get_all(db_session=schema_session):
                     kwargs["project"] = project
                     func(*args, **kwargs)
             except Exception as e:
+                log.error(
+                    f"Error trying to execute task: {fullname(func)} with parameters {args} and {kwargs}"
+                )
                 log.exception(e)
             finally:
-                schema_session.close()
+                OrgSession.remove()
 
         elapsed_time = time.perf_counter() - start
         metrics_provider.timer(
@@ -52,9 +59,10 @@ def _execute_task_in_project_context(
         )
     except Exception as e:
         # No rollback necessary as we only read from the database
+        log.error(f"Error trying to execute task: {fullname(func)}")
         log.exception(e)
     finally:
-        db_session.close()
+        CoreSession.remove()
 
 
 def scheduled_project_task(func: Callable):

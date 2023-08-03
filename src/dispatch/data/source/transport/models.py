@@ -11,7 +11,7 @@ from sqlalchemy import UniqueConstraint
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, ProjectMixin, PrimaryKey
+from dispatch.models import DispatchBase, ProjectMixin, Pagination, PrimaryKey
 from dispatch.project.models import ProjectRead
 
 
@@ -41,6 +41,5 @@ class SourceTransportUpdate(SourceTransportBase):
     id: PrimaryKey
 
 
-class SourceTransportPagination(DispatchBase):
+class SourceTransportPagination(Pagination):
     items: List[SourceTransportRead]
-    total: int

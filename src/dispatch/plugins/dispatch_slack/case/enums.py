@@ -7,11 +7,16 @@ class CaseNotificationActions(DispatchEnum):
     join_incident = "case-notification-join-incident"
     reopen = "case-notification-reopen"
     resolve = "case-notification-resolve"
+    triage = "case-notification-triage"
 
 
 class CasePaginateActions(DispatchEnum):
     list_signal_next = "case-list-signal-next"
     list_signal_previous = "case-list-signal-previous"
+
+
+class CaseEditActions(DispatchEnum):
+    submit = "case-notification-edit-submit"
 
 
 class CaseResolveActions(DispatchEnum):

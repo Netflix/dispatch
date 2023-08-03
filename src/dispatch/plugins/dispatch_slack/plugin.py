@@ -38,6 +38,7 @@ from .service import (
     conversation_archived,
     create_conversation,
     create_slack_client,
+    does_user_exist,
     get_user_avatar_url,
     get_user_profile_by_email,
     rename_conversation,
@@ -109,10 +110,21 @@ class SlackConversationPlugin(ConversationPlugin):
     ):
         """Creates a new engagement message."""
         client = create_slack_client(self.configuration)
+        if not does_user_exist(client=client, email=user.email):
+            not_found_msg = (
+                f"Unable to engage user ({user.email}). Not found in current slack workspace."
+            )
+            return send_message(
+                client=client,
+                conversation_id=conversation_id,
+                text=not_found_msg,
+                ts=thread_id,
+            )
+
         blocks = create_signal_engagement_message(
             case=case,
             channel_id=conversation_id,
-            user=user,
+            user_email=user.email,
             engagement=engagement,
             signal_instance=signal_instance,
             engagement_status=engagement_status,
@@ -226,7 +238,7 @@ class SlackConversationPlugin(ConversationPlugin):
     def add(self, conversation_id: str, participants: List[str]):
         """Adds users to conversation."""
         client = create_slack_client(self.configuration)
-        participants = [resolve_user(client, p)["id"] for p in participants]
+        participants = [resolve_user(client, p)["id"] for p in set(participants)]
 
         archived = conversation_archived(client, conversation_id)
         if not archived:
@@ -235,7 +247,7 @@ class SlackConversationPlugin(ConversationPlugin):
     def add_to_thread(self, conversation_id: str, thread_id: str, participants: List[str]):
         """Adds users to a thread conversation."""
         client = create_slack_client(self.configuration)
-        participants = [resolve_user(client, p)["id"] for p in participants]
+        participants = [resolve_user(client, p)["id"] for p in set(participants)]
         add_users_to_conversation_thread(client, conversation_id, thread_id, participants)
 
     def archive(self, conversation_id: str):

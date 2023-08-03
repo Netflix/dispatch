@@ -45,6 +45,7 @@
             v-model="selected"
             loading-text="Loading... Please wait"
             show-select
+            @click:row="showCaseEditSheet"
           >
             <template v-slot:item.case_severity.name="{ item }">
               <case-severity :severity="item.case_severity.name" />
@@ -226,6 +227,9 @@ export default {
       "showDeleteDialog",
       "showEscalateDialog",
     ]),
+    showCaseEditSheet(item) {
+      this.$router.push({ name: "CaseTableEdit", params: { name: item.name } })
+    },
   },
 
   watch: {

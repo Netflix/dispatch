@@ -39,6 +39,7 @@ from dispatch.models import (
     PrimaryKey,
     ProjectMixin,
     TimeStampMixin,
+    Pagination,
 )
 from dispatch.workflow.models import WorkflowRead
 
@@ -275,9 +276,8 @@ class SignalEngagementRead(SignalEngagementBase):
     id: PrimaryKey
 
 
-class SignalEngagementPagination(DispatchBase):
+class SignalEngagementPagination(Pagination):
     items: List[SignalEngagementRead]
-    total: int
 
 
 class SignalFilterCreate(SignalFilterBase):
@@ -288,9 +288,8 @@ class SignalFilterRead(SignalFilterBase):
     id: PrimaryKey
 
 
-class SignalFilterPagination(DispatchBase):
+class SignalFilterPagination(Pagination):
     items: List[SignalFilterRead]
-    total: int
 
 
 class SignalBase(DispatchBase):
@@ -351,9 +350,8 @@ class SignalReadMinimal(DispatchBase):
     created_at: Optional[datetime] = None
 
 
-class SignalPagination(DispatchBase):
+class SignalPagination(Pagination):
     items: List[SignalRead]
-    total: int
 
 
 class AdditionalMetadata(DispatchBase):
@@ -384,6 +382,5 @@ class SignalInstanceRead(SignalInstanceBase):
     signal: SignalRead
 
 
-class SignalInstancePagination(DispatchBase):
+class SignalInstancePagination(Pagination):
     items: List[SignalInstanceRead]
-    total: int

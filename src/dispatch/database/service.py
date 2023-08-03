@@ -224,7 +224,7 @@ def get_model_class_by_name(registry, name):
 def get_named_models(filters):
     models = []
     for filter in filters:
-        models.append(filter.get_named_models())
+        models.extend(filter.get_named_models())
     return models
 
 
@@ -310,11 +310,12 @@ def apply_filters(query, filter_spec, model_cls=None, do_auto_join=True):
                     The :class:`sqlalchemy.orm.Query` instance after all the filters
                     have been applied.
     """
-    filters = build_filters(filter_spec)
     default_model = get_default_model(query)
     if not default_model:
         default_model = model_cls
-    filter_models = get_named_models(filters)[0]
+
+    filters = build_filters(filter_spec)
+    filter_models = get_named_models(filters)
 
     if do_auto_join:
         query = auto_join(query, filter_models)
@@ -356,7 +357,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (SignalInstance, "EntityType"): (SignalInstance.entities, True),
     }
     filters = build_filters(filter_spec)
-    filter_models = get_named_models(filters)[0]
+    filter_models = get_named_models(filters)
     for filter_model in filter_models:
         if model_map.get((model, filter_model)):
             joined_model, is_outer = model_map[(model, filter_model)]
@@ -391,9 +392,14 @@ def search(*, query_str: str, query: Query, model: str, sort=False):
 
     # determine if we have a name and use it for exact matching
     # TODO we could make the exact match field configurable in the future
+    # Also include searches formatted as "-xxxx" for Jira-created ticket names
     if hasattr(search_model, "name"):
         query = query.filter(
-            or_(vector.op("@@")(func.tsq_parse(query_str)), search_model.name == query_str)
+            or_(
+                vector.op("@@")(func.tsq_parse(query_str)),
+                search_model.name == query_str,
+                vector.op("@@")(f"-{query_str}"),
+            )
         )
     else:
         query = query.filter(vector.op("@@")(func.tsq_parse(query_str)))
@@ -408,7 +414,7 @@ def create_sort_spec(model, sort_by, descending):
     """Creates sort_spec."""
     sort_spec = []
     if sort_by and descending:
-        for field, direction in zip(sort_by, descending):
+        for field, direction in zip(sort_by, descending, strict=False):
             direction = "desc" if direction else "asc"
 
             # we have a complex field, we may need to join
