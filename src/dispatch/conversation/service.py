@@ -26,8 +26,9 @@ def get_by_channel_id_ignoring_channel_type(
             .filter(Conversation.case_id.isnot(None))
             .one_or_none()
         )
+
     # For incidents
-    else:
+    if not conversation:
         conversation = (
             db_session.query(Conversation)
             .filter(Conversation.channel_id.contains(channel_id_without_type))
