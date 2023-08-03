@@ -43,6 +43,7 @@ def feedback_report_daily(db_session: SessionLocal, project: Project):
 @timer
 @scheduled_project_task
 def feedback_oncall_shift_weekly(db_session: SessionLocal, project: Project):
+    """Sends the oncall shift feedback form to active incident commanders each week."""
     incidents = incident_service.get_all_by_status(
         db_session=db_session, status=IncidentStatus.active, project_id=project.id
     )
