@@ -16,13 +16,17 @@ def get_by_channel_id_ignoring_channel_type(
     channel id in the database if the channel type has changed.
     """
     channel_id_without_type = channel_id[1:]
+
+    # For cases
     if thread_id:
         conversation = (
             db_session.query(Conversation)
             .filter(Conversation.channel_id.contains(channel_id_without_type))
             .filter(Conversation.thread_id == thread_id)
+            .filter(Conversation.case_id.isnot(None))
             .one_or_none()
         )
+    # For incidents
     else:
         conversation = (
             db_session.query(Conversation)
