@@ -16,7 +16,7 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.messaging.strings import DOCUMENT_DESCRIPTIONS
-from dispatch.models import DispatchBase, ResourceBase, ProjectMixin, ResourceMixin, EvergreenMixin
+from dispatch.models import ResourceBase, ProjectMixin, ResourceMixin, EvergreenMixin, Pagination
 from dispatch.project.models import ProjectRead
 from dispatch.search_filter.models import SearchFilterRead
 
@@ -73,6 +73,5 @@ class DocumentRead(DocumentBase):
         return v
 
 
-class DocumentPagination(DispatchBase):
-    total: int
+class DocumentPagination(Pagination):
     items: List[DocumentRead] = []

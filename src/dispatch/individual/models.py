@@ -10,7 +10,13 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.database.core import Base
 from dispatch.project.models import ProjectRead
 from dispatch.search_filter.models import SearchFilterRead
-from dispatch.models import ContactBase, ContactMixin, DispatchBase, ProjectMixin, PrimaryKey
+from dispatch.models import (
+    ContactBase,
+    ContactMixin,
+    ProjectMixin,
+    PrimaryKey,
+    Pagination,
+)
 
 # Association tables for many to many relationships
 assoc_individual_filters = Table(
@@ -84,6 +90,5 @@ class IndividualContactReadMinimal(IndividualContactBase):
     updated_at: Optional[datetime] = None
 
 
-class IndividualContactPagination(DispatchBase):
-    total: int
+class IndividualContactPagination(Pagination):
     items: List[IndividualContactRead] = []

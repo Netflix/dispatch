@@ -6,7 +6,13 @@ from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin, PrimaryKey
+from dispatch.models import (
+    DispatchBase,
+    ProjectMixin,
+    Pagination,
+    TimeStampMixin,
+    PrimaryKey,
+)
 from dispatch.project.models import ProjectRead
 from dispatch.data.source.models import SourceRead
 
@@ -65,6 +71,5 @@ class QueryRead(QueryBase):
     id: PrimaryKey
 
 
-class QueryPagination(DispatchBase):
+class QueryPagination(Pagination):
     items: List[QueryRead]
-    total: int

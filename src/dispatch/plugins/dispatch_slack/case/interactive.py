@@ -94,9 +94,7 @@ from dispatch.signal.enums import SignalEngagementStatus
 from dispatch.signal.models import (
     SignalEngagement,
     SignalFilterCreate,
-    SignalFilterRead,
     SignalInstance,
-    SignalUpdate,
 )
 
 
@@ -679,16 +677,8 @@ def handle_snooze_submission_event(
         except IntegrityError:
             raise ExistsError("A signal filter with this name already exists.") from None
 
-        signal_in = SignalUpdate(
-            id=signal.id,
-            name=signal.name,
-            owner=signal.owner,
-            external_id=signal.external_id,
-            project=project,
-            filters=[SignalFilterRead.from_orm(new_filter)],
-        )
-
-        signal = signal_service.update(db_session=db_session, signal=signal, signal_in=signal_in)
+        signal.filters.append(new_filter)
+        db_session.commit()
 
     # Check if last_mfa_time was within the last hour
     last_hour = datetime.now() - timedelta(hours=1)
@@ -823,7 +813,13 @@ def handle_case_participant_role_activity(
             case_id=context["subject"].id, user_email=user.email, db_session=db_session
         )
         participant.user_conversation_id = context["user_id"]
+
+    # if a participant is active mark the case as being in the triaged state
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    if case.status == CaseStatus.new:
+        case.status = CaseStatus.triage
     db_session.commit()
+    case_flows.update_conversation(case, db_session)
 
 
 @message_dispatcher.add(
@@ -1205,6 +1201,17 @@ def resolve_button_click(
         private_metadata=context["subject"].json(),
     ).build()
     client.views_open(trigger_id=body["trigger_id"], view=modal)
+
+
+@app.action(CaseNotificationActions.triage, middleware=[button_context_middleware, db_middleware])
+def triage_button_click(
+    ack: Ack, body: dict, db_session: Session, context: BoltContext, client: WebClient
+):
+    ack()
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    case.status = CaseStatus.triage
+    db_session.commit()
+    case_flows.update_conversation(case, db_session)
 
 
 @app.view(

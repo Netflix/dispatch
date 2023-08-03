@@ -9,7 +9,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, NameStr, PrimaryKey
+from dispatch.models import DispatchBase, NameStr, PrimaryKey, Pagination
 
 from dispatch.organization.models import Organization, OrganizationRead
 
@@ -68,6 +68,5 @@ class ProjectRead(ProjectBase):
     id: Optional[PrimaryKey]
 
 
-class ProjectPagination(DispatchBase):
-    total: int
+class ProjectPagination(Pagination):
     items: List[ProjectRead] = []
