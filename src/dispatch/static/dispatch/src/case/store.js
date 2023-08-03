@@ -36,6 +36,7 @@ const getDefaultSelectedState = () => {
     title: null,
     triage_at: null,
     visibility: null,
+    conversation: null,
     workflow_instances: null,
   }
 }

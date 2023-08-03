@@ -18,6 +18,7 @@ from dispatch.models import (
     TimeStampMixin,
     ProjectMixin,
     PrimaryKey,
+    Pagination,
 )
 from dispatch.participant.models import ParticipantRead
 from dispatch.plugin.models import PluginInstance, PluginInstanceRead
@@ -147,8 +148,7 @@ class WorkflowRead(WorkflowBase):
         return v
 
 
-class WorkflowPagination(DispatchBase):
-    total: int
+class WorkflowPagination(Pagination):
     items: List[WorkflowRead] = []
 
 
@@ -181,6 +181,5 @@ class WorkflowInstanceRead(WorkflowInstanceBase):
     creator: Optional[ParticipantRead]
 
 
-class WorkflowInstancePagination(DispatchBase):
-    total: int
+class WorkflowInstancePagination(Pagination):
     items: List[WorkflowInstanceRead] = []

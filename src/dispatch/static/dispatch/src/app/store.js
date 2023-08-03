@@ -8,12 +8,16 @@ const getDefaultRefreshState = () => {
   }
 }
 
+const latestCommitHash = import.meta.env.VITE_DISPATCH_COMMIT_HASH
+const latestCommitMessage = import.meta.env.VITE_DISPATCH_COMMIT_MESSAGE
+
 const state = {
   toggleDrawer: true,
   refresh: {
     ...getDefaultRefreshState(),
   },
   loading: false,
+  currentVersion: latestCommitHash,
 }
 
 const getters = {
@@ -30,6 +34,16 @@ const actions = {
   },
   setLoading({ commit }, value) {
     commit("SET_LOADING", value)
+  },
+  showCommitMessage({ commit }) {
+    commit(
+      "notification_backend/addBeNotification",
+      {
+        text: `Hash: ${latestCommitHash} | Message: ${latestCommitMessage}`,
+        type: "success",
+      },
+      { root: true }
+    )
   },
 }
 

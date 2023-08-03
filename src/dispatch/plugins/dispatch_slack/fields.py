@@ -50,6 +50,7 @@ class DefaultBlockIds(DispatchEnum):
     case_status_select = "case-status-select"
     case_severity_select = "case-severity-select"
     case_type_select = "case-type-select"
+    case_assignee_select = "case-assignee-select"
 
     # entities
     entity_select = "entity-select"

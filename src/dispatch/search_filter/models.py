@@ -12,7 +12,14 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.auth.models import DispatchUser, UserRead
 from dispatch.database.core import Base
 from dispatch.enums import DispatchEnum
-from dispatch.models import DispatchBase, NameStr, PrimaryKey, ProjectMixin, TimeStampMixin
+from dispatch.models import (
+    DispatchBase,
+    NameStr,
+    PrimaryKey,
+    ProjectMixin,
+    TimeStampMixin,
+    Pagination,
+)
 from dispatch.project.models import ProjectRead
 
 
@@ -83,6 +90,5 @@ class SearchFilterRead(SearchFilterBase):
     teams: Optional[List[TeamRead]] = []
 
 
-class SearchFilterPagination(DispatchBase):
+class SearchFilterPagination(Pagination):
     items: List[SearchFilterRead]
-    total: int
