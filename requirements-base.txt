@@ -57,7 +57,7 @@ certifi==2023.7.22
     #   sentry-sdk
 cffi==1.15.1
     # via cryptography
-chardet==5.1.0
+chardet==5.2.0
     # via
     #   -r requirements-base.in
     #   emails
@@ -367,7 +367,7 @@ scipy==1.10.1
     # via statsmodels
 sentry-asgi==0.2.0
     # via -r requirements-base.in
-sentry-sdk==1.29.1
+sentry-sdk==1.29.2
     # via
     #   -r requirements-base.in
     #   sentry-asgi
