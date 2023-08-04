@@ -86,6 +86,10 @@ class IncidentReportActions(DispatchEnum):
     project_select = "incident-report-project-select"
 
 
+class IncidentShortcutCallbacks(DispatchEnum):
+    report = "incident-report"
+
+
 class UpdateNotificationGroupActions(DispatchEnum):
     submit = "update-notification-group-submit"
 
