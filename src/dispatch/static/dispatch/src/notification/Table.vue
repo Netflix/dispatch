@@ -69,12 +69,37 @@
         </v-card>
       </v-col>
     </v-row>
+    <v-divider />
+    <v-row no-gutters>
+      <v-col>
+        <div class="text-body-1 ml-4 mt-3">Notification settings</div>
+        <v-row align="start" no-gutters>
+          <v-col class="d-flex justify-start">
+            <v-checkbox
+              class="ml-10 mr-5"
+              v-model="dailyReports"
+              label="Send Daily Incident Report"
+              @change="updateDailyReports"
+            />
+            <v-tooltip max-width="500px" open-delay="50" bottom>
+              <template #activator="{ on }">
+                <v-icon v-on="on"> mdi-information </v-icon>
+              </template>
+              <span>
+                If activated, Dispatch will send a daily report of incidents that are currently
+                active and incidents that have been marked as stable or closed in the last 24 hours.
+              </span>
+            </v-tooltip>
+          </v-col>
+        </v-row>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
 <script>
 import { mapFields } from "vuex-map-fields"
-import { mapActions } from "vuex"
+import { mapActions, mapState } from "vuex"
 
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
 import DeleteDialog from "@/notification/DeleteDialog.vue"
@@ -143,7 +168,8 @@ export default {
   },
 
   methods: {
-    ...mapActions("notification", ["getAll", "createEditShow", "removeShow"]),
+    ...mapState("notification", ["dailyReports"]),
+    ...mapActions("notification", ["getAll", "createEditShow", "removeShow", "updateDailyReports"]),
   },
 }
 </script>

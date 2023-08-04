@@ -45,6 +45,7 @@ const state = {
       },
     },
     loading: false,
+    dailyReports: true,
   },
 }
 
@@ -77,6 +78,9 @@ const actions = {
   removeShow({ commit }, notification) {
     commit("SET_DIALOG_DELETE", true)
     commit("SET_SELECTED", notification)
+  },
+  updateDailyReports({ commit }, update) {
+    console.log(`Got update as: ${update}`)
   },
   closeCreateEdit({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
