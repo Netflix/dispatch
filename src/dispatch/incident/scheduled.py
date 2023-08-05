@@ -90,7 +90,7 @@ def incident_report_daily(db_session: SessionLocal, project: Project):
     """Creates and sends incident daily reports based on notifications."""
 
     # don't send if set to false
-    if project.organization.send_daily_reports is False:
+    if project.send_daily_reports is False:
         return
 
     # we fetch all active, stable and closed incidents

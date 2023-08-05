@@ -79,7 +79,7 @@
               class="ml-10 mr-5"
               v-model="dailyReports"
               label="Send Daily Incident Report"
-              @change="toggleDailyReports"
+              @change="updateDailyReports"
               :disabled="dailyReports == null"
             />
             <v-tooltip max-width="500px" open-delay="50" bottom>
@@ -148,16 +148,14 @@ export default {
   },
 
   created() {
-    const organization = this.$route.params.organization
-
     this.project = [{ name: this.query.project }]
 
-    this.getAll(organization)
+    this.getAll()
 
     this.$watch(
       (vm) => [vm.page],
       () => {
-        this.getAll(organization)
+        this.getAll()
       }
     )
 
@@ -166,18 +164,13 @@ export default {
       () => {
         this.page = 1
         this.$router.push({ query: { project: this.project[0].name } })
-        this.getAll(organization)
+        this.getAll()
       }
     )
   },
 
   methods: {
     ...mapActions("notification", ["getAll", "createEditShow", "removeShow", "updateDailyReports"]),
-
-    toggleDailyReports(value) {
-      const organization = this.$route.params.organization
-      this.updateDailyReports({ organization, value })
-    },
   },
 }
 </script>

@@ -3,7 +3,7 @@ import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import NotificationApi from "@/notification/api"
-import OrganizationApi from "@/organization/api"
+import ProjectApi from "@/project/api"
 
 const getDefaultSelectedState = () => {
   return {
@@ -54,38 +54,18 @@ const getters = {
   getField,
 }
 
-function getCurrentOrganizationFilter(organization) {
-  const slugFilter = [
-    {
-      model: "Organization",
-      field: "slug",
-      op: "==",
-      value: organization,
-    },
-  ]
-
-  const filterOptions = {
-    itemsPerPage: 50,
-    sortBy: ["name"],
-    descending: [false],
-    filter: JSON.stringify(slugFilter),
-  }
-
-  return SearchUtils.createParametersFromTableOptions({ ...filterOptions })
-}
-
 const actions = {
-  getAll: debounce(({ commit, state }, organization) => {
+  getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
     let params = SearchUtils.createParametersFromTableOptions(
       { ...state.table.options },
       "Notification"
     )
-    const filterOptions = getCurrentOrganizationFilter(organization)
-    OrganizationApi.getAll(filterOptions).then((response) => {
-      const currentOrganization = response.data.items[0]
-      // If null, set to true by default
-      commit("SET_DAILY_REPORT_STATE", currentOrganization.send_daily_reports ?? true)
+    ProjectApi.getAll({ q: state.table.options.filters.project }).then((response) => {
+      const project = response.data.items[0]
+      if (project) {
+        commit("SET_DAILY_REPORT_STATE", project.send_daily_reports ?? true)
+      }
     })
     return NotificationApi.getAll(params)
       .then((response) => {
@@ -106,22 +86,22 @@ const actions = {
     commit("SET_DIALOG_DELETE", true)
     commit("SET_SELECTED", notification)
   },
-  updateDailyReports({ commit }, { organization, value }) {
-    const filterOptions = getCurrentOrganizationFilter(organization)
-
-    OrganizationApi.getAll(filterOptions).then((response) => {
-      const currentOrganization = response.data.items[0]
-      currentOrganization.send_daily_reports = value
-      OrganizationApi.update(currentOrganization.id, currentOrganization).catch(() => {
-        commit(
-          "notification_backend/addBeNotification",
-          {
-            text: `Couldn't update database.`,
-            type: "error",
-          },
-          { root: true }
-        )
-      })
+  updateDailyReports({ commit }, value) {
+    ProjectApi.getAll({ q: state.table.options.filters.project }).then((response) => {
+      const project = response.data.items[0]
+      if (project) {
+        project.send_daily_reports = value
+        ProjectApi.update(project.id, project).then(() => {
+          commit(
+            "notification_backend/addBeNotification",
+            {
+              text: `Project setting updated.`,
+              type: "success",
+            },
+            { root: true }
+          )
+        })
+      }
     })
   },
   closeCreateEdit({ commit }) {
