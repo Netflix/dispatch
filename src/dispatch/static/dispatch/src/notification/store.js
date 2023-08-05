@@ -61,7 +61,7 @@ const actions = {
       { ...state.table.options },
       "Notification"
     )
-    ProjectApi.getAll({ q: state.table.options.filters.project }).then((response) => {
+    ProjectApi.getAll({ q: state.table.options.filters.project[0].name }).then((response) => {
       const project = response.data.items[0]
       if (project) {
         commit("SET_DAILY_REPORT_STATE", project.send_daily_reports ?? true)
@@ -87,7 +87,7 @@ const actions = {
     commit("SET_SELECTED", notification)
   },
   updateDailyReports({ commit }, value) {
-    ProjectApi.getAll({ q: state.table.options.filters.project }).then((response) => {
+    ProjectApi.getAll({ q: state.table.options.filters.project[0].name }).then((response) => {
       const project = response.data.items[0]
       if (project) {
         project.send_daily_reports = value
