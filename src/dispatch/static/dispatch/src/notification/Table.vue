@@ -100,7 +100,7 @@
 
 <script>
 import { mapFields } from "vuex-map-fields"
-import { mapActions, mapState } from "vuex"
+import { mapActions } from "vuex"
 
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
 import DeleteDialog from "@/notification/DeleteDialog.vue"
@@ -144,7 +144,7 @@ export default {
       "table.rows.total",
       "dailyReports",
     ]),
-    ...mapFields("route", ["params", "query"]),
+    ...mapFields("route", ["query"]),
   },
 
   created() {
