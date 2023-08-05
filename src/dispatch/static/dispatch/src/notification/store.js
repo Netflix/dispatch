@@ -3,6 +3,7 @@ import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import NotificationApi from "@/notification/api"
+import OrganizationApi from "@/organization/api"
 
 const getDefaultSelectedState = () => {
   return {
@@ -45,21 +46,47 @@ const state = {
       },
     },
     loading: false,
-    dailyReports: true,
   },
+  dailyReports: null,
 }
 
 const getters = {
   getField,
 }
 
+function getCurrentOrganizationFilter(organization) {
+  const slugFilter = [
+    {
+      model: "Organization",
+      field: "slug",
+      op: "==",
+      value: organization,
+    },
+  ]
+
+  const filterOptions = {
+    itemsPerPage: 50,
+    sortBy: ["name"],
+    descending: [false],
+    filter: JSON.stringify(slugFilter),
+  }
+
+  return SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+}
+
 const actions = {
-  getAll: debounce(({ commit, state }) => {
+  getAll: debounce(({ commit, state }, organization) => {
     commit("SET_TABLE_LOADING", "primary")
     let params = SearchUtils.createParametersFromTableOptions(
       { ...state.table.options },
       "Notification"
     )
+    const filterOptions = getCurrentOrganizationFilter(organization)
+    OrganizationApi.getAll(filterOptions).then((response) => {
+      const currentOrganization = response.data.items[0]
+      // If null, set to true by default
+      commit("SET_DAILY_REPORT_STATE", currentOrganization.send_daily_reports ?? true)
+    })
     return NotificationApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)
@@ -79,8 +106,23 @@ const actions = {
     commit("SET_DIALOG_DELETE", true)
     commit("SET_SELECTED", notification)
   },
-  updateDailyReports({ commit }, update) {
-    console.log(`Got update as: ${update}`)
+  updateDailyReports({ commit }, { organization, value }) {
+    const filterOptions = getCurrentOrganizationFilter(organization)
+
+    OrganizationApi.getAll(filterOptions).then((response) => {
+      const currentOrganization = response.data.items[0]
+      currentOrganization.send_daily_reports = value
+      OrganizationApi.update(currentOrganization.id, currentOrganization).catch(() => {
+        commit(
+          "notification_backend/addBeNotification",
+          {
+            text: `Couldn't update database.`,
+            type: "error",
+          },
+          { root: true }
+        )
+      })
+    })
   },
   closeCreateEdit({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
@@ -162,6 +204,9 @@ const mutations = {
     let project = state.selected.project
     state.selected = { ...getDefaultSelectedState() }
     state.selected.project = project
+  },
+  SET_DAILY_REPORT_STATE(state, value) {
+    state.dailyReports = value
   },
 }
 

@@ -24,6 +24,7 @@ class Organization(Base):
     banner_enabled = Column(Boolean)
     banner_color = Column(String)
     banner_text = Column(String)
+    send_daily_reports = Column(Boolean)
 
     search_vector = Column(
         TSVectorType("name", "description", weights={"name": "A", "description": "B"})
@@ -47,6 +48,7 @@ class OrganizationBase(DispatchBase):
     banner_enabled: Optional[bool] = Field(False, nullable=True)
     banner_color: Optional[Color] = Field(None, nullable=True)
     banner_text: Optional[NameStr] = Field(None, nullable=True)
+    send_daily_reports: Optional[bool] = Field(True, nullable=True)
 
 
 class OrganizationCreate(OrganizationBase):
@@ -60,6 +62,7 @@ class OrganizationUpdate(DispatchBase):
     banner_enabled: Optional[bool] = Field(False, nullable=True)
     banner_color: Optional[Color] = Field(None, nullable=True)
     banner_text: Optional[NameStr] = Field(None, nullable=True)
+    send_daily_reports: Optional[bool] = Field(True, nullable=True)
 
 
 class OrganizationRead(OrganizationBase):

@@ -88,6 +88,11 @@ def incident_auto_tagger(db_session: SessionLocal, project: Project):
 @scheduled_project_task
 def incident_report_daily(db_session: SessionLocal, project: Project):
     """Creates and sends incident daily reports based on notifications."""
+
+    # don't send if set to false
+    if project.organization.send_daily_reports is False:
+        return
+
     # we fetch all active, stable and closed incidents
     active_incidents = get_all_by_status(
         db_session=db_session, project_id=project.id, status=IncidentStatus.active
