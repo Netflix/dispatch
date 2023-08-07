@@ -11,6 +11,9 @@
       </v-col>
     </v-row>
     <v-row no-gutters>
+      <div class="text-body-1 ml-4 mt-3">Notification channels</div>
+    </v-row>
+    <v-row no-gutters>
       <v-col>
         <v-card elevation="0">
           <v-card-title>
@@ -72,7 +75,7 @@
     <v-divider />
     <v-row no-gutters>
       <v-col>
-        <div class="text-body-1 ml-4 mt-3">Notification settings</div>
+        <div class="text-body-1 ml-4 mt-6">Notification settings</div>
         <v-row align="start" no-gutters>
           <v-col class="d-flex justify-start">
             <v-checkbox
