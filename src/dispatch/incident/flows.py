@@ -139,6 +139,9 @@ def inactivate_incident_participants(incident: Incident, db_session: Session):
     )
 
 
+# TODO: recreate the resources. do series of if checks.
+
+
 # i think this is where we create the resources in the beginning.
 @background_task
 def incident_create_flow(*, organization_slug: str, incident_id: int, db_session=None) -> Incident:

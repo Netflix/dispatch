@@ -95,6 +95,7 @@ import IncidentPriorityCombobox from "@/incident/priority/IncidentPriorityCombob
 import IncidentSeverityCombobox from "@/incident/severity/IncidentSeverityCombobox.vue"
 import IncidentStatusMultiSelect from "@/incident/status/IncidentStatusMultiSelect.vue"
 import IncidentTypeCombobox from "@/incident/type/IncidentTypeCombobox.vue"
+import IndividualApi from "@/individual/api"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
@@ -156,6 +157,8 @@ export default {
       "table.options.filters.participant",
     ]),
     numFilters: function () {
+      console.log("this:")
+      console.log(this)
       return sum([
         this.incident_priority.length,
         this.incident_severity.length,
@@ -171,6 +174,10 @@ export default {
 
   methods: {
     applyFilters() {
+      console.log("this 2:")
+      console.log(this)
+      console.log("local commander is ")
+      console.log(this.local_commander)
       // we set the filter values
       this.closed_at = this.local_closed_at
       this.incident_priority = this.local_incident_priority
@@ -179,6 +186,8 @@ export default {
       this.project = this.local_project
       this.reported_at = this.local_reported_at
       this.status = this.local_status
+      this.commander = this.local_commander
+      this.commander_id = this.local_commander.id
       this.tag = this.local_tag
       this.tag_type = this.local_tag_type
       this.participant = this.local_participant
