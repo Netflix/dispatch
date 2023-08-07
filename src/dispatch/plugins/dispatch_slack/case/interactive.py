@@ -604,7 +604,7 @@ def handle_snooze_submission_event(
     ) -> None:
         form_data: FormData = subject.form_data
         # Get the existing filters for the signal
-        signal = signal_service.get(db_session=db_session, signal_id=subject.id)
+        signal = signal_service.get(db_session=db_session, signal_id=int(subject.id))
         # Create the new filter from the form data
         if form_data.get(DefaultBlockIds.entity_select):
             entities = [
