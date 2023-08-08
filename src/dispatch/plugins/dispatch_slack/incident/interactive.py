@@ -78,6 +78,7 @@ from dispatch.plugins.dispatch_slack.incident.enums import (
     IncidentNotificationActions,
     IncidentReportActions,
     IncidentUpdateActions,
+    IncidentShortcutCallbacks,
     LinkMonitorActionIds,
     LinkMonitorBlockIds,
     RemindAgainActions,
@@ -106,6 +107,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     subject_middleware,
     user_middleware,
     select_context_middleware,
+    shortcut_context_middleware,
 )
 from dispatch.plugins.dispatch_slack.modals.common import send_success_modal
 from dispatch.plugins.dispatch_slack.models import MonitorMetadata, TaskMetadata
@@ -1847,6 +1849,56 @@ def handle_update_incident_submission_event(
         title="Executive Report",
         message="Incident updated successfully.",
     )
+
+
+@app.shortcut(
+    IncidentShortcutCallbacks.report, middleware=[db_middleware, shortcut_context_middleware]
+)
+def report_incident(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+    shortcut: dict,
+):
+    ack()
+    initial_description = None
+    if body.get("message"):
+        permalink = (
+            client.chat_getPermalink(
+                channel=context["subject"].channel_id, message_ts=body["message"]["ts"]
+            )
+        )["permalink"]
+        initial_description = f"{body['message']['text']}\n\n{permalink}"
+
+    blocks = [
+        Context(
+            elements=[
+                MarkdownText(
+                    text="If you suspect an incident and need help, please fill out this form to the best of your abilities."
+                )
+            ]
+        ),
+        title_input(),
+        description_input(initial_value=initial_description),
+        project_select(
+            db_session=db_session,
+            action_id=IncidentReportActions.project_select,
+            dispatch_action=True,
+        ),
+    ]
+
+    modal = Modal(
+        title="Report Incident",
+        blocks=blocks,
+        submit="Report",
+        close="Cancel",
+        callback_id=IncidentReportActions.submit,
+        private_metadata=context["subject"].json(),
+    ).build()
+
+    client.views_open(trigger_id=shortcut["trigger_id"], view=modal)
 
 
 def handle_report_incident_command(
