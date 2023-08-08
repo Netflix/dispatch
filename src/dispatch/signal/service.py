@@ -18,7 +18,6 @@ from dispatch.service import service as service_service
 from dispatch.tag import service as tag_service
 from dispatch.workflow import service as workflow_service
 from dispatch.entity.models import Entity
-from dispatch.models import PrimaryKey
 
 from .models import (
     Signal,
@@ -208,11 +207,19 @@ def get_signal_instance(
     )
 
 
-def get(*, db_session: Session, signal_id: Union[PrimaryKey, str]) -> Optional[Signal]:
+def get(*, db_session: Session, signal_id: Union[str, int]) -> Optional[Signal]:
     """Gets a signal by id or external_id."""
-    signal = db_session.query(Signal).filter(Signal.id == signal_id).one_or_none()
-    if not signal:
-        signal = db_session.query(Signal).filter(Signal.external_id == str(signal_id)).one_or_none()
+    return db_session.query(Signal).filter(Signal.id == signal_id).one_or_none()
+
+
+def get_by_primary_or_external_id(
+    *, db_session: Session, signal_id: Union[str, int]
+) -> Optional[Signal]:
+    """Gets a signal by id or external_id."""
+    if isinstance(signal_id, int):
+        signal = db_session.query(Signal).filter(Signal.id == signal_id).one_or_none()
+    else:
+        signal = db_session.query(Signal).filter(Signal.external_id == signal_id).one_or_none()
     return signal
 
 
