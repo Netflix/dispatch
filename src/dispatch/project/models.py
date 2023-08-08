@@ -35,6 +35,8 @@ class Project(Base):
         cascade="all, delete-orphan",
     )
 
+    send_daily_reports = Column(Boolean)
+
     @hybrid_property
     def slug(self):
         return slugify(self.name)
@@ -54,6 +56,7 @@ class ProjectBase(DispatchBase):
     description: Optional[str] = Field(None, nullable=True)
     default: bool = False
     color: Optional[str] = Field(None, nullable=True)
+    send_daily_reports: Optional[bool] = Field(True, nullable=True)
 
 
 class ProjectCreate(ProjectBase):
@@ -61,7 +64,7 @@ class ProjectCreate(ProjectBase):
 
 
 class ProjectUpdate(ProjectBase):
-    pass
+    send_daily_reports: Optional[bool] = Field(True, nullable=True)
 
 
 class ProjectRead(ProjectBase):
