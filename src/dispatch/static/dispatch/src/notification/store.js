@@ -3,6 +3,7 @@ import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import NotificationApi from "@/notification/api"
+import ProjectApi from "@/project/api"
 
 const getDefaultSelectedState = () => {
   return {
@@ -46,6 +47,7 @@ const state = {
     },
     loading: false,
   },
+  dailyReports: null,
 }
 
 const getters = {
@@ -59,6 +61,12 @@ const actions = {
       { ...state.table.options },
       "Notification"
     )
+    ProjectApi.getAll({ q: state.table.options.filters.project[0].name }).then((response) => {
+      const project = response.data.items[0]
+      if (project) {
+        commit("SET_DAILY_REPORT_STATE", project.send_daily_reports ?? true)
+      }
+    })
     return NotificationApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)
@@ -77,6 +85,24 @@ const actions = {
   removeShow({ commit }, notification) {
     commit("SET_DIALOG_DELETE", true)
     commit("SET_SELECTED", notification)
+  },
+  updateDailyReports({ commit }, value) {
+    ProjectApi.getAll({ q: state.table.options.filters.project[0].name }).then((response) => {
+      const project = response.data.items[0]
+      if (project) {
+        project.send_daily_reports = value
+        ProjectApi.update(project.id, project).then(() => {
+          commit(
+            "notification_backend/addBeNotification",
+            {
+              text: `Project setting updated.`,
+              type: "success",
+            },
+            { root: true }
+          )
+        })
+      }
+    })
   },
   closeCreateEdit({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
@@ -158,6 +184,9 @@ const mutations = {
     let project = state.selected.project
     state.selected = { ...getDefaultSelectedState() }
     state.selected.project = project
+  },
+  SET_DAILY_REPORT_STATE(state, value) {
+    state.dailyReports = value
   },
 }
 
