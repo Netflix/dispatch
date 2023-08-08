@@ -209,6 +209,13 @@ def get_signal_instance(
 
 def get(*, db_session: Session, signal_id: Union[str, int]) -> Optional[Signal]:
     """Gets a signal by id or external_id."""
+    return db_session.query(Signal).filter(Signal.id == signal_id).one_or_none()
+
+
+def get_by_primary_or_external_id(
+    *, db_session: Session, signal_id: Union[str, int]
+) -> Optional[Signal]:
+    """Gets a signal by id or external_id."""
     if isinstance(signal_id, int):
         signal = db_session.query(Signal).filter(Signal.id == signal_id).one_or_none()
     else:
