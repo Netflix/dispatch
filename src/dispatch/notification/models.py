@@ -13,13 +13,13 @@ from dispatch.project.models import ProjectRead
 from dispatch.search_filter.models import SearchFilterRead, SearchFilterUpdate
 
 from dispatch.models import (
-    DispatchBase,
     EvergreenBase,
     EvergreenMixin,
     TimeStampMixin,
     ProjectMixin,
     NameStr,
     PrimaryKey,
+    Pagination,
 )
 
 
@@ -85,6 +85,5 @@ class NotificationRead(NotificationBase):
     filters: Optional[List[SearchFilterRead]]
 
 
-class NotificationPagination(DispatchBase):
-    total: int
+class NotificationPagination(Pagination):
     items: List[NotificationRead] = []

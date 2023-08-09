@@ -24,9 +24,9 @@ from dispatch.auth.models import DispatchUser
 from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
 from dispatch.case.enums import CaseStatus
-from dispatch.case.models import Case, CaseCreate, CaseUpdate
-from dispatch.enums import UserRoles
+from dispatch.case.models import Case, CaseCreate, CaseRead, CaseUpdate
 from dispatch.entity import service as entity_service
+from dispatch.enums import UserRoles
 from dispatch.exceptions import ExistsError
 from dispatch.incident import flows as incident_flows
 from dispatch.individual.models import IndividualContactRead
@@ -94,9 +94,7 @@ from dispatch.signal.enums import SignalEngagementStatus
 from dispatch.signal.models import (
     SignalEngagement,
     SignalFilterCreate,
-    SignalFilterRead,
     SignalInstance,
-    SignalUpdate,
 )
 
 
@@ -679,16 +677,8 @@ def handle_snooze_submission_event(
         except IntegrityError:
             raise ExistsError("A signal filter with this name already exists.") from None
 
-        signal_in = SignalUpdate(
-            id=signal.id,
-            name=signal.name,
-            owner=signal.owner,
-            external_id=signal.external_id,
-            project=project,
-            filters=[SignalFilterRead.from_orm(new_filter)],
-        )
-
-        signal = signal_service.update(db_session=db_session, signal=signal, signal_in=signal_in)
+        signal.filters.append(new_filter)
+        db_session.commit()
 
     # Check if last_mfa_time was within the last hour
     last_hour = datetime.now() - timedelta(hours=1)
@@ -749,7 +739,7 @@ def assignee_select(
     placeholder: str = "Select Assignee",
     initial_user: str = None,
     action_id: str = None,
-    block_id: str = None,
+    block_id: str = DefaultBlockIds.case_assignee_select,
     label: str = "Assignee",
     **kwargs,
 ):
@@ -823,7 +813,13 @@ def handle_case_participant_role_activity(
             case_id=context["subject"].id, user_email=user.email, db_session=db_session
         )
         participant.user_conversation_id = context["user_id"]
+
+    # if a participant is active mark the case as being in the triaged state
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    if case.status == CaseStatus.new:
+        case.status = CaseStatus.triage
     db_session.commit()
+    case_flows.update_conversation(case, db_session)
 
 
 @message_dispatcher.add(
@@ -1145,6 +1141,7 @@ def handle_edit_submission_event(
 ):
     ack()
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    previous_case = CaseRead.from_orm(case)
 
     case_priority = None
     if form_data.get(DefaultBlockIds.case_priority_select):
@@ -1153,6 +1150,11 @@ def handle_edit_submission_event(
     case_type = None
     if form_data.get(DefaultBlockIds.case_type_select):
         case_type = {"name": form_data[DefaultBlockIds.case_type_select]["name"]}
+
+    if form_data.get(DefaultBlockIds.case_assignee_select):
+        assignee_email = client.users_info(
+            user=form_data[DefaultBlockIds.case_assignee_select]["value"]
+        )["user"]["profile"]["email"]
 
     case_in = CaseUpdate(
         title=form_data[DefaultBlockIds.title_input],
@@ -1166,10 +1168,16 @@ def handle_edit_submission_event(
     )
 
     case = case_service.update(db_session=db_session, case=case, case_in=case_in, current_user=user)
-    blocks = create_case_message(case=case, channel_id=context["subject"].channel_id)
-    client.chat_update(
-        blocks=blocks, ts=case.conversation.thread_id, channel=case.conversation.channel_id
+    case_flows.case_update_flow(
+        case_id=case.id,
+        previous_case=previous_case,
+        db_session=db_session,
+        assignee_email=assignee_email,
+        user_email=user.email,
+        organization_slug=context["subject"].organization_slug,
     )
+
+    return case
 
 
 @app.action(CaseNotificationActions.resolve, middleware=[button_context_middleware, db_middleware])
@@ -1193,6 +1201,17 @@ def resolve_button_click(
         private_metadata=context["subject"].json(),
     ).build()
     client.views_open(trigger_id=body["trigger_id"], view=modal)
+
+
+@app.action(CaseNotificationActions.triage, middleware=[button_context_middleware, db_middleware])
+def triage_button_click(
+    ack: Ack, body: dict, db_session: Session, context: BoltContext, client: WebClient
+):
+    ack()
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    case.status = CaseStatus.triage
+    db_session.commit()
+    case_flows.update_conversation(case, db_session)
 
 
 @app.view(

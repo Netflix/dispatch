@@ -9,7 +9,7 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.database.core import Base
 from dispatch.feedback.enums import FeedbackRating
 from dispatch.incident.models import IncidentReadMinimal
-from dispatch.models import DispatchBase, TimeStampMixin, PrimaryKey
+from dispatch.models import DispatchBase, TimeStampMixin, PrimaryKey, Pagination
 from dispatch.participant.models import ParticipantRead
 from dispatch.project.models import ProjectRead
 
@@ -59,6 +59,5 @@ class FeedbackRead(FeedbackBase):
     project: Optional[ProjectRead]
 
 
-class FeedbackPagination(DispatchBase):
+class FeedbackPagination(Pagination):
     items: List[FeedbackRead]
-    total: int

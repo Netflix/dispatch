@@ -7,7 +7,14 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.enums import DispatchEnum
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, NameStr, TimeStampMixin, ProjectMixin, PrimaryKey
+from dispatch.models import (
+    DispatchBase,
+    NameStr,
+    TimeStampMixin,
+    ProjectMixin,
+    PrimaryKey,
+    Pagination,
+)
 from dispatch.project.models import ProjectRead
 
 
@@ -80,6 +87,5 @@ class EntityTypeReadMinimal(DispatchBase):
     regular_expression: Optional[str] = Field(None, nullable=True)
 
 
-class EntityTypePagination(DispatchBase):
+class EntityTypePagination(Pagination):
     items: List[EntityTypeRead]
-    total: int

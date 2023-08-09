@@ -7,6 +7,7 @@ class CaseNotificationActions(DispatchEnum):
     join_incident = "case-notification-join-incident"
     reopen = "case-notification-reopen"
     resolve = "case-notification-resolve"
+    triage = "case-notification-triage"
 
 
 class CasePaginateActions(DispatchEnum):

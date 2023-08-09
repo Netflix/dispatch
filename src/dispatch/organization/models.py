@@ -10,7 +10,7 @@ from sqlalchemy_utils import TSVectorType
 
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, NameStr, OrganizationSlug, PrimaryKey
+from dispatch.models import DispatchBase, NameStr, OrganizationSlug, PrimaryKey, Pagination
 
 
 class Organization(Base):
@@ -67,6 +67,5 @@ class OrganizationRead(OrganizationBase):
     slug: Optional[OrganizationSlug]
 
 
-class OrganizationPagination(DispatchBase):
-    total: int
+class OrganizationPagination(Pagination):
     items: List[OrganizationRead] = []

@@ -8,7 +8,7 @@ from sqlalchemy.event import listen
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base, ensure_unique_default_per_project
-from dispatch.models import DispatchBase, NameStr, ProjectMixin, PrimaryKey
+from dispatch.models import DispatchBase, NameStr, ProjectMixin, PrimaryKey, Pagination
 from dispatch.project.models import ProjectRead
 
 
@@ -69,6 +69,5 @@ class IncidentSeverityReadMinimal(DispatchBase):
     name: NameStr
 
 
-class IncidentSeverityPagination(DispatchBase):
-    total: int
+class IncidentSeverityPagination(Pagination):
     items: List[IncidentSeverityRead] = []
