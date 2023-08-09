@@ -195,3 +195,59 @@ def delete_document(document: Document, project_id: int, db_session: SessionLoca
 
     # we delete the internal document
     delete(db_session=db_session, document_id=document.id)
+
+
+def open_document_access(document: Document, db_session: SessionLocal):
+    """Opens access to document by adding domain wide permission."""
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=document.incident.project.id, plugin_type="storage"
+    )
+    if not plugin:
+        log.warning("Access to document not opened. No storage plugin enabled.")
+        return
+
+    try:
+        plugin.instance.open(document.resource_id)
+    except Exception as e:
+        event_service.log_incident_event(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"Opening {deslug(document.resource_type).lower()} to anyone in the domain failed. Reason: {e}",
+            incident_id=document.incident.id,
+        )
+        log.exception(e)
+    else:
+        event_service.log_incident_event(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"{deslug(document.resource_type).lower().capitalize()} opened to anyone in the domain",
+            incident_id=document.incident.id,
+        )
+
+
+def mark_document_as_readonly(document: Document, db_session: SessionLocal):
+    """Marks document as readonly."""
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=document.incident.project.id, plugin_type="storage"
+    )
+    if not plugin:
+        log.warning("Document not marked as readonly. No storage plugin enabled.")
+        return
+
+    try:
+        plugin.instance.mark_readonly(document.resource_id)
+    except Exception as e:
+        event_service.log_incident_event(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"Marking {deslug(document.resource_type).lower()} as readonly failed. Reason: {e}",
+            incident_id=document.incident.id,
+        )
+        log.exception(e)
+    else:
+        event_service.log_incident_event(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"{deslug(document.resource_type).lower().capitalize()} marked as readonly",
+            incident_id=document.incident.id,
+        )

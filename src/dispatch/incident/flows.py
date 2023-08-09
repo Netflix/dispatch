@@ -251,7 +251,7 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
         # we send a suggested reading message to the participant
         # suggested_document_items = get_suggested_document_items(incident, db_session)
         # send_incident_suggested_reading_messages(
-        #     incident, suggested_document_items, user_email, db_session
+        # 	  incident, suggested_document_items, user_email, db_session
         # )
 
     # wait until all resources are created before adding suggested participants
@@ -419,45 +419,13 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
         )
         if storage_plugin:
             if storage_plugin.configuration.open_on_close:
-                # we add organization wide permission to the incident document as
-                # typically that's the only resource that requires it.
-                try:
-                    storage_plugin.instance.open(incident.incident_document.resource_id)
-                except Exception as e:
-                    event_service.log_incident_event(
-                        db_session=db_session,
-                        source="Dispatch Core App",
-                        description=f"Opening incident document to anyone in the domain failed. Reason: {e}",
-                        incident_id=incident.id,
-                    )
-                    log.exception(e)
-                else:
-                    event_service.log_incident_event(
-                        db_session=db_session,
-                        source="Dispatch Core App",
-                        description="Incident document opened to anyone in the domain",
-                        incident_id=incident.id,
-                    )
+                for document in [incident.incident_document, incident.incident_review_document]:
+                    document_flows.open_document_access(document=document, db_session=db_session)
 
             if storage_plugin.configuration.read_only:
-                # unfortunately this can't be applied at the folder level
-                # so we just mark the incident doc as readonly.
-                try:
-                    storage_plugin.instance.mark_readonly(incident.incident_document.resource_id)
-                except Exception as e:
-                    event_service.log_incident_event(
-                        db_session=db_session,
-                        source="Dispatch Core App",
-                        description=f"Marking incident document as readonly failed. Reason: {e}",
-                        incident_id=incident.id,
-                    )
-                    log.exception(e)
-                else:
-                    event_service.log_incident_event(
-                        db_session=db_session,
-                        source="Dispatch Core App",
-                        description="Incident document marked as readonly",
-                        incident_id=incident.id,
+                for document in [incident.incident_document, incident.incident_review_document]:
+                    document_flows.mark_document_as_readonly(
+                        document=document, db_session=db_session
                     )
 
     # we send a direct message to the incident commander asking to review
@@ -718,7 +686,7 @@ def incident_assign_role_flow(
         # NOTE: This is disabled until we can determine the source of the caller
         # we let the assigner know that the assignee already has this role
         # send_incident_participant_has_role_ephemeral_message(
-        #   assigner_email, assignee_contact_info, assignee_role, incident
+        # 	assigner_email, assignee_contact_info, assignee_role, incident
         # )
         return
 
@@ -726,7 +694,7 @@ def incident_assign_role_flow(
         # NOTE: This is disabled until we can determine the source of the caller
         # we let the assigner know that we were not able to assign the role
         # send_incident_participant_role_not_assigned_ephemeral_message(
-        #   assigner_email, assignee_contact_info, assignee_role, incident
+        # 	assigner_email, assignee_contact_info, assignee_role, incident
         # )
         return
 
@@ -934,7 +902,7 @@ def incident_add_or_reactivate_participant_flow(
         # we send a suggested reading message to the participant
         # suggested_document_items = get_suggested_document_items(incident, db_session)
         # send_incident_suggested_reading_messages(
-        #     incident, suggested_document_items, user_email, db_session
+        # 	  incident, suggested_document_items, user_email, db_session
         # )
 
     return participant
