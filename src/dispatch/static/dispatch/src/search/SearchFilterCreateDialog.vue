@@ -409,7 +409,11 @@ export default {
         vm.filters.visibility,
       ],
       () => {
-        this.expression = SearchUtils.createFilterExpression(this.filters)
+        if (this.subject === "incident") {
+          this.expression = SearchUtils.createFilterExpression(this.filters, "Incident")
+        } else {
+          this.expression = SearchUtils.createFilterExpression(this.filters, "Case")
+        }
         this.getPreviewData()
       }
     )
