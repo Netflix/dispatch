@@ -255,6 +255,12 @@ class TaskRead(DispatchBase):
     weblink: Optional[str]
 
 
+class TaskReadMinimal(DispatchBase):
+    id: PrimaryKey
+    description: Optional[str] = Field(None, nullable=True)
+    status: TaskStatus = TaskStatus.open
+
+
 # Pydantic models...
 class IncidentBase(DispatchBase):
     title: str
@@ -309,6 +315,7 @@ class IncidentReadMinimal(IncidentBase):
     reporters_location: Optional[str]
     stable_at: Optional[datetime] = None
     tags: Optional[List[TagRead]] = []
+    tasks: Optional[List[TaskReadMinimal]] = []
     total_cost: Optional[float]
 
 
