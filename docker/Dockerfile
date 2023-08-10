@@ -39,6 +39,13 @@ ARG VITE_SENTRY_DSN
 ARG VITE_SENTRY_APP_KEY
 ARG VITE_SENTRY_ENABLED
 
+# Should be replaced in your build process script
+ARG VITE_DISPATCH_COMMIT_HASH
+ENV VITE_DISPATCH_COMMIT_HASH="Unknown"
+
+ARG VITE_DISPATCH_COMMIT_MESSAGE
+ENV VITE_DISPATCH_COMMIT_MESSAGE="Unknown"
+
 COPY . /usr/src/dispatch/
 RUN export YARN_CACHE_FOLDER="$(mktemp -d)" \
     && cd /usr/src/dispatch \

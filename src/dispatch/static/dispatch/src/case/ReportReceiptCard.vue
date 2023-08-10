@@ -99,6 +99,26 @@
             </v-list-item>
             <v-divider />
           </span>
+          <span v-if="activeResourcePlugins.conversation">
+            <v-list-item v-if="conversation" :href="conversation.weblink" target="_blank">
+              <v-list-item-content>
+                <v-list-item-title>Conversation</v-list-item-title>
+                <v-list-item-subtitle>{{ conversation.description }}</v-list-item-subtitle>
+              </v-list-item-content>
+              <v-list-item-action>
+                <v-list-item-icon>
+                  <v-icon>open_in_new</v-icon>
+                </v-list-item-icon>
+              </v-list-item-action>
+            </v-list-item>
+            <v-list-item v-else>
+              <v-list-item-content>
+                <v-list-item-title>Creating case conversation...</v-list-item-title>
+                <v-progress-linear indeterminate />
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider />
+          </span>
           <span v-if="activeResourcePlugins.storage">
             <v-list-item v-if="storage" :href="storage.weblink" target="_blank">
               <v-list-item-content>
@@ -176,6 +196,7 @@ export default {
         document: null,
         ticket: null,
         storage: null,
+        conversation: null,
       },
       project_faq: null,
     }
@@ -220,6 +241,7 @@ export default {
       "selected.description",
       "selected.visibility",
       "selected.storage",
+      "selected.conversation",
       "selected.documents",
       "selected.project",
       "selected.loading",

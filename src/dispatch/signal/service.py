@@ -1,6 +1,6 @@
 import json
 from datetime import datetime, timedelta, timezone
-from typing import Optional
+from typing import Optional, Union
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy import desc, asc
@@ -207,9 +207,20 @@ def get_signal_instance(
     )
 
 
-def get(*, db_session: Session, signal_id: int) -> Optional[Signal]:
-    """Gets a signal by id."""
+def get(*, db_session: Session, signal_id: Union[str, int]) -> Optional[Signal]:
+    """Gets a signal by id or external_id."""
     return db_session.query(Signal).filter(Signal.id == signal_id).one_or_none()
+
+
+def get_by_primary_or_external_id(
+    *, db_session: Session, signal_id: Union[str, int]
+) -> Optional[Signal]:
+    """Gets a signal by id or external_id."""
+    if isinstance(signal_id, int):
+        signal = db_session.query(Signal).filter(Signal.id == signal_id).one_or_none()
+    else:
+        signal = db_session.query(Signal).filter(Signal.external_id == signal_id).one_or_none()
+    return signal
 
 
 def get_by_variant_or_external_id(
@@ -476,7 +487,13 @@ def update_instance(
     *, db_session: Session, signal_instance_in: SignalInstanceCreate
 ) -> SignalInstance:
     """Updates an existing signal instance."""
-    signal_instance = get_signal_instance(signal_instance_id=signal_instance_in.id)
+    if signal_instance_in.raw:
+        if signal_instance_in.raw.get("id"):
+            signal_instance_id = signal_instance_in.raw["id"]
+
+    signal_instance = get_signal_instance(
+        db_session=db_session, signal_instance_id=signal_instance_id
+    )
     signal_instance.raw = json.loads(json.dumps(signal_instance_in.raw))
 
     db_session.commit()

@@ -1,7 +1,7 @@
 from typing import List, Optional
-from pydantic import Field, validator
 
-from sqlalchemy import Column, Boolean, ForeignKey, Integer, String, JSON
+from pydantic import Field, validator
+from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.event import listen
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import relationship
@@ -10,8 +10,7 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base, ensure_unique_default_per_project
 from dispatch.enums import Visibility
-from dispatch.models import DispatchBase, ProjectMixin
-from dispatch.models import NameStr, PrimaryKey
+from dispatch.models import DispatchBase, NameStr, Pagination, PrimaryKey, ProjectMixin
 from dispatch.plugin.models import PluginMetadata
 from dispatch.project.models import ProjectRead
 
@@ -111,6 +110,5 @@ class CaseTypeRead(CaseTypeBase):
     id: PrimaryKey
 
 
-class CaseTypePagination(DispatchBase):
-    total: int
+class CaseTypePagination(Pagination):
     items: List[CaseTypeRead] = []

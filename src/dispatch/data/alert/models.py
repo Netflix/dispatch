@@ -5,7 +5,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, TimeStampMixin, PrimaryKey
+from dispatch.models import DispatchBase, TimeStampMixin, PrimaryKey, Pagination
 
 
 class Alert(Base, TimeStampMixin):
@@ -38,6 +38,5 @@ class AlertRead(AlertBase):
     id: PrimaryKey
 
 
-class AlertPagination(DispatchBase):
+class AlertPagination(Pagination):
     items: List[AlertRead]
-    total: int

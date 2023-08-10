@@ -99,7 +99,7 @@ def get_or_create(*, db_session, email: str, project: Project, **kwargs) -> Indi
         individual_info = fetch_individual_info(contact_plugin, email, db_session)
 
     kwargs["email"] = individual_info.get("email", email)
-    kwargs["name"] = individual_info.get("fullname", "Unknown")
+    kwargs["name"] = individual_info.get("fullname", email.split("@")[0].capitalize())
     kwargs["weblink"] = individual_info.get("weblink", "")
 
     if not individual_contact:
