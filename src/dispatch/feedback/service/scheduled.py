@@ -69,6 +69,4 @@ def oncall_shift_feedback(db_session: SessionLocal, project: Project):
         db_session=db_session,
     )
 
-    print(
-        f"Requesting oncall shift feedback from {individual.name}."
-    )
+    print(f"Requesting oncall shift feedback from {individual.name}.")

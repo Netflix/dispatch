@@ -347,9 +347,12 @@ def ack_oncall_shift_feedback_submission_event(ack: Ack) -> None:
 
 def ack_with_error(ack: Ack) -> None:
     """Handles the oncall shift feedback submission form validation."""
-    ack(response_action="errors", errors={
-        ServiceFeedbackNotificationBlockIds.hours_input: "The number of hours field must be numeric"
-    })
+    ack(
+        response_action="errors",
+        errors={
+            ServiceFeedbackNotificationBlockIds.hours_input: "The number of hours field must be numeric"
+        },
+    )
 
 
 @app.view(
@@ -382,7 +385,8 @@ def handle_oncall_shift_feedback_submission_event(
     shift_end_at = datetime.strptime(metadata[3], "%Y-%m-%dT%H:%M:%SZ")
 
     individual = (
-        None if form_data.get(ServiceFeedbackNotificationBlockIds.anonymous_checkbox)
+        None
+        if form_data.get(ServiceFeedbackNotificationBlockIds.anonymous_checkbox)
         else individual_service.get_by_email_and_project(
             db_session=db_session, email=user.email, project_id=project_id
         )
@@ -398,7 +402,9 @@ def handle_oncall_shift_feedback_submission_event(
         shift_start_at=None,
     )
 
-    service_feedback = feedback_service.create(db_session=db_session, service_feedback_in=service_feedback)
+    service_feedback = feedback_service.create(
+        db_session=db_session, service_feedback_in=service_feedback
+    )
 
     modal = Modal(
         title="Oncall Shift Feedback",

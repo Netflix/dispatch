@@ -159,11 +159,7 @@ def page_oncall(
     return create_incident(client, headers, data)
 
 
-def get_oncall_at_time(
-    client: APISession,
-    schedule_id: str,
-    utctime: str
-) -> Optional[dict]:
+def get_oncall_at_time(client: APISession, schedule_id: str, utctime: str) -> Optional[dict]:
     """Retrieves the email of the oncall person at the utc time given."""
     try:
         oncalls = list(
@@ -206,10 +202,12 @@ def oncall_shift_check(client: APISession, schedule_id: str) -> Optional[dict]:
     """Determines whether the oncall person just went off shift and returns their email."""
     now = datetime.utcnow()
     # compare oncall person scheduled 18 hours ago vs 2 hours from now
-    previous_shift = (now - timedelta(hours=18)).isoformat(timespec='minutes') + "Z"
-    next_shift = (now + timedelta(hours=2)).isoformat(timespec='minutes') + "Z"
+    previous_shift = (now - timedelta(hours=18)).isoformat(timespec="minutes") + "Z"
+    next_shift = (now + timedelta(hours=2)).isoformat(timespec="minutes") + "Z"
 
-    previous_oncall = get_oncall_at_time(client=client, schedule_id=schedule_id, utctime=previous_shift)
+    previous_oncall = get_oncall_at_time(
+        client=client, schedule_id=schedule_id, utctime=previous_shift
+    )
     next_oncall = get_oncall_at_time(client=client, schedule_id=schedule_id, utctime=next_shift)
 
     if previous_oncall["email"] != next_oncall["email"]:

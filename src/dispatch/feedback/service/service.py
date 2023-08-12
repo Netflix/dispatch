@@ -25,7 +25,9 @@ def get_all(*, db_session: Session):
 def create(*, service_feedback_in: ServiceFeedbackCreate, db_session: Session) -> ServiceFeedback:
     """Creates a new piece of service feedback."""
 
-    individual_contact_id = None if not service_feedback_in.individual else service_feedback_in.individual.id
+    individual_contact_id = (
+        None if not service_feedback_in.individual else service_feedback_in.individual.id
+    )
 
     service_feedback = ServiceFeedback(
         **service_feedback_in.dict(exclude={"individual"}),
