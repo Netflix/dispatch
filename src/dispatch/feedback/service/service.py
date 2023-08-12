@@ -2,9 +2,6 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from dispatch.service import service as service_service
-from dispatch.individual import service as individual_service
-
 from .models import ServiceFeedback, ServiceFeedbackCreate, ServiceFeedbackUpdate
 
 
