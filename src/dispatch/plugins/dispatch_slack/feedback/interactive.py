@@ -1,3 +1,4 @@
+import logging
 from blockkit import (
     Checkboxes,
     Context,
@@ -11,11 +12,14 @@ from blockkit import (
 from slack_bolt import Ack, BoltContext, Respond
 from slack_sdk.web.client import WebClient
 from sqlalchemy.orm import Session
+from datetime import datetime
 
 from dispatch.auth.models import DispatchUser
 from dispatch.feedback.incident import service as incident_feedback_service
 from dispatch.feedback.incident.enums import FeedbackRating
 from dispatch.feedback.incident.models import FeedbackCreate
+from dispatch.feedback.service import service as feedback_service
+from dispatch.individual import service as individual_service
 from dispatch.feedback.service.models import ServiceFeedbackRating
 from dispatch.incident import service as incident_service
 from dispatch.participant import service as participant_service
@@ -37,6 +41,8 @@ from .enums import (
     ServiceFeedbackNotificationActions,
     ServiceFeedbackNotificationBlockIds,
 )
+
+log = logging.getLogger(__file__)
 
 
 def configure(config):
@@ -288,7 +294,7 @@ def oncall_shift_feeback_anonymous_checkbox(
 
 @app.action(
     ServiceFeedbackNotificationActions.provide,
-    middleware=[button_context_middleware, db_middleware],
+    middleware=[db_middleware],
 )
 def handle_oncall_shift_feedback_direct_message_button_click(
     ack: Ack,
@@ -300,6 +306,8 @@ def handle_oncall_shift_feedback_direct_message_button_click(
 ):
     """Handles the feedback button in the oncall shift feedback direct message."""
     ack()
+
+    metadata = body["actions"][0]["value"]
 
     blocks = [
         Context(
@@ -321,7 +329,7 @@ def handle_oncall_shift_feedback_direct_message_button_click(
         submit="Submit",
         close="Cancel",
         callback_id=ServiceFeedbackNotificationActions.submit,
-        private_metadata=context["subject"].json(),
+        private_metadata=metadata,
     ).build()
 
     client.views_open(trigger_id=body["trigger_id"], view=modal)
@@ -337,9 +345,16 @@ def ack_oncall_shift_feedback_submission_event(ack: Ack) -> None:
     ack(response_action="update", view=modal)
 
 
+def ack_with_error(ack: Ack) -> None:
+    """Handles the oncall shift feedback submission form validation."""
+    ack(response_action="errors", errors={
+        ServiceFeedbackNotificationBlockIds.hours_input: "The number of hours field must be numeric"
+    })
+
+
 @app.view(
     ServiceFeedbackNotificationActions.submit,
-    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
+    middleware=[db_middleware, user_middleware, modal_submit_middleware],
 )
 def handle_oncall_shift_feedback_submission_event(
     ack: Ack,
@@ -350,29 +365,40 @@ def handle_oncall_shift_feedback_submission_event(
     db_session: Session,
     form_data: dict,
 ):
-    # TODO: handle multiple organizations during submission
+    hours = form_data.get(ServiceFeedbackNotificationBlockIds.hours_input, {})
+    if not hours.isnumeric():
+        ack_with_error(ack=ack)
+        return
+
     ack_oncall_shift_feedback_submission_event(ack=ack)
-    # incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
-    #
-    # feedback = form_data.get(ServiceFeedbackNotificationBlockIds.feedback_input)
-    # rating = form_data.get(ServiceFeedbackNotificationBlockIds.rating_select, {}).get("value")
-    #
-    # feedback_in = FeedbackCreate(
-    #     rating=rating, feedback=feedback, project=incident.project, incident=incident
-    # )
-    # feedback = feedback_service.create(db_session=db_session, feedback_in=feedback_in)
-    # incident.feedback.append(feedback)
-    #
-    # # we only really care if this exists, if it doesn't then flag is false
-    # if not form_data.get(ServiceFeedbackNotificationBlockIds.anonymous_checkbox):
-    #     participant = participant_service.get_by_incident_id_and_email(
-    #         db_session=db_session, incident_id=context["subject"].id, email=user.email
-    #     )
-    #     participant.feedback.append(feedback)
-    #     db_session.add(participant)
-    #
-    # db_session.add(incident)
-    # db_session.commit()
+
+    feedback = form_data.get(ServiceFeedbackNotificationBlockIds.feedback_input)
+    rating = form_data.get(ServiceFeedbackNotificationBlockIds.rating_select, {}).get("value")
+
+    # metadata is organization_slug|project_id|schedule_id|shift_end_at
+    metadata = body["view"]["private_metadata"].split("|")
+    project_id = metadata[1]
+    schedule_id = metadata[2]
+    shift_end_at = datetime.strptime(metadata[3], "%Y-%m-%dT%H:%M:%SZ")
+
+    individual = (
+        None if form_data.get(ServiceFeedbackNotificationBlockIds.anonymous_checkbox)
+        else individual_service.get_by_email_and_project(
+            db_session=db_session, email=user.email, project_id=project_id
+        )
+    )
+
+    service_feedback = feedback_service.ServiceFeedbackCreate(
+        feedback=feedback,
+        hours=hours,
+        individual=individual,
+        rating=ServiceFeedbackRating(rating),
+        schedule=schedule_id,
+        shift_end_at=shift_end_at,
+        shift_start_at=None,
+    )
+
+    service_feedback = feedback_service.create(db_session=db_session, service_feedback_in=service_feedback)
 
     modal = Modal(
         title="Oncall Shift Feedback",

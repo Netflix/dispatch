@@ -6,7 +6,7 @@
 """
 from pdpyras import APISession
 from pydantic import Field, SecretStr, EmailStr
-from typing import Literal
+from typing import Literal, Optional
 import logging
 
 from dispatch.config import BaseConfigurationModel
@@ -14,7 +14,7 @@ from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_pagerduty as pagerduty_oncall_plugin
 from dispatch.plugins.bases import OncallPlugin
 
-from .service import get_oncall, page_oncall
+from .service import get_oncall, page_oncall, oncall_shift_check
 
 
 log = logging.getLogger(__name__)
@@ -75,4 +75,12 @@ class PagerDutyOncallPlugin(OncallPlugin):
             incident_name=incident_name,
             incident_title=incident_title,
             incident_description=incident_description,
+        )
+
+    def did_oncall_just_go_off_shift(self, schedule_id: str) -> Optional[dict]:
+        client = APISession(self.configuration.api_key.get_secret_value())
+        client.url = self.configuration.pagerduty_api_url
+        return oncall_shift_check(
+            client=client,
+            schedule_id=schedule_id,
         )

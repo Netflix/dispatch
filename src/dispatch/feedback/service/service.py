@@ -3,6 +3,7 @@ from typing import Optional
 from sqlalchemy.orm import Session
 
 from dispatch.service import service as service_service
+from dispatch.individual import service as individual_service
 
 from .models import ServiceFeedback, ServiceFeedbackCreate, ServiceFeedbackUpdate
 
@@ -23,16 +24,12 @@ def get_all(*, db_session: Session):
 
 def create(*, service_feedback_in: ServiceFeedbackCreate, db_session: Session) -> ServiceFeedback:
     """Creates a new piece of service feedback."""
-    service = service_service.get(
-        db_session=db_session,
-        service_id=service_feedback_in.service.id,
-    )
 
-    # TODO(mvilanova): add individual
+    individual_contact_id = None if not service_feedback_in.individual else service_feedback_in.individual.id
 
     service_feedback = ServiceFeedback(
-        **service_feedback_in.dict(exclude={"service"}),
-        service=service,
+        **service_feedback_in.dict(exclude={"individual"}),
+        individual_contact_id=individual_contact_id,
     )
     db_session.add(service_feedback)
     db_session.commit()

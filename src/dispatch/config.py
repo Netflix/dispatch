@@ -221,3 +221,7 @@ ALEMBIC_MULTI_TENANT_MIGRATION_PATH = config(
     "ALEMBIC_MULTI_TENANT_MIGRATION_PATH",
     default=f"{os.path.dirname(os.path.realpath(__file__))}/database/revisions/multi-tenant-migration.sql",
 )
+
+# for feedback form - set the project name and the PagerDuty schedule id
+DISPATCH_FEEDBACK_PROJECT_NAME = config("DISPATCH_FEEDBACK_PROJECT_NAME", default=None)
+DISPATCH_FEEDBACK_SCHEDULE_ID = config("DISPATCH_FEEDBACK_SCHEDULE_ID", default=None)

@@ -1,75 +1,74 @@
 from schedule import every
 import logging
+from operator import attrgetter
 
-from sqlalchemy.orm import Session
-
-from dispatch.decorators import scheduled_project_task
+from dispatch.database.core import SessionLocal
+from dispatch.decorators import scheduled_project_task, timer
 from dispatch.individual import service as individual_service
 from dispatch.plugin import service as plugin_service
 from dispatch.project.models import Project
 from dispatch.scheduler import scheduler
-from dispatch.service import service as service_service
-
+from dispatch.config import DISPATCH_FEEDBACK_PROJECT_NAME, DISPATCH_FEEDBACK_SCHEDULE_ID
 from .messaging import send_oncall_shift_feedback_message
 
 log = logging.getLogger(__name__)
 
+"""
+    Experimental: will wake up and check the oncall schedule for previous day
+    vs current day to see if a different person is oncall, if so, the previous day's
+    oncall will receive a shift feedback form.
+    Timing: for UCAN, wake at 4pm UTC == 8am PST / 9am PDT
+            for EMEA, wake at 6am UTC == 8am UTC+2 Standard / 9am UTC+2 Daylight Saving
+"""
 
-@scheduler.add(every(15).minutes, name="oncall-shift-feedback")
+
+@scheduler.add(every(1).day.at("16:00"), name="oncall-shift-feedback-ucan")
+@timer
 @scheduled_project_task
-def oncall_shift_feedback(project: Project, db_session: Session):
+def oncall_shift_feedback_ucan(db_session: SessionLocal, project: Project):
+    oncall_shift_feedback(db_session=db_session, project=project)
+
+
+@scheduler.add(every(1).day.at("06:00"), name="oncall-shift-feedback-emea")
+@timer
+@scheduled_project_task
+def oncall_shift_feedback_emea(db_session: SessionLocal, project: Project):
+    oncall_shift_feedback(db_session=db_session, project=project)
+
+
+def oncall_shift_feedback(db_session: SessionLocal, project: Project):
     """
-    Collects feedback from individuals participating in an oncall service that has health metrics enabled
-    when their oncall shift ends.
+    Experimental: collects feedback from individuals participating in an oncall service that has health metrics enabled
+    when their oncall shift ends. For now, only for one project and schedule.
     """
+    if project.name != DISPATCH_FEEDBACK_PROJECT_NAME:
+        return
+
+    schedule_id = DISPATCH_FEEDBACK_SCHEDULE_ID
+    if not schedule_id:
+        return
+
     oncall_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project.id, plugin_type="oncall"
     )
-
     if not oncall_plugin:
-        log.warning(
-            f"Skipping collection of oncall shift feedback for project {project.name}. No oncall plugin enabled."
-        )
+        log.warning("Feedback form not sent. No plugin of type oncall enabled.")
         return
 
-    oncall_services = service_service.get_all_by_health_metrics(
-        db_session=db_session, service_type=oncall_plugin.instance.slug, health_metrics=True
+    current_oncall = oncall_plugin.instance.did_oncall_just_go_off_shift(schedule_id)
+
+    individual = individual_service.get_by_email_and_project(
+        db_session=db_session, email=current_oncall["email"], project_id=project.id
     )
 
-    for oncall_service in oncall_services:
-        # we get the current oncall's information
-        current_oncall_info = oncall_plugin.instance.get(
-            service_id=oncall_service.external_id, type="current"
-        )
+    send_oncall_shift_feedback_message(
+        project=project,
+        individual=individual,
+        schedule_id=schedule_id,
+        shift_end_at=current_oncall["shift_end"],
+        db_session=db_session,
+    )
 
-        # we get the time when the current oncall will end their shift
-        # current_oncall_end_utc = datetime.strptime(
-        #     current_oncall_info["end"], "%Y-%m-%dT%H:%M:%S%z"
-        # )
-        # dt_now_utc = datetime.now(timezone.utc)
-
-        # we check if the oncall shift will end in less than 30 minutes
-        # if current_oncall_end_utc - dt_now_utc < timedelta(minutes=30):
-        # TODO(mvilanova): add a check to avoid asking more than once before the oncall shift ends
-
-        # we send the current commander a direct message asking to provide mental and emotional effort
-        # and number of off hours spent on incident response tasks
-
-        individual = individual_service.get_by_email_and_project(
-            db_session=db_session, email=current_oncall_info["email"], project_id=project.id
-        )
-
-        shift_start_at = current_oncall_info["start"]
-        shift_end_at = current_oncall_info["end"]
-
-        send_oncall_shift_feedback_message(
-            individual=individual,
-            service=oncall_service,
-            shift_end_at=shift_end_at,
-            shift_start_at=shift_start_at,
-            db_session=db_session,
-        )
-
-        print(
-            f"Requesting oncall shift feedback from {individual.name} for the {oncall_service.name} oncall service."
-        )
+    print(
+        f"Requesting oncall shift feedback from {individual.name}."
+    )

@@ -26,7 +26,7 @@ def upgrade():
         sa.Column("hours", sa.Integer(), nullable=True),
         sa.Column("shift_start_at", sa.DateTime(), nullable=True),
         sa.Column("shift_end_at", sa.DateTime(), nullable=True),
-        sa.Column("service_id", sa.Integer(), nullable=True),
+        sa.Column("schedule", sa.String(), nullable=True),
         sa.Column("individual_contact_id", sa.Integer(), nullable=True),
         sa.Column("search_vector", sqlalchemy_utils.types.ts_vector.TSVectorType(), nullable=True),
         sa.Column("updated_at", sa.DateTime(), nullable=True),
@@ -34,10 +34,6 @@ def upgrade():
         sa.ForeignKeyConstraint(
             ["individual_contact_id"],
             ["individual_contact.id"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["service_id"],
-            ["service.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )

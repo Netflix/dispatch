@@ -8,28 +8,29 @@ from dispatch.messaging.strings import (
     MessageType,
 )
 from dispatch.plugin import service as plugin_service
-from dispatch.service.models import Service
+from dispatch.project.models import Project
 
 
 log = logging.getLogger(__name__)
 
 
 def send_oncall_shift_feedback_message(
-    service: Service,
+    *,
+    project: Project,
     individual: IndividualContact,
-    shift_start_at: str,
+    schedule_id: str,
     shift_end_at: str,
     db_session: Session,
 ):
     """
-    Sends a direct message to the oncall about to end their shift
+    Experimental: sends a direct message to the oncall about to end their shift
     asking to provide feedback about their experience.
     """
     notification_text = "Oncall Shift Feedback Request"
     notification_template = ONCALL_SHIFT_FEEDBACK_NOTIFICATION
 
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=service.project.id, plugin_type="conversation"
+        db_session=db_session, project_id=project.id, plugin_type="conversation"
     )
     if not plugin:
         log.warning(
@@ -40,11 +41,11 @@ def send_oncall_shift_feedback_message(
     items = [
         {
             "individual_name": individual.name,
-            "oncall_service_id": service.id,
-            "oncall_service_name": service.name,
-            "organization_slug": service.project.organization.slug,
+            "oncall_schedule_id": schedule_id,
+            "oncall_service_name": "Security Incident Response On-Call",
+            "organization_slug": project.organization.slug,
+            "project_id": project.id,
             "shift_end_at": shift_end_at,
-            "shift_start_at": shift_start_at,
         }
     ]
 
