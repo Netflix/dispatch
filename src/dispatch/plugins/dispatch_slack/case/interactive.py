@@ -1189,7 +1189,9 @@ def resolve_button_click(
 
     reason = case.resolution_reason
     blocks = [
-        case_resolution_reason_select(initial_option={"text": reason, "value": reason}) if reason else case_resolution_reason_select(),
+        case_resolution_reason_select(initial_option={"text": reason, "value": reason})
+        if reason
+        else case_resolution_reason_select(),
         resolution_input(initial_value=case.resolution),
     ]
 
