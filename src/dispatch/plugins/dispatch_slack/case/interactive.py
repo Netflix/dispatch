@@ -1187,8 +1187,11 @@ def resolve_button_click(
     ack()
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
+    reason = case.resolution_reason
     blocks = [
-        case_resolution_reason_select(),
+        case_resolution_reason_select(initial_option={"text": reason, "value": reason})
+        if reason
+        else case_resolution_reason_select(),
         resolution_input(initial_value=case.resolution),
     ]
 
@@ -1242,6 +1245,7 @@ def handle_resolve_submission_event(
     # we update the case with the new resolution and status
     case_in = CaseUpdate(
         title=case.title,
+        resolution_reason=form_data[DefaultBlockIds.case_resolution_reason_select]["value"],
         resolution=form_data[DefaultBlockIds.resolution_input],
         visibility=case.visibility,
         status=CaseStatus.closed,
