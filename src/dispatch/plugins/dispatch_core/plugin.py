@@ -72,9 +72,10 @@ class BasicAuthProviderPlugin(AuthenticationProviderPlugin):
 
         try:
             data = jwt.decode(token, DISPATCH_JWT_SECRET)
-        except (JWKError, JWTError) as e:
+        except (JWKError, JWTError):
             raise HTTPException(
-                status_code=HTTP_401_UNAUTHORIZED, detail=[{"msg": str(e)}]
+                status_code=HTTP_401_UNAUTHORIZED,
+                detail=[{"msg": "Could not validate credentials"}],
             ) from None
         return data["email"]
 
