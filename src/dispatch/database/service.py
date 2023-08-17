@@ -349,6 +349,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (Case, "TagType"): (Case.tags, True),
         (Incident, "Tag"): (Incident.tags, True),
         (Incident, "TagType"): (Incident.tags, True),
+        (Incident, "IndividualContact"): (Incident.commander, True),
         (Incident, "Term"): (Incident.terms, True),
         (Signal, "Tag"): (Signal.tags, True),
         (Signal, "TagType"): {Signal.tags, True},
@@ -491,9 +492,23 @@ def search_filter_sort_paginate(
 
         query = apply_model_specific_filters(model_cls, query, current_user, role)
 
+        log.debug(f"**** This is the filter_spec before {str(filter_spec)}")
+
+        filter_spec = {
+            "or": [
+                {
+                    "or": [
+                        {"model": "IndividualContact", "field": "name", "op": "==", "value": "Kevin Glisson"},
+                    ]
+                },
+            ]
+        }
+        log.debug(f"**** This is the filter_spec {str(filter_spec)}")
         if filter_spec:
             query = apply_filter_specific_joins(model_cls, filter_spec, query)
+            log.debug(f"**** the query is {str(query)}")
             query = apply_filters(query, filter_spec, model_cls)
+            log.debug(f"**** the query is now {str(query)}")
 
         if sort_by:
             sort_spec = create_sort_spec(model, sort_by, descending)

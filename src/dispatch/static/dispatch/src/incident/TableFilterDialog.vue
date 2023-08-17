@@ -47,6 +47,28 @@
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
+            <participant-select
+              v-model="local_commander"
+              label="Incident Commander"
+              hint="The participant acting as incident commander."
+              :project="local_project"
+              clearable
+            />
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-content>
+            <participant-select
+              v-model="local_participant"
+              label="Incident Participant"
+              hint="Any participant in the incident."
+              :project="local_project"
+              clearable
+            />
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-content>
             <tag-type-filter-combobox v-model="local_tag_type" label="Tag Types" />
           </v-list-item-content>
         </v-list-item>
@@ -76,6 +98,7 @@ import IncidentTypeCombobox from "@/incident/type/IncidentTypeCombobox.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
+import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 
 export default {
   name: "IncidentTableFilterDialog",
@@ -89,6 +112,7 @@ export default {
     ProjectCombobox,
     TagFilterAutoComplete,
     TagTypeFilterCombobox,
+    ParticipantSelect,
   },
 
   props: {
@@ -112,6 +136,8 @@ export default {
       local_status: [],
       local_tag: [],
       local_tag_type: [],
+      local_commander: null,
+      local_participant: null,
     }
   },
 
@@ -126,6 +152,8 @@ export default {
       "table.options.filters.status",
       "table.options.filters.tag",
       "table.options.filters.tag_type",
+      "table.options.filters.commander",
+      "table.options.filters.participant",
     ]),
     numFilters: function () {
       return sum([
@@ -152,6 +180,8 @@ export default {
       this.status = this.local_status
       this.tag = this.local_tag
       this.tag_type = this.local_tag_type
+      this.commander = this.local_commander
+      this.participant = this.local_participant
 
       // we close the dialog
       this.display = false
