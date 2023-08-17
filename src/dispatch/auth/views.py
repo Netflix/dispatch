@@ -51,16 +51,14 @@ user_router = APIRouter()
     response_model=UserPagination,
 )
 def get_users(organization: OrganizationSlug, common: CommonParameters):
-    """Get all users."""
+    """Gets all organization users."""
     common["filter_spec"] = {
         "and": [{"model": "Organization", "op": "==", "field": "slug", "value": organization}]
     }
 
     items = search_filter_sort_paginate(model="DispatchUser", **common)
 
-    # filtered users
     return {
-        "total": items["total"],
         "items": [
             {
                 "id": u.id,
@@ -70,6 +68,9 @@ def get_users(organization: OrganizationSlug, common: CommonParameters):
             }
             for u in items["items"]
         ],
+        "itemsPerPage": items["itemsPerPage"],
+        "page": items["page"],
+        "total": items["total"],
     }
 
 
