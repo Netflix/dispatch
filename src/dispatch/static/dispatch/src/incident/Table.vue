@@ -249,6 +249,9 @@ export default {
       ...RouterUtils.deserializeFilters(this.query),
       project: this.defaultUserProjects,
     }
+    if (this.filters.commander) {
+      this.filters.participant = this.filters.commander
+    }
 
     this.getAll()
 
@@ -279,7 +282,6 @@ export default {
       ],
       () => {
         this.page = 1
-        console.log(`The filters are ${JSON.stringify(this.filters)}`)
         RouterUtils.updateURLFilters(this.filters)
         this.getAll()
       }

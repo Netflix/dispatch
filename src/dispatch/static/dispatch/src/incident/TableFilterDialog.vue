@@ -164,6 +164,7 @@ export default {
         this.status.length,
         this.tag.length,
         this.tag_type.length,
+        this.local_participant == null ? 0 : 1,
       ])
     },
   },

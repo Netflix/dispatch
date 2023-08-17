@@ -110,11 +110,18 @@ class Filter(object):
 
     def get_named_models(self):
         if "model" in self.filter_spec:
-            return {self.filter_spec["model"]}
+            model = self.filter_spec["model"]
+            if model in ["Participant", "Commander"]:
+                return {"IndividualContact"}
+            else:
+                return {self.filter_spec["model"]}
         return set()
 
     def format_for_sqlalchemy(self, query, default_model):
         filter_spec = self.filter_spec
+        if filter_spec["model"] in ["Participant", "Commander"]:
+            filter_spec["model"] = "IndividualContact"
+
         operator = self.operator
         value = self.value
 
@@ -349,7 +356,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (Case, "TagType"): (Case.tags, True),
         (Incident, "Tag"): (Incident.tags, True),
         (Incident, "TagType"): (Incident.tags, True),
-        (Incident, "IndividualContact"): (Incident.commander, True),
+        (Incident, "IndividualContact"): (Incident.participants, True),
         (Incident, "Term"): (Incident.terms, True),
         (Signal, "Tag"): (Signal.tags, True),
         (Signal, "TagType"): {Signal.tags, True},
@@ -357,6 +364,13 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (SignalInstance, "EntityType"): (SignalInstance.entities, True),
     }
     filters = build_filters(filter_spec)
+
+    # Replace mapping if looking for commander
+    if "Commander" in str(filter_spec):
+        model_map.update(
+            {(Incident, "IndividualContact"): (Incident.commander, True)}
+        )
+
     filter_models = get_named_models(filters)
     for filter_model in filter_models:
         if model_map.get((model, filter_model)):
@@ -492,23 +506,9 @@ def search_filter_sort_paginate(
 
         query = apply_model_specific_filters(model_cls, query, current_user, role)
 
-        log.debug(f"**** This is the filter_spec before {str(filter_spec)}")
-
-        # filter_spec = {
-        #     "or": [
-        #         {
-        #             "or": [
-        #                 {"model": "IndividualContact", "field": "name", "op": "==", "value": "Kevin Glisson"},
-        #             ]
-        #         },
-        #     ]
-        # }
-        log.debug(f"**** This is the filter_spec {str(filter_spec)}")
         if filter_spec:
             query = apply_filter_specific_joins(model_cls, filter_spec, query)
-            log.debug(f"**** the query is {str(query)}")
             query = apply_filters(query, filter_spec, model_cls)
-            log.debug(f"**** the query is now {str(query)}")
 
         if sort_by:
             sort_spec = create_sort_spec(model, sort_by, descending)
