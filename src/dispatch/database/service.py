@@ -494,15 +494,15 @@ def search_filter_sort_paginate(
 
         log.debug(f"**** This is the filter_spec before {str(filter_spec)}")
 
-        filter_spec = {
-            "or": [
-                {
-                    "or": [
-                        {"model": "IndividualContact", "field": "name", "op": "==", "value": "Kevin Glisson"},
-                    ]
-                },
-            ]
-        }
+        # filter_spec = {
+        #     "or": [
+        #         {
+        #             "or": [
+        #                 {"model": "IndividualContact", "field": "name", "op": "==", "value": "Kevin Glisson"},
+        #             ]
+        #         },
+        #     ]
+        # }
         log.debug(f"**** This is the filter_spec {str(filter_spec)}")
         if filter_spec:
             query = apply_filter_specific_joins(model_cls, filter_spec, query)
