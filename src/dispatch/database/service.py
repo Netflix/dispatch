@@ -367,9 +367,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
 
     # Replace mapping if looking for commander
     if "Commander" in str(filter_spec):
-        model_map.update(
-            {(Incident, "IndividualContact"): (Incident.commander, True)}
-        )
+        model_map.update({(Incident, "IndividualContact"): (Incident.commander, True)})
 
     filter_models = get_named_models(filters)
     for filter_model in filter_models:
