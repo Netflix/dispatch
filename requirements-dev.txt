@@ -24,7 +24,7 @@ coverage==7.3.0
     # via -r requirements-dev.in
 decorator==5.1.1
     # via ipython
-devtools==0.11.0
+devtools==0.12.0
     # via -r requirements-dev.in
 distlib==0.3.6
     # via virtualenv
@@ -81,7 +81,9 @@ ptyprocess==0.7.0
 pure-eval==0.2.2
     # via stack-data
 pygments==2.15.1
-    # via ipython
+    # via
+    #   devtools
+    #   ipython
 pytest==7.4.0
     # via -r requirements-dev.in
 python-dateutil==2.8.2
