@@ -5,10 +5,11 @@ from dispatch.database.core import SessionLocal
 from dispatch.decorators import scheduled_project_task, timer
 from dispatch.individual import service as individual_service
 from dispatch.plugin import service as plugin_service
+from dispatch.service import service as service_service
 from dispatch.project.models import Project
 from dispatch.scheduler import scheduler
-from dispatch.config import DISPATCH_FEEDBACK_PROJECT_NAME, DISPATCH_FEEDBACK_SCHEDULE_ID
 from .messaging import send_oncall_shift_feedback_message
+from .models import PluginInstance
 
 log = logging.getLogger(__name__)
 
@@ -35,25 +36,13 @@ def oncall_shift_feedback_emea(db_session: SessionLocal, project: Project):
     oncall_shift_feedback(db_session=db_session, project=project)
 
 
-def oncall_shift_feedback(db_session: SessionLocal, project: Project):
+def find_schedule_and_send(
+    *, db_session: SessionLocal, project: Project, oncall_plugin: PluginInstance, schedule_id: str
+):
     """
-    Experimental: collects feedback from individuals participating in an oncall service that has health metrics enabled
-    when their oncall shift ends. For now, only for one project and schedule.
+    Given PagerDuty schedule_id, determine if the shift ended for the previous oncall person and
+    send the health metrics feedback request
     """
-    if project.name != DISPATCH_FEEDBACK_PROJECT_NAME:
-        return
-
-    schedule_id = DISPATCH_FEEDBACK_SCHEDULE_ID
-    if not schedule_id:
-        return
-
-    oncall_plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=project.id, plugin_type="oncall"
-    )
-    if not oncall_plugin:
-        log.warning("Feedback form not sent. No plugin of type oncall enabled.")
-        return
-
     current_oncall = oncall_plugin.instance.did_oncall_just_go_off_shift(schedule_id)
 
     individual = individual_service.get_by_email_and_project(
@@ -68,4 +57,38 @@ def oncall_shift_feedback(db_session: SessionLocal, project: Project):
         db_session=db_session,
     )
 
-    print(f"Requesting oncall shift feedback from {individual.name}.")
+
+@scheduler.add(every(1).minutes, name="oncall-shift-feedback-emea")
+@timer
+@scheduled_project_task
+def oncall_shift_feedback(db_session: SessionLocal, project: Project):
+    """
+    Experimental: collects feedback from individuals participating in an oncall service that has health metrics enabled
+    when their oncall shift ends. For now, only for one project and schedule.
+    """
+    oncall_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=project.id, plugin_type="oncall"
+    )
+
+    if not oncall_plugin:
+        log.warning(
+            f"Skipping collection of oncall shift feedback for project {project.name}. No oncall plugin enabled."
+        )
+        return
+
+    # Get all oncall services marked for health metrics
+    oncall_services = service_service.get_all_by_health_metrics(
+        db_session=db_session, service_type=oncall_plugin.instance.slug, health_metrics=True
+    )
+
+    for oncall_service in oncall_services:
+        # for each service, get the schedule_id
+        external_id = oncall_service.external_id
+        schedule_id = oncall_plugin.instance.get_schedule_id_from_service_id(service_id=external_id)
+        if schedule_id:
+            find_schedule_and_send(
+                db_session=db_session,
+                project=project,
+                oncall_plugin=oncall_plugin,
+                schedule_id=schedule_id,
+            )

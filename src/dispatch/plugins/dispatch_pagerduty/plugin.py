@@ -14,7 +14,7 @@ from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_pagerduty as pagerduty_oncall_plugin
 from dispatch.plugins.bases import OncallPlugin
 
-from .service import get_oncall, page_oncall, oncall_shift_check
+from .service import get_oncall, page_oncall, oncall_shift_check, get_escalation_policy, get_service
 
 
 log = logging.getLogger(__name__)
@@ -84,3 +84,26 @@ class PagerDutyOncallPlugin(OncallPlugin):
             client=client,
             schedule_id=schedule_id,
         )
+
+    def get_schedule_id_from_service_id(self, service_id: str) -> Optional[str]:
+        if not service_id:
+            return None
+
+        try:
+            client = APISession(self.configuration.api_key.get_secret_value())
+            client.url = self.configuration.pagerduty_api_url
+            service = get_service(
+                client=client,
+                service_id=service_id,
+            )
+            if service:
+                escalation_policy_id = service["escalation_policy"]["id"]
+                escalation_policy = get_escalation_policy(
+                    client=client,
+                    escalation_policy_id=escalation_policy_id,
+                )
+                if escalation_policy:
+                    return escalation_policy["escalation_rules"][0]["targets"][0]["id"]
+        except Exception as e:
+            log.error("Error trying to retrieve schedule_id from service_id")
+            log.exception(e)
