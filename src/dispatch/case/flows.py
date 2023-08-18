@@ -593,7 +593,7 @@ def case_to_incident_escalate_flow(
         case_id=case.id,
     )
 
-    if case.storage:
+    if case.storage and incident.tactical_group:
         # we add the incident's tactical group to the case's storage folder
         # to allow incident participants to access the case's artifacts in the folder
         storage_members = [incident.tactical_group.email]
