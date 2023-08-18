@@ -54,6 +54,7 @@ def find_schedule_and_send(
         individual=individual,
         schedule_id=schedule_id,
         shift_end_at=current_oncall["shift_end"],
+        schedule_name=current_oncall["schedule_name"],
         db_session=db_session,
     )
 

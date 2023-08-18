@@ -20,6 +20,7 @@ def send_oncall_shift_feedback_message(
     individual: IndividualContact,
     schedule_id: str,
     shift_end_at: str,
+    schedule_name: str,
     db_session: Session,
 ):
     """
@@ -42,7 +43,7 @@ def send_oncall_shift_feedback_message(
         {
             "individual_name": individual.name,
             "oncall_schedule_id": schedule_id,
-            "oncall_service_name": "Security Incident Response On-Call",
+            "oncall_service_name": schedule_name,
             "organization_slug": project.organization.slug,
             "project_id": project.id,
             "shift_end_at": shift_end_at,

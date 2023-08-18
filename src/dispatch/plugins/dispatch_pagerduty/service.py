@@ -181,9 +181,11 @@ def get_oncall_at_time(client: APISession, schedule_id: str, utctime: str) -> Op
         user = get_user(client, user_id)
         user_email = user["email"]
         shift_end = oncalls[0]["end"]
+        schedule_name = oncalls[0]["schedule"]["summary"]
         return {
             "email": user_email,
             "shift_end": shift_end,
+            "schedule_name": schedule_name,
         }
 
     except PDHTTPError as e:
