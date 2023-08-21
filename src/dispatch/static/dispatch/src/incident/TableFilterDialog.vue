@@ -55,6 +55,28 @@
             <tag-filter-auto-complete v-model="local_tag" label="Tags" />
           </v-list-item-content>
         </v-list-item>
+        <v-list-item>
+          <v-list-item-content>
+            <v-card class="mx-auto" outlined elevation="0">
+              <v-card-title>Incident Participant</v-card-title>
+              <v-card-subtitle>Show only incidents with this participant</v-card-subtitle>
+              <participant-select
+                class="ml-10 mr-5"
+                v-model="local_participant"
+                label="Participant"
+                hint="Show only incidents with this participant"
+                :project="local_project"
+                clearable
+              />
+              <v-checkbox
+                class="ml-10 mr-5"
+                v-model="local_participant_is_commander"
+                label="And this participant is the Incident Commander"
+                :disabled="local_participant == null"
+              />
+            </v-card>
+          </v-list-item-content>
+        </v-list-item>
       </v-list>
       <v-card-actions>
         <v-spacer />
@@ -76,6 +98,7 @@ import IncidentTypeCombobox from "@/incident/type/IncidentTypeCombobox.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
+import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 
 export default {
   name: "IncidentTableFilterDialog",
@@ -89,6 +112,7 @@ export default {
     ProjectCombobox,
     TagFilterAutoComplete,
     TagTypeFilterCombobox,
+    ParticipantSelect,
   },
 
   props: {
@@ -112,6 +136,8 @@ export default {
       local_status: [],
       local_tag: [],
       local_tag_type: [],
+      local_participant_is_commander: false,
+      local_participant: null,
     }
   },
 
@@ -126,6 +152,8 @@ export default {
       "table.options.filters.status",
       "table.options.filters.tag",
       "table.options.filters.tag_type",
+      "table.options.filters.commander",
+      "table.options.filters.participant",
     ]),
     numFilters: function () {
       return sum([
@@ -136,6 +164,7 @@ export default {
         this.status.length,
         this.tag.length,
         this.tag_type.length,
+        this.local_participant == null ? 0 : 1,
       ])
     },
   },
@@ -152,6 +181,14 @@ export default {
       this.status = this.local_status
       this.tag = this.local_tag
       this.tag_type = this.local_tag_type
+      this.participant = this.local_participant
+      if (this.local_participant_is_commander) {
+        this.commander = this.local_participant
+        this.participant = null
+      } else {
+        this.commander = null
+        this.participant = this.local_participant
+      }
 
       // we close the dialog
       this.display = false

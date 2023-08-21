@@ -34,6 +34,7 @@ class MessageType(DispatchEnum):
     incident_tactical_report = "incident-tactical-report"
     incident_task_list = "incident-task-list"
     incident_task_reminder = "incident-task-reminder"
+    service_feedback = "service-feedback"
 
 
 INCIDENT_STATUS_DESCRIPTIONS = {
@@ -318,6 +319,9 @@ Hey, I see you're the Incident Commander for {{name}} ("{{title}}"). Here are a 
 \n
 To find a Slack command, simply type `/` in the message field or click the lightning bolt icon to the left of the message field.
 """
+
+ONCALL_SHIFT_FEEDBACK_DESCRIPTION = """
+Hi {{ individual_name }}, it appears that your {{ oncall_service_name }} shift has completed. To help us understand the impact on our responders, we would appreciate your feedback."""
 
 INCIDENT_STATUS_CHANGE_DESCRIPTION = """
 The incident status has been changed from {{ incident_status_old }} to {{ incident_status_new }}.""".replace(
@@ -756,6 +760,20 @@ INCIDENT_OPEN_TASKS = [
     {
         "title": "{{title}}",
         "text": INCIDENT_OPEN_TASKS_DESCRIPTION,
+    }
+]
+
+ONCALL_SHIFT_FEEDBACK_NOTIFICATION = [
+    {
+        "title": "Oncall Shift Feedback",
+        "text": ONCALL_SHIFT_FEEDBACK_DESCRIPTION,
+        "buttons": [
+            {
+                "button_text": "Provide Feedback",
+                "button_value": "{{organization_slug}}|{{project_id}}|{{oncall_schedule_id}}|{{shift_end_at}}",
+                "button_action": ConversationButtonActions.service_feedback,
+            }
+        ],
     }
 ]
 

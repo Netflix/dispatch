@@ -1,7 +1,7 @@
 <template>
   <ValidationObserver v-slot="{ invalid, validated }">
     <v-navigation-drawer v-model="showCreateEdit" app clipped right width="500">
-      <template v-slot:prepend>
+      <template #prepend>
         <v-list-item two-line>
           <v-list-item-content>
             <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
@@ -80,13 +80,16 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
+                <v-checkbox v-model="health_metrics" label="Collect Health Metrics" />
+              </v-flex>
+              <v-flex xs12>
                 <v-checkbox v-model="is_active" label="Enabled" />
               </v-flex>
               <v-flex xs12>
                 <span class="subtitle-2"
                   >Engagement
                   <v-tooltip max-width="250px" bottom>
-                    <template v-slot:activator="{ on, attrs }">
+                    <template #activator="{ on, attrs }">
                       <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                     </template>
                     This service will be used to automatically engage services for any incident or
@@ -106,7 +109,7 @@
                 <span class="subtitle-2"
                   >Evergreen
                   <v-tooltip max-width="250px" bottom>
-                    <template v-slot:activator="{ on, attrs }">
+                    <template #activator="{ on, attrs }">
                       <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                     </template>
                     Dispatch will send the owner a reminder email to the resource owner, reminding
@@ -184,18 +187,19 @@ export default {
 
   computed: {
     ...mapFields("service", [
-      "selected.name",
-      "selected.type",
-      "selected.id",
-      "selected.filters",
-      "selected.project",
       "selected.description",
-      "selected.external_id",
-      "selected.evergreen_owner",
       "selected.evergreen",
+      "selected.evergreen_owner",
       "selected.evergreen_reminder_interval",
+      "selected.external_id",
+      "selected.filters",
+      "selected.health_metrics",
+      "selected.id",
       "selected.is_active",
       "selected.loading",
+      "selected.name",
+      "selected.project",
+      "selected.type",
       "dialogs.showCreateEdit",
     ]),
     ...mapFields("route", ["query"]),

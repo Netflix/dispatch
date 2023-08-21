@@ -50,7 +50,7 @@ from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.bolt import app
 from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
 from dispatch.plugins.dispatch_slack.enums import SlackAPIErrorCode
-from dispatch.plugins.dispatch_slack.exceptions import CommandError
+from dispatch.plugins.dispatch_slack.exceptions import CommandError, EventError
 from dispatch.plugins.dispatch_slack.fields import (
     DefaultActionIds,
     DefaultBlockIds,
@@ -907,6 +907,11 @@ def handle_member_joined_channel(
 ) -> None:
     """Handles the member_joined_channel Slack event."""
     ack()
+
+    if not user:
+        raise EventError(
+            "Unable to handle member_joined_channel Slack event. Dispatch user unknown"
+        )
 
     participant = incident_flows.incident_add_or_reactivate_participant_flow(
         user_email=user.email, incident_id=context["subject"].id, db_session=db_session
