@@ -119,7 +119,7 @@ class Filter(object):
 
     def format_for_sqlalchemy(self, query, default_model):
         filter_spec = self.filter_spec
-        if filter_spec["model"] in ["Participant", "Commander"]:
+        if filter_spec.get("model") in ["Participant", "Commander"]:
             filter_spec["model"] = "IndividualContact"
 
         operator = self.operator
