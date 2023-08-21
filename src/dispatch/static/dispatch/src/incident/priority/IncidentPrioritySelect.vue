@@ -7,6 +7,7 @@
     label="Priority"
     return-object
     :loading="loading"
+    :error-messages="show_error"
   >
     <template v-slot:item="data">
       <template>
@@ -38,6 +39,10 @@ export default {
       type: [Object],
       default: null,
     },
+    status: {
+      type: String,
+      default: "",
+    },
   },
 
   data() {
@@ -55,6 +60,12 @@ export default {
       set(value) {
         this.$emit("input", value)
       },
+    },
+    show_error() {
+      if (this.status == "Stable" && this.value.name != "Low") {
+        return "Priority must be Low for Stable incidents"
+      }
+      return null
     },
   },
 
@@ -101,7 +112,7 @@ export default {
   created() {
     this.fetchData()
     this.$watch(
-      (vm) => [vm.project],
+      (vm) => [vm.project, vm.status],
       () => {
         this.fetchData()
       }

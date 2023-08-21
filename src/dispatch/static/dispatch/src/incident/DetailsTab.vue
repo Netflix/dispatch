@@ -77,15 +77,23 @@
         <incident-severity-select v-model="incident_severity" :project="project" />
       </v-flex>
       <v-flex xs6>
-        <incident-priority-select v-model="incident_priority" :project="project" />
+        <ValidationProvider name="Incident Priority" rules="lowOnlyForStable:@status" immediate>
+          <incident-priority-select
+            v-model="incident_priority"
+            :project="project"
+            :status="status"
+          />
+        </ValidationProvider>
       </v-flex>
       <v-flex xs6>
-        <v-select
-          v-model="status"
-          label="Status"
-          :items="statuses"
-          hint="The status of the incident."
-        />
+        <ValidationProvider name="status" disabled="true">
+          <v-select
+            v-model="status"
+            label="Status"
+            :items="statuses"
+            hint="The status of the incident."
+          />
+        </ValidationProvider>
       </v-flex>
       <v-flex xs6>
         <v-select
@@ -142,6 +150,17 @@ import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 extend("required", {
   ...required,
   message: "This field is required",
+})
+
+extend("lowOnlyForStable", {
+  params: ["status"],
+  validate(value, { status }) {
+    if (status == "Stable" && value.name != "Low") {
+      return false
+    }
+    return true
+  },
+  message: "This field value must be between {min} and {max}",
 })
 
 export default {
