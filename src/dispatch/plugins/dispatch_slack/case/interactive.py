@@ -1,9 +1,9 @@
-import json
-import re
 from datetime import datetime, timedelta
 from uuid import UUID
-
+import json
 import pytz
+import re
+
 from blockkit import (
     Actions,
     Button,
@@ -17,6 +17,7 @@ from blockkit import (
 )
 from slack_bolt import Ack, BoltContext, Respond
 from slack_sdk.web.client import WebClient
+
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -25,10 +26,10 @@ from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
 from dispatch.case.enums import CaseStatus
 from dispatch.case.models import Case, CaseCreate, CaseRead, CaseUpdate
+from dispatch.conversation import flows as conversation_flows
 from dispatch.entity import service as entity_service
 from dispatch.enums import UserRoles
 from dispatch.exceptions import ExistsError
-from dispatch.incident import flows as incident_flows
 from dispatch.individual.models import IndividualContactRead
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
@@ -1026,12 +1027,13 @@ def handle_escalation_submission_event(
         channel=case.conversation.channel_id,
         thread_ts=case.conversation.thread_id,
     )
+
     incident = case_flows.case_escalated_status_flow(
         case=case, organization_slug=context["subject"].organization_slug, db_session=db_session
     )
 
-    incident_flows.add_participants_to_conversation(
-        db_session=db_session, participant_emails=[user.email], incident=incident
+    conversation_flows.add_participants(
+        incident=incident, participant_emails=[user.email], db_session=db_session
     )
 
     blocks = [
@@ -1079,9 +1081,12 @@ def join_incident_button_click(
     ack()
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
-    # TODO handle case there are multiple related incidents
-    incident_flows.add_participants_to_conversation(
-        db_session=db_session, participant_emails=[user.email], incident=case.incidents[0]
+    # we add the user to the incident conversation
+    conversation_flows.add_participants(
+        # TODO: handle case where there are multiple related incidents
+        incident=case.incidents[0],
+        participant_emails=[user.email],
+        db_session=db_session,
     )
 
 
@@ -1187,8 +1192,11 @@ def resolve_button_click(
     ack()
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
+    reason = case.resolution_reason
     blocks = [
-        case_resolution_reason_select(),
+        case_resolution_reason_select(initial_option={"text": reason, "value": reason})
+        if reason
+        else case_resolution_reason_select(),
         resolution_input(initial_value=case.resolution),
     ]
 
@@ -1242,6 +1250,7 @@ def handle_resolve_submission_event(
     # we update the case with the new resolution and status
     case_in = CaseUpdate(
         title=case.title,
+        resolution_reason=form_data[DefaultBlockIds.case_resolution_reason_select]["value"],
         resolution=form_data[DefaultBlockIds.resolution_input],
         visibility=case.visibility,
         status=CaseStatus.closed,

@@ -34,12 +34,15 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template v-slot:item.is_active="{ item }">
+            <template #[`item.health_metrics`]="{ item }">
+              <v-simple-checkbox v-model="item.health_metrics" disabled />
+            </template>
+            <template #[`item.is_active`]="{ item }">
               <v-simple-checkbox v-model="item.is_active" disabled />
             </template>
-            <template v-slot:item.data-table-actions="{ item }">
+            <template #[`item.data-table-actions`]="{ item }">
               <v-menu bottom left>
-                <template v-slot:activator="{ on }">
+                <template #activator="{ on }">
                   <v-btn icon v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>
@@ -65,9 +68,9 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
-import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
 import DeleteDialog from "@/service/DeleteDialog.vue"
 import NewEditSheet from "@/service/NewEditSheet.vue"
+import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
 
 export default {
   name: "ServiceTable",
@@ -84,6 +87,7 @@ export default {
         { text: "Description", value: "description", sortable: false },
         { text: "Type", value: "type", sortable: true },
         { text: "External Id", value: "external_id", sortable: true },
+        { text: "Collect Health Metrics", value: "health_metrics", sortable: true },
         { text: "Enabled", value: "is_active", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],

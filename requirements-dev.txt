@@ -16,7 +16,7 @@ black==23.7.0
     # via -r requirements-dev.in
 cfgv==3.3.1
     # via pre-commit
-click==8.1.6
+click==8.1.7
     # via
     #   -r requirements-dev.in
     #   black
@@ -24,7 +24,7 @@ coverage==7.3.0
     # via -r requirements-dev.in
 decorator==5.1.1
     # via ipython
-devtools==0.11.0
+devtools==0.12.1
     # via -r requirements-dev.in
 distlib==0.3.6
     # via virtualenv
@@ -81,14 +81,16 @@ ptyprocess==0.7.0
 pure-eval==0.2.2
     # via stack-data
 pygments==2.15.1
-    # via ipython
+    # via
+    #   devtools
+    #   ipython
 pytest==7.4.0
     # via -r requirements-dev.in
 python-dateutil==2.8.2
     # via faker
 pyyaml==6.0
     # via pre-commit
-ruff==0.0.284
+ruff==0.0.285
     # via -r requirements-dev.in
 six==1.16.0
     # via
@@ -104,7 +106,7 @@ traitlets==5.9.0
     #   matplotlib-inline
 virtualenv==20.21.0
     # via pre-commit
-vulture==2.8
+vulture==2.9
     # via -r requirements-dev.in
 wcwidth==0.2.6
     # via prompt-toolkit
