@@ -22,7 +22,7 @@ const getDefaultSelectedState = () => {
     incident_severity: null,
     incident_type: null,
     name: null,
-    participants: null,
+    participant: null,
     project: null,
     reported_at: null,
     reporter: null,
@@ -81,7 +81,7 @@ const state = {
     options: {
       filters: {
         reporter: [],
-        commander: [],
+        commander: null,
         incident_type: [],
         incident_priority: [],
         incident_severity: [],
@@ -97,6 +97,7 @@ const state = {
           start: null,
           end: null,
         },
+        participant: null,
       },
       q: "",
       page: 1,
