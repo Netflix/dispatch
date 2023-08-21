@@ -106,7 +106,7 @@ traitlets==5.9.0
     #   matplotlib-inline
 virtualenv==20.21.0
     # via pre-commit
-vulture==2.8
+vulture==2.9
     # via -r requirements-dev.in
 wcwidth==0.2.6
     # via prompt-toolkit
