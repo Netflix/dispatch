@@ -1861,7 +1861,7 @@ def handle_update_incident_submission_event(
     send_success_modal(
         client=client,
         view_id=body["view"]["id"],
-        title="Executive Report",
+        title="Update Incident",
         message="Incident updated successfully.",
     )
 
