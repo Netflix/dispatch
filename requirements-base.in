@@ -31,6 +31,7 @@ pandas
 pdpyras
 protobuf
 psycopg2-binary
+pydantic==1.*
 pyparsing
 python-dateutil
 python-jose
@@ -53,7 +54,6 @@ sqlalchemy<1.4  # NOTE temporarily until https://github.com/kvesteri/sqlalchemy-
 statsmodels
 tabulate
 tenacity
-typing-extensions==4.4.0
 uvicorn
 uvloop
 validators==0.18.2
