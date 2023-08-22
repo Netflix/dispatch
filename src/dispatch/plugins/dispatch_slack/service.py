@@ -49,9 +49,7 @@ def handle_slack_error(exception: SlackApiError, endpoint: str, kwargs: dict) ->
         SlackAPIErrorCode.USER_NOT_IN_CHANNEL,
         SlackAPIErrorCode.USERS_NOT_FOUND,
     }:
-        # NOTE we've seen some consistency problems with channel creation, adding users to channels or messaging them.
         log.warn(message)
-        raise TryAgain from None
     elif error == SlackAPIErrorCode.FATAL_ERROR:
         # NOTE we've experienced a wide range of issues when Slack's performance is degraded
         log.error(message)
