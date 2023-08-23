@@ -77,7 +77,11 @@
         <incident-severity-select v-model="incident_severity" :project="project" />
       </v-flex>
       <v-flex xs6>
-        <ValidationProvider name="Incident Priority" rules="lowOnlyForStable:@status" immediate>
+        <ValidationProvider
+          name="Incident Priority"
+          rules="lowOnlyForStable:@status,@project"
+          immediate
+        >
           <incident-priority-select
             v-model="incident_priority"
             :project="project"
@@ -86,7 +90,7 @@
         </ValidationProvider>
       </v-flex>
       <v-flex xs6>
-        <ValidationProvider name="status" disabled="true">
+        <ValidationProvider name="status" rules="alwaysTrue" immediate>
           <v-select
             v-model="status"
             label="Status"
@@ -128,6 +132,11 @@
       <v-flex xs12>
         <case-filter-combobox label="Cases" v-model="cases" />
       </v-flex>
+      <v-flex xs12 v-show="false">
+        <ValidationProvider name="project" rules="alwaysTrue" immediate>
+          <v-text-field v-model="project"></v-text-field>
+        </ValidationProvider>
+      </v-flex>
     </v-layout>
   </v-container>
 </template>
@@ -153,14 +162,21 @@ extend("required", {
 })
 
 extend("lowOnlyForStable", {
-  params: ["status"],
-  validate(value, { status }) {
+  params: ["status", "project"],
+  validate(value, { status, project }) {
+    console.log(`This is the project ${JSON.stringify(project)} and status ${status}`)
     if (status == "Stable" && value.name != "Low") {
+      console.log(`Now the status is ${status}`)
       return false
     }
     return true
   },
-  message: "This field value must be between {min} and {max}",
+})
+
+extend("alwaysTrue", {
+  validate() {
+    return true
+  },
 })
 
 export default {
