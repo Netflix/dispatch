@@ -51,11 +51,11 @@ class PagerDutyOncallPlugin(OncallPlugin):
     def __init__(self):
         self.configuration_schema = PagerdutyConfiguration
 
-    def get(self, service_id: str, type: Literal["current", "next"] = "current", **kwargs) -> str:
-        """Gets the current or next oncall person's email."""
+    def get(self, service_id: str, **kwargs) -> str:
+        """Gets the current oncall person's email."""
         client = APISession(self.configuration.api_key.get_secret_value())
         client.url = self.configuration.pagerduty_api_url
-        return get_oncall(client=client, service_id=service_id, type=type)
+        return get_oncall(client=client, service_id=service_id)
 
     def page(
         self,
