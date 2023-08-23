@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from http import HTTPStatus
-from typing import Literal, Optional
+from typing import Optional
 import logging
 
 from pdpyras import APISession, PDHTTPError, PDClientError

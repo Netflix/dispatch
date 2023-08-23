@@ -6,7 +6,7 @@
 """
 from pdpyras import APISession
 from pydantic import Field, SecretStr, EmailStr
-from typing import Literal, Optional
+from typing import Optional
 import logging
 
 from dispatch.config import BaseConfigurationModel
