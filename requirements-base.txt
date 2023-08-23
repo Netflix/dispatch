@@ -4,7 +4,6 @@
 #
 #    pip-compile --resolver=backtracking requirements-base.in
 #
-
 aiocache==0.12.2
     # via -r requirements-base.in
 aiofiles==23.2.1
@@ -237,7 +236,7 @@ oauthlib[signedtoken]==3.2.2
     #   atlassian-python-api
     #   jira
     #   requests-oauthlib
-openai==0.27.8
+openai==0.27.9
     # via -r requirements-base.in
 packaging==23.1
     # via
