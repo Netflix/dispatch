@@ -22,9 +22,9 @@ from sqlalchemy_filters.models import Field, get_model_from_spec
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import CurrentUser, get_current_role
 from dispatch.case.models import Case
-from dispatch.database.core import DbSession
 from dispatch.data.query.models import Query as QueryModel
 from dispatch.data.source.models import Source
+from dispatch.database.core import DbSession
 from dispatch.enums import UserRoles, Visibility
 from dispatch.exceptions import FieldNotFoundError, InvalidFilterError
 from dispatch.feedback.incident.models import Feedback
@@ -35,6 +35,7 @@ from dispatch.participant.models import Participant
 from dispatch.plugin.models import Plugin, PluginInstance
 from dispatch.search.fulltext.composite_search import CompositeSearch
 from dispatch.signal.models import Signal, SignalInstance
+from dispatch.tag.models import Tag
 from dispatch.task.models import Task
 
 from .core import Base, get_class_by_tablename, get_model_name_by_tablename
@@ -362,6 +363,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (Signal, "TagType"): {Signal.tags, True},
         (SignalInstance, "Entity"): (SignalInstance.entities, True),
         (SignalInstance, "EntityType"): (SignalInstance.entities, True),
+        (Tag, "TagType"): (Tag.tag_type, False),
     }
     filters = build_filters(filter_spec)
 
