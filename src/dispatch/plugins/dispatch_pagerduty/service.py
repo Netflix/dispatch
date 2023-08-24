@@ -83,7 +83,9 @@ def get_oncall_email(client: APISession, service_id: str) -> str:
     """Fetches the oncall's email for a given service."""
     service = get_service(client=client, service_id=service_id)
     escalation_policy_id = service["escalation_policy"]["id"]
-    escalation_policy = get_escalation_policy(client=client, escalation_policy_id=escalation_policy_id)
+    escalation_policy = get_escalation_policy(
+        client=client, escalation_policy_id=escalation_policy_id
+    )
     filter_name = (
         f"{escalation_policy['escalation_rules'][0]['targets'][0]['type'].split('_')[0]}_ids[]"
     )
