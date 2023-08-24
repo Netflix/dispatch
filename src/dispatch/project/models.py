@@ -12,7 +12,7 @@ from dispatch.database.core import Base
 from dispatch.models import DispatchBase, NameStr, PrimaryKey, Pagination
 
 from dispatch.organization.models import Organization, OrganizationRead
-from dispatch.incident.priority.models import IncidentPriority, IncidentPriorityBase
+from dispatch.incident.priority.models import IncidentPriority
 
 
 class Project(Base):
@@ -69,7 +69,6 @@ class ProjectCreate(ProjectBase):
 
 class ProjectUpdate(ProjectBase):
     send_daily_reports: Optional[bool] = Field(True, nullable=True)
-    incident_priority: IncidentPriorityBase
 
 
 class ProjectRead(ProjectBase):
