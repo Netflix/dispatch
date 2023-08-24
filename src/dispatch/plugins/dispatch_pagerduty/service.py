@@ -79,10 +79,11 @@ def create_incident(client: APISession, headers: dict, data: dict) -> dict:
     return incident
 
 
-def get_oncall_email(client, service: dict) -> str:
+def get_oncall_email(client: APISession, service_id: str) -> str:
     """Fetches the oncall's email for a given service."""
+    service = get_service(client=client, service_id=service_id)
     escalation_policy_id = service["escalation_policy"]["id"]
-    escalation_policy = client.rget(f"/escalation_policies/{escalation_policy_id}")
+    escalation_policy = get_escalation_policy(client=client, escalation_policy_id=escalation_policy_id)
     filter_name = (
         f"{escalation_policy['escalation_rules'][0]['targets'][0]['type'].split('_')[0]}_ids[]"
     )
@@ -104,15 +105,9 @@ def get_oncall_email(client, service: dict) -> str:
         raise Exception(
             f"No users could be found for this pagerduty escalation policy ({escalation_policy_id}). Is there a schedule associated?"
         )
-    user = client.rget(f"/users/{user_id}")
+    user = get_user(client=client, user_id=user_id)
 
     return user["email"]
-
-
-def get_oncall(client: APISession, service_id: str) -> str:
-    """Gets the email of the current oncall for a given service id."""
-    service = get_service(client, service_id)
-    return get_oncall_email(client, service)
 
 
 def page_oncall(
