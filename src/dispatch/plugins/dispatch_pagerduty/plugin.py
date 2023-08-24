@@ -14,7 +14,13 @@ from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_pagerduty as pagerduty_oncall_plugin
 from dispatch.plugins.bases import OncallPlugin
 
-from .service import get_oncall_email, page_oncall, oncall_shift_check, get_escalation_policy, get_service
+from .service import (
+    get_oncall_email,
+    page_oncall,
+    oncall_shift_check,
+    get_escalation_policy,
+    get_service,
+)
 
 
 log = logging.getLogger(__name__)
