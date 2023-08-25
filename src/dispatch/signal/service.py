@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional, Union
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from sqlalchemy import desc, asc
+from sqlalchemy import desc, asc, or_
 from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
@@ -216,10 +216,11 @@ def get_by_primary_or_external_id(
     *, db_session: Session, signal_id: Union[str, int]
 ) -> Optional[Signal]:
     """Gets a signal by id or external_id."""
-    if isinstance(signal_id, int):
-        signal = db_session.query(Signal).filter(Signal.id == signal_id).one_or_none()
-    else:
-        signal = db_session.query(Signal).filter(Signal.external_id == signal_id).one_or_none()
+    signal = (
+        db_session.query(Signal)
+        .filter(or_(Signal.id == signal_id, Signal.external_id == signal_id))
+        .one_or_none()
+    )
     return signal
 
 
