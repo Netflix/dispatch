@@ -646,15 +646,16 @@ def case_to_incident_endpoint_escalate_flow(
         case_id=case.id,
     )
 
-    # we add the incident's tactical group to the case's storage folder
-    # to allow incident participants to access the case's artifacts in the folder
-    storage_members = [incident.tactical_group.email]
-    storage_flows.update_storage(
-        subject=case,
-        storage_action=StorageAction.add_members,
-        storage_members=storage_members,
-        db_session=db_session,
-    )
+    if case.storage and incident.tactical_group:
+        # we add the incident's tactical group to the case's storage folder
+        # to allow incident participants to access the case's artifacts in the folder
+        storage_members = [incident.tactical_group.email]
+        storage_flows.update_storage(
+            subject=case,
+            storage_action=StorageAction.add_members,
+            storage_members=storage_members,
+            db_session=db_session,
+        )
 
     event_service.log_case_event(
         db_session=db_session,
