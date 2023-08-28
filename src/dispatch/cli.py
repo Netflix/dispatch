@@ -621,13 +621,14 @@ def dispatch_scheduler():
     from .data.source.scheduled import sync_sources  # noqa
     from .document.scheduled import sync_document_terms  # noqa
     from .evergreen.scheduled import create_evergreen_reminders  # noqa
-    from .feedback.scheduled import feedback_report_daily  # noqa
+    from .feedback.incident.scheduled import feedback_report_daily  # noqa
+    from .feedback.service.scheduled import oncall_shift_feedback  # noqa
+    from .incident_cost.scheduled import calculate_incidents_response_cost  # noqa
     from .incident.scheduled import (  # noqa
         incident_auto_tagger,
         incident_close_reminder,
         incident_report_daily,
     )
-    from .incident_cost.scheduled import calculate_incidents_response_cost  # noqa
     from .monitor.scheduled import sync_active_stable_monitors  # noqa
     from .report.scheduled import incident_report_reminders  # noqa
     from .signal.scheduled import consume_signals  # noqa

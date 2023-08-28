@@ -21,10 +21,10 @@ from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import IncidentCreate
 from dispatch.individual.models import IndividualContactRead
 from dispatch.models import OrganizationSlug, PrimaryKey
-from dispatch.participant import service as participant_service
 from dispatch.participant import flows as participant_flows
-from dispatch.participant_role import flows as role_flow
+from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
+from dispatch.participant_role import flows as role_flow
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.storage import flows as storage_flows
@@ -377,6 +377,14 @@ def case_update_flow(
     # we get the case
     case = get(db_session=db_session, case_id=case_id)
 
+    # we run the case assign role flow
+    case_assign_role_flow(
+        case_id=case.id,
+        assignee_email=assignee_email,
+        assignee_role=ParticipantRoleType.assignee,
+        db_session=db_session,
+    )
+
     # we run the transition flow based on the current and previous status of the case
     case_status_transition_flow_dispatcher(
         case=case,
@@ -397,15 +405,6 @@ def case_update_flow(
 
     # we update the tactical group if we have a new assignee
     if previous_case.assignee.individual.email != assignee_email:
-        log.debug(
-            f"{user_email} updated Case {case_id} assignee from {previous_case.assignee.individual.email} to {assignee_email}"
-        )
-        case_assign_role_flow(
-            case_id=case.id,
-            assignee_email=assignee_email,
-            assignee_role=ParticipantRoleType.assignee,
-            db_session=db_session,
-        )
         if case.tactical_group:
             group_flows.update_group(
                 subject=case,
@@ -593,22 +592,23 @@ def case_to_incident_escalate_flow(
         case_id=case.id,
     )
 
-    # we add the incident's tactical group to the case's storage folder
-    # to allow incident participants to access the case's artifacts in the folder
-    storage_members = [incident.tactical_group.email]
-    storage_flows.update_storage(
-        subject=case,
-        storage_action=StorageAction.add_members,
-        storage_members=storage_members,
-        db_session=db_session,
-    )
+    if case.storage and incident.tactical_group:
+        # we add the incident's tactical group to the case's storage folder
+        # to allow incident participants to access the case's artifacts in the folder
+        storage_members = [incident.tactical_group.email]
+        storage_flows.update_storage(
+            subject=case,
+            storage_action=StorageAction.add_members,
+            storage_members=storage_members,
+            db_session=db_session,
+        )
 
-    event_service.log_case_event(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description=f"The members of the incident's tactical group {incident.tactical_group.email} have been given permission to access the case's storage folder",
-        case_id=case.id,
-    )
+        event_service.log_case_event(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"The members of the incident's tactical group {incident.tactical_group.email} have been given permission to access the case's storage folder",
+            case_id=case.id,
+        )
 
 
 @background_task
@@ -645,15 +645,16 @@ def case_to_incident_endpoint_escalate_flow(
         case_id=case.id,
     )
 
-    # we add the incident's tactical group to the case's storage folder
-    # to allow incident participants to access the case's artifacts in the folder
-    storage_members = [incident.tactical_group.email]
-    storage_flows.update_storage(
-        subject=case,
-        storage_action=StorageAction.add_members,
-        storage_members=storage_members,
-        db_session=db_session,
-    )
+    if case.storage and incident.tactical_group:
+        # we add the incident's tactical group to the case's storage folder
+        # to allow incident participants to access the case's artifacts in the folder
+        storage_members = [incident.tactical_group.email]
+        storage_flows.update_storage(
+            subject=case,
+            storage_action=StorageAction.add_members,
+            storage_members=storage_members,
+            db_session=db_session,
+        )
 
     event_service.log_case_event(
         db_session=db_session,
@@ -670,11 +671,13 @@ def case_assign_role_flow(
     db_session: SessionLocal,
 ):
     """Runs the case participant role assignment flow."""
+    # we get the case
     case = get(case_id=case_id, db_session=db_session)
 
     # we add the assignee to the incident if they're not a participant
     case_add_or_reactivate_participant_flow(assignee_email, case.id, db_session=db_session)
 
+    # we run the assign role flow
     role_flow.assign_role_flow(case, assignee_email, assignee_role, db_session)
 
 

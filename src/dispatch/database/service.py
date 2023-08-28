@@ -22,12 +22,12 @@ from sqlalchemy_filters.models import Field, get_model_from_spec
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import CurrentUser, get_current_role
 from dispatch.case.models import Case
-from dispatch.database.core import DbSession
 from dispatch.data.query.models import Query as QueryModel
 from dispatch.data.source.models import Source
+from dispatch.database.core import DbSession
 from dispatch.enums import UserRoles, Visibility
 from dispatch.exceptions import FieldNotFoundError, InvalidFilterError
-from dispatch.feedback.models import Feedback
+from dispatch.feedback.incident.models import Feedback
 from dispatch.incident.models import Incident
 from dispatch.incident.type.models import IncidentType
 from dispatch.individual.models import IndividualContact
@@ -35,6 +35,7 @@ from dispatch.participant.models import Participant
 from dispatch.plugin.models import Plugin, PluginInstance
 from dispatch.search.fulltext.composite_search import CompositeSearch
 from dispatch.signal.models import Signal, SignalInstance
+from dispatch.tag.models import Tag
 from dispatch.task.models import Task
 
 from .core import Base, get_class_by_tablename, get_model_name_by_tablename
@@ -110,11 +111,18 @@ class Filter(object):
 
     def get_named_models(self):
         if "model" in self.filter_spec:
-            return {self.filter_spec["model"]}
+            model = self.filter_spec["model"]
+            if model in ["Participant", "Commander"]:
+                return {"IndividualContact"}
+            else:
+                return {self.filter_spec["model"]}
         return set()
 
     def format_for_sqlalchemy(self, query, default_model):
         filter_spec = self.filter_spec
+        if filter_spec.get("model") in ["Participant", "Commander"]:
+            filter_spec["model"] = "IndividualContact"
+
         operator = self.operator
         value = self.value
 
@@ -349,13 +357,20 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (Case, "TagType"): (Case.tags, True),
         (Incident, "Tag"): (Incident.tags, True),
         (Incident, "TagType"): (Incident.tags, True),
+        (Incident, "IndividualContact"): (Incident.participants, True),
         (Incident, "Term"): (Incident.terms, True),
         (Signal, "Tag"): (Signal.tags, True),
         (Signal, "TagType"): {Signal.tags, True},
         (SignalInstance, "Entity"): (SignalInstance.entities, True),
         (SignalInstance, "EntityType"): (SignalInstance.entities, True),
+        (Tag, "TagType"): (Tag.tag_type, False),
     }
     filters = build_filters(filter_spec)
+
+    # Replace mapping if looking for commander
+    if "Commander" in str(filter_spec):
+        model_map.update({(Incident, "IndividualContact"): (Incident.commander, True)})
+
     filter_models = get_named_models(filters)
     for filter_model in filter_models:
         if model_map.get((model, filter_model)):

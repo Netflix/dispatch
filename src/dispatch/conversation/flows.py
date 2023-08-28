@@ -11,6 +11,7 @@ from dispatch.plugin import service as plugin_service
 from dispatch.storage.models import Storage
 from dispatch.ticket.models import Ticket
 from dispatch.utils import deslug_and_capitalize_resource_type
+from dispatch.config import DISPATCH_UI_URL
 
 from .models import Conversation, ConversationCreate
 from .service import create
@@ -233,13 +234,24 @@ def add_conversation_bookmarks(incident: Incident, db_session: SessionLocal):
             "Storage bookmark not added. No storage available for this incident."
         )
 
+        ticket_weblink = resolve_attr(incident, "ticket.weblink")
         plugin.instance.add_bookmark(
             incident.conversation.channel_id,
-            resolve_attr(incident, "ticket.weblink"),
+            ticket_weblink,
             title="Ticket",
         ) if incident.ticket else log.warning(
             "Ticket bookmark not added. No ticket available for this incident."
         )
+
+        dispatch_weblink = f"{DISPATCH_UI_URL}/{incident.project.organization.name}/incidents/{incident.name}?project={incident.project.name}"
+
+        # only add Dispatch UI ticket if not using Dispatch ticket plugin
+        if ticket_weblink != dispatch_weblink:
+            plugin.instance.add_bookmark(
+                incident.conversation.channel_id,
+                dispatch_weblink,
+                title="Dispatch UI",
+            )
     except Exception as e:
         event_service.log_incident_event(
             db_session=db_session,

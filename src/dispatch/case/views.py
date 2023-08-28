@@ -35,7 +35,7 @@ from .flows import (
     case_triage_create_flow,
     case_update_flow,
 )
-from .models import Case, CaseCreate, CasePagination, CaseRead, CaseUpdate
+from .models import Case, CaseCreate, CasePagination, CaseRead, CaseUpdate, CaseExpandedPagination
 from .service import create, delete, get, update
 
 
@@ -74,9 +74,16 @@ def get_case(
 
 
 @router.get("", summary="Retrieves a list of cases.")
-def get_cases(common: CommonParameters, include: List[str] = Query([], alias="include[]")):
+def get_cases(
+    common: CommonParameters,
+    include: List[str] = Query([], alias="include[]"),
+    expand: bool = Query(default=False),
+):
     """Retrieves all cases."""
     pagination = search_filter_sort_paginate(model="Case", **common)
+
+    if expand:
+        return json.loads(CaseExpandedPagination(**pagination).json())
 
     if include:
         # only allow two levels for now
@@ -162,12 +169,17 @@ def update_case(
         db_session=db_session, case=current_case, case_in=case_in, current_user=current_user
     )
 
+    if not case_in.assignee:
+        # if the case didn't have an assignee and the user
+        # doesn't set one then we make the user the assignee
+        assignee_email = current_user.email
+
     # we run the case update flow
     background_tasks.add_task(
         case_update_flow,
         case_id=case_id,
         previous_case=previous_case,
-        assignee_email=case_in.assignee.individual.email,
+        assignee_email=assignee_email,
         user_email=current_user.email,
         organization_slug=organization,
     )

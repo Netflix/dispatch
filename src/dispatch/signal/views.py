@@ -1,4 +1,5 @@
 import logging
+from typing import Union
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response, status, Depends
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
@@ -37,6 +38,7 @@ from .service import (
     delete,
     delete_signal_filter,
     get,
+    get_by_primary_or_external_id,
     get_signal_filter,
     update,
     update_signal_filter,
@@ -256,9 +258,9 @@ def get_signals(common: CommonParameters):
 
 
 @router.get("/{signal_id}", response_model=SignalRead)
-def get_signal(db_session: DbSession, signal_id: PrimaryKey):
+def get_signal(db_session: DbSession, signal_id: Union[str, PrimaryKey]):
     """Gets a signal by its id."""
-    signal = get(db_session=db_session, signal_id=signal_id)
+    signal = get_by_primary_or_external_id(db_session=db_session, signal_id=signal_id)
     if not signal:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -278,9 +280,11 @@ def create_signal(db_session: DbSession, signal_in: SignalCreate):
     response_model=SignalRead,
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
-def update_signal(db_session: DbSession, signal_id: PrimaryKey, signal_in: SignalUpdate):
+def update_signal(
+    db_session: DbSession, signal_id: Union[str, PrimaryKey], signal_in: SignalUpdate
+):
     """Updates an existing signal."""
-    signal = get(db_session=db_session, signal_id=signal_id)
+    signal = get_by_primary_or_external_id(db_session=db_session, signal_id=signal_id)
     if not signal:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -303,9 +307,9 @@ def update_signal(db_session: DbSession, signal_id: PrimaryKey, signal_in: Signa
     response_model=None,
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
-def delete_signal(db_session: DbSession, signal_id: PrimaryKey):
+def delete_signal(db_session: DbSession, signal_id: Union[str, PrimaryKey]):
     """Deletes a signal."""
-    signal = get(db_session=db_session, signal_id=signal_id)
+    signal = get_by_primary_or_external_id(db_session=db_session, signal_id=signal_id)
     if not signal:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

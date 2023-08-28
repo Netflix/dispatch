@@ -27,7 +27,7 @@ from dispatch.document.models import Document
 from dispatch.entity.models import Entity
 from dispatch.entity_type.models import EntityType
 from dispatch.event.models import Event
-from dispatch.feedback.models import Feedback
+from dispatch.feedback.incident.models import Feedback
 from dispatch.group.models import Group
 from dispatch.incident.models import Incident
 from dispatch.incident.priority.models import IncidentPriority

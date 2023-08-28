@@ -111,6 +111,8 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
     elif case.status == CaseStatus.closed:
         blocks.extend(
             [
+                Section(text=f"*Resolution reason* \n {case.resolution_reason}"),
+                Section(text=f"*Resolution description* \n {case.resolution}"),
                 Actions(
                     elements=[
                         Button(
@@ -120,7 +122,7 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
                             value=button_metadata,
                         )
                     ]
-                )
+                ),
             ]
         )
     else:

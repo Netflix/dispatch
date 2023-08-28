@@ -193,6 +193,7 @@ export default {
       "table.options.descending",
       "table.options.filters",
       "table.options.filters.commander",
+      "table.options.filters.participant",
       "table.options.filters.incident_priority",
       "table.options.filters.incident_severity",
       "table.options.filters.incident_type",
@@ -248,6 +249,9 @@ export default {
       ...RouterUtils.deserializeFilters(this.query),
       project: this.defaultUserProjects,
     }
+    if (this.filters.commander) {
+      this.filters.participant = this.filters.commander
+    }
 
     this.getAll()
 
@@ -273,6 +277,8 @@ export default {
         vm.status,
         vm.tag,
         vm.tag_type,
+        vm.commander,
+        vm.participant,
       ],
       () => {
         this.page = 1

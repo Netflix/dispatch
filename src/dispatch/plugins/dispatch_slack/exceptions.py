@@ -1,13 +1,13 @@
 from dispatch.exceptions import DispatchException
 
 
-class CommandError(DispatchException):
-    code = "command"
+class BotNotPresentError(DispatchException):
+    code = "bot_not_present"
     msg_template = "{msg}"
 
 
-class SubmissionError(DispatchException):
-    code = "submission"
+class CommandError(DispatchException):
+    code = "command"
     msg_template = "{msg}"
 
 
@@ -16,11 +16,16 @@ class ContextError(DispatchException):
     msg_template = "{msg}"
 
 
+class EventError(DispatchException):
+    code = "command"
+    msg_template = "{msg}"
+
+
 class RoleError(DispatchException):
     code = "role"
     msg_template = "{msg}"
 
 
-class BotNotPresentError(DispatchException):
-    code = "bot_not_present"
+class SubmissionError(DispatchException):
+    code = "submission"
     msg_template = "{msg}"

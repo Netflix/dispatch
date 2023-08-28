@@ -6,18 +6,19 @@ import ServiceApi from "@/service/api"
 
 const getDefaultSelectedState = () => {
   return {
-    name: null,
-    type: null,
-    external_id: null,
-    is_active: null,
-    filters: [],
+    created_at: null,
     description: null,
-    id: null,
     evergreen: null,
     evergreen_owner: null,
     evergreen_reminder_interval: null,
+    external_id: null,
+    filters: [],
+    health_metrics: null,
+    id: null,
+    is_active: null,
+    name: null,
     project: null,
-    created_at: null,
+    type: null,
     updated_at: null,
     loading: false,
   }

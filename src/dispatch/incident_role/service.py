@@ -24,7 +24,7 @@ log = logging.getLogger(__name__)
 
 
 def get(*, db_session, incident_role_id: int) -> Optional[IncidentRole]:
-    """Gets a notifcation by id."""
+    """Gets an incident role by id."""
     return db_session.query(IncidentRole).filter(IncidentRole.id == incident_role_id).one_or_none()
 
 

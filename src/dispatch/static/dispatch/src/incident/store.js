@@ -23,7 +23,7 @@ const getDefaultSelectedState = () => {
     incident_severity: null,
     incident_type: null,
     name: null,
-    participants: null,
+    participant: null,
     project: null,
     reported_at: null,
     reporter: null,
@@ -82,7 +82,7 @@ const state = {
     options: {
       filters: {
         reporter: [],
-        commander: [],
+        commander: null,
         incident_type: [],
         incident_priority: [],
         incident_severity: [],
@@ -98,6 +98,7 @@ const state = {
           start: null,
           end: null,
         },
+        participant: null,
       },
       q: "",
       page: 1,
@@ -206,6 +207,13 @@ const actions = {
   showReportDialog({ commit }, incident) {
     commit("SET_DIALOG_REPORT", true)
     commit("SET_SELECTED", incident)
+
+    state.report.tactical.actions = incident.tasks.reduce((result, task) => {
+      if (task.status == "Resolved") {
+        return result
+      }
+      return (result ? result + "\n" : "") + "- " + task.description
+    }, "")
   },
   closeReportDialog({ commit }) {
     commit("SET_DIALOG_REPORT", false)
