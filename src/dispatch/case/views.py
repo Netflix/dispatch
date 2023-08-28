@@ -169,12 +169,17 @@ def update_case(
         db_session=db_session, case=current_case, case_in=case_in, current_user=current_user
     )
 
+    if not case_in.assignee:
+        # if the case didn't have an assignee and the user
+        # doesn't set one then we make the user the assignee
+        assignee_email = current_user.email
+
     # we run the case update flow
     background_tasks.add_task(
         case_update_flow,
         case_id=case_id,
         previous_case=previous_case,
-        assignee_email=case_in.assignee.individual.email,
+        assignee_email=assignee_email,
         user_email=current_user.email,
         organization_slug=organization,
     )

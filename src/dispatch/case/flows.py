@@ -377,6 +377,14 @@ def case_update_flow(
     # we get the case
     case = get(db_session=db_session, case_id=case_id)
 
+    # we run the case assign role flow
+    case_assign_role_flow(
+        case_id=case.id,
+        assignee_email=assignee_email,
+        assignee_role=ParticipantRoleType.assignee,
+        db_session=db_session,
+    )
+
     # we run the transition flow based on the current and previous status of the case
     case_status_transition_flow_dispatcher(
         case=case,
@@ -397,15 +405,6 @@ def case_update_flow(
 
     # we update the tactical group if we have a new assignee
     if previous_case.assignee.individual.email != assignee_email:
-        log.debug(
-            f"{user_email} updated Case {case_id} assignee from {previous_case.assignee.individual.email} to {assignee_email}"
-        )
-        case_assign_role_flow(
-            case_id=case.id,
-            assignee_email=assignee_email,
-            assignee_role=ParticipantRoleType.assignee,
-            db_session=db_session,
-        )
         if case.tactical_group:
             group_flows.update_group(
                 subject=case,
@@ -672,11 +671,13 @@ def case_assign_role_flow(
     db_session: SessionLocal,
 ):
     """Runs the case participant role assignment flow."""
+    # we get the case
     case = get(case_id=case_id, db_session=db_session)
 
     # we add the assignee to the incident if they're not a participant
     case_add_or_reactivate_participant_flow(assignee_email, case.id, db_session=db_session)
 
+    # we run the assign role flow
     role_flow.assign_role_flow(case, assignee_email, assignee_role, db_session)
 
 
