@@ -4,7 +4,7 @@
       <span class="subtitle-2">Plugin Metadata</span>
       <v-spacer />
       <v-tooltip bottom>
-        <template v-slot:activator="{ on }">
+        <template #activator="{ on }">
           <v-btn small icon @click="addPlugin()" v-on="on">
             <v-icon>add</v-icon>
           </v-btn>
@@ -16,7 +16,7 @@
       <v-row align="center" dense>
         <v-col cols="12" sm="1">
           <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
+            <template #activator="{ on }">
               <v-btn small icon @click="removePlugin(plugin_idx)" v-on="on"
                 ><v-icon>remove</v-icon></v-btn
               >
@@ -35,7 +35,7 @@
         </v-col>
         <v-col cols="12" sm="1">
           <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
+            <template #activator="{ on }">
               <v-btn small icon @click="addItem(plugin_idx)" v-on="on"><v-icon>add</v-icon></v-btn>
             </template>
             <span>Add Item</span>
@@ -51,7 +51,7 @@
       >
         <v-col cols="12" sm="1">
           <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
+            <template #activator="{ on }">
               <v-btn small icon @click="removeItem(plugin_idx, meta_idx)" v-on="on"
                 ><v-icon>remove</v-icon></v-btn
               >

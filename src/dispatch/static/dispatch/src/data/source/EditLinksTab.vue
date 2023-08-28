@@ -11,10 +11,10 @@
           append-outer-icon="mdi-plus"
           @click:append-outer="addNew"
           clearable
-        ></v-text-field>
+        />
       </div>
       <v-data-table :headers="headers" :items="links" :search="q">
-        <template v-slot:item.name="{ item }">
+        <template #item.name="{ item }">
           <v-text-field
             v-model="editedItem.name"
             :hide-details="true"
@@ -22,7 +22,7 @@
             placeholder="Name"
             single-line
             v-if="item.id === editedItem.id"
-          ></v-text-field>
+          />
           <v-text-field
             v-model="editedItem.href"
             :hide-details="true"
@@ -30,14 +30,14 @@
             placeholder="Link"
             single-line
             v-if="item.id === editedItem.id"
-          ></v-text-field>
+          />
           <span v-else
             ><a :href="item.href">
               <b>{{ item.name }}</b></a
             ></span
           >
         </template>
-        <template v-slot:item.description="{ item }">
+        <template #item.description="{ item }">
           <v-text-field
             v-model="editedItem.description"
             :hide-details="true"
@@ -45,10 +45,10 @@
             placeholder="Description"
             single-line
             v-if="item.id === editedItem.id"
-          ></v-text-field>
+          />
           <span v-else>{{ item.description }}</span>
         </template>
-        <template v-slot:item.actions="{ item }">
+        <template #item.actions="{ item }">
           <div v-if="item.id === editedItem.id">
             <v-icon class="mr-3" @click="close"> mdi-window-close </v-icon>
             <v-icon @click="save"> mdi-content-save </v-icon>

@@ -33,7 +33,7 @@
             </v-list-item>
           </v-list>
 
-          <v-divider></v-divider>
+          <v-divider />
 
           <v-card-actions>
             <v-list-item class="grow">
@@ -53,7 +53,7 @@
                 >
                   <v-icon> mdi-phone </v-icon>
                 </v-btn>
-                <span class="mr-1"></span>
+                <span class="mr-1" />
                 <v-btn :href="'mailto:' + commander.individual.email" icon class="mr-1">
                   <v-icon> mdi-email </v-icon>
                 </v-btn>

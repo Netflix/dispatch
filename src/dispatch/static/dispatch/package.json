@@ -5,8 +5,8 @@
   "scripts": {
     "serve": "cross-env NODE_ENV=dev NODE_OPTIONS='--max-http-header-size=100000' vite",
     "build": "vite build --out-dir dist",
-    "lint": "eslint src",
-    "lint:fix": "eslint src --fix",
+    "lint": "eslint src --ext .js,.vue",
+    "lint:fix": "eslint src --ext .js,.vue --fix",
     "preview": "vite preview --open --port 8080"
   },
   "dependencies": {
@@ -70,32 +70,5 @@
     "vue-template-compiler": "^2.6.12",
     "vuetify-loader": "^1.7.2",
     "yarn": "^1.22.10"
-  },
-  "eslintConfig": {
-    "root": true,
-    "extends": [
-      "plugin:vue/strongly-recommended",
-      "plugin:prettier/recommended",
-      "eslint:recommended",
-      "plugin:vue/essential"
-    ],
-    "parserOptions": {
-      "ecmaVersion": 2020
-    },
-    "env": {
-      "browser": true,
-      "node": true
-    },
-    "overrides": [
-      {
-        "files": [
-          "test/*"
-        ],
-        "rules": {
-          "no-undef": "off"
-        }
-      }
-    ],
-    "rules": {}
   }
 }

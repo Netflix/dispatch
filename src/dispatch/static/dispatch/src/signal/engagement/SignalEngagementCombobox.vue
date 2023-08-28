@@ -10,7 +10,7 @@
       >
         <template #selection="{ attr, item, selected }">
           <v-menu bottom right transition="scale-transition" origin="top left">
-            <template v-slot:activator="{ on }">
+            <template #activator="{ on }">
               <v-chip
                 v-bind="attr"
                 :input-value="selected"
@@ -44,9 +44,9 @@
                   <v-list-item-action>
                     <v-icon>mdi-text-box</v-icon>
                   </v-list-item-action>
-                  <v-list-item-subtitle>{{
-                    item ? item.description : "Unknown"
-                  }}</v-list-item-subtitle>
+                  <v-list-item-subtitle>
+                    {{ item ? item.description : "Unknown" }}
+                  </v-list-item-subtitle>
                 </v-list-item>
               </v-list>
             </v-card>

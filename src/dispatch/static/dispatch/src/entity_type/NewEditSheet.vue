@@ -1,7 +1,7 @@
 <template>
   <ValidationObserver v-slot="{ invalid, validated }">
     <v-navigation-drawer v-model="showCreateEdit" app clipped right width="1000">
-      <template v-slot:prepend>
+      <template #prepend>
         <v-list-item two-line>
           <v-list-item-content>
             <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
@@ -53,8 +53,8 @@
           </ValidationProvider>
           <v-radio-group v-model="scope" label="Scope" row>
             <v-tooltip max-width="250px" left>
-              <template v-slot:activator="{ on, attrs }">
-                <v-radio v-bind="attrs" v-on="on" label="Multiple" value="multiple"></v-radio>
+              <template #activator="{ on, attrs }">
+                <v-radio v-bind="attrs" v-on="on" label="Multiple" value="multiple" />
               </template>
               <span>
                 An entity type with a definition scope of 'multiple' can be associated with one or
@@ -63,8 +63,8 @@
               </span>
             </v-tooltip>
             <v-tooltip max-width="250px" left>
-              <template v-slot:activator="{ on, attrs }">
-                <v-radio v-bind="attrs" v-on="on" label="All" value="all"></v-radio>
+              <template #activator="{ on, attrs }">
+                <v-radio v-bind="attrs" v-on="on" label="All" value="all" />
               </template>
               <span>
                 An entity type with a definition scope of 'all' will be associated with all current
@@ -85,14 +85,14 @@
       <v-card flat tile>
         <v-app-bar color="white" flat>
           <v-toolbar-title class="subtitle-2"> Expression Configuration </v-toolbar-title>
-          <v-spacer></v-spacer>
+          <v-spacer />
         </v-app-bar>
         <v-card-text>
           Entity types are used to extract useful metadata out of signals. Define either a RegEx or
           JSON Path expression to pull entities out of a signals raw json.
           <v-radio-group label="Type" v-model="type" row>
-            <v-radio label="Regular Expression" value="regex"></v-radio>
-            <v-radio label="JSON Path" value="json"></v-radio>
+            <v-radio label="Regular Expression" value="regex" />
+            <v-radio label="JSON Path" value="json" />
           </v-radio-group>
           <v-text-field
             v-if="type === 'regex'"
@@ -100,7 +100,7 @@
             label="Regular Expression"
             hint="A regular expression pattern for your entity type. The first capture group will be used."
           >
-            <template v-slot:append-outer>
+            <template #append-outer>
               <v-btn
                 icon
                 href="https://cheatography.com/davechild/cheat-sheets/regular-expressions/"
@@ -116,7 +116,7 @@
             label="JSON Path"
             hint="The field where the entity will be present. Supports JSON Path expressions."
           >
-            <template v-slot:append-outer>
+            <template #append-outer>
               <v-btn
                 icon
                 href="https://github.com/json-path/JsonPath#path-examples"
@@ -134,7 +134,7 @@
                   No example signals are currently available for this definition.
                 </template>
                 <template v-for="(instance, index) in signalInstances" v-else>
-                  <v-list-item>
+                  <v-list-item :key="`item-${index}`">
                     <v-list-item-content>
                       <v-list-item-title>{{ instance.id }}</v-list-item-title>
                     </v-list-item-content>
@@ -144,9 +144,8 @@
                       </v-btn>
                     </v-list-item-action>
                   </v-list-item>
-                  <v-divider v-if="index < signalInstances.length - 1"></v-divider>
+                  <v-divider v-if="index < signalInstances.length - 1" :key="`divider-${index}`" />
                 </template>
-                <template v-else> </template>
               </v-list>
             </v-col>
             <v-col cols="8">
@@ -299,14 +298,14 @@ export default {
     }
   },
   watch: {
-    regular_expression: function (newVal, oldVal) {
+    regular_expression(newVal, oldVal) {
       this.onSelectedChange("regular_expression", newVal, oldVal)
     },
-    jpath: function (newVal, oldVal) {
+    jpath(newVal, oldVal) {
       this.onSelectedChange("jpath", newVal, oldVal)
     },
-    signals: function (newVal, oldVal) {
-      this.getSignalData(this.newVal)
+    signals(newVal) {
+      this.getSignalData(newVal)
     },
   },
 }

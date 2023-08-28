@@ -34,15 +34,15 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template v-slot:item.discoverable="{ item }">
+            <template #item.discoverable="{ item }">
               <v-simple-checkbox v-model="item.discoverable" disabled />
             </template>
-            <template v-slot:item.tag_type.name="{ item }">
+            <template #item.tag_type.name="{ item }">
               <span v-if="item.tag_type">
                 {{ item.tag_type.name }}
               </span>
             </template>
-            <template v-slot:item.data-table-actions="{ item }">
+            <template #item.data-table-actions="{ item }">
               <v-menu bottom left>
                 <template #activator="{ on }">
                   <v-btn icon v-on="on">

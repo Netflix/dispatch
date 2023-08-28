@@ -4,7 +4,7 @@
       <router-view />
       <v-snackbar bottom right :value="updateExists" :timeout="-1" color="info">
         An update is available
-        <template v-slot:action="{ attrs }">
+        <template #action="{ attrs }">
           <v-btn text v-bind="attrs" @click="refreshApp"> Update </v-btn>
         </template>
       </v-snackbar>

@@ -14,7 +14,7 @@
     no-filter
     v-model="entities"
   >
-    <template v-slot:no-data>
+    <template #no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
@@ -25,12 +25,12 @@
         </v-list-item-content>
       </v-list-item>
     </template>
-    <template v-slot:selection="{ item, index }">
+    <template #selection="{ item, index }">
       <v-chip close @click:close="entities.splice(index, 1)">
         {{ item.entity_type.name }} / {{ item.value }}
       </v-chip>
     </template>
-    <template v-slot:item="data">
+    <template #item="data">
       <v-list-item-content>
         <v-list-item-title> {{ data.item.name }} </v-list-item-title>
         <v-list-item-subtitle style="width: 200px" class="text-truncate">
@@ -38,7 +38,7 @@
         </v-list-item-subtitle>
       </v-list-item-content>
     </template>
-    <template v-slot:append-item>
+    <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
         <v-list-item-content>
           <v-list-item-subtitle> Load More </v-list-item-subtitle>
@@ -49,7 +49,7 @@
 </template>
 
 <script>
-import { cloneDeep, debounce } from "lodash"
+import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import EntityApi from "@/entity/api"

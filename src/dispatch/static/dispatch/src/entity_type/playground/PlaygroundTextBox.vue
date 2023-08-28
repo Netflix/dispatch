@@ -1,6 +1,6 @@
 <template>
   <div class="playground-editor" style="height: 500px">
-    <div id="playground-editor" style="height: 500px"></div>
+    <div id="playground-editor" style="height: 500px" />
   </div>
 </template>
 

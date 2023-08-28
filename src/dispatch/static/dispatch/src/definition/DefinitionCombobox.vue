@@ -12,7 +12,7 @@
     no-filter
     v-model="definitions"
   >
-    <template v-slot:no-data>
+    <template #no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
@@ -23,7 +23,7 @@
         </v-list-item-content>
       </v-list-item>
     </template>
-    <template v-slot:append-item>
+    <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
         <v-list-item-content>
           <v-list-item-subtitle> Load More </v-list-item-subtitle>
@@ -71,13 +71,13 @@ export default {
       },
       set(value) {
         this.search = null
-        this._definitions = value.filter((v) => {
+        const definitions = value.filter((v) => {
           if (typeof v === "string") {
             return false
           }
           return true
         })
-        this.$emit("input", this._definitions)
+        this.$emit("input", definitions)
       },
     },
   },

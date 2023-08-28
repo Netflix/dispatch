@@ -8,14 +8,15 @@
       hide-default-footer
       disable-filtering
     >
-      <template v-slot:item.name="{ item }">
+      <template #item.name="{ item }">
         <router-link
           :to="{
             name: 'SourceDetail',
             params: { name: item.name, tab: 'details' },
           }"
-          ><b>{{ item.name }}</b></router-link
         >
+          <b>{{ item.name }}</b>
+        </router-link>
       </template>
     </v-data-table>
   </v-card>

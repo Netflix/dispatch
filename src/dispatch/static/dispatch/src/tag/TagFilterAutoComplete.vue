@@ -25,8 +25,8 @@
         </v-list-item-content>
       </v-list-item>
     </template>
-    <template v-slot:selection="{ item, index }">
-      <v-chip close @click:close="value.splice(index, 1)">
+    <template #selection="{ item, index }">
+      <v-chip close @click:close="remove(index)">
         <span v-if="item.tag_type">
           <span v-if="!project">{{ item.project.name }}/</span>{{ item.tag_type.name }}/
         </span>
@@ -35,7 +35,7 @@
         </a>
       </v-chip>
     </template>
-    <template v-slot:item="data">
+    <template #item="data">
       <v-list-item-content>
         <v-list-item-title>
           <span v-if="!project">{{ data.item.project.name }}/</span>{{ data.item.tag_type.name }}/{{
@@ -108,13 +108,13 @@ export default {
       },
       set(value) {
         this.search = null
-        this._tags = value.filter((v) => {
+        const tags = value.filter((v) => {
           if (typeof v === "string") {
             return false
           }
           return true
         })
-        this.$emit("input", this._tags)
+        this.$emit("input", tags)
       },
     },
   },
@@ -203,6 +203,11 @@ export default {
     getFilteredData: debounce(function () {
       this.fetchData()
     }, 500),
+    remove(index) {
+      const value = cloneDeep(this.value)
+      value.splice(index, 1)
+      this.$emit("input", value)
+    },
   },
 }
 </script>

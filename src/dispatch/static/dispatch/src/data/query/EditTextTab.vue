@@ -2,11 +2,11 @@
   <v-container grid-list-md>
     <v-layout wrap>
       <v-flex xs12>
-        <v-select :items="languages" v-model="language" label="Language"></v-select>
+        <v-select :items="languages" v-model="language" label="Language" />
       </v-flex>
       <v-flex xs12>
         <div style="height: 100vh">
-          <MonacoEditor v-model="text" :options="editorOptions" :language="language"></MonacoEditor>
+          <MonacoEditor v-model="text" :options="editorOptions" :language="language" />
         </div>
       </v-flex>
     </v-layout>

@@ -12,7 +12,7 @@
     v-model="plugin"
     clearable
   >
-    <template v-slot:no-data>
+    <template #no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
@@ -23,7 +23,7 @@
         </v-list-item-content>
       </v-list-item>
     </template>
-    <template v-slot:item="data">
+    <template #item="data">
       <v-list-item-content>
         <v-list-item-title>
           <div>
@@ -37,7 +37,7 @@
         </v-list-item-subtitle>
       </v-list-item-content>
     </template>
-    <template v-slot:append-item>
+    <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
         <v-list-item-content>
           <v-list-item-subtitle> Load More </v-list-item-subtitle>

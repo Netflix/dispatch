@@ -1,7 +1,7 @@
 <template>
   <ValidationObserver v-slot="{ invalid, validated }">
     <v-navigation-drawer v-model="showCreateEdit" app stateless clipped right width="500">
-      <template v-slot:prepend>
+      <template #prepend>
         <v-list-item two-line>
           <v-list-item-content>
             <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
@@ -91,7 +91,7 @@
                 <span class="subtitle-2">
                   Evergreen
                   <v-tooltip max-width="250px" bottom>
-                    <template v-slot:activator="{ on, attrs }">
+                    <template #activator="{ on, attrs }">
                       <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                     </template>
                     Dispatch will send an email reminder to the template owner to keep it up to

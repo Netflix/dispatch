@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="showExport" persistent max-width="800px">
-    <template v-slot:activator="{ on }">
+    <template #activator="{ on }">
       <v-btn color="secondary" class="ml-2" v-on="on"> Export </v-btn>
     </template>
     <v-card>
@@ -77,43 +77,43 @@
               :items="items"
               :loading="previewRowsLoading"
             >
-              <template v-slot:item.description="{ item }">
+              <template #item.description="{ item }">
                 <div class="text-truncate" style="max-width: 400px">
                   {{ item.description }}
                 </div>
               </template>
-              <template v-slot:item.incident.status="{ item }">
+              <template #item.incident.status="{ item }">
                 <incident-status :status="item.incident.status" :id="item.id" />
               </template>
-              <template v-slot:item.incident_priority.name="{ item }">
+              <template #item.incident_priority.name="{ item }">
                 <incident-priority :priority="item.incident.incident_priority.name" />
               </template>
-              <template v-slot:item.creator.individual_contact.name="{ item }">
+              <template #item.creator.individual_contact.name="{ item }">
                 <participant :participant="item.creator" />
               </template>
-              <template v-slot:item.owner.individual_contact.name="{ item }">
+              <template #item.owner.individual_contact.name="{ item }">
                 <participant :participant="item.owner" />
               </template>
-              <template v-slot:item.incident_type.name="{ item }">
+              <template #item.incident_type.name="{ item }">
                 {{ item.incident.incident_type.name }}
               </template>
-              <template v-slot:item.assignees="{ item }">
+              <template #item.assignees="{ item }">
                 <participant
                   v-for="assignee in item.assignees"
                   :key="assignee.id"
                   :participant="assignee"
                 />
               </template>
-              <template v-slot:item.resolve_by="{ item }">
+              <template #item.resolve_by="{ item }">
                 {{ item.resolve_by | formatDate }}
               </template>
-              <template v-slot:item.created_at="{ item }">
+              <template #item.created_at="{ item }">
                 {{ item.created_at | formatDate }}
               </template>
-              <template v-slot:item.resolved_at="{ item }">
+              <template #item.resolved_at="{ item }">
                 {{ item.resolved_at | formatDate }}
               </template>
-              <template v-slot:item.source="{ item }">
+              <template #item.source="{ item }">
                 {{ item.source }}
                 <a :href="item.weblink" target="_blank" style="text-decoration: none" />
               </template>
