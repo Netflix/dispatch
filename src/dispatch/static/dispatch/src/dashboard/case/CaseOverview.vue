@@ -85,7 +85,7 @@
 
 <script>
 import { mapFields } from "vuex-map-fields"
-import { groupBy, sumBy, filter } from "lodash"
+import { groupBy, sumBy } from "lodash"
 import { parseISO } from "date-fns"
 import differenceInHours from "date-fns/differenceInHours"
 

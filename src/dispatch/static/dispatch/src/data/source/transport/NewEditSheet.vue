@@ -8,7 +8,7 @@
       width="800"
       :permanent="$vuetify.breakpoint.mdAndDown"
     >
-      <template v-slot:prepend>
+      <template #prepend>
         <v-list-item two-line>
           <v-list-item-content>
             <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>

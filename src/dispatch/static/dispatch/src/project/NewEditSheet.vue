@@ -1,7 +1,7 @@
 <template>
   <ValidationObserver v-slot="{ invalid, validated }">
     <v-navigation-drawer v-model="showCreateEdit" app clipped right width="500">
-      <template v-slot:prepend>
+      <template #prepend>
         <v-list-item two-line>
           <v-list-item-content>
             <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
@@ -58,7 +58,7 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <color-picker-input v-model="color"></color-picker-input>
+                <color-picker-input v-model="color" />
               </v-flex>
               <v-flex xs12>
                 <ValidationProvider name="Employee Cost" immediate>

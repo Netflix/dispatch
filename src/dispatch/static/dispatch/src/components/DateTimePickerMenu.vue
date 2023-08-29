@@ -9,7 +9,7 @@
     max-width="290px"
     min-width="290px"
   >
-    <template v-slot:activator="{ on }">
+    <template #activator="{ on }">
       <v-text-field
         v-model="formattedDatetime"
         prepend-icon="event"
@@ -32,15 +32,15 @@
             </slot>
           </v-tab>
           <v-tab-item key="calendar">
-            <v-date-picker v-model="date" @input="showTimePicker" full-width></v-date-picker>
+            <v-date-picker v-model="date" @input="showTimePicker" full-width />
           </v-tab-item>
           <v-tab-item key="timer">
-            <v-time-picker v-model="time" full-width></v-time-picker>
+            <v-time-picker v-model="time" full-width />
           </v-tab-item>
         </v-tabs>
       </v-card-text>
       <v-card-actions>
-        <v-spacer></v-spacer>
+        <v-spacer />
         <slot name="actions" :parent="this">
           <v-btn color="grey lighten-1" text @click.native="clearHandler">Clear</v-btn>
           <v-btn text @click="okHandler">Ok</v-btn>

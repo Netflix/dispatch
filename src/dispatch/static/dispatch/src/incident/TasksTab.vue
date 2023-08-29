@@ -8,9 +8,9 @@
               {{ task.description }}
             </v-list-item-title>
             <v-list-item-subtitle>
-              <strong>Created:</strong> {{ task.created_at | formatRelativeDate }}
-              | <strong>Status:</strong> {{ task.status }}
-              | <strong>Assignees:</strong> {{ task.assignees | individualNames }}
+              <strong>Created:</strong> {{ task.created_at | formatRelativeDate }} |
+              <strong>Status:</strong> {{ task.status }} | <strong>Assignees:</strong>
+              {{ task.assignees | individualNames }}
             </v-list-item-subtitle>
           </v-list-item-content>
           <v-list-item-action>
@@ -29,7 +29,6 @@
 </template>
 
 <script>
-import map from "lodash"
 import { mapFields } from "vuex-map-fields"
 
 export default {

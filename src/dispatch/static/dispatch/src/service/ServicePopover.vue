@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-menu v-model="menu" bottom right transition="scale-transition" origin="top left">
-      <template v-slot:activator="{ on }">
+      <template #activator="{ on }">
         <v-chip pill small v-on="on">
           <v-avatar color="teal" left>
             <span class="white--text">{{ service.name | initials }}</span>
@@ -37,10 +37,9 @@
             <v-list-item-action>
               <v-icon>mdi-toggle-switch</v-icon>
             </v-list-item-action>
-            <v-list-item-subtitle
-              ><span v-if="service.is_active">Active</span
-              ><span v-else>Inactive</span></v-list-item-subtitle
-            >
+            <v-list-item-subtitle>
+              <span v-if="service.is_active">Active</span><span v-else>Inactive</span>
+            </v-list-item-subtitle>
           </v-list-item>
         </v-list>
       </v-card>

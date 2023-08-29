@@ -34,15 +34,15 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template v-slot:item.is_active="{ item }">
+            <template #item.is_active="{ item }">
               <v-simple-checkbox v-model="item.is_active" disabled />
             </template>
-            <template v-slot:item.is_external="{ item }">
+            <template #item.is_external="{ item }">
               <v-simple-checkbox v-model="item.is_external" disabled />
             </template>
-            <template v-slot:item.data-table-actions="{ item }">
+            <template #item.data-table-actions="{ item }">
               <v-menu bottom left>
-                <template v-slot:activator="{ on }">
+                <template #activator="{ on }">
                   <v-btn icon v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>

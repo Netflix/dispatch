@@ -34,14 +34,14 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template v-slot:item.name="{ item }">
+            <template #item.name="{ item }">
               <router-link :to="{ name: 'ProjectSettings', query: { project: item.name } }">
                 {{ item.name }}
               </router-link>
             </template>
-            <template v-slot:item.data-table-actions="{ item }">
+            <template #item.data-table-actions="{ item }">
               <v-menu bottom left>
-                <template v-slot:activator="{ on }">
+                <template #activator="{ on }">
                   <v-btn icon v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>

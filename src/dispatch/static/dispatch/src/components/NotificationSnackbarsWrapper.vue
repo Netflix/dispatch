@@ -6,7 +6,7 @@
     @input="setSeen(notification.index)"
   >
     {{ notification.text }}
-    <template v-slot:action="{ attrs }">
+    <template #action="{ attrs }">
       <v-btn text v-bind="attrs" @click="setSeen(notification.index)"> Close </v-btn>
     </template>
   </v-snackbar>

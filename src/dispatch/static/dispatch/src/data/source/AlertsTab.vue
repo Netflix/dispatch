@@ -11,12 +11,12 @@
               line-width="1"
               height="50"
               padding="15"
-            ></v-sparkline>
+            />
           </v-sheet>
           <v-card-text class="pt-0">
             <div class="text-h6 font-weight-light mb-2">Alert Volume</div>
-            <v-data-table :headers="headers" :items="alerts"></v-data-table>
-            <v-divider class="my-2"></v-divider>
+            <v-data-table :headers="headers" :items="alerts" />
+            <v-divider class="my-2" />
             <v-icon class="mr-2" small> mdi-clock </v-icon>
             <span class="text-caption grey--text font-weight-light">last alert 10min ago</span>
           </v-card-text>

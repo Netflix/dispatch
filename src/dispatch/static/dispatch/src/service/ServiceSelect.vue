@@ -12,8 +12,7 @@
     :hint="hint"
     :loading="loading"
     no-filter
-  >
-  </v-combobox>
+  />
 </template>
 
 <script>

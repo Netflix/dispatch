@@ -1,6 +1,6 @@
 <template>
   <v-navigation-drawer v-model="showCreateEdit" app clipped right width="500">
-    <template v-slot:prepend>
+    <template #prepend>
       <v-list-item two-line>
         <v-list-item-content>
           <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>

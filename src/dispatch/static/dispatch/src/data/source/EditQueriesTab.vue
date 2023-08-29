@@ -24,6 +24,7 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import QuerySelect from "@/data/query/QuerySelect.vue"
+import { cloneDeep } from "lodash"
 
 export default {
   name: "SourceEditQueriesTab",
@@ -51,11 +52,15 @@ export default {
 
   methods: {
     add() {
-      this.value.push(this.selectedQuery)
+      const value = cloneDeep(this.value)
+      value.push(this.selectedQuery)
       this.selectedQuery = null
+      this.$emit("input", value)
     },
     remove(idx) {
-      this.value.splice(idx, 1)
+      const value = cloneDeep(this.value)
+      value.splice(idx, 1)
+      this.$emit("input", value)
     },
   },
 

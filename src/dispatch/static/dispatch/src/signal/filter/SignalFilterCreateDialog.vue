@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="showCreateEdit" persistent max-width="800px">
-    <template v-slot:activator="{ on }">
+    <template #activator="{ on }">
       <v-btn icon v-on="on">
         <v-icon>add</v-icon>
       </v-btn>
@@ -8,7 +8,7 @@
     <v-card>
       <v-card-title>
         <span class="headline">Create Signal Filter</span>
-        <v-spacer></v-spacer>
+        <v-spacer />
       </v-card-title>
       <v-stepper v-model="step">
         <v-stepper-header>
@@ -33,8 +33,8 @@
                   <v-tab-item>
                     <ValidationProvider name="Action" rules="required" immediate>
                       <v-radio-group label="Action" v-model="action" row class="justify-right">
-                        <v-radio label="Snooze" value="snooze"></v-radio>
-                        <v-radio label="Deduplicate" value="deduplicate"></v-radio>
+                        <v-radio label="Snooze" value="snooze" />
+                        <v-radio label="Deduplicate" value="deduplicate" />
                       </v-radio-group>
                     </ValidationProvider>
                     <span v-if="action === 'deduplicate'">
@@ -49,7 +49,7 @@
                         label="Window (minutes)"
                         :items="windows"
                         v-model="window"
-                      ></v-select>
+                      />
                     </span>
                     <span v-if="action == 'snooze'">
                       <entity-filter-combobox
@@ -57,7 +57,7 @@
                         v-model="filters.entity"
                         label="Entities"
                       />
-                      <expiration-input persistent-hint v-model="expiration"></expiration-input>
+                      <expiration-input persistent-hint v-model="expiration" />
                     </span>
                   </v-tab-item>
                   <v-tab-item>
@@ -66,7 +66,7 @@
                         v-model="expression_str"
                         :options="editorOptions"
                         language="json"
-                      ></MonacoEditor>
+                      />
                     </div>
                   </v-tab-item>
                 </v-tabs>
@@ -89,7 +89,7 @@
                   :items="previewRows.items"
                   :loading="previewRowsLoading"
                 >
-                  <template v-slot:item.data-table-actions="{ item }">
+                  <template #item.data-table-actions="{ item }">
                     <raw-signal-viewer v-model="item.raw" />
                   </template>
                 </v-data-table>

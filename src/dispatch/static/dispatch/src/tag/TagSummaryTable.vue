@@ -2,20 +2,20 @@
   <div>
     <new-edit-sheet />
     <v-data-table :headers="headers" :items="items">
-      <template v-slot:item.discoverable="{ item }">
+      <template #item.discoverable="{ item }">
         <v-simple-checkbox v-model="item.discoverable" disabled />
       </template>
-      <template v-slot:item.project.name="{ item }">
+      <template #item.project.name="{ item }">
         <v-chip small :color="item.project.color" text-color="white">
           {{ item.project.name }}
         </v-chip>
       </template>
-      <template v-slot:item.tag_type.name="{ item }">
+      <template #item.tag_type.name="{ item }">
         {{ item.tag_type.name }}
       </template>
-      <template v-slot:item.data-table-actions="{ item }">
+      <template #item.data-table-actions="{ item }">
         <v-menu bottom left>
-          <template v-slot:activator="{ on }">
+          <template #activator="{ on }">
             <v-btn icon v-on="on">
               <v-icon>mdi-dots-vertical</v-icon>
             </v-btn>

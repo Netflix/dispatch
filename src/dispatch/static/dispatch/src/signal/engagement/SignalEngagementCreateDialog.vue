@@ -1,6 +1,6 @@
 <template>
   <v-dialog persistent max-width="800px" v-model="dialog">
-    <template v-slot:activator="{ on, attrs }">
+    <template #activator="{ on, attrs }">
       <v-btn icon v-bind="attrs" v-on="on">
         <v-icon>add</v-icon>
       </v-btn>
@@ -8,7 +8,7 @@
     <v-card>
       <v-card-title>
         <span class="headline">Create Signal Engagement Filter</span>
-        <v-spacer></v-spacer>
+        <v-spacer />
       </v-card-title>
       <v-stepper v-model="step">
         <v-stepper-header>
@@ -33,7 +33,7 @@
                         v-model="entity_type"
                         :project="project"
                         :signalDefinition="selected"
-                      ></entity-type-select>
+                      />
                       <v-textarea
                         v-model="message"
                         label="Message"
@@ -43,7 +43,7 @@
                       <v-checkbox
                         v-model="require_mfa"
                         label="Require Multi-Factor Authentication"
-                      ></v-checkbox>
+                      />
                     </span>
                   </v-tab-item>
                 </v-tabs>
@@ -113,8 +113,6 @@ import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
 import EntityTypeSelect from "@/entity_type/EntityTypeSelect.vue"
-import EntityTypeFilterCombobox from "@/entity_type/EntityTypeFilterCombobox.vue"
-import EntityFilterCombobox from "@/entity/EntityFilterCombobox.vue"
 
 extend("required", {
   ...required,
@@ -139,9 +137,7 @@ export default {
     }
   },
   components: {
-    EntityFilterCombobox,
     EntityTypeSelect,
-    EntityTypeFilterCombobox,
     ValidationObserver,
     ValidationProvider,
   },

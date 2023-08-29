@@ -1,21 +1,22 @@
 <template>
   <div>
     <v-data-table :headers="headers" :items="items">
-      <template v-slot:item.name="{ item }">
+      <template #item.name="{ item }">
         <router-link
           :to="{
             name: 'SourceDetail',
             params: { name: item.name, tab: 'details' },
           }"
-          ><b>{{ item.name }}</b></router-link
         >
+          <b>{{ item.name }}</b>
+        </router-link>
       </template>
-      <template v-slot:item.project.name="{ item }">
+      <template #item.project.name="{ item }">
         <v-chip small :color="item.project.color" text-color="white">
           {{ item.project.name }}
         </v-chip>
       </template>
-      <template v-slot:item.source_environment.name="{ item }">
+      <template #item.source_environment.name="{ item }">
         <v-chip
           v-if="item.source_environment"
           small
@@ -25,7 +26,7 @@
           {{ item.source_environment.name }}
         </v-chip>
       </template>
-      <template v-slot:item.source_status="{ item }">
+      <template #item.source_status="{ item }">
         <v-badge
           v-if="item.source_status"
           bordered
@@ -39,25 +40,25 @@
           {{ item.source_status.name }}
         </v-badge>
       </template>
-      <template v-slot:item.source_data_format="{ item }">
+      <template #item.source_data_format="{ item }">
         <v-chip v-if="item.source_data_format" small dark>
           {{ item.source_data_format.name }}
         </v-chip>
       </template>
-      <template v-slot:item.source_type="{ item }">
+      <template #item.source_type="{ item }">
         <v-chip v-if="item.source_type" small dark>
           {{ item.source_type.name }}
         </v-chip>
       </template>
-      <template v-slot:item.owner="{ item }">
+      <template #item.owner="{ item }">
         <service-popover v-if="item.owner" :service="item.owner" />
       </template>
-      <template v-slot:item.data_last_loaded_at="{ item }">
+      <template #item.data_last_loaded_at="{ item }">
         {{ item.data_last_loaded_at | formatRelativeDate }}
       </template>
-      <template v-slot:item.data-table-actions="{ item }">
+      <template #item.data-table-actions="{ item }">
         <v-menu bottom left>
-          <template v-slot:activator="{ on }">
+          <template #activator="{ on }">
             <v-btn icon v-on="on">
               <v-icon>mdi-dots-vertical</v-icon>
             </v-btn>

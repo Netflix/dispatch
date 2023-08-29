@@ -15,7 +15,7 @@
     multiple
     no-filter
   >
-    <template v-slot:no-data>
+    <template #no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
@@ -26,12 +26,12 @@
         </v-list-item-content>
       </v-list-item>
     </template>
-    <template v-slot:selection="data">
+    <template #selection="data">
       <v-chip close class="chip--select-multi" @input="removeMember($event)">
         {{ data.item.content.name }}
       </v-chip>
     </template>
-    <template v-slot:item="data">
+    <template #item="data">
       <v-list-item-content>
         <v-list-item-title>
           <div class="text-uppercase text-truncate">

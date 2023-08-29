@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-menu v-model="menu" bottom right transition="scale-transition" origin="top left">
-      <template v-slot:activator="{ on }">
+      <template #activator="{ on }">
         <v-chip pill small v-on="on" v-if="participant.individual">
           <v-avatar color="teal" left>
             <span class="white--text">{{ participant.individual.name | initials }}</span>

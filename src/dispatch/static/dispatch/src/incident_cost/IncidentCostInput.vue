@@ -18,7 +18,7 @@
       </v-col>
       <v-col cols="12" sm="1">
         <v-tooltip bottom>
-          <template v-slot:activator="{ on }">
+          <template #activator="{ on }">
             <v-btn small icon @click="addIncidentCost()" v-on="on">
               <v-icon>add</v-icon>
             </v-btn>

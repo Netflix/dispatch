@@ -1,6 +1,6 @@
 <template>
   <v-menu v-model="menu" bottom right transition="scale-transition" origin="top right">
-    <template v-slot:activator="{ on }">
+    <template #activator="{ on }">
       <v-btn icon small v-on="on"><v-icon>mdi-chevron-down</v-icon></v-btn>
     </template>
     <v-card width="400">

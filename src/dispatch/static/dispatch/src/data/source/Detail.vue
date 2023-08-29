@@ -4,12 +4,12 @@
     <v-toolbar dark flat>
       <v-toolbar-title>{{ name }}</v-toolbar-title>
 
-      <v-spacer></v-spacer>
+      <v-spacer />
 
       <span v-if="source_status"> Status: {{ source_status.name }}</span>
 
       <v-menu bottom left>
-        <template v-slot:activator="{ on }">
+        <template #activator="{ on }">
           <v-btn icon v-on="on">
             <v-icon>mdi-dots-vertical</v-icon>
           </v-btn>
@@ -24,9 +24,9 @@
         </v-list>
       </v-menu>
 
-      <template v-slot:extension>
+      <template #extension>
         <v-tabs align-with-title>
-          <v-tabs-slider></v-tabs-slider>
+          <v-tabs-slider />
           <v-tab :to="{ params: { tab: 'details' } }">Details </v-tab>
           <!--<v-tab :to="{ params: { tab: 'schema' } }">Schema </v-tab>-->
           <v-tab :to="{ params: { tab: 'queries' } }">Queries </v-tab>

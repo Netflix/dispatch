@@ -39,68 +39,68 @@
             loading-text="Loading... Please wait"
             show-select
           >
-            <template v-slot:item.description="{ item }">
+            <template #item.description="{ item }">
               <div class="text-truncate" style="max-width: 400px">
                 {{ item.description }}
               </div>
             </template>
-            <template v-slot:item.project.name="{ item }">
+            <template #item.project.name="{ item }">
               <v-chip small :color="item.project.color" text-color="white">
                 {{ item.project.name }}
               </v-chip>
             </template>
-            <template v-slot:item.incident_priority.name="{ item }">
+            <template #item.incident_priority.name="{ item }">
               <incident-priority :priority="item.incident.incident_priority.name" />
             </template>
-            <template v-slot:item.creator.individual_contact.name="{ item }">
+            <template #item.creator.individual_contact.name="{ item }">
               <participant :participant="item.creator" />
             </template>
-            <template v-slot:item.owner.individual_contact.name="{ item }">
+            <template #item.owner.individual_contact.name="{ item }">
               <participant :participant="item.owner" />
             </template>
-            <template v-slot:item.incident_type.name="{ item }">
+            <template #item.incident_type.name="{ item }">
               {{ item.incident.incident_type.name }}
             </template>
-            <template v-slot:item.assignees="{ item }">
+            <template #item.assignees="{ item }">
               <participant
                 v-for="assignee in item.assignees"
                 :key="assignee.id"
                 :participant="assignee"
               />
             </template>
-            <template v-slot:item.resolve_by="{ item }">
+            <template #item.resolve_by="{ item }">
               <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
+                <template #activator="{ on, attrs }">
                   <span v-bind="attrs" v-on="on">{{ item.resolve_by | formatRelativeDate }}</span>
                 </template>
                 <span>{{ item.resolve_by | formatDate }}</span>
               </v-tooltip>
             </template>
-            <template v-slot:item.created_at="{ item }">
+            <template #item.created_at="{ item }">
               <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
+                <template #activator="{ on, attrs }">
                   <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
                 </template>
                 <span>{{ item.created_at | formatDate }}</span>
               </v-tooltip>
             </template>
-            <template v-slot:item.resolved_at="{ item }">
+            <template #item.resolved_at="{ item }">
               <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
+                <template #activator="{ on, attrs }">
                   <span v-bind="attrs" v-on="on">{{ item.resolved_at | formatRelativeDate }}</span>
                 </template>
                 <span>{{ item.resolved_at | formatDate }}</span>
               </v-tooltip>
             </template>
-            <template v-slot:item.source="{ item }">
+            <template #item.source="{ item }">
               <a :href="item.weblink" target="_blank" style="text-decoration: none">
                 {{ item.source }}
                 <v-icon small>open_in_new</v-icon>
               </a>
             </template>
-            <template v-slot:item.data-table-actions="{ item }">
+            <template #item.data-table-actions="{ item }">
               <v-menu bottom left>
-                <template v-slot:activator="{ on }">
+                <template #activator="{ on }">
                   <v-btn icon v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>
