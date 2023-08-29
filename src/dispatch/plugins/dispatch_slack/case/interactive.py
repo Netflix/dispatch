@@ -1173,12 +1173,13 @@ def handle_edit_submission_event(
     )
 
     case = case_service.update(db_session=db_session, case=case, case_in=case_in, current_user=user)
+
     case_flows.case_update_flow(
         case_id=case.id,
         previous_case=previous_case,
         db_session=db_session,
+        reporter_email=case.reporter.individual.email,
         assignee_email=assignee_email,
-        user_email=user.email,
         organization_slug=context["subject"].organization_slug,
     )
 

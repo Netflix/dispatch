@@ -110,6 +110,8 @@ def update_group(
         log.exception(e)
         return
 
+    subject_type = get_table_name_by_class_instance(subject)
+
     # we add the member to the group if it's not a member
     if group_action == GroupAction.add_member and group_member not in group_members:
         try:
@@ -118,6 +120,21 @@ def update_group(
             log.exception(e)
             return
 
+        if subject_type == "case":
+            event_service.log_case_event(
+                db_session=db_session,
+                source=plugin.plugin.title,
+                description=f"{group_member} added to case group ({group.email})",
+                case_id=subject.id,
+            )
+        if subject_type == "incident":
+            event_service.log_incident_event(
+                db_session=db_session,
+                source=plugin.plugin.title,
+                description=f"{group_member} added to incident group ({group.email})",
+                incident_id=subject.id,
+            )
+
     # we remove the member from the group if it's a member
     if group_action == GroupAction.remove_member and group_member in group_members:
         try:
@@ -125,6 +142,21 @@ def update_group(
         except Exception as e:
             log.exception(e)
             return
+
+        if subject_type == "case":
+            event_service.log_case_event(
+                db_session=db_session,
+                source=plugin.plugin.title,
+                description=f"{group_member} removed from case group ({group.email})",
+                case_id=subject.id,
+            )
+        if subject_type == "incident":
+            event_service.log_incident_event(
+                db_session=db_session,
+                source=plugin.plugin.title,
+                description=f"{group_member} removed from incident group ({group.email})",
+                incident_id=subject.id,
+            )
 
 
 def delete_group(group: Group, project_id: int, db_session: SessionLocal):
