@@ -161,6 +161,22 @@ def update_case(
     background_tasks: BackgroundTasks,
 ):
     """Updates an existing case."""
+    reporter_email = None
+    if case_in.reporter:
+        # we assign the case to the reporter provided
+        reporter_email = case_in.reporter.individual.email
+    elif current_user:
+        # we fall back to assign the case to the current user
+        reporter_email = current_user.email
+
+    assignee_email = None
+    if case_in.assignee:
+        # we assign the case to the assignee provided
+        assignee_email = case_in.assignee.individual.email
+    elif current_user:
+        # we fall back to assign the case to the current user
+        assignee_email = current_user.email
+
     # we store the previous state of the case in order to be able to detect changes
     previous_case = CaseRead.from_orm(current_case)
 
@@ -169,18 +185,13 @@ def update_case(
         db_session=db_session, case=current_case, case_in=case_in, current_user=current_user
     )
 
-    if not case_in.assignee:
-        # if the case didn't have an assignee and the user
-        # doesn't set one then we make the user the assignee
-        assignee_email = current_user.email
-
     # we run the case update flow
     background_tasks.add_task(
         case_update_flow,
         case_id=case_id,
         previous_case=previous_case,
+        reporter_email=reporter_email,
         assignee_email=assignee_email,
-        user_email=current_user.email,
         organization_slug=organization,
     )
 
