@@ -60,7 +60,6 @@ def find_schedule_and_send(
     )
 
 
-@scheduler.add(every(1).minutes, name="oncall-shift-feedback-emea")
 @timer
 @scheduled_project_task
 def oncall_shift_feedback(db_session: SessionLocal, project: Project):
