@@ -437,6 +437,34 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
     send_incident_rating_feedback_message(incident, db_session)
 
 
+def check_for_tag_change(
+    previous_incident_tags: list,
+    current_incident_tags: list
+) -> tuple[list, list]:
+    """Determines if there is any tag change and builds the description string if so"""
+    added_tags = []
+    removed_tags = []
+    description = ""
+
+    for tag in previous_incident_tags:
+        if tag.id not in [t.id for t in current_incident_tags]:
+            removed_tags.append(f"{tag.tag_type.name}/{tag.name}/{tag.id}")
+
+    for tag in current_incident_tags:
+        if tag.id not in [t.id for t in previous_incident_tags]:
+            added_tags.append(f"{tag.tag_type.name}/{tag.name}/{tag.id}")
+
+    # if added_tags or removed_tags:
+    #     if added_tags:
+    #         description = f"added the following tag{'s' if len(added_tags) > 1 else ''}: {','.join(added_tags)}"
+    #         if removed_tags:
+    #             description += " and "
+    #     if removed_tags:
+    #         description += f"removed the following tag{'s' if len(removed_tags) > 1 else ''}: {','.join(removed_tags)}"
+
+    return (added_tags, removed_tags)
+
+
 def conversation_topic_dispatcher(
     user_email: str,
     incident: Incident,
@@ -465,6 +493,19 @@ def conversation_topic_dispatcher(
             source="Incident Participant",
             description=f"{individual.name} changed the incident description",
             details={"description": incident.description},
+            incident_id=incident.id,
+            individual_id=individual.id,
+        )
+
+    added_tags, removed_tags = check_for_tag_change(previous_incident_tags=previous_incident.tags, current_incident_tags=incident.tags)
+    if added_tags or removed_tags:
+        conversation_topic_change = True
+
+        event_service.log_incident_event(
+            db_session=db_session,
+            source="Incident Participant",
+            description=f"{individual.name} added {len(added_tags)} and removed {len(removed_tags)}",
+            details={"added_tags": ','.join(added_tags), "removed_tags": ','.join(removed_tags)},
             incident_id=incident.id,
             individual_id=individual.id,
         )
