@@ -9,10 +9,6 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base, ensure_unique_default_per_project
 from dispatch.models import DispatchBase, NameStr, ProjectMixin, PrimaryKey, Pagination
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dispatch.project.models import ProjectRead
 
 
 class IncidentPriority(Base, ProjectMixin):
@@ -37,6 +33,10 @@ class IncidentPriority(Base, ProjectMixin):
 
 
 listen(IncidentPriority.default, "set", ensure_unique_default_per_project)
+
+
+class ProjectRead(DispatchBase):
+    id: Optional[PrimaryKey]
 
 
 # Pydantic models...
