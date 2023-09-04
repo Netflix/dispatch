@@ -34,7 +34,7 @@
             </v-list>
           </v-col>
           <v-col>
-            <v-text-field :value="windowStartFormatted" prepend-icon="mdi-calendar" />
+            <v-text-field :model-value="windowStartFormatted" prepend-icon="mdi-calendar" />
             <v-date-picker
               color="primary"
               no-title

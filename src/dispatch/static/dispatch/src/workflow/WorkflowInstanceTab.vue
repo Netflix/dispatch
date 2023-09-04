@@ -10,7 +10,7 @@
       <workflow-instance-detail-menu :value="item" />
     </template>
     <template #item.created_at="{ item }">
-      <v-tooltip bottom>
+      <v-tooltip location="bottom">
         <template #activator="{ on, attrs }">
           <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
         </template>

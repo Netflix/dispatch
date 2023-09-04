@@ -2,8 +2,8 @@
   <v-autocomplete
     v-model="query"
     :items="items"
-    item-text="name"
-    :search-input.sync="search"
+    item-title="name"
+    v-model:search="search"
     :menu-props="{ maxHeight: '400' }"
     hide-selected
     :label="label"
@@ -14,25 +14,21 @@
     no-filter
   >
     <template #selection="{ attr, on, item, selected }">
-      <v-chip v-bind="attr" :input-value="selected" v-on="on">
+      <v-chip v-bind="attr" :model-value="selected" v-on="on">
         <span v-text="item.name" />
       </v-chip>
     </template>
     <template #item="{ item }">
-      <v-list-item-content>
-        <v-list-item-title>{{ item.name }}</v-list-item-title>
-        <v-list-item-subtitle>{{ item.title }}</v-list-item-subtitle>
-      </v-list-item-content>
+      <v-list-item-title>{{ item.name }}</v-list-item-title>
+      <v-list-item-subtitle>{{ item.title }}</v-list-item-subtitle>
     </template>
     <template #no-data>
       <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title>
-            No querys matching "
-            <strong>{{ search }}</strong
-            >".
-          </v-list-item-title>
-        </v-list-item-content>
+        <v-list-item-title>
+          No querys matching "
+          <strong>{{ search }}</strong
+          >".
+        </v-list-item-title>
       </v-list-item>
     </template>
   </v-autocomplete>

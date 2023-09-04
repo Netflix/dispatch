@@ -1,11 +1,11 @@
 <template>
   <v-container>
     <v-row no-gutter>
-      <span class="subtitle-2">Workflow Parameters</span>
+      <span class="text-subtitle-2">Workflow Parameters</span>
       <v-spacer />
-      <v-tooltip bottom>
+      <v-tooltip location="bottom">
         <template #activator="{ on }">
-          <v-btn small icon @click="addItem()" v-on="on">
+          <v-btn size="small" icon @click="addItem()" v-on="on">
             <v-icon>add</v-icon>
           </v-btn>
         </template>
@@ -15,9 +15,11 @@
     <span v-for="(param, idx) in parameters" :key="idx">
       <v-row align="center" dense>
         <v-col cols="12" sm="1">
-          <v-tooltip bottom>
+          <v-tooltip location="bottom">
             <template #activator="{ on }">
-              <v-btn small icon @click="removeItem(idx)" v-on="on"><v-icon>remove</v-icon></v-btn>
+              <v-btn size="small" icon @click="removeItem(idx)" v-on="on"
+                ><v-icon>remove</v-icon></v-btn
+              >
             </template>
             <span>Remove Item</span>
           </v-tooltip>
@@ -25,8 +27,8 @@
         <v-col cols="12" sm="5">
           <v-text-field
             label="Key"
-            :value="param.key"
-            @input="updateItemKey(idx, $event)"
+            :model-value="param.key"
+            @update:model-value="updateItemKey(idx, $event)"
             type="text"
           />
         </v-col>

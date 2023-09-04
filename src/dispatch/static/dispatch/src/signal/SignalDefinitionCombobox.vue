@@ -4,28 +4,33 @@
     :label="label"
     :loading="loading"
     :menu-props="{ maxHeight: '400' }"
-    :search-input.sync="search"
-    @update:search-input="getFilteredData({ q: $event })"
+    v-model:search="search"
+    @update:search="getFilteredData({ q: $event })"
     chips
     clearable
     close
-    deletable-chips
+    closable-chips
     hide-selected
-    item-text="name"
+    item-title="name"
     item-value="id"
     multiple
     no-filter
     v-model="signalDefinitions"
   >
     <template #selection="{ attr, item, selected }">
-      <v-menu v-model="menu" bottom right transition="scale-transition" origin="top left">
+      <v-menu
+        v-model="menu"
+        location="bottom right"
+        transition="scale-transition"
+        origin="top left"
+      >
         <template #activator="{ on }">
           <v-chip
             v-bind="attr"
-            :input-value="selected"
+            :model-value="selected"
             pill
             v-on="on"
-            close
+            closable
             @click:close="remove(item)"
           >
             {{ item.name }}
@@ -35,12 +40,12 @@
           <v-list dark>
             <v-list-item>
               <v-list-item-avatar color="teal">
-                <span class="white--text">{{ item.name | initials }}</span>
+                <span class="text-white">{{ item.name | initials }}</span>
               </v-list-item-avatar>
-              <v-list-item-content>
-                <v-list-item-title>{{ item.name }}</v-list-item-title>
-                <v-list-item-subtitle>{{ item.type }}</v-list-item-subtitle>
-              </v-list-item-content>
+
+              <v-list-item-title>{{ item.name }}</v-list-item-title>
+              <v-list-item-subtitle>{{ item.type }}</v-list-item-subtitle>
+
               <v-list-item-action>
                 <v-btn icon @click="menu = false">
                   <v-icon>mdi-close-circle</v-icon>
@@ -60,21 +65,17 @@
       </v-menu>
     </template>
     <template #item="{ item }">
-      <v-list-item-content>
-        <v-list-item-title>{{ item.name }}</v-list-item-title>
-        <v-list-item-subtitle style="width: 200px" class="text-truncate">
-          {{ item.description }}
-        </v-list-item-subtitle>
-      </v-list-item-content>
+      <v-list-item-title>{{ item.name }}</v-list-item-title>
+      <v-list-item-subtitle style="width: 200px" class="text-truncate">
+        {{ item.description }}
+      </v-list-item-subtitle>
     </template>
     <template #no-data>
       <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title>
-            No signal definition matching "
-            <strong>{{ search }}</strong>
-          </v-list-item-title>
-        </v-list-item-content>
+        <v-list-item-title>
+          No signal definition matching "
+          <strong>{{ search }}</strong>
+        </v-list-item-title>
       </v-list-item>
     </template>
   </v-combobox>

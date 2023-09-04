@@ -7,7 +7,7 @@
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Create Workflow</span>
+        <span class="text-h5">Create Workflow</span>
         <v-spacer />
       </v-card-title>
       <v-stepper v-model="step">
@@ -49,7 +49,7 @@
               </v-card-text>
               <v-card-actions>
                 <v-spacer />
-                <v-btn @click="closeCreateEditDialog()" text> Cancel </v-btn>
+                <v-btn @click="closeCreateEditDialog()" variant="text"> Cancel </v-btn>
                 <v-btn color="info" @click="step = 2"> Continue </v-btn>
               </v-card-actions>
             </v-card>
@@ -87,7 +87,7 @@
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer />
-                  <v-btn @click="closeCreateEditDialog()" text> Cancel </v-btn>
+                  <v-btn @click="closeCreateEditDialog()" variant="text"> Cancel </v-btn>
                   <v-btn
                     color="info"
                     @click="saveWorkflow()"

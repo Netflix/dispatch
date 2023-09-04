@@ -4,17 +4,16 @@
       v-model="showCreateEdit"
       app
       clipped
-      right
+      location="right"
       width="800"
       :permanent="$vuetify.display.mdAndDown"
     >
       <template #prepend>
-        <v-list-item two-line>
-          <v-list-item-content>
-            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
-            <v-list-item-title v-else class="title"> New </v-list-item-title>
-            <v-list-item-subtitle>Data Format</v-list-item-subtitle>
-          </v-list-item-content>
+        <v-list-item lines="two">
+          <v-list-item-title v-if="id" class="text-h6"> Edit </v-list-item-title>
+          <v-list-item-title v-else class="text-h6"> New </v-list-item-title>
+          <v-list-item-subtitle>Data Format</v-list-item-subtitle>
+
           <v-btn
             icon
             color="info"

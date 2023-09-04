@@ -7,7 +7,7 @@
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Create Search Filter</span>
+        <span class="text-h5">Create Search Filter</span>
         <v-spacer />
         <span>
           <v-radio-group v-model="subject" class="justify-right" row>
@@ -31,111 +31,87 @@
           <v-stepper-content step="1">
             <v-card>
               <v-card-text>
-                <v-tabs color="primary" right>
+                <v-tabs color="primary" align-tabs="end">
                   <v-tab>Basic</v-tab>
                   <v-tab>Advanced</v-tab>
                   <v-tab-item>
-                    <v-list v-if="subject == 'incident'" dense>
+                    <v-list v-if="subject == 'incident'" density="compact">
                       <v-list-item>
-                        <v-list-item-content>
-                          <tag-filter-auto-complete
-                            :project="project"
-                            v-model="filters.tag"
-                            label="Tags"
-                          />
-                        </v-list-item-content>
+                        <tag-filter-auto-complete
+                          :project="project"
+                          v-model="filters.tag"
+                          label="Tags"
+                        />
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>
-                          <tag-type-filter-combobox
-                            :project="project"
-                            v-model="filters.tag_type"
-                            label="Tag Types"
-                          />
-                        </v-list-item-content>
+                        <tag-type-filter-combobox
+                          :project="project"
+                          v-model="filters.tag_type"
+                          label="Tag Types"
+                        />
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>
-                          <incident-type-combobox
-                            :project="project"
-                            v-model="filters.incident_type"
-                          />
-                        </v-list-item-content>
+                        <incident-type-combobox
+                          :project="project"
+                          v-model="filters.incident_type"
+                        />
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>
-                          <incident-priority-combobox
-                            :project="project"
-                            v-model="filters.incident_priority"
-                          />
-                        </v-list-item-content>
+                        <incident-priority-combobox
+                          :project="project"
+                          v-model="filters.incident_priority"
+                        />
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>
-                          <incident-status-multi-select v-model="filters.status" />
-                        </v-list-item-content>
+                        <incident-status-multi-select v-model="filters.status" />
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>
-                          <v-select
-                            :items="visibilities"
-                            v-model="filters.visibility"
-                            name="visibility"
-                            item-text="name"
-                            return-object
-                            label="Visibility"
-                          />
-                        </v-list-item-content>
+                        <v-select
+                          :items="visibilities"
+                          v-model="filters.visibility"
+                          name="visibility"
+                          item-title="name"
+                          return-object
+                          label="Visibility"
+                        />
                       </v-list-item>
                     </v-list>
                     <v-list v-else>
                       <v-list-item>
-                        <v-list-item-content>
-                          <tag-filter-auto-complete
-                            :project="project"
-                            v-model="filters.tag"
-                            label="Tags"
-                          />
-                        </v-list-item-content>
+                        <tag-filter-auto-complete
+                          :project="project"
+                          v-model="filters.tag"
+                          label="Tags"
+                        />
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>
-                          <tag-type-filter-combobox
-                            :project="project"
-                            v-model="filters.tag_type"
-                            label="Tag Types"
-                          />
-                        </v-list-item-content>
+                        <tag-type-filter-combobox
+                          :project="project"
+                          v-model="filters.tag_type"
+                          label="Tag Types"
+                        />
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>
-                          <case-type-combobox :project="project" v-model="filters.case_type" />
-                        </v-list-item-content>
+                        <case-type-combobox :project="project" v-model="filters.case_type" />
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>
-                          <case-priority-combobox
-                            :project="project"
-                            v-model="filters.case_priority"
-                          />
-                        </v-list-item-content>
+                        <case-priority-combobox
+                          :project="project"
+                          v-model="filters.case_priority"
+                        />
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>
-                          <incident-status-multi-select v-model="filters.status" />
-                        </v-list-item-content>
+                        <incident-status-multi-select v-model="filters.status" />
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>
-                          <v-select
-                            :items="visibilities"
-                            v-model="filters.visibility"
-                            name="visibility"
-                            item-text="name"
-                            return-object
-                            label="Visibility"
-                          />
-                        </v-list-item-content>
+                        <v-select
+                          :items="visibilities"
+                          v-model="filters.visibility"
+                          name="visibility"
+                          item-title="name"
+                          return-object
+                          label="Visibility"
+                        />
                       </v-list-item>
                     </v-list>
                   </v-tab-item>
@@ -152,7 +128,7 @@
               </v-card-text>
               <v-card-actions>
                 <v-spacer />
-                <v-btn @click="closeCreateDialog()" text> Cancel </v-btn>
+                <v-btn @click="closeCreateDialog()" variant="text"> Cancel </v-btn>
                 <v-btn color="info" @click="step = 2"> Continue </v-btn>
               </v-card-actions>
             </v-card>
@@ -178,7 +154,7 @@
               </v-card-text>
               <v-card-actions>
                 <v-spacer />
-                <v-btn @click="closeCreateDialog()" text> Cancel </v-btn>
+                <v-btn @click="closeCreateDialog()" variant="text"> Cancel </v-btn>
                 <v-btn color="info" @click="step = 3" :loading="loading"> Continue </v-btn>
               </v-card-actions>
             </v-card>
@@ -216,7 +192,7 @@
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer />
-                  <v-btn @click="closeCreateDialog()" text> Cancel </v-btn>
+                  <v-btn @click="closeCreateDialog()" variant="text"> Cancel </v-btn>
                   <v-btn
                     color="info"
                     @click="saveFilter()"

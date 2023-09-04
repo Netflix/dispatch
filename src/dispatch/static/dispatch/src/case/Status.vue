@@ -7,12 +7,12 @@
           <span class="button font-weight-bold">D I S P A T C H</span>
         </router-link>
         <v-spacer />
-        <v-btn small color="primary" :to="{ name: 'caseReport' }"> Report Issue </v-btn>
+        <v-btn size="small" color="primary" :to="{ name: 'caseReport' }"> Report Issue </v-btn>
       </v-app-bar>
       <v-container fluid>
         <v-row>
           <v-col>
-            <v-card class="mx-auto ma-4" flat outlined>
+            <v-card class="mx-auto ma-4" flat variant="outlined">
               <v-card-text>
                 <case-summary-table :items="items" :loading="loading" />
               </v-card-text>

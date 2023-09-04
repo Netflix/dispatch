@@ -7,7 +7,7 @@
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Create Signal Filter</span>
+        <span class="text-h5">Create Signal Filter</span>
         <v-spacer />
       </v-card-title>
       <v-stepper v-model="step">
@@ -27,7 +27,7 @@
               <v-card-text>
                 Define the entity and entity types that will be used to match with existing signal
                 instances.
-                <v-tabs color="primary" right>
+                <v-tabs color="primary" align-tabs="end">
                   <v-tab>Basic</v-tab>
                   <v-tab>Advanced</v-tab>
                   <v-tab-item>
@@ -73,7 +73,7 @@
               </v-card-text>
               <v-card-actions>
                 <v-spacer />
-                <v-btn @click="closeCreateEditDialog()" text> Cancel </v-btn>
+                <v-btn @click="closeCreateEditDialog()" variant="text"> Cancel </v-btn>
                 <v-btn color="info" @click="step = 2"> Continue </v-btn>
               </v-card-actions>
             </v-card>
@@ -96,7 +96,7 @@
               </v-card-text>
               <v-card-actions>
                 <v-spacer />
-                <v-btn @click="closeCreateEditDialog()" text> Cancel </v-btn>
+                <v-btn @click="closeCreateEditDialog()" variant="text"> Cancel </v-btn>
                 <v-btn color="info" @click="step = 3" :loading="loading"> Continue </v-btn>
               </v-card-actions>
             </v-card>
@@ -133,7 +133,7 @@
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer />
-                  <v-btn @click="closeCreateEditDialog()" text> Cancel </v-btn>
+                  <v-btn @click="closeCreateEditDialog()" variant="text"> Cancel </v-btn>
                   <v-btn
                     color="info"
                     @click="saveFilter()"

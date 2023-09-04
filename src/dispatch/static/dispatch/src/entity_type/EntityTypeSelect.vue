@@ -3,26 +3,22 @@
     v-model="entity"
     :items="items"
     :menu-props="{ maxHeight: '400' }"
-    item-text="name"
+    item-title="name"
     label="Type"
     return-object
     :loading="loading"
   >
     <template #item="data">
       <template>
-        <v-list-item-content>
-          <v-list-item-title>{{ data.item.name }}</v-list-item-title>
-          <v-list-item-subtitle style="width: 200px" class="text-truncate">
-            {{ data.item.description }}
-          </v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item-title>{{ data.item.name }}</v-list-item-title>
+        <v-list-item-subtitle style="width: 200px" class="text-truncate">
+          {{ data.item.description }}
+        </v-list-item-subtitle>
       </template>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
-        <v-list-item-content>
-          <v-list-item-subtitle> Load More </v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
   </v-combobox>

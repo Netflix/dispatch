@@ -1,30 +1,29 @@
 <template>
   <v-list>
     <v-list-item target="_blank">
-      <v-list-item-content>
-        <v-list-item-title>Total Cost</v-list-item-title>
-      </v-list-item-content>
+      <v-list-item-title>Total Cost</v-list-item-title>
+
       <v-list-item-action>{{ totalCost | toUSD }} </v-list-item-action>
     </v-list-item>
     <v-divider />
     <span v-for="(cost, index) in incident_costs" :key="index">
       <v-list-item target="_blank">
         <v-list-item-icon v-if="cost.incident_cost_type.editable">
-          <v-tooltip bottom>
+          <v-tooltip location="bottom">
             <template #activator="{ on }">
-              <v-btn small icon @click="removeIncidentCost(index)" v-on="on">
+              <v-btn size="small" icon @click="removeIncidentCost(index)" v-on="on">
                 <v-icon>remove</v-icon>
               </v-btn>
             </template>
             <span>Remove Cost</span>
           </v-tooltip>
         </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title>
-            {{ cost.incident_cost_type.name }}
-          </v-list-item-title>
-          <v-list-item-subtitle>{{ cost.incident_cost_type.description }}</v-list-item-subtitle>
-        </v-list-item-content>
+
+        <v-list-item-title>
+          {{ cost.incident_cost_type.name }}
+        </v-list-item-title>
+        <v-list-item-subtitle>{{ cost.incident_cost_type.description }}</v-list-item-subtitle>
+
         <v-list-item-action>{{ cost.amount | toUSD }}</v-list-item-action>
       </v-list-item>
       <v-divider />

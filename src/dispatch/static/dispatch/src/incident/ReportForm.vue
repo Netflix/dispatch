@@ -8,7 +8,7 @@
           <span class="button font-weight-bold">D I S P A T C H</span>
         </router-link>
         <v-spacer />
-        <v-btn small color="info" :to="{ name: 'status' }"> Active Incidents </v-btn>
+        <v-btn size="small" color="info" :to="{ name: 'status' }"> Active Incidents </v-btn>
       </v-app-bar>
       <organization-banner />
       <report-receipt-card v-if="id" />

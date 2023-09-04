@@ -64,9 +64,8 @@
                       </template>
                       <template v-for="(instance, index) in signalInstances" v-else>
                         <v-list-item :key="`item-${index}`">
-                          <v-list-item-content>
-                            <v-list-item-title>{{ instance.id }}</v-list-item-title>
-                          </v-list-item-content>
+                          <v-list-item-title>{{ instance.id }}</v-list-item-title>
+
                           <v-list-item-action>
                             <v-btn icon @click="updateEditorValue(instance.raw)">
                               <v-icon>mdi-arrow-right</v-icon>
@@ -87,7 +86,7 @@
               </v-card-text>
               <v-card-actions>
                 <v-spacer />
-                <v-btn @click="dialog = false" text> Cancel </v-btn>
+                <v-btn @click="dialog = false" variant="text"> Cancel </v-btn>
                 <v-btn color="info" @click="step = 2" :loading="loading"> Continue </v-btn>
               </v-card-actions>
             </v-card>
@@ -126,7 +125,7 @@
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer />
-                  <v-btn @click="dialog = false" text> Cancel </v-btn>
+                  <v-btn @click="dialog = false" variant="text"> Cancel </v-btn>
                   <v-btn
                     color="info"
                     @click="saveEntityType()"

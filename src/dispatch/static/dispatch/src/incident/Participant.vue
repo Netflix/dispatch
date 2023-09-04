@@ -1,10 +1,10 @@
 <template>
   <div>
-    <v-menu v-model="menu" bottom right transition="scale-transition" origin="top left">
+    <v-menu v-model="menu" location="bottom right" transition="scale-transition" origin="top left">
       <template #activator="{ on }">
         <v-chip pill small v-on="on" v-if="participant.individual">
-          <v-avatar color="teal" left>
-            <span class="white--text">{{ participant.individual.name | initials }}</span>
+          <v-avatar color="teal" start>
+            <span class="text-white">{{ participant.individual.name | initials }}</span>
           </v-avatar>
           {{ participant.individual.name }}
         </v-chip>
@@ -13,12 +13,12 @@
         <v-list dark>
           <v-list-item v-if="participant.individual">
             <v-list-item-avatar color="teal">
-              <span class="white--text">{{ participant.individual.name | initials }}</span>
+              <span class="text-white">{{ participant.individual.name | initials }}</span>
             </v-list-item-avatar>
-            <v-list-item-content>
-              <v-list-item-title>{{ participant.individual.name }}</v-list-item-title>
-              <v-list-item-subtitle>{{ participant.individual.email }}</v-list-item-subtitle>
-            </v-list-item-content>
+
+            <v-list-item-title>{{ participant.individual.name }}</v-list-item-title>
+            <v-list-item-subtitle>{{ participant.individual.email }}</v-list-item-subtitle>
+
             <v-list-item-action>
               <v-btn icon @click="menu = false">
                 <v-icon>mdi-close-circle</v-icon>

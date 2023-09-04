@@ -17,8 +17,8 @@
             <div class="text-h6 font-weight-light mb-2">Alert Volume</div>
             <v-data-table :headers="headers" :items="alerts" />
             <v-divider class="my-2" />
-            <v-icon class="mr-2" small> mdi-clock </v-icon>
-            <span class="text-caption grey--text font-weight-light">last alert 10min ago</span>
+            <v-icon class="mr-2" size="small"> mdi-clock </v-icon>
+            <span class="text-caption text-grey font-weight-light">last alert 10min ago</span>
           </v-card-text>
         </v-card>
       </v-col>

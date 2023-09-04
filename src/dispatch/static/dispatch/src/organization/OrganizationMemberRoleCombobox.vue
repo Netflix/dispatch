@@ -1,11 +1,11 @@
 <template>
   <v-container>
     <v-row no-gutter>
-      <span class="subtitle-2">{{ label }}</span>
+      <span class="text-subtitle-2">{{ label }}</span>
       <v-spacer />
-      <v-tooltip bottom>
+      <v-tooltip location="bottom">
         <template #activator="{ on }">
-          <v-btn small icon @click="addRole()" v-on="on">
+          <v-btn size="small" icon @click="addRole()" v-on="on">
             <v-icon>add</v-icon>
           </v-btn>
         </template>
@@ -15,9 +15,11 @@
     <span v-for="(role, idx) in value" :key="idx">
       <v-row align="center" dense>
         <v-col cols="12" sm="1">
-          <v-tooltip bottom>
+          <v-tooltip location="bottom">
             <template #activator="{ on }">
-              <v-btn small icon @click="removeRole(idx)" v-on="on"><v-icon>remove</v-icon></v-btn>
+              <v-btn size="small" icon @click="removeRole(idx)" v-on="on"
+                ><v-icon>remove</v-icon></v-btn
+              >
             </template>
             <span>Remove Role</span>
           </v-tooltip>

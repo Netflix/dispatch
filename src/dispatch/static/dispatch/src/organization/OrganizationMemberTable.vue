@@ -3,7 +3,7 @@
     <new-edit-sheet />
     <v-row no-gutters>
       <v-col>
-        <div class="headline">Members</div>
+        <div class="text-h5">Members</div>
       </v-col>
       <v-col class="text-right">
         <v-btn color="info" class="mr-2" @click="createEditShow()"> New </v-btn>
@@ -26,15 +26,15 @@
             :headers="headers"
             :items="items"
             :server-items-length="total"
-            :page.sync="page"
-            :items-per-page.sync="itemsPerPage"
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="descending"
+            v-model:page="page"
+            v-model:items-per-page="itemsPerPage"
+            v-model:sort-by="sortBy"
+            v-model:sort-desc="descending"
             :loading="loading"
             loading-text="Loading... Please wait"
           >
             <template #[`item.data-table-actions`]="{ item }">
-              <v-menu bottom left>
+              <v-menu location="bottom left">
                 <template #activator="{ on }">
                   <v-btn icon v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>

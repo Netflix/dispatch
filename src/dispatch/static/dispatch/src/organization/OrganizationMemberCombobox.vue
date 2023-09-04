@@ -3,44 +3,38 @@
     :items="items"
     :label="label"
     :loading="loading"
-    :search-input.sync="search"
-    @update:search-input="getFilteredData()"
+    v-model:search="search"
+    @update:search="getFilteredData()"
     chips
     clearable
-    deletable-chips
+    closable-chips
     hide-selected
-    item-text="email"
+    item-title="email"
     no-filter
     return-object
     v-model="assignee"
   >
     <template #no-data>
       <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title>
-            No users matching "
-            <strong>{{ search }}</strong
-            >".
-          </v-list-item-title>
-        </v-list-item-content>
+        <v-list-item-title>
+          No users matching "
+          <strong>{{ search }}</strong
+          >".
+        </v-list-item-title>
       </v-list-item>
     </template>
     <template #item="data">
-      <v-list-item-content>
-        <v-list-item-title>{{ data.item.email }}</v-list-item-title>
-        <!-- <v-list-item-subtitle>{{ data.item.individual.email }}</v-list-item-subtitle> -->
-      </v-list-item-content>
+      <v-list-item-title>{{ data.item.email }}</v-list-item-title>
+      <!-- <v-list-item-subtitle>{{ data.item.individual.email }}</v-list-item-subtitle> -->
     </template>
     <template #selection="{ attr, on, item, selected }">
-      <v-chip v-bind="attr" :input-value="selected" v-on="on">
+      <v-chip v-bind="attr" :model-value="selected" v-on="on">
         <span v-text="item.email" />
       </v-chip>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
-        <v-list-item-content>
-          <v-list-item-subtitle> Load More </v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
   </v-combobox>

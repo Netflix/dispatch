@@ -2,11 +2,9 @@
   <v-container>
     <v-row dense>
       <v-col cols="12">
-        <v-card outlined elevation="0">
-          <v-list-item two-line>
-            <v-list-item-content>
-              <v-list-item-title class="text-h6"> Incident Details </v-list-item-title>
-            </v-list-item-content>
+        <v-card variant="outlined" elevation="0">
+          <v-list-item lines="two">
+            <v-list-item-title class="text-h6"> Incident Details </v-list-item-title>
           </v-list-item>
           <v-card-text>
             <v-row align="center">
@@ -14,7 +12,7 @@
             </v-row>
           </v-card-text>
 
-          <v-list class="transparent">
+          <v-list class="bg-transparent">
             <v-list-item>
               <v-list-item-title>Type</v-list-item-title>
               <v-list-item-subtitle class="text-right">
@@ -37,13 +35,13 @@
 
           <v-card-actions>
             <v-list-item class="grow">
-              <v-list-item-avatar color="grey darken-3">
-                <span class="white--text text-h5">{{ commander.individual.name | initials }}</span>
+              <v-list-item-avatar color="grey-darken-3">
+                <span class="text-white text-h5">{{ commander.individual.name | initials }}</span>
               </v-list-item-avatar>
-              <v-list-item-content>
-                <v-list-item-title>{{ commander.individual.name }}</v-list-item-title>
-                <v-list-item-subtitle>Incident Commander</v-list-item-subtitle>
-              </v-list-item-content>
+
+              <v-list-item-title>{{ commander.individual.name }}</v-list-item-title>
+              <v-list-item-subtitle>Incident Commander</v-list-item-subtitle>
+
               <v-row align="center" justify="end">
                 <v-btn
                   v-if="commander.individual.phone"
@@ -63,21 +61,18 @@
         </v-card>
       </v-col>
       <v-col cols="12">
-        <v-card outlined elevation="0">
-          <v-list-item two-line>
-            <v-list-item-content>
-              <v-list-item-title class="text-h6"> Incident Resources </v-list-item-title>
-            </v-list-item-content>
+        <v-card variant="outlined" elevation="0">
+          <v-list-item lines="two">
+            <v-list-item-title class="text-h6"> Incident Resources </v-list-item-title>
           </v-list-item>
           <span v-for="pluginInstance in activeResourcePlugins" :key="pluginInstance.id">
             <span v-if="pluginInstance.plugin.type === 'document'">
               <span v-if="resourceData('documents').length">
                 <span v-for="document in resourceData('documents')" :key="document.resource_id">
                   <v-list-item :href="document.weblink" target="_blank">
-                    <v-list-item-content>
-                      <v-list-item-title>{{ document.resource_type | deslug }}</v-list-item-title>
-                      <v-list-item-subtitle>{{ document.description }}</v-list-item-subtitle>
-                    </v-list-item-content>
+                    <v-list-item-title>{{ document.resource_type | deslug }}</v-list-item-title>
+                    <v-list-item-subtitle>{{ document.description }}</v-list-item-subtitle>
+
                     <v-list-item-action>
                       <v-list-item-icon>
                         <v-icon>open_in_new</v-icon>
@@ -89,10 +84,8 @@
               </span>
               <span v-else>
                 <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-title>Creating documents... </v-list-item-title>
-                    <v-progress-linear indeterminate />
-                  </v-list-item-content>
+                  <v-list-item-title>Creating documents... </v-list-item-title>
+                  <v-progress-linear indeterminate />
                 </v-list-item>
               </span>
             </span>
@@ -102,14 +95,11 @@
                 target="_blank"
                 :href="resourceData(pluginInstance.plugin.type).weblink"
               >
-                <v-list-item-content>
-                  <v-list-item-title>{{
-                    pluginInstance.plugin.type | capitalize
-                  }}</v-list-item-title>
-                  <v-list-item-subtitle>{{
-                    resourceData(pluginInstance.plugin.type).description
-                  }}</v-list-item-subtitle>
-                </v-list-item-content>
+                <v-list-item-title>{{ pluginInstance.plugin.type | capitalize }}</v-list-item-title>
+                <v-list-item-subtitle>{{
+                  resourceData(pluginInstance.plugin.type).description
+                }}</v-list-item-subtitle>
+
                 <v-list-item-action>
                   <v-list-item-icon>
                     <v-icon>open_in_new</v-icon>
@@ -117,12 +107,10 @@
                 </v-list-item-action>
               </v-list-item>
               <v-list-item v-else>
-                <v-list-item-content>
-                  <v-list-item-title
-                    >Creating {{ pluginInstance.plugin.type }} resource...</v-list-item-title
-                  >
-                  <v-progress-linear indeterminate />
-                </v-list-item-content>
+                <v-list-item-title
+                  >Creating {{ pluginInstance.plugin.type }} resource...</v-list-item-title
+                >
+                <v-progress-linear indeterminate />
               </v-list-item>
               <v-divider />
             </span>

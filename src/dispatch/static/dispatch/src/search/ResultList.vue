@@ -1,6 +1,6 @@
 <template>
-  <v-card class="mx-auto" outlined :loading="loading" elevation="0">
-    <v-subheader class="title"> Search results for: "{{ query }}" </v-subheader>
+  <v-card class="mx-auto" variant="outlined" :loading="loading" elevation="0">
+    <v-subheader class="text-h6"> Search results for: "{{ query }}" </v-subheader>
     <v-expansion-panels flat>
       <v-expansion-panel>
         <v-expansion-panel-header>

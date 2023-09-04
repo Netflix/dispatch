@@ -2,7 +2,7 @@
   <v-dialog v-model="showRemove" persistent max-width="800px">
     <v-card>
       <v-card-title>
-        <span class="headline">Delete Environment?</span>
+        <span class="text-h5">Delete Environment?</span>
       </v-card-title>
       <v-card-text>
         <v-container grid-list-md>
@@ -11,8 +11,8 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="blue en-1" text @click="closeRemove()"> Cancel </v-btn>
-        <v-btn color="red en-1" text @click="remove()"> Delete </v-btn>
+        <v-btn color="blue en-1" variant="text" @click="closeRemove()"> Cancel </v-btn>
+        <v-btn color="red en-1" variant="text" @click="remove()"> Delete </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

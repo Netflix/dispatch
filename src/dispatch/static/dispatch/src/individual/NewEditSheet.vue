@@ -1,13 +1,12 @@
 <template>
   <ValidationObserver v-slot="{ invalid, validated }">
-    <v-navigation-drawer v-model="showCreateEdit" app clipped right width="500">
+    <v-navigation-drawer v-model="showCreateEdit" app clipped location="right" width="500">
       <template #prepend>
-        <v-list-item two-line>
-          <v-list-item-content>
-            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
-            <v-list-item-title v-else class="title"> New </v-list-item-title>
-            <v-list-item-subtitle>Individual</v-list-item-subtitle>
-          </v-list-item-content>
+        <v-list-item lines="two">
+          <v-list-item-title v-if="id" class="text-h6"> Edit </v-list-item-title>
+          <v-list-item-title v-else class="text-h6"> New </v-list-item-title>
+          <v-list-item-subtitle>Individual</v-list-item-subtitle>
+
           <v-btn
             icon
             color="info"
@@ -27,7 +26,7 @@
           <v-container grid-list-md>
             <v-layout wrap>
               <v-flex xs12>
-                <span class="subtitle-2">Details</span>
+                <span class="text-subtitle-2">Details</span>
               </v-flex>
               <v-flex xs12>
                 <ValidationProvider name="Name" rules="required" immediate>
@@ -84,9 +83,9 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <span class="subtitle-2"
+                <span class="text-subtitle-2"
                   >Engagement
-                  <v-tooltip max-width="250px" bottom>
+                  <v-tooltip max-width="250px" location="bottom">
                     <template #activator="{ on, attrs }">
                       <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                     </template>

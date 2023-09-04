@@ -3,7 +3,7 @@
     <new-edit-sheet />
     <v-data-table :headers="headers" :items="items">
       <template #item.discoverable="{ item }">
-        <v-simple-checkbox v-model="item.discoverable" disabled />
+        <v-checkbox-btn v-model="item.discoverable" disabled />
       </template>
       <template #item.project.name="{ item }">
         <v-chip small :color="item.project.color" text-color="white">
@@ -14,7 +14,7 @@
         {{ item.tag_type.name }}
       </template>
       <template #item.data-table-actions="{ item }">
-        <v-menu bottom left>
+        <v-menu location="bottom left">
           <template #activator="{ on }">
             <v-btn icon v-on="on">
               <v-icon>mdi-dots-vertical</v-icon>

@@ -2,9 +2,9 @@
   <v-combobox
     v-model="service"
     :items="items"
-    :search-input.sync="search"
+    v-model:search="search"
     :menu-props="{ maxHeight: '400' }"
-    item-text="name"
+    item-title="name"
     item-value="id"
     :label="label"
     placeholder="Start typing to search"
@@ -13,7 +13,7 @@
     :loading="loading"
     no-filter
   >
-    <template slot="append-outer">
+    <template #append-outer>
       <v-btn icon @click="createEditShow({})">
         <v-icon>add</v-icon>
       </v-btn>

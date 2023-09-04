@@ -1,7 +1,13 @@
 <template>
   <v-text-field v-model="color" :label="label">
     <template #append-outer>
-      <v-menu v-model="menu" top nudge-bottom="105" nudge-left="16" :close-on-content-click="false">
+      <v-menu
+        v-model="menu"
+        location="top"
+        nudge-bottom="105"
+        nudge-left="16"
+        :close-on-content-click="false"
+      >
         <template #activator="{ on }">
           <div :style="swatchStyle" v-on="on" />
         </template>

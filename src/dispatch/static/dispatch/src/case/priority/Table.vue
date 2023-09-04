@@ -3,7 +3,7 @@
     <new-edit-sheet />
     <v-row no-gutters>
       <v-col>
-        <v-alert dismissible icon="mdi-school" prominent text type="info">
+        <v-alert closable icon="mdi-school" prominent text type="info">
           Priorities add another dimension to Dispatch's case categorization. They also allow for
           some configurability.
         </v-alert>
@@ -34,24 +34,24 @@
             :headers="headers"
             :items="items"
             :server-items-length="total"
-            :page.sync="page"
-            :items-per-page.sync="itemsPerPage"
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="descending"
+            v-model:page="page"
+            v-model:items-per-page="itemsPerPage"
+            v-model:sort-by="sortBy"
+            v-model:sort-desc="descending"
             :loading="loading"
             loading-text="Loading... Please wait"
           >
             <template #item.page_assignee="{ item }">
-              <v-simple-checkbox v-model="item.page_assignee" disabled />
+              <v-checkbox-btn v-model="item.page_assignee" disabled />
             </template>
             <template #item.default="{ item }">
-              <v-simple-checkbox v-model="item.default" disabled />
+              <v-checkbox-btn v-model="item.default" disabled />
             </template>
             <template #item.enabled="{ item }">
-              <v-simple-checkbox v-model="item.enabled" disabled />
+              <v-checkbox-btn v-model="item.enabled" disabled />
             </template>
             <template #item.data-table-actions="{ item }">
-              <v-menu bottom left>
+              <v-menu location="bottom left">
                 <template #activator="{ on }">
                   <v-btn icon v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>

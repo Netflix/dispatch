@@ -27,7 +27,7 @@
             :headers="headers"
             :items="items"
             :server-items-length="total"
-            :page.sync="page"
+            v-model:page="page"
             :items-per-page="itemsPerPage"
             :sort-by="sortBy"
             :sort-desc="descending"
@@ -35,7 +35,7 @@
             loading-text="Loading... Please wait"
           >
             <template #item.data-table-actions="{ item }">
-              <v-menu bottom left>
+              <v-menu location="bottom left">
                 <template #activator="{ on }">
                   <v-btn icon v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>

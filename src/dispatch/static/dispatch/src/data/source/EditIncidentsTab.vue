@@ -3,14 +3,13 @@
     <incident-select v-model="selectedIncident" :project="project" />
     <v-list>
       <v-list-item v-for="(i, idx) in value" :key="i.id">
-        <v-list-item-content>
-          <v-list-item-title>
-            {{ i.name }}
-          </v-list-item-title>
-          <v-list-item-subtitle>
-            {{ i.title }}
-          </v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item-title>
+          {{ i.name }}
+        </v-list-item-title>
+        <v-list-item-subtitle>
+          {{ i.title }}
+        </v-list-item-subtitle>
+
         <v-list-item-action>
           <v-btn icon @click="remove(idx)">
             <v-icon> mdi-delete </v-icon>

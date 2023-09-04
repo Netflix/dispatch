@@ -33,7 +33,7 @@
           color="warning"
           slot="activator"
           dot
-          left
+          location="left"
           offset-x="-10"
           offset-y="12"
         >
@@ -57,7 +57,7 @@
         {{ item.data_last_loaded_at | formatRelativeDate }}
       </template>
       <template #item.data-table-actions="{ item }">
-        <v-menu bottom left>
+        <v-menu location="bottom left">
           <template #activator="{ on }">
             <v-btn icon v-on="on">
               <v-icon>mdi-dots-vertical</v-icon>

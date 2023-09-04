@@ -4,7 +4,7 @@
       <v-layout align-center justify-center>
         <div class="text-md-center">
           <h1>404</h1>
-          <h2 class="my-3 headline">Sorry, page not found</h2>
+          <h2 class="my-3 text-h5">Sorry, page not found</h2>
           <div>
             <v-btn color="info" @click="goHome"> Go Home </v-btn>
           </div>

@@ -4,40 +4,36 @@
     :label="label"
     :loading="loading"
     :menu-props="{ maxHeight: '400' }"
-    :search-input.sync="search"
-    @update:search-input="fetchData({ q: $event })"
+    v-model:search="search"
+    @update:search="fetchData({ q: $event })"
     chips
     clearable
-    deletable-chips
+    closable-chips
     hide-selected
-    item-text="name"
+    item-title="name"
     item-value="id"
     multiple
     no-filter
     v-model="incident"
   >
     <template #selection="{ attr, on, item, selected }">
-      <v-chip v-bind="attr" :input-value="selected" v-on="on" close @click:close="remove(item)">
+      <v-chip v-bind="attr" :model-value="selected" v-on="on" closable @click:close="remove(item)">
         <span v-text="item.name" />
       </v-chip>
     </template>
     <template #item="{ item }">
-      <v-list-item-content>
-        <v-list-item-title>{{ item.name }}</v-list-item-title>
-        <v-list-item-subtitle style="width: 200px" class="text-truncate">
-          {{ item.title }}
-        </v-list-item-subtitle>
-      </v-list-item-content>
+      <v-list-item-title>{{ item.name }}</v-list-item-title>
+      <v-list-item-subtitle style="width: 200px" class="text-truncate">
+        {{ item.title }}
+      </v-list-item-subtitle>
     </template>
     <template #no-data>
       <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title>
-            No incidents matching "
-            <strong>{{ search }}</strong
-            >".
-          </v-list-item-title>
-        </v-list-item-content>
+        <v-list-item-title>
+          No incidents matching "
+          <strong>{{ search }}</strong
+          >".
+        </v-list-item-title>
       </v-list-item>
     </template>
   </v-combobox>

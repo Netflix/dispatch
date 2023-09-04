@@ -1,5 +1,5 @@
 <template>
-  <v-card class="widget-card" outlined elevation="0">
+  <v-card class="widget-card" variant="outlined" elevation="0">
     <v-card-text class="pa-0">
       <v-container class="pa-0">
         <div class="layout row ma-0">
@@ -11,11 +11,11 @@
             </div>
           </div>
           <div class="layout column ma-0 justify-center">
-            <span class="caption">{{ subTitle }}</span>
-            <div class="headline">
+            <span class="text-caption">{{ subTitle }}</span>
+            <div class="text-h5">
               {{ title }}
             </div>
-            <span class="caption">{{ supTitle }}</span>
+            <span class="text-caption">{{ supTitle }}</span>
           </div>
         </div>
       </v-container>

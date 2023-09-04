@@ -1,49 +1,45 @@
 <template>
   <v-combobox
-    deletable-chips
+    closable-chips
     :allow-overflow="false"
     :items="value.suggestedMembers"
     :loading="isLoading"
     :return-object="true"
-    :search-input.sync="search"
-    @input="addMembers($event)"
-    @update:search-input="setFilterOptions({ q: $event })"
+    v-model:search="search"
+    @update:model-value="addMembers($event)"
+    @update:search="setFilterOptions({ q: $event })"
     chips
     clearable
-    item-text="content.name"
+    item-title="content.name"
     label="Members"
     multiple
     no-filter
   >
     <template #no-data>
       <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title>
-            No Members matching "
-            <strong>{{ search }}</strong
-            >". Press <kbd>enter</kbd> to add.
-          </v-list-item-title>
-        </v-list-item-content>
+        <v-list-item-title>
+          No Members matching "
+          <strong>{{ search }}</strong
+          >". Press <kbd>enter</kbd> to add.
+        </v-list-item-title>
       </v-list-item>
     </template>
     <template #selection="data">
-      <v-chip close class="chip--select-multi" @input="removeMember($event)">
+      <v-chip closable class="chip--select-multi" @update:model-value="removeMember($event)">
         {{ data.item.content.name }}
       </v-chip>
     </template>
     <template #item="data">
-      <v-list-item-content>
-        <v-list-item-title>
-          <div class="text-uppercase text-truncate">
-            {{ data.item.content.name }}
-          </div>
-        </v-list-item-title>
-        <v-list-item-subtitle>
-          <div class="text-truncate">
-            {{ data.item.type }}
-          </div>
-        </v-list-item-subtitle>
-      </v-list-item-content>
+      <v-list-item-title>
+        <div class="text-uppercase text-truncate">
+          {{ data.item.content.name }}
+        </div>
+      </v-list-item-title>
+      <v-list-item-subtitle>
+        <div class="text-truncate">
+          {{ data.item.type }}
+        </div>
+      </v-list-item-subtitle>
     </template>
   </v-combobox>
 </template>

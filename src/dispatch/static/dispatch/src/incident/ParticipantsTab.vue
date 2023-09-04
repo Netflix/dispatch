@@ -3,14 +3,13 @@
     <div v-if="participants && participants.length">
       <span v-for="participant in participants" :key="participant.id">
         <v-list-item :href="participant.individual.weblink" target="_blank">
-          <v-list-item-content>
-            <v-list-item-title>
-              {{ participant.individual.name }} ({{ participant.participant_roles | activeRoles }})
-            </v-list-item-title>
-            <v-list-item-subtitle>
-              {{ participant.team }} - {{ participant.location }}
-            </v-list-item-subtitle>
-          </v-list-item-content>
+          <v-list-item-title>
+            {{ participant.individual.name }} ({{ participant.participant_roles | activeRoles }})
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            {{ participant.team }} - {{ participant.location }}
+          </v-list-item-subtitle>
+
           <v-list-item-action>
             <v-list-item-icon>
               <v-icon>open_in_new</v-icon>

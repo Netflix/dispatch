@@ -7,9 +7,9 @@
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Column Filters</span>
+        <span class="text-h5">Column Filters</span>
       </v-card-title>
-      <v-list dense />
+      <v-list density="compact" />
     </v-card>
   </v-dialog>
 </template>

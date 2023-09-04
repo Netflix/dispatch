@@ -3,7 +3,7 @@
     v-model="incident_types"
     :items="items"
     :menu-props="{ maxHeight: '400' }"
-    item-text="name"
+    item-title="name"
     label="Add Incident Types"
     multiple
     chips

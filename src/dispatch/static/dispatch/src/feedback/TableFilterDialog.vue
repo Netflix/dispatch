@@ -7,23 +7,19 @@
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Feedback Filters</span>
+        <span class="text-h5">Feedback Filters</span>
       </v-card-title>
-      <v-list dense>
+      <v-list density="compact">
         <v-list-item>
-          <v-list-item-content>
-            <project-combobox v-model="local_project" label="Projects" />
-          </v-list-item-content>
+          <project-combobox v-model="local_project" label="Projects" />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <incident-combobox v-model="local_incident" label="Incidents" />
-          </v-list-item-content>
+          <incident-combobox v-model="local_incident" label="Incidents" />
         </v-list-item>
       </v-list>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="info" text @click="applyFilters()"> Apply Filters </v-btn>
+        <v-btn color="info" variant="text" @click="applyFilters()"> Apply Filters </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

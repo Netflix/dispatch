@@ -2,7 +2,7 @@
   <v-container fluid>
     <v-row no-gutters>
       <v-col>
-        <div class="headline">Signals</div>
+        <div class="text-h5">Signals</div>
       </v-col>
     </v-row>
     <v-row no-gutters>
@@ -12,13 +12,13 @@
             :headers="headers"
             :items="items"
             :server-items-length="total"
-            :page.sync="page"
-            :items-per-page.sync="itemsPerPage"
+            v-model:page="page"
+            v-model:items-per-page="itemsPerPage"
             :footer-props="{
               'items-per-page-options': [10, 25, 50, 100],
             }"
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="descending"
+            v-model:sort-by="sortBy"
+            v-model:sort-desc="descending"
             :loading="loading"
             loading-text="Loading... Please wait"
           >
@@ -55,7 +55,7 @@
               </v-chip>
             </template>
             <template #item.created_at="{ item }">
-              <v-tooltip bottom>
+              <v-tooltip location="bottom">
                 <template #activator="{ on, attrs }">
                   <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
                 </template>

@@ -3,10 +3,8 @@
     <v-row>
       <v-col>
         <v-card>
-          <v-list-item two-line>
-            <v-list-item-content>
-              <v-list-item-title class="text-h5"> Example Log </v-list-item-title>
-            </v-list-item-content>
+          <v-list-item lines="two">
+            <v-list-item-title class="text-h5"> Example Log </v-list-item-title>
           </v-list-item>
           <v-list-item>
             <pre> {{ example_log }} </pre>

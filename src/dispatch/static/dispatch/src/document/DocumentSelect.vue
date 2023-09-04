@@ -3,19 +3,19 @@
     <v-autocomplete
       v-model="document"
       :items="items"
-      :search-input.sync="search"
+      v-model:search="search"
       :menu-props="{ maxHeight: '400' }"
       slot-scope="{ errors, valid }"
       :error-messages="errors"
       :success="valid"
-      item-text="name"
+      item-title="name"
       label="Document"
       placeholder="Start typing to search"
       return-object
       :loading="loading"
       no-filter
     >
-      <template slot="append-outer">
+      <template #append-outer>
         <v-btn icon @click="createEditShow({})">
           <v-icon>add</v-icon>
         </v-btn>

@@ -2,7 +2,7 @@
   <v-select
     v-model="case_priority"
     :items="items"
-    item-text="name"
+    item-title="name"
     :menu-props="{ maxHeight: '400' }"
     label="Priority"
     return-object
@@ -10,12 +10,10 @@
   >
     <template #item="data">
       <template>
-        <v-list-item-content>
-          <v-list-item-title>{{ data.item.name }}</v-list-item-title>
-          <v-list-item-subtitle style="width: 200px" class="text-truncate">
-            {{ data.item.description }}
-          </v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item-title>{{ data.item.name }}</v-list-item-title>
+        <v-list-item-subtitle style="width: 200px" class="text-truncate">
+          {{ data.item.description }}
+        </v-list-item-subtitle>
       </template>
     </template>
   </v-select>

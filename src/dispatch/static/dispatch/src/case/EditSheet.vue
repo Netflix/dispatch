@@ -1,22 +1,21 @@
 <template>
   <ValidationObserver v-slot="{ invalid, validated }">
-    <v-navigation-drawer app clipped right width="900">
+    <v-navigation-drawer app clipped location="right" width="900">
       <template #prepend>
-        <v-list-item two-line>
-          <v-list-item-content>
-            <v-list-item-title class="title">
-              {{ name }}
-            </v-list-item-title>
-            <v-list-item-subtitle>
-              Reported - {{ reported_at | formatRelativeDate }}
-            </v-list-item-subtitle>
-          </v-list-item-content>
+        <v-list-item lines="two">
+          <v-list-item-title class="text-h6">
+            {{ name }}
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            Reported - {{ reported_at | formatRelativeDate }}
+          </v-list-item-subtitle>
+
           <v-btn
             v-if="status == 'New' || status == 'Triage'"
             @click="showEscalateDialog(selected)"
             color="error"
           >
-            <v-icon left> error_outline </v-icon>
+            <v-icon start> error_outline </v-icon>
             Escalate Case
           </v-btn>
           <v-spacer />

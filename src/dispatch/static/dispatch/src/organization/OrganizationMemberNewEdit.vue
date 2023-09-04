@@ -1,13 +1,12 @@
 <template>
   <ValidationObserver v-slot="{ invalid, validated }">
-    <v-navigation-drawer v-model="showCreateEdit" app clipped right width="500">
+    <v-navigation-drawer v-model="showCreateEdit" app clipped location="right" width="500">
       <template #prepend>
-        <v-list-item two-line>
-          <v-list-item-content>
-            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
-            <v-list-item-title v-else class="title"> New </v-list-item-title>
-            <v-list-item-subtitle>Member</v-list-item-subtitle>
-          </v-list-item-content>
+        <v-list-item lines="two">
+          <v-list-item-title v-if="id" class="text-h6"> Edit </v-list-item-title>
+          <v-list-item-title v-else class="text-h6"> New </v-list-item-title>
+          <v-list-item-subtitle>Member</v-list-item-subtitle>
+
           <v-btn
             icon
             color="info"
@@ -27,7 +26,7 @@
           <v-container grid-list-md>
             <v-layout wrap>
               <v-flex xs12>
-                <span class="subtitle-2">Details</span>
+                <span class="text-subtitle-2">Details</span>
               </v-flex>
               <v-flex xs12>
                 <ValidationProvider name="Email" rules="required" immediate>
@@ -52,11 +51,11 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <span class="subtitle-2">Role</span>
+                <span class="text-subtitle-2">Role</span>
               </v-flex>
               <v-flex xs12>
                 <v-radio-group v-model="role" column>
-                  <v-tooltip max-width="250px" left>
+                  <v-tooltip max-width="250px" location="left">
                     <template #activator="{ on, attrs }">
                       <v-radio v-bind="attrs" v-on="on" label="Member" value="Member" />
                     </template>
@@ -65,7 +64,7 @@
                       the organization.
                     </span>
                   </v-tooltip>
-                  <v-tooltip max-width="250px" left>
+                  <v-tooltip max-width="250px" location="left">
                     <template #activator="{ on, attrs }">
                       <v-radio v-bind="attrs" v-on="on" label="Admin" value="Admin" />
                     </template>
@@ -76,7 +75,7 @@
                       they can manage memberships of teams that they are members of.
                     </span>
                   </v-tooltip>
-                  <v-tooltip max-width="250px" left>
+                  <v-tooltip max-width="250px" location="left">
                     <template #activator="{ on, attrs }">
                       <v-radio v-bind="attrs" v-on="on" label="Manager" value="Manager" />
                     </template>
@@ -85,7 +84,7 @@
                       members.
                     </span>
                   </v-tooltip>
-                  <v-tooltip max-width="250px" left>
+                  <v-tooltip max-width="250px" location="left">
                     <template #activator="{ on, attrs }">
                       <v-radio v-bind="attrs" v-on="on" label="Owner" value="Owner" />
                     </template>
@@ -97,13 +96,11 @@
                 </v-radio-group>
               </v-flex>
               <v-flex xs12>
-                <span class="subtitle-2">Settings</span>
+                <span class="text-subtitle-2">Settings</span>
               </v-flex>
               <v-flex xs12>
                 <v-list-item>
-                  <v-list-item-content>
-                    <project-combobox v-model="defaultProjects" label="Default Projects" />
-                  </v-list-item-content>
+                  <project-combobox v-model="defaultProjects" label="Default Projects" />
                 </v-list-item>
               </v-flex>
             </v-layout>

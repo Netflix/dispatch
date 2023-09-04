@@ -4,6 +4,7 @@ module.exports = {
     "eslint:recommended",
     "plugin:prettier/recommended",
     "plugin:vue/vue3-strongly-recommended",
+    "plugin:vuetify/base",
   ],
   parserOptions: {
     ecmaVersion: 2020,

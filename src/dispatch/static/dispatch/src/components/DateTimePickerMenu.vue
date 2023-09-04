@@ -42,8 +42,8 @@
       <v-card-actions>
         <v-spacer />
         <slot name="actions" :parent="this">
-          <v-btn color="grey lighten-1" text @click.native="clearHandler">Clear</v-btn>
-          <v-btn text @click="okHandler">Ok</v-btn>
+          <v-btn color="grey-lighten-1" variant="text" @click.native="clearHandler">Clear</v-btn>
+          <v-btn variant="text" @click="okHandler">Ok</v-btn>
         </slot>
       </v-card-actions>
     </v-card>

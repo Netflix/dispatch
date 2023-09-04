@@ -3,9 +3,7 @@
     <v-row>
       <v-list>
         <v-list-item target="_blank">
-          <v-list-item-content>
-            <v-list-item-title>Add Cost</v-list-item-title>
-          </v-list-item-content>
+          <v-list-item-title>Add Cost</v-list-item-title>
         </v-list-item>
       </v-list>
     </v-row>
@@ -17,9 +15,9 @@
         <v-text-field type="number" label="Amount" v-model.number="amount" prefix="$" />
       </v-col>
       <v-col cols="12" sm="1">
-        <v-tooltip bottom>
+        <v-tooltip location="bottom">
           <template #activator="{ on }">
-            <v-btn small icon @click="addIncidentCost()" v-on="on">
+            <v-btn size="small" icon @click="addIncidentCost()" v-on="on">
               <v-icon>add</v-icon>
             </v-btn>
           </template>

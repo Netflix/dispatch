@@ -1,10 +1,10 @@
 <template>
   <div>
-    <v-menu v-model="menu" bottom right transition="scale-transition" origin="top left">
+    <v-menu v-model="menu" location="bottom right" transition="scale-transition" origin="top left">
       <template #activator="{ on }">
         <v-chip pill small v-on="on">
-          <v-avatar color="teal" left>
-            <span class="white--text">{{ value.name | initials }}</span>
+          <v-avatar color="teal" start>
+            <span class="text-white">{{ value.name | initials }}</span>
           </v-avatar>
           {{ value.name }}
         </v-chip>
@@ -13,12 +13,12 @@
         <v-list dark>
           <v-list-item>
             <v-list-item-avatar color="teal">
-              <span class="white--text">{{ value.name | initials }}</span>
+              <span class="text-white">{{ value.name | initials }}</span>
             </v-list-item-avatar>
-            <v-list-item-content>
-              <v-list-item-title>{{ value.name }}</v-list-item-title>
-              <v-list-item-subtitle>{{ value.status }}</v-list-item-subtitle>
-            </v-list-item-content>
+
+            <v-list-item-title>{{ value.name }}</v-list-item-title>
+            <v-list-item-subtitle>{{ value.status }}</v-list-item-subtitle>
+
             <v-list-item-action>
               <v-btn
                 icon

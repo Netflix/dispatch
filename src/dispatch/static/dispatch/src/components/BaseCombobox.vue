@@ -3,24 +3,22 @@
     :items="items"
     :label="label"
     :loading="loading"
-    :search-input.sync="search"
-    @update:search-input="getFilteredData()"
+    v-model:search="search"
+    @update:search="getFilteredData()"
     chips
     clearable
     hide-selected
-    :item-text="getItemName"
+    :item-title="getItemName"
     item-value="id"
     multiple
     no-filter
-    deletable-chips
+    closable-chips
     v-model="selectedItems"
   >
     <slot name="selection" v-bind="{ attr, item, selected }" />
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
-        <v-list-item-content>
-          <v-list-item-subtitle> Load More </v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
   </v-combobox>

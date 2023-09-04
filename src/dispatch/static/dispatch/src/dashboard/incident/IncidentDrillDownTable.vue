@@ -19,7 +19,7 @@
         </v-chip>
       </template>
       <template #item.data-table-actions="{ item }">
-        <v-menu bottom left>
+        <v-menu location="bottom left">
           <template #activator="{ on }">
             <v-btn icon v-on="on">
               <v-icon>mdi-dots-vertical</v-icon>

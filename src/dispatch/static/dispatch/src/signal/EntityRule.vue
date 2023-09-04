@@ -1,9 +1,9 @@
 <template>
-  <v-card flat tile>
+  <v-card flat rounded="0">
     <v-app-bar color="white" flat>
-      <v-toolbar-title class="subtitle-2"> Entity Type Configuration </v-toolbar-title>
+      <v-toolbar-title class="text-subtitle-2"> Entity Type Configuration </v-toolbar-title>
       <v-spacer />
-      <v-tooltip max-width="250px" bottom>
+      <v-tooltip max-width="250px" location="bottom">
         <template #activator="{ on, attrs }">
           <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
         </template>

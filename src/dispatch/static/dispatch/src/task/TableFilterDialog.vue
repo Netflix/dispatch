@@ -7,41 +7,31 @@
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Task Filters</span>
+        <span class="text-h5">Task Filters</span>
       </v-card-title>
-      <v-list dense>
+      <v-list density="compact">
         <v-list-item>
-          <v-list-item-content>
-            <project-combobox v-model="local_project" label="Projects" />
-          </v-list-item-content>
+          <project-combobox v-model="local_project" label="Projects" />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <incident-combobox v-model="local_incident" label="Incidents" />
-          </v-list-item-content>
+          <incident-combobox v-model="local_incident" label="Incidents" />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <incident-type-combobox v-model="local_incident_type" label="Incident Types" />
-          </v-list-item-content>
+          <incident-type-combobox v-model="local_incident_type" label="Incident Types" />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <incident-priority-combobox
-              v-model="local_incident_priority"
-              label="Incident Priorities"
-            />
-          </v-list-item-content>
+          <incident-priority-combobox
+            v-model="local_incident_priority"
+            label="Incident Priorities"
+          />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <task-status-multi-select v-model="local_status" label="Statuses" />
-          </v-list-item-content>
+          <task-status-multi-select v-model="local_status" label="Statuses" />
         </v-list-item>
       </v-list>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="info" text @click="applyFilters()"> Apply Filters </v-btn>
+        <v-btn color="info" variant="text" @click="applyFilters()"> Apply Filters </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

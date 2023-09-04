@@ -30,10 +30,10 @@
             :headers="headers"
             :items="items"
             :server-items-length="total"
-            :page.sync="page"
-            :items-per-page.sync="itemsPerPage"
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="descending"
+            v-model:page="page"
+            v-model:items-per-page="itemsPerPage"
+            v-model:sort-by="sortBy"
+            v-model:sort-desc="descending"
             :loading="loading"
             loading-text="Loading... Please wait"
           >
@@ -41,10 +41,10 @@
               <search-filter v-for="filter in item.filters" :key="filter.id" :filter="filter" />
             </template>
             <template #item.enabled="{ item }">
-              <v-simple-checkbox v-model="item.enabled" disabled />
+              <v-checkbox-btn v-model="item.enabled" disabled />
             </template>
             <template #item.created_at="{ item }">
-              <v-tooltip bottom>
+              <v-tooltip location="bottom">
                 <template #activator="{ on, attrs }">
                   <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
                 </template>
@@ -52,7 +52,7 @@
               </v-tooltip>
             </template>
             <template #item.data-table-actions="{ item }">
-              <v-menu bottom left>
+              <v-menu location="bottom left">
                 <template #activator="{ on }">
                   <v-btn icon v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>
@@ -82,10 +82,10 @@
               class="ml-10 mr-5"
               v-model="dailyReports"
               label="Send Daily Incident Report"
-              @change="updateDailyReports"
+              @update:model-value="updateDailyReports"
               :disabled="dailyReports == null"
             />
-            <v-tooltip max-width="500px" open-delay="50" bottom>
+            <v-tooltip max-width="500px" open-delay="50" location="bottom">
               <template #activator="{ on }">
                 <v-icon v-on="on"> mdi-information </v-icon>
               </template>

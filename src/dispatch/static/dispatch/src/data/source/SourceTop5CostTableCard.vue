@@ -1,5 +1,5 @@
 <template>
-  <v-card :loading="loading" outlined elevation="0">
+  <v-card :loading="loading" variant="outlined" elevation="0">
     <v-card-title>Top 5 Cost</v-card-title>
     <v-data-table
       :headers="headers"

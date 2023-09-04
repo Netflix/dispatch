@@ -9,14 +9,14 @@
         v-model="engagements"
       >
         <template #selection="{ attr, item, selected }">
-          <v-menu bottom right transition="scale-transition" origin="top left">
+          <v-menu location="bottom right" transition="scale-transition" origin="top left">
             <template #activator="{ on }">
               <v-chip
                 v-bind="attr"
-                :input-value="selected"
+                :model-value="selected"
                 pill
                 v-on="on"
-                close
+                closable
                 @click:close="remove(item)"
               >
                 {{ item ? item.name : "Unknown" }}
@@ -26,12 +26,12 @@
               <v-list dark>
                 <v-list-item>
                   <v-list-item-avatar color="teal">
-                    <span class="white--text">{{ initials(item) }}</span>
+                    <span class="text-white">{{ initials(item) }}</span>
                   </v-list-item-avatar>
-                  <v-list-item-content>
-                    <v-list-item-title>{{ item ? item.name : "Unknown" }}</v-list-item-title>
-                    <v-list-item-subtitle>{{ item ? item.type : "Unknown" }}</v-list-item-subtitle>
-                  </v-list-item-content>
+
+                  <v-list-item-title>{{ item ? item.name : "Unknown" }}</v-list-item-title>
+                  <v-list-item-subtitle>{{ item ? item.type : "Unknown" }}</v-list-item-subtitle>
+
                   <v-list-item-action>
                     <v-btn icon>
                       <v-icon>mdi-close-circle</v-icon>

@@ -4,7 +4,7 @@
       <new-edit-sheet />
       <delete-dialog />
       <v-col>
-        <div class="headline">Tasks</div>
+        <div class="text-h5">Tasks</div>
       </v-col>
       <v-spacer />
       <v-col class="text-right">
@@ -30,10 +30,10 @@
             :headers="headers"
             :items="items"
             :server-items-length="total"
-            :page.sync="page"
-            :items-per-page.sync="itemsPerPage"
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="descending"
+            v-model:page="page"
+            v-model:items-per-page="itemsPerPage"
+            v-model:sort-by="sortBy"
+            v-model:sort-desc="descending"
             v-model="selected"
             :loading="loading"
             loading-text="Loading... Please wait"
@@ -69,7 +69,7 @@
               />
             </template>
             <template #item.resolve_by="{ item }">
-              <v-tooltip bottom>
+              <v-tooltip location="bottom">
                 <template #activator="{ on, attrs }">
                   <span v-bind="attrs" v-on="on">{{ item.resolve_by | formatRelativeDate }}</span>
                 </template>
@@ -77,7 +77,7 @@
               </v-tooltip>
             </template>
             <template #item.created_at="{ item }">
-              <v-tooltip bottom>
+              <v-tooltip location="bottom">
                 <template #activator="{ on, attrs }">
                   <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
                 </template>
@@ -85,7 +85,7 @@
               </v-tooltip>
             </template>
             <template #item.resolved_at="{ item }">
-              <v-tooltip bottom>
+              <v-tooltip location="bottom">
                 <template #activator="{ on, attrs }">
                   <span v-bind="attrs" v-on="on">{{ item.resolved_at | formatRelativeDate }}</span>
                 </template>
@@ -95,11 +95,11 @@
             <template #item.source="{ item }">
               <a :href="item.weblink" target="_blank" style="text-decoration: none">
                 {{ item.source }}
-                <v-icon small>open_in_new</v-icon>
+                <v-icon size="small">open_in_new</v-icon>
               </a>
             </template>
             <template #item.data-table-actions="{ item }">
-              <v-menu bottom left>
+              <v-menu location="bottom left">
                 <template #activator="{ on }">
                   <v-btn icon v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>

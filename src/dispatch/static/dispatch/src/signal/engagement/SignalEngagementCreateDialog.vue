@@ -7,7 +7,7 @@
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Create Signal Engagement Filter</span>
+        <span class="text-h5">Create Signal Engagement Filter</span>
         <v-spacer />
       </v-card-title>
       <v-stepper v-model="step">
@@ -25,7 +25,7 @@
             <v-card>
               <v-card-text>
                 Define the entity types that will be used to match with existing signal instances.
-                <v-tabs color="primary" right>
+                <v-tabs color="primary" align-tabs="end">
                   <v-tab>Basic</v-tab>
                   <v-tab-item>
                     <span>
@@ -50,7 +50,7 @@
               </v-card-text>
               <v-card-actions>
                 <v-spacer />
-                <v-btn @click="dialog = false" text> Cancel </v-btn>
+                <v-btn @click="dialog = false" variant="text"> Cancel </v-btn>
                 <v-btn color="info" @click="step = 2"> Continue </v-btn>
               </v-card-actions>
             </v-card>
@@ -88,7 +88,7 @@
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer />
-                  <v-btn @click="dialog = false" text> Cancel </v-btn>
+                  <v-btn @click="dialog = false" variant="text"> Cancel </v-btn>
                   <v-btn
                     color="info"
                     @click="saveEngagement()"

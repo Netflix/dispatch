@@ -1,13 +1,12 @@
 <template>
   <ValidationObserver v-slot="{ invalid, validated }">
-    <v-navigation-drawer v-model="showCreateEdit" app clipped right width="500">
+    <v-navigation-drawer v-model="showCreateEdit" app clipped location="right" width="500">
       <template #prepend>
-        <v-list-item two-line>
-          <v-list-item-content>
-            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
-            <v-list-item-title v-else class="title"> New </v-list-item-title>
-            <v-list-item-subtitle>Signal Definition</v-list-item-subtitle>
-          </v-list-item-content>
+        <v-list-item lines="two">
+          <v-list-item-title v-if="id" class="text-h6"> Edit </v-list-item-title>
+          <v-list-item-title v-else class="text-h6"> New </v-list-item-title>
+          <v-list-item-subtitle>Signal Definition</v-list-item-subtitle>
+
           <v-btn
             icon
             color="info"
@@ -24,7 +23,7 @@
       </template>
       <v-row no-gutters>
         <v-col cols="12">
-          <v-card flat tile>
+          <v-card flat rounded="0">
             <v-card-text>
               <v-row no-gutters>
                 <v-col cols="12">
@@ -162,11 +161,11 @@
           </v-card>
         </v-col>
         <v-col cols="12">
-          <v-card flat tile>
+          <v-card flat rounded="0">
             <v-app-bar color="white" flat>
-              <v-toolbar-title class="subtitle-2"> Entity Configuration </v-toolbar-title>
+              <v-toolbar-title class="text-subtitle-2"> Entity Configuration </v-toolbar-title>
               <v-spacer />
-              <v-tooltip max-width="250px" bottom>
+              <v-tooltip max-width="250px" location="bottom">
                 <template #activator="{ on, attrs }">
                   <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                 </template>
@@ -184,11 +183,11 @@
           </v-card>
         </v-col>
         <v-col cols="12">
-          <v-card flat tile>
+          <v-card flat rounded="0">
             <v-app-bar color="white" flat>
-              <v-toolbar-title class="subtitle-2"> Case Configuration </v-toolbar-title>
+              <v-toolbar-title class="text-subtitle-2"> Case Configuration </v-toolbar-title>
               <v-spacer />
-              <v-tooltip max-width="250px" bottom>
+              <v-tooltip max-width="250px" location="bottom">
                 <template #activator="{ on, attrs }">
                   <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                 </template>
@@ -213,11 +212,11 @@
           </v-card>
         </v-col>
         <v-col cols="12">
-          <v-card flat tile>
+          <v-card flat rounded="0">
             <v-app-bar color="white" flat>
-              <v-toolbar-title class="subtitle-2"> Filter(s) </v-toolbar-title>
+              <v-toolbar-title class="text-subtitle-2"> Filter(s) </v-toolbar-title>
               <v-spacer />
-              <v-tooltip max-width="250px" bottom>
+              <v-tooltip max-width="250px" location="bottom">
                 <template #activator="{ on, attrs }">
                   <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                 </template>
@@ -235,11 +234,11 @@
           </v-card>
         </v-col>
         <v-col cols="12">
-          <v-card flat tile>
+          <v-card flat rounded="0">
             <v-app-bar color="white" flat>
-              <v-toolbar-title class="subtitle-2"> Engagement(s) </v-toolbar-title>
+              <v-toolbar-title class="text-subtitle-2"> Engagement(s) </v-toolbar-title>
               <v-spacer />
-              <v-tooltip max-width="250px" bottom>
+              <v-tooltip max-width="250px" location="bottom">
                 <template #activator="{ on, attrs }">
                   <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                 </template>
@@ -256,11 +255,11 @@
           </v-card>
         </v-col>
         <v-col cols="12">
-          <v-card flat tile>
+          <v-card flat rounded="0">
             <v-app-bar color="white" flat>
-              <v-toolbar-title class="subtitle-2"> Workflow(s) </v-toolbar-title>
+              <v-toolbar-title class="text-subtitle-2"> Workflow(s) </v-toolbar-title>
               <v-spacer />
-              <v-tooltip max-width="250px" bottom>
+              <v-tooltip max-width="250px" location="bottom">
                 <template #activator="{ on, attrs }">
                   <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                 </template>

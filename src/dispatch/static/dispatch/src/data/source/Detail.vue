@@ -8,7 +8,7 @@
 
       <span v-if="source_status"> Status: {{ source_status.name }}</span>
 
-      <v-menu bottom left>
+      <v-menu location="bottom left">
         <template #activator="{ on }">
           <v-btn icon v-on="on">
             <v-icon>mdi-dots-vertical</v-icon>
@@ -25,7 +25,7 @@
       </v-menu>
 
       <template #extension>
-        <v-tabs align-with-title>
+        <v-tabs align-tabs="title">
           <v-tabs-slider />
           <v-tab :to="{ params: { tab: 'details' } }">Details </v-tab>
           <!--<v-tab :to="{ params: { tab: 'schema' } }">Schema </v-tab>-->

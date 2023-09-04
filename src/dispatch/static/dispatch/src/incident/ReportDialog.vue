@@ -2,10 +2,10 @@
   <v-dialog v-model="showReportDialog" persistent max-width="800px">
     <v-card>
       <v-card-title>
-        <span class="headline">Create Report</span>
+        <span class="text-h5">Create Report</span>
       </v-card-title>
       <v-card-text>
-        <v-tabs color="primary" v-model="type" right>
+        <v-tabs color="primary" v-model="type" align-tabs="end">
           <v-tab key="tactical" href="#tactical"> Tactical </v-tab>
           <v-tab key="executive" href="#executive"> Executive </v-tab>
         </v-tabs>
@@ -73,8 +73,8 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn text @click="closeReportDialog()"> Cancel </v-btn>
-        <v-btn color="info" text @click="createReport()"> Create </v-btn>
+        <v-btn variant="text" @click="closeReportDialog()"> Cancel </v-btn>
+        <v-btn color="info" variant="text" @click="createReport()"> Create </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

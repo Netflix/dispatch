@@ -1,6 +1,6 @@
 <template>
   <ValidationObserver v-slot="{ invalid, validated }">
-    <v-card class="mx-auto ma-4" max-width="600" flat outlined :loading="loading">
+    <v-card class="mx-auto ma-4" max-width="600" flat variant="outlined" :loading="loading">
       <v-card-title> Register </v-card-title>
       <v-card-text>
         <v-container>
@@ -32,16 +32,16 @@
         </v-container>
       </v-card-text>
       <v-card-actions>
-        <v-list-item two-line>
-          <v-list-item-content>
-            <v-list-item-subtitle>
-              Have a account? <router-link :to="{ name: 'BasicLogin' }"> Login </router-link>
-            </v-list-item-subtitle>
-          </v-list-item-content>
+        <v-list-item lines="two">
+          <v-list-item-subtitle>
+            Have a account? <router-link :to="{ name: 'BasicLogin' }"> Login </router-link>
+          </v-list-item-subtitle>
+
           <v-row align="center" justify="end">
             <v-btn
               color="info"
               :loading="loading"
+              :disabled="invalid || !validated"
               @click="register({ email: email, password: password })"
             >
               Register

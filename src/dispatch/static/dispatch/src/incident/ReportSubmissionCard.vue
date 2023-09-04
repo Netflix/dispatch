@@ -1,10 +1,10 @@
 <template>
   <ValidationObserver v-slot="{ invalid, validated }">
-    <v-card class="mx-auto ma-4" max-width="600" flat outlined :loading="loading">
+    <v-card class="mx-auto ma-4" max-width="600" flat variant="outlined" :loading="loading">
       <v-card-text>
-        <p class="display-1 text--primary">
+        <p class="text-h4 text--primary">
           Report Incident
-          <v-tooltip bottom>
+          <v-tooltip location="bottom">
             <template #activator="{ on }">
               <v-btn icon v-on="on" @click="copyView"><v-icon>mdi-content-copy</v-icon></v-btn>
             </template>
@@ -19,7 +19,7 @@
           If you have additional questions, please check out the following FAQ document:
           <a :href="project_faq.weblink" target="_blank" style="text-decoration: none">
             {{ project_faq.name }}
-            <v-icon small>open_in_new</v-icon>
+            <v-icon size="small">open_in_new</v-icon>
           </a>
         </p>
         <v-form>
@@ -73,7 +73,7 @@
             <template>
               <v-btn
                 color="info"
-                depressed
+                variant="flat"
                 :loading="loading"
                 :disabled="invalid || !validated"
                 @click="report()"

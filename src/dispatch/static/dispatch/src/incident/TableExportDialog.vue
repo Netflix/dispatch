@@ -5,7 +5,7 @@
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Export Incidents</span>
+        <span class="text-h5">Export Incidents</span>
       </v-card-title>
       <v-stepper v-model="e1">
         <v-stepper-header>
@@ -17,50 +17,34 @@
         </v-stepper-header>
         <v-stepper-items>
           <v-stepper-content step="1">
-            <v-list dense>
+            <v-list density="compact">
               <v-list-item>
-                <v-list-item-content>
-                  <date-window-input v-model="reported_at" label="Reported At" />
-                </v-list-item-content>
+                <date-window-input v-model="reported_at" label="Reported At" />
               </v-list-item>
               <v-list-item>
-                <v-list-item-content>
-                  <project-combobox v-model="project" label="Projects" />
-                </v-list-item-content>
+                <project-combobox v-model="project" label="Projects" />
               </v-list-item>
               <v-list-item>
-                <v-list-item-content>
-                  <tag-filter-auto-complete v-model="tag" label="Tags" />
-                </v-list-item-content>
+                <tag-filter-auto-complete v-model="tag" label="Tags" />
               </v-list-item>
               <v-list-item>
-                <v-list-item-content>
-                  <tag-type-filter-combobox v-model="tag_type" label="Tag Types" />
-                </v-list-item-content>
+                <tag-type-filter-combobox v-model="tag_type" label="Tag Types" />
               </v-list-item>
               <v-list-item>
-                <v-list-item-content>
-                  <incident-type-combobox v-model="incident_type" />
-                </v-list-item-content>
+                <incident-type-combobox v-model="incident_type" />
               </v-list-item>
               <v-list-item>
-                <v-list-item-content>
-                  <incident-severity-combobox v-model="incident_severity" />
-                </v-list-item-content>
+                <incident-severity-combobox v-model="incident_severity" />
               </v-list-item>
               <v-list-item>
-                <v-list-item-content>
-                  <incident-priority-combobox v-model="incident_priority" />
-                </v-list-item-content>
+                <incident-priority-combobox v-model="incident_priority" />
               </v-list-item>
               <v-list-item>
-                <v-list-item-content>
-                  <incident-status-multi-select v-model="status" />
-                </v-list-item-content>
+                <incident-status-multi-select v-model="status" />
               </v-list-item>
             </v-list>
             <v-spacer />
-            <v-btn @click="closeExport()" text> Cancel </v-btn>
+            <v-btn @click="closeExport()" variant="text"> Cancel </v-btn>
             <v-btn color="info" @click="e1 = 2"> Continue </v-btn>
           </v-stepper-content>
           <v-stepper-content step="2">
@@ -73,7 +57,7 @@
               return-object
             />
             <v-spacer />
-            <v-btn @click="closeExport()" text> Cancel </v-btn>
+            <v-btn @click="closeExport()" variant="text"> Cancel </v-btn>
             <v-btn color="info" @click="e1 = 3"> Continue </v-btn>
           </v-stepper-content>
           <v-stepper-content step="3">
@@ -94,7 +78,7 @@
               </template>
             </v-data-table>
             <v-spacer />
-            <v-btn @click="closeExport()" text> Cancel </v-btn>
+            <v-btn @click="closeExport()" variant="text"> Cancel </v-btn>
             <v-badge :value="total" overlap color="info" bordered :content="total">
               <v-btn color="info" @click="exportToCSV()" :loading="exportLoading"> Export </v-btn>
             </v-badge>

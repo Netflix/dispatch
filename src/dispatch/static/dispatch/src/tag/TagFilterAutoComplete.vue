@@ -3,11 +3,11 @@
     :items="items"
     :label="label"
     :loading="loading"
-    :search-input.sync="search"
-    @update:search-input="getFilteredData()"
+    v-model:search="search"
+    @update:search="getFilteredData()"
     chips
     clearable
-    item-text="name"
+    item-title="name"
     item-value="id"
     hide-selected
     multiple
@@ -16,17 +16,15 @@
   >
     <template #no-data>
       <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title>
-            No tags matching "
-            <strong>{{ search }}</strong
-            >"
-          </v-list-item-title>
-        </v-list-item-content>
+        <v-list-item-title>
+          No tags matching "
+          <strong>{{ search }}</strong
+          >"
+        </v-list-item-title>
       </v-list-item>
     </template>
     <template #selection="{ item, index }">
-      <v-chip close @click:close="remove(index)">
+      <v-chip closable @click:close="remove(index)">
         <span v-if="item.tag_type">
           <span v-if="!project">{{ item.project.name }}/</span>{{ item.tag_type.name }}/
         </span>
@@ -36,22 +34,18 @@
       </v-chip>
     </template>
     <template #item="data">
-      <v-list-item-content>
-        <v-list-item-title>
-          <span v-if="!project">{{ data.item.project.name }}/</span>{{ data.item.tag_type.name }}/{{
-            data.item.name
-          }}
-        </v-list-item-title>
-        <v-list-item-subtitle style="width: 200px" class="text-truncate">
-          {{ data.item.description }}
-        </v-list-item-subtitle>
-      </v-list-item-content>
+      <v-list-item-title>
+        <span v-if="!project">{{ data.item.project.name }}/</span>{{ data.item.tag_type.name }}/{{
+          data.item.name
+        }}
+      </v-list-item-title>
+      <v-list-item-subtitle style="width: 200px" class="text-truncate">
+        {{ data.item.description }}
+      </v-list-item-subtitle>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
-        <v-list-item-content>
-          <v-list-item-subtitle> Load More </v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
   </v-combobox>

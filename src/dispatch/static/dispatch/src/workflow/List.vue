@@ -6,9 +6,7 @@
       <v-list-group prepend-icon="playlist_add_check" no-action color="info">
         <template #activator>
           <v-list-item>
-            <v-list-item-content>
-              <v-list-item-title>Workflows ({{ items.length }})</v-list-item-title>
-            </v-list-item-content>
+            <v-list-item-title>Workflows ({{ items.length }})</v-list-item-title>
           </v-list-item>
         </template>
         <v-list-item
@@ -16,10 +14,8 @@
           :key="item.content.id"
           @click="showNewEditSheet(item.content)"
         >
-          <v-list-item-content>
-            <v-list-item-title>{{ item.content.description }}</v-list-item-title>
-            <v-list-item-subtitle>Description</v-list-item-subtitle>
-          </v-list-item-content>
+          <v-list-item-title>{{ item.content.description }}</v-list-item-title>
+          <v-list-item-subtitle>Description</v-list-item-subtitle>
         </v-list-item>
       </v-list-group>
     </v-list>

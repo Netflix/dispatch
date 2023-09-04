@@ -36,8 +36,8 @@
                     />
                   </div>
                   <v-divider class="my-2" />
-                  <v-icon class="mr-2" small> mdi-language-markdown </v-icon>
-                  <span class="text-caption grey--text">Styling with markdown supported</span>
+                  <v-icon class="mr-2" size="small"> mdi-language-markdown </v-icon>
+                  <span class="text-caption text-grey">Styling with markdown supported</span>
                 </v-card-text>
               </v-card>
             </v-tab-item>
@@ -46,15 +46,13 @@
       </v-col>
       <v-col cols="6" md="4">
         <v-card>
-          <v-list-item two-line>
-            <v-list-item-content>
-              <v-list-item-title class="text-h5"> Basic Information </v-list-item-title>
-            </v-list-item-content>
+          <v-list-item lines="two">
+            <v-list-item-title class="text-h5"> Basic Information </v-list-item-title>
           </v-list-item>
           <v-list-item>
             {{ description }}
           </v-list-item>
-          <v-list class="transparent">
+          <v-list class="bg-transparent">
             <v-list-item>
               <v-list-item-title>Data Last Loaded At</v-list-item-title>
               <v-list-item-subtitle class="text-right">

@@ -2,7 +2,7 @@
   <v-dialog v-model="showHandoffDialog" persistent max-width="800px">
     <v-card>
       <v-card-title>
-        <span class="headline">Handoff Cases</span>
+        <span class="text-h5">Handoff Cases</span>
       </v-card-title>
       <v-card-text> Select the new assignee for the selected cases. </v-card-text>
       <v-card-actions>
@@ -11,10 +11,10 @@
             <v-flex xs12>
               <participant-select v-model="assignee" label="Case Assignee" :project="project" />
             </v-flex>
-            <v-btn color="blue en-1" text @click="closeHandoffDialog()"> Cancel </v-btn>
+            <v-btn color="blue en-1" variant="text" @click="closeHandoffDialog()"> Cancel </v-btn>
             <v-btn
               color="red en-1"
-              text
+              variant="text"
               :loading="loading"
               @click="saveBulk({ assignee: assignee })"
             >

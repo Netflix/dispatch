@@ -4,7 +4,7 @@
     <v-row align="center" justify="space-between" no-gutters>
       <delete-dialog />
       <v-col>
-        <div class="headline">Sources</div>
+        <div class="text-h5">Sources</div>
       </v-col>
       <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
@@ -28,10 +28,10 @@
             :headers="headers"
             :items="items"
             :server-items-length="total"
-            :page.sync="page"
-            :items-per-page.sync="itemsPerPage"
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="descending"
+            v-model:page="page"
+            v-model:items-per-page="itemsPerPage"
+            v-model:sort-by="sortBy"
+            v-model:sort-desc="descending"
             :loading="loading"
             loading-text="Loading... Please wait"
           >
@@ -72,7 +72,7 @@
               {{ item.data_last_loaded_at | formatRelativeDate }}
             </template>
             <template #item.data-table-actions="{ item }">
-              <v-menu bottom left>
+              <v-menu location="bottom left">
                 <template #activator="{ on }">
                   <v-btn icon v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>

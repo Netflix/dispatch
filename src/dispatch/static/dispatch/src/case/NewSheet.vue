@@ -4,15 +4,14 @@
       v-model="showNewSheet"
       app
       clipped
-      right
+      location="right"
       width="800"
       :permanent="$vuetify.display.mdAndDown"
     >
       <template #prepend>
-        <v-list-item two-line>
-          <v-list-item-content>
-            <v-list-item-title class="title"> New </v-list-item-title>
-          </v-list-item-content>
+        <v-list-item lines="two">
+          <v-list-item-title class="text-h6"> New </v-list-item-title>
+
           <v-btn
             icon
             color="info"

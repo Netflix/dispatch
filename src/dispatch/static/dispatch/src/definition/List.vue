@@ -6,9 +6,7 @@
       <v-list-group prepend-icon="book" no-action color="info">
         <template #activator>
           <v-list-item>
-            <v-list-item-content>
-              <v-list-item-title>Definitions ({{ items.length }})</v-list-item-title>
-            </v-list-item-content>
+            <v-list-item-title>Definitions ({{ items.length }})</v-list-item-title>
           </v-list-item>
         </template>
         <v-list-item
@@ -16,10 +14,8 @@
           :key="item.content.id"
           @click="createEditShow(item.content)"
         >
-          <v-list-item-content>
-            <v-list-item-title>{{ item.content.text }}</v-list-item-title>
-            <v-list-item-subtitle>Text</v-list-item-subtitle>
-          </v-list-item-content>
+          <v-list-item-title>{{ item.content.text }}</v-list-item-title>
+          <v-list-item-subtitle>Text</v-list-item-subtitle>
         </v-list-item>
       </v-list-group>
     </v-list>

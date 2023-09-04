@@ -2,7 +2,7 @@
   <v-select
     v-model="incident_priorities"
     :items="items"
-    item-text="name"
+    item-title="name"
     :menu-props="{ maxHeight: '400' }"
     label="Add Incident Priorities"
     multiple

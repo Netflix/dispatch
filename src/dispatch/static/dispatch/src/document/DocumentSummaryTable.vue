@@ -4,7 +4,7 @@
       <template #item.name="{ item }">
         <a :href="item.weblink" target="_blank" style="text-decoration: none">
           {{ item.name }}
-          <v-icon small>open_in_new</v-icon>
+          <v-icon size="small">open_in_new</v-icon>
         </a>
       </template>
       <template #item.project.name="{ item }">
@@ -13,7 +13,7 @@
         </v-chip>
       </template>
       <template #item.data-table-actions="{ item }">
-        <v-menu bottom left>
+        <v-menu location="bottom left">
           <template #activator="{ on }">
             <v-btn icon v-on="on">
               <v-icon>mdi-dots-vertical</v-icon>

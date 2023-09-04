@@ -53,7 +53,7 @@ export default {
       this.editor.layout()
     })
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.editor.dispose()
     this.model.dispose()
   },

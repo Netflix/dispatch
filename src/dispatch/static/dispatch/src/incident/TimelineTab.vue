@@ -11,14 +11,14 @@
         Export
       </v-btn>
     </v-row>
-    <v-timeline v-if="events && events.length" dense clipped>
-      <v-col class="text-right caption">(times in UTC)</v-col>
+    <v-timeline v-if="events && events.length" density="compact" clipped>
+      <v-col class="text-right text-caption">(times in UTC)</v-col>
       <v-timeline-item
         v-for="event in sortedEvents"
         :key="event.id"
         class="mb-4"
-        color="blue"
-        small
+        dot-color="blue"
+        size="small"
       >
         <v-row justify="space-between">
           <v-col cols="7">
@@ -26,19 +26,19 @@
             <transition-group name="slide" v-if="showDetails">
               <template v-for="(value, key) in event.details">
                 <v-card flat :key="key">
-                  <v-card-title class="subtitle-1">
+                  <v-card-title class="text-subtitle-1">
                     {{ key | snakeToCamel }}
                   </v-card-title>
                   <v-card-text>{{ value }}</v-card-text>
                 </v-card>
               </template>
             </transition-group>
-            <div class="caption">
+            <div class="text-caption">
               {{ event.source }}
             </div>
           </v-col>
           <v-col class="text-right" cols="5">
-            <v-tooltip bottom>
+            <v-tooltip location="bottom">
               <template #activator="{ on, attrs }">
                 <span v-bind="attrs" v-on="on" class="wavy-underline">{{
                   event.started_at | formatToUTC

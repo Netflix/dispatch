@@ -3,9 +3,9 @@
     <v-combobox
       v-model="template"
       :items="items"
-      :search-input.sync="search"
+      v-model:search="search"
       :menu-props="{ maxHeight: '400' }"
-      item-text="name"
+      item-title="name"
       item-value="id"
       :label="label"
       placeholder="Start typing to search"
@@ -14,7 +14,7 @@
       :loading="loading"
       no-filter
     >
-      <template slot="append-outer">
+      <template #append-outer>
         <v-btn icon @click="createEditShow({ resource_type: resourceType })">
           <v-icon>add</v-icon>
         </v-btn>
@@ -22,19 +22,15 @@
       </template>
       <template #no-data>
         <v-list-item>
-          <v-list-item-content>
-            <v-list-item-title>
-              No results matching "<strong>{{ search }}</strong
-              >"
-            </v-list-item-title>
-          </v-list-item-content>
+          <v-list-item-title>
+            No results matching "<strong>{{ search }}</strong
+            >"
+          </v-list-item-title>
         </v-list-item>
       </template>
       <template #append-item>
         <v-list-item v-if="more" @click="loadMore()">
-          <v-list-item-content>
-            <v-list-item-subtitle> Load More </v-list-item-subtitle>
-          </v-list-item-content>
+          <v-list-item-subtitle> Load More </v-list-item-subtitle>
         </v-list-item>
       </template>
     </v-combobox>

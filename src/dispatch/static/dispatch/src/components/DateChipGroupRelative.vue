@@ -1,8 +1,8 @@
 <template>
   <v-chip-group
     v-model="selectedDateTime"
-    @change="submit"
-    active-class="red--text text--accent-4"
+    @update:model-value="submit"
+    selected-class="red--text text--accent-4"
     mandatory
   >
     <v-chip v-for="option in options" :key="option.value" :value="option.value">

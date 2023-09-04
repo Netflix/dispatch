@@ -2,7 +2,7 @@
   <v-dialog v-model="showDeleteDialog" persistent max-width="800px">
     <v-card>
       <v-card-title>
-        <span class="headline">Delete Incident?</span>
+        <span class="text-h5">Delete Incident?</span>
       </v-card-title>
       <v-card-text>
         <v-container grid-list-md>
@@ -13,8 +13,8 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="blue en-1" text @click="closeDeleteDialog()"> Cancel </v-btn>
-        <v-btn color="red en-1" text @click="deleteIncident(selected)"> Delete </v-btn>
+        <v-btn color="blue en-1" variant="text" @click="closeDeleteDialog()"> Cancel </v-btn>
+        <v-btn color="red en-1" variant="text" @click="deleteIncident(selected)"> Delete </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

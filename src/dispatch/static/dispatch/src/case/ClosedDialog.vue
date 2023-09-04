@@ -2,7 +2,7 @@
   <v-dialog v-model="showClosedDialog" persistent max-width="800px">
     <v-card>
       <v-card-title>
-        <span class="headline">Close Cases</span>
+        <span class="text-h5">Close Cases</span>
       </v-card-title>
       <v-card-text>
         Closed cased require a resolution reason and a resolution summary.
@@ -26,10 +26,10 @@
                 clearable
               />
             </v-flex>
-            <v-btn color="blue en-1" text @click="closeClosedDialog()"> Cancel </v-btn>
+            <v-btn color="blue en-1" variant="text" @click="closeClosedDialog()"> Cancel </v-btn>
             <v-btn
               color="red en-1"
-              text
+              variant="text"
               :loading="loading"
               @click="
                 saveBulk({

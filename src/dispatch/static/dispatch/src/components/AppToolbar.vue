@@ -19,23 +19,23 @@
       prepend-inner-icon="search"
       label="Search"
       clearable
-      solo-inverted
+      variant="solo-inverted"
       flat
       @keyup.enter="performSearch()"
     />
     <v-spacer />
     <v-toolbar-items>
-      <v-tooltip v-if="!$vuetify.theme.dark" bottom>
+      <v-tooltip v-if="!$vuetify.theme.dark" location="bottom">
         <template #activator="{ on }">
-          <v-btn v-on="on" small icon @click="toggleDarkTheme">
+          <v-btn v-on="on" size="small" icon @click="toggleDarkTheme">
             <v-icon class="mr-1"> mdi-moon-waxing-crescent </v-icon>
           </v-btn>
         </template>
         <span>Dark Mode On</span>
       </v-tooltip>
-      <v-tooltip v-else bottom>
+      <v-tooltip v-else location="bottom">
         <template #activator="{ on }">
-          <v-btn v-on="on" small icon @click="toggleDarkTheme">
+          <v-btn v-on="on" size="small" icon @click="toggleDarkTheme">
             <v-icon>mdi-white-balance-sunny</v-icon>
           </v-btn>
         </template>
@@ -47,12 +47,12 @@
             <v-icon>help_outline</v-icon>
           </v-btn>
         </template>
-        <v-list dense>
+        <v-list density="compact">
           <v-list-item href="/api/v1/docs" target="_blank">
             <v-list-item-title>API Documentation</v-list-item-title>
             <v-list-item-action>
               <v-list-item-icon>
-                <v-icon small>open_in_new</v-icon>
+                <v-icon size="small">open_in_new</v-icon>
               </v-list-item-icon>
             </v-list-item-action>
           </v-list-item>
@@ -60,7 +60,7 @@
             <v-list-item-title>App Documentation</v-list-item-title>
             <v-list-item-action>
               <v-list-item-icon>
-                <v-icon small>open_in_new</v-icon>
+                <v-icon size="small">open_in_new</v-icon>
               </v-list-item-icon>
             </v-list-item-action>
           </v-list-item>
@@ -70,7 +70,7 @@
             </v-list-item-title>
             <v-list-item-action>
               <v-list-item-icon>
-                <v-icon small>read_more</v-icon>
+                <v-icon size="small">read_more</v-icon>
               </v-list-item-icon>
             </v-list-item-action>
           </v-list-item>
@@ -78,7 +78,7 @@
       </v-menu>
       <v-menu offset-y>
         <template #activator="{ on }">
-          <v-btn icon large text v-on="on">
+          <v-btn icon size="large" variant="text" v-on="on">
             <v-avatar size="30px" v-if="userAvatarUrl(currentUser())">
               <v-img :src="userAvatarUrl(currentUser())" />
             </v-avatar>
@@ -96,14 +96,14 @@
               <v-list-item-avatar v-else>
                 <v-icon size="30px"> account_circle </v-icon>
               </v-list-item-avatar>
-              <v-list-item-content>
-                <v-list-item-title class="title">
-                  {{ currentUser().name || currentUser().email }}
-                </v-list-item-title>
-                <v-list-item-subtitle> {{ currentUser().email }} </v-list-item-subtitle>
-              </v-list-item-content>
+
+              <v-list-item-title class="text-h6">
+                {{ currentUser().name || currentUser().email }}
+              </v-list-item-title>
+              <v-list-item-subtitle> {{ currentUser().email }} </v-list-item-subtitle>
+
               <v-list-item-action>
-                <v-tooltip bottom>
+                <v-tooltip location="bottom">
                   <template #activator="{ on }">
                     <v-btn icon v-on="on" @click="logout()"><v-icon>logout</v-icon></v-btn>
                   </template>
@@ -114,12 +114,11 @@
             <v-divider />
             <v-subheader>Organizations</v-subheader>
             <v-list-item v-for="(item, i) in organizations" :key="i">
-              <v-list-item-content>
-                <v-list-item-title>{{ item.name }}</v-list-item-title>
-                <v-list-item-subtitle>{{ item.description }}</v-list-item-subtitle>
-              </v-list-item-content>
+              <v-list-item-title>{{ item.name }}</v-list-item-title>
+              <v-list-item-subtitle>{{ item.description }}</v-list-item-subtitle>
+
               <v-list-item-action>
-                <v-tooltip bottom>
+                <v-tooltip location="bottom">
                   <template #activator="{ on }">
                     <v-btn icon v-on="on" @click="showCreateEditDialog(item)">
                       <v-icon>mdi-pencil-outline</v-icon>
@@ -129,7 +128,7 @@
                 </v-tooltip>
               </v-list-item-action>
               <v-list-item-action>
-                <v-tooltip bottom>
+                <v-tooltip location="bottom">
                   <template #activator="{ on }">
                     <v-btn @click="switchOrganizations(item.slug)" icon v-on="on">
                       <v-icon>mdi-swap-horizontal</v-icon>
@@ -144,9 +143,8 @@
             <v-list-item-avatar>
               <v-icon size="30px">mdi-plus</v-icon>
             </v-list-item-avatar>
-            <v-list-item-content>
-              <v-list-item-title>Create a new organization</v-list-item-title>
-            </v-list-item-content>
+
+            <v-list-item-title>Create a new organization</v-list-item-title>
           </v-list-item>
         </v-card>
       </v-menu>

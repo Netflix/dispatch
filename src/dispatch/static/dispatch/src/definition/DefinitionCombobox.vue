@@ -2,10 +2,10 @@
   <v-combobox
     :items="items"
     :loading="loading"
-    :search-input.sync="search"
-    @update:search-input="getFilteredData()"
+    v-model:search="search"
+    @update:search="getFilteredData()"
     chips
-    deletable-chips
+    closable-chips
     hide-selected
     label="Add definitions"
     multiple
@@ -14,20 +14,16 @@
   >
     <template #no-data>
       <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title>
-            No results matching "
-            <strong>{{ search }}</strong
-            >". Press <kbd>enter</kbd> to create a new one
-          </v-list-item-title>
-        </v-list-item-content>
+        <v-list-item-title>
+          No results matching "
+          <strong>{{ search }}</strong
+          >". Press <kbd>enter</kbd> to create a new one
+        </v-list-item-title>
       </v-list-item>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
-        <v-list-item-content>
-          <v-list-item-subtitle> Load More </v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
   </v-combobox>

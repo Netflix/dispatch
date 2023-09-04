@@ -3,8 +3,8 @@
     v-model="plugin"
     :loading="loading"
     :items="items"
-    item-text="plugin.slug"
-    :search-input.sync="search"
+    item-title="plugin.slug"
+    v-model:search="search"
     hide-selected
     :label="label"
     no-filter
@@ -12,34 +12,28 @@
   >
     <template #no-data>
       <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title>
-            No Plugins matching "
-            <strong>{{ search }}</strong
-            >"
-          </v-list-item-title>
-        </v-list-item-content>
+        <v-list-item-title>
+          No Plugins matching "
+          <strong>{{ search }}</strong
+          >"
+        </v-list-item-title>
       </v-list-item>
     </template>
     <template #item="data">
-      <v-list-item-content>
-        <v-list-item-title>
-          <div>
-            {{ data.item.plugin.title }}
-          </div>
-        </v-list-item-title>
-        <v-list-item-subtitle>
-          <div style="width: 200px" class="text-truncate">
-            {{ data.item.plugin.description }}
-          </div>
-        </v-list-item-subtitle>
-      </v-list-item-content>
+      <v-list-item-title>
+        <div>
+          {{ data.item.plugin.title }}
+        </div>
+      </v-list-item-title>
+      <v-list-item-subtitle>
+        <div style="width: 200px" class="text-truncate">
+          {{ data.item.plugin.description }}
+        </div>
+      </v-list-item-subtitle>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
-        <v-list-item-content>
-          <v-list-item-subtitle> Load More </v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
   </v-autocomplete>

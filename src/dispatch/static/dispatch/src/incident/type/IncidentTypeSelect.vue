@@ -3,29 +3,25 @@
     v-model="incident_type"
     :items="items"
     :menu-props="{ maxHeight: '400' }"
-    item-text="name"
+    item-title="name"
     :label="label"
     return-object
     :loading="loading"
   >
     <template #item="data">
-      <v-list-item-content>
-        <v-list-item-title v-if="!project">
-          {{ data.item.project.name }}/{{ data.item.name }}
-        </v-list-item-title>
-        <v-list-item-title v-else>
-          {{ data.item.name }}
-        </v-list-item-title>
-        <v-list-item-subtitle style="width: 200px" class="text-truncate">
-          {{ data.item.description }}
-        </v-list-item-subtitle>
-      </v-list-item-content>
+      <v-list-item-title v-if="!project">
+        {{ data.item.project.name }}/{{ data.item.name }}
+      </v-list-item-title>
+      <v-list-item-title v-else>
+        {{ data.item.name }}
+      </v-list-item-title>
+      <v-list-item-subtitle style="width: 200px" class="text-truncate">
+        {{ data.item.description }}
+      </v-list-item-subtitle>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
-        <v-list-item-content>
-          <v-list-item-subtitle> Load More </v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
   </v-select>

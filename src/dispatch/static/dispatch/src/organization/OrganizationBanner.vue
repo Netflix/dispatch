@@ -6,7 +6,7 @@
     app
   >
     <v-icon color="white" size="36"> mdi-information-outline </v-icon>
-    <span class="white--text">{{ currentOrganization.banner_text }}</span>
+    <span class="text-white">{{ currentOrganization.banner_text }}</span>
   </v-system-bar>
 </template>
 

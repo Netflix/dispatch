@@ -1,11 +1,11 @@
 <template>
   <v-container>
     <v-row no-gutter>
-      <span class="subtitle-2">Plugin Metadata</span>
+      <span class="text-subtitle-2">Plugin Metadata</span>
       <v-spacer />
-      <v-tooltip bottom>
+      <v-tooltip location="bottom">
         <template #activator="{ on }">
-          <v-btn small icon @click="addPlugin()" v-on="on">
+          <v-btn size="small" icon @click="addPlugin()" v-on="on">
             <v-icon>add</v-icon>
           </v-btn>
         </template>
@@ -15,9 +15,9 @@
     <span v-for="(plugin, plugin_idx) in plugins" :key="plugin_idx">
       <v-row align="center" dense>
         <v-col cols="12" sm="1">
-          <v-tooltip bottom>
+          <v-tooltip location="bottom">
             <template #activator="{ on }">
-              <v-btn small icon @click="removePlugin(plugin_idx)" v-on="on"
+              <v-btn size="small" icon @click="removePlugin(plugin_idx)" v-on="on"
                 ><v-icon>remove</v-icon></v-btn
               >
             </template>
@@ -34,9 +34,11 @@
           />
         </v-col>
         <v-col cols="12" sm="1">
-          <v-tooltip bottom>
+          <v-tooltip location="bottom">
             <template #activator="{ on }">
-              <v-btn small icon @click="addItem(plugin_idx)" v-on="on"><v-icon>add</v-icon></v-btn>
+              <v-btn size="small" icon @click="addItem(plugin_idx)" v-on="on"
+                ><v-icon>add</v-icon></v-btn
+              >
             </template>
             <span>Add Item</span>
           </v-tooltip>
@@ -50,9 +52,9 @@
         :plugin-index="plugin_idx"
       >
         <v-col cols="12" sm="1">
-          <v-tooltip bottom>
+          <v-tooltip location="bottom">
             <template #activator="{ on }">
-              <v-btn small icon @click="removeItem(plugin_idx, meta_idx)" v-on="on"
+              <v-btn size="small" icon @click="removeItem(plugin_idx, meta_idx)" v-on="on"
                 ><v-icon>remove</v-icon></v-btn
               >
             </template>
@@ -60,10 +62,20 @@
           </v-tooltip>
         </v-col>
         <v-col cols="12" sm="5">
-          <v-text-field label="Key" @input="itemChanged()" v-model="meta.key" type="text" />
+          <v-text-field
+            label="Key"
+            @update:model-value="itemChanged()"
+            v-model="meta.key"
+            type="text"
+          />
         </v-col>
         <v-col cols="12" sm="6">
-          <v-text-field label="Value" @input="itemChanged()" v-model="meta.value" type="text" />
+          <v-text-field
+            label="Value"
+            @update:model-value="itemChanged()"
+            v-model="meta.value"
+            type="text"
+          />
         </v-col>
       </v-row>
     </span>

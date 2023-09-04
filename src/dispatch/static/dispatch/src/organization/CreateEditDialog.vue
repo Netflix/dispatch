@@ -3,8 +3,8 @@
     <ValidationObserver disabled v-slot="{ invalid, validated }">
       <v-card>
         <v-card-title>
-          <span class="headline" v-if="id">Edit Organization</span>
-          <span class="headline" v-else>Create an Organization</span>
+          <span class="text-h5" v-if="id">Edit Organization</span>
+          <span class="text-h5" v-else>Create an Organization</span>
         </v-card-title>
         <v-card-text>
           Organizations represent the top-level in your hierarchy. You'll be able to bundle a
@@ -46,9 +46,9 @@
             />
           </ValidationProvider>
         </v-card-text>
-        <v-list-item-title class="subtitle-2 ml-4">
+        <v-list-item-title class="text-subtitle-2 ml-4">
           Banner Settings
-          <v-tooltip max-width="250px" bottom>
+          <v-tooltip max-width="250px" location="bottom">
             <template #activator="{ on, attrs }">
               <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
             </template>
@@ -75,11 +75,11 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn text @click="closeCreateEditDialog()"> Cancel </v-btn>
+          <v-btn variant="text" @click="closeCreateEditDialog()"> Cancel </v-btn>
           <v-btn
             v-if="id"
             color="info"
-            text
+            variant="text"
             @click="save()"
             :loading="loading"
             :disabled="invalid || !validated"
@@ -89,7 +89,7 @@
           <v-btn
             v-else
             color="info"
-            text
+            variant="text"
             @click="save()"
             :loading="loading"
             :disabled="invalid || !validated"

@@ -1,10 +1,9 @@
 <template>
-  <v-navigation-drawer app clipped right bottom width="500">
+  <v-navigation-drawer app clipped location="right" width="500">
     <template #prepend>
-      <v-list-item two-line>
-        <v-list-item-content>
-          <v-list-item-subtitle>Details</v-list-item-subtitle>
-        </v-list-item-content>
+      <v-list-item lines="two">
+        <v-list-item-subtitle>Details</v-list-item-subtitle>
+
         <v-btn icon color="secondary" @click="hideSheet()">
           <v-icon>close</v-icon>
         </v-btn>

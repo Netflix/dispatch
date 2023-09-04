@@ -8,8 +8,8 @@
           label="Search"
           single-line
           hide-details
-          append-outer-icon="mdi-plus"
-          @click:append-outer="addNew"
+          append-icon="mdi-plus"
+          @click:append="addNew"
           clearable
         />
       </div>
@@ -18,7 +18,7 @@
           <v-text-field
             v-model="editedItem.name"
             :hide-details="true"
-            dense
+            density="compact"
             placeholder="Name"
             single-line
             v-if="item.id === editedItem.id"
@@ -26,7 +26,7 @@
           <v-text-field
             v-model="editedItem.href"
             :hide-details="true"
-            dense
+            density="compact"
             placeholder="Link"
             single-line
             v-if="item.id === editedItem.id"
@@ -41,7 +41,7 @@
           <v-text-field
             v-model="editedItem.description"
             :hide-details="true"
-            dense
+            density="compact"
             placeholder="Description"
             single-line
             v-if="item.id === editedItem.id"

@@ -1,6 +1,6 @@
 <template>
   <ValidationObserver v-slot="{ invalid, validated }">
-    <v-card class="mx-auto ma-4" max-width="600" flat outlined :loading="loading">
+    <v-card class="mx-auto ma-4" max-width="600" flat variant="outlined" :loading="loading">
       <v-card-title> Login </v-card-title>
       <v-card-text>
         <v-container>
@@ -32,7 +32,7 @@
         </v-container>
       </v-card-text>
       <v-card-actions>
-        <v-list-item two-line>
+        <v-list-item lines="two">
           <v-list-item-content v-if="registrationEnabled">
             <v-list-item-subtitle>
               Don't have a account?

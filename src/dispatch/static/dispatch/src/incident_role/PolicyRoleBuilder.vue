@@ -4,7 +4,7 @@
       <v-row>
         <v-col>
           {{ label }}
-          <v-tooltip bottom>
+          <v-tooltip location="bottom">
             <template #activator="{ on, attrs }">
               <v-btn icon color="info" v-bind="attrs" v-on="on" @click="add()">
                 <v-icon> mdi-playlist-plus </v-icon>
@@ -14,7 +14,7 @@
           </v-tooltip>
         </v-col>
         <v-col cols="1" align="end">
-          <v-tooltip bottom>
+          <v-tooltip location="bottom">
             <template #activator="{ on, attrs }">
               <v-btn icon color="info" v-bind="attrs" v-on="on" :loading="loading" @click="save()">
                 <v-icon> save </v-icon>
@@ -50,51 +50,35 @@
               </v-row>
             </v-expansion-panel-header>
             <v-expansion-panel-content>
-              <v-list dense>
+              <v-list density="compact">
                 <v-list-item>
-                  <v-list-item-content>
-                    <tag-filter-auto-complete
-                      label="Tags"
-                      :project="project"
-                      v-model="policy.tags"
-                    />
-                  </v-list-item-content>
+                  <tag-filter-auto-complete label="Tags" :project="project" v-model="policy.tags" />
                 </v-list-item>
                 <v-list-item>
-                  <v-list-item-content>
-                    <incident-priority-combobox
-                      :project="project"
-                      v-model="policy.incident_priorities"
-                    />
-                  </v-list-item-content>
+                  <incident-priority-combobox
+                    :project="project"
+                    v-model="policy.incident_priorities"
+                  />
                 </v-list-item>
                 <v-list-item>
-                  <v-list-item-content>
-                    <incident-type-combobox :project="project" v-model="policy.incident_types" />
-                  </v-list-item-content>
+                  <incident-type-combobox :project="project" v-model="policy.incident_types" />
                 </v-list-item>
                 <v-list-item>
-                  <v-list-item-content>
-                    <service-select-new
-                      label="Target Service"
-                      :project="project"
-                      v-model="policy.service"
-                    />
-                  </v-list-item-content>
+                  <service-select-new
+                    label="Target Service"
+                    :project="project"
+                    v-model="policy.service"
+                  />
                 </v-list-item>
                 <v-list-item>
-                  <v-list-item-content>
-                    <v-checkbox
-                      v-model="policy.enabled"
-                      label="Enabled"
-                      hint="Check this if you would like this policy to be considered when resolving the role."
-                    />
-                  </v-list-item-content>
+                  <v-checkbox
+                    v-model="policy.enabled"
+                    label="Enabled"
+                    hint="Check this if you would like this policy to be considered when resolving the role."
+                  />
                 </v-list-item>
                 <v-list-item>
-                  <v-list-item-content>
-                    <v-btn color="primary" @click="remove(idx)"> Delete Policy </v-btn>
-                  </v-list-item-content>
+                  <v-btn color="primary" @click="remove(idx)"> Delete Policy </v-btn>
                 </v-list-item>
               </v-list>
             </v-expansion-panel-content>

@@ -1,16 +1,15 @@
 <template>
   <ValidationObserver v-slot="{ invalid, validated }">
-    <v-navigation-drawer app right width="800" :permanent="$vuetify.display.mdAndDown">
+    <v-navigation-drawer app location="right" width="800" :permanent="$vuetify.display.mdAndDown">
       <template #prepend>
-        <v-list-item two-line>
-          <v-list-item-content>
-            <v-list-item-title class="title">
-              {{ name }}
-            </v-list-item-title>
-            <v-list-item-subtitle>
-              Reported - {{ reported_at | formatRelativeDate }}
-            </v-list-item-subtitle>
-          </v-list-item-content>
+        <v-list-item lines="two">
+          <v-list-item-title class="text-h6">
+            {{ name }}
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            Reported - {{ reported_at | formatRelativeDate }}
+          </v-list-item-subtitle>
+
           <v-spacer />
           <v-btn
             icon

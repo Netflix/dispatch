@@ -1,13 +1,12 @@
 <template>
   <ValidationObserver v-slot="{ invalid, validated }">
-    <v-navigation-drawer v-model="showCreateEdit" app clipped right width="1000">
+    <v-navigation-drawer v-model="showCreateEdit" app clipped location="right" width="1000">
       <template #prepend>
-        <v-list-item two-line>
-          <v-list-item-content>
-            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
-            <v-list-item-title v-else class="title"> New </v-list-item-title>
-            <v-list-item-subtitle>Entity Type</v-list-item-subtitle>
-          </v-list-item-content>
+        <v-list-item lines="two">
+          <v-list-item-title v-if="id" class="text-h6"> Edit </v-list-item-title>
+          <v-list-item-title v-else class="text-h6"> New </v-list-item-title>
+          <v-list-item-subtitle>Entity Type</v-list-item-subtitle>
+
           <v-btn
             icon
             color="info"
@@ -22,9 +21,9 @@
           </v-btn>
         </v-list-item>
       </template>
-      <v-card flat tile>
+      <v-card flat rounded="0">
         <v-app-bar color="white" flat>
-          <v-toolbar-title class="subtitle-2"> Details </v-toolbar-title>
+          <v-toolbar-title class="text-subtitle-2"> Details </v-toolbar-title>
         </v-app-bar>
         <v-card-text>
           <ValidationProvider name="Name" rules="required" immediate>
@@ -52,7 +51,7 @@
             />
           </ValidationProvider>
           <v-radio-group v-model="scope" label="Scope" row>
-            <v-tooltip max-width="250px" left>
+            <v-tooltip max-width="250px" location="left">
               <template #activator="{ on, attrs }">
                 <v-radio v-bind="attrs" v-on="on" label="Multiple" value="multiple" />
               </template>
@@ -62,7 +61,7 @@
                 multiple definitions.
               </span>
             </v-tooltip>
-            <v-tooltip max-width="250px" left>
+            <v-tooltip max-width="250px" location="left">
               <template #activator="{ on, attrs }">
                 <v-radio v-bind="attrs" v-on="on" label="All" value="all" />
               </template>
@@ -82,9 +81,9 @@
           />
         </v-card-text>
       </v-card>
-      <v-card flat tile>
+      <v-card flat rounded="0">
         <v-app-bar color="white" flat>
-          <v-toolbar-title class="subtitle-2"> Expression Configuration </v-toolbar-title>
+          <v-toolbar-title class="text-subtitle-2"> Expression Configuration </v-toolbar-title>
           <v-spacer />
         </v-app-bar>
         <v-card-text>
@@ -135,9 +134,8 @@
                 </template>
                 <template v-for="(instance, index) in signalInstances" v-else>
                   <v-list-item :key="`item-${index}`">
-                    <v-list-item-content>
-                      <v-list-item-title>{{ instance.id }}</v-list-item-title>
-                    </v-list-item-content>
+                    <v-list-item-title>{{ instance.id }}</v-list-item-title>
+
                     <v-list-item-action>
                       <v-btn icon @click="updateEditorValue(instance.raw)">
                         <v-icon>mdi-arrow-right</v-icon>

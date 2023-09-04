@@ -28,30 +28,30 @@
             :items="items"
             :item-class="row_class"
             :server-items-length="total"
-            :page.sync="page"
-            :items-per-page.sync="itemsPerPage"
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="descending"
+            v-model:page="page"
+            v-model:items-per-page="itemsPerPage"
+            v-model:sort-by="sortBy"
+            v-model:sort-desc="descending"
             :loading="loading"
             loading-text="Loading... Please wait"
           >
             <template #item.author="{ item }">
               <a :href="item.author_url" target="_blank" style="text-decoration: none">
                 {{ item.author }}
-                <v-icon small>open_in_new</v-icon>
+                <v-icon size="small">open_in_new</v-icon>
               </a>
             </template>
             <template #item.enabled="{ item }">
-              <v-simple-checkbox v-model="item.enabled" disabled />
+              <v-checkbox-btn v-model="item.enabled" disabled />
             </template>
             <template #item.plugin.multiple="{ item }">
-              <v-simple-checkbox v-model="item.plugin.multiple" disabled />
+              <v-checkbox-btn v-model="item.plugin.multiple" disabled />
             </template>
             <template #item.plugin.required="{ item }">
-              <v-simple-checkbox v-model="item.plugin.required" disabled />
+              <v-checkbox-btn v-model="item.plugin.required" disabled />
             </template>
             <template #item.data-table-actions="{ item }">
-              <v-menu bottom left>
+              <v-menu location="bottom left">
                 <template #activator="{ on }">
                   <v-btn icon v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>

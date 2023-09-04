@@ -4,7 +4,7 @@
     <delete-dialog />
     <v-row no-gutters>
       <v-col>
-        <v-alert dismissible icon="mdi-school" prominent text type="info">
+        <v-alert closable icon="mdi-school" prominent text type="info">
           Workflows extend Dispatch into existing workflow orchestration systems and can be used
           nearly anything as long as they report back their status to Dispatch.
         </v-alert>
@@ -35,21 +35,21 @@
             :headers="headers"
             :items="items"
             :server-items-length="total"
-            :page.sync="page"
-            :items-per-page.sync="itemsPerPage"
+            v-model:page="page"
+            v-model:items-per-page="itemsPerPage"
             :loading="loading"
             loading-text="Loading... Please wait"
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="descending"
+            v-model:sort-by="sortBy"
+            v-model:sort-desc="descending"
           >
             <template #item.plugin_instance="{ item }">
               {{ item.plugin_instance.plugin.title }}
             </template>
             <template #item.enabled="{ item }">
-              <v-simple-checkbox v-model="item.enabled" disabled />
+              <v-checkbox-btn v-model="item.enabled" disabled />
             </template>
             <template #item.data-table-actions="{ item }">
-              <v-menu bottom left>
+              <v-menu location="bottom left">
                 <template #activator="{ on }">
                   <v-btn icon v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>

@@ -3,45 +3,39 @@
     :items="items"
     :label="label"
     :loading="loading"
-    :search-input.sync="search"
-    @update:search-input="getFilteredData()"
-    deletable-chips
+    v-model:search="search"
+    @update:search="getFilteredData()"
+    closable-chips
     hide-selected
-    item-text="name"
+    item-title="name"
     item-value="id"
     no-filter
     v-model="incident_cost_type"
   >
     <template #no-data>
       <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title>
-            No cost types matching "
-            <strong>{{ search }}</strong
-            >"
-          </v-list-item-title>
-        </v-list-item-content>
+        <v-list-item-title>
+          No cost types matching "
+          <strong>{{ search }}</strong
+          >"
+        </v-list-item-title>
       </v-list-item>
     </template>
     <template #item="data">
-      <v-list-item-content>
-        <v-list-item-title>
-          <div>
-            {{ data.item.name }}
-          </div>
-        </v-list-item-title>
-        <v-list-item-subtitle>
-          <div style="width: 200px" class="text-truncate">
-            {{ data.item.description }}
-          </div>
-        </v-list-item-subtitle>
-      </v-list-item-content>
+      <v-list-item-title>
+        <div>
+          {{ data.item.name }}
+        </div>
+      </v-list-item-title>
+      <v-list-item-subtitle>
+        <div style="width: 200px" class="text-truncate">
+          {{ data.item.description }}
+        </div>
+      </v-list-item-subtitle>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
-        <v-list-item-content>
-          <v-list-item-subtitle> Load More </v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
   </v-combobox>

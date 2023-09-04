@@ -19,7 +19,7 @@
         </v-chip>
       </template>
       <template #item.reported_at="{ item }">
-        <v-tooltip bottom>
+        <v-tooltip location="bottom">
           <template #activator="{ on, attrs }">
             <span v-bind="attrs" v-on="on">{{ item.reported_at | formatRelativeDate }}</span>
           </template>
@@ -27,7 +27,7 @@
         </v-tooltip>
       </template>
       <template #item.data-table-actions="{ item }">
-        <v-menu bottom left>
+        <v-menu location="bottom left">
           <template #activator="{ on }">
             <v-btn icon v-on="on">
               <v-icon>mdi-dots-vertical</v-icon>
