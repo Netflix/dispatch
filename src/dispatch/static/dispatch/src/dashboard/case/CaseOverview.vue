@@ -1,93 +1,96 @@
 <template>
-  <v-container fluid grid-list-xl>
+  <v-container fluid>
     <!-- <cases-drill-down-sheet -->
     <!--   :show="showDrillDown" -->
     <!--   :items="detailItems" -->
     <!--   @close="showDrillDown = false" -->
     <!-- /> -->
-    <v-layout row wrap>
-      <v-flex class="d-flex justify-start" lg6 sm6 xs12>
+    <v-row>
+      <v-col class="d-flex justify-start" cols="12" sm="6">
         <v-btn color="info" @click="copyView"> Share View </v-btn>
-      </v-flex>
-      <v-flex class="d-flex justify-end" lg6 sm6 xs12>
+      </v-col>
+      <v-col class="d-flex justify-end" cols="12" sm="6">
         <case-dialog-filter
           @update="update"
           @loading="setLoading"
           :projects="defaultUserProjects"
         />
-      </v-flex>
-    </v-layout>
-    <v-layout row wrap>
+      </v-col>
+    </v-row>
+    <v-row>
       <!-- Widgets Start -->
-      <v-flex lg3 sm6 xs12>
-        <stat-widget icon="domain" :title="totalCases | toNumberString" sup-title="Cases" />
-      </v-flex>
-      <v-flex lg3 sm6 xs12>
+      <v-col cols="12" sm="6" lg="3">
+        <stat-widget icon="mdi-domain" :title="toNumberString(totalCases)" sup-title="Cases" />
+      </v-col>
+      <v-col cols="12" sm="6" lg="3">
         <stat-widget
-          icon="domain"
-          :title="totalCasesTriaged | toNumberString"
+          icon="mdi-domain"
+          :title="toNumberString(totalCasesTriaged)"
           sup-title="Cases Triaged"
         />
-      </v-flex>
-      <v-flex lg3 sm6 xs12>
+      </v-col>
+      <v-col cols="12" sm="6" lg="3">
         <stat-widget
-          icon="domain"
-          :title="totalCasesEscalated | toNumberString"
+          icon="mdi-domain"
+          :title="toNumberString(totalCasesEscalated)"
           sup-title="Cases Escalated"
         />
-      </v-flex>
-      <v-flex lg3 sm6 xs12>
+      </v-col>
+      <v-col cols="12" sm="6" lg="3">
         <stat-widget
-          icon="watch_later"
-          :title="totalHours | toNumberString"
+          icon="mdi-clock"
+          :title="toNumberString(totalHours)"
           sup-title="Total Hours (New to Closed)"
         />
-      </v-flex>
+      </v-col>
       <!-- Widgets Ends -->
       <!-- Statistics Start -->
-      <v-flex lg6 sm6 xs12>
+      <v-col cols="12" sm="6">
         <case-type-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
           @detailsSelected="detailsSelected($event)"
         />
-      </v-flex>
-      <v-flex lg6 sm6 xs12>
+      </v-col>
+      <v-col cols="12" sm="6">
         <case-severity-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
           @detailsSelected="detailsSelected($event)"
         />
-      </v-flex>
-      <!-- <v-flex lg6 sm6 xs12> -->
+      </v-col>
+      <!-- <v-col cols="12" sm="6"> -->
       <!--   <case-priority-bar-chart-card -->
       <!--     v-model="groupedItems" -->
       <!--     :loading="loading" -->
       <!--     @detailsSelected="detailsSelected($event)" -->
       <!--   /> -->
-      <!-- </v-flex> -->
-      <v-flex lg6 sm6 xs12>
+      <!-- </v-col> -->
+      <v-col cols="12" sm="6">
         <case-new-triage-average-time-card v-model="groupedItems" :loading="loading" />
-      </v-flex>
-      <v-flex lg6 sm6 xs12>
+      </v-col>
+      <v-col cols="12" sm="6">
         <case-triage-escalated-average-time-card v-model="groupedItems" :loading="loading" />
-      </v-flex>
-      <v-flex lg6 sm6 xs12>
+      </v-col>
+      <v-col cols="12" sm="6">
         <case-escalated-closed-average-time-card v-model="groupedItems" :loading="loading" />
-      </v-flex>
-      <v-flex lg6 sm6 xs12>
+      </v-col>
+      <v-col cols="12" sm="6">
         <case-new-closed-average-time-card v-model="groupedItems" :loading="loading" />
-      </v-flex>
+      </v-col>
       <!-- Statistics Ends -->
-    </v-layout>
+    </v-row>
   </v-container>
 </template>
 
 <script>
 import { mapFields } from "vuex-map-fields"
 import { groupBy, sumBy } from "lodash"
-import { parseISO } from "date-fns"
+
+import parseISO from "date-fns/parseISO"
 import differenceInHours from "date-fns/differenceInHours"
+
+import { toNumberString } from "@/filters"
 
 import CaseDialogFilter from "@/dashboard/case/CaseDialogFilter.vue"
 // import CasesDrillDownSheet from "@/dashboard/case/CasesDrillDownSheet.vue"
@@ -124,6 +127,10 @@ export default {
       detailItems: [],
       showDrillDown: false,
     }
+  },
+
+  setup() {
+    return { toNumberString }
   },
 
   methods: {

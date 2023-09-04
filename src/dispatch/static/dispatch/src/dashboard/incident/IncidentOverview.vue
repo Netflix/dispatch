@@ -1,128 +1,133 @@
 <template>
-  <v-container fluid grid-list-xl>
-    <incidents-drill-down-sheet v-if="showDrillDown" :items="detailItems" @close="closeDrillDown" />
-    <v-layout row wrap>
-      <v-flex class="d-flex justify-start" lg6 sm6 xs12>
+  <v-container fluid>
+    <incidents-drill-down-sheet v-if="showDrillDown" :items="detailItems" />
+    <v-row>
+      <v-col class="d-flex justify-start" cols="12" sm="6">
         <v-btn color="info" @click="copyView"> Share View </v-btn>
-      </v-flex>
-      <v-flex class="d-flex justify-end" lg6 sm6 xs12>
+      </v-col>
+      <v-col class="d-flex justify-end" cols="12" sm="6">
         <incident-dialog-filter
           @update="update"
           @loading="setLoading"
           :projects="defaultUserProjects"
         />
-      </v-flex>
-    </v-layout>
-    <v-layout row wrap>
-      <v-flex lg3 sm6 xs12>
-        <stat-widget icon="domain" :title="totalIncidents | toNumberString" sup-title="Incidents" />
-      </v-flex>
-      <v-flex lg3 sm6 xs12>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="12" sm="6" lg="3">
         <stat-widget
-          icon="watch_later"
-          :title="totalResponseHours | toNumberString"
+          icon="mdi-domain"
+          :title="toNumberString(totalIncidents)"
+          sup-title="Incidents"
+        />
+      </v-col>
+      <v-col cols="12" sm="6" lg="3">
+        <stat-widget
+          icon="mdi-clock"
+          :title="toNumberString(totalResponseHours)"
           sup-title="Total Response Hours"
         />
-      </v-flex>
-      <v-flex lg3 sm6 xs12>
+      </v-col>
+      <v-col cols="12" sm="6" lg="3">
         <stat-widget
-          icon="attach_money"
-          :title="totalIncidentsCost | toUSD"
+          icon="mdi-currency-usd"
+          :title="toUSD(totalIncidentsCost)"
           sup-title="Total Incidents Cost"
         />
-      </v-flex>
-      <v-flex lg3 sm6 xs12>
+      </v-col>
+      <v-col cols="12" sm="6" lg="3">
         <stat-widget
-          icon="show_chart"
-          :title="averageIncidentCost | toUSD"
+          icon="mdi-chart-line-variant"
+          :title="toUSD(averageIncidentCost)"
           sup-title="Average Cost Per Incident"
         />
-      </v-flex>
+      </v-col>
       <!-- Widgets Ends -->
       <!-- Statistics -->
-      <v-flex lg12 sm12 xs12>
+      <v-col cols="12">
         <incident-type-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
           @detailsSelected="detailsSelected($event)"
         />
-      </v-flex>
-      <v-flex lg6 sm6 xs12>
+      </v-col>
+      <v-col cols="12" sm="6">
         <incident-severity-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
           @detailsSelected="detailsSelected($event)"
         />
-      </v-flex>
-      <v-flex lg6 sm6 xs12>
+      </v-col>
+      <v-col cols="12" sm="6">
         <incident-priority-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
           @detailsSelected="detailsSelected($event)"
         />
-      </v-flex>
-      <v-flex lg6 sm6 xs12>
+      </v-col>
+      <v-col cols="12" sm="6">
         <incident-mean-response-time-card v-model="groupedItems" :loading="loading" />
-      </v-flex>
-      <v-flex lg6 sm6 xs12>
+      </v-col>
+      <v-col cols="12" sm="6">
         <incident-cost-bar-chart-card v-model="groupedItems" :loading="loading" />
-      </v-flex>
-      <v-flex lg12 sm12 xs12>
+      </v-col>
+      <v-col cols="12">
         <incident-forecast-card />
-      </v-flex>
-      <v-flex lg6 sm6 xs12>
+      </v-col>
+      <v-col cols="12" sm="6">
         <incident-reporters-location-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
           @detailsSelected="detailsSelected($event)"
         />
-      </v-flex>
-      <v-flex lg6 sm6 xs12>
+      </v-col>
+      <v-col cols="12" sm="6">
         <incident-commanders-location-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
           @detailsSelected="detailsSelected($event)"
         />
-      </v-flex>
-      <v-flex lg6 sm6 xs12>
+      </v-col>
+      <v-col cols="12" sm="6">
         <incident-participants-location-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
           @detailsSelected="detailsSelected($event)"
         />
-      </v-flex>
-      <v-flex lg6 sm6 xs12>
+      </v-col>
+      <v-col cols="12" sm="6">
         <incident-participants-team-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
           @detailsSelected="detailsSelected($event)"
         />
-      </v-flex>
-      <v-flex lg6 sm6 xs12>
+      </v-col>
+      <v-col cols="12" sm="6">
         <incident-heatmap-card
           v-model="groupedItems"
           :loading="loading"
           @detailsSelected="detailsSelected($event)"
         />
-      </v-flex>
-      <v-flex lg6 sm6 xs12>
+      </v-col>
+      <v-col cols="12" sm="6">
         <incident-tags-treemap-card
           v-model="items"
           :loading="loading"
           @detailsSelected="detailsSelected($event)"
         />
-      </v-flex>
+      </v-col>
       <!-- Statistics Ends -->
-    </v-layout>
+    </v-row>
   </v-container>
 </template>
 
 <script>
 import { mapFields } from "vuex-map-fields"
 import { groupBy, sumBy } from "lodash"
-import { parseISO } from "date-fns"
-
+import parseISO from "date-fns/parseISO"
 import differenceInHours from "date-fns/differenceInHours"
+
+import { toNumberString, toUSD } from "@/filters"
 
 import IncidentCommandersLocationBarChartCard from "@/dashboard/incident/IncidentCommandersLocationBarChartCard.vue"
 import IncidentCostBarChartCard from "@/dashboard/incident/IncidentCostBarChartCard.vue"
@@ -171,6 +176,10 @@ export default {
     }
   },
 
+  setup() {
+    return { toNumberString, toUSD }
+  },
+
   methods: {
     update(data) {
       this.items = data.filter(function (item) {
@@ -210,9 +219,6 @@ export default {
           )
         }
       )
-    },
-    closeDrillDown() {
-      this.showDrillDown = false
     },
   },
 

@@ -1,8 +1,8 @@
 <template>
   <v-dialog v-model="display" max-width="600px">
-    <template #activator="{ on }">
+    <template #activator="{ props }">
       <v-badge :value="numFilters" bordered overlap color="info" :content="numFilters">
-        <v-btn color="secondary" v-on="on"> Filter </v-btn>
+        <v-btn color="secondary" v-bind="props"> Filter </v-btn>
       </v-badge>
     </template>
     <v-card>
@@ -32,7 +32,6 @@
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
 import { sum } from "lodash"
 import startOfMonth from "date-fns/startOfMonth"
 import subMonths from "date-fns/subMonths"
