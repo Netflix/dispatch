@@ -117,7 +117,6 @@ export default {
       "selected.title",
       "selected.visibility",
     ]),
-    ...mapFields("route", ["query"]),
   },
 }
 </script>

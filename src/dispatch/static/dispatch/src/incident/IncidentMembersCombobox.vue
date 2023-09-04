@@ -62,7 +62,6 @@ export default {
   },
 
   computed: {
-    ...mapState("route", ["results", "isLoading"]),
     ...mapState("incident", ["description"]),
     text: {
       set(text) {

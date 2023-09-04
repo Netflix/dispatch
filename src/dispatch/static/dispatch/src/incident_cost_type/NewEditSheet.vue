@@ -114,7 +114,6 @@ export default {
       "selected.loading",
       "dialogs.showCreateEdit",
     ]),
-    ...mapFields("route", ["query"]),
     ...mapFields("incident_cost_type", {
       default_incident_cost_type: "selected.default",
     }),
@@ -125,8 +124,8 @@ export default {
   },
 
   created() {
-    if (this.query.project) {
-      this.project = { name: this.query.project }
+    if (this.$route.query.project) {
+      this.project = { name: this.$route.query.project }
     }
   },
 }

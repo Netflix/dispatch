@@ -140,14 +140,13 @@ export default {
       "table.rows.items",
       "table.rows.total",
     ]),
-    ...mapFields("route", ["query", "params"]),
     ...mapFields("auth", ["currentUser.projects"]),
   },
   methods: {
     ...mapActions("signal", ["getAll", "createEditShow", "removeShow"]),
   },
   created() {
-    this.project = [{ name: this.query.project }]
+    this.project = [{ name: this.$route.query.project }]
     this.getAll()
 
     this.$watch(

@@ -169,7 +169,6 @@ export default {
   },
 
   computed: {
-    ...mapFields("route", ["query.project"]),
     ...mapFields("auth", ["currentUser.projects"]),
 
     casesByYear() {

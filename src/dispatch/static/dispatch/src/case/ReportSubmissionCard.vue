@@ -144,7 +144,6 @@ export default {
       "selected.project",
       "selected.id",
     ]),
-    ...mapFields("route", ["query"]),
   },
 
   methods: {
@@ -201,16 +200,16 @@ export default {
   },
 
   created() {
-    if (this.query.project) {
-      this.project = { name: this.query.project }
+    if (this.$route.query.project) {
+      this.project = { name: this.$route.query.project }
     }
 
-    if (this.query.case_type) {
-      this.case_type = { name: this.query.case_type }
+    if (this.$route.query.case_type) {
+      this.case_type = { name: this.$route.query.case_type }
     }
 
-    if (this.query.case_priority) {
-      this.case_priority = { name: this.query.case_priority }
+    if (this.$route.query.case_priority) {
+      this.case_priority = { name: this.$route.query.case_priority }
     }
 
     this.getFAQ()
@@ -236,13 +235,13 @@ export default {
       }
     )
 
-    if (this.query.tag) {
-      if (Array.isArray(this.query.tag)) {
-        this.tags = this.query.tag.map(function (t) {
+    if (this.$route.query.tag) {
+      if (Array.isArray(this.$route.query.tag)) {
+        this.tags = this.$route.query.tag.map(function (t) {
           return { name: t }
         })
       } else {
-        this.tags = [{ name: this.query.tag }]
+        this.tags = [{ name: this.$route.query.tag }]
       }
     }
   },

@@ -154,7 +154,6 @@ export default {
       "selected.loading",
       "dialogs.showCreateEdit",
     ]),
-    ...mapFields("route", ["query"]),
   },
   methods: {
     ...mapActions("workflow", ["closeCreateEditDialog", "save"]),
@@ -166,8 +165,8 @@ export default {
     },
   },
   created() {
-    if (this.query.project) {
-      this.project = { name: this.query.project }
+    if (this.$route.query.project) {
+      this.project = { name: this.$route.query.project }
     }
   },
 }

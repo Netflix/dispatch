@@ -15,8 +15,6 @@
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
-
 import ProjectMenuSelect from "@/project/ProjectMenuSelect.vue"
 
 export default {
@@ -60,12 +58,11 @@ export default {
           projectSelect: true,
         },
         {
-          text: this.meta.title,
+          text: this.$route.meta.title,
           disabled: false,
         },
       ]
     },
-    ...mapFields("route", ["query", "params", "meta"]),
   },
 }
 </script>

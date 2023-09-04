@@ -200,15 +200,14 @@ export default {
     ...mapFields("case_type", {
       default_case_type: "selected.default",
     }),
-    ...mapFields("route", ["query"]),
   },
 
   methods: {
     ...mapActions("case_type", ["save", "closeCreateEdit"]),
   },
   created() {
-    if (this.query.project) {
-      this.project = { name: this.query.project }
+    if (this.$route.query.project) {
+      this.project = { name: this.$route.query.project }
       this.incidentProject = this.project
     }
   },

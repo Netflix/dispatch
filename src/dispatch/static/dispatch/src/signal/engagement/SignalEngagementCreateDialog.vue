@@ -152,7 +152,6 @@ export default {
       "selected.project",
       "loading",
     ]),
-    ...mapFields("route", ["query"]),
   },
   methods: {
     ...mapActions("signalEngagement", ["save"]),
@@ -165,8 +164,8 @@ export default {
     },
   },
   created() {
-    if (this.query.project) {
-      this.project = { name: this.query.project }
+    if (this.$route.query.project) {
+      this.project = { name: this.$route.query.project }
     }
   },
 }

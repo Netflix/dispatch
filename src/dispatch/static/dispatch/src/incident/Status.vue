@@ -19,7 +19,6 @@
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
 import SearchUtils from "@/search/utils"
 import RouterUtils from "@/router/utils"
 
@@ -46,13 +45,9 @@ export default {
   created() {
     this.filters = {
       ...this.filters,
-      ...RouterUtils.deserializeFilters(this.query),
+      ...RouterUtils.deserializeFilters(this.$route.query),
     }
     this.getActive()
-  },
-
-  computed: {
-    ...mapFields("route", ["query"]),
   },
 
   methods: {

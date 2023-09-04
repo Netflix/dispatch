@@ -191,15 +191,14 @@ export default {
     ...mapFields("incident_type", {
       default_incident_type: "selected.default",
     }),
-    ...mapFields("route", ["query"]),
   },
 
   methods: {
     ...mapActions("incident_type", ["save", "closeCreateEdit"]),
   },
   created() {
-    if (this.query.project) {
-      this.project = { name: this.query.project }
+    if (this.$route.query.project) {
+      this.project = { name: this.$route.query.project }
     }
   },
 }

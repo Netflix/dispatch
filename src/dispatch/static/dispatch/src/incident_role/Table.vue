@@ -35,8 +35,6 @@
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
-
 import PolicyRoleBuilder from "@/incident_role/PolicyRoleBuilder.vue"
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
 
@@ -48,13 +46,9 @@ export default {
     SettingsBreadcrumbs,
   },
 
-  computed: {
-    ...mapFields("route", ["query"]),
-  },
-
   created() {
-    this.breadCrumbProject = [{ name: this.query.project }]
-    this.project = { name: this.query.project }
+    this.breadCrumbProject = [{ name: this.$route.query.project }]
+    this.project = { name: this.$route.query.project }
     this.$watch(
       (vm) => [vm.breadCrumbProject],
       () => {

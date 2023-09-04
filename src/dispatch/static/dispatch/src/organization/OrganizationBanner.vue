@@ -11,8 +11,6 @@
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
-
 import OrganizationApi from "@/organization/api"
 import SearchUtils from "@/search/utils"
 
@@ -21,10 +19,6 @@ export default {
     return {
       currentOrganization: {},
     }
-  },
-
-  computed: {
-    ...mapFields("route", ["params"]),
   },
 
   created() {

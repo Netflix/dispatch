@@ -148,7 +148,6 @@ export default {
       "selected.project",
       "selected.id",
     ]),
-    ...mapFields("route", ["query"]),
   },
 
   methods: {
@@ -205,33 +204,33 @@ export default {
   },
 
   created() {
-    if (this.query.project) {
-      this.project = { name: this.query.project }
+    if (this.$route.query.project) {
+      this.project = { name: this.$route.query.project }
     }
 
-    if (this.query.incident_type) {
-      this.incident_type = { name: this.query.incident_type }
+    if (this.$route.query.incident_type) {
+      this.incident_type = { name: this.$route.query.incident_type }
     }
 
-    if (this.query.incident_priority) {
-      this.incident_priority = { name: this.query.incident_priority }
+    if (this.$route.query.incident_priority) {
+      this.incident_priority = { name: this.$route.query.incident_priority }
     }
 
-    if (this.query.title) {
-      this.title = this.query.title
+    if (this.$route.query.title) {
+      this.title = this.$route.query.title
     }
 
-    if (this.query.description) {
-      this.description = this.query.description
+    if (this.$route.query.description) {
+      this.description = this.$route.query.description
     }
 
-    if (this.query.tag) {
-      if (Array.isArray(this.query.tag)) {
-        this.tags = this.query.tag.map(function (t) {
+    if (this.$route.query.tag) {
+      if (Array.isArray(this.$route.query.tag)) {
+        this.tags = this.$route.query.tag.map(function (t) {
           return { name: t }
         })
       } else {
-        this.tags = [{ name: this.query.tag }]
+        this.tags = [{ name: this.$route.query.tag }]
       }
     }
 

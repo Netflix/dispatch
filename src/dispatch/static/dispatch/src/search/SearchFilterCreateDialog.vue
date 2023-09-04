@@ -308,7 +308,6 @@ export default {
       "loading",
       "dialogs.showCreate",
     ]),
-    ...mapFields("route", ["query"]),
     expression_str: {
       get: function () {
         return JSON.stringify(this.expression, null, "\t") || "[]"
@@ -361,8 +360,8 @@ export default {
     },
   },
   created() {
-    if (this.query.project) {
-      this.project = { name: this.query.project }
+    if (this.$route.query.project) {
+      this.project = { name: this.$route.query.project }
     }
     this.getPreviewData()
     this.$watch(

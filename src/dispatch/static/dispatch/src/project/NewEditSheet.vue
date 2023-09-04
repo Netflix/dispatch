@@ -170,7 +170,6 @@ export default {
       "selected.owner_email",
       "dialogs.showCreateEdit",
     ]),
-    ...mapFields("route", ["params"]),
   },
 
   methods: {
@@ -178,7 +177,10 @@ export default {
   },
 
   created() {
-    this.organization = { name: this.params.organization, slug: this.params.organization }
+    this.organization = {
+      name: this.$route.params.organization,
+      slug: this.$route.params.organization,
+    }
   },
 }
 </script>

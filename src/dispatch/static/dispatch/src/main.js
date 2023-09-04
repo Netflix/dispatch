@@ -6,14 +6,11 @@ import store from "./store"
 
 import "roboto-fontface/css/roboto/roboto-fontface.css"
 import "font-awesome/css/font-awesome.css"
-// import { sync } from "vuex-router-sync"
 
 import * as Sentry from "@sentry/vue"
 
 // import VueClipboard from "vue-clipboard2"
 // import VueMarkdown from "vue-markdown"
-
-// sync(store, router, { moduleName: "route" })
 
 // Vue.use(VueClipboard)
 // Vue.use(VueMarkdown)

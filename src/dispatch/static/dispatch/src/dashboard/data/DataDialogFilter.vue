@@ -23,7 +23,6 @@
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
 import { sum } from "lodash"
 
 import DataSourceApi from "@/data/source/api.js"
@@ -63,7 +62,6 @@ export default {
     numFilters: function () {
       return sum([this.filters.project.length])
     },
-    ...mapFields("route", ["query"]),
   },
 
   methods: {
@@ -93,7 +91,7 @@ export default {
   },
 
   created() {
-    this.filters = { ...this.filters, ...RouterUtils.deserializeFilters(this.query) }
+    this.filters = { ...this.filters, ...RouterUtils.deserializeFilters(this.$route.query) }
     this.fetchData()
   },
 }

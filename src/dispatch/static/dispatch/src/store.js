@@ -1,5 +1,4 @@
 import { createStore } from "vuex"
-import { getField } from "vuex-map-fields"
 
 import app from "@/app/store"
 import auth from "@/auth/store"
@@ -73,12 +72,6 @@ export default createStore({
     project,
     query,
     reference,
-    route: {
-      namespaced: true,
-      getters: {
-        getField,
-      },
-    },
     runbook,
     search,
     service,

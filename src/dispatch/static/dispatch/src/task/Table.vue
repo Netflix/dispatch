@@ -188,7 +188,6 @@ export default {
       "table.rows.total",
       "table.rows.selected",
     ]),
-    ...mapFields("route", ["query"]),
     ...mapFields("auth", ["currentUser.projects"]),
 
     defaultUserProjects: {
@@ -210,7 +209,7 @@ export default {
   created() {
     this.filters = {
       ...this.filters,
-      ...RouterUtils.deserializeFilters(this.query),
+      ...RouterUtils.deserializeFilters(this.$route.query),
       project: this.defaultUserProjects,
     }
 

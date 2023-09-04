@@ -42,7 +42,6 @@
 
 <script>
 import { sum } from "lodash"
-import { mapFields } from "vuex-map-fields"
 
 import startOfMonth from "date-fns/startOfMonth"
 import subMonths from "date-fns/subMonths"
@@ -119,7 +118,6 @@ export default {
         1,
       ])
     },
-    ...mapFields("route", ["query"]),
   },
 
   methods: {
@@ -175,7 +173,7 @@ export default {
           end: today().toISOString().slice(0, -1),
         },
       },
-      ...RouterUtils.deserializeFilters(this.query), // Order matters as values will overwrite
+      ...RouterUtils.deserializeFilters(this.$route.query), // Order matters as values will overwrite
     }
     this.fetchData()
   },

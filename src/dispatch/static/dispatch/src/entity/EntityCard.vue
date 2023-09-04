@@ -107,7 +107,6 @@ export default {
   },
   computed: {
     ...mapFields("entity", ["dialogs.showCaseView"]),
-    ...mapFields("route", ["query"]),
     badgeCount() {
       return this.count >= 100 ? "x99+" : `x${this.count}`
     },

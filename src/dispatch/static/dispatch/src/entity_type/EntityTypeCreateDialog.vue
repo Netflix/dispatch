@@ -146,7 +146,6 @@
 
 <script>
 import { mapMutations } from "vuex"
-import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import PlaygroundTextBox from "@/entity_type/playground/PlaygroundTextBox.vue"
@@ -229,9 +228,6 @@ export default {
     PlaygroundTextBox,
     ValidationObserver,
     ValidationProvider,
-  },
-  computed: {
-    ...mapFields("route", ["query"]),
   },
   methods: {
     ...mapMutations("playground", ["updatePattern", "updateJsonPath"]),
