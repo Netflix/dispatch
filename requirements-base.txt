@@ -36,7 +36,7 @@ bcrypt==4.0.1
     # via -r requirements-base.in
 blis==0.7.10
     # via thinc
-blockkit==1.6.0
+blockkit==1.5.2
     # via -r requirements-base.in
 cachetools==5.3.1
     # via
@@ -361,7 +361,7 @@ rsa==4.9
     #   python-jose
 schedule==1.2.0
     # via -r requirements-base.in
-schemathesis==3.19.6
+schemathesis==3.19.7
     # via -r requirements-base.in
 scipy==1.11.2
     # via statsmodels
