@@ -164,9 +164,10 @@ extend("required", {
 extend("lowOnlyForStable", {
   params: ["status", "project"],
   validate(value, { status, project }) {
-    console.log(`This is the project ${JSON.stringify(project)} and status ${status}`)
-    if (status == "Stable" && value.name != "Low") {
-      console.log(`Now the status is ${status}`)
+    if (!project) return true
+    const restrictStableTo = project.restrict_stable_to
+    if (!restrictStableTo) return true
+    if (status == "Stable" && value.name != restrictStableTo.name) {
       return false
     }
     return true

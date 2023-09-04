@@ -3,6 +3,7 @@ import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import IncidentPriorityApi from "@/incident/priority/api"
+import ProjectApi from "@/project/api"
 
 const getDefaultSelectedState = () => {
   return {
@@ -46,10 +47,33 @@ const state = {
     },
     loading: false,
   },
+  restrictStableTo: null,
 }
 
 const getters = {
   getField,
+}
+
+// debounce setting changes
+var oldRestrictStableTo = undefined
+
+function commitRestrictToStable(commit, value) {
+  ProjectApi.getAll({ q: state.table.options.filters.project[0].name }).then((response) => {
+    const project = response.data.items[0]
+    if (project) {
+      project.restrict_stable_to_id = value
+      ProjectApi.update(project.id, project).then(() => {
+        commit(
+          "notification_backend/addBeNotification",
+          {
+            text: `Setting updated.`,
+            type: "success",
+          },
+          { root: true }
+        )
+      })
+    }
+  })
 }
 
 const actions = {
@@ -61,6 +85,12 @@ const actions = {
     )
     return IncidentPriorityApi.getAll(params)
       .then((response) => {
+        if (response.data.items[0]) {
+          ProjectApi.get(response.data.items[0].project.id).then((response) => {
+            state.restrictStableTo = response.data.restrict_stable_to
+            oldRestrictStableTo = state.restrictStableTo
+          })
+        }
         commit("SET_TABLE_LOADING", false)
         commit("SET_TABLE_ROWS", response.data)
       })
@@ -131,6 +161,21 @@ const actions = {
         { root: true }
       )
     })
+  },
+  updateRestrictStable({ commit }, value) {
+    if (!value) state.restrictStableTo = null
+    if (oldRestrictStableTo === undefined) {
+      oldRestrictStableTo = state.restrictStableTo
+      return
+    }
+    if (oldRestrictStableTo?.name !== state.restrictStableTo?.name) {
+      oldRestrictStableTo = state.restrictStableTo
+      if (value) {
+        commitRestrictToStable(commit, state.restrictStableTo.id)
+      } else {
+        commitRestrictToStable(commit, null)
+      }
+    }
   },
 }
 

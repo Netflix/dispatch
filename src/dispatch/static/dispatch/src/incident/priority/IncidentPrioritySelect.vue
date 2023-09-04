@@ -62,8 +62,11 @@ export default {
       },
     },
     show_error() {
-      if (this.status == "Stable" && this.value.name != "Low") {
-        return "Priority must be Low for Stable incidents"
+      if (!this.project) return null
+      const restrictStableTo = this.project.restrict_stable_to
+      if (!restrictStableTo) return null
+      if (this.status == "Stable" && this.value.name != restrictStableTo.name) {
+        return `Priority must be ${restrictStableTo.name} for Stable incidents`
       }
       return null
     },

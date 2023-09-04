@@ -18,6 +18,9 @@
       </v-col>
     </v-row>
     <v-row no-gutters>
+      <div class="text-body-1 ml-4 mt-3">Incident priority types</div>
+    </v-row>
+    <v-row no-gutters>
       <v-col>
         <v-card elevation="0">
           <v-card-title>
@@ -68,6 +71,39 @@
         </v-card>
       </v-col>
     </v-row>
+    <v-divider />
+    <v-row no-gutters>
+      <v-col>
+        <div class="text-body-1 ml-4 mt-6">Incident priority settings</div>
+        <v-row align="start" no-gutters>
+          <v-col class="d-flex justify-start">
+            <v-checkbox
+              class="ml-10 mr-5"
+              v-model="restrictStable"
+              label="Restrict Stable status to this priority:"
+              @change="updateRestrictStable"
+            />
+            <v-tooltip max-width="500px" open-delay="50" bottom>
+              <template #activator="{ on }">
+                <v-icon v-on="on"> mdi-information </v-icon>
+              </template>
+              <span>
+                If activated, Dispatch will automatically change Stable incidents to this priority.
+                Also, users will not be permitted to change the priority on Stable incidents.
+              </span>
+            </v-tooltip>
+            <span max-width="500px">
+              <incident-priority-select
+                class="ml-4"
+                max-width="400px"
+                v-model="restrictStableTo"
+                :project="project[0]"
+              />
+            </span>
+          </v-col>
+        </v-row>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -77,6 +113,7 @@ import { mapActions } from "vuex"
 
 import NewEditSheet from "@/incident/priority/NewEditSheet.vue"
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
+import IncidentPrioritySelect from "@/incident/priority/IncidentPrioritySelect.vue"
 
 export default {
   name: "IncidentPriorityTable",
@@ -84,6 +121,7 @@ export default {
   components: {
     NewEditSheet,
     SettingsBreadcrumbs,
+    IncidentPrioritySelect,
   },
   data() {
     return {
@@ -98,6 +136,7 @@ export default {
         { text: "View Order", value: "view_order", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
+      restrictStable: false,
     }
   },
 
@@ -112,6 +151,7 @@ export default {
       "table.loading",
       "table.rows.items",
       "table.rows.total",
+      "restrictStableTo",
     ]),
     ...mapFields("route", ["query", "params"]),
   },
@@ -120,6 +160,7 @@ export default {
     this.project = [{ name: this.query.project }]
 
     this.getAll()
+    this.restrictStable = this.restrictStableTo != null
 
     this.$watch(
       (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending, vm.project],
@@ -127,12 +168,26 @@ export default {
         this.page = 1
         this.$router.push({ query: { project: this.project[0].name } })
         this.getAll()
+        this.restrictStable = this.restrictStableTo != null
+      }
+    )
+
+    this.$watch(
+      (vm) => [vm.restrictStableTo],
+      () => {
+        this.restrictStable = this.restrictStableTo != null
+        this.updateRestrictStable(this.restrictStable)
       }
     )
   },
 
   methods: {
-    ...mapActions("incident_priority", ["getAll", "createEditShow", "removeShow"]),
+    ...mapActions("incident_priority", [
+      "getAll",
+      "createEditShow",
+      "removeShow",
+      "updateRestrictStable",
+    ]),
   },
 }
 </script>
