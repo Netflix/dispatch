@@ -1,7 +1,9 @@
 <template>
   <v-dialog v-model="dialog" persistent max-width="1000px">
     <template #activator="{ on }">
-      <v-btn class="mr-2" icon v-on="on"> <v-icon>mdi-card-search-outline</v-icon> </v-btn>
+      <v-btn class="mr-2" icon variant="text" v-on="on">
+        <v-icon>mdi-card-search-outline</v-icon>
+      </v-btn>
     </template>
     <v-card>
       <v-card-title>

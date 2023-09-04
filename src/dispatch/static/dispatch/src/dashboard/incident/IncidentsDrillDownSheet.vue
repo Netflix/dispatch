@@ -4,7 +4,7 @@
       <v-list-item lines="two">
         <v-list-item-subtitle>Details</v-list-item-subtitle>
 
-        <v-btn icon color="secondary" @click="hideSheet()">
+        <v-btn icon variant="text" color="secondary" @click="hideSheet()">
           <v-icon>close</v-icon>
         </v-btn>
       </v-list-item>

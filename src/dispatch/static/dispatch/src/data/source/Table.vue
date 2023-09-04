@@ -74,7 +74,7 @@
             <template #item.data-table-actions="{ item }">
               <v-menu location="bottom left">
                 <template #activator="{ on }">
-                  <v-btn icon v-on="on">
+                  <v-btn icon variant="text" v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>
                 </template>

@@ -6,7 +6,7 @@
           <v-toolbar flat>
             <v-toolbar-title>Documentation</v-toolbar-title>
             <v-spacer />
-            <v-btn icon color="info" :loading="loading" @click="save()">
+            <v-btn icon variant="text" color="info" :loading="loading" @click="save()">
               <v-icon>save</v-icon>
             </v-btn>
             <template #extension>

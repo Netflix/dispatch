@@ -16,6 +16,7 @@
 
           <v-btn
             icon
+            variant="text"
             color="info"
             :loading="loading"
             :disabled="invalid || !validated"
@@ -23,7 +24,7 @@
           >
             <v-icon>save</v-icon>
           </v-btn>
-          <v-btn icon color="secondary" @click="closeCreateEdit()">
+          <v-btn icon variant="text" color="secondary" @click="closeCreateEdit()">
             <v-icon>close</v-icon>
           </v-btn>
         </v-list-item>

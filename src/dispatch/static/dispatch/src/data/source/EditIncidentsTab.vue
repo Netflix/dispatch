@@ -11,7 +11,7 @@
         </v-list-item-subtitle>
 
         <v-list-item-action>
-          <v-btn icon @click="remove(idx)">
+          <v-btn icon variant="text" @click="remove(idx)">
             <v-icon> mdi-delete </v-icon>
           </v-btn>
         </v-list-item-action>

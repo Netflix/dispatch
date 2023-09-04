@@ -16,7 +16,7 @@
       no-filter
     >
       <reference slot="append-outer">
-        <v-btn icon @click="createEditShow({})">
+        <v-btn icon variant="text" @click="createEditShow({})">
           <v-icon>add</v-icon>
         </v-btn>
         <new-edit-sheet @new-document-created="addItem($event)" />

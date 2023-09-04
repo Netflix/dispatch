@@ -47,12 +47,18 @@
                   v-if="commander.individual.phone"
                   :href="'tel:' + commander.individual.phone"
                   icon
+                  variant="text"
                   class="mr-1"
                 >
                   <v-icon> mdi-phone </v-icon>
                 </v-btn>
                 <span class="mr-1" />
-                <v-btn :href="'mailto:' + commander.individual.email" icon class="mr-1">
+                <v-btn
+                  :href="'mailto:' + commander.individual.email"
+                  icon
+                  variant="text"
+                  class="mr-1"
+                >
                   <v-icon> mdi-email </v-icon>
                 </v-btn>
               </v-row>

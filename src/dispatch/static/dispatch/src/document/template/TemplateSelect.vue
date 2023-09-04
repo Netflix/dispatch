@@ -15,7 +15,7 @@
       no-filter
     >
       <template #append-outer>
-        <v-btn icon @click="createEditShow({ resource_type: resourceType })">
+        <v-btn icon variant="text" @click="createEditShow({ resource_type: resourceType })">
           <v-icon>add</v-icon>
         </v-btn>
         <new-edit-sheet @new-document-created="addItem($event)" />

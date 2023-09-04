@@ -6,7 +6,9 @@
           Report Incident
           <v-tooltip location="bottom">
             <template #activator="{ on }">
-              <v-btn icon v-on="on" @click="copyView"><v-icon>mdi-content-copy</v-icon></v-btn>
+              <v-btn icon variant="text" v-on="on" @click="copyView">
+                <v-icon>mdi-content-copy</v-icon>
+              </v-btn>
             </template>
             <span>Copy current fields as template.</span>
           </v-tooltip>

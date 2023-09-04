@@ -1,5 +1,6 @@
 module.exports = {
   root: true,
+  plugins: ["eslint-plugin-local-rules"],
   extends: [
     "eslint:recommended",
     "plugin:prettier/recommended",
@@ -22,6 +23,8 @@ module.exports = {
     },
   ],
   rules: {
+    "local-rules/icon-button-variant": "error",
+
     // Conflicts with prettier
     "vue/max-attributes-per-line": "off",
     "vue/singleline-html-element-content-newline": "off",

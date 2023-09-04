@@ -6,7 +6,7 @@
           {{ label }}
           <v-tooltip location="bottom">
             <template #activator="{ on, attrs }">
-              <v-btn icon color="info" v-bind="attrs" v-on="on" @click="add()">
+              <v-btn icon variant="text" color="info" v-bind="attrs" v-on="on" @click="add()">
                 <v-icon> mdi-playlist-plus </v-icon>
               </v-btn>
             </template>
@@ -16,7 +16,15 @@
         <v-col cols="1" align="end">
           <v-tooltip location="bottom">
             <template #activator="{ on, attrs }">
-              <v-btn icon color="info" v-bind="attrs" v-on="on" :loading="loading" @click="save()">
+              <v-btn
+                icon
+                variant="text"
+                color="info"
+                v-bind="attrs"
+                v-on="on"
+                :loading="loading"
+                @click="save()"
+              >
                 <v-icon> save </v-icon>
               </v-btn>
             </template>

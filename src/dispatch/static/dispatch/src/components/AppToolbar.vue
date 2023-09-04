@@ -23,7 +23,7 @@
     />
     <v-spacer />
     <v-toolbar-items>
-      <v-btn icon @click="toggleDarkTheme">
+      <v-btn icon variant="text" @click="toggleDarkTheme">
         <v-icon
           :icon="
             $vuetify.theme.current.dark ? 'mdi-white-balance-sunny' : 'mdi-moon-waxing-crescent'
@@ -33,7 +33,7 @@
           Dark Mode {{ $vuetify.theme.current.dark ? "Off" : "On" }}
         </v-tooltip>
       </v-btn>
-      <v-btn icon>
+      <v-btn icon variant="text">
         <v-icon>mdi-help-circle-outline</v-icon>
         <v-menu activator="parent">
           <v-list density="compact">

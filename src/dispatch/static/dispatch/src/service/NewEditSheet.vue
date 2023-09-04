@@ -7,10 +7,10 @@
           <v-list-item-title v-else class="text-h6"> New </v-list-item-title>
           <v-list-item-subtitle>Service</v-list-item-subtitle>
 
-          <v-btn icon color="info" :disabled="invalid || !validated" @click="save()">
+          <v-btn icon variant="text" color="info" :disabled="invalid || !validated" @click="save()">
             <v-icon>save</v-icon>
           </v-btn>
-          <v-btn icon color="secondary" @click="closeCreateEdit()">
+          <v-btn icon variant="text" color="secondary" @click="closeCreateEdit()">
             <v-icon>close</v-icon>
           </v-btn>
         </v-list-item>

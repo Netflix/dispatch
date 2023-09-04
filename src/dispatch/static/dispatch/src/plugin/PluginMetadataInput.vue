@@ -5,7 +5,7 @@
       <v-spacer />
       <v-tooltip location="bottom">
         <template #activator="{ on }">
-          <v-btn size="small" icon @click="addPlugin()" v-on="on">
+          <v-btn size="small" icon variant="text" @click="addPlugin()" v-on="on">
             <v-icon>add</v-icon>
           </v-btn>
         </template>
@@ -17,7 +17,7 @@
         <v-col cols="12" sm="1">
           <v-tooltip location="bottom">
             <template #activator="{ on }">
-              <v-btn size="small" icon @click="removePlugin(plugin_idx)" v-on="on"
+              <v-btn size="small" icon variant="text" @click="removePlugin(plugin_idx)" v-on="on"
                 ><v-icon>remove</v-icon></v-btn
               >
             </template>
@@ -36,7 +36,7 @@
         <v-col cols="12" sm="1">
           <v-tooltip location="bottom">
             <template #activator="{ on }">
-              <v-btn size="small" icon @click="addItem(plugin_idx)" v-on="on"
+              <v-btn size="small" icon variant="text" @click="addItem(plugin_idx)" v-on="on"
                 ><v-icon>add</v-icon></v-btn
               >
             </template>
@@ -54,7 +54,12 @@
         <v-col cols="12" sm="1">
           <v-tooltip location="bottom">
             <template #activator="{ on }">
-              <v-btn size="small" icon @click="removeItem(plugin_idx, meta_idx)" v-on="on"
+              <v-btn
+                size="small"
+                icon
+                variant="text"
+                @click="removeItem(plugin_idx, meta_idx)"
+                v-on="on"
                 ><v-icon>remove</v-icon></v-btn
               >
             </template>

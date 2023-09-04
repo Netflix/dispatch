@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="showCreateEdit" persistent max-width="800px">
     <template #activator="{ on }">
-      <v-btn icon v-on="on">
+      <v-btn icon variant="text" v-on="on">
         <v-icon>add</v-icon>
       </v-btn>
     </template>

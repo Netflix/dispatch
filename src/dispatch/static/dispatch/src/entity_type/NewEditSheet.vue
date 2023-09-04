@@ -9,6 +9,7 @@
 
           <v-btn
             icon
+            variant="text"
             color="info"
             :loading="loading"
             :disabled="invalid || !validated"
@@ -16,7 +17,7 @@
           >
             <v-icon>save</v-icon>
           </v-btn>
-          <v-btn icon color="secondary" @click="closeCreateEdit()">
+          <v-btn icon variant="text" color="secondary" @click="closeCreateEdit()">
             <v-icon>close</v-icon>
           </v-btn>
         </v-list-item>
@@ -102,6 +103,7 @@
             <template #append-outer>
               <v-btn
                 icon
+                variant="text"
                 href="https://cheatography.com/davechild/cheat-sheets/regular-expressions/"
                 target="_blank"
               >
@@ -118,6 +120,7 @@
             <template #append-outer>
               <v-btn
                 icon
+                variant="text"
                 href="https://github.com/json-path/JsonPath#path-examples"
                 target="_blank"
               >
@@ -137,7 +140,7 @@
                     <v-list-item-title>{{ instance.id }}</v-list-item-title>
 
                     <v-list-item-action>
-                      <v-btn icon @click="updateEditorValue(instance.raw)">
+                      <v-btn icon variant="text" @click="updateEditorValue(instance.raw)">
                         <v-icon>mdi-arrow-right</v-icon>
                       </v-btn>
                     </v-list-item-action>

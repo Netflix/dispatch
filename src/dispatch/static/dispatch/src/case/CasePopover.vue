@@ -22,6 +22,7 @@
             <v-list-item-action>
               <v-btn
                 icon
+                variant="text"
                 :to="{
                   name: 'CaseTableEdit',
                   params: { name: value.name },

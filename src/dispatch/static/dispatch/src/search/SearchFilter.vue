@@ -20,7 +20,7 @@
             <v-list-item-subtitle>{{ filter.type }}</v-list-item-subtitle>
 
             <v-list-item-action>
-              <v-btn icon @click="menu = false">
+              <v-btn icon variant="text" @click="menu = false">
                 <v-icon>mdi-close-circle</v-icon>
               </v-btn>
             </v-list-item-action>

@@ -26,7 +26,7 @@
       </v-tooltip>
     </template>
     <template #item.data-table-actions="{ item }">
-      <v-btn icon @click="showRun({ type: 'signal', data: item })">
+      <v-btn icon variant="text" @click="showRun({ type: 'signal', data: item })">
         <v-icon>mdi-play-circle-outline</v-icon>
       </v-btn>
       <workflow-run-modal />

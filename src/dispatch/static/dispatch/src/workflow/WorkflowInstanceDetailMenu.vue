@@ -1,7 +1,7 @@
 <template>
   <v-menu v-model="menu" location="bottom right" transition="scale-transition" origin="top right">
     <template #activator="{ on }">
-      <v-btn icon size="small" v-on="on"><v-icon>mdi-chevron-down</v-icon></v-btn>
+      <v-btn icon variant="text" size="small" v-on="on"><v-icon>mdi-chevron-down</v-icon></v-btn>
     </template>
     <v-card width="400">
       <v-list dark>
@@ -9,7 +9,7 @@
           <v-list-item-title>Workflow Details</v-list-item-title>
 
           <v-list-item-action>
-            <v-btn icon @click="menu = false">
+            <v-btn icon variant="text" @click="menu = false">
               <v-icon>mdi-close-circle</v-icon>
             </v-btn>
           </v-list-item-action>

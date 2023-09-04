@@ -5,7 +5,7 @@
       <v-spacer />
       <v-tooltip location="bottom">
         <template #activator="{ on }">
-          <v-btn size="small" icon @click="addRole()" v-on="on">
+          <v-btn size="small" icon variant="text" @click="addRole()" v-on="on">
             <v-icon>add</v-icon>
           </v-btn>
         </template>
@@ -17,7 +17,7 @@
         <v-col cols="12" sm="1">
           <v-tooltip location="bottom">
             <template #activator="{ on }">
-              <v-btn size="small" icon @click="removeRole(idx)" v-on="on"
+              <v-btn size="small" icon variant="text" @click="removeRole(idx)" v-on="on"
                 ><v-icon>remove</v-icon></v-btn
               >
             </template>

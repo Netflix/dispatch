@@ -69,14 +69,20 @@
               </v-chip>
             </template>
             <template #item.external_url="{ item }">
-              <v-btn v-if="item.external_url" :href="item.external_url" target="_blank" icon>
+              <v-btn
+                v-if="item.external_url"
+                :href="item.external_url"
+                target="_blank"
+                icon
+                variant="text"
+              >
                 <v-icon>mdi-open-in-new</v-icon>
               </v-btn>
             </template>
             <template #item.data-table-actions="{ item }">
               <v-menu location="bottom left">
                 <template #activator="{ on }">
-                  <v-btn icon v-on="on">
+                  <v-btn icon variant="text" v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>
                 </template>

@@ -14,7 +14,7 @@
     no-filter
   >
     <template #append-outer>
-      <v-btn icon @click="createEditShow({})">
+      <v-btn icon variant="text" @click="createEditShow({})">
         <v-icon>add</v-icon>
       </v-btn>
       <new-edit-sheet @new-service-created="addItem($event)" />

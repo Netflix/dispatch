@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="dialog" max-width="1000px" persistent :key="componentKey">
     <template #activator="{ on, attrs }">
-      <v-btn v-bind="attrs" v-on="on" icon><v-icon>add</v-icon></v-btn>
+      <v-btn v-bind="attrs" v-on="on" icon variant="text"><v-icon>add</v-icon></v-btn>
     </template>
     <v-card>
       <v-card-title>Create Entity Type </v-card-title>
@@ -32,6 +32,7 @@
                   <template #append-outer>
                     <v-btn
                       icon
+                      variant="text"
                       href="https://cheatography.com/davechild/cheat-sheets/regular-expressions/"
                       target="_blank"
                     >
@@ -48,6 +49,7 @@
                   <template #append-outer>
                     <v-btn
                       icon
+                      variant="text"
                       href="https://github.com/json-path/JsonPath#path-examples"
                       target="_blank"
                     >
@@ -67,7 +69,7 @@
                           <v-list-item-title>{{ instance.id }}</v-list-item-title>
 
                           <v-list-item-action>
-                            <v-btn icon @click="updateEditorValue(instance.raw)">
+                            <v-btn icon variant="text" @click="updateEditorValue(instance.raw)">
                               <v-icon>mdi-arrow-right</v-icon>
                             </v-btn>
                           </v-list-item-action>
