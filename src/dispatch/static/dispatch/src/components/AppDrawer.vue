@@ -1,4 +1,4 @@
-<style>
+<style scoped>
 .v-list-item--active::before {
   background-color: #e50914;
   display: block;
@@ -14,51 +14,39 @@
 }
 </style>
 <template>
-  <v-navigation-drawer
-    app
-    permanent
-    :width="mini ? 220 : 440"
-    clipped
-    class="background1"
-    v-if="showChildPane"
-  >
-    <v-layout fill-height no-gutters>
-      <v-navigation-drawer width="220" permanent :rail="mini" rail-width="80px">
-        <v-list density="compact" flat nav>
-          <span v-for="(route, index) in routes" :key="index" :to="route.path">
-            <v-list-item :to="{ name: route.name }">
-              <v-list-item-action>
-                <v-icon>{{ route.meta.icon }}</v-icon>
-              </v-list-item-action>
-
-              <v-list-item-title>{{ route.meta.title }}</v-list-item-title>
-            </v-list-item>
-          </span>
-          <v-list-item v-if="mini" @click.stop="toggleMiniNav()">
-            <v-list-item-action>
-              <v-icon>mdi-chevron-right</v-icon>
-            </v-list-item-action>
-
-            <v-list-item-title>Minimize</v-list-item-title>
-          </v-list-item>
-          <v-list-item v-else @click.stop="toggleMiniNav()">
-            <v-list-item-action>
-              <v-icon>mdi-chevron-left</v-icon>
-            </v-list-item-action>
-
-            <v-list-item-title>Minimize</v-list-item-title>
-          </v-list-item>
+  <v-navigation-drawer permanent :width="mini ? 220 : 440" class="background1" v-if="showChildPane">
+    <v-layout class="h-100">
+      <v-navigation-drawer width="220" permanent :rail="mini">
+        <v-list density="compact" nav>
+          <v-list-item
+            v-for="(route, index) in routes"
+            :key="index"
+            :to="{ name: route.name }"
+            :prepend-icon="route.meta.icon"
+            :title="route.meta.title"
+          />
+          <v-list-item
+            @click.stop="toggleMiniNav()"
+            :prepend-icon="mini ? 'mdi-chevron-right' : 'mdi-chevron-left'"
+            title="Minimize"
+          />
         </v-list>
         <template #append>
-          <div class="pa-3">
-            <v-btn v-if="mini" color="error" block :to="{ name: 'report' }">
-              <v-icon> error_outline </v-icon>
-            </v-btn>
-            <v-btn v-else color="error" block :to="{ name: 'report' }">
-              <v-icon start> error_outline </v-icon>
-              Report Incident
-            </v-btn>
-          </div>
+          <v-list-item
+            nav
+            class="ma-2"
+            rounded
+            variant="flat"
+            base-color="error"
+            :to="{ name: 'report' }"
+          >
+            <template #prepend>
+              <v-icon>mdi-alert-circle-outline</v-icon>
+            </template>
+            <v-list-item-title class="text-uppercase text-body-2">
+              Report incident
+            </v-list-item-title>
+          </v-list-item>
         </template>
       </v-navigation-drawer>
       <v-navigation-drawer width="220">
@@ -74,9 +62,9 @@
             />
           </v-list-item>
           <span v-for="(subRoutes, group, idx) in children" :key="group">
-            <v-subheader>
-              {{ group | capitalize }}
-            </v-subheader>
+            <v-list-subheader class="text-capitalize">
+              {{ group }}
+            </v-list-subheader>
             <v-list-item
               v-for="(route, subIndex) in subRoutes"
               :key="subIndex"
@@ -90,39 +78,46 @@
       </v-navigation-drawer>
     </v-layout>
   </v-navigation-drawer>
-  <v-navigation-drawer app permanent width="220" :rail="mini" clipped v-else>
+  <v-navigation-drawer permanent width="220" :rail="mini" v-else>
     <v-list density="compact" nav>
-      <span v-for="(route, index) in routes" :key="index">
-        <v-list-item :to="{ name: route.name }">
-          <v-list-item-action>
-            <v-icon>{{ route.meta.icon }}</v-icon>
-          </v-list-item-action>
-
-          <v-list-item-title>{{ route.meta.title }}</v-list-item-title>
-        </v-list-item>
-      </span>
-      <v-list-item v-if="mini" @click.stop="toggleMiniNav()">
-        <v-list-item-action>
-          <v-icon>mdi-chevron-right</v-icon>
-        </v-list-item-action>
-
-        <v-list-item-title>Minimize</v-list-item-title>
+      <v-list-item
+        v-for="(route, index) in routes"
+        :key="index"
+        :to="{ name: route.name }"
+        :prepend-icon="route.meta.icon"
+        :title="route.meta.title"
+      >
+        <v-tooltip v-if="mini" activator="parent" location="right" :text="route.meta.title" />
       </v-list-item>
-      <v-list-item v-else @click.stop="toggleMiniNav()">
-        <v-list-item-action>
-          <v-icon>mdi-chevron-left</v-icon>
-        </v-list-item-action>
-
-        <v-list-item-title>Minimize</v-list-item-title>
+      <v-list-item
+        @click.stop="toggleMiniNav()"
+        :prepend-icon="mini ? 'mdi-chevron-right' : 'mdi-chevron-left'"
+        title="Minimize"
+      >
+        <v-tooltip v-if="mini" activator="parent" location="right" text="Minimize" />
       </v-list-item>
     </v-list>
     <template #append>
-      <div class="pa-3">
-        <v-btn color="error" block :to="{ name: 'report' }">
-          <v-icon start> error_outline </v-icon>
-          <span v-if="!mini">Report Incident</span>
-        </v-btn>
-      </div>
+      <v-list-item
+        nav
+        class="ma-2"
+        rounded
+        variant="flat"
+        base-color="error"
+        :to="{ name: 'report' }"
+      >
+        <template #prepend>
+          <v-icon>mdi-alert-circle-outline</v-icon>
+        </template>
+        <v-list-item-title class="text-uppercase text-body-2">Report incident</v-list-item-title>
+        <v-tooltip
+          v-if="mini"
+          activator="parent"
+          location="right"
+          content-class="bg-error"
+          text="Report incident"
+        />
+      </v-list-item>
     </template>
   </v-navigation-drawer>
 </template>

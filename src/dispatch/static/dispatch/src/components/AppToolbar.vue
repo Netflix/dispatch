@@ -1,153 +1,136 @@
 <template>
-  <v-app-bar
-    clipped-left
-    clipped-right
-    app
-    flat
-    style="border-bottom: 1px solid #d2d2d2 !important"
-    color="background0"
-  >
+  <v-app-bar flat style="border-bottom: 1px solid #d2d2d2 !important" color="background0">
+    <template #prepend>
+      <router-link :to="{ name: 'IncidentOverview' }" style="text-decoration: none">
+        <span class="button font-weight-bold">D I S P A T C H</span>
+      </router-link>
+    </template>
     <organization-create-edit-dialog />
     <!--<v-app-bar-nav-icon @click="handleDrawerToggle" />-->
-    <router-link :to="{ name: 'IncidentOverview' }" style="text-decoration: none">
-      <span class="button font-weight-bold">D I S P A T C H</span>
-    </router-link>
+
     <v-spacer />
     <v-text-field
       v-model="queryString"
       hide-details
-      prepend-inner-icon="search"
+      prepend-inner-icon="mdi-magnify"
       label="Search"
       clearable
-      variant="solo-inverted"
+      variant="solo"
+      single-line
       flat
+      bg-color="background2"
       @keyup.enter="performSearch()"
     />
     <v-spacer />
     <v-toolbar-items>
-      <v-tooltip v-if="!$vuetify.theme.dark" location="bottom">
-        <template #activator="{ on }">
-          <v-btn v-on="on" size="small" icon @click="toggleDarkTheme">
-            <v-icon class="mr-1"> mdi-moon-waxing-crescent </v-icon>
-          </v-btn>
-        </template>
-        <span>Dark Mode On</span>
-      </v-tooltip>
-      <v-tooltip v-else location="bottom">
-        <template #activator="{ on }">
-          <v-btn v-on="on" size="small" icon @click="toggleDarkTheme">
-            <v-icon>mdi-white-balance-sunny</v-icon>
-          </v-btn>
-        </template>
-        <span>Dark Mode Off</span>
-      </v-tooltip>
-      <v-menu offset-y>
-        <template #activator="{ on, attrs }">
-          <v-btn icon v-bind="attrs" v-on="on">
-            <v-icon>help_outline</v-icon>
-          </v-btn>
-        </template>
-        <v-list density="compact">
-          <v-list-item href="/api/v1/docs" target="_blank">
-            <v-list-item-title>API Documentation</v-list-item-title>
-            <v-list-item-action>
-              <v-list-item-icon>
-                <v-icon size="small">open_in_new</v-icon>
-              </v-list-item-icon>
-            </v-list-item-action>
-          </v-list-item>
-          <v-list-item href="https://netflix.github.io/dispatch/" target="_blank">
-            <v-list-item-title>App Documentation</v-list-item-title>
-            <v-list-item-action>
-              <v-list-item-icon>
-                <v-icon size="small">open_in_new</v-icon>
-              </v-list-item-icon>
-            </v-list-item-action>
-          </v-list-item>
-          <v-list-item v-if="currentVersion()" @click="showCommitMessage">
-            <v-list-item-title>
-              Current version: {{ currentVersion() | formatHash }}
-            </v-list-item-title>
-            <v-list-item-action>
-              <v-list-item-icon>
-                <v-icon size="small">read_more</v-icon>
-              </v-list-item-icon>
-            </v-list-item-action>
-          </v-list-item>
-        </v-list>
-      </v-menu>
-      <v-menu offset-y>
-        <template #activator="{ on }">
-          <v-btn icon size="large" variant="text" v-on="on">
-            <v-avatar size="30px" v-if="userAvatarUrl(currentUser())">
-              <v-img :src="userAvatarUrl(currentUser())" />
-            </v-avatar>
-            <v-avatar size="30px" v-else>
-              <v-icon> account_circle </v-icon>
-            </v-avatar>
-          </v-btn>
-        </template>
-        <v-card width="400">
-          <v-list>
+      <v-btn icon @click="toggleDarkTheme">
+        <v-icon
+          :icon="
+            $vuetify.theme.current.dark ? 'mdi-white-balance-sunny' : 'mdi-moon-waxing-crescent'
+          "
+        />
+        <v-tooltip activator="parent" location="bottom">
+          Dark Mode {{ $vuetify.theme.current.dark ? "Off" : "On" }}
+        </v-tooltip>
+      </v-btn>
+      <v-btn icon>
+        <v-icon>mdi-help-circle-outline</v-icon>
+        <v-menu activator="parent">
+          <v-list density="compact">
+            <v-list-item
+              href="/api/v1/docs"
+              target="_blank"
+              title="API Documentation"
+              append-icon="mdi-open-in-new"
+            />
+            <v-list-item
+              href="https://netflix.github.io/dispatch/"
+              target="_blank"
+              title="App Documentation"
+              append-icon="mdi-open-in-new"
+            />
+            <v-list-item
+              v-if="currentVersion()"
+              @click="showCommitMessage"
+              append-icon="mdi-page-next-outline"
+            >
+              <v-list-item-title>
+                Current version: {{ formatHash(currentVersion()) }}
+              </v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </v-btn>
+      <v-btn icon size="large" variant="text">
+        <v-avatar size="30px" v-if="userAvatarUrl(currentUser())">
+          <v-img :src="userAvatarUrl(currentUser())" />
+        </v-avatar>
+        <v-avatar size="30px" v-else>
+          <v-icon>mdi-account-circle</v-icon>
+        </v-avatar>
+        <v-menu activator="parent" width="400">
+          <v-list class="pb-0">
             <v-list-item class="px-2">
-              <v-list-item-avatar v-if="userAvatarUrl(currentUser())">
-                <v-img :src="userAvatarUrl(currentUser())" />
-              </v-list-item-avatar>
-              <v-list-item-avatar v-else>
-                <v-icon size="30px"> account_circle </v-icon>
-              </v-list-item-avatar>
+              <template #prepend>
+                <v-avatar v-if="userAvatarUrl(currentUser())">
+                  <v-img :src="userAvatarUrl(currentUser())" />
+                </v-avatar>
+                <v-avatar v-else>
+                  <v-icon size="30px">mdi-account-circle</v-icon>
+                </v-avatar>
+              </template>
 
               <v-list-item-title class="text-h6">
                 {{ currentUser().name || currentUser().email }}
               </v-list-item-title>
               <v-list-item-subtitle> {{ currentUser().email }} </v-list-item-subtitle>
 
-              <v-list-item-action>
+              <template #append>
                 <v-tooltip location="bottom">
-                  <template #activator="{ on }">
-                    <v-btn icon v-on="on" @click="logout()"><v-icon>logout</v-icon></v-btn>
+                  <template #activator="{ props }">
+                    <v-btn icon="mdi-logout" variant="plain" v-bind="props" @click="logout()" />
                   </template>
                   <span>Logout</span>
                 </v-tooltip>
-              </v-list-item-action>
+              </template>
             </v-list-item>
             <v-divider />
-            <v-subheader>Organizations</v-subheader>
+            <v-list-subheader>Organizations</v-list-subheader>
             <v-list-item v-for="(item, i) in organizations" :key="i">
               <v-list-item-title>{{ item.name }}</v-list-item-title>
               <v-list-item-subtitle>{{ item.description }}</v-list-item-subtitle>
 
-              <v-list-item-action>
+              <template #append>
                 <v-tooltip location="bottom">
-                  <template #activator="{ on }">
-                    <v-btn icon v-on="on" @click="showCreateEditDialog(item)">
-                      <v-icon>mdi-pencil-outline</v-icon>
-                    </v-btn>
+                  <template #activator="{ props }">
+                    <v-btn
+                      icon="mdi-pencil-outline"
+                      variant="text"
+                      v-bind="props"
+                      @click="showCreateEditDialog(item)"
+                    />
                   </template>
                   <span>Edit Organization</span>
                 </v-tooltip>
-              </v-list-item-action>
-              <v-list-item-action>
                 <v-tooltip location="bottom">
-                  <template #activator="{ on }">
-                    <v-btn @click="switchOrganizations(item.slug)" icon v-on="on">
-                      <v-icon>mdi-swap-horizontal</v-icon>
-                    </v-btn>
+                  <template #activator="{ props }">
+                    <v-btn
+                      @click="switchOrganizations(item.slug)"
+                      icon="mdi-swap-horizontal"
+                      variant="text"
+                      v-bind="props"
+                    />
                   </template>
                   <span>Switch Organization</span>
                 </v-tooltip>
-              </v-list-item-action>
+              </template>
+            </v-list-item>
+            <v-list-item @click="showCreateEditDialog()" prepend-icon="mdi-plus">
+              <v-list-item-title>Create a new organization</v-list-item-title>
             </v-list-item>
           </v-list>
-          <v-list-item @click="showCreateEditDialog()">
-            <v-list-item-avatar>
-              <v-icon size="30px">mdi-plus</v-icon>
-            </v-list-item-avatar>
-
-            <v-list-item-title>Create a new organization</v-list-item-title>
-          </v-list-item>
-        </v-card>
-      </v-menu>
+        </v-menu>
+      </v-btn>
     </v-toolbar-items>
   </v-app-bar>
 </template>
@@ -155,6 +138,7 @@
 import { mapActions, mapGetters, mapMutations, mapState } from "vuex"
 
 import Util from "@/util"
+import { formatHash } from "@/filters"
 import OrganizationApi from "@/organization/api"
 import OrganizationCreateEditDialog from "@/organization/CreateEditDialog.vue"
 
@@ -164,6 +148,9 @@ export default {
     organizations: [],
     query: "",
   }),
+  setup() {
+    return { formatHash }
+  },
   components: {
     OrganizationCreateEditDialog,
   },
@@ -191,8 +178,8 @@ export default {
       this.$router.push({ name: "ResultList", query: { q: query } })
     },
     toggleDarkTheme() {
-      this.$vuetify.theme.dark = !this.$vuetify.theme.dark
-      localStorage.setItem("dark_theme", this.$vuetify.theme.dark.toString())
+      this.$vuetify.theme.global.name = this.$vuetify.theme.global.current.dark ? "light" : "dark"
+      localStorage.setItem("dark_theme", this.$vuetify.theme.global.current.dark.toString())
     },
     switchOrganizations(slug) {
       this.$router.push({ params: { organization: slug } }).then(() => {
