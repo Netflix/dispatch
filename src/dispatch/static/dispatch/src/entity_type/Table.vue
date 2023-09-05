@@ -34,12 +34,12 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template v-slot:item.enabled="{ item }">
+            <template #item.enabled="{ item }">
               <v-simple-checkbox v-model="item.enabled" disabled />
             </template>
-            <template v-slot:item.data-table-actions="{ item }">
+            <template #item.data-table-actions="{ item }">
               <v-menu bottom left>
-                <template v-slot:activator="{ on }">
+                <template #activator="{ on }">
                   <v-btn icon v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>

@@ -6,7 +6,7 @@
     min-width="auto"
     offset-y
   >
-    <template v-slot:activator="{ on, attrs }">
+    <template #activator="{ on, attrs }">
       <v-text-field
         v-model="windowRange"
         :label="label"
@@ -15,7 +15,7 @@
         clearable
         readonly
         @click:clear="clearWindowRange()"
-      ></v-text-field>
+      />
     </template>
     <v-card>
       <v-container>
@@ -34,22 +34,22 @@
             </v-list>
           </v-col>
           <v-col>
-            <v-text-field :value="windowStartFormatted" prepend-icon="mdi-calendar"></v-text-field>
+            <v-text-field :value="windowStartFormatted" prepend-icon="mdi-calendar" />
             <v-date-picker
               color="primary"
               no-title
               :value="window.start"
               @input="setWindowStart($event)"
-            ></v-date-picker>
+            />
           </v-col>
           <v-col>
-            <v-text-field v-model="windowEndFormatted" prepend-icon="mdi-calendar"></v-text-field>
+            <v-text-field v-model="windowEndFormatted" prepend-icon="mdi-calendar" />
             <v-date-picker
               color="primary"
               no-title
               :value="window.end"
               @input="setWindowEnd($event)"
-            ></v-date-picker>
+            />
           </v-col>
         </v-row>
       </v-container>

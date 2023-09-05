@@ -8,7 +8,7 @@
     return-object
     :loading="loading"
   >
-    <template v-slot:item="data">
+    <template #item="data">
       <v-list-item-content>
         <v-list-item-title v-if="!project">
           {{ data.item.project.name }}/{{ data.item.name }}
@@ -16,14 +16,12 @@
         <v-list-item-title v-else>
           {{ data.item.name }}
         </v-list-item-title>
-        <v-list-item-subtitle
-          style="width: 200px"
-          class="text-truncate"
-          v-text="data.item.description"
-        />
+        <v-list-item-subtitle style="width: 200px" class="text-truncate">
+          {{ data.item.description }}
+        </v-list-item-subtitle>
       </v-list-item-content>
     </template>
-    <template v-slot:append-item>
+    <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
         <v-list-item-content>
           <v-list-item-subtitle> Load More </v-list-item-subtitle>

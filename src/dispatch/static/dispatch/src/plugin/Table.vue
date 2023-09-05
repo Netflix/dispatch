@@ -35,24 +35,24 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template v-slot:item.author="{ item }">
+            <template #item.author="{ item }">
               <a :href="item.author_url" target="_blank" style="text-decoration: none">
                 {{ item.author }}
                 <v-icon small>open_in_new</v-icon>
               </a>
             </template>
-            <template v-slot:item.enabled="{ item }">
+            <template #item.enabled="{ item }">
               <v-simple-checkbox v-model="item.enabled" disabled />
             </template>
-            <template v-slot:item.plugin.multiple="{ item }">
+            <template #item.plugin.multiple="{ item }">
               <v-simple-checkbox v-model="item.plugin.multiple" disabled />
             </template>
-            <template v-slot:item.plugin.required="{ item }">
+            <template #item.plugin.required="{ item }">
               <v-simple-checkbox v-model="item.plugin.required" disabled />
             </template>
-            <template v-slot:item.data-table-actions="{ item }">
+            <template #item.data-table-actions="{ item }">
               <v-menu bottom left>
-                <template v-slot:activator="{ on }">
+                <template #activator="{ on }">
                   <v-btn icon v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>

@@ -3,8 +3,8 @@
     <new-edit-sheet />
     <v-row no-gutters>
       <v-col>
-        <v-alert dismissible icon="mdi-school" prominent text type="info"
-          >Types categorize incidents. Dispatch allows for configuration on a per-incident type
+        <v-alert dismissible icon="mdi-school" prominent text type="info">
+          Types categorize incidents. Dispatch allows for configuration on a per-incident type
           basis.
         </v-alert>
       </v-col>
@@ -41,15 +41,15 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template v-slot:item.default="{ item }">
+            <template #item.default="{ item }">
               <v-simple-checkbox v-model="item.default" disabled />
             </template>
-            <template v-slot:item.enabled="{ item }">
+            <template #item.enabled="{ item }">
               <v-simple-checkbox v-model="item.enabled" disabled />
             </template>
-            <template v-slot:item.data-table-actions="{ item }">
+            <template #item.data-table-actions="{ item }">
               <v-menu bottom left>
-                <template v-slot:activator="{ on }">
+                <template #activator="{ on }">
                   <v-btn icon v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>

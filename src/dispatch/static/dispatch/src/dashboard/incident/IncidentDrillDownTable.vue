@@ -9,18 +9,18 @@
           single-line
           hide-details
           clearable
-        ></v-text-field>
+        />
       </v-card-title>
     </v-card>
     <v-data-table :headers="headers" :items="items" :loading="loading" :search="search">
-      <template v-slot:item.project.name="{ item }">
+      <template #item.project.name="{ item }">
         <v-chip small :color="item.project.color" text-color="white">
           {{ item.project.name }}
         </v-chip>
       </template>
-      <template v-slot:item.data-table-actions="{ item }">
+      <template #item.data-table-actions="{ item }">
         <v-menu bottom left>
-          <template v-slot:activator="{ on }">
+          <template #activator="{ on }">
             <v-btn icon v-on="on">
               <v-icon>mdi-dots-vertical</v-icon>
             </v-btn>

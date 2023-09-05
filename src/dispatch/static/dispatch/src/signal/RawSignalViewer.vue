@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="dialog" persistent max-width="1000px">
-    <template v-slot:activator="{ on }">
+    <template #activator="{ on }">
       <v-btn class="mr-2" icon v-on="on"> <v-icon>mdi-card-search-outline</v-icon> </v-btn>
     </template>
     <v-card>
@@ -9,7 +9,7 @@
       </v-card-title>
       <v-card-text>
         <div style="height: 800px">
-          <MonacoEditor v-model="raw_str" :options="editorOptions" language="json"></MonacoEditor>
+          <MonacoEditor v-model="raw_str" :options="editorOptions" language="json" />
         </div>
       </v-card-text>
       <v-card-actions>

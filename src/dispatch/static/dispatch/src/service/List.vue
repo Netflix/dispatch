@@ -17,7 +17,7 @@
           @click="createEditShow(item.content)"
         >
           <v-list-item-content>
-            <v-list-item-title v-text="item.content.name" />
+            <v-list-item-title>{{ item.content.name }}</v-list-item-title>
             <v-list-item-subtitle>Name</v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>

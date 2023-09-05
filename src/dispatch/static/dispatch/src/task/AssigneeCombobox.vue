@@ -16,7 +16,7 @@
     no-filter
     :loading="loading"
   >
-    <template v-slot:no-data>
+    <template #no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>

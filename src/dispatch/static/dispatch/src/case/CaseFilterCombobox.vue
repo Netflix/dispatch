@@ -15,7 +15,7 @@
     no-filter
     v-model="cases"
   >
-    <template v-slot:no-data>
+    <template #no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
@@ -26,19 +26,17 @@
         </v-list-item-content>
       </v-list-item>
     </template>
-    <template v-slot:item="data">
+    <template #item="data">
       <template>
         <v-list-item-content>
-          <v-list-item-title v-text="data.item.name" />
-          <v-list-item-subtitle
-            style="width: 200px"
-            class="text-truncate"
-            v-text="data.item.title"
-          />
+          <v-list-item-title>{{ data.item.name }}</v-list-item-title>
+          <v-list-item-subtitle style="width: 200px" class="text-truncate">
+            {{ data.item.title }}
+          </v-list-item-subtitle>
         </v-list-item-content>
       </template>
     </template>
-    <template v-slot:append-item>
+    <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
         <v-list-item-content>
           <v-list-item-subtitle> Load More </v-list-item-subtitle>
@@ -87,13 +85,13 @@ export default {
       },
       set(value) {
         this.search = null
-        this._cases = value.filter((v) => {
+        const cases = value.filter((v) => {
           if (typeof v === "string") {
             return false
           }
           return true
         })
-        this.$emit("input", this._cases)
+        this.$emit("input", cases)
       },
     },
   },

@@ -13,7 +13,7 @@
     no-filter
     v-model="terms"
   >
-    <template v-slot:no-data>
+    <template #no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
@@ -66,13 +66,13 @@ export default {
       },
       set(value) {
         this.search = null
-        this._terms = value.filter((v) => {
+        const terms = value.filter((v) => {
           if (typeof v === "string") {
             return false
           }
           return true
         })
-        this.$emit("input", this._terms)
+        this.$emit("input", terms)
       },
     },
   },

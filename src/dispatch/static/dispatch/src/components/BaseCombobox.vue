@@ -15,8 +15,8 @@
     deletable-chips
     v-model="selectedItems"
   >
-    <slot name="selection" v-bind="{ attr, item, selected }"></slot>
-    <template v-slot:append-item>
+    <slot name="selection" v-bind="{ attr, item, selected }" />
+    <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
         <v-list-item-content>
           <v-list-item-subtitle> Load More </v-list-item-subtitle>

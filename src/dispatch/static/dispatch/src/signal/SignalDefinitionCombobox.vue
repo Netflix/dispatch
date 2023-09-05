@@ -17,9 +17,9 @@
     no-filter
     v-model="signalDefinitions"
   >
-    <template v-slot:selection="{ attr, item, selected }">
+    <template #selection="{ attr, item, selected }">
       <v-menu v-model="menu" bottom right transition="scale-transition" origin="top left">
-        <template v-slot:activator="{ on }">
+        <template #activator="{ on }">
           <v-chip
             v-bind="attr"
             :input-value="selected"
@@ -59,17 +59,15 @@
         </v-card>
       </v-menu>
     </template>
-    <template v-slot:item="{ item }">
+    <template #item="{ item }">
       <v-list-item-content>
-        <v-list-item-title v-text="item.name" />
-        <v-list-item-subtitle
-          style="width: 200px"
-          class="text-truncate"
-          v-text="item.description"
-        />
+        <v-list-item-title>{{ item.name }}</v-list-item-title>
+        <v-list-item-subtitle style="width: 200px" class="text-truncate">
+          {{ item.description }}
+        </v-list-item-subtitle>
       </v-list-item-content>
     </template>
-    <template v-slot:no-data>
+    <template #no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
@@ -128,13 +126,13 @@ export default {
       },
       set(value) {
         this.search = null
-        this._signalDefinitions = value.filter((v) => {
+        const signalDefinitions = value.filter((v) => {
           if (typeof v === "string") {
             return false
           }
           return true
         })
-        this.$emit("input", this._signalDefinitions)
+        this.$emit("input", signalDefinitions)
       },
     },
   },

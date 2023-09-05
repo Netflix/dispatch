@@ -5,7 +5,6 @@
     :search-input.sync="search"
     :menu-props="{ maxHeight: '400' }"
     item-text="name"
-    label="Type"
     item-value="id"
     :label="label"
     placeholder="Start typing to search"
@@ -14,17 +13,15 @@
     :loading="loading"
     no-filter
   >
-    <template v-slot:item="data">
+    <template #item="data">
       <v-list-item-content>
-        <v-list-item-title v-text="data.item.name" />
-        <v-list-item-subtitle
-          style="width: 200px"
-          class="text-truncate"
-          v-text="data.item.description"
-        />
+        <v-list-item-title>{{ data.item.name }}</v-list-item-title>
+        <v-list-item-subtitle style="width: 200px" class="text-truncate">
+          {{ data.item.description }}
+        </v-list-item-subtitle>
       </v-list-item-content>
     </template>
-    <template v-slot:append-item>
+    <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
         <v-list-item-content>
           <v-list-item-subtitle> Load More </v-list-item-subtitle>

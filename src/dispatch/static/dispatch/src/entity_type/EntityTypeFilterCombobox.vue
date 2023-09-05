@@ -15,9 +15,9 @@
     no-filter
     v-model="entity_types"
   >
-    <template v-slot:selection="{ attr, item, selected }">
+    <template #selection="{ attr, item, selected }">
       <v-menu bottom right transition="scale-transition" origin="top left">
-        <template v-slot:activator="{ on }">
+        <template #activator="{ on }">
           <v-chip
             v-bind="attr"
             :input-value="selected"
@@ -65,7 +65,7 @@
         </v-card>
       </v-menu>
     </template>
-    <template v-slot:no-data>
+    <template #no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
@@ -76,7 +76,7 @@
         </v-list-item-content>
       </v-list-item>
     </template>
-    <template v-slot:item="data">
+    <template #item="data">
       <v-list-item-content>
         <v-list-item-title> {{ data.item.name }} </v-list-item-title>
         <v-list-item-subtitle style="width: 200px" class="text-truncate">
@@ -84,7 +84,7 @@
         </v-list-item-subtitle>
       </v-list-item-content>
     </template>
-    <template v-slot:append-item>
+    <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
         <v-list-item-content>
           <v-list-item-subtitle> Load More </v-list-item-subtitle>
@@ -102,7 +102,7 @@
 </template>
 
 <script>
-import { cloneDeep, debounce } from "lodash"
+import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import EntityTypeApi from "@/entity_type/api"

@@ -1,7 +1,7 @@
 <template>
   <ValidationObserver v-slot="{ invalid, validated }">
     <v-navigation-drawer v-model="showCreateEdit" app clipped right width="500">
-      <template v-slot:prepend>
+      <template #prepend>
         <v-list-item two-line>
           <v-list-item-content>
             <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
@@ -87,7 +87,7 @@
                 <span class="subtitle-2"
                   >Engagement
                   <v-tooltip max-width="250px" bottom>
-                    <template v-slot:activator="{ on, attrs }">
+                    <template #activator="{ on, attrs }">
                       <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                     </template>
                     This individual will be automatically engaged for any incident or case matching

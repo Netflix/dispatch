@@ -22,18 +22,18 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template v-slot:item.case="{ item }">
+            <template #item.case="{ item }">
               <case-popover v-if="item.case" v-model="item.case" />
             </template>
-            <template v-slot:item.signal="{ item }">
+            <template #item.signal="{ item }">
               <signal-popover v-model="item.signal" />
             </template>
-            <template v-slot:item.project.name="{ item }">
+            <template #item.project.name="{ item }">
               <v-chip small :color="item.project.color" text-color="white">
                 {{ item.project.name }}
               </v-chip>
             </template>
-            <template v-slot:item.filter_action="{ item }">
+            <template #item.filter_action="{ item }">
               <v-chip
                 small
                 text-color="white"
@@ -54,15 +54,15 @@
                 }}
               </v-chip>
             </template>
-            <template v-slot:item.created_at="{ item }">
+            <template #item.created_at="{ item }">
               <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
+                <template #activator="{ on, attrs }">
                   <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
                 </template>
                 <span>{{ item.created_at | formatDate }}</span>
               </v-tooltip>
             </template>
-            <template v-slot:item.data-table-actions="{ item }">
+            <template #item.data-table-actions="{ item }">
               <raw-signal-viewer v-model="item.raw" />
             </template>
           </v-data-table>

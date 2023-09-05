@@ -52,7 +52,7 @@
             </v-list-item-content>
           </v-list-item>
         </v-list>
-        <template v-slot:append>
+        <template #append>
           <div class="pa-3">
             <v-btn v-if="mini" color="error" block :to="{ name: 'report' }">
               <v-icon> error_outline </v-icon>
@@ -74,8 +74,7 @@
               label="Filter"
               single-line
               hide-details
-            >
-            </v-text-field>
+            />
           </v-list-item>
           <span v-for="(subRoutes, group, idx) in children" :key="group">
             <v-subheader>
@@ -125,7 +124,7 @@
         </v-list-item-content>
       </v-list-item>
     </v-list>
-    <template v-slot:append>
+    <template #append>
       <div class="pa-3">
         <v-btn color="error" block :to="{ name: 'report' }">
           <v-icon left> error_outline </v-icon>
@@ -160,6 +159,13 @@ export default {
 
   created() {
     this.mini = JSON.parse(localStorage.getItem("mini_nav"))
+    this.$watch(
+      () => this.$router.currentRoute.query.project,
+      (val) => {
+        this.showFilter = val
+        if (!val) this.q = ""
+      }
+    )
   },
 
   methods: {
@@ -168,6 +174,7 @@ export default {
       localStorage.setItem("mini_nav", this.mini)
     },
   },
+
   computed: {
     computeLogo() {
       return "/static/m.png"
@@ -209,7 +216,6 @@ export default {
 
       // Filter children if we have a filter string
       if (this.$router.currentRoute.query.project) {
-        this.showFilter = true
         let q = this.q
         if (q.length) {
           children = children.filter(function (item) {
@@ -221,9 +227,6 @@ export default {
             return metadata.includes(q.toLowerCase())
           })
         }
-      } else {
-        this.showFilter = false
-        this.q = ""
       }
 
       children = groupBy(children, function (child) {

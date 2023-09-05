@@ -1,8 +1,8 @@
 <template>
   <v-text-field v-model="color" :label="label">
-    <template v-slot:append-outer>
+    <template #append-outer>
       <v-menu v-model="menu" top nudge-bottom="105" nudge-left="16" :close-on-content-click="false">
-        <template v-slot:activator="{ on }">
+        <template #activator="{ on }">
           <div :style="swatchStyle" v-on="on" />
         </template>
         <v-card>

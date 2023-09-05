@@ -5,11 +5,12 @@ from dispatch.database.core import SessionLocal
 from dispatch.decorators import scheduled_project_task, timer
 from dispatch.individual import service as individual_service
 from dispatch.plugin import service as plugin_service
-from dispatch.service import service as service_service
+from dispatch.plugin.models import PluginInstance
 from dispatch.project.models import Project
 from dispatch.scheduler import scheduler
+from dispatch.service import service as service_service
+
 from .messaging import send_oncall_shift_feedback_message
-from .models import PluginInstance
 
 log = logging.getLogger(__name__)
 
@@ -59,7 +60,6 @@ def find_schedule_and_send(
     )
 
 
-@scheduler.add(every(1).minutes, name="oncall-shift-feedback-emea")
 @timer
 @scheduled_project_task
 def oncall_shift_feedback(db_session: SessionLocal, project: Project):

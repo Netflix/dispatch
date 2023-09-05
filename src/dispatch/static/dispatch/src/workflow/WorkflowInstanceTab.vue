@@ -6,12 +6,12 @@
     disabled-pagination
     hide-default-footer
   >
-    <template v-slot:item.parameters="{ item }">
+    <template #item.parameters="{ item }">
       <workflow-instance-detail-menu :value="item" />
     </template>
-    <template v-slot:item.created_at="{ item }">
+    <template #item.created_at="{ item }">
       <v-tooltip bottom>
-        <template v-slot:activator="{ on, attrs }">
+        <template #activator="{ on, attrs }">
           <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
         </template>
         <span>{{ item.created_at | formatDate }}</span>

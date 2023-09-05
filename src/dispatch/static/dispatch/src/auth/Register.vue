@@ -46,7 +46,7 @@
               @click="register({ email: email, password: password })"
             >
               Register
-              <template v-slot:loader>
+              <template #loader>
                 <v-progress-linear indeterminate color="white" />
               </template>
             </v-btn>

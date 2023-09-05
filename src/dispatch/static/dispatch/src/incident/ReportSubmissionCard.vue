@@ -5,7 +5,7 @@
         <p class="display-1 text--primary">
           Report Incident
           <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
+            <template #activator="{ on }">
               <v-btn icon v-on="on" @click="copyView"><v-icon>mdi-content-copy</v-icon></v-btn>
             </template>
             <span>Copy current fields as template.</span>
@@ -79,7 +79,7 @@
                 @click="report()"
               >
                 Submit
-                <template v-slot:loader>
+                <template #loader>
                   <v-progress-linear indeterminate color="white" />
                 </template>
               </v-btn>
@@ -245,7 +245,14 @@ export default {
     )
 
     this.$watch(
-      (vm) => [vm.project, vm.incident_priority, vm.incident_type, vm.title, vm.description, vm.tags],
+      (vm) => [
+        vm.project,
+        vm.incident_priority,
+        vm.incident_type,
+        vm.title,
+        vm.description,
+        vm.tags,
+      ],
       () => {
         var queryParams = {
           project: this.project ? this.project.name : null,
@@ -256,18 +263,20 @@ export default {
           tag: this.tags ? this.tags.map((tag) => tag.name) : null,
         }
         Object.keys(queryParams).forEach((key) => (queryParams[key] ? {} : delete queryParams[key]))
-        router.replace({
-          query: queryParams,
-        }).catch(err => {
-          // Updating the query fields also updates the URL.
-          // Frequent updates to these fields throws navigation cancelled failures.
-          if (isNavigationFailure(err, NavigationFailureType.cancelled)){
-            // resolve error
-            return err
-          }
-          // rethrow error
-          return Promise.reject(err)
-        })
+        router
+          .replace({
+            query: queryParams,
+          })
+          .catch((err) => {
+            // Updating the query fields also updates the URL.
+            // Frequent updates to these fields throws navigation cancelled failures.
+            if (isNavigationFailure(err, NavigationFailureType.cancelled)) {
+              // resolve error
+              return err
+            }
+            // rethrow error
+            return Promise.reject(err)
+          })
       }
     )
   },

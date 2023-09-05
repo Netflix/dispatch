@@ -5,13 +5,13 @@
         <v-card height="100%">
           <v-toolbar flat>
             <v-toolbar-title>Documentation</v-toolbar-title>
-            <v-spacer></v-spacer>
+            <v-spacer />
             <v-btn icon color="info" :loading="loading" @click="save()">
               <v-icon>save</v-icon>
             </v-btn>
-            <template v-slot:extension>
+            <template #extension>
               <v-tabs v-model="tab">
-                <v-tabs-slider></v-tabs-slider>
+                <v-tabs-slider />
                 <v-tab key="view">View </v-tab>
                 <v-tab key="edit">Edit </v-tab>
               </v-tabs>
@@ -21,7 +21,7 @@
             <v-tab-item key="view">
               <v-card flat>
                 <v-card-text>
-                  <vue-markdown :source="documentation"></vue-markdown>
+                  <vue-markdown :source="documentation" />
                 </v-card-text>
               </v-card>
             </v-tab-item>
@@ -33,9 +33,9 @@
                       v-model="documentation"
                       :options="editorOptions"
                       language="markdown"
-                    ></MonacoEditor>
+                    />
                   </div>
-                  <v-divider class="my-2"></v-divider>
+                  <v-divider class="my-2" />
                   <v-icon class="mr-2" small> mdi-language-markdown </v-icon>
                   <span class="text-caption grey--text">Styling with markdown supported</span>
                 </v-card-text>
@@ -58,8 +58,8 @@
             <v-list-item>
               <v-list-item-title>Data Last Loaded At</v-list-item-title>
               <v-list-item-subtitle class="text-right">
-                {{ data_last_loaded_at | formatRelativeDate }}</v-list-item-subtitle
-              >
+                {{ data_last_loaded_at | formatRelativeDate }}
+              </v-list-item-subtitle>
             </v-list-item>
             <v-list-item>
               <v-list-item-title>Retention</v-list-item-title>
@@ -78,20 +78,20 @@
             <v-list-item>
               <v-list-item-title>Source Type</v-list-item-title>
               <v-list-item-subtitle v-if="source_type" class="text-right">
-                {{ source_type.name }}</v-list-item-subtitle
-              >
+                {{ source_type.name }}
+              </v-list-item-subtitle>
             </v-list-item>
             <v-list-item>
               <v-list-item-title>Data Format</v-list-item-title>
               <v-list-item-subtitle v-if="source_data_format" class="text-right">
-                {{ source_data_format.name }}</v-list-item-subtitle
-              >
+                {{ source_data_format.name }}
+              </v-list-item-subtitle>
             </v-list-item>
             <v-list-item>
               <v-list-item-title>Transport</v-list-item-title>
               <v-list-item-subtitle v-if="source_transport" class="text-right">
-                {{ source_transport.name }}</v-list-item-subtitle
-              >
+                {{ source_transport.name }}
+              </v-list-item-subtitle>
             </v-list-item>
             <v-list-item>
               <v-list-item-title>Sampling Rate</v-list-item-title>
@@ -107,7 +107,7 @@
           <v-card-title>Links</v-card-title>
           <v-card-text>
             <v-data-table hide-default-footer disable-pagination :headers="headers" :items="links">
-              <template v-slot:item.name="{ item }">
+              <template #item.name="{ item }">
                 <span
                   ><a :href="item.href">
                     <b>{{ item.name }}</b></a

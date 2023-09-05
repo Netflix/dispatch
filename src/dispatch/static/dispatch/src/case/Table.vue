@@ -47,42 +47,42 @@
             show-select
             @click:row="showCaseEditSheet"
           >
-            <template v-slot:item.case_severity.name="{ item }">
+            <template #item.case_severity.name="{ item }">
               <case-severity :severity="item.case_severity.name" />
             </template>
-            <template v-slot:item.case_priority.name="{ item }">
+            <template #item.case_priority.name="{ item }">
               <case-priority :priority="item.case_priority.name" />
             </template>
-            <template v-slot:item.status="{ item }">
+            <template #item.status="{ item }">
               <case-status :status="item.status" :id="item.id" />
             </template>
-            <template v-slot:item.project.name="{ item }">
+            <template #item.project.name="{ item }">
               <v-chip small :color="item.project.color" text-color="white">
                 {{ item.project.name }}
               </v-chip>
             </template>
-            <template v-slot:item.assignee="{ item }">
+            <template #item.assignee="{ item }">
               <case-participant :participant="item.assignee" />
             </template>
-            <template v-slot:item.reported_at="{ item }">
+            <template #item.reported_at="{ item }">
               <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
+                <template #activator="{ on, attrs }">
                   <span v-bind="attrs" v-on="on">{{ item.reported_at | formatRelativeDate }}</span>
                 </template>
                 <span>{{ item.reported_at | formatDate }}</span>
               </v-tooltip>
             </template>
-            <template v-slot:item.closed_at="{ item }">
+            <template #item.closed_at="{ item }">
               <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
+                <template #activator="{ on, attrs }">
                   <span v-bind="attrs" v-on="on">{{ item.closed_at | formatRelativeDate }}</span>
                 </template>
                 <span>{{ item.closed_at | formatDate }}</span>
               </v-tooltip>
             </template>
-            <template v-slot:item.data-table-actions="{ item }">
+            <template #item.data-table-actions="{ item }">
               <v-menu bottom left>
-                <template v-slot:activator="{ on }">
+                <template #activator="{ on }">
                   <v-btn icon v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>

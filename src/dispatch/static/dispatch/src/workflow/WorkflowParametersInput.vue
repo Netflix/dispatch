@@ -4,7 +4,7 @@
       <span class="subtitle-2">Workflow Parameters</span>
       <v-spacer />
       <v-tooltip bottom>
-        <template v-slot:activator="{ on }">
+        <template #activator="{ on }">
           <v-btn small icon @click="addItem()" v-on="on">
             <v-icon>add</v-icon>
           </v-btn>
@@ -16,7 +16,7 @@
       <v-row align="center" dense>
         <v-col cols="12" sm="1">
           <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
+            <template #activator="{ on }">
               <v-btn small icon @click="removeItem(idx)" v-on="on"><v-icon>remove</v-icon></v-btn>
             </template>
             <span>Remove Item</span>

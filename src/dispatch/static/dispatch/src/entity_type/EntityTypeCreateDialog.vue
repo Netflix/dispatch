@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="dialog" max-width="1000px" persistent :key="componentKey">
-    <template v-slot:activator="{ on, attrs }">
+    <template #activator="{ on, attrs }">
       <v-btn v-bind="attrs" v-on="on" icon><v-icon>add</v-icon></v-btn>
     </template>
     <v-card>
@@ -20,8 +20,8 @@
                 Entity types are used to extract useful metadata out of signals. Define either a
                 RegEx or JSON Path expression to pull entities out of a signals raw json.
                 <v-radio-group label="Type" v-model="type" row>
-                  <v-radio label="Regular Expression" value="regex"></v-radio>
-                  <v-radio label="JSON Path" value="json"></v-radio>
+                  <v-radio label="Regular Expression" value="regex" />
+                  <v-radio label="JSON Path" value="json" />
                 </v-radio-group>
                 <v-text-field
                   v-if="type === 'regex'"
@@ -29,7 +29,7 @@
                   label="Regular Expression"
                   hint="A regular expression pattern for your entity type. The first capture group will be used."
                 >
-                  <template v-slot:append-outer>
+                  <template #append-outer>
                     <v-btn
                       icon
                       href="https://cheatography.com/davechild/cheat-sheets/regular-expressions/"
@@ -45,7 +45,7 @@
                   label="JSON Path"
                   hint="The field where the entity will be present. Supports JSON Path expressions."
                 >
-                  <template v-slot:append-outer>
+                  <template #append-outer>
                     <v-btn
                       icon
                       href="https://github.com/json-path/JsonPath#path-examples"
@@ -63,7 +63,7 @@
                         No example signals are currently available for this definition.
                       </template>
                       <template v-for="(instance, index) in signalInstances" v-else>
-                        <v-list-item>
+                        <v-list-item :key="`item-${index}`">
                           <v-list-item-content>
                             <v-list-item-title>{{ instance.id }}</v-list-item-title>
                           </v-list-item-content>
@@ -73,9 +73,11 @@
                             </v-btn>
                           </v-list-item-action>
                         </v-list-item>
-                        <v-divider v-if="index < signalInstances.length - 1"></v-divider>
+                        <v-divider
+                          v-if="index < signalInstances.length - 1"
+                          :key="`divider-${index}`"
+                        />
                       </template>
-                      <template v-else> </template>
                     </v-list>
                   </v-col>
                   <v-col cols="8">
@@ -151,7 +153,6 @@ import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import PlaygroundTextBox from "@/entity_type/playground/PlaygroundTextBox.vue"
 import SearchUtils from "@/search/utils"
 import SignalApi from "@/signal/api"
-import SignalDefinitionCombobox from "@/signal/SignalDefinitionCombobox.vue"
 import EntityTypeApi from "@/entity_type/api"
 import { isValidJsonPath, isValidRegex } from "@/entity_type/utils.js"
 
@@ -227,7 +228,6 @@ export default {
   },
   components: {
     PlaygroundTextBox,
-    SignalDefinitionCombobox,
     ValidationObserver,
     ValidationProvider,
   },

@@ -14,7 +14,7 @@
     no-filter
     v-model="tags"
   >
-    <template v-slot:no-data>
+    <template #no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
@@ -25,12 +25,12 @@
         </v-list-item-content>
       </v-list-item>
     </template>
-    <template v-slot:selection="{ item, index }">
-      <v-chip close @click:close="value.splice(index, 1)">
+    <template #selection="{ item, index }">
+      <v-chip close @click:close="remove(index)">
         <span v-if="item.tag_type"> {{ item.project.name }}/ </span>{{ item.name }}
       </v-chip>
     </template>
-    <template v-slot:item="data">
+    <template #item="data">
       <v-list-item-content>
         <v-list-item-title> {{ data.item.project.name }}/{{ data.item.name }} </v-list-item-title>
         <v-list-item-subtitle style="width: 200px" class="text-truncate">
@@ -38,7 +38,7 @@
         </v-list-item-subtitle>
       </v-list-item-content>
     </template>
-    <template v-slot:append-item>
+    <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
         <v-list-item-content>
           <v-list-item-subtitle> Load More </v-list-item-subtitle>
@@ -99,13 +99,13 @@ export default {
       },
       set(value) {
         this.search = null
-        this._tags = value.filter((v) => {
+        const tags = value.filter((v) => {
           if (typeof v === "string") {
             return false
           }
           return true
         })
-        this.$emit("input", this._tags)
+        this.$emit("input", tags)
       },
     },
   },
@@ -160,6 +160,11 @@ export default {
     getFilteredData: debounce(function () {
       this.fetchData()
     }, 500),
+    remove(index) {
+      const value = cloneDeep(this.value)
+      value.splice(index, 1)
+      this.$emit("input", value)
+    },
   },
 }
 </script>

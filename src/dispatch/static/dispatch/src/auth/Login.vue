@@ -47,7 +47,7 @@
               @click="basicLogin({ email: email, password: password })"
             >
               Login
-              <template v-slot:loader>
+              <template #loader>
                 <v-progress-linear indeterminate color="white" />
               </template>
             </v-btn>

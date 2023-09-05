@@ -16,18 +16,20 @@
     no-filter
     v-model="incident"
   >
-    <template v-slot:selection="{ attr, on, item, selected }">
+    <template #selection="{ attr, on, item, selected }">
       <v-chip v-bind="attr" :input-value="selected" v-on="on" close @click:close="remove(item)">
         <span v-text="item.name" />
       </v-chip>
     </template>
-    <template v-slot:item="{ item }">
+    <template #item="{ item }">
       <v-list-item-content>
-        <v-list-item-title v-text="item.name" />
-        <v-list-item-subtitle style="width: 200px" class="text-truncate" v-text="item.title" />
+        <v-list-item-title>{{ item.name }}</v-list-item-title>
+        <v-list-item-subtitle style="width: 200px" class="text-truncate">
+          {{ item.title }}
+        </v-list-item-subtitle>
       </v-list-item-content>
     </template>
-    <template v-slot:no-data>
+    <template #no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
@@ -75,13 +77,13 @@ export default {
         return cloneDeep(this.value)
       },
       set(value) {
-        this._incidents = value.filter((v) => {
+        const incidents = value.filter((v) => {
           if (typeof v === "string") {
             return false
           }
           return true
         })
-        this.$emit("input", this._incidents)
+        this.$emit("input", incidents)
         this.search = null
       },
     },

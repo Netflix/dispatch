@@ -4,7 +4,7 @@
     <v-divider />
     <v-list>
       <v-list-group prepend-icon="playlist_add_check" no-action color="info">
-        <template v-slot:activator>
+        <template #activator>
           <v-list-item>
             <v-list-item-content>
               <v-list-item-title>Workflows ({{ items.length }})</v-list-item-title>
@@ -17,7 +17,7 @@
           @click="showNewEditSheet(item.content)"
         >
           <v-list-item-content>
-            <v-list-item-title v-text="item.content.description" />
+            <v-list-item-title>{{ item.content.description }}</v-list-item-title>
             <v-list-item-subtitle>Description</v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>

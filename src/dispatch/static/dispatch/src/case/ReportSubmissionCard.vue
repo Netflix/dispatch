@@ -5,7 +5,7 @@
         <p class="display-1 text--primary">
           Open a Case
           <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
+            <template #activator="{ on }">
               <v-btn icon v-on="on" @click="copyView"><v-icon>mdi-content-copy</v-icon></v-btn>
             </template>
             <span>Copy current fields as template.</span>
@@ -81,7 +81,7 @@
                 @click="report()"
               >
                 Submit
-                <template v-slot:loader>
+                <template #loader>
                   <v-progress-linear indeterminate color="white" />
                 </template>
               </v-btn>
