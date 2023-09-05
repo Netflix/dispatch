@@ -167,6 +167,7 @@ def create_signal_instance(
     signal = signal_service.get_by_variant_or_external_id(
         db_session=db_session,
         project_id=project.id,
+        environment=signal_instance_data.get("environment"),
         external_id=signal_instance_data.get("id"),
         variant=signal_instance_data["variant"],
     )
