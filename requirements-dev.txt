@@ -72,7 +72,7 @@ platformdirs==3.10.0
     #   virtualenv
 pluggy==1.2.0
     # via pytest
-pre-commit==3.3.3
+pre-commit==3.4.0
     # via -r requirements-dev.in
 prompt-toolkit==3.0.39
     # via ipython
