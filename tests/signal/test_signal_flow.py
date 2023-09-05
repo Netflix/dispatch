@@ -12,7 +12,7 @@ def test_create_signal_instance(session, signal, case_severity, case_priority, u
     case_severity.default = True
     case_severity.project_id = signal.project_id
 
-    instance_data = {"variant": signal.variant}
+    instance_data = {"variant": signal.variant, "environment": "test"}
 
     assert create_signal_instance(
         db_session=session,
@@ -31,7 +31,7 @@ def test_create_signal_instance_no_variant(session, signal, case_severity, case_
     case_severity.default = True
     case_severity.project_id = signal.project_id
 
-    instance_data = {"variant": "unknown"}
+    instance_data = {"variant": "unknown", "environment": "test"}
     with pytest.raises(DispatchException):
         create_signal_instance(
             db_session=session,
@@ -51,7 +51,7 @@ def test_create_signal_instance_not_enabled(session, signal, case_severity, case
     case_severity.project_id = signal.project_id
 
     signal.enabled = False
-    instance_data = {"variant": signal.variant}
+    instance_data = {"variant": signal.variant, "environment": "test"}
     with pytest.raises(DispatchException):
         create_signal_instance(
             db_session=session,
