@@ -134,7 +134,7 @@
       </v-flex>
       <v-flex xs12 v-show="false">
         <ValidationProvider name="project" rules="alwaysTrue" immediate>
-          <v-text-field v-model="project"></v-text-field>
+          <v-text-field v-model="project" />
         </ValidationProvider>
       </v-flex>
     </v-layout>
