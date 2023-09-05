@@ -36,7 +36,7 @@ bcrypt==4.0.1
     # via -r requirements-base.in
 blis==0.7.10
     # via thinc
-blockkit==1.6.0
+blockkit==1.5.2
     # via -r requirements-base.in
 cachetools==5.3.1
     # via
@@ -307,7 +307,7 @@ pyrate-limiter==2.10.0
     # via schemathesis
 pyrsistent==0.19.3
     # via jsonschema
-pytest==7.4.0
+pytest==7.4.1
     # via
     #   pytest-subtests
     #   schemathesis
