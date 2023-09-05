@@ -440,7 +440,7 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
 def check_for_tag_change(
     previous_incident_tags: list, current_incident_tags: list
 ) -> tuple[str, dict]:
-    """Determines if there is any tag change and builds the description string if so"""
+    """Determines if there is any tag change and builds the description string and details if so"""
     added_tags = []
     removed_tags = []
     description = ""
@@ -454,15 +454,14 @@ def check_for_tag_change(
         if tag.id not in [t.id for t in previous_incident_tags]:
             added_tags.append(f"{tag.tag_type.name}/{tag.name}")
 
-    if added_tags or removed_tags:
-        if added_tags:
-            description = f"added {len(added_tags)} tag{'s' if len(added_tags) > 1 else ''}"
-            details.update({"added tags": ", ".join(added_tags)})
-            if removed_tags:
-                description += " and "
+    if added_tags:
+        description = f"added {len(added_tags)} tag{'s' if len(added_tags) > 1 else ''}"
+        details.update({"added tags": ", ".join(added_tags)})
         if removed_tags:
-            description += f"removed {len(removed_tags)} tag{'s' if len(removed_tags) > 1 else ''}"
-            details.update({"removed tags": ", ".join(removed_tags)})
+            description += " and "
+    if removed_tags:
+        description += f"removed {len(removed_tags)} tag{'s' if len(removed_tags) > 1 else ''}"
+        details.update({"removed tags": ", ".join(removed_tags)})
 
     return (description, details)
 
