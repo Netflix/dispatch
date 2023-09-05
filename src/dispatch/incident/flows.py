@@ -438,31 +438,33 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
 
 
 def check_for_tag_change(
-    previous_incident_tags: list,
-    current_incident_tags: list
-) -> tuple[list, list]:
+    previous_incident_tags: list, current_incident_tags: list
+) -> tuple[str, dict]:
     """Determines if there is any tag change and builds the description string if so"""
     added_tags = []
     removed_tags = []
     description = ""
+    details = {}
 
     for tag in previous_incident_tags:
         if tag.id not in [t.id for t in current_incident_tags]:
-            removed_tags.append(f"{tag.tag_type.name}/{tag.name}/{tag.id}")
+            removed_tags.append(f"{tag.tag_type.name}/{tag.name}")
 
     for tag in current_incident_tags:
         if tag.id not in [t.id for t in previous_incident_tags]:
-            added_tags.append(f"{tag.tag_type.name}/{tag.name}/{tag.id}")
+            added_tags.append(f"{tag.tag_type.name}/{tag.name}")
 
-    # if added_tags or removed_tags:
-    #     if added_tags:
-    #         description = f"added the following tag{'s' if len(added_tags) > 1 else ''}: {','.join(added_tags)}"
-    #         if removed_tags:
-    #             description += " and "
-    #     if removed_tags:
-    #         description += f"removed the following tag{'s' if len(removed_tags) > 1 else ''}: {','.join(removed_tags)}"
+    if added_tags or removed_tags:
+        if added_tags:
+            description = f"added {len(added_tags)} tag{'s' if len(added_tags) > 1 else ''}"
+            details.update({"added tags": ", ".join(added_tags)})
+            if removed_tags:
+                description += " and "
+        if removed_tags:
+            description += f"removed {len(removed_tags)} tag{'s' if len(removed_tags) > 1 else ''}"
+            details.update({"removed tags": ", ".join(removed_tags)})
 
-    return (added_tags, removed_tags)
+    return (description, details)
 
 
 def conversation_topic_dispatcher(
@@ -497,15 +499,15 @@ def conversation_topic_dispatcher(
             individual_id=individual.id,
         )
 
-    added_tags, removed_tags = check_for_tag_change(previous_incident_tags=previous_incident.tags, current_incident_tags=incident.tags)
-    if added_tags or removed_tags:
-        conversation_topic_change = True
-
+    description, details = check_for_tag_change(
+        previous_incident_tags=previous_incident.tags, current_incident_tags=incident.tags
+    )
+    if description:
         event_service.log_incident_event(
             db_session=db_session,
             source="Incident Participant",
-            description=f"{individual.name} added {len(added_tags)} and removed {len(removed_tags)}",
-            details={"added_tags": ','.join(added_tags), "removed_tags": ','.join(removed_tags)},
+            description=f"{individual.name} {description}",
+            details=details,
             incident_id=incident.id,
             individual_id=individual.id,
         )
