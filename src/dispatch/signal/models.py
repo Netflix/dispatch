@@ -337,6 +337,7 @@ class SignalUpdate(SignalBase):
 class SignalRead(SignalBase):
     id: PrimaryKey
     engagements: Optional[List[SignalEngagementRead]] = []
+    environment: Optional[SignalEnvironment] = SignalEnvironment.PROD
     entity_types: Optional[List[EntityTypeRead]] = []
     filters: Optional[List[SignalFilterRead]] = []
     workflows: Optional[List[WorkflowRead]] = []
@@ -351,6 +352,7 @@ class SignalReadMinimal(DispatchBase):
     description: Optional[str]
     variant: Optional[str]
     external_id: str
+    environment: Optional[SignalEnvironment] = SignalEnvironment.PROD
     enabled: Optional[bool] = False
     external_url: Optional[str]
     create_case: Optional[bool] = True
