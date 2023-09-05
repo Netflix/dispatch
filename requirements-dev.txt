@@ -4,9 +4,6 @@
 #
 #    pip-compile --resolver=backtracking requirements-dev.in
 #
-
-appnope==0.1.3
-    # via ipython
 asttokens==2.2.1
     # via
     #   devtools
@@ -27,7 +24,7 @@ coverage==7.3.0
     # via -r requirements-dev.in
 decorator==5.1.1
     # via ipython
-devtools==0.12.1
+devtools==0.12.2
     # via -r requirements-dev.in
 distlib==0.3.7
     # via virtualenv
@@ -37,7 +34,7 @@ executing==1.2.0
     #   stack-data
 factory-boy==3.3.0
     # via -r requirements-dev.in
-faker==19.3.0
+faker==19.3.1
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -75,7 +72,7 @@ platformdirs==3.10.0
     #   virtualenv
 pluggy==1.2.0
     # via pytest
-pre-commit==3.3.3
+pre-commit==3.4.0
     # via -r requirements-dev.in
 prompt-toolkit==3.0.39
     # via ipython
@@ -87,13 +84,13 @@ pygments==2.16.1
     # via
     #   devtools
     #   ipython
-pytest==7.4.0
+pytest==7.4.1
     # via -r requirements-dev.in
 python-dateutil==2.8.2
     # via faker
 pyyaml==6.0.1
     # via pre-commit
-ruff==0.0.285
+ruff==0.0.286
     # via -r requirements-dev.in
 six==1.16.0
     # via

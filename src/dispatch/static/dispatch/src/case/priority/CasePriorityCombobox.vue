@@ -14,7 +14,7 @@
     no-filter
     v-model="casePriority"
   >
-    <template v-slot:no-data>
+    <template #no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
@@ -25,12 +25,12 @@
         </v-list-item-content>
       </v-list-item>
     </template>
-    <template v-slot:selection="{ item, index }">
-      <v-chip close @click:close="value.splice(index, 1)">
+    <template #selection="{ item, index }">
+      <v-chip close @click:close="remove(index)">
         <span v-if="!project"> {{ item.project.name }}/ </span>{{ item.name }}
       </v-chip>
     </template>
-    <template v-slot:item="data">
+    <template #item="data">
       <v-list-item-content>
         <v-list-item-title>
           <span v-if="!project">{{ data.item.project.name }}/</span>{{ data.item.name }}
@@ -40,7 +40,7 @@
         </v-list-item-subtitle>
       </v-list-item-content>
     </template>
-    <template v-slot:append-item>
+    <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
         <v-list-item-content>
           <v-list-item-subtitle> Load More </v-list-item-subtitle>
@@ -94,13 +94,13 @@ export default {
       },
       set(value) {
         this.search = null
-        this._casePriorities = value.filter((v) => {
+        const casePriorities = value.filter((v) => {
           if (typeof v === "string") {
             return false
           }
           return true
         })
-        this.$emit("input", this._casePriorities)
+        this.$emit("input", casePriorities)
       },
     },
   },
@@ -160,6 +160,11 @@ export default {
     getFilteredData: debounce(function () {
       this.fetchData()
     }, 500),
+    remove(index) {
+      const value = cloneDeep(this.value)
+      value.splice(index, 1)
+      this.$emit("input", value)
+    },
   },
 
   created() {

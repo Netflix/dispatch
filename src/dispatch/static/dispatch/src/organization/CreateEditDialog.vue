@@ -49,7 +49,7 @@
         <v-list-item-title class="subtitle-2 ml-4">
           Banner Settings
           <v-tooltip max-width="250px" bottom>
-            <template v-slot:activator="{ on, attrs }">
+            <template #activator="{ on, attrs }">
               <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
             </template>
             When enabled, this banner will be presented to users throughout the application when
@@ -70,7 +70,7 @@
               required
             />
           </ValidationProvider>
-          <color-picker-input label="Color" v-model="banner_color"></color-picker-input>
+          <color-picker-input label="Color" v-model="banner_color" />
           <v-checkbox v-model="banner_enabled" label="Enabled" />
         </v-card-text>
         <v-card-actions>

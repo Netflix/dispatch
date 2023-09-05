@@ -50,24 +50,24 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template v-slot:item.evergreen="{ item }">
+            <template #item.evergreen="{ item }">
               <v-simple-checkbox v-model="item.evergreen" disabled />
             </template>
-            <template v-slot:item.resource_type="{ item }">
+            <template #item.resource_type="{ item }">
               {{ getResourceTitle(item.resource_type) }}
             </template>
-            <template v-slot:item.description="{ item }">
+            <template #item.description="{ item }">
               {{ item.description }}
             </template>
-            <template v-slot:item.name="{ item }">
+            <template #item.name="{ item }">
               <a :href="item.weblink" target="_blank" style="text-decoration: none">
                 {{ item.name }}
                 <v-icon small>open_in_new</v-icon>
               </a>
             </template>
-            <template v-slot:item.data-table-actions="{ item }">
+            <template #item.data-table-actions="{ item }">
               <v-menu bottom left>
-                <template v-slot:activator="{ on }">
+                <template #activator="{ on }">
                   <v-btn icon v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>

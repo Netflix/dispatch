@@ -4,8 +4,8 @@
     <delete-dialog />
     <v-row no-gutters>
       <v-col>
-        <v-alert dismissible icon="mdi-school" prominent text type="info"
-          >Signal definitions determine how a signal is processed. Allowing you to map case types,
+        <v-alert dismissible icon="mdi-school" prominent text type="info">
+          Signal definitions determine how a signal is processed. Allowing you to map case types,
           snooze and duplication rules for each signal.
         </v-alert>
       </v-col>
@@ -42,23 +42,23 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template v-slot:item.enabled="{ item }">
+            <template #item.enabled="{ item }">
               <v-simple-checkbox v-model="item.enabled" disabled />
             </template>
-            <template v-slot:item.status="{ item }">
+            <template #item.status="{ item }">
               <case-status :status="item.status" :id="item.id" />
             </template>
-            <template v-slot:item.project.name="{ item }">
+            <template #item.project.name="{ item }">
               <v-chip small :color="item.project.color" text-color="white">
                 {{ item.project.name }}
               </v-chip>
             </template>
-            <template v-slot:item.case_type="{ item }">
+            <template #item.case_type="{ item }">
               <v-chip v-if="item.case_type" small color="info" text-color="white">
                 {{ item.case_type.name }}
               </v-chip>
             </template>
-            <template v-slot:item.case_priority="{ item }">
+            <template #item.case_priority="{ item }">
               <v-chip
                 v-if="item.case_priority"
                 small
@@ -68,14 +68,14 @@
                 {{ item.case_priority.name }}
               </v-chip>
             </template>
-            <template v-slot:item.external_url="{ item }">
+            <template #item.external_url="{ item }">
               <v-btn v-if="item.external_url" :href="item.external_url" target="_blank" icon>
                 <v-icon>mdi-open-in-new</v-icon>
               </v-btn>
             </template>
-            <template v-slot:item.data-table-actions="{ item }">
+            <template #item.data-table-actions="{ item }">
               <v-menu bottom left>
-                <template v-slot:activator="{ on }">
+                <template #activator="{ on }">
                   <v-btn icon v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>

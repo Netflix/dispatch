@@ -23,6 +23,7 @@
 
 <script>
 import IncidentSelect from "@/incident/IncidentSelect.vue"
+import { cloneDeep } from "lodash"
 
 export default {
   name: "SourceEditIncidentsTab",
@@ -52,11 +53,15 @@ export default {
 
   methods: {
     add() {
-      this.value.push(this.selectedIncident)
+      const value = cloneDeep(this.value)
+      value.push(this.selectedIncident)
       this.selectedIncident = null
+      this.$emit("input", value)
     },
     remove(idx) {
-      this.value.splice(idx, 1)
+      const value = cloneDeep(this.value)
+      value.splice(idx, 1)
+      this.$emit("input", value)
     },
   },
 

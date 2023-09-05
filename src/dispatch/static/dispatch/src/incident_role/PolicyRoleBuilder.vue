@@ -5,7 +5,7 @@
         <v-col>
           {{ label }}
           <v-tooltip bottom>
-            <template v-slot:activator="{ on, attrs }">
+            <template #activator="{ on, attrs }">
               <v-btn icon color="info" v-bind="attrs" v-on="on" @click="add()">
                 <v-icon> mdi-playlist-plus </v-icon>
               </v-btn>
@@ -15,7 +15,7 @@
         </v-col>
         <v-col cols="1" align="end">
           <v-tooltip bottom>
-            <template v-slot:activator="{ on, attrs }">
+            <template #activator="{ on, attrs }">
               <v-btn icon color="info" v-bind="attrs" v-on="on" :loading="loading" @click="save()">
                 <v-icon> save </v-icon>
               </v-btn>
@@ -79,7 +79,7 @@
                       label="Target Service"
                       :project="project"
                       v-model="policy.service"
-                    ></service-select-new>
+                    />
                   </v-list-item-content>
                 </v-list-item>
                 <v-list-item>

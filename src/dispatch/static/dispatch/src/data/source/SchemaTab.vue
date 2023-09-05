@@ -17,7 +17,7 @@
         <v-card> <v-card-title>Schema</v-card-title></v-card>
       </v-col>
     </v-row>
-    <v-row> </v-row>
+    <v-row />
   </v-container>
 </template>
 

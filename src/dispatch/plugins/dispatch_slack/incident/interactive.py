@@ -910,7 +910,7 @@ def handle_member_joined_channel(
 
     if not user:
         raise EventError(
-            "Unable to handle member_joined_channel Slack event. Dispatch user unknown"
+            "Unable to handle member_joined_channel Slack event. Dispatch user unknown."
         )
 
     participant = incident_flows.incident_add_or_reactivate_participant_flow(

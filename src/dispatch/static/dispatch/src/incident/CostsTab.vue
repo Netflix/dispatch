@@ -11,7 +11,7 @@
       <v-list-item target="_blank">
         <v-list-item-icon v-if="cost.incident_cost_type.editable">
           <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
+            <template #activator="{ on }">
               <v-btn small icon @click="removeIncidentCost(index)" v-on="on">
                 <v-icon>remove</v-icon>
               </v-btn>

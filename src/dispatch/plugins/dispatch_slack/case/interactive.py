@@ -1165,7 +1165,7 @@ def handle_edit_submission_event(
         title=form_data[DefaultBlockIds.title_input],
         description=form_data[DefaultBlockIds.description_input],
         resolution=form_data[DefaultBlockIds.resolution_input],
-        resolution_reason=form_data[DefaultBlockIds.case_resolution_reason_select],
+        resolution_reason=form_data[DefaultBlockIds.case_resolution_reason_select]["value"],
         status=form_data[DefaultBlockIds.case_status_select]["name"],
         visibility=case.visibility,
         case_priority=case_priority,
@@ -1173,12 +1173,13 @@ def handle_edit_submission_event(
     )
 
     case = case_service.update(db_session=db_session, case=case, case_in=case_in, current_user=user)
+
     case_flows.case_update_flow(
         case_id=case.id,
         previous_case=previous_case,
         db_session=db_session,
+        reporter_email=case.reporter.individual.email,
         assignee_email=assignee_email,
-        user_email=user.email,
         organization_slug=context["subject"].organization_slug,
     )
 
@@ -1235,7 +1236,7 @@ def handle_resolve_submission_event(
     user: DispatchUser,
 ):
     ack()
-    # we get the current case, or 'previous_case'
+    # we get the current or previous case
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
     # we run the case status transition flow

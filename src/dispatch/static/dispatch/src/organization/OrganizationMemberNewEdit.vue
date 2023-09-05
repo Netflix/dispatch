@@ -58,7 +58,7 @@
                 <v-radio-group v-model="role" column>
                   <v-tooltip max-width="250px" left>
                     <template #activator="{ on, attrs }">
-                      <v-radio v-bind="attrs" v-on="on" label="Member" value="Member"> </v-radio>
+                      <v-radio v-bind="attrs" v-on="on" label="Member" value="Member" />
                     </template>
                     <span>
                       Members can view and act on incidents, as well as view most other data within
@@ -67,7 +67,7 @@
                   </v-tooltip>
                   <v-tooltip max-width="250px" left>
                     <template #activator="{ on, attrs }">
-                      <v-radio v-bind="attrs" v-on="on" label="Admin" value="Admin"> </v-radio>
+                      <v-radio v-bind="attrs" v-on="on" label="Admin" value="Admin" />
                     </template>
                     <span>
                       Admin privileges on any teams of which they're a member. They can create new
@@ -78,7 +78,7 @@
                   </v-tooltip>
                   <v-tooltip max-width="250px" left>
                     <template #activator="{ on, attrs }">
-                      <v-radio v-bind="attrs" v-on="on" label="Manager" value="Manager"> </v-radio>
+                      <v-radio v-bind="attrs" v-on="on" label="Manager" value="Manager" />
                     </template>
                     <span>
                       Gains admin access on all teams as well as the ability to add and remove
@@ -87,7 +87,7 @@
                   </v-tooltip>
                   <v-tooltip max-width="250px" left>
                     <template #activator="{ on, attrs }">
-                      <v-radio v-bind="attrs" v-on="on" label="Owner" value="Owner"> </v-radio>
+                      <v-radio v-bind="attrs" v-on="on" label="Owner" value="Owner" />
                     </template>
                     <span
                       >Unrestricted access to the organization, its data, and its settings. Can add,

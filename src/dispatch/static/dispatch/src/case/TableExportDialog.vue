@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="showExport" persistent max-width="800px">
-    <template v-slot:activator="{ on }">
+    <template #activator="{ on }">
       <v-btn color="secondary" class="ml-2" v-on="on"> Export </v-btn>
     </template>
     <v-card>
@@ -83,13 +83,13 @@
               :items="items"
               :loading="previewRowsLoading"
             >
-              <template v-slot:item.case_severity.name="{ item }">
+              <template #item.case_severity.name="{ item }">
                 <case-severity :severity="item.case_severity.name" />
               </template>
-              <template v-slot:item.case_priority.name="{ item }">
+              <template #item.case_priority.name="{ item }">
                 <case-priority :priority="item.case_priority.name" />
               </template>
-              <template v-slot:item.status="{ item }">
+              <template #item.status="{ item }">
                 <case-status :status="item.status" :id="item.id" />
               </template>
             </v-data-table>

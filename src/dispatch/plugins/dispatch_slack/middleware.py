@@ -256,7 +256,6 @@ def user_middleware(
         )
         db_session = refetch_db_session(slug)
 
-    user = None
     participant = None
     # in the case of creating new incidents or cases we don't have a subject yet
     if context["subject"].id:
@@ -271,17 +270,18 @@ def user_middleware(
                 db_session=db_session, case_id=context["subject"].id, user_conversation_id=user_id
             )
 
-        if participant:
-            user = user_service.get_or_create(
-                db_session=db_session,
-                organization=context["subject"].organization_slug,
-                user_in=UserRegister(email=participant.individual.email),
-            )
+    user = None
+    if participant:
+        user = user_service.get_or_create(
+            db_session=db_session,
+            organization=context["subject"].organization_slug,
+            user_in=UserRegister(email=participant.individual.email),
+        )
     else:
         email = client.users_info(user=user_id)["user"]["profile"]["email"]
 
         if not email:
-            raise ContextError("Unable to determine user from context.")
+            raise ContextError("Unable to get user email address.")
 
         user = user_service.get_or_create(
             db_session=db_session,

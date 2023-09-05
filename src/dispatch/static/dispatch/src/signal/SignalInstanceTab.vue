@@ -7,25 +7,25 @@
       'items-per-page-options': [25, 50, 100],
     }"
   >
-    <template v-slot:item.signal="{ item }">
+    <template #item.signal="{ item }">
       <signal-popover v-model="item.signal" />
     </template>
-    <template v-slot:item.entities="{ item }">
+    <template #item.entities="{ item }">
       <v-row>
         <v-chip v-for="(entity, index) in item.entities" :key="index" class="mr-2">
           {{ entity.entity_type.name }}
         </v-chip>
       </v-row>
     </template>
-    <template v-slot:item.created_at="{ item }">
+    <template #item.created_at="{ item }">
       <v-tooltip bottom>
-        <template v-slot:activator="{ on, attrs }">
+        <template #activator="{ on, attrs }">
           <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
         </template>
         <span>{{ item.created_at | formatDate }}</span>
       </v-tooltip>
     </template>
-    <template v-slot:item.data-table-actions="{ item }">
+    <template #item.data-table-actions="{ item }">
       <v-btn icon @click="showRun({ type: 'signal', data: item })">
         <v-icon>mdi-play-circle-outline</v-icon>
       </v-btn>

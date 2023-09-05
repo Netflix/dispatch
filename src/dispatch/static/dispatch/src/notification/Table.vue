@@ -37,23 +37,23 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template v-slot:item.filters="{ item }">
+            <template #item.filters="{ item }">
               <search-filter v-for="filter in item.filters" :key="filter.id" :filter="filter" />
             </template>
-            <template v-slot:item.enabled="{ item }">
+            <template #item.enabled="{ item }">
               <v-simple-checkbox v-model="item.enabled" disabled />
             </template>
-            <template v-slot:item.created_at="{ item }">
+            <template #item.created_at="{ item }">
               <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
+                <template #activator="{ on, attrs }">
                   <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
                 </template>
                 <span>{{ item.created_at | formatDate }}</span>
               </v-tooltip>
             </template>
-            <template v-slot:item.data-table-actions="{ item }">
+            <template #item.data-table-actions="{ item }">
               <v-menu bottom left>
-                <template v-slot:activator="{ on }">
+                <template #activator="{ on }">
                   <v-btn icon v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>

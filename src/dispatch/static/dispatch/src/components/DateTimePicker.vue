@@ -13,10 +13,10 @@
           </slot>
         </v-tab>
         <v-tab-item key="calendar">
-          <v-date-picker v-model="date" @input="showTimePicker"></v-date-picker>
+          <v-date-picker v-model="date" @input="showTimePicker" />
         </v-tab-item>
         <v-tab-item key="timer">
-          <v-time-picker v-model="time"></v-time-picker>
+          <v-time-picker v-model="time" />
         </v-tab-item>
       </v-tabs>
     </v-card-text>

@@ -1,6 +1,6 @@
 <template>
-  <v-navigation-drawer v-model="show" app clipped right bottom width="500">
-    <template v-slot:prepend>
+  <v-navigation-drawer app clipped right bottom width="500">
+    <template #prepend>
       <v-list-item two-line>
         <v-list-item-content>
           <v-list-item-subtitle>Details</v-list-item-subtitle>
@@ -27,17 +27,11 @@ export default {
       },
       type: Array,
     },
-    show: {
-      default: function () {
-        return false
-      },
-      type: Boolean,
-    },
   },
 
   methods: {
-    hideSheet: function () {
-      this.$emit("close")
+    hideSheet() {
+      this.$emit("input", false)
     },
   },
 

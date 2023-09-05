@@ -20,7 +20,7 @@
         </v-btn>
         <new-edit-sheet @new-document-created="addItem($event)" />
       </template>
-      <template v-slot:no-data>
+      <template #no-data>
         <v-list-item>
           <v-list-item-content>
             <v-list-item-title>
@@ -30,7 +30,7 @@
           </v-list-item-content>
         </v-list-item>
       </template>
-      <template v-slot:append-item>
+      <template #append-item>
         <v-list-item v-if="more" @click="loadMore()">
           <v-list-item-content>
             <v-list-item-subtitle> Load More </v-list-item-subtitle>

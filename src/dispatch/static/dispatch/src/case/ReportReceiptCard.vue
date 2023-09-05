@@ -16,7 +16,7 @@
       </p>
       <v-list three-line>
         <v-list-group :value="true">
-          <template v-slot:activator>
+          <template #activator>
             <v-list-item-title class="title"> Case Details </v-list-item-title>
           </template>
           <v-list-item-group>
@@ -76,7 +76,7 @@
       </v-list>
       <v-list three-line>
         <v-list-group :value="true">
-          <template v-slot:activator>
+          <template #activator>
             <v-list-item-title class="title"> Case Resources </v-list-item-title>
           </template>
           <span v-if="activeResourcePlugins.ticket">

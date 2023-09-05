@@ -1,34 +1,34 @@
 <template>
   <div>
     <v-data-table :headers="headers" :items="items" :loading="loading">
-      <template v-slot:item.incident_priority.name="{ item }">
+      <template #item.incident_priority.name="{ item }">
         <incident-priority :priority="item.incident_priority.name" />
       </template>
-      <template v-slot:item.status="{ item }">
+      <template #item.status="{ item }">
         <incident-status :status="item.status" :id="item.id" />
       </template>
-      <template v-slot:item.commander="{ item }">
+      <template #item.commander="{ item }">
         <incident-participant :participant="item.commander" />
       </template>
-      <template v-slot:item.reporter="{ item }">
+      <template #item.reporter="{ item }">
         <incident-participant :participant="item.reporter" />
       </template>
-      <template v-slot:item.project.name="{ item }">
+      <template #item.project.name="{ item }">
         <v-chip small :color="item.project.color" text-color="white">
           {{ item.project.name }}
         </v-chip>
       </template>
-      <template v-slot:item.reported_at="{ item }">
+      <template #item.reported_at="{ item }">
         <v-tooltip bottom>
-          <template v-slot:activator="{ on, attrs }">
+          <template #activator="{ on, attrs }">
             <span v-bind="attrs" v-on="on">{{ item.reported_at | formatRelativeDate }}</span>
           </template>
           <span>{{ item.reported_at | formatDate }}</span>
         </v-tooltip>
       </template>
-      <template v-slot:item.data-table-actions="{ item }">
+      <template #item.data-table-actions="{ item }">
         <v-menu bottom left>
-          <template v-slot:activator="{ on }">
+          <template #activator="{ on }">
             <v-btn icon v-on="on">
               <v-icon>mdi-dots-vertical</v-icon>
             </v-btn>

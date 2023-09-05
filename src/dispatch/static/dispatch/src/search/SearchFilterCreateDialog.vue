@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="showCreate" persistent max-width="800px">
-    <template v-slot:activator="{ on }">
+    <template #activator="{ on }">
       <v-btn icon v-on="on">
         <v-icon>add</v-icon>
       </v-btn>
@@ -8,11 +8,11 @@
     <v-card>
       <v-card-title>
         <span class="headline">Create Search Filter</span>
-        <v-spacer></v-spacer>
+        <v-spacer />
         <span>
           <v-radio-group v-model="subject" class="justify-right" row>
-            <v-radio label="Incident" value="incident"></v-radio>
-            <v-radio label="Case" value="case"></v-radio>
+            <v-radio label="Incident" value="incident" />
+            <v-radio label="Case" value="case" />
           </v-radio-group>
         </span>
       </v-card-title>
@@ -145,7 +145,7 @@
                         v-model="expression_str"
                         :options="editorOptions"
                         language="json"
-                      ></MonacoEditor>
+                      />
                     </div>
                   </v-tab-item>
                 </v-tabs>
@@ -168,10 +168,10 @@
                   :items="previewRows.items"
                   :loading="previewRowsLoading"
                 >
-                  <template v-slot:item.incident_priority.name="{ item }">
+                  <template #item.incident_priority.name="{ item }">
                     <incident-priority :priority="item.incident_priority.name" />
                   </template>
-                  <template v-slot:item.status="{ item }">
+                  <template #item.status="{ item }">
                     <incident-status :status="item.status" :id="item.id" />
                   </template>
                 </v-data-table>
@@ -308,7 +308,6 @@ export default {
     }
   },
   components: {
-    CaseApi,
     CasePriorityCombobox,
     CaseTypeCombobox,
     IncidentPriority,

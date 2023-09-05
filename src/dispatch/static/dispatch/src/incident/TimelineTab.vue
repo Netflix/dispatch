@@ -39,7 +39,7 @@
           </v-col>
           <v-col class="text-right" cols="5">
             <v-tooltip bottom>
-              <template v-slot:activator="{ on, attrs }">
+              <template #activator="{ on, attrs }">
                 <span v-bind="attrs" v-on="on" class="wavy-underline">{{
                   event.started_at | formatToUTC
                 }}</span>

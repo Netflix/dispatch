@@ -132,7 +132,7 @@ def case_add_or_reactivate_participant_flow(
                 user_email, case, db_session, service_id=service_id
             )
     else:
-        # we add the participant to the incident
+        # we add the participant to the case
         participant = participant_flows.add_participant(
             user_email, case, db_session, service_id=service_id, role=participant_role
         )
@@ -142,14 +142,14 @@ def case_add_or_reactivate_participant_flow(
             subject=case,
             group=case.tactical_group,
             group_action=GroupAction.add_member,
-            group_member=case.assignee.individual.email,
+            group_member=participant.individual.email,
             db_session=db_session,
         )
 
     if case.status != CaseStatus.closed:
         # we add the participant to the conversation
         if add_to_conversation:
-            add_participants_to_conversation([user_email], case, db_session)
+            add_participants_to_conversation([participant.individual.email], case, db_session)
 
     return participant
 
@@ -368,14 +368,30 @@ def case_update_flow(
     *,
     case_id: int,
     previous_case: CaseRead,
+    reporter_email: str,
     assignee_email: str,
-    user_email: str,
     organization_slug: OrganizationSlug,
     db_session=None,
 ):
     """Runs the case update flow."""
     # we get the case
     case = get(db_session=db_session, case_id=case_id)
+
+    # we run the case assign role flow for the reporter
+    case_assign_role_flow(
+        case_id=case.id,
+        participant_email=reporter_email,
+        participant_role=ParticipantRoleType.reporter,
+        db_session=db_session,
+    )
+
+    # we run the case assign role flow for the assignee
+    case_assign_role_flow(
+        case_id=case.id,
+        participant_email=assignee_email,
+        participant_role=ParticipantRoleType.assignee,
+        db_session=db_session,
+    )
 
     # we run the transition flow based on the current and previous status of the case
     case_status_transition_flow_dispatcher(
@@ -395,30 +411,15 @@ def case_update_flow(
             document=case.case_document, project_id=case.project.id, db_session=db_session
         )
 
-    # we update the tactical group if we have a new assignee
-    if previous_case.assignee.individual.email != assignee_email:
-        log.debug(
-            f"{user_email} updated Case {case_id} assignee from {previous_case.assignee.individual.email} to {assignee_email}"
-        )
-        case_assign_role_flow(
-            case_id=case.id,
-            assignee_email=assignee_email,
-            assignee_role=ParticipantRoleType.assignee,
-            db_session=db_session,
-        )
-        if case.tactical_group:
+    if case.tactical_group:
+        # we update the tactical group
+        for group_member in [reporter_email, assignee_email]:
             group_flows.update_group(
                 subject=case,
                 group=case.tactical_group,
                 group_action=GroupAction.add_member,
-                group_member=case.assignee.individual.email,
+                group_member=group_member,
                 db_session=db_session,
-            )
-            event_service.log_case_event(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description="Case group updated",
-                case_id=case_id,
             )
 
     # we send the case updated notification
@@ -646,15 +647,16 @@ def case_to_incident_endpoint_escalate_flow(
         case_id=case.id,
     )
 
-    # we add the incident's tactical group to the case's storage folder
-    # to allow incident participants to access the case's artifacts in the folder
-    storage_members = [incident.tactical_group.email]
-    storage_flows.update_storage(
-        subject=case,
-        storage_action=StorageAction.add_members,
-        storage_members=storage_members,
-        db_session=db_session,
-    )
+    if case.storage and incident.tactical_group:
+        # we add the incident's tactical group to the case's storage folder
+        # to allow incident participants to access the case's artifacts in the folder
+        storage_members = [incident.tactical_group.email]
+        storage_flows.update_storage(
+            subject=case,
+            storage_action=StorageAction.add_members,
+            storage_members=storage_members,
+            db_session=db_session,
+        )
 
     event_service.log_case_event(
         db_session=db_session,
@@ -666,17 +668,19 @@ def case_to_incident_endpoint_escalate_flow(
 
 def case_assign_role_flow(
     case_id: int,
-    assignee_email: str,
-    assignee_role: str,
+    participant_email: str,
+    participant_role: str,
     db_session: SessionLocal,
 ):
     """Runs the case participant role assignment flow."""
+    # we get the case
     case = get(case_id=case_id, db_session=db_session)
 
-    # we add the assignee to the incident if they're not a participant
-    case_add_or_reactivate_participant_flow(assignee_email, case.id, db_session=db_session)
+    # we add the participant to the incident if they're not a member already
+    case_add_or_reactivate_participant_flow(participant_email, case.id, db_session=db_session)
 
-    role_flow.assign_role_flow(case, assignee_email, assignee_role, db_session)
+    # we run the assign role flow
+    role_flow.assign_role_flow(case, participant_email, participant_role, db_session)
 
 
 def case_create_resources_flow(

@@ -243,10 +243,7 @@ def add_conversation_bookmarks(incident: Incident, db_session: SessionLocal):
             "Ticket bookmark not added. No ticket available for this incident."
         )
 
-        resource_id = (
-            f"dispatch-{incident.project.organization.slug}-{incident.project.slug}-{incident.id}"
-        )
-        dispatch_weblink = f"{DISPATCH_UI_URL}/{incident.project.organization.name}/incidents/{resource_id}?project={incident.project.name}"
+        dispatch_weblink = f"{DISPATCH_UI_URL}/{incident.project.organization.name}/incidents/{incident.name}?project={incident.project.name}"
 
         # only add Dispatch UI ticket if not using Dispatch ticket plugin
         if ticket_weblink != dispatch_weblink:

@@ -43,7 +43,7 @@ export default {
   },
 }
 </script>
-<style lang="stylus" scoped>
+<style scoped>
 .disabled {
   color: grey;
   pointer-events: none;

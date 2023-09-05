@@ -1,9 +1,9 @@
 <template>
   <v-breadcrumbs :items="crumbs">
-    <template v-slot:divider>
+    <template #divider>
       <v-icon>mdi-chevron-right</v-icon>
     </template>
-    <template v-slot:item="{ item }">
+    <template #item="{ item }">
       <v-breadcrumbs-item v-if="item.projectSelect">
         <project-menu-select v-model="project" />
       </v-breadcrumbs-item>

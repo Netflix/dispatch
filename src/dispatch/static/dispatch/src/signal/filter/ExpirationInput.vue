@@ -1,6 +1,6 @@
 <template>
   <v-menu v-model="menu" :close-on-content-click="false" transition="scale-transition">
-    <template v-slot:activator="{ on, attrs }">
+    <template #activator="{ on, attrs }">
       <v-text-field
         v-model="expiration"
         :label="label"
@@ -9,7 +9,7 @@
         clearable
         readonly
         @click:clear="clearExpiration()"
-      ></v-text-field>
+      />
     </template>
     <v-card>
       <v-row>
@@ -31,7 +31,7 @@
         </v-col>
       </v-row>
       <v-card-actions>
-        <v-spacer></v-spacer>
+        <v-spacer />
         <slot name="actions" :parent="this">
           <v-btn color="grey lighten-1" text @click.native="clearExpiration()">Clear</v-btn>
           <v-btn text @click="closeMenu()">Ok</v-btn>

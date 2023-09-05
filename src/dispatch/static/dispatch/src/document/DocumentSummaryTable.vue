@@ -1,20 +1,20 @@
 <template>
   <div>
     <v-data-table :headers="headers" :items="items">
-      <template v-slot:item.name="{ item }">
+      <template #item.name="{ item }">
         <a :href="item.weblink" target="_blank" style="text-decoration: none">
           {{ item.name }}
           <v-icon small>open_in_new</v-icon>
         </a>
       </template>
-      <template v-slot:item.project.name="{ item }">
+      <template #item.project.name="{ item }">
         <v-chip small :color="item.project.color" text-color="white">
           {{ item.project.name }}
         </v-chip>
       </template>
-      <template v-slot:item.data-table-actions="{ item }">
+      <template #item.data-table-actions="{ item }">
         <v-menu bottom left>
-          <template v-slot:activator="{ on }">
+          <template #activator="{ on }">
             <v-btn icon v-on="on">
               <v-icon>mdi-dots-vertical</v-icon>
             </v-btn>

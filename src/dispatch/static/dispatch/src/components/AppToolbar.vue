@@ -26,7 +26,7 @@
     <v-spacer />
     <v-toolbar-items>
       <v-tooltip v-if="!$vuetify.theme.dark" bottom>
-        <template v-slot:activator="{ on }">
+        <template #activator="{ on }">
           <v-btn v-on="on" small icon @click="toggleDarkTheme">
             <v-icon class="mr-1"> mdi-moon-waxing-crescent </v-icon>
           </v-btn>
@@ -34,7 +34,7 @@
         <span>Dark Mode On</span>
       </v-tooltip>
       <v-tooltip v-else bottom>
-        <template v-slot:activator="{ on }">
+        <template #activator="{ on }">
           <v-btn v-on="on" small icon @click="toggleDarkTheme">
             <v-icon>mdi-white-balance-sunny</v-icon>
           </v-btn>
@@ -42,7 +42,7 @@
         <span>Dark Mode Off</span>
       </v-tooltip>
       <v-menu offset-y>
-        <template v-slot:activator="{ on, attrs }">
+        <template #activator="{ on, attrs }">
           <v-btn icon v-bind="attrs" v-on="on">
             <v-icon>help_outline</v-icon>
           </v-btn>
@@ -77,10 +77,10 @@
         </v-list>
       </v-menu>
       <v-menu offset-y>
-        <template v-slot:activator="{ on }">
+        <template #activator="{ on }">
           <v-btn icon large text v-on="on">
             <v-avatar size="30px" v-if="userAvatarUrl(currentUser())">
-              <v-img :src="userAvatarUrl(currentUser())"></v-img>
+              <v-img :src="userAvatarUrl(currentUser())" />
             </v-avatar>
             <v-avatar size="30px" v-else>
               <v-icon> account_circle </v-icon>
@@ -91,26 +91,27 @@
           <v-list>
             <v-list-item class="px-2">
               <v-list-item-avatar v-if="userAvatarUrl(currentUser())">
-                <v-img :src="userAvatarUrl(currentUser())"></v-img>
+                <v-img :src="userAvatarUrl(currentUser())" />
               </v-list-item-avatar>
               <v-list-item-avatar v-else>
                 <v-icon size="30px"> account_circle </v-icon>
               </v-list-item-avatar>
               <v-list-item-content>
-                <v-list-item-title class="title" v-text="currentUser().name || currentUser().email">
+                <v-list-item-title class="title">
+                  {{ currentUser().name || currentUser().email }}
                 </v-list-item-title>
                 <v-list-item-subtitle> {{ currentUser().email }} </v-list-item-subtitle>
               </v-list-item-content>
               <v-list-item-action>
                 <v-tooltip bottom>
-                  <template v-slot:activator="{ on }">
+                  <template #activator="{ on }">
                     <v-btn icon v-on="on" @click="logout()"><v-icon>logout</v-icon></v-btn>
                   </template>
                   <span>Logout</span>
                 </v-tooltip>
               </v-list-item-action>
             </v-list-item>
-            <v-divider></v-divider>
+            <v-divider />
             <v-subheader>Organizations</v-subheader>
             <v-list-item v-for="(item, i) in organizations" :key="i">
               <v-list-item-content>
@@ -119,20 +120,20 @@
               </v-list-item-content>
               <v-list-item-action>
                 <v-tooltip bottom>
-                  <template v-slot:activator="{ on }">
-                    <v-btn icon v-on="on" @click="showCreateEditDialog(item)"
-                      ><v-icon>mdi-pencil-outline</v-icon></v-btn
-                    >
+                  <template #activator="{ on }">
+                    <v-btn icon v-on="on" @click="showCreateEditDialog(item)">
+                      <v-icon>mdi-pencil-outline</v-icon>
+                    </v-btn>
                   </template>
                   <span>Edit Organization</span>
                 </v-tooltip>
               </v-list-item-action>
               <v-list-item-action>
                 <v-tooltip bottom>
-                  <template v-slot:activator="{ on }">
-                    <v-btn @click="switchOrganizations(item.slug)" icon v-on="on"
-                      ><v-icon>mdi-swap-horizontal</v-icon></v-btn
-                    >
+                  <template #activator="{ on }">
+                    <v-btn @click="switchOrganizations(item.slug)" icon v-on="on">
+                      <v-icon>mdi-swap-horizontal</v-icon>
+                    </v-btn>
                   </template>
                   <span>Switch Organization</span>
                 </v-tooltip>
@@ -235,5 +236,3 @@ export default {
   },
 }
 </script>
-
-<style lang="stylus" scoped></style>

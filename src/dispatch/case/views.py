@@ -161,6 +161,22 @@ def update_case(
     background_tasks: BackgroundTasks,
 ):
     """Updates an existing case."""
+    reporter_email = None
+    if case_in.reporter:
+        # we assign the case to the reporter provided
+        reporter_email = case_in.reporter.individual.email
+    elif current_user:
+        # we fall back to assign the case to the current user
+        reporter_email = current_user.email
+
+    assignee_email = None
+    if case_in.assignee:
+        # we assign the case to the assignee provided
+        assignee_email = case_in.assignee.individual.email
+    elif current_user:
+        # we fall back to assign the case to the current user
+        assignee_email = current_user.email
+
     # we store the previous state of the case in order to be able to detect changes
     previous_case = CaseRead.from_orm(current_case)
 
@@ -174,8 +190,8 @@ def update_case(
         case_update_flow,
         case_id=case_id,
         previous_case=previous_case,
-        assignee_email=case_in.assignee.individual.email,
-        user_email=current_user.email,
+        reporter_email=reporter_email,
+        assignee_email=assignee_email,
         organization_slug=organization,
     )
 

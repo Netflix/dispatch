@@ -1,7 +1,7 @@
 <template>
   <ValidationObserver v-slot="{ invalid, validated }">
     <v-navigation-drawer v-model="showCreateEdit" app clipped right width="500">
-      <template v-slot:prepend>
+      <template #prepend>
         <v-list-item two-line>
           <v-list-item-content>
             <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
@@ -165,9 +165,9 @@
           <v-card flat tile>
             <v-app-bar color="white" flat>
               <v-toolbar-title class="subtitle-2"> Entity Configuration </v-toolbar-title>
-              <v-spacer></v-spacer>
+              <v-spacer />
               <v-tooltip max-width="250px" bottom>
-                <template v-slot:activator="{ on, attrs }">
+                <template #activator="{ on, attrs }">
                   <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                 </template>
                 The follow options allow you to control which entities should be pulled from the
@@ -179,7 +179,7 @@
                 v-model="entity_types"
                 :project="project"
                 :signalDefinition="selected"
-              ></entity-type-filter-combobox>
+              />
             </v-card-text>
           </v-card>
         </v-col>
@@ -187,9 +187,9 @@
           <v-card flat tile>
             <v-app-bar color="white" flat>
               <v-toolbar-title class="subtitle-2"> Case Configuration </v-toolbar-title>
-              <v-spacer></v-spacer>
+              <v-spacer />
               <v-tooltip max-width="250px" bottom>
-                <template v-slot:activator="{ on, attrs }">
+                <template #activator="{ on, attrs }">
                   <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                 </template>
                 The following options allow you to configure the type of case that Dispatch will
@@ -216,9 +216,9 @@
           <v-card flat tile>
             <v-app-bar color="white" flat>
               <v-toolbar-title class="subtitle-2"> Filter(s) </v-toolbar-title>
-              <v-spacer></v-spacer>
+              <v-spacer />
               <v-tooltip max-width="250px" bottom>
-                <template v-slot:activator="{ on, attrs }">
+                <template #activator="{ on, attrs }">
                   <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                 </template>
                 Defines a signal filter allowing you to take either a "Snooze" or "Deduplication"
@@ -230,7 +230,7 @@
                 v-model="filters"
                 :project="project"
                 :signalDefinition="selected"
-              ></signal-filter-combobox>
+              />
             </v-card-text>
           </v-card>
         </v-col>
@@ -238,9 +238,9 @@
           <v-card flat tile>
             <v-app-bar color="white" flat>
               <v-toolbar-title class="subtitle-2"> Engagement(s) </v-toolbar-title>
-              <v-spacer></v-spacer>
+              <v-spacer />
               <v-tooltip max-width="250px" bottom>
-                <template v-slot:activator="{ on, attrs }">
+                <template #activator="{ on, attrs }">
                   <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                 </template>
                 Defines an Engagement filter.
@@ -251,7 +251,7 @@
                 v-model="engagements"
                 :project="project"
                 :signalDefinition="selected"
-              ></signal-engagement-combobox>
+              />
             </v-card-text>
           </v-card>
         </v-col>
@@ -259,9 +259,9 @@
           <v-card flat tile>
             <v-app-bar color="white" flat>
               <v-toolbar-title class="subtitle-2"> Workflow(s) </v-toolbar-title>
-              <v-spacer></v-spacer>
+              <v-spacer />
               <v-tooltip max-width="250px" bottom>
-                <template v-slot:activator="{ on, attrs }">
+                <template #activator="{ on, attrs }">
                   <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                 </template>
                 Defines a workflow.
@@ -272,7 +272,7 @@
                 v-model="workflows"
                 :project="project"
                 :signalDefinition="selected"
-              ></workflow-combobox>
+              />
             </v-card-text>
           </v-card>
         </v-col>
@@ -294,7 +294,6 @@ import EntityTypeFilterCombobox from "@/entity_type/EntityTypeFilterCombobox.vue
 import SignalEngagementCombobox from "@/signal/engagement/SignalEngagementCombobox.vue"
 import SignalFilterCombobox from "@/signal/filter/SignalFilterCombobox.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
-import WorkflowSelect from "@/workflow/WorkflowSelect.vue"
 import WorkflowCombobox from "@/workflow/WorkflowCombobox.vue"
 
 extend("required", {
@@ -314,7 +313,6 @@ export default {
     SignalFilterCombobox,
     EntityTypeFilterCombobox,
     TagFilterAutoComplete,
-    WorkflowSelect,
     WorkflowCombobox,
   },
 

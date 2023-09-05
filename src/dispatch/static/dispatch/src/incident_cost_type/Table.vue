@@ -12,8 +12,8 @@
     </v-row>
     <v-row no-gutters>
       <v-col>
-        <v-alert dismissible icon="mdi-school" prominent text type="info"
-          >Incident cost types are line items for incident cost. Add your own for more accurate
+        <v-alert dismissible icon="mdi-school" prominent text type="info">
+          Incident cost types are line items for incident cost. Add your own for more accurate
           incident cost estimates.
         </v-alert>
       </v-col>
@@ -42,26 +42,26 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template v-slot:item.default="{ item }">
+            <template #item.default="{ item }">
               <v-simple-checkbox v-model="item.default" disabled />
             </template>
-            <template v-slot:item.editable="{ item }">
+            <template #item.editable="{ item }">
               <v-simple-checkbox v-model="item.editable" disabled />
             </template>
-            <template v-slot:item.details="{ item }">
+            <template #item.details="{ item }">
               {{ item.details }}
             </template>
-            <template v-slot:item.created_at="{ item }">
+            <template #item.created_at="{ item }">
               <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
+                <template #activator="{ on, attrs }">
                   <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
                 </template>
                 <span>{{ item.created_at | formatDate }}</span>
               </v-tooltip>
             </template>
-            <template v-slot:item.data-table-actions="{ item }">
+            <template #item.data-table-actions="{ item }">
               <v-menu bottom left>
-                <template v-slot:activator="{ on }">
+                <template #activator="{ on }">
                   <v-btn icon v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>

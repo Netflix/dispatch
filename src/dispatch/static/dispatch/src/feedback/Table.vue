@@ -33,25 +33,25 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template v-slot:item.participant="{ item }">
+            <template #item.participant="{ item }">
               <participant v-if="item.participant" :participant="item.participant" />
             </template>
-            <template v-slot:item.created_at="{ item }">
+            <template #item.created_at="{ item }">
               <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
+                <template #activator="{ on, attrs }">
                   <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
                 </template>
                 <span>{{ item.created_at | formatDate }}</span>
               </v-tooltip>
             </template>
-            <template v-slot:item.project.name="{ item }">
+            <template #item.project.name="{ item }">
               <v-chip small :color="item.project.color" text-color="white">
                 {{ item.project.name }}
               </v-chip>
             </template>
-            <template v-slot:item.data-table-actions="{ item }">
+            <template #item.data-table-actions="{ item }">
               <v-menu bottom left>
-                <template v-slot:activator="{ on }">
+                <template #activator="{ on }">
                   <v-btn icon v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>

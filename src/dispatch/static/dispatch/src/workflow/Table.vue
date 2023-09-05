@@ -4,9 +4,9 @@
     <delete-dialog />
     <v-row no-gutters>
       <v-col>
-        <v-alert dismissible icon="mdi-school" prominent text type="info"
-          >Workflows extend Dispatch into existing workflow orchestration systems and can be used
-          for nearly anything as long as they report back their status to Dispatch.
+        <v-alert dismissible icon="mdi-school" prominent text type="info">
+          Workflows extend Dispatch into existing workflow orchestration systems and can be used
+          nearly anything as long as they report back their status to Dispatch.
         </v-alert>
       </v-col>
     </v-row>
@@ -42,15 +42,15 @@
             :sort-by.sync="sortBy"
             :sort-desc.sync="descending"
           >
-            <template v-slot:item.plugin_instance="{ item }">
+            <template #item.plugin_instance="{ item }">
               {{ item.plugin_instance.plugin.title }}
             </template>
-            <template v-slot:item.enabled="{ item }">
+            <template #item.enabled="{ item }">
               <v-simple-checkbox v-model="item.enabled" disabled />
             </template>
-            <template v-slot:item.data-table-actions="{ item }">
+            <template #item.data-table-actions="{ item }">
               <v-menu bottom left>
-                <template v-slot:activator="{ on }">
+                <template #activator="{ on }">
                   <v-btn icon v-on="on">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>
