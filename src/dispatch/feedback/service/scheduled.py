@@ -60,8 +60,6 @@ def find_schedule_and_send(
     )
 
 
-@timer
-@scheduled_project_task
 def oncall_shift_feedback(db_session: SessionLocal, project: Project):
     """
     Experimental: collects feedback from individuals participating in an oncall service that has health metrics enabled
@@ -77,9 +75,12 @@ def oncall_shift_feedback(db_session: SessionLocal, project: Project):
         )
         return
 
-    # Get all oncall services marked for health metrics
+    # Get all oncall services marked for health metrics for this project
     oncall_services = service_service.get_all_by_health_metrics(
-        db_session=db_session, service_type=oncall_plugin.instance.slug, health_metrics=True
+        db_session=db_session,
+        service_type=oncall_plugin.instance.slug,
+        health_metrics=True,
+        project_id=project.id,
     )
 
     for oncall_service in oncall_services:
