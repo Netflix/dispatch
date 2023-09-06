@@ -31,7 +31,7 @@ export default {
 
   methods: {
     hideSheet() {
-      this.$emit("input", false)
+      this.$emit("close", false)
     },
   },
 
