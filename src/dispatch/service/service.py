@@ -148,10 +148,15 @@ def get_all_by_project_id_and_status(
 
 
 def get_all_by_health_metrics(
-    *, db_session, service_type: str, health_metrics: bool
+    *, db_session, service_type: str, health_metrics: bool, project_id: int
 ) -> List[Optional[Service]]:
-    """Gets all services based on the given health metrics value."""
-    return db_session.query(Service).filter(Service.health_metrics.is_(health_metrics)).all()
+    """Gets all services based on the given health metrics value for a given project."""
+    return (
+        db_session.query(Service)
+        .filter(Service.health_metrics.is_(health_metrics))
+        .filter(Service.project_id == project_id)
+        .all()
+    )
 
 
 def create(*, db_session, service_in: ServiceCreate) -> Service:
