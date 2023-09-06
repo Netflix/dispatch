@@ -29,6 +29,7 @@ from dispatch.service import service as service_service
 from dispatch.storage import flows as storage_flows
 from dispatch.task.enums import TaskStatus
 from dispatch.ticket import flows as ticket_flows
+from dispatch.tag.flows import check_for_tag_change
 
 from .messaging import (
     # get_suggested_document_items,
@@ -465,6 +466,19 @@ def conversation_topic_dispatcher(
             source="Incident Participant",
             description=f"{individual.name} changed the incident description",
             details={"description": incident.description},
+            incident_id=incident.id,
+            individual_id=individual.id,
+        )
+
+    description, details = check_for_tag_change(
+        previous_incident_tags=previous_incident.tags, current_incident_tags=incident.tags
+    )
+    if description:
+        event_service.log_incident_event(
+            db_session=db_session,
+            source="Incident Participant",
+            description=f"{individual.name} {description}",
+            details=details,
             incident_id=incident.id,
             individual_id=individual.id,
         )
