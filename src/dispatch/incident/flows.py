@@ -29,6 +29,7 @@ from dispatch.service import service as service_service
 from dispatch.storage import flows as storage_flows
 from dispatch.task.enums import TaskStatus
 from dispatch.ticket import flows as ticket_flows
+from dispatch.tag.flows import check_for_tag_change
 
 from .messaging import (
     # get_suggested_document_items,
@@ -435,35 +436,6 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
     # we send a direct message to all participants asking them
     # to rate and provide feedback about the incident
     send_incident_rating_feedback_message(incident, db_session)
-
-
-def check_for_tag_change(
-    previous_incident_tags: list, current_incident_tags: list
-) -> tuple[str, dict]:
-    """Determines if there is any tag change and builds the description string and details if so"""
-    added_tags = []
-    removed_tags = []
-    description = ""
-    details = {}
-
-    for tag in previous_incident_tags:
-        if tag.id not in [t.id for t in current_incident_tags]:
-            removed_tags.append(f"{tag.tag_type.name}/{tag.name}")
-
-    for tag in current_incident_tags:
-        if tag.id not in [t.id for t in previous_incident_tags]:
-            added_tags.append(f"{tag.tag_type.name}/{tag.name}")
-
-    if added_tags:
-        description = f"added {len(added_tags)} tag{'s' if len(added_tags) > 1 else ''}"
-        details.update({"added tags": ", ".join(added_tags)})
-        if removed_tags:
-            description += " and "
-    if removed_tags:
-        description += f"removed {len(removed_tags)} tag{'s' if len(removed_tags) > 1 else ''}"
-        details.update({"removed tags": ", ".join(removed_tags)})
-
-    return (description, details)
 
 
 def conversation_topic_dispatcher(
