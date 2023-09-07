@@ -1,11 +1,11 @@
 import logging
 from typing import Union
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response, status, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, Response, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.exc import IntegrityError
 
-from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
+from dispatch.auth.permissions import PermissionsDependency, SensitiveProjectActionPermission
 from dispatch.auth.service import CurrentUser
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
@@ -15,11 +15,13 @@ from dispatch.project import service as project_service
 from dispatch.rate_limiter import limiter
 from dispatch.signal import service as signal_service
 
+from .flows import signal_instance_update_flow
 from .models import (
     SignalCreate,
     SignalEngagementCreate,
     SignalEngagementPagination,
     SignalEngagementRead,
+    SignalEnvironment,
     SignalFilterCreate,
     SignalFilterPagination,
     SignalFilterRead,
@@ -43,8 +45,6 @@ from .service import (
     update,
     update_signal_filter,
 )
-
-from .flows import signal_instance_update_flow
 
 router = APIRouter()
 
@@ -75,12 +75,14 @@ def create_signal_instance(
     if not signal_instance_in.signal:
         external_id = signal_instance_in.raw.get("externalId")
         variant = signal_instance_in.raw.get("variant")
+        environment = signal_instance_in.raw.get("environment", SignalEnvironment.PROD)
 
         if external_id or variant:
             signal = signal_service.get_by_variant_or_external_id(
                 db_session=db_session,
                 project_id=project.id,
                 external_id=external_id,
+                environment=environment,
                 variant=variant,
             )
 
