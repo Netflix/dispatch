@@ -225,18 +225,31 @@ def get_by_primary_or_external_id(
 
 
 def get_by_variant_or_external_id(
-    *, db_session: Session, project_id: int, external_id: str = None, variant: str = None
+    *,
+    db_session: Session,
+    project_id: int,
+    environment: str,
+    external_id: str = None,
+    variant: str = None,
 ) -> Optional[Signal]:
     """Gets a signal it's external id (and variant if supplied)."""
     if variant:
         return (
             db_session.query(Signal)
-            .filter(Signal.project_id == project_id, Signal.variant == variant)
+            .filter(
+                Signal.project_id == project_id,
+                Signal.environment == environment,
+                Signal.variant == variant,
+            )
             .one_or_none()
         )
     return (
         db_session.query(Signal)
-        .filter(Signal.project_id == project_id, Signal.external_id == external_id)
+        .filter(
+            Signal.project_id == project_id,
+            Signal.environment == environment,
+            Signal.external_id == external_id,
+        )
         .one_or_none()
     )
 
