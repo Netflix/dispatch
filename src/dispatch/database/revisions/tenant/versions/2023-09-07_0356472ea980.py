@@ -1,7 +1,7 @@
 """Adds new restrict to stable incident priority id
 
 Revision ID: 0356472ea980
-Revises: 4e57f5b1f3f3
+Revises: 1dd78f49e303
 Create Date: 2023-09-01 15:30:52.512886
 
 """
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "0356472ea980"
-down_revision = "4e57f5b1f3f3"
+down_revision = "1dd78f49e303"
 branch_labels = None
 depends_on = None
 
