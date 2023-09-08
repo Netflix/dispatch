@@ -84,7 +84,7 @@ pygments==2.16.1
     # via
     #   devtools
     #   ipython
-pytest==7.4.1
+pytest==7.4.2
     # via -r requirements-dev.in
 python-dateutil==2.8.2
     # via faker
