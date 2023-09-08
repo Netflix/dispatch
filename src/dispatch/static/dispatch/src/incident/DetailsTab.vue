@@ -79,7 +79,7 @@
       <v-flex xs6>
         <ValidationProvider
           name="Incident Priority"
-          rules="lowOnlyForStable:@status,@project"
+          rules="stableRestrictedPriority:@status,@project"
           immediate
         >
           <incident-priority-select
@@ -161,7 +161,7 @@ extend("required", {
   message: "This field is required",
 })
 
-extend("lowOnlyForStable", {
+extend("stableRestrictedPriority", {
   params: ["status", "project"],
   validate(value, { status, project }) {
     if (!project) return true
