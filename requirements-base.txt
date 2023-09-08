@@ -308,7 +308,7 @@ pyrate-limiter==2.10.0
     # via schemathesis
 pyrsistent==0.19.3
     # via jsonschema
-pytest==7.4.1
+pytest==7.4.2
     # via
     #   pytest-subtests
     #   schemathesis
