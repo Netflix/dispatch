@@ -1,5 +1,5 @@
 <template>
-  <v-form @submit.prevent v-slot="{ isValid }">
+  <v-form @submit.prevent="register({ email, password })" v-slot="{ isValid }">
     <v-card class="mx-auto ma-4" max-width="600" flat variant="outlined" :loading="loading">
       <v-card-title> Register </v-card-title>
       <v-card-text>
@@ -16,7 +16,7 @@
             <v-col cols="12" md="12">
               <v-text-field
                 v-model="password"
-                :type="'password'"
+                type="password"
                 label="Password"
                 name="Password"
                 :rules="[rules.required]"
@@ -32,12 +32,7 @@
           </v-list-item-subtitle>
 
           <v-row align="center" justify="end">
-            <v-btn
-              color="info"
-              :loading="loading"
-              :disabled="!isValid.value || !validated"
-              @click="register({ email: email, password: password })"
-            >
+            <v-btn type="submit" color="info" :loading="loading" :disabled="!isValid.value">
               Register
               <template #loader>
                 <v-progress-linear indeterminate color="white" />

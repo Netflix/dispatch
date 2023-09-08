@@ -160,7 +160,7 @@
             </v-card>
           </v-stepper-content>
           <v-stepper-content step="3">
-            <v-form disabled @submit.prevent v-slot="{ isValid }">
+            <v-form @submit.prevent v-slot="{ isValid }">
               <v-card>
                 <v-card-text>
                   Provide a name and description for your filter.
@@ -168,7 +168,7 @@
                       v-model="name"
                       label="Name"
                       hint="A name for your saved search."
-                      
+
                       clearable
                       required
                       name="Name"
@@ -178,7 +178,7 @@
                       v-model="description"
                       label="Description"
                       hint="A short description."
-                      
+
                       clearable
                       auto-grow
                       required
@@ -193,7 +193,7 @@
                     color="info"
                     @click="saveFilter()"
                     :loading="loading"
-                    :disabled="!isValid.value || !validated"
+                    :disabled="!isValid.value"
                   >
                     Save
                   </v-btn>

@@ -24,7 +24,7 @@ module.exports = {
   ],
   rules: {
     "local-rules/icon-button-variant": "error",
-    "local-rules/vee-validate": "error",
+    // "local-rules/vee-validate": "error",
 
     // Conflicts with prettier
     "vue/max-attributes-per-line": "off",

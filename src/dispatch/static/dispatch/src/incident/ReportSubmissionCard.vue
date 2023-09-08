@@ -71,7 +71,7 @@
                 color="info"
                 variant="flat"
                 :loading="loading"
-                :disabled="!isValid.value || !validated"
+                :disabled="!isValid.value"
                 @click="report()"
               >
                 Submit

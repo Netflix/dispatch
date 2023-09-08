@@ -12,7 +12,7 @@
             variant="text"
             color="info"
             :loading="loading"
-            :disabled="!isValid.value || !validated"
+            :disabled="!isValid.value"
             @click="save()"
           >
             <v-icon>save</v-icon>
@@ -163,13 +163,6 @@ import SignalApi from "@/signal/api"
 import SignalDefinitionCombobox from "@/signal/SignalDefinitionCombobox.vue"
 import { isValidJsonPath, isValidRegex } from "@/entity_type/utils.js"
 
-function regexp(value) {
-  return isValidRegex(value) || "Must be a valid regular expression pattern."
-}
-
-function jpath(value) {
-  return isValidJsonPath(value) || "Must be a valid JSON path expression."
-}
 export default {
   setup() {
     return {

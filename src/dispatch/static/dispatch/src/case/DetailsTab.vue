@@ -123,7 +123,6 @@
 
 <script>
 import { required } from "@/util/form"
-
 import { mapFields } from "vuex-map-fields"
 
 import CaseFilterCombobox from "@/case/CaseFilterCombobox.vue"

@@ -53,7 +53,7 @@
           </v-stepper-content>
 
           <v-stepper-content step="2">
-            <v-form disabled @submit.prevent v-slot="{ isValid }">
+            <v-form @submit.prevent v-slot="{ isValid }">
               <v-card>
                 <v-card-text>
                   Provide a name and description for your workflow.
@@ -83,7 +83,7 @@
                     color="info"
                     @click="saveWorkflow()"
                     :loading="loading"
-                    :disabled="!isValid.value || !validated"
+                    :disabled="!isValid.value"
                   >
                     Save
                   </v-btn>

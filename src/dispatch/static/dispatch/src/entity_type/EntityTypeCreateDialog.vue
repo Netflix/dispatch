@@ -94,7 +94,7 @@
             </v-card>
           </v-stepper-content>
           <v-stepper-content step="2">
-            <v-form disabled @submit.prevent v-slot="{ isValid }">
+            <v-form @submit.prevent v-slot="{ isValid }">
               <v-card>
                 <v-card-text>
                   <v-card-text>
@@ -125,7 +125,7 @@
                     color="info"
                     @click="saveEntityType()"
                     :loading="loading"
-                    :disabled="!isValid.value || !validated"
+                    :disabled="!isValid.value"
                   >
                     Save
                   </v-btn>
@@ -148,13 +148,7 @@ import SearchUtils from "@/search/utils"
 import SignalApi from "@/signal/api"
 import EntityTypeApi from "@/entity_type/api"
 import { isValidJsonPath, isValidRegex } from "@/entity_type/utils.js"
-function regexp(value) {
-  return isValidRegex(value) || "Must be a valid regular expression pattern."
-}
 
-function jpath(value) {
-  return isValidJsonPath(value) || "Must be a valid JSON path expression."
-}
 export default {
   setup() {
     return {

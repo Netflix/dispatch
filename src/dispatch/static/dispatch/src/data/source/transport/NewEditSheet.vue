@@ -19,7 +19,7 @@
             variant="text"
             color="info"
             :loading="loading"
-            :disabled="!isValid.value || !validated"
+            :disabled="!isValid.value"
             @click="save()"
           >
             <v-icon>save</v-icon>

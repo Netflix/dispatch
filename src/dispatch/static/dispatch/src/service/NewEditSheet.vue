@@ -7,13 +7,7 @@
           <v-list-item-title v-else class="text-h6"> New </v-list-item-title>
           <v-list-item-subtitle>Service</v-list-item-subtitle>
 
-          <v-btn
-            icon
-            variant="text"
-            color="info"
-            :disabled="!isValid.value || !validated"
-            @click="save()"
-          >
+          <v-btn icon variant="text" color="info" :disabled="!isValid.value" @click="save()">
             <v-icon>save</v-icon>
           </v-btn>
           <v-btn icon variant="text" color="secondary" @click="closeCreateEdit()">

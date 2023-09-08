@@ -12,7 +12,7 @@
             variant="text"
             color="info"
             :loading="loading"
-            :disabled="!isValid.value || !validated"
+            :disabled="!isValid.value"
             @click="save()"
           >
             <v-icon>save</v-icon>
@@ -42,7 +42,7 @@
               <v-flex v-if="!id" xs12>
                 <v-text-field
                   v-model="password"
-                  :type="'password'"
+                  type="password"
                   label="Password"
                   name="Password"
                   :rules="[rules.required]"

@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="showCreateEdit" persistent max-width="600px">
-    <v-form disabled @submit.prevent v-slot="{ isValid }">
+    <v-form @submit.prevent v-slot="{ isValid }">
       <v-card>
         <v-card-title>
           <span class="text-h5" v-if="id">Edit Organization</span>
@@ -70,7 +70,7 @@
             variant="text"
             @click="save()"
             :loading="loading"
-            :disabled="!isValid.value || !validated"
+            :disabled="!isValid.value"
           >
             Update
           </v-btn>
@@ -80,7 +80,7 @@
             variant="text"
             @click="save()"
             :loading="loading"
-            :disabled="!isValid.value || !validated"
+            :disabled="!isValid.value"
           >
             Create
           </v-btn>
