@@ -80,35 +80,35 @@
                 />
               </v-flex>
               <v-flex xs12>
-                <ValidationObserver disabled>
+                <v-form @submit.prevent>
                   <template-select
                     :project="project"
                     label="Case Template"
                     v-model="case_template_document"
                     resource-type="dispatch-case-document-template"
                   />
-                </ValidationObserver>
+                </v-form>
               </v-flex>
               <v-flex xs12>
-                <ValidationObserver disabled>
+                <v-form @submit.prevent>
                   <service-select
                     :project="project"
                     label="Oncall Service"
                     v-model="oncall_service"
                   />
-                </ValidationObserver>
+                </v-form>
               </v-flex>
               <v-flex xs6>
                 <project-select label="Incident Project" v-model="incidentProject" />
               </v-flex>
               <v-flex xs6>
-                <ValidationObserver disabled>
+                <v-form @submit.prevent>
                   <incident-type-select
                     label="Incident Type"
                     :project="incidentProject"
                     v-model="incident_type"
                   />
-                </ValidationObserver>
+                </v-form>
               </v-flex>
               <v-flex xs 12>
                 <v-checkbox

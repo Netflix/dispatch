@@ -160,18 +160,13 @@ extend("required", {
   ...required,
   message: "This field is required",
 })
-extend("regexp", {
-  validate(value) {
-    return isValidRegex(value)
-  },
-  message: "Must be a valid regular expression pattern.",
-})
-extend("jpath", {
-  validate(value) {
-    return isValidJsonPath(value)
-  },
-  message: "Must be a valid JSON path expression.",
-})
+function regexp(value) {
+  return isValidRegex(value) || "Must be a valid regular expression pattern."
+}
+
+function jpath(value) {
+  return isValidJsonPath(value) || "Must be a valid JSON path expression."
+}
 export default {
   name: "EntityTypeCreateDialog",
   props: {

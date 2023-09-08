@@ -128,13 +128,13 @@
                   />
                 </v-col>
                 <v-col cols="12">
-                  <ValidationObserver disabled>
+                  <v-form @submit.prevent>
                     <service-select
                       :project="project"
                       label="Oncall Service"
                       v-model="oncall_service"
                     />
-                  </ValidationObserver>
+                  </v-form>
                 </v-col>
                 <v-col cols="12">
                   <ValidationProvider name="ConversationTarget" immediate>

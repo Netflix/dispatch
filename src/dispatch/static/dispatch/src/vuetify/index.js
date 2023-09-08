@@ -4,6 +4,11 @@ import { createVuetify } from "vuetify"
 
 export function vuetifyPlugin(app) {
   const vuetify = createVuetify({
+    defaults: {
+      VTextField: {
+        variant: "underlined",
+      },
+    },
     theme: {
       themes: {
         light: {

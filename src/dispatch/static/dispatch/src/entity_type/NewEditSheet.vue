@@ -170,21 +170,17 @@ import SignalApi from "@/signal/api"
 import SignalDefinitionCombobox from "@/signal/SignalDefinitionCombobox.vue"
 import { isValidJsonPath, isValidRegex } from "@/entity_type/utils.js"
 
+function regexp(value) {
+  return isValidRegex(value) || "Must be a valid regular expression pattern."
+}
+
+function jpath(value) {
+  return isValidJsonPath(value) || "Must be a valid JSON path expression."
+}
+
 extend("required", {
   ...required,
   message: "This field is required",
-})
-extend("regexp", {
-  validate(value) {
-    return isValidRegex(value)
-  },
-  message: "Must be a valid regular expression pattern.",
-})
-extend("jpath", {
-  validate(value) {
-    return isValidJsonPath(value)
-  },
-  message: "Must be a valid JSON path expression.",
 })
 export default {
   name: "EntityTypeCreateSheet",

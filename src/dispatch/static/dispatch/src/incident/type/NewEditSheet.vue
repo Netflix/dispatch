@@ -67,44 +67,44 @@
                 />
               </v-flex>
               <v-flex xs12>
-                <ValidationObserver disabled>
+                <v-form @submit.prevent>
                   <template-select
                     :project="project"
                     label="Incident Template"
                     v-model="incident_template_document"
                     resource-type="dispatch-incident-document-template"
                   />
-                </ValidationObserver>
+                </v-form>
               </v-flex>
               <v-flex xs12>
-                <ValidationObserver disabled>
+                <v-form @submit.prevent>
                   <template-select
                     :project="project"
                     label="Executive Template"
                     v-model="executive_template_document"
                     resource-type="dispatch-executive-report-document-template"
                   />
-                </ValidationObserver>
+                </v-form>
               </v-flex>
               <v-flex xs12>
-                <ValidationObserver disabled>
+                <v-form @submit.prevent>
                   <template-select
                     :project="project"
                     label="Review Template"
                     v-model="review_template_document"
                     resource-type="dispatch-incident-review-document-template"
                   />
-                </ValidationObserver>
+                </v-form>
               </v-flex>
               <v-flex xs12>
-                <ValidationObserver disabled>
+                <v-form @submit.prevent>
                   <template-select
                     :project="project"
                     label="Tracking Template"
                     v-model="tracking_template_document"
                     resource-type="dispatch-incident-tracking-template"
                   />
-                </ValidationObserver>
+                </v-form>
               </v-flex>
               <v-flex xs 12>
                 <v-checkbox

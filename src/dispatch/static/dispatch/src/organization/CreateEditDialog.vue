@@ -9,29 +9,24 @@
         <v-card-text>
           Organizations represent the top-level in your hierarchy. You'll be able to bundle a
           collection of projects within an organization.
-          <ValidationProvider name="Name" rules="required" immediate>
-            <v-text-field
-              v-if="id"
-              v-model="name"
-              label="Name"
-              hint="A name for your organization. Note: it can't be modified once the organization has been created."
-              slot-scope="{ errors, valid }"
-              :error-messages="errors"
-              :success="valid"
-              disabled
-            />
-            <v-text-field
-              v-else
-              v-model="name"
-              label="Name"
-              hint="A name for your organization. Note: it can't be modified once the organization has been created."
-              slot-scope="{ errors, valid }"
-              :error-messages="errors"
-              :success="valid"
-              clearable
-              required
-            />
-          </ValidationProvider>
+          <v-text-field
+            v-if="id"
+            v-model="name"
+            name="Name"
+            label="Name"
+            hint="A name for your organization. Note: it can't be modified once the organization has been created."
+            disabled
+          />
+          <v-text-field
+            v-else
+            v-model="name"
+            name="Name"
+            label="Name"
+            hint="A name for your organization. Note: it can't be modified once the organization has been created."
+            clearable
+            required
+            :rules="[rules.required]"
+          />
           <ValidationProvider name="Description" rules="required" immediate>
             <v-textarea
               v-model="description"

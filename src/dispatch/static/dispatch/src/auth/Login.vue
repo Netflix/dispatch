@@ -1,82 +1,66 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
+  <v-form @submit.prevent="onSubmit" v-slot="{ isValid }">
     <v-card class="mx-auto ma-4" max-width="600" flat variant="outlined" :loading="loading">
       <v-card-title> Login </v-card-title>
       <v-card-text>
         <v-container>
           <v-row>
             <v-col cols="12" md="12">
-              <ValidationProvider name="Email" rules="required|email" immediate>
-                <v-text-field
-                  v-model="email"
-                  label="Email"
-                  slot-scope="{ errors, valid }"
-                  :error-messages="errors"
-                  :success="valid"
-                />
-              </ValidationProvider>
+              <v-text-field
+                v-model="email"
+                label="Email"
+                name="Email"
+                :rules="[rules.required, rules.email]"
+              />
             </v-col>
             <v-col cols="12" md="12">
-              <ValidationProvider name="Password" rules="required" immediate>
-                <v-text-field
-                  v-model="password"
-                  :type="'password'"
-                  label="Password"
-                  slot-scope="{ errors, valid }"
-                  :error-messages="errors"
-                  :success="valid"
-                />
-              </ValidationProvider>
+              <v-text-field
+                v-model="password"
+                type="password"
+                label="Password"
+                name="Password"
+                :rules="[rules.required]"
+              />
             </v-col>
           </v-row>
         </v-container>
       </v-card-text>
       <v-card-actions>
-        <v-list-item lines="two">
-          <v-list-item-content v-if="registrationEnabled">
-            <v-list-item-subtitle>
-              Don't have a account?
-              <router-link :to="{ name: 'BasicRegister' }"> Register </router-link>
-            </v-list-item-subtitle>
-          </v-list-item-content>
-          <v-row align="center" justify="end">
-            <v-btn
-              color="info"
-              :loading="loading"
-              :disabled="invalid || !validated"
-              @click="basicLogin({ email: email, password: password })"
-            >
-              Login
-              <template #loader>
-                <v-progress-linear indeterminate color="white" />
-              </template>
-            </v-btn>
-          </v-row>
-        </v-list-item>
+        <div v-if="registrationEnabled" class="text-subheader-2 pl-4 text-medium-emphasis">
+          Don't have a account?
+          <router-link :to="{ name: 'BasicRegister' }"> Register </router-link>
+        </div>
+        <v-spacer />
+        <v-btn
+          type="submit"
+          color="info"
+          variant="elevated"
+          :loading="loading"
+          :disabled="!isValid.value"
+        >
+          Login
+          <template #loader>
+            <v-progress-linear indeterminate color="white" />
+          </template>
+        </v-btn>
       </v-card-actions>
     </v-card>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
+import { required, email } from "@/util/form"
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
-import { required, email } from "vee-validate/dist/rules"
+
 const registrationEnabled =
   import.meta.env.VITE_DISPATCH_AUTH_REGISTRATION_ENABLED === "false" ? false : true
 
-extend("email", email)
-
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-
 export default {
-  components: {
-    ValidationProvider,
-    ValidationObserver,
+  setup() {
+    return {
+      rules: { required, email },
+    }
   },
   data() {
     return {
@@ -90,6 +74,11 @@ export default {
   },
   methods: {
     ...mapActions("auth", ["basicLogin"]),
+    async onSubmit(e) {
+      if (!(await e).valid) return
+
+      this.basicLogin({ email: this.email, password: this.password })
+    },
   },
 }
 </script>
