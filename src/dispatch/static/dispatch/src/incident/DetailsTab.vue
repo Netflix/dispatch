@@ -2,32 +2,26 @@
   <v-container grid-list-md>
     <v-layout wrap>
       <v-flex xs12>
-        <ValidationProvider name="Title" rules="required" immediate>
-          <v-text-field
-            v-model="title"
-            slot-scope="{ errors, valid }"
-            :error-messages="errors"
-            :success="valid"
-            label="Title"
-            hint="Title of the incident."
-            clearable
-            required
-          />
-        </ValidationProvider>
+        <v-text-field
+          v-model="title"
+          label="Title"
+          hint="Title of the incident."
+          clearable
+          required
+          name="Title"
+          :rules="[rules.required]"
+        />
       </v-flex>
       <v-flex xs12>
-        <ValidationProvider name="Description" rules="required" immediate>
-          <v-textarea
-            v-model="description"
-            slot-scope="{ errors, valid }"
-            :error-messages="errors"
-            :success="valid"
-            label="Description"
-            hint="Description of the incident."
-            clearable
-            required
-          />
-        </ValidationProvider>
+        <v-textarea
+          v-model="description"
+          label="Description"
+          hint="Description of the incident."
+          clearable
+          required
+          name="Description"
+          :rules="[rules.required]"
+        />
       </v-flex>
       <v-flex xs12>
         <v-textarea
@@ -38,34 +32,28 @@
         />
       </v-flex>
       <v-flex xs6>
-        <ValidationProvider name="Reporter" rules="required" immediate>
-          <participant-select
-            v-model="reporter"
-            slot-scope="{ errors, valid }"
-            label="Reporter"
-            :error-messages="errors"
-            :success="valid"
-            hint="The participant who reported the incident."
-            clearable
-            required
-            :project="project"
-          />
-        </ValidationProvider>
+        <participant-select
+          v-model="reporter"
+          label="Reporter"
+          hint="The participant who reported the incident."
+          clearable
+          required
+          :project="project"
+          name="Reporter"
+          :rules="[rules.required]"
+        />
       </v-flex>
       <v-flex xs6>
-        <ValidationProvider name="Incident Commander" rules="required" immediate>
-          <participant-select
-            v-model="commander"
-            slot-scope="{ errors, valid }"
-            label="Incident Commander"
-            :error-messages="errors"
-            :success="valid"
-            hint="The participant acting as incident commander."
-            clearable
-            required
-            :project="project"
-          />
-        </ValidationProvider>
+        <participant-select
+          v-model="commander"
+          label="Incident Commander"
+          hint="The participant acting as incident commander."
+          clearable
+          required
+          :project="project"
+          name="Incident Commander"
+          :rules="[rules.required]"
+        />
       </v-flex>
       <v-flex xs6>
         <project-select v-model="project" />
@@ -125,9 +113,9 @@
 </template>
 
 <script>
-import { ValidationProvider, extend } from "vee-validate"
+import { required } from "@/util/form"
+
 import { mapFields } from "vuex-map-fields"
-import { required } from "vee-validate/dist/rules"
 
 import CaseFilterCombobox from "@/case/CaseFilterCombobox.vue"
 import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
@@ -139,12 +127,12 @@ import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "IncidentDetailsTab",
 
   components: {
@@ -157,7 +145,6 @@ export default {
     ParticipantSelect,
     ProjectSelect,
     TagFilterAutoComplete,
-    ValidationProvider,
   },
 
   data() {

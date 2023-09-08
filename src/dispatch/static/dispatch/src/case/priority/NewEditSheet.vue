@@ -1,5 +1,5 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
+  <v-form @submit.prevent v-slot="{ isValid }">
     <v-navigation-drawer v-model="showCreateEdit" app clipped location="right" width="500">
       <template #prepend>
         <v-list-item lines="two">
@@ -12,7 +12,7 @@
             variant="text"
             color="info"
             :loading="loading"
-            :disabled="invalid || !validated"
+            :disabled="!isValid.value || !validated"
             @click="save()"
           >
             <v-icon>save</v-icon>
@@ -30,47 +30,38 @@
                 <span class="text-subtitle-2">Details</span>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Name" rules="required" immediate>
-                  <v-text-field
-                    v-model="name"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Name"
-                    hint="A name for your case priority."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="name"
+                  label="Name"
+                  hint="A name for your case priority."
+                  clearable
+                  required
+                  name="Name"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Description" rules="required" immediate>
-                  <v-textarea
-                    v-model="description"
-                    slot-scope="{ errors, valid }"
-                    label="Description"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="A description for your case priority."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-textarea
+                  v-model="description"
+                  label="Description"
+                  hint="A description for your case priority."
+                  clearable
+                  required
+                  name="Description"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="View Order" rules="required" immediate>
-                  <v-text-field
-                    v-model="view_order"
-                    slot-scope="{ errors, valid }"
-                    label="View Order"
-                    :error-messages="errors"
-                    :success="valid"
-                    type="number"
-                    hint="Enter a value to indicate the order in which you want this priority to be shown in a list (lowest numbers are shown first)."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="view_order"
+                  label="View Order"
+                  type="number"
+                  hint="Enter a value to indicate the order in which you want this priority to be shown in a list (lowest numbers are shown first)."
+                  clearable
+                  required
+                  name="View Order"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
                 <v-checkbox
@@ -101,29 +92,27 @@
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { required } from "@/util/form"
+
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
-import { required } from "vee-validate/dist/rules"
 
 import ColorPickerInput from "@/components/ColorPickerInput.vue"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "CasePriorityNewEditSheet",
 
   components: {
     ColorPickerInput,
-    ValidationObserver,
-    ValidationProvider,
   },
 
   data() {

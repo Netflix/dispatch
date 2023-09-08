@@ -31,12 +31,17 @@
                   <v-tab>Basic</v-tab>
                   <v-tab>Advanced</v-tab>
                   <v-tab-item>
-                    <ValidationProvider name="Action" rules="required" immediate>
-                      <v-radio-group label="Action" v-model="action" row class="justify-right">
-                        <v-radio label="Snooze" value="snooze" />
-                        <v-radio label="Deduplicate" value="deduplicate" />
-                      </v-radio-group>
-                    </ValidationProvider>
+                    <v-radio-group
+                      label="Action"
+                      v-model="action"
+                      row
+                      class="justify-right"
+                      name="Action"
+                      :rules="[rules.required]"
+                    >
+                      <v-radio label="Snooze" value="snooze" />
+                      <v-radio label="Deduplicate" value="deduplicate" />
+                    </v-radio-group>
                     <span v-if="action === 'deduplicate'">
                       <entity-type-filter-combobox
                         :project="project"
@@ -102,34 +107,28 @@
             </v-card>
           </v-stepper-content>
           <v-stepper-content step="3">
-            <ValidationObserver disabled v-slot="{ invalid, validated }">
+            <v-form disabled @submit.prevent v-slot="{ isValid }">
               <v-card>
                 <v-card-text>
                   Provide a name and description for your filter.
-                  <ValidationProvider name="Name" rules="required" immediate>
-                    <v-text-field
-                      v-model="name"
-                      label="Name"
-                      hint="A name for your saved search."
-                      slot-scope="{ errors, valid }"
-                      :error-messages="errors"
-                      :success="valid"
-                      clearable
-                      required
-                    />
-                  </ValidationProvider>
-                  <ValidationProvider name="Description" rules="required" immediate>
-                    <v-textarea
-                      v-model="description"
-                      label="Description"
-                      hint="A short description."
-                      slot-scope="{ errors, valid }"
-                      :error-messages="errors"
-                      :success="valid"
-                      clearable
-                      auto-grow
-                    />
-                  </ValidationProvider>
+                  <v-text-field
+                    v-model="name"
+                    label="Name"
+                    hint="A name for your saved search."
+                    clearable
+                    required
+                    name="Name"
+                    :rules="[rules.required]"
+                  />
+                  <v-textarea
+                    v-model="description"
+                    label="Description"
+                    hint="A short description."
+                    clearable
+                    auto-grow
+                    name="Description"
+                    :rules="[rules.required]"
+                  />
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer />
@@ -138,13 +137,13 @@
                     color="info"
                     @click="saveFilter()"
                     :loading="loading"
-                    :disabled="invalid || !validated"
+                    :disabled="!isValid.value || !validated"
                   >
                     Save
                   </v-btn>
                 </v-card-actions>
               </v-card>
-            </ValidationObserver>
+            </v-form>
           </v-stepper-content>
         </v-stepper-items>
       </v-stepper>
@@ -155,10 +154,11 @@
 <script>
 // import MonacoEditor from "monaco-editor-vue"
 
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { required } from "@/util/form"
+
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
-import { required } from "vee-validate/dist/rules"
+
 import SearchUtils from "@/search/utils"
 import SignalApi from "@/signal/api"
 import EntityTypeFilterCombobox from "@/entity_type/EntityTypeFilterCombobox.vue"
@@ -166,12 +166,12 @@ import EntityFilterCombobox from "@/entity/EntityFilterCombobox.vue"
 import RawSignalViewer from "@/signal/RawSignalViewer.vue"
 
 import ExpirationInput from "@/signal/filter/ExpirationInput.vue"
-
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "SignalFilterCreateDialog",
   props: {
     value: {
@@ -211,8 +211,6 @@ export default {
   components: {
     EntityFilterCombobox,
     EntityTypeFilterCombobox,
-    ValidationObserver,
-    ValidationProvider,
     RawSignalViewer,
     ExpirationInput,
     // MonacoEditor,

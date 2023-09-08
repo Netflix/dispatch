@@ -1,34 +1,29 @@
 <template>
-  <ValidationProvider name="reference" immediate>
-    <v-autocomplete
-      v-model="reference"
-      :items="items"
-      v-model:search="search"
-      :menu-props="{ maxHeight: '400' }"
-      slot-scope="{ errors, valid }"
-      :error-messages="errors"
-      :success="valid"
-      item-title="name"
-      :label="label"
-      placeholder="Start typing to search"
-      return-object
-      :loading="loading"
-      no-filter
-    >
-      <reference slot="append-outer">
-        <v-btn icon variant="text" @click="createEditShow({})">
-          <v-icon>add</v-icon>
-        </v-btn>
-        <new-edit-sheet @new-document-created="addItem($event)" />
-      </reference>
-    </v-autocomplete>
-  </ValidationProvider>
+  <v-autocomplete
+    v-model="reference"
+    :items="items"
+    v-model:search="search"
+    :menu-props="{ maxHeight: '400' }"
+    item-title="name"
+    :label="label"
+    placeholder="Start typing to search"
+    return-object
+    :loading="loading"
+    no-filter
+    name="reference"
+  >
+    <reference slot="append-outer">
+      <v-btn icon variant="text" @click="createEditShow({})">
+        <v-icon>add</v-icon>
+      </v-btn>
+      <new-edit-sheet @new-document-created="addItem($event)" />
+    </reference>
+  </v-autocomplete>
 </template>
 
 <script>
 import { mapActions } from "vuex"
 import { cloneDeep } from "lodash"
-import { ValidationProvider } from "vee-validate"
 
 import DocumentApi from "@/document/api"
 import NewEditSheet from "@/document/reference/TemplateNewEditSheet.vue"
@@ -58,7 +53,6 @@ export default {
   },
 
   components: {
-    ValidationProvider,
     NewEditSheet,
   },
 

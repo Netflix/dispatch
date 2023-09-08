@@ -73,8 +73,6 @@ export default {
     },
   },
 
-  components: {},
-
   methods: {
     ...mapActions("term", ["getMembers", "selectMember"]),
     ...mapMutations("term", ["SET_TERMS", "SELECT_TERM"]),

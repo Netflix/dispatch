@@ -19,7 +19,6 @@ import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
 export default {
   name: "WorkflowTableFilterDialog",
-  components: {},
   data() {
     return {
       display: false,

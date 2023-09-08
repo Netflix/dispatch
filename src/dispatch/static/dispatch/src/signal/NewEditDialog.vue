@@ -1,5 +1,5 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
+  <v-form @submit.prevent v-slot="{ isValid }">
     <v-navigation-drawer v-model="showCreateEdit" app clipped location="right" width="500">
       <template #prepend>
         <v-list-item lines="two">
@@ -12,7 +12,7 @@
             variant="text"
             color="info"
             :loading="loading"
-            :disabled="invalid || !validated"
+            :disabled="!isValid.value || !validated"
             @click="save()"
           >
             <v-icon>save</v-icon>
@@ -28,90 +28,69 @@
             <v-card-text>
               <v-row no-gutters>
                 <v-col cols="12">
-                  <ValidationProvider name="Name" rules="required" immediate>
-                    <v-text-field
-                      v-model="name"
-                      slot-scope="{ errors, valid }"
-                      :error-messages="errors"
-                      :success="valid"
-                      label="Name"
-                      persistent-hint
-                      hint="A human readable display name for this signal."
-                      clearable
-                    />
-                  </ValidationProvider>
+                  <v-text-field
+                    v-model="name"
+                    label="Name"
+                    persistent-hint
+                    hint="A human readable display name for this signal."
+                    clearable
+                    name="Name"
+                    :rules="[rules.required]"
+                  />
                 </v-col>
                 <v-col cols="12">
-                  <ValidationProvider name="Description" immediate>
-                    <v-textarea
-                      v-model="description"
-                      slot-scope="{ errors, valid }"
-                      label="Description"
-                      :error-messages="errors"
-                      :success="valid"
-                      rows="1"
-                      auto-grow
-                      hint="A short description of the signal."
-                      persistent-hint
-                      clearable
-                    />
-                  </ValidationProvider>
+                  <v-textarea
+                    v-model="description"
+                    label="Description"
+                    rows="1"
+                    auto-grow
+                    hint="A short description of the signal."
+                    persistent-hint
+                    clearable
+                    name="Description"
+                  />
                 </v-col>
                 <v-col cols="12">
-                  <ValidationProvider name="variant" immediate>
-                    <v-text-field
-                      v-model="variant"
-                      slot-scope="{ errors, valid }"
-                      :error-messages="errors"
-                      :success="valid"
-                      label="Variant"
-                      hint="The same signal can have multiple variants with different defintions."
-                      persistent-hint
-                      clearable
-                    />
-                  </ValidationProvider>
+                  <v-text-field
+                    v-model="variant"
+                    label="Variant"
+                    hint="The same signal can have multiple variants with different defintions."
+                    persistent-hint
+                    clearable
+                    name="variant"
+                  />
                 </v-col>
                 <v-col cols="12">
-                  <ValidationProvider name="owner" rules="required" immediate>
-                    <v-text-field
-                      v-model="owner"
-                      slot-scope="{ errors, valid }"
-                      :error-messages="errors"
-                      :success="valid"
-                      label="Owner"
-                      hint="Typically the team or owner that produces the signal."
-                      persistent-hint
-                      clearable
-                    />
-                  </ValidationProvider>
+                  <v-text-field
+                    v-model="owner"
+                    label="Owner"
+                    hint="Typically the team or owner that produces the signal."
+                    persistent-hint
+                    clearable
+                    name="owner"
+                    :rules="[rules.required]"
+                  />
                 </v-col>
                 <v-col cols="12">
-                  <ValidationProvider name="externalId" rules="required" immediate>
-                    <v-text-field
-                      v-model="external_id"
-                      slot-scope="{ errors, valid }"
-                      :error-messages="errors"
-                      :success="valid"
-                      label="External ID"
-                      hint="This ID will be used to correctly associate incoming signals to this definition."
-                      persistent-hint
-                      clearable
-                    />
-                  </ValidationProvider>
+                  <v-text-field
+                    v-model="external_id"
+                    label="External ID"
+                    hint="This ID will be used to correctly associate incoming signals to this definition."
+                    persistent-hint
+                    clearable
+                    name="externalId"
+                    :rules="[rules.required]"
+                  />
                 </v-col>
                 <v-col cols="12">
-                  <ValidationProvider name="externalURL" immediate>
-                    <v-text-field
-                      v-model="external_url"
-                      slot-scope="{ errors, valid }"
-                      :error-messages="errors"
-                      :success="valid"
-                      label="External URL"
-                      hint="This is a reference to an external app or documentation for this signal."
-                      persistent-hint
-                      clearable
-                    />
-                  </ValidationProvider>
+                  <v-text-field
+                    v-model="external_url"
+                    label="External URL"
+                    hint="This is a reference to an external app or documentation for this signal."
+                    persistent-hint
+                    clearable
+                    name="externalURL"
+                  />
                 </v-col>
                 <v-col cols="12">
                   <v-checkbox
@@ -137,17 +116,13 @@
                   </v-form>
                 </v-col>
                 <v-col cols="12">
-                  <ValidationProvider name="ConversationTarget" immediate>
-                    <v-text-field
-                      v-model="conversation_target"
-                      slot-scope="{ errors, valid }"
-                      :error-messages="errors"
-                      :success="valid"
-                      label="Conversation Target"
-                      hint="The conversation identifier that new case messages will be sent to."
-                      clearable
-                    />
-                  </ValidationProvider>
+                  <v-text-field
+                    v-model="conversation_target"
+                    label="Conversation Target"
+                    hint="The conversation identifier that new case messages will be sent to."
+                    clearable
+                    name="ConversationTarget"
+                  />
                 </v-col>
                 <v-col cols="12">
                   <tag-filter-auto-complete
@@ -278,14 +253,13 @@
         </v-col>
       </v-row>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
+import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
-import { required } from "vee-validate/dist/rules"
 
 import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import ServiceSelect from "@/service/ServiceSelect.vue"
@@ -296,16 +270,15 @@ import SignalFilterCombobox from "@/signal/filter/SignalFilterCombobox.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 import WorkflowCombobox from "@/workflow/WorkflowCombobox.vue"
 
-extend("required", {
-  ...required,
-})
-
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "SignalNewEditDialog",
 
   components: {
-    ValidationObserver,
-    ValidationProvider,
     ServiceSelect,
     CaseTypeSelect,
     CasePrioritySelect,

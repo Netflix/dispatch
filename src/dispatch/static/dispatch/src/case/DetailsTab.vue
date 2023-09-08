@@ -2,32 +2,26 @@
   <v-container grid-list-md>
     <v-layout wrap>
       <v-flex xs12>
-        <ValidationProvider name="Title" rules="required" immediate>
-          <v-text-field
-            v-model="title"
-            slot-scope="{ errors, valid }"
-            :error-messages="errors"
-            :success="valid"
-            label="Title"
-            hint="Title of the case."
-            clearable
-            required
-          />
-        </ValidationProvider>
+        <v-text-field
+          v-model="title"
+          label="Title"
+          hint="Title of the case."
+          clearable
+          required
+          name="Title"
+          :rules="[rules.required]"
+        />
       </v-flex>
       <v-flex xs12>
-        <ValidationProvider name="Description" rules="required" immediate>
-          <v-textarea
-            v-model="description"
-            slot-scope="{ errors, valid }"
-            :error-messages="errors"
-            :success="valid"
-            label="Description"
-            hint="Description of the case."
-            clearable
-            required
-          />
-        </ValidationProvider>
+        <v-textarea
+          v-model="description"
+          label="Description"
+          hint="Description of the case."
+          clearable
+          required
+          name="Description"
+          :rules="[rules.required]"
+        />
       </v-flex>
       <v-flex xs12>
         <v-select
@@ -128,9 +122,9 @@
 </template>
 
 <script>
-import { ValidationProvider, extend } from "vee-validate"
+import { required } from "@/util/form"
+
 import { mapFields } from "vuex-map-fields"
-import { required } from "vee-validate/dist/rules"
 
 import CaseFilterCombobox from "@/case/CaseFilterCombobox.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
@@ -142,12 +136,12 @@ import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "CaseDetailsTab",
 
   components: {
@@ -160,7 +154,6 @@ export default {
     ParticipantSelect,
     ProjectSelect,
     TagFilterAutoComplete,
-    ValidationProvider,
   },
 
   data() {

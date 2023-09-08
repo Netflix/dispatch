@@ -25,8 +25,6 @@ import { mapFields } from "vuex-map-fields"
 export default {
   name: "SourceDetailsTab",
 
-  components: {},
-
   computed: {
     ...mapFields("source", ["selected.schema", "selected.example_log", "selected.loading"]),
   },

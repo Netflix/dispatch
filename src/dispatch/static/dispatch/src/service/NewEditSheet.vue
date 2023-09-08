@@ -1,5 +1,5 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
+  <v-form @submit.prevent v-slot="{ isValid }">
     <v-navigation-drawer v-model="showCreateEdit" app clipped location="right" width="500">
       <template #prepend>
         <v-list-item lines="two">
@@ -7,7 +7,13 @@
           <v-list-item-title v-else class="text-h6"> New </v-list-item-title>
           <v-list-item-subtitle>Service</v-list-item-subtitle>
 
-          <v-btn icon variant="text" color="info" :disabled="invalid || !validated" @click="save()">
+          <v-btn
+            icon
+            variant="text"
+            color="info"
+            :disabled="!isValid.value || !validated"
+            @click="save()"
+          >
             <v-icon>save</v-icon>
           </v-btn>
           <v-btn icon variant="text" color="secondary" @click="closeCreateEdit()">
@@ -23,60 +29,48 @@
                 <span class="text-subtitle-2">Details</span>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Name" rules="required" immediate>
-                  <v-text-field
-                    v-model="name"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Name"
-                    hint="A name for your service."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="name"
+                  label="Name"
+                  hint="A name for your service."
+                  clearable
+                  required
+                  name="Name"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Description" rules="required" immediate>
-                  <v-textarea
-                    v-model="description"
-                    slot-scope="{ errors, valid }"
-                    label="Description"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="A description for your service."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-textarea
+                  v-model="description"
+                  label="Description"
+                  hint="A description for your service."
+                  clearable
+                  required
+                  name="Description"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Type" rules="required" immediate>
-                  <v-select
-                    v-model="type"
-                    slot-scope="{ errors, valid }"
-                    :loading="loading"
-                    :items="oncall_plugins"
-                    label="Type"
-                    :error-messages="errors"
-                    hint="Oncall plugin to use."
-                    :success="valid"
-                  />
-                </ValidationProvider>
+                <v-select
+                  v-model="type"
+                  :loading="loading"
+                  :items="oncall_plugins"
+                  label="Type"
+                  hint="Oncall plugin to use."
+                  name="Type"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="External Id" rules="required" immediate>
-                  <v-text-field
-                    v-model="external_id"
-                    slot-scope="{ errors, valid }"
-                    label="External Id"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="An external identifier for service."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="external_id"
+                  label="External Id"
+                  hint="An external identifier for service."
+                  clearable
+                  required
+                  name="External Id"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
                 <v-checkbox v-model="health_metrics" label="Collect Health Metrics" />
@@ -117,33 +111,25 @@
                 </span>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Owner" immediate>
-                  <v-text-field
-                    v-model="evergreen_owner"
-                    slot-scope="{ errors, valid }"
-                    label="Owner"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="Owner of this service."
-                    clearable
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="evergreen_owner"
+                  label="Owner"
+                  hint="Owner of this service."
+                  clearable
+                  name="Owner"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Reminder Interval" immediate>
-                  <v-text-field
-                    v-model="evergreen_reminder_interval"
-                    slot-scope="{ errors, valid }"
-                    label="Reminder Interval"
-                    :error-messages="errors"
-                    :success="valid"
-                    type="number"
-                    hint="Number of days that should elapse between reminders sent to the service owner."
-                    placeholder="90"
-                    clearable
-                    min="1"
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="evergreen_reminder_interval"
+                  label="Reminder Interval"
+                  type="number"
+                  hint="Number of days that should elapse between reminders sent to the service owner."
+                  placeholder="90"
+                  clearable
+                  min="1"
+                  name="Reminder Interval"
+                />
               </v-flex>
               <v-flex xs12>
                 <v-checkbox
@@ -157,30 +143,27 @@
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
+import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
-import { required } from "vee-validate/dist/rules"
 
 import SearchFilterCombobox from "@/search/SearchFilterCombobox.vue"
 import SearchUtils from "@/search/utils"
 import PluginApi from "@/plugin/api"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "ServiceNewEditSheet",
 
   components: {
-    ValidationObserver,
-    ValidationProvider,
     SearchFilterCombobox,
   },
 

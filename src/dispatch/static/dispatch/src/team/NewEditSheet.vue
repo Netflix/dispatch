@@ -1,5 +1,5 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
+  <v-form @submit.prevent v-slot="{ isValid }">
     <v-navigation-drawer v-model="showCreateEdit" app clipped location="right" width="500">
       <template #prepend>
         <v-list-item lines="two">
@@ -12,7 +12,7 @@
             variant="text"
             color="info"
             :loading="loading"
-            :disabled="invalid || !validated"
+            :disabled="!isValid.value || !validated"
             @click="save()"
           >
             <v-icon>save</v-icon>
@@ -30,45 +30,35 @@
                 <span class="text-subtitle-2">Details</span>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Name" rules="required" immediate>
-                  <v-text-field
-                    v-model="name"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Name"
-                    hint="A name for your team."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="name"
+                  label="Name"
+                  hint="A name for your team."
+                  clearable
+                  required
+                  name="Name"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Email" rules="required" immediate>
-                  <v-text-field
-                    v-model="email"
-                    slot-scope="{ errors, valid }"
-                    label="Email"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="The team's email."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="email"
+                  label="Email"
+                  hint="The team's email."
+                  clearable
+                  required
+                  name="Email"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Company" immediate>
-                  <v-text-field
-                    v-model="company"
-                    slot-scope="{ errors, valid }"
-                    label="Company"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="The team's company."
-                    clearable
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="company"
+                  label="Company"
+                  hint="The team's company."
+                  clearable
+                  name="Company"
+                />
               </v-flex>
               <v-flex xs12>
                 <span class="text-subtitle-2"
@@ -103,33 +93,25 @@
                 </span>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Owner" immediate>
-                  <v-text-field
-                    v-model="evergreen_owner"
-                    slot-scope="{ errors, valid }"
-                    label="Owner"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="Owner of this team."
-                    clearable
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="evergreen_owner"
+                  label="Owner"
+                  hint="Owner of this team."
+                  clearable
+                  name="Owner"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Reminder Interval" immediate>
-                  <v-text-field
-                    v-model="evergreen_reminder_interval"
-                    slot-scope="{ errors, valid }"
-                    label="Reminder Interval"
-                    :error-messages="errors"
-                    :success="valid"
-                    type="number"
-                    hint="Number of days that should elapse between reminders sent to the team owner."
-                    placeholder="90"
-                    clearable
-                    min="1"
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="evergreen_reminder_interval"
+                  label="Reminder Interval"
+                  type="number"
+                  hint="Number of days that should elapse between reminders sent to the team owner."
+                  placeholder="90"
+                  clearable
+                  min="1"
+                  name="Reminder Interval"
+                />
               </v-flex>
               <v-flex xs12>
                 <v-checkbox
@@ -143,22 +125,22 @@
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
+import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
-import { required } from "vee-validate/dist/rules"
+
 import SearchFilterCombobox from "@/search/SearchFilterCombobox.vue"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "ServiceNewEditSheet",
 
   data() {
@@ -168,8 +150,6 @@ export default {
   },
 
   components: {
-    ValidationObserver,
-    ValidationProvider,
     SearchFilterCombobox,
   },
 

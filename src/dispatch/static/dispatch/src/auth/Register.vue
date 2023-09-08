@@ -1,32 +1,26 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
+  <v-form @submit.prevent v-slot="{ isValid }">
     <v-card class="mx-auto ma-4" max-width="600" flat variant="outlined" :loading="loading">
       <v-card-title> Register </v-card-title>
       <v-card-text>
         <v-container>
           <v-row>
             <v-col cols="12" md="12">
-              <ValidationProvider name="Email" rules="required|email" immediate>
-                <v-text-field
-                  v-model="email"
-                  label="Email"
-                  slot-scope="{ errors, valid }"
-                  :error-messages="errors"
-                  :success="valid"
-                />
-              </ValidationProvider>
+              <v-text-field
+                v-model="email"
+                label="Email"
+                name="Email"
+                :rules="[rules.required, rules.email]"
+              />
             </v-col>
             <v-col cols="12" md="12">
-              <ValidationProvider name="Password" rules="required" immediate>
-                <v-text-field
-                  v-model="password"
-                  :type="'password'"
-                  label="Password"
-                  slot-scope="{ errors, valid }"
-                  :error-messages="errors"
-                  :success="valid"
-                />
-              </ValidationProvider>
+              <v-text-field
+                v-model="password"
+                :type="'password'"
+                label="Password"
+                name="Password"
+                :rules="[rules.required]"
+              />
             </v-col>
           </v-row>
         </v-container>
@@ -41,7 +35,7 @@
             <v-btn
               color="info"
               :loading="loading"
-              :disabled="invalid || !validated"
+              :disabled="!isValid.value || !validated"
               @click="register({ email: email, password: password })"
             >
               Register
@@ -53,26 +47,19 @@
         </v-list-item>
       </v-card-actions>
     </v-card>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
+import { required, email } from "@/util/form"
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
-import { required, email } from "vee-validate/dist/rules"
-
-extend("email", email)
-
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
 
 export default {
-  components: {
-    ValidationProvider,
-    ValidationObserver,
+  setup() {
+    return {
+      rules: { required, email },
+    }
   },
   data() {
     return {

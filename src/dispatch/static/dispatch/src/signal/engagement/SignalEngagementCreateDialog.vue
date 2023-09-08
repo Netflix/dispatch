@@ -57,34 +57,28 @@
           </v-stepper-content>
 
           <v-stepper-content step="2">
-            <ValidationObserver disabled v-slot="{ invalid, validated }">
+            <v-form disabled @submit.prevent v-slot="{ isValid }">
               <v-card>
                 <v-card-text>
                   Provide a name and description for your filter.
-                  <ValidationProvider name="Name" rules="required" immediate>
-                    <v-text-field
-                      v-model="name"
-                      label="Name"
-                      hint="A name for your saved search."
-                      slot-scope="{ errors, valid }"
-                      :error-messages="errors"
-                      :success="valid"
-                      clearable
-                      required
-                    />
-                  </ValidationProvider>
-                  <ValidationProvider name="Description" rules="required" immediate>
-                    <v-textarea
-                      v-model="description"
-                      label="Description"
-                      hint="A short description."
-                      slot-scope="{ errors, valid }"
-                      :error-messages="errors"
-                      :success="valid"
-                      clearable
-                      auto-grow
-                    />
-                  </ValidationProvider>
+                  <v-text-field
+                    v-model="name"
+                    label="Name"
+                    hint="A name for your saved search."
+                    clearable
+                    required
+                    name="Name"
+                    :rules="[rules.required]"
+                  />
+                  <v-textarea
+                    v-model="description"
+                    label="Description"
+                    hint="A short description."
+                    clearable
+                    auto-grow
+                    name="Description"
+                    :rules="[rules.required]"
+                  />
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer />
@@ -93,13 +87,13 @@
                     color="info"
                     @click="saveEngagement()"
                     :loading="loading"
-                    :disabled="invalid || !validated"
+                    :disabled="!isValid.value || !validated"
                   >
                     Save
                   </v-btn>
                 </v-card-actions>
               </v-card>
-            </ValidationObserver>
+            </v-form>
           </v-stepper-content>
         </v-stepper-items>
       </v-stepper>
@@ -108,17 +102,18 @@
 </template>
 
 <script>
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { required } from "@/util/form"
+
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
-import { required } from "vee-validate/dist/rules"
-import EntityTypeSelect from "@/entity_type/EntityTypeSelect.vue"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
+import EntityTypeSelect from "@/entity_type/EntityTypeSelect.vue"
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "SignalEngagementDialog",
   props: {
     value: {
@@ -138,8 +133,6 @@ export default {
   },
   components: {
     EntityTypeSelect,
-    ValidationObserver,
-    ValidationProvider,
   },
   computed: {
     ...mapFields("signalEngagement", [

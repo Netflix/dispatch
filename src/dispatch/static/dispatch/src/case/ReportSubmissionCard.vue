@@ -1,5 +1,5 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
+  <v-form @submit.prevent v-slot="{ isValid }">
     <v-card class="mx-auto ma-4" max-width="600" flat variant="outlined" :loading="loading">
       <v-card-text>
         <p class="text-h4 text--primary">
@@ -30,36 +30,30 @@
           <v-container grid-list-md>
             <v-layout wrap>
               <v-flex xs12>
-                <ValidationProvider name="Title" rules="required" immediate>
-                  <v-textarea
-                    v-model="title"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Title"
-                    hint="A brief explanatory title. You can change this later."
-                    clearable
-                    auto-grow
-                    rows="2"
-                    required
-                  />
-                </ValidationProvider>
+                <v-textarea
+                  v-model="title"
+                  label="Title"
+                  hint="A brief explanatory title. You can change this later."
+                  clearable
+                  auto-grow
+                  rows="2"
+                  required
+                  name="Title"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Description" rules="required" immediate>
-                  <v-textarea
-                    v-model="description"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Description"
-                    hint="A summary of what you know so far. It's all right if this is incomplete."
-                    clearable
-                    auto-grow
-                    rows="3"
-                    required
-                  />
-                </ValidationProvider>
+                <v-textarea
+                  v-model="description"
+                  label="Description"
+                  hint="A summary of what you know so far. It's all right if this is incomplete."
+                  clearable
+                  auto-grow
+                  rows="3"
+                  required
+                  name="Description"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
                 <project-select v-model="project" />
@@ -79,7 +73,7 @@
                 color="info"
                 variant="flat"
                 :loading="loading"
-                :disabled="invalid || !validated"
+                :disabled="!isValid.value || !validated"
                 @click="report()"
               >
                 Submit
@@ -92,14 +86,14 @@
         </v-form>
       </v-card-text>
     </v-card>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
+import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
-import { required } from "vee-validate/dist/rules"
+
 import router from "@/router"
 import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
@@ -107,17 +101,15 @@ import ProjectSelect from "@/project/ProjectSelect.vue"
 import DocumentApi from "@/document/api"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "ReportSubmissionCard",
 
   components: {
-    ValidationProvider,
-    ValidationObserver,
     CaseTypeSelect,
     CasePrioritySelect,
     ProjectSelect,

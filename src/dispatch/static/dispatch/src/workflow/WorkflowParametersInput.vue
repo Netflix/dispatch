@@ -51,8 +51,6 @@ import { cloneDeep } from "lodash"
 export default {
   name: "WorkflowParameterInput",
 
-  components: {},
-
   props: {
     value: {
       type: Array,

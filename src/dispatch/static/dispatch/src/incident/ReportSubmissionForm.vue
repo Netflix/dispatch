@@ -1,39 +1,33 @@
 <template>
-  <ValidationObserver v-slot="{}">
+  <v-form @submit.prevent v-slot="{ isValid }">
     <v-form>
       <v-container grid-list-md>
         <v-layout wrap>
           <v-flex xs12>
-            <ValidationProvider name="Title" rules="required" immediate>
-              <v-textarea
-                v-model="title"
-                slot-scope="{ errors, valid }"
-                :error-messages="errors"
-                :success="valid"
-                label="Title"
-                hint="A brief explanatory title. You can change this later."
-                clearable
-                auto-grow
-                rows="2"
-                required
-              />
-            </ValidationProvider>
+            <v-textarea
+              v-model="title"
+              label="Title"
+              hint="A brief explanatory title. You can change this later."
+              clearable
+              auto-grow
+              rows="2"
+              required
+              name="Title"
+              :rules="[rules.required]"
+            />
           </v-flex>
           <v-flex xs12>
-            <ValidationProvider name="Description" rules="required" immediate>
-              <v-textarea
-                v-model="description"
-                slot-scope="{ errors, valid }"
-                :error-messages="errors"
-                :success="valid"
-                label="Description"
-                hint="A summary of what you know so far. It's all right if this is incomplete."
-                clearable
-                auto-grow
-                rows="3"
-                required
-              />
-            </ValidationProvider>
+            <v-textarea
+              v-model="description"
+              label="Description"
+              hint="A summary of what you know so far. It's all right if this is incomplete."
+              clearable
+              auto-grow
+              rows="3"
+              required
+              name="Description"
+              :rules="[rules.required]"
+            />
           </v-flex>
           <v-flex xs12>
             <project-select v-model="project" />
@@ -54,25 +48,25 @@
         </v-layout>
       </v-container>
     </v-form>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { required } from "@/util/form"
+
 import { mapFields } from "vuex-map-fields"
-import { required } from "vee-validate/dist/rules"
 
 import IncidentPrioritySelect from "@/incident/priority/IncidentPrioritySelect.vue"
 import IncidentTypeSelect from "@/incident/type/IncidentTypeSelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "ReportSubmissionForm",
 
   components: {
@@ -80,8 +74,6 @@ export default {
     IncidentTypeSelect,
     ProjectSelect,
     TagFilterAutoComplete,
-    ValidationObserver,
-    ValidationProvider,
   },
 
   props: {

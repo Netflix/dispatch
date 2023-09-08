@@ -63,8 +63,6 @@ export default {
     }
   },
 
-  components: {},
-
   computed: {
     ...mapFields("case_management", [
       "dialogs.showClosedDialog",

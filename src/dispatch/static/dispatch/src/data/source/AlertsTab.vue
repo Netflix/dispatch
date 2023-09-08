@@ -32,8 +32,6 @@ import { mapFields } from "vuex-map-fields"
 export default {
   name: "SourceAlertsTab",
 
-  components: {},
-
   computed: {
     ...mapFields("source", ["selected.alerts", "selected.loading"]),
   },

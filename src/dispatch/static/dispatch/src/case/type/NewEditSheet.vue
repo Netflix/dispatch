@@ -1,5 +1,5 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
+  <v-form @submit.prevent v-slot="{ isValid }">
     <v-navigation-drawer v-model="showCreateEdit" app clipped location="right" width="500">
       <template #prepend>
         <v-list-item lines="two">
@@ -12,7 +12,7 @@
             variant="text"
             color="info"
             :loading="loading"
-            :disabled="invalid || !validated"
+            :disabled="!isValid.value || !validated"
             @click="save()"
           >
             <v-icon>save</v-icon>
@@ -30,45 +30,35 @@
                 <span class="text-subtitle-2">Details</span>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Name" rules="required" immediate>
-                  <v-text-field
-                    v-model="name"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Name"
-                    hint="A name for your case type."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="name"
+                  label="Name"
+                  hint="A name for your case type."
+                  clearable
+                  required
+                  name="Name"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Description" rules="required" immediate>
-                  <v-textarea
-                    v-model="description"
-                    slot-scope="{ errors, valid }"
-                    label="Description"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="A description for your case type."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-textarea
+                  v-model="description"
+                  label="Description"
+                  hint="A description for your case type."
+                  clearable
+                  required
+                  name="Description"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="ConversationTarget" immediate>
-                  <v-text-field
-                    v-model="conversation_target"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Conversation Target"
-                    hint="The conversation identifier that new case messages will be sent to."
-                    clearable
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="conversation_target"
+                  label="Conversation Target"
+                  hint="The conversation identifier that new case messages will be sent to."
+                  clearable
+                  name="ConversationTarget"
+                />
               </v-flex>
               <v-flex xs12>
                 <v-select
@@ -139,14 +129,14 @@
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { required } from "@/util/form"
+
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
-import { required } from "vee-validate/dist/rules"
 
 import IncidentTypeSelect from "@/incident/type/IncidentTypeSelect.vue"
 import PluginMetadataInput from "@/plugin/PluginMetadataInput.vue"
@@ -154,12 +144,12 @@ import ServiceSelect from "@/service/ServiceSelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import TemplateSelect from "@/document/template/TemplateSelect.vue"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "CaseTypeNewEditSheet",
 
   components: {
@@ -168,8 +158,6 @@ export default {
     ServiceSelect,
     ProjectSelect,
     TemplateSelect,
-    ValidationObserver,
-    ValidationProvider,
   },
 
   data() {

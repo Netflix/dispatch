@@ -1,5 +1,5 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
+  <v-form @submit.prevent v-slot="{ isValid }">
     <v-navigation-drawer
       v-model="showCreateEdit"
       app
@@ -19,7 +19,7 @@
             variant="text"
             color="info"
             :loading="loading"
-            :disabled="invalid || !validated"
+            :disabled="!isValid.value || !validated"
             @click="save()"
           >
             <v-icon>save</v-icon>
@@ -40,59 +40,45 @@
                 <span class="text-subtitle-2">Details</span>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Name" rules="required" immediate>
-                  <v-text-field
-                    v-model="name"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Name"
-                    hint="A name for your template."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="name"
+                  label="Name"
+                  hint="A name for your template."
+                  clearable
+                  required
+                  name="Name"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="description" immediate>
-                  <v-textarea
-                    v-model="description"
-                    slot-scope="{ errors, valid }"
-                    label="Description"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="A description for your template."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-textarea
+                  v-model="description"
+                  label="Description"
+                  hint="A description for your template."
+                  clearable
+                  required
+                  name="description"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Template Weblink" rules="required" immediate>
-                  <v-text-field
-                    v-model="weblink"
-                    slot-scope="{ errors, valid }"
-                    label="Weblink"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="A weblink for your template."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="weblink"
+                  label="Weblink"
+                  hint="A weblink for your template."
+                  clearable
+                  required
+                  name="Template Weblink"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Resource Id" immediate>
-                  <v-text-field
-                    v-model="resource_id"
-                    slot-scope="{ errors, valid }"
-                    label="External Id"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="External identifier for the document template. Used for API integration (e.g. Google doc file id). Typically, the unique id in the weblink."
-                    clearable
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="resource_id"
+                  label="External Id"
+                  hint="External identifier for the document template. Used for API integration (e.g. Google doc file id). Typically, the unique id in the weblink."
+                  clearable
+                  name="Resource Id"
+                />
               </v-flex>
               <v-flex xs12>
                 <span class="text-subtitle-2">
@@ -107,33 +93,25 @@
                 </span>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Owner" immediate>
-                  <v-text-field
-                    v-model="evergreen_owner"
-                    slot-scope="{ errors, valid }"
-                    label="Owner"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="Owner of this document template."
-                    clearable
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="evergreen_owner"
+                  label="Owner"
+                  hint="Owner of this document template."
+                  clearable
+                  name="Owner"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Reminder Interval" immediate>
-                  <v-text-field
-                    v-model="evergreen_reminder_interval"
-                    slot-scope="{ errors, valid }"
-                    label="Reminder Interval"
-                    :error-messages="errors"
-                    :success="valid"
-                    type="number"
-                    hint="Number of days that should elapse between reminders sent to the document template owner."
-                    placeholder="90"
-                    clearable
-                    min="1"
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="evergreen_reminder_interval"
+                  label="Reminder Interval"
+                  type="number"
+                  hint="Number of days that should elapse between reminders sent to the document template owner."
+                  placeholder="90"
+                  clearable
+                  min="1"
+                  name="Reminder Interval"
+                />
               </v-flex>
               <v-flex xs12>
                 <v-checkbox
@@ -147,28 +125,25 @@
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
+import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
-import { required } from "vee-validate/dist/rules"
 
 import InfoWidget from "@/components/InfoWidget.vue"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "TemplateNewEditSheet",
 
   components: {
-    ValidationObserver,
-    ValidationProvider,
     InfoWidget,
   },
 

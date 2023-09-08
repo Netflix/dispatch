@@ -1,5 +1,5 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
+  <v-form @submit.prevent v-slot="{ isValid }">
     <v-navigation-drawer v-model="showCreateEdit" app clipped location="right" width="600">
       <template #prepend>
         <v-list-item lines="two">
@@ -12,7 +12,7 @@
             variant="text"
             color="info"
             :loading="loading"
-            :disabled="invalid || !validated"
+            :disabled="!isValid.value || !validated"
             @click="save()"
           >
             <v-icon>save</v-icon>
@@ -33,13 +33,12 @@
         </v-tab-item>
       </v-tabs>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver } from "vee-validate"
 
 import EditBasicInfoTab from "@/data/query/EditBasicInfoTab.vue"
 import EditTextTab from "@/data/query/EditTextTab.vue"
@@ -50,7 +49,6 @@ export default {
   components: {
     EditBasicInfoTab,
     EditTextTab,
-    ValidationObserver,
   },
 
   computed: {

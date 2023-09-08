@@ -19,8 +19,6 @@ import { mapFields } from "vuex-map-fields"
 export default {
   name: "SourceDetailsTab",
 
-  components: {},
-
   computed: {
     ...mapFields("source", ["selected.queries", "selected.loading"]),
   },

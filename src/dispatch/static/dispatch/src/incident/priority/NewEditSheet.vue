@@ -1,5 +1,5 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
+  <v-form @submit.prevent v-slot="{ isValid }">
     <v-navigation-drawer v-model="showCreateEdit" app clipped location="right" width="500">
       <template #prepend>
         <v-list-item lines="two">
@@ -12,7 +12,7 @@
             variant="text"
             color="info"
             :loading="loading"
-            :disabled="invalid || !validated"
+            :disabled="!isValid.value || !validated"
             @click="save()"
           >
             <v-icon>save</v-icon>
@@ -30,79 +30,64 @@
                 <span class="text-subtitle-2">Details</span>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Name" rules="required" immediate>
-                  <v-text-field
-                    v-model="name"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Name"
-                    hint="A name for your incident priority."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="name"
+                  label="Name"
+                  hint="A name for your incident priority."
+                  clearable
+                  required
+                  name="Name"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Description" rules="required" immediate>
-                  <v-textarea
-                    v-model="description"
-                    slot-scope="{ errors, valid }"
-                    label="Description"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="A description for your incident priority."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-textarea
+                  v-model="description"
+                  label="Description"
+                  hint="A description for your incident priority."
+                  clearable
+                  required
+                  name="Description"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="View Order" rules="required" immediate>
-                  <v-text-field
-                    v-model="view_order"
-                    slot-scope="{ errors, valid }"
-                    label="View Order"
-                    :error-messages="errors"
-                    :success="valid"
-                    type="number"
-                    hint="Enter a value to indicate the order in which you want this priority to be shown in a list (lowest numbers are shown first)."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="view_order"
+                  label="View Order"
+                  type="number"
+                  hint="Enter a value to indicate the order in which you want this priority to be shown in a list (lowest numbers are shown first)."
+                  clearable
+                  required
+                  name="View Order"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Tactical Report Reminder" rules="required" immediate>
-                  <v-text-field
-                    v-model="tactical_report_reminder"
-                    slot-scope="{ errors, valid }"
-                    label="Tactical Report Reminder"
-                    :error-messages="errors"
-                    :success="valid"
-                    type="number"
-                    hint="Number of hours to send a tactical report reminder to the incident commander."
-                    clearable
-                    required
-                    min="1"
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="tactical_report_reminder"
+                  label="Tactical Report Reminder"
+                  type="number"
+                  hint="Number of hours to send a tactical report reminder to the incident commander."
+                  clearable
+                  required
+                  min="1"
+                  name="Tactical Report Reminder"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Executive Report Reminder" rules="required" immediate>
-                  <v-text-field
-                    v-model="executive_report_reminder"
-                    slot-scope="{ errors, valid }"
-                    label="Executive Report Reminder"
-                    :error-messages="errors"
-                    :success="valid"
-                    type="number"
-                    hint="Number of hours to send an executive report reminder to the incident commander."
-                    clearable
-                    required
-                    min="1"
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="executive_report_reminder"
+                  label="Executive Report Reminder"
+                  type="number"
+                  hint="Number of hours to send an executive report reminder to the incident commander."
+                  clearable
+                  required
+                  min="1"
+                  name="Executive Report Reminder"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
                 <v-checkbox
@@ -133,29 +118,26 @@
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
+import { required } from "@/util/form"
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
-import { required } from "vee-validate/dist/rules"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 
 import ColorPickerInput from "@/components/ColorPickerInput.vue"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "IncidentPriorityNewEditSheet",
 
   components: {
     ColorPickerInput,
-    ValidationObserver,
-    ValidationProvider,
   },
 
   data() {

@@ -68,8 +68,6 @@ import { mapFields } from "vuex-map-fields"
 export default {
   name: "SourceEditUsefulLinksTab",
 
-  components: {},
-
   computed: {
     ...mapFields("source", ["selected.links", "selected.loading"]),
   },

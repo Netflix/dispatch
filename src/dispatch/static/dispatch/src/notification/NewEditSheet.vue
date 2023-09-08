@@ -1,5 +1,5 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
+  <v-form @submit.prevent v-slot="{ isValid }">
     <v-navigation-drawer v-model="showCreateEdit" app clipped location="right" width="500">
       <template #prepend>
         <v-list-item lines="two">
@@ -12,7 +12,7 @@
             variant="text"
             color="info"
             :loading="loading"
-            :disabled="invalid || !validated"
+            :disabled="!isValid.value || !validated"
             @click="save()"
           >
             <v-icon>save</v-icon>
@@ -30,31 +30,24 @@
                 <span class="text-subtitle-2">Details</span>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Name" rules="required" immediate>
-                  <v-text-field
-                    v-model="name"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Name"
-                    hint="A name for your notification."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="name"
+                  label="Name"
+                  hint="A name for your notification."
+                  clearable
+                  required
+                  name="Name"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Description" immediate>
-                  <v-textarea
-                    v-model="description"
-                    slot-scope="{ errors, valid }"
-                    label="Description"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="A description for your notification."
-                    clearable
-                  />
-                </ValidationProvider>
+                <v-textarea
+                  v-model="description"
+                  label="Description"
+                  hint="A description for your notification."
+                  clearable
+                  name="Description"
+                />
               </v-flex>
               <v-flex xs12>
                 <v-select
@@ -65,18 +58,15 @@
                 />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Target" rules="required" immediate>
-                  <v-text-field
-                    v-model="target"
-                    slot-scope="{ errors, valid }"
-                    label="Target"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="The target destination of the notification (e.g. email address, conversation name)."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="target"
+                  label="Target"
+                  hint="The target destination of the notification (e.g. email address, conversation name)."
+                  clearable
+                  required
+                  name="Target"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
                 <search-filter-combobox
@@ -106,33 +96,25 @@
                 </span>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Owner" immediate>
-                  <v-text-field
-                    v-model="evergreen_owner"
-                    slot-scope="{ errors, valid }"
-                    label="Owner"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="Owner of this notification."
-                    clearable
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="evergreen_owner"
+                  label="Owner"
+                  hint="Owner of this notification."
+                  clearable
+                  name="Owner"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Reminder Interval" immediate>
-                  <v-text-field
-                    v-model="evergreen_reminder_interval"
-                    slot-scope="{ errors, valid }"
-                    label="Reminder Interval"
-                    :error-messages="errors"
-                    :success="valid"
-                    type="number"
-                    hint="Number of days that should elapse between reminders sent to the notification owner."
-                    placeholder="90"
-                    clearable
-                    min="1"
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="evergreen_reminder_interval"
+                  label="Reminder Interval"
+                  type="number"
+                  hint="Number of days that should elapse between reminders sent to the notification owner."
+                  placeholder="90"
+                  clearable
+                  min="1"
+                  name="Reminder Interval"
+                />
               </v-flex>
               <v-flex xs12>
                 <v-checkbox
@@ -146,27 +128,25 @@
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
+import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
-import { required } from "vee-validate/dist/rules"
+
 import SearchFilterCombobox from "@/search/SearchFilterCombobox.vue"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "NotificationNewEditSheet",
 
   components: {
-    ValidationObserver,
-    ValidationProvider,
     SearchFilterCombobox,
   },
 

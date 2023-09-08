@@ -2,32 +2,26 @@
   <v-container grid-list-md>
     <v-layout wrap>
       <v-flex xs12>
-        <ValidationProvider name="Name" rules="required" immediate>
-          <v-text-field
-            v-model="name"
-            slot-scope="{ errors, valid }"
-            :error-messages="errors"
-            :success="valid"
-            label="Name"
-            hint="Name of data source."
-            clearable
-            required
-          />
-        </ValidationProvider>
+        <v-text-field
+          v-model="name"
+          label="Name"
+          hint="Name of data source."
+          clearable
+          required
+          name="Name"
+          :rules="[rules.required]"
+        />
       </v-flex>
       <v-flex xs12>
-        <ValidationProvider name="Description" rules="required" immediate>
-          <v-textarea
-            v-model="description"
-            slot-scope="{ errors, valid }"
-            :error-messages="errors"
-            :success="valid"
-            label="Description"
-            hint="Description of data source."
-            clearable
-            required
-          />
-        </ValidationProvider>
+        <v-textarea
+          v-model="description"
+          label="Description"
+          hint="Description of data source."
+          clearable
+          required
+          name="Description"
+          :rules="[rules.required]"
+        />
       </v-flex>
       <v-flex xs12>
         <project-select v-model="project" />
@@ -102,9 +96,8 @@
 </template>
 
 <script>
+import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
-import { ValidationProvider, extend } from "vee-validate"
-import { required } from "vee-validate/dist/rules"
 
 import ServiceSelect from "@/service/ServiceSelect.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
@@ -115,16 +108,15 @@ import DataFormatSelect from "@/data/source/dataFormat/DataFormatSelect.vue"
 import TransportSelect from "@/data/source/transport/TransportSelect.vue"
 import TypeSelect from "@/data/source/type/TypeSelect.vue"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "SourceDetailsTab",
 
   components: {
-    ValidationProvider,
     ServiceSelect,
     TagFilterAutoComplete,
     ProjectSelect,

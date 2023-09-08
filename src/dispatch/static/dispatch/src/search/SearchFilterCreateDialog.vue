@@ -160,35 +160,31 @@
             </v-card>
           </v-stepper-content>
           <v-stepper-content step="3">
-            <ValidationObserver disabled v-slot="{ invalid, validated }">
+            <v-form disabled @submit.prevent v-slot="{ isValid }">
               <v-card>
                 <v-card-text>
                   Provide a name and description for your filter.
-                  <ValidationProvider name="Name" rules="required" immediate>
-                    <v-text-field
+                  <v-text-field
                       v-model="name"
                       label="Name"
                       hint="A name for your saved search."
-                      slot-scope="{ errors, valid }"
-                      :error-messages="errors"
-                      :success="valid"
+                      
                       clearable
                       required
+                      name="Name"
+                      :rules="[rules.required]"
                     />
-                  </ValidationProvider>
-                  <ValidationProvider name="Description" rules="required" immediate>
-                    <v-textarea
+                  <v-textarea
                       v-model="description"
                       label="Description"
                       hint="A short description."
-                      slot-scope="{ errors, valid }"
-                      :error-messages="errors"
-                      :success="valid"
+                      
                       clearable
                       auto-grow
                       required
+                      name="Description"
+                      :rules="[rules.required]"
                     />
-                  </ValidationProvider>
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer />
@@ -197,13 +193,13 @@
                     color="info"
                     @click="saveFilter()"
                     :loading="loading"
-                    :disabled="invalid || !validated"
+                    :disabled="!isValid.value || !validated"
                   >
                     Save
                   </v-btn>
                 </v-card-actions>
               </v-card>
-            </ValidationObserver>
+            </v-form>
           </v-stepper-content>
         </v-stepper-items>
       </v-stepper>
@@ -214,10 +210,11 @@
 <script>
 // import MonacoEditor from "monaco-editor-vue"
 
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { required } from '@/util/form'
+
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
-import { required } from "vee-validate/dist/rules"
+
 import CaseApi from "@/case/api"
 import CasePriorityCombobox from "@/case/priority/CasePriorityCombobox.vue"
 import CaseTypeCombobox from "@/case/type/CaseTypeCombobox.vue"
@@ -229,12 +226,12 @@ import IncidentStatusMultiSelect from "@/incident/status/IncidentStatusMultiSele
 import IncidentTypeCombobox from "@/incident/type/IncidentTypeCombobox.vue"
 import SearchUtils from "@/search/utils"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
-import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-export default {
+import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"export default {
+  setup() {
+    return {
+      rules: { required }
+    }
+  },
   name: "SearchFilterCreateDialog",
   props: {
     value: {
@@ -293,8 +290,6 @@ export default {
     IncidentTypeCombobox,
     TagFilterAutoComplete,
     TagTypeFilterCombobox,
-    ValidationObserver,
-    ValidationProvider,
     // MonacoEditor,
   },
   computed: {

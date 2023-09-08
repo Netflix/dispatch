@@ -1,5 +1,5 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
+  <v-form @submit.prevent v-slot="{ isValid }">
     <v-navigation-drawer v-model="showCreateEdit" app clipped location="right" width="500">
       <template #prepend>
         <v-list-item lines="two">
@@ -12,7 +12,7 @@
             variant="text"
             color="info"
             :loading="loading"
-            :disabled="invalid || !validated"
+            :disabled="!isValid.value || !validated"
             @click="save()"
           >
             <v-icon>save</v-icon>
@@ -30,44 +30,35 @@
                 <span class="text-subtitle-2">Details</span>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="name" rules="required" immediate>
-                  <v-text-field
-                    v-model="name"
-                    slot-scope="{ errors, valid }"
-                    label="Name"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="A name for your workflow."
-                    required
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="name"
+                  label="Name"
+                  hint="A name for your workflow."
+                  required
+                  name="name"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="resourceId" rules="required" immediate>
-                  <v-text-field
-                    v-model="resource_id"
-                    slot-scope="{ errors, valid }"
-                    label="Resource Id"
-                    :error-messages="errors"
-                    :success="valid"
-                    required
-                    hint="External resource id that refers to this workflow."
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="resource_id"
+                  label="Resource Id"
+                  required
+                  hint="External resource id that refers to this workflow."
+                  name="resourceId"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="description" rules="required" immediate>
-                  <v-textarea
-                    v-model="description"
-                    slot-scope="{ errors, valid }"
-                    label="Description"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="The workflow's description."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-textarea
+                  v-model="description"
+                  label="Description"
+                  hint="The workflow's description."
+                  clearable
+                  required
+                  name="description"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
                 <plugin-instance-combobox
@@ -92,29 +83,26 @@
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
+import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
-import { required } from "vee-validate/dist/rules"
 
 import PluginInstanceCombobox from "@/plugin/PluginInstanceCombobox.vue"
 import WorkflowParametersInput from "@/workflow/WorkflowParametersInput.vue"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "WorkflowNewEditSheet",
 
   components: {
-    ValidationObserver,
-    ValidationProvider,
     PluginInstanceCombobox,
     WorkflowParametersInput,
   },

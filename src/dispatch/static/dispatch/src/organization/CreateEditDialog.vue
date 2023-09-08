@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="showCreateEdit" persistent max-width="600px">
-    <ValidationObserver disabled v-slot="{ invalid, validated }">
+    <v-form disabled @submit.prevent v-slot="{ isValid }">
       <v-card>
         <v-card-title>
           <span class="text-h5" v-if="id">Edit Organization</span>
@@ -27,19 +27,16 @@
             required
             :rules="[rules.required]"
           />
-          <ValidationProvider name="Description" rules="required" immediate>
-            <v-textarea
-              v-model="description"
-              label="Description"
-              hint="A short description for your organization."
-              slot-scope="{ errors, valid }"
-              :error-messages="errors"
-              :success="valid"
-              clearable
-              auto-grow
-              required
-            />
-          </ValidationProvider>
+          <v-textarea
+            v-model="description"
+            label="Description"
+            hint="A short description for your organization."
+            clearable
+            auto-grow
+            required
+            name="Description"
+            :rules="[rules.required]"
+          />
         </v-card-text>
         <v-list-item-title class="text-subtitle-2 ml-4">
           Banner Settings
@@ -52,19 +49,15 @@
           </v-tooltip>
         </v-list-item-title>
         <v-card-text>
-          <ValidationProvider name="text" immediate>
-            <v-textarea
-              v-model="banner_text"
-              label="Text"
-              hint="Any information you would like to include in an organizational banner."
-              slot-scope="{ errors, valid }"
-              :error-messages="errors"
-              :success="valid"
-              clearable
-              auto-grow
-              required
-            />
-          </ValidationProvider>
+          <v-textarea
+            v-model="banner_text"
+            label="Text"
+            hint="Any information you would like to include in an organizational banner."
+            clearable
+            auto-grow
+            required
+            name="text"
+          />
           <color-picker-input label="Color" v-model="banner_color" />
           <v-checkbox v-model="banner_enabled" label="Enabled" />
         </v-card-text>
@@ -77,7 +70,7 @@
             variant="text"
             @click="save()"
             :loading="loading"
-            :disabled="invalid || !validated"
+            :disabled="!isValid.value || !validated"
           >
             Update
           </v-btn>
@@ -87,36 +80,34 @@
             variant="text"
             @click="save()"
             :loading="loading"
-            :disabled="invalid || !validated"
+            :disabled="!isValid.value || !validated"
           >
             Create
           </v-btn>
         </v-card-actions>
       </v-card>
-    </ValidationObserver>
+    </v-form>
   </v-dialog>
 </template>
 
 <script>
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { required } from "@/util/form"
+
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
-import { required } from "vee-validate/dist/rules"
 
 import ColorPickerInput from "@/components/ColorPickerInput.vue"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "OrganizationCreateEditDialog",
 
   components: {
     ColorPickerInput,
-    ValidationObserver,
-    ValidationProvider,
   },
 
   data() {

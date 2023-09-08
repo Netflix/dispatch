@@ -1,5 +1,5 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
+  <v-form @submit.prevent v-slot="{ isValid }">
     <v-navigation-drawer v-model="showCreateEdit" app clipped location="right" width="500">
       <template #prepend>
         <v-list-item lines="two">
@@ -12,7 +12,7 @@
             variant="text"
             color="info"
             :loading="loading"
-            :disabled="invalid || !validated"
+            :disabled="!isValid.value || !validated"
             @click="save()"
           >
             <v-icon>save</v-icon>
@@ -30,26 +30,23 @@
                 <span class="text-subtitle-2">Details</span>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Email" rules="required" immediate>
-                  <v-text-field
-                    v-model="email"
-                    :disabled="id !== null"
-                    label="Email"
-                    hint="Member's email."
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="email"
+                  :disabled="id !== null"
+                  label="Email"
+                  hint="Member's email."
+                  name="Email"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex v-if="!id" xs12>
-                <ValidationProvider name="Password" rules="required" immediate>
-                  <v-text-field
-                    v-model="password"
-                    :type="'password'"
-                    label="Password"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="password"
+                  :type="'password'"
+                  label="Password"
+                  name="Password"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
                 <span class="text-subtitle-2">Role</span>
@@ -109,24 +106,27 @@
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
+import { required } from "@/util/form"
 import { map } from "lodash"
 
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider } from "vee-validate"
 
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "MemberEditSheet",
 
   components: {
-    ValidationObserver,
-    ValidationProvider,
     ProjectCombobox,
   },
 

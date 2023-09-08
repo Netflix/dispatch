@@ -1,5 +1,5 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
+  <v-form @submit.prevent v-slot="{ isValid }">
     <v-navigation-drawer v-model="showCreateEdit" app clipped location="right" width="500">
       <template #prepend>
         <v-list-item lines="two">
@@ -12,7 +12,7 @@
             variant="text"
             color="info"
             :loading="loading"
-            :disabled="invalid || !validated"
+            :disabled="!isValid.value || !validated"
             @click="save()"
           >
             <v-icon>save</v-icon>
@@ -27,19 +27,16 @@
           <v-container grid-list-md>
             <v-layout wrap>
               <v-flex xs12>
-                <ValidationProvider name="Text" rules="required" immediate>
-                  <v-textarea
-                    v-model="text"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Text"
-                    hint="A short description."
-                    clearable
-                    auto-grow
-                    required
-                  />
-                </ValidationProvider>
+                <v-textarea
+                  v-model="text"
+                  label="Text"
+                  hint="A short description."
+                  clearable
+                  auto-grow
+                  required
+                  name="Text"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
                 <term-combobox :project="project" v-model="terms" />
@@ -49,27 +46,25 @@
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
+import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
-import { required } from "vee-validate/dist/rules"
+
 import TermCombobox from "@/term/TermCombobox.vue"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "DefinitionNewEditSheet",
 
   components: {
-    ValidationObserver,
-    ValidationProvider,
     TermCombobox,
   },
 

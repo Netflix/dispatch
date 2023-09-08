@@ -1,5 +1,5 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
+  <v-form @submit.prevent v-slot="{ isValid }">
     <v-navigation-drawer v-model="showCreateEdit" app clipped location="right" width="500">
       <template #prepend>
         <v-list-item lines="two">
@@ -12,7 +12,7 @@
             variant="text"
             color="info"
             :loading="loading"
-            :disabled="invalid || !validated"
+            :disabled="!isValid.value || !validated"
             @click="save()"
           >
             <v-icon>save</v-icon>
@@ -30,58 +30,44 @@
                 <span class="text-subtitle-2">Details</span>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Name" rules="required" immediate>
-                  <v-text-field
-                    v-model="name"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Name"
-                    hint="Name of individual."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="name"
+                  label="Name"
+                  hint="Name of individual."
+                  clearable
+                  required
+                  name="Name"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Email" rules="required" immediate>
-                  <v-text-field
-                    v-model="email"
-                    slot-scope="{ errors, valid }"
-                    label="Email"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="Individual's email address."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="email"
+                  label="Email"
+                  hint="Individual's email address."
+                  clearable
+                  required
+                  name="Email"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Company" immediate>
-                  <v-text-field
-                    v-model="company"
-                    slot-scope="{ errors, valid }"
-                    label="Company"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="Individual's company."
-                    clearable
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="company"
+                  label="Company"
+                  hint="Individual's company."
+                  clearable
+                  name="Company"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="ExternalId" immediate>
-                  <v-text-field
-                    v-model="external_id"
-                    slot-scope="{ errors, valid }"
-                    label="External Id"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="Individual's external ID."
-                    clearable
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="external_id"
+                  label="External Id"
+                  hint="Individual's external ID."
+                  clearable
+                  name="ExternalId"
+                />
               </v-flex>
               <v-flex xs12>
                 <span class="text-subtitle-2"
@@ -108,22 +94,22 @@
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
+import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
-import { required } from "vee-validate/dist/rules"
+
 import SearchFilterCombobox from "@/search/SearchFilterCombobox.vue"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "IndividualNewEditSheet",
 
   data() {
@@ -133,8 +119,6 @@ export default {
   },
 
   components: {
-    ValidationObserver,
-    ValidationProvider,
     SearchFilterCombobox,
   },
 

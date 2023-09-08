@@ -1,5 +1,5 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
+  <v-form @submit.prevent v-slot="{ isValid }">
     <v-navigation-drawer
       v-model="showNewSheet"
       app
@@ -17,7 +17,7 @@
             variant="text"
             color="info"
             :loading="loading"
-            :disabled="invalid || !validated"
+            :disabled="!isValid.value || !validated"
             @click="save()"
           >
             <v-icon>save</v-icon>
@@ -34,13 +34,12 @@
         <incident-details-tab />
       </v-tabs-items>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver } from "vee-validate"
 
 import IncidentDetailsTab from "@/incident/DetailsTab.vue"
 
@@ -48,7 +47,6 @@ export default {
   name: "IncidentNewSheet",
 
   components: {
-    ValidationObserver,
     IncidentDetailsTab,
   },
 

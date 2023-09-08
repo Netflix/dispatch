@@ -1,5 +1,5 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
+  <v-form @submit.prevent v-slot="{ isValid }">
     <v-navigation-drawer v-model="showCreateEdit" app clipped location="right" width="500">
       <template #prepend>
         <v-list-item lines="two">
@@ -12,7 +12,7 @@
             variant="text"
             color="info"
             :loading="loading"
-            :disabled="invalid || !validated"
+            :disabled="!isValid.value || !validated"
             @click="save()"
           >
             <v-icon>save</v-icon>
@@ -27,18 +27,14 @@
           <v-container grid-list-md>
             <v-layout wrap>
               <v-flex xs12>
-                <ValidationProvider name="description" immediate>
-                  <v-textarea
-                    v-model="description"
-                    slot-scope="{ errors, valid }"
-                    label="Description"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="The task's description."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-textarea
+                  v-model="description"
+                  label="Description"
+                  hint="The task's description."
+                  clearable
+                  required
+                  name="description"
+                />
               </v-flex>
               <v-flex xs12>
                 <project-select v-model="project" />
@@ -52,46 +48,37 @@
                 />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="incident" rules="required" immediate>
-                  <incident-select
-                    v-model="incident"
-                    slot-scope="{ errors, valid }"
-                    label="Incident"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="The tasks associated incident"
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <incident-select
+                  v-model="incident"
+                  label="Incident"
+                  hint="The tasks associated incident"
+                  clearable
+                  required
+                  name="incident"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="owner" rules="required" immediate>
-                  <participant-select
-                    v-model="owner"
-                    slot-scope="{ errors, valid }"
-                    label="Owner"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="The tasks current owner"
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <participant-select
+                  v-model="owner"
+                  label="Owner"
+                  hint="The tasks current owner"
+                  clearable
+                  required
+                  name="owner"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="assignees" rules="required" immediate>
-                  <assignee-combobox
-                    v-model="assignees"
-                    slot-scope="{ errors, valid }"
-                    label="Assignees"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="The tasks current assignees"
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <assignee-combobox
+                  v-model="assignees"
+                  label="Assignees"
+                  hint="The tasks current assignees"
+                  clearable
+                  required
+                  name="assignees"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
                 <v-row>
@@ -108,31 +95,29 @@
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
+import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import IncidentSelect from "@/incident/IncidentSelect.vue"
 import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 import AssigneeCombobox from "@/task/AssigneeCombobox.vue"
 import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
-import { required } from "vee-validate/dist/rules"
-
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
 
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "TaskNewEditSheet",
 
   components: {
-    ValidationObserver,
-    ValidationProvider,
     IncidentSelect,
     AssigneeCombobox,
     ParticipantSelect,

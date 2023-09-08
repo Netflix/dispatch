@@ -79,7 +79,6 @@ import { mapActions } from "vuex"
 export default {
   name: "SourceSummaryTable",
 
-  components: {},
   data() {
     return {
       headers: [

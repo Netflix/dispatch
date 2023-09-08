@@ -1,5 +1,5 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
+  <v-form @submit.prevent v-slot="{ isValid }">
     <v-navigation-drawer v-model="showCreateEdit" app clipped location="right" width="1000">
       <template #prepend>
         <v-list-item lines="two">
@@ -12,7 +12,7 @@
             variant="text"
             color="info"
             :loading="loading"
-            :disabled="invalid || !validated"
+            :disabled="!isValid.value || !validated"
             @click="save()"
           >
             <v-icon>save</v-icon>
@@ -27,30 +27,23 @@
           <v-toolbar-title class="text-subtitle-2"> Details </v-toolbar-title>
         </v-app-bar>
         <v-card-text>
-          <ValidationProvider name="Name" rules="required" immediate>
-            <v-text-field
-              v-model="name"
-              label="Name"
-              hint="A name for your entity type."
-              slot-scope="{ errors, valid }"
-              :error-messages="errors"
-              :success="valid"
-              clearable
-              required
-            />
-          </ValidationProvider>
-          <ValidationProvider name="Description" immediate>
-            <v-textarea
-              v-model="description"
-              label="Description"
-              hint="A short description."
-              slot-scope="{ errors, valid }"
-              :error-messages="errors"
-              :success="valid"
-              clearable
-              auto-grow
-            />
-          </ValidationProvider>
+          <v-text-field
+            v-model="name"
+            label="Name"
+            hint="A name for your entity type."
+            clearable
+            required
+            name="Name"
+            :rules="[rules.required]"
+          />
+          <v-textarea
+            v-model="description"
+            label="Description"
+            hint="A short description."
+            clearable
+            auto-grow
+            name="Description"
+          />
           <v-radio-group v-model="scope" label="Scope" row>
             <v-tooltip max-width="250px" location="left">
               <template #activator="{ on, attrs }">
@@ -156,14 +149,14 @@
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
+import { required } from "@/util/form"
 import { mapActions, mapMutations } from "vuex"
 import { mapFields } from "vuex-map-fields"
-import { required } from "vee-validate/dist/rules"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+
 import PlaygroundTextBox from "@/entity_type/playground/PlaygroundTextBox.vue"
 import SearchUtils from "@/search/utils"
 import SignalApi from "@/signal/api"
@@ -177,12 +170,12 @@ function regexp(value) {
 function jpath(value) {
   return isValidJsonPath(value) || "Must be a valid JSON path expression."
 }
-
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "EntityTypeCreateSheet",
   data() {
     return {
@@ -216,8 +209,6 @@ export default {
   components: {
     PlaygroundTextBox,
     SignalDefinitionCombobox,
-    ValidationObserver,
-    ValidationProvider,
   },
   computed: {
     ...mapFields("entity_type", [

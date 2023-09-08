@@ -94,36 +94,29 @@
             </v-card>
           </v-stepper-content>
           <v-stepper-content step="2">
-            <ValidationObserver disabled v-slot="{ invalid, validated }">
+            <v-form disabled @submit.prevent v-slot="{ isValid }">
               <v-card>
                 <v-card-text>
                   <v-card-text>
                     Provide a name and a description for your entity type:
                   </v-card-text>
-                  <ValidationProvider name="Name" rules="required" immediate>
-                    <v-text-field
-                      v-model="entityType.name"
-                      label="Name"
-                      hint="A name for your saved search."
-                      slot-scope="{ errors, valid }"
-                      :error-messages="errors"
-                      :success="valid"
-                      clearable
-                      required
-                    />
-                  </ValidationProvider>
-                  <ValidationProvider name="Description" immediate>
-                    <v-textarea
-                      v-model="entityType.description"
-                      label="Description"
-                      hint="A short description."
-                      slot-scope="{ errors, valid }"
-                      :error-messages="errors"
-                      :success="valid"
-                      clearable
-                      auto-grow
-                    />
-                  </ValidationProvider>
+                  <v-text-field
+                    v-model="entityType.name"
+                    label="Name"
+                    hint="A name for your saved search."
+                    clearable
+                    required
+                    name="Name"
+                    :rules="[rules.required]"
+                  />
+                  <v-textarea
+                    v-model="entityType.description"
+                    label="Description"
+                    hint="A short description."
+                    clearable
+                    auto-grow
+                    name="Description"
+                  />
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer />
@@ -132,13 +125,13 @@
                     color="info"
                     @click="saveEntityType()"
                     :loading="loading"
-                    :disabled="invalid || !validated"
+                    :disabled="!isValid.value || !validated"
                   >
                     Save
                   </v-btn>
                 </v-card-actions>
               </v-card>
-            </ValidationObserver>
+            </v-form>
           </v-stepper-content>
         </v-stepper-items>
       </v-stepper>
@@ -147,19 +140,14 @@
 </template>
 
 <script>
+import { required } from "@/util/form"
 import { mapMutations } from "vuex"
-import { required } from "vee-validate/dist/rules"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+
 import PlaygroundTextBox from "@/entity_type/playground/PlaygroundTextBox.vue"
 import SearchUtils from "@/search/utils"
 import SignalApi from "@/signal/api"
 import EntityTypeApi from "@/entity_type/api"
 import { isValidJsonPath, isValidRegex } from "@/entity_type/utils.js"
-
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
 function regexp(value) {
   return isValidRegex(value) || "Must be a valid regular expression pattern."
 }
@@ -168,6 +156,11 @@ function jpath(value) {
   return isValidJsonPath(value) || "Must be a valid JSON path expression."
 }
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "EntityTypeCreateDialog",
   props: {
     project: {
@@ -223,8 +216,6 @@ export default {
   },
   components: {
     PlaygroundTextBox,
-    ValidationObserver,
-    ValidationProvider,
   },
   methods: {
     ...mapMutations("playground", ["updatePattern", "updateJsonPath"]),

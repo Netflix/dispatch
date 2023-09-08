@@ -29,7 +29,6 @@ import { mapActions } from "vuex"
 export default {
   name: "QuerySummaryTable",
 
-  components: {},
   data() {
     return {
       headers: [

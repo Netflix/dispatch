@@ -38,7 +38,6 @@ import { mapActions } from "vuex"
 export default {
   name: "DocumentSummaryTable",
 
-  components: {},
   data() {
     return {
       headers: [

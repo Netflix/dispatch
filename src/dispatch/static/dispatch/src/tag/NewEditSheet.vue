@@ -1,5 +1,5 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
+  <v-form @submit.prevent v-slot="{ isValid }">
     <v-navigation-drawer v-model="showCreateEdit" app clipped location="right" width="500">
       <template #prepend>
         <v-list-item lines="two">
@@ -12,7 +12,7 @@
             variant="text"
             color="info"
             :loading="loading"
-            :disabled="invalid || !validated"
+            :disabled="!isValid.value || !validated"
             @click="save()"
           >
             <v-icon>save</v-icon>
@@ -30,76 +30,57 @@
                 <span class="text-subtitle-2">Details</span>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="name" rules="required" immediate>
-                  <v-text-field
-                    v-model="name"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Name"
-                    hint="A name for your tag."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="name"
+                  label="Name"
+                  hint="A name for your tag."
+                  clearable
+                  required
+                  name="name"
+                  :rules="[rules.required]"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="description" immediate>
-                  <v-textarea
-                    v-model="description"
-                    slot-scope="{ errors, valid }"
-                    label="Description"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="A description for your tag."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-textarea
+                  v-model="description"
+                  label="Description"
+                  hint="A description for your tag."
+                  clearable
+                  required
+                  name="description"
+                />
               </v-flex>
               <v-flex xs12>
                 <tag-type-select :project="project" v-model="tag_type" />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="source" immediate>
-                  <v-text-field
-                    v-model="source"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Source"
-                    hint="The tag's source."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="source"
+                  label="Source"
+                  hint="The tag's source."
+                  clearable
+                  required
+                  name="source"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="uri" immediate>
-                  <v-text-field
-                    v-model="uri"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="URI"
-                    hint="The tag's URI."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="uri"
+                  label="URI"
+                  hint="The tag's URI."
+                  clearable
+                  required
+                  name="uri"
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="external_id" immediate>
-                  <v-text-field
-                    v-model="external_id"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="External ID"
-                    hint="A tags external id."
-                    clearable
-                  />
-                </ValidationProvider>
+                <v-text-field
+                  v-model="external_id"
+                  label="External ID"
+                  hint="A tags external id."
+                  clearable
+                  name="external_id"
+                />
               </v-flex>
               <v-flex>
                 <v-checkbox
@@ -113,28 +94,26 @@
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { required } from "@/util/form"
+
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
-import { required } from "vee-validate/dist/rules"
 
 import TagTypeSelect from "@/tag_type/TagTypeSelect.vue"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "TagNewEditSheet",
 
   components: {
-    ValidationObserver,
-    ValidationProvider,
     TagTypeSelect,
   },
 

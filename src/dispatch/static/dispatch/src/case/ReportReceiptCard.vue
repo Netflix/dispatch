@@ -162,7 +162,6 @@ import PluginApi from "@/plugin/api"
 export default {
   name: "CaseReportReceiptCard",
 
-  components: {},
   data() {
     return {
       isSubmitted: false,
