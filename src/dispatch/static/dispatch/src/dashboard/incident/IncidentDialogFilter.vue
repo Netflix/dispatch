@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="display" max-width="600">
     <template #activator="{ props }">
-      <v-badge :value="numFilters" bordered overlap color="info" :content="numFilters">
+      <v-badge :value="numFilters" bordered color="info" :content="numFilters">
         <v-btn color="secondary" v-bind="props"> Filter </v-btn>
       </v-badge>
     </template>

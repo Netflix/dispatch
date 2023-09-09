@@ -8,7 +8,7 @@
         <v-tooltip location="bottom">
           <template #activator="{ on, attrs }">
             <span v-bind="attrs" v-on="on">
-              <v-badge color="grey" :content="badgeCount" overlap offset-x="45" offset-y="37">
+              <v-badge color="grey" :content="badgeCount" offset-x="45" offset-y="37">
                 <v-card-subtitle />
               </v-badge>
             </span>

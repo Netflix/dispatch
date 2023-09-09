@@ -105,7 +105,7 @@
                 <a :href="item.weblink" target="_blank" style="text-decoration: none" />
               </template>
             </v-data-table>
-            <v-badge :value="total" overlap color="info" bordered :content="total">
+            <v-badge :value="total" color="info" bordered :content="total">
               <v-btn color="info" @click="exportToCSV()" :loading="exportLoading"> Export </v-btn>
             </v-badge>
 
