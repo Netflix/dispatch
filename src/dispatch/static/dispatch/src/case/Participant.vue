@@ -4,7 +4,7 @@
       <template #activator="{ on }">
         <v-chip pill small v-on="on" v-if="participant.individual">
           <v-avatar color="teal" start>
-            <span class="text-white">{{ participant.individual.name | initials }}</span>
+            <span class="text-white">{{ initials(participant.individual.name) }}</span>
           </v-avatar>
           {{ participant.individual.name }}
         </v-chip>
@@ -13,7 +13,7 @@
         <v-list dark>
           <v-list-item v-if="participant.individual">
             <v-list-item-avatar color="teal">
-              <span class="text-white">{{ participant.individual.name | initials }}</span>
+              <span class="text-white">{{ initials(participant.individual.name) }}</span>
             </v-list-item-avatar>
 
             <v-list-item-title>{{ participant.individual.name }}</v-list-item-title>
@@ -74,12 +74,18 @@
 </template>
 
 <script>
+import { initials } from "@/filters"
+
 export default {
   name: "CaseParticipant",
 
   data: () => ({
     menu: false,
   }),
+
+  setup() {
+    return { initials }
+  },
 
   props: {
     participant: {

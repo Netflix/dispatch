@@ -4,7 +4,7 @@
       <span v-for="participant in participants" :key="participant.id">
         <v-list-item :href="participant.individual.weblink" target="_blank">
           <v-list-item-title>
-            {{ participant.individual.name }} ({{ participant.participant_roles | activeRoles }})
+            {{ participant.individual.name }} ({{ activeRoles(participant.participant_roles) }})
           </v-list-item-title>
           <v-list-item-subtitle>
             {{ participant.team }} - {{ participant.location }}
@@ -27,9 +27,14 @@
 
 <script>
 import { mapFields } from "vuex-map-fields"
+import { activeRoles } from "@/filters"
 
 export default {
   name: "IncidentParticipantsTab",
+
+  setup() {
+    return { activeRoles }
+  },
 
   computed: {
     ...mapFields("incident", ["selected.participants"]),

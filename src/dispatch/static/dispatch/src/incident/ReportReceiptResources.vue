@@ -36,7 +36,7 @@
           <v-card-actions>
             <v-list-item class="grow">
               <v-list-item-avatar color="grey-darken-3">
-                <span class="text-white text-h5">{{ commander.individual.name | initials }}</span>
+                <span class="text-white text-h5">{{ initials(commander.individual.name) }}</span>
               </v-list-item-avatar>
 
               <v-list-item-title>{{ commander.individual.name }}</v-list-item-title>
@@ -76,7 +76,7 @@
               <span v-if="resourceData('documents').length">
                 <span v-for="document in resourceData('documents')" :key="document.resource_id">
                   <v-list-item :href="document.weblink" target="_blank">
-                    <v-list-item-title>{{ document.resource_type | deslug }}</v-list-item-title>
+                    <v-list-item-title>{{ deslug(document.resource_type) }}</v-list-item-title>
                     <v-list-item-subtitle>{{ document.description }}</v-list-item-subtitle>
 
                     <v-list-item-action>
@@ -101,7 +101,7 @@
                 target="_blank"
                 :href="resourceData(pluginInstance.plugin.type).weblink"
               >
-                <v-list-item-title>{{ pluginInstance.plugin.type | capitalize }}</v-list-item-title>
+                <v-list-item-title>{{ capitalize(pluginInstance.plugin.type) }}</v-list-item-title>
                 <v-list-item-subtitle>{{
                   resourceData(pluginInstance.plugin.type).description
                 }}</v-list-item-subtitle>
@@ -130,6 +130,7 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+import { initials, deslug, capitalize } from "@/filters"
 
 import IncidentPriority from "@/incident/priority/IncidentPriority.vue"
 import PluginApi from "@/plugin/api"
@@ -147,6 +148,9 @@ export default {
       activeResourcePlugins: [],
       project_faq: null,
     }
+  },
+  setup() {
+    return { initials, deslug, capitalize }
   },
   created() {
     PluginApi.getAllInstances({

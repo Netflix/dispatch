@@ -92,13 +92,13 @@
                 />
               </template>
               <template #item.resolve_by="{ item }">
-                {{ item.resolve_by | formatDate }}
+                {{ formatDate(item.resolve_by) }}
               </template>
               <template #item.created_at="{ item }">
-                {{ item.created_at | formatDate }}
+                {{ formatDate(item.created_at) }}
               </template>
               <template #item.resolved_at="{ item }">
-                {{ item.resolved_at | formatDate }}
+                {{ formatDate(item.resolved_at) }}
               </template>
               <template #item.source="{ item }">
                 {{ item.source }}
@@ -120,7 +120,7 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-
+import { formatDate } from "@/filters"
 import Util from "@/util"
 import SearchUtils from "@/search/utils"
 
@@ -167,6 +167,9 @@ export default {
       previewRowsLoading: false,
       exportLoading: false,
     }
+  },
+  setup() {
+    return { formatDate }
   },
   components: {
     IncidentCombobox,

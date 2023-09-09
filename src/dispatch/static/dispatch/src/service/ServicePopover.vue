@@ -4,7 +4,7 @@
       <template #activator="{ on }">
         <v-chip pill small v-on="on">
           <v-avatar color="teal" start>
-            <span class="text-white">{{ service.name | initials }}</span>
+            <span class="text-white">{{ initials(service.name) }}</span>
           </v-avatar>
           {{ service.name }}
         </v-chip>
@@ -13,7 +13,7 @@
         <v-list dark>
           <v-list-item>
             <v-list-item-avatar color="teal">
-              <span class="text-white">{{ service.name | initials }}</span>
+              <span class="text-white">{{ initials(service.name) }}</span>
             </v-list-item-avatar>
 
             <v-list-item-title>{{ service.name }}</v-list-item-title>
@@ -48,12 +48,18 @@
 </template>
 
 <script>
+import { initials } from "@/filters"
+
 export default {
   name: "ServicePopover",
 
   data: () => ({
     menu: false,
   }),
+
+  setup() {
+    return { initials }
+  },
 
   props: {
     service: {

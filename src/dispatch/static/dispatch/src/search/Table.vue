@@ -81,17 +81,17 @@
             <template #[`item.created_at`]="{ item }">
               <v-tooltip location="bottom">
                 <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
+                  <span v-bind="attrs" v-on="on">{{ formatRelativeDate(item.created_at) }}</span>
                 </template>
-                <span>{{ item.created_at | formatDate }}</span>
+                <span>{{ formatDate(item.created_at) }}</span>
               </v-tooltip>
             </template>
             <template #[`item.updated_at`]="{ item }">
               <v-tooltip location="bottom">
                 <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ item.updated_at | formatRelativeDate }}</span>
+                  <span v-bind="attrs" v-on="on">{{ formatRelativeDate(item.updated_at) }}</span>
                 </template>
-                <span>{{ item.updated_at | formatDate }}</span>
+                <span>{{ formatDate(item.updated_at) }}</span>
               </v-tooltip>
             </template>
             <template #[`item.data-table-actions`]="{ item }">
@@ -121,6 +121,7 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+import { formatRelativeDate, formatDate } from "@/filters"
 
 import DeleteDialog from "@/search/DeleteDialog.vue"
 
@@ -146,6 +147,10 @@ export default {
       ],
       showEditSheet: false,
     }
+  },
+
+  setup() {
+    return { formatRelativeDate, formatDate }
   },
 
   computed: {

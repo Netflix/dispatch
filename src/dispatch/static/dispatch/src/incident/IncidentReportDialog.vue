@@ -12,7 +12,7 @@
         <v-card-text>
           <div class="text-h6 text--primary">Last Tactical Report</div>
           <div v-if="item.last_tactical_report">
-            <p>As of {{ item.last_tactical_report.created_at | formatRelativeDate }}</p>
+            <p>As of {{ formatRelativeDate(item.last_tactical_report.created_at) }}</p>
             <p class="text-subtitle-1 text--primary">Conditions</p>
             <div>{{ item.last_tactical_report.details.conditions }}</div>
             <p class="text-subtitle-1 text--primary">Actions</p>
@@ -27,7 +27,7 @@
         <v-card-text>
           <div class="text-h6 text--primary">Last Executive Report</div>
           <div v-if="item.last_executive_report">
-            <p>As of {{ item.last_executive_report.created_at | formatRelativeDate }}</p>
+            <p>As of {{ formatRelativeDate(item.last_executive_report.created_at) }}</p>
             <p class="text-subtitle-1 text--primary">Current Status</p>
             <div>{{ item.last_executive_report.details.current_status }}</div>
             <p class="text-subtitle-1 text--primary">Overview</p>
@@ -42,6 +42,8 @@
   </v-dialog>
 </template>
 <script>
+import { formatRelativeDate } from "@/filters"
+
 export default {
   name: "IncidentReportDialog",
 
@@ -49,6 +51,10 @@ export default {
     return {
       show: false,
     }
+  },
+
+  setup() {
+    return { formatRelativeDate }
   },
 }
 </script>

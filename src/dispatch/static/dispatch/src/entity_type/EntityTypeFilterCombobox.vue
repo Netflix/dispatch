@@ -33,7 +33,7 @@
           <v-list dark>
             <v-list-item>
               <v-list-item-avatar color="teal">
-                <span class="text-white">{{ item.name | initials }}</span>
+                <span class="text-white">{{ initials(item.name) }}</span>
               </v-list-item-avatar>
 
               <v-list-item-title>{{ item.name }}</v-list-item-title>
@@ -97,6 +97,7 @@
 
 <script>
 import { debounce } from "lodash"
+import { initials } from "@/filters"
 
 import SearchUtils from "@/search/utils"
 import EntityTypeApi from "@/entity_type/api"
@@ -143,6 +144,10 @@ export default {
       createdEntityType: null,
       search: null,
     }
+  },
+
+  setup() {
+    return { initials }
   },
 
   computed: {

@@ -7,8 +7,8 @@
       <v-breadcrumbs-item v-if="item.projectSelect">
         <project-menu-select v-model="project" />
       </v-breadcrumbs-item>
-      <v-breadcrumbs-item v-else :to="item.to" :disabled="item.disabled">
-        {{ item.text | capitalize }}
+      <v-breadcrumbs-item v-else :to="item.to" :disabled="item.disabled" class="text-capitalize">
+        {{ item.text }}
       </v-breadcrumbs-item>
     </template>
   </v-breadcrumbs>

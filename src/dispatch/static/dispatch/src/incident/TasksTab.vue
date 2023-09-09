@@ -7,9 +7,9 @@
             {{ task.description }}
           </v-list-item-title>
           <v-list-item-subtitle>
-            <strong>Created:</strong> {{ task.created_at | formatRelativeDate }} |
+            <strong>Created:</strong> {{ formatRelativeDate(task.created_at) }} |
             <strong>Status:</strong> {{ task.status }} | <strong>Assignees:</strong>
-            {{ task.assignees | individualNames }}
+            {{ individualNames(task.assignees) }}
           </v-list-item-subtitle>
 
           <v-list-item-action>
@@ -29,9 +29,14 @@
 
 <script>
 import { mapFields } from "vuex-map-fields"
+import { formatRelativeDate, individualNames } from "@/filters"
 
 export default {
   name: "IncidentTasksTab",
+
+  setup() {
+    return { formatRelativeDate, individualNames }
+  },
 
   computed: {
     ...mapFields("incident", ["selected.tasks"]),

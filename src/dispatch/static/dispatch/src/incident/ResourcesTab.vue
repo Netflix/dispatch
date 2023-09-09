@@ -46,7 +46,7 @@
     <v-divider />
     <span v-for="document in documents" :key="document.resource_id">
       <v-list-item :href="document.weblink" target="_blank">
-        <v-list-item-title>{{ document.resource_type | deslug }}</v-list-item-title>
+        <v-list-item-title>{{ deslug(document.resource_type) }}</v-list-item-title>
         <v-list-item-subtitle>{{ document.description }}</v-list-item-subtitle>
 
         <v-list-item-action>
@@ -62,9 +62,14 @@
 
 <script>
 import { mapFields } from "vuex-map-fields"
+import { deslug } from "@/filters"
 
 export default {
   name: "IncidentResourcesTab",
+
+  setup() {
+    return { deslug }
+  },
 
   computed: {
     ...mapFields("incident", [

@@ -15,9 +15,9 @@
       <template #item.reported_at="{ item }">
         <v-tooltip location="bottom">
           <template #activator="{ on, attrs }">
-            <span v-bind="attrs" v-on="on">{{ item.reported_at | formatRelativeDate }}</span>
+            <span v-bind="attrs" v-on="on">{{ formatRelativeDate(item.reported_at) }}</span>
           </template>
-          <span>{{ item.reported_at | formatDate }}</span>
+          <span>{{ formatDate(item.reported_at) }}</span>
         </v-tooltip>
       </template>
       <template #item.data-table-actions="{ item }">
@@ -39,7 +39,7 @@
 </template>
 <script>
 import { mapActions } from "vuex"
-
+import { formatRelativeDate, formatDate } from "@/filters"
 import CasePriority from "@/case/priority/CasePriority.vue"
 import CaseStatus from "@/case/CaseStatus.vue"
 
@@ -65,6 +65,10 @@ export default {
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }
+  },
+
+  setup() {
+    return { formatRelativeDate, formatDate }
   },
 
   props: {

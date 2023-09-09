@@ -37,7 +37,7 @@
               <v-list dark>
                 <v-list-item>
                   <v-list-item-avatar color="teal">
-                    <span class="text-white">{{ item.name | initials }}</span>
+                    <span class="text-white">{{ initials(item.name) }}</span>
                   </v-list-item-avatar>
 
                   <v-list-item-title>{{ item.name }}</v-list-item-title>
@@ -97,6 +97,7 @@
 
 <script>
 import { cloneDeep, debounce } from "lodash"
+import { initials } from "@/filters"
 
 import SignalApi from "@/signal/api"
 import SearchUtils from "@/search/utils"
@@ -134,6 +135,10 @@ export default {
       search: null,
       createdFilter: null,
     }
+  },
+
+  setup() {
+    return { initials }
   },
 
   computed: {

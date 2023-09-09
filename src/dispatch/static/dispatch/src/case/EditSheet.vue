@@ -7,7 +7,7 @@
             {{ name }}
           </v-list-item-title>
           <v-list-item-subtitle>
-            Reported - {{ reported_at | formatRelativeDate }}
+            Reported - {{ formatRelativeDate(reported_at) }}
           </v-list-item-subtitle>
 
           <v-btn
@@ -77,6 +77,7 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+import { formatRelativeDate } from "@/filters"
 
 import CaseDetailsTab from "@/case/DetailsTab.vue"
 import CaseParticipantsTab from "@/case/ParticipantsTab.vue"
@@ -103,6 +104,10 @@ export default {
     return {
       tab: null,
     }
+  },
+
+  setup() {
+    return { formatRelativeDate }
   },
 
   computed: {

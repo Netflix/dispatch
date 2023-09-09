@@ -56,7 +56,7 @@
             <v-list-item>
               <v-list-item-title>Data Last Loaded At</v-list-item-title>
               <v-list-item-subtitle class="text-right">
-                {{ data_last_loaded_at | formatRelativeDate }}
+                {{ formatRelativeDate(data_last_loaded_at) }}
               </v-list-item-subtitle>
             </v-list-item>
             <v-list-item>
@@ -124,6 +124,7 @@
 import { mapFields } from "vuex-map-fields"
 // import VueMarkdown from "vue-markdown"
 // import MonacoEditor from "monaco-editor-vue"
+import { formatRelativeDate } from "@/filters"
 
 export default {
   name: "SourceDetailsTab",
@@ -174,6 +175,10 @@ export default {
         { text: "Description", value: "description" },
       ],
     }
+  },
+
+  setup() {
+    return { formatRelativeDate }
   },
 
   methods: {

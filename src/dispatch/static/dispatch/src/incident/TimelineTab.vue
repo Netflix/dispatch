@@ -27,7 +27,7 @@
               <template v-for="(value, key) in event.details">
                 <v-card flat :key="key">
                   <v-card-title class="text-subtitle-1">
-                    {{ key | snakeToCamel }}
+                    {{ snakeToCamel(key) }}
                   </v-card-title>
                   <v-card-text>{{ value }}</v-card-text>
                 </v-card>
@@ -41,10 +41,10 @@
             <v-tooltip location="bottom">
               <template #activator="{ on, attrs }">
                 <span v-bind="attrs" v-on="on" class="wavy-underline">{{
-                  event.started_at | formatToUTC
+                  formatToUTC(event.started_at)
                 }}</span>
               </template>
-              <span class="pre-formatted">{{ event.started_at | formatToTimeZones }}</span>
+              <span class="pre-formatted">{{ formatToTimeZones(event.started_at) }}</span>
             </v-tooltip>
           </v-col>
         </v-row>
@@ -59,6 +59,7 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import Util from "@/util"
+import { snakeToCamel, formatToUTC, formatToTimeZones } from "@/filters"
 
 export default {
   name: "IncidentTimelineTab",
@@ -68,6 +69,10 @@ export default {
       showDetails: false,
       exportLoading: false,
     }
+  },
+
+  setup() {
+    return { snakeToCamel, formatToUTC, formatToTimeZones }
   },
 
   computed: {

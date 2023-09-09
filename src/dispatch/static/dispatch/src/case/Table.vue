@@ -67,17 +67,17 @@
             <template #item.reported_at="{ item }">
               <v-tooltip location="bottom">
                 <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ item.reported_at | formatRelativeDate }}</span>
+                  <span v-bind="attrs" v-on="on">{{ formatRelativeDate(item.reported_at) }}</span>
                 </template>
-                <span>{{ item.reported_at | formatDate }}</span>
+                <span>{{ formatDate(item.reported_at) }}</span>
               </v-tooltip>
             </template>
             <template #item.closed_at="{ item }">
               <v-tooltip location="bottom">
                 <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ item.closed_at | formatRelativeDate }}</span>
+                  <span v-bind="attrs" v-on="on">{{ formatRelativeDate(item.closed_at) }}</span>
                 </template>
-                <span>{{ item.closed_at | formatDate }}</span>
+                <span>{{ formatDate(item.closed_at) }}</span>
               </v-tooltip>
             </template>
             <template #item.data-table-actions="{ item }">
@@ -125,6 +125,7 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+import { formatRelativeDate, formatDate } from "@/filters"
 
 import BulkEditSheet from "@/case/BulkEditSheet.vue"
 import CaseParticipant from "@/case/Participant.vue"
@@ -180,6 +181,10 @@ export default {
       ],
       showEditSheet: false,
     }
+  },
+
+  setup() {
+    return { formatRelativeDate, formatDate }
   },
 
   computed: {

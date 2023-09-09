@@ -12,9 +12,9 @@
     <template #item.created_at="{ item }">
       <v-tooltip location="bottom">
         <template #activator="{ on, attrs }">
-          <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
+          <span v-bind="attrs" v-on="on">{{ formatRelativeDate(item.created_at) }}</span>
         </template>
-        <span>{{ item.created_at | formatDate }}</span>
+        <span>{{ formatDate(item.created_at) }}</span>
       </v-tooltip>
     </template>
   </v-data-table>
@@ -22,7 +22,7 @@
 
 <script>
 import { mapFields } from "vuex-map-fields"
-
+import { formatRelativeDate, formatDate } from "@/filters"
 import CasePopover from "@/case/CasePopover.vue"
 
 export default {
@@ -47,6 +47,9 @@ export default {
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }
+  },
+  setup() {
+    return { formatRelativeDate, formatDate }
   },
   computed: {
     ...mapFields("case_management", ["selected.cases"]),

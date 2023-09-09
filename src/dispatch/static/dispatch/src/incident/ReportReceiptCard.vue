@@ -156,7 +156,7 @@
               <span v-if="documents.length">
                 <span v-for="document in documents" :key="document.resource_id">
                   <v-list-item :href="document.weblink" target="_blank">
-                    <v-list-item-title>{{ document.resource_type | deslug }}</v-list-item-title>
+                    <v-list-item-title>{{ deslug(document.resource_type) }}</v-list-item-title>
                     <v-list-item-subtitle>{{ document.description }}</v-list-item-subtitle>
 
                     <v-list-item-action>
@@ -194,6 +194,7 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { forEach, find } from "lodash"
+import { deslug } from "@/filters"
 import DocumentApi from "@/document/api"
 import Participant from "@/incident/Participant.vue"
 
@@ -217,6 +218,9 @@ export default {
       },
       project_faq: null,
     }
+  },
+  setup() {
+    return { deslug }
   },
   created() {
     this.getFAQ()

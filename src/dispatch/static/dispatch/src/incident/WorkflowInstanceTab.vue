@@ -11,7 +11,7 @@
             <v-list subheader>
               <v-subheader>Details</v-subheader>
               <v-list-item :href="instance.weblink">
-                <v-list-item-title>{{ instance.status | capitalize }}</v-list-item-title>
+                <v-list-item-title>{{ capitalize(instance.status) }}</v-list-item-title>
                 <v-list-item-subtitle>Status</v-list-item-subtitle>
 
                 <v-list-item-icon>
@@ -57,9 +57,13 @@
 
 <script>
 import { mapFields } from "vuex-map-fields"
+import { capitalize } from "@/filters"
 
 export default {
   name: "IncidentWorkflowInstanceTab",
+  setup() {
+    return { capitalize }
+  },
   computed: {
     ...mapFields("incident", ["selected.workflow_instances"]),
   },

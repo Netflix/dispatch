@@ -34,25 +34,25 @@
       <template #item.resolve_by="{ item }">
         <v-tooltip location="bottom">
           <template #activator="{ on, attrs }">
-            <span v-bind="attrs" v-on="on">{{ item.resolve_by | formatRelativeDate }}</span>
+            <span v-bind="attrs" v-on="on">{{ formatRelativeDate(item.resolve_by) }}</span>
           </template>
-          <span>{{ item.resolve_by | formatDate }}</span>
+          <span>{{ formatDate(item.resolve_by) }}</span>
         </v-tooltip>
       </template>
       <template #item.created_at="{ item }">
         <v-tooltip location="bottom">
           <template #activator="{ on, attrs }">
-            <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
+            <span v-bind="attrs" v-on="on">{{ formatRelativeDate(item.created_at) }}</span>
           </template>
-          <span>{{ item.created_at | formatDate }}</span>
+          <span>{{ formatDate(item.created_at) }}</span>
         </v-tooltip>
       </template>
       <template #item.resolved_at="{ item }">
         <v-tooltip location="bottom">
           <template #activator="{ on, attrs }">
-            <span v-bind="attrs" v-on="on">{{ item.resolved_by | formatRelativeDate }}</span>
+            <span v-bind="attrs" v-on="on">{{ formatRelativeDate(item.resolved_by) }}</span>
           </template>
-          <span>{{ item.resolve_by | formatDate }}</span>
+          <span>{{ formatDate(item.resolve_by) }}</span>
         </v-tooltip>
       </template>
       <template #item.source="{ item }">
@@ -81,6 +81,7 @@
 
 <script>
 import { mapActions } from "vuex"
+import { formatRelativeDate, formatDate } from "@/filters"
 
 import IncidentPriority from "@/incident/priority/IncidentPriority.vue"
 import NewEditSheet from "@/task/NewEditSheet.vue"
@@ -107,6 +108,10 @@ export default {
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }
+  },
+
+  setup() {
+    return { formatRelativeDate, formatDate }
   },
 
   props: {

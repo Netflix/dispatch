@@ -12,16 +12,19 @@
     <template #item.created_at="{ item }">
       <v-tooltip location="bottom">
         <template #activator="{ on, attrs }">
-          <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
+          <span v-bind="attrs" v-on="on">{{ formatRelativeDate(item.created_at) }}</span>
         </template>
-        <span>{{ item.created_at | formatDate }}</span>
+        <span>{{ formatDate(item.created_at) }}</span>
       </v-tooltip>
     </template>
   </v-data-table>
 </template>
 
 <script>
+import { formatRelativeDate, formatDate } from "@/filters"
+
 import WorkflowInstanceDetailMenu from "@/workflow/WorkflowInstanceDetailMenu.vue"
+
 export default {
   name: "WorkflowInstanceTab",
   props: {
@@ -47,6 +50,9 @@ export default {
         { text: "", value: "parameters" },
       ],
     }
+  },
+  setup() {
+    return { formatRelativeDate, formatDate }
   },
 }
 </script>

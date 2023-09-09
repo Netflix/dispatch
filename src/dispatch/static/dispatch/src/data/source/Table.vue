@@ -69,7 +69,7 @@
               <service-popover v-if="item.owner" :service="item.owner" />
             </template>
             <template #item.data_last_loaded_at="{ item }">
-              {{ item.data_last_loaded_at | formatRelativeDate }}
+              {{ formatRelativeDate(item.data_last_loaded_at) }}
             </template>
             <template #item.data-table-actions="{ item }">
               <v-menu location="bottom left">
@@ -98,6 +98,7 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+import { formatRelativeDate } from "@/filters"
 
 import DeleteDialog from "@/data/source/DeleteDialog.vue"
 import NewEditSheet from "@/data/source/NewEditSheet.vue"
@@ -133,6 +134,10 @@ export default {
         },
       ],
     }
+  },
+
+  setup() {
+    return { formatRelativeDate }
   },
 
   computed: {
