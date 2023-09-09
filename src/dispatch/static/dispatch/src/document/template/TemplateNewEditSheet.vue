@@ -34,12 +34,12 @@
       />
       <v-card flat>
         <v-card-text>
-          <v-container grid-list-md>
-            <v-layout wrap>
-              <v-flex xs12>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
                 <span class="text-subtitle-2">Details</span>
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-text-field
                   v-model="name"
                   label="Name"
@@ -49,8 +49,8 @@
                   name="Name"
                   :rules="[rules.required]"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-textarea
                   v-model="description"
                   label="Description"
@@ -59,8 +59,8 @@
                   required
                   name="description"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-text-field
                   v-model="weblink"
                   label="Weblink"
@@ -70,8 +70,8 @@
                   name="Template Weblink"
                   :rules="[rules.required]"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-text-field
                   v-model="resource_id"
                   label="External Id"
@@ -79,8 +79,8 @@
                   clearable
                   name="Resource Id"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <span class="text-subtitle-2">
                   Evergreen
                   <v-tooltip max-width="250px" location="bottom">
@@ -91,8 +91,8 @@
                     date.
                   </v-tooltip>
                 </span>
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-text-field
                   v-model="evergreen_owner"
                   label="Owner"
@@ -100,8 +100,8 @@
                   clearable
                   name="Owner"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-text-field
                   v-model="evergreen_reminder_interval"
                   label="Reminder Interval"
@@ -112,15 +112,15 @@
                   min="1"
                   name="Reminder Interval"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-checkbox
                   v-model="evergreen"
                   hint="Enabling evergreen will send periodic reminders to the owner to update this document template."
                   label="Enabled"
                 />
-              </v-flex>
-            </v-layout>
+              </v-col>
+            </v-row>
           </v-container>
         </v-card-text>
       </v-card>

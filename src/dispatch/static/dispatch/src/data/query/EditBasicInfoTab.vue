@@ -1,7 +1,7 @@
 <template>
-  <v-container grid-list-md>
-    <v-layout wrap>
-      <v-flex xs12>
+  <v-container>
+    <v-row>
+      <v-col cols="12">
         <v-text-field
           v-model="name"
           label="Name"
@@ -11,8 +11,8 @@
           name="Name"
           :rules="[rules.required]"
         />
-      </v-flex>
-      <v-flex xs12>
+      </v-col>
+      <v-col cols="12">
         <v-textarea
           v-model="description"
           label="Description"
@@ -22,14 +22,14 @@
           name="Description"
           :rules="[rules.required]"
         />
-      </v-flex>
-      <v-flex xs12>
+      </v-col>
+      <v-col cols="12">
         <project-select v-model="project" />
-      </v-flex>
-      <v-flex xs12>
+      </v-col>
+      <v-col cols="12">
         <source-select v-model="source" :project="project" />
-      </v-flex>
-      <v-flex xs12>
+      </v-col>
+      <v-col cols="12">
         <tag-filter-auto-complete
           label="Tags"
           v-model="tags"
@@ -37,8 +37,8 @@
           model="query"
           :model-id="id"
         />
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 

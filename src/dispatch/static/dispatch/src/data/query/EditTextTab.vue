@@ -1,15 +1,15 @@
 <template>
-  <v-container grid-list-md>
-    <v-layout wrap>
-      <v-flex xs12>
+  <v-container>
+    <v-row>
+      <v-col cols="12">
         <v-select :items="languages" v-model="language" label="Language" />
-      </v-flex>
-      <v-flex xs12>
+      </v-col>
+      <v-col cols="12">
         <div style="height: 100vh">
           <MonacoEditor v-model="text" :options="editorOptions" :language="language" />
         </div>
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 

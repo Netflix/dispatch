@@ -179,12 +179,12 @@
           </span>
         </v-list-group>
       </v-list>
-      <v-container grid-list-md>
-        <v-flex xs12>
+      <v-container>
+        <v-col cols="12">
           <v-btn color="info" variant="flat" @click="resetSelected()">
             Report another incident
           </v-btn>
-        </v-flex>
+        </v-col>
       </v-container>
     </v-card-text>
   </v-card>

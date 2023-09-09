@@ -28,9 +28,9 @@
       </v-list-item>
       <v-divider />
     </span>
-    <v-flex xs12>
+    <v-col cols="12">
       <incident-cost-input @input="addIncidentCost($event)" />
-    </v-flex>
+    </v-col>
   </v-list>
 </template>
 

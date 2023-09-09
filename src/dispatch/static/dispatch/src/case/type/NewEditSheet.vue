@@ -24,12 +24,12 @@
       </template>
       <v-card flat>
         <v-card-text>
-          <v-container grid-list-md>
-            <v-layout wrap>
-              <v-flex xs12>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
                 <span class="text-subtitle-2">Details</span>
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-text-field
                   v-model="name"
                   label="Name"
@@ -39,8 +39,8 @@
                   name="Name"
                   :rules="[rules.required]"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-textarea
                   v-model="description"
                   label="Description"
@@ -50,8 +50,8 @@
                   name="Description"
                   :rules="[rules.required]"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-text-field
                   v-model="conversation_target"
                   label="Conversation Target"
@@ -59,8 +59,8 @@
                   clearable
                   name="ConversationTarget"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-select
                   v-model="visibility"
                   label="Visibility"
@@ -68,8 +68,8 @@
                   hint="A visibility for your case type"
                   clearable
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-form @submit.prevent>
                   <template-select
                     :project="project"
@@ -78,8 +78,8 @@
                     resource-type="dispatch-case-document-template"
                   />
                 </v-form>
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-form @submit.prevent>
                   <service-select
                     :project="project"
@@ -87,11 +87,11 @@
                     v-model="oncall_service"
                   />
                 </v-form>
-              </v-flex>
-              <v-flex xs6>
+              </v-col>
+              <v-col cols="6">
                 <project-select label="Incident Project" v-model="incidentProject" />
-              </v-flex>
-              <v-flex xs6>
+              </v-col>
+              <v-col cols="6">
                 <v-form @submit.prevent>
                   <incident-type-select
                     label="Incident Type"
@@ -99,32 +99,32 @@
                     v-model="incident_type"
                   />
                 </v-form>
-              </v-flex>
-              <v-flex xs 12>
+              </v-col>
+              <v-col cols="12">
                 <v-checkbox
                   v-model="exclude_from_metrics"
                   label="Exclude From Metrics"
                   hint="Check if this case type should be excluded from all metrics."
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-checkbox
                   v-model="default_case_type"
                   label="Default Case Type"
                   hint="Check this if this case type should be the default."
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-checkbox
                   v-model="enabled"
                   label="Enabled"
                   hint="Determines whether this case type is availible for new cases."
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <plugin-metadata-input v-model="plugin_metadata" :project="project" />
-              </v-flex>
-            </v-layout>
+              </v-col>
+            </v-row>
           </v-container>
         </v-card-text>
       </v-card>

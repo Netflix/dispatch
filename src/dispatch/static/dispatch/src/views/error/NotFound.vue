@@ -1,7 +1,7 @@
 <template>
   <v-app class="exception">
     <v-container fluid fill-height>
-      <v-layout align-center justify-center>
+      <div class="d-flex align-center justify-center">
         <div class="text-md-center">
           <h1>404</h1>
           <h2 class="my-3 text-h5">Sorry, page not found</h2>
@@ -9,7 +9,7 @@
             <v-btn color="info" @click="goHome"> Go Home </v-btn>
           </div>
         </div>
-      </v-layout>
+      </div>
     </v-container>
   </v-app>
 </template>

@@ -1,7 +1,7 @@
 <template>
-  <v-container grid-list-md>
-    <v-layout wrap>
-      <v-flex xs12>
+  <v-container>
+    <v-row>
+      <v-col cols="12">
         <v-text-field
           v-model="title"
           label="Title"
@@ -11,8 +11,8 @@
           name="Title"
           :rules="[rules.required]"
         />
-      </v-flex>
-      <v-flex xs12>
+      </v-col>
+      <v-col cols="12">
         <v-textarea
           v-model="description"
           label="Description"
@@ -22,16 +22,16 @@
           name="Description"
           :rules="[rules.required]"
         />
-      </v-flex>
-      <v-flex xs12>
+      </v-col>
+      <v-col cols="12">
         <v-textarea
           v-model="resolution"
           label="Resolution"
           hint="Description of the actions taken to resolve the incident."
           clearable
         />
-      </v-flex>
-      <v-flex xs6>
+      </v-col>
+      <v-col cols="6">
         <participant-select
           v-model="reporter"
           label="Reporter"
@@ -42,8 +42,8 @@
           name="Reporter"
           :rules="[rules.required]"
         />
-      </v-flex>
-      <v-flex xs6>
+      </v-col>
+      <v-col cols="6">
         <participant-select
           v-model="commander"
           label="Incident Commander"
@@ -54,36 +54,36 @@
           name="Incident Commander"
           :rules="[rules.required]"
         />
-      </v-flex>
-      <v-flex xs6>
+      </v-col>
+      <v-col cols="6">
         <project-select v-model="project" />
-      </v-flex>
-      <v-flex xs6>
+      </v-col>
+      <v-col cols="6">
         <incident-type-select v-model="incident_type" :project="project" />
-      </v-flex>
-      <v-flex xs6>
+      </v-col>
+      <v-col cols="6">
         <incident-severity-select v-model="incident_severity" :project="project" />
-      </v-flex>
-      <v-flex xs6>
+      </v-col>
+      <v-col cols="6">
         <incident-priority-select v-model="incident_priority" :project="project" />
-      </v-flex>
-      <v-flex xs6>
+      </v-col>
+      <v-col cols="6">
         <v-select
           v-model="status"
           label="Status"
           :items="statuses"
           hint="The status of the incident."
         />
-      </v-flex>
-      <v-flex xs6>
+      </v-col>
+      <v-col cols="6">
         <v-select
           v-model="visibility"
           label="Visibility"
           :items="visibilities"
           hint="The visibilty of the incident."
         />
-      </v-flex>
-      <v-flex xs12>
+      </v-col>
+      <v-col cols="12">
         <v-row>
           <v-col cols="6">
             <date-time-picker-menu label="Reported At" v-model="reported_at" />
@@ -92,8 +92,8 @@
             <date-time-picker-menu label="Stable At" v-model="stable_at" />
           </v-col>
         </v-row>
-      </v-flex>
-      <v-flex xs12>
+      </v-col>
+      <v-col cols="12">
         <tag-filter-auto-complete
           label="Tags"
           v-model="tags"
@@ -101,14 +101,14 @@
           model="incident"
           :model-id="id"
         />
-      </v-flex>
-      <v-flex xs12>
+      </v-col>
+      <v-col cols="12">
         <incident-filter-combobox label="Duplicates" v-model="duplicates" :project="project" />
-      </v-flex>
-      <v-flex xs12>
+      </v-col>
+      <v-col cols="12">
         <case-filter-combobox label="Cases" v-model="cases" />
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 

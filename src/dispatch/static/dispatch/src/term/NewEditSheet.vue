@@ -24,9 +24,9 @@
       </template>
       <v-card flat>
         <v-card-text>
-          <v-container grid-list-md>
-            <v-layout wrap>
-              <v-flex xs12>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
                 <v-text-field
                   v-model="text"
                   label="Text"
@@ -37,18 +37,18 @@
                   name="Text"
                   :rules="[rules.required]"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <definition-combobox :project="project" v-model="definitions" />
-              </v-flex>
-            </v-layout>
-            <v-flex>
+              </v-col>
+            </v-row>
+            <v-col>
               <v-checkbox
                 v-model="discoverable"
                 label="Discoverable"
                 hint="Is this term a common word or is it eligible for auto-detection?"
               />
-            </v-flex>
+            </v-col>
           </v-container>
         </v-card-text>
       </v-card>

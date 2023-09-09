@@ -10,9 +10,7 @@
         transition="slide-y-transition"
       >There was an issue deleting.</v-alert>-->
       <v-card-text>
-        <v-container grid-list-md>
-          <v-layout wrap> Are you sure you would like to delete this team? </v-layout>
-        </v-container>
+        <v-container> Are you sure you would like to delete this team? </v-container>
       </v-card-text>
       <v-card-actions>
         <v-spacer />

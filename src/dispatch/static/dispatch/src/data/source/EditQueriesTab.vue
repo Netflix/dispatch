@@ -1,5 +1,5 @@
 <template>
-  <v-container grid-list-md>
+  <v-container>
     <query-select v-model="selectedQuery" :project="project" />
     <v-list>
       <v-list-item v-for="(i, idx) in value" :key="i.id">

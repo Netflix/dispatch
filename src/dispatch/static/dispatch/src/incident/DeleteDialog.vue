@@ -5,10 +5,8 @@
         <span class="text-h5">Delete Incident?</span>
       </v-card-title>
       <v-card-text>
-        <v-container grid-list-md>
-          <v-layout wrap>
-            Are you sure you want to delete this incident and all its external resources?
-          </v-layout>
+        <v-container>
+          Are you sure you want to delete this incident and all its external resources?
         </v-container>
       </v-card-text>
       <v-card-actions>

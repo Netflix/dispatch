@@ -22,15 +22,15 @@
             <v-card>
               <v-card-text>
                 Define the entity types that will be used to paramterize the workflow.
-                <v-flex xs12>
+                <v-col cols="12">
                   <plugin-instance-combobox
                     v-model="plugin_instance"
                     type="workflow"
                     :project="project"
                     label="Plugin"
                   />
-                </v-flex>
-                <v-flex xs12>
+                </v-col>
+                <v-col cols="12">
                   <v-text-field
                     v-model="resource_id"
                     label="Resource Id"
@@ -39,10 +39,10 @@
                     name="resourceId"
                     :rules="[rules.required]"
                   />
-                </v-flex>
-                <v-flex xs12>
+                </v-col>
+                <v-col cols="12">
                   <workflow-parameters-entity-input v-model="parameters" />
-                </v-flex>
+                </v-col>
               </v-card-text>
               <v-card-actions>
                 <v-spacer />

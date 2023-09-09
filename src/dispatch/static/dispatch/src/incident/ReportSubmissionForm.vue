@@ -1,9 +1,9 @@
 <template>
   <v-form @submit.prevent v-slot="{ isValid }">
     <v-form>
-      <v-container grid-list-md>
-        <v-layout wrap>
-          <v-flex xs12>
+      <v-container>
+        <v-row>
+          <v-col cols="12">
             <v-textarea
               v-model="title"
               label="Title"
@@ -15,8 +15,8 @@
               name="Title"
               :rules="[rules.required]"
             />
-          </v-flex>
-          <v-flex xs12>
+          </v-col>
+          <v-col cols="12">
             <v-textarea
               v-model="description"
               label="Description"
@@ -28,24 +28,24 @@
               name="Description"
               :rules="[rules.required]"
             />
-          </v-flex>
-          <v-flex xs12>
+          </v-col>
+          <v-col cols="12">
             <project-select v-model="project" />
-          </v-flex>
-          <v-flex xs12>
+          </v-col>
+          <v-col cols="12">
             <incident-type-select
               :project="project"
               v-model="incident_type"
               value="this.incidentType"
             />
-          </v-flex>
-          <v-flex xs12>
+          </v-col>
+          <v-col cols="12">
             <incident-priority-select :project="project" v-model="incident_priority" />
-          </v-flex>
-          <v-flex xs12>
+          </v-col>
+          <v-col cols="12">
             <tag-filter-auto-complete :project="project" v-model="tags" label="Tags" />
-          </v-flex>
-        </v-layout>
+          </v-col>
+        </v-row>
       </v-container>
     </v-form>
   </v-form>

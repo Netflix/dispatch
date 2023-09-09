@@ -24,12 +24,12 @@
       </template>
       <v-card flat>
         <v-card-text>
-          <v-container grid-list-md>
-            <v-layout wrap>
-              <v-flex xs12>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
                 <span class="text-subtitle-2">Details</span>
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-text-field
                   v-model="name"
                   label="Name"
@@ -39,8 +39,8 @@
                   name="Name"
                   :rules="[rules.required]"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-text-field
                   v-model="description"
                   label="Description"
@@ -49,11 +49,11 @@
                   required
                   name="Description"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <color-picker-input v-model="color" />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-text-field
                   v-model.number="annual_employee_cost"
                   label="Annual Employee Cost"
@@ -67,8 +67,8 @@
                   placeholder="50000"
                   name="Employee Cost"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-text-field
                   v-model.number="business_year_hours"
                   label="Business Year Hours"
@@ -81,8 +81,8 @@
                   placeholder="2080"
                   name="Year Hours"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-text-field
                   v-model="owner_email"
                   label="Owner Email"
@@ -92,8 +92,8 @@
                   name="Owner Email"
                   :rules="[rules.email]"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-text-field
                   v-model="owner_conversation"
                   label="Owner Conversation"
@@ -102,8 +102,8 @@
                   required
                   name="Owner Conversation"
                 />
-              </v-flex>
-            </v-layout>
+              </v-col>
+            </v-row>
           </v-container>
         </v-card-text>
       </v-card>

@@ -24,9 +24,9 @@
       </template>
       <v-card flat>
         <v-card-text>
-          <v-container grid-list-md>
-            <v-layout wrap>
-              <v-flex xs12>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
                 <v-textarea
                   v-model="description"
                   label="Description"
@@ -35,19 +35,19 @@
                   required
                   name="description"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <project-select v-model="project" />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-select
                   v-model="status"
                   label="Status"
                   :items="statuses"
                   hint="The incident's current status"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <incident-select
                   v-model="incident"
                   label="Incident"
@@ -57,8 +57,8 @@
                   name="incident"
                   :rules="[rules.required]"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <participant-select
                   v-model="owner"
                   label="Owner"
@@ -68,8 +68,8 @@
                   name="owner"
                   :rules="[rules.required]"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <assignee-combobox
                   v-model="assignees"
                   label="Assignees"
@@ -79,8 +79,8 @@
                   name="assignees"
                   :rules="[rules.required]"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-row>
                   <v-col cols="6">
                     <date-time-picker-menu label="Resolved At" v-model="resolved_at" />
@@ -89,8 +89,8 @@
                     <date-time-picker-menu label="Resolve By" v-model="resolve_by" />
                   </v-col>
                 </v-row>
-              </v-flex>
-            </v-layout>
+              </v-col>
+            </v-row>
           </v-container>
         </v-card-text>
       </v-card>

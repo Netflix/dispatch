@@ -5,9 +5,7 @@
         <span class="text-h5">Delete Feedback?</span>
       </v-card-title>
       <v-card-text>
-        <v-container grid-list-md>
-          <v-layout wrap> Are you sure you would like to delete this feedback? </v-layout>
-        </v-container>
+        <v-container> Are you sure you would like to delete this feedback? </v-container>
       </v-card-text>
       <v-card-actions>
         <v-spacer />

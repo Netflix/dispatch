@@ -24,12 +24,12 @@
       </template>
       <v-card flat>
         <v-card-text>
-          <v-container grid-list-md>
-            <v-layout wrap>
-              <v-flex xs12>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
                 <span class="text-subtitle-2">Details</span>
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-text-field
                   v-model="name"
                   label="Name"
@@ -39,8 +39,8 @@
                   name="Name"
                   :rules="[rules.required]"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-text-field
                   v-model="email"
                   label="Email"
@@ -50,8 +50,8 @@
                   name="Email"
                   :rules="[rules.required]"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-text-field
                   v-model="company"
                   label="Company"
@@ -59,8 +59,8 @@
                   clearable
                   name="Company"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-text-field
                   v-model="external_id"
                   label="External Id"
@@ -68,8 +68,8 @@
                   clearable
                   name="ExternalId"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <span class="text-subtitle-2"
                   >Engagement
                   <v-tooltip max-width="250px" location="bottom">
@@ -80,16 +80,16 @@
                     the following filters.
                   </v-tooltip>
                 </span>
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <search-filter-combobox
                   v-model="filters"
                   :project="project"
                   label="Filters"
                   hint="Select one or more filters that will determine when the individual is engaged."
                 />
-              </v-flex>
-            </v-layout>
+              </v-col>
+            </v-row>
           </v-container>
         </v-card-text>
       </v-card>

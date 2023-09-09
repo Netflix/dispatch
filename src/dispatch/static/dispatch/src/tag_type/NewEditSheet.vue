@@ -24,12 +24,12 @@
       </template>
       <v-card flat>
         <v-card-text>
-          <v-container grid-list-md>
-            <v-layout wrap>
-              <v-flex xs12>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
                 <span class="text-subtitle-2">Details</span>
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-text-field
                   v-model="name"
                   label="Name"
@@ -39,8 +39,8 @@
                   name="Name"
                   :rules="[rules.required]"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-textarea
                   v-model="description"
                   label="Description"
@@ -49,15 +49,15 @@
                   required
                   name="Description"
                 />
-              </v-flex>
-              <v-flex>
+              </v-col>
+              <v-col>
                 <v-checkbox
                   v-model="exclusive"
                   label="Exclusive"
                   hint="Should an incident only have one tag of this type?"
                 />
-              </v-flex>
-            </v-layout>
+              </v-col>
+            </v-row>
           </v-container>
         </v-card-text>
       </v-card>

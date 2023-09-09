@@ -1,10 +1,10 @@
 <template>
-  <v-container grid-list-md>
+  <v-container>
     <v-card elevation="0">
       <div class="d-flex">
         <v-text-field
           v-model="q"
-          append-icon="search"
+          append-inner-icon="search"
           label="Search"
           single-line
           hide-details

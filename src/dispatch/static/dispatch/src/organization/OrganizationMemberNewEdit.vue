@@ -24,12 +24,12 @@
       </template>
       <v-card flat>
         <v-card-text>
-          <v-container grid-list-md>
-            <v-layout wrap>
-              <v-flex xs12>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
                 <span class="text-subtitle-2">Details</span>
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-text-field
                   v-model="email"
                   :disabled="id !== null"
@@ -38,8 +38,8 @@
                   name="Email"
                   :rules="[rules.required]"
                 />
-              </v-flex>
-              <v-flex v-if="!id" xs12>
+              </v-col>
+              <v-col v-if="!id" cols="12">
                 <v-text-field
                   v-model="password"
                   type="password"
@@ -47,11 +47,11 @@
                   name="Password"
                   :rules="[rules.required]"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <span class="text-subtitle-2">Role</span>
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-radio-group v-model="role" column>
                   <v-tooltip max-width="250px" location="left">
                     <template #activator="{ on, attrs }">
@@ -92,16 +92,16 @@
                     >
                   </v-tooltip>
                 </v-radio-group>
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <span class="text-subtitle-2">Settings</span>
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-list-item>
                   <project-combobox v-model="defaultProjects" label="Default Projects" />
                 </v-list-item>
-              </v-flex>
-            </v-layout>
+              </v-col>
+            </v-row>
           </v-container>
         </v-card-text>
       </v-card>

@@ -24,12 +24,12 @@
       </template>
       <v-card flat>
         <v-card-text>
-          <v-container grid-list-md>
-            <v-layout wrap>
-              <v-flex xs12>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
                 <span class="text-subtitle-2">Details</span>
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-text-field
                   v-model="name"
                   label="Name"
@@ -39,8 +39,8 @@
                   name="Name"
                   :rules="[rules.required]"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-textarea
                   v-model="description"
                   label="Description"
@@ -50,8 +50,8 @@
                   name="Description"
                   :rules="[rules.required]"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-select
                   v-model="visibility"
                   label="Visibility"
@@ -59,8 +59,8 @@
                   hint="A visibility for your incident type"
                   clearable
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-form @submit.prevent>
                   <template-select
                     :project="project"
@@ -69,8 +69,8 @@
                     resource-type="dispatch-incident-document-template"
                   />
                 </v-form>
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-form @submit.prevent>
                   <template-select
                     :project="project"
@@ -79,8 +79,8 @@
                     resource-type="dispatch-executive-report-document-template"
                   />
                 </v-form>
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-form @submit.prevent>
                   <template-select
                     :project="project"
@@ -89,8 +89,8 @@
                     resource-type="dispatch-incident-review-document-template"
                   />
                 </v-form>
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-form @submit.prevent>
                   <template-select
                     :project="project"
@@ -99,32 +99,32 @@
                     resource-type="dispatch-incident-tracking-template"
                   />
                 </v-form>
-              </v-flex>
-              <v-flex xs 12>
+              </v-col>
+              <v-col cols="12">
                 <v-checkbox
                   v-model="exclude_from_metrics"
                   label="Exclude From Metrics"
                   hint="Check if this incident type should be excluded from all metrics."
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-checkbox
                   v-model="default_incident_type"
                   label="Default Incident Type"
                   hint="Check this if this incident type should be the default."
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-checkbox
                   v-model="enabled"
                   label="Enabled"
                   hint="Determines whether this incident type is availible for new incidents."
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <plugin-metadata-input v-model="plugin_metadata" :project="project" />
-              </v-flex>
-            </v-layout>
+              </v-col>
+            </v-row>
           </v-container>
         </v-card-text>
       </v-card>

@@ -1,17 +1,17 @@
 <template>
   <div id="page-lists">
-    <v-container grid-list-lg fluid>
-      <v-layout row wrap>
-        <v-flex lg4>
+    <v-container fluid>
+      <v-row>
+        <v-col lg="4">
           <profile-card />
-        </v-flex>
-        <v-flex lg4>
+        </v-col>
+        <v-col lg="4">
           <menu-card />
-        </v-flex>
-        <v-flex lg4>
+        </v-col>
+        <v-col lg="4">
           <setting-card />
-        </v-flex>
-      </v-layout>
+        </v-col>
+      </v-row>
     </v-container>
   </div>
 </template>

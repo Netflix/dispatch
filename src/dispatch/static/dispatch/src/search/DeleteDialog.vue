@@ -5,9 +5,7 @@
         <span class="text-h5">Delete Search Filter?</span>
       </v-card-title>
       <v-card-text>
-        <v-container grid-list-md>
-          <v-layout wrap> Are you sure you would like to delete this search filter? </v-layout>
-        </v-container>
+        <v-container> Are you sure you would like to delete this search filter? </v-container>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
