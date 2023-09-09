@@ -165,26 +165,24 @@
                 <v-card-text>
                   Provide a name and description for your filter.
                   <v-text-field
-                      v-model="name"
-                      label="Name"
-                      hint="A name for your saved search."
-
-                      clearable
-                      required
-                      name="Name"
-                      :rules="[rules.required]"
-                    />
+                    v-model="name"
+                    label="Name"
+                    hint="A name for your saved search."
+                    clearable
+                    required
+                    name="Name"
+                    :rules="[rules.required]"
+                  />
                   <v-textarea
-                      v-model="description"
-                      label="Description"
-                      hint="A short description."
-
-                      clearable
-                      auto-grow
-                      required
-                      name="Description"
-                      :rules="[rules.required]"
-                    />
+                    v-model="description"
+                    label="Description"
+                    hint="A short description."
+                    clearable
+                    auto-grow
+                    required
+                    name="Description"
+                    :rules="[rules.required]"
+                  />
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer />
@@ -210,7 +208,7 @@
 <script>
 // import MonacoEditor from "monaco-editor-vue"
 
-import { required } from '@/util/form'
+import { required } from "@/util/form"
 
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
@@ -226,10 +224,12 @@ import IncidentStatusMultiSelect from "@/incident/status/IncidentStatusMultiSele
 import IncidentTypeCombobox from "@/incident/type/IncidentTypeCombobox.vue"
 import SearchUtils from "@/search/utils"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
-import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"export default {
+import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
+
+export default {
   setup() {
     return {
-      rules: { required }
+      rules: { required },
     }
   },
   name: "SearchFilterCreateDialog",
