@@ -10,6 +10,7 @@ from dispatch.database.core import Base
 from dispatch.individual.models import IndividualContactRead
 from dispatch.models import DispatchBase, TimeStampMixin, FeedbackMixin, PrimaryKey
 from dispatch.project.models import ProjectRead
+from .reminder.models import ServiceFeedbackReminderRead
 
 from .enums import ServiceFeedbackRating
 
@@ -26,6 +27,7 @@ class ServiceFeedback(TimeStampMixin, FeedbackMixin, Base):
 
     # Relationships
     individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))
+    reminder_id = Column(Integer, ForeignKey("service_feedback_reminder.id"))
 
     search_vector = Column(
         TSVectorType(
@@ -49,6 +51,7 @@ class ServiceFeedbackBase(DispatchBase):
     schedule: Optional[str]
     shift_end_at: Optional[datetime]
     shift_start_at: Optional[datetime]
+    service_feedback_reminder: Optional[ServiceFeedbackReminderRead]
 
 
 class ServiceFeedbackCreate(ServiceFeedbackBase):

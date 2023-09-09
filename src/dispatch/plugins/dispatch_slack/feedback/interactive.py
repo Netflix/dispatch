@@ -23,6 +23,7 @@ from dispatch.individual import service as individual_service
 from dispatch.feedback.service.models import ServiceFeedbackRating
 from dispatch.incident import service as incident_service
 from dispatch.participant import service as participant_service
+from dispatch.feedback.service.reminder import service as reminder_service
 from dispatch.plugins.dispatch_slack.bolt import app
 from dispatch.plugins.dispatch_slack.fields import static_select_block
 from dispatch.plugins.dispatch_slack.middleware import (
@@ -378,11 +379,15 @@ def handle_oncall_shift_feedback_submission_event(
     feedback = form_data.get(ServiceFeedbackNotificationBlockIds.feedback_input)
     rating = form_data.get(ServiceFeedbackNotificationBlockIds.rating_select, {}).get("value")
 
-    # metadata is organization_slug|project_id|schedule_id|shift_end_at
+    # metadata is organization_slug|project_id|schedule_id|shift_end_at|reminder_id
     metadata = body["view"]["private_metadata"].split("|")
     project_id = metadata[1]
     schedule_id = metadata[2]
     shift_end_at = datetime.strptime(metadata[3], "%Y-%m-%dT%H:%M:%SZ")
+    # if there's a reminder id, delete the reminder
+    if len(metadata) > 4:
+        reminder_id = metadata[4]
+        reminder_service.delete(db_session=db_session, reminder_id=reminder_id)
 
     individual = (
         None

@@ -1,4 +1,6 @@
 import logging
+from datetime import datetime, timedelta
+from typing import Optional
 
 from sqlalchemy.orm import Session
 
@@ -9,7 +11,8 @@ from dispatch.messaging.strings import (
 )
 from dispatch.plugin import service as plugin_service
 from dispatch.project.models import Project
-
+from .reminder.models import ServiceFeedbackReminder, ServiceFeedbackReminderUpdate
+from .reminder import service as reminder_service
 
 log = logging.getLogger(__name__)
 
@@ -21,6 +24,7 @@ def send_oncall_shift_feedback_message(
     schedule_id: str,
     shift_end_at: str,
     schedule_name: str,
+    reminder: Optional[ServiceFeedbackReminder] = None,
     db_session: Session,
 ):
     """
@@ -39,6 +43,31 @@ def send_oncall_shift_feedback_message(
         )
         return
 
+    if reminder:
+        # update reminder with 23 hours from now
+        reminder = reminder_service.update(
+            db_session=db_session,
+            reminder=reminder,
+            reminder_in=ServiceFeedbackReminderUpdate(
+                id=reminder.id,
+                reminder_at=datetime.utcnow() + timedelta(hours=23),
+            ),
+        )
+        notification_template[0].title += " - Reminder"
+    else:
+        # create reminder and pass to plugin
+        reminder = reminder_service.create(
+            db_session=db_session,
+            reminder_in=ServiceFeedbackReminder(
+                reminder_at=datetime.utcnow() + timedelta(hours=23),
+                individual_contact_id=individual.id,
+                project_id=project.id,
+                schedule_id=schedule_id,
+                schedule_name=schedule_name,
+                shift_end_at=shift_end_at,
+            ),
+        )
+
     items = [
         {
             "individual_name": individual.name,
@@ -47,6 +76,7 @@ def send_oncall_shift_feedback_message(
             "organization_slug": project.organization.slug,
             "project_id": project.id,
             "shift_end_at": shift_end_at,
+            "reminder_id": reminder.id,
         }
     ]
 
