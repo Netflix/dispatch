@@ -15,13 +15,13 @@
 
 <script>
 import { mapFields } from "vuex-map-fields"
-import MonacoEditor from "monaco-editor-vue"
+// import MonacoEditor from "monaco-editor-vue"
 
 export default {
   name: "QueryTextTab",
 
   components: {
-    MonacoEditor,
+    // MonacoEditor,
   },
 
   computed: {

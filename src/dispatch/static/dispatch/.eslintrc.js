@@ -1,6 +1,10 @@
 module.exports = {
   root: true,
-  extends: ["eslint:recommended", "plugin:prettier/recommended", "plugin:vue/strongly-recommended"],
+  extends: [
+    "eslint:recommended",
+    "plugin:prettier/recommended",
+    "plugin:vue/vue3-strongly-recommended",
+  ],
   parserOptions: {
     ecmaVersion: 2020,
   },

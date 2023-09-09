@@ -1,5 +1,4 @@
-import Vue from "vue"
-import Vuex from "vuex"
+import { createStore } from "vuex"
 import { getField } from "vuex-map-fields"
 
 import app from "@/app/store"
@@ -47,9 +46,7 @@ import template from "@/document/template/store"
 import term from "@/term/store"
 import workflow from "@/workflow/store"
 
-Vue.use(Vuex)
-
-export default new Vuex.Store({
+export default createStore({
   modules: {
     app,
     auth,

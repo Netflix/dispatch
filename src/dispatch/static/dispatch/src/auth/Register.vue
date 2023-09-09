@@ -42,7 +42,6 @@
             <v-btn
               color="info"
               :loading="loading"
-              :disabled="invalid || !validated"
               @click="register({ email: email, password: password })"
             >
               Register

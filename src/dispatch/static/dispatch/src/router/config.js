@@ -27,11 +27,6 @@ if (registrationEnabled) {
 
 export const publicRoute = [
   {
-    path: "*",
-    meta: { title: "Dispatch" },
-    component: () => import("@/views/error/NotFound.vue"),
-  },
-  {
     path: "/:organization/auth/",
     component: BasicLayout,
     meta: { title: "Auth", icon: "view_compact", group: "auth" },
@@ -54,9 +49,14 @@ export const publicRoute = [
     name: "PKCEImplicityCallback",
     meta: { requiresAuth: true },
   },
+  {
+    path: "/:pathMatch(.*)*",
+    meta: { title: "Dispatch" },
+    component: () => import("@/views/error/NotFound.vue"),
+  },
 ]
 
-// NOTE: The order in which routes are added to the list matters when evaluated. For example, /incidents/report will take precendence over /incidents/:name.
+// NOTE: The order in which routes are added to the list matters when evaluated. For example, /incidents/report will take precedence over /incidents/:name.
 export const protectedRoute = [
   {
     path: "/",

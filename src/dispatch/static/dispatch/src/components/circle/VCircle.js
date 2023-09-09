@@ -1,4 +1,4 @@
-import "./VCircle.styl"
+import "./VCircle.sass"
 import Colorable from "vuetify/es5/mixins/colorable"
 export default {
   mixins: [Colorable],

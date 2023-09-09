@@ -160,7 +160,7 @@ export default {
   created() {
     this.mini = JSON.parse(localStorage.getItem("mini_nav"))
     this.$watch(
-      () => this.$router.currentRoute.query.project,
+      () => this.$router.currentRoute.value.query.project,
       (val) => {
         this.showFilter = val
         if (!val) this.q = ""
@@ -185,7 +185,7 @@ export default {
       )
     },
     childrenQueryParams() {
-      return this.$router.currentRoute.query
+      return this.$router.currentRoute.value.query
     },
     showChildPane() {
       if (Object.keys(this.children).length) {
@@ -215,7 +215,7 @@ export default {
       })
 
       // Filter children if we have a filter string
-      if (this.$router.currentRoute.query.project) {
+      if (this.$router.currentRoute.value.query.project) {
         let q = this.q
         if (q.length) {
           children = children.filter(function (item) {

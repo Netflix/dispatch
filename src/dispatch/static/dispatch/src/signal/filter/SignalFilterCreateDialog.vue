@@ -153,7 +153,7 @@
 </template>
 
 <script>
-import MonacoEditor from "monaco-editor-vue"
+// import MonacoEditor from "monaco-editor-vue"
 
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { mapActions } from "vuex"
@@ -215,7 +215,7 @@ export default {
     ValidationProvider,
     RawSignalViewer,
     ExpirationInput,
-    MonacoEditor,
+    // MonacoEditor,
   },
   computed: {
     ...mapFields("signalFilter", [

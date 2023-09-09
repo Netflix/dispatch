@@ -47,7 +47,7 @@ const actions = {
         .then(() => {
           commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEditDialog")
-          router.go(router.currentRoute)
+          router.go(router.currentRoute.value)
           commit(
             "notification_backend/addBeNotification",
             { text: "Organization created successfully.", type: "success" },
@@ -62,7 +62,7 @@ const actions = {
         .then(() => {
           commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEditDialog")
-          router.go(router.currentRoute)
+          router.go(router.currentRoute.value)
           commit(
             "notification_backend/addBeNotification",
             { text: "Organization updated successfully.", type: "success" },

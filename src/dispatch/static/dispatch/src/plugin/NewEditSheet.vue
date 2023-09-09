@@ -43,8 +43,8 @@
 </template>
 
 <script>
-import jsonForm from "@koumoul/vjsf"
-import "@koumoul/vjsf/dist/main.css"
+// import jsonForm from "@koumoul/vjsf"
+// import "@koumoul/vjsf/dist/main.css"
 import { mapFields } from "vuex-map-fields"
 import { mapActions, mapMutations } from "vuex"
 
@@ -54,7 +54,7 @@ export default {
   name: "PluginEditSheet",
 
   components: {
-    jsonForm,
+    // jsonForm,
     PluginCombobox,
   },
 

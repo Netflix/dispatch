@@ -236,7 +236,7 @@
 </template>
 
 <script>
-import MonacoEditor from "monaco-editor-vue"
+// import MonacoEditor from "monaco-editor-vue"
 
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { mapActions } from "vuex"
@@ -319,7 +319,7 @@ export default {
     TagTypeFilterCombobox,
     ValidationObserver,
     ValidationProvider,
-    MonacoEditor,
+    // MonacoEditor,
   },
   computed: {
     ...mapFields("search", [

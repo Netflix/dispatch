@@ -1,33 +1,32 @@
-import Vue from "vue"
 import { parseISO, formatISO } from "date-fns"
 import moment from "moment-timezone"
 
 const time_format = "YYYY-MM-DD HH:mm:ss"
 const zones_to_show = ["America/Los_Angeles", "America/New_York"]
 
-Vue.filter("formatHash", function (value) {
+export function formatHash(value) {
   if (value) {
     return value.slice(0, 7)
   }
-})
+}
 
-Vue.filter("formatDate", function (value) {
+export function formatDate(value) {
   if (value) {
     return formatISO(parseISO(value))
   }
-})
+}
 
-Vue.filter("formatToUTC", function (value) {
+export function formatToUTC(value) {
   if (value) {
     return moment(value).utc().format(time_format)
   }
-})
+}
 
 function formatTimeZone(time) {
   return `${time.format("z")}: ${time.format(time_format)}`
 }
 
-Vue.filter("formatToTimeZones", function (value) {
+export function formatToTimeZones(value) {
   if (value) {
     const m = moment(value)
     if (!m.isValid()) return value
@@ -42,9 +41,9 @@ Vue.filter("formatToTimeZones", function (value) {
     })
     return tooltip_text
   }
-})
+}
 
-Vue.filter("formatRelativeDate", function (value) {
+export function formatRelativeDate(value) {
   if (value) {
     var units = {
       year: 24 * 60 * 60 * 1000 * 365,
@@ -78,9 +77,9 @@ Vue.filter("formatRelativeDate", function (value) {
     }
     return getRelativeTime(parseISO(value))
   }
-})
+}
 
-Vue.filter("initials", function (value) {
+export function initials(value) {
   if (value) {
     return value
       .split(" ")
@@ -88,20 +87,20 @@ Vue.filter("initials", function (value) {
       .slice(0, 2)
       .join("")
   }
-})
+}
 
-Vue.filter("asString", function (value) {
+export function asString(value) {
   if (!value) return ""
   return value.toString()
-})
+}
 
-Vue.filter("capitalize", function (value) {
+export function capitalize(value) {
   if (!value) return ""
   value = value.toString()
   return value.charAt(0).toUpperCase() + value.slice(1)
-})
+}
 
-Vue.filter("toUSD", function (value) {
+export function toUSD(value) {
   if (value) {
     var formatter = new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -111,9 +110,9 @@ Vue.filter("toUSD", function (value) {
     return formatter.format(value)
   }
   return value
-})
+}
 
-Vue.filter("toNumberString", function (value) {
+export function toNumberString(value) {
   if (value) {
     var formatter = new Intl.NumberFormat("en-US", {
       maximumSignificantDigits: 6,
@@ -121,9 +120,9 @@ Vue.filter("toNumberString", function (value) {
     return formatter.format(value)
   }
   return value
-})
+}
 
-Vue.filter("deslug", function (value) {
+export function deslug(value) {
   if (value) {
     return value
       .split("-")
@@ -133,9 +132,9 @@ Vue.filter("deslug", function (value) {
       })
       .join(" ")
   }
-})
+}
 
-Vue.filter("snakeToCamel", function (value) {
+export function snakeToCamel(value) {
   if (value) {
     return value
       .split("_")
@@ -144,9 +143,9 @@ Vue.filter("snakeToCamel", function (value) {
       })
       .join(" ")
   }
-})
+}
 
-Vue.filter("commaString", function (value, key) {
+export function commaString(value, key) {
   if (value) {
     return value
       .map(function (el) {
@@ -154,9 +153,9 @@ Vue.filter("commaString", function (value, key) {
       })
       .join(", ")
   }
-})
+}
 
-export const activeRoles = function (value) {
+export function activeRoles(value) {
   if (value) {
     let active_roles = value
       .filter((role) => !role.renounced_at)
@@ -172,9 +171,7 @@ export const activeRoles = function (value) {
   }
 }
 
-Vue.filter("activeRoles", activeRoles)
-
-Vue.filter("individualNames", function (value) {
+export function individualNames(value) {
   if (value) {
     return value
       .map(function (item) {
@@ -182,4 +179,4 @@ Vue.filter("individualNames", function (value) {
       })
       .join(", ")
   }
-})
+}

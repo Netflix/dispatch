@@ -1,19 +1,24 @@
-import Vue from "vue"
+import { createApp } from "vue"
 import App from "./App.vue"
-import vuetify from "./vuetify/"
+import { vuetifyPlugin } from "./vuetify/"
 import router from "./router/"
 import store from "./store"
 
-import "./filters.js"
 import "roboto-fontface/css/roboto/roboto-fontface.css"
 import "font-awesome/css/font-awesome.css"
-import { sync } from "vuex-router-sync"
+// import { sync } from "vuex-router-sync"
 
-import * as Sentry from "@sentry/browser"
-import * as Integrations from "@sentry/integrations"
+import * as Sentry from "@sentry/vue"
 
-import VueClipboard from "vue-clipboard2"
-import VueMarkdown from "vue-markdown"
+// import VueClipboard from "vue-clipboard2"
+// import VueMarkdown from "vue-markdown"
+
+// sync(store, router, { moduleName: "route" })
+
+// Vue.use(VueClipboard)
+// Vue.use(VueMarkdown)
+
+const app = createApp(App)
 
 // Configure sentry
 let SENTRY_ENABLED = import.meta.env.VITE_DISPATCH_SENTRY_ENABLED
@@ -29,21 +34,14 @@ if (SENTRY_ENABLED) {
     DSN = SENTRY_DSN
   }
   Sentry.init({
+    app,
     dsn: DSN,
-    integrations: [new Integrations.Vue({ Vue, attachProps: true })],
   })
 }
 
-sync(store, router, { moduleName: "route" })
+// Configure plugins
+app.use(vuetifyPlugin)
+app.use(router)
+app.use(store)
 
-Vue.config.productionTip = false
-
-Vue.use(VueClipboard)
-Vue.use(VueMarkdown)
-
-new Vue({
-  vuetify,
-  router,
-  store,
-  render: (h) => h(App),
-}).$mount("#app")
+app.mount("#app")

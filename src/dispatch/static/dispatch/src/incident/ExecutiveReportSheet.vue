@@ -6,7 +6,7 @@
       clipped
       right
       width="800"
-      :permanent="$vuetify.breakpoint.mdAndDown"
+      :permanent="$vuetify.display.mdAndDown"
     >
       <template #prepend>
         <v-list-item two-line>
