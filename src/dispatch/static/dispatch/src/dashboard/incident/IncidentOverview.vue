@@ -48,21 +48,21 @@
         <incident-type-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
-          @detailsSelected="detailsSelected($event)"
+          @details-selected="detailsSelected($event)"
         />
       </v-col>
       <v-col cols="12" sm="6">
         <incident-severity-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
-          @detailsSelected="detailsSelected($event)"
+          @details-selected="detailsSelected($event)"
         />
       </v-col>
       <v-col cols="12" sm="6">
         <incident-priority-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
-          @detailsSelected="detailsSelected($event)"
+          @details-selected="detailsSelected($event)"
         />
       </v-col>
       <v-col cols="12" sm="6">
@@ -78,42 +78,42 @@
         <incident-reporters-location-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
-          @detailsSelected="detailsSelected($event)"
+          @details-selected="detailsSelected($event)"
         />
       </v-col>
       <v-col cols="12" sm="6">
         <incident-commanders-location-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
-          @detailsSelected="detailsSelected($event)"
+          @details-selected="detailsSelected($event)"
         />
       </v-col>
       <v-col cols="12" sm="6">
         <incident-participants-location-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
-          @detailsSelected="detailsSelected($event)"
+          @details-selected="detailsSelected($event)"
         />
       </v-col>
       <v-col cols="12" sm="6">
         <incident-participants-team-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
-          @detailsSelected="detailsSelected($event)"
+          @details-selected="detailsSelected($event)"
         />
       </v-col>
       <v-col cols="12" sm="6">
         <incident-heatmap-card
           v-model="groupedItems"
           :loading="loading"
-          @detailsSelected="detailsSelected($event)"
+          @details-selected="detailsSelected($event)"
         />
       </v-col>
       <v-col cols="12" sm="6">
         <incident-tags-treemap-card
           v-model="items"
           :loading="loading"
-          @detailsSelected="detailsSelected($event)"
+          @details-selected="detailsSelected($event)"
         />
       </v-col>
       <!-- Statistics Ends -->

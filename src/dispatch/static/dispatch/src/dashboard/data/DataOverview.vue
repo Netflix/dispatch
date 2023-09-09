@@ -6,7 +6,7 @@
       </v-col>
       <v-col class="d-flex justify-end" cols="12" sm="6">
         <dialog-filter
-          @filterOptions="setFilterOptions"
+          @filter-options="setFilterOptions"
           @update="update"
           @loading="setLoading"
           :projects="defaultUserProjects"

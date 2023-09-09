@@ -49,21 +49,21 @@
         <case-type-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
-          @detailsSelected="detailsSelected($event)"
+          @details-selected="detailsSelected($event)"
         />
       </v-col>
       <v-col cols="12" sm="6">
         <case-severity-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
-          @detailsSelected="detailsSelected($event)"
+          @details-selected="detailsSelected($event)"
         />
       </v-col>
       <!-- <v-col cols="12" sm="6"> -->
       <!--   <case-priority-bar-chart-card -->
       <!--     v-model="groupedItems" -->
       <!--     :loading="loading" -->
-      <!--     @detailsSelected="detailsSelected($event)" -->
+      <!--     @details-selected="detailsSelected($event)" -->
       <!--   /> -->
       <!-- </v-col> -->
       <v-col cols="12" sm="6">
