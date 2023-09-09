@@ -31,7 +31,6 @@
           v-if="item.source_status"
           bordered
           color="warning"
-          slot="activator"
           dot
           location="left"
           offset-x="-10"

@@ -1,45 +1,21 @@
 <template>
   <div>
-    <div v-if="status == 'New'">
-      <v-badge
-        bordered
-        color="red"
-        slot="activator"
-        dot
-        location="left"
-        offset-x="-10"
-        offset-y="12"
-      >
+    <div v-if="status === 'New'">
+      <v-badge bordered color="red" dot location="left" offset-x="-10" offset-y="12">
         {{ status }}
       </v-badge>
     </div>
-    <div v-if="status == 'Triage'">
-      <v-badge
-        bordered
-        color="orange"
-        slot="activator"
-        dot
-        location="left"
-        offset-x="-10"
-        offset-y="12"
-      >
+    <div v-if="status === 'Triage'">
+      <v-badge bordered color="orange" dot location="left" offset-x="-10" offset-y="12">
         {{ status }}
       </v-badge>
     </div>
-    <div v-if="status == 'Escalated'">
-      <v-badge
-        bordered
-        color="yellow"
-        slot="activator"
-        dot
-        location="left"
-        offset-x="-10"
-        offset-y="12"
-      >
+    <div v-if="status === 'Escalated'">
+      <v-badge bordered color="yellow" dot location="left" offset-x="-10" offset-y="12">
         {{ status }}
       </v-badge>
     </div>
-    <div v-if="status == 'Closed'">
+    <div v-if="status === 'Closed'">
       <v-badge bordered color="success" dot location="left" offset-x="-10" offset-y="12">
         {{ status }}
       </v-badge>

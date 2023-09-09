@@ -1,15 +1,7 @@
 <template>
   <div>
-    <div v-if="status == 'Active'">
-      <v-badge
-        bordered
-        color="error"
-        slot="activator"
-        dot
-        location="left"
-        offset-x="-10"
-        offset-y="12"
-      >
+    <div v-if="status === 'Active'">
+      <v-badge bordered color="error" dot location="left" offset-x="-10" offset-y="12">
         {{ status }}
       </v-badge>
       <v-tooltip location="bottom">
@@ -29,16 +21,8 @@
         <span>Subscribe</span>
       </v-tooltip>
     </div>
-    <div v-if="status == 'Stable'">
-      <v-badge
-        bordered
-        color="warning"
-        slot="activator"
-        dot
-        location="left"
-        offset-x="-10"
-        offset-y="12"
-      >
+    <div v-if="status === 'Stable'">
+      <v-badge bordered color="warning" dot location="left" offset-x="-10" offset-y="12">
         {{ status }}
       </v-badge>
       <v-tooltip location="bottom">
@@ -58,7 +42,7 @@
         <span>Subscribe</span>
       </v-tooltip>
     </div>
-    <div v-if="status == 'Closed'">
+    <div v-if="status === 'Closed'">
       <v-badge bordered color="success" dot location="left" offset-x="-10" offset-y="12">
         {{ status }}
       </v-badge>

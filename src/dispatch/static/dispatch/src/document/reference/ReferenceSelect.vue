@@ -12,12 +12,12 @@
     no-filter
     name="reference"
   >
-    <reference slot="append-outer">
+    <template #append>
       <v-btn icon variant="text" @click="createEditShow({})">
         <v-icon>add</v-icon>
       </v-btn>
       <new-edit-sheet @new-document-created="addItem($event)" />
-    </reference>
+    </template>
   </v-autocomplete>
 </template>
 
