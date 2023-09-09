@@ -7,7 +7,6 @@
         :api="workflowApi"
         :project="project"
         v-bind="$attrs"
-        v-on="$listeners"
         v-model="workflows"
       >
         <template #selection="{ attr, item, selected }">
@@ -73,6 +72,7 @@ import WorkflowCreateDialog from "@/workflow/WorkflowCreateDialog.vue"
 
 export default {
   name: "WorkflowCombobox",
+  inheritAttrs: false,
   components: {
     BaseCombobox,
     WorkflowCreateDialog,
