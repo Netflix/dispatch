@@ -1,5 +1,5 @@
 <template>
-  <v-navigation-drawer v-model="showCreateEdit" clipped location="right" width="500">
+  <v-navigation-drawer v-model="showCreateEdit" location="right" width="500">
     <template #prepend>
       <v-list-item lines="two">
         <v-list-item-title v-if="id" class="text-h6"> Edit </v-list-item-title>

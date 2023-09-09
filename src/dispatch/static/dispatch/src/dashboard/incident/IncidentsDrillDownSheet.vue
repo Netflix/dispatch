@@ -1,5 +1,5 @@
 <template>
-  <v-navigation-drawer clipped location="right" width="500">
+  <v-navigation-drawer location="right" width="500">
     <template #prepend>
       <v-list-item lines="two">
         <v-list-item-subtitle>Details</v-list-item-subtitle>

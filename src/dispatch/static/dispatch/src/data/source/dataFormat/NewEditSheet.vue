@@ -2,7 +2,6 @@
   <v-form @submit.prevent v-slot="{ isValid }">
     <v-navigation-drawer
       v-model="showCreateEdit"
-      clipped
       location="right"
       width="800"
       :permanent="$vuetify.display.mdAndDown"
