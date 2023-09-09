@@ -64,8 +64,12 @@
                       <template v-if="!signalInstances.length">
                         No example signals are currently available for this definition.
                       </template>
-                      <template v-for="(instance, index) in signalInstances" v-else>
-                        <v-list-item :key="`item-${index}`">
+                      <template
+                        v-else
+                        v-for="(instance, index) in signalInstances"
+                        :key="`item-${index}`"
+                      >
+                        <v-list-item>
                           <v-list-item-title>{{ instance.id }}</v-list-item-title>
 
                           <v-list-item-action>
@@ -74,10 +78,7 @@
                             </v-btn>
                           </v-list-item-action>
                         </v-list-item>
-                        <v-divider
-                          v-if="index < signalInstances.length - 1"
-                          :key="`divider-${index}`"
-                        />
+                        <v-divider v-if="index < signalInstances.length - 1" />
                       </template>
                     </v-list>
                   </v-col>
