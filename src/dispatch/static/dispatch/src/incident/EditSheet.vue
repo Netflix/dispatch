@@ -1,6 +1,6 @@
 <template>
   <v-form @submit.prevent v-slot="{ isValid }">
-    <v-navigation-drawer app location="right" width="800" :permanent="$vuetify.display.mdAndDown">
+    <v-navigation-drawer location="right" width="800" :permanent="$vuetify.display.mdAndDown">
       <template #prepend>
         <v-list-item lines="two">
           <v-list-item-title class="text-h6">

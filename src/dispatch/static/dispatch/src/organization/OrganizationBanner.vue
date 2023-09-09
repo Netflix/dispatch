@@ -3,7 +3,6 @@
     v-if="currentOrganization && currentOrganization.banner_enabled"
     :color="currentOrganization.banner_color"
     height="64px"
-    app
   >
     <v-icon color="white" size="36"> mdi-information-outline </v-icon>
     <span class="text-white">{{ currentOrganization.banner_text }}</span>

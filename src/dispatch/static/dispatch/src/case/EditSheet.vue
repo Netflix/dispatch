@@ -1,6 +1,6 @@
 <template>
   <v-form @submit.prevent v-slot="{ isValid }">
-    <v-navigation-drawer app clipped location="right" width="900">
+    <v-navigation-drawer clipped location="right" width="900">
       <template #prepend>
         <v-list-item lines="two">
           <v-list-item-title class="text-h6">
