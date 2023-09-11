@@ -124,7 +124,7 @@ frozenlist==1.4.0
     #   aiosignal
 google-api-core==2.11.1
     # via google-api-python-client
-google-api-python-client==2.97.0
+google-api-python-client==2.98.0
     # via -r requirements-base.in
 google-auth==2.22.0
     # via
@@ -269,7 +269,7 @@ preshed==3.0.8
     # via
     #   spacy
     #   thinc
-protobuf==4.24.2
+protobuf==4.24.3
     # via
     #   -r requirements-base.in
     #   google-api-core
@@ -308,7 +308,7 @@ pyrate-limiter==2.10.0
     # via schemathesis
 pyrsistent==0.19.3
     # via jsonschema
-pytest==7.4.1
+pytest==7.4.2
     # via
     #   pytest-subtests
     #   schemathesis

@@ -34,7 +34,7 @@ executing==1.2.0
     #   stack-data
 factory-boy==3.3.0
     # via -r requirements-dev.in
-faker==19.3.1
+faker==19.4.0
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -84,7 +84,7 @@ pygments==2.16.1
     # via
     #   devtools
     #   ipython
-pytest==7.4.1
+pytest==7.4.2
     # via -r requirements-dev.in
 python-dateutil==2.8.2
     # via faker
