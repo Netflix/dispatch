@@ -817,7 +817,6 @@ class SignalFactory(BaseFactory):
     description = "Test Description"
     external_url = "https://test.com"
     external_id = "1234"
-    environment = "test"
     variant = "Test Variant"
     enabled = True
     loopin_signal_identity = False
