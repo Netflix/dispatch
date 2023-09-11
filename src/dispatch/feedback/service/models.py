@@ -10,7 +10,6 @@ from dispatch.database.core import Base
 from dispatch.individual.models import IndividualContactRead
 from dispatch.models import DispatchBase, TimeStampMixin, FeedbackMixin, PrimaryKey
 from dispatch.project.models import ProjectRead
-from .reminder.models import ServiceFeedbackReminderRead
 
 from .enums import ServiceFeedbackRating
 
