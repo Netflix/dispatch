@@ -129,11 +129,6 @@ class SignalFilterAction(DispatchEnum):
     none = "none"
 
 
-class SignalEnvironment(DispatchEnum):
-    PROD = "prod"
-    TEST = "test"
-
-
 class Signal(Base, TimeStampMixin, ProjectMixin):
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -146,7 +141,6 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     variant = Column(String)
     loopin_signal_identity = Column(Boolean, default=False)
     enabled = Column(Boolean, default=False)
-    environment = Column(String, default=SignalEnvironment.PROD)
     case_type_id = Column(Integer, ForeignKey(CaseType.id))
     case_type = relationship("CaseType", backref="signals")
     case_priority_id = Column(Integer, ForeignKey(CasePriority.id))
@@ -310,7 +304,6 @@ class SignalBase(DispatchBase):
     enabled: Optional[bool] = False
     external_url: Optional[str]
     create_case: Optional[bool] = True
-    environment: Optional[SignalEnvironment] = SignalEnvironment.PROD
     oncall_service: Optional[Service]
     source: Optional[SourceBase]
     created_at: Optional[datetime] = None
@@ -337,7 +330,6 @@ class SignalUpdate(SignalBase):
 class SignalRead(SignalBase):
     id: PrimaryKey
     engagements: Optional[List[SignalEngagementRead]] = []
-    environment: Optional[SignalEnvironment] = SignalEnvironment.PROD
     entity_types: Optional[List[EntityTypeRead]] = []
     filters: Optional[List[SignalFilterRead]] = []
     workflows: Optional[List[WorkflowRead]] = []
@@ -352,7 +344,6 @@ class SignalReadMinimal(DispatchBase):
     description: Optional[str]
     variant: Optional[str]
     external_id: str
-    environment: Optional[SignalEnvironment] = SignalEnvironment.PROD
     enabled: Optional[bool] = False
     external_url: Optional[str]
     create_case: Optional[bool] = True

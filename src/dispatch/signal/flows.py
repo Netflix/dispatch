@@ -19,12 +19,7 @@ from dispatch.service import flows as service_flows
 from dispatch.signal import flows as signal_flows
 from dispatch.signal import service as signal_service
 from dispatch.signal.enums import SignalEngagementStatus
-from dispatch.signal.models import (
-    SignalFilterAction,
-    SignalInstance,
-    SignalInstanceCreate,
-    SignalEnvironment,
-)
+from dispatch.signal.models import SignalFilterAction, SignalInstance, SignalInstanceCreate
 from dispatch.workflow import flows as workflow_flows
 from dispatch.entity_type.models import EntityScopeEnum
 
@@ -180,7 +175,6 @@ def create_signal_instance(
     signal = signal_service.get_by_variant_or_external_id(
         db_session=db_session,
         project_id=project.id,
-        environment=signal_instance_data.get("environment", SignalEnvironment.PROD),
         external_id=signal_instance_data.get("id"),
         variant=signal_instance_data["variant"],
     )
