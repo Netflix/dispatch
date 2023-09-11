@@ -231,6 +231,7 @@ class SignalInstance(Base, TimeStampMixin, ProjectMixin):
     case_priority = relationship("CasePriority", backref="signal_instances")
     fingerprint = Column(String)
     filter_action = Column(String)
+    canary = Column(Boolean, default=False)
     raw = Column(JSONB)
     signal = relationship("Signal", backref="instances")
     signal_id = Column(Integer, ForeignKey("signal.id"))
@@ -301,6 +302,7 @@ class SignalBase(DispatchBase):
     case_type: Optional[CaseTypeRead]
     case_priority: Optional[CasePriorityRead]
     external_id: str
+    canary: Optional[bool] = False
     enabled: Optional[bool] = False
     external_url: Optional[str]
     create_case: Optional[bool] = True
