@@ -140,68 +140,83 @@ def inactivate_incident_participants(incident: Incident, db_session: Session):
     )
 
 
-@background_task
-def incident_create_flow(*, organization_slug: str, incident_id: int, db_session=None) -> Incident:
-    """Creates all resources required for new incidents."""
+def incident_create_resources(*, incident_id: int, db_session=None) -> Incident:
+    """Creates all resources required for incidents."""
+    # we get the incident
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
     # we get the incident
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     # we create the incident ticket
-    ticket_flows.create_incident_ticket(incident=incident, db_session=db_session)
+    if not incident.ticket:
+        ticket_flows.create_incident_ticket(incident=incident, db_session=db_session)
 
     # we resolve individual and team participants
     individual_participants, team_participants = get_incident_participants(incident, db_session)
+    tactical_participant_emails = [i.email for i, _ in individual_participants]
 
     # we create the tactical group
-    tactical_participant_emails = [i.email for i, _ in individual_participants]
-    tactical_group = group_flows.create_group(
-        subject=incident,
-        group_type=GroupType.tactical,
-        group_participants=tactical_participant_emails,
-        db_session=db_session,
+    tactical_group = (
+        incident.tactical_group
+        if incident.tactical_group
+        else group_flows.create_group(
+            subject=incident,
+            group_type=GroupType.tactical,
+            group_participants=tactical_participant_emails,
+            db_session=db_session,
+        )
     )
 
     # we create the notifications group
     notification_participant_emails = [t.email for t in team_participants]
-    notifications_group = group_flows.create_group(
-        subject=incident,
-        group_type=GroupType.notifications,
-        group_participants=notification_participant_emails,
-        db_session=db_session,
+    notifications_group = (
+        incident.notifications_group
+        if incident.notifications_group
+        else group_flows.create_group(
+            subject=incident,
+            group_type=GroupType.notifications,
+            group_participants=notification_participant_emails,
+            db_session=db_session,
+        )
     )
 
     # we create the storage folder
-    storage_members = []
-    if tactical_group and notifications_group:
-        storage_members = [tactical_group.email, notifications_group.email]
-    else:
-        storage_members = tactical_participant_emails
+    if not incident.storage:
+        storage_members = []
+        if tactical_group and notifications_group:
+            storage_members = [tactical_group.email, notifications_group.email]
+        else:
+            storage_members = tactical_participant_emails
 
-    storage_flows.create_storage(
-        subject=incident, storage_members=storage_members, db_session=db_session
-    )
+        storage_flows.create_storage(
+            subject=incident, storage_members=storage_members, db_session=db_session
+        )
 
     # we create the incident document
-    document_flows.create_document(
-        subject=incident,
-        document_type=DocumentResourceTypes.incident,
-        document_template=incident.incident_type.incident_template_document,
-        db_session=db_session,
-    )
+    if not incident.incident_document:
+        document_flows.create_document(
+            subject=incident,
+            document_type=DocumentResourceTypes.incident,
+            document_template=incident.incident_type.incident_template_document,
+            db_session=db_session,
+        )
 
     # we create the conference room
-    conference_participants = []
-    if tactical_group and notifications_group:
-        conference_participants = [tactical_group.email, notifications_group.email]
-    else:
-        conference_participants = tactical_participant_emails
+    if not incident.conference:
+        conference_participants = []
+        if tactical_group and notifications_group:
+            conference_participants = [tactical_group.email, notifications_group.email]
+        else:
+            conference_participants = tactical_participant_emails
 
-    conference_flows.create_conference(
-        incident=incident, participants=conference_participants, db_session=db_session
-    )
+        conference_flows.create_conference(
+            incident=incident, participants=conference_participants, db_session=db_session
+        )
 
     # we create the conversation
-    conversation_flows.create_conversation(incident=incident, db_session=db_session)
+    if not incident.conversation:
+        conversation_flows.create_conversation(incident=incident, db_session=db_session)
 
     # we update the incident ticket
     ticket_flows.update_incident_ticket(incident_id=incident.id, db_session=db_session)
@@ -264,6 +279,16 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
             service_id=service_id,
             db_session=db_session,
         )
+
+
+@background_task
+def incident_create_flow(*, organization_slug: str, incident_id: int, db_session=None) -> Incident:
+    """Creates all resources required for new incidents and initiates incident response workflow."""
+    # we create the incident resources
+    incident_create_resources(incident_id=incident_id, db_session=db_session)
+
+    # we get the incident
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     event_service.log_incident_event(
         db_session=db_session,
