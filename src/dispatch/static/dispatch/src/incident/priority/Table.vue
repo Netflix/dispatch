@@ -81,7 +81,7 @@
               class="ml-10 mr-5"
               v-model="restrictStable"
               label="Restrict Stable status to this priority:"
-              @change="updateRestrictStable"
+              @change="updateStablePriority"
             />
             <v-tooltip max-width="500px" open-delay="50" bottom>
               <template #activator="{ on }">
@@ -96,7 +96,7 @@
               <incident-priority-select
                 class="ml-4"
                 max-width="400px"
-                v-model="restrictStableTo"
+                v-model="stablePriority"
                 :project="project[0]"
               />
             </span>
@@ -151,7 +151,7 @@ export default {
       "table.loading",
       "table.rows.items",
       "table.rows.total",
-      "restrictStableTo",
+      "stablePriority",
     ]),
     ...mapFields("route", ["query", "params"]),
   },
@@ -160,7 +160,7 @@ export default {
     this.project = [{ name: this.query.project }]
 
     this.getAll()
-    this.restrictStable = this.restrictStableTo != null
+    this.restrictStable = this.stablePriority != null
 
     this.$watch(
       (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending, vm.project],
@@ -168,15 +168,15 @@ export default {
         this.page = 1
         this.$router.push({ query: { project: this.project[0].name } })
         this.getAll()
-        this.restrictStable = this.restrictStableTo != null
+        this.restrictStable = this.stablePriority != null
       }
     )
 
     this.$watch(
-      (vm) => [vm.restrictStableTo],
+      (vm) => [vm.stablePriority],
       () => {
-        this.restrictStable = this.restrictStableTo != null
-        this.updateRestrictStable(this.restrictStable)
+        this.restrictStable = this.stablePriority != null
+        this.updateStablePriority(this.restrictStable)
       }
     )
   },
@@ -186,7 +186,7 @@ export default {
       "getAll",
       "createEditShow",
       "removeShow",
-      "updateRestrictStable",
+      "updateStablePriority",
     ]),
   },
 }

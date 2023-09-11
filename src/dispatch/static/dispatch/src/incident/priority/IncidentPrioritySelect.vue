@@ -63,10 +63,10 @@ export default {
     },
     show_error() {
       if (!this.project) return null
-      const restrictStableTo = this.project.restrict_stable_to
-      if (!restrictStableTo) return null
-      if (this.status == "Stable" && this.value.name != restrictStableTo.name) {
-        return `Priority must be ${restrictStableTo.name} for Stable incidents`
+      const stablePriority = this.project.stable_priority
+      if (!stablePriority) return null
+      if (this.status == "Stable" && this.value.name != stablePriority.name) {
+        return `Priority must be ${stablePriority.name} for Stable incidents`
       }
       return null
     },

@@ -165,9 +165,9 @@ extend("stableRestrictedPriority", {
   params: ["status", "project"],
   validate(value, { status, project }) {
     if (!project) return true
-    const restrictStableTo = project.restrict_stable_to
-    if (!restrictStableTo) return true
-    if (status == "Stable" && value.name != restrictStableTo.name) {
+    const stablePriority = project.stable_priority
+    if (!stablePriority) return true
+    if (status == "Stable" && value.name != stablePriority.name) {
       return false
     }
     return true

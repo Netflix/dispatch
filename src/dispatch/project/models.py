@@ -41,11 +41,11 @@ class Project(Base):
 
     send_daily_reports = Column(Boolean)
 
-    restrict_stable_to_id = Column(Integer, nullable=True)
-    restrict_stable_to = relationship(
+    stable_priority_id = Column(Integer, nullable=True)
+    stable_priority = relationship(
         IncidentPriority,
-        foreign_keys=[restrict_stable_to_id],
-        primaryjoin="IncidentPriority.id == Project.restrict_stable_to_id",
+        foreign_keys=[stable_priority_id],
+        primaryjoin="IncidentPriority.id == Project.stable_priority_id",
     )
 
     @hybrid_property
@@ -76,12 +76,12 @@ class ProjectCreate(ProjectBase):
 
 class ProjectUpdate(ProjectBase):
     send_daily_reports: Optional[bool] = Field(True, nullable=True)
-    restrict_stable_to_id: Optional[int]
+    stable_priority_id: Optional[int]
 
 
 class ProjectRead(ProjectBase):
     id: Optional[PrimaryKey]
-    restrict_stable_to: Optional[IncidentPriorityRead] = None
+    stable_priority: Optional[IncidentPriorityRead] = None
 
 
 class ProjectPagination(Pagination):

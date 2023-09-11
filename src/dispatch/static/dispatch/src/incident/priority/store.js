@@ -47,7 +47,7 @@ const state = {
     },
     loading: false,
   },
-  restrictStableTo: null,
+  stablePriority: null,
 }
 
 const getters = {
@@ -55,13 +55,13 @@ const getters = {
 }
 
 // debounce setting changes
-var oldRestrictStableTo = undefined
+var oldStablePriority = undefined
 
-function commitRestrictToStable(commit, value) {
+function commitStablePriority(commit, value) {
   ProjectApi.getAll({ q: state.table.options.filters.project[0].name }).then((response) => {
     const project = response.data.items[0]
     if (project) {
-      project.restrict_stable_to_id = value
+      project.stable_priority_id = value
       ProjectApi.update(project.id, project).then(() => {
         commit(
           "notification_backend/addBeNotification",
@@ -87,8 +87,8 @@ const actions = {
       .then((response) => {
         if (response.data.items[0]) {
           ProjectApi.get(response.data.items[0].project.id).then((response) => {
-            state.restrictStableTo = response.data.restrict_stable_to
-            oldRestrictStableTo = state.restrictStableTo
+            state.stablePriority = response.data.stable_priority
+            oldStablePriority = state.stablePriority
           })
         }
         commit("SET_TABLE_LOADING", false)
@@ -162,18 +162,18 @@ const actions = {
       )
     })
   },
-  updateRestrictStable({ commit }, value) {
-    if (!value) state.restrictStableTo = null
-    if (oldRestrictStableTo === undefined) {
-      oldRestrictStableTo = state.restrictStableTo
+  updateStablePriority({ commit }, value) {
+    if (!value) state.stablePriority = null
+    if (oldStablePriority === undefined) {
+      oldStablePriority = state.stablePriority
       return
     }
-    if (oldRestrictStableTo?.name !== state.restrictStableTo?.name) {
-      oldRestrictStableTo = state.restrictStableTo
+    if (oldStablePriority?.name !== state.stablePriority?.name) {
+      oldStablePriority = state.stablePriority
       if (value) {
-        commitRestrictToStable(commit, state.restrictStableTo.id)
+        commitStablePriority(commit, state.stablePriority.id)
       } else {
-        commitRestrictToStable(commit, null)
+        commitStablePriority(commit, null)
       }
     }
   },
