@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from dispatch.individual.models import IndividualContact
 from dispatch.messaging.strings import (
     ONCALL_SHIFT_FEEDBACK_NOTIFICATION,
+    ONCALL_SHIFT_FEEDBACK_NOTIFICATION_REMINDER,
     MessageType,
 )
 from dispatch.plugin import service as plugin_service
@@ -53,7 +54,7 @@ def send_oncall_shift_feedback_message(
                 reminder_at=datetime.utcnow() + timedelta(hours=23),
             ),
         )
-        notification_template[0].title += " - Reminder"
+        notification_template = ONCALL_SHIFT_FEEDBACK_NOTIFICATION_REMINDER
     else:
         # create reminder and pass to plugin
         reminder = reminder_service.create(
@@ -68,6 +69,7 @@ def send_oncall_shift_feedback_message(
             ),
         )
 
+    shift_end_clean = shift_end_at.replace("T", " ").replace("Z", "")
     items = [
         {
             "individual_name": individual.name,
@@ -75,7 +77,7 @@ def send_oncall_shift_feedback_message(
             "oncall_service_name": schedule_name,
             "organization_slug": project.organization.slug,
             "project_id": project.id,
-            "shift_end_at": shift_end_at,
+            "shift_end_at": shift_end_clean,
             "reminder_id": reminder.id,
         }
     ]

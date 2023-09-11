@@ -24,6 +24,7 @@ from dispatch.feedback.service.models import ServiceFeedbackRating
 from dispatch.incident import service as incident_service
 from dispatch.participant import service as participant_service
 from dispatch.feedback.service.reminder import service as reminder_service
+from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack.bolt import app
 from dispatch.plugins.dispatch_slack.fields import static_select_block
 from dispatch.plugins.dispatch_slack.middleware import (
@@ -41,6 +42,10 @@ from .enums import (
     ServiceFeedbackNotificationActionIds,
     ServiceFeedbackNotificationActions,
     ServiceFeedbackNotificationBlockIds,
+)
+from dispatch.messaging.strings import (
+    ONCALL_SHIFT_FEEDBACK_RECEIVED,
+    MessageType,
 )
 
 log = logging.getLogger(__file__)
@@ -383,7 +388,12 @@ def handle_oncall_shift_feedback_submission_event(
     metadata = body["view"]["private_metadata"].split("|")
     project_id = metadata[1]
     schedule_id = metadata[2]
-    shift_end_at = datetime.strptime(metadata[3], "%Y-%m-%dT%H:%M:%SZ")
+    shift_end_raw = metadata[3]
+    shift_end_at = (
+        datetime.strptime(shift_end_raw, "%Y-%m-%dT%H:%M:%SZ")
+        if "T" in shift_end_raw
+        else datetime.strptime(shift_end_raw, "%Y-%m-%d %H:%M:%S")
+    )
     # if there's a reminder id, delete the reminder
     if len(metadata) > 4:
         reminder_id = metadata[4]
@@ -421,3 +431,26 @@ def handle_oncall_shift_feedback_submission_event(
         view_id=body["view"]["id"],
         view=modal,
     )
+
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=project_id, plugin_type="conversation"
+    )
+
+    if plugin:
+        notification_text = "Oncall Shift Feedback Received"
+        notification_template = ONCALL_SHIFT_FEEDBACK_RECEIVED
+        items = [
+            {
+                "shift_end_at": shift_end_at,
+            }
+        ]
+        try:
+            plugin.instance.send_direct(
+                individual.email,
+                notification_text,
+                notification_template,
+                MessageType.service_feedback,
+                items=items,
+            )
+        except Exception as e:
+            log.exception(e)

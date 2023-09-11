@@ -27,7 +27,6 @@ class ServiceFeedback(TimeStampMixin, FeedbackMixin, Base):
 
     # Relationships
     individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))
-    reminder_id = Column(Integer, ForeignKey("service_feedback_reminder.id"))
 
     search_vector = Column(
         TSVectorType(
@@ -51,7 +50,6 @@ class ServiceFeedbackBase(DispatchBase):
     schedule: Optional[str]
     shift_end_at: Optional[datetime]
     shift_start_at: Optional[datetime]
-    service_feedback_reminder: Optional[ServiceFeedbackReminderRead]
 
 
 class ServiceFeedbackCreate(ServiceFeedbackBase):

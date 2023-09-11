@@ -19,7 +19,7 @@ def get_all_expired_reminders_by_project_id(
         .join(IndividualContact)
         .join(Project)
         .filter(Project.id == project_id)
-        .filter(ServiceFeedbackReminder.reminder_at >= datetime.utcnow() - timedelta(minutes=1))
+        .filter(datetime.utcnow() >= ServiceFeedbackReminder.reminder_at - timedelta(minutes=1))
         .all()
     )
 

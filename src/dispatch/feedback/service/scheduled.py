@@ -52,7 +52,7 @@ def find_expired_reminders_and_send(*, db_session: SessionLocal, project: Projec
             project=project,
             individual=individual,
             schedule_id=reminder.schedule_id,
-            shift_end_at=reminder.shift_end_at,
+            shift_end_at=str(reminder.shift_end_at),
             schedule_name=reminder.schedule_name,
             reminder=reminder,
             db_session=db_session,
