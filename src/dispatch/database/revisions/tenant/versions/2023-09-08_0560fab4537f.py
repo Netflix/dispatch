@@ -1,7 +1,7 @@
 """Adds reminders to oncall shift feedback
 
 Revision ID: 0560fab4537f
-Revises: 4e57f5b1f3f3
+Revises: 0356472ea980
 Create Date: 2023-09-08 17:13:57.903367
 
 """
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "0560fab4537f"
-down_revision = "4e57f5b1f3f3"
+down_revision = "0356472ea980"
 branch_labels = None
 depends_on = None
 
