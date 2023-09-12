@@ -43,7 +43,7 @@
           @end="drag = false"
         >
           <v-expansion-panel v-for="(policy, idx) in policies" :key="policy.id">
-            <v-expansion-panel-header>
+            <v-expansion-panel-title>
               <v-row align="center" justify="center">
                 <v-col cols="1">
                   <v-icon> mdi-drag-horizontal-variant </v-icon>
@@ -56,8 +56,8 @@
                   {{ policy.role }} - <span v-if="policy.service">{{ policy.service.name }}</span>
                 </v-col>
               </v-row>
-            </v-expansion-panel-header>
-            <v-expansion-panel-content>
+            </v-expansion-panel-title>
+            <v-expansion-panel-text>
               <v-list density="compact">
                 <v-list-item>
                   <tag-filter-auto-complete label="Tags" :project="project" v-model="policy.tags" />
@@ -89,7 +89,7 @@
                   <v-btn color="primary" @click="remove(idx)"> Delete Policy </v-btn>
                 </v-list-item>
               </v-list>
-            </v-expansion-panel-content>
+            </v-expansion-panel-text>
           </v-expansion-panel>
         </draggable>
       </v-expansion-panels>

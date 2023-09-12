@@ -1,6 +1,7 @@
 import "@mdi/font/css/materialdesignicons.css"
 import "vuetify/styles"
 import { createVuetify } from "vuetify"
+import { VDataTable } from "vuetify/labs/VDataTable"
 
 export function vuetifyPlugin(app) {
   const vuetify = createVuetify({
@@ -8,6 +9,24 @@ export function vuetifyPlugin(app) {
       VTextField: {
         variant: "underlined",
       },
+      VTextarea: {
+        variant: "underlined",
+      },
+      VSelect: {
+        variant: "underlined",
+      },
+      VAutocomplete: {
+        variant: "underlined",
+      },
+      VCombobox: {
+        variant: "underlined",
+      },
+      VExpansionPanel: {
+        elevation: 0,
+      },
+    },
+    components: {
+      VDataTable,
     },
     theme: {
       themes: {

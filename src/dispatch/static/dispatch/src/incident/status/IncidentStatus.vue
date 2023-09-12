@@ -1,53 +1,32 @@
 <template>
-  <div>
-    <div v-if="status === 'Active'">
-      <v-badge bordered color="error" dot location="left" offset-x="-10" offset-y="12">
-        {{ status }}
-      </v-badge>
-      <v-tooltip location="bottom">
-        <template #activator="{ on, attrs }">
-          <v-btn icon variant="text" v-bind="attrs" v-on="on" @click.stop="joinIncident(id)">
-            <v-icon> mdi-account-plus </v-icon>
-          </v-btn>
-        </template>
-        <span>Join</span>
-      </v-tooltip>
-      <v-tooltip location="bottom">
-        <template #activator="{ on, attrs }">
-          <v-btn icon variant="text" v-bind="attrs" v-on="on" @click.stop="subscribeToIncident(id)">
-            <v-icon> mdi-email-plus </v-icon>
-          </v-btn>
-        </template>
-        <span>Subscribe</span>
-      </v-tooltip>
-    </div>
-    <div v-if="status === 'Stable'">
-      <v-badge bordered color="warning" dot location="left" offset-x="-10" offset-y="12">
-        {{ status }}
-      </v-badge>
-      <v-tooltip location="bottom">
-        <template #activator="{ on, attrs }">
-          <v-btn icon variant="text" v-bind="attrs" v-on="on" @click.stop="joinIncident(id)">
-            <v-icon> mdi-account-plus </v-icon>
-          </v-btn>
-        </template>
-        <span>Join</span>
-      </v-tooltip>
-      <v-tooltip location="bottom">
-        <template #activator="{ on, attrs }">
-          <v-btn icon variant="text" v-bind="attrs" v-on="on" @click.stop="subscribeToIncident(id)">
-            <v-icon> mdi-email-plus </v-icon>
-          </v-btn>
-        </template>
-        <span>Subscribe</span>
-      </v-tooltip>
-    </div>
-    <div v-if="status === 'Closed'">
-      <v-badge bordered color="success" dot location="left" offset-x="-10" offset-y="12">
-        {{ status }}
-      </v-badge>
-    </div>
-  </div>
+  <v-badge bordered :color="badgeColor" dot location="left" offset-x="-16">
+    {{ status }}
+  </v-badge>
+  <template v-if="status === 'Active' || status === 'Stable'">
+    <v-tooltip location="bottom" text="Join">
+      <template #activator="{ props }">
+        <v-btn
+          v-bind="props"
+          icon="mdi-account-plus"
+          variant="text"
+          density="comfortable"
+          class="ml-1"
+          @click.stop="joinIncident(id)"
+        />
+      </template>
+    </v-tooltip>
+    <v-tooltip location="bottom" text="Subscribe">
+      <template #activator="{ props }">
+        <v-btn
+          v-bind="props"
+          icon="mdi-email-plus"
+          variant="text"
+          density="comfortable"
+          @click.stop="subscribeToIncident(id)"
+        />
+      </template>
+    </v-tooltip>
+  </template>
 </template>
 
 <script>
@@ -64,6 +43,18 @@ export default {
     id: {
       type: Number,
       required: true,
+    },
+  },
+
+  computed: {
+    badgeColor() {
+      return (
+        {
+          Active: "error",
+          Stable: "warning",
+          Closed: "success",
+        }[this.status] || "error"
+      )
     },
   },
 

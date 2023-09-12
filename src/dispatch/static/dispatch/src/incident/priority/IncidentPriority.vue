@@ -1,26 +1,7 @@
 <template>
-  <div class="pl-5">
-    <div v-if="priority == 'Low'">
-      <v-badge bordered color="info" dot location="left" offset-x="-10" offset-y="12">
-        {{ priority }}
-      </v-badge>
-    </div>
-    <div v-else-if="priority == 'Medium'">
-      <v-badge bordered color="warning" dot location="left" offset-x="-10" offset-y="12">
-        {{ priority }}
-      </v-badge>
-    </div>
-    <div v-else-if="priority == 'High'">
-      <v-badge bordered color="error" dot location="left" offset-x="-10" offset-y="12">
-        {{ priority }}
-      </v-badge>
-    </div>
-    <div v-else>
-      <v-badge bordered color="error" dot location="left" offset-x="-10" offset-y="12">
-        {{ priority }}
-      </v-badge>
-    </div>
-  </div>
+  <v-badge class="pl-5" bordered :color="color" dot location="left" offset-x="-16">
+    {{ priority }}
+  </v-badge>
 </template>
 
 <script>
@@ -31,6 +12,18 @@ export default {
     priority: {
       type: String,
       required: true,
+    },
+  },
+
+  computed: {
+    color() {
+      return (
+        {
+          Low: "info",
+          Medium: "warning",
+          High: "error",
+        }[this.priority] || "error"
+      )
     },
   },
 }

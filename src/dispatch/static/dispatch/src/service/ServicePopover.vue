@@ -1,50 +1,41 @@
 <template>
-  <div>
-    <v-menu v-model="menu" location="bottom right" transition="scale-transition" origin="top left">
-      <template #activator="{ on }">
-        <v-chip pill small v-on="on">
-          <v-avatar color="teal" start>
-            <span class="text-white">{{ initials(service.name) }}</span>
-          </v-avatar>
-          {{ service.name }}
-        </v-chip>
-      </template>
-      <v-card width="300">
-        <v-list dark>
-          <v-list-item>
-            <v-list-item-avatar color="teal">
-              <span class="text-white">{{ initials(service.name) }}</span>
-            </v-list-item-avatar>
+  <v-menu v-model="menu" location="top left" origin="overlap">
+    <template #activator="{ props }">
+      <v-chip pill small v-bind="props">
+        <v-avatar color="teal" start>
+          {{ initials(service.name) }}
+        </v-avatar>
+        {{ service.name }}
+      </v-chip>
+    </template>
+    <v-card width="300">
+      <v-list theme="dark">
+        <v-list-item>
+          <template #prepend>
+            <v-avatar color="teal">
+              {{ initials(service.name) }}
+            </v-avatar>
+          </template>
 
-            <v-list-item-title>{{ service.name }}</v-list-item-title>
-            <v-list-item-subtitle>{{ service.type }}</v-list-item-subtitle>
+          <v-list-item-title>{{ service.name }}</v-list-item-title>
+          <v-list-item-subtitle>{{ service.type }}</v-list-item-subtitle>
 
-            <v-list-item-action>
-              <v-btn icon variant="text" @click="menu = false">
-                <v-icon>mdi-close-circle</v-icon>
-              </v-btn>
-            </v-list-item-action>
-          </v-list-item>
-        </v-list>
-        <v-list>
-          <v-list-item>
-            <v-list-item-action>
-              <v-icon>mdi-information</v-icon>
-            </v-list-item-action>
-            <v-list-item-subtitle>{{ service.description }}</v-list-item-subtitle>
-          </v-list-item>
-          <v-list-item>
-            <v-list-item-action>
-              <v-icon>mdi-toggle-switch</v-icon>
-            </v-list-item-action>
-            <v-list-item-subtitle>
-              <span v-if="service.is_active">Active</span><span v-else>Inactive</span>
-            </v-list-item-subtitle>
-          </v-list-item>
-        </v-list>
-      </v-card>
-    </v-menu>
-  </div>
+          <template #append>
+            <v-btn icon="mdi-close-circle" variant="text" @click="menu = false" />
+          </template>
+        </v-list-item>
+      </v-list>
+      <v-list>
+        <v-list-item prepend-icon="mdi-information">
+          <v-list-item-subtitle>{{ service.description }}</v-list-item-subtitle>
+        </v-list-item>
+        <v-list-item prepend-icon="mdi-toggle-switch">
+          <v-list-item-subtitle v-if="service.is_active">Active</v-list-item-subtitle>
+          <v-list-item-subtitle v-else>Inactive</v-list-item-subtitle>
+        </v-list-item>
+      </v-list>
+    </v-card>
+  </v-menu>
 </template>
 
 <script>

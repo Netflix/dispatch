@@ -1,36 +1,32 @@
 <template>
-  <div>
-    <v-data-table :headers="headers" :items="items">
-      <template #item.name="{ item }">
-        <a :href="item.weblink" target="_blank" style="text-decoration: none">
-          {{ item.name }}
-          <v-icon size="small">open_in_new</v-icon>
-        </a>
-      </template>
-      <template #item.project.name="{ item }">
-        <v-chip small :color="item.project.color" text-color="white">
-          {{ item.project.name }}
-        </v-chip>
-      </template>
-      <template #item.data-table-actions="{ item }">
-        <v-menu location="bottom left">
-          <template #activator="{ on }">
-            <v-btn icon variant="text" v-on="on">
-              <v-icon>mdi-dots-vertical</v-icon>
-            </v-btn>
-          </template>
-          <v-list>
-            <v-list-item @click="createEditShow(item)">
-              <v-list-item-title>View / Edit</v-list-item-title>
-            </v-list-item>
-            <v-list-item @click="removeShow(item)">
-              <v-list-item-title>Delete</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
-      </template>
-    </v-data-table>
-  </div>
+  <v-data-table :headers="headers" :items="items">
+    <template #item.name="{ item }">
+      <a :href="item.raw.weblink" target="_blank" style="text-decoration: none">
+        {{ item.raw.name }}
+        <v-icon size="small">mdi-open-in-new</v-icon>
+      </a>
+    </template>
+    <template #item.project.name="{ item }">
+      <v-chip small :color="item.project.color">
+        {{ item.raw.project.name }}
+      </v-chip>
+    </template>
+    <template #item.data-table-actions="{ item }">
+      <v-menu location="bottom left">
+        <template #activator="{ props }">
+          <v-btn icon="mdi-dots-vertical" variant="text" v-bind="props" />
+        </template>
+        <v-list>
+          <v-list-item @click="createEditShow(item.raw)">
+            <v-list-item-title>View / Edit</v-list-item-title>
+          </v-list-item>
+          <v-list-item @click="removeShow(item.raw)">
+            <v-list-item-title>Delete</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </template>
+  </v-data-table>
 </template>
 
 <script>
@@ -41,10 +37,10 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", sortable: false },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Project", value: "project.name", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", key: "name", sortable: false },
+        { title: "Description", key: "description", sortable: false },
+        { title: "Project", key: "project.name", sortable: true },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },

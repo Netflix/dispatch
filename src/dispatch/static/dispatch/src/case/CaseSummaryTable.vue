@@ -1,41 +1,37 @@
 <template>
-  <div>
-    <v-data-table :headers="headers" :items="items" :loading="loading">
-      <template #item.case_priority.name="{ item }">
-        <case-priority :priority="item.case_priority.name" />
-      </template>
-      <template #item.status="{ item }">
-        <case-status :status="item.status" :id="item.id" />
-      </template>
-      <template #item.project.name="{ item }">
-        <v-chip small :color="item.project.color" text-color="white">
-          {{ item.project.name }}
-        </v-chip>
-      </template>
-      <template #item.reported_at="{ item }">
-        <v-tooltip location="bottom">
-          <template #activator="{ on, attrs }">
-            <span v-bind="attrs" v-on="on">{{ formatRelativeDate(item.reported_at) }}</span>
-          </template>
-          <span>{{ formatDate(item.reported_at) }}</span>
-        </v-tooltip>
-      </template>
-      <template #item.data-table-actions="{ item }">
-        <v-menu location="bottom left">
-          <template #activator="{ on }">
-            <v-btn icon variant="text" v-on="on">
-              <v-icon>mdi-dots-vertical</v-icon>
-            </v-btn>
-          </template>
-          <v-list>
-            <v-list-item :to="{ name: 'CaseTableEdit', params: { name: item.name } }">
-              <v-list-item-title>View / Edit</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
-      </template>
-    </v-data-table>
-  </div>
+  <v-data-table :headers="headers" :items="items" :loading="loading">
+    <template #item.case_priority.name="{ item }">
+      <case-priority :priority="item.raw.case_priority.name" />
+    </template>
+    <template #item.status="{ item }">
+      <case-status :status="item.raw.status" :id="item.raw.id" />
+    </template>
+    <template #item.project.name="{ item }">
+      <v-chip size="small" :color="item.raw.project.color">
+        {{ item.raw.project.name }}
+      </v-chip>
+    </template>
+    <template #item.reported_at="{ item }">
+      <v-tooltip location="bottom">
+        <template #activator="{ props }">
+          <span v-bind="props">{{ formatRelativeDate(item.raw.reported_at) }}</span>
+        </template>
+        <span>{{ formatDate(item.raw.reported_at) }}</span>
+      </v-tooltip>
+    </template>
+    <template #item.data-table-actions="{ item }">
+      <v-menu location="bottom left">
+        <template #activator="{ props }">
+          <v-btn icon="mdi-dots-vertical" variant="text" bind="props" />
+        </template>
+        <v-list>
+          <v-list-item :to="{ name: 'CaseTableEdit', params: { name: item.raw.name } }">
+            <v-list-item-title>View / Edit</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </template>
+  </v-data-table>
 </template>
 <script>
 import { mapActions } from "vuex"
@@ -54,15 +50,15 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", align: "left", sortable: false, width: "10%" },
-        { text: "Title", value: "title", sortable: false },
-        { text: "Status", value: "status", sortable: false },
-        { text: "Type", value: "case_type.name", sortable: false },
-        { text: "Priority", value: "case_priority.name", sortable: false, width: "10%" },
-        { text: "Project", value: "project.name", sortable: false },
-        { text: "Reported At", value: "reported_at", sortable: false },
-        { text: "Assignee", value: "assignee.email", sortable: false },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", key: "name", align: "left", sortable: false, width: "10%" },
+        { title: "Title", key: "title", sortable: false },
+        { title: "Status", key: "status", sortable: false },
+        { title: "Type", key: "case_type.name", sortable: false },
+        { title: "Priority", key: "case_priority.name", sortable: false, width: "10%" },
+        { title: "Project", key: "project.name", sortable: false },
+        { title: "Reported At", key: "reported_at", sortable: false },
+        { title: "Assignee", key: "assignee.email", sortable: false },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },
