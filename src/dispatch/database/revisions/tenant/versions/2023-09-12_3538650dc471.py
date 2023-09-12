@@ -1,7 +1,7 @@
 """Adds type to events
 
 Revision ID: 3538650dc471
-Revises: 1dd78f49e303
+Revises: 0560fab4537f
 Create Date: 2023-09-12 13:43:42.539336
 
 """
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "3538650dc471"
-down_revision = "1dd78f49e303"
+down_revision = "0560fab4537f"
 branch_labels = None
 depends_on = None
 
