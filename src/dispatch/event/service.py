@@ -7,6 +7,7 @@ from dispatch.auth import service as auth_service
 from dispatch.case import service as case_service
 from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
+from dispatch.enums import EventType
 
 from .models import Event, EventCreate, EventUpdate
 
@@ -88,6 +89,7 @@ def log_incident_event(
         source=source,
         description=description,
         details=details,
+        type=EventType.other,
     )
     event = create(db_session=db_session, event_in=event_in)
 
@@ -133,6 +135,7 @@ def log_case_event(
         source=source,
         description=description,
         details=details,
+        type=EventType.other,
     )
     event = create(db_session=db_session, event_in=event_in)
 
