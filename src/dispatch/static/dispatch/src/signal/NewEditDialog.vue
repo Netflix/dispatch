@@ -141,8 +141,8 @@
                 <template #activator="{ on, attrs }">
                   <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                 </template>
-                The following options allow you to configure the type of case that Dispatch
-                will create when it encounters this signal.
+                The following options allow you to configure the type of case that Dispatch will
+                create when it encounters this signal.
               </v-tooltip>
             </v-app-bar>
             <v-card-text>
