@@ -12,6 +12,10 @@ from dispatch.database.core import Base
 from dispatch.models import DispatchBase, NameStr, PrimaryKey, Pagination
 
 from dispatch.organization.models import Organization, OrganizationRead
+from dispatch.incident.priority.models import (
+    IncidentPriority,
+    IncidentPriorityRead,
+)
 
 
 class Project(Base):
@@ -36,6 +40,13 @@ class Project(Base):
     )
 
     send_daily_reports = Column(Boolean)
+
+    stable_priority_id = Column(Integer, nullable=True)
+    stable_priority = relationship(
+        IncidentPriority,
+        foreign_keys=[stable_priority_id],
+        primaryjoin="IncidentPriority.id == Project.stable_priority_id",
+    )
 
     @hybrid_property
     def slug(self):
@@ -65,10 +76,12 @@ class ProjectCreate(ProjectBase):
 
 class ProjectUpdate(ProjectBase):
     send_daily_reports: Optional[bool] = Field(True, nullable=True)
+    stable_priority_id: Optional[int]
 
 
 class ProjectRead(ProjectBase):
     id: Optional[PrimaryKey]
+    stable_priority: Optional[IncidentPriorityRead] = None
 
 
 class ProjectPagination(Pagination):

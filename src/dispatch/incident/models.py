@@ -239,6 +239,7 @@ class ProjectRead(DispatchBase):
     id: Optional[PrimaryKey]
     name: NameStr
     color: Optional[str]
+    stable_priority: Optional[IncidentPriorityRead] = None
 
 
 class CaseRead(DispatchBase):

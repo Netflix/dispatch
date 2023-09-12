@@ -1,5 +1,5 @@
 <template>
-  <v-navigation-drawer app clipped right bottom width="500">
+  <v-navigation-drawer v-bind="$attrs" v-on="$listeners" app clipped right bottom width="500">
     <template #prepend>
       <v-list-item two-line>
         <v-list-item-content>
@@ -31,7 +31,7 @@ export default {
 
   methods: {
     hideSheet() {
-      this.$emit("close", false)
+      this.$emit("input", false)
     },
   },
 

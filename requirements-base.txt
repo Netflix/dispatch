@@ -124,7 +124,7 @@ frozenlist==1.4.0
     #   aiosignal
 google-api-core==2.11.1
     # via google-api-python-client
-google-api-python-client==2.97.0
+google-api-python-client==2.98.0
     # via -r requirements-base.in
 google-auth==2.22.0
     # via
@@ -134,7 +134,7 @@ google-auth==2.22.0
     #   google-auth-oauthlib
 google-auth-httplib2==0.1.0
     # via google-api-python-client
-google-auth-oauthlib==1.0.0
+google-auth-oauthlib==1.1.0
     # via -r requirements-base.in
 googleapis-common-protos==1.60.0
     # via google-api-core
@@ -269,7 +269,7 @@ preshed==3.0.8
     # via
     #   spacy
     #   thinc
-protobuf==4.24.2
+protobuf==4.24.3
     # via
     #   -r requirements-base.in
     #   google-api-core
@@ -308,7 +308,7 @@ pyrate-limiter==2.10.0
     # via schemathesis
 pyrsistent==0.19.3
     # via jsonschema
-pytest==7.4.1
+pytest==7.4.2
     # via
     #   pytest-subtests
     #   schemathesis
@@ -391,7 +391,7 @@ six==1.16.0
     #   validators
 slack-bolt==1.18.0
     # via -r requirements-base.in
-slack-sdk==3.21.3
+slack-sdk==3.22.0
     # via
     #   -r requirements-base.in
     #   slack-bolt

@@ -3,6 +3,7 @@ import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import IncidentPriorityApi from "@/incident/priority/api"
+import ProjectApi from "@/project/api"
 
 const getDefaultSelectedState = () => {
   return {
@@ -46,10 +47,33 @@ const state = {
     },
     loading: false,
   },
+  stablePriority: null,
 }
 
 const getters = {
   getField,
+}
+
+// debounce setting changes
+var oldStablePriority = undefined
+
+function commitStablePriority(commit, value) {
+  ProjectApi.getAll({ q: state.table.options.filters.project[0].name }).then((response) => {
+    const project = response.data.items[0]
+    if (project) {
+      project.stable_priority_id = value
+      ProjectApi.update(project.id, project).then(() => {
+        commit(
+          "notification_backend/addBeNotification",
+          {
+            text: `Setting updated.`,
+            type: "success",
+          },
+          { root: true }
+        )
+      })
+    }
+  })
 }
 
 const actions = {
@@ -61,6 +85,12 @@ const actions = {
     )
     return IncidentPriorityApi.getAll(params)
       .then((response) => {
+        if (response.data.items[0]) {
+          ProjectApi.get(response.data.items[0].project.id).then((response) => {
+            state.stablePriority = response.data.stable_priority
+            oldStablePriority = state.stablePriority
+          })
+        }
         commit("SET_TABLE_LOADING", false)
         commit("SET_TABLE_ROWS", response.data)
       })
@@ -131,6 +161,21 @@ const actions = {
         { root: true }
       )
     })
+  },
+  updateStablePriority({ commit }, value) {
+    if (!value) state.stablePriority = null
+    if (oldStablePriority === undefined) {
+      oldStablePriority = state.stablePriority
+      return
+    }
+    if (oldStablePriority?.name !== state.stablePriority?.name) {
+      oldStablePriority = state.stablePriority
+      if (value) {
+        commitStablePriority(commit, state.stablePriority.id)
+      } else {
+        commitStablePriority(commit, null)
+      }
+    }
   },
 }
 
