@@ -28,6 +28,13 @@
             <v-card-text>
               <v-row no-gutters>
                 <v-col cols="12">
+                  <v-checkbox
+                    v-model="enabled"
+                    label="Enabled"
+                    hint="Determines whether this signal definition is currently active and should be used to process signals."
+                  />
+                </v-col>
+                <v-col cols="12">
                   <ValidationProvider name="Name" rules="required" immediate>
                     <v-text-field
                       v-model="name"
@@ -114,17 +121,47 @@
                   </ValidationProvider>
                 </v-col>
                 <v-col cols="12">
-                  <v-checkbox
-                    v-model="enabled"
-                    label="Enabled"
-                    hint="Determines whether this signal definition is currently active and should be used to process signals."
+                  <tag-filter-auto-complete
+                    label="Tags"
+                    v-model="tags"
+                    model="signal"
+                    :model-id="id"
                   />
                 </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <v-col cols="12">
+          <v-card flat tile>
+            <v-app-bar color="white" flat>
+              <v-toolbar-title class="subtitle-2"> Case Configuration </v-toolbar-title>
+              <v-spacer />
+              <v-tooltip max-width="250px" bottom>
+                <template #activator="{ on, attrs }">
+                  <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
+                </template>
+                The following options allow you to configure the type of case that Dispatch
+                will create when it encounters this signal.
+              </v-tooltip>
+            </v-app-bar>
+            <v-card-text>
+              <v-row no-gutters>
                 <v-col cols="12">
                   <v-checkbox
                     v-model="create_case"
                     label="Create Case"
                     hint="Determines whether this signal is eligible for case creation (signals could still be associated with existing cases via SignalFilters)."
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <case-type-select v-model="case_type" :project="project" label="Type" />
+                </v-col>
+                <v-col cols="12">
+                  <case-priority-select
+                    v-model="case_priority"
+                    :project="project"
+                    label="Case Priority"
                   />
                 </v-col>
                 <v-col cols="12">
@@ -150,17 +187,18 @@
                   </ValidationProvider>
                 </v-col>
                 <v-col cols="12">
-                  <tag-filter-auto-complete
-                    label="Tags"
-                    v-model="tags"
-                    model="signal"
-                    :model-id="id"
+                  <signal-engagement-combobox
+                    v-model="engagements"
+                    label="Engagement(s)"
+                    :project="project"
+                    :signalDefinition="selected"
                   />
                 </v-col>
               </v-row>
             </v-card-text>
           </v-card>
         </v-col>
+
         <v-col cols="12">
           <v-card flat tile>
             <v-app-bar color="white" flat>
@@ -186,35 +224,6 @@
         <v-col cols="12">
           <v-card flat tile>
             <v-app-bar color="white" flat>
-              <v-toolbar-title class="subtitle-2"> Case Configuration </v-toolbar-title>
-              <v-spacer />
-              <v-tooltip max-width="250px" bottom>
-                <template #activator="{ on, attrs }">
-                  <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
-                </template>
-                The following options allow you to configure the type of case that Dispatch will
-                create when it encounters this signal.
-              </v-tooltip>
-            </v-app-bar>
-            <v-card-text>
-              <v-row no-gutters>
-                <v-col cols="12">
-                  <case-type-select label="Case Type" :project="project" v-model="case_type" />
-                </v-col>
-                <v-col cols="12">
-                  <case-priority-select
-                    label="Case Priority"
-                    :project="project"
-                    v-model="case_priority"
-                  />
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-card>
-        </v-col>
-        <v-col cols="12">
-          <v-card flat tile>
-            <v-app-bar color="white" flat>
               <v-toolbar-title class="subtitle-2"> Filter(s) </v-toolbar-title>
               <v-spacer />
               <v-tooltip max-width="250px" bottom>
@@ -228,27 +237,6 @@
             <v-card-text>
               <signal-filter-combobox
                 v-model="filters"
-                :project="project"
-                :signalDefinition="selected"
-              />
-            </v-card-text>
-          </v-card>
-        </v-col>
-        <v-col cols="12">
-          <v-card flat tile>
-            <v-app-bar color="white" flat>
-              <v-toolbar-title class="subtitle-2"> Engagement(s) </v-toolbar-title>
-              <v-spacer />
-              <v-tooltip max-width="250px" bottom>
-                <template #activator="{ on, attrs }">
-                  <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
-                </template>
-                Defines an Engagement filter.
-              </v-tooltip>
-            </v-app-bar>
-            <v-card-text>
-              <signal-engagement-combobox
-                v-model="engagements"
                 :project="project"
                 :signalDefinition="selected"
               />
