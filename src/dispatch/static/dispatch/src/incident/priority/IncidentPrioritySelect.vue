@@ -7,6 +7,7 @@
     label="Priority"
     return-object
     :loading="loading"
+    :error-messages="show_error"
   >
     <template #item="data">
       <template>
@@ -38,6 +39,10 @@ export default {
       type: [Object],
       default: null,
     },
+    status: {
+      type: String,
+      default: "",
+    },
   },
 
   data() {
@@ -55,6 +60,15 @@ export default {
       set(value) {
         this.$emit("input", value)
       },
+    },
+    show_error() {
+      if (!this.project) return null
+      const stablePriority = this.project.stable_priority
+      if (!stablePriority) return null
+      if (this.status == "Stable" && this.value.name != stablePriority.name) {
+        return `Priority must be ${stablePriority.name} for Stable incidents`
+      }
+      return null
     },
   },
 
@@ -101,7 +115,7 @@ export default {
   created() {
     this.fetchData()
     this.$watch(
-      (vm) => [vm.project],
+      (vm) => [vm.project, vm.status],
       () => {
         this.fetchData()
       }

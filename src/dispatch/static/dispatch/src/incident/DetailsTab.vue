@@ -77,15 +77,27 @@
         <incident-severity-select v-model="incident_severity" :project="project" />
       </v-flex>
       <v-flex xs6>
-        <incident-priority-select v-model="incident_priority" :project="project" />
+        <ValidationProvider
+          name="Incident Priority"
+          rules="stableRestrictedPriority:@status,@project"
+          immediate
+        >
+          <incident-priority-select
+            v-model="incident_priority"
+            :project="project"
+            :status="status"
+          />
+        </ValidationProvider>
       </v-flex>
       <v-flex xs6>
-        <v-select
-          v-model="status"
-          label="Status"
-          :items="statuses"
-          hint="The status of the incident."
-        />
+        <ValidationProvider name="status" rules="alwaysTrue" immediate>
+          <v-select
+            v-model="status"
+            label="Status"
+            :items="statuses"
+            hint="The status of the incident."
+          />
+        </ValidationProvider>
       </v-flex>
       <v-flex xs6>
         <v-select
@@ -120,6 +132,11 @@
       <v-flex xs12>
         <case-filter-combobox label="Cases" v-model="cases" />
       </v-flex>
+      <v-flex xs12 v-show="false">
+        <ValidationProvider name="project" rules="alwaysTrue" immediate>
+          <v-text-field v-model="project" />
+        </ValidationProvider>
+      </v-flex>
     </v-layout>
   </v-container>
 </template>
@@ -142,6 +159,25 @@ import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 extend("required", {
   ...required,
   message: "This field is required",
+})
+
+extend("stableRestrictedPriority", {
+  params: ["status", "project"],
+  validate(value, { status, project }) {
+    if (!project) return true
+    const stablePriority = project.stable_priority
+    if (!stablePriority) return true
+    if (status == "Stable" && value.name != stablePriority.name) {
+      return false
+    }
+    return true
+  },
+})
+
+extend("alwaysTrue", {
+  validate() {
+    return true
+  },
 })
 
 export default {
