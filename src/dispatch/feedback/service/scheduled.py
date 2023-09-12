@@ -9,6 +9,7 @@ from dispatch.plugin.models import PluginInstance
 from dispatch.project.models import Project
 from dispatch.scheduler import scheduler
 from dispatch.service import service as service_service
+from .reminder import service as reminder_service
 
 from .messaging import send_oncall_shift_feedback_message
 
@@ -28,6 +29,7 @@ log = logging.getLogger(__name__)
 @scheduled_project_task
 def oncall_shift_feedback_ucan(db_session: SessionLocal, project: Project):
     oncall_shift_feedback(db_session=db_session, project=project)
+    find_expired_reminders_and_send(db_session=db_session, project=project)
 
 
 @scheduler.add(every(1).day.at("06:00"), name="oncall-shift-feedback-emea")
@@ -35,6 +37,26 @@ def oncall_shift_feedback_ucan(db_session: SessionLocal, project: Project):
 @scheduled_project_task
 def oncall_shift_feedback_emea(db_session: SessionLocal, project: Project):
     oncall_shift_feedback(db_session=db_session, project=project)
+    find_expired_reminders_and_send(db_session=db_session, project=project)
+
+
+def find_expired_reminders_and_send(*, db_session: SessionLocal, project: Project):
+    reminders = reminder_service.get_all_expired_reminders_by_project_id(
+        db_session=db_session, project_id=project.id
+    )
+    for reminder in reminders:
+        individual = individual_service.get(
+            db_session=db_session, individual_contact_id=reminder.individual_contact_id
+        )
+        send_oncall_shift_feedback_message(
+            project=project,
+            individual=individual,
+            schedule_id=reminder.schedule_id,
+            shift_end_at=str(reminder.shift_end_at),
+            schedule_name=reminder.schedule_name,
+            reminder=reminder,
+            db_session=db_session,
+        )
 
 
 def find_schedule_and_send(
