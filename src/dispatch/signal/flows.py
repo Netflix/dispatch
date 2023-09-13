@@ -90,6 +90,10 @@ def signal_instance_create_flow(
             )
         return signal_instance
 
+    # limited support for canary signals, just store the instance and return
+    if signal_instance.canary:
+        return signal_instance
+
     if not signal_instance.signal.create_case:
         return signal_instance
 
