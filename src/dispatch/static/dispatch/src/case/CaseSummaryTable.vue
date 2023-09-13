@@ -20,9 +20,9 @@
       </v-tooltip>
     </template>
     <template #item.data-table-actions="{ item }">
-      <v-menu location="bottom left">
+      <v-menu location="right" origin="overlap">
         <template #activator="{ props }">
-          <v-btn icon="mdi-dots-vertical" variant="text" bind="props" />
+          <v-btn icon="mdi-dots-vertical" variant="text" v-bind="props" />
         </template>
         <v-list>
           <v-list-item :to="{ name: 'CaseTableEdit', params: { name: item.raw.name } }">

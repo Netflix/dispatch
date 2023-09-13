@@ -1,5 +1,5 @@
 <template>
-  <v-menu v-model="menu" :close-on-content-click="false" transition="scale-transition">
+  <v-menu v-model="menu" :close-on-content-click="false">
     <template #activator="{ props }">
       <v-text-field
         v-model="expiration"

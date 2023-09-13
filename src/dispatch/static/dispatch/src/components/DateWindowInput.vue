@@ -1,11 +1,5 @@
 <template>
-  <v-menu
-    v-model="menu"
-    :close-on-content-click="false"
-    transition="scale-transition"
-    min-width="auto"
-    offset-y
-  >
+  <v-menu v-model="menu" :close-on-content-click="false">
     <template #activator="{ props }">
       <v-text-field
         v-model="windowRange"

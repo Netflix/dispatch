@@ -18,12 +18,7 @@
     v-model="signalDefinitions"
   >
     <template #selection="{ item, selected }">
-      <v-menu
-        v-model="menu"
-        location="bottom right"
-        transition="scale-transition"
-        origin="top left"
-      >
+      <v-menu v-model="menu" origin="overlap">
         <template #activator="{ props }">
           <v-chip v-bind="props" :model-value="selected" pill closable @click:close="remove(item)">
             {{ item.name }}

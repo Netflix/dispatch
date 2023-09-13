@@ -26,7 +26,7 @@
       </v-tooltip>
     </template>
     <template #item.data-table-actions="{ item }">
-      <v-menu location="bottom left">
+      <v-menu location="right" origin="overlap">
         <template #activator="{ props }">
           <v-btn icon="mdi-dots-vertical" variant="text" density="comfortable" v-bind="props" />
         </template>

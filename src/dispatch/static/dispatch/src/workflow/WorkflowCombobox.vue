@@ -10,7 +10,7 @@
         v-model="workflows"
       >
         <template #selection="{ item, selected }">
-          <v-menu location="bottom right" transition="scale-transition" origin="top left">
+          <v-menu origin="overlap">
             <template #activator="{ props }">
               <v-chip
                 v-bind="props"

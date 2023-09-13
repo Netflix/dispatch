@@ -1,5 +1,5 @@
 <template>
-  <v-menu v-model="menu" location="top left" origin="overlap">
+  <v-menu v-model="menu" location="top" origin="overlap">
     <template #activator="{ props }">
       <v-chip pill size="small" v-bind="props" v-if="participant.individual">
         <v-avatar color="teal" start>

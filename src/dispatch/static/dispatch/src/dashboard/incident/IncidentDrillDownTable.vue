@@ -19,7 +19,7 @@
         </v-chip>
       </template>
       <template #item.data-table-actions="{ item }">
-        <v-menu location="bottom left">
+        <v-menu location="right" origin="overlap">
           <template #activator="{ props }">
             <v-btn icon variant="text" v-bind="props">
               <v-icon>mdi-dots-vertical</v-icon>

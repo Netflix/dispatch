@@ -1,5 +1,5 @@
 <template>
-  <v-menu v-model="menu" location="bottom right" transition="scale-transition" origin="top right">
+  <v-menu v-model="menu" origin="overlap">
     <template #activator="{ props }">
       <v-btn icon variant="text" size="small" v-bind="props">
         <v-icon>mdi-chevron-down</v-icon>

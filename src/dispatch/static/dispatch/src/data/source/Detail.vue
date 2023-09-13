@@ -8,7 +8,7 @@
 
       <span v-if="source_status"> Status: {{ source_status.name }}</span>
 
-      <v-menu location="bottom left">
+      <v-menu location="right" origin="overlap">
         <template #activator="{ props }">
           <v-btn icon variant="text" v-bind="props">
             <v-icon>mdi-dots-vertical</v-icon>
