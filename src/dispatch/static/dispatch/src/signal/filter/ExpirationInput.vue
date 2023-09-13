@@ -32,9 +32,7 @@
       <v-card-actions>
         <v-spacer />
         <slot name="actions" :parent="this">
-          <v-btn color="grey-lighten-1" variant="text" @click.native="clearExpiration()">
-            Clear
-          </v-btn>
+          <v-btn color="grey-lighten-1" variant="text" @click="clearExpiration()"> Clear </v-btn>
           <v-btn variant="text" @click="closeMenu()">Ok</v-btn>
         </slot>
       </v-card-actions>
