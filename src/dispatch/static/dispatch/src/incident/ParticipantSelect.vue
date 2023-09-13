@@ -27,11 +27,6 @@
       <v-list-item-title>{{ data.item.individual.name }}</v-list-item-title>
       <v-list-item-subtitle>{{ data.item.individual.email }}</v-list-item-subtitle>
     </template>
-    <template #selection="{ attr, on, item, selected }">
-      <v-chip v-bind="attr" :model-value="selected" v-on="on">
-        <span v-text="item.individual.name" />
-      </v-chip>
-    </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
         <v-list-item-subtitle> Load More </v-list-item-subtitle>

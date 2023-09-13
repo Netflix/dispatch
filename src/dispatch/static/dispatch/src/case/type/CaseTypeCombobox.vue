@@ -23,9 +23,9 @@
         </v-list-item-title>
       </v-list-item>
     </template>
-    <template #selection="{ item, index }">
-      <v-chip closable @click:close="remove(index)">
-        <span v-if="!project"> {{ item.project.name }}/ </span>{{ item.name }}
+    <template #chip="{ item, props }">
+      <v-chip v-bind="props">
+        <span v-if="!project"> {{ item.raw.project.name }}/ </span>{{ item.raw.name }}
       </v-chip>
     </template>
     <template #item="data">
@@ -156,11 +156,6 @@ export default {
     getFilteredData: debounce(function () {
       this.fetchData()
     }, 500),
-    remove(index) {
-      const value = cloneDeep(this.value)
-      value.splice(index, 1)
-      this.$emit("input", value)
-    },
   },
 
   created() {

@@ -6,6 +6,7 @@
     v-model:search="search"
     @update:search="getFilteredData()"
     chips
+    closable-chips
     clearable
     item-title="name"
     item-value="id"
@@ -23,13 +24,13 @@
         </v-list-item-title>
       </v-list-item>
     </template>
-    <template #selection="{ item, index }">
-      <v-chip closable @click:close="remove(index)">
+    <template #chip="{ item, props }">
+      <v-chip v-bind="props">
         <span v-if="item.tag_type">
-          <span v-if="!project">{{ item.project.name }}/</span>{{ item.tag_type.name }}/
+          <span v-if="!project">{{ item.raw.project.name }}/</span>{{ item.raw.tag_type.name }}/
         </span>
-        <a :href="item.uri" target="_blank" :title="item.description">
-          {{ item.name }}
+        <a :href="item.raw.uri" target="_blank" :title="item.raw.description">
+          {{ item.raw.name }}
         </a>
       </v-chip>
     </template>
@@ -197,11 +198,6 @@ export default {
     getFilteredData: debounce(function () {
       this.fetchData()
     }, 500),
-    remove(index) {
-      const value = cloneDeep(this.value)
-      value.splice(index, 1)
-      this.$emit("input", value)
-    },
   },
 }
 </script>

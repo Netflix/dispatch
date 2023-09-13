@@ -17,12 +17,10 @@
     no-filter
     v-model="signalDefinitions"
   >
-    <template #selection="{ item, selected }">
+    <template #chip="{ item, props }">
       <v-menu v-model="menu" origin="overlap">
-        <template #activator="{ props }">
-          <v-chip v-bind="props" :model-value="selected" pill closable @click:close="remove(item)">
-            {{ item.name }}
-          </v-chip>
+        <template #activator="{ props: menuProps }">
+          <v-chip v-bind="mergeProps(props, menuProps)" pill />
         </template>
         <v-card>
           <v-list dark>
@@ -72,6 +70,7 @@
 <script>
 import { cloneDeep, debounce } from "lodash"
 import { initials } from "@/filters"
+import { mergeProps } from "vue"
 
 import SignalApi from "@/signal/api"
 import SearchUtils from "@/search/utils"
@@ -110,7 +109,7 @@ export default {
   },
 
   setup() {
-    return { initials }
+    return { initials, mergeProps }
   },
 
   computed: {
@@ -132,9 +131,6 @@ export default {
   },
 
   methods: {
-    remove(item) {
-      this.signalDefinitions.splice(this.signalDefinitions.indexOf(item), 1)
-    },
     fetchData() {
       this.error = null
       this.loading = "error"

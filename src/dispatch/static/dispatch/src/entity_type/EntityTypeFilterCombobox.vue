@@ -15,12 +15,10 @@
     no-filter
     v-model="entity_types"
   >
-    <template #selection="{ item, selected }">
+    <template #chip="{ item, props }">
       <v-menu origin="overlap">
-        <template #activator="{ props }">
-          <v-chip v-bind="props" :model-value="selected" pill closable @click:close="remove(item)">
-            {{ item.name }}
-          </v-chip>
+        <template #activator="{ props: menuProps }">
+          <v-chip v-bind="mergeProps(props, menuProps)" pill />
         </template>
         <v-card>
           <v-list dark>
@@ -91,6 +89,7 @@
 <script>
 import { debounce } from "lodash"
 import { initials } from "@/filters"
+import { mergeProps } from "vue"
 
 import SearchUtils from "@/search/utils"
 import EntityTypeApi from "@/entity_type/api"
@@ -140,7 +139,7 @@ export default {
   },
 
   setup() {
-    return { initials }
+    return { initials, mergeProps }
   },
 
   computed: {
@@ -208,9 +207,6 @@ export default {
 
         this.loading = false
       })
-    },
-    remove(item) {
-      this.entity_types.splice(this.entity_types.indexOf(item), 1)
     },
     getFilteredData: debounce(function () {
       this.fetchData()

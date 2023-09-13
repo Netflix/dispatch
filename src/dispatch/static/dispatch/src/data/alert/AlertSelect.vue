@@ -9,15 +9,11 @@
     :label="label"
     close
     clearable
+    chips
     :loading="loading"
     return-object
     no-filter
   >
-    <template #selection="{ attr, on, item, selected }">
-      <v-chip v-bind="attr" :model-value="selected" v-on="on">
-        <span v-text="item.name" />
-      </v-chip>
-    </template>
     <template #item="{ item }">
       <v-list-item-title>{{ item.name }}</v-list-item-title>
       <v-list-item-subtitle>{{ item.title }}</v-list-item-subtitle>

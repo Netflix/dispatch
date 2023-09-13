@@ -19,9 +19,6 @@
         </v-list-item-title>
       </v-list-item>
     </template>
-    <template #selection="{ item }">
-      {{ item.name }}
-    </template>
     <template #item="data">
       <v-list-item-title>
         {{ data.item.name }}

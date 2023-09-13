@@ -6,6 +6,7 @@
     v-model:search="search"
     @update:search="getFilteredData()"
     chips
+    closable-chips
     clearable
     hide-selected
     item-title="name"
@@ -23,10 +24,8 @@
         </v-list-item-title>
       </v-list-item>
     </template>
-    <template #selection="{ item, index }">
-      <v-chip closable @click:close="entities.splice(index, 1)">
-        {{ item.entity_type.name }} / {{ item.value }}
-      </v-chip>
+    <template #chip="{ item, props }">
+      <v-chip v-bind="props"> {{ item.raw.entity_type.name }} / {{ item.raw.value }} </v-chip>
     </template>
     <template #item="data">
       <v-list-item-title> {{ data.item.name }} </v-list-item-title>

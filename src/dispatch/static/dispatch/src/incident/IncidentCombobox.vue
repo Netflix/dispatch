@@ -16,11 +16,6 @@
     no-filter
     v-model="incident"
   >
-    <template #selection="{ attr, on, item, selected }">
-      <v-chip v-bind="attr" :model-value="selected" v-on="on" closable @click:close="remove(item)">
-        <span v-text="item.name" />
-      </v-chip>
-    </template>
     <template #item="{ item }">
       <v-list-item-title>{{ item.name }}</v-list-item-title>
       <v-list-item-subtitle style="width: 200px" class="text-truncate">
@@ -90,9 +85,6 @@ export default {
   },
 
   methods: {
-    remove(item) {
-      this.incident.splice(this.incident.indexOf(item), 1)
-    },
     fetchData(filterOptions) {
       this.error = null
       this.loading = "error"
