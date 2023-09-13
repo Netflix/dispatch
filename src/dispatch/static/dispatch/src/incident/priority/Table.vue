@@ -23,7 +23,7 @@
           <v-card-title>
             <v-text-field
               v-model="q"
-              append-icon="search"
+              append-inner-icon="search"
               label="Search"
               single-line
               hide-details

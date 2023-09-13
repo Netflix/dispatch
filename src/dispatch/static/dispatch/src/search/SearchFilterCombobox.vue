@@ -82,7 +82,7 @@
             </v-list-item-title>
           </v-list-item>
         </template>
-        <template #append-outer>
+        <template #append>
           <search-filter-create-dialog v-model="createdFilter" />
         </template>
       </v-combobox>

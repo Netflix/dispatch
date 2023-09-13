@@ -55,7 +55,7 @@
             <v-text-field
               v-if="showFilter"
               v-model="q"
-              append-icon="search"
+              append-inner-icon="search"
               label="Filter"
               single-line
               hide-details

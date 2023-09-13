@@ -82,7 +82,7 @@
             </v-list-item-title>
           </v-list-item>
         </template>
-        <template #append-outer>
+        <template #append>
           <signal-filter-create-dialog
             v-model="createdFilter"
             :project="project"

@@ -29,7 +29,7 @@
                   label="Regular Expression"
                   hint="A regular expression pattern for your entity type. The first capture group will be used."
                 >
-                  <template #append-outer>
+                  <template #append>
                     <v-btn
                       icon
                       variant="text"
@@ -46,7 +46,7 @@
                   label="JSON Path"
                   hint="The field where the entity will be present. Supports JSON Path expressions."
                 >
-                  <template #append-outer>
+                  <template #append>
                     <v-btn
                       icon
                       variant="text"

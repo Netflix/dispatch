@@ -78,7 +78,7 @@
         <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
-    <template #append-outer>
+    <template #append>
       <entity-type-create-dialog
         v-model="createdEntityType"
         :project="project"

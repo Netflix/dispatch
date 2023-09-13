@@ -14,7 +14,7 @@
     no-filter
     name="template"
   >
-    <template #append-outer>
+    <template #append>
       <v-btn icon variant="text" @click="createEditShow({ resource_type: resourceType })">
         <v-icon>add</v-icon>
       </v-btn>

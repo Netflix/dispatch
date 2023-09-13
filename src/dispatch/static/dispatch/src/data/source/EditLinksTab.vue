@@ -8,7 +8,7 @@
           label="Search"
           single-line
           hide-details
-          append-icon="mdi-plus"
+          append-inner-icon="mdi-plus"
           @click:append="addNew"
           clearable
         />

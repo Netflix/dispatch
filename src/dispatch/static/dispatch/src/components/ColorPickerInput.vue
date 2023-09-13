@@ -1,6 +1,6 @@
 <template>
   <v-text-field v-model="color" :label="label">
-    <template #append-outer>
+    <template #append>
       <v-menu v-model="menu" location="top" :close-on-content-click="false">
         <template #activator="{ props }">
           <div :style="swatchStyle" v-bind="props" />

@@ -13,7 +13,7 @@
     :loading="loading"
     no-filter
   >
-    <template #append-outer>
+    <template #append>
       <v-btn icon variant="text" @click="createEditShow({})">
         <v-icon>add</v-icon>
       </v-btn>

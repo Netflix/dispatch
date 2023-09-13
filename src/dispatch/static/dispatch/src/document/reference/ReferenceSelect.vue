@@ -12,7 +12,7 @@
     no-filter
     name="reference"
   >
-    <template #append>
+    <template #append-inner>
       <v-btn icon variant="text" @click="createEditShow({})">
         <v-icon>add</v-icon>
       </v-btn>

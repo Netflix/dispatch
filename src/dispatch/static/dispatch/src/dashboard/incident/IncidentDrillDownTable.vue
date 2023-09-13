@@ -4,7 +4,7 @@
       <v-card-title>
         <v-text-field
           v-model="search"
-          append-icon="mdi-magnify"
+          append-inner-icon="mdi-magnify"
           label="Search"
           single-line
           hide-details
