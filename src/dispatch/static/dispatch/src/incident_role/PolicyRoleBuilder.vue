@@ -49,8 +49,10 @@
                   <v-icon> mdi-drag-horizontal-variant </v-icon>
                 </v-col>
                 <v-col cols="1">
-                  <v-chip v-if="policy.enabled" dark color="green" small label>Enabled</v-chip>
-                  <v-chip v-if="!policy.enabled" dark small label>Disabled</v-chip>
+                  <v-chip v-if="policy.enabled" dark color="green" size="small" label>
+                    Enabled
+                  </v-chip>
+                  <v-chip v-if="!policy.enabled" dark size="small" label>Disabled</v-chip>
                 </v-col>
                 <v-col>
                   {{ policy.role }} - <span v-if="policy.service">{{ policy.service.name }}</span>

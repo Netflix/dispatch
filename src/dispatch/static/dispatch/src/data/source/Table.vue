@@ -46,7 +46,7 @@
               </router-link>
             </template>
             <template #item.project.name="{ item }">
-              <v-chip small :color="item.project.color" text-color="white">
+              <v-chip size="small" :color="item.project.color" text-color="white">
                 {{ item.project.name }}
               </v-chip>
             </template>
@@ -56,7 +56,7 @@
               </span>
             </template>
             <template #item.source_data_format="{ item }">
-              <v-chip v-if="item.source_data_format" small dark>
+              <v-chip v-if="item.source_data_format" size="small" dark>
                 {{ item.source_data_format.name }}
               </v-chip>
             </template>

@@ -1,7 +1,7 @@
 <template>
   <v-data-table :headers="headers" :items="items">
     <template #item.project.name="{ item }">
-      <v-chip small :color="item.raw.project.color">
+      <v-chip size="small" :color="item.raw.project.color">
         {{ item.raw.project.name }}
       </v-chip>
     </template>

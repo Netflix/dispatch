@@ -44,34 +44,59 @@
           >
             <!-- TODO(mvilanova): Allow to view the list of individuals, teams, services, and notifications upon clicking on the chip -->
             <template #[`item.individuals`]="{ item }">
-              <v-chip v-if="item.individuals.length == 0" small color="green" text-color="white">
+              <v-chip
+                v-if="item.individuals.length == 0"
+                size="small"
+                color="green"
+                text-color="white"
+              >
                 {{ item.individuals.length }}
               </v-chip>
-              <v-chip v-if="item.individuals.length > 0" small color="red" text-color="white">
+              <v-chip
+                v-if="item.individuals.length > 0"
+                size="small"
+                color="red"
+                text-color="white"
+              >
                 {{ item.individuals.length }}
               </v-chip>
             </template>
             <template #[`item.teams`]="{ item }">
-              <v-chip v-if="item.teams.length == 0" small color="green" text-color="white">
+              <v-chip v-if="item.teams.length == 0" size="small" color="green" text-color="white">
                 {{ item.teams.length }}
               </v-chip>
-              <v-chip v-if="item.teams.length > 0" small color="red" text-color="white">
+              <v-chip v-if="item.teams.length > 0" size="small" color="red" text-color="white">
                 {{ item.teams.length }}
               </v-chip>
             </template>
             <template #[`item.services`]="{ item }">
-              <v-chip v-if="item.services.length == 0" small color="green" text-color="white">
+              <v-chip
+                v-if="item.services.length == 0"
+                size="small"
+                color="green"
+                text-color="white"
+              >
                 {{ item.services.length }}
               </v-chip>
-              <v-chip v-if="item.services.length > 0" small color="red" text-color="white">
+              <v-chip v-if="item.services.length > 0" size="small" color="red" text-color="white">
                 {{ item.services.length }}
               </v-chip>
             </template>
             <template #[`item.notifications`]="{ item }">
-              <v-chip v-if="item.notifications.length == 0" small color="green" text-color="white">
+              <v-chip
+                v-if="item.notifications.length == 0"
+                size="small"
+                color="green"
+                text-color="white"
+              >
                 {{ item.notifications.length }}
               </v-chip>
-              <v-chip v-if="item.notifications.length > 0" small color="red" text-color="white">
+              <v-chip
+                v-if="item.notifications.length > 0"
+                size="small"
+                color="red"
+                text-color="white"
+              >
                 {{ item.notifications.length }}
               </v-chip>
             </template>

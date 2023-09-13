@@ -36,7 +36,7 @@
             loading-text="Loading... Please wait"
           >
             <template #item.project.name="{ item }">
-              <v-chip small :color="item.project.color" text-color="white">
+              <v-chip size="small" :color="item.project.color" text-color="white">
                 {{ item.project.name }}
               </v-chip>
             </template>

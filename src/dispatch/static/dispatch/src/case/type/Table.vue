@@ -41,12 +41,12 @@
             loading-text="Loading... Please wait"
           >
             <template #item.oncall_service.name="{ item }">
-              <v-chip v-if="item.oncall_service" small color="info" text-color="white">
+              <v-chip v-if="item.oncall_service" size="small" color="info" text-color="white">
                 {{ item.oncall_service.name }}
               </v-chip>
             </template>
             <template #item.incident_type.name="{ item }">
-              <v-chip v-if="item.incident_type" small color="info" text-color="white">
+              <v-chip v-if="item.incident_type" size="small" color="info" text-color="white">
                 {{ item.incident_type.name }}
               </v-chip>
             </template>

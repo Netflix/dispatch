@@ -49,19 +49,19 @@
               <case-status :status="item.status" :id="item.id" />
             </template>
             <template #item.project.name="{ item }">
-              <v-chip small :color="item.project.color" text-color="white">
+              <v-chip size="small" :color="item.project.color" text-color="white">
                 {{ item.project.name }}
               </v-chip>
             </template>
             <template #item.case_type="{ item }">
-              <v-chip v-if="item.case_type" small color="info" text-color="white">
+              <v-chip v-if="item.case_type" size="small" color="info" text-color="white">
                 {{ item.case_type.name }}
               </v-chip>
             </template>
             <template #item.case_priority="{ item }">
               <v-chip
                 v-if="item.case_priority"
-                small
+                size="small"
                 :color="item.case_priority.color"
                 text-color="white"
               >

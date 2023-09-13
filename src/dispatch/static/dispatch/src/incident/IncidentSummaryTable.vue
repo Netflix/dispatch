@@ -13,7 +13,7 @@
       <incident-participant :participant="item.raw.reporter" />
     </template>
     <template #item.project.name="{ item }">
-      <v-chip small :color="item.raw.project.color">
+      <v-chip size="small" :color="item.raw.project.color">
         {{ item.raw.project.name }}
       </v-chip>
     </template>

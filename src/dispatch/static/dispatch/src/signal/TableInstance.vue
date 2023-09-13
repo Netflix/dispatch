@@ -29,13 +29,13 @@
               <signal-popover v-model="item.signal" />
             </template>
             <template #item.project.name="{ item }">
-              <v-chip small :color="item.project.color" text-color="white">
+              <v-chip size="small" :color="item.project.color" text-color="white">
                 {{ item.project.name }}
               </v-chip>
             </template>
             <template #item.filter_action="{ item }">
               <v-chip
-                small
+                size="small"
                 text-color="white"
                 :color="
                   item.filter_action === 'snooze'

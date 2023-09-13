@@ -5,7 +5,7 @@
       <v-checkbox-btn v-model="item.raw.discoverable" disabled />
     </template>
     <template #item.project.name="{ item }">
-      <v-chip small :color="item.project.color">
+      <v-chip size="small" :color="item.project.color">
         {{ item.raw.project.name }}
       </v-chip>
     </template>

@@ -11,12 +11,16 @@
       </router-link>
     </template>
     <template #item.project.name="{ item }">
-      <v-chip small :color="item.raw.project.color">
+      <v-chip size="small" :color="item.raw.project.color">
         {{ item.raw.project.name }}
       </v-chip>
     </template>
     <template #item.source_environment.name="{ item }">
-      <v-chip v-if="item.raw.source_environment" small :color="item.raw.source_environment.color">
+      <v-chip
+        v-if="item.raw.source_environment"
+        size="small"
+        :color="item.raw.source_environment.color"
+      >
         {{ item.source_environment.name }}
       </v-chip>
     </template>

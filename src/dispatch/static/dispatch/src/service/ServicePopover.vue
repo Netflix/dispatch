@@ -1,7 +1,7 @@
 <template>
   <v-menu v-model="menu" location="top left" origin="overlap">
     <template #activator="{ props }">
-      <v-chip pill small v-bind="props">
+      <v-chip pill size="small" v-bind="props">
         <v-avatar color="teal" start>
           {{ initials(service.name) }}
         </v-avatar>

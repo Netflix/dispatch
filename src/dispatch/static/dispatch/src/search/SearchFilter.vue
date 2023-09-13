@@ -2,7 +2,7 @@
   <div>
     <v-menu v-model="menu" location="bottom right" transition="scale-transition" origin="top left">
       <template #activator="{ on }">
-        <v-chip pill small v-on="on">
+        <v-chip pill size="small" v-on="on">
           <v-avatar color="teal" start>
             <span class="text-white">{{ initials(filter.name) }}</span>
           </v-avatar>
