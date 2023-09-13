@@ -16,8 +16,8 @@
       </v-col>
       <v-col cols="12" sm="1">
         <v-tooltip location="bottom">
-          <template #activator="{ on }">
-            <v-btn size="small" icon variant="text" @click="addIncidentCost()" v-on="on">
+          <template #activator="{ props }">
+            <v-btn size="small" icon variant="text" @click="addIncidentCost()" v-bind="props">
               <v-icon>add</v-icon>
             </v-btn>
           </template>

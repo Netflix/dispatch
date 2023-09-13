@@ -1,8 +1,8 @@
 <template>
   <div>
     <v-menu v-model="menu" location="bottom right" transition="scale-transition" origin="top left">
-      <template #activator="{ on }">
-        <v-chip pill size="small" v-on="on">
+      <template #activator="{ props }">
+        <v-chip pill size="small" v-bind="props">
           <v-avatar color="teal" start>
             <span class="text-white">{{ initials(value.name) }}</span>
           </v-avatar>

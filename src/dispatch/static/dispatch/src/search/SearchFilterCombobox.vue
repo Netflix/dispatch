@@ -19,19 +19,18 @@
         no-filter
         v-model="searchFilters"
       >
-        <template #selection="{ attr, item, selected }">
+        <template #selection="{ item, selected }">
           <v-menu
             v-model="menu"
             location="bottom right"
             transition="scale-transition"
             origin="top left"
           >
-            <template #activator="{ on }">
+            <template #activator="{ props }">
               <v-chip
-                v-bind="attr"
+                v-bind="props"
                 :model-value="selected"
                 pill
-                v-on="on"
                 closable
                 @click:close="remove(item)"
               >

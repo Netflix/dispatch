@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="showExport" persistent max-width="800px">
-    <template #activator="{ on }">
-      <v-btn color="secondary" class="ml-2" v-on="on"> Export </v-btn>
+    <template #activator="{ props }">
+      <v-btn color="secondary" class="ml-2" v-bind="props"> Export </v-btn>
     </template>
     <v-card>
       <v-card-title>

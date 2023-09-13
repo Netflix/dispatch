@@ -1,7 +1,7 @@
 <template>
   <v-dialog persistent max-width="800px" v-model="dialog">
-    <template #activator="{ on, attrs }">
-      <v-btn icon variant="text" v-bind="attrs" v-on="on">
+    <template #activator="{ props }">
+      <v-btn icon variant="text" v-bind="props">
         <v-icon>add</v-icon>
       </v-btn>
     </template>

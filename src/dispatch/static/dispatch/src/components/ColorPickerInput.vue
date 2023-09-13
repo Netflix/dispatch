@@ -8,8 +8,8 @@
         nudge-left="16"
         :close-on-content-click="false"
       >
-        <template #activator="{ on }">
-          <div :style="swatchStyle" v-on="on" />
+        <template #activator="{ props }">
+          <div :style="swatchStyle" v-bind="props" />
         </template>
         <v-card>
           <v-card-text class="pa-0">

@@ -9,13 +9,13 @@
     max-width="290px"
     min-width="290px"
   >
-    <template #activator="{ on }">
+    <template #activator="{ props }">
       <v-text-field
         v-model="formattedDatetime"
         prepend-icon="event"
         :label="label"
         readonly
-        v-on="on"
+        v-bind="props"
       />
     </template>
     <v-card>

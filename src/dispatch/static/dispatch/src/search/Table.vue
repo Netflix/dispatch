@@ -105,24 +105,24 @@
             </template>
             <template #[`item.created_at`]="{ item }">
               <v-tooltip location="bottom">
-                <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ formatRelativeDate(item.created_at) }}</span>
+                <template #activator="{ props }">
+                  <span v-bind="props">{{ formatRelativeDate(item.created_at) }}</span>
                 </template>
                 <span>{{ formatDate(item.created_at) }}</span>
               </v-tooltip>
             </template>
             <template #[`item.updated_at`]="{ item }">
               <v-tooltip location="bottom">
-                <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ formatRelativeDate(item.updated_at) }}</span>
+                <template #activator="{ props }">
+                  <span v-bind="props">{{ formatRelativeDate(item.updated_at) }}</span>
                 </template>
                 <span>{{ formatDate(item.updated_at) }}</span>
               </v-tooltip>
             </template>
             <template #[`item.data-table-actions`]="{ item }">
               <v-menu location="bottom left">
-                <template #activator="{ on }">
-                  <v-btn icon variant="text" v-on="on">
+                <template #activator="{ props }">
+                  <v-btn icon variant="text" v-bind="props">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>
                 </template>

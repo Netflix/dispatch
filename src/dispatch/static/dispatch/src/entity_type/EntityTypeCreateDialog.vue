@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="dialog" max-width="1000px" persistent :key="componentKey">
-    <template #activator="{ on, attrs }">
-      <v-btn v-bind="attrs" v-on="on" icon variant="text"><v-icon>add</v-icon></v-btn>
+    <template #activator="{ props }">
+      <v-btn v-bind="props" icon variant="text"><v-icon>add</v-icon></v-btn>
     </template>
     <v-card>
       <v-card-title>Create Entity Type </v-card-title>

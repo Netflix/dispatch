@@ -6,12 +6,11 @@
     min-width="auto"
     offset-y
   >
-    <template #activator="{ on, attrs }">
+    <template #activator="{ props }">
       <v-text-field
         v-model="windowRange"
         :label="label"
-        v-bind="attrs"
-        v-on="on"
+        v-bind="props"
         clearable
         readonly
         @click:clear="clearWindowRange()"

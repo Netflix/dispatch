@@ -15,17 +15,10 @@
     no-filter
     v-model="entity_types"
   >
-    <template #selection="{ attr, item, selected }">
+    <template #selection="{ item, selected }">
       <v-menu location="bottom right" transition="scale-transition" origin="top left">
-        <template #activator="{ on }">
-          <v-chip
-            v-bind="attr"
-            :model-value="selected"
-            pill
-            v-on="on"
-            closable
-            @click:close="remove(item)"
-          >
+        <template #activator="{ props }">
+          <v-chip v-bind="props" :model-value="selected" pill closable @click:close="remove(item)">
             {{ item.name }}
           </v-chip>
         </template>

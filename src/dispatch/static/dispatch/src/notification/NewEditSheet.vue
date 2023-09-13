@@ -87,8 +87,8 @@
                 <span class="text-subtitle-2"
                   >Evergreen
                   <v-tooltip max-width="250px" location="bottom">
-                    <template #activator="{ on, attrs }">
-                      <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
+                    <template #activator="{ props }">
+                      <v-icon v-bind="props"> help_outline </v-icon>
                     </template>
                     Dispatch will send the owner a reminder email to the resource owner, reminding
                     them to keep the resource current.

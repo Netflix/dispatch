@@ -6,8 +6,8 @@
       </v-col>
       <v-col class="text-right" cols="4" v-if="count > 1" style="align-self: center">
         <v-tooltip location="bottom">
-          <template #activator="{ on, attrs }">
-            <span v-bind="attrs" v-on="on">
+          <template #activator="{ props }">
+            <span v-bind="props">
               <v-badge color="grey" :content="badgeCount" offset-x="45" offset-y="37">
                 <v-card-subtitle />
               </v-badge>

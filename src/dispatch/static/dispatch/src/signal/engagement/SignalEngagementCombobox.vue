@@ -10,12 +10,11 @@
       >
         <template #selection="{ attr, item, selected }">
           <v-menu location="bottom right" transition="scale-transition" origin="top left">
-            <template #activator="{ on }">
+            <template #activator="{ props }">
               <v-chip
-                v-bind="attr"
+                v-bind="props"
                 :model-value="selected"
                 pill
-                v-on="on"
                 closable
                 @click:close="remove(item)"
               >

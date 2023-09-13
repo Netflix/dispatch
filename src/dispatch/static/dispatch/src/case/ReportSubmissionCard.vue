@@ -5,8 +5,8 @@
         <p class="text-h4 text--primary">
           Open a Case
           <v-tooltip location="bottom">
-            <template #activator="{ on }">
-              <v-btn icon variant="text" v-on="on" @click="copyView">
+            <template #activator="{ props }">
+              <v-btn icon variant="text" v-bind="props" @click="copyView">
                 <v-icon>mdi-content-copy</v-icon>
               </v-btn>
             </template>

@@ -1,11 +1,10 @@
 <template>
   <v-menu v-model="menu" :close-on-content-click="false" transition="scale-transition">
-    <template #activator="{ on, attrs }">
+    <template #activator="{ props }">
       <v-text-field
         v-model="expiration"
         :label="label"
-        v-bind="attrs"
-        v-on="on"
+        v-bind="props"
         clearable
         readonly
         @click:clear="clearExpiration()"

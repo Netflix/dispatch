@@ -35,8 +35,8 @@
           >
             <template #item.data-table-actions="{ item }">
               <v-menu location="bottom left">
-                <template #activator="{ on }">
-                  <v-btn icon variant="text" v-on="on">
+                <template #activator="{ props }">
+                  <v-btn icon variant="text" v-bind="props">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>
                 </template>

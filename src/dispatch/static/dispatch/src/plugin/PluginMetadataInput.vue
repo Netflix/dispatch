@@ -4,8 +4,8 @@
       <span class="text-subtitle-2">Plugin Metadata</span>
       <v-spacer />
       <v-tooltip location="bottom">
-        <template #activator="{ on }">
-          <v-btn size="small" icon variant="text" @click="addPlugin()" v-on="on">
+        <template #activator="{ props }">
+          <v-btn size="small" icon variant="text" @click="addPlugin()" v-bind="props">
             <v-icon>add</v-icon>
           </v-btn>
         </template>
@@ -16,8 +16,13 @@
       <v-row align="center" dense>
         <v-col cols="12" sm="1">
           <v-tooltip location="bottom">
-            <template #activator="{ on }">
-              <v-btn size="small" icon variant="text" @click="removePlugin(plugin_idx)" v-on="on"
+            <template #activator="{ props }">
+              <v-btn
+                size="small"
+                icon
+                variant="text"
+                @click="removePlugin(plugin_idx)"
+                v-bind="props"
                 ><v-icon>remove</v-icon></v-btn
               >
             </template>
@@ -35,8 +40,8 @@
         </v-col>
         <v-col cols="12" sm="1">
           <v-tooltip location="bottom">
-            <template #activator="{ on }">
-              <v-btn size="small" icon variant="text" @click="addItem(plugin_idx)" v-on="on"
+            <template #activator="{ props }">
+              <v-btn size="small" icon variant="text" @click="addItem(plugin_idx)" v-bind="props"
                 ><v-icon>add</v-icon></v-btn
               >
             </template>
@@ -53,13 +58,13 @@
       >
         <v-col cols="12" sm="1">
           <v-tooltip location="bottom">
-            <template #activator="{ on }">
+            <template #activator="{ props }">
               <v-btn
                 size="small"
                 icon
                 variant="text"
                 @click="removeItem(plugin_idx, meta_idx)"
-                v-on="on"
+                v-bind="props"
                 ><v-icon>remove</v-icon></v-btn
               >
             </template>

@@ -1,8 +1,8 @@
 <template>
   <v-dialog v-model="display" max-width="600px">
-    <template #activator="{ on }">
+    <template #activator="{ props }">
       <v-badge :value="numFilters" bordered color="info" :content="numFilters">
-        <v-btn color="secondary" v-on="on"> Filter </v-btn>
+        <v-btn color="secondary" v-bind="props"> Filter </v-btn>
       </v-badge>
     </template>
     <v-card>

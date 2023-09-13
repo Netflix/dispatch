@@ -4,8 +4,8 @@
       <v-toolbar-title class="text-subtitle-2"> Entity Type Configuration </v-toolbar-title>
       <v-spacer />
       <v-tooltip max-width="250px" location="bottom">
-        <template #activator="{ on, attrs }">
-          <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
+        <template #activator="{ props }">
+          <v-icon v-bind="props"> help_outline </v-icon>
         </template>
         Dispatch will attempt to locate entities that match the given criteria. Global entities
         cannot be selected, since they are applied to all signals.

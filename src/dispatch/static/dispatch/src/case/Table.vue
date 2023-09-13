@@ -66,24 +66,24 @@
             </template>
             <template #item.reported_at="{ item }">
               <v-tooltip location="bottom">
-                <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ formatRelativeDate(item.reported_at) }}</span>
+                <template #activator="{ props }">
+                  <span v-bind="props">{{ formatRelativeDate(item.reported_at) }}</span>
                 </template>
                 <span>{{ formatDate(item.reported_at) }}</span>
               </v-tooltip>
             </template>
             <template #item.closed_at="{ item }">
               <v-tooltip location="bottom">
-                <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ formatRelativeDate(item.closed_at) }}</span>
+                <template #activator="{ props }">
+                  <span v-bind="props">{{ formatRelativeDate(item.closed_at) }}</span>
                 </template>
                 <span>{{ formatDate(item.closed_at) }}</span>
               </v-tooltip>
             </template>
             <template #item.data-table-actions="{ item }">
               <v-menu location="bottom left">
-                <template #activator="{ on }">
-                  <v-btn icon variant="text" v-on="on">
+                <template #activator="{ props }">
+                  <v-btn icon variant="text" v-bind="props">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>
                 </template>

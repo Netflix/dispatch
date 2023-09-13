@@ -46,8 +46,8 @@
           />
           <v-radio-group v-model="scope" label="Scope" row>
             <v-tooltip max-width="250px" location="left">
-              <template #activator="{ on, attrs }">
-                <v-radio v-bind="attrs" v-on="on" label="Multiple" value="multiple" />
+              <template #activator="{ props }">
+                <v-radio v-bind="props" label="Multiple" value="multiple" />
               </template>
               <span>
                 An entity type with a definition scope of 'multiple' can be associated with one or
@@ -56,8 +56,8 @@
               </span>
             </v-tooltip>
             <v-tooltip max-width="250px" location="left">
-              <template #activator="{ on, attrs }">
-                <v-radio v-bind="attrs" v-on="on" label="All" value="all" />
+              <template #activator="{ props }">
+                <v-radio v-bind="props" label="All" value="all" />
               </template>
               <span>
                 An entity type with a definition scope of 'all' will be associated with all current

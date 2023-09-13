@@ -54,8 +54,8 @@
               <v-col cols="12">
                 <v-radio-group v-model="role" column>
                   <v-tooltip max-width="250px" location="left">
-                    <template #activator="{ on, attrs }">
-                      <v-radio v-bind="attrs" v-on="on" label="Member" value="Member" />
+                    <template #activator="{ props }">
+                      <v-radio v-bind="props" label="Member" value="Member" />
                     </template>
                     <span>
                       Members can view and act on incidents, as well as view most other data within
@@ -63,8 +63,8 @@
                     </span>
                   </v-tooltip>
                   <v-tooltip max-width="250px" location="left">
-                    <template #activator="{ on, attrs }">
-                      <v-radio v-bind="attrs" v-on="on" label="Admin" value="Admin" />
+                    <template #activator="{ props }">
+                      <v-radio v-bind="props" label="Admin" value="Admin" />
                     </template>
                     <span>
                       Admin privileges on any teams of which they're a member. They can create new
@@ -74,8 +74,8 @@
                     </span>
                   </v-tooltip>
                   <v-tooltip max-width="250px" location="left">
-                    <template #activator="{ on, attrs }">
-                      <v-radio v-bind="attrs" v-on="on" label="Manager" value="Manager" />
+                    <template #activator="{ props }">
+                      <v-radio v-bind="props" label="Manager" value="Manager" />
                     </template>
                     <span>
                       Gains admin access on all teams as well as the ability to add and remove
@@ -83,8 +83,8 @@
                     </span>
                   </v-tooltip>
                   <v-tooltip max-width="250px" location="left">
-                    <template #activator="{ on, attrs }">
-                      <v-radio v-bind="attrs" v-on="on" label="Owner" value="Owner" />
+                    <template #activator="{ props }">
+                      <v-radio v-bind="props" label="Owner" value="Owner" />
                     </template>
                     <span
                       >Unrestricted access to the organization, its data, and its settings. Can add,

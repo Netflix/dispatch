@@ -142,8 +142,8 @@
               <v-toolbar-title class="text-subtitle-2"> Entity Configuration </v-toolbar-title>
               <v-spacer />
               <v-tooltip max-width="250px" location="bottom">
-                <template #activator="{ on, attrs }">
-                  <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
+                <template #activator="{ props }">
+                  <v-icon v-bind="props"> help_outline </v-icon>
                 </template>
                 The follow options allow you to control which entities should be pulled from the
                 signal.
@@ -164,8 +164,8 @@
               <v-toolbar-title class="text-subtitle-2"> Case Configuration </v-toolbar-title>
               <v-spacer />
               <v-tooltip max-width="250px" location="bottom">
-                <template #activator="{ on, attrs }">
-                  <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
+                <template #activator="{ props }">
+                  <v-icon v-bind="props"> help_outline </v-icon>
                 </template>
                 The following options allow you to configure the type of case that Dispatch will
                 create when it encounters this signal.
@@ -193,8 +193,8 @@
               <v-toolbar-title class="text-subtitle-2"> Filter(s) </v-toolbar-title>
               <v-spacer />
               <v-tooltip max-width="250px" location="bottom">
-                <template #activator="{ on, attrs }">
-                  <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
+                <template #activator="{ props }">
+                  <v-icon v-bind="props"> help_outline </v-icon>
                 </template>
                 Defines a signal filter allowing you to take either a "Snooze" or "Deduplication"
                 action for any match signal matching the filter.
@@ -215,8 +215,8 @@
               <v-toolbar-title class="text-subtitle-2"> Engagement(s) </v-toolbar-title>
               <v-spacer />
               <v-tooltip max-width="250px" location="bottom">
-                <template #activator="{ on, attrs }">
-                  <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
+                <template #activator="{ props }">
+                  <v-icon v-bind="props"> help_outline </v-icon>
                 </template>
                 Defines an Engagement filter.
               </v-tooltip>
@@ -236,8 +236,8 @@
               <v-toolbar-title class="text-subtitle-2"> Workflow(s) </v-toolbar-title>
               <v-spacer />
               <v-tooltip max-width="250px" location="bottom">
-                <template #activator="{ on, attrs }">
-                  <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
+                <template #activator="{ props }">
+                  <v-icon v-bind="props"> help_outline </v-icon>
                 </template>
                 Defines a workflow.
               </v-tooltip>

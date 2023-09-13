@@ -5,8 +5,8 @@
         <v-col>
           {{ label }}
           <v-tooltip location="bottom">
-            <template #activator="{ on, attrs }">
-              <v-btn icon variant="text" color="info" v-bind="attrs" v-on="on" @click="add()">
+            <template #activator="{ props }">
+              <v-btn icon variant="text" color="info" v-bind="props" @click="add()">
                 <v-icon> mdi-playlist-plus </v-icon>
               </v-btn>
             </template>
@@ -15,13 +15,12 @@
         </v-col>
         <v-col cols="1" align="end">
           <v-tooltip location="bottom">
-            <template #activator="{ on, attrs }">
+            <template #activator="{ props }">
               <v-btn
                 icon
                 variant="text"
                 color="info"
-                v-bind="attrs"
-                v-on="on"
+                v-bind="props"
                 :loading="loading"
                 @click="save()"
               >

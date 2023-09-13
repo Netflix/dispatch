@@ -4,8 +4,8 @@
       <span class="text-subtitle-2">{{ label }}</span>
       <v-spacer />
       <v-tooltip location="bottom">
-        <template #activator="{ on }">
-          <v-btn size="small" icon variant="text" @click="addRole()" v-on="on">
+        <template #activator="{ props }">
+          <v-btn size="small" icon variant="text" @click="addRole()" v-bind="props">
             <v-icon>add</v-icon>
           </v-btn>
         </template>
@@ -16,8 +16,8 @@
       <v-row align="center" dense>
         <v-col cols="12" sm="1">
           <v-tooltip location="bottom">
-            <template #activator="{ on }">
-              <v-btn size="small" icon variant="text" @click="removeRole(idx)" v-on="on"
+            <template #activator="{ props }">
+              <v-btn size="small" icon variant="text" @click="removeRole(idx)" v-bind="props"
                 ><v-icon>remove</v-icon></v-btn
               >
             </template>
