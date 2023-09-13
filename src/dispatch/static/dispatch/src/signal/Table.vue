@@ -122,7 +122,7 @@ export default {
         { text: "Owner", value: "owner" },
         { text: "Case Type", value: "case_type" },
         { text: "Case Priority", value: "case_priority" },
-        { text: "", value: "external_url", sortable: false },
+        { text: "External URL", value: "external_url", sortable: false },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
       showEditSheet: false,
