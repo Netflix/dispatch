@@ -302,7 +302,6 @@ class SignalBase(DispatchBase):
     case_type: Optional[CaseTypeRead]
     case_priority: Optional[CasePriorityRead]
     external_id: str
-    canary: Optional[bool] = False
     enabled: Optional[bool] = False
     external_url: Optional[str]
     create_case: Optional[bool] = True
@@ -366,6 +365,7 @@ class AdditionalMetadata(DispatchBase):
 class SignalInstanceBase(DispatchBase):
     project: ProjectRead
     case: Optional[CaseReadMinimal]
+    canary: Optional[bool] = False
     entities: Optional[List[EntityRead]] = []
     raw: dict[str, Any]
     filter_action: SignalFilterAction = None
