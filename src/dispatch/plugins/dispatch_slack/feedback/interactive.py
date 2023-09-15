@@ -397,7 +397,8 @@ def handle_oncall_shift_feedback_submission_event(
     # if there's a reminder id, delete the reminder
     if len(metadata) > 4:
         reminder_id = metadata[4]
-        reminder_service.delete(db_session=db_session, reminder_id=reminder_id)
+        if reminder_id.isnumeric():
+            reminder_service.delete(db_session=db_session, reminder_id=reminder_id)
 
     individual = (
         None
