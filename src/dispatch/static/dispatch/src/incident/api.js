@@ -66,4 +66,8 @@ export default {
   updateEvent(incidentId, payload) {
     return API.patch(`/${resource}/${incidentId}/event`, payload)
   },
+
+  deleteEvent(incidentId, event_uuid) {
+    return API.delete(`/${resource}/${incidentId}/event/${event_uuid}`)
+  },
 }

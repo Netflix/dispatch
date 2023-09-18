@@ -12,6 +12,7 @@
       </v-btn>
       <timeline-filter-dialog ref="filter_dialog" />
       <edit-event-dialog />
+      <delete-event-dialog />
     </v-row>
     <v-timeline v-if="events && events.length" dense clipped>
       <v-col class="text-right caption time-zone-notice">(times in UTC)</v-col>
@@ -77,7 +78,7 @@
         </v-row>
         <div :v-if="event.type == 'Custom event'" style="" class="custom-event-edit">
           <v-btn plain small @click="showEditEventDialog(event)"><v-icon>mdi-pencil</v-icon></v-btn>
-          <v-btn plain small><v-icon>mdi-trash-can</v-icon></v-btn>
+          <v-btn plain small @click="showDeleteEventDialog(event)"><v-icon>mdi-trash-can</v-icon></v-btn>
         </div>
       </v-timeline-item>
     </v-timeline>
@@ -98,6 +99,7 @@ import { mapActions } from "vuex"
 import Util from "@/util"
 import TimelineFilterDialog from "@/incident/TimelineFilterDialog.vue"
 import EditEventDialog from "@/incident/EditEventDialog.vue"
+import DeleteEventDialog from "@/incident/DeleteEventDialog.vue"
 
 const eventTypeToIcon = {
   "Other": "mdi-monitor-star",
@@ -121,6 +123,7 @@ export default {
   components: {
     TimelineFilterDialog,
     EditEventDialog,
+    DeleteEventDialog,
   },
 
   data() {
@@ -138,7 +141,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions("incident", ["showNewEventDialog", "showEditEventDialog"]),
+    ...mapActions("incident", ["showNewEventDialog", "showEditEventDialog", "showDeleteEventDialog"]),
     exportToCSV() {
       this.exportLoading = true
       let items = this.sortedEvents

@@ -38,6 +38,7 @@ const getDefaultSelectedState = () => {
     visibility: null,
     workflow_instances: null,
     loading: false,
+    currentEvent: {},
   }
 }
 
@@ -69,7 +70,7 @@ const state = {
     showNewSheet: false,
     showReportDialog: false,
     showEditEventDialog: false,
-    currentEvent: {},
+    showDeleteEventDialog: false,
   },
   report: {
     ...getDefaultReportState(),
@@ -242,25 +243,28 @@ const actions = {
     commit("RESET_SELECTED")
   },
   showEditEventDialog({ commit }, event) {
-    state.dialogs.currentEvent = event
-    commit("SET_DIALOG_NEW_EVENT", true)
-  },
-  deleteEventDialog({ commit }, event) {
-    state.dialogs.currentEvent = event
-    // commit("SET_DIALOG_NEW_EVENT", true)
-  },
-  showNewEventDialog({ commit }, started_at) {
-    state.dialogs.currentEvent = { started_at }
-    commit("SET_DIALOG_NEW_EVENT", true)
+    state.selected.currentEvent = event
+    commit("SET_DIALOG_EDIT_EVENT", true)
   },
   closeEditEventDialog({ commit }) {
-    commit("SET_DIALOG_NEW_EVENT", false)
+    commit("SET_DIALOG_EDIT_EVENT", false)
+  },
+  showNewEventDialog({ commit }, started_at) {
+    state.selected.currentEvent = { started_at }
+    commit("SET_DIALOG_EDIT_EVENT", true)
+  },
+  showDeleteEventDialog({ commit }, event) {
+    state.selected.currentEvent = event
+    commit("SET_DIALOG_DELETE_EVENT", true)
+  },
+  closeDeleteEventDialog({ commit }) {
+    commit("SET_DIALOG_DELETE_EVENT", false)
   },
   storeNewEvent({ commit }) {
     IncidentApi.createNewEvent(state.selected.id, {
       source: "Incident Participant",
-      description: state.dialogs.currentEvent.description,
-      started_at: state.dialogs.currentEvent.started_at,
+      description: state.selected.currentEvent.description,
+      started_at: state.selected.currentEvent.started_at,
       type: "Custom event",
     }).then(() => {
       IncidentApi.get(state.selected.id).then((response) => {
@@ -272,10 +276,10 @@ const actions = {
         { root: true }
       )
     })
-    commit("SET_DIALOG_NEW_EVENT", false)
+    commit("SET_DIALOG_EDIT_EVENT", false)
   },
   updateExistingEvent({ commit }) {
-    IncidentApi.updateEvent(state.selected.id, state.dialogs.currentEvent).then(() => {
+    IncidentApi.updateEvent(state.selected.id, state.selected.currentEvent).then(() => {
       IncidentApi.get(state.selected.id).then((response) => {
         commit("SET_SELECTED", response.data)
       })
@@ -285,7 +289,20 @@ const actions = {
         { root: true }
       )
     })
-    commit("SET_DIALOG_NEW_EVENT", false)
+    commit("SET_DIALOG_EDIT_EVENT", false)
+  },
+  deleteEvent({ commit }) {
+    IncidentApi.deleteEvent(state.selected.id, state.selected.currentEvent.uuid).then(() => {
+      IncidentApi.get(state.selected.id).then((response) => {
+        commit("SET_SELECTED", response.data)
+      })
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "Event deleted successfully.", type: "success" },
+        { root: true }
+      )
+    })
+    commit("SET_DIALOG_DELETE_EVENT", false)
   },
   report({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
@@ -460,8 +477,11 @@ const mutations = {
   SET_DIALOG_DELETE(state, value) {
     state.dialogs.showDeleteDialog = value
   },
-  SET_DIALOG_NEW_EVENT(state, value) {
+  SET_DIALOG_EDIT_EVENT(state, value) {
     state.dialogs.showEditEventDialog = value
+  },
+  SET_DIALOG_DELETE_EVENT(state, value) {
+    state.dialogs.showDeleteEventDialog = value
   },
   SET_DIALOG_REPORT(state, value) {
     state.dialogs.showReportDialog = value

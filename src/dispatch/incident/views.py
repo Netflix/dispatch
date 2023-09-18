@@ -350,6 +350,28 @@ def update_custom_event(
     )
 
 
+@router.delete(
+    "/{incident_id}/event/{event_uuid}",
+    summary="Deletes a custom event.",
+    dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
+)
+def delete_custom_event(
+    db_session: DbSession,
+    organization: OrganizationSlug,
+    incident_id: PrimaryKey,
+    current_incident: CurrentIncident,
+    event_uuid: str,
+    current_user: CurrentUser,
+    background_tasks: BackgroundTasks,
+):
+    """Deletes a custom event."""
+    background_tasks.add_task(
+        report_flows.delete_incident_event,
+        event_uuid=event_uuid,
+        organization_slug=organization,
+    )
+
+
 def get_month_range(relative):
     today = date.today()
     relative_month = today - relativedelta(months=relative)

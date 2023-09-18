@@ -171,7 +171,6 @@ def update_incident_event(
 ) -> Event:
     """Updates an event in the incident timeline."""
     event = get_by_uuid(db_session=db_session, uuid=uuid)
-    log.debug(f"**** Got event as {str(event)}")
     if not ended_at:
         ended_at = started_at
 
@@ -188,3 +187,13 @@ def update_incident_event(
     event = update(db_session=db_session, event=event, event_in=event_in)
 
     return event
+
+
+def delete_incident_event(
+    db_session,
+    uuid: str,
+):
+    """Deletes an event."""
+    event = get_by_uuid(db_session=db_session, uuid=uuid)
+
+    delete(db_session=db_session, event_id=event.id)

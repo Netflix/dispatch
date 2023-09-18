@@ -73,9 +73,9 @@ export default {
   computed: {
     ...mapFields("incident", [
       "dialogs.showEditEventDialog",
-      "dialogs.currentEvent.started_at",
-      "dialogs.currentEvent.description",
-      "dialogs.currentEvent.uuid",
+      "selected.currentEvent.started_at",
+      "selected.currentEvent.description",
+      "selected.currentEvent.uuid",
     ]),
   },
 

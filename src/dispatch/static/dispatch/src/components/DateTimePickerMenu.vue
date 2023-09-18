@@ -146,7 +146,6 @@ export default {
         : initDateTime
       this.date = format(zonedDateTime, DEFAULT_DATE_FORMAT, { timeZone: this.timeZone })
       this.time = format(zonedDateTime, DEFAULT_TIME_FORMAT, { timeZone: this.timeZone })
-      console.log(`This time is ${this.time} and time zone ${this.timeZone}`)
     },
     okHandler() {
       this.resetPicker()

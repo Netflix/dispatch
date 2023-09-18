@@ -116,6 +116,18 @@ def update_incident_event(
 
 
 @background_task
+def delete_incident_event(
+    event_uuid: str,
+    organization_slug: str = None,
+    db_session=None,
+):
+    event_service.delete_incident_event(
+        db_session=db_session,
+        uuid=event_uuid,
+    )
+
+
+@background_task
 def create_executive_report(
     user_email: str,
     incident_id: int,
