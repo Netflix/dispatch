@@ -314,7 +314,9 @@ def create_custom_event(
     current_user: CurrentUser,
     background_tasks: BackgroundTasks,
 ):
-    event_in.update({"details": {"created_by": current_user.email, "added_on": str(datetime.utcnow())}})
+    event_in.update(
+        {"details": {"created_by": current_user.email, "added_on": str(datetime.utcnow())}}
+    )
     """Creates a custom event."""
     background_tasks.add_task(
         report_flows.log_incident_event,
@@ -339,9 +341,19 @@ def update_custom_event(
     background_tasks: BackgroundTasks,
 ):
     if event_in.get("details"):
-        event_in.update({"details": {**event_in["details"], "updated_by": current_user.email, "updated_on": str(datetime.utcnow())}})
+        event_in.update(
+            {
+                "details": {
+                    **event_in["details"],
+                    "updated_by": current_user.email,
+                    "updated_on": str(datetime.utcnow()),
+                }
+            }
+        )
     else:
-        event_in.update({"details": {"updated_by": current_user.email, "updated_on": str(datetime.utcnow())}})
+        event_in.update(
+            {"details": {"updated_by": current_user.email, "updated_on": str(datetime.utcnow())}}
+        )
     """Updates a custom event."""
     background_tasks.add_task(
         report_flows.update_incident_event,

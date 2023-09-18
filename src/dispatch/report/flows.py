@@ -94,7 +94,7 @@ def log_incident_event(
         incident_id=incident_id,
         started_at=event_in["started_at"],
         details=event_in["details"],
-        type=event_in["type"]
+        type=event_in["type"],
     )
 
 
@@ -111,7 +111,7 @@ def update_incident_event(
         description=event_in["description"],
         started_at=event_in["started_at"],
         details=event_in["details"],
-        type=event_in["type"]
+        type=event_in["type"],
     )
 
 

@@ -21,7 +21,9 @@
                 :items="timezones"
                 class="ml-2 time-zone-select"
               />
-              <v-btn color="green en-1" class="ml-10 mt-3" width="100" @click="setTimeToNow()"> Now </v-btn>
+              <v-btn color="green en-1" class="ml-10 mt-3" width="100" @click="setTimeToNow()">
+                Now
+              </v-btn>
             </v-row>
             <v-row>
               <span class="ml-8 time-utc"> Time in UTC is {{ started_at | formatToUTC }} </span>

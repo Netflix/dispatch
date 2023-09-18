@@ -70,7 +70,13 @@
           <div class="add-event" style="--margtop: -40px; --margbot: 0px; --margrule: 40px">
             <div class="horiz-rule" />
             <div class="add-button">
-              <v-btn compact small plain class="up-button" @click="showNewEventDialog(event.started_at)">
+              <v-btn
+                compact
+                small
+                plain
+                class="up-button"
+                @click="showNewEventDialog(event.started_at)"
+              >
                 <v-icon small class="mr-1">mdi-plus-circle-outline</v-icon>Add event
               </v-btn>
             </div>
@@ -78,7 +84,9 @@
         </v-row>
         <div :v-if="event.type == 'Custom event'" style="" class="custom-event-edit">
           <v-btn plain small @click="showEditEventDialog(event)"><v-icon>mdi-pencil</v-icon></v-btn>
-          <v-btn plain small @click="showDeleteEventDialog(event)"><v-icon>mdi-trash-can</v-icon></v-btn>
+          <v-btn plain small @click="showDeleteEventDialog(event)">
+            <v-icon>mdi-trash-can</v-icon>
+          </v-btn>
         </div>
       </v-timeline-item>
     </v-timeline>
@@ -141,7 +149,11 @@ export default {
     },
   },
   methods: {
-    ...mapActions("incident", ["showNewEventDialog", "showEditEventDialog", "showDeleteEventDialog"]),
+    ...mapActions("incident", [
+      "showNewEventDialog",
+      "showEditEventDialog",
+      "showDeleteEventDialog",
+    ]),
     exportToCSV() {
       this.exportLoading = true
       let items = this.sortedEvents
