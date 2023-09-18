@@ -14,6 +14,7 @@ from dispatch.participant_role.models import (
 )
 from dispatch.participant import service as participant_service
 from dispatch.service import service as service_service
+from dispatch.enums import EventType
 
 
 log = logging.getLogger(__name__)
@@ -78,6 +79,7 @@ def add_participant(
             source="Dispatch Core App",
             description=f"{individual.name} added to incident with {participant_role.role} role",
             case_id=subject.id,
+            type=EventType.participant_updated,
         )
     if subject_type == "incident":
         event_service.log_incident_event(
@@ -85,6 +87,7 @@ def add_participant(
             source="Dispatch Core App",
             description=f"{individual.name} added to incident with {participant_role.role} role",
             incident_id=subject.id,
+            type=EventType.participant_updated,
         )
 
     return participant
@@ -111,6 +114,7 @@ def remove_participant(user_email: str, incident: Incident, db_session: SessionL
             source="Dispatch Core App",
             description=f"{participant.individual.name} has been removed",
             incident_id=incident.id,
+            type=EventType.participant_updated,
         )
 
 
@@ -141,6 +145,7 @@ def inactivate_participant(user_email: str, incident: Incident, db_session: Sess
         source="Dispatch Core App",
         description=f"{participant.individual.name} has been inactivated",
         incident_id=incident.id,
+        type=EventType.participant_updated,
     )
 
     return True
@@ -183,6 +188,7 @@ def reactivate_participant(
         source="Dispatch Core App",
         description=f"{participant.individual.name} has been reactivated",
         incident_id=incident.id,
+        type=EventType.participant_updated,
     )
 
     return True

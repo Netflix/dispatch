@@ -28,7 +28,7 @@ from sqlalchemy.orm import Session
 from dispatch.auth.models import DispatchUser
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.database.service import search_filter_sort_paginate
-from dispatch.enums import Visibility
+from dispatch.enums import Visibility, EventType
 from dispatch.event import service as event_service
 from dispatch.exceptions import DispatchException
 from dispatch.group import flows as group_flows
@@ -691,6 +691,7 @@ def handle_timeline_added_event(
             incident_id=context["subject"].id,
             individual_id=individual.id,
             started_at=message_ts_utc,
+            type=EventType.custom_event,
         )
 
 
@@ -735,6 +736,7 @@ def handle_participant_role_activity(
                             f"{ParticipantRoleType.participant} due to activity in the incident channel"
                         ),
                         incident_id=context["subject"].id,
+                        type=EventType.participant_updated,
                     )
 
             db_session.commit()
@@ -1046,6 +1048,7 @@ def handle_add_timeline_submission_event(
         description=f'"{event_description}," said {participant.individual.name}',
         incident_id=context["subject"].id,
         individual_id=participant.individual.id,
+        type=EventType.custom_event,
     )
 
     send_success_modal(

@@ -22,7 +22,7 @@ class Event(Base, TimeStampMixin):
     source = Column(String, nullable=False)
     description = Column(String, nullable=False)
     details = Column(JSONType, nullable=True)
-    type = Column(String, default=EventType.other, nullable=False)
+    type = Column(String, default=EventType.other, nullable=True)
 
     # relationships
     individual_id = Column(Integer, ForeignKey("individual_contact.id", ondelete="CASCADE"))
@@ -47,7 +47,7 @@ class EventBase(DispatchBase):
     source: str
     description: str
     details: Optional[dict]
-    type: str
+    type: Optional[str]
 
 
 class EventCreate(EventBase):

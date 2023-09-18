@@ -68,6 +68,8 @@ const state = {
     showHandoffDialog: false,
     showNewSheet: false,
     showReportDialog: false,
+    showEditEventDialog: false,
+    currentEvent: {},
   },
   report: {
     ...getDefaultReportState(),
@@ -107,6 +109,13 @@ const state = {
     },
     loading: false,
     bulkEditLoading: false,
+  },
+  timeline_filters: {
+    field_updates: true,
+    assessment_updates: false,
+    user_curated_events: false,
+    participant_updates: true,
+    other_events: true,
   },
 }
 
@@ -231,6 +240,52 @@ const actions = {
   closeHandoffDialog({ commit }) {
     commit("SET_DIALOG_SHOW_HANDOFF", false)
     commit("RESET_SELECTED")
+  },
+  showEditEventDialog({ commit }, event) {
+    state.dialogs.currentEvent = event
+    commit("SET_DIALOG_NEW_EVENT", true)
+  },
+  deleteEventDialog({ commit }, event) {
+    state.dialogs.currentEvent = event
+    // commit("SET_DIALOG_NEW_EVENT", true)
+  },
+  showNewEventDialog({ commit }, started_at) {
+    state.dialogs.currentEvent = { started_at }
+    commit("SET_DIALOG_NEW_EVENT", true)
+  },
+  closeEditEventDialog({ commit }) {
+    commit("SET_DIALOG_NEW_EVENT", false)
+  },
+  storeNewEvent({ commit }) {
+    IncidentApi.createNewEvent(state.selected.id, {
+      source: "Incident Participant",
+      description: state.dialogs.currentEvent.description,
+      started_at: state.dialogs.currentEvent.started_at,
+      type: "Custom event",
+    }).then(() => {
+      IncidentApi.get(state.selected.id).then((response) => {
+        commit("SET_SELECTED", response.data)
+      })
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "Event created successfully.", type: "success" },
+        { root: true }
+      )
+    })
+    commit("SET_DIALOG_NEW_EVENT", false)
+  },
+  updateExistingEvent({ commit }) {
+    IncidentApi.updateEvent(state.selected.id, state.dialogs.currentEvent).then(() => {
+      IncidentApi.get(state.selected.id).then((response) => {
+        commit("SET_SELECTED", response.data)
+      })
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "Event updated successfully.", type: "success" },
+        { root: true }
+      )
+    })
+    commit("SET_DIALOG_NEW_EVENT", false)
   },
   report({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
@@ -404,6 +459,9 @@ const mutations = {
   },
   SET_DIALOG_DELETE(state, value) {
     state.dialogs.showDeleteDialog = value
+  },
+  SET_DIALOG_NEW_EVENT(state, value) {
+    state.dialogs.showEditEventDialog = value
   },
   SET_DIALOG_REPORT(state, value) {
     state.dialogs.showReportDialog = value

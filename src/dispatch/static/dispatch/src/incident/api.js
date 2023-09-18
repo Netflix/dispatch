@@ -58,4 +58,12 @@ export default {
   createReport(incidentId, type, payload) {
     return API.post(`/${resource}/${incidentId}/report/${type}`, payload)
   },
+
+  createNewEvent(incidentId, payload) {
+    return API.post(`/${resource}/${incidentId}/event`, payload)
+  },
+
+  updateEvent(incidentId, payload) {
+    return API.patch(`/${resource}/${incidentId}/event`, payload)
+  },
 }

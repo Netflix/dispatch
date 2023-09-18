@@ -9,3 +9,76 @@
 .pre-formatted {
     white-space: pre;
 }
+
+.time-zone-notice {
+  margin-top: -10px;
+  margin-bottom: -20px;
+}
+
+.up-button {
+  margin-top: -10px;
+}
+
+.add-event .add-button {
+  background-color: var(--v-background0-base);
+  font-size: 2.85rem;
+  color: rgb(140 154 170);
+  line-height: 1rem;
+  display: none;
+  margin-top: -20px;
+}
+
+.add-event:hover .add-button {
+  display: inline-block;
+}
+
+.add-event {
+  background-color: transparent;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  display: block;
+  height: 40px;
+  margin-top: var(--margtop);
+  margin-bottom: var(--margbot);
+  position: relative;
+  z-index: 99;
+}
+
+.add-event .horiz-rule {
+  display: none;
+  background-color: var(--v-borderline-base);
+  height: 2px;
+  margin-top: var(--margrule);
+  margin-left: 4rem;
+  width: 80%;
+}
+
+.add-event:hover .horiz-rule {
+  display: block;
+}
+
+.custom-event:hover {
+  background: linear-gradient(
+    to top,
+    transparent,
+    transparent 1.5rem,
+    var(--v-borderline-base) 1rem,
+    var(--v-borderline-base) 100%
+  );
+}
+.custom-event-edit {
+  display: none;
+
+
+}
+
+.custom-event:hover .custom-event-edit {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 42%;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+  z-index: 99;
+}

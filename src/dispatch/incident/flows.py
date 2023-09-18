@@ -10,7 +10,7 @@ from dispatch.database.core import resolve_attr
 from dispatch.decorators import background_task
 from dispatch.document import flows as document_flows
 from dispatch.enums import DocumentResourceTypes
-from dispatch.enums import Visibility
+from dispatch.enums import Visibility, EventType
 from dispatch.event import service as event_service
 from dispatch.group import flows as group_flows
 from dispatch.group.enums import GroupType, GroupAction
@@ -77,6 +77,7 @@ def get_incident_participants(
                 source=plugin.plugin.title,
                 description="Incident participants resolved",
                 incident_id=incident.id,
+                type=EventType.participant_updated,
             )
         else:
             event_service.log_incident_event(
@@ -84,6 +85,7 @@ def get_incident_participants(
                 source="Dispatch Core App",
                 description="Incident participants not resolved",
                 incident_id=incident.id,
+                type=EventType.participant_updated,
             )
             log.warning("Incident participants not resolved. No participant plugin enabled.")
 
@@ -104,6 +106,7 @@ def reactivate_incident_participants(incident: Incident, db_session: Session):
                 source="Dispatch Core App",
                 description=f"Unable to reactivate participant with email {participant.individual.email}",
                 incident_id=incident.id,
+                type=EventType.participant_updated,
             )
             log.exception(e)
 
@@ -112,6 +115,7 @@ def reactivate_incident_participants(incident: Incident, db_session: Session):
         source="Dispatch Core App",
         description="Incident participants reactivated",
         incident_id=incident.id,
+        type=EventType.participant_updated,
     )
 
 
@@ -129,6 +133,7 @@ def inactivate_incident_participants(incident: Incident, db_session: Session):
                 source="Dispatch Core App",
                 description=f"Unable to inactivate participant with email {participant.individual.email}",
                 incident_id=incident.id,
+                type=EventType.participant_updated,
             )
             log.exception(e)
 
@@ -137,6 +142,7 @@ def inactivate_incident_participants(incident: Incident, db_session: Session):
         source="Dispatch Core App",
         description="Incident participants inactivated",
         incident_id=incident.id,
+        type=EventType.participant_updated,
     )
 
 
@@ -270,6 +276,7 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
         source="Dispatch Core App",
         description="Incident participants added to incident",
         incident_id=incident.id,
+        type=EventType.participant_updated,
     )
 
     send_incident_created_notifications(incident, db_session)
@@ -458,6 +465,7 @@ def conversation_topic_dispatcher(
             description=f'{individual.name} changed the incident title to "{incident.title}"',
             incident_id=incident.id,
             individual_id=individual.id,
+            type=EventType.field_updated,
         )
 
     if previous_incident.description != incident.description:
@@ -468,6 +476,7 @@ def conversation_topic_dispatcher(
             details={"description": incident.description},
             incident_id=incident.id,
             individual_id=individual.id,
+            type=EventType.field_updated,
         )
 
     description, details = check_for_tag_change(
@@ -481,6 +490,7 @@ def conversation_topic_dispatcher(
             details=details,
             incident_id=incident.id,
             individual_id=individual.id,
+            type=EventType.field_updated,
         )
 
     if previous_incident.incident_type.name != incident.incident_type.name:
@@ -492,6 +502,7 @@ def conversation_topic_dispatcher(
             description=f"{individual.name} changed the incident type to {incident.incident_type.name}",
             incident_id=incident.id,
             individual_id=individual.id,
+            type=EventType.field_updated,
         )
 
     if previous_incident.incident_severity.name != incident.incident_severity.name:
@@ -503,6 +514,7 @@ def conversation_topic_dispatcher(
             description=f"{individual.name} changed the incident severity to {incident.incident_severity.name}",
             incident_id=incident.id,
             individual_id=individual.id,
+            type=EventType.assessment_updated,
         )
 
     if previous_incident.incident_priority.name != incident.incident_priority.name:
@@ -514,6 +526,7 @@ def conversation_topic_dispatcher(
             description=f"{individual.name} changed the incident priority to {incident.incident_priority.name}",
             incident_id=incident.id,
             individual_id=individual.id,
+            type=EventType.assessment_updated,
         )
 
     if previous_incident.status != incident.status:
@@ -525,6 +538,7 @@ def conversation_topic_dispatcher(
             description=f"{individual.name} marked the incident as {incident.status.lower()}",
             incident_id=incident.id,
             individual_id=individual.id,
+            type=EventType.assessment_updated,
         )
 
     if conversation_topic_change:
@@ -574,6 +588,7 @@ def status_flow_dispatcher(
             source="Dispatch Core App",
             description=f"The incident status has been changed from {previous_status.lower()} to {current_status.lower()}",  # noqa
             incident_id=incident.id,
+            type=EventType.assessment_updated,
         )
 
 

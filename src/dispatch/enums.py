@@ -59,5 +59,9 @@ class DocumentResourceTemplateTypes(DispatchEnum):
 
 
 class EventType(DispatchEnum):
-    other = "Other"
-    system = "System"
+    other = "Other"  # default and catch-all (x resource created/updated, etc.)
+    field_updated = "Field updated"  # for fields like title, description, tags, type, etc.
+    assessment_updated = "Assessment updated"  # for priority, status, or severity changes
+    participant_updated = "Participant updated"  # for added/removed users and role changes
+    imported_message = "Imported message"  # for stopwatch-reacted messages from Slack
+    custom_event = "Custom event"  # for user-added events (new feature)

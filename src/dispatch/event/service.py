@@ -12,7 +12,7 @@ from dispatch.enums import EventType
 from .models import Event, EventCreate, EventUpdate
 
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 def get(*, db_session, event_id: int) -> Optional[Event]:
@@ -28,6 +28,11 @@ def get_by_case_id(*, db_session, case_id: int) -> List[Optional[Event]]:
 def get_by_incident_id(*, db_session, incident_id: int) -> List[Optional[Event]]:
     """Get events by incident id."""
     return db_session.query(Event).filter(Event.incident_id == incident_id)
+
+
+def get_by_uuid(*, db_session, uuid: str) -> List[Optional[Event]]:
+    """Get events by uuid."""
+    return db_session.query(Event).filter(Event.uuid == uuid).one_or_none()
 
 
 def get_all(*, db_session) -> List[Optional[Event]]:
@@ -72,6 +77,7 @@ def log_incident_event(
     started_at: datetime = None,
     ended_at: datetime = None,
     details: dict = None,
+    type: str = EventType.other,
 ) -> Event:
     """Logs an event in the incident timeline."""
     uuid = uuid4()
@@ -89,7 +95,7 @@ def log_incident_event(
         source=source,
         description=description,
         details=details,
-        type=EventType.other,
+        type=type,
     )
     event = create(db_session=db_session, event_in=event_in)
 
@@ -149,5 +155,36 @@ def log_case_event(
         db_session.add(dispatch_user)
 
     db_session.commit()
+
+    return event
+
+
+def update_incident_event(
+    db_session,
+    uuid: str,
+    source: str,
+    description: str,
+    started_at: datetime = None,
+    ended_at: datetime = None,
+    details: dict = None,
+    type: str = EventType.other,
+) -> Event:
+    """Updates an event in the incident timeline."""
+    event = get_by_uuid(db_session=db_session, uuid=uuid)
+    log.debug(f"**** Got event as {str(event)}")
+    if not ended_at:
+        ended_at = started_at
+
+    event_in = EventUpdate(
+        uuid=uuid,
+        started_at=started_at,
+        ended_at=ended_at,
+        source=source,
+        details=details,
+        description=description,
+        type=type,
+    )
+
+    event = update(db_session=db_session, event=event, event_in=event_in)
 
     return event
