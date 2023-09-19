@@ -3,6 +3,7 @@ import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import CaseApi from "@/case/api"
+import PluginApi from "@/plugin/api"
 import router from "@/router"
 
 const getDefaultSelectedState = () => {
@@ -253,6 +254,28 @@ const actions = {
         commit("SET_SELECTED_LOADING", false)
       })
   },
+  createAllResources({ commit, dispatch }) {
+    commit("SET_SELECTED_LOADING", true)
+    return CaseApi.createAllResources(state.selected.id)
+      .then(function () {
+        dispatch("get")
+        commit(
+          "notification_backend/addBeNotification",
+          { text: "Case resource(s) created successfully.", type: "success" },
+          { root: true }
+        )
+      })
+      .catch(() => {
+        commit(
+          "notification_backend/addBeNotification",
+          { text: "No case resources created.", type: "error" },
+          { root: true }
+        )
+      })
+      .finally(() => {
+        commit("SET_SELECTED_LOADING", false)
+      })
+  },
   save({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
@@ -328,6 +351,37 @@ const actions = {
         { text: "Case deleted successfully.", type: "success" },
         { root: true }
       )
+    })
+  },
+  isPluginEnabled(_, type) {
+    if (!state.selected.project) {
+      return false
+    }
+    return PluginApi.getAllInstances({
+      filter: JSON.stringify({
+        and: [
+          {
+            model: "PluginInstance",
+            field: "enabled",
+            op: "==",
+            value: "true",
+          },
+          {
+            model: "Project",
+            field: "name",
+            op: "==",
+            value: state.selected.project.name,
+          },
+          {
+            model: "Plugin",
+            field: "type",
+            op: "like",
+            value: String(type),
+          },
+        ],
+      }),
+    }).then((response) => {
+      return response.data.items.length > 0
     })
   },
 }

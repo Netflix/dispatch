@@ -65,23 +65,70 @@
       </v-list-item>
       <v-divider />
     </span>
+    <span v-if="(!ticket && ticketPluginEnabled) ||
+      (!groups && groupPluginEnabled) ||
+      (!conversation && conversationPluginEnabled) ||
+      (!storage && storagePluginEnabled) ||
+      (!documents && documentPluginEnabled)
+      ">
+      <v-list-item @click="createAllResources()">
+        <v-list-item-content>
+          <v-list-item-title>Recreate Missing Resources</v-list-item-title>
+          <v-list-item-subtitle>Initiate a retry for creating any missing or unsuccesfully created
+            resource(s).</v-list-item-subtitle>
+        </v-list-item-content>
+        <v-list-item-action>
+          <v-list-item-icon>
+            <v-icon>refresh</v-icon>
+          </v-list-item-icon>
+        </v-list-item-action>
+      </v-list-item>
+    </span>
   </v-list>
 </template>
 
 <script>
+import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 
 export default {
   name: "CaseResourcesTab",
 
+  data() {
+    return {
+      ticketPluginEnabled: false,
+      groupPluginEnabled: false,
+      conversationPluginEnabled: false,
+      storagePluginEnabled: false,
+      documentPluginEnabled: false,
+    }
+  },
+
   computed: {
     ...mapFields("case_management", [
+      "selected",
       "selected.documents",
       "selected.groups",
       "selected.storage",
       "selected.ticket",
       "selected.conversation",
     ]),
+  },
+
+  async mounted() {
+    this.ticketPluginEnabled = await this.isPluginEnabled("ticket")
+    this.groupPluginEnabled = await this.isPluginEnabled("group")
+    this.conversationPluginEnabled =
+      (await this.isPluginEnabled("conversation")) &&
+      this.selected.case_type &&
+      this.selected.case_type.conversation_target
+    this.storagePluginEnabled = await this.isPluginEnabled("storage")
+    this.documentPluginEnabled = await this.isPluginEnabled("document")
+    console.log(this)
+  },
+
+  methods: {
+    ...mapActions("case_management", ["createAllResources", "isPluginEnabled"]),
   },
 }
 </script>

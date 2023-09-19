@@ -34,6 +34,8 @@ from .flows import (
     case_new_create_flow,
     case_triage_create_flow,
     case_update_flow,
+    case_create_resources_flow,
+    get_case_participants,
 )
 from .models import Case, CaseCreate, CasePagination, CaseRead, CaseUpdate, CaseExpandedPagination
 from .service import create, delete, get, update
@@ -143,6 +145,30 @@ def create_case(
         )
 
     return case
+
+
+@router.post(
+    "/{case_id}/resources",
+    response_model=CaseRead,
+    summary="Creates resources for an existing case.",
+)
+def create_case_resources(
+    db_session: DbSession,
+    case_id: PrimaryKey,
+    current_case: CurrentCase,
+):
+    """Creates resources for an existing incident."""
+    individual_participants, team_participants = get_case_participants(
+        case=current_case, db_session=db_session
+    )
+    case_create_resources_flow(
+        db_session=db_session,
+        case_id=case_id,
+        individual_participants=individual_participants,
+        team_participants=team_participants,
+    )
+
+    return current_case
 
 
 @router.put(
