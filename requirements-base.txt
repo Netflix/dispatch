@@ -255,7 +255,7 @@ patsy==0.5.3
     # via statsmodels
 pbr==5.11.1
     # via jira
-pdpyras==5.1.1
+pdpyras==5.1.2
     # via -r requirements-base.in
 pluggy==1.2.0
     # via pytest
