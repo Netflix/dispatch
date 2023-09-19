@@ -140,14 +140,8 @@ def inactivate_incident_participants(incident: Incident, db_session: Session):
     )
 
 
-def incident_create_resources(*, incident_id: int, db_session=None) -> Incident:
+def incident_create_resources(*, incident: Incident, db_session=None) -> Incident:
     """Creates all resources required for incidents."""
-    # we get the incident
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
-    # we get the incident
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
     # we create the incident ticket
     if not incident.ticket:
         ticket_flows.create_incident_ticket(incident=incident, db_session=db_session)
@@ -157,35 +151,29 @@ def incident_create_resources(*, incident_id: int, db_session=None) -> Incident:
     tactical_participant_emails = [i.email for i, _ in individual_participants]
 
     # we create the tactical group
-    tactical_group = (
-        incident.tactical_group
-        if incident.tactical_group
-        else group_flows.create_group(
+    if not incident.tactical_group:
+        group_flows.create_group(
             subject=incident,
             group_type=GroupType.tactical,
             group_participants=tactical_participant_emails,
             db_session=db_session,
         )
-    )
 
     # we create the notifications group
-    notification_participant_emails = [t.email for t in team_participants]
-    notifications_group = (
-        incident.notifications_group
-        if incident.notifications_group
-        else group_flows.create_group(
+    if not incident.notifications_group:
+        notification_participant_emails = [t.email for t in team_participants]
+        group_flows.create_group(
             subject=incident,
             group_type=GroupType.notifications,
             group_participants=notification_participant_emails,
             db_session=db_session,
         )
-    )
 
     # we create the storage folder
     if not incident.storage:
         storage_members = []
-        if tactical_group and notifications_group:
-            storage_members = [tactical_group.email, notifications_group.email]
+        if incident.tactical_group and incident.notifications_group:
+            storage_members = [incident.tactical_group.email, incident.notifications_group.email]
         else:
             storage_members = tactical_participant_emails
 
@@ -205,8 +193,11 @@ def incident_create_resources(*, incident_id: int, db_session=None) -> Incident:
     # we create the conference room
     if not incident.conference:
         conference_participants = []
-        if tactical_group and notifications_group:
-            conference_participants = [tactical_group.email, notifications_group.email]
+        if incident.tactical_group and incident.notifications_group:
+            conference_participants = [
+                incident.tactical_group.email,
+                incident.notifications_group.email,
+            ]
         else:
             conference_participants = tactical_participant_emails
 
@@ -280,15 +271,29 @@ def incident_create_resources(*, incident_id: int, db_session=None) -> Incident:
             db_session=db_session,
         )
 
+    return incident
+
+
+@background_task
+def incident_create_resources_flow(
+    *, organization_slug: str, incident_id: int, db_session=None
+) -> Incident:
+    """Creates all resources required for new incidents and initiates incident response workflow."""
+    # we get the incident
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    # we create the incident resources
+    return incident_create_resources(incident=incident, db_session=db_session)
+
 
 @background_task
 def incident_create_flow(*, organization_slug: str, incident_id: int, db_session=None) -> Incident:
     """Creates all resources required for new incidents and initiates incident response workflow."""
-    # we create the incident resources
-    incident_create_resources(incident_id=incident_id, db_session=db_session)
-
     # we get the incident
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    # we create the incident resources
+    incident_create_resources(incident=incident, db_session=db_session)
 
     event_service.log_incident_event(
         db_session=db_session,

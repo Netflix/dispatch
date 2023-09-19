@@ -62,14 +62,44 @@
       </v-list-item>
       <v-divider />
     </span>
+    <span v-if="(!ticket && ticketPluginEnabled) ||
+      (!conference && conferencePluginEnabled) ||
+      (!conversation && conversationPluginEnabled) ||
+      (!storage && storagePluginEnabled) ||
+      (!documents && documentPluginEnabled)
+      ">
+      <v-list-item @click="createAllResources()">
+        <v-list-item-content>
+          <v-list-item-title>Recreate Missing Resources</v-list-item-title>
+          <v-list-item-subtitle>Initiate a retry for creating any missing or unsuccesfully created
+            resource(s).</v-list-item-subtitle>
+        </v-list-item-content>
+        <v-list-item-action>
+          <v-list-item-icon>
+            <v-icon>refresh</v-icon>
+          </v-list-item-icon>
+        </v-list-item-action>
+      </v-list-item>
+    </span>
   </v-list>
 </template>
 
 <script>
+import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 
 export default {
   name: "IncidentResourcesTab",
+
+  data() {
+    return {
+      ticketPluginEnabled: false,
+      conferencePluginEnabled: false,
+      conversationPluginEnabled: false,
+      storagePluginEnabled: false,
+      documentPluginEnabled: false,
+    }
+  },
 
   computed: {
     ...mapFields("incident", [
@@ -79,6 +109,18 @@ export default {
       "selected.conference",
       "selected.conversation",
     ]),
+  },
+
+  async mounted() {
+    this.ticketPluginEnabled = await this.isPluginEnabled("ticket")
+    this.conferencePluginEnabled = await this.isPluginEnabled("conference")
+    this.conversationPluginEnabled = await this.isPluginEnabled("conversation")
+    this.storagePluginEnabled = await this.isPluginEnabled("storage")
+    this.documentPluginEnabled = await this.isPluginEnabled("document")
+  },
+
+  methods: {
+    ...mapActions("incident", ["createAllResources", "isPluginEnabled"]),
   },
 }
 </script>
