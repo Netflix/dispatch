@@ -62,17 +62,22 @@
       </v-list-item>
       <v-divider />
     </span>
-    <span v-if="(!ticket && ticketPluginEnabled) ||
-      (!conference && conferencePluginEnabled) ||
-      (!conversation && conversationPluginEnabled) ||
-      (!storage && storagePluginEnabled) ||
-      (!documents && documentPluginEnabled)
-      ">
+    <span
+      v-if="
+        (!ticket && ticketPluginEnabled) ||
+        (!conference && conferencePluginEnabled) ||
+        (!conversation && conversationPluginEnabled) ||
+        (!storage && storagePluginEnabled) ||
+        (!documents && documentPluginEnabled)
+      "
+    >
       <v-list-item @click="createAllResources()">
         <v-list-item-content>
           <v-list-item-title>Recreate Missing Resources</v-list-item-title>
-          <v-list-item-subtitle>Initiate a retry for creating any missing or unsuccesfully created
-            resource(s).</v-list-item-subtitle>
+          <v-list-item-subtitle
+            >Initiate a retry for creating any missing or unsuccesfully created
+            resource(s).</v-list-item-subtitle
+          >
         </v-list-item-content>
         <v-list-item-action>
           <v-list-item-icon>
