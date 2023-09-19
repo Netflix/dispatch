@@ -13,6 +13,7 @@ from sqlalchemy.exc import IntegrityError
 
 from dispatch.auth.permissions import (
     IncidentEditPermission,
+    IncidentCommanderOrReporterPermission,
     IncidentJoinOrSubscribePermission,
     IncidentViewPermission,
     PermissionsDependency,
@@ -329,7 +330,7 @@ def create_custom_event(
 @router.patch(
     "/{incident_id}/event",
     summary="Updates a custom event.",
-    dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
+    dependencies=[Depends(PermissionsDependency([IncidentCommanderOrReporterPermission]))],
 )
 def update_custom_event(
     db_session: DbSession,
@@ -365,7 +366,7 @@ def update_custom_event(
 @router.delete(
     "/{incident_id}/event/{event_uuid}",
     summary="Deletes a custom event.",
-    dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
+    dependencies=[Depends(PermissionsDependency([IncidentCommanderOrReporterPermission]))],
 )
 def delete_custom_event(
     db_session: DbSession,

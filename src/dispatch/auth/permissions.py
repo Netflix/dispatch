@@ -332,6 +332,43 @@ class IncidentCommanderPermission(BasePermission):
                 return True
 
 
+class IncidentReporterPermission(BasePermission):
+    def has_required_permissions(
+        self,
+        request: Request,
+    ) -> bool:
+        current_user = get_current_user(request=request)
+        pk = PrimaryKeyModel(id=request.path_params["incident_id"])
+        current_incident = incident_service.get(db_session=request.state.db, incident_id=pk.id)
+
+        if not current_incident:
+            return False
+
+        if current_incident.reporter:
+            if current_incident.reporter.individual.email == current_user.email:
+                return True
+
+
+class IncidentCommanderOrReporterPermission(BasePermission):
+    def has_required_permissions(
+        self,
+        request: Request,
+    ) -> bool:
+        current_user = get_current_user(request=request)
+        pk = PrimaryKeyModel(id=request.path_params["incident_id"])
+        current_incident = incident_service.get(db_session=request.state.db, incident_id=pk.id)
+        if not current_incident:
+            return False
+
+        if current_incident.commander:
+            if current_incident.commander.individual.email == current_user.email:
+                return True
+
+        if current_incident.reporter:
+            if current_incident.reporter.individual.email == current_user.email:
+                return True
+
+
 class IncidentParticipantPermission(BasePermission):
     def has_required_permissions(
         self,
