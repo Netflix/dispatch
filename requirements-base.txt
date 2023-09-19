@@ -95,9 +95,7 @@ cymem==2.0.7
     #   spacy
     #   thinc
 decorator==5.1.1
-    # via
-    #   jsonpath-ng
-    #   validators
+    # via validators
 defusedxml==0.7.1
     # via jira
 deprecated==1.2.14
@@ -184,7 +182,7 @@ jira==2.0.0
     # via -r requirements-base.in
 joblib==1.3.2
     # via -r requirements-base.in
-jsonpath-ng==1.5.3
+jsonpath-ng==1.6.0
     # via -r requirements-base.in
 jsonschema==4.17.3
     # via
@@ -382,7 +380,6 @@ six==1.16.0
     #   google-auth
     #   google-auth-httplib2
     #   jira
-    #   jsonpath-ng
     #   junit-xml
     #   oauth2client
     #   patsy
