@@ -84,4 +84,4 @@ def send_case_triage_reminder(case: Case, db_session: SessionLocal):
         items=items,
     )
 
-    log.debug(f"Case close reminder sent to {case.assignee.individual.email}.")
+    log.debug(f"Case triage reminder sent to {case.assignee.individual.email}.")
