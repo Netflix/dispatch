@@ -5,6 +5,8 @@ import SearchUtils from "@/search/utils"
 import IncidentApi from "@/incident/api"
 import router from "@/router"
 
+import moment from "moment-timezone"
+
 const getDefaultSelectedState = () => {
   return {
     cases: [],
@@ -249,8 +251,14 @@ const actions = {
   closeEditEventDialog({ commit }) {
     commit("SET_DIALOG_EDIT_EVENT", false)
   },
+  showNewPreEventDialog({ commit }, started_at) {
+    started_at = moment(started_at).subtract(1, "seconds").toISOString()
+    state.selected.currentEvent = { started_at, description: "" }
+    commit("SET_DIALOG_EDIT_EVENT", true)
+  },
   showNewEventDialog({ commit }, started_at) {
-    state.selected.currentEvent = { started_at }
+    started_at = moment(started_at).add(1, "seconds").toISOString()
+    state.selected.currentEvent = { started_at, description: "" }
     commit("SET_DIALOG_EDIT_EVENT", true)
   },
   showDeleteEventDialog({ commit }, event) {

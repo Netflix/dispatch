@@ -321,6 +321,7 @@ def create_custom_event(
     """Creates a custom event."""
     background_tasks.add_task(
         report_flows.log_incident_event,
+        user_email=current_user.email,
         incident_id=current_incident.id,
         event_in=event_in,
         organization_slug=organization,

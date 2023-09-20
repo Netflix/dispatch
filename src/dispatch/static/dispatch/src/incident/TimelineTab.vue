@@ -23,7 +23,13 @@
         >
           <div class="horiz-rule" />
           <div class="add-button">
-            <v-btn compact small plain class="up-button">
+            <v-btn
+              compact
+              small
+              plain
+              class="up-button"
+              @click="showNewPreEventDialog(sortedEvents[0].started_at)"
+            >
               <v-icon small class="mr-1">mdi-plus-circle-outline</v-icon>Add event
             </v-btn>
           </div>
@@ -153,6 +159,7 @@ export default {
       "showNewEventDialog",
       "showEditEventDialog",
       "showDeleteEventDialog",
+      "showNewPreEventDialog",
     ]),
     exportToCSV() {
       this.exportLoading = true
