@@ -153,7 +153,6 @@ def assign_role_flow(
                 source="Dispatch Core App",
                 description=f"{assignee_participant.individual.name} has been assigned the role of {assignee_role}",
                 case_id=subject.id,
-                type=EventType.participant_updated,
             )
         return "role_assigned"
 
