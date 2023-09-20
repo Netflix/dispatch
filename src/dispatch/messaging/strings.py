@@ -251,7 +251,7 @@ Please ensure you triage the case based on its priority.""".replace(
 ).strip()
 
 CASE_CLOSE_REMINDER_DESCRIPTION = """The status of this case hasn't been updated recently.
-You can use case 'Resolve' button if it has been resolved and can be closed.""".replace(
+You can use the case 'Resolve' button if it has been resolved and can be closed.""".replace(
     "\n", " "
 ).strip()
 
