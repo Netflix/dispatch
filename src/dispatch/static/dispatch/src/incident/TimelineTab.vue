@@ -116,7 +116,7 @@ import EditEventDialog from "@/incident/EditEventDialog.vue"
 import DeleteEventDialog from "@/incident/DeleteEventDialog.vue"
 
 const eventTypeToIcon = {
-  "Other": "mdi-monitor-star",
+  Other: "mdi-monitor-star",
   "Field updated": "mdi-subtitles-outline",
   "Assessment updated": "mdi-priority-high",
   "Participant updated": "mdi-account-outline",
@@ -124,7 +124,7 @@ const eventTypeToIcon = {
 }
 
 const eventTypeToFilter = {
-  "Other": "other_events",
+  Other: "other_events",
   "Field updated": "field_updates",
   "Assessment updated": "assessment_updates",
   "Participant updated": "participant_updates",
