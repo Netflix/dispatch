@@ -1156,16 +1156,21 @@ def handle_edit_submission_event(
     if form_data.get(DefaultBlockIds.case_type_select):
         case_type = {"name": form_data[DefaultBlockIds.case_type_select]["name"]}
 
+    assignee_email = None
     if form_data.get(DefaultBlockIds.case_assignee_select):
         assignee_email = client.users_info(
             user=form_data[DefaultBlockIds.case_assignee_select]["value"]
         )["user"]["profile"]["email"]
 
+    resolution_reason = None
+    if form_data.get(DefaultBlockIds.case_resolution_reason_select):
+        resolution_reason = form_data[DefaultBlockIds.case_resolution_reason_select]["value"]
+
     case_in = CaseUpdate(
         title=form_data[DefaultBlockIds.title_input],
         description=form_data[DefaultBlockIds.description_input],
         resolution=form_data[DefaultBlockIds.resolution_input],
-        resolution_reason=form_data[DefaultBlockIds.case_resolution_reason_select]["value"],
+        resolution_reason=resolution_reason,
         status=form_data[DefaultBlockIds.case_status_select]["name"],
         visibility=case.visibility,
         case_priority=case_priority,
