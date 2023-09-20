@@ -246,7 +246,7 @@ You can use `{{command}}` in the conversation to close the incident if it has be
 ).strip()
 
 CASE_TRIAGE_REMINDER_DESCRIPTION = """The status of this case hasn't been updated recently.
-Please ensure you triage the case based on it's priority.""".replace(
+Please ensure you triage the case based on its priority.""".replace(
     "\n", " "
 ).strip()
 
