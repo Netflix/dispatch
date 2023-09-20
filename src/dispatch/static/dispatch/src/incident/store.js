@@ -208,7 +208,7 @@ const actions = {
     commit("SET_SELECTED", incident)
 
     state.report.tactical.actions +=
-      "\nOutstanding Incident Tasks:\n" +
+      "\n\nOutstanding Incident Tasks:\n" +
       incident.tasks.reduce((result, task) => {
         if (task.status == "Resolved") {
           return result
