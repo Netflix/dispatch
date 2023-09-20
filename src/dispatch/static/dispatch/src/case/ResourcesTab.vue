@@ -129,7 +129,6 @@ export default {
       this.selected.case_type.conversation_target
     this.storagePluginEnabled = await this.isPluginEnabled("storage")
     this.documentPluginEnabled = await this.isPluginEnabled("document")
-    console.log(this)
   },
 
   methods: {
