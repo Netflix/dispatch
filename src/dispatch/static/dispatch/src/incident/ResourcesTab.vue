@@ -126,7 +126,7 @@ export default {
     ]),
   },
 
-   async mounted() {
+  async mounted() {
     let enabledPlugins = await this.getEnabledPlugins()
 
     this.ticketPluginEnabled = enabledPlugins.includes("ticket")
@@ -135,7 +135,6 @@ export default {
     this.storagePluginEnabled = enabledPlugins.includes("storage")
     this.documentPluginEnabled = enabledPlugins.includes("document")
   },
-
 
   methods: {
     ...mapActions("incident", ["createAllResources", "getEnabledPlugins"]),

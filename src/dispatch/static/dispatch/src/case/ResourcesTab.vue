@@ -130,7 +130,7 @@ export default {
     ]),
   },
 
-   async mounted() {
+  async mounted() {
     let enabledPlugins = await this.getEnabledPlugins()
 
     this.ticketPluginEnabled = enabledPlugins.includes("ticket")
