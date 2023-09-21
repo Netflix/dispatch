@@ -74,7 +74,7 @@
         (!documents && documentPluginEnabled)
       "
     >
-      <v-list-item @click="createAllResources()">
+      <v-list-item v-if="!loading" @click="createAllResources()">
         <v-list-item-content>
           <v-list-item-title>Recreate Missing Resources</v-list-item-title>
           <v-list-item-subtitle
@@ -87,6 +87,15 @@
             <v-icon>refresh</v-icon>
           </v-list-item-icon>
         </v-list-item-action>
+      </v-list-item>
+      <v-list-item v-else-if="loading">
+        <v-list-item-content>
+          <v-list-item-title>Creating resources...</v-list-item-title>
+          <v-list-item-subtitle
+            >Initiate a retry for creating any missing or unsuccesfully created
+            resource(s).</v-list-item-subtitle
+          >
+        </v-list-item-content>
       </v-list-item>
     </span>
   </v-list>
@@ -117,22 +126,22 @@ export default {
       "selected.storage",
       "selected.ticket",
       "selected.conversation",
+      "selected.loading",
     ]),
   },
 
-  async mounted() {
-    this.ticketPluginEnabled = await this.isPluginEnabled("ticket")
-    this.groupPluginEnabled = await this.isPluginEnabled("group")
-    this.conversationPluginEnabled =
-      (await this.isPluginEnabled("conversation")) &&
-      this.selected.case_type &&
-      this.selected.case_type.conversation_target
-    this.storagePluginEnabled = await this.isPluginEnabled("storage")
-    this.documentPluginEnabled = await this.isPluginEnabled("document")
+   async mounted() {
+    let enabledPlugins = await this.getEnabledPlugins()
+
+    this.ticketPluginEnabled = enabledPlugins.includes("ticket")
+    this.conferencePluginEnabled = enabledPlugins.includes("conference")
+    this.groupPluginEnabled = enabledPlugins.includes("participant-group")
+    this.storagePluginEnabled = enabledPlugins.includes("storage")
+    this.documentPluginEnabled = enabledPlugins.includes("document")
   },
 
   methods: {
-    ...mapActions("case_management", ["createAllResources", "isPluginEnabled"]),
+    ...mapActions("case_management", ["createAllResources", "getEnabledPlugins"]),
   },
 }
 </script>

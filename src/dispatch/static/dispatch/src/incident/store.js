@@ -350,7 +350,6 @@ const actions = {
     commit("SET_SELECTED_LOADING", true)
     return IncidentApi.createAllResources(state.selected.id)
       .then(function () {
-        dispatch("get")
         commit(
           "notification_backend/addBeNotification",
           { text: "Incident resource(s) created successfully.", type: "success" },
@@ -365,6 +364,7 @@ const actions = {
         )
       })
       .finally(() => {
+        dispatch("get")
         commit("SET_SELECTED_LOADING", false)
       })
   },
@@ -392,7 +392,7 @@ const actions = {
       )
     })
   },
-  isPluginEnabled(_, type) {
+  getEnabledPlugins() {
     if (!state.selected.project) {
       return false
     }
@@ -411,16 +411,15 @@ const actions = {
             op: "==",
             value: state.selected.project.name,
           },
-          {
-            model: "Plugin",
-            field: "type",
-            op: "==",
-            value: String(type),
-          },
         ],
       }),
     }).then((response) => {
-      return response.data.items.length > 0
+      return response.data.items.reduce((result, item) => {
+        if (item.plugin) {
+          result.push(item.plugin.type)
+        }
+        return result
+      }, [])
     })
   },
 }
