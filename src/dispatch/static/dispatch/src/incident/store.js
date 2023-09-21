@@ -219,12 +219,14 @@ const actions = {
     commit("SET_DIALOG_REPORT", true)
     commit("SET_SELECTED", incident)
 
-    state.report.tactical.actions = incident.tasks.reduce((result, task) => {
-      if (task.status == "Resolved") {
-        return result
-      }
-      return (result ? result + "\n" : "") + "- " + task.description
-    }, "")
+    state.report.tactical.actions +=
+      "\n\nOutstanding Incident Tasks:\n" +
+      incident.tasks.reduce((result, task) => {
+        if (task.status == "Resolved") {
+          return result
+        }
+        return (result ? result + "\n" : "") + "- " + task.description
+      }, "")
   },
   closeReportDialog({ commit }) {
     commit("SET_DIALOG_REPORT", false)
