@@ -176,9 +176,18 @@ def create_conversation(case: Case, conversation_target: str, db_session: Sessio
 
 def update_conversation(case: Case, db_session: SessionLocal):
     """Updates external communication conversation."""
+    if not case.conversation:
+        log.warning("Conversation not updated. No relationship between case and conversation.")
+        return
+
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=case.project.id, plugin_type="conversation"
     )
+
+    if not plugin:
+        log.warning("Document not updated. No conversation plugin enabled.")
+        return
+
     plugin.instance.update_thread(
         case=case, conversation_id=case.conversation.channel_id, ts=case.conversation.thread_id
     )
