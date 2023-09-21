@@ -275,6 +275,7 @@ def oncall_shift_feedback_input(
             initial_value=initial_value,
             multiline=True,
             placeholder="How would you describe your experience?",
+            optional=True,
         ),
         label=label,
         **kwargs,
@@ -325,6 +326,7 @@ def handle_oncall_shift_feedback_direct_message_button_click(
         ),
         oncall_shift_feeback_rating_select(),
         oncall_shift_feedback_hours_input(),
+        oncall_shift_feedback_input(),
         oncall_shift_feeback_anonymous_checkbox(),
     ]
 
@@ -380,7 +382,7 @@ def handle_oncall_shift_feedback_submission_event(
 
     ack_oncall_shift_feedback_submission_event(ack=ack)
 
-    feedback = ""
+    feedback = form_data.get(ServiceFeedbackNotificationBlockIds.feedback_input, "")
     rating = form_data.get(ServiceFeedbackNotificationBlockIds.rating_select, {}).get("value")
 
     # metadata is organization_slug|project_id|schedule_id|shift_end_at|reminder_id
