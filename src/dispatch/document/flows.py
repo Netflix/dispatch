@@ -19,6 +19,12 @@ def create_document(
     subject: Any, document_type: str, document_template: Document, db_session: SessionLocal
 ):
     """Creates a document."""
+    if not subject.storage:
+        log.warning(
+            "Document not created. No relationship between subject and storage. Storage is required for document creation."
+        )
+        return
+
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=subject.project.id, plugin_type="storage"
     )
@@ -113,6 +119,10 @@ def create_document(
 
 def update_document(document: Document, project_id: int, db_session: SessionLocal):
     """Updates an existing document."""
+    if not document:
+        log.warning("Document not updated. No document provided.")
+        return
+
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project_id, plugin_type="document"
     )
