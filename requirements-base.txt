@@ -245,7 +245,7 @@ packaging==23.1
     #   spacy
     #   statsmodels
     #   thinc
-pandas==2.1.0
+pandas==2.1.1
     # via
     #   -r requirements-base.in
     #   statsmodels
