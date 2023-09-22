@@ -346,7 +346,7 @@ const actions = {
       )
     })
   },
-  createAllResources({ commit, dispatch }) {
+  createAllResources({ commit }) {
     commit("SET_SELECTED_LOADING", true)
     return IncidentApi.createAllResources(state.selected.id)
       .then(function () {
@@ -356,15 +356,10 @@ const actions = {
           { root: true }
         )
       })
-      .catch(() => {
-        commit(
-          "notification_backend/addBeNotification",
-          { text: "No incident resources created.", type: "error" },
-          { root: true }
-        )
-      })
       .finally(() => {
-        dispatch("get")
+        IncidentApi.get(state.selected.id).then((response) => {
+          commit("SET_SELECTED", response.data)
+        })
         commit("SET_SELECTED_LOADING", false)
       })
   },

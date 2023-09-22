@@ -120,13 +120,12 @@ export default {
 
   computed: {
     ...mapFields("case_management", [
-      "selected",
+      "selected.conversation",
       "selected.documents",
       "selected.groups",
+      "selected.loading",
       "selected.storage",
       "selected.ticket",
-      "selected.conversation",
-      "selected.loading",
     ]),
   },
 
@@ -134,8 +133,8 @@ export default {
     let enabledPlugins = await this.getEnabledPlugins()
 
     this.ticketPluginEnabled = enabledPlugins.includes("ticket")
-    this.conferencePluginEnabled = enabledPlugins.includes("conference")
     this.groupPluginEnabled = enabledPlugins.includes("participant-group")
+    this.conversationPluginEnabled = enabledPlugins.includes("conversation")
     this.storagePluginEnabled = enabledPlugins.includes("storage")
     this.documentPluginEnabled = enabledPlugins.includes("document")
   },

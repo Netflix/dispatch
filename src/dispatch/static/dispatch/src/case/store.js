@@ -254,7 +254,7 @@ const actions = {
         commit("SET_SELECTED_LOADING", false)
       })
   },
-  createAllResources({ commit, dispatch }) {
+  createAllResources({ commit }) {
     commit("SET_SELECTED_LOADING", true)
     return CaseApi.createAllResources(state.selected.id)
       .then(function () {
@@ -264,15 +264,10 @@ const actions = {
           { root: true }
         )
       })
-      .catch(() => {
-        commit(
-          "notification_backend/addBeNotification",
-          { text: "No case resources created.", type: "error" },
-          { root: true }
-        )
-      })
       .finally(() => {
-        dispatch("get")
+        CaseApi.get(state.selected.id).then((response) => {
+          commit("SET_SELECTED", response.data)
+        })
         commit("SET_SELECTED_LOADING", false)
       })
   },

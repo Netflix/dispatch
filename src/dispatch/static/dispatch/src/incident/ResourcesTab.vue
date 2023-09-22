@@ -117,12 +117,12 @@ export default {
 
   computed: {
     ...mapFields("incident", [
-      "selected.ticket",
-      "selected.storage",
-      "selected.documents",
       "selected.conference",
       "selected.conversation",
+      "selected.documents",
       "selected.loading",
+      "selected.storage",
+      "selected.ticket",
     ]),
   },
 
