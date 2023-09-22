@@ -149,10 +149,14 @@ def create_incident_resources(
     organization: OrganizationSlug,
     incident_id: PrimaryKey,
     current_incident: CurrentIncident,
+    background_tasks: BackgroundTasks,
 ):
     """Creates resources for an existing incident."""
-    incident_create_resources_flow(organization_slug=organization, incident_id=incident_id)
-    return current_incident
+    background_tasks.add_task(
+        incident_create_resources_flow, organization_slug=organization, incident_id=incident_id
+    )
+
+    # return current_incident
 
 
 @router.put(

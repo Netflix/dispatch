@@ -156,19 +156,21 @@ def create_case_resources(
     db_session: DbSession,
     case_id: PrimaryKey,
     current_case: CurrentCase,
+    background_tasks: BackgroundTasks,
 ):
     """Creates resources for an existing incident."""
     individual_participants, team_participants = get_case_participants(
         case=current_case, db_session=db_session
     )
-    case_create_resources_flow(
+    background_tasks.add_task(
+        case_create_resources_flow,
         db_session=db_session,
         case_id=case_id,
         individual_participants=individual_participants,
         team_participants=team_participants,
     )
 
-    return current_case
+    # return current_case
 
 
 @router.put(
