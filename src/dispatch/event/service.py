@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 from uuid import uuid4
 import datetime
 import logging
