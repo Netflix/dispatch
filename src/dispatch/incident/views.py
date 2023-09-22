@@ -317,9 +317,7 @@ def create_custom_event(
     current_user: CurrentUser,
     background_tasks: BackgroundTasks,
 ):
-    event_in.details.update(
-        {"created_by": current_user.email, "added_on": str(datetime.utcnow())}
-    )
+    event_in.details.update({"created_by": current_user.email, "added_on": str(datetime.utcnow())})
     """Creates a custom event."""
     background_tasks.add_task(
         event_flows.log_incident_event,

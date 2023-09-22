@@ -348,7 +348,10 @@ class IncidentCommanderOrScribePermission(BasePermission):
         if not current_incident:
             return False
 
-        if current_incident.commander and current_incident.commander.individual.email == current_user.email:
+        if (
+            current_incident.commander
+            and current_incident.commander.individual.email == current_user.email
+        ):
             return True
 
         scribes = [
