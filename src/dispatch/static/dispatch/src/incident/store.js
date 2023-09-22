@@ -348,20 +348,12 @@ const actions = {
   },
   createAllResources({ commit }) {
     commit("SET_SELECTED_LOADING", true)
-    return IncidentApi.createAllResources(state.selected.id)
-      .then(function () {
-        commit(
-          "notification_backend/addBeNotification",
-          { text: "Incident resource(s) created successfully.", type: "success" },
-          { root: true }
-        )
+    return IncidentApi.createAllResources(state.selected.id).then(() => {
+      IncidentApi.get(state.selected.id).then((response) => {
+        commit("SET_SELECTED", response.data)
       })
-      .finally(() => {
-        IncidentApi.get(state.selected.id).then((response) => {
-          commit("SET_SELECTED", response.data)
-        })
-        commit("SET_SELECTED_LOADING", false)
-      })
+      commit("SET_SELECTED_LOADING", false)
+    })
   },
   resetSelected({ commit }) {
     commit("RESET_SELECTED")

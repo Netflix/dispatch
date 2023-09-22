@@ -256,20 +256,12 @@ const actions = {
   },
   createAllResources({ commit }) {
     commit("SET_SELECTED_LOADING", true)
-    return CaseApi.createAllResources(state.selected.id)
-      .then(function () {
-        commit(
-          "notification_backend/addBeNotification",
-          { text: "Case resource(s) created successfully.", type: "success" },
-          { root: true }
-        )
+    return CaseApi.createAllResources(state.selected.id).then(() => {
+      CaseApi.get(state.selected.id).then((response) => {
+        commit("SET_SELECTED", response.data)
       })
-      .finally(() => {
-        CaseApi.get(state.selected.id).then((response) => {
-          commit("SET_SELECTED", response.data)
-        })
-        commit("SET_SELECTED_LOADING", false)
-      })
+      commit("SET_SELECTED_LOADING", false)
+    })
   },
   save({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
