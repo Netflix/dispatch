@@ -41,7 +41,7 @@
         :icon="iconItem(event)"
         :key="event.id"
         class="mb-4"
-        :class="event.type == 'Custom event' ? 'custom-event' : null"
+        :class="isEditable(event) ? 'custom-event' : null"
         color="blue"
       >
         <v-row justify="space-between">
@@ -61,15 +61,28 @@
               {{ event.source }}
             </div>
           </v-col>
-          <v-col class="text-right" cols="5">
-            <v-tooltip bottom>
-              <template #activator="{ on, attrs }">
-                <span v-bind="attrs" v-on="on" class="wavy-underline">{{
-                  event.started_at | formatToUTC
-                }}</span>
-              </template>
-              <span class="pre-formatted">{{ event.started_at | formatToTimeZones }}</span>
-            </v-tooltip>
+          <v-col cols="1">
+            <div :v-if="isEditable(event)" class="custom-event-edit">
+              <v-btn plain small @click="showEditEventDialog(event)">
+                <v-icon>mdi-pencil</v-icon>
+              </v-btn>
+              <br />
+              <v-btn plain small @click="showDeleteEventDialog(event)">
+                <v-icon>mdi-trash-can</v-icon>
+              </v-btn>
+            </div>
+          </v-col>
+          <v-col class="text-right" cols="4">
+            <v-col>
+              <v-tooltip bottom>
+                <template #activator="{ on, attrs }">
+                  <span v-bind="attrs" v-on="on" class="wavy-underline">{{
+                    event.started_at | formatToUTC
+                  }}</span>
+                </template>
+                <span class="pre-formatted">{{ event.started_at | formatToTimeZones }}</span>
+              </v-tooltip>
+            </v-col>
           </v-col>
         </v-row>
         <v-row>
@@ -88,12 +101,6 @@
             </div>
           </div>
         </v-row>
-        <div :v-if="event.type == 'Custom event'" style="" class="custom-event-edit">
-          <v-btn plain small @click="showEditEventDialog(event)"><v-icon>mdi-pencil</v-icon></v-btn>
-          <v-btn plain small @click="showDeleteEventDialog(event)">
-            <v-icon>mdi-trash-can</v-icon>
-          </v-btn>
-        </div>
       </v-timeline-item>
     </v-timeline>
     <div v-else>
@@ -121,6 +128,7 @@ const eventTypeToIcon = {
   "Assessment updated": "mdi-priority-high",
   "Participant updated": "mdi-account-outline",
   "Custom event": "mdi-text-account",
+  "Imported message": "mdi-page-next-outline",
 }
 
 const eventTypeToFilter = {
@@ -129,6 +137,7 @@ const eventTypeToFilter = {
   "Assessment updated": "assessment_updates",
   "Participant updated": "participant_updates",
   "Custom event": "user_curated_events",
+  "Imported message": "user_curated_events",
 }
 
 export default {
@@ -182,6 +191,9 @@ export default {
           return this.timeline_filters[eventTypeToFilter[e.type]] || false
         })
       )
+    },
+    isEditable(event) {
+      return event.type == "Custom event" || event.type == "Imported message"
     },
   },
 }

@@ -20,22 +20,22 @@ def get(*, db_session, event_id: int) -> Optional[Event]:
     return db_session.query(Event).filter(Event.id == event_id).one_or_none()
 
 
-def get_by_case_id(*, db_session, case_id: int) -> List[Optional[Event]]:
+def get_by_case_id(*, db_session, case_id: int) -> list[Event | None]:
     """Get events by case id."""
     return db_session.query(Event).filter(Event.case_id == case_id)
 
 
-def get_by_incident_id(*, db_session, incident_id: int) -> List[Optional[Event]]:
+def get_by_incident_id(*, db_session, incident_id: int) -> list[Event | None]:
     """Get events by incident id."""
     return db_session.query(Event).filter(Event.incident_id == incident_id)
 
 
-def get_by_uuid(*, db_session, uuid: str) -> List[Optional[Event]]:
+def get_by_uuid(*, db_session, uuid: str) -> list[Event | None]:
     """Get events by uuid."""
     return db_session.query(Event).filter(Event.uuid == uuid).one_or_none()
 
 
-def get_all(*, db_session) -> List[Optional[Event]]:
+def get_all(*, db_session) -> list[Event | None]:
     """Get all events."""
     return db_session.query(Event)
 
@@ -161,29 +161,10 @@ def log_case_event(
 
 def update_incident_event(
     db_session,
-    uuid: str,
-    source: str,
-    description: str,
-    started_at: datetime = None,
-    ended_at: datetime = None,
-    details: dict = None,
-    type: str = EventType.other,
+    event_in: EventUpdate,
 ) -> Event:
     """Updates an event in the incident timeline."""
-    event = get_by_uuid(db_session=db_session, uuid=uuid)
-    if not ended_at:
-        ended_at = started_at
-
-    event_in = EventUpdate(
-        uuid=uuid,
-        started_at=started_at,
-        ended_at=ended_at,
-        source=source,
-        details=details,
-        description=description,
-        type=type,
-    )
-
+    event = get_by_uuid(db_session=db_session, uuid=event_in.uuid)
     event = update(db_session=db_session, event=event, event_in=event_in)
 
     return event

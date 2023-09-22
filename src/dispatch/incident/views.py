@@ -13,7 +13,7 @@ from sqlalchemy.exc import IntegrityError
 
 from dispatch.auth.permissions import (
     IncidentEditPermission,
-    IncidentCommanderOrReporterPermission,
+    IncidentCommanderOrScribePermission,
     IncidentJoinOrSubscribePermission,
     IncidentViewPermission,
     PermissionsDependency,
@@ -27,7 +27,9 @@ from dispatch.individual.models import IndividualContactRead
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.participant.models import ParticipantUpdate
 from dispatch.report import flows as report_flows
+from dispatch.event import flows as event_flows
 from dispatch.report.models import ExecutiveReportCreate, TacticalReportCreate
+from dispatch.event.models import EventUpdate, EventCreateMinimal
 
 from .flows import (
     incident_add_or_reactivate_participant_flow,
@@ -311,16 +313,16 @@ def create_custom_event(
     organization: OrganizationSlug,
     incident_id: PrimaryKey,
     current_incident: CurrentIncident,
-    event_in: dict,
+    event_in: EventCreateMinimal,
     current_user: CurrentUser,
     background_tasks: BackgroundTasks,
 ):
-    event_in.update(
-        {"details": {"created_by": current_user.email, "added_on": str(datetime.utcnow())}}
+    event_in.details.update(
+        {"created_by": current_user.email, "added_on": str(datetime.utcnow())}
     )
     """Creates a custom event."""
     background_tasks.add_task(
-        report_flows.log_incident_event,
+        event_flows.log_incident_event,
         user_email=current_user.email,
         incident_id=current_incident.id,
         event_in=event_in,
@@ -331,34 +333,32 @@ def create_custom_event(
 @router.patch(
     "/{incident_id}/event",
     summary="Updates a custom event.",
-    dependencies=[Depends(PermissionsDependency([IncidentCommanderOrReporterPermission]))],
+    dependencies=[Depends(PermissionsDependency([IncidentCommanderOrScribePermission]))],
 )
 def update_custom_event(
     db_session: DbSession,
     organization: OrganizationSlug,
     incident_id: PrimaryKey,
     current_incident: CurrentIncident,
-    event_in: dict,
+    event_in: EventUpdate,
     current_user: CurrentUser,
     background_tasks: BackgroundTasks,
 ):
-    if event_in.get("details"):
-        event_in.update(
+    if event_in.details:
+        event_in.details.update(
             {
-                "details": {
-                    **event_in["details"],
-                    "updated_by": current_user.email,
-                    "updated_on": str(datetime.utcnow()),
-                }
+                **event_in.details,
+                "updated_by": current_user.email,
+                "updated_on": str(datetime.utcnow()),
             }
         )
     else:
-        event_in.update(
-            {"details": {"updated_by": current_user.email, "updated_on": str(datetime.utcnow())}}
+        event_in.details.update(
+            {"updated_by": current_user.email, "updated_on": str(datetime.utcnow())}
         )
     """Updates a custom event."""
     background_tasks.add_task(
-        report_flows.update_incident_event,
+        event_flows.update_incident_event,
         event_in=event_in,
         organization_slug=organization,
     )
@@ -367,7 +367,7 @@ def update_custom_event(
 @router.delete(
     "/{incident_id}/event/{event_uuid}",
     summary="Deletes a custom event.",
-    dependencies=[Depends(PermissionsDependency([IncidentCommanderOrReporterPermission]))],
+    dependencies=[Depends(PermissionsDependency([IncidentCommanderOrScribePermission]))],
 )
 def delete_custom_event(
     db_session: DbSession,
@@ -380,7 +380,7 @@ def delete_custom_event(
 ):
     """Deletes a custom event."""
     background_tasks.add_task(
-        report_flows.delete_incident_event,
+        event_flows.delete_incident_event,
         event_uuid=event_uuid,
         organization_slug=organization,
     )

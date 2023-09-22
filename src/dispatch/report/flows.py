@@ -12,7 +12,6 @@ from dispatch.event import service as event_service
 from dispatch.exceptions import InvalidConfigurationError
 from dispatch.incident import service as incident_service
 from dispatch.participant import service as participant_service
-from dispatch.individual import service as individual_service
 from dispatch.plugin import service as plugin_service
 
 from .enums import ReportTypes
@@ -78,60 +77,6 @@ def create_tactical_report(
     send_tactical_report_to_tactical_group(incident_id, tactical_report, db_session)
 
     return tactical_report
-
-
-@background_task
-def log_incident_event(
-    user_email: str,
-    incident_id: int,
-    event_in: dict,
-    organization_slug: str = None,
-    db_session=None,
-):
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-    individual = individual_service.get_by_email_and_project(
-        db_session=db_session, email=user_email, project_id=incident.project.id
-    )
-    event_in["source"] = f"Custom event created by {individual.name}"
-
-    event_service.log_incident_event(
-        db_session=db_session,
-        source=event_in["source"],
-        description=event_in["description"],
-        incident_id=incident_id,
-        started_at=event_in["started_at"],
-        details=event_in["details"],
-        type=event_in["type"],
-    )
-
-
-@background_task
-def update_incident_event(
-    event_in: dict,
-    organization_slug: str = None,
-    db_session=None,
-):
-    event_service.update_incident_event(
-        db_session=db_session,
-        uuid=event_in["uuid"],
-        source=event_in["source"],
-        description=event_in["description"],
-        started_at=event_in["started_at"],
-        details=event_in["details"],
-        type=event_in["type"],
-    )
-
-
-@background_task
-def delete_incident_event(
-    event_uuid: str,
-    organization_slug: str = None,
-    db_session=None,
-):
-    event_service.delete_incident_event(
-        db_session=db_session,
-        uuid=event_uuid,
-    )
 
 
 @background_task

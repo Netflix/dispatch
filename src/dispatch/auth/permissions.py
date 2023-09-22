@@ -15,6 +15,7 @@ from dispatch.individual import service as individual_contact_service
 from dispatch.models import PrimaryKeyModel
 from dispatch.organization import service as organization_service
 from dispatch.organization.models import OrganizationRead
+from dispatch.participant_role.enums import ParticipantRoleType
 
 log = logging.getLogger(__name__)
 
@@ -315,6 +316,8 @@ class IncidentReporterPermission(BasePermission):
             if current_incident.reporter.individual.email == current_user.email:
                 return True
 
+        return False
+
 
 class IncidentCommanderPermission(BasePermission):
     def has_required_permissions(
@@ -331,8 +334,10 @@ class IncidentCommanderPermission(BasePermission):
             if current_incident.commander.individual.email == current_user.email:
                 return True
 
+        return False
 
-class IncidentCommanderOrReporterPermission(BasePermission):
+
+class IncidentCommanderOrScribePermission(BasePermission):
     def has_required_permissions(
         self,
         request: Request,
@@ -343,13 +348,18 @@ class IncidentCommanderOrReporterPermission(BasePermission):
         if not current_incident:
             return False
 
-        if current_incident.commander:
-            if current_incident.commander.individual.email == current_user.email:
-                return True
+        if current_incident.commander and current_incident.commander.individual.email == current_user.email:
+            return True
 
-        if current_incident.reporter:
-            if current_incident.reporter.individual.email == current_user.email:
-                return True
+        scribes = [
+            participant.individual.email
+            for participant in current_incident.participants
+            if ParticipantRoleType.scribe in [role.role for role in participant.participant_roles]
+        ]
+        if current_user.email in scribes:
+            return True
+
+        return False
 
 
 class IncidentParticipantPermission(BasePermission):

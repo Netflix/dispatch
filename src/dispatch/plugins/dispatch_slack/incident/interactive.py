@@ -691,7 +691,7 @@ def handle_timeline_added_event(
             incident_id=context["subject"].id,
             individual_id=individual.id,
             started_at=message_ts_utc,
-            type=EventType.custom_event,
+            type=EventType.imported_message,
         )
 
 
@@ -1048,7 +1048,7 @@ def handle_add_timeline_submission_event(
         description=f'"{event_description}," said {participant.individual.name}',
         incident_id=context["subject"].id,
         individual_id=participant.individual.id,
-        type=EventType.custom_event,
+        type=EventType.imported_message,
     )
 
     send_success_modal(

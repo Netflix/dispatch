@@ -276,6 +276,7 @@ const actions = {
       description: state.selected.currentEvent.description,
       started_at: state.selected.currentEvent.started_at,
       type: "Custom event",
+      details: {},
     }).then(() => {
       IncidentApi.get(state.selected.id).then((response) => {
         commit("SET_SELECTED", response.data)

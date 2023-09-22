@@ -60,3 +60,11 @@ class EventUpdate(EventBase):
 
 class EventRead(EventBase):
     pass
+
+
+class EventCreateMinimal(DispatchBase):
+    started_at: datetime
+    source: str
+    description: str
+    details: dict
+    type: Optional[str]

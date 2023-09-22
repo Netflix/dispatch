@@ -58,27 +58,17 @@
   display: block;
 }
 
-.custom-event:hover {
-  background: linear-gradient(
-    to top,
-    transparent,
-    transparent 1.5rem,
-    var(--v-borderline-base) 1rem,
-    var(--v-borderline-base) 100%
-  );
-}
 .custom-event-edit {
   display: none;
-
-
 }
 
 .custom-event:hover .custom-event-edit {
   display: block;
+  z-index: 100;
   position: absolute;
-  top: 50%;
-  left: 42%;
-  -ms-transform: translateY(-50%);
-  transform: translateY(-50%);
-  z-index: 99;
+  margin-top: -12px;
+}
+
+.not-a-custom-event {
+  height: 20px;
 }
