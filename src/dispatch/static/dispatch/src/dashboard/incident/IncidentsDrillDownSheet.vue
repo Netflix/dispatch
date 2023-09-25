@@ -4,9 +4,11 @@
       <v-list-item lines="two">
         <v-list-item-subtitle>Details</v-list-item-subtitle>
 
-        <v-btn icon variant="text" color="secondary" @click="hideSheet()">
-          <v-icon>close</v-icon>
-        </v-btn>
+        <template #append>
+          <v-btn icon variant="text" color="secondary" @click="hideSheet()">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </template>
       </v-list-item>
     </template>
     <incident-drill-down-table :items="items" />

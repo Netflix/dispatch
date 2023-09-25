@@ -7,7 +7,7 @@
             <v-toolbar-title>Documentation</v-toolbar-title>
             <v-spacer />
             <v-btn icon variant="text" color="info" :loading="loading" @click="save()">
-              <v-icon>save</v-icon>
+              <v-icon>mdi-content-save</v-icon>
             </v-btn>
             <template #extension>
               <v-tabs v-model="tab">

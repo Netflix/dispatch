@@ -7,19 +7,21 @@
           <v-list-item-title v-else class="text-h6"> New </v-list-item-title>
           <v-list-item-subtitle>Individual</v-list-item-subtitle>
 
-          <v-btn
-            icon
-            variant="text"
-            color="info"
-            :loading="loading"
-            :disabled="!isValid.value"
-            @click="save()"
-          >
-            <v-icon>save</v-icon>
-          </v-btn>
-          <v-btn icon variant="text" color="secondary" @click="closeCreateEdit()">
-            <v-icon>close</v-icon>
-          </v-btn>
+          <template #append>
+            <v-btn
+              icon
+              variant="text"
+              color="info"
+              :loading="loading"
+              :disabled="!isValid.value"
+              @click="save()"
+            >
+              <v-icon>mdi-content-save</v-icon>
+            </v-btn>
+            <v-btn icon variant="text" color="secondary" @click="closeCreateEdit()">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </template>
         </v-list-item>
       </template>
       <v-card flat>

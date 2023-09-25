@@ -10,19 +10,21 @@
         <v-list-item lines="two">
           <v-list-item-title class="text-h6"> New </v-list-item-title>
 
-          <v-btn
-            icon
-            variant="text"
-            color="info"
-            :loading="loading"
-            :disabled="!isValid.value"
-            @click="save()"
-          >
-            <v-icon>save</v-icon>
-          </v-btn>
-          <v-btn icon variant="text" color="secondary" @click="closeNewSheet">
-            <v-icon>close</v-icon>
-          </v-btn>
+          <template #append>
+            <v-btn
+              icon
+              variant="text"
+              color="info"
+              :loading="loading"
+              :disabled="!isValid.value"
+              @click="save()"
+            >
+              <v-icon>mdi-content-save</v-icon>
+            </v-btn>
+            <v-btn icon variant="text" color="secondary" @click="closeNewSheet">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </template>
         </v-list-item>
       </template>
       <v-tabs color="primary" v-model="tab">

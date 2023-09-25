@@ -10,20 +10,21 @@
             Reported - {{ formatRelativeDate(reported_at) }}
           </v-list-item-subtitle>
 
-          <v-spacer />
-          <v-btn
-            icon
-            variant="text"
-            color="info"
-            :loading="loading"
-            :disabled="!isValid.value"
-            @click="save()"
-          >
-            <v-icon>save</v-icon>
-          </v-btn>
-          <v-btn icon variant="text" color="secondary" @click="closeEditSheet">
-            <v-icon>close</v-icon>
-          </v-btn>
+          <template #append>
+            <v-btn
+              icon
+              variant="text"
+              color="info"
+              :loading="loading"
+              :disabled="!isValid.value"
+              @click="save()"
+            >
+              <v-icon>mdi-content-save</v-icon>
+            </v-btn>
+            <v-btn icon variant="text" color="secondary" @click="closeEditSheet">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </template>
         </v-list-item>
       </template>
       <v-tabs color="primary" fixed-tabs v-model="tab">
