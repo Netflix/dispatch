@@ -402,6 +402,7 @@ const actions = {
           },
         ],
       }),
+      itemsPerPage: 50,
     }).then((response) => {
       return response.data.items.reduce((result, item) => {
         if (item.plugin) {

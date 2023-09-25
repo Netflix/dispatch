@@ -149,7 +149,6 @@ def create_case(
 
 @router.post(
     "/{case_id}/resources",
-    response_model=CaseRead,
     summary="Creates resources for an existing case.",
 )
 def create_case_resources(
@@ -169,8 +168,6 @@ def create_case_resources(
         individual_participants=individual_participants,
         team_participants=team_participants,
     )
-
-    # return current_case
 
 
 @router.put(

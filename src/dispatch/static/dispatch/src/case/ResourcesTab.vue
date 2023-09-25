@@ -131,6 +131,7 @@ export default {
 
   async mounted() {
     let enabledPlugins = await this.getEnabledPlugins()
+    if (!enabledPlugins) return
 
     this.ticketPluginEnabled = enabledPlugins.includes("ticket")
     this.groupPluginEnabled = enabledPlugins.includes("participant-group")
