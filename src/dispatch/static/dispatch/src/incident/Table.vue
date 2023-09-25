@@ -23,7 +23,7 @@
           <v-card-title>
             <v-text-field
               v-model="q"
-              append-inner-icon="search"
+              append-inner-icon="mdi-magnify"
               label="Search"
               single-line
               hide-details
@@ -48,40 +48,40 @@
             show-select
             @click:row="showIncidentEditSheet"
           >
-            <template #item.project.name="{ item }">
-              <v-chip size="small" :color="item.project.color" text-color="white">
-                {{ item.project.name }}
+            <template #item.project.name="{ item, value }">
+              <v-chip size="small" :color="item.project.color">
+                {{ value }}
               </v-chip>
             </template>
-            <template #item.incident_severity.name="{ item }">
-              <incident-severity :severity="item.incident_severity.name" />
+            <template #item.incident_severity.name="{ value }">
+              <incident-severity :severity="value" />
             </template>
-            <template #item.incident_priority.name="{ item }">
-              <incident-priority :priority="item.incident_priority.name" />
+            <template #item.incident_priority.name="{ value }">
+              <incident-priority :priority="value" />
             </template>
-            <template #item.status="{ item }">
-              <incident-status :status="item.status" :id="item.id" />
+            <template #item.status="{ item, value }">
+              <incident-status :status="value" :id="item.id" />
             </template>
-            <template #item.incident_costs="{ item }">
-              <incident-cost-card :incident-costs="item.incident_costs" />
+            <template #item.incident_costs="{ value }">
+              <incident-cost-card :incident-costs="value" />
             </template>
-            <template #item.commander="{ item }">
-              <incident-participant :participant="item.commander" />
+            <template #item.commander="{ value }">
+              <incident-participant :participant="value" />
             </template>
-            <template #item.reported_at="{ item }">
+            <template #item.reported_at="{ value }">
               <v-tooltip location="bottom">
                 <template #activator="{ props }">
-                  <span v-bind="props">{{ formatRelativeDate(item.reported_at) }}</span>
+                  <span v-bind="props">{{ formatRelativeDate(value) }}</span>
                 </template>
-                <span>{{ formatDate(item.reported_at) }}</span>
+                <span>{{ formatDate(value) }}</span>
               </v-tooltip>
             </template>
-            <template #item.closed_at="{ item }">
+            <template #item.closed_at="{ value }">
               <v-tooltip location="bottom">
                 <template #activator="{ props }">
-                  <span v-bind="props">{{ formatRelativeDate(item.closed_at) }}</span>
+                  <span v-bind="props">{{ formatRelativeDate(value) }}</span>
                 </template>
-                <span>{{ formatDate(item.closed_at) }}</span>
+                <span>{{ formatDate(value) }}</span>
               </v-tooltip>
             </template>
             <template #item.data-table-actions="{ item }">
@@ -170,18 +170,18 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", align: "left", width: "10%" },
-        { text: "Title", value: "title", sortable: false },
-        { text: "Status", value: "status" },
-        { text: "Type", value: "incident_type.name" },
-        { text: "Severity", value: "incident_severity.name", width: "10%" },
-        { text: "Priority", value: "incident_priority.name", width: "10%" },
-        { text: "Project", value: "project.name", sortable: true },
-        { text: "Commander", value: "commander", sortable: false },
-        { text: "Cost", value: "incident_costs", sortable: false },
-        { text: "Reported At", value: "reported_at" },
-        { text: "Closed At", value: "closed_at" },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", key: "name", align: "left", width: "10%" },
+        { title: "Title", key: "title", sortable: false },
+        { title: "Status", key: "status" },
+        { title: "Type", key: "incident_type.name" },
+        { title: "Severity", key: "incident_severity.name", width: "10%" },
+        { title: "Priority", key: "incident_priority.name", width: "10%" },
+        { title: "Project", key: "project.name", sortable: true },
+        { title: "Commander", key: "commander", sortable: false },
+        { title: "Cost", key: "incident_costs", sortable: false },
+        { title: "Reported At", key: "reported_at" },
+        { title: "Closed At", key: "closed_at" },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
       showEditSheet: false,
     }
@@ -232,7 +232,7 @@ export default {
   methods: {
     ...mapActions("incident", ["getAll", "showNewSheet", "showDeleteDialog", "showReportDialog"]),
     ...mapActions("workflow", ["showRun"]),
-    showIncidentEditSheet(item) {
+    showIncidentEditSheet(e, { item }) {
       this.$router.push({ name: "IncidentTableEdit", params: { name: item.name } })
     },
   },

@@ -95,7 +95,7 @@
                   :loading="previewRowsLoading"
                 >
                   <template #item.data-table-actions="{ item }">
-                    <raw-signal-viewer v-model="item.raw" />
+                    <raw-signal-viewer :value="item" />
                   </template>
                 </v-data-table>
               </v-card-text>

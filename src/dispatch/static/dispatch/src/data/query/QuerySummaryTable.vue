@@ -1,8 +1,8 @@
 <template>
   <v-data-table :headers="headers" :items="items">
-    <template #item.project.name="{ item }">
-      <v-chip size="small" :color="item.raw.project.color">
-        {{ item.raw.project.name }}
+    <template #item.project.name="{ item, value }">
+      <v-chip size="small" :color="item.project.color">
+        {{ value }}
       </v-chip>
     </template>
     <template #item.data-table-actions="{ item }">
@@ -11,7 +11,7 @@
           <v-btn icon="mdi-dots-vertical" variant="text" v-bind="props" />
         </template>
         <v-list>
-          <v-list-item :to="{ name: 'QueryTableEdit', params: { name: item.raw.name } }">
+          <v-list-item :to="{ name: 'QueryTableEdit', params: { name: item.name } }">
             <v-list-item-title>View / Edit</v-list-item-title>
           </v-list-item>
         </v-list>

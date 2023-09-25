@@ -34,8 +34,8 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #item.enabled="{ item }">
-              <v-checkbox-btn v-model="item.enabled" disabled />
+            <template #item.enabled="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
             <template #item.data-table-actions="{ item }">
               <v-menu location="right" origin="overlap">
@@ -80,11 +80,11 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", sortable: true },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Scope", value: "scope", sortable: true },
-        { text: "Enabled", value: "enabled", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", value: "name", sortable: true },
+        { title: "Description", value: "description", sortable: false },
+        { title: "Scope", value: "scope", sortable: true },
+        { title: "Enabled", value: "enabled", sortable: true },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },

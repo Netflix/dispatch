@@ -41,14 +41,14 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #item.page_assignee="{ item }">
-              <v-checkbox-btn v-model="item.page_assignee" disabled />
+            <template #item.page_assignee="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #item.default="{ item }">
-              <v-checkbox-btn v-model="item.default" disabled />
+            <template #item.default="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #item.enabled="{ item }">
-              <v-checkbox-btn v-model="item.enabled" disabled />
+            <template #item.enabled="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
             <template #item.data-table-actions="{ item }">
               <v-menu location="right" origin="overlap">
@@ -89,13 +89,13 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", sortable: true },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Page Assignee", value: "page_assignee", sortable: true },
-        { text: "Default", value: "default", sortable: true },
-        { text: "Enabled", value: "enabled", sortable: true },
-        { text: "View Order", value: "view_order", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", value: "name", sortable: true },
+        { title: "Description", value: "description", sortable: false },
+        { title: "Page Assignee", value: "page_assignee", sortable: true },
+        { title: "Default", value: "default", sortable: true },
+        { title: "Enabled", value: "enabled", sortable: true },
+        { title: "View Order", value: "view_order", sortable: true },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },

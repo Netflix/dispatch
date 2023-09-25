@@ -46,7 +46,7 @@
               </router-link>
             </template>
             <template #item.project.name="{ item }">
-              <v-chip size="small" :color="item.project.color" text-color="white">
+              <v-chip size="small" :color="item.project.color">
                 {{ item.project.name }}
               </v-chip>
             </template>
@@ -68,8 +68,8 @@
             <template #item.owner="{ item }">
               <service-popover v-if="item.owner" :service="item.owner" />
             </template>
-            <template #item.data_last_loaded_at="{ item }">
-              {{ formatRelativeDate(item.data_last_loaded_at) }}
+            <template #item.data_last_loaded_at="{ value }">
+              {{ formatRelativeDate(value) }}
             </template>
             <template #item.data-table-actions="{ item }">
               <v-menu location="right" origin="overlap">
@@ -119,16 +119,16 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", sortable: true },
-        { text: "Project", value: "project.name", sortable: false },
-        { text: "Environment", value: "source_environment.name", sortable: true },
-        { text: "Owner", value: "owner" },
-        { text: "Status", value: "source_status", sortable: true },
-        { text: "Type", value: "source_type", sortable: true },
-        { text: "Last Loaded", value: "data_last_loaded_at", sortable: true },
+        { title: "Name", value: "name", sortable: true },
+        { title: "Project", value: "project.name", sortable: false },
+        { title: "Environment", value: "source_environment.name", sortable: true },
+        { title: "Owner", value: "owner" },
+        { title: "Status", value: "source_status", sortable: true },
+        { title: "Type", value: "source_type", sortable: true },
+        { title: "Last Loaded", value: "data_last_loaded_at", sortable: true },
         {
-          text: "",
-          value: "data-table-actions",
+          title: "",
+          key: "data-table-actions",
           sortable: false,
           align: "end",
         },

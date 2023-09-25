@@ -50,14 +50,11 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #item.resource_type="{ item }">
-              {{ getResourceTitle(item.resource_type) }}
+            <template #item.resource_type="{ value }">
+              {{ getResourceTitle(value) }}
             </template>
-            <template #item.evergreen="{ item }">
-              <v-checkbox-btn v-model="item.evergreen" disabled />
-            </template>
-            <template #item.description="{ item }">
-              {{ item.description }}
+            <template #item.evergreen="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
             <template #item.name="{ item }">
               <a :href="item.weblink" target="_blank" style="text-decoration: none">
@@ -110,11 +107,11 @@ export default {
     return {
       runbookDocumentTypes: runbookDocumentTypes,
       headers: [
-        { text: "Name", value: "name", sortable: true },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Type", value: "resource_type", sortable: true },
-        { text: "Evergreen", value: "evergreen", sortable: true, width: "10%" },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", key: "name", sortable: true },
+        { title: "Description", key: "description", sortable: false },
+        { title: "Type", key: "resource_type", sortable: true },
+        { title: "Evergreen", key: "evergreen", sortable: true, width: "10%" },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },

@@ -4,11 +4,11 @@
       <div class="d-flex">
         <v-text-field
           v-model="q"
-          append-inner-icon="search"
+          append-inner-icon="mdi-magnify"
           label="Search"
           single-line
           hide-details
-          append-inner-icon="mdi-plus"
+          append-icon="mdi-plus"
           @click:append="addNew"
           clearable
         />
@@ -75,16 +75,16 @@ export default {
     q: "",
     headers: [
       {
-        text: "Name",
-        value: "name",
+        title: "Name",
+        key: "name",
         sortable: true,
       },
       {
-        text: "Description",
-        value: "description",
+        title: "Description",
+        key: "description",
         sortable: false,
       },
-      { text: "Actions", value: "actions", sortable: false, width: "100px" },
+      { title: "Actions", key: "actions", sortable: false, width: "100px" },
     ],
     editedIndex: -1,
     editedItem: {

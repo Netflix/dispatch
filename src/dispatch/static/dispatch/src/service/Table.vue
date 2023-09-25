@@ -34,13 +34,13 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #[`item.health_metrics`]="{ item }">
-              <v-checkbox-btn v-model="item.health_metrics" disabled />
+            <template #item.health_metrics="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #[`item.is_active`]="{ item }">
-              <v-checkbox-btn v-model="item.is_active" disabled />
+            <template #item.is_active="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #[`item.data-table-actions`]="{ item }">
+            <template #item.data-table-actions="{ item }">
               <v-menu location="right" origin="overlap">
                 <template #activator="{ props }">
                   <v-btn icon variant="text" v-bind="props">
@@ -83,13 +83,13 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", sortable: true },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Type", value: "type", sortable: true },
-        { text: "External Id", value: "external_id", sortable: true },
-        { text: "Collect Health Metrics", value: "health_metrics", sortable: true },
-        { text: "Enabled", value: "is_active", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", value: "name", sortable: true },
+        { title: "Description", value: "description", sortable: false },
+        { title: "Type", value: "type", sortable: true },
+        { title: "External Id", value: "external_id", sortable: true },
+        { title: "Collect Health Metrics", value: "health_metrics", sortable: true },
+        { title: "Enabled", value: "is_active", sortable: true },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },

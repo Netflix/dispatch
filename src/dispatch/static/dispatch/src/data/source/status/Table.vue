@@ -77,11 +77,11 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", sortable: true },
-        { text: "Description", value: "description", sortable: false },
+        { title: "Name", value: "name", sortable: true },
+        { title: "Description", value: "description", sortable: false },
         {
-          text: "",
-          value: "data-table-actions",
+          title: "",
+          key: "data-table-actions",
           sortable: false,
           align: "end",
         },

@@ -41,11 +41,11 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #item.default="{ item }">
-              <v-checkbox-btn v-model="item.default" disabled />
+            <template #item.default="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #item.enabled="{ item }">
-              <v-checkbox-btn v-model="item.enabled" disabled />
+            <template #item.enabled="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
             <template #item.data-table-actions="{ item }">
               <v-menu location="right" origin="overlap">
@@ -85,13 +85,13 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", sortable: true },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Incident Document", value: "incident_template_document.name", sortable: false },
-        { text: "Visibility", value: "visibility", sortable: false },
-        { text: "Default", value: "default", sortable: true },
-        { text: "Enabled", value: "enabled", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", value: "name", sortable: true },
+        { title: "Description", value: "description", sortable: false },
+        { title: "Incident Document", value: "incident_template_document.name", sortable: false },
+        { title: "Visibility", value: "visibility", sortable: false },
+        { title: "Default", value: "default", sortable: true },
+        { title: "Enabled", value: "enabled", sortable: true },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },

@@ -41,14 +41,14 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #item.page_commander="{ item }">
-              <v-checkbox-btn v-model="item.page_commander" disabled />
+            <template #item.page_commander="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #item.default="{ item }">
-              <v-checkbox-btn v-model="item.default" disabled />
+            <template #item.default="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #item.enabled="{ item }">
-              <v-checkbox-btn v-model="item.enabled" disabled />
+            <template #item.enabled="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
             <template #item.data-table-actions="{ item }">
               <v-menu location="right" origin="overlap">
@@ -88,15 +88,15 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", sortable: true },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Page Commander", value: "page_commander", sortable: true },
-        { text: "Default", value: "default", sortable: true },
-        { text: "Enabled", value: "enabled", sortable: true },
-        { text: "Tactical Report Reminder", value: "tactical_report_reminder", sortable: true },
-        { text: "Executive Report Reminder", value: "executive_report_reminder", sortable: true },
-        { text: "View Order", value: "view_order", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", value: "name", sortable: true },
+        { title: "Description", value: "description", sortable: false },
+        { title: "Page Commander", value: "page_commander", sortable: true },
+        { title: "Default", value: "default", sortable: true },
+        { title: "Enabled", value: "enabled", sortable: true },
+        { title: "Tactical Report Reminder", value: "tactical_report_reminder", sortable: true },
+        { title: "Executive Report Reminder", value: "executive_report_reminder", sortable: true },
+        { title: "View Order", value: "view_order", sortable: true },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },

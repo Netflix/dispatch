@@ -42,13 +42,13 @@ export default {
       value: [200, 675, 410, 390, 310, 460, 250, 240],
       headers: [
         {
-          text: "Name",
+          title: "Name",
           align: "start",
           sortable: false,
-          value: "name",
+          key: "name",
         },
-        { text: "Description", value: "description" },
-        { text: "Source", value: "originator" },
+        { title: "Description", key: "description" },
+        { title: "Source", key: "originator" },
       ],
     }
   },

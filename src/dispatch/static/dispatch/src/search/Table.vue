@@ -43,83 +43,58 @@
             loading-text="Loading... Please wait"
           >
             <!-- TODO(mvilanova): Allow to view the list of individuals, teams, services, and notifications upon clicking on the chip -->
-            <template #[`item.individuals`]="{ item }">
-              <v-chip
-                v-if="item.individuals.length == 0"
-                size="small"
-                color="green"
-                text-color="white"
-              >
+            <template #item.individuals="{ item }">
+              <v-chip v-if="item.individuals.length == 0" size="small" color="green">
                 {{ item.individuals.length }}
               </v-chip>
-              <v-chip
-                v-if="item.individuals.length > 0"
-                size="small"
-                color="red"
-                text-color="white"
-              >
+              <v-chip v-if="item.individuals.length > 0" size="small" color="red">
                 {{ item.individuals.length }}
               </v-chip>
             </template>
-            <template #[`item.teams`]="{ item }">
-              <v-chip v-if="item.teams.length == 0" size="small" color="green" text-color="white">
+            <template #item.teams="{ item }">
+              <v-chip v-if="item.teams.length == 0" size="small" color="green">
                 {{ item.teams.length }}
               </v-chip>
-              <v-chip v-if="item.teams.length > 0" size="small" color="red" text-color="white">
+              <v-chip v-if="item.teams.length > 0" size="small" color="red">
                 {{ item.teams.length }}
               </v-chip>
             </template>
-            <template #[`item.services`]="{ item }">
-              <v-chip
-                v-if="item.services.length == 0"
-                size="small"
-                color="green"
-                text-color="white"
-              >
+            <template #item.services="{ item }">
+              <v-chip v-if="item.services.length == 0" size="small" color="green">
                 {{ item.services.length }}
               </v-chip>
-              <v-chip v-if="item.services.length > 0" size="small" color="red" text-color="white">
+              <v-chip v-if="item.services.length > 0" size="small" color="red">
                 {{ item.services.length }}
               </v-chip>
             </template>
-            <template #[`item.notifications`]="{ item }">
-              <v-chip
-                v-if="item.notifications.length == 0"
-                size="small"
-                color="green"
-                text-color="white"
-              >
+            <template #item.notifications="{ item }">
+              <v-chip v-if="item.notifications.length == 0" size="small" color="green">
                 {{ item.notifications.length }}
               </v-chip>
-              <v-chip
-                v-if="item.notifications.length > 0"
-                size="small"
-                color="red"
-                text-color="white"
-              >
+              <v-chip v-if="item.notifications.length > 0" size="small" color="red">
                 {{ item.notifications.length }}
               </v-chip>
             </template>
-            <template #[`item.enabled`]="{ item }">
-              <v-checkbox-btn v-model="item.enabled" disabled />
+            <template #item.enabled="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #[`item.created_at`]="{ item }">
+            <template #item.created_at="{ value }">
               <v-tooltip location="bottom">
                 <template #activator="{ props }">
-                  <span v-bind="props">{{ formatRelativeDate(item.created_at) }}</span>
+                  <span v-bind="props">{{ formatRelativeDate(value) }}</span>
                 </template>
-                <span>{{ formatDate(item.created_at) }}</span>
+                <span>{{ formatDate(value) }}</span>
               </v-tooltip>
             </template>
-            <template #[`item.updated_at`]="{ item }">
+            <template #item.updated_at="{ value }">
               <v-tooltip location="bottom">
                 <template #activator="{ props }">
-                  <span v-bind="props">{{ formatRelativeDate(item.updated_at) }}</span>
+                  <span v-bind="props">{{ formatRelativeDate(value) }}</span>
                 </template>
-                <span>{{ formatDate(item.updated_at) }}</span>
+                <span>{{ formatDate(value) }}</span>
               </v-tooltip>
             </template>
-            <template #[`item.data-table-actions`]="{ item }">
+            <template #item.data-table-actions="{ item }">
               <v-menu location="right" origin="overlap">
                 <template #activator="{ props }">
                   <v-btn icon variant="text" v-bind="props">
@@ -158,17 +133,17 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", align: "left", width: "10%" },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Individuals", value: "individuals" },
-        { text: "Teams", value: "teams" },
-        { text: "Services", value: "services" },
-        { text: "Notifications", value: "notifications" },
-        { text: "Creator", value: "creator.email" },
-        { text: "Created At", value: "created_at" },
-        { text: "Updated At", value: "updated_at" },
-        { text: "Enabled", value: "enabled" },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", value: "name", align: "left", width: "10%" },
+        { title: "Description", value: "description", sortable: false },
+        { title: "Individuals", value: "individuals" },
+        { title: "Teams", value: "teams" },
+        { title: "Services", value: "services" },
+        { title: "Notifications", value: "notifications" },
+        { title: "Creator", value: "creator.email" },
+        { title: "Created At", value: "created_at" },
+        { title: "Updated At", value: "updated_at" },
+        { title: "Enabled", value: "enabled" },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
       showEditSheet: false,
     }

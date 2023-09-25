@@ -40,15 +40,15 @@
             <template #item.filters="{ item }">
               <search-filter v-for="filter in item.filters" :key="filter.id" :filter="filter" />
             </template>
-            <template #item.enabled="{ item }">
-              <v-checkbox-btn v-model="item.enabled" disabled />
+            <template #item.enabled="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #item.created_at="{ item }">
+            <template #item.created_at="{ value }">
               <v-tooltip location="bottom">
                 <template #activator="{ props }">
-                  <span v-bind="props">{{ formatRelativeDate(item.created_at) }}</span>
+                  <span v-bind="props">{{ formatRelativeDate(value) }}</span>
                 </template>
-                <span>{{ formatDate(item.created_at) }}</span>
+                <span>{{ formatDate(value) }}</span>
               </v-tooltip>
             </template>
             <template #item.data-table-actions="{ item }">
@@ -123,14 +123,14 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", sortable: false },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Type", value: "type", sortable: false },
-        { text: "Target", value: "target", sortable: false },
-        { text: "Filters", value: "filters", sortable: false },
-        { text: "Enabled", value: "enabled", sortable: false },
-        { text: "Created At", value: "created_at", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", value: "name", sortable: false },
+        { title: "Description", value: "description", sortable: false },
+        { title: "Type", value: "type", sortable: false },
+        { title: "Target", value: "target", sortable: false },
+        { title: "Filters", value: "filters", sortable: false },
+        { title: "Enabled", value: "enabled", sortable: false },
+        { title: "Created At", value: "created_at", sortable: true },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },

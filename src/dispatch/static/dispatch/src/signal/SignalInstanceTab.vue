@@ -7,22 +7,22 @@
       'items-per-page-options': [25, 50, 100],
     }"
   >
-    <template #item.signal="{ item }">
-      <signal-popover v-model="item.signal" />
+    <template #item.signal="{ value }">
+      <signal-popover :value="value" />
     </template>
-    <template #item.entities="{ item }">
+    <template #item.entities="{ value }">
       <v-row>
-        <v-chip v-for="(entity, index) in item.entities" :key="index" class="mr-2">
+        <v-chip v-for="(entity, index) in value" :key="index" class="mr-2">
           {{ entity.entity_type.name }}
         </v-chip>
       </v-row>
     </template>
-    <template #item.created_at="{ item }">
+    <template #item.created_at="{ value }">
       <v-tooltip location="bottom">
         <template #activator="{ props }">
-          <span v-bind="props">{{ formatRelativeDate(item.created_at) }}</span>
+          <span v-bind="props">{{ formatRelativeDate(value) }}</span>
         </template>
-        <span>{{ formatDate(item.created_at) }}</span>
+        <span>{{ formatDate(value) }}</span>
       </v-tooltip>
     </template>
     <template #item.data-table-actions="{ item }">
@@ -30,7 +30,7 @@
         <v-icon>mdi-play-circle-outline</v-icon>
       </v-btn>
       <workflow-run-modal />
-      <raw-signal-viewer v-model="item.raw" />
+      <raw-signal-viewer :value="item" />
     </template>
   </v-data-table>
 </template>
@@ -62,10 +62,10 @@ export default {
       menu: false,
       workflowRunDialog: false,
       headers: [
-        { text: "Signal", value: "signal", sortable: false },
-        { text: "Entities", value: "entities", sortable: false },
-        { text: "Created At", value: "created_at" },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Signal", key: "signal", sortable: false },
+        { title: "Entities", key: "entities", sortable: false },
+        { title: "Created At", key: "created_at" },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },

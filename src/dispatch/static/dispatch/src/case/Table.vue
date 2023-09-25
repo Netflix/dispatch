@@ -47,37 +47,37 @@
             show-select
             @click:row="showCaseEditSheet"
           >
-            <template #item.case_severity.name="{ item }">
-              <case-severity :severity="item.case_severity.name" />
+            <template #item.case_severity.name="{ value }">
+              <case-severity :severity="value" />
             </template>
-            <template #item.case_priority.name="{ item }">
-              <case-priority :priority="item.case_priority.name" />
+            <template #item.case_priority.name="{ value }">
+              <case-priority :priority="value" />
             </template>
             <template #item.status="{ item }">
               <case-status :status="item.status" :id="item.id" />
             </template>
             <template #item.project.name="{ item }">
-              <v-chip size="small" :color="item.project.color" text-color="white">
+              <v-chip size="small" :color="item.project.color">
                 {{ item.project.name }}
               </v-chip>
             </template>
-            <template #item.assignee="{ item }">
-              <case-participant :participant="item.assignee" />
+            <template #item.assignee="{ value }">
+              <case-participant :participant="value" />
             </template>
-            <template #item.reported_at="{ item }">
+            <template #item.reported_at="{ value }">
               <v-tooltip location="bottom">
                 <template #activator="{ props }">
-                  <span v-bind="props">{{ formatRelativeDate(item.reported_at) }}</span>
+                  <span v-bind="props">{{ formatRelativeDate(value) }}</span>
                 </template>
-                <span>{{ formatDate(item.reported_at) }}</span>
+                <span>{{ formatDate(value) }}</span>
               </v-tooltip>
             </template>
-            <template #item.closed_at="{ item }">
+            <template #item.closed_at="{ value }">
               <v-tooltip location="bottom">
                 <template #activator="{ props }">
-                  <span v-bind="props">{{ formatRelativeDate(item.closed_at) }}</span>
+                  <span v-bind="props">{{ formatRelativeDate(value) }}</span>
                 </template>
-                <span>{{ formatDate(item.closed_at) }}</span>
+                <span>{{ formatDate(value) }}</span>
               </v-tooltip>
             </template>
             <template #item.data-table-actions="{ item }">
@@ -167,17 +167,17 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", align: "left", width: "10%" },
-        { text: "Title", value: "title", sortable: false },
-        { text: "Status", value: "status" },
-        { text: "Type", value: "case_type.name", sortable: true },
-        { text: "Severity", value: "case_severity.name", sortable: true },
-        { text: "Priority", value: "case_priority.name", sortable: true },
-        { text: "Project", value: "project.name", sortable: true },
-        { text: "Assignee", value: "assignee", sortable: true },
-        { text: "Reported At", value: "reported_at" },
-        { text: "Closed At", value: "closed_at" },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", value: "name", align: "left", width: "10%" },
+        { title: "Title", value: "title", sortable: false },
+        { title: "Status", value: "status" },
+        { title: "Type", value: "case_type.name", sortable: true },
+        { title: "Severity", value: "case_severity.name", sortable: true },
+        { title: "Priority", value: "case_priority.name", sortable: true },
+        { title: "Project", value: "project.name", sortable: true },
+        { title: "Assignee", value: "assignee", sortable: true },
+        { title: "Reported At", value: "reported_at" },
+        { title: "Closed At", value: "closed_at" },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
       showEditSheet: false,
     }

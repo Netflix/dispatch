@@ -22,48 +22,45 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #item.case="{ item }">
-              <case-popover v-if="item.case" v-model="item.case" />
+            <template #item.case="{ value }">
+              <case-popover v-if="value" :value="value" />
             </template>
-            <template #item.signal="{ item }">
-              <signal-popover v-model="item.signal" />
+            <template #item.signal="{ value }">
+              <signal-popover :value="value" />
             </template>
-            <template #item.project.name="{ item }">
-              <v-chip size="small" :color="item.project.color" text-color="white">
-                {{ item.project.name }}
+            <template #item.project.name="{ item, value }">
+              <v-chip size="small" :color="item.project.color">
+                {{ value }}
               </v-chip>
             </template>
-            <template #item.filter_action="{ item }">
+            <template #item.filter_action="{ value }">
               <v-chip
                 size="small"
-                text-color="white"
                 :color="
-                  item.filter_action === 'snooze'
-                    ? 'blue-accent-4'
-                    : item.filter_action === 'deduplicate'
-                    ? 'blue-accent-2'
-                    : ''
+                  {
+                    snooze: 'blue-accent-4',
+                    deduplicate: 'blue-accent-2',
+                  }[value]
                 "
               >
                 {{
-                  item.filter_action === "snooze"
-                    ? "Snoozed"
-                    : item.filter_action === "deduplicate"
-                    ? "Duplicate"
-                    : "Not Filtered"
+                  {
+                    snooze: "Snoozed",
+                    deduplicate: "Duplicate",
+                  }[value] || "Not Filtered"
                 }}
               </v-chip>
             </template>
-            <template #item.created_at="{ item }">
+            <template #item.created_at="{ value }">
               <v-tooltip location="bottom">
                 <template #activator="{ props }">
-                  <span v-bind="props">{{ formatRelativeDate(item.created_at) }}</span>
+                  <span v-bind="props">{{ formatRelativeDate(value) }}</span>
                 </template>
-                <span>{{ formatDate(item.created_at) }}</span>
+                <span>{{ formatDate(value) }}</span>
               </v-tooltip>
             </template>
             <template #item.data-table-actions="{ item }">
-              <raw-signal-viewer v-model="item.raw" />
+              <raw-signal-viewer :value="item" />
             </template>
           </v-data-table>
         </v-card>
@@ -94,12 +91,12 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Case", value: "case", sortable: false },
-        { text: "Signal", value: "signal", sortable: false },
-        { text: "Project", value: "project.name", sortable: true },
-        { text: "Filter Action", value: "filter_action", sortable: true },
-        { text: "Created At", value: "created_at" },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Case", value: "case", sortable: false },
+        { title: "Signal", value: "signal", sortable: false },
+        { title: "Project", value: "project.name", sortable: true },
+        { title: "Filter Action", value: "filter_action", sortable: true },
+        { title: "Created At", value: "created_at" },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },

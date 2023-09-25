@@ -42,29 +42,24 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #item.enabled="{ item }">
-              <v-checkbox-btn v-model="item.enabled" disabled />
+            <template #item.enabled="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #item.status="{ item }">
-              <case-status :status="item.status" :id="item.id" />
+            <template #item.status="{ item, value }">
+              <case-status :status="value" :id="item.id" />
             </template>
             <template #item.project.name="{ item }">
-              <v-chip size="small" :color="item.project.color" text-color="white">
+              <v-chip size="small" :color="item.project.color">
                 {{ item.project.name }}
               </v-chip>
             </template>
             <template #item.case_type="{ item }">
-              <v-chip v-if="item.case_type" size="small" color="info" text-color="white">
+              <v-chip v-if="item.case_type" size="small" color="info">
                 {{ item.case_type.name }}
               </v-chip>
             </template>
             <template #item.case_priority="{ item }">
-              <v-chip
-                v-if="item.case_priority"
-                size="small"
-                :color="item.case_priority.color"
-                text-color="white"
-              >
+              <v-chip v-if="item.case_priority" size="small" :color="item.case_priority.color">
                 {{ item.case_priority.name }}
               </v-chip>
             </template>
@@ -121,15 +116,15 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", align: "left", width: "10%" },
-        { text: "Variant", value: "variant", sortable: true },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Enabled", value: "enabled", sortable: true },
-        { text: "Owner", value: "owner" },
-        { text: "Case Type", value: "case_type" },
-        { text: "Case Priority", value: "case_priority" },
-        { text: "", value: "external_url", sortable: false },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", value: "name", align: "left", width: "10%" },
+        { title: "Variant", value: "variant", sortable: true },
+        { title: "Description", value: "description", sortable: false },
+        { title: "Enabled", value: "enabled", sortable: true },
+        { title: "Owner", value: "owner" },
+        { title: "Case Type", value: "case_type" },
+        { title: "Case Priority", value: "case_priority" },
+        { title: "", value: "external_url", sortable: false },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
       showEditSheet: false,
     }

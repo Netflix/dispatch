@@ -9,28 +9,28 @@
     clearable
     closable-chips
     hide-selected
+    :hide-no-data="!search"
     item-title="name"
     item-value="id"
     multiple
     no-filter
     v-model="project"
+    :menu-props="{ maxWidth: 0 }"
   >
     <template #no-data>
-      <v-list-item>
+      <v-list-item v-if="search">
         <v-list-item-title>
-          No Projects matching "
-          <strong>{{ search }}</strong
+          No Projects matching "<strong>{{ search }}</strong
           >".
         </v-list-item-title>
       </v-list-item>
     </template>
-    <template #item="data">
-      <template>
-        <v-list-item-title>{{ data.item.name }}</v-list-item-title>
-        <v-list-item-subtitle style="width: 200px" class="text-truncate">
-          {{ data.item.description }}
+    <template #item="{ props, item }">
+      <v-list-item v-bind="props">
+        <v-list-item-subtitle :title="item.raw.description">
+          {{ item.raw.description }}
         </v-list-item-subtitle>
-      </template>
+      </v-list-item>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
@@ -50,7 +50,7 @@ export default {
   name: "ProjectComboBox",
 
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -77,7 +77,7 @@ export default {
   computed: {
     project: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         this.search = null
@@ -87,7 +87,7 @@ export default {
           }
           return true
         })
-        this.$emit("input", _projects)
+        this.$emit("update:modelValue", _projects)
       },
     },
   },

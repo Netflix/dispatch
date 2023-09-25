@@ -34,8 +34,8 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #item.discoverable="{ item }">
-              <v-checkbox-btn v-model="item.discoverable" disabled />
+            <template #item.discoverable="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
             <template #item.data-table-actions="{ item }">
               <v-menu location="right" origin="overlap">
@@ -80,9 +80,9 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Text", value: "text", sortable: true },
-        { text: "Discoverable", value: "discoverable", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Text", value: "text", sortable: true },
+        { title: "Discoverable", value: "discoverable", sortable: true },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },

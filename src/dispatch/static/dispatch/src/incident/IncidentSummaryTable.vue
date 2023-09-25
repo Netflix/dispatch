@@ -1,28 +1,28 @@
 <template>
   <v-data-table hover :headers="headers" :items="items" :loading="loading">
-    <template #item.incident_priority.name="{ item }">
-      <incident-priority :priority="item.raw.incident_priority.name" />
+    <template #item.incident_priority.name="{ value }">
+      <incident-priority :priority="value" />
     </template>
-    <template #item.status="{ item }">
-      <incident-status :status="item.raw.status" :id="item.raw.id" />
+    <template #item.status="{ value }">
+      <incident-status :status="value" :id="item.id" />
     </template>
-    <template #item.commander="{ item }">
-      <incident-participant :participant="item.raw.commander" />
+    <template #item.commander="{ value }">
+      <incident-participant :participant="value" />
     </template>
-    <template #item.reporter="{ item }">
-      <incident-participant :participant="item.raw.reporter" />
+    <template #item.reporter="{ value }">
+      <incident-participant :participant="value" />
     </template>
-    <template #item.project.name="{ item }">
-      <v-chip size="small" :color="item.raw.project.color">
-        {{ item.raw.project.name }}
+    <template #item.project.name="{ item, value }">
+      <v-chip size="small" :color="item.project.color">
+        {{ value }}
       </v-chip>
     </template>
-    <template #item.reported_at="{ item }">
+    <template #item.reported_at="{ value }">
       <v-tooltip location="bottom">
         <template #activator="{ props }">
-          <span v-bind="props">{{ formatRelativeDate(item.raw.reported_at) }}</span>
+          <span v-bind="props">{{ formatRelativeDate(value) }}</span>
         </template>
-        <span>{{ formatDate(item.raw.reported_at) }}</span>
+        <span>{{ formatDate(value) }}</span>
       </v-tooltip>
     </template>
     <template #item.data-table-actions="{ item }">
@@ -31,7 +31,7 @@
           <v-btn icon="mdi-dots-vertical" variant="text" density="comfortable" v-bind="props" />
         </template>
         <v-list>
-          <v-list-item :to="{ name: 'IncidentTableEdit', params: { name: item.raw.name } }">
+          <v-list-item :to="{ name: 'IncidentTableEdit', params: { name: item.name } }">
             <v-list-item-title>View / Edit</v-list-item-title>
           </v-list-item>
         </v-list>

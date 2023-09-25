@@ -45,8 +45,8 @@
             <template #item.plugin_instance="{ item }">
               {{ item.plugin_instance.plugin.title }}
             </template>
-            <template #item.enabled="{ item }">
-              <v-checkbox-btn v-model="item.enabled" disabled />
+            <template #item.enabled="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
             <template #item.data-table-actions="{ item }">
               <v-menu location="right" origin="overlap">
@@ -88,12 +88,12 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", sortable: true },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Enabled", value: "enabled", sortable: true },
-        { text: "ResourceId", value: "resource_id", sortable: true },
-        { text: "Plugin", value: "plugin_instance", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", value: "name", sortable: true },
+        { title: "Description", value: "description", sortable: false },
+        { title: "Enabled", value: "enabled", sortable: true },
+        { title: "ResourceId", value: "resource_id", sortable: true },
+        { title: "Plugin", value: "plugin_instance", sortable: true },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },

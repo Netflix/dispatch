@@ -42,14 +42,11 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #item.default="{ item }">
-              <v-checkbox-btn v-model="item.default" disabled />
+            <template #item.default="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #item.editable="{ item }">
-              <v-checkbox-btn v-model="item.editable" disabled />
-            </template>
-            <template #item.details="{ item }">
-              {{ item.details }}
+            <template #item.editable="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
             <template #item.created_at="{ item }">
               <v-tooltip location="bottom">
@@ -104,14 +101,14 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", sortable: false },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Category", value: "category", sortable: false },
-        { text: "Details", value: "details", sortable: false },
-        { text: "Default", value: "default", sortable: true },
-        { text: "Editable", value: "editable", sortable: true },
-        { text: "Created At", value: "created_at", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", value: "name", sortable: false },
+        { title: "Description", value: "description", sortable: false },
+        { title: "Category", value: "category", sortable: false },
+        { title: "Details", value: "details", sortable: false },
+        { title: "Default", value: "default", sortable: true },
+        { title: "Editable", value: "editable", sortable: true },
+        { title: "Created At", value: "created_at", sortable: true },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },

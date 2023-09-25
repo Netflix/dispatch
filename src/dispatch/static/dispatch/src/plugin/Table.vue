@@ -41,14 +41,14 @@
                 <v-icon size="small">open_in_new</v-icon>
               </a>
             </template>
-            <template #item.enabled="{ item }">
-              <v-checkbox-btn v-model="item.enabled" disabled />
+            <template #item.enabled="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #item.plugin.multiple="{ item }">
-              <v-checkbox-btn v-model="item.plugin.multiple" disabled />
+            <template #item.plugin.multiple="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #item.plugin.required="{ item }">
-              <v-checkbox-btn v-model="item.plugin.required" disabled />
+            <template #item.plugin.required="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
             <template #item.data-table-actions="{ item }">
               <v-menu location="right" origin="overlap">
@@ -93,15 +93,15 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Title", value: "plugin.title", sortable: true },
-        { text: "Slug", value: "plugin.slug", sortable: true },
-        { text: "Author", value: "plugin.author", sortable: true },
-        { text: "Version", value: "plugin.version", sortable: true },
-        { text: "Enabled", value: "enabled", sortable: true },
-        { text: "Required", value: "plugin.required", sortable: true },
-        { text: "Multiple Allowed", value: "plugin.multiple", sortable: true },
-        { text: "Type", value: "plugin.type", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Title", value: "plugin.title", sortable: true },
+        { title: "Slug", value: "plugin.slug", sortable: true },
+        { title: "Author", value: "plugin.author", sortable: true },
+        { title: "Version", value: "plugin.version", sortable: true },
+        { title: "Enabled", value: "enabled", sortable: true },
+        { title: "Required", value: "plugin.required", sortable: true },
+        { title: "Multiple Allowed", value: "plugin.multiple", sortable: true },
+        { title: "Type", value: "plugin.type", sortable: true },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },

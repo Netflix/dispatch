@@ -34,11 +34,11 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #item.is_active="{ item }">
-              <v-checkbox-btn v-model="item.is_active" disabled />
+            <template #item.is_active="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #item.is_external="{ item }">
-              <v-checkbox-btn v-model="item.is_external" disabled />
+            <template #item.is_external="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
             <template #item.data-table-actions="{ item }">
               <v-menu location="right" origin="overlap">
@@ -83,12 +83,12 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", sortable: true },
-        { text: "Email", value: "email", sortable: true },
-        { text: "Company", value: "company", sortable: true },
-        { text: "Active", value: "is_active", sortable: true },
-        { text: "External", value: "is_external", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", value: "name", sortable: true },
+        { title: "Email", value: "email", sortable: true },
+        { title: "Company", value: "company", sortable: true },
+        { title: "Active", value: "is_active", sortable: true },
+        { title: "External", value: "is_external", sortable: true },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },

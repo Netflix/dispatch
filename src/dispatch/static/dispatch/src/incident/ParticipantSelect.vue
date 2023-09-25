@@ -7,7 +7,6 @@
     @update:search="getFilteredData()"
     chips
     clearable
-    closable-chips
     hide-selected
     item-title="individual.name"
     no-filter
@@ -23,9 +22,8 @@
         </v-list-item-title>
       </v-list-item>
     </template>
-    <template #item="data">
-      <v-list-item-title>{{ data.item.individual.name }}</v-list-item-title>
-      <v-list-item-subtitle>{{ data.item.individual.email }}</v-list-item-subtitle>
+    <template #item="{ props, item }">
+      <v-list-item v-bind="props" :subtitle="item.raw.individual.email" />
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
@@ -44,7 +42,7 @@ import IndividualApi from "@/individual/api"
 export default {
   name: "ParticipantSelect",
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return null
@@ -71,10 +69,10 @@ export default {
   computed: {
     participant: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },

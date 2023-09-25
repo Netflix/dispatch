@@ -34,13 +34,10 @@ const DEFAULT_TIME_FORMAT = "HH:mm:ss"
 export default {
   name: "DatetimeTimePicker",
 
-  model: {
-    prop: "datetime",
-    event: "input",
-  },
+  inheritAttrs: false,
 
   props: {
-    datetime: {
+    modelValue: {
       type: [Date, String],
       default: null,
     },
@@ -97,15 +94,15 @@ export default {
   },
   methods: {
     init() {
-      if (!this.datetime) {
+      if (!this.modelValue) {
         return
       }
       let initDateTime
 
-      if (this.datetime instanceof Date) {
-        initDateTime = this.datetime
-      } else if (typeof this.datetime === "string" || this.datetime instanceof String) {
-        initDateTime = parseISO(this.datetime)
+      if (this.modelValue instanceof Date) {
+        initDateTime = this.modelValue
+      } else if (typeof this.modelValue === "string" || this.modelValue instanceof String) {
+        initDateTime = parseISO(this.modelValue)
       }
       this.date = format(initDateTime, DEFAULT_DATE_FORMAT)
       this.time = format(initDateTime, DEFAULT_TIME_FORMAT)
@@ -113,13 +110,13 @@ export default {
     okHandler() {
       this.resetPicker()
       let isoString = this.selectedDatetime.toISOString()
-      this.$emit("input", isoString)
+      this.$emit("update:modelValue", isoString)
     },
     clearHandler() {
       this.resetPicker()
       this.date = DEFAULT_DATE
       this.time = DEFAULT_TIME
-      this.$emit("input", null)
+      this.$emit("update:modelValue", null)
     },
     resetPicker() {
       this.display = false
@@ -133,7 +130,7 @@ export default {
     },
   },
   watch: {
-    datetime: function () {
+    modelValue() {
       this.init()
     },
   },

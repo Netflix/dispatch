@@ -46,12 +46,12 @@ export default {
     return {
       headers: [
         {
-          text: "Name",
+          title: "Name",
           align: "start",
           sortable: true,
-          value: "name",
+          key: "name",
         },
-        { text: "Num Incidents", value: "incidents.length" },
+        { title: "Num Incidents", key: "incidents.length" },
       ],
     }
   },

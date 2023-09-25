@@ -27,12 +27,12 @@ export default {
     return {
       headers: [
         {
-          text: "Name",
+          title: "Name",
           align: "start",
           sortable: false,
-          value: "name",
+          key: "name",
         },
-        { text: "Description", value: "description" },
+        { title: "Description", key: "description" },
       ],
     }
   },

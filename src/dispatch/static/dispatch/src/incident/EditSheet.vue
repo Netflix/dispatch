@@ -27,37 +27,37 @@
         </v-list-item>
       </template>
       <v-tabs color="primary" fixed-tabs v-model="tab">
-        <v-tab key="details"> Details </v-tab>
-        <v-tab key="resources"> Resources </v-tab>
-        <v-tab key="participants"> Participants </v-tab>
-        <v-tab key="timeline"> Timeline </v-tab>
-        <v-tab key="tasks"> Tasks </v-tab>
-        <v-tab key="workflows"> Workflows </v-tab>
-        <v-tab key="costs"> Costs </v-tab>
+        <v-tab value="details"> Details </v-tab>
+        <v-tab value="resources"> Resources </v-tab>
+        <v-tab value="participants"> Participants </v-tab>
+        <v-tab value="timeline"> Timeline </v-tab>
+        <v-tab value="tasks"> Tasks </v-tab>
+        <v-tab value="workflows"> Workflows </v-tab>
+        <v-tab value="costs"> Costs </v-tab>
       </v-tabs>
-      <v-tabs-items v-model="tab">
-        <v-tab-item key="details">
+      <v-window v-model="tab">
+        <v-window-item value="details">
           <incident-details-tab />
-        </v-tab-item>
-        <v-tab-item key="resources">
+        </v-window-item>
+        <v-window-item value="resources">
           <incident-resources-tab />
-        </v-tab-item>
-        <v-tab-item key="participants">
+        </v-window-item>
+        <v-window-item value="participants">
           <incident-participants-tab />
-        </v-tab-item>
-        <v-tab-item key="timeline">
+        </v-window-item>
+        <v-window-item value="timeline">
           <incident-timeline-tab />
-        </v-tab-item>
-        <v-tab-item key="tasks">
+        </v-window-item>
+        <v-window-item value="tasks">
           <incident-tasks-tab />
-        </v-tab-item>
-        <v-tab-item key="workflow_instances">
+        </v-window-item>
+        <v-window-item value="workflow_instances">
           <workflow-instance-tab v-model="workflow_instances" />
-        </v-tab-item>
-        <v-tab-item key="costs">
+        </v-window-item>
+        <v-window-item value="costs">
           <incident-costs-tab />
-        </v-tab-item>
-      </v-tabs-items>
+        </v-window-item>
+      </v-window>
     </v-navigation-drawer>
   </v-form>
 </template>

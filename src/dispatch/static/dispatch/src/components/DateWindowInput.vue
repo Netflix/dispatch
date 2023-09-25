@@ -15,15 +15,14 @@
         <v-row>
           <v-col>
             <v-list>
-              <v-list-item-group color="primary">
-                <v-list-item
-                  v-for="(item, index) in windowRanges"
-                  :key="index"
-                  @click="setWindowRange(item.window)"
-                >
-                  <v-list-item-title>{{ item.title }}</v-list-item-title>
-                </v-list-item>
-              </v-list-item-group>
+              <v-list-item
+                v-for="(item, index) in windowRanges"
+                :key="index"
+                :value="index"
+                @click="setWindowRange(item.window)"
+              >
+                <v-list-item-title>{{ item.title }}</v-list-item-title>
+              </v-list-item>
             </v-list>
           </v-col>
           <v-col>
@@ -31,8 +30,8 @@
             <v-date-picker
               color="primary"
               no-title
-              :value="window.start"
-              @input="setWindowStart($event)"
+              :model-value="window.start"
+              @update:model-value="setWindowStart($event)"
             />
           </v-col>
           <v-col>
@@ -40,8 +39,8 @@
             <v-date-picker
               color="primary"
               no-title
-              :value="window.end"
-              @input="setWindowEnd($event)"
+              :model-value="window.end"
+              @update:model-value="setWindowEnd($event)"
             />
           </v-col>
         </v-row>
@@ -70,8 +69,9 @@ let today = function () {
 
 export default {
   name: "DateWindowInput",
+  inheritAttrs: false,
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -131,8 +131,8 @@ export default {
     },
     window: {
       get() {
-        if (Object.keys(this.value).length > 1) {
-          return cloneDeep(this.value)
+        if (Object.keys(this.modelValue).length > 1) {
+          return cloneDeep(this.modelValue)
         }
         return {
           start: null,
@@ -140,7 +140,7 @@ export default {
         }
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
     windowStartFormatted() {

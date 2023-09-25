@@ -13,12 +13,12 @@
     multiple
     no-filter
     v-model="incidentSeverity"
+    :menu-props="{ maxWidth: 0 }"
   >
     <template #no-data>
       <v-list-item>
         <v-list-item-title>
-          No incident severities matching "
-          <strong>{{ search }}</strong
+          No incident severities matching "<strong>{{ search }}</strong
           >".
         </v-list-item-title>
       </v-list-item>
@@ -28,13 +28,15 @@
         <span v-if="!project"> {{ item.raw.project.name }}/ </span>{{ item.raw.name }}
       </v-chip>
     </template>
-    <template #item="data">
-      <v-list-item-title>
-        <span v-if="!project">{{ data.item.project.name }}/</span>{{ data.item.name }}
-      </v-list-item-title>
-      <v-list-item-subtitle style="width: 200px" class="text-truncate">
-        {{ data.item.description }}
-      </v-list-item-subtitle>
+    <template #item="{ props, item }">
+      <v-list-item v-bind="props" :title="null">
+        <v-list-item-title>
+          <span v-if="!project">{{ item.raw.project.name }}/</span>{{ item.raw.name }}
+        </v-list-item-title>
+        <v-list-item-subtitle :title="item.raw.description">
+          {{ item.raw.description }}
+        </v-list-item-subtitle>
+      </v-list-item>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
@@ -54,7 +56,7 @@ export default {
   name: "IncidentSeverityComboBox",
 
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -85,7 +87,7 @@ export default {
   computed: {
     incidentSeverity: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         this.search = null
@@ -95,7 +97,7 @@ export default {
           }
           return true
         })
-        this.$emit("input", incidentSeverities)
+        this.$emit("update:modelValue", incidentSeverities)
       },
     },
   },

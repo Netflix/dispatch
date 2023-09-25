@@ -14,6 +14,7 @@
     multiple
     no-filter
     v-model="tags"
+    :menu-props="{ maxWidth: 0 }"
   >
     <template #no-data>
       <v-list-item>
@@ -26,7 +27,7 @@
     </template>
     <template #chip="{ item, props }">
       <v-chip v-bind="props">
-        <span v-if="item.tag_type">
+        <span v-if="item.raw.tag_type">
           <span v-if="!project">{{ item.raw.project.name }}/</span>{{ item.raw.tag_type.name }}/
         </span>
         <a :href="item.raw.uri" target="_blank" :title="item.raw.description">
@@ -34,15 +35,17 @@
         </a>
       </v-chip>
     </template>
-    <template #item="data">
-      <v-list-item-title>
-        <span v-if="!project">{{ data.item.project.name }}/</span>{{ data.item.tag_type.name }}/{{
-          data.item.name
-        }}
-      </v-list-item-title>
-      <v-list-item-subtitle style="width: 200px" class="text-truncate">
-        {{ data.item.description }}
-      </v-list-item-subtitle>
+    <template #item="{ props, item }">
+      <v-list-item v-bind="props" :title="null">
+        <v-list-item-title>
+          <span v-if="!project">{{ item.raw.project.name }}/</span>{{ item.raw.tag_type.name }}/{{
+            item.raw.name
+          }}
+        </v-list-item-title>
+        <v-list-item-subtitle :title="item.raw.description">
+          {{ item.raw.description }}
+        </v-list-item-subtitle>
+      </v-list-item>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
@@ -62,7 +65,7 @@ export default {
   name: "TagAutoComplete",
 
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -99,7 +102,7 @@ export default {
   computed: {
     tags: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         this.search = null
@@ -109,7 +112,7 @@ export default {
           }
           return true
         })
-        this.$emit("input", tags)
+        this.$emit("update:modelValue", tags)
       },
     },
   },

@@ -40,11 +40,11 @@ export default {
     return {
       menu: false,
       headers: [
-        { text: "Case", value: "case", sortable: false },
-        { text: "Priority", value: "case_priority.name", sortable: false },
-        { text: "Status", value: "status", sortable: false },
-        { text: "Created At", value: "created_at" },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Case", key: "case", sortable: false },
+        { title: "Priority", key: "case_priority.name", sortable: false },
+        { title: "Status", key: "status", sortable: false },
+        { title: "Created At", key: "created_at" },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },

@@ -33,7 +33,7 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #[`item.data-table-actions`]="{ item }">
+            <template #item.data-table-actions="{ item }">
               <v-menu location="right" origin="overlap">
                 <template #activator="{ props }">
                   <v-btn icon variant="text" v-bind="props">
@@ -69,9 +69,9 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Email", value: "email", sortable: true },
-        { text: "Role", value: "role", sortable: false },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Email", key: "email", sortable: true },
+        { title: "Role", key: "role", sortable: false },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },

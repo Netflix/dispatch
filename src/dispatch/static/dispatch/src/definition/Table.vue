@@ -77,8 +77,8 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Text", value: "text", sortable: false },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Text", value: "text", sortable: false },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },

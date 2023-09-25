@@ -1,64 +1,30 @@
 <template>
   <new-edit-sheet />
   <v-data-table :headers="headers" :items="items" :loading="loading">
-    <template #item.description="{ item }">
+    <template #item.description="{ value }">
       <div class="text-truncate" style="max-width: 400px">
-        {{ item.raw.description }}
+        {{ value }}
       </div>
     </template>
-    <template #item.project.name="{ item }">
+    <template #item.project.name="{ item, value }">
       <v-chip size="small" :color="item.project.color">
-        {{ item.raw.project.name }}
+        {{ value }}
       </v-chip>
     </template>
-    <template #item.incident_priority.name="{ item }">
-      <incident-priority :priority="item.raw.incident.incident_priority.name" />
+    <template #item.incident_priority.name="{ value }">
+      <incident-priority :priority="value" />
     </template>
-    <template #item.creator.individual_contact.name="{ item }">
-      <participant :participant="item.raw.creator" />
+    <template #item.creator="{ value }">
+      <participant :participant="value" />
     </template>
-    <template #item.owner.individual_contact.name="{ item }">
-      <participant :participant="item.raw.owner" />
+    <template #item.owner="{ value }">
+      <participant :participant="value" />
     </template>
-    <template #item.incident_type.name="{ item }">
-      {{ item.raw.incident.incident_type.name }}
+    <template #item.incident_type.name="{ value }">
+      {{ value }}
     </template>
-    <template #item.assignees="{ item }">
-      <participant
-        v-for="assignee in item.raw.assignees"
-        :key="assignee.id"
-        :participant="assignee"
-      />
-    </template>
-    <template #item.resolve_by="{ item }">
-      <v-tooltip location="bottom">
-        <template #activator="{ props }">
-          <span v-bind="props">{{ formatRelativeDate(item.raw.resolve_by) }}</span>
-        </template>
-        <span>{{ formatDate(item.raw.resolve_by) }}</span>
-      </v-tooltip>
-    </template>
-    <template #item.created_at="{ item }">
-      <v-tooltip location="bottom">
-        <template #activator="{ props }">
-          <span v-bind="props">{{ formatRelativeDate(item.raw.created_at) }}</span>
-        </template>
-        <span>{{ formatDate(item.raw.created_at) }}</span>
-      </v-tooltip>
-    </template>
-    <template #item.resolved_at="{ item }">
-      <v-tooltip location="bottom">
-        <template #activator="{ props }">
-          <span v-bind="props">{{ formatRelativeDate(item.raw.resolved_by) }}</span>
-        </template>
-        <span>{{ formatDate(item.raw.resolve_by) }}</span>
-      </v-tooltip>
-    </template>
-    <template #item.source="{ item }">
-      <a :href="item.weblink" target="_blank" style="text-decoration: none">
-        {{ item.raw.source }}
-        <v-icon size="small">mdi-open-in-new</v-icon>
-      </a>
+    <template #item.assignees="{ value }">
+      <participant v-for="assignee in value" :key="assignee.id" :participant="assignee" />
     </template>
     <template #item.data-table-actions="{ item }">
       <v-menu location="right" origin="overlap">
@@ -66,7 +32,7 @@
           <v-btn icon="mdi-dots-vertical" variant="text" v-bind="props" />
         </template>
         <v-list>
-          <v-list-item @click="createEditShow(item.raw)">
+          <v-list-item @click="createEditShow(item)">
             <v-list-item-title>View / Edit</v-list-item-title>
           </v-list-item>
         </v-list>
@@ -96,8 +62,8 @@ export default {
       headers: [
         { title: "Incident Name", key: "incident.name", sortable: false },
         { title: "Status", key: "status", sortable: false },
-        { title: "Creator", key: "creator.individual_contact.name", sortable: false },
-        { title: "Owner", key: "owner.individual_contact.name", sortable: false },
+        { title: "Creator", key: "creator", sortable: false },
+        { title: "Owner", key: "owner", sortable: false },
         { title: "Assignees", key: "assignees", sortable: false },
         { title: "Description", key: "description", sortable: false },
         { title: "Project", key: "project.name", sortable: true },

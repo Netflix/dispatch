@@ -92,14 +92,14 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Incident Name", value: "incident.name", sortable: false },
-        { text: "Incident Title", value: "incident.title", sortable: false },
-        { text: "Participant", value: "participant", sortable: true },
-        { text: "Rating", value: "rating", sortable: true },
-        { text: "Feedback", value: "feedback", sortable: true },
-        { text: "Project", value: "project.name", sortable: false },
-        { text: "Created At", value: "created_at", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Incident Name", value: "incident.name", sortable: false },
+        { title: "Incident Title", value: "incident.title", sortable: false },
+        { title: "Participant", value: "participant", sortable: true },
+        { title: "Rating", value: "rating", sortable: true },
+        { title: "Feedback", value: "feedback", sortable: true },
+        { title: "Project", value: "project.name", sortable: false },
+        { title: "Created At", value: "created_at", sortable: true },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },

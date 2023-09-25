@@ -45,7 +45,7 @@
               </div>
             </template>
             <template #item.project.name="{ item }">
-              <v-chip size="small" :color="item.project.color" text-color="white">
+              <v-chip size="small" :color="item.project.color">
                 {{ item.project.name }}
               </v-chip>
             </template>
@@ -150,20 +150,20 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Incident Name", value: "incident.name", sortable: true },
-        { text: "Incident Priority", value: "incident_priority.name", sortable: true },
-        { text: "Incident Type", value: "incident_type.name", sortable: true },
-        { text: "Status", value: "status", sortable: true },
-        { text: "Creator", value: "creator.individual_contact.name", sortable: true },
-        { text: "Owner", value: "owner.individual_contact.name", sortable: true },
-        { text: "Assignees", value: "assignees", sortable: false },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Source", value: "source", sortable: true },
-        { text: "Project", value: "project.name", sortable: true },
-        { text: "Due By", value: "resolve_by", sortable: true },
-        { text: "Created At", value: "created_at", sortable: true },
-        { text: "Resolved At", value: "resolved_at", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Incident Name", value: "incident.name", sortable: true },
+        { title: "Incident Priority", value: "incident_priority.name", sortable: true },
+        { title: "Incident Type", value: "incident_type.name", sortable: true },
+        { title: "Status", value: "status", sortable: true },
+        { title: "Creator", value: "creator.individual_contact.name", sortable: true },
+        { title: "Owner", value: "owner.individual_contact.name", sortable: true },
+        { title: "Assignees", value: "assignees", sortable: false },
+        { title: "Description", value: "description", sortable: false },
+        { title: "Source", value: "source", sortable: true },
+        { title: "Project", value: "project.name", sortable: true },
+        { title: "Due By", value: "resolve_by", sortable: true },
+        { title: "Created At", value: "created_at", sortable: true },
+        { title: "Resolved At", value: "resolved_at", sortable: true },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },

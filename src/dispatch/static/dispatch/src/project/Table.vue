@@ -81,11 +81,11 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", sortable: true },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Annual Employee Cost", value: "annual_employee_cost", sortable: false },
-        { text: "Business Year Hours", value: "business_year_hours", sortable: false },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", value: "name", sortable: true },
+        { title: "Description", value: "description", sortable: false },
+        { title: "Annual Employee Cost", value: "annual_employee_cost", sortable: false },
+        { title: "Business Year Hours", value: "business_year_hours", sortable: false },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },

@@ -34,8 +34,8 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #item.discoverable="{ item }">
-              <v-checkbox-btn v-model="item.discoverable" disabled />
+            <template #item.discoverable="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
             <template #item.tag_type.name="{ item }">
               <span v-if="item.tag_type">
@@ -86,14 +86,14 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", sortable: true },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Type", value: "tag_type.name", sortable: true },
-        { text: "Source", value: "source", sortable: true },
-        { text: "URI", value: "uri", sortable: false },
-        { text: "External ID", value: "external_id", sortable: false },
-        { text: "Discoverable", value: "discoverable", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", value: "name", sortable: true },
+        { title: "Description", value: "description", sortable: false },
+        { title: "Type", value: "tag_type.name", sortable: true },
+        { title: "Source", value: "source", sortable: true },
+        { title: "URI", value: "uri", sortable: false },
+        { title: "External ID", value: "external_id", sortable: false },
+        { title: "Discoverable", value: "discoverable", sortable: true },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },

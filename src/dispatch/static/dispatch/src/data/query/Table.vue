@@ -36,12 +36,9 @@
             loading-text="Loading... Please wait"
           >
             <template #item.project.name="{ item }">
-              <v-chip size="small" :color="item.project.color" text-color="white">
+              <v-chip size="small" :color="item.project.color">
                 {{ item.project.name }}
               </v-chip>
-            </template>
-            <template #item.owner="{ item }">
-              <service-popover :service="item.owner" />
             </template>
             <template #item.data-table-actions="{ item }">
               <v-menu location="right" origin="overlap">
@@ -74,7 +71,6 @@ import { mapActions } from "vuex"
 import DeleteDialog from "@/data/query/DeleteDialog.vue"
 import NewEditSheet from "@/data/query/NewEditSheet.vue"
 import RouterUtils from "@/router/utils"
-import ServicePopover from "@/service/ServicePopover.vue"
 import TableFilterDialog from "@/data/query/TableFilterDialog.vue"
 
 export default {
@@ -83,20 +79,19 @@ export default {
   components: {
     DeleteDialog,
     NewEditSheet,
-    ServicePopover,
     TableFilterDialog,
   },
 
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", sortable: true },
-        { text: "Project", value: "project.name", sortable: false },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Language", value: "language", sortable: true },
+        { title: "Name", value: "name", sortable: true },
+        { title: "Project", value: "project.name", sortable: false },
+        { title: "Description", value: "description", sortable: false },
+        { title: "Language", value: "language", sortable: true },
         {
-          text: "",
-          value: "data-table-actions",
+          title: "",
+          key: "data-table-actions",
           sortable: false,
           align: "end",
         },

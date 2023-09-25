@@ -42,12 +42,12 @@ export default {
     return {
       menu: false,
       headers: [
-        { text: "Name", value: "workflow.name" },
-        { text: "Status", value: "status" },
-        { text: "Creator", value: "creator.individual.name" },
-        { text: "Run Reason", value: "run_reason" },
-        { text: "Created At", value: "created_at" },
-        { text: "", value: "parameters" },
+        { title: "Name", value: "workflow.name" },
+        { title: "Status", value: "status" },
+        { title: "Creator", value: "creator.individual.name" },
+        { title: "Run Reason", value: "run_reason" },
+        { title: "Created At", value: "created_at" },
+        { title: "", value: "parameters" },
       ],
     }
   },

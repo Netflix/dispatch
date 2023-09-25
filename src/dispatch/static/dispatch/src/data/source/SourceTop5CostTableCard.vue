@@ -8,14 +8,14 @@
       hide-default-footer
       disable-filtering
     >
-      <template #item.name="{ item }">
+      <template #item.name="{ value }">
         <router-link
           :to="{
             name: 'SourceDetail',
-            params: { name: item.name, tab: 'details' },
+            params: { name: value, tab: 'details' },
           }"
         >
-          <b>{{ item.name }}</b>
+          <b>{{ value }}</b>
         </router-link>
       </template>
     </v-data-table>
@@ -46,12 +46,12 @@ export default {
     return {
       headers: [
         {
-          text: "Name",
+          title: "Name",
           align: "start",
           sortable: true,
-          value: "name",
+          key: "name",
         },
-        { text: "Cost", value: "cost" },
+        { title: "Cost", key: "cost" },
       ],
     }
   },

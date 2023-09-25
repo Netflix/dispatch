@@ -50,16 +50,13 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #item.evergreen="{ item }">
-              <v-checkbox-btn v-model="item.evergreen" disabled />
+            <template #item.evergreen="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #item.resource_type="{ item }">
-              {{ getResourceTitle(item.resource_type) }}
+            <template #item.resource_type="{ value }">
+              {{ getResourceTitle(value) }}
             </template>
-            <template #item.description="{ item }">
-              {{ item.description }}
-            </template>
-            <template #item.name="{ item }">
+            <template #item.name="{ item, value }">
               <a :href="item.weblink" target="_blank" style="text-decoration: none">
                 {{ item.name }}
                 <v-icon size="small">open_in_new</v-icon>
@@ -110,11 +107,11 @@ export default {
     return {
       referenceDocumentTypes: referenceDocumentTypes,
       headers: [
-        { text: "Name", value: "name", sortable: true },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Type", value: "resource_type", sortable: true },
-        { text: "Evergreen", value: "evergreen", sortable: true, width: "10%", align: "center" },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", key: "name", sortable: true },
+        { title: "Description", key: "description", sortable: false },
+        { title: "Type", key: "resource_type", sortable: true },
+        { title: "Evergreen", key: "evergreen", sortable: true, width: "10%", align: "center" },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },
