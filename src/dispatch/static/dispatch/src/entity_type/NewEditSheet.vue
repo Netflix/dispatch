@@ -102,7 +102,7 @@
                 href="https://cheatography.com/davechild/cheat-sheets/regular-expressions/"
                 target="_blank"
               >
-                <v-icon> mdi-help-circle-outline </v-icon>
+                <v-icon>mdi-help-circle-outline</v-icon>
               </v-btn>
             </template>
           </v-text-field>
@@ -119,7 +119,7 @@
                 href="https://github.com/json-path/JsonPath#path-examples"
                 target="_blank"
               >
-                <v-icon> mdi-help-circle-outline </v-icon>
+                <v-icon>mdi-help-circle-outline</v-icon>
               </v-btn>
             </template>
           </v-text-field>

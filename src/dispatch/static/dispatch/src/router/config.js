@@ -29,7 +29,7 @@ export const publicRoute = [
   {
     path: "/:organization/auth/",
     component: BasicLayout,
-    meta: { title: "Auth", icon: "view_compact", group: "auth" },
+    meta: { title: "Auth", icon: "mdi-view-comfy-outline", group: "auth" },
     children: authPages,
   },
   {
@@ -515,7 +515,7 @@ export const protectedRoute = [
       component: DefaultLayout,
       meta: {
         title: "Search",
-        icon: "view_compact",
+        icon: "mdi-view-comfy-outline",
         group: "search",
         noMenu: true,
         requiresAuth: true,

@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="dialog" max-width="1000px" persistent :key="componentKey">
     <template #activator="{ props }">
-      <v-btn v-bind="props" icon variant="text"><v-icon>add</v-icon></v-btn>
+      <v-btn v-bind="props" icon variant="text"><v-icon>mdi-plus</v-icon></v-btn>
     </template>
     <v-card>
       <v-card-title>Create Entity Type </v-card-title>
@@ -36,7 +36,7 @@
                       href="https://cheatography.com/davechild/cheat-sheets/regular-expressions/"
                       target="_blank"
                     >
-                      <v-icon> mdi-help-circle-outline </v-icon>
+                      <v-icon>mdi-help-circle-outline</v-icon>
                     </v-btn>
                   </template>
                 </v-text-field>
@@ -53,7 +53,7 @@
                       href="https://github.com/json-path/JsonPath#path-examples"
                       target="_blank"
                     >
-                      <v-icon> mdi-help-circle-outline </v-icon>
+                      <v-icon>mdi-help-circle-outline</v-icon>
                     </v-btn>
                   </template>
                 </v-text-field>

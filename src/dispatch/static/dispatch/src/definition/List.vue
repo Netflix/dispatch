@@ -3,7 +3,7 @@
     <new-edit-sheet />
     <v-divider />
     <v-list>
-      <v-list-group prepend-icon="book" no-action color="info">
+      <v-list-group prepend-icon="mdi-book-outline" no-action color="info">
         <template #activator>
           <v-list-item>
             <v-list-item-title>Definitions ({{ items.length }})</v-list-item-title>

@@ -49,7 +49,7 @@
           </template>
           <v-list-item>
             <template #prepend>
-              <v-icon>business</v-icon>
+              <v-icon>mdi-domain</v-icon>
             </template>
 
             <v-list-item-subtitle>{{ value.title }}</v-list-item-subtitle>
@@ -57,7 +57,7 @@
           <template v-if="value.case_type && value.case_type.name">
             <v-list-item>
               <template #prepend>
-                <v-icon>business</v-icon>
+                <v-icon>mdi-domain</v-icon>
               </template>
 
               <v-list-item-subtitle>{{ value.case_type.name }}</v-list-item-subtitle>

@@ -38,28 +38,28 @@
           </v-list-item>
           <v-list-item v-if="participant.individual.company">
             <template #prepend>
-              <v-icon>business</v-icon>
+              <v-icon>mdi-domain</v-icon>
             </template>
 
             <v-list-item-subtitle>{{ participant.individual.company }}</v-list-item-subtitle>
           </v-list-item>
           <v-list-item v-if="participant.location">
             <template #prepend>
-              <v-icon>public</v-icon>
+              <v-icon>mdi-earth</v-icon>
             </template>
 
             <v-list-item-subtitle>{{ participant.location }}</v-list-item-subtitle>
           </v-list-item>
           <v-list-item v-if="participant.department">
             <template #prepend>
-              <v-icon>groups</v-icon>
+              <v-icon>mdi-account-group-outline</v-icon>
             </template>
 
             <v-list-item-subtitle>{{ participant.department }}</v-list-item-subtitle>
           </v-list-item>
           <v-list-item v-if="participant.team">
             <template #prepend>
-              <v-icon>group</v-icon>
+              <v-icon>mdi-account-multiple-outline</v-icon>
             </template>
 
             <v-list-item-subtitle>{{ participant.team }}</v-list-item-subtitle>

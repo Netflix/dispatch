@@ -7,7 +7,7 @@
           <v-tooltip location="bottom">
             <template #activator="{ props }">
               <v-btn icon variant="text" color="info" v-bind="props" @click="add()">
-                <v-icon> mdi-playlist-plus </v-icon>
+                <v-icon>mdi-playlist-plus</v-icon>
               </v-btn>
             </template>
             <span>Create {{ label }} Policy</span>
@@ -24,7 +24,7 @@
                 :loading="loading"
                 @click="save()"
               >
-                <v-icon> save </v-icon>
+                <v-icon>mdi-content-save-outline</v-icon>
               </v-btn>
             </template>
             <span>Save {{ label }} Policies</span>
@@ -45,7 +45,7 @@
             <v-expansion-panel-title>
               <v-row align="center" justify="center">
                 <v-col cols="1">
-                  <v-icon> mdi-drag-horizontal-variant </v-icon>
+                  <v-icon>mdi-drag-horizontal-variant</v-icon>
                 </v-col>
                 <v-col cols="1">
                   <v-chip v-if="policy.enabled" dark color="green" size="small" label>

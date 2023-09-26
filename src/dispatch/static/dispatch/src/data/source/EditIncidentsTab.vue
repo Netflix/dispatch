@@ -12,7 +12,7 @@
 
         <template #append>
           <v-btn icon variant="text" @click="remove(idx)">
-            <v-icon> mdi-delete </v-icon>
+            <v-icon>mdi-delete</v-icon>
           </v-btn>
         </template>
       </v-list-item>

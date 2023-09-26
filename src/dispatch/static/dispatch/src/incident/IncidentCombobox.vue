@@ -25,8 +25,7 @@
     <template #no-data>
       <v-list-item>
         <v-list-item-title>
-          No incidents matching "
-          <strong>{{ search }}</strong
+          No incidents matching "<strong>{{ search }}</strong
           >".
         </v-list-item-title>
       </v-list-item>

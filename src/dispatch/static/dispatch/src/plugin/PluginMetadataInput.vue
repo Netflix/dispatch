@@ -6,7 +6,7 @@
       <v-tooltip location="bottom">
         <template #activator="{ props }">
           <v-btn size="small" icon variant="text" @click="addPlugin()" v-bind="props">
-            <v-icon>add</v-icon>
+            <v-icon>mdi-plus</v-icon>
           </v-btn>
         </template>
         <span>Add Plugin</span>
@@ -23,7 +23,7 @@
                 variant="text"
                 @click="removePlugin(plugin_idx)"
                 v-bind="props"
-                ><v-icon>remove</v-icon></v-btn
+                ><v-icon>mdi-minus</v-icon></v-btn
               >
             </template>
             <span>Remove Plugin</span>
@@ -42,7 +42,7 @@
           <v-tooltip location="bottom">
             <template #activator="{ props }">
               <v-btn size="small" icon variant="text" @click="addItem(plugin_idx)" v-bind="props"
-                ><v-icon>add</v-icon></v-btn
+                ><v-icon>mdi-plus</v-icon></v-btn
               >
             </template>
             <span>Add Item</span>
@@ -65,7 +65,7 @@
                 variant="text"
                 @click="removeItem(plugin_idx, meta_idx)"
                 v-bind="props"
-                ><v-icon>remove</v-icon></v-btn
+                ><v-icon>mdi-minus</v-icon></v-btn
               >
             </template>
             <span>Remove Item</span>

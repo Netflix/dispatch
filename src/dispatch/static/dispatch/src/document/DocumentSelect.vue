@@ -14,7 +14,7 @@
   >
     <template #append>
       <v-btn icon variant="text" @click="createEditShow({})">
-        <v-icon>add</v-icon>
+        <v-icon>mdi-plus</v-icon>
       </v-btn>
     </template>
   </v-autocomplete>

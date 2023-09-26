@@ -40,7 +40,7 @@
           </v-list-item>
           <v-list-item>
             <template #prepend>
-              <v-icon>business</v-icon>
+              <v-icon>mdi-domain</v-icon>
             </template>
 
             <v-list-item-subtitle>{{ value.description }}</v-list-item-subtitle>

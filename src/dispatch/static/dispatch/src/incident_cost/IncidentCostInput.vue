@@ -18,7 +18,7 @@
         <v-tooltip location="bottom">
           <template #activator="{ props }">
             <v-btn size="small" icon variant="text" @click="addIncidentCost()" v-bind="props">
-              <v-icon>add</v-icon>
+              <v-icon>mdi-plus</v-icon>
             </v-btn>
           </template>
           <span>Add Cost</span>

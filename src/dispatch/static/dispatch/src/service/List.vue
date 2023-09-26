@@ -3,7 +3,7 @@
     <new-edit-sheet />
     <v-divider />
     <v-list>
-      <v-list-group prepend-icon="room_service" no-action color="info">
+      <v-list-group prepend-icon="mdi-room-service" no-action color="info">
         <template #activator>
           <v-list-item>
             <v-list-item-title>Services ({{ items.length }})</v-list-item-title>

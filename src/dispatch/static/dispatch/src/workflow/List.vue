@@ -3,7 +3,7 @@
     <new-edit-sheet />
     <v-divider />
     <v-list>
-      <v-list-group prepend-icon="playlist_add_check" no-action color="info">
+      <v-list-group prepend-icon="mdi-playlist-check" no-action color="info">
         <template #activator>
           <v-list-item>
             <v-list-item-title>Workflows ({{ items.length }})</v-list-item-title>

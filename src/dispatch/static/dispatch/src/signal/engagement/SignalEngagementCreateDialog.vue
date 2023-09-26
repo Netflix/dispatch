@@ -2,7 +2,7 @@
   <v-dialog persistent max-width="800px" v-model="dialog">
     <template #activator="{ props }">
       <v-btn icon variant="text" v-bind="props">
-        <v-icon>add</v-icon>
+        <v-icon>mdi-plus</v-icon>
       </v-btn>
     </template>
     <v-card>

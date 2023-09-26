@@ -40,7 +40,7 @@
             <v-text-field
               v-if="showFilter"
               v-model="q"
-              append-inner-icon="search"
+              append-inner-icon="mdi-magnify"
               label="Filter"
               single-line
               hide-details

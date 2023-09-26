@@ -16,7 +16,7 @@
   >
     <template #append>
       <v-btn icon variant="text" @click="createEditShow({ resource_type: resourceType })">
-        <v-icon>add</v-icon>
+        <v-icon>mdi-plus</v-icon>
       </v-btn>
       <new-edit-sheet @new-document-created="addItem($event)" />
     </template>

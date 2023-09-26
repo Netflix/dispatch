@@ -6,7 +6,7 @@
       <v-tooltip location="bottom">
         <template #activator="{ props }">
           <v-btn size="small" icon variant="text" @click="addRole()" v-bind="props">
-            <v-icon>add</v-icon>
+            <v-icon>mdi-plus</v-icon>
           </v-btn>
         </template>
         <span>Add Role</span>
@@ -18,7 +18,7 @@
           <v-tooltip location="bottom">
             <template #activator="{ props }">
               <v-btn size="small" icon variant="text" @click="removeRole(idx)" v-bind="props"
-                ><v-icon>remove</v-icon></v-btn
+                ><v-icon>mdi-minus</v-icon></v-btn
               >
             </template>
             <span>Remove Role</span>

@@ -18,7 +18,7 @@
                 @click="removeIncidentCost(index)"
                 v-bind="props"
               >
-                <v-icon>remove</v-icon>
+                <v-icon>mdi-minus</v-icon>
               </v-btn>
             </template>
             <span>Remove Cost</span>

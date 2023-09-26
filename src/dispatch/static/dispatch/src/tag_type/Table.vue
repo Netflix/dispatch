@@ -15,7 +15,7 @@
           <v-card-title>
             <v-text-field
               v-model="q"
-              append-inner-icon="search"
+              append-inner-icon="mdi-magnify"
               label="Search"
               single-line
               hide-details

@@ -3,7 +3,7 @@
     <new-edit-sheet />
     <v-divider />
     <v-list>
-      <v-list-group prepend-icon="people" no-action color="info">
+      <v-list-group prepend-icon="mdi-account-multiple" no-action color="info">
         <template #activator>
           <v-list-item>
             <v-list-item-title>Teams ({{ items.length }})</v-list-item-title>
