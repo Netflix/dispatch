@@ -142,6 +142,7 @@ def create_incident(
 
 @router.post(
     "/{incident_id}/resources",
+    response_model=IncidentRead,
     summary="Creates resources for an existing incident.",
 )
 def create_incident_resources(
@@ -154,6 +155,8 @@ def create_incident_resources(
     background_tasks.add_task(
         incident_create_resources_flow, organization_slug=organization, incident_id=incident_id
     )
+
+    return current_incident
 
 
 @router.put(

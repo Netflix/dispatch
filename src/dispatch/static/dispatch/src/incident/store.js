@@ -348,14 +348,39 @@ const actions = {
       )
     })
   },
-  createAllResources({ commit }) {
+  createAllResources({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
-    return IncidentApi.createAllResources(state.selected.id).then(() => {
-      IncidentApi.get(state.selected.id).then((response) => {
-        commit("SET_SELECTED", response.data)
+    return IncidentApi.createAllResources(state.selected.id)
+      .then(() => {
+        IncidentApi.get(state.selected.id).then((response) => {
+          commit("SET_SELECTED", response.data)
+          dispatch("getEnabledPlugins").then((enabledPlugins) => {
+            // Poll the server for resource creation updates.
+            var interval = setInterval(function () {
+              if (
+                state.selected.conversation ^ enabledPlugins.includes("conversation") ||
+                state.selected.documents ^ enabledPlugins.includes("document") ||
+                state.selected.storage ^ enabledPlugins.includes("storage") ||
+                state.selected.conference ^ enabledPlugins.includes("conference") ||
+                state.selected.ticket ^ enabledPlugins.includes("ticket")
+              ) {
+                dispatch("get").then(() => {
+                  clearInterval(interval)
+                  commit("SET_SELECTED_LOADING", false)
+                  commit(
+                    "notification_backend/addBeNotification",
+                    { text: "Resources(s) created successfully.", type: "success" },
+                    { root: true }
+                  )
+                })
+              }
+            }, 5000)
+          })
+        })
       })
-      commit("SET_SELECTED_LOADING", false)
-    })
+      .catch(() => {
+        commit("SET_SELECTED_LOADING", false)
+      })
   },
   resetSelected({ commit }) {
     commit("RESET_SELECTED")
