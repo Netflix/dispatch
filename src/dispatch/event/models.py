@@ -9,6 +9,7 @@ from sqlalchemy_utils import TSVectorType, JSONType
 
 from dispatch.database.core import Base
 from dispatch.models import DispatchBase, TimeStampMixin
+from dispatch.enums import EventType
 
 
 # SQLAlchemy Model
@@ -21,6 +22,7 @@ class Event(Base, TimeStampMixin):
     source = Column(String, nullable=False)
     description = Column(String, nullable=False)
     details = Column(JSONType, nullable=True)
+    type = Column(String, default=EventType.other, nullable=True)
 
     # relationships
     individual_id = Column(Integer, ForeignKey("individual_contact.id", ondelete="CASCADE"))
@@ -45,6 +47,7 @@ class EventBase(DispatchBase):
     source: str
     description: str
     details: Optional[dict]
+    type: Optional[str]
 
 
 class EventCreate(EventBase):
@@ -57,3 +60,11 @@ class EventUpdate(EventBase):
 
 class EventRead(EventBase):
     pass
+
+
+class EventCreateMinimal(DispatchBase):
+    started_at: datetime
+    source: str
+    description: str
+    details: dict
+    type: Optional[str]

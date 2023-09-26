@@ -159,6 +159,16 @@ export const protectedRoute = [
                 showEditSheet: true,
               },
             },
+            {
+              path: "/:organization/incidents/:name/timeline",
+              name: "IncidentTableEdit",
+              component: () => import("@/incident/EditSheet.vue"),
+              props: true,
+              meta: {
+                showEditSheet: true,
+                showTimeline: true,
+              },
+            },
           ],
         },
       ],

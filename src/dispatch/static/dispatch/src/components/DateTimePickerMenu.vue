@@ -51,7 +51,7 @@
 </template>
 <script>
 import { parse, parseISO } from "date-fns"
-import { format } from "date-fns-tz"
+import { format, utcToZonedTime } from "date-fns-tz"
 
 const DEFAULT_DATE = ""
 const DEFAULT_TIME = "00:00:00"
@@ -83,6 +83,10 @@ export default {
       type: String,
       default: "HH:mm",
     },
+    timeZone: {
+      type: String,
+      default: null,
+    },
   },
 
   data() {
@@ -105,7 +109,9 @@ export default {
       return DEFAULT_DATE_FORMAT + " " + DEFAULT_TIME_FORMAT
     },
     formattedDatetime() {
-      return this.selectedDatetime ? format(this.selectedDatetime, this.dateTimeFormat) : ""
+      return this.selectedDatetime
+        ? format(this.selectedDatetime, this.dateTimeFormat, { timeZone: this.timeZone })
+        : ""
     },
     selectedDatetime() {
       if (this.date && this.time) {
@@ -134,8 +140,12 @@ export default {
       } else if (typeof this.datetime === "string" || this.datetime instanceof String) {
         initDateTime = parseISO(this.datetime)
       }
-      this.date = format(initDateTime, DEFAULT_DATE_FORMAT)
-      this.time = format(initDateTime, DEFAULT_TIME_FORMAT)
+
+      const zonedDateTime = this.timeZone
+        ? utcToZonedTime(initDateTime, this.timeZone)
+        : initDateTime
+      this.date = format(zonedDateTime, DEFAULT_DATE_FORMAT, { timeZone: this.timeZone })
+      this.time = format(zonedDateTime, DEFAULT_TIME_FORMAT, { timeZone: this.timeZone })
     },
     okHandler() {
       this.resetPicker()
@@ -161,6 +171,9 @@ export default {
   },
   watch: {
     datetime: function () {
+      this.init()
+    },
+    timeZone: function () {
       this.init()
     },
   },

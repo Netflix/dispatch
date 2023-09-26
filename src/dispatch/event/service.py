@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 from uuid import uuid4
 import datetime
 import logging
@@ -7,11 +7,12 @@ from dispatch.auth import service as auth_service
 from dispatch.case import service as case_service
 from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
+from dispatch.enums import EventType
 
 from .models import Event, EventCreate, EventUpdate
 
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 def get(*, db_session, event_id: int) -> Optional[Event]:
@@ -19,17 +20,22 @@ def get(*, db_session, event_id: int) -> Optional[Event]:
     return db_session.query(Event).filter(Event.id == event_id).one_or_none()
 
 
-def get_by_case_id(*, db_session, case_id: int) -> List[Optional[Event]]:
+def get_by_case_id(*, db_session, case_id: int) -> list[Event | None]:
     """Get events by case id."""
     return db_session.query(Event).filter(Event.case_id == case_id)
 
 
-def get_by_incident_id(*, db_session, incident_id: int) -> List[Optional[Event]]:
+def get_by_incident_id(*, db_session, incident_id: int) -> list[Event | None]:
     """Get events by incident id."""
     return db_session.query(Event).filter(Event.incident_id == incident_id)
 
 
-def get_all(*, db_session) -> List[Optional[Event]]:
+def get_by_uuid(*, db_session, uuid: str) -> list[Event | None]:
+    """Get events by uuid."""
+    return db_session.query(Event).filter(Event.uuid == uuid).one_or_none()
+
+
+def get_all(*, db_session) -> list[Event | None]:
     """Get all events."""
     return db_session.query(Event)
 
@@ -71,6 +77,7 @@ def log_incident_event(
     started_at: datetime = None,
     ended_at: datetime = None,
     details: dict = None,
+    type: str = EventType.other,
 ) -> Event:
     """Logs an event in the incident timeline."""
     uuid = uuid4()
@@ -88,6 +95,7 @@ def log_incident_event(
         source=source,
         description=description,
         details=details,
+        type=type,
     )
     event = create(db_session=db_session, event_in=event_in)
 
@@ -133,6 +141,7 @@ def log_case_event(
         source=source,
         description=description,
         details=details,
+        type=EventType.other,
     )
     event = create(db_session=db_session, event_in=event_in)
 
@@ -148,3 +157,24 @@ def log_case_event(
     db_session.commit()
 
     return event
+
+
+def update_incident_event(
+    db_session,
+    event_in: EventUpdate,
+) -> Event:
+    """Updates an event in the incident timeline."""
+    event = get_by_uuid(db_session=db_session, uuid=event_in.uuid)
+    event = update(db_session=db_session, event=event, event_in=event_in)
+
+    return event
+
+
+def delete_incident_event(
+    db_session,
+    uuid: str,
+):
+    """Deletes an event."""
+    event = get_by_uuid(db_session=db_session, uuid=uuid)
+
+    delete(db_session=db_session, event_id=event.id)
