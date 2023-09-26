@@ -1,17 +1,18 @@
 <template>
-  <v-combobox
+  <v-autocomplete
     :items="items"
     :label="label"
     :loading="loading"
+    :filter="customFilter"
     :search-input.sync="search"
-    @update:search-input="getFilteredData()"
     chips
     clearable
     deletable-chips
     hide-selected
     item-text="individual.name"
-    no-filter
+    item-value="individual"
     return-object
+    cache-items
     v-model="participant"
   >
     <template #no-data>
@@ -43,7 +44,7 @@
         </v-list-item-content>
       </v-list-item>
     </template>
-  </v-combobox>
+  </v-autocomplete>
 </template>
 
 <script>
@@ -95,9 +96,12 @@ export default {
   },
 
   methods: {
-    loadMore() {
-      this.numItems = this.numItems + 5
-      this.fetchData()
+    customFilter(item, queryText) {
+      const name = item.individual.name.toLowerCase()
+      const email = item.individual.email.toLowerCase()
+      const searchText = queryText.toLowerCase()
+
+      return name.indexOf(searchText) > -1 || email.indexOf(searchText) > -1
     },
     fetchData() {
       this.loading = "error"
@@ -105,7 +109,7 @@ export default {
         q: this.search,
         sortBy: ["name"],
         descending: [false],
-        itemsPerPage: this.numItems,
+        itemsPerPage: -1,
       }
 
       if (this.project) {
