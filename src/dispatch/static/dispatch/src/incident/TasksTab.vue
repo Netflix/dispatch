@@ -12,11 +12,9 @@
             {{ individualNames(task.assignees) }}
           </v-list-item-subtitle>
 
-          <v-list-item-action>
-            <v-list-item-icon>
-              <v-icon>open_in_new</v-icon>
-            </v-list-item-icon>
-          </v-list-item-action>
+          <template #append>
+            <v-icon>mdi-open-in-new</v-icon>
+          </template>
         </v-list-item>
         <v-divider />
       </span>

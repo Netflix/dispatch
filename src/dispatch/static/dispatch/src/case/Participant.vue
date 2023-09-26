@@ -12,49 +12,56 @@
       <v-card width="300">
         <v-list dark>
           <v-list-item v-if="participant.individual">
-            <v-list-item-avatar color="teal">
-              <span class="text-white">{{ initials(participant.individual.name) }}</span>
-            </v-list-item-avatar>
+            <template #prepend>
+              <v-avatar color="teal">
+                <span class="text-white">{{ initials(participant.individual.name) }}</span>
+              </v-avatar>
+            </template>
 
             <v-list-item-title>{{ participant.individual.name }}</v-list-item-title>
             <v-list-item-subtitle>{{ participant.individual.email }}</v-list-item-subtitle>
 
-            <v-list-item-action>
+            <template #append>
               <v-btn icon variant="text" @click="menu = false">
                 <v-icon>mdi-close-circle</v-icon>
               </v-btn>
-            </v-list-item-action>
+            </template>
           </v-list-item>
         </v-list>
         <v-list>
           <v-list-item>
-            <v-list-item-action>
+            <template #prepend>
               <v-icon>mdi-briefcase</v-icon>
-            </v-list-item-action>
+            </template>
+
             <v-list-item-subtitle>{{ participant.individual.email }}</v-list-item-subtitle>
           </v-list-item>
           <v-list-item v-if="participant.individual.company">
-            <v-list-item-action>
+            <template #prepend>
               <v-icon>business</v-icon>
-            </v-list-item-action>
+            </template>
+
             <v-list-item-subtitle>{{ participant.individual.company }}</v-list-item-subtitle>
           </v-list-item>
           <v-list-item v-if="participant.location">
-            <v-list-item-action>
+            <template #prepend>
               <v-icon>public</v-icon>
-            </v-list-item-action>
+            </template>
+
             <v-list-item-subtitle>{{ participant.location }}</v-list-item-subtitle>
           </v-list-item>
           <v-list-item v-if="participant.department">
-            <v-list-item-action>
+            <template #prepend>
               <v-icon>groups</v-icon>
-            </v-list-item-action>
+            </template>
+
             <v-list-item-subtitle>{{ participant.department }}</v-list-item-subtitle>
           </v-list-item>
           <v-list-item v-if="participant.team">
-            <v-list-item-action>
+            <template #prepend>
               <v-icon>group</v-icon>
-            </v-list-item-action>
+            </template>
+
             <v-list-item-subtitle>{{ participant.team }}</v-list-item-subtitle>
           </v-list-item>
           <v-list-item
@@ -62,9 +69,10 @@
             :href="participant.individual.weblink"
             target="_blank"
           >
-            <v-list-item-action>
-              <v-icon>open_in_new</v-icon>
-            </v-list-item-action>
+            <template #prepend>
+              <v-icon>mdi-open-in-new</v-icon>
+            </template>
+
             <v-list-item-subtitle>External Profile</v-list-item-subtitle>
           </v-list-item>
         </v-list>

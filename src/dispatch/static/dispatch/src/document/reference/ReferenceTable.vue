@@ -56,10 +56,10 @@
             <template #item.resource_type="{ value }">
               {{ getResourceTitle(value) }}
             </template>
-            <template #item.name="{ item, value }">
+            <template #item.name="{ item }">
               <a :href="item.weblink" target="_blank" style="text-decoration: none">
                 {{ item.name }}
-                <v-icon size="small">open_in_new</v-icon>
+                <v-icon size="small">mdi-open-in-new</v-icon>
               </a>
             </template>
             <template #item.data-table-actions="{ item }">

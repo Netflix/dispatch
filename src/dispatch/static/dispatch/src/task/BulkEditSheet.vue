@@ -8,21 +8,17 @@
         <v-list-item>
           <v-list-item-subtitle>{{ selected.length }} selected</v-list-item-subtitle>
 
-          <v-spacer />
-
-          <v-list-item-icon>
+          <template #append>
             <v-btn variant="text" @click="saveBulk({ status: 'Resolved' })">
               <v-icon>mdi-check</v-icon>
               Mark Resolved
             </v-btn>
-          </v-list-item-icon>
 
-          <v-list-item-icon>
             <v-btn variant="text" @click="saveBulk({ status: 'Open' })">
               <v-icon>mdi-close</v-icon>
               Mark Open
             </v-btn>
-          </v-list-item-icon>
+          </template>
         </v-list-item>
       </v-list>
     </v-card>

@@ -23,31 +23,35 @@
         <v-card>
           <v-list dark>
             <v-list-item>
-              <v-list-item-avatar color="teal">
-                <span class="text-white">{{ initials(item.name) }}</span>
-              </v-list-item-avatar>
+              <template #prepend>
+                <v-avatar color="teal">
+                  <span class="text-white">{{ initials(item.name) }}</span>
+                </v-avatar>
+              </template>
 
               <v-list-item-title>{{ item.name }}</v-list-item-title>
               <v-list-item-subtitle>{{ item.type }}</v-list-item-subtitle>
 
-              <v-list-item-action>
+              <template #append>
                 <v-btn icon variant="text">
                   <v-icon>mdi-close-circle</v-icon>
                 </v-btn>
-              </v-list-item-action>
+              </template>
             </v-list-item>
           </v-list>
           <v-list>
             <v-list-item>
-              <v-list-item-action>
+              <template #prepend>
                 <v-icon>mdi-text-box</v-icon>
-              </v-list-item-action>
+              </template>
+
               <v-list-item-subtitle>{{ item.description }}</v-list-item-subtitle>
             </v-list-item>
             <v-list-item v-if="item.jpath">
-              <v-list-item-action>
+              <template #prepend>
                 <v-icon>mdi-code-json</v-icon>
-              </v-list-item-action>
+              </template>
+
               <v-list-item-subtitle>
                 <pre>{{ item.jpath }}</pre>
               </v-list-item-subtitle>

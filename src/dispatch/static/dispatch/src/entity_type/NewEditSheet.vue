@@ -138,11 +138,11 @@
                   <v-list-item>
                     <v-list-item-title>{{ instance.id }}</v-list-item-title>
 
-                    <v-list-item-action>
+                    <template #append>
                       <v-btn icon variant="text" @click="updateEditorValue(instance.raw)">
                         <v-icon>mdi-arrow-right</v-icon>
                       </v-btn>
-                    </v-list-item-action>
+                    </template>
                   </v-list-item>
                   <v-divider v-if="index < signalInstances.length - 1" />
                 </template>

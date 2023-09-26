@@ -10,24 +10,26 @@
         <v-list-item>
           <v-list-item-title>Workflow Details</v-list-item-title>
 
-          <v-list-item-action>
+          <template #append>
             <v-btn icon variant="text" @click="menu = false">
               <v-icon>mdi-close-circle</v-icon>
             </v-btn>
-          </v-list-item-action>
+          </template>
         </v-list-item>
       </v-list>
       <v-list>
         <v-list-item>
-          <v-list-item-action>
+          <template #prepend>
             <v-icon>mdi-text-box</v-icon>
-          </v-list-item-action>
+          </template>
+
           <v-list-item-subtitle>Parameters</v-list-item-subtitle>
         </v-list-item>
         <v-list-item v-if="value.parameters">
-          <v-list-item-action>
+          <template #prepend>
             <v-icon>mdi-code-json</v-icon>
-          </v-list-item-action>
+          </template>
+
           <v-list-item-subtitle>
             <pre>{{ value.parameters }}</pre>
           </v-list-item-subtitle>

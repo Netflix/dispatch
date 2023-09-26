@@ -35,14 +35,16 @@
 
           <v-card-actions>
             <v-list-item class="grow">
-              <v-list-item-avatar color="grey-darken-3">
-                <span class="text-white text-h5">{{ initials(commander.individual.name) }}</span>
-              </v-list-item-avatar>
+              <template #prepend>
+                <v-avatar color="grey-darken-3">
+                  <span class="text-white text-h5">{{ initials(commander.individual.name) }}</span>
+                </v-avatar>
+              </template>
 
               <v-list-item-title>{{ commander.individual.name }}</v-list-item-title>
               <v-list-item-subtitle>Incident Commander</v-list-item-subtitle>
 
-              <v-row align="center" justify="end">
+              <template #append>
                 <v-btn
                   v-if="commander.individual.phone"
                   :href="'tel:' + commander.individual.phone"
@@ -50,18 +52,17 @@
                   variant="text"
                   class="mr-1"
                 >
-                  <v-icon> mdi-phone </v-icon>
+                  <v-icon>mdi-phone</v-icon>
                 </v-btn>
-                <span class="mr-1" />
                 <v-btn
                   :href="'mailto:' + commander.individual.email"
                   icon
                   variant="text"
                   class="mr-1"
                 >
-                  <v-icon> mdi-email </v-icon>
+                  <v-icon>mdi-email</v-icon>
                 </v-btn>
-              </v-row>
+              </template>
             </v-list-item>
           </v-card-actions>
         </v-card>
@@ -79,11 +80,9 @@
                     <v-list-item-title>{{ deslug(document.resource_type) }}</v-list-item-title>
                     <v-list-item-subtitle>{{ document.description }}</v-list-item-subtitle>
 
-                    <v-list-item-action>
-                      <v-list-item-icon>
-                        <v-icon>open_in_new</v-icon>
-                      </v-list-item-icon>
-                    </v-list-item-action>
+                    <template #append>
+                      <v-icon>mdi-open-in-new</v-icon>
+                    </template>
                   </v-list-item>
                   <v-divider />
                 </span>
@@ -106,11 +105,9 @@
                   resourceData(pluginInstance.plugin.type).description
                 }}</v-list-item-subtitle>
 
-                <v-list-item-action>
-                  <v-list-item-icon>
-                    <v-icon>open_in_new</v-icon>
-                  </v-list-item-icon>
-                </v-list-item-action>
+                <template #append>
+                  <v-icon>mdi-open-in-new</v-icon>
+                </template>
               </v-list-item>
               <v-list-item v-else>
                 <v-list-item-title

@@ -8,14 +8,14 @@
       hide-default-footer
       disable-filtering
     >
-      <template #item.name="{ value }">
+      <template #item.name="{ item }">
         <router-link
           :to="{
             name: 'SourceDetail',
-            params: { name: value, tab: 'details' },
+            params: { name: item.name, tab: 'details' },
           }"
         >
-          <b>{{ value }}</b>
+          <b>{{ item.name }}</b>
         </router-link>
       </template>
     </v-data-table>

@@ -3,46 +3,53 @@
     <v-menu v-model="menu" origin="overlap">
       <template #activator="{ props }">
         <v-chip pill size="small" v-bind="props">
-          <v-avatar color="teal" start>
-            <span class="text-white">{{ initials(value.name) }}</span>
-          </v-avatar>
+          <template #prepend>
+            <v-avatar color="teal">
+              {{ initials(value.name) }}
+            </v-avatar>
+          </template>
           {{ value.name }}
         </v-chip>
       </template>
       <v-card width="300">
         <v-list dark>
           <v-list-item>
-            <v-list-item-avatar color="teal">
-              <span class="text-white">{{ initials(value.name) }}</span>
-            </v-list-item-avatar>
+            <template #prepend>
+              <v-avatar color="teal">
+                {{ initials(value.name) }}
+              </v-avatar>
+            </template>
 
             <v-list-item-title>{{ value.name }}</v-list-item-title>
             <v-list-item-subtitle>{{ value.variant }}</v-list-item-subtitle>
 
-            <v-list-item-action>
+            <template #append>
               <v-btn icon variant="text" @click="menu = false">
                 <v-icon>mdi-close-circle</v-icon>
               </v-btn>
-            </v-list-item-action>
+            </template>
           </v-list-item>
         </v-list>
         <v-list>
           <v-list-item>
-            <v-list-item-action>
+            <template #prepend>
               <v-icon>mdi-briefcase</v-icon>
-            </v-list-item-action>
+            </template>
+
             <v-list-item-subtitle>{{ value.owner }}</v-list-item-subtitle>
           </v-list-item>
           <v-list-item>
-            <v-list-item-action>
+            <template #prepend>
               <v-icon>business</v-icon>
-            </v-list-item-action>
+            </template>
+
             <v-list-item-subtitle>{{ value.description }}</v-list-item-subtitle>
           </v-list-item>
           <v-list-item v-if="value.external_url" :href="value.external_url" target="_blank">
-            <v-list-item-action>
-              <v-icon>open_in_new</v-icon>
-            </v-list-item-action>
+            <template #prepend>
+              <v-icon>mdi-open-in-new</v-icon>
+            </template>
+
             <v-list-item-subtitle>External Documentation</v-list-item-subtitle>
           </v-list-item>
         </v-list>

@@ -4,44 +4,36 @@
       <v-list-item-title>Ticket</v-list-item-title>
       <v-list-item-subtitle>{{ ticket.description }}</v-list-item-subtitle>
 
-      <v-list-item-action>
-        <v-list-item-icon>
-          <v-icon>open_in_new</v-icon>
-        </v-list-item-icon>
-      </v-list-item-action>
+      <template #append>
+        <v-icon>mdi-open-in-new</v-icon>
+      </template>
     </v-list-item>
     <v-divider />
     <v-list-item v-if="conference" :href="conference.weblink" target="_blank">
       <v-list-item-title>Video Conference</v-list-item-title>
       <v-list-item-subtitle>{{ conference.description }}</v-list-item-subtitle>
 
-      <v-list-item-action>
-        <v-list-item-icon>
-          <v-icon>open_in_new</v-icon>
-        </v-list-item-icon>
-      </v-list-item-action>
+      <template #append>
+        <v-icon>mdi-open-in-new</v-icon>
+      </template>
     </v-list-item>
     <v-divider />
     <v-list-item v-if="conversation" :href="conversation.weblink" target="_blank">
       <v-list-item-title>Conversation</v-list-item-title>
       <v-list-item-subtitle>{{ conversation.description }}</v-list-item-subtitle>
 
-      <v-list-item-action>
-        <v-list-item-icon>
-          <v-icon>open_in_new</v-icon>
-        </v-list-item-icon>
-      </v-list-item-action>
+      <template #append>
+        <v-icon>mdi-open-in-new</v-icon>
+      </template>
     </v-list-item>
     <v-divider />
     <v-list-item v-if="storage" :href="storage.weblink" target="_blank">
       <v-list-item-title>Storage</v-list-item-title>
       <v-list-item-subtitle>{{ storage.description }}</v-list-item-subtitle>
 
-      <v-list-item-action>
-        <v-list-item-icon>
-          <v-icon>open_in_new</v-icon>
-        </v-list-item-icon>
-      </v-list-item-action>
+      <template #append>
+        <v-icon>mdi-open-in-new</v-icon>
+      </template>
     </v-list-item>
     <v-divider />
     <span v-for="document in documents" :key="document.resource_id">
@@ -49,11 +41,9 @@
         <v-list-item-title>{{ deslug(document.resource_type) }}</v-list-item-title>
         <v-list-item-subtitle>{{ document.description }}</v-list-item-subtitle>
 
-        <v-list-item-action>
-          <v-list-item-icon>
-            <v-icon>open_in_new</v-icon>
-          </v-list-item-icon>
-        </v-list-item-action>
+        <template #append>
+          <v-icon>mdi-open-in-new</v-icon>
+        </template>
       </v-list-item>
       <v-divider />
     </span>

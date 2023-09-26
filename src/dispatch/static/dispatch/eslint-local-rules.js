@@ -548,4 +548,106 @@ module.exports = {
       )
     },
   },
+  "list-item-children": {
+    meta: {
+      fixable: "code",
+    },
+    create(context) {
+      return context.parserServices.defineTemplateBodyVisitor({
+        'VElement[name="v-list-item"]'(node) {
+          if (
+            node.startTag.attributes.some((attr) => attr.directive && attr.key.name.name === "slot")
+          ) {
+            return
+          }
+
+          const prepend = []
+          const append = []
+          let inContent = false
+          let reachedContent = false
+          let fixable = true
+          for (const child of node.children) {
+            if (child.type !== "VElement") {
+              if (child.type === "VText" && !child.value.trim()) continue
+              else {
+                fixable = false
+                break
+              }
+            } else if (
+              ["v-list-item-title", "v-list-item-subtitle", "v-list-item-content"].includes(
+                child.name
+              )
+            ) {
+              if (reachedContent && !inContent) {
+                fixable = false
+                break
+              }
+              inContent = true
+              reachedContent = true
+            } else if (
+              ["v-list-item-avatar", "v-list-item-icon", "v-list-item-action"].includes(child.name)
+            ) {
+              inContent = false
+              if (child.startTag.attributes.length && child.name !== "v-list-item-avatar") {
+                fixable = false
+                break
+              }
+              if (reachedContent) {
+                append.push(child)
+              } else {
+                prepend.push(child)
+              }
+            } else {
+              fixable = false
+              break
+            }
+          }
+
+          if (prepend.length || append.length) {
+            context.report({
+              node,
+              message: "move list item children into slots",
+              *fix(fixer) {
+                if (!fixable) return
+
+                function stringifyChildren(children) {
+                  return children
+                    .flatMap((child) => {
+                      if (child.name === "v-list-item-avatar") {
+                        return context.sourceCode
+                          .getText(child)
+                          .replace(/<v-list-item-avatar(\s|>)/, "<v-avatar$1")
+                          .replace("</v-list-item-avatar>", "</v-avatar>")
+                      }
+                      return child.children.map((v) => context.sourceCode.getText(v).trim())
+                    })
+                    .join("\n")
+                }
+
+                for (const child of prepend) {
+                  yield fixer.remove(child)
+                }
+                for (const child of append) {
+                  yield fixer.remove(child)
+                }
+
+                if (prepend.length) {
+                  yield fixer.insertTextAfter(
+                    node.startTag,
+                    `<template #prepend>${stringifyChildren(prepend)}</template>`
+                  )
+                }
+                if (append.length) {
+                  yield fixer.insertTextBefore(
+                    node.endTag,
+                    `<template #append>${stringifyChildren(append)}</template>`
+                  )
+                }
+              },
+            })
+          }
+        },
+      })
+    },
+  },
 }

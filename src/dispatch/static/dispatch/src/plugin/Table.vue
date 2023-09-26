@@ -38,7 +38,7 @@
             <template #item.author="{ item }">
               <a :href="item.author_url" target="_blank" style="text-decoration: none">
                 {{ item.author }}
-                <v-icon size="small">open_in_new</v-icon>
+                <v-icon size="small">mdi-open-in-new</v-icon>
               </a>
             </template>
             <template #item.enabled="{ value }">

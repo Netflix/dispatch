@@ -24,25 +24,28 @@
             <v-card>
               <v-list dark>
                 <v-list-item>
-                  <v-list-item-avatar color="teal">
-                    <span class="text-white">{{ initials(item) }}</span>
-                  </v-list-item-avatar>
+                  <template #prepend>
+                    <v-avatar color="teal">
+                      {{ initials(item) }}
+                    </v-avatar>
+                  </template>
 
                   <v-list-item-title>{{ item ? item.name : "Unknown" }}</v-list-item-title>
                   <v-list-item-subtitle>{{ item ? item.type : "Unknown" }}</v-list-item-subtitle>
 
-                  <v-list-item-action>
+                  <template #append>
                     <v-btn icon variant="text">
                       <v-icon>mdi-close-circle</v-icon>
                     </v-btn>
-                  </v-list-item-action>
+                  </template>
                 </v-list-item>
               </v-list>
               <v-list>
                 <v-list-item>
-                  <v-list-item-action>
+                  <template #prepend>
                     <v-icon>mdi-text-box</v-icon>
-                  </v-list-item-action>
+                  </template>
+
                   <v-list-item-subtitle>
                     {{ item ? item.description : "Unknown" }}
                   </v-list-item-subtitle>

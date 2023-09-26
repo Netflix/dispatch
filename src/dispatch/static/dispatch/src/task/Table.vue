@@ -95,7 +95,7 @@
             <template #item.source="{ item }">
               <a :href="item.weblink" target="_blank" style="text-decoration: none">
                 {{ item.source }}
-                <v-icon size="small">open_in_new</v-icon>
+                <v-icon size="small">mdi-open-in-new</v-icon>
               </a>
             </template>
             <template #item.data-table-actions="{ item }">

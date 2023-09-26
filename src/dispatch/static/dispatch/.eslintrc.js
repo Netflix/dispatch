@@ -24,6 +24,7 @@ module.exports = {
   ],
   rules: {
     "local-rules/icon-button-variant": "error",
+    // "local-rules/list-item-children": "error",
     // "local-rules/vee-validate": "error",
 
     // Conflicts with prettier

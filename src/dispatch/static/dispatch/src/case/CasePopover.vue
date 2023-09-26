@@ -12,14 +12,16 @@
       <v-card width="300">
         <v-list dark>
           <v-list-item>
-            <v-list-item-avatar color="teal">
-              <span class="text-white">{{ initials(value.name) }}</span>
-            </v-list-item-avatar>
+            <template #prepend>
+              <v-avatar color="teal">
+                {{ initials(value.name) }}
+              </v-avatar>
+            </template>
 
             <v-list-item-title>{{ value.name }}</v-list-item-title>
             <v-list-item-subtitle>{{ value.status }}</v-list-item-subtitle>
 
-            <v-list-item-action>
+            <template #append>
               <v-btn
                 icon
                 variant="text"
@@ -30,7 +32,7 @@
               >
                 <v-icon>mdi-arrow-right-bold-circle</v-icon>
               </v-btn>
-            </v-list-item-action>
+            </template>
           </v-list-item>
         </v-list>
         <v-list>
@@ -38,23 +40,26 @@
             v-if="value.assignee && value.assignee.individual && value.assignee.individual.email"
           >
             <v-list-item>
-              <v-list-item-action>
+              <template #prepend>
                 <v-icon>mdi-briefcase</v-icon>
-              </v-list-item-action>
+              </template>
+
               <v-list-item-subtitle>{{ value.assignee.individual.email }}</v-list-item-subtitle>
             </v-list-item>
           </template>
           <v-list-item>
-            <v-list-item-action>
+            <template #prepend>
               <v-icon>business</v-icon>
-            </v-list-item-action>
+            </template>
+
             <v-list-item-subtitle>{{ value.title }}</v-list-item-subtitle>
           </v-list-item>
           <template v-if="value.case_type && value.case_type.name">
             <v-list-item>
-              <v-list-item-action>
+              <template #prepend>
                 <v-icon>business</v-icon>
-              </v-list-item-action>
+              </template>
+
               <v-list-item-subtitle>{{ value.case_type.name }}</v-list-item-subtitle>
             </v-list-item>
           </template>

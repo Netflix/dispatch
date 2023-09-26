@@ -31,14 +31,14 @@
             Have a account? <router-link :to="{ name: 'BasicLogin' }"> Login </router-link>
           </v-list-item-subtitle>
 
-          <v-row align="center" justify="end">
+          <template #append>
             <v-btn type="submit" color="info" :loading="loading" :disabled="!isValid.value">
               Register
               <template #loader>
                 <v-progress-linear indeterminate color="white" />
               </template>
             </v-btn>
-          </v-row>
+          </template>
         </v-list-item>
       </v-card-actions>
     </v-card>

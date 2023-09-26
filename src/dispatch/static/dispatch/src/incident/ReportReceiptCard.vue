@@ -11,7 +11,7 @@
         Checkout this project's incident FAQ document:
         <a :href="project_faq.weblink" target="_blank" style="text-decoration: none">
           {{ project_faq.name }}
-          <v-icon size="small">open_in_new</v-icon>
+          <v-icon size="small">mdi-open-in-new</v-icon>
         </a>
       </p>
       <v-list lines="three">
@@ -19,65 +19,63 @@
           <template #activator>
             <v-list-item-title class="text-h6"> Incident Details </v-list-item-title>
           </template>
-          <v-list-item-group>
-            <v-list-item>
-              <v-list-item-title>Title</v-list-item-title>
-              <v-list-item-subtitle>{{ title }}</v-list-item-subtitle>
-            </v-list-item>
-            <v-divider />
-            <v-list-item>
-              <v-list-item-title>Description</v-list-item-title>
-              <v-list-item-subtitle>{{ description }}</v-list-item-subtitle>
-            </v-list-item>
-            <v-divider />
-            <v-list-item>
-              <v-list-item-title>Project</v-list-item-title>
-              <v-list-item-subtitle>{{ project.name }}</v-list-item-subtitle>
-            </v-list-item>
-            <v-divider />
-            <v-list-item>
-              <v-list-item-title>Type</v-list-item-title>
-              <v-list-item-subtitle>{{ incident_type.name }}</v-list-item-subtitle>
-            </v-list-item>
-            <v-divider />
-            <v-list-item>
-              <v-list-item-title>Priority</v-list-item-title>
-              <v-list-item-subtitle>{{ incident_priority.name }}</v-list-item-subtitle>
-            </v-list-item>
-            <v-divider />
-            <v-list-item>
-              <v-list-item-title>Visibility</v-list-item-title>
-              <v-list-item-subtitle>{{ visibility }}</v-list-item-subtitle>
-            </v-list-item>
-            <v-divider />
-            <v-list-item>
-              <v-list-item-title>Incident Commander</v-list-item-title>
-              <v-list-item-subtitle>
-                <participant :participant="commander" />
-              </v-list-item-subtitle>
-            </v-list-item>
-            <v-divider />
-            <v-list-item>
-              <v-list-item-title>Incident Commander Paged?</v-list-item-title>
-              <v-list-item-subtitle>
-                <span v-if="incident_priority.page_commander">
-                  The incident commander was paged.
-                </span>
-                <span v-else>The incident commander was not paged.</span>
-              </v-list-item-subtitle>
-            </v-list-item>
-            <v-divider />
-            <v-list-item>
-              <v-list-item-title>Incident Participants</v-list-item-title>
-              <v-list-item-subtitle>
-                <v-chip-group column>
-                  <v-item v-for="participant in participants" :key="participant.id">
-                    <participant :participant="participant" />
-                  </v-item>
-                </v-chip-group>
-              </v-list-item-subtitle>
-            </v-list-item>
-          </v-list-item-group>
+          <v-list-item>
+            <v-list-item-title>Title</v-list-item-title>
+            <v-list-item-subtitle>{{ title }}</v-list-item-subtitle>
+          </v-list-item>
+          <v-divider />
+          <v-list-item>
+            <v-list-item-title>Description</v-list-item-title>
+            <v-list-item-subtitle>{{ description }}</v-list-item-subtitle>
+          </v-list-item>
+          <v-divider />
+          <v-list-item>
+            <v-list-item-title>Project</v-list-item-title>
+            <v-list-item-subtitle>{{ project.name }}</v-list-item-subtitle>
+          </v-list-item>
+          <v-divider />
+          <v-list-item>
+            <v-list-item-title>Type</v-list-item-title>
+            <v-list-item-subtitle>{{ incident_type.name }}</v-list-item-subtitle>
+          </v-list-item>
+          <v-divider />
+          <v-list-item>
+            <v-list-item-title>Priority</v-list-item-title>
+            <v-list-item-subtitle>{{ incident_priority.name }}</v-list-item-subtitle>
+          </v-list-item>
+          <v-divider />
+          <v-list-item>
+            <v-list-item-title>Visibility</v-list-item-title>
+            <v-list-item-subtitle>{{ visibility }}</v-list-item-subtitle>
+          </v-list-item>
+          <v-divider />
+          <v-list-item>
+            <v-list-item-title>Incident Commander</v-list-item-title>
+            <v-list-item-subtitle>
+              <participant :participant="commander" />
+            </v-list-item-subtitle>
+          </v-list-item>
+          <v-divider />
+          <v-list-item>
+            <v-list-item-title>Incident Commander Paged?</v-list-item-title>
+            <v-list-item-subtitle>
+              <span v-if="incident_priority.page_commander">
+                The incident commander was paged.
+              </span>
+              <span v-else>The incident commander was not paged.</span>
+            </v-list-item-subtitle>
+          </v-list-item>
+          <v-divider />
+          <v-list-item>
+            <v-list-item-title>Incident Participants</v-list-item-title>
+            <v-list-item-subtitle>
+              <v-chip-group column>
+                <v-item v-for="participant in participants" :key="participant.id">
+                  <participant :participant="participant" />
+                </v-item>
+              </v-chip-group>
+            </v-list-item-subtitle>
+          </v-list-item>
         </v-list-group>
       </v-list>
       <v-list lines="three">
@@ -90,11 +88,9 @@
               <v-list-item-title>Ticket</v-list-item-title>
               <v-list-item-subtitle>{{ ticket.description }}</v-list-item-subtitle>
 
-              <v-list-item-action>
-                <v-list-item-icon>
-                  <v-icon>open_in_new</v-icon>
-                </v-list-item-icon>
-              </v-list-item-action>
+              <template #append>
+                <v-icon>mdi-open-in-new</v-icon>
+              </template>
             </v-list-item>
             <v-list-item v-else>
               <v-list-item-title>Creating incident ticket...</v-list-item-title>
@@ -107,11 +103,9 @@
               <v-list-item-title>Video Conference</v-list-item-title>
               <v-list-item-subtitle>{{ conference.description }}</v-list-item-subtitle>
 
-              <v-list-item-action>
-                <v-list-item-icon>
-                  <v-icon>open_in_new</v-icon>
-                </v-list-item-icon>
-              </v-list-item-action>
+              <template #append>
+                <v-icon>mdi-open-in-new</v-icon>
+              </template>
             </v-list-item>
             <v-list-item v-else>
               <v-list-item-title>Creating incident video conference...</v-list-item-title>
@@ -124,11 +118,9 @@
               <v-list-item-title>Conversation</v-list-item-title>
               <v-list-item-subtitle>{{ conversation.description }}</v-list-item-subtitle>
 
-              <v-list-item-action>
-                <v-list-item-icon>
-                  <v-icon>open_in_new</v-icon>
-                </v-list-item-icon>
-              </v-list-item-action>
+              <template #append>
+                <v-icon>mdi-open-in-new</v-icon>
+              </template>
             </v-list-item>
             <v-list-item v-else>
               <v-list-item-title>Creating incident conversation...</v-list-item-title>
@@ -141,11 +133,9 @@
               <v-list-item-title>Storage</v-list-item-title>
               <v-list-item-subtitle>{{ storage.description }}</v-list-item-subtitle>
 
-              <v-list-item-action>
-                <v-list-item-icon>
-                  <v-icon>open_in_new</v-icon>
-                </v-list-item-icon>
-              </v-list-item-action>
+              <template #append>
+                <v-icon>mdi-open-in-new</v-icon>
+              </template>
             </v-list-item>
             <v-list-item v-else>
               <v-list-item-title>Creating incident storage...</v-list-item-title>
@@ -159,11 +149,9 @@
                     <v-list-item-title>{{ deslug(document.resource_type) }}</v-list-item-title>
                     <v-list-item-subtitle>{{ document.description }}</v-list-item-subtitle>
 
-                    <v-list-item-action>
-                      <v-list-item-icon>
-                        <v-icon>open_in_new</v-icon>
-                      </v-list-item-icon>
-                    </v-list-item-action>
+                    <template #append>
+                      <v-icon>mdi-open-in-new</v-icon>
+                    </template>
                   </v-list-item>
                   <v-divider />
                 </span>

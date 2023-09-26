@@ -7,37 +7,32 @@
         <v-list-item>
           <v-list-item-subtitle>{{ selected.length }} selected</v-list-item-subtitle>
 
-          <v-spacer />
-          <v-list-item-icon>
+          <template #append>
             <v-btn variant="text" @click="showHandoffDialog()">
               <v-icon>mdi-account-arrow-right</v-icon>
               Handoff
             </v-btn>
-          </v-list-item-icon>
-          <v-list-item-icon>
+
             <v-btn variant="text" @click="saveBulk({ status: 'New' })">
               <v-icon>mdi-alert-decagram</v-icon>
               Mark New
             </v-btn>
-          </v-list-item-icon>
-          <v-list-item-icon>
+
             <v-btn variant="text" @click="saveBulk({ status: 'Triage' })">
               <v-icon>mdi-check</v-icon>
               Mark Triage
             </v-btn>
-          </v-list-item-icon>
-          <v-list-item-icon>
+
             <v-btn variant="text" @click="showClosedDialog()">
               <v-icon>mdi-close</v-icon>
               Mark Closed
             </v-btn>
-          </v-list-item-icon>
-          <v-list-item-icon>
+
             <v-btn variant="text" color="primary" @click="deleteBulk()">
               <v-icon color="primary">mdi-delete</v-icon>
               Delete
             </v-btn>
-          </v-list-item-icon>
+          </template>
         </v-list-item>
       </v-list>
     </v-card>

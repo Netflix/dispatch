@@ -10,11 +10,11 @@
           {{ i.title }}
         </v-list-item-subtitle>
 
-        <v-list-item-action>
+        <template #append>
           <v-btn icon variant="text" @click="remove(idx)">
             <v-icon> mdi-delete </v-icon>
           </v-btn>
-        </v-list-item-action>
+        </template>
       </v-list-item>
     </v-list>
   </v-container>

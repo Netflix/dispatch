@@ -3,12 +3,12 @@
     <v-list-item target="_blank">
       <v-list-item-title>Total Cost</v-list-item-title>
 
-      <v-list-item-action>{{ toUSD(totalCost) }} </v-list-item-action>
+      <template #append>{{ toUSD(totalCost) }} </template>
     </v-list-item>
     <v-divider />
     <span v-for="(cost, index) in incident_costs" :key="index">
       <v-list-item target="_blank">
-        <v-list-item-icon v-if="cost.incident_cost_type.editable">
+        <template #prepend v-if="cost.incident_cost_type.editable">
           <v-tooltip location="bottom">
             <template #activator="{ props }">
               <v-btn
@@ -23,14 +23,16 @@
             </template>
             <span>Remove Cost</span>
           </v-tooltip>
-        </v-list-item-icon>
+        </template>
 
         <v-list-item-title>
           {{ cost.incident_cost_type.name }}
         </v-list-item-title>
         <v-list-item-subtitle>{{ cost.incident_cost_type.description }}</v-list-item-subtitle>
 
-        <v-list-item-action>{{ toUSD(cost.amount) }}</v-list-item-action>
+        <template #append>
+          {{ toUSD(cost.amount) }}
+        </template>
       </v-list-item>
       <v-divider />
     </span>

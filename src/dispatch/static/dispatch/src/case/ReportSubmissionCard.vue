@@ -23,7 +23,7 @@
           please check out the following FAQ document:
           <a :href="project_faq.weblink" target="_blank" style="text-decoration: none">
             {{ project_faq.name }}
-            <v-icon size="small">open_in_new</v-icon>
+            <v-icon size="small">mdi-open-in-new</v-icon>
           </a>
         </p>
         <v-form>
