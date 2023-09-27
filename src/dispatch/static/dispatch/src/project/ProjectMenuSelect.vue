@@ -9,13 +9,14 @@
     hide-details
     :loading="loading"
     variant="outlined"
-    dense
+    density="compact"
   >
-    <template #item="data">
-      <v-list-item-title>{{ data.item.name }}</v-list-item-title>
-      <v-list-item-subtitle style="width: 200px" class="text-truncate">
-        {{ data.item.description }}
-      </v-list-item-subtitle>
+    <template #item="{ item: { raw: item }, props }">
+      <v-list-item v-bind="props">
+        <v-list-item-subtitle :title="item.description">
+          {{ item.description }}
+        </v-list-item-subtitle>
+      </v-list-item>
     </template>
   </v-autocomplete>
 </template>

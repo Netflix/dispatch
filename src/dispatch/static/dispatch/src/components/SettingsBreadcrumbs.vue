@@ -3,6 +3,14 @@
     <template #divider>
       <v-icon>mdi-chevron-right</v-icon>
     </template>
+    <template #title="{ item }">
+      <template v-if="item.projectSelect">
+        <project-menu-select v-model="project" />
+      </template>
+      <template v-else>
+        {{ item.title }}
+      </template>
+    </template>
     <template #item="{ item }">
       <v-breadcrumbs-item v-if="item.projectSelect">
         <project-menu-select v-model="project" />
@@ -51,14 +59,14 @@ export default {
     crumbs() {
       return [
         {
-          text: "Settings",
+          title: "Settings",
           disabled: false,
         },
         {
           projectSelect: true,
         },
         {
-          text: this.$route.meta.title,
+          title: this.$route.meta.title,
           disabled: false,
         },
       ]
