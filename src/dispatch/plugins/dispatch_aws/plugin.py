@@ -63,4 +63,4 @@ class SQSSignalConsumerPlugin(SignalConsumerPlugin):
                     except Exception as e:
                         log.exception(e)
 
-            client.delete_message_batch(QueueUrl=sqs_queue_url, Entries=entries)
+                client.delete_message_batch(QueueUrl=sqs_queue_url, Entries=entries)
