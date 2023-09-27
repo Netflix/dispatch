@@ -25,9 +25,9 @@
         </v-list-item>
       </template>
       <v-card flat rounded="0">
-        <v-app-bar color="white" flat>
+        <v-toolbar color="transparent" flat>
           <v-toolbar-title class="text-subtitle-2"> Details </v-toolbar-title>
-        </v-app-bar>
+        </v-toolbar>
         <v-card-text>
           <v-text-field
             v-model="name"
@@ -78,10 +78,9 @@
         </v-card-text>
       </v-card>
       <v-card flat rounded="0">
-        <v-app-bar color="white" flat>
+        <v-toolbar color="transparent" flat>
           <v-toolbar-title class="text-subtitle-2"> Expression Configuration </v-toolbar-title>
-          <v-spacer />
-        </v-app-bar>
+        </v-toolbar>
         <v-card-text>
           Entity types are used to extract useful metadata out of signals. Define either a RegEx or
           JSON Path expression to pull entities out of a signals raw json.

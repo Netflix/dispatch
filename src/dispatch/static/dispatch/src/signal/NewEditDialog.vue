@@ -99,6 +99,7 @@
                     v-model="enabled"
                     label="Enabled"
                     hint="Determines whether this signal definition is currently active and should be used to process signals."
+                    persistent-hint
                   />
                 </v-col>
                 <v-col cols="12">
@@ -106,6 +107,7 @@
                     v-model="create_case"
                     label="Create Case"
                     hint="Determines whether this signal is eligible for case creation (signals could still be associated with existing cases via SignalFilters)."
+                    persistent-hint
                   />
                 </v-col>
                 <v-col cols="12">
@@ -140,17 +142,18 @@
         </v-col>
         <v-col cols="12">
           <v-card flat rounded="0">
-            <v-app-bar color="white" flat>
+            <v-toolbar color="transparent" flat>
               <v-toolbar-title class="text-subtitle-2"> Entity Configuration </v-toolbar-title>
-              <v-spacer />
-              <v-tooltip max-width="250px" location="bottom">
-                <template #activator="{ props }">
-                  <v-icon v-bind="props"> help_outline </v-icon>
-                </template>
-                The follow options allow you to control which entities should be pulled from the
-                signal.
-              </v-tooltip>
-            </v-app-bar>
+              <template #append>
+                <v-tooltip max-width="250px" location="bottom">
+                  <template #activator="{ props }">
+                    <v-icon v-bind="props">mdi-help-circle-outline</v-icon>
+                  </template>
+                  The follow options allow you to control which entities should be pulled from the
+                  signal.
+                </v-tooltip>
+              </template>
+            </v-toolbar>
             <v-card-text>
               <entity-type-filter-combobox
                 v-model="entity_types"
@@ -162,17 +165,18 @@
         </v-col>
         <v-col cols="12">
           <v-card flat rounded="0">
-            <v-app-bar color="white" flat>
+            <v-toolbar color="transparent" flat>
               <v-toolbar-title class="text-subtitle-2"> Case Configuration </v-toolbar-title>
-              <v-spacer />
-              <v-tooltip max-width="250px" location="bottom">
-                <template #activator="{ props }">
-                  <v-icon v-bind="props"> help_outline </v-icon>
-                </template>
-                The following options allow you to configure the type of case that Dispatch will
-                create when it encounters this signal.
-              </v-tooltip>
-            </v-app-bar>
+              <template #append>
+                <v-tooltip max-width="250px" location="bottom">
+                  <template #activator="{ props }">
+                    <v-icon v-bind="props">mdi-help-circle-outline</v-icon>
+                  </template>
+                  The following options allow you to configure the type of case that Dispatch will
+                  create when it encounters this signal.
+                </v-tooltip>
+              </template>
+            </v-toolbar>
             <v-card-text>
               <v-row no-gutters>
                 <v-col cols="12">
@@ -191,17 +195,18 @@
         </v-col>
         <v-col cols="12">
           <v-card flat rounded="0">
-            <v-app-bar color="white" flat>
+            <v-toolbar color="transparent" flat>
               <v-toolbar-title class="text-subtitle-2"> Filter(s) </v-toolbar-title>
-              <v-spacer />
-              <v-tooltip max-width="250px" location="bottom">
-                <template #activator="{ props }">
-                  <v-icon v-bind="props"> help_outline </v-icon>
-                </template>
-                Defines a signal filter allowing you to take either a "Snooze" or "Deduplication"
-                action for any match signal matching the filter.
-              </v-tooltip>
-            </v-app-bar>
+              <template #append>
+                <v-tooltip max-width="250px" location="bottom">
+                  <template #activator="{ props }">
+                    <v-icon v-bind="props">mdi-help-circle-outline</v-icon>
+                  </template>
+                  Defines a signal filter allowing you to take either a "Snooze" or "Deduplication"
+                  action for any match signal matching the filter.
+                </v-tooltip>
+              </template>
+            </v-toolbar>
             <v-card-text>
               <signal-filter-combobox
                 v-model="filters"
@@ -213,16 +218,17 @@
         </v-col>
         <v-col cols="12">
           <v-card flat rounded="0">
-            <v-app-bar color="white" flat>
+            <v-toolbar color="transparent" flat>
               <v-toolbar-title class="text-subtitle-2"> Engagement(s) </v-toolbar-title>
-              <v-spacer />
-              <v-tooltip max-width="250px" location="bottom">
-                <template #activator="{ props }">
-                  <v-icon v-bind="props"> help_outline </v-icon>
-                </template>
-                Defines an Engagement filter.
-              </v-tooltip>
-            </v-app-bar>
+              <template #append>
+                <v-tooltip max-width="250px" location="bottom">
+                  <template #activator="{ props }">
+                    <v-icon v-bind="props">mdi-help-circle-outline</v-icon>
+                  </template>
+                  Defines an Engagement filter.
+                </v-tooltip>
+              </template>
+            </v-toolbar>
             <v-card-text>
               <signal-engagement-combobox v-model="engagements" :project="project" />
             </v-card-text>
@@ -230,16 +236,17 @@
         </v-col>
         <v-col cols="12">
           <v-card flat rounded="0">
-            <v-app-bar color="white" flat>
+            <v-toolbar color="transparent" flat>
               <v-toolbar-title class="text-subtitle-2"> Workflow(s) </v-toolbar-title>
-              <v-spacer />
-              <v-tooltip max-width="250px" location="bottom">
-                <template #activator="{ props }">
-                  <v-icon v-bind="props"> help_outline </v-icon>
-                </template>
-                Defines a workflow.
-              </v-tooltip>
-            </v-app-bar>
+              <template #append>
+                <v-tooltip max-width="250px" location="bottom">
+                  <template #activator="{ props }">
+                    <v-icon v-bind="props">mdi-help-circle-outline</v-icon>
+                  </template>
+                  Defines a workflow.
+                </v-tooltip>
+              </template>
+            </v-toolbar>
             <v-card-text>
               <workflow-combobox v-model="workflows" :project="project" />
             </v-card-text>

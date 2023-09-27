@@ -48,13 +48,13 @@
                 >
                   <template #append>
                     <v-btn
-                      icon
+                      icon="mdi-help-circle-outline"
                       variant="text"
+                      density="comfortable"
+                      size="small"
                       href="https://github.com/json-path/JsonPath#path-examples"
                       target="_blank"
-                    >
-                      <v-icon>mdi-help-circle-outline</v-icon>
-                    </v-btn>
+                    />
                   </template>
                 </v-text-field>
                 Example signals:
