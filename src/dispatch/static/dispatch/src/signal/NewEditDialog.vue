@@ -30,9 +30,17 @@
             <v-card-text>
               <v-row no-gutters>
                 <v-col cols="12">
+                  <v-checkbox
+                    v-model="enabled"
+                    label="Enabled"
+                    hint="Determines whether this signal definition is currently active and should be used to process signals."
+                    persistent-hint
+                  />
+                </v-col>
+                <v-col cols="12">
                   <v-text-field
                     v-model="name"
-                    label="Name"
+                    label="Name (required)"
                     persistent-hint
                     hint="A human readable display name for this signal."
                     clearable
@@ -65,7 +73,7 @@
                 <v-col cols="12">
                   <v-text-field
                     v-model="owner"
-                    label="Owner"
+                    label="Owner (required)"
                     hint="Typically the team or owner that produces the signal."
                     persistent-hint
                     clearable
@@ -76,7 +84,7 @@
                 <v-col cols="12">
                   <v-text-field
                     v-model="external_id"
-                    label="External ID"
+                    label="External ID (required)"
                     hint="This ID will be used to correctly associate incoming signals to this definition."
                     persistent-hint
                     clearable
@@ -95,19 +103,49 @@
                   />
                 </v-col>
                 <v-col cols="12">
-                  <v-checkbox
-                    v-model="enabled"
-                    label="Enabled"
-                    hint="Determines whether this signal definition is currently active and should be used to process signals."
-                    persistent-hint
+                  <tag-filter-auto-complete
+                    label="Tags"
+                    v-model="tags"
+                    model="signal"
+                    :model-id="id"
                   />
                 </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <v-col cols="12">
+          <v-card flat rounded="0">
+            <v-toolbar color="transparent" flat>
+              <v-toolbar-title class="text-subtitle-2"> Case Configuration </v-toolbar-title>
+              <template #append>
+                <v-tooltip max-width="250px" location="bottom">
+                  <template #activator="{ props }">
+                    <v-icon v-bind="props">mdi-help-circle-outline</v-icon>
+                  </template>
+                  The following options allow you to configure the type of case that Dispatch will
+                  create when it encounters this signal.
+                </v-tooltip>
+              </template>
+            </v-toolbar>
+            <v-card-text>
+              <v-row no-gutters>
                 <v-col cols="12">
                   <v-checkbox
                     v-model="create_case"
                     label="Create Case"
                     hint="Determines whether this signal is eligible for case creation (signals could still be associated with existing cases via SignalFilters)."
                     persistent-hint
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <case-type-select v-model="case_type" :project="project" label="Type" />
+                </v-col>
+                <v-col cols="12">
+                  <case-priority-select
+                    v-model="case_priority"
+                    :project="project"
+                    label="Case Priority"
                   />
                 </v-col>
                 <v-col cols="12">
@@ -129,17 +167,18 @@
                   />
                 </v-col>
                 <v-col cols="12">
-                  <tag-filter-auto-complete
-                    label="Tags"
-                    v-model="tags"
-                    model="signal"
-                    :model-id="id"
+                  <signal-engagement-combobox
+                    v-model="engagements"
+                    label="Engagement(s)"
+                    :project="project"
+                    :signalDefinition="selected"
                   />
                 </v-col>
               </v-row>
             </v-card-text>
           </v-card>
         </v-col>
+
         <v-col cols="12">
           <v-card flat rounded="0">
             <v-toolbar color="transparent" flat>
@@ -166,36 +205,6 @@
         <v-col cols="12">
           <v-card flat rounded="0">
             <v-toolbar color="transparent" flat>
-              <v-toolbar-title class="text-subtitle-2"> Case Configuration </v-toolbar-title>
-              <template #append>
-                <v-tooltip max-width="250px" location="bottom">
-                  <template #activator="{ props }">
-                    <v-icon v-bind="props">mdi-help-circle-outline</v-icon>
-                  </template>
-                  The following options allow you to configure the type of case that Dispatch will
-                  create when it encounters this signal.
-                </v-tooltip>
-              </template>
-            </v-toolbar>
-            <v-card-text>
-              <v-row no-gutters>
-                <v-col cols="12">
-                  <case-type-select label="Case Type" :project="project" v-model="case_type" />
-                </v-col>
-                <v-col cols="12">
-                  <case-priority-select
-                    label="Case Priority"
-                    :project="project"
-                    v-model="case_priority"
-                  />
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-card>
-        </v-col>
-        <v-col cols="12">
-          <v-card flat rounded="0">
-            <v-toolbar color="transparent" flat>
               <v-toolbar-title class="text-subtitle-2"> Filter(s) </v-toolbar-title>
               <template #append>
                 <v-tooltip max-width="250px" location="bottom">
@@ -213,24 +222,6 @@
                 :project="project"
                 :signalDefinition="selected"
               />
-            </v-card-text>
-          </v-card>
-        </v-col>
-        <v-col cols="12">
-          <v-card flat rounded="0">
-            <v-toolbar color="transparent" flat>
-              <v-toolbar-title class="text-subtitle-2"> Engagement(s) </v-toolbar-title>
-              <template #append>
-                <v-tooltip max-width="250px" location="bottom">
-                  <template #activator="{ props }">
-                    <v-icon v-bind="props">mdi-help-circle-outline</v-icon>
-                  </template>
-                  Defines an Engagement filter.
-                </v-tooltip>
-              </template>
-            </v-toolbar>
-            <v-card-text>
-              <signal-engagement-combobox v-model="engagements" :project="project" />
             </v-card-text>
           </v-card>
         </v-col>

@@ -38,43 +38,30 @@ def chunks(ids, n):
         yield ids[i : i + n]
 
 
-def handle_slack_error(exception: SlackApiError, endpoint: str, kwargs: dict) -> NoReturn:
-    message = (
-        f"SlackAPIError. Response: {exception.response}. Endpoint: {endpoint}. Kwargs: {kwargs}"
-    )
-    error = exception.response["error"]
-
-    if error in {
-        SlackAPIErrorCode.CHANNEL_NOT_FOUND,
-        SlackAPIErrorCode.USER_NOT_IN_CHANNEL,
-        SlackAPIErrorCode.USERS_NOT_FOUND,
-    }:
-        log.warn(message)
-    elif error == SlackAPIErrorCode.FATAL_ERROR:
-        # NOTE we've experienced a wide range of issues when Slack's performance is degraded
-        log.error(message)
-        time.sleep(300)
-        raise TryAgain from None
-    elif exception.response.headers.get("Retry-After"):
-        wait = int(exception.response.headers["Retry-After"])
-        log.info(f"SlackError: Rate limit hit. Waiting {wait} seconds.")
-        time.sleep(wait)
-        raise TryAgain from None
-    else:
-        raise exception
-
-
 @retry(stop=stop_after_attempt(5), retry=retry_if_exception_type(TryAgain))
 def make_call(client: WebClient, endpoint: str, **kwargs) -> SlackResponse:
     """Makes a Slack client API call."""
     try:
         if endpoint in set(SlackAPIGetEndpoints):
-            response = client.api_call(endpoint, http_verb="GET", params=kwargs)
-        else:
-            response = client.api_call(endpoint, json=kwargs)
-    except SlackApiError as e:
-        handle_slack_error(e, endpoint, kwargs)
-    return response
+            return client.api_call(endpoint, http_verb="GET", params=kwargs)
+        return client.api_call(endpoint, json=kwargs)
+    except SlackApiError as exception:
+        message = (
+            f"SlackAPIError. Response: {exception.response}. Endpoint: {endpoint}. Kwargs: {kwargs}"
+        )
+
+        error = exception.response["error"]
+        if error == SlackAPIErrorCode.FATAL_ERROR:
+            # NOTE we've experienced a wide range of issues when Slack's performance is degraded
+            log.error(message)
+            time.sleep(300)
+            raise TryAgain from None
+        elif exception.response.headers.get("Retry-After"):
+            wait = int(exception.response.headers["Retry-After"])
+            log.info(f"SlackError: Rate limit hit. Waiting {wait} seconds.")
+            time.sleep(wait)
+            raise TryAgain from None
+        raise exception
 
 
 def list_conversation_messages(client: WebClient, conversation_id: str, **kwargs) -> SlackResponse:

@@ -65,7 +65,7 @@
         <incident-severity-select v-model="incident_severity" :project="project" />
       </v-col>
       <v-col cols="6">
-        <incident-priority-select v-model="incident_priority" :project="project" />
+        <incident-priority-select v-model="incident_priority" :project="project" :status="status" />
       </v-col>
       <v-col cols="6">
         <v-select
@@ -107,6 +107,9 @@
       </v-col>
       <v-col cols="12">
         <case-filter-combobox label="Cases" v-model="cases" />
+      </v-col>
+      <v-col cols="12" v-show="false">
+        <v-text-field v-model="project" name="project" />
       </v-col>
     </v-row>
   </v-container>

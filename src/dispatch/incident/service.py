@@ -289,11 +289,8 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
         incident_severity_in=incident_in.incident_severity,
     )
 
-    if incident_in.status == IncidentStatus.stable:
-        incident_priority = incident_priority_service.get_default(
-            db_session=db_session,
-            project_id=incident.project.id,
-        )
+    if incident_in.status == IncidentStatus.stable and incident.project.stable_priority:
+        incident_priority = incident.project.stable_priority
     else:
         incident_priority = incident_priority_service.get_by_name_or_default(
             db_session=db_session,

@@ -321,7 +321,10 @@ To find a Slack command, simply type `/` in the message field or click the light
 """
 
 ONCALL_SHIFT_FEEDBACK_DESCRIPTION = """
-Hi {{ individual_name }}, it appears that your {{ oncall_service_name }} shift has completed. To help us understand the impact on our responders, we would appreciate your feedback."""
+Hi {{ individual_name }}, it appears that your {{ oncall_service_name }} shift recently completed on {{ shift_end_at }} UTC. To help us understand the impact on our responders, we would appreciate your feedback."""
+
+ONCALL_SHIFT_FEEDBACK_RECEIVED_DESCRIPTION = """
+We received your feedback for your shift that ended {{ shift_end_at }} UTC. Thank you!"""
 
 INCIDENT_STATUS_CHANGE_DESCRIPTION = """
 The incident status has been changed from {{ incident_status_old }} to {{ incident_status_new }}.""".replace(
@@ -763,17 +766,34 @@ INCIDENT_OPEN_TASKS = [
     }
 ]
 
+ONCALL_SHIFT_FEEDBACK_BUTTONS = [
+    {
+        "button_text": "Provide Feedback",
+        "button_value": "{{organization_slug}}|{{project_id}}|{{oncall_schedule_id}}|{{shift_end_at}}|{{reminder_id}}",
+        "button_action": ConversationButtonActions.service_feedback,
+    }
+]
+
 ONCALL_SHIFT_FEEDBACK_NOTIFICATION = [
     {
         "title": "Oncall Shift Feedback",
         "text": ONCALL_SHIFT_FEEDBACK_DESCRIPTION,
-        "buttons": [
-            {
-                "button_text": "Provide Feedback",
-                "button_value": "{{organization_slug}}|{{project_id}}|{{oncall_schedule_id}}|{{shift_end_at}}",
-                "button_action": ConversationButtonActions.service_feedback,
-            }
-        ],
+        "buttons": ONCALL_SHIFT_FEEDBACK_BUTTONS,
+    }
+]
+
+ONCALL_SHIFT_FEEDBACK_NOTIFICATION_REMINDER = [
+    {
+        "title": "Oncall Shift Feedback - REMINDER",
+        "text": ONCALL_SHIFT_FEEDBACK_DESCRIPTION,
+        "buttons": ONCALL_SHIFT_FEEDBACK_BUTTONS,
+    }
+]
+
+ONCALL_SHIFT_FEEDBACK_RECEIVED = [
+    {
+        "title": "Oncall Shift Feedback - RECEIVED",
+        "text": ONCALL_SHIFT_FEEDBACK_RECEIVED_DESCRIPTION,
     }
 ]
 

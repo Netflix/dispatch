@@ -19,12 +19,7 @@ from dispatch.service import flows as service_flows
 from dispatch.signal import flows as signal_flows
 from dispatch.signal import service as signal_service
 from dispatch.signal.enums import SignalEngagementStatus
-from dispatch.signal.models import (
-    SignalFilterAction,
-    SignalInstance,
-    SignalInstanceCreate,
-    SignalEnvironment,
-)
+from dispatch.signal.models import SignalFilterAction, SignalInstance, SignalInstanceCreate
 from dispatch.workflow import flows as workflow_flows
 from dispatch.entity_type.models import EntityScopeEnum
 
@@ -95,19 +90,35 @@ def signal_instance_create_flow(
             )
         return signal_instance
 
+    # limited support for canary signals, just store the instance and return
+    if signal_instance.canary:
+        return signal_instance
+
     if not signal_instance.signal.create_case:
         return signal_instance
 
-    # process signal <-> case overrides
+    # processes overrides for case creation
+    # we want the following order of precedence:
+    # 1. signal instance overrides
+    # 2. signal definition overrides
+    # 3. case type defaults
+
     if signal_instance.case_priority:
         case_priority = signal_instance.case_priority
     else:
         case_priority = signal_instance.signal.case_priority
 
+    # if the signal has provided a case type use it's values instead of the definitions
+    conversation_target = None
     if signal_instance.case_type:
         case_type = signal_instance.case_type
+        if signal_instance.signal.conversation_target:
+            conversation_target = signal_instance.case_type.conversation_target
     else:
         case_type = signal_instance.signal.case_type
+
+        if signal_instance.signal.conversation_target:
+            conversation_target = signal_instance.signal.conversation_target
 
     assignee = None
     if signal_instance.signal.oncall_service:
@@ -115,10 +126,6 @@ def signal_instance_create_flow(
             service=signal_instance.signal.oncall_service, db_session=db_session
         )
         assignee = {"individual": {"email": email}}
-
-    conversation_target = None
-    if signal_instance.signal.conversation_target:
-        conversation_target = signal_instance.signal.conversation_target
 
     # create a case if not duplicate or snoozed and case creation is enabled
     case_in = CaseCreate(
@@ -172,7 +179,6 @@ def create_signal_instance(
     signal = signal_service.get_by_variant_or_external_id(
         db_session=db_session,
         project_id=project.id,
-        environment=signal_instance_data.get("environment", SignalEnvironment.PROD),
         external_id=signal_instance_data.get("id"),
         variant=signal_instance_data["variant"],
     )
