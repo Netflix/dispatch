@@ -174,10 +174,6 @@ export default {
   },
   name: "SignalFilterCreateDialog",
   props: {
-    value: {
-      type: Object,
-      default: null,
-    },
     signalDefinition: {
       type: Object,
       required: true,
@@ -242,7 +238,7 @@ export default {
     saveFilter() {
       // reset local data
       this.save().then((filter) => {
-        this.$emit("input", filter)
+        this.$emit("save", filter)
       })
     },
     resetFilters() {

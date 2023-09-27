@@ -48,24 +48,16 @@ import SearchUtils from "@/search/utils"
 import EntityApi from "@/entity/api"
 
 export default {
-  name: "EntityCombobox",
+  name: "EntityFilterCombobox",
 
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: () => [],
     },
     label: {
       type: String,
       default: "Add Entity Types",
-    },
-    model: {
-      type: String,
-      default: null,
-    },
-    modelId: {
-      type: Number,
-      default: null,
     },
     project: {
       type: Object,
@@ -86,10 +78,10 @@ export default {
   computed: {
     entities: {
       get() {
-        return this.value
+        return this.modelValue
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },

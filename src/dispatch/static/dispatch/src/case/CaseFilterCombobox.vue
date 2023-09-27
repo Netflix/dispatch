@@ -50,7 +50,7 @@ export default {
   name: "CaseFilterCombobox",
 
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -75,7 +75,7 @@ export default {
   computed: {
     cases: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         this.search = null
@@ -85,7 +85,7 @@ export default {
           }
           return true
         })
-        this.$emit("input", cases)
+        this.$emit("update:modelValue", cases)
       },
     },
   },

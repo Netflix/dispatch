@@ -49,7 +49,7 @@ import EnvironmentApi from "@/data/source/environment/api"
 export default {
   name: "SourceEnvironmentComboBox",
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -76,7 +76,7 @@ export default {
   computed: {
     environments: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         this.search = null
@@ -86,7 +86,7 @@ export default {
           }
           return true
         })
-        this.$emit("input", _environments)
+        this.$emit("update:modelValue", _environments)
       },
     },
   },

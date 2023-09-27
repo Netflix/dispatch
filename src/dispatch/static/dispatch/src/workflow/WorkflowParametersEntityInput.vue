@@ -17,9 +17,9 @@
         <v-col cols="12" sm="1">
           <v-tooltip location="bottom">
             <template #activator="{ props }">
-              <v-btn size="small" icon variant="text" @click="removeItem(idx)" v-bind="props"
-                ><v-icon>mdi-minus</v-icon></v-btn
-              >
+              <v-btn size="small" icon variant="text" @click="removeItem(idx)" v-bind="props">
+                <v-icon>mdi-minus</v-icon>
+              </v-btn>
             </template>
             <span>Remove Item</span>
           </v-tooltip>
@@ -34,9 +34,9 @@
         </v-col>
         <v-col cols="12" sm="6">
           <entity-type-select
-            v-model="param.value"
+            :model-value="param.value"
+            @update:model-value="updateItemValue(idx, $event)"
             :project="project"
-            @input="updateItemValue(idx, $event)"
             :signalDefinition="selected"
           />
         </v-col>
@@ -55,7 +55,7 @@ export default {
   components: { EntityTypeSelect },
 
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -66,7 +66,7 @@ export default {
   computed: {
     parameters: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
     },
   },
@@ -74,19 +74,19 @@ export default {
   methods: {
     addItem() {
       this.parameters.push({ key: null, value: null })
-      this.$emit("input", this.parameters)
+      this.$emit("update:modelValue", this.parameters)
     },
     removeItem(idx) {
       this.parameters.splice(idx, 1)
-      this.$emit("input", this.parameters)
+      this.$emit("update:modelValue", this.parameters)
     },
     updateItemKey(idx, event) {
       this.parameters[idx]["key"] = event
-      this.$emit("input", this.parameters)
+      this.$emit("update:modelValue", this.parameters)
     },
     updateItemValue(idx, event) {
       this.parameters[idx]["value"] = event["name"]
-      this.$emit("input", this.parameters)
+      this.$emit("update:modelValue", this.parameters)
     },
   },
 }

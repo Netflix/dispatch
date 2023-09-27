@@ -77,7 +77,7 @@
           </v-list-item>
         </template>
         <template #append>
-          <search-filter-create-dialog v-model="createdFilter" />
+          <search-filter-create-dialog @save="createFilter" />
         </template>
       </v-combobox>
     </v-row>
@@ -96,7 +96,7 @@ import SearchFilterCreateDialog from "@/search/SearchFilterCreateDialog.vue"
 export default {
   name: "SearchFilterCombobox",
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -119,7 +119,6 @@ export default {
       loading: false,
       items: [],
       search: null,
-      createdFilter: null,
       menu: false,
     }
   },
@@ -131,7 +130,7 @@ export default {
   computed: {
     searchFilters: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         this.search = null
@@ -141,19 +140,16 @@ export default {
           }
           return true
         })
-        this.$emit("input", filters)
+        this.$emit("update:modelValue", filters)
       },
     },
   },
 
-  watch: {
-    createdFilter: function (newVal) {
-      this.items.push(newVal)
-      this.searchFilters.push(newVal)
-    },
-  },
-
   methods: {
+    createFilter(value) {
+      this.items.push(value)
+      this.searchFilters.push(value)
+    },
     fetchData() {
       this.error = null
       this.loading = "error"

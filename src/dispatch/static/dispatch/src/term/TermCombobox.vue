@@ -34,7 +34,7 @@ import TermApi from "@/term/api"
 export default {
   name: "TermCombobox",
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -60,7 +60,7 @@ export default {
   computed: {
     terms: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         this.search = null
@@ -70,7 +70,7 @@ export default {
           }
           return true
         })
-        this.$emit("input", terms)
+        this.$emit("update:modelValue", terms)
       },
     },
   },

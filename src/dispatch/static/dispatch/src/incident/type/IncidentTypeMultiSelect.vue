@@ -22,7 +22,7 @@ export default {
   name: "IncidentTypeMultiSelect",
 
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -50,10 +50,10 @@ export default {
   computed: {
     incident_types: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },

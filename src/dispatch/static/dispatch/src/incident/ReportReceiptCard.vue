@@ -14,8 +14,8 @@
           <v-icon size="small">mdi-open-in-new</v-icon>
         </a>
       </p>
-      <v-list lines="three">
-        <v-list-group :value="true">
+      <v-list lines="three" :opened="[0]">
+        <v-list-group :value="0">
           <template #activator>
             <v-list-item-title class="text-h6"> Incident Details </v-list-item-title>
           </template>
@@ -78,8 +78,8 @@
           </v-list-item>
         </v-list-group>
       </v-list>
-      <v-list lines="three">
-        <v-list-group :value="true">
+      <v-list lines="three" :opened="[0]">
+        <v-list-group :value="0">
           <template #activator>
             <v-list-item-title class="text-h6"> Incident Resources </v-list-item-title>
           </template>

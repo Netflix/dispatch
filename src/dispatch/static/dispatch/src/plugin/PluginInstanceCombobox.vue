@@ -47,7 +47,7 @@ import PluginApi from "@/plugin/api"
 export default {
   name: "PluginCombobox",
   props: {
-    value: {
+    modelValue: {
       type: [Object],
       default: null,
     },
@@ -76,7 +76,7 @@ export default {
   },
 
   created() {
-    this.plugin = cloneDeep(this.value)
+    this.plugin = cloneDeep(this.modelValue)
     this.fetchData()
   },
 
@@ -143,7 +143,7 @@ export default {
       val && val !== this.select && this.getFilteredData(val)
     },
     plugin(val) {
-      this.$emit("input", val)
+      this.$emit("update:modelValue", val)
     },
   },
 }

@@ -157,7 +157,6 @@ export default {
           return { project: item, default: true }
         })
         this.projects = wrapped
-        this.$emit("input", wrapped)
       },
     },
   },

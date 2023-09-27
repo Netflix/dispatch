@@ -224,11 +224,7 @@
               </v-tooltip>
             </v-app-bar>
             <v-card-text>
-              <signal-engagement-combobox
-                v-model="engagements"
-                :project="project"
-                :signalDefinition="selected"
-              />
+              <signal-engagement-combobox v-model="engagements" :project="project" />
             </v-card-text>
           </v-card>
         </v-col>
@@ -245,11 +241,7 @@
               </v-tooltip>
             </v-app-bar>
             <v-card-text>
-              <workflow-combobox
-                v-model="workflows"
-                :project="project"
-                :signalDefinition="selected"
-              />
+              <workflow-combobox v-model="workflows" :project="project" />
             </v-card-text>
           </v-card>
         </v-col>

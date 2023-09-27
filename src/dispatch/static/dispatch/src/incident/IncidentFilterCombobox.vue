@@ -49,7 +49,7 @@ import IncidentApi from "@/incident/api"
 export default {
   name: "IncidentFilterCombobox",
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -73,7 +73,7 @@ export default {
   computed: {
     incidents: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         this.search = null
@@ -83,7 +83,7 @@ export default {
           }
           return true
         })
-        this.$emit("input", incidents)
+        this.$emit("update:modelValue", incidents)
       },
     },
   },

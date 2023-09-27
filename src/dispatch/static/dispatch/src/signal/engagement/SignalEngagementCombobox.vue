@@ -2,7 +2,6 @@
   <v-row no-gutters align="center">
     <v-col cols="12" sm="11">
       <base-combobox
-        :value="value"
         :label="label"
         :api="signalEngagementApi"
         :project="project"
@@ -57,11 +56,7 @@
       </base-combobox>
     </v-col>
     <v-col cols="12" sm="1">
-      <signal-engagement-create-dialog
-        v-model="createdItem"
-        :project="project"
-        :signalDefinition="signalDefinition"
-      />
+      <signal-engagement-create-dialog @save="createItem" />
     </v-col>
   </v-row>
 </template>
@@ -78,7 +73,7 @@ export default {
     SignalEngagementCreateDialog,
   },
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: () => [],
     },
@@ -90,38 +85,29 @@ export default {
       type: Object,
       required: true,
     },
-    signalDefinition: {
-      type: Object,
-      required: false,
-    },
   },
   data() {
     return {
       signalEngagementApi: SignalEngagementApi,
-      createdItem: null,
       items: [],
     }
   },
   computed: {
     engagements: {
       get() {
-        return this.value
+        return this.modelValue
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
-    },
-  },
-
-  watch: {
-    createdItem: function (newVal) {
-      this.items.push(newVal)
-      this.engagements.push(newVal)
     },
   },
 
   methods: {
-    // ...
+    createItem(value) {
+      this.items.push(value)
+      this.engagements.push(value)
+    },
     initials(item) {
       if (!item) {
         return "Unknown"

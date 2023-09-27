@@ -53,7 +53,7 @@ import CasePriorityApi from "@/case/priority/api"
 export default {
   name: "CasePriorityComboBox",
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -84,7 +84,7 @@ export default {
   computed: {
     casePriority: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         this.search = null
@@ -94,7 +94,7 @@ export default {
           }
           return true
         })
-        this.$emit("input", casePriorities)
+        this.$emit("update:modelValue", casePriorities)
       },
     },
   },

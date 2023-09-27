@@ -79,7 +79,7 @@
             </v-data-table>
             <v-spacer />
             <v-btn @click="closeExport()" variant="text"> Cancel </v-btn>
-            <v-badge :value="total" color="info" bordered :content="total">
+            <v-badge :model-value="!!total" color="info" bordered :content="total">
               <v-btn color="info" @click="exportToCSV()" :loading="exportLoading"> Export </v-btn>
             </v-badge>
           </v-stepper-content>

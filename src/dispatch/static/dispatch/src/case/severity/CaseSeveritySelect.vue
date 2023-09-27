@@ -28,7 +28,7 @@ import CaseSeverityApi from "@/case/severity/api"
 export default {
   name: "CaseSeveritySelect",
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -50,10 +50,10 @@ export default {
   computed: {
     case_severity: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },

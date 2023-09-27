@@ -44,7 +44,7 @@ import SourceStatusApi from "@/data/source/status/api"
 export default {
   name: "SourceStatusSelect",
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -72,11 +72,11 @@ export default {
   computed: {
     status: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         if (typeof value !== "string") {
-          this.$emit("input", value)
+          this.$emit("update:modelValue", value)
         }
       },
     },

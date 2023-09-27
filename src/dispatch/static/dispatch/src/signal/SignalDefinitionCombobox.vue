@@ -81,7 +81,7 @@ import SearchUtils from "@/search/utils"
 export default {
   name: "SignalDefinitionCombobox",
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -118,7 +118,7 @@ export default {
   computed: {
     signalDefinitions: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         this.search = null
@@ -128,7 +128,7 @@ export default {
           }
           return true
         })
-        this.$emit("input", signalDefinitions)
+        this.$emit("update:modelValue", signalDefinitions)
       },
     },
   },

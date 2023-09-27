@@ -32,7 +32,7 @@ export default {
 
   methods: {
     hideSheet() {
-      this.$emit("input", false)
+      this.$emit("update:modelValue", false)
     },
   },
 

@@ -52,7 +52,7 @@ export default {
   name: "WorkflowParameterInput",
 
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -63,7 +63,7 @@ export default {
   computed: {
     parameters: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
     },
   },
@@ -71,19 +71,19 @@ export default {
   methods: {
     addItem() {
       this.parameters.push({ key: null, value: null })
-      this.$emit("input", this.parameters)
+      this.$emit("update:modelValue", this.parameters)
     },
     removeItem(idx) {
       this.parameters.splice(idx, 1)
-      this.$emit("input", this.parameters)
+      this.$emit("update:modelValue", this.parameters)
     },
     updateItemKey(idx, event) {
       this.parameters[idx]["key"] = event
-      this.$emit("input", this.parameters)
+      this.$emit("update:modelValue", this.parameters)
     },
     updateItemValue(idx, event) {
       this.parameters[idx]["value"] = event
-      this.$emit("input", this.parameters)
+      this.$emit("update:modelValue", this.parameters)
     },
   },
 }

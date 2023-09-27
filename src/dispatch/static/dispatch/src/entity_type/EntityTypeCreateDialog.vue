@@ -220,7 +220,7 @@ export default {
         this.loading = false
         this.dialog = false
         this.reset()
-        this.$emit("input", resp.data)
+        this.$emit("create", resp.data)
       })
     },
     isValidRegex,

@@ -29,7 +29,7 @@ export default {
   name: "IncidentSeveritySelect",
 
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -51,10 +51,10 @@ export default {
   computed: {
     incidentSeverity: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },

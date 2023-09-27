@@ -38,7 +38,7 @@ import DefinitionApi from "@/definition/api"
 export default {
   name: "DefinitionCombobox",
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -63,7 +63,7 @@ export default {
   computed: {
     definitions: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         this.search = null
@@ -73,7 +73,7 @@ export default {
           }
           return true
         })
-        this.$emit("input", definitions)
+        this.$emit("update:modelValue", definitions)
       },
     },
   },

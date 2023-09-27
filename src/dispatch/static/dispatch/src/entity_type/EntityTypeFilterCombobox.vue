@@ -82,7 +82,7 @@
     </template>
     <template #append>
       <entity-type-create-dialog
-        v-model="createdEntityType"
+        @create="createEntityType"
         :project="project"
         :signalDefinition="signalDefinition"
       />
@@ -103,21 +103,13 @@ export default {
   name: "EntityTypeFilterCombobox",
 
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: () => [],
     },
     label: {
       type: String,
       default: "Add Entity Types",
-    },
-    model: {
-      type: String,
-      default: null,
-    },
-    modelId: {
-      type: Number,
-      default: null,
     },
     project: {
       type: Object,
@@ -137,7 +129,6 @@ export default {
       items: [],
       more: false,
       numItems: 5,
-      createdEntityType: null,
       search: null,
     }
   },
@@ -149,10 +140,10 @@ export default {
   computed: {
     entity_types: {
       get() {
-        return this.value
+        return this.modelValue
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },
@@ -167,14 +158,11 @@ export default {
     )
   },
 
-  watch: {
-    createdEntityType: function (newVal) {
-      this.items.push(newVal)
-      this.entity_types.push(newVal)
-    },
-  },
-
   methods: {
+    createEntityType(value) {
+      this.items.push(value)
+      this.entity_types.push(value)
+    },
     loadMore() {
       this.numItems = this.numItems + 5
       this.fetchData()

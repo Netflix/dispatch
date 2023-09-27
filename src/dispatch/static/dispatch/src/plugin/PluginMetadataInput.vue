@@ -31,11 +31,11 @@
         </v-col>
         <v-col cols="12" sm="10">
           <plugin-instance-combobox
+            :model-value="plugin"
+            @update:model-value="setPlugin({ plugin: $event, idx: plugin_idx })"
             :project="project"
             :type="type"
-            @input="setPlugin({ plugin: $event, idx: plugin_idx })"
             label="Plugin"
-            :value="plugin"
           />
         </v-col>
         <v-col cols="12" sm="1">
@@ -103,7 +103,7 @@ export default {
   },
 
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -122,7 +122,7 @@ export default {
   computed: {
     plugins: {
       get() {
-        return cloneDeep(this.value).map((x) => ({ ...x, ...{ plugin: { slug: x.slug } } }))
+        return cloneDeep(this.modelValue).map((x) => ({ ...x, ...{ plugin: { slug: x.slug } } }))
       },
     },
   },
@@ -130,30 +130,30 @@ export default {
   methods: {
     addPlugin() {
       this.plugins.push({ plugin: { slug: "" } })
-      this.$emit("input", this.plugins)
+      this.$emit("update:modelValue", this.plugins)
     },
     removePlugin(plugin_idx) {
       this.plugins.splice(plugin_idx, 1)
-      this.$emit("input", this.plugins)
+      this.$emit("update:modelValue", this.plugins)
     },
     addItem(plugin_idx) {
       if (!this.plugins[plugin_idx].metadata) {
         this.$set(this.plugins[plugin_idx], "metadata", [])
       }
       this.plugins[plugin_idx].metadata.push({ key: "", value: "" })
-      this.$emit("input", this.plugins)
+      this.$emit("update:modelValue", this.plugins)
     },
     removeItem(plugin_idx, metadata_idx) {
       this.plugins[plugin_idx].metadata.splice(metadata_idx, 1)
-      this.$emit("input", this.plugins)
+      this.$emit("update:modelValue", this.plugins)
     },
     setPlugin(event) {
       this.$set(this.plugins, event.idx, event.plugin)
       this.plugins[event.idx].slug = event.plugin.plugin.slug
-      this.$emit("input", this.plugins)
+      this.$emit("update:modelValue", this.plugins)
     },
     itemChanged() {
-      this.$emit("input", this.plugins)
+      this.$emit("update:modelValue", this.plugins)
     },
   },
 }

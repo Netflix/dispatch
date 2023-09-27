@@ -21,7 +21,7 @@ export default {
   name: "SettingsBreadCrumbs",
 
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -42,10 +42,10 @@ export default {
   computed: {
     project: {
       get() {
-        return this.value[0]
+        return this.modelValue[0]
       },
       set(value) {
-        this.$emit("input", [value])
+        this.$emit("update:modelValue", [value])
       },
     },
     crumbs() {

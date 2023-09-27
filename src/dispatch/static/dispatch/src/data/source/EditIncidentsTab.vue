@@ -32,7 +32,7 @@ export default {
   },
 
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -52,15 +52,15 @@ export default {
 
   methods: {
     add() {
-      const value = cloneDeep(this.value)
+      const value = cloneDeep(this.modelValue)
       value.push(this.selectedIncident)
       this.selectedIncident = null
-      this.$emit("input", value)
+      this.$emit("update:modelValue", value)
     },
     remove(idx) {
-      const value = cloneDeep(this.value)
+      const value = cloneDeep(this.modelValue)
       value.splice(idx, 1)
-      this.$emit("input", value)
+      this.$emit("update:modelValue", value)
     },
   },
 

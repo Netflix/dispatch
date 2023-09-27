@@ -79,11 +79,7 @@
           </v-list-item>
         </template>
         <template #append>
-          <signal-filter-create-dialog
-            v-model="createdFilter"
-            :project="project"
-            :signalDefinition="signalDefinition"
-          />
+          <signal-filter-create-dialog @save="createFilter" :signalDefinition="signalDefinition" />
         </template>
       </v-combobox>
     </v-row>
@@ -102,7 +98,7 @@ import SignalFilterCreateDialog from "@/signal/filter/SignalFilterCreateDialog.v
 export default {
   name: "SignalFilterCombobox",
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -129,7 +125,6 @@ export default {
       loading: false,
       items: [],
       search: null,
-      createdFilter: null,
     }
   },
 
@@ -140,7 +135,7 @@ export default {
   computed: {
     filters: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         this.search = null
@@ -150,19 +145,16 @@ export default {
           }
           return true
         })
-        this.$emit("input", filters)
+        this.$emit("update:modelValue", filters)
       },
     },
   },
 
-  watch: {
-    createdFilter: function (newVal) {
-      this.items.push(newVal)
-      this.filters.push(newVal)
-    },
-  },
-
   methods: {
+    createFilter(value) {
+      this.items.push(value)
+      this.filters.push(value)
+    },
     fetchData() {
       this.error = null
       this.loading = "error"

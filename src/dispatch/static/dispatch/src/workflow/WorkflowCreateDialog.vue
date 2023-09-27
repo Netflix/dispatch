@@ -112,16 +112,6 @@ export default {
     }
   },
   name: "WorkflowCreateDialog",
-  props: {
-    value: {
-      type: Object,
-      default: null,
-    },
-    signalDefinition: {
-      type: Object,
-      required: false,
-    },
-  },
   data() {
     return {
       step: 1,
@@ -150,7 +140,7 @@ export default {
     saveWorkflow() {
       // reset local data
       this.save().then((workflow) => {
-        this.$emit("input", workflow)
+        this.$emit("save", workflow)
       })
     },
   },

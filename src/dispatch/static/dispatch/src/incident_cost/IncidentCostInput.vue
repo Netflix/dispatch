@@ -49,7 +49,7 @@ export default {
     addIncidentCost() {
       if (this.amount !== null && this.incident_cost_type !== null) {
         // Passing data to parent component
-        this.$emit("input", { amount: this.amount, incident_cost_type: this.incident_cost_type })
+        this.$emit("add", { amount: this.amount, incident_cost_type: this.incident_cost_type })
 
         // Resetting default values
         this.amount = null

@@ -115,16 +115,6 @@ export default {
     }
   },
   name: "SignalEngagementDialog",
-  props: {
-    value: {
-      type: Object,
-      default: null,
-    },
-    signalDefinition: {
-      type: Object,
-      required: true,
-    },
-  },
   data() {
     return {
       step: 1,
@@ -151,7 +141,7 @@ export default {
     saveEngagement() {
       // reset local data
       this.save().then((engagement) => {
-        this.$emit("input", engagement)
+        this.$emit("save", engagement)
         this.dialog = false
       })
     },

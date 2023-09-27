@@ -15,14 +15,14 @@
 export default {
   name: "DateChipGroupRelative",
   props: {
-    value: {
+    modelValue: {
       type: Number,
       default: 30,
     },
   },
   data() {
     return {
-      selectedDateTime: this.value,
+      selectedDateTime: this.modelValue,
       options: [
         { value: 1, label: "Last 24 hours" },
         { value: 3, label: "Last 3 days" },
@@ -34,7 +34,7 @@ export default {
   },
   methods: {
     submit() {
-      this.$emit("input", this.selectedDateTime)
+      this.$emit("update:modelValue", this.selectedDateTime)
     },
   },
 }

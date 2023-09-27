@@ -39,7 +39,7 @@ import { cloneDeep, debounce } from "lodash"
 export default {
   name: "IncidentComboBox",
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -64,7 +64,7 @@ export default {
   computed: {
     incident: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         const incidents = value.filter((v) => {
@@ -73,7 +73,7 @@ export default {
           }
           return true
         })
-        this.$emit("input", incidents)
+        this.$emit("update:modelValue", incidents)
         this.search = null
       },
     },

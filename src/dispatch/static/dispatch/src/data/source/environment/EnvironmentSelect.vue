@@ -44,7 +44,7 @@ import SourceEnvironmentApi from "@/data/source/environment/api"
 export default {
   name: "SourceEnvironmentSelect",
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -72,11 +72,11 @@ export default {
   computed: {
     environment: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         if (typeof value !== "string") {
-          this.$emit("input", value)
+          this.$emit("update:modelValue", value)
         }
       },
     },

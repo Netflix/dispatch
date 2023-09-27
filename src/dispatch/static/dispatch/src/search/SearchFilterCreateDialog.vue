@@ -233,12 +233,6 @@ export default {
     }
   },
   name: "SearchFilterCreateDialog",
-  props: {
-    value: {
-      type: Object,
-      default: null,
-    },
-  },
   data() {
     return {
       visibilities: [{ name: "Open" }, { name: "Restricted" }],
@@ -317,7 +311,7 @@ export default {
     saveFilter() {
       // reset local data
       this.save("incident").then((filter) => {
-        this.$emit("input", filter)
+        this.$emit("save", filter)
       })
     },
     resetFilters() {

@@ -34,7 +34,7 @@ import { map } from "lodash"
 export default {
   name: "AssigneeComboBox",
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -60,7 +60,7 @@ export default {
   computed: {
     assignee: {
       get() {
-        return map(this.value, function (item) {
+        return map(this.modelValue, function (item) {
           return item["individual"]
         })
       },
@@ -71,7 +71,7 @@ export default {
           }
           return item
         })
-        this.$emit("input", wrapped)
+        this.$emit("update:modelValue", wrapped)
       },
     },
   },

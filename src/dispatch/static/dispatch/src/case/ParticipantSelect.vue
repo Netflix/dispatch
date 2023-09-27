@@ -44,7 +44,7 @@ import IndividualApi from "@/individual/api"
 export default {
   name: "ParticipantSelect",
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return null
@@ -71,10 +71,10 @@ export default {
   computed: {
     participant: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },

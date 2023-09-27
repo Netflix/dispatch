@@ -44,7 +44,7 @@ import SourceApi from "@/data/source/api"
 export default {
   name: "SourceSelect",
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -72,11 +72,11 @@ export default {
   computed: {
     source: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         if (typeof value !== "string") {
-          this.$emit("input", value)
+          this.$emit("update:modelValue", value)
         }
       },
     },

@@ -55,7 +55,7 @@ import IncidentPriorityApi from "@/incident/priority/api"
 export default {
   name: "IncidentPriorityComboBox",
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -86,7 +86,7 @@ export default {
   computed: {
     incidentPriority: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         this.search = null
@@ -96,7 +96,7 @@ export default {
           }
           return true
         })
-        this.$emit("input", incidentPriorities)
+        this.$emit("update:modelValue", incidentPriorities)
       },
     },
   },

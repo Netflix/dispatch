@@ -2,7 +2,6 @@
   <v-row no-gutters align="center">
     <v-col cols="12" sm="11">
       <base-combobox
-        :value="value"
         :label="label"
         :api="workflowApi"
         :project="project"
@@ -58,11 +57,7 @@
       </base-combobox>
     </v-col>
     <v-col cols="12" sm="1">
-      <workflow-create-dialog
-        v-model="createdItem"
-        :project="project"
-        :signalDefinition="signalDefinition"
-      />
+      <workflow-create-dialog @save="createItem" :project="project" />
     </v-col>
   </v-row>
 </template>
@@ -80,7 +75,7 @@ export default {
     WorkflowCreateDialog,
   },
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: () => [],
     },
@@ -92,29 +87,26 @@ export default {
       type: Object,
       required: true,
     },
-    signalDefinition: {
-      type: Object,
-      required: false,
-    },
   },
   data() {
     return {
       workflowApi: WorkflowApi,
-      createdItem: null,
     }
   },
   computed: {
     workflows: {
       get() {
-        return this.value
+        return this.modelValue
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },
   methods: {
-    // ...
+    createItem() {
+      // do nothing?
+    },
     initials(item) {
       if (!item) {
         return "Unknown"

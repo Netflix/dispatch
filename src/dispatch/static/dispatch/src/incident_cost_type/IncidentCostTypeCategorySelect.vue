@@ -16,7 +16,7 @@ export default {
   name: "IncidentCostTypeCategorySelect",
 
   props: {
-    value: {
+    modelValue: {
       type: String,
       default: function () {
         return ""
@@ -39,10 +39,10 @@ export default {
   computed: {
     incidentCostTypeCategories: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },

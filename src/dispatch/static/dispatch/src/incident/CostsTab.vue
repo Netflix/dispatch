@@ -37,7 +37,7 @@
       <v-divider />
     </span>
     <v-col cols="12">
-      <incident-cost-input @input="addIncidentCost($event)" />
+      <incident-cost-input @add="addIncidentCost" />
     </v-col>
   </v-list>
 </template>
@@ -63,11 +63,10 @@ export default {
   computed: {
     ...mapMultiRowFields("incident", ["selected.incident_costs"]),
 
-    totalCost: function () {
-      var total_cost = this.incident_costs.reduce(function (accumulator, item) {
+    totalCost() {
+      return this.incident_costs.reduce((accumulator, item) => {
         return accumulator + item.amount
       }, 0)
-      return total_cost
     },
   },
 

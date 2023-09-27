@@ -54,7 +54,7 @@ export default {
   name: "CaseSeverityComboBox",
 
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -85,7 +85,7 @@ export default {
   computed: {
     caseSeverity: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         this.search = null
@@ -95,7 +95,7 @@ export default {
           }
           return true
         })
-        this.$emit("input", caseSeverities)
+        this.$emit("update:modelValue", caseSeverities)
       },
     },
   },

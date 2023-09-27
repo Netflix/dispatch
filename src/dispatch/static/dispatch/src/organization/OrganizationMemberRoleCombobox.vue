@@ -47,7 +47,7 @@ export default {
   },
 
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -74,14 +74,14 @@ export default {
 
   methods: {
     addRole() {
-      const value = cloneDeep(this.value)
+      const value = cloneDeep(this.modelValue)
       value.push({ role: "Member", default: false, project: null })
-      this.$emit("input", value)
+      this.$emit("update:modelValue", value)
     },
     removeRole(idx) {
-      const value = cloneDeep(this.value)
+      const value = cloneDeep(this.modelValue)
       value.splice(idx)
-      this.$emit("input", value)
+      this.$emit("update:modelValue", value)
     },
   },
 }

@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    <incidents-drill-down-sheet v-if="showDrillDown" :items="detailItems" />
+    <incidents-drill-down-sheet v-model="showDrillDown" :items="detailItems" />
     <v-row>
       <v-col class="d-flex justify-start" cols="12" sm="6">
         <v-btn color="info" @click="copyView"> Share View </v-btn>

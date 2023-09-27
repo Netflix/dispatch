@@ -19,39 +19,39 @@ export default {
     },
   },
   created() {
-    loader.init().then((monaco) => {
-      const editorOptions = {
-        minimap: { enabled: false },
-        renderLineHighlight: "none",
-        language: "json",
-        automaticLayout: true,
-        value: this.getDefaultValue(),
-      }
-      let uuid = crypto.randomUUID()
-      // Create a unique URI for the in-memory model
-      const modelUri = monaco.Uri.parse(`inmemory://playground-${uuid}`)
-      // Create the model with an osquery log as the initial value
-      const model = monaco.editor.createModel(this.getDefaultValue(), "json", modelUri)
-      // Create the editor and pass the model to the options
-      const editor = monaco.editor.create(
-        document.getElementById("playground-editor"),
-        editorOptions,
-        {
-          model,
-        }
-      )
-      // Store the references to the model and editor
-      this.model = model
-      this.editor = editor
-      this.monaco = monaco
-
-      // Register an event listener for when the content of the model changes
-      this.editor.onDidChangeModelContent(() => {
-        // Call the updateDecorations method and pass the current pattern and jpath
-        this.updateDecorations(this.pattern, this.jpath)
-      })
-      this.editor.layout()
-    })
+    // loader.init().then((monaco) => {
+    //   const editorOptions = {
+    //     minimap: { enabled: false },
+    //     renderLineHighlight: "none",
+    //     language: "json",
+    //     automaticLayout: true,
+    //     value: this.getDefaultValue(),
+    //   }
+    //   let uuid = crypto.randomUUID()
+    //   // Create a unique URI for the in-memory model
+    //   const modelUri = monaco.Uri.parse(`inmemory://playground-${uuid}`)
+    //   // Create the model with an osquery log as the initial value
+    //   const model = monaco.editor.createModel(this.getDefaultValue(), "json", modelUri)
+    //   // Create the editor and pass the model to the options
+    //   const editor = monaco.editor.create(
+    //     document.getElementById("playground-editor"),
+    //     editorOptions,
+    //     {
+    //       model,
+    //     }
+    //   )
+    //   // Store the references to the model and editor
+    //   this.model = model
+    //   this.editor = editor
+    //   this.monaco = monaco
+    //
+    //   // Register an event listener for when the content of the model changes
+    //   this.editor.onDidChangeModelContent(() => {
+    //     // Call the updateDecorations method and pass the current pattern and jpath
+    //     this.updateDecorations(this.pattern, this.jpath)
+    //   })
+    //   this.editor.layout()
+    // })
   },
   beforeUnmount() {
     this.editor.dispose()

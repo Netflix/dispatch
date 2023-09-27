@@ -27,7 +27,7 @@ export default {
   name: "ColorPickerInput",
 
   props: {
-    value: {
+    modelValue: {
       type: String,
       default: "#1976D2FF",
     },
@@ -48,10 +48,10 @@ export default {
   computed: {
     color: {
       get() {
-        return this.value || "#1976D2FF"
+        return this.modelValue || "#1976D2FF"
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
     swatchStyle() {

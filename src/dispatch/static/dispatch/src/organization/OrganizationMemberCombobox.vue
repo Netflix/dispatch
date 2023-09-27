@@ -45,7 +45,7 @@ export default {
   name: "OrganizationMemberCombobox",
 
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return null
@@ -72,10 +72,10 @@ export default {
   computed: {
     assignee: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },

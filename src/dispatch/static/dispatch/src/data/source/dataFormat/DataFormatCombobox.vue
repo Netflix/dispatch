@@ -49,7 +49,7 @@ import DataFormatApi from "@/data/source/dataFormat/api"
 export default {
   name: "SourceDataFormatComboBox",
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -76,7 +76,7 @@ export default {
   computed: {
     dataFormats: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         this.search = null
@@ -86,7 +86,7 @@ export default {
           }
           return true
         })
-        this.$emit("input", _dataFormats)
+        this.$emit("update:modelValue", _dataFormats)
       },
     },
   },

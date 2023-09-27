@@ -26,7 +26,7 @@ import IncidentPriorityApi from "@/incident/priority/api"
 export default {
   name: "IncidentPrioritySelect",
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -48,10 +48,10 @@ export default {
   computed: {
     incident_priorities: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },
