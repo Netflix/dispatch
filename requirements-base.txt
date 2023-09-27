@@ -122,7 +122,7 @@ frozenlist==1.4.0
     #   aiosignal
 google-api-core==2.11.1
     # via google-api-python-client
-google-api-python-client==2.100.0
+google-api-python-client==2.101.0
     # via -r requirements-base.in
 google-auth==2.22.0
     # via
@@ -235,7 +235,7 @@ oauthlib[signedtoken]==3.2.2
     #   atlassian-python-api
     #   jira
     #   requests-oauthlib
-openai==0.28.0
+openai==0.28.1
     # via -r requirements-base.in
 packaging==23.1
     # via
