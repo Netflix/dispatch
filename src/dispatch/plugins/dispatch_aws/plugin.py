@@ -12,15 +12,15 @@ import logging
 from dispatch.metrics import provider as metrics_provider
 from dispatch.plugins.bases import SignalConsumerPlugin
 from dispatch.signal import service as signal_service
-from dispatch.signal.models import SignalInstance
-from dispatch.plugins.dispatch_aws.config import AWSSQSConfigurationSchema
+from dispatch.signal.models import SignalInstanceCreate
+from dispatch.plugins.dispatch_aws.config import AWSSQSConfiguration
 
 from . import __version__
 
 log = logging.getLogger(__name__)
 
 
-class SQSSignalConsumerPlugin(SignalConsumerPlugin):
+class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
     title = "AWS SQS - Signal Consumer"
     slug = "aws-sqs-signal-consumer"
     description = "Uses sqs to consume signals"
@@ -30,37 +30,49 @@ class SQSSignalConsumerPlugin(SignalConsumerPlugin):
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
-        self.configuration_schema = AWSSQSConfigurationSchema
+        self.configuration_schema = AWSSQSConfiguration
 
-    def consume(
-        self,
-    ):
+    def consume(self, db_session, project):
         client = boto3.client("sqs", region_name=self.configuration.region)
-        sqs_queue_url: str = client.get_queue_url(
-            QueueName=self.configuration.queue_name, QueueOwnerAWSAccountId=self.sqs_queue_owner
+        queue_url: str = client.get_queue_url(
+            QueueName=self.configuration.queue_name,
+            QueueOwnerAWSAccountId=self.configuration.queue_owner,
         )["QueueUrl"]
 
         while True:
             response = client.receive_message(
-                QueueUrl=sqs_queue_url,
+                QueueUrl=queue_url,
                 MaxNumberOfMessages=self.configuration.batch_size,
-                VisibilityTimeout=2 * self.round_length,
-                WaitTimeSeconds=self.round_length,
+                VisibilityTimeout=40,
+                WaitTimeSeconds=20,
             )
             if response.get("Messages") and len(response.get("Messages")) > 0:
                 entries = []
                 for message in response["Messages"]:
                     try:
                         body = json.loads(message["Body"])
-                        signal = signal_service.create_signal_instance(SignalInstance(**body))
-                        metrics_provider.counter(
-                            "sqs.signal.received", tags={"signalName": signal.name}
+                        signal_data = json.loads(body["Message"])
+
+                        signal_instance = signal_service.create_signal_instance(
+                            db_session=db_session,
+                            signal_instance_in=SignalInstanceCreate(
+                                project=project, raw=signal_data, **signal_data
+                            ),
                         )
-                        log.debug(f"Received signal: {signal}")
+                        metrics_provider.counter(
+                            "sqs.signal.received",
+                            tags={
+                                "signalName": signal_instance.signal.name,
+                                "externalId": signal_instance.signal.external_id,
+                            },
+                        )
+                        log.debug(
+                            f"Received signal: SignalName: {signal_instance.signal.name} ExernalId: {signal_instance.signal.external_id}"
+                        )
                         entries.append(
                             {"Id": message["MessageId"], "ReceiptHandle": message["ReceiptHandle"]}
                         )
                     except Exception as e:
                         log.exception(e)
 
-                client.delete_message_batch(QueueUrl=sqs_queue_url, Entries=entries)
+                client.delete_message_batch(QueueUrl=queue_url, Entries=entries)

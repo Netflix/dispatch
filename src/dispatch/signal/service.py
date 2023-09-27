@@ -25,7 +25,7 @@ from dispatch.entity import service as entity_service
 from .exceptions import (
     SignalNotDefinedException,
     SignalNotEnabledException,
-    SignalNotIdentifiableException,
+    SignalNotIdentifiedException,
 )
 
 from .models import (
@@ -119,33 +119,25 @@ def get_signal_engagement_by_name_or_raise(
 
 
 def create_signal_instance(*, db_session: Session, signal_instance_in: SignalInstanceCreate):
-    project = project_service.get_by_name_or_default(
-        db_session=db_session, project_in=signal_instance_in.project
-    )
-
     if not signal_instance_in.signal:
-        external_id = signal_instance_in.raw.get("externalId")
-        variant = signal_instance_in.raw.get("variant")
+        external_id = signal_instance_in.external_id
 
-        if external_id or variant:
-            signal = get_by_variant_or_external_id(
-                db_session=db_session,
-                project_id=project.id,
-                external_id=external_id,
-                variant=variant,
+        # this assumes the external_ids are uuids
+        if external_id:
+            signal = (
+                db_session.query(Signal).filter(Signal.external_id == external_id).one_or_none()
             )
-
             signal_instance_in.signal = signal
         else:
-            msg = "An external id or variant must be provided."
-            raise SignalNotIdentifiableException(msg)
+            msg = "An externalId must be provided."
+            raise SignalNotIdentifiedException(msg)
 
     if not signal:
-        msg = f"No signal definition found. External Id: {external_id} Variant: {variant}"
+        msg = f"No signal definition found. ExternalId: {external_id}"
         raise SignalNotDefinedException(msg)
 
     if not signal.enabled:
-        msg = f"Signal definition not enabled. Signal Name: {signal.name}"
+        msg = f"Signal definition not enabled. SignalName: {signal.name} ExternalId: {signal.external_id}"
         raise SignalNotEnabledException(msg)
 
     try:
@@ -159,7 +151,7 @@ def create_signal_instance(*, db_session: Session, signal_instance_in: SignalIns
         signal_instance = update_instance(
             db_session=db_session, signal_instance_in=signal_instance_in
         )
-        # Note: we can do this because it's still relatively cheap, if we add more logic to the flow
+        # Note: we can do this because it's still relatively cheap, if we add more logic here
         # this will need to be moved to a background function (similar to case creation)
         # fetch `all` entities that should be associated with all signal definitions
         entity_types = entity_type_service.get_all(
@@ -520,6 +512,7 @@ def create_instance(
                 "project",
                 "entities",
                 "raw",
+                "external_id",
             }
         ),
         raw=json.loads(json.dumps(signal_instance_in.raw)),

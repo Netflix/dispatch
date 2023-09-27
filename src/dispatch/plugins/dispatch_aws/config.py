@@ -3,16 +3,16 @@ from dispatch.config import BaseConfigurationModel
 
 
 class AWSSQSConfiguration(BaseConfigurationModel):
-    """SQS configuration description."""
+    """Signal SQS configuration"""
 
     queue_name: str = Field(
-        title="SQS Queue Name",
-        description="SQS Queue Name, not the ARN.",
+        title="Queue Name",
+        description="Queue Name, not the ARN.",
     )
 
     queue_owner: str = Field(
-        title="SQS Queue Owner",
-        description="SQS Queue Owner Account ID.",
+        title="Queue Owner",
+        description="Queue Owner Account ID.",
     )
 
     region: str = Field(
@@ -22,8 +22,8 @@ class AWSSQSConfiguration(BaseConfigurationModel):
     )
 
     batch_size: int = Field(
-        title="SQS Batch Size",
-        description="SQS Batch Size.",
+        title="Batch Size",
+        description="Number of messages to retrieve from SQS.",
         default=10,
         le=10,
     )

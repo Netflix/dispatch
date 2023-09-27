@@ -775,15 +775,14 @@ def signals_group():
 @signals_group.command("consume")
 @click.argument("organization")
 @click.argument("project")
-@click.argument("plugin")
-def consume_signals(organization, project, plugin):  # TODO support multiple from one command
+@click.argument("plugin_name")
+def consume_signals(organization, project, plugin_name):  # TODO support multiple from one command
     """Runs a continuous process that consumes signals from the specified plugin."""
-    from sqlalchemy import true
-
     from dispatch.common.utils.cli import install_plugins
     from dispatch.database.core import refetch_db_session
     from dispatch.project import service as project_service
     from dispatch.project.models import ProjectRead
+    from dispatch.plugin import service as plugin_service
 
     install_plugins()
 
@@ -793,25 +792,19 @@ def consume_signals(organization, project, plugin):  # TODO support multiple fro
         db_session=session, project_in=ProjectRead(name=project)
     )
 
-    instances = (
-        session.query(PluginInstance)
-        .filter(PluginInstance.enabled == true())
-        .filter(PluginInstance.project_id == project.id)
-        .all()
+    plugins = plugin_service.get_active_instances(
+        db_session=session, plugin_type="signal-consumer", project_id=project.id
     )
 
-    instance = None
-    for i in instances:
-        if i.plugin.slug == "signal-consumer":
-            instance: PluginInstance = i
-            break
-
-    if not instance:
-        click.secho(
-            f"No signal consumer plugin has been configured for this organization/plugin. Organization: {organization} Project: {project}",
-            fg="red",
+    if not plugins:
+        log.debug(
+            "No signals consumed. No signal-consumer plugins enabled. Project: {project.name}. Organization: {project.organization.name}"
         )
         return
+
+    for plugin in plugins:
+        if plugin.plugin.slug == plugin_name:
+            plugin.instance.consume(db_session=session, project=project)
 
 
 @signals_group.command("process")
