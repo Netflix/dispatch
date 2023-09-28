@@ -117,29 +117,3 @@ def oncall_shift_feedback(db_session: SessionLocal, project: Project, hour: int)
                 schedule_id=schedule_id,
                 hour=hour,
             )
-
-
-# ****** DELETE ME
-@scheduler.add(every(1).minutes, name="oncall-shift-feedback-test")
-@timer
-@scheduled_project_task
-def find_schedule_and_send_test(*, db_session: SessionLocal, project: Project):
-    """
-    Given PagerDuty schedule_id, determine if the shift ended for the previous oncall person and
-    send the health metrics feedback request
-    """
-    current_oncall = {"email": "dwhittaker@netflix.com", "shift_end": "2023-09-27T10:00:00Z", "schedule_name": "TEST ONCALL"}
-
-    individual = individual_service.get_by_email_and_project(
-        db_session=db_session, email=current_oncall["email"], project_id=project.id
-    )
-
-    log.debug("**** SENDING")
-    send_oncall_shift_feedback_message(
-        project=project,
-        individual=individual,
-        schedule_id="XXXXX",
-        shift_end_at=current_oncall["shift_end"],
-        schedule_name=current_oncall["schedule_name"],
-        db_session=db_session,
-    )
