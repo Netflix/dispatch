@@ -22,5 +22,4 @@ export default {
   delete(documentId) {
     return API.delete(`${resource}/${documentId}`)
   },
-
 }
