@@ -271,6 +271,13 @@ def incident_create_resources(*, incident: Incident, db_session=None) -> Inciden
             db_session=db_session,
         )
 
+    event_service.log_incident_event(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description="Incident participants added to incident",
+        incident_id=incident.id,
+    )
+
     return incident
 
 
@@ -278,7 +285,7 @@ def incident_create_resources(*, incident: Incident, db_session=None) -> Inciden
 def incident_create_resources_flow(
     *, organization_slug: str, incident_id: int, db_session=None
 ) -> Incident:
-    """Creates all resources required for new incidents and initiates incident response workflow."""
+    """Creates all resources required for an existing incident."""
     # we get the incident
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
@@ -295,21 +302,7 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
     # we create the incident resources
     incident_create_resources(incident=incident, db_session=db_session)
 
-    event_service.log_incident_event(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description="Incident participants added to incident",
-        incident_id=incident.id,
-    )
-
     send_incident_created_notifications(incident, db_session)
-
-    event_service.log_incident_event(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description="Incident notifications sent",
-        incident_id=incident.id,
-    )
 
     # we page the incident commander based on incident priority
     if incident.incident_priority.page_commander:

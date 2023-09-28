@@ -696,8 +696,8 @@ def case_assign_role_flow(
 def case_create_resources_flow(
     db_session: Session,
     case_id: int,
-    individual_participants: list,
-    team_participants: list,
+    individual_participants: List[str],
+    team_participants: List[str],
     conversation_target: str = None,
 ) -> None:
     """Runs the case resource creation flow."""
