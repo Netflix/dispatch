@@ -60,7 +60,12 @@ def find_expired_reminders_and_send(*, db_session: SessionLocal, project: Projec
 
 
 def find_schedule_and_send(
-    *, db_session: SessionLocal, project: Project, oncall_plugin: PluginInstance, schedule_id: str, hour: int,
+    *,
+    db_session: SessionLocal,
+    project: Project,
+    oncall_plugin: PluginInstance,
+    schedule_id: str,
+    hour: int,
 ):
     """
     Given PagerDuty schedule_id, determine if the shift ended for the previous oncall person and

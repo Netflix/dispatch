@@ -2,7 +2,7 @@ from fastapi import APIRouter
 
 from dispatch.database.service import search_filter_sort_paginate, CommonParameters
 
-from .models import (ServiceFeedbackPagination)
+from .models import ServiceFeedbackPagination
 
 
 router = APIRouter()
