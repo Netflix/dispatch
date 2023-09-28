@@ -158,7 +158,7 @@ def create_case_resources(
     current_case: CurrentCase,
     background_tasks: BackgroundTasks,
 ):
-    """Creates resources for an existing incident."""
+    """Creates resources for an existing case."""
     individual_participants, team_participants = get_case_participants(
         case=current_case, db_session=db_session
     )
