@@ -186,7 +186,7 @@ def handle_incident_feedback_submission_event(
     ack_incident_feedback_submission_event(ack=ack)
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
-    feedback = form_data.get(IncidentFeedbackNotificationBlockIds.feedback_input)
+    feedback = form_data.get(IncidentFeedbackNotificationBlockIds.feedback_input, "")
     rating = form_data.get(IncidentFeedbackNotificationBlockIds.rating_select, {}).get("value")
 
     feedback_in = FeedbackCreate(
