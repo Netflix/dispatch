@@ -58,9 +58,7 @@ def create_case_conversation(case: Case, conversation_target: str, db_session: S
         thread_id=conversation["timestamp"],
         channel_id=conversation["id"],
     )
-    case.conversation = create(
-        db_session=db_session, conversation_in=conversation_in
-    )
+    case.conversation = create(db_session=db_session, conversation_in=conversation_in)
 
     event_service.log_case_event(
         db_session=db_session,
@@ -347,7 +345,9 @@ def add_case_participants(case: Case, participant_emails: List[str], db_session:
         log.exception(e)
 
 
-def add_incident_participants(incident: Incident, participant_emails: List[str], db_session: SessionLocal):
+def add_incident_participants(
+    incident: Incident, participant_emails: List[str], db_session: SessionLocal
+):
     """Adds one or more participants to the incident conversation."""
     if not incident.conversation:
         log.warning(

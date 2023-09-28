@@ -196,7 +196,7 @@ def case_new_create_flow(
             case_id=case.id,
             individual_participants=individual_participants,
             team_participants=team_participants,
-            conversation_target=conversation_target
+            conversation_target=conversation_target,
         )
 
     if case.case_priority.page_assignee:
@@ -626,7 +626,9 @@ def case_create_resources_flow(
             group_flows.create_group(
                 subject=case,
                 group_type=GroupType.tactical,
-                group_participants=list(set(direct_participant_emails + indirect_participant_emails)),
+                group_participants=list(
+                    set(direct_participant_emails + indirect_participant_emails)
+                ),
                 db_session=db_session,
             )
 
