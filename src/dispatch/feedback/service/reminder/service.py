@@ -24,11 +24,11 @@ def get_all_expired_reminders_by_project_id(
     )
 
 
-def create(*, db_session, reminder_in: ServiceFeedbackReminderCreate) -> ServiceFeedbackReminder:
+def create(*, db_session, reminder_in: ServiceFeedbackReminder) -> ServiceFeedbackReminder:
     """Creates a new service feedback reminder."""
     reminder = ServiceFeedbackReminder(**reminder_in.dict())
 
-    db_session.add(reminder_in)
+    db_session.add(reminder)
     db_session.commit()
     return reminder
 

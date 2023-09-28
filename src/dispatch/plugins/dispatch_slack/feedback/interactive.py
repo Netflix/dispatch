@@ -275,8 +275,8 @@ def oncall_shift_feedback_input(
             initial_value=initial_value,
             multiline=True,
             placeholder="How would you describe your experience?",
-            optional=True,
         ),
+        optional=True,
         label=label,
         **kwargs,
     )

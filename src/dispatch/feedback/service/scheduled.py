@@ -28,7 +28,7 @@ log = logging.getLogger(__name__)
 @timer
 @scheduled_project_task
 def oncall_shift_feedback_ucan(db_session: SessionLocal, project: Project):
-    oncall_shift_feedback(db_session=db_session, project=project)
+    oncall_shift_feedback(db_session=db_session, project=project, hour=16)
     find_expired_reminders_and_send(db_session=db_session, project=project)
 
 
@@ -36,7 +36,7 @@ def oncall_shift_feedback_ucan(db_session: SessionLocal, project: Project):
 @timer
 @scheduled_project_task
 def oncall_shift_feedback_emea(db_session: SessionLocal, project: Project):
-    oncall_shift_feedback(db_session=db_session, project=project)
+    oncall_shift_feedback(db_session=db_session, project=project, hour=6)
     find_expired_reminders_and_send(db_session=db_session, project=project)
 
 
@@ -60,13 +60,13 @@ def find_expired_reminders_and_send(*, db_session: SessionLocal, project: Projec
 
 
 def find_schedule_and_send(
-    *, db_session: SessionLocal, project: Project, oncall_plugin: PluginInstance, schedule_id: str
+    *, db_session: SessionLocal, project: Project, oncall_plugin: PluginInstance, schedule_id: str, hour: int,
 ):
     """
     Given PagerDuty schedule_id, determine if the shift ended for the previous oncall person and
     send the health metrics feedback request
     """
-    current_oncall = oncall_plugin.instance.did_oncall_just_go_off_shift(schedule_id)
+    current_oncall = oncall_plugin.instance.did_oncall_just_go_off_shift(schedule_id, hour)
 
     individual = individual_service.get_by_email_and_project(
         db_session=db_session, email=current_oncall["email"], project_id=project.id
@@ -82,7 +82,7 @@ def find_schedule_and_send(
     )
 
 
-def oncall_shift_feedback(db_session: SessionLocal, project: Project):
+def oncall_shift_feedback(db_session: SessionLocal, project: Project, hour: int):
     """
     Experimental: collects feedback from individuals participating in an oncall service that has health metrics enabled
     when their oncall shift ends. For now, only for one project and schedule.
@@ -115,4 +115,31 @@ def oncall_shift_feedback(db_session: SessionLocal, project: Project):
                 project=project,
                 oncall_plugin=oncall_plugin,
                 schedule_id=schedule_id,
+                hour=hour,
             )
+
+
+# ****** DELETE ME
+@scheduler.add(every(1).minutes, name="oncall-shift-feedback-test")
+@timer
+@scheduled_project_task
+def find_schedule_and_send_test(*, db_session: SessionLocal, project: Project):
+    """
+    Given PagerDuty schedule_id, determine if the shift ended for the previous oncall person and
+    send the health metrics feedback request
+    """
+    current_oncall = {"email": "dwhittaker@netflix.com", "shift_end": "2023-09-27T10:00:00Z", "schedule_name": "TEST ONCALL"}
+
+    individual = individual_service.get_by_email_and_project(
+        db_session=db_session, email=current_oncall["email"], project_id=project.id
+    )
+
+    log.debug("**** SENDING")
+    send_oncall_shift_feedback_message(
+        project=project,
+        individual=individual,
+        schedule_id="XXXXX",
+        shift_end_at=current_oncall["shift_end"],
+        schedule_name=current_oncall["schedule_name"],
+        db_session=db_session,
+    )
