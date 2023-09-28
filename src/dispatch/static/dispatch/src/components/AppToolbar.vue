@@ -116,7 +116,8 @@
             <v-switch
               v-model="currentUser().experimental_features"
               inset
-              class="ml-4"
+              class="ml-5"
+              color="blue"
               @change="updateExperimentalFeatures()"
               :label="currentUser().experimental_features ? 'Enabled' : 'Disabled'"
             ></v-switch>
