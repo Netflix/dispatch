@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 
 from .models import (
     ServiceFeedbackReminder,
-    ServiceFeedbackReminderCreate,
     ServiceFeedbackReminderUpdate,
 )
 from dispatch.individual.models import IndividualContact
