@@ -1,8 +1,0 @@
-{
-  "devDependencies": {
-    "@playwright/test": "^1.38.0"
-  },
-  "dependencies": {
-    "lint": "^0.8.19"
-  }
-}
