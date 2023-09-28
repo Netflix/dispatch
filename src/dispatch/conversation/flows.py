@@ -2,6 +2,7 @@ import logging
 
 from typing import TypeVar, List
 
+from dispatch.case.models import Case
 from dispatch.conference.models import Conference
 from dispatch.database.core import SessionLocal, resolve_attr
 from dispatch.document.models import Document
@@ -22,7 +23,59 @@ log = logging.getLogger(__name__)
 Resource = TypeVar("Resource", Document, Conference, Storage, Ticket)
 
 
-def create_conversation(incident: Incident, db_session: SessionLocal):
+def create_case_conversation(case: Case, conversation_target: str, db_session: SessionLocal):
+    """Create external communication conversation."""
+
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project.id, plugin_type="conversation"
+    )
+    if not plugin:
+        log.warning("Conversation not created. No conversation plugin enabled.")
+        return
+
+    if not conversation_target:
+        conversation_target = case.case_type.conversation_target
+
+    if conversation_target:
+        try:
+            conversation = plugin.instance.create_threaded(
+                case=case, conversation_id=conversation_target, db_session=db_session
+            )
+        except Exception as e:
+            # TODO: consistency across exceptions
+            log.exception(e)
+
+    if not conversation:
+        log.error(f"Conversation not created. Plugin {plugin.plugin.slug} encountered an error.")
+        return
+
+    conversation.update({"resource_type": plugin.plugin.slug, "resource_id": conversation["id"]})
+
+    conversation_in = ConversationCreate(
+        resource_id=conversation["resource_id"],
+        resource_type=conversation["resource_type"],
+        weblink=conversation["weblink"],
+        thread_id=conversation["timestamp"],
+        channel_id=conversation["id"],
+    )
+    case.conversation = create(
+        db_session=db_session, conversation_in=conversation_in
+    )
+
+    event_service.log_case_event(
+        db_session=db_session,
+        source=plugin.plugin.title,
+        description="Case conversation created",
+        case_id=case.id,
+    )
+
+    db_session.add(case)
+    db_session.commit()
+
+    return case.conversation
+
+
+def create_incident_conversation(incident: Incident, db_session: SessionLocal):
     """Creates a conversation."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
@@ -59,8 +112,7 @@ def create_conversation(incident: Incident, db_session: SessionLocal):
         weblink=external_conversation["weblink"],
         channel_id=external_conversation["id"],
     )
-    conversation = create(conversation_in=conversation_in, db_session=db_session)
-    incident.conversation = conversation
+    incident.conversation = create(conversation_in=conversation_in, db_session=db_session)
 
     db_session.add(incident)
     db_session.commit()
@@ -72,7 +124,7 @@ def create_conversation(incident: Incident, db_session: SessionLocal):
         incident_id=incident.id,
     )
 
-    return conversation
+    return incident.conversation
 
 
 def archive_conversation(incident: Incident, db_session: SessionLocal):
@@ -262,8 +314,41 @@ def add_conversation_bookmarks(incident: Incident, db_session: SessionLocal):
         log.exception(e)
 
 
-def add_participants(incident: Incident, participant_emails: List[str], db_session: SessionLocal):
-    """Adds one or more participants to the conversation."""
+def add_case_participants(case: Case, participant_emails: List[str], db_session: SessionLocal):
+    """Adds one or more participants to the case conversation."""
+    if not case.conversation:
+        log.warning(
+            "Case participant(s) not added to conversation. No conversation available for this case."
+        )
+        return
+
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project.id, plugin_type="conversation"
+    )
+    if not plugin:
+        log.warning(
+            "Case participant(s) not added to conversation. No conversation plugin enabled."
+        )
+        return
+
+    try:
+        plugin.instance.add_to_thread(
+            case.conversation.channel_id,
+            case.conversation.thread_id,
+            participant_emails,
+        )
+    except Exception as e:
+        event_service.log_case_event(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"Adding participant(s) to case conversation failed. Reason: {e}",
+            case_id=case.id,
+        )
+        log.exception(e)
+
+
+def add_incident_participants(incident: Incident, participant_emails: List[str], db_session: SessionLocal):
+    """Adds one or more participants to the incident conversation."""
     if not incident.conversation:
         log.warning(
             "Incident participant(s) not added to conversation. No conversation available for this incident."

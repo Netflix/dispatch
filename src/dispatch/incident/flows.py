@@ -207,7 +207,7 @@ def incident_create_resources(*, incident: Incident, db_session=None) -> Inciden
 
     # we create the conversation
     if not incident.conversation:
-        conversation_flows.create_conversation(incident=incident, db_session=db_session)
+        conversation_flows.create_incident_conversation(incident=incident, db_session=db_session)
 
     # we update the incident ticket
     ticket_flows.update_incident_ticket(incident_id=incident.id, db_session=db_session)
@@ -244,7 +244,7 @@ def incident_create_resources(*, incident: Incident, db_session=None) -> Inciden
         )
 
         # we add the participant to the conversation
-        conversation_flows.add_participants(
+        conversation_flows.add_incident_participants(
             incident=incident, participant_emails=[user_email], db_session=db_session
         )
 
@@ -925,7 +925,7 @@ def incident_add_or_reactivate_participant_flow(
 
     if incident.status != IncidentStatus.closed:
         # we add the participant to the conversation
-        conversation_flows.add_participants(
+        conversation_flows.add_incident_participants(
             incident=incident, participant_emails=[user_email], db_session=db_session
         )
 
@@ -965,7 +965,7 @@ def incident_remove_participant_flow(
             for assignee in task.assignees:
                 if assignee == participant:
                     # we add the participant to the conversation
-                    conversation_flows.add_participants(
+                    conversation_flows.add_incident_participants(
                         incident=incident, participant_emails=[user_email], db_session=db_session
                     )
 
@@ -977,7 +977,7 @@ def incident_remove_participant_flow(
 
     if user_email == incident.commander.individual.email:
         # we add the participant to the conversation
-        conversation_flows.add_participants(
+        conversation_flows.add_incident_participants(
             incident=incident, participant_emails=[user_email], db_session=db_session
         )
 
