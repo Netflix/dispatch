@@ -55,5 +55,6 @@ def delete(*, db_session, reminder_id: int):
         .filter(ServiceFeedbackReminder.id == reminder_id)
         .one_or_none()
     )
-    db_session.delete(reminder)
-    db_session.commit()
+    if reminder:
+        db_session.delete(reminder)
+        db_session.commit()

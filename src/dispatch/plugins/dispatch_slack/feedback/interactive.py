@@ -448,7 +448,7 @@ def handle_oncall_shift_feedback_submission_event(
         ]
         try:
             plugin.instance.send_direct(
-                individual.email,
+                user.email,
                 notification_text,
                 notification_template,
                 MessageType.service_feedback,

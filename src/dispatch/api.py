@@ -24,6 +24,7 @@ from dispatch.document.views import router as document_router
 from dispatch.entity.views import router as entity_router
 from dispatch.entity_type.views import router as entity_type_router
 from dispatch.feedback.incident.views import router as feedback_router
+from dispatch.feedback.service.views import router as service_feedback_router
 from dispatch.incident.priority.views import router as incident_priority_router
 from dispatch.incident.severity.views import router as incident_severity_router
 from dispatch.incident.type.views import router as incident_type_router
@@ -202,6 +203,9 @@ authenticated_organization_api_router.include_router(
 )
 authenticated_organization_api_router.include_router(
     feedback_router, prefix="/feedback", tags=["feedback"]
+)
+authenticated_organization_api_router.include_router(
+    service_feedback_router, prefix="/service_feedback", tags=["service_feedback"]
 )
 authenticated_organization_api_router.include_router(
     notification_router, prefix="/notifications", tags=["notifications"]
