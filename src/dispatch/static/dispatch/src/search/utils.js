@@ -118,7 +118,14 @@ export default {
           if (!value) {
             return
           }
-          if (has(value, "id")) {
+          if (["commander", "participant"].includes(key) && has(value, "email")) {
+            subFilter.push({
+              model: toPascalCase(key),
+              field: "email",
+              op: "==",
+              value: value.email,
+            })
+          } else if (has(value, "id")) {
             subFilter.push({
               model: toPascalCase(key),
               field: "id",

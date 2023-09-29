@@ -14,17 +14,33 @@ export default {
         return
       }
       each(value, function (item) {
-        if (has(flatFilters, key)) {
-          if (typeof item === "string" || item instanceof String) {
-            flatFilters[key].push(item)
+        if (["commander", "participant"].includes(key)) {
+          if (has(flatFilters, key)) {
+            if (typeof item === "string" || item instanceof String) {
+              flatFilters[key].push(item)
+            } else {
+              flatFilters[key].push(item.email)
+            }
           } else {
-            flatFilters[key].push(item.name)
+            if (typeof item === "string" || item instanceof String) {
+              flatFilters[key] = [item]
+            } else {
+              flatFilters[key] = [item.email]
+            }
           }
         } else {
-          if (typeof item === "string" || item instanceof String) {
-            flatFilters[key] = [item]
+          if (has(flatFilters, key)) {
+            if (typeof item === "string" || item instanceof String) {
+              flatFilters[key].push(item)
+            } else {
+              flatFilters[key].push(item.name)
+            }
           } else {
-            flatFilters[key] = [item.name]
+            if (typeof item === "string" || item instanceof String) {
+              flatFilters[key] = [item]
+            } else {
+              flatFilters[key] = [item.name]
+            }
           }
         }
       })
@@ -64,6 +80,24 @@ export default {
               filters[key].push(item)
             } else {
               filters[key] = [item]
+            }
+          })
+        }
+        return
+      }
+      if (["commander", "participant"].includes(key)) {
+        if (typeof value === "string" || value instanceof String) {
+          if (has(filters, key)) {
+            filters[key].push({ email: value })
+          } else {
+            filters[key] = [{ email: value }]
+          }
+        } else {
+          each(value, function (item) {
+            if (has(filters, key)) {
+              filters[key].push({ email: item })
+            } else {
+              filters[key] = [{ email: item }]
             }
           })
         }
