@@ -114,7 +114,7 @@ email-validator==2.0.0.post2
     # via -r requirements-base.in
 emails==0.6
     # via -r requirements-base.in
-fastapi==0.103.1
+fastapi==0.103.2
     # via -r requirements-base.in
 frozenlist==1.4.0
     # via
