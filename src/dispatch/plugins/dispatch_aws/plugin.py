@@ -60,7 +60,7 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                             ),
                         )
                         metrics_provider.counter(
-                            "sqs.signal.received",
+                            "aws-sqs-signal-consumer.signal.received",
                             tags={
                                 "signalName": signal_instance.signal.name,
                                 "externalId": signal_instance.signal.external_id,

@@ -627,7 +627,6 @@ def dispatch_scheduler():
     from .incident.scheduled import (
         incident_auto_tagger,  # noqa
     )
-    from .signal.scheduled import consume_signals  # noqa
     from .incident_cost.scheduled import calculate_incidents_response_cost  # noqa
     from .monitor.scheduled import sync_active_stable_monitors  # noqa
     from .report.scheduled import incident_report_reminders  # noqa
