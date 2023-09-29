@@ -3,7 +3,7 @@ from uuid import UUID
 
 from typing import Optional
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Boolean
 from sqlalchemy.dialects.postgresql import UUID as SQLAlchemyUUID
 from sqlalchemy_utils import TSVectorType, JSONType
 
@@ -23,6 +23,8 @@ class Event(Base, TimeStampMixin):
     description = Column(String, nullable=False)
     details = Column(JSONType, nullable=True)
     type = Column(String, default=EventType.other, nullable=True)
+    owner = Column(String, nullable=True)
+    pinned = Column(Boolean, default=False)
 
     # relationships
     individual_id = Column(Integer, ForeignKey("individual_contact.id", ondelete="CASCADE"))
@@ -48,6 +50,8 @@ class EventBase(DispatchBase):
     description: str
     details: Optional[dict]
     type: Optional[str]
+    owner: Optional[str]
+    pinned: Optional[bool]
 
 
 class EventCreate(EventBase):
