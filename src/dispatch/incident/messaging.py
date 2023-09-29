@@ -11,6 +11,7 @@ from dispatch.config import DISPATCH_UI_URL
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.database.core import SessionLocal, resolve_attr
 from dispatch.document import service as document_service
+from dispatch.event import service as event_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import Incident, IncidentRead
 from dispatch.notification import service as notification_service
@@ -345,6 +346,13 @@ def send_incident_created_notifications(incident: Incident, db_session: SessionL
         project_id=incident.project.id,
         class_instance=incident,
         notification_params=notification_params,
+    )
+
+    event_service.log_incident_event(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description="Incident notifications sent",
+        incident_id=incident.id,
     )
 
     log.debug("Incident created notifications sent.")
