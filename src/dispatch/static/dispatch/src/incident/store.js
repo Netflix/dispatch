@@ -3,6 +3,7 @@ import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import IncidentApi from "@/incident/api"
+import PluginApi from "@/plugin/api"
 import router from "@/router"
 
 const getDefaultSelectedState = () => {
@@ -347,6 +348,40 @@ const actions = {
       )
     })
   },
+  createAllResources({ commit, dispatch }) {
+    commit("SET_SELECTED_LOADING", true)
+    return IncidentApi.createAllResources(state.selected.id)
+      .then(() => {
+        IncidentApi.get(state.selected.id).then((response) => {
+          commit("SET_SELECTED", response.data)
+          dispatch("getEnabledPlugins").then((enabledPlugins) => {
+            // Poll the server for resource creation updates.
+            var interval = setInterval(function () {
+              if (
+                state.selected.conversation ^ enabledPlugins.includes("conversation") ||
+                state.selected.documents ^ enabledPlugins.includes("document") ||
+                state.selected.storage ^ enabledPlugins.includes("storage") ||
+                state.selected.conference ^ enabledPlugins.includes("conference") ||
+                state.selected.ticket ^ enabledPlugins.includes("ticket")
+              ) {
+                dispatch("get").then(() => {
+                  clearInterval(interval)
+                  commit("SET_SELECTED_LOADING", false)
+                  commit(
+                    "notification_backend/addBeNotification",
+                    { text: "Resources(s) created successfully.", type: "success" },
+                    { root: true }
+                  )
+                })
+              }
+            }, 5000)
+          })
+        })
+      })
+      .catch(() => {
+        commit("SET_SELECTED_LOADING", false)
+      })
+  },
   resetSelected({ commit }) {
     commit("RESET_SELECTED")
   },
@@ -369,6 +404,37 @@ const actions = {
         },
         { root: true }
       )
+    })
+  },
+  getEnabledPlugins() {
+    if (!state.selected.project) {
+      return false
+    }
+    return PluginApi.getAllInstances({
+      filter: JSON.stringify({
+        and: [
+          {
+            model: "PluginInstance",
+            field: "enabled",
+            op: "==",
+            value: "true",
+          },
+          {
+            model: "Project",
+            field: "name",
+            op: "==",
+            value: state.selected.project.name,
+          },
+        ],
+      }),
+      itemsPerPage: 50,
+    }).then((response) => {
+      return response.data.items.reduce((result, item) => {
+        if (item.plugin) {
+          result.push(item.plugin.type)
+        }
+        return result
+      }, [])
     })
   },
 }
