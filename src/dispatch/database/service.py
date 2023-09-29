@@ -504,12 +504,13 @@ def search_filter_sort_paginate(
             sort = False if sort_by else True
             query = search(query_str=query_str, query=query, model=model, sort=sort)
 
+        query_restricted = apply_model_specific_filters(model_cls, query, current_user, role)
+
         if filter_spec:
             query = apply_filter_specific_joins(model_cls, filter_spec, query)
             query = apply_filters(query, filter_spec, model_cls)
 
         if model == "Incident":
-            query_restricted = apply_model_specific_filters(model_cls, query, current_user, role)
             query = query.intersect(query_restricted)
 
         if sort_by:
