@@ -489,6 +489,7 @@ def conversation_topic_dispatcher(
             incident_id=incident.id,
             individual_id=individual.id,
             type=EventType.field_updated,
+            owner=individual.name,
         )
 
     if previous_incident.description != incident.description:
@@ -500,6 +501,7 @@ def conversation_topic_dispatcher(
             incident_id=incident.id,
             individual_id=individual.id,
             type=EventType.field_updated,
+            owner=individual.name,
         )
 
     description, details = check_for_tag_change(
@@ -514,6 +516,7 @@ def conversation_topic_dispatcher(
             incident_id=incident.id,
             individual_id=individual.id,
             type=EventType.field_updated,
+            owner=individual.name,
         )
 
     if previous_incident.incident_type.name != incident.incident_type.name:
@@ -526,6 +529,7 @@ def conversation_topic_dispatcher(
             incident_id=incident.id,
             individual_id=individual.id,
             type=EventType.field_updated,
+            owner=individual.name,
         )
 
     if previous_incident.incident_severity.name != incident.incident_severity.name:
@@ -538,6 +542,7 @@ def conversation_topic_dispatcher(
             incident_id=incident.id,
             individual_id=individual.id,
             type=EventType.assessment_updated,
+            owner=individual.name,
         )
 
     if previous_incident.incident_priority.name != incident.incident_priority.name:
@@ -550,6 +555,7 @@ def conversation_topic_dispatcher(
             incident_id=incident.id,
             individual_id=individual.id,
             type=EventType.assessment_updated,
+            owner=individual.name,
         )
 
     if previous_incident.status != incident.status:
@@ -562,6 +568,7 @@ def conversation_topic_dispatcher(
             incident_id=incident.id,
             individual_id=individual.id,
             type=EventType.assessment_updated,
+            owner=individual.name,
         )
 
     if conversation_topic_change:

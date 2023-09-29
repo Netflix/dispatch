@@ -692,6 +692,7 @@ def handle_timeline_added_event(
             individual_id=individual.id,
             started_at=message_ts_utc,
             type=EventType.imported_message,
+            owner=individual.name,
         )
 
 
@@ -1049,6 +1050,7 @@ def handle_add_timeline_submission_event(
         incident_id=context["subject"].id,
         individual_id=participant.individual.id,
         type=EventType.imported_message,
+        owner=participant.individual.name,
     )
 
     send_success_modal(

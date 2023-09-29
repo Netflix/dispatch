@@ -78,6 +78,7 @@ def log_incident_event(
     ended_at: datetime = None,
     details: dict = None,
     type: str = EventType.other,
+    owner: str = "",
 ) -> Event:
     """Logs an event in the incident timeline."""
     uuid = uuid4()
@@ -96,6 +97,7 @@ def log_incident_event(
         description=description,
         details=details,
         type=type,
+        owner=owner,
     )
     event = create(db_session=db_session, event_in=event_in)
 

@@ -72,3 +72,4 @@ class EventCreateMinimal(DispatchBase):
     description: str
     details: dict
     type: Optional[str]
+    owner: Optional[str]

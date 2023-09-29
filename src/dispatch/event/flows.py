@@ -22,6 +22,7 @@ def log_incident_event(
         db_session=db_session, email=user_email, project_id=incident.project.id
     )
     event_in.source = f"Custom event created by {individual.name}"
+    event_in.owner = individual.name
 
     event_service.log_incident_event(
         db_session=db_session,
