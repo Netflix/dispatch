@@ -39,6 +39,7 @@ from .flows import (
     incident_delete_flow,
     incident_subscribe_participant_flow,
     incident_update_flow,
+    incident_create_resources_flow,
 )
 from .metrics import create_incident_metric_query, make_forecast
 from .models import (
@@ -140,6 +141,25 @@ def create_incident(
         )
 
     return incident
+
+
+@router.post(
+    "/{incident_id}/resources",
+    response_model=IncidentRead,
+    summary="Creates resources for an existing incident.",
+)
+def create_incident_resources(
+    organization: OrganizationSlug,
+    incident_id: PrimaryKey,
+    current_incident: CurrentIncident,
+    background_tasks: BackgroundTasks,
+):
+    """Creates resources for an existing incident."""
+    background_tasks.add_task(
+        incident_create_resources_flow, organization_slug=organization, incident_id=incident_id
+    )
+
+    return current_incident
 
 
 @router.put(

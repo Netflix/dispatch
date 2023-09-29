@@ -70,4 +70,8 @@ export default {
   deleteEvent(incidentId, event_uuid) {
     return API.delete(`/${resource}/${incidentId}/event/${event_uuid}`)
   },
+
+  createAllResources(incidentId, payload) {
+    return API.post(`/${resource}/${incidentId}/resources`, payload)
+  },
 }
