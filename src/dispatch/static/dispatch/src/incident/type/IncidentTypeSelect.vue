@@ -8,16 +8,18 @@
     return-object
     :loading="loading"
   >
-    <template #item="data">
-      <v-list-item-title v-if="!project">
-        {{ data.item.project.name }}/{{ data.item.name }}
-      </v-list-item-title>
-      <v-list-item-title v-else>
-        {{ data.item.name }}
-      </v-list-item-title>
-      <v-list-item-subtitle :title="data.item.description">
-        {{ data.item.description }}
-      </v-list-item-subtitle>
+    <template #item="{ props, item }">
+      <v-list-item v-bind="props" :title="null">
+        <v-list-item-title v-if="!project">
+          {{ item.raw.project.name }}/{{ item.raw.name }}
+        </v-list-item-title>
+        <v-list-item-title v-else>
+          {{ item.raw.name }}
+        </v-list-item-title>
+        <v-list-item-subtitle :title="item.raw.description">
+          {{ item.raw.description }}
+        </v-list-item-subtitle>
+      </v-list-item>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">

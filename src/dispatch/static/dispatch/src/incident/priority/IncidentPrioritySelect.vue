@@ -3,19 +3,13 @@
     v-model="incident_priorities"
     :items="items"
     item-title="name"
+    :item-props="(item) => ({ subtitle: item.description })"
     :menu-props="{ maxHeight: '400' }"
     label="Priority"
     return-object
     :loading="loading"
     :error-messages="show_error"
-  >
-    <template #item="data">
-      <template>
-        <v-list-item-title>{{ data.item.name }}</v-list-item-title>
-        <v-list-item-subtitle>{{ data.item.description }}</v-list-item-subtitle>
-      </template>
-    </template>
-  </v-select>
+  />
 </template>
 
 <script>

@@ -29,12 +29,14 @@
       </v-chip>
     </template>
     <template #item="data">
-      <v-list-item-title>
-        <span v-if="!project">{{ data.item.project.name }}/</span>{{ data.item.name }}
-      </v-list-item-title>
-      <v-list-item-subtitle :title="data.item.description">
-        {{ data.item.description }}
-      </v-list-item-subtitle>
+      <v-list-item v-bind="data.props" :title="null">
+        <v-list-item-title>
+          <span v-if="!project">{{ data.item.raw.project.name }}/</span>{{ data.item.raw.name }}
+        </v-list-item-title>
+        <v-list-item-subtitle :title="data.item.raw.description">
+          {{ data.item.raw.description }}
+        </v-list-item-subtitle>
+      </v-list-item>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">

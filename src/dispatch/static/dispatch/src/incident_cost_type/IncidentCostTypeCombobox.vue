@@ -15,23 +15,20 @@
     <template #no-data>
       <v-list-item>
         <v-list-item-title>
-          No cost types matching "
-          <strong>{{ search }}</strong
+          No cost types matching "<strong>{{ search }}</strong
           >"
         </v-list-item-title>
       </v-list-item>
     </template>
     <template #item="data">
-      <v-list-item-title>
-        <div>
-          {{ data.item.name }}
-        </div>
-      </v-list-item-title>
-      <v-list-item-subtitle>
-        <div style="width: 200px" class="text-truncate">
-          {{ data.item.description }}
-        </div>
-      </v-list-item-subtitle>
+      <v-list-item v-bind="data.props" :title="null">
+        <v-list-item-title>
+          {{ data.item.raw.name }}
+        </v-list-item-title>
+        <v-list-item-subtitle :title="data.item.raw.description">
+          {{ data.item.raw.description }}
+        </v-list-item-subtitle>
+      </v-list-item>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">

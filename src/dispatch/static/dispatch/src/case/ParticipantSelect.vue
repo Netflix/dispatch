@@ -10,6 +10,7 @@
     closable-chips
     hide-selected
     item-title="individual.name"
+    :item-props="(item) => ({ subtitle: item.individual.email })"
     no-filter
     return-object
     v-model="participant"
@@ -22,10 +23,6 @@
           >".
         </v-list-item-title>
       </v-list-item>
-    </template>
-    <template #item="data">
-      <v-list-item-title>{{ data.item.individual.name }}</v-list-item-title>
-      <v-list-item-subtitle>{{ data.item.individual.email }}</v-list-item-subtitle>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">

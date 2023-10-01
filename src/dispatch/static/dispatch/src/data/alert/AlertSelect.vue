@@ -3,6 +3,7 @@
     v-model="query"
     :items="items"
     item-title="name"
+    :item-props="(item) => ({ subtitle: item.title })"
     v-model:search="search"
     :menu-props="{ maxHeight: '400' }"
     hide-selected
@@ -14,15 +15,10 @@
     return-object
     no-filter
   >
-    <template #item="{ item }">
-      <v-list-item-title>{{ item.name }}</v-list-item-title>
-      <v-list-item-subtitle>{{ item.title }}</v-list-item-subtitle>
-    </template>
     <template #no-data>
       <v-list-item>
         <v-list-item-title>
-          No querys matching "
-          <strong>{{ search }}</strong
+          No querys matching "<strong>{{ search }}</strong
           >".
         </v-list-item-title>
       </v-list-item>

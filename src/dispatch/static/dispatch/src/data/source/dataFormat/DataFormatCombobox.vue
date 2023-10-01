@@ -18,19 +18,18 @@
     <template #no-data>
       <v-list-item>
         <v-list-item-title>
-          No Projects matching "
-          <strong>{{ search }}</strong
+          No Projects matching "<strong>{{ search }}</strong
           >".
         </v-list-item-title>
       </v-list-item>
     </template>
     <template #item="data">
-      <template>
-        <v-list-item-title>{{ data.item.name }}</v-list-item-title>
-        <v-list-item-subtitle :title="data.item.description">
-          {{ data.item.description }}
+      <v-list-item v-bind="data.props" :title="null">
+        <v-list-item-title>{{ data.item.raw.name }}</v-list-item-title>
+        <v-list-item-subtitle :title="data.item.raw.description">
+          {{ data.item.raw.description }}
         </v-list-item-subtitle>
-      </template>
+      </v-list-item>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">

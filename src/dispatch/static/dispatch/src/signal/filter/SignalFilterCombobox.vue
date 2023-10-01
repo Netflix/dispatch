@@ -64,11 +64,13 @@
             </v-card>
           </v-menu>
         </template>
-        <template #item="{ item }">
-          <v-list-item-title>{{ item.name }}</v-list-item-title>
-          <v-list-item-subtitle :title="item.description">
-            {{ item.description }}
-          </v-list-item-subtitle>
+        <template #item="{ props, item }">
+          <v-list-item v-bind="props" :title="null">
+            <v-list-item-title>{{ item.raw.name }}</v-list-item-title>
+            <v-list-item-subtitle :title="item.raw.description">
+              {{ item.raw.description }}
+            </v-list-item-subtitle>
+          </v-list-item>
         </template>
         <template #no-data>
           <v-list-item>

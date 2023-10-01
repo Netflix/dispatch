@@ -18,8 +18,7 @@
     <template #no-data>
       <v-list-item>
         <v-list-item-title>
-          No entities matching "
-          <strong>{{ search }}</strong
+          No entities matching "<strong>{{ search }}</strong
           >"
         </v-list-item-title>
       </v-list-item>
@@ -28,10 +27,12 @@
       <v-chip v-bind="props"> {{ item.raw.entity_type.name }} / {{ item.raw.value }} </v-chip>
     </template>
     <template #item="data">
-      <v-list-item-title> {{ data.item.name }} </v-list-item-title>
-      <v-list-item-subtitle :title="data.item.entity_type.name">
-        {{ data.item.entity_type.name }}
-      </v-list-item-subtitle>
+      <v-list-item v-bind="data.props" :title="null">
+        <v-list-item-title> {{ data.item.raw.name }} </v-list-item-title>
+        <v-list-item-subtitle :title="data.item.raw.entity_type.name">
+          {{ data.item.raw.entity_type.name }}
+        </v-list-item-subtitle>
+      </v-list-item>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">

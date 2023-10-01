@@ -17,15 +17,10 @@
     <template #no-data>
       <v-list-item>
         <v-list-item-title>
-          No users matching "
-          <strong>{{ search }}</strong
+          No users matching "<strong>{{ search }}</strong
           >".
         </v-list-item-title>
       </v-list-item>
-    </template>
-    <template #item="data">
-      <v-list-item-title>{{ data.item.email }}</v-list-item-title>
-      <!-- <v-list-item-subtitle>{{ data.item.individual.email }}</v-list-item-subtitle> -->
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">

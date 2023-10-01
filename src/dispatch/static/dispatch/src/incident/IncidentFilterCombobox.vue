@@ -18,19 +18,18 @@
     <template #no-data>
       <v-list-item>
         <v-list-item-title>
-          No incidents matching "
-          <strong>{{ search }}</strong
+          No incidents matching "<strong>{{ search }}</strong
           >"
         </v-list-item-title>
       </v-list-item>
     </template>
     <template #item="data">
-      <template>
-        <v-list-item-title>{{ data.item.name }}</v-list-item-title>
-        <v-list-item-subtitle :title="data.item.title">
-          {{ data.item.title }}
+      <v-list-item v-bind="data.props" :title="null">
+        <v-list-item-title>{{ data.item.raw.name }}</v-list-item-title>
+        <v-list-item-subtitle :title="data.item.raw.title">
+          {{ data.item.raw.title }}
         </v-list-item-subtitle>
-      </template>
+      </v-list-item>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
