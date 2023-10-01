@@ -112,6 +112,16 @@
               </v-list-item-action>
             </v-list-item>
             <v-divider />
+            <v-subheader>Experimental Features</v-subheader>
+            <v-switch
+              v-model="currentUser().experimental_features"
+              inset
+              class="ml-5"
+              color="blue"
+              @change="updateExperimentalFeatures()"
+              :label="currentUser().experimental_features ? 'Enabled' : 'Disabled'"
+            ></v-switch>
+            <v-divider />
             <v-subheader>Organizations</v-subheader>
             <v-list-item v-for="(item, i) in organizations" :key="i">
               <v-list-item-content>
@@ -159,6 +169,7 @@ import { mapActions, mapGetters, mapMutations, mapState } from "vuex"
 import Util from "@/util"
 import OrganizationApi from "@/organization/api"
 import OrganizationCreateEditDialog from "@/organization/CreateEditDialog.vue"
+import UserApi from "@/auth/api"
 
 export default {
   name: "AppToolbar",
@@ -181,6 +192,16 @@ export default {
     },
   },
   methods: {
+    updateExperimentalFeatures() {
+      UserApi.getUserInfo()
+        .then((response) => {
+          let userId = response.data.id
+          UserApi.update(userId, { id: userId, experimental_features: this.experimental_features })
+        })
+        .catch((error) => {
+          console.error("Error occurred while updating experimental features: ", error)
+        })
+    },
     handleDrawerToggle() {
       this.$store.dispatch("app/toggleDrawer")
     },
@@ -203,7 +224,7 @@ export default {
     },
     ...mapState("auth", ["currentUser"]),
     ...mapState("app", ["currentVersion"]),
-    ...mapActions("auth", ["logout"]),
+    ...mapActions("auth", ["logout", "getExperimentalFeatures"]),
     ...mapActions("search", ["setQuery"]),
     ...mapActions("organization", ["showCreateEditDialog"]),
     ...mapActions("app", ["showCommitMessage"]),
@@ -233,6 +254,8 @@ export default {
       this.organizations = response.data.items
       this.loading = false
     })
+
+    this.getExperimentalFeatures()
   },
 }
 </script>

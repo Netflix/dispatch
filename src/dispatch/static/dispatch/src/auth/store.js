@@ -25,6 +25,7 @@ const state = {
     email: "",
     projects: [],
     role: null,
+    experimental_features: false,
   },
   selected: {
     ...getDefaultSelectedState(),
@@ -148,6 +149,15 @@ const actions = {
     commit("SET_USER_LOGOUT")
     router.go()
   },
+  getExperimentalFeatures({ commit }) {
+    UserApi.getUserInfo()
+      .then((response) => {
+        commit("SET_EXPERIMENTAL_FEATURES", response.data.experimental_features)
+      })
+      .catch((error) => {
+        console.error("Error occurred while updating experimental features: ", error)
+      })
+  },
   createExpirationCheck({ state, commit }) {
     // expiration time minus 10 min
     let expire_at = subMinutes(fromUnixTime(state.currentUser.exp), 10)
@@ -194,6 +204,9 @@ const mutations = {
       loggedIn: true,
     }
     localStorage.setItem("token", token)
+  },
+  SET_EXPERIMENTAL_FEATURES(state, value) {
+    state.currentUser.experimental_features = value
   },
   SET_USER_LOGOUT(state) {
     state.currentUser = { loggedIn: false }
