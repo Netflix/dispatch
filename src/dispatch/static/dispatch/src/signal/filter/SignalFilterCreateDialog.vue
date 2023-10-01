@@ -12,17 +12,17 @@
       </v-card-title>
       <v-stepper v-model="step">
         <v-stepper-header>
-          <v-stepper-step :complete="step > 1" step="1" editable> Filter </v-stepper-step>
+          <v-stepper-item :complete="step > 1" :value="1" editable> Filter </v-stepper-item>
           <v-divider />
 
-          <v-stepper-step :complete="step > 2" step="2" editable> Preview </v-stepper-step>
+          <v-stepper-item :complete="step > 2" :value="2" editable> Preview </v-stepper-item>
           <v-divider />
 
-          <v-stepper-step step="3" editable> Save </v-stepper-step>
+          <v-stepper-item :value="3" editable> Save </v-stepper-item>
         </v-stepper-header>
 
-        <v-stepper-items>
-          <v-stepper-content step="1">
+        <v-stepper-window>
+          <v-stepper-window-item :value="1">
             <v-card>
               <v-card-text>
                 Define the entity and entity types that will be used to match with existing signal
@@ -82,9 +82,9 @@
                 <v-btn color="info" @click="step = 2"> Continue </v-btn>
               </v-card-actions>
             </v-card>
-          </v-stepper-content>
+          </v-stepper-window-item>
 
-          <v-stepper-content step="2">
+          <v-stepper-window-item :value="2">
             <v-card>
               <v-card-text>
                 Examples matching your filter:
@@ -105,8 +105,8 @@
                 <v-btn color="info" @click="step = 3" :loading="loading"> Continue </v-btn>
               </v-card-actions>
             </v-card>
-          </v-stepper-content>
-          <v-stepper-content step="3">
+          </v-stepper-window-item>
+          <v-stepper-window-item :value="3">
             <v-form @submit.prevent v-slot="{ isValid }">
               <v-card>
                 <v-card-text>
@@ -144,8 +144,8 @@
                 </v-card-actions>
               </v-card>
             </v-form>
-          </v-stepper-content>
-        </v-stepper-items>
+          </v-stepper-window-item>
+        </v-stepper-window>
       </v-stepper>
     </v-card>
   </v-dialog>

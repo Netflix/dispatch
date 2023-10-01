@@ -9,14 +9,14 @@
       </v-card-title>
       <v-stepper v-model="e1">
         <v-stepper-header>
-          <v-stepper-step :complete="e1 > 1" step="1" editable> Filter Data </v-stepper-step>
+          <v-stepper-item :complete="e1 > 1" :value="1" editable> Filter Data </v-stepper-item>
           <v-divider />
-          <v-stepper-step :complete="e1 > 2" step="2" editable> Select Fields </v-stepper-step>
+          <v-stepper-item :complete="e1 > 2" :value="2" editable> Select Fields </v-stepper-item>
           <v-divider />
-          <v-stepper-step step="3" editable> Preview </v-stepper-step>
+          <v-stepper-item :value="3" editable> Preview </v-stepper-item>
         </v-stepper-header>
-        <v-stepper-items>
-          <v-stepper-content step="1">
+        <v-stepper-window>
+          <v-stepper-window-item :value="1">
             <v-list density="compact">
               <v-list-item>
                 <date-window-input v-model="reported_at" label="Reported At" />
@@ -46,8 +46,8 @@
             <v-spacer />
             <v-btn @click="closeExport()" variant="text"> Cancel </v-btn>
             <v-btn color="info" @click="e1 = 2"> Continue </v-btn>
-          </v-stepper-content>
-          <v-stepper-content step="2">
+          </v-stepper-window-item>
+          <v-stepper-window-item :value="2">
             <v-autocomplete
               v-model="selectedFields"
               :items="allFields"
@@ -59,8 +59,8 @@
             <v-spacer />
             <v-btn @click="closeExport()" variant="text"> Cancel </v-btn>
             <v-btn color="info" @click="e1 = 3"> Continue </v-btn>
-          </v-stepper-content>
-          <v-stepper-content step="3">
+          </v-stepper-window-item>
+          <v-stepper-window-item :value="3">
             <v-data-table
               hide-default-footer
               :headers="selectedFields"
@@ -82,8 +82,8 @@
             <v-badge :model-value="!!total" color="info" bordered :content="total">
               <v-btn color="info" @click="exportToCSV()" :loading="exportLoading"> Export </v-btn>
             </v-badge>
-          </v-stepper-content>
-        </v-stepper-items>
+          </v-stepper-window-item>
+        </v-stepper-window>
       </v-stepper>
     </v-card>
   </v-dialog>

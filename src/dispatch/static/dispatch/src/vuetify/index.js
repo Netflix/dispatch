@@ -4,6 +4,7 @@ import { createVuetify } from "vuetify"
 import { VDataTable } from "vuetify/labs/VDataTable"
 import { VBottomSheet } from "vuetify/labs/VBottomSheet"
 import { VDatePicker } from "vuetify/labs/VDatePicker"
+import * as VStepper from "vuetify/labs/VStepper"
 
 export function vuetifyPlugin(app) {
   const vuetify = createVuetify({
@@ -43,6 +44,7 @@ export function vuetifyPlugin(app) {
       VDataTable,
       VBottomSheet,
       VDatePicker,
+      ...VStepper,
     },
     theme: {
       themes: {
