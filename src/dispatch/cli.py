@@ -640,6 +640,7 @@ def dispatch_scheduler():
     )
     from .term.scheduled import sync_terms  # noqa
     from .workflow.scheduled import sync_workflows  # noqa
+    from .case.scheduled import case_triage_reminder, case_close_reminder  # noqa
 
 
 @dispatch_scheduler.command("list")
