@@ -29,7 +29,7 @@
     </template>
     <template #item="data">
       <v-list-item-title> {{ data.item.name }} </v-list-item-title>
-      <v-list-item-subtitle style="width: 200px" class="text-truncate">
+      <v-list-item-subtitle :title="data.item.entity_type.name">
         {{ data.item.entity_type.name }}
       </v-list-item-subtitle>
     </template>

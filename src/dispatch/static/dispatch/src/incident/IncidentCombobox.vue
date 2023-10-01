@@ -18,7 +18,7 @@
   >
     <template #item="{ item }">
       <v-list-item-title>{{ item.name }}</v-list-item-title>
-      <v-list-item-subtitle style="width: 200px" class="text-truncate">
+      <v-list-item-subtitle :title="item.title">
         {{ item.title }}
       </v-list-item-subtitle>
     </template>
