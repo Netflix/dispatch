@@ -26,6 +26,15 @@ export function vuetifyPlugin(app) {
       VExpansionPanel: {
         elevation: 0,
       },
+      VCheckbox: {
+        color: "primary",
+      },
+      VRadioGroup: {
+        color: "primary",
+      },
+      VSwitch: {
+        color: "primary",
+      },
       VDataTable: {
         hover: true,
       },
