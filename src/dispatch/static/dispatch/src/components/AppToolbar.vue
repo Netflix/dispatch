@@ -95,6 +95,16 @@
               </template>
             </v-list-item>
             <v-divider />
+            <v-list-subheader>Experimental Features</v-list-subheader>
+            <v-switch
+              v-model="currentUser().experimental_features"
+              inset
+              class="ml-5"
+              color="blue"
+              @update:model-value="updateExperimentalFeatures()"
+              :label="currentUser().experimental_features ? 'Enabled' : 'Disabled'"
+            />
+            <v-divider />
             <v-list-subheader>Organizations</v-list-subheader>
             <v-list-item v-for="(item, i) in organizations" :key="i">
               <v-list-item-title>{{ item.name }}</v-list-item-title>
@@ -141,6 +151,7 @@ import Util from "@/util"
 import { formatHash } from "@/filters"
 import OrganizationApi from "@/organization/api"
 import OrganizationCreateEditDialog from "@/organization/CreateEditDialog.vue"
+import UserApi from "@/auth/api"
 
 export default {
   name: "AppToolbar",
@@ -166,6 +177,16 @@ export default {
     },
   },
   methods: {
+    updateExperimentalFeatures() {
+      UserApi.getUserInfo()
+        .then((response) => {
+          let userId = response.data.id
+          UserApi.update(userId, { id: userId, experimental_features: this.experimental_features })
+        })
+        .catch((error) => {
+          console.error("Error occurred while updating experimental features: ", error)
+        })
+    },
     handleDrawerToggle() {
       this.$store.dispatch("app/toggleDrawer")
     },
@@ -188,7 +209,7 @@ export default {
     },
     ...mapState("auth", ["currentUser"]),
     ...mapState("app", ["currentVersion"]),
-    ...mapActions("auth", ["logout"]),
+    ...mapActions("auth", ["logout", "getExperimentalFeatures"]),
     ...mapActions("search", ["setQuery"]),
     ...mapActions("organization", ["showCreateEditDialog"]),
     ...mapActions("app", ["showCommitMessage"]),
@@ -218,6 +239,8 @@ export default {
       this.organizations = response.data.items
       this.loading = false
     })
+
+    this.getExperimentalFeatures()
   },
 }
 </script>

@@ -83,12 +83,13 @@ class PagerDutyOncallPlugin(OncallPlugin):
             incident_description=incident_description,
         )
 
-    def did_oncall_just_go_off_shift(self, schedule_id: str) -> Optional[dict]:
+    def did_oncall_just_go_off_shift(self, schedule_id: str, hour: int) -> Optional[dict]:
         client = APISession(self.configuration.api_key.get_secret_value())
         client.url = self.configuration.pagerduty_api_url
         return oncall_shift_check(
             client=client,
             schedule_id=schedule_id,
+            hour=hour,
         )
 
     def get_schedule_id_from_service_id(self, service_id: str) -> Optional[str]:

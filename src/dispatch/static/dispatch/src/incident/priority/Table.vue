@@ -81,11 +81,11 @@
               class="ml-10 mr-5"
               v-model="restrictStable"
               label="Restrict Stable status to this priority:"
-              @change="updateStablePriority"
+              @update:model-value="updateStablePriority"
             />
-            <v-tooltip max-width="500px" open-delay="50" bottom>
-              <template #activator="{ on }">
-                <v-icon v-on="on"> mdi-information </v-icon>
+            <v-tooltip max-width="500px" open-delay="50" location="bottom">
+              <template #activator="{ props }">
+                <v-icon v-bind="props">mdi-information</v-icon>
               </template>
               <span>
                 If activated, Dispatch will automatically change Stable incidents to this priority.

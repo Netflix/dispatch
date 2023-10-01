@@ -13,16 +13,15 @@
     <v-card>
       <v-row>
         <v-col>
-          <v-list>
-            <v-list-item-group color="primary">
-              <v-list-item
-                v-for="(item, index) in expirationShortcuts"
-                :key="index"
-                @click="setExpiration(item.expiration)"
-              >
-                <v-list-item-title class="text-center">{{ item.title }}</v-list-item-title>
-              </v-list-item>
-            </v-list-item-group>
+          <v-list color="primary">
+            <v-list-item
+              v-for="(item, index) in expirationShortcuts"
+              :key="index"
+              :value="item.title"
+              @click="setExpiration(item.expiration)"
+            >
+              <v-list-item-title class="text-center">{{ item.title }}</v-list-item-title>
+            </v-list-item>
           </v-list>
         </v-col>
         <v-col>

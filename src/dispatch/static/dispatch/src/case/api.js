@@ -44,4 +44,8 @@ export default {
   delete(caseId) {
     return API.delete(`/${resource}/${caseId}`)
   },
+
+  createAllResources(caseId, payload) {
+    return API.post(`/${resource}/${caseId}/resources`, payload)
+  },
 }

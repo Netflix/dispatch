@@ -177,9 +177,12 @@ def get_oncall_at_time(client: APISession, schedule_id: str, utctime: str) -> Op
         raise e
 
 
-def oncall_shift_check(client: APISession, schedule_id: str) -> Optional[dict]:
+def oncall_shift_check(client: APISession, schedule_id: str, hour: int) -> Optional[dict]:
     """Determines whether the oncall person just went off shift and returns their email."""
     now = datetime.utcnow()
+    # in case scheduler is late, replace hour with exact one for shift comparison
+    now = now.replace(hour=hour, minute=0, second=0, microsecond=0)
+
     # compare oncall person scheduled 18 hours ago vs 2 hours from now
     previous_shift = (now - timedelta(hours=18)).isoformat(timespec="minutes") + "Z"
     next_shift = (now + timedelta(hours=2)).isoformat(timespec="minutes") + "Z"

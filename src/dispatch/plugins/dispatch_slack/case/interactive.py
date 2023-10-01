@@ -1032,7 +1032,7 @@ def handle_escalation_submission_event(
         case=case, organization_slug=context["subject"].organization_slug, db_session=db_session
     )
 
-    conversation_flows.add_participants(
+    conversation_flows.add_incident_participants(
         incident=incident, participant_emails=[user.email], db_session=db_session
     )
 
@@ -1082,7 +1082,7 @@ def join_incident_button_click(
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
     # we add the user to the incident conversation
-    conversation_flows.add_participants(
+    conversation_flows.add_incident_participants(
         # TODO: handle case where there are multiple related incidents
         incident=case.incidents[0],
         participant_emails=[user.email],

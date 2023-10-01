@@ -31,6 +31,26 @@
         <v-list-item>
           <incident-priority-combobox v-model="filters.incident_priority" />
         </v-list-item>
+        <v-list-item>
+          <v-card class="mx-auto" variant="outlined" elevation="0">
+            <v-card-title>Incident Participant</v-card-title>
+            <v-card-subtitle>Show only incidents with this participant</v-card-subtitle>
+            <participant-select
+              class="ml-10 mr-5"
+              v-model="local_participant"
+              label="Participant"
+              hint="Show only incidents with this participant"
+              :project="filters.project"
+              clearable
+            />
+            <v-checkbox
+              class="ml-10 mr-5"
+              v-model="local_participant_is_commander"
+              label="And this participant is the Incident Commander"
+              :disabled="local_participant == null"
+            />
+          </v-card>
+        </v-list-item>
       </v-list>
       <v-card-actions>
         <v-spacer />
@@ -55,6 +75,7 @@ import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import RouterUtils from "@/router/utils"
 import SearchUtils from "@/search/utils"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
+import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 
 let today = function () {
   let now = new Date()
@@ -62,7 +83,7 @@ let today = function () {
 }
 
 export default {
-  name: "IncidentOverviewFilterDialog",
+  name: "IncidentDialogFilter",
 
   components: {
     DateWindowInput,
@@ -71,6 +92,7 @@ export default {
     IncidentTypeCombobox,
     ProjectCombobox,
     TagFilterAutoComplete,
+    ParticipantSelect,
   },
 
   props: {
@@ -103,6 +125,8 @@ export default {
           end: null,
         },
       },
+      local_participant_is_commander: false,
+      local_participant: null,
     }
   },
 
@@ -115,6 +139,7 @@ export default {
         this.filters.project.length,
         this.filters.status.length,
         this.filters.tag.length,
+        this.local_participant == null ? 0 : 1,
         1,
       ])
     },
@@ -122,6 +147,15 @@ export default {
 
   methods: {
     applyFilters() {
+      if (this.local_participant) {
+        if (this.local_participant_is_commander) {
+          this.filters.commander = this.local_participant
+          this.filters.participant = null
+        } else {
+          this.filters.commander = null
+          this.filters.participant = this.local_participant
+        }
+      }
       RouterUtils.updateURLFilters(this.filters)
       this.fetchData()
       // we close the dialog

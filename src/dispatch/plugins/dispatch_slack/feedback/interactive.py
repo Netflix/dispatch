@@ -186,7 +186,7 @@ def handle_incident_feedback_submission_event(
     ack_incident_feedback_submission_event(ack=ack)
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
-    feedback = form_data.get(IncidentFeedbackNotificationBlockIds.feedback_input)
+    feedback = form_data.get(IncidentFeedbackNotificationBlockIds.feedback_input, "")
     rating = form_data.get(IncidentFeedbackNotificationBlockIds.rating_select, {}).get("value")
 
     feedback_in = FeedbackCreate(
@@ -275,8 +275,8 @@ def oncall_shift_feedback_input(
             initial_value=initial_value,
             multiline=True,
             placeholder="How would you describe your experience?",
-            optional=True,
         ),
+        optional=True,
         label=label,
         **kwargs,
     )
@@ -448,7 +448,7 @@ def handle_oncall_shift_feedback_submission_event(
         ]
         try:
             plugin.instance.send_direct(
-                individual.email,
+                user.email,
                 notification_text,
                 notification_template,
                 MessageType.service_feedback,
