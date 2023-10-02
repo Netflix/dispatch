@@ -17,12 +17,15 @@ export function vuetifyPlugin(app) {
       },
       VSelect: {
         variant: "underlined",
+        itemTitle: "text",
       },
       VAutocomplete: {
         variant: "underlined",
+        itemTitle: "text",
       },
       VCombobox: {
         variant: "underlined",
+        itemTitle: "text",
       },
       VExpansionPanel: {
         elevation: 0,
@@ -38,6 +41,9 @@ export function vuetifyPlugin(app) {
       },
       VDataTable: {
         hover: true,
+        VSelect: {
+          itemTitle: "title",
+        },
       },
     },
     components: {
