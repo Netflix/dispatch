@@ -976,15 +976,29 @@ def handle_add_timeline_event_command(
 ) -> None:
     """Handles the add timeline event command."""
     ack()
-    description= None
-    date= ""
-    time= ""
-    if re.match('.*DESC\s*(.+?)(?: DATE|$|TIME)',body['text'], re.IGNORECASE):
-        description= (re.match('DESC\s*(.+?)(?: DATE|$|TIME)',body['text'], re.IGNORECASE).group(1)).strip()
-    if re.match('.*DATE\s*(\d{4}\-\d{2}\-\d{2})(?: TIME|$|DESC)',body['text'], re.IGNORECASE):
-        date= (re.match('.*DATE\s*(\d{4}\-\d{2}\-\d{2})(?: TIME|$|DESC)',body['text'], re.IGNORECASE).group(1)).strip()
-    if re.match('.*TIME\s*(([01]?[0-9]|2[0-3]):[0-5][0-9])(?: |DATE|$|DESC)',body['text'], re.IGNORECASE):
-        time= (re.match('.*TIME\s*(([01]?[0-9]|2[0-3]):[0-5][0-9])(?: |DATE|$|DESC)',body['text'], re.IGNORECASE).group(1)).strip()
+    description = None
+    date = ""
+    time = ""
+    if re.match(".*DESC\s*(.+?)(?: DATE|$|TIME)", body["text"], re.IGNORECASE):
+        description = (
+            re.match("DESC\s*(.+?)(?: DATE|$|TIME)", body["text"], re.IGNORECASE).group(1)
+        ).strip()
+    if re.match(".*DATE\s*(\d{4}\-\d{2}\-\d{2})(?: TIME|$|DESC)", body["text"], re.IGNORECASE):
+        date = (
+            re.match(
+                ".*DATE\s*(\d{4}\-\d{2}\-\d{2})(?: TIME|$|DESC)", body["text"], re.IGNORECASE
+            ).group(1)
+        ).strip()
+    if re.match(
+        ".*TIME\s*(([01]?[0-9]|2[0-3]):[0-5][0-9])(?: |DATE|$|DESC)", body["text"], re.IGNORECASE
+    ):
+        time = (
+            re.match(
+                ".*TIME\s*(([01]?[0-9]|2[0-3]):[0-5][0-9])(?: |DATE|$|DESC)",
+                body["text"],
+                re.IGNORECASE,
+            ).group(1)
+        ).strip()
 
     blocks = [
         Context(
@@ -995,7 +1009,7 @@ def handle_add_timeline_event_command(
         description_input(initial_value=description),
     ]
 
-    blocks.extend(datetime_picker_block(initial_option=date+"|"+time))
+    blocks.extend(datetime_picker_block(initial_option=date + "|" + time))
 
     modal = Modal(
         title="Add Timeline Event",

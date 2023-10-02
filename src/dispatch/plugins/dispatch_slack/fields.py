@@ -225,16 +225,19 @@ def datetime_picker_block(
     """Builds a datetime picker block"""
     hour = None
     minute = None
-    date = initial_option.split("|")[0] if initial_option.split("|")[0]!="" else None
+    date = initial_option.split("|")[0] if initial_option.split("|")[0] != "" else None
 
-    if initial_option.split("|")[1]!="":
-         #appends zero if time is not entered in hh format
+    if initial_option.split("|")[1] != "":
+        # appends zero if time is not entered in hh format
         if len(initial_option.split("|")[1].split(":")[0]) == 1:
-            h= "0"+initial_option.split("|")[1].split(":")[0]
+            h = "0" + initial_option.split("|")[1].split(":")[0]
         else:
-            h=initial_option.split("|")[1].split(":")[0]
-        hour = {"text":h,"value":h}
-        minute = {"text":initial_option.split("|")[1].split(":")[1],"value":initial_option.split("|")[1].split(":")[1]}
+            h = initial_option.split("|")[1].split(":")[0]
+        hour = {"text": h, "value": h}
+        minute = {
+            "text": initial_option.split("|")[1].split(":")[1],
+            "value": initial_option.split("|")[1].split(":")[1],
+        }
     return [
         date_picker_input(initial_date=date),
         hour_picker_input(initial_option=hour),
