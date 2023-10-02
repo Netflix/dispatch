@@ -30,9 +30,9 @@
       <v-tabs color="primary" v-model="tab">
         <v-tab key="details"> Details </v-tab>
       </v-tabs>
-      <v-tabs-items v-model="tab">
+      <v-window v-model="tab">
         <incident-details-tab />
-      </v-tabs-items>
+      </v-window>
     </v-navigation-drawer>
   </v-form>
 </template>

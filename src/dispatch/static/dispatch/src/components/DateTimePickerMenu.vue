@@ -28,13 +28,15 @@
               <v-icon>mdi-clock-outline</v-icon>
             </slot>
           </v-tab>
-          <v-tab-item key="calendar">
-            <v-date-picker v-model="date" @input="showTimePicker" full-width />
-          </v-tab-item>
-          <v-tab-item key="timer">
-            <v-time-picker v-model="time" full-width />
-          </v-tab-item>
         </v-tabs>
+        <v-window v-model="activeTab">
+          <v-window-item key="calendar">
+            <v-date-picker v-model="date" @input="showTimePicker" full-width />
+          </v-window-item>
+          <v-window-item key="timer">
+            <v-time-picker v-model="time" full-width />
+          </v-window-item>
+        </v-window>
       </v-card-text>
       <v-card-actions>
         <v-spacer />

@@ -25,9 +25,11 @@
             <v-card>
               <v-card-text>
                 Define the entity types that will be used to match with existing signal instances.
-                <v-tabs color="primary" align-tabs="end">
+                <v-tabs v-model="activeTab" color="primary" align-tabs="end">
                   <v-tab>Basic</v-tab>
-                  <v-tab-item>
+                </v-tabs>
+                <v-window v-model="activeTab">
+                  <v-window-item>
                     <span>
                       <entity-type-select
                         v-model="entity_type"
@@ -45,8 +47,8 @@
                         label="Require Multi-Factor Authentication"
                       />
                     </span>
-                  </v-tab-item>
-                </v-tabs>
+                  </v-window-item>
+                </v-window>
               </v-card-text>
               <v-card-actions>
                 <v-spacer />
@@ -117,6 +119,7 @@ export default {
   name: "SignalEngagementDialog",
   data() {
     return {
+      activeTab: 0,
       step: 1,
       dialog: false,
     }

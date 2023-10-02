@@ -24,16 +24,18 @@
           </template>
         </v-list-item>
       </template>
-      <v-tabs>
+      <v-tabs v-model="activeTab">
         <v-tab> Basic Info </v-tab>
         <v-tab> Text </v-tab>
-        <v-tab-item>
-          <edit-basic-info-tab />
-        </v-tab-item>
-        <v-tab-item>
-          <edit-text-tab />
-        </v-tab-item>
       </v-tabs>
+      <v-window v-model="activeTab">
+        <v-window-item>
+          <edit-basic-info-tab />
+        </v-window-item>
+        <v-window-item>
+          <edit-text-tab />
+        </v-window-item>
+      </v-window>
     </v-navigation-drawer>
   </v-form>
 </template>
@@ -52,6 +54,10 @@ export default {
     EditBasicInfoTab,
     EditTextTab,
   },
+
+  data: () => ({
+    activeTab: 0,
+  }),
 
   computed: {
     ...mapFields("query", ["selected.id", "selected.loading", "dialogs.showCreateEdit"]),

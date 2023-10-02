@@ -11,21 +11,20 @@
             </v-btn>
             <template #extension>
               <v-tabs v-model="tab">
-                <v-tabs-slider />
                 <v-tab key="view">View </v-tab>
                 <v-tab key="edit">Edit </v-tab>
               </v-tabs>
             </template>
           </v-toolbar>
-          <v-tabs-items v-model="tab">
-            <v-tab-item key="view">
+          <v-window v-model="tab">
+            <v-window-item key="view">
               <v-card flat>
                 <v-card-text>
                   <vue-markdown :source="documentation" />
                 </v-card-text>
               </v-card>
-            </v-tab-item>
-            <v-tab-item key="edit">
+            </v-window-item>
+            <v-window-item key="edit">
               <v-card flat>
                 <v-card-text>
                   <div style="height: 400px">
@@ -40,8 +39,8 @@
                   <span class="text-caption text-grey">Styling with markdown supported</span>
                 </v-card-text>
               </v-card>
-            </v-tab-item>
-          </v-tabs-items>
+            </v-window-item>
+          </v-window>
         </v-card>
       </v-col>
       <v-col cols="6" md="4">

@@ -27,10 +27,12 @@
               <v-card-text>
                 Define the entity and entity types that will be used to match with existing signal
                 instances.
-                <v-tabs color="primary" align-tabs="end">
+                <v-tabs v-model="activeTab" color="primary" align-tabs="end">
                   <v-tab>Basic</v-tab>
                   <v-tab>Advanced</v-tab>
-                  <v-tab-item>
+                </v-tabs>
+                <v-window v-model="activeTab">
+                  <v-window-item>
                     <v-radio-group
                       label="Action"
                       v-model="action"
@@ -64,8 +66,8 @@
                       />
                       <expiration-input persistent-hint v-model="expiration" />
                     </span>
-                  </v-tab-item>
-                  <v-tab-item>
+                  </v-window-item>
+                  <v-window-item>
                     <div style="height: 400px">
                       <MonacoEditor
                         v-model="expression_str"
@@ -73,8 +75,8 @@
                         language="json"
                       />
                     </div>
-                  </v-tab-item>
-                </v-tabs>
+                  </v-window-item>
+                </v-window>
               </v-card-text>
               <v-card-actions>
                 <v-spacer />
@@ -181,6 +183,7 @@ export default {
   },
   data() {
     return {
+      activeTab: 0,
       editorOptions: {
         automaticLayout: true,
         renderValidationDecorations: "on",

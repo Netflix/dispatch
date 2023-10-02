@@ -6,15 +6,13 @@
       </v-btn>
     </template>
     <v-card>
-      <v-card-title>
+      <v-card-title class="d-flex">
         <span class="text-h5">Create Search Filter</span>
         <v-spacer />
-        <span>
-          <v-radio-group v-model="subject" class="justify-right" row>
-            <v-radio label="Incident" value="incident" />
-            <v-radio label="Case" value="case" />
-          </v-radio-group>
-        </span>
+        <v-radio-group v-model="subject" class="flex-0-0" inline>
+          <v-radio label="Incident" value="incident" />
+          <v-radio label="Case" value="case" />
+        </v-radio-group>
       </v-card-title>
       <v-stepper v-model="step">
         <v-stepper-header>
@@ -31,10 +29,12 @@
           <v-stepper-window-item :value="1">
             <v-card>
               <v-card-text>
-                <v-tabs color="primary" align-tabs="end">
+                <v-tabs v-model="activeTab" color="primary" align-tabs="end">
                   <v-tab>Basic</v-tab>
                   <v-tab>Advanced</v-tab>
-                  <v-tab-item>
+                </v-tabs>
+                <v-window v-model="activeTab">
+                  <v-window-item>
                     <v-list v-if="subject == 'incident'" density="compact">
                       <v-list-item>
                         <tag-filter-auto-complete
@@ -114,8 +114,8 @@
                         />
                       </v-list-item>
                     </v-list>
-                  </v-tab-item>
-                  <v-tab-item>
+                  </v-window-item>
+                  <v-window-item>
                     <div style="height: 400px">
                       <MonacoEditor
                         v-model="expression_str"
@@ -123,8 +123,8 @@
                         language="json"
                       />
                     </div>
-                  </v-tab-item>
-                </v-tabs>
+                  </v-window-item>
+                </v-window>
               </v-card-text>
               <v-card-actions>
                 <v-spacer />
@@ -255,6 +255,7 @@ export default {
         { text: "Case Type", value: "case_type.name", sortable: false },
         { text: "Case Priority", value: "case_priority.name", sortable: false },
       ],
+      activeTab: 0,
       step: 1,
       previewRows: {
         items: [],

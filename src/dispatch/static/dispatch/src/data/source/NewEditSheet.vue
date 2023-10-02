@@ -24,24 +24,26 @@
           </template>
         </v-list-item>
       </template>
-      <v-tabs>
+      <v-tabs v-model="activeTab">
         <v-tab> Basic Info </v-tab>
         <v-tab> Queries </v-tab>
         <v-tab> Incidents </v-tab>
         <v-tab> Links </v-tab>
-        <v-tab-item>
-          <edit-basic-info-tab />
-        </v-tab-item>
-        <v-tab-item>
-          <edit-queries-tab v-model="queries" />
-        </v-tab-item>
-        <v-tab-item>
-          <edit-incidents-tab v-model="incidents" />
-        </v-tab-item>
-        <v-tab-item>
-          <edit-links-tab />
-        </v-tab-item>
       </v-tabs>
+      <v-window v-model="activeTab">
+        <v-window-item>
+          <edit-basic-info-tab />
+        </v-window-item>
+        <v-window-item>
+          <edit-queries-tab v-model="queries" />
+        </v-window-item>
+        <v-window-item>
+          <edit-incidents-tab v-model="incidents" />
+        </v-window-item>
+        <v-window-item>
+          <edit-links-tab />
+        </v-window-item>
+      </v-window>
     </v-navigation-drawer>
   </v-form>
 </template>
@@ -64,6 +66,10 @@ export default {
     EditQueriesTab,
     EditLinksTab,
   },
+
+  data: () => ({
+    activeTab: 0,
+  }),
 
   computed: {
     ...mapFields("source", [

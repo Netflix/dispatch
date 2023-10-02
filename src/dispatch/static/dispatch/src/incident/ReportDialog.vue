@@ -6,11 +6,11 @@
       </v-card-title>
       <v-card-text>
         <v-tabs color="primary" v-model="type" align-tabs="end">
-          <v-tab key="tactical" href="#tactical"> Tactical </v-tab>
-          <v-tab key="executive" href="#executive"> Executive </v-tab>
+          <v-tab key="tactical" value="tactical"> Tactical </v-tab>
+          <v-tab key="executive" value="executive"> Executive </v-tab>
         </v-tabs>
-        <v-tabs-items v-model="type">
-          <v-tab-item key="tactical" value="tactical">
+        <v-window v-model="type">
+          <v-window-item key="tactical" value="tactical">
             <v-card elevation="0">
               <v-card-text>
                 Tactical reports are only sent to incident participants and are generally used for
@@ -38,8 +38,8 @@
                 />
               </v-card-text>
             </v-card>
-          </v-tab-item>
-          <v-tab-item key="executive" value="executive">
+          </v-window-item>
+          <v-window-item key="executive" value="executive">
             <v-card elevation="0">
               <v-card-text>
                 Executive reports are sent to incident participants in addition to executive
@@ -68,8 +68,8 @@
                 />
               </v-card-text>
             </v-card>
-          </v-tab-item>
-        </v-tabs-items>
+          </v-window-item>
+        </v-window>
       </v-card-text>
       <v-card-actions>
         <v-spacer />

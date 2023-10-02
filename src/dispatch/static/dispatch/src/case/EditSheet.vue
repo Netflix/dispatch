@@ -45,33 +45,33 @@
         <v-tab key="entities"> Entities </v-tab>
         <v-tab key="signals"> Signals </v-tab>
       </v-tabs>
-      <v-tabs-items v-model="tab">
-        <v-tab-item key="details">
+      <v-window v-model="tab">
+        <v-window-item key="details">
           <case-details-tab />
-        </v-tab-item>
-        <v-tab-item key="resources">
+        </v-window-item>
+        <v-window-item key="resources">
           <case-resources-tab />
-        </v-tab-item>
-        <v-tab-item key="participants">
+        </v-window-item>
+        <v-window-item key="participants">
           <case-participants-tab />
-        </v-tab-item>
-        <v-tab-item key="timeline">
+        </v-window-item>
+        <v-window-item key="timeline">
           <case-timeline-tab />
-        </v-tab-item>
-        <v-tab-item key="workflow_instances">
+        </v-window-item>
+        <v-window-item key="workflow_instances">
           <workflow-instance-tab v-model="workflow_instances" />
-        </v-tab-item>
-        <v-tab-item key="entities">
+        </v-window-item>
+        <v-window-item key="entities">
           <entities-tab
             :selected="selected"
             v-model="signal_instances"
             v-if="selected.signal_instances"
           />
-        </v-tab-item>
-        <v-tab-item key="signal_instances">
+        </v-window-item>
+        <v-window-item key="signal_instances">
           <signal-instance-tab v-model="signal_instances" v-if="selected.signal_instances" />
-        </v-tab-item>
-      </v-tabs-items>
+        </v-window-item>
+      </v-window>
     </v-navigation-drawer>
   </v-form>
 </template>
