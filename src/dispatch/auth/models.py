@@ -54,6 +54,7 @@ class DispatchUser(Base, TimeStampMixin):
     email = Column(String, unique=True)
     password = Column(LargeBinary, nullable=False)
     last_mfa_time = Column(DateTime, nullable=True)
+    experimental_features = Column(Boolean, default=False)
 
     # relationships
     events = relationship("Event", backref="dispatch_user")
@@ -157,6 +158,7 @@ class UserLoginResponse(DispatchBase):
 class UserRead(UserBase):
     id: PrimaryKey
     role: Optional[str] = Field(None, nullable=True)
+    experimental_features: Optional[bool]
 
 
 class UserUpdate(DispatchBase):
@@ -164,6 +166,7 @@ class UserUpdate(DispatchBase):
     password: Optional[str] = Field(None, nullable=True)
     projects: Optional[List[UserProject]]
     organizations: Optional[List[UserOrganization]]
+    experimental_features: Optional[bool]
     role: Optional[str] = Field(None, nullable=True)
 
     @validator("password", pre=True)

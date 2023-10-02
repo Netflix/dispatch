@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 
 from .models import (
     ServiceFeedbackReminder,
-    ServiceFeedbackReminderCreate,
     ServiceFeedbackReminderUpdate,
 )
 from dispatch.individual.models import IndividualContact
@@ -24,11 +23,11 @@ def get_all_expired_reminders_by_project_id(
     )
 
 
-def create(*, db_session, reminder_in: ServiceFeedbackReminderCreate) -> ServiceFeedbackReminder:
+def create(*, db_session, reminder_in: ServiceFeedbackReminder) -> ServiceFeedbackReminder:
     """Creates a new service feedback reminder."""
     reminder = ServiceFeedbackReminder(**reminder_in.dict())
 
-    db_session.add(reminder_in)
+    db_session.add(reminder)
     db_session.commit()
     return reminder
 
@@ -55,5 +54,6 @@ def delete(*, db_session, reminder_id: int):
         .filter(ServiceFeedbackReminder.id == reminder_id)
         .one_or_none()
     )
-    db_session.delete(reminder)
-    db_session.commit()
+    if reminder:
+        db_session.delete(reminder)
+        db_session.commit()

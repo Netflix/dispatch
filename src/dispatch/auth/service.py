@@ -245,6 +245,9 @@ def update(*, db_session, user: DispatchUser, user_in: UserUpdate) -> DispatchUs
                 )
             )
 
+    if experimental_features := user_in.experimental_features:
+        user.experimental_features = experimental_features
+
     db_session.commit()
     return user
 
