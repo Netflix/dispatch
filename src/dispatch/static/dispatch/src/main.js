@@ -9,12 +9,6 @@ import "font-awesome/css/font-awesome.css"
 
 import * as Sentry from "@sentry/vue"
 
-// import VueClipboard from "vue-clipboard2"
-// import VueMarkdown from "vue-markdown"
-
-// Vue.use(VueClipboard)
-// Vue.use(VueMarkdown)
-
 const app = createApp(App)
 
 // Configure sentry

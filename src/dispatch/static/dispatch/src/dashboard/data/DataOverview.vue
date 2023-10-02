@@ -122,7 +122,7 @@ export default {
     },
     copyView: function () {
       let store = this.$store
-      this.$copyText(window.location).then(
+      navigator.clipboard.writeText(window.location).then(
         function () {
           store.commit(
             "notification_backend/addBeNotification",
