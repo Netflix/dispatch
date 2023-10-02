@@ -209,7 +209,7 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
             "visibility": incident.visibility,
         },
         incident_id=incident.id,
-        owner=reporter_name
+        owner=reporter_name,
     )
 
     # add reporter
