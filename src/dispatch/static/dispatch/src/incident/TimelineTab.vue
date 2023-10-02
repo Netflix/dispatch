@@ -172,8 +172,16 @@ export default {
     ]),
     exportToCSV() {
       this.exportLoading = true
+      const selected_items=[]
       let items = this.sortedEvents
-      Util.exportCSV(items, this.name + "-timeline-export.csv")
+      items.forEach(item=> {
+        if(this.showItem(item)){
+          selected_items.push(item)
+      }
+    }
+        )
+      
+      Util.exportCSV(selected_items.map(item=> ({'Time (in UTC)': item.started_at,'Description': item.description,'Owner': this.extractOwner(item)})), this.name + "-timeline-export.csv")
       this.exportLoading = false
     },
     showItem(item) {
@@ -183,6 +191,11 @@ export default {
     iconItem(item) {
       if (item.description == "Incident created") return "mdi-flare"
       return eventTypeToIcon[item.type]
+    },
+    extractOwner(item){
+      if (item.owner!=null && item.owner!="") return item.owner
+      return 'Dispatch'
+
     },
     countHidden() {
       if (!this.events) return 0
