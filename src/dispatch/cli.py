@@ -797,7 +797,7 @@ def consume_signals(organization, project, plugin_name):  # TODO support multipl
     )
 
     if not plugins:
-        log.debug(
+        log.warning(
             "No signals consumed. No signal-consumer plugins enabled. Project: {project.name}. Organization: {project.organization.name}"
         )
         return
@@ -805,6 +805,11 @@ def consume_signals(organization, project, plugin_name):  # TODO support multipl
     for plugin in plugins:
         if plugin.plugin.slug == plugin_name:
             plugin.instance.consume(db_session=session, project=project)
+            break
+    else:
+        log.warning(
+            f"No signals consumed. No signal-consumer plugin found with slug {plugin_name}. Project: {project.name}. Organization: {project.organization.name}"
+        )
 
 
 @signals_group.command("process")
