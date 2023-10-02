@@ -29,6 +29,10 @@ export default {
   border-radius: 0;
 }
 
+a {
+  color: rgb(var(--v-theme-anchor));
+}
+
 .v-list-item--active::before {
   background-color: #e50914;
   display: block;
