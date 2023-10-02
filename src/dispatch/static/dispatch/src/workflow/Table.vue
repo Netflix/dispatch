@@ -42,9 +42,6 @@
             v-model:sort-by="sortBy"
             v-model:sort-desc="descending"
           >
-            <template #item.plugin_instance="{ item }">
-              {{ item.plugin_instance.plugin.title }}
-            </template>
             <template #item.enabled="{ value }">
               <v-checkbox-btn :model-value="value" disabled />
             </template>
@@ -92,7 +89,12 @@ export default {
         { title: "Description", value: "description", sortable: false },
         { title: "Enabled", value: "enabled", sortable: true },
         { title: "ResourceId", value: "resource_id", sortable: true },
-        { title: "Plugin", value: "plugin_instance", sortable: true },
+        {
+          title: "Plugin",
+          key: "plugin_instance",
+          value: "plugin_instance.plugin.title",
+          sortable: true,
+        },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
