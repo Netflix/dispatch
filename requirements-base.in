@@ -6,6 +6,7 @@ atlassian-python-api==3.32.0
 attrs==22.1.0
 bcrypt
 blockkit
+boto3
 cachetools
 chardet
 click
@@ -44,8 +45,8 @@ schemathesis
 sentry-asgi
 sentry-sdk
 sh
-slack-bolt
 slack_sdk
+slack-bolt
 slowapi
 spacy
 sqlalchemy-filters

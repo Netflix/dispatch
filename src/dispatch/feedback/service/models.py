@@ -5,10 +5,11 @@ from typing import Optional, List
 from sqlalchemy import Column, Integer, ForeignKey, DateTime, String
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy_utils import TSVectorType
+from sqlalchemy.orm import relationship
 
 from dispatch.database.core import Base
-from dispatch.individual.models import IndividualContactRead
-from dispatch.models import DispatchBase, TimeStampMixin, FeedbackMixin, PrimaryKey
+from dispatch.individual.models import IndividualContactReadMinimal
+from dispatch.models import DispatchBase, TimeStampMixin, FeedbackMixin, PrimaryKey, Pagination
 from dispatch.project.models import ProjectRead
 
 from .enums import ServiceFeedbackRating
@@ -26,6 +27,7 @@ class ServiceFeedback(TimeStampMixin, FeedbackMixin, Base):
 
     # Relationships
     individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))
+    individual = relationship("IndividualContact")
 
     search_vector = Column(
         TSVectorType(
@@ -37,14 +39,14 @@ class ServiceFeedback(TimeStampMixin, FeedbackMixin, Base):
 
     @hybrid_property
     def project(self):
-        return self.service.project
+        return self.individual.project
 
 
 # Pydantic models
 class ServiceFeedbackBase(DispatchBase):
     feedback: Optional[str] = Field(None, nullable=True)
     hours: Optional[int]
-    individual: Optional[IndividualContactRead]
+    individual: Optional[IndividualContactReadMinimal]
     rating: ServiceFeedbackRating = ServiceFeedbackRating.little_effort
     schedule: Optional[str]
     shift_end_at: Optional[datetime]
@@ -64,6 +66,6 @@ class ServiceFeedbackRead(ServiceFeedbackBase):
     project: Optional[ProjectRead]
 
 
-class ServiceFeedbackPagination(DispatchBase):
+class ServiceFeedbackPagination(Pagination):
     items: List[ServiceFeedbackRead]
     total: int
