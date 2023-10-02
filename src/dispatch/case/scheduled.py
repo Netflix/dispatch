@@ -40,7 +40,7 @@ def case_triage_reminder(db_session: SessionLocal, project: Project):
 
     # if we want more specific SLA reminders, we would need to add additional data model
     for case in cases:
-        span = datetime.utcnow() - case.created
+        span = datetime.utcnow() - case.created_at
         q, r = divmod(span.days, 1)
         if q >= 1:
             # we only send one reminder per case per day
