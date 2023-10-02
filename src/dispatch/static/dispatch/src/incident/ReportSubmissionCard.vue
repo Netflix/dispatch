@@ -1,5 +1,5 @@
 <template>
-  <v-form @submit.prevent v-slot="{ isValid }">
+  <v-form @submit.prevent="report()" v-slot="{ isValid }">
     <v-card class="mx-auto ma-4" max-width="600" flat variant="outlined" :loading="loading">
       <v-card-text>
         <p class="text-h4 text--primary">
@@ -24,64 +24,60 @@
             <v-icon size="small">mdi-open-in-new</v-icon>
           </a>
         </p>
-        <v-form>
-          <v-container>
-            <v-row>
-              <v-col cols="12">
-                <v-textarea
-                  v-model="title"
-                  label="Title"
-                  hint="A brief explanatory title. You can change this later."
-                  clearable
-                  auto-grow
-                  rows="2"
-                  required
-                  name="Title"
-                  :rules="[rules.required]"
-                />
-              </v-col>
-              <v-col cols="12">
-                <v-textarea
-                  v-model="description"
-                  label="Description"
-                  hint="A summary of what you know so far. It's all right if this is incomplete."
-                  clearable
-                  auto-grow
-                  rows="3"
-                  required
-                  name="Description"
-                  :rules="[rules.required]"
-                />
-              </v-col>
-              <v-col cols="12">
-                <project-select v-model="project" />
-              </v-col>
-              <v-col cols="12">
-                <incident-type-select :project="project" v-model="incident_type" />
-              </v-col>
-              <v-col cols="12">
-                <incident-priority-select :project="project" v-model="incident_priority" />
-              </v-col>
-              <v-col cols="12">
-                <tag-filter-auto-complete :project="project" v-model="tags" label="Tags" />
-              </v-col>
-            </v-row>
-            <template>
-              <v-btn
-                color="info"
-                variant="flat"
-                :loading="loading"
-                :disabled="!isValid.value"
-                @click="report()"
-              >
-                Submit
-                <template #loader>
-                  <v-progress-linear indeterminate color="white" />
-                </template>
-              </v-btn>
+        <v-container>
+          <v-row>
+            <v-col cols="12">
+              <v-textarea
+                v-model="title"
+                label="Title"
+                hint="A brief explanatory title. You can change this later."
+                clearable
+                auto-grow
+                rows="2"
+                required
+                name="Title"
+                :rules="[rules.required]"
+              />
+            </v-col>
+            <v-col cols="12">
+              <v-textarea
+                v-model="description"
+                label="Description"
+                hint="A summary of what you know so far. It's all right if this is incomplete."
+                clearable
+                auto-grow
+                rows="3"
+                required
+                name="Description"
+                :rules="[rules.required]"
+              />
+            </v-col>
+            <v-col cols="12">
+              <project-select v-model="project" />
+            </v-col>
+            <v-col cols="12">
+              <incident-type-select :project="project" v-model="incident_type" />
+            </v-col>
+            <v-col cols="12">
+              <incident-priority-select :project="project" v-model="incident_priority" />
+            </v-col>
+            <v-col cols="12">
+              <tag-filter-auto-complete :project="project" v-model="tags" label="Tags" />
+            </v-col>
+          </v-row>
+          <v-btn
+            color="info"
+            variant="flat"
+            :loading="loading"
+            :disabled="!isValid.value"
+            type="submit"
+          >
+            Submit
+            <template #loader>
+              <v-progress-linear indeterminate color="white" />
             </template>
-          </v-container>
-        </v-form>
+          </v-btn>
+        </v-container>
       </v-card-text>
     </v-card>
   </v-form>

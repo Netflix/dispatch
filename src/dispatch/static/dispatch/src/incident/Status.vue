@@ -3,11 +3,14 @@
     <v-main>
       <organization-banner />
       <v-app-bar flat style="border-bottom: 1px solid #d2d2d2 !important" color="background0">
-        <router-link :to="{ name: 'IncidentOverview' }" style="text-decoration: none">
-          <span class="button font-weight-bold">D I S P A T C H</span>
-        </router-link>
-        <v-spacer />
-        <v-btn size="small" color="primary" :to="{ name: 'report' }"> Report Incident </v-btn>
+        <template #prepend>
+          <router-link :to="{ name: 'IncidentOverview' }" style="text-decoration: none">
+            <span class="button font-weight-bold">D I S P A T C H</span>
+          </router-link>
+        </template>
+        <template #append>
+          <v-btn size="small" color="primary" :to="{ name: 'report' }"> Report Incident </v-btn>
+        </template>
       </v-app-bar>
       <v-card class="mx-auto ma-4" max-width="1000" flat variant="outlined">
         <v-card-text>

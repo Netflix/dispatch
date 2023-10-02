@@ -3,7 +3,7 @@
     <template #item.incident_priority.name="{ value }">
       <incident-priority :priority="value" />
     </template>
-    <template #item.status="{ value }">
+    <template #item.status="{ item, value }">
       <incident-status :status="value" :id="item.id" />
     </template>
     <template #item.commander="{ value }">

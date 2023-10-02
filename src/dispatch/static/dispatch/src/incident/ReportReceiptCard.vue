@@ -16,8 +16,10 @@
       </p>
       <v-list lines="three" :opened="[0]">
         <v-list-group :value="0">
-          <template #activator>
-            <v-list-item-title class="text-h6"> Incident Details </v-list-item-title>
+          <template #activator="{ props }">
+            <v-list-item v-bind="props">
+              <v-list-item-title class="text-h6"> Incident Details </v-list-item-title>
+            </v-list-item>
           </template>
           <v-list-item>
             <v-list-item-title>Title</v-list-item-title>
@@ -70,9 +72,9 @@
             <v-list-item-title>Incident Participants</v-list-item-title>
             <v-list-item-subtitle>
               <v-chip-group column>
-                <v-item v-for="participant in participants" :key="participant.id">
+                <template v-for="participant in participants" :key="participant.id">
                   <participant :participant="participant" />
-                </v-item>
+                </template>
               </v-chip-group>
             </v-list-item-subtitle>
           </v-list-item>
@@ -80,8 +82,10 @@
       </v-list>
       <v-list lines="three" :opened="[0]">
         <v-list-group :value="0">
-          <template #activator>
-            <v-list-item-title class="text-h6"> Incident Resources </v-list-item-title>
+          <template #activator="{ props }">
+            <v-list-item v-bind="props">
+              <v-list-item-title class="text-h6"> Incident Resources </v-list-item-title>
+            </v-list-item>
           </template>
           <span v-if="activeResourcePlugins.ticket">
             <v-list-item v-if="ticket" :href="ticket.weblink" target="_blank">

@@ -16,8 +16,10 @@
       </p>
       <v-list lines="three" :opened="[0]">
         <v-list-group :value="0">
-          <template #activator>
-            <v-list-item-title class="text-h6"> Case Details </v-list-item-title>
+          <template #activator="{ props }">
+            <v-list-item v-bind="props">
+              <v-list-item-title class="text-h6"> Case Details </v-list-item-title>
+            </v-list-item>
           </template>
           <v-list-item>
             <v-list-item-title>Assignee</v-list-item-title>

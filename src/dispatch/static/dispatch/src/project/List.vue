@@ -3,9 +3,9 @@
     <new-edit-sheet />
     <v-divider />
     <v-list>
-      <v-list-group prepend-icon="mdi-account-multiple" no-action color="info">
-        <template #activator>
-          <v-list-item>
+      <v-list-group prepend-icon="mdi-account-multiple" color="info">
+        <template #activator="{ props }">
+          <v-list-item v-bind="props">
             <v-list-item-title>Projects ({{ items.length }})</v-list-item-title>
           </v-list-item>
         </template>
