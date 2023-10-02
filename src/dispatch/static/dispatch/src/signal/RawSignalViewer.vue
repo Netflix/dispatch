@@ -23,7 +23,7 @@
 </template>
 
 <script>
-// import MonacoEditor from "monaco-editor-vue"
+import MonacoEditor from "@/components/MonacoEditor.vue"
 
 export default {
   name: "RawSignalViewer",
@@ -38,7 +38,7 @@ export default {
   },
 
   components: {
-    // MonacoEditor,
+    MonacoEditor,
   },
 
   computed: {

@@ -154,7 +154,7 @@
 </template>
 
 <script>
-// import MonacoEditor from "monaco-editor-vue"
+import MonacoEditor from "@/components/MonacoEditor.vue"
 
 import { required } from "@/util/form"
 
@@ -212,7 +212,7 @@ export default {
     EntityTypeFilterCombobox,
     RawSignalViewer,
     ExpirationInput,
-    // MonacoEditor,
+    MonacoEditor,
   },
   computed: {
     ...mapFields("signalFilter", [

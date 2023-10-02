@@ -206,7 +206,7 @@
 </template>
 
 <script>
-// import MonacoEditor from "monaco-editor-vue"
+import MonacoEditor from "@/components/MonacoEditor.vue"
 
 import { required } from "@/util/form"
 
@@ -285,7 +285,7 @@ export default {
     IncidentTypeCombobox,
     TagFilterAutoComplete,
     TagTypeFilterCombobox,
-    // MonacoEditor,
+    MonacoEditor,
   },
   computed: {
     ...mapFields("search", [

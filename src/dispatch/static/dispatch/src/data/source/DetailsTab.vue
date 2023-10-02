@@ -122,7 +122,7 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 // import VueMarkdown from "vue-markdown"
-// import MonacoEditor from "monaco-editor-vue"
+import MonacoEditor from "@/components/MonacoEditor.vue"
 import { formatRelativeDate } from "@/filters"
 
 export default {
@@ -130,7 +130,7 @@ export default {
 
   components: {
     // VueMarkdown,
-    // MonacoEditor,
+    MonacoEditor,
   },
 
   computed: {
