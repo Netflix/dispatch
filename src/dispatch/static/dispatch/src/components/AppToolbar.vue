@@ -196,10 +196,10 @@ export default {
       UserApi.getUserInfo()
         .then((response) => {
           let userId = response.data.id
-          let currentUserExperimentalFeatures = this.currentUser().experimental_features
+          let newUserExperimentalFeatures = this.currentUser().experimental_features
           UserApi.update(userId, {
             id: userId,
-            experimental_features: currentUserExperimentalFeatures,
+            experimental_features: newUserExperimentalFeatures,
           })
         })
         .catch((error) => {
