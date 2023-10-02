@@ -7,14 +7,7 @@
         </template>
         <v-card>
           <v-card-text class="pa-0">
-            <v-color-picker
-              v-model="color"
-              show-swatches
-              hide-sliders
-              hide-inputs
-              hide-mode-switch
-              flat
-            />
+            <v-color-picker v-model="color" show-swatches hide-sliders hide-inputs elevation="0" />
           </v-card-text>
         </v-card>
       </v-menu>

@@ -56,7 +56,7 @@
               </span>
             </template>
             <template #item.source_data_format="{ item }">
-              <v-chip v-if="item.source_data_format" size="small" dark>
+              <v-chip v-if="item.source_data_format" size="small">
                 {{ item.source_data_format.name }}
               </v-chip>
             </template>

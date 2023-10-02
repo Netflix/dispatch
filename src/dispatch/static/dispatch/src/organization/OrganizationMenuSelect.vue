@@ -9,10 +9,10 @@
     hide-details
     :loading="loading"
     variant="outlined"
-    dense
+    density="comfortable"
   >
     <template #item="data">
-      <v-list-item v-bind="data.props" :title="null">
+      <v-list-item v-bind="data.props" :title="null" density="comfortable">
         <v-list-item-title>{{ data.item.raw.name }}</v-list-item-title>
         <v-list-item-subtitle :title="data.item.raw.description">
           {{ data.item.raw.description }}
