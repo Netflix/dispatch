@@ -76,7 +76,7 @@
                   >Engagement
                   <v-tooltip max-width="250px" location="bottom">
                     <template #activator="{ props }">
-                      <v-icon v-bind="props"> help_outline </v-icon>
+                      <v-icon v-bind="props">mdi-help-circle-outline</v-icon>
                     </template>
                     This individual will be automatically engaged for any incident or case matching
                     the following filters.

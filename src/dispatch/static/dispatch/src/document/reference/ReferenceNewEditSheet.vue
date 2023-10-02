@@ -77,7 +77,7 @@
                   >Evergreen
                   <v-tooltip max-width="250px" location="bottom">
                     <template #activator="{ props }">
-                      <v-icon v-bind="props"> help_outline </v-icon>
+                      <v-icon v-bind="props">mdi-help-circle-outline</v-icon>
                     </template>
                     Dispatch will send the owner a reminder email to the resource owner, reminding
                     them to keep the resource current.

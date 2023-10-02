@@ -42,7 +42,7 @@
           Banner Settings
           <v-tooltip max-width="250px" location="bottom">
             <template #activator="{ props }">
-              <v-icon v-bind="props"> help_outline </v-icon>
+              <v-icon v-bind="props">mdi-help-circle-outline</v-icon>
             </template>
             When enabled, this banner will be presented to users throughout the application when
             using this organization.
