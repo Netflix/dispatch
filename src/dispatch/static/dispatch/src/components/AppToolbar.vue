@@ -196,7 +196,11 @@ export default {
       UserApi.getUserInfo()
         .then((response) => {
           let userId = response.data.id
-          UserApi.update(userId, { id: userId, experimental_features: this.experimental_features })
+          let currentUserExperimentalFeatures = this.currentUser().experimental_features
+          UserApi.update(userId, {
+            id: userId,
+            experimental_features: currentUserExperimentalFeatures,
+          })
         })
         .catch((error) => {
           console.error("Error occurred while updating experimental features: ", error)
