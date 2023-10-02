@@ -33,6 +33,7 @@
     "vue": "^3.3.4",
     "vue-router": "^4.2.4",
     "vue3-apexcharts": "^1.4.4",
+    "vue3-markdown-it": "^1.0.10",
     "vuedraggable": "^2.24.3",
     "vuetify": "npm:@vuetify/nightly@3.3.19-master.2023-09-30",
     "vuex": "^4.1.0",

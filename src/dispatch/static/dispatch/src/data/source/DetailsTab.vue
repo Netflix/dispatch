@@ -121,7 +121,7 @@
 
 <script>
 import { mapFields } from "vuex-map-fields"
-// import VueMarkdown from "vue-markdown"
+import VueMarkdown from "vue3-markdown-it"
 import MonacoEditor from "@/components/MonacoEditor.vue"
 import { formatRelativeDate } from "@/filters"
 
@@ -129,7 +129,7 @@ export default {
   name: "SourceDetailsTab",
 
   components: {
-    // VueMarkdown,
+    VueMarkdown,
     MonacoEditor,
   },
 
