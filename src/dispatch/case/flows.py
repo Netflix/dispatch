@@ -186,6 +186,7 @@ def case_new_create_flow(
     # we create the ticket
     ticket_flows.create_case_ticket(case=case, db_session=db_session)
 
+    # we resolve participants
     individual_participants, team_participants = get_case_participants(
         case=case, db_session=db_session
     )
@@ -198,6 +199,9 @@ def case_new_create_flow(
             team_participants=team_participants,
             conversation_target=conversation_target,
         )
+    else:
+        # we still want to update the ticket, but not twice if resources are created
+        ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
     if case.case_priority.page_assignee:
         if not service_id:
@@ -341,8 +345,9 @@ def case_update_flow(
                 db_session=db_session,
             )
 
-    # we send the case updated notification
-    update_conversation(case, db_session)
+    if case.conversation:
+        # we send the case updated notification
+        update_conversation(case, db_session)
 
 
 def case_delete_flow(case: Case, db_session: SessionLocal):
@@ -654,13 +659,13 @@ def case_create_resources_flow(
                 db_session=db_session,
             )
 
-        # we update the ticket
-        ticket_flows.update_case_ticket(case=case, db_session=db_session)
-
         # we update the case document
         document_flows.update_document(
             document=case.case_document, project_id=case.project.id, db_session=db_session
         )
+
+        # we update the ticket
+        ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
     try:
         # we create the conversation and add participants to the thread
