@@ -196,7 +196,7 @@ def update_case_ticket(
     case: Case,
     db_session: SessionLocal,
 ):
-    """Updates an case ticket."""
+    """Updates a case ticket."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=case.project.id, plugin_type="ticket"
     )
@@ -215,6 +215,14 @@ def update_case_ticket(
         case_type_in=case.case_type,
     ).get_meta(plugin.plugin.slug)
 
+    case_document_weblink = ""
+    if case.case_document:
+        case_document_weblink = resolve_attr(case, "case_document.weblink")
+
+    case_storage_weblink = ""
+    if case.storage:
+        case_storage_weblink = resolve_attr(case, "storage.weblink")
+
     # we update the external case ticket
     try:
         plugin.instance.update_case_ticket(
@@ -227,8 +235,8 @@ def update_case_ticket(
             case.case_priority.name,
             case.status.lower(),
             case.assignee.individual.email,
-            resolve_attr(case, "case_document.weblink"),
-            resolve_attr(case, "storage.weblink"),
+            case_document_weblink,
+            case_storage_weblink,
             case_type_plugin_metadata=case_type_plugin_metadata,
         )
     except Exception as e:
