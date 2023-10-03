@@ -196,7 +196,7 @@ def update_case_ticket(
     case: Case,
     db_session: SessionLocal,
 ):
-    """Updates an case ticket."""
+    """Updates a case ticket."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=case.project.id, plugin_type="ticket"
     )

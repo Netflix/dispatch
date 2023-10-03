@@ -207,6 +207,7 @@ def case_new_create_flow(
     # we create the ticket
     ticket_flows.create_case_ticket(case=case, db_session=db_session)
 
+    # we resolve participants
     individual_participants, team_participants = get_case_participants(
         case=case, db_session=db_session
     )
@@ -301,6 +302,9 @@ def case_new_create_flow(
                     case_id=case.id,
                 )
                 log.exception(e)
+
+    # we update the ticket
+    ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
     db_session.add(case)
     db_session.commit()
@@ -423,7 +427,8 @@ def case_update_flow(
             )
 
     # we send the case updated notification
-    update_conversation(case, db_session)
+    if case.conversation:
+        update_conversation(case, db_session)
 
 
 def case_delete_flow(case: Case, db_session: SessionLocal):
@@ -724,9 +729,6 @@ def case_create_resources_flow(
         document_template=case.case_type.case_template_document,
         db_session=db_session,
     )
-
-    # we update the ticket
-    ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
     # we update the case document
     document_flows.update_document(
