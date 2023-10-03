@@ -772,11 +772,33 @@ def signals_group():
     pass
 
 
+def _run_consume(plugin_slug: str, organization_slug: str, project_id: int, running: bool):
+    from dispatch.database.core import refetch_db_session
+    from dispatch.plugin import service as plugin_service
+    from dispatch.project import service as project_service
+    from dispatch.common.utils.cli import install_plugins
+
+    install_plugins()
+
+    db_session = refetch_db_session(organization_slug=organization_slug)
+    plugin = plugin_service.get_active_instance_by_slug(
+        db_session=db_session, slug=plugin_slug, project_id=project_id
+    )
+    project = project_service.get(db_session=db_session, project_id=project_id)
+    while True:
+        if not running["is_running"]:
+            break
+        plugin.instance.consume(db_session=db_session, project=project)
+
+
 @signals_group.command("consume")
 def consume_signals():
     """Runs a continuous process that consumes signals from the specified plugin."""
     import time
-    import concurrent.futures
+    from multiprocessing import Manager
+    import multiprocessing
+
+    import signal
 
     from dispatch.common.utils.cli import install_plugins
     from dispatch.project import service as project_service
@@ -787,16 +809,21 @@ def consume_signals():
 
     install_plugins()
     organizations = get_all_organizations(db_session=SessionLocal())
-    for organization in organizations:
-        schema_engine = engine.execution_options(
-            schema_translate_map={
-                None: f"dispatch_organization_{organization.slug}",
-            }
-        )
-        session = sessionmaker(bind=schema_engine)()
 
-        projects = project_service.get_all(db_session=session)
-        with concurrent.futures.ProcessPoolExecutor() as executor:
+    with Manager() as manager:
+        running = manager.dict()
+        running["is_running"] = True
+        workers = []
+
+        for organization in organizations:
+            schema_engine = engine.execution_options(
+                schema_translate_map={
+                    None: f"dispatch_organization_{organization.slug}",
+                }
+            )
+            session = sessionmaker(bind=schema_engine)()
+
+            projects = project_service.get_all(db_session=session)
             for project in projects:
                 plugins = plugin_service.get_active_instances(
                     db_session=session, plugin_type="signal-consumer", project_id=project.id
@@ -807,12 +834,31 @@ def consume_signals():
                         f"No signals consumed. No signal-consumer plugins enabled. Project: {project.name}. Organization: {project.organization.name}"
                     )
 
-                    for plugin in plugins:
-                        log.debug(f"Consuming signals for plugin: {plugin.plugin.slug}")
-                        executor.submit(plugin.instance.consume, session, project)
+                for plugin in plugins:
+                    log.debug(f"Consuming signals for plugin: {plugin.plugin.slug}")
+                    p = multiprocessing.Process(
+                        target=_run_consume,
+                        args=(plugin.plugin.slug, organization.slug, project.id, running),
+                    )
+                    p.start()
+                    workers.append(p)
+                    print(workers)
 
-    # if no plugins are configured, we sleep for 10 minutes
-    time.sleep(600)
+        def terminate_processes(signum, frame):
+            print("Terminating main process...")
+            running["is_running"] = False  # noqa
+            for worker in workers:
+                worker.join()
+
+        signal.signal(signal.SIGINT, terminate_processes)
+        signal.signal(signal.SIGTERM, terminate_processes)
+
+        # Keep the main thread running
+        while True:
+            if not running["is_running"]:
+                print("Main process terminating.")
+                break
+            time.sleep(1)
 
 
 @signals_group.command("process")
