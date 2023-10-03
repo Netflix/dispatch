@@ -775,6 +775,7 @@ def signals_group():
 @signals_group.command("consume")
 def consume_signals():
     """Runs a continuous process that consumes signals from the specified plugin."""
+    import time
     import concurrent.futures
 
     from dispatch.common.utils.cli import install_plugins
@@ -795,20 +796,23 @@ def consume_signals():
         session = sessionmaker(bind=schema_engine)()
 
         projects = project_service.get_all(db_session=session)
-        for project in projects:
-            plugins = plugin_service.get_active_instances(
-                db_session=session, plugin_type="signal-consumer", project_id=project.id
-            )
-
-            if not plugins:
-                log.warning(
-                    f"No signals consumed. No signal-consumer plugins enabled. Project: {project.name}. Organization: {project.organization.name}"
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            for project in projects:
+                plugins = plugin_service.get_active_instances(
+                    db_session=session, plugin_type="signal-consumer", project_id=project.id
                 )
 
-            for plugin in plugins:
-                log.debug(f"Consuming signals for plugin {plugin.plugin.slug}")
-                with concurrent.futures.ProcessPoolExecutor() as executor:
-                    executor.submit(plugin.instance.consume, session, project)
+                if not plugins:
+                    log.warning(
+                        f"No signals consumed. No signal-consumer plugins enabled. Project: {project.name}. Organization: {project.organization.name}"
+                    )
+
+                    for plugin in plugins:
+                        log.debug(f"Consuming signals for plugin: {plugin.plugin.slug}")
+                        executor.submit(plugin.instance.consume, session, project)
+
+    # if no plugins are configured, we sleep for 10 minutes
+    time.sleep(600)
 
 
 @signals_group.command("process")
