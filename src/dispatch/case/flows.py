@@ -197,6 +197,7 @@ def case_new_create_flow(
         individual_participants=individual_participants,
         team_participants=team_participants,
         conversation_target=conversation_target,
+        create_resources=create_resources,
     )
     if not create_resources:
         # we still want to update the ticket, but not twice if resources are created
