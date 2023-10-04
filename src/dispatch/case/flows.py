@@ -191,6 +191,8 @@ def case_new_create_flow(
         case=case, db_session=db_session
     )
 
+    # NOTE: we create all external resources for a Case unless it's
+    # created from a Signal, as it gets expensive when we have lots of them.
     case_create_resources_flow(
         db_session=db_session,
         case_id=case.id,
