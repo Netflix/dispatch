@@ -177,7 +177,7 @@ def case_new_create_flow(
     conversation_target: str = None,
     service_id: int = None,
     db_session: Session,
-    create_resources: bool = True,
+    create_all_resources: bool = True,
 ):
     """Runs the case new creation flow."""
     # we get the case
@@ -197,11 +197,8 @@ def case_new_create_flow(
         individual_participants=individual_participants,
         team_participants=team_participants,
         conversation_target=conversation_target,
-        create_resources=create_resources,
+        create_all_resources=create_all_resources,
     )
-    if not create_resources:
-        # we still want to update the ticket, but not twice if resources are created
-        ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
     if case.case_priority.page_assignee:
         if not service_id:
@@ -613,7 +610,7 @@ def case_create_resources_flow(
     individual_participants: List[str],
     team_participants: List[str],
     conversation_target: str = None,
-    create_resources: bool = True,
+    create_all_resources: bool = True,
 ) -> None:
     """Runs the case resource creation flow."""
     case = get(db_session=db_session, case_id=case_id)
@@ -621,7 +618,7 @@ def case_create_resources_flow(
     if case.assignee:
         individual_participants.append((case.assignee.individual, None))
 
-    if create_resources:
+    if create_all_resources:
         # we create the tactical group
         direct_participant_emails = [i.email for i, _ in individual_participants]
 
@@ -663,9 +660,6 @@ def case_create_resources_flow(
         document_flows.update_document(
             document=case.case_document, project_id=case.project.id, db_session=db_session
         )
-
-        # we update the ticket
-        ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
     try:
         # we create the conversation and add participants to the thread
@@ -711,3 +705,6 @@ def case_create_resources_flow(
             case_id=case.id,
         )
         log.exception(e)
+
+    # we update the ticket
+    ticket_flows.update_case_ticket(case=case, db_session=db_session)
