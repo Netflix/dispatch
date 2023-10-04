@@ -120,7 +120,7 @@
               color="blue"
               @change="updateExperimentalFeatures()"
               :label="currentUser().experimental_features ? 'Enabled' : 'Disabled'"
-            ></v-switch>
+            />
             <v-divider />
             <v-subheader>Organizations</v-subheader>
             <v-list-item v-for="(item, i) in organizations" :key="i">
