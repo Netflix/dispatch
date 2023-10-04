@@ -198,8 +198,9 @@ def case_new_create_flow(
         team_participants=team_participants,
         conversation_target=conversation_target,
     )
-    # we still want to update the ticket, but not twice if resources are created
-    ticket_flows.update_case_ticket(case=case, db_session=db_session)
+    if not create_resources:
+        # we still want to update the ticket, but not twice if resources are created
+        ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
     if case.case_priority.page_assignee:
         if not service_id:
