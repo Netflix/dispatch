@@ -191,15 +191,14 @@ def case_new_create_flow(
         case=case, db_session=db_session
     )
 
-    if create_resources:
-        case_create_resources_flow(
-            db_session=db_session,
-            case_id=case.id,
-            individual_participants=individual_participants,
-            team_participants=team_participants,
-            conversation_target=conversation_target,
-        )
-    else:
+    case_create_resources_flow(
+        db_session=db_session,
+        case_id=case.id,
+        individual_participants=individual_participants,
+        team_participants=team_participants,
+        conversation_target=conversation_target,
+    )
+    if not create_resources:
         # we still want to update the ticket, but not twice if resources are created
         ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
