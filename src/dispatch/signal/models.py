@@ -363,11 +363,12 @@ class AdditionalMetadata(DispatchBase):
 
 
 class SignalInstanceBase(DispatchBase):
-    project: ProjectRead
+    project: Optional[ProjectRead]
     case: Optional[CaseReadMinimal]
     canary: Optional[bool] = False
     entities: Optional[List[EntityRead]] = []
     raw: dict[str, Any]
+    external_id: Optional[str]
     filter_action: SignalFilterAction = None
     created_at: Optional[datetime] = None
 

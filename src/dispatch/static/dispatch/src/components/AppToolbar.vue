@@ -120,7 +120,7 @@
               color="blue"
               @change="updateExperimentalFeatures()"
               :label="currentUser().experimental_features ? 'Enabled' : 'Disabled'"
-            ></v-switch>
+            />
             <v-divider />
             <v-subheader>Organizations</v-subheader>
             <v-list-item v-for="(item, i) in organizations" :key="i">
@@ -196,7 +196,11 @@ export default {
       UserApi.getUserInfo()
         .then((response) => {
           let userId = response.data.id
-          UserApi.update(userId, { id: userId, experimental_features: this.experimental_features })
+          let newUserExperimentalFeatures = this.currentUser().experimental_features
+          UserApi.update(userId, {
+            id: userId,
+            experimental_features: newUserExperimentalFeatures,
+          })
         })
         .catch((error) => {
           console.error("Error occurred while updating experimental features: ", error)

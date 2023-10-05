@@ -18,6 +18,15 @@ from dispatch.service import service as service_service
 from dispatch.tag import service as tag_service
 from dispatch.workflow import service as workflow_service
 from dispatch.entity.models import Entity
+from sqlalchemy.exc import IntegrityError
+from dispatch.entity_type.models import EntityScopeEnum
+from dispatch.entity import service as entity_service
+
+from .exceptions import (
+    SignalNotDefinedException,
+    SignalNotEnabledException,
+    SignalNotIdentifiedException,
+)
 
 from .models import (
     Signal,
@@ -107,6 +116,58 @@ def get_signal_engagement_by_name_or_raise(
             model=SignalEngagementRead,
         )
     return signal_engagement
+
+
+def create_signal_instance(*, db_session: Session, signal_instance_in: SignalInstanceCreate):
+    if not signal_instance_in.signal:
+        external_id = signal_instance_in.external_id
+
+        # this assumes the external_ids are uuids
+        if external_id:
+            signal = (
+                db_session.query(Signal).filter(Signal.external_id == external_id).one_or_none()
+            )
+            signal_instance_in.signal = signal
+        else:
+            msg = "An externalId must be provided."
+            raise SignalNotIdentifiedException(msg)
+
+    if not signal:
+        msg = f"No signal definition found. ExternalId: {external_id}"
+        raise SignalNotDefinedException(msg)
+
+    if not signal.enabled:
+        msg = f"Signal definition not enabled. SignalName: {signal.name} ExternalId: {signal.external_id}"
+        raise SignalNotEnabledException(msg)
+
+    try:
+        signal_instance = create_instance(
+            db_session=db_session, signal_instance_in=signal_instance_in
+        )
+        signal_instance.signal = signal
+        db_session.commit()
+    except IntegrityError:
+        db_session.rollback()
+        signal_instance = update_instance(
+            db_session=db_session, signal_instance_in=signal_instance_in
+        )
+        # Note: we can do this because it's still relatively cheap, if we add more logic here
+        # this will need to be moved to a background function (similar to case creation)
+        # fetch `all` entities that should be associated with all signal definitions
+        entity_types = entity_type_service.get_all(
+            db_session=db_session, scope=EntityScopeEnum.all
+        ).all()
+        entity_types = signal_instance.signal.entity_types + entity_types
+
+        if entity_types:
+            entities = entity_service.find_entities(
+                db_session=db_session,
+                signal_instance=signal_instance,
+                entity_types=entity_types,
+            )
+            signal_instance.entities = entities
+            db_session.commit()
+    return signal_instance
 
 
 def create_signal_filter(
@@ -451,6 +512,7 @@ def create_instance(
                 "project",
                 "entities",
                 "raw",
+                "external_id",
             }
         ),
         raw=json.loads(json.dumps(signal_instance_in.raw)),

@@ -147,7 +147,7 @@ def signal_instance_create_flow(
         service_id=None,
         conversation_target=conversation_target,
         case_id=case.id,
-        create_resources=False,
+        create_all_resources=False,
     )
 
     if signal_instance.signal.engagements and entities:

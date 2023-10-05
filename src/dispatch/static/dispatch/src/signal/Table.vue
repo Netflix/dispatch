@@ -42,6 +42,9 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
+            <template #item.create_case="{ item }">
+              <v-simple-checkbox v-model="item.create_case" disabled />
+            </template>
             <template #item.enabled="{ item }">
               <v-simple-checkbox v-model="item.enabled" disabled />
             </template>
@@ -118,6 +121,7 @@ export default {
         { text: "Name", value: "name", align: "left", width: "10%" },
         { text: "Variant", value: "variant", sortable: true },
         { text: "Description", value: "description", sortable: false },
+        { text: "Create Case", value: "create_case", sortable: true, width: "100px" },
         { text: "Enabled", value: "enabled", sortable: true },
         { text: "Owner", value: "owner" },
         { text: "Case Type", value: "case_type" },
