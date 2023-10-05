@@ -983,7 +983,9 @@ def handle_add_timeline_event_command(
         description = (
             re.match("DESC\\s*(.+?)(?: DATE|$|TIME)", body["text"], re.IGNORECASE).group(1)
         ).strip()
-    if re.match(".*DATE\\s*(\\d{4}\\-\\d{2}\\-\\d{2})(?: TIME|$|DESC)", body["text"], re.IGNORECASE):
+    if re.match(
+        ".*DATE\\s*(\\d{4}\\-\\d{2}\\-\\d{2})(?: TIME|$|DESC)", body["text"], re.IGNORECASE
+    ):
         date = (
             re.match(
                 ".*DATE\\s*(\\d{4}\\-\\d{2}\\-\\d{2})(?: TIME|$|DESC)", body["text"], re.IGNORECASE
