@@ -371,9 +371,7 @@ def update_custom_event(
             }
         )
     else:
-        event_in.details = (
-            {"updated_by": current_user.email, "updated_on": str(datetime.utcnow())}
-        )
+        event_in.details = {"updated_by": current_user.email, "updated_on": str(datetime.utcnow())}
     """Updates a custom event."""
     background_tasks.add_task(
         event_flows.update_incident_event,
