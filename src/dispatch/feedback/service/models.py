@@ -29,6 +29,9 @@ class ServiceFeedback(TimeStampMixin, FeedbackMixin, Base):
     individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))
     individual = relationship("IndividualContact")
 
+    project_id = Column(Integer, ForeignKey("project.id"))
+    project = relationship("Project")
+
     search_vector = Column(
         TSVectorType(
             "feedback",
@@ -36,10 +39,6 @@ class ServiceFeedback(TimeStampMixin, FeedbackMixin, Base):
             regconfig="pg_catalog.simple",
         )
     )
-
-    @hybrid_property
-    def project(self):
-        return self.individual.project
 
 
 # Pydantic models
@@ -51,6 +50,7 @@ class ServiceFeedbackBase(DispatchBase):
     schedule: Optional[str]
     shift_end_at: Optional[datetime]
     shift_start_at: Optional[datetime]
+    project: Optional[ProjectRead]
 
 
 class ServiceFeedbackCreate(ServiceFeedbackBase):

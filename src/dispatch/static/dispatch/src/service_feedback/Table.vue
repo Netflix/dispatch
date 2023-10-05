@@ -3,10 +3,12 @@
     <delete-dialog />
     <v-row no-gutters>
       <v-col>
-        <div class="headline">Incident feedback</div>
+        <div class="headline">Service feedback</div>
       </v-col>
-      <v-col class="text-right">
-        <table-filter-dialog :projects="defaultUserProjects" />
+    </v-row>
+    <v-row align="center" justify="space-between" no-gutters>
+      <v-col cols="8">
+        <settings-breadcrumbs v-model="project" />
       </v-col>
     </v-row>
     <v-row no-gutters>
@@ -77,15 +79,13 @@ import { mapActions } from "vuex"
 import DeleteDialog from "@/feedback/DeleteDialog.vue"
 import Participant from "@/incident/Participant.vue"
 import RouterUtils from "@/router/utils"
-import TableFilterDialog from "@/feedback/TableFilterDialog.vue"
 
 export default {
-  name: "FeedbackTable",
+  name: "ServiceFeedbackTable",
 
   components: {
     DeleteDialog,
     Participant,
-    TableFilterDialog,
   },
 
   data() {

@@ -25,6 +25,7 @@ from dispatch.incident import service as incident_service
 from dispatch.participant import service as participant_service
 from dispatch.feedback.service.reminder import service as reminder_service
 from dispatch.plugin import service as plugin_service
+from dispatch.project import service as project_service
 from dispatch.plugins.dispatch_slack.bolt import app
 from dispatch.plugins.dispatch_slack.fields import static_select_block
 from dispatch.plugins.dispatch_slack.middleware import (
@@ -409,6 +410,8 @@ def handle_oncall_shift_feedback_submission_event(
         )
     )
 
+    project = project_service.get(db_session=db_session, project_id=project_id)
+
     service_feedback = feedback_service.ServiceFeedbackCreate(
         feedback=feedback,
         hours=hours,
@@ -417,6 +420,7 @@ def handle_oncall_shift_feedback_submission_event(
         schedule=schedule_id,
         shift_end_at=shift_end_at,
         shift_start_at=None,
+        project=project,
     )
 
     service_feedback = feedback_service.create(

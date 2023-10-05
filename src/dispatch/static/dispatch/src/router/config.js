@@ -288,8 +288,14 @@ export const protectedRoute = [
         {
           path: "/:organization/feedback",
           name: "FeedbackTable",
-          meta: { title: "Feedback" },
+          meta: { title: "Incident feedback", group: "feedback" },
           component: () => import("@/feedback/Table.vue"),
+        },
+        {
+          path: "/:organization/service-feedback",
+          name: "ServiceFeedbackTable",
+          meta: { title: "Service feedback", group: "feedback" },
+          component: () => import("@/service_feedback/Table.vue"),
         },
       ],
     },
