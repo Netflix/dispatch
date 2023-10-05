@@ -19,7 +19,7 @@
         <span class="headline">Timeline Filters</span>
       </v-card-title>
       <v-card-subtitle class="subtitle_top">
-        Do <b>not show</b> the following types of events
+        Only show the following types of events
       </v-card-subtitle>
       <v-list dense>
         <v-list-item>
@@ -85,6 +85,13 @@
 import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
 
+function invertBooleanValues(obj) {
+  return Object.keys(obj).reduce((acc, key) => {
+    acc[key] = !obj[key]
+    return acc
+  }, {})
+}
+
 export default {
   name: "IncidentTimelineFilterDialog",
 
@@ -101,11 +108,11 @@ export default {
     return {
       display: false,
       local_filters: {
-        field_updates: true,
-        assessment_updates: false,
-        user_curated_events: false,
-        participant_updates: true,
-        other_events: true,
+        field_updates: false,
+        assessment_updates: true,
+        user_curated_events: true,
+        participant_updates: false,
+        other_events: false,
       },
     }
   },
@@ -119,7 +126,7 @@ export default {
 
   methods: {
     applyFilters() {
-      this.timeline_filters = structuredClone(this.local_filters)
+      this.timeline_filters = invertBooleanValues(this.local_filters)
       this.display = false
     },
   },
@@ -130,7 +137,7 @@ export default {
       () => {
         if (this.display) {
           // copy actual to local on dialog show
-          this.local_filters = structuredClone(this.timeline_filters)
+          this.local_filters = invertBooleanValues(this.timeline_filters)
         }
       }
     )
