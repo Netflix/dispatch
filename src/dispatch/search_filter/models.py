@@ -48,18 +48,22 @@ class SearchFilter(Base, ProjectMixin, TimeStampMixin):
 # Pydantic models...
 class IndividualContactRead(DispatchBase):
     id: Optional[PrimaryKey]
+    name: str
 
 
 class TeamRead(DispatchBase):
     id: Optional[PrimaryKey]
+    name: str
 
 
 class ServiceRead(DispatchBase):
     id: Optional[PrimaryKey]
+    name: str
 
 
 class NotificationRead(DispatchBase):
     id: Optional[PrimaryKey]
+    name: str
 
 
 class SearchFilterBase(DispatchBase):
