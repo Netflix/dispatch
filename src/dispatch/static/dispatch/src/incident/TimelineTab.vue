@@ -41,7 +41,7 @@
         :icon="iconItem(event)"
         :key="event.id"
         class="mb-4"
-        :class="isEditable(event) ? 'custom-event' : null"
+        :class="classType(event)"
         color="blue"
       >
         <v-row justify="space-between">
@@ -62,13 +62,39 @@
             </div>
           </v-col>
           <v-col cols="1">
-            <div :v-if="isEditable(event)" class="custom-event-edit">
+            <div v-if="isEditable(event)" class="custom-event-edit">
               <v-btn plain small @click="showEditEventDialog(event)">
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
               <br />
+              <v-btn plain small @click="togglePin(event)">
+                <v-hover v-slot="{ hover }">
+                  <v-icon v-if="!isPinned(event)">mdi-pin-outline</v-icon>
+                  <v-icon v-else-if="hover && isPinned(event)">mdi-pin-off</v-icon>
+                  <v-icon v-else-if="!hover && isPinned(event)">mdi-pin</v-icon>
+                </v-hover>
+              </v-btn>
+              <br />
               <v-btn plain small @click="showDeleteEventDialog(event)">
                 <v-icon>mdi-trash-can</v-icon>
+              </v-btn>
+            </div>
+            <div v-if="isPinned(event) && !isEditable(event)" class="pinned-event">
+              <v-btn plain small @click="togglePin(event)">
+                <v-hover v-slot="{ hover }">
+                  <v-icon v-if="hover">mdi-pin-off</v-icon>
+                  <v-icon v-else>mdi-pin</v-icon>
+                </v-hover>
+              </v-btn>
+            </div>
+            <div v-if="isPinned(event) && isEditable(event)" class="pinned-custom-event">
+              <v-btn plain small @click="togglePin(event)">
+                <v-icon>mdi-pin</v-icon>
+              </v-btn>
+            </div>
+            <div v-else-if="!isPinned(event) && !isEditable(event)" class="pinned-event">
+              <v-btn plain small @click="togglePin(event)">
+                <v-icon>mdi-pin-outline</v-icon>
               </v-btn>
             </div>
           </v-col>
@@ -169,6 +195,7 @@ export default {
       "showEditEventDialog",
       "showDeleteEventDialog",
       "showNewPreEventDialog",
+      "togglePin",
     ]),
     exportToCSV() {
       this.exportLoading = true
@@ -190,16 +217,16 @@ export default {
       )
       this.exportLoading = false
     },
-    showItem(item) {
-      if (item.description == "Incident created") return true
-      return !this.timeline_filters[eventTypeToFilter[item.type]]
+    showItem(event) {
+      if (event.pinned) return true
+      return !this.timeline_filters[eventTypeToFilter[event.type]]
     },
-    iconItem(item) {
-      if (item.description == "Incident created") return "mdi-flare"
-      return eventTypeToIcon[item.type]
+    iconItem(event) {
+      if (event.description == "Incident created") return "mdi-flare"
+      return eventTypeToIcon[event.type]
     },
-    extractOwner(item) {
-      if (item.owner != null && item.owner != "") return item.owner
+    extractOwner(event) {
+      if (event.owner != null && event.owner != "") return event.owner
       return "Dispatch"
     },
     countHidden() {
@@ -212,6 +239,15 @@ export default {
     },
     isEditable(event) {
       return event.type == "Custom event" || event.type == "Imported message"
+    },
+    classType(event) {
+      if (event.type == "Custom event" || event.type == "Imported message") {
+        return "custom-event"
+      }
+      return "pinned-event"
+    },
+    isPinned(event) {
+      return event.pinned
     },
   },
 }

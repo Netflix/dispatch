@@ -371,7 +371,7 @@ def update_custom_event(
             }
         )
     else:
-        event_in.details.update(
+        event_in.details = (
             {"updated_by": current_user.email, "updated_on": str(datetime.utcnow())}
         )
     """Updates a custom event."""

@@ -210,6 +210,7 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
         },
         incident_id=incident.id,
         owner=reporter_name,
+        pinned=True,
     )
 
     # add reporter

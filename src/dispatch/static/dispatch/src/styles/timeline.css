@@ -66,9 +66,31 @@
   display: block;
   z-index: 100;
   position: absolute;
-  margin-top: -12px;
+  margin-top: -17px;
+}
+
+.pinned-event-edit {
+  display: none;
+}
+
+.pinned-event:hover .pinned-event-edit {
+  display: block;
+  z-index: 100;
+  position: absolute;
+  margin-top: 10px;
 }
 
 .not-a-custom-event {
   height: 20px;
+}
+
+.pinned-custom-event {
+  display: block;
+  z-index: 101;
+  position: absolute;
+  margin-top: 10px;
+}
+
+.custom-event:hover .pinned-custom-event {
+  display: none !important;
 }

@@ -18,7 +18,9 @@
       <v-card-title>
         <span class="headline">Timeline Filters</span>
       </v-card-title>
-      <v-card-subtitle class="subtitle_top"> Hide the following types of events </v-card-subtitle>
+      <v-card-subtitle class="subtitle_top">
+        Do <b>not show</b> the following types of events
+      </v-card-subtitle>
       <v-list dense>
         <v-list-item>
           <v-list-item-content class="pl-5 pt-5">

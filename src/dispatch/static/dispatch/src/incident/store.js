@@ -268,6 +268,21 @@ const actions = {
     state.selected.currentEvent = event
     commit("SET_DIALOG_DELETE_EVENT", true)
   },
+  togglePin({ commit }, event) {
+    state.selected.currentEvent = event
+    state.selected.currentEvent.pinned = !state.selected.currentEvent.pinned
+    IncidentApi.updateEvent(state.selected.id, state.selected.currentEvent).then(() => {
+      IncidentApi.get(state.selected.id).then((response) => {
+        commit("SET_SELECTED", response.data)
+      })
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "Event updated successfully.", type: "success" },
+        { root: true }
+      )
+    })
+    commit("SET_DIALOG_EDIT_EVENT", false)
+  },
   closeDeleteEventDialog({ commit }) {
     commit("SET_DIALOG_DELETE_EVENT", false)
   },
