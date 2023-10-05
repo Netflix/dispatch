@@ -1,3 +1,5 @@
+import logging
+
 from datetime import datetime, date
 from schedule import every
 
@@ -13,6 +15,9 @@ from .service import (
 )
 
 
+log = logging.getLogger(__name__)
+
+
 @scheduler.add(every(1).day.at("18:00"), name="case-close-reminder")
 @timer
 @scheduled_project_task
@@ -23,12 +28,16 @@ def case_close_reminder(db_session: SessionLocal, project: Project):
     )
 
     for case in cases:
-        span = datetime.utcnow() - case.triage_at
-        q, r = divmod(span.days, 7)
-        if q >= 1 and date.today().isoweekday() == 1:
-            # we only send the reminder for cases that have been triaging
-            # longer than a week and only on Mondays
-            send_case_close_reminder(case, db_session)
+        try:
+            span = datetime.utcnow() - case.triage_at
+            q, r = divmod(span.days, 7)
+            if q >= 1 and date.today().isoweekday() == 1:
+                # we only send the reminder for cases that have been triaging
+                # longer than a week and only on Mondays
+                send_case_close_reminder(case, db_session)
+        except Exception as e:
+            # if one fails we don't want all to fail
+            log.exception(e)
 
 
 @scheduler.add(every(1).day.at("18:00"), name="case-triage-reminder")
