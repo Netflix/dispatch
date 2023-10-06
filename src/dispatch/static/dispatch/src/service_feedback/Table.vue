@@ -34,7 +34,10 @@
             loading-text="Loading... Please wait"
           >
             <template #item.individual="{ item }">
-              <participant v-if="item.individual" :participant="convertToParticipant(item.individual)" />
+              <participant
+                v-if="item.individual"
+                :participant="convertToParticipant(item.individual)"
+              />
             </template>
             <template #item.created_at="{ item }">
               <v-tooltip bottom>

@@ -26,9 +26,7 @@ def create(*, service_feedback_in: ServiceFeedbackCreate, db_session: Session) -
         None if not service_feedback_in.individual else service_feedback_in.individual.id
     )
 
-    project_id = (
-        None if not service_feedback_in.project else service_feedback_in.project.id
-    )
+    project_id = None if not service_feedback_in.project else service_feedback_in.project.id
 
     service_feedback = ServiceFeedback(
         **service_feedback_in.dict(exclude={"individual", "project"}),
