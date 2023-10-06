@@ -77,10 +77,14 @@ click==8.1.7
     #   schemathesis
     #   typer
     #   uvicorn
+cloudpathlib==0.15.1
+    # via weasel
 colorama==0.4.6
     # via schemathesis
 confection==0.1.1
-    # via thinc
+    # via
+    #   thinc
+    #   weasel
 cryptography==39.0.2
     # via
     #   -r requirements-base.in
@@ -255,6 +259,7 @@ packaging==23.1
     #   spacy
     #   statsmodels
     #   thinc
+    #   weasel
 pandas==2.1.1
     # via
     #   -r requirements-base.in
@@ -304,6 +309,7 @@ pydantic==1.10.13
     #   fastapi
     #   spacy
     #   thinc
+    #   weasel
 pyjwt[crypto]==2.8.0
     # via
     #   msal
@@ -357,6 +363,7 @@ requests==2.31.0
     #   schemathesis
     #   spacy
     #   starlette-testclient
+    #   weasel
 requests-oauthlib==1.3.1
     # via
     #   atlassian-python-api
@@ -411,6 +418,7 @@ smart-open==6.3.0
     # via
     #   pathy
     #   spacy
+    #   weasel
 sniffio==1.3.0
     # via
     #   anyio
@@ -418,7 +426,7 @@ sniffio==1.3.0
     #   httpx
 sortedcontainers==2.4.0
     # via hypothesis
-spacy==3.6.1
+spacy==3.7.1
     # via -r requirements-base.in
 spacy-legacy==3.0.12
     # via spacy
@@ -439,6 +447,7 @@ srsly==2.4.7
     #   confection
     #   spacy
     #   thinc
+    #   weasel
 starlette==0.27.0
     # via
     #   fastapi
@@ -468,6 +477,7 @@ typer==0.9.0
     # via
     #   pathy
     #   spacy
+    #   weasel
 typing-extensions==4.7.1
     # via
     #   alembic
@@ -497,6 +507,9 @@ wasabi==1.1.2
     # via
     #   spacy
     #   thinc
+    #   weasel
+weasel==0.3.2
+    # via spacy
 werkzeug==2.3.7
     # via schemathesis
 wrapt==1.15.0
