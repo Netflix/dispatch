@@ -25,6 +25,7 @@ export var opts = {
         gray8: "#F0F0F0",
         gray9: "#FAFAFA",
         white: "#FFFFFF",
+        borderline: "#E4E4E4",
       },
       dark: {
         primary: "#E50914",
@@ -49,7 +50,11 @@ export var opts = {
         gray8: "#F0F0F0",
         gray9: "#FAFAFA",
         white: "#FFFFFF",
+        borderline: "#404040",
       },
+    },
+    options: {
+      customProperties: true,
     },
   },
 }

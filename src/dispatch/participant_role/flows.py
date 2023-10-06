@@ -5,6 +5,7 @@ from dispatch.database.core import SessionLocal, get_table_name_by_class_instanc
 from dispatch.event import service as event_service
 from dispatch.participant import service as participant_service
 from dispatch.participant_role.models import ParticipantRoleType
+from dispatch.enums import EventType
 
 from .service import get_all_active_roles, add_role, renounce_role
 
@@ -58,6 +59,7 @@ def assign_role_flow(
             source="Dispatch Core App",
             description=f"{assignee_participant.individual.name} has been assigned the role of {assignee_role}",
             incident_id=subject.id,
+            type=EventType.participant_updated,
         )
 
         return "role_assigned"
@@ -143,6 +145,7 @@ def assign_role_flow(
                 source="Dispatch Core App",
                 description=f"{assignee_participant.individual.name} has been assigned the role of {assignee_role}",
                 incident_id=subject.id,
+                type=EventType.participant_updated,
             )
         if subject_type == "case":
             event_service.log_case_event(
