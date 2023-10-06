@@ -193,6 +193,8 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
     db_session.add(incident)
     db_session.commit()
 
+    reporter_name = incident_in.reporter.individual.name if incident_in.reporter else ""
+
     event_service.log_incident_event(
         db_session=db_session,
         source="Dispatch Core App",
@@ -207,6 +209,8 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
             "visibility": incident.visibility,
         },
         incident_id=incident.id,
+        owner=reporter_name,
+        pinned=True,
     )
 
     # add reporter
