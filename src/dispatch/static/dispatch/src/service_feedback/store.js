@@ -21,7 +21,6 @@ const state = {
     ...getDefaultSelectedState(),
   },
   dialogs: {
-    showCreateEdit: false,
     showRemove: false,
   },
   table: {
@@ -35,6 +34,9 @@ const state = {
       itemsPerPage: 10,
       sortBy: ["created_at"],
       descending: [true],
+      filters: {
+        project: [],
+      },
     },
     loading: false,
   },
@@ -49,30 +51,31 @@ const actions = {
     commit("SET_TABLE_LOADING", "primary")
     let params = SearchUtils.createParametersFromTableOptions(
       { ...state.table.options },
-      "Feedback"
+      "ServiceFeedback"
     )
     return ServiceFeedbackApi.getAll(params).then((response) => {
       commit("SET_TABLE_LOADING", false)
       commit("SET_TABLE_ROWS", response.data)
     })
   }, 500),
-  createEditShow({ commit }, feedback) {
-    commit("SET_DIALOG_CREATE_EDIT", true)
-    if (feedback) {
-      commit("SET_SELECTED", feedback)
-    }
-  },
   removeShow({ commit }, feedback) {
     commit("SET_DIALOG_DELETE", true)
     commit("SET_SELECTED", feedback)
   },
-  closeCreateEdit({ commit }) {
-    commit("SET_DIALOG_CREATE_EDIT", false)
-    commit("RESET_SELECTED")
-  },
   closeRemove({ commit }) {
     commit("SET_DIALOG_DELETE", false)
     commit("RESET_SELECTED")
+  },
+  remove({ commit, dispatch }) {
+    return ServiceFeedbackApi.delete(state.selected.id).then(function () {
+      dispatch("closeRemove")
+      dispatch("getAll")
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "Feedback deleted successfully.", type: "success" },
+        { root: true }
+      )
+    })
   },
 }
 
@@ -86,9 +89,6 @@ const mutations = {
   },
   SET_TABLE_ROWS(state, value) {
     state.table.rows = value
-  },
-  SET_DIALOG_CREATE_EDIT(state, value) {
-    state.dialogs.showCreateEdit = value
   },
   SET_DIALOG_DELETE(state, value) {
     state.dialogs.showRemove = value

@@ -51,6 +51,7 @@ class ServiceFeedbackBase(DispatchBase):
     shift_end_at: Optional[datetime]
     shift_start_at: Optional[datetime]
     project: Optional[ProjectRead]
+    created_at: Optional[datetime]
 
 
 class ServiceFeedbackCreate(ServiceFeedbackBase):

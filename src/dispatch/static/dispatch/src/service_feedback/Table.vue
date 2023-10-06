@@ -5,10 +5,8 @@
       <v-col>
         <div class="headline">Service feedback</div>
       </v-col>
-    </v-row>
-    <v-row align="center" justify="space-between" no-gutters>
-      <v-col cols="8">
-        <settings-breadcrumbs v-model="project" />
+      <v-col class="text-right">
+        <table-filter-dialog :projects="defaultUserProjects" />
       </v-col>
     </v-row>
     <v-row no-gutters>
@@ -35,6 +33,9 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
+            <template #item.individual="{ item }">
+              <participant v-if="item.individual" :participant="convertToParticipant(item.individual)" />
+            </template>
             <template #item.created_at="{ item }">
               <v-tooltip bottom>
                 <template #activator="{ on, attrs }">
@@ -73,9 +74,10 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
-import DeleteDialog from "@/feedback/DeleteDialog.vue"
+import DeleteDialog from "@/service_feedback/DeleteDialog.vue"
 import Participant from "@/incident/Participant.vue"
 import RouterUtils from "@/router/utils"
+import TableFilterDialog from "@/service_feedback/TableFilterDialog.vue"
 
 export default {
   name: "ServiceFeedbackTable",
@@ -83,6 +85,7 @@ export default {
   components: {
     DeleteDialog,
     Participant,
+    TableFilterDialog,
   },
 
   data() {
@@ -90,7 +93,7 @@ export default {
       headers: [
         { text: "Shift End At", value: "shift_end_at", sortable: true },
         { text: "Participant", value: "individual", sortable: true },
-        { text: "After Hours", value: "hours", sortable: true },
+        { text: "Post-Shift Hours", value: "hours", sortable: true },
         { text: "Rating", value: "rating", sortable: true },
         { text: "Feedback", value: "feedback", sortable: true },
         { text: "Project", value: "project.name", sortable: false },
@@ -101,12 +104,13 @@ export default {
   },
 
   computed: {
-    ...mapFields("feedback", [
+    ...mapFields("service_feedback", [
       "table.options.q",
       "table.options.page",
       "table.options.itemsPerPage",
       "table.options.sortBy",
       "table.options.descending",
+      "table.options.filters.project",
       "table.loading",
       "table.rows.items",
       "table.rows.total",
@@ -127,10 +131,24 @@ export default {
   },
 
   methods: {
-    ...mapActions("service-feedback", ["getAll", "removeShow"]),
+    ...mapActions("service_feedback", ["getAll", "removeShow"]),
+    convertToParticipant(individual) {
+      return {
+        individual: {
+          name: individual.name,
+          email: individual.email,
+        },
+      }
+    },
   },
 
   created() {
+    this.filters = {
+      ...this.filters,
+      ...RouterUtils.deserializeFilters(this.query),
+      project: this.defaultUserProjects,
+    }
+
     this.getAll()
 
     this.$watch(
@@ -141,17 +159,7 @@ export default {
     )
 
     this.$watch(
-      (vm) => [
-        vm.q,
-        vm.itemsPerPage,
-        vm.sortBy,
-        vm.descending,
-        vm.incident,
-        vm.rating,
-        vm.feedback,
-        vm.project,
-        vm.participant,
-      ],
+      (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending, vm.project],
       () => {
         this.page = 1
         RouterUtils.updateURLFilters(this.filters)

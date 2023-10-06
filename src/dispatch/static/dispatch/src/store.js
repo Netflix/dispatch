@@ -30,6 +30,7 @@ import reference from "@/document/reference/store"
 import runbook from "@/document/runbook/store"
 import search from "@/search/store"
 import service from "@/service/store"
+import service_feedback from "@/service_feedback/store"
 import signal from "@/signal/store"
 import signalEngagement from "@/signal/engagement/store"
 import signalFilter from "@/signal/filter/store"
@@ -85,6 +86,7 @@ export default new Vuex.Store({
     runbook,
     search,
     service,
+    service_feedback,
     source,
     sourceDataFormat,
     sourceEnvironment,
