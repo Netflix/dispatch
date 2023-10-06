@@ -67,7 +67,7 @@
                 <template v-for="individual in individuals">
                   <v-list-item :key="individual.id">
                     <v-list-item-content>
-                      <v-list-item-title>{{ individual.name }}</v-list-item-title>
+                      <incident-participant :participant="convertToParticipant(individual)" />
                     </v-list-item-content>
                   </v-list-item>
                 </template>
@@ -118,6 +118,7 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationProvider, ValidationObserver, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
+import IncidentParticipant from "@/incident/Participant.vue"
 
 extend("required", {
   ...required,
@@ -130,6 +131,7 @@ export default {
   components: {
     ValidationProvider,
     ValidationObserver,
+    IncidentParticipant,
   },
 
   computed: {
@@ -149,6 +151,14 @@ export default {
 
   methods: {
     ...mapActions("search", ["closeCreateEdit", "save"]),
+    convertToParticipant(individual) {
+      return {
+        individual: {
+          name: individual.name,
+          email: individual.email,
+        },
+      }
+    },
   },
 }
 </script>

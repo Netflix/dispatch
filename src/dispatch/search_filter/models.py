@@ -49,6 +49,7 @@ class SearchFilter(Base, ProjectMixin, TimeStampMixin):
 class IndividualContactRead(DispatchBase):
     id: Optional[PrimaryKey]
     name: str
+    email: str
 
 
 class TeamRead(DispatchBase):
