@@ -35,9 +35,6 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #item.participant="{ item }">
-              <participant v-if="item.participant" :participant="item.participant" />
-            </template>
             <template #item.created_at="{ item }">
               <v-tooltip bottom>
                 <template #activator="{ on, attrs }">
@@ -91,9 +88,9 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Incident Name", value: "incident.name", sortable: false },
-        { text: "Incident Title", value: "incident.title", sortable: false },
-        { text: "Participant", value: "participant", sortable: true },
+        { text: "Shift End At", value: "shift_end_at", sortable: true },
+        { text: "Participant", value: "individual", sortable: true },
+        { text: "After Hours", value: "hours", sortable: true },
         { text: "Rating", value: "rating", sortable: true },
         { text: "Feedback", value: "feedback", sortable: true },
         { text: "Project", value: "project.name", sortable: false },
@@ -110,12 +107,6 @@ export default {
       "table.options.itemsPerPage",
       "table.options.sortBy",
       "table.options.descending",
-      "table.options.filters",
-      "table.options.filters.incident",
-      "table.options.filters.rating",
-      "table.options.filters.feedback",
-      "table.options.filters.participant",
-      "table.options.filters.project",
       "table.loading",
       "table.rows.items",
       "table.rows.total",
@@ -136,16 +127,10 @@ export default {
   },
 
   methods: {
-    ...mapActions("feedback", ["getAll", "removeShow"]),
+    ...mapActions("service-feedback", ["getAll", "removeShow"]),
   },
 
   created() {
-    this.filters = {
-      ...this.filters,
-      ...RouterUtils.deserializeFilters(this.query),
-      project: this.defaultUserProjects,
-    }
-
     this.getAll()
 
     this.$watch(
