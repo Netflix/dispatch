@@ -1,5 +1,9 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 
+from dispatch.auth.permissions import (
+    OrganizationAdminPermission,
+    PermissionsDependency,
+)
 from dispatch.database.core import DbSession
 from dispatch.database.service import search_filter_sort_paginate, CommonParameters
 from dispatch.models import PrimaryKey
@@ -17,10 +21,10 @@ def get_feedback_entries(commons: CommonParameters):
     return search_filter_sort_paginate(model="ServiceFeedback", **commons)
 
 
-@router.get("/{feedback_id}", response_model=ServiceFeedbackRead)
-def get_feedback(db_session: DbSession, feedback_id: PrimaryKey):
+@router.get("/{service_feedback_id}", response_model=ServiceFeedbackRead)
+def get_feedback(db_session: DbSession, service_feedback_id: PrimaryKey):
     """Get a feedback entry by its id."""
-    feedback = get(db_session=db_session, feedback_id=feedback_id)
+    feedback = get(db_session=db_session, service_feedback_id=service_feedback_id)
     if not feedback:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -29,13 +33,17 @@ def get_feedback(db_session: DbSession, feedback_id: PrimaryKey):
     return feedback
 
 
-@router.delete("/{feedback_id}", response_model=None)
-def delete_feedback(db_session: DbSession, feedback_id: PrimaryKey):
+@router.delete(
+    "/{service_feedback_id}",
+    response_model=None,
+    dependencies=[Depends(PermissionsDependency([OrganizationAdminPermission]))],
+)
+def delete_feedback(db_session: DbSession, service_feedback_id: PrimaryKey):
     """Delete a feedback entry, returning only an HTTP 200 OK if successful."""
-    feedback = get(db_session=db_session, feedback_id=feedback_id)
+    feedback = get(db_session=db_session, service_feedback_id=service_feedback_id)
     if not feedback:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=[{"msg": "A feedback entry with this id does not exist."}],
         )
-    delete(db_session=db_session, feedback_id=feedback_id)
+    delete(db_session=db_session, service_feedback_id=service_feedback_id)

@@ -2,8 +2,7 @@ from datetime import datetime
 from pydantic import Field
 from typing import Optional, List
 
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, String
-from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, String, Numeric
 from sqlalchemy_utils import TSVectorType
 from sqlalchemy.orm import relationship
 
@@ -21,7 +20,7 @@ class ServiceFeedback(TimeStampMixin, FeedbackMixin, Base):
     feedback = Column(String)
     rating = Column(String)
     schedule = Column(String)
-    hours = Column(Integer)
+    hours = Column(Numeric(precision=10, scale=2))
     shift_start_at = Column(DateTime)
     shift_end_at = Column(DateTime)
 
@@ -44,7 +43,7 @@ class ServiceFeedback(TimeStampMixin, FeedbackMixin, Base):
 # Pydantic models
 class ServiceFeedbackBase(DispatchBase):
     feedback: Optional[str] = Field(None, nullable=True)
-    hours: Optional[int]
+    hours: Optional[float]
     individual: Optional[IndividualContactReadMinimal]
     rating: ServiceFeedbackRating = ServiceFeedbackRating.little_effort
     schedule: Optional[str]

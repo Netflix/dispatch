@@ -122,25 +122,3 @@ def oncall_shift_feedback(db_session: SessionLocal, project: Project, hour: int)
                 schedule_id=schedule_id,
                 hour=hour,
             )
-
-
-# REMOVE AFTER TEST ****
-@scheduler.add(every(1).minutes, name="oncall-shift-feedback-test")
-@timer
-@scheduled_project_task
-def test_oncall_shift_feedback(db_session: SessionLocal, project: Project):
-    individual = individual_service.get_by_email_and_project(
-        db_session=db_session, email="dwhittaker@netflix.com", project_id=project.id
-    )
-
-    send_oncall_shift_feedback_message(
-        project=project,
-        individual=individual,
-        schedule_id="testing",
-        shift_end_at="2023-08-11T04:00:00Z",
-        schedule_name="SIRT TEST",
-        db_session=db_session,
-    )
-
-    log.debug("***** Sent oncall shift feedback to dwhittaker")
-# END TEST ****

@@ -376,8 +376,8 @@ def handle_oncall_shift_feedback_submission_event(
     db_session: Session,
     form_data: dict,
 ):
-    hours = form_data.get(ServiceFeedbackNotificationBlockIds.hours_input, {})
-    if not hours.isnumeric():
+    hours = form_data.get(ServiceFeedbackNotificationBlockIds.hours_input, "")
+    if not hours.replace(".", "", 1).isdigit():
         ack_with_error(ack=ack)
         return
 
