@@ -6,6 +6,8 @@ import IncidentApi from "@/incident/api"
 import PluginApi from "@/plugin/api"
 import router from "@/router"
 
+import moment from "moment-timezone"
+
 const getDefaultSelectedState = () => {
   return {
     cases: [],
@@ -39,6 +41,7 @@ const getDefaultSelectedState = () => {
     visibility: null,
     workflow_instances: null,
     loading: false,
+    currentEvent: {},
   }
 }
 
@@ -69,6 +72,8 @@ const state = {
     showHandoffDialog: false,
     showNewSheet: false,
     showReportDialog: false,
+    showEditEventDialog: false,
+    showDeleteEventDialog: false,
   },
   report: {
     ...getDefaultReportState(),
@@ -108,6 +113,13 @@ const state = {
     },
     loading: false,
     bulkEditLoading: false,
+  },
+  timeline_filters: {
+    field_updates: true,
+    assessment_updates: false,
+    user_curated_events: false,
+    participant_updates: true,
+    other_events: true,
   },
 }
 
@@ -234,6 +246,90 @@ const actions = {
   closeHandoffDialog({ commit }) {
     commit("SET_DIALOG_SHOW_HANDOFF", false)
     commit("RESET_SELECTED")
+  },
+  showEditEventDialog({ commit }, event) {
+    state.selected.currentEvent = event
+    commit("SET_DIALOG_EDIT_EVENT", true)
+  },
+  closeEditEventDialog({ commit }) {
+    commit("SET_DIALOG_EDIT_EVENT", false)
+  },
+  showNewPreEventDialog({ commit }, started_at) {
+    started_at = moment(started_at).subtract(1, "seconds").toISOString()
+    state.selected.currentEvent = { started_at, description: "" }
+    commit("SET_DIALOG_EDIT_EVENT", true)
+  },
+  showNewEventDialog({ commit }, started_at) {
+    started_at = moment(started_at).add(1, "seconds").toISOString()
+    state.selected.currentEvent = { started_at, description: "" }
+    commit("SET_DIALOG_EDIT_EVENT", true)
+  },
+  showDeleteEventDialog({ commit }, event) {
+    state.selected.currentEvent = event
+    commit("SET_DIALOG_DELETE_EVENT", true)
+  },
+  togglePin({ commit }, event) {
+    state.selected.currentEvent = event
+    state.selected.currentEvent.pinned = !state.selected.currentEvent.pinned
+    IncidentApi.updateEvent(state.selected.id, state.selected.currentEvent).then(() => {
+      IncidentApi.get(state.selected.id).then((response) => {
+        commit("SET_SELECTED", response.data)
+      })
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "Event updated successfully.", type: "success" },
+        { root: true }
+      )
+    })
+    commit("SET_DIALOG_EDIT_EVENT", false)
+  },
+  closeDeleteEventDialog({ commit }) {
+    commit("SET_DIALOG_DELETE_EVENT", false)
+  },
+  storeNewEvent({ commit }) {
+    IncidentApi.createNewEvent(state.selected.id, {
+      source: "Incident Participant",
+      description: state.selected.currentEvent.description,
+      started_at: state.selected.currentEvent.started_at,
+      type: "Custom event",
+      details: {},
+    }).then(() => {
+      IncidentApi.get(state.selected.id).then((response) => {
+        commit("SET_SELECTED", response.data)
+      })
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "Event created successfully.", type: "success" },
+        { root: true }
+      )
+    })
+    commit("SET_DIALOG_EDIT_EVENT", false)
+  },
+  updateExistingEvent({ commit }) {
+    IncidentApi.updateEvent(state.selected.id, state.selected.currentEvent).then(() => {
+      IncidentApi.get(state.selected.id).then((response) => {
+        commit("SET_SELECTED", response.data)
+      })
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "Event updated successfully.", type: "success" },
+        { root: true }
+      )
+    })
+    commit("SET_DIALOG_EDIT_EVENT", false)
+  },
+  deleteEvent({ commit }) {
+    IncidentApi.deleteEvent(state.selected.id, state.selected.currentEvent.uuid).then(() => {
+      IncidentApi.get(state.selected.id).then((response) => {
+        commit("SET_SELECTED", response.data)
+      })
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "Event deleted successfully.", type: "success" },
+        { root: true }
+      )
+    })
+    commit("SET_DIALOG_DELETE_EVENT", false)
   },
   report({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
@@ -472,6 +568,12 @@ const mutations = {
   },
   SET_DIALOG_DELETE(state, value) {
     state.dialogs.showDeleteDialog = value
+  },
+  SET_DIALOG_EDIT_EVENT(state, value) {
+    state.dialogs.showEditEventDialog = value
+  },
+  SET_DIALOG_DELETE_EVENT(state, value) {
+    state.dialogs.showDeleteEventDialog = value
   },
   SET_DIALOG_REPORT(state, value) {
     state.dialogs.showReportDialog = value
