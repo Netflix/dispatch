@@ -161,7 +161,7 @@ export const protectedRoute = [
             },
             {
               path: "/:organization/incidents/:name/timeline",
-              name: "IncidentTableEdit",
+              name: "IncidentTableEditTimeline",
               component: () => import("@/incident/EditSheet.vue"),
               props: true,
               meta: {
