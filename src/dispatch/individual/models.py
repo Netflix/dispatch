@@ -42,6 +42,8 @@ class IndividualContact(Base, ContactMixin, ProjectMixin):
     external_id = Column(String)
 
     events = relationship("Event", backref="individual")
+    service_feedback = relationship("ServiceFeedback", backref="individual")
+
     filters = relationship(
         "SearchFilter", secondary=assoc_individual_filters, backref="individuals"
     )

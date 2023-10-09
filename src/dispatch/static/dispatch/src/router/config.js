@@ -286,7 +286,7 @@ export const protectedRoute = [
       path: "feedback",
       component: DefaultLayout,
       name: "feedback",
-      redirect: { name: "FeedbackTable" },
+      redirect: { name: "IncidentFeedbackTable" },
       meta: {
         title: "Feedback",
         icon: "mdi-message-alert",
@@ -296,16 +296,16 @@ export const protectedRoute = [
       },
       children: [
         {
-          path: "/:organization/feedback",
-          name: "FeedbackTable",
+          path: "/:organization/feedback/incident",
+          name: "IncidentFeedbackTable",
           meta: { title: "Incident feedback", group: "feedback" },
-          component: () => import("@/feedback/Table.vue"),
+          component: () => import("@/feedback/incident/Table.vue"),
         },
         {
-          path: "/:organization/service-feedback",
+          path: "/:organization/feedback/service",
           name: "ServiceFeedbackTable",
-          meta: { title: "Service feedback", group: "feedback" },
-          component: () => import("@/service_feedback/Table.vue"),
+          meta: { title: "Oncall feedback", group: "feedback" },
+          component: () => import("@/feedback/service/Table.vue"),
         },
       ],
     },

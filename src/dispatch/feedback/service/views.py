@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 
 from dispatch.auth.permissions import (
-    OrganizationAdminPermission,
+    FeedbackDeletePermission,
     PermissionsDependency,
 )
 from dispatch.database.core import DbSession
@@ -34,9 +34,9 @@ def get_feedback(db_session: DbSession, service_feedback_id: PrimaryKey):
 
 
 @router.delete(
-    "/{service_feedback_id}",
+    "/{service_feedback_id}/{individual_contact_id}",
     response_model=None,
-    dependencies=[Depends(PermissionsDependency([OrganizationAdminPermission]))],
+    dependencies=[Depends(PermissionsDependency([FeedbackDeletePermission]))],
 )
 def delete_feedback(db_session: DbSession, service_feedback_id: PrimaryKey):
     """Delete a feedback entry, returning only an HTTP 200 OK if successful."""

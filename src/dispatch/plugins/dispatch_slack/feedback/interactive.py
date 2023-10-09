@@ -20,7 +20,7 @@ from dispatch.feedback.incident.enums import FeedbackRating
 from dispatch.feedback.incident.models import FeedbackCreate
 from dispatch.feedback.service import service as feedback_service
 from dispatch.individual import service as individual_service
-from dispatch.feedback.service.models import ServiceFeedbackRating
+from dispatch.feedback.service.models import ServiceFeedbackRating, ServiceFeedbackCreate
 from dispatch.incident import service as incident_service
 from dispatch.participant import service as participant_service
 from dispatch.feedback.service.reminder import service as reminder_service
@@ -412,7 +412,7 @@ def handle_oncall_shift_feedback_submission_event(
 
     project = project_service.get(db_session=db_session, project_id=project_id)
 
-    service_feedback = feedback_service.ServiceFeedbackCreate(
+    service_feedback = ServiceFeedbackCreate(
         feedback=feedback,
         hours=hours,
         individual=individual,

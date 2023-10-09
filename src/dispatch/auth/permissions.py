@@ -436,3 +436,33 @@ class CaseParticipantPermission(BasePermission):
             participant.individual.email for participant in current_case.participants
         ]
         return current_user.email in participant_emails
+
+
+class FeedbackDeletePermission(BasePermission):
+    def has_required_permissions(
+        self,
+        request: Request,
+    ) -> bool:
+        permission = any_permission(
+            permissions=[
+                SensitiveProjectActionPermission,
+            ],
+            request=request,
+        )
+        if not permission:
+            individual_contact_id = request.path_params.get("individual_contact_id", "0")
+            # "0" is passed if the feedback is anonymous
+            if individual_contact_id != "0":
+                pk = PrimaryKeyModel(id=individual_contact_id)
+                individual_contact = individual_contact_service.get(
+                    db_session=request.state.db, individual_contact_id=pk.id
+                )
+
+                if not individual_contact:
+                    return False
+
+                current_user = get_current_user(request=request)
+                if individual_contact.email == current_user.email:
+                    return True
+
+        return permission

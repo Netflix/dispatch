@@ -22,16 +22,16 @@
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 export default {
-  name: "FeedbackDeleteDialog",
+  name: "ServiceFeedbackDeleteDialog",
   data() {
     return {}
   },
   computed: {
-    ...mapFields("feedback", ["dialogs.showRemove"]),
+    ...mapFields("service_feedback", ["dialogs.showRemove"]),
   },
 
   methods: {
-    ...mapActions("feedback", ["remove", "closeRemove"]),
+    ...mapActions("service_feedback", ["remove", "closeRemove"]),
   },
 }
 </script>

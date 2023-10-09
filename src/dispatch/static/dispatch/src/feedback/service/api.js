@@ -7,7 +7,7 @@ export default {
     return API.get(`${resource}`, { params: { ...options } })
   },
 
-  delete(feedbackId) {
-    return API.delete(`${resource}/${feedbackId}`)
+  delete(feedbackId, individualId) {
+    return API.delete(`${resource}/${feedbackId}/${individualId}`)
   },
 }

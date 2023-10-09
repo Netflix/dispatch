@@ -2,14 +2,14 @@ import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
-import ServiceFeedbackApi from "@/service_feedback/api"
+import ServiceFeedbackApi from "@/feedback/service/api"
 
 const getDefaultSelectedState = () => {
   return {
     feedback: null,
     id: null,
     incident: null,
-    participant: null,
+    individual: null,
     project: null,
     rating: null,
     loading: false,
@@ -67,15 +67,17 @@ const actions = {
     commit("RESET_SELECTED")
   },
   remove({ commit, dispatch }) {
-    return ServiceFeedbackApi.delete(state.selected.id).then(function () {
-      dispatch("closeRemove")
-      dispatch("getAll")
-      commit(
-        "notification_backend/addBeNotification",
-        { text: "Feedback deleted successfully.", type: "success" },
-        { root: true }
-      )
-    })
+    return ServiceFeedbackApi.delete(state.selected.id, state.selected.individual?.id || "0").then(
+      function () {
+        dispatch("closeRemove")
+        dispatch("getAll")
+        commit(
+          "notification_backend/addBeNotification",
+          { text: "Feedback deleted successfully.", type: "success" },
+          { root: true }
+        )
+      }
+    )
   },
 }
 

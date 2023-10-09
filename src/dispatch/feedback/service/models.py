@@ -17,8 +17,6 @@ from .enums import ServiceFeedbackRating
 class ServiceFeedback(TimeStampMixin, FeedbackMixin, Base):
     # Columns
     id = Column(Integer, primary_key=True)
-    feedback = Column(String)
-    rating = Column(String)
     schedule = Column(String)
     hours = Column(Numeric(precision=10, scale=2))
     shift_start_at = Column(DateTime)
@@ -26,7 +24,6 @@ class ServiceFeedback(TimeStampMixin, FeedbackMixin, Base):
 
     # Relationships
     individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))
-    individual = relationship("IndividualContact")
 
     project_id = Column(Integer, ForeignKey("project.id"))
     project = relationship("Project")
