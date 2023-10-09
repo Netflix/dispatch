@@ -8,7 +8,7 @@ aiocache==0.12.2
     # via -r requirements-base.in
 aiofiles==23.2.1
     # via -r requirements-base.in
-aiohttp==3.8.5
+aiohttp==3.8.6
     # via
     #   -r requirements-base.in
     #   openai
@@ -214,7 +214,7 @@ lxml==4.9.3
     #   premailer
 mako==1.2.4
     # via alembic
-markdown==3.4.4
+markdown==3.5
     # via -r requirements-base.in
 markupsafe==2.1.3
     # via
