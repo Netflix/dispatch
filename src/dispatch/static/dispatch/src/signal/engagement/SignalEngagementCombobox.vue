@@ -7,14 +7,12 @@
         :project="project"
         v-model="engagements"
       >
-        <template #selection="{ attr, item, selected }">
+        <template #selection="{ item, props: chipProps }">
           <v-menu origin="overlap">
-            <template #activator="{ props }">
+            <template #activator="{ props: activatorProps }">
               <v-chip
-                v-bind="props"
-                :model-value="selected"
+                v-bind="mergeProps(chipProps, activatorProps)"
                 pill
-                closable
                 @click:close="remove(item)"
               >
                 {{ item ? item.name : "Unknown" }}
@@ -62,6 +60,7 @@
 </template>
 
 <script>
+import { mergeProps } from "vue"
 import BaseCombobox from "@/components/BaseCombobox.vue"
 import SignalEngagementApi from "@/signal/engagement/api"
 import SignalEngagementCreateDialog from "@/signal/engagement/SignalEngagementCreateDialog.vue"
@@ -85,6 +84,9 @@ export default {
       type: Object,
       required: true,
     },
+  },
+  setup() {
+    return { mergeProps }
   },
   data() {
     return {

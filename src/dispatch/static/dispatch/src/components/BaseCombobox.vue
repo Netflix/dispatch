@@ -15,7 +15,9 @@
     closable-chips
     v-model="selectedItems"
   >
-    <slot name="selection" v-bind="{ attr, item, selected }" />
+    <template #chip="data">
+      <slot name="selection" v-bind="data" />
+    </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
         <v-list-item-subtitle> Load More </v-list-item-subtitle>
@@ -59,9 +61,6 @@ export default {
       numItems: 5,
       createdItem: null,
       search: null,
-      attr: {},
-      item: null,
-      selected: null,
     }
   },
 

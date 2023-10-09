@@ -8,14 +8,12 @@
         v-bind="$attrs"
         v-model="workflows"
       >
-        <template #selection="{ item, selected }">
+        <template #selection="{ item, props: chipProps }">
           <v-menu origin="overlap">
-            <template #activator="{ props }">
+            <template #activator="{ props: activatorProps }">
               <v-chip
-                v-bind="props"
-                :model-value="selected"
+                v-bind="mergeProps(chipProps, activatorProps)"
                 pill
-                closable
                 @click:close="remove(item)"
               >
                 {{ item ? item.name : "Unknown" }}
@@ -63,6 +61,7 @@
 </template>
 
 <script>
+import { mergeProps } from "vue"
 import BaseCombobox from "@/components/BaseCombobox.vue"
 import WorkflowApi from "@/workflow/api"
 import WorkflowCreateDialog from "@/workflow/WorkflowCreateDialog.vue"
@@ -87,6 +86,9 @@ export default {
       type: Object,
       required: true,
     },
+  },
+  setup() {
+    return { mergeProps }
   },
   data() {
     return {
