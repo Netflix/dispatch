@@ -26,22 +26,11 @@
             </v-list>
           </v-col>
           <v-col>
-            <v-text-field :model-value="windowStartFormatted" prepend-icon="mdi-calendar" />
-            <v-date-picker
-              color="primary"
-              no-title
-              :model-value="window.start"
-              @update:model-value="setWindowStart($event)"
-            />
+            <!-- TODO: use vuetify picker components -->
+            <v-text-field type="date" v-model="windowStartInput" prepend-icon="mdi-calendar" />
           </v-col>
           <v-col>
-            <v-text-field v-model="windowEndFormatted" prepend-icon="mdi-calendar" />
-            <v-date-picker
-              color="primary"
-              no-title
-              :model-value="window.end"
-              @update:model-value="setWindowEnd($event)"
-            />
+            <v-text-field type="date" v-model="windowEndInput" prepend-icon="mdi-calendar" />
           </v-col>
         </v-row>
       </v-container>
@@ -86,6 +75,8 @@ export default {
   data() {
     return {
       menu: false,
+      windowStartInput: null,
+      windowEndInput: null,
       windowRanges: [
         { title: "Today", window: { start: today(), end: today() } },
         { title: "This Month", window: { start: startOfMonth(today()), end: today() } },
@@ -154,6 +145,30 @@ export default {
         return this.window.end.substr(0, 10)
       }
       return ""
+    },
+  },
+
+  watch: {
+    window: {
+      handler(value) {
+        if (value.start) {
+          this.windowStartInput = value.start.substr(0, 10)
+        }
+        if (value.end) {
+          this.windowEndInput = value.end.substr(0, 10)
+        }
+      },
+      immediate: true,
+    },
+    windowStartInput: function (value) {
+      if (value) {
+        this.setWindowStart(value)
+      }
+    },
+    windowEndInput: function (value) {
+      if (value) {
+        this.setWindowEnd(value)
+      }
     },
   },
 
