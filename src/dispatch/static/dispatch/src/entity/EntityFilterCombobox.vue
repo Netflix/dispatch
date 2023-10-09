@@ -58,7 +58,7 @@ export default {
     },
     label: {
       type: String,
-      default: "Add Entity Types",
+      default: "Add Entities",
     },
     project: {
       type: Object,

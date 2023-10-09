@@ -59,6 +59,18 @@ export default {
     return API.post(`/${resource}/${incidentId}/report/${type}`, payload)
   },
 
+  createNewEvent(incidentId, payload) {
+    return API.post(`/${resource}/${incidentId}/event`, payload)
+  },
+
+  updateEvent(incidentId, payload) {
+    return API.patch(`/${resource}/${incidentId}/event`, payload)
+  },
+
+  deleteEvent(incidentId, event_uuid) {
+    return API.delete(`/${resource}/${incidentId}/event/${event_uuid}`)
+  },
+
   createAllResources(incidentId, payload) {
     return API.post(`/${resource}/${incidentId}/resources`, payload)
   },

@@ -80,6 +80,9 @@ export function vuetifyPlugin(app) {
             gray9: "#FAFAFA",
             white: "#FFFFFF",
           },
+          variables: {
+            borderline: "#E4E4E4",
+          },
         },
         dark: {
           colors: {
@@ -105,6 +108,9 @@ export function vuetifyPlugin(app) {
             gray8: "#F0F0F0",
             gray9: "#FAFAFA",
             white: "#FFFFFF",
+          },
+          variables: {
+            borderline: "#404040",
           },
         },
       },

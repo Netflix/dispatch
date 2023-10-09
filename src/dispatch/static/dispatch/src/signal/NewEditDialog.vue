@@ -198,6 +198,7 @@
                 v-model="entity_types"
                 :project="project"
                 :signalDefinition="selected"
+                label="Add Entity Types"
               />
             </v-card-text>
           </v-card>

@@ -110,7 +110,7 @@ export default {
     },
     label: {
       type: String,
-      default: "Add Entity Types",
+      default: "Add Entity Type Filters",
     },
     project: {
       type: Object,
@@ -182,7 +182,7 @@ export default {
           ...filterOptions,
           filters: {
             project: [this.project],
-            scope: ["multiple"],
+            scope: ["multiple", "single"],
           },
         }
         filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })

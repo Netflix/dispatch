@@ -1,6 +1,7 @@
 <template>
   <v-container fluid>
-    <!-- <new-edit-dialog /> -->
+    <search-filter-create-dialog />
+    <edit-dialog />
     <delete-dialog />
     <v-row no-gutters>
       <v-col>
@@ -14,9 +15,9 @@
       <v-col cols="8">
         <settings-breadcrumbs v-model="project" />
       </v-col>
-      <!-- <v-col class="text-right"> -->
-      <!--   <v-btn color="info" class="ml-2" @click="createEditShow()"> New </v-btn> -->
-      <!-- </v-col> -->
+      <v-col class="text-right">
+        <v-btn color="info" class="mr-2" @click="showCreateDialog()"> New </v-btn>
+      </v-col>
     </v-row>
     <v-row no-gutters>
       <v-col>
@@ -102,9 +103,9 @@
                   </v-btn>
                 </template>
                 <v-list>
-                  <!-- <v-list-item @click="createEditShow(item)"> -->
-                  <!--   <v-list-item-title>View / Edit</v-list-item-title> -->
-                  <!-- </v-list-item> -->
+                  <v-list-item @click="createEditShow(item)">
+                    <v-list-item-title>View / Edit</v-list-item-title>
+                  </v-list-item>
                   <v-list-item @click="removeShow(item)">
                     <v-list-item-title>Delete</v-list-item-title>
                   </v-list-item>
@@ -124,11 +125,13 @@ import { mapActions } from "vuex"
 import { formatRelativeDate, formatDate } from "@/filters"
 
 import DeleteDialog from "@/search/DeleteDialog.vue"
+import SearchFilterCreateDialog from "@/search/SearchFilterCreateDialog.vue"
+import EditDialog from "@/search/EditDialog.vue"
 
 export default {
   name: "SearchFilterTable",
 
-  components: { DeleteDialog },
+  components: { DeleteDialog, SearchFilterCreateDialog, EditDialog },
 
   data() {
     return {
@@ -168,7 +171,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("search", ["getAll", "createEditShow", "removeShow"]),
+    ...mapActions("search", ["getAll", "createEditShow", "showCreateDialog", "removeShow"]),
   },
 
   created() {

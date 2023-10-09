@@ -1,6 +1,11 @@
 <template>
   <v-form @submit.prevent v-slot="{ isValid }">
-    <v-navigation-drawer location="right" width="800" :permanent="$vuetify.display.mdAndDown">
+    <v-navigation-drawer
+      location="right"
+      :width="navigation.width"
+      ref="drawer"
+      :permanent="$vuetify.display.mdAndDown"
+    >
       <template #prepend>
         <v-list-item lines="two">
           <v-list-item-title class="text-h6">
@@ -92,6 +97,11 @@ export default {
   data() {
     return {
       tab: null,
+      navigation: {
+        width: 800,
+        borderSize: 3,
+        minWidth: 400,
+      },
     }
   },
 
@@ -119,6 +129,14 @@ export default {
     "$route.params.name": function () {
       this.fetchDetails()
     },
+    $route: {
+      immediate: true,
+      handler(newVal) {
+        if (newVal.meta && newVal.meta.showTimeline) {
+          this.tab = 3
+        }
+      },
+    },
   },
 
   methods: {
@@ -126,6 +144,70 @@ export default {
       this.getDetails({ name: this.$route.params.name })
     },
     ...mapActions("incident", ["save", "getDetails", "closeEditSheet"]),
+    setBorderWidth() {
+      const drawerBorder = this.$refs.drawer.$el.querySelector(".v-navigation-drawer__border")
+      drawerBorder.style.width = this.navigation.borderSize + "px"
+      drawerBorder.style.cursor = "ew-resize"
+      drawerBorder.style.backgroundColor = "#E4E4E4"
+    },
+    setEvents() {
+      const borderSize = this.navigation.borderSize
+      const minWidth = this.navigation.minWidth
+      const drawerElement = this.$refs.drawer.$el
+      const drawerBorder = drawerElement.querySelector(".v-navigation-drawer__border")
+
+      function resize(e) {
+        document.body.style.cursor = "ew-resize"
+        let f = document.body.scrollWidth - e.clientX
+        if (f < minWidth) {
+          f = minWidth
+        }
+        drawerElement.style.width = f + "px"
+      }
+
+      drawerBorder.addEventListener(
+        "mouseover",
+        () => {
+          drawerBorder.style.backgroundColor = "red"
+        },
+        false
+      )
+
+      drawerBorder.addEventListener(
+        "mouseout",
+        () => {
+          drawerBorder.style.backgroundColor = "#E4E4E4"
+        },
+        false
+      )
+
+      drawerBorder.addEventListener(
+        "mousedown",
+        (e) => {
+          if (e.offsetX < borderSize) {
+            drawerElement.style.transition = "initial"
+            document.addEventListener("mousemove", resize, false)
+          }
+        },
+        false
+      )
+
+      document.addEventListener(
+        "mouseup",
+        () => {
+          drawerElement.style.transition = ""
+          this.navigation.width = drawerElement.style.width
+          document.body.style.cursor = ""
+          document.removeEventListener("mousemove", resize, false)
+        },
+        false
+      )
+    },
+  },
+
+  mounted() {
+    this.setBorderWidth()
+    this.setEvents()
   },
 }
 </script>

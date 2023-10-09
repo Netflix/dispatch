@@ -46,6 +46,10 @@ export default {
       type: String,
       default: "",
     },
+    timezone: {
+      type: String,
+      default: null,
+    },
   },
 
   data() {

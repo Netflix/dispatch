@@ -56,3 +56,12 @@ class DocumentResourceTemplateTypes(DispatchEnum):
     incident = "dispatch-incident-document-template"
     review = "dispatch-incident-review-document-template"
     tracking = "dispatch-incident-sheet-template"
+
+
+class EventType(DispatchEnum):
+    other = "Other"  # default and catch-all (x resource created/updated, etc.)
+    field_updated = "Field updated"  # for fields like title, description, tags, type, etc.
+    assessment_updated = "Assessment updated"  # for priority, status, or severity changes
+    participant_updated = "Participant updated"  # for added/removed users and role changes
+    imported_message = "Imported message"  # for stopwatch-reacted messages from Slack
+    custom_event = "Custom event"  # for user-added events (new feature)
