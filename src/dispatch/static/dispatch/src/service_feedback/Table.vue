@@ -38,6 +38,7 @@
                 v-if="item.individual"
                 :participant="convertToParticipant(item.individual)"
               />
+              <span v-else>(anonymous)</span>
             </template>
             <template #item.created_at="{ item }">
               <v-tooltip bottom>
