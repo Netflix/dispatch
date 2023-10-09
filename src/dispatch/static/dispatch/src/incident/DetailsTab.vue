@@ -132,6 +132,18 @@
       <v-flex xs12>
         <case-filter-combobox label="Cases" v-model="cases" />
       </v-flex>
+      <v-flex xs12 justify-center>
+        <v-row align="center" justify="center">
+          <v-btn
+            color="secondary"
+            class="ml-2 mr-2 mt-3"
+            @click="showPreviewEngageDialog(item)"
+          >
+            Preview Engagement Filters
+          </v-btn>
+        </v-row>
+      </v-flex>
+      <preview-engage-dialog />
       <v-flex xs12 v-show="false">
         <ValidationProvider name="project" rules="alwaysTrue" immediate>
           <v-text-field v-model="project" />
@@ -143,6 +155,7 @@
 
 <script>
 import { ValidationProvider, extend } from "vee-validate"
+import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
 
@@ -153,6 +166,7 @@ import IncidentPrioritySelect from "@/incident/priority/IncidentPrioritySelect.v
 import IncidentSeveritySelect from "@/incident/severity/IncidentSeveritySelect.vue"
 import IncidentTypeSelect from "@/incident/type/IncidentTypeSelect.vue"
 import ParticipantSelect from "@/incident/ParticipantSelect.vue"
+import PreviewEngageDialog from "@/incident/PreviewEngageDialog.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 
@@ -191,6 +205,7 @@ export default {
     IncidentSeveritySelect,
     IncidentTypeSelect,
     ParticipantSelect,
+    PreviewEngageDialog,
     ProjectSelect,
     TagFilterAutoComplete,
     ValidationProvider,
@@ -226,6 +241,10 @@ export default {
       "selected.title",
       "selected.visibility",
     ]),
+  },
+
+  methods: {
+    ...mapActions("incident", ["showPreviewEngageDialog"]),
   },
 }
 </script>

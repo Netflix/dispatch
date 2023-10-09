@@ -74,6 +74,7 @@ const state = {
     showReportDialog: false,
     showEditEventDialog: false,
     showDeleteEventDialog: false,
+    showPreviewEngageDialog: false,
   },
   report: {
     ...getDefaultReportState(),
@@ -232,6 +233,15 @@ const actions = {
   closeReportDialog({ commit }) {
     commit("SET_DIALOG_REPORT", false)
     commit("RESET_SELECTED")
+  },
+  showPreviewEngageDialog({ commit }, incident) {
+    commit("SET_DIALOG_PREVIEW_ENGAGE", true)
+    if (incident) {
+      commit("SET_SELECTED", incident)
+    }
+  },
+  closePreviewEngageDialog({ commit }) {
+    commit("SET_DIALOG_PREVIEW_ENGAGE", false)
   },
   showExport({ commit }) {
     commit("SET_DIALOG_SHOW_EXPORT", true)
@@ -568,6 +578,9 @@ const mutations = {
   },
   SET_DIALOG_DELETE(state, value) {
     state.dialogs.showDeleteDialog = value
+  },
+  SET_DIALOG_PREVIEW_ENGAGE(state, value) {
+    state.dialogs.showPreviewEngageDialog = value
   },
   SET_DIALOG_EDIT_EVENT(state, value) {
     state.dialogs.showEditEventDialog = value
