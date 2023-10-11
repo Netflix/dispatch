@@ -44,11 +44,13 @@ def create_case_conversation(case: Case, conversation_target: str, db_session: S
         except Exception as e:
             # TODO: consistency across exceptions
             log.exception(e)
+            return
 
-    if not conversation:
-        log.error(f"Conversation not created. Plugin {plugin.plugin.slug} encountered an error.")
-        return
-
+        if not conversation:
+            log.error(
+                f"Conversation not created. Plugin {plugin.plugin.slug} encountered an error."
+            )
+            return
     conversation.update({"resource_type": plugin.plugin.slug, "resource_id": conversation["id"]})
 
     conversation_in = ConversationCreate(
