@@ -62,7 +62,10 @@ export default {
   },
 
   computed: {
-    ...mapFields("feedback", ["table.options.filters.incident", "table.options.filters.project"]),
+    ...mapFields("incident_feedback", [
+      "table.options.filters.incident",
+      "table.options.filters.project",
+    ]),
 
     numFilters: function () {
       return sum([this.incident.length, this.project.length])

@@ -20,11 +20,12 @@ from dispatch.feedback.incident.enums import FeedbackRating
 from dispatch.feedback.incident.models import FeedbackCreate
 from dispatch.feedback.service import service as feedback_service
 from dispatch.individual import service as individual_service
-from dispatch.feedback.service.models import ServiceFeedbackRating
+from dispatch.feedback.service.models import ServiceFeedbackRating, ServiceFeedbackCreate
 from dispatch.incident import service as incident_service
 from dispatch.participant import service as participant_service
 from dispatch.feedback.service.reminder import service as reminder_service
 from dispatch.plugin import service as plugin_service
+from dispatch.project import service as project_service
 from dispatch.plugins.dispatch_slack.bolt import app
 from dispatch.plugins.dispatch_slack.fields import static_select_block
 from dispatch.plugins.dispatch_slack.middleware import (
@@ -375,8 +376,8 @@ def handle_oncall_shift_feedback_submission_event(
     db_session: Session,
     form_data: dict,
 ):
-    hours = form_data.get(ServiceFeedbackNotificationBlockIds.hours_input, {})
-    if not hours.isnumeric():
+    hours = form_data.get(ServiceFeedbackNotificationBlockIds.hours_input, "")
+    if not hours.replace(".", "", 1).isdigit():
         ack_with_error(ack=ack)
         return
 
@@ -409,7 +410,9 @@ def handle_oncall_shift_feedback_submission_event(
         )
     )
 
-    service_feedback = feedback_service.ServiceFeedbackCreate(
+    project = project_service.get(db_session=db_session, project_id=project_id)
+
+    service_feedback = ServiceFeedbackCreate(
         feedback=feedback,
         hours=hours,
         individual=individual,
@@ -417,6 +420,7 @@ def handle_oncall_shift_feedback_submission_event(
         schedule=schedule_id,
         shift_end_at=shift_end_at,
         shift_start_at=None,
+        project=project,
     )
 
     service_feedback = feedback_service.create(

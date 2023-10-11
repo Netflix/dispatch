@@ -2,7 +2,7 @@ import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
-import FeedbackApi from "@/feedback/api"
+import FeedbackApi from "@/feedback/incident/api"
 
 const getDefaultSelectedState = () => {
   return {
