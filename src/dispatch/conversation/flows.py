@@ -51,26 +51,28 @@ def create_case_conversation(case: Case, conversation_target: str, db_session: S
                 f"Conversation not created. Plugin {plugin.plugin.slug} encountered an error."
             )
             return
-    conversation.update({"resource_type": plugin.plugin.slug, "resource_id": conversation["id"]})
+        conversation.update(
+            {"resource_type": plugin.plugin.slug, "resource_id": conversation["id"]}
+        )
 
-    conversation_in = ConversationCreate(
-        resource_id=conversation["resource_id"],
-        resource_type=conversation["resource_type"],
-        weblink=conversation["weblink"],
-        thread_id=conversation["timestamp"],
-        channel_id=conversation["id"],
-    )
-    case.conversation = create(db_session=db_session, conversation_in=conversation_in)
+        conversation_in = ConversationCreate(
+            resource_id=conversation["resource_id"],
+            resource_type=conversation["resource_type"],
+            weblink=conversation["weblink"],
+            thread_id=conversation["timestamp"],
+            channel_id=conversation["id"],
+        )
+        case.conversation = create(db_session=db_session, conversation_in=conversation_in)
 
-    event_service.log_case_event(
-        db_session=db_session,
-        source=plugin.plugin.title,
-        description="Case conversation created",
-        case_id=case.id,
-    )
+        event_service.log_case_event(
+            db_session=db_session,
+            source=plugin.plugin.title,
+            description="Case conversation created",
+            case_id=case.id,
+        )
 
-    db_session.add(case)
-    db_session.commit()
+        db_session.add(case)
+        db_session.commit()
 
     return case.conversation
 
