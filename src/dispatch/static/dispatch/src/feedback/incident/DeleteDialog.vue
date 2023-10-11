@@ -27,11 +27,11 @@ export default {
     return {}
   },
   computed: {
-    ...mapFields("feedback", ["dialogs.showRemove"]),
+    ...mapFields("incident_feedback", ["dialogs.showRemove"]),
   },
 
   methods: {
-    ...mapActions("feedback", ["remove", "closeRemove"]),
+    ...mapActions("incident_feedback", ["remove", "closeRemove"]),
   },
 }
 </script>

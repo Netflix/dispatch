@@ -3,7 +3,7 @@
     <delete-dialog />
     <v-row no-gutters>
       <v-col>
-        <div class="headline">Feedback</div>
+        <div class="headline">Oncall feedback</div>
       </v-col>
       <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
@@ -33,8 +33,22 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #item.participant="{ item }">
-              <participant v-if="item.participant" :participant="item.participant" />
+            <template #item.individual="{ item }">
+              <participant
+                v-if="item.individual"
+                :participant="convertToParticipant(item.individual)"
+              />
+              <span v-else>(anonymous)</span>
+            </template>
+            <template #item.shift_end_at="{ item }">
+              <v-tooltip bottom>
+                <template #activator="{ on, attrs }">
+                  <span v-bind="attrs" v-on="on" class="wavy-underline">{{
+                    item.shift_end_at | formatToUTC
+                  }}</span>
+                </template>
+                <span class="pre-formatted">{{ item.shift_end_at | formatToTimeZones }}</span>
+              </v-tooltip>
             </template>
             <template #item.created_at="{ item }">
               <v-tooltip bottom>
@@ -74,13 +88,13 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
-import DeleteDialog from "@/feedback/DeleteDialog.vue"
+import DeleteDialog from "@/feedback/service/DeleteDialog.vue"
 import Participant from "@/incident/Participant.vue"
 import RouterUtils from "@/router/utils"
-import TableFilterDialog from "@/feedback/TableFilterDialog.vue"
+import TableFilterDialog from "@/feedback/service/TableFilterDialog.vue"
 
 export default {
-  name: "FeedbackTable",
+  name: "ServiceFeedbackTable",
 
   components: {
     DeleteDialog,
@@ -91,9 +105,9 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Incident Name", value: "incident.name", sortable: false },
-        { text: "Incident Title", value: "incident.title", sortable: false },
-        { text: "Participant", value: "participant", sortable: true },
+        { text: "Shift End At (UTC)", value: "shift_end_at", sortable: true },
+        { text: "Participant", value: "individual", sortable: true },
+        { text: "Off-Shift Hours", value: "hours", sortable: true },
         { text: "Rating", value: "rating", sortable: true },
         { text: "Feedback", value: "feedback", sortable: true },
         { text: "Project", value: "project.name", sortable: false },
@@ -104,17 +118,12 @@ export default {
   },
 
   computed: {
-    ...mapFields("feedback", [
+    ...mapFields("service_feedback", [
       "table.options.q",
       "table.options.page",
       "table.options.itemsPerPage",
       "table.options.sortBy",
       "table.options.descending",
-      "table.options.filters",
-      "table.options.filters.incident",
-      "table.options.filters.rating",
-      "table.options.filters.feedback",
-      "table.options.filters.participant",
       "table.options.filters.project",
       "table.loading",
       "table.rows.items",
@@ -136,7 +145,15 @@ export default {
   },
 
   methods: {
-    ...mapActions("feedback", ["getAll", "removeShow"]),
+    ...mapActions("service_feedback", ["getAll", "removeShow"]),
+    convertToParticipant(individual) {
+      return {
+        individual: {
+          name: individual.name,
+          email: individual.email,
+        },
+      }
+    },
   },
 
   created() {
@@ -156,17 +173,7 @@ export default {
     )
 
     this.$watch(
-      (vm) => [
-        vm.q,
-        vm.itemsPerPage,
-        vm.sortBy,
-        vm.descending,
-        vm.incident,
-        vm.rating,
-        vm.feedback,
-        vm.project,
-        vm.participant,
-      ],
+      (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending, vm.project],
       () => {
         this.page = 1
         RouterUtils.updateURLFilters(this.filters)
@@ -176,3 +183,9 @@ export default {
   },
 }
 </script>
+
+<style scoped lang="css">
+.pre-formatted {
+  white-space: pre;
+}
+</style>
