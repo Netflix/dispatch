@@ -24,7 +24,7 @@
               <v-list-item-content>
                 <v-list-item-title>Assignee</v-list-item-title>
                 <v-list-item-subtitle>
-                  {{ assignee.email }}
+                  {{ assignee.individual.name }}, {{ assignee.team }}
                 </v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
