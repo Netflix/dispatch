@@ -627,7 +627,7 @@ INCIDENT_CLOSE_REMINDER = [
 CASE_CLOSE_REMINDER = [
     {
         "title": "{{name}} Case - Close Reminder",
-        "title_link": "{{ticket_weblink}}",
+        "title_link": "{{dispatch_ui_case_url}}",
         "text": CASE_CLOSE_REMINDER_DESCRIPTION,
     },
     CASE_TITLE,
@@ -637,7 +637,7 @@ CASE_CLOSE_REMINDER = [
 CASE_TRIAGE_REMINDER = [
     {
         "title": "{{name}} Case - Triage Reminder",
-        "title_link": "{{ticket_weblink}}",
+        "title_link": "{{dispatch_ui_case_url}}",
         "text": CASE_TRIAGE_REMINDER_DESCRIPTION,
     },
     CASE_TITLE,

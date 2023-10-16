@@ -13,6 +13,7 @@ from dispatch.messaging.strings import (
     CASE_TRIAGE_REMINDER,
     MessageType,
 )
+from dispatch.config import DISPATCH_UI_URL
 from dispatch.plugin import service as plugin_service
 
 
@@ -36,7 +37,7 @@ def send_case_close_reminder(case: Case, db_session: SessionLocal):
     items = [
         {
             "name": case.name,
-            "ticket_weblink": case.ticket.weblink,
+            "dispatch_ui_case_url": f"{DISPATCH_UI_URL}/{case.project.organization.name}/cases/{case.name}",  # noqa
             "title": case.title,
             "status": case.status,
         }
@@ -70,9 +71,9 @@ def send_case_triage_reminder(case: Case, db_session: SessionLocal):
     items = [
         {
             "name": case.name,
-            "ticket_weblink": case.ticket.weblink,
             "title": case.title,
             "status": case.status,
+            "dispatch_ui_case_url": f"{DISPATCH_UI_URL}/{case.project.organization.name}/cases/{case.name}",  # noqa
         }
     ]
 
