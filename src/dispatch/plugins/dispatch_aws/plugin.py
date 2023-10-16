@@ -39,39 +39,40 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
             QueueOwnerAWSAccountId=self.configuration.queue_owner,
         )["QueueUrl"]
 
-        response = client.receive_message(
-            QueueUrl=queue_url,
-            MaxNumberOfMessages=self.configuration.batch_size,
-            VisibilityTimeout=40,
-            WaitTimeSeconds=20,
-        )
-        if response.get("Messages") and len(response.get("Messages")) > 0:
-            entries = []
-            for message in response["Messages"]:
-                try:
-                    body = json.loads(message["Body"])
-                    signal_data = json.loads(body["Message"])
+        while True:
+            response = client.receive_message(
+                QueueUrl=queue_url,
+                MaxNumberOfMessages=self.configuration.batch_size,
+                VisibilityTimeout=40,
+                WaitTimeSeconds=20,
+            )
+            if response.get("Messages") and len(response.get("Messages")) > 0:
+                entries = []
+                for message in response["Messages"]:
+                    try:
+                        body = json.loads(message["Body"])
+                        signal_data = json.loads(body["Message"])
 
-                    signal_instance = signal_service.create_signal_instance(
-                        db_session=db_session,
-                        signal_instance_in=SignalInstanceCreate(
-                            project=project, raw=signal_data, **signal_data
-                        ),
-                    )
-                    metrics_provider.counter(
-                        "aws-sqs-signal-consumer.signal.received",
-                        tags={
-                            "signalName": signal_instance.signal.name,
-                            "externalId": signal_instance.signal.external_id,
-                        },
-                    )
-                    log.debug(
-                        f"Received signal: SignalName: {signal_instance.signal.name} ExernalId: {signal_instance.signal.external_id}"
-                    )
-                    entries.append(
-                        {"Id": message["MessageId"], "ReceiptHandle": message["ReceiptHandle"]}
-                    )
-                except Exception as e:
-                    log.exception(e)
+                        signal_instance = signal_service.create_signal_instance(
+                            db_session=db_session,
+                            signal_instance_in=SignalInstanceCreate(
+                                project=project, raw=signal_data, **signal_data
+                            ),
+                        )
+                        metrics_provider.counter(
+                            "aws-sqs-signal-consumer.signal.received",
+                            tags={
+                                "signalName": signal_instance.signal.name,
+                                "externalId": signal_instance.signal.external_id,
+                            },
+                        )
+                        log.debug(
+                            f"Received signal: SignalName: {signal_instance.signal.name} ExernalId: {signal_instance.signal.external_id}"
+                        )
+                        entries.append(
+                            {"Id": message["MessageId"], "ReceiptHandle": message["ReceiptHandle"]}
+                        )
+                    except Exception as e:
+                        log.exception(e)
 
-            client.delete_message_batch(QueueUrl=queue_url, Entries=entries)
+                client.delete_message_batch(QueueUrl=queue_url, Entries=entries)

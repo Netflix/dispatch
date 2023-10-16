@@ -836,13 +836,13 @@ def consume_signals():
 
                 for plugin in plugins:
                     log.debug(f"Consuming signals for plugin: {plugin.plugin.slug}")
-                    p = multiprocessing.Process(
-                        target=_run_consume,
-                        args=(plugin.plugin.slug, organization.slug, project.id, running),
-                    )
-                    p.start()
-                    workers.append(p)
-                    print(workers)
+                    for _ in range(5):  # TODO add plugin.instance.concurrency:
+                        p = multiprocessing.Process(
+                            target=_run_consume,
+                            args=(plugin.plugin.slug, organization.slug, project.id, running),
+                        )
+                        p.start()
+                        workers.append(p)
 
         def terminate_processes(signum, frame):
             print("Terminating main process...")
