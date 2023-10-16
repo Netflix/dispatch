@@ -499,7 +499,7 @@ urllib3==1.26.17
     #   sentry-sdk
 uvicorn==0.23.2
     # via -r requirements-base.in
-uvloop==0.17.0
+uvloop==0.18.0
     # via -r requirements-base.in
 validators==0.18.2
     # via -r requirements-base.in
