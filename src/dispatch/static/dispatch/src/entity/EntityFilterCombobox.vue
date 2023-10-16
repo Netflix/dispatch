@@ -55,7 +55,7 @@ import SearchUtils from "@/search/utils"
 import EntityApi from "@/entity/api"
 
 export default {
-  name: "EntityCombobox",
+  name: "EntityFilterCombobox",
 
   props: {
     value: {
@@ -64,7 +64,7 @@ export default {
     },
     label: {
       type: String,
-      default: "Add Entity Types",
+      default: "Add Entities",
     },
     model: {
       type: String,

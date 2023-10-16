@@ -20,7 +20,7 @@ click==8.1.7
     # via
     #   -r requirements-dev.in
     #   black
-coverage==7.3.1
+coverage==7.3.2
     # via -r requirements-dev.in
 decorator==5.1.1
     # via ipython
@@ -34,7 +34,7 @@ executing==1.2.0
     #   stack-data
 factory-boy==3.3.0
     # via -r requirements-dev.in
-faker==19.6.2
+faker==19.8.0
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -90,7 +90,7 @@ python-dateutil==2.8.2
     # via faker
 pyyaml==6.0.1
     # via pre-commit
-ruff==0.0.291
+ruff==0.0.292
     # via -r requirements-dev.in
 six==1.16.0
     # via
@@ -106,7 +106,7 @@ traitlets==5.9.0
     #   matplotlib-inline
 virtualenv==20.24.3
     # via pre-commit
-vulture==2.9.1
+vulture==2.10
     # via -r requirements-dev.in
 wcwidth==0.2.6
     # via prompt-toolkit

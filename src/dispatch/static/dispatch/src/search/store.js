@@ -70,6 +70,7 @@ const state = {
   dialogs: {
     showCreate: false,
     showRemove: false,
+    showCreateEdit: false,
   },
   loading: false,
   selected: {
@@ -86,7 +87,7 @@ const actions = {
     commit("SET_TABLE_LOADING", "primary")
     let params = SearchUtils.createParametersFromTableOptions(
       { ...state.table.options },
-      "SearcFilter"
+      "SearchFilter"
     )
     return SearchApi.getAllFilters(params)
       .then((response) => {
@@ -120,7 +121,7 @@ const actions = {
   closeCreateDialog({ commit }) {
     commit("SET_DIALOG_SHOW_CREATE", false)
   },
-  save({ commit }) {
+  save({ commit, dispatch }) {
     commit("SET_LOADING", true)
     if (!state.selected.id) {
       return SearchApi.create(state.selected)
@@ -140,6 +141,8 @@ const actions = {
     } else {
       return SearchApi.update(state.selected.id, state.selected)
         .then(() => {
+          dispatch("closeCreateEdit")
+          dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
             { text: "Search filter updated successfully.", type: "success" },
@@ -170,6 +173,16 @@ const actions = {
         { root: true }
       )
     })
+  },
+  createEditShow({ commit }, search_filter) {
+    commit("SET_DIALOG_CREATE_EDIT", true)
+    if (search_filter) {
+      commit("SET_SELECTED", search_filter)
+    }
+  },
+  closeCreateEdit({ commit }) {
+    commit("SET_DIALOG_CREATE_EDIT", false)
+    commit("RESET_SELECTED")
   },
 }
 
@@ -207,6 +220,9 @@ const mutations = {
   },
   SET_DIALOG_DELETE(state, value) {
     state.dialogs.showRemove = value
+  },
+  SET_DIALOG_CREATE_EDIT(state, value) {
+    state.dialogs.showCreateEdit = value
   },
 }
 

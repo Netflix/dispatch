@@ -15,6 +15,7 @@ from dispatch.individual import service as individual_contact_service
 from dispatch.models import PrimaryKeyModel
 from dispatch.organization import service as organization_service
 from dispatch.organization.models import OrganizationRead
+from dispatch.participant_role.enums import ParticipantRoleType
 
 log = logging.getLogger(__name__)
 
@@ -315,6 +316,8 @@ class IncidentReporterPermission(BasePermission):
             if current_incident.reporter.individual.email == current_user.email:
                 return True
 
+        return False
+
 
 class IncidentCommanderPermission(BasePermission):
     def has_required_permissions(
@@ -330,6 +333,36 @@ class IncidentCommanderPermission(BasePermission):
         if current_incident.commander:
             if current_incident.commander.individual.email == current_user.email:
                 return True
+
+        return False
+
+
+class IncidentCommanderOrScribePermission(BasePermission):
+    def has_required_permissions(
+        self,
+        request: Request,
+    ) -> bool:
+        current_user = get_current_user(request=request)
+        pk = PrimaryKeyModel(id=request.path_params["incident_id"])
+        current_incident = incident_service.get(db_session=request.state.db, incident_id=pk.id)
+        if not current_incident:
+            return False
+
+        if (
+            current_incident.commander
+            and current_incident.commander.individual.email == current_user.email
+        ):
+            return True
+
+        scribes = [
+            participant.individual.email
+            for participant in current_incident.participants
+            if ParticipantRoleType.scribe in [role.role for role in participant.participant_roles]
+        ]
+        if current_user.email in scribes:
+            return True
+
+        return False
 
 
 class IncidentParticipantPermission(BasePermission):
@@ -403,3 +436,33 @@ class CaseParticipantPermission(BasePermission):
             participant.individual.email for participant in current_case.participants
         ]
         return current_user.email in participant_emails
+
+
+class FeedbackDeletePermission(BasePermission):
+    def has_required_permissions(
+        self,
+        request: Request,
+    ) -> bool:
+        permission = any_permission(
+            permissions=[
+                SensitiveProjectActionPermission,
+            ],
+            request=request,
+        )
+        if not permission:
+            individual_contact_id = request.path_params.get("individual_contact_id", "0")
+            # "0" is passed if the feedback is anonymous
+            if individual_contact_id != "0":
+                pk = PrimaryKeyModel(id=individual_contact_id)
+                individual_contact = individual_contact_service.get(
+                    db_session=request.state.db, individual_contact_id=pk.id
+                )
+
+                if not individual_contact:
+                    return False
+
+                current_user = get_current_user(request=request)
+                if individual_contact.email == current_user.email:
+                    return True
+
+        return permission
