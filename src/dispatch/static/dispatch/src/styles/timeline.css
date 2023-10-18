@@ -47,7 +47,7 @@
 
 .add-event .horiz-rule {
   display: none;
-  background-color: var(--v-borderline);
+  background-color: rgb(var(--v-borderline));
   height: 2px;
   margin-top: var(--margrule);
   margin-left: 4rem;
@@ -93,4 +93,8 @@
 
 .custom-event:hover .pinned-custom-event {
   display: none !important;
+}
+
+:deep(.v-timeline-item__body) {
+  justify-self: initial !important;
 }
