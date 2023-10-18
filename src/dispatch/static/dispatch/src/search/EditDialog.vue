@@ -4,7 +4,7 @@
       v-model="showCreateEdit"
       location="right"
       width="500"
-      :permanent="$vuetify.breakpoint.mdAndDown"
+      :permanent="$vuetify.display.mdAndDown"
     >
       <template #prepend>
         <v-list-item lines="two">
