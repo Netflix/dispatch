@@ -39,17 +39,17 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
             QueueOwnerAWSAccountId=self.configuration.queue_owner,
         )["QueueUrl"]
 
-        while True:
-            response = client.receive_message(
-                QueueUrl=queue_url,
-                MaxNumberOfMessages=self.configuration.batch_size,
-                VisibilityTimeout=40,
-                WaitTimeSeconds=20,
-            )
-            if response.get("Messages") and len(response.get("Messages")) > 0:
-                entries = []
-                for message in response["Messages"]:
-                    try:
+        try:
+            while True:
+                response = client.receive_message(
+                    QueueUrl=queue_url,
+                    MaxNumberOfMessages=self.configuration.batch_size,
+                    VisibilityTimeout=40,
+                    WaitTimeSeconds=20,
+                )
+                if response.get("Messages") and len(response.get("Messages")) > 0:
+                    entries = []
+                    for message in response["Messages"]:
                         body = json.loads(message["Body"])
                         signal_data = json.loads(body["Message"])
 
@@ -72,7 +72,7 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                         entries.append(
                             {"Id": message["MessageId"], "ReceiptHandle": message["ReceiptHandle"]}
                         )
-                    except Exception as e:
-                        log.exception(e)
-
-                client.delete_message_batch(QueueUrl=queue_url, Entries=entries)
+                    if entries:
+                        client.delete_message_batch(QueueUrl=queue_url, Entries=entries)
+        except Exception as e:
+            log.exception(e)
