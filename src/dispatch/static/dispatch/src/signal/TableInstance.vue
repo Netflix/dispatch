@@ -8,10 +8,10 @@
     <v-row no-gutters>
       <v-col>
         <v-card elevation="0">
-          <v-data-table
+          <v-data-table-server
             :headers="headers"
             :items="items"
-            :server-items-length="total"
+            :items-length="total"
             v-model:page="page"
             v-model:items-per-page="itemsPerPage"
             :footer-props="{
@@ -62,7 +62,7 @@
             <template #item.data-table-actions="{ item }">
               <raw-signal-viewer :value="item" />
             </template>
-          </v-data-table>
+          </v-data-table-server>
         </v-card>
       </v-col>
     </v-row>

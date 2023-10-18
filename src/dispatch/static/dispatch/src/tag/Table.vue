@@ -23,10 +23,10 @@
               clearable
             />
           </v-card-title>
-          <v-data-table
+          <v-data-table-server
             :headers="headers"
             :items="items"
-            :server-items-length="total"
+            :items-length="total"
             v-model:page="page"
             v-model:items-per-page="itemsPerPage"
             v-model:sort-by="sortBy"
@@ -59,7 +59,7 @@
                 </v-list>
               </v-menu>
             </template>
-          </v-data-table>
+          </v-data-table-server>
         </v-card>
       </v-col>
     </v-row>
