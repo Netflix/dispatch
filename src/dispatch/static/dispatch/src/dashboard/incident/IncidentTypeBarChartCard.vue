@@ -19,7 +19,7 @@ export default {
   name: "IncidentTypeBarChartCard",
 
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -96,10 +96,14 @@ export default {
       }
     },
     series() {
-      return DashboardUtils.createCountedSeriesData(this.value, "incident_type.name", this.types)
+      return DashboardUtils.createCountedSeriesData(
+        this.modelValue,
+        "incident_type.name",
+        this.types
+      )
     },
     categoryData() {
-      return Object.keys(this.value)
+      return Object.keys(this.modelValue)
     },
   },
 }

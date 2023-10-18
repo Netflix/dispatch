@@ -68,14 +68,6 @@ import WorkflowSelect from "@/workflow/WorkflowSelect.vue"
 import WorkflowParametersInput from "@/workflow/WorkflowParametersInput.vue"
 export default {
   name: "WorkflowRunModal",
-  props: {
-    value: {
-      type: Object,
-      default: function () {
-        return {}
-      },
-    },
-  },
 
   data() {
     return {}

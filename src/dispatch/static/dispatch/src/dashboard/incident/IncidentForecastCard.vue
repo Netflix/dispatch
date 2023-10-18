@@ -21,15 +21,6 @@ export default {
     DashboardCard,
   },
 
-  props: {
-    value: {
-      type: Object,
-      default: function () {
-        return {}
-      },
-    },
-  },
-
   computed: {
     filterParam() {
       let params = {}

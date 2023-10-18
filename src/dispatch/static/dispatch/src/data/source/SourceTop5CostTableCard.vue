@@ -28,7 +28,7 @@ export default {
   name: "SourceTop5CostTableCard",
 
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -58,7 +58,7 @@ export default {
 
   computed: {
     sources() {
-      return sortBy(this.value, ["cost"]).slice(0, 5)
+      return sortBy(this.modelValue, ["cost"]).slice(0, 5)
     },
   },
 }

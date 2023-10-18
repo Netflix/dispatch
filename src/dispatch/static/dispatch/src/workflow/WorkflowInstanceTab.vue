@@ -1,7 +1,7 @@
 <template>
   <v-data-table
     :headers="headers"
-    :items="value"
+    :items="modelValue"
     :items-per-page="-1"
     disabled-pagination
     hide-default-footer
@@ -28,7 +28,7 @@ import WorkflowInstanceDetailMenu from "@/workflow/WorkflowInstanceDetailMenu.vu
 export default {
   name: "WorkflowInstanceTab",
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
