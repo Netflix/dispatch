@@ -3,9 +3,11 @@ import App from "./App.vue"
 import { vuetifyPlugin } from "./vuetify/"
 import router from "./router/"
 import store from "./store"
+import { plugin, defaultConfig } from '@formkit/vue'
 
 import "roboto-fontface/css/roboto/roboto-fontface.css"
 import "font-awesome/css/font-awesome.css"
+import '@formkit/themes/genesis'
 
 import * as Sentry from "@sentry/vue"
 
@@ -31,6 +33,7 @@ if (SENTRY_ENABLED) {
 }
 
 // Configure plugins
+app.use(plugin, defaultConfig)
 app.use(vuetifyPlugin)
 app.use(router)
 app.use(store)

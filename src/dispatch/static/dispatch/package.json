@@ -10,6 +10,8 @@
     "preview": "vite preview --open --port 8080"
   },
   "dependencies": {
+    "@formkit/themes": "^1.2.2",
+    "@formkit/vue": "^1.2.2",
     "@json2csv/plainjs": "^6.1.1",
     "@json2csv/transforms": "^6.1.1",
     "@mdi/font": "^5.9.55",
@@ -50,7 +52,6 @@
     "eslint-plugin-local-rules": "^2.0.0",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-vue": "^9.7.0",
-    "eslint-plugin-vuetify": "^2.0.5",
     "jquery": "^3.6.0",
     "jwt-decode": "^3.1.2",
     "prettier": "^2.7.1",

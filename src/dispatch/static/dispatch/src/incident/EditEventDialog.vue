@@ -28,7 +28,7 @@
             <v-row>
               <span class="ml-8 time-utc"> Time in UTC is {{ formatToUTC(started_at) }} </span>
             </v-row>
-            <v-flex xs12>
+            <v-row>
               <v-textarea
                 v-model="description"
                 class="mt-3"
@@ -37,7 +37,7 @@
                 clearable
                 required
               />
-            </v-flex>
+            </v-row>
           </v-layout>
         </v-container>
       </v-card-text>

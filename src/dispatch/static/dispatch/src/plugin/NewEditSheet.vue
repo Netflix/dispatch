@@ -5,7 +5,6 @@
         <v-list-item-title v-if="id" class="text-h6"> Edit </v-list-item-title>
         <v-list-item-title v-else class="text-h6"> New </v-list-item-title>
         <v-list-item-subtitle>Plugin Instance</v-list-item-subtitle>
-
         <template #append>
           <v-btn
             icon
@@ -32,7 +31,7 @@
             hint="Each plugin type can only ever have one enabled plugin. Existing enabled plugins will be de-activated."
             label="Enabled"
           />
-          <json-form
+          <!-- <json-form
             v-if="!plugin"
             v-model="configuration"
             :schema="configuration_schema"
@@ -43,7 +42,10 @@
             v-model="configuration"
             :schema="plugin.configuration_schema"
             :options="options"
-          />
+          /> -->
+          <FormKit type="form" v-model="configuration" :actions="false">
+            <FormKitSchema :schema="formkit_configuration_schema" />
+          </FormKit>
         </v-form>
       </v-card-text>
     </v-card>
@@ -82,6 +84,7 @@ export default {
       "selected.enabled",
       "selected.configuration",
       "selected.configuration_schema",
+      "selected.formkit_configuration_schema",
       "selected.loading",
       "selected.plugin",
       "dialogs.showCreateEdit",
