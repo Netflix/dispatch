@@ -7,14 +7,11 @@
     </template>
     <v-card>
       <v-card-title>
-        <span class="text-h5">Feedback Filters</span>
+        <span class="text-h5">Service Feedback Filters</span>
       </v-card-title>
       <v-list density="compact">
         <v-list-item>
           <project-combobox v-model="local_project" label="Projects" />
-        </v-list-item>
-        <v-list-item>
-          <incident-combobox v-model="local_incident" label="Incidents" />
         </v-list-item>
       </v-list>
       <v-card-actions>
@@ -29,14 +26,12 @@
 import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
 
-import IncidentCombobox from "@/incident/IncidentCombobox.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 
 export default {
-  name: "FeedbackTableFilterDialog",
+  name: "ServiceFeedbackTableFilterDialog",
 
   components: {
-    IncidentCombobox,
     ProjectCombobox,
   },
 
@@ -52,16 +47,15 @@ export default {
   data() {
     return {
       display: false,
-      local_incident: [],
       local_project: this.projects,
     }
   },
 
   computed: {
-    ...mapFields("feedback", ["table.options.filters.incident", "table.options.filters.project"]),
+    ...mapFields("service_feedback", ["table.options.filters.project"]),
 
     numFilters: function () {
-      return sum([this.incident.length, this.project.length])
+      return sum([this.project.length])
     },
   },
 
@@ -69,7 +63,6 @@ export default {
     applyFilters() {
       // we set the filter values
       this.project = this.local_project
-      this.incident = this.local_incident
 
       // we close the dialog
       this.display = false

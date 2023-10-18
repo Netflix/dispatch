@@ -34,7 +34,7 @@ executing==1.2.0
     #   stack-data
 factory-boy==3.3.0
     # via -r requirements-dev.in
-faker==19.6.2
+faker==19.10.0
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -72,7 +72,7 @@ platformdirs==3.10.0
     #   virtualenv
 pluggy==1.2.0
     # via pytest
-pre-commit==3.4.0
+pre-commit==3.5.0
     # via -r requirements-dev.in
 prompt-toolkit==3.0.39
     # via ipython
@@ -106,7 +106,7 @@ traitlets==5.9.0
     #   matplotlib-inline
 virtualenv==20.24.3
     # via pre-commit
-vulture==2.9.1
+vulture==2.10
     # via -r requirements-dev.in
 wcwidth==0.2.6
     # via prompt-toolkit

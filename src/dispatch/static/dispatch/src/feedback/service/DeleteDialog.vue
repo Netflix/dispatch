@@ -5,7 +5,7 @@
         <span class="text-h5">Delete Feedback?</span>
       </v-card-title>
       <v-card-text>
-        <v-container> Are you sure you would like to delete this feedback? </v-container>
+        <v-container>Are you sure you would like to delete this feedback?</v-container>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
@@ -20,16 +20,16 @@
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 export default {
-  name: "FeedbackDeleteDialog",
+  name: "ServiceFeedbackDeleteDialog",
   data() {
     return {}
   },
   computed: {
-    ...mapFields("feedback", ["dialogs.showRemove"]),
+    ...mapFields("service_feedback", ["dialogs.showRemove"]),
   },
 
   methods: {
-    ...mapActions("feedback", ["remove", "closeRemove"]),
+    ...mapActions("service_feedback", ["remove", "closeRemove"]),
   },
 }
 </script>

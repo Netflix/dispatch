@@ -159,7 +159,7 @@ function convertToFormkit(json_schema) {
   }
   var formkit_schema = []
   var title = {
-    "$el": "h1",
+    $el: "h1",
     children: json_schema.description,
   }
   formkit_schema.push(title)
@@ -171,19 +171,17 @@ function convertToFormkit(json_schema) {
         name: key,
         label: value.title,
         help: value.description,
-        validation: 'required',
+        validation: "required",
       }
-    }
-    else if (value.type == "string") {
+    } else if (value.type == "string") {
       obj = {
         $formkit: "text",
         name: key,
         label: value.title,
         help: value.description,
-        validation: 'required',
+        validation: "required",
       }
-    }
-    else if (value.type == "boolean") {
+    } else if (value.type == "boolean") {
       obj = {
         $cmp: "FormKit",
         props: {

@@ -6,9 +6,9 @@
         <span v-else class="text-h5">Edit event</span>
       </v-card-title>
       <v-card-text>
-        <v-container grid-list-md class="mt-3">
-          <v-layout wrap>
-            <v-row>
+        <v-container class="mt-3">
+          <v-row>
+            <v-col cols="12">
               <date-time-picker-menu
                 label="Reported At"
                 v-model="started_at"
@@ -24,11 +24,11 @@
               <v-btn color="green en-1" class="ml-10 mt-3" width="100" @click="setTimeToNow()">
                 Now
               </v-btn>
-            </v-row>
-            <v-row>
+            </v-col>
+            <v-col cols="12">
               <span class="ml-8 time-utc"> Time in UTC is {{ formatToUTC(started_at) }} </span>
-            </v-row>
-            <v-row>
+            </v-col>
+            <v-col cols="12">
               <v-textarea
                 v-model="description"
                 class="mt-3"
@@ -37,8 +37,8 @@
                 clearable
                 required
               />
-            </v-row>
-          </v-layout>
+            </v-col>
+          </v-row>
         </v-container>
       </v-card-text>
       <v-card-actions>

@@ -10,7 +10,7 @@ import definition from "@/definition/store"
 import document from "@/document/store"
 import entity from "@/entity/store"
 import entity_type from "@/entity_type/store"
-import feedback from "@/feedback/store"
+import incident_feedback from "@/feedback/incident/store"
 import incident from "@/incident/store"
 import incident_cost_type from "@/incident_cost_type/store"
 import incident_priority from "@/incident/priority/store"
@@ -28,6 +28,7 @@ import reference from "@/document/reference/store"
 import runbook from "@/document/runbook/store"
 import search from "@/search/store"
 import service from "@/service/store"
+import service_feedback from "@/feedback/service/store"
 import signal from "@/signal/store"
 import signalEngagement from "@/signal/engagement/store"
 import signalFilter from "@/signal/filter/store"
@@ -57,7 +58,7 @@ export default createStore({
     document,
     entity,
     entity_type,
-    feedback,
+    incident_feedback,
     incident,
     incident_cost_type,
     incident_priority,
@@ -75,6 +76,7 @@ export default createStore({
     runbook,
     search,
     service,
+    service_feedback,
     source,
     sourceDataFormat,
     sourceEnvironment,

@@ -3,7 +3,7 @@
     <delete-dialog />
     <v-row no-gutters>
       <v-col>
-        <div class="text-h5">Feedback</div>
+        <div class="text-h5">Incident feedback</div>
       </v-col>
       <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
@@ -75,10 +75,10 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { formatRelativeDate, formatDate } from "@/filters"
 
-import DeleteDialog from "@/feedback/DeleteDialog.vue"
+import DeleteDialog from "@/feedback/incident/DeleteDialog.vue"
 import Participant from "@/incident/Participant.vue"
 import RouterUtils from "@/router/utils"
-import TableFilterDialog from "@/feedback/TableFilterDialog.vue"
+import TableFilterDialog from "@/feedback/incident/TableFilterDialog.vue"
 
 export default {
   name: "FeedbackTable",
@@ -109,7 +109,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("feedback", [
+    ...mapFields("incident_feedback", [
       "table.options.q",
       "table.options.page",
       "table.options.itemsPerPage",
@@ -140,7 +140,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("feedback", ["getAll", "removeShow"]),
+    ...mapActions("incident_feedback", ["getAll", "removeShow"]),
   },
 
   created() {
