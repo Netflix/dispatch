@@ -12,7 +12,7 @@ attrs==22.1.0
     # via -r requirements-dev.in
 backcall==0.2.0
     # via ipython
-black==23.9.1
+black==23.10.0
     # via -r requirements-dev.in
 cfgv==3.4.0
     # via pre-commit
@@ -90,7 +90,7 @@ python-dateutil==2.8.2
     # via faker
 pyyaml==6.0.1
     # via pre-commit
-ruff==0.0.292
+ruff==0.1.0
     # via -r requirements-dev.in
 six==1.16.0
     # via
