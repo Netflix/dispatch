@@ -10,6 +10,7 @@ from dispatch.models import DispatchBase, Pagination, PrimaryKey, ProjectMixin, 
 from dispatch.project.models import ProjectRead
 
 
+# TODO(averyl): Do we want an updated_at field? What about existing entries that don't have this field?
 # SQLAlchemy Model
 class IncidentCost(Base, TimeStampMixin, ProjectMixin):
     # columns

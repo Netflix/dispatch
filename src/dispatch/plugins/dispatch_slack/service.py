@@ -13,6 +13,7 @@ from slack_sdk.web.slack_response import SlackResponse
 
 from .config import SlackConversationConfiguration
 from .enums import SlackAPIErrorCode, SlackAPIGetEndpoints, SlackAPIPostEndpoints
+from dispatch.conversation.enums import ConversationCommands, ConversationFilters
 
 
 Conversation = dict[str, str]
@@ -376,3 +377,99 @@ def add_pin(client: WebClient, conversation_id: str, timestamp: str) -> SlackRes
 def is_user(config: SlackConversationConfiguration, user_id: str) -> bool:
     """Returns true if it's a regular user, false if Dispatch or Slackbot bot."""
     return user_id != config.app_user_slug and user_id != "USLACKBOT"
+
+
+def get_thread_replies(
+    client: WebClient, conversation_id: str, ts: str, cursor: str = None, exclusions: List[str] = []
+) -> dict:
+    """Gets all threads for a given message."""
+
+    result = {
+        "id": conversation_id,
+        "ts": ts,
+        "messages": [],
+    }
+
+    while True:
+        response = make_call(
+            client,
+            SlackAPIGetEndpoints.conversations_replies,
+            channel=conversation_id,
+            ts=ts,
+            cursor=cursor,
+        )
+        if not "ok" in response or not "messages" in response:
+            break
+
+        result["messages"] += response["messages"]
+
+        if not response["has_more"]:
+            break
+        cursor = response["response_metadata"]["next_cursor"]
+
+    return result
+
+
+def get_channel_messages(
+    client: WebClient, conversation_id: str, cursor: str = None, exclusions: List[str] = []
+) -> dict:
+    """Gets all messages for a given conversation."""
+    result = {
+        "id": conversation_id,
+        "messages": [],
+    }
+    while True:
+        response = make_call(
+            client,
+            SlackAPIGetEndpoints.conversations_history,
+            channel=conversation_id,
+            cursor=cursor,
+        )
+        if not "ok" in response or not "messages" in response:
+            break
+
+        # filter out messages of a specific type
+        if exclusions:
+            pass
+
+        result["messages"] += response["messages"]
+
+        if not response["has_more"]:
+            break
+        cursor = response["response_metadata"]["next_cursor"]
+
+    return result
+
+
+def get_messages_and_thread_replies(
+    client: WebClient, conversation_id: str, exclusions=List[ConversationFilters]
+):
+    """Gets all messages and threads for a given Slack channel."""
+    result = get_channel_messages(client, conversation_id)
+
+    for message in result["messages"]:
+        if "reply_count" in message:
+            thread_replies = get_thread_replies(
+                client, conversation_id=conversation_id, ts=message["thread_ts"]
+            )
+            result["messages"] += thread_replies["messages"]
+
+    # Sort messages in order.
+    result["messages"].sort(key=lambda x: x["ts"])
+    return result
+
+    # TODO(averyl): add exclusion filtering
+    # for exclusion in exclusions:
+    #     # filter out channel joined messages and bot messages
+    #     if (
+    #         "subtype" in message
+    #         and message["subtype"] == "channel_join"
+    #         or message["subtype"] == "bot_message"
+    #     ):
+    #         continue
+
+    #     if not "user" in message:
+    #         print(f"Error retrieving message {message}")
+    #         continue
+    #     total_messages += 1
+    #     user_activity[message["user"]] += [float(message["ts"])]

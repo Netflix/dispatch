@@ -34,7 +34,11 @@ from dispatch.incident.type.models import (
     IncidentTypeRead,
     IncidentTypeReadMinimal,
 )
-from dispatch.incident_cost.models import IncidentCostRead, IncidentCostUpdate
+from dispatch.incident_cost.models import (
+    IncidentCostRead,
+    IncidentCostUpdate,
+)
+from dispatch.incident_cost_model.models import IncidentCostModelRead
 from dispatch.messaging.strings import INCIDENT_RESOLUTION_DEFAULT
 from dispatch.models import (
     DispatchBase,
@@ -221,6 +225,14 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     notifications_group_id = Column(Integer, ForeignKey("group.id"))
     notifications_group = relationship("Group", foreign_keys=[notifications_group_id])
 
+    incident_cost_model_id = Column(
+        Integer, ForeignKey("incident_cost_model.id"), nullable=True, default=None
+    )
+    incident_cost_model = relationship(
+        "IncidentCostModel",
+        foreign_keys=[incident_cost_model_id],
+    )
+
     @hybrid_property
     def total_cost(self):
         if self.incident_costs:
@@ -285,6 +297,7 @@ class IncidentBase(DispatchBase):
 
 class IncidentCreate(IncidentBase):
     commander: Optional[ParticipantUpdate]
+    incident_cost_model: Optional[IncidentCostModelRead] = None
     incident_priority: Optional[IncidentPriorityCreate]
     incident_severity: Optional[IncidentSeverityCreate]
     incident_type: Optional[IncidentTypeCreate]
@@ -303,6 +316,7 @@ class IncidentReadMinimal(IncidentBase):
     commanders_location: Optional[str]
     created_at: Optional[datetime] = None
     duplicates: Optional[List[IncidentReadMinimal]] = []
+    incident_cost_model: Optional[IncidentCostModelRead] = None
     incident_costs: Optional[List[IncidentCostRead]] = []
     incident_priority: IncidentPriorityReadMinimal
     incident_severity: IncidentSeverityReadMinimal
@@ -329,6 +343,7 @@ class IncidentUpdate(IncidentBase):
     delay_executive_report_reminder: Optional[datetime] = None
     delay_tactical_report_reminder: Optional[datetime] = None
     duplicates: Optional[List[IncidentReadMinimal]] = []
+    incident_cost_model: Optional[IncidentCostModelRead] = None
     incident_costs: Optional[List[IncidentCostUpdate]] = []
     incident_priority: IncidentPriorityBase
     incident_severity: IncidentSeverityBase
@@ -369,6 +384,7 @@ class IncidentRead(IncidentBase):
     documents: Optional[List[DocumentRead]] = []
     duplicates: Optional[List[IncidentReadMinimal]] = []
     events: Optional[List[EventRead]] = []
+    incident_cost_model: Optional[IncidentCostModelRead] = None
     incident_costs: Optional[List[IncidentCostRead]] = []
     incident_priority: IncidentPriorityRead
     incident_severity: IncidentSeverityRead

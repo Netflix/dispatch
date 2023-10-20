@@ -15,6 +15,7 @@ from dispatch.case import service as case_service
 from dispatch.database.core import SessionLocal
 from dispatch.event import service as event_service
 from dispatch.exceptions import NotFoundError
+from dispatch.incident_cost_model import service as incident_cost_model_service
 from dispatch.incident.priority import service as incident_priority_service
 from dispatch.incident.severity import service as incident_severity_service
 from dispatch.incident.type import service as incident_type_service
@@ -188,6 +189,7 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
         tags=tag_objs,
         title=incident_in.title,
         visibility=visibility,
+        incident_cost_model=incident_in.incident_cost_model,
     )
 
     db_session.add(incident)
@@ -302,6 +304,16 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
             incident_priority_in=incident_in.incident_priority,
         )
 
+    incident_cost_model = None
+    if (
+        incident_in.incident_cost_model
+        and incident_in.incident_cost_model.id != incident.incident_cost_model_id
+    ):
+        incident_cost_model = incident_cost_model_service.get_cost_model_by_id(
+            db_session=db_session,
+            incident_cost_model_id=incident_in.incident_cost_model.id,
+        )
+
     cases = []
     for c in incident_in.cases:
         cases.append(case_service.get(db_session=db_session, case_id=c.id))
@@ -332,6 +344,7 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
             "cases",
             "commander",
             "duplicates",
+            "incident_cost_model",
             "incident_costs",
             "incident_priority",
             "incident_severity",
@@ -350,6 +363,7 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
 
     incident.cases = cases
     incident.duplicates = duplicates
+    incident.incident_cost_model = incident_cost_model
     incident.incident_costs = incident_costs
     incident.incident_priority = incident_priority
     incident.incident_severity = incident_severity

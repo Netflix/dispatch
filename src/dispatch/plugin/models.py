@@ -1,23 +1,22 @@
 import logging
 
-from typing import Any, List, Optional
 from pydantic import Field, SecretStr
 from pydantic.json import pydantic_encoder
+from typing import Any, List, Optional
 
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, PrimaryKeyConstraint, Table
 from sqlalchemy.ext.associationproxy import association_proxy
-
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType, StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 
-
-from dispatch.database.core import Base
 from dispatch.config import DISPATCH_ENCRYPTION_KEY
-from dispatch.models import DispatchBase, ProjectMixin, Pagination, PrimaryKey
+from dispatch.database.core import Base
+from dispatch.models import DispatchBase, ProjectMixin, Pagination, PrimaryKey, NameStr
 from dispatch.plugins.base import plugins
 from dispatch.project.models import ProjectRead
+
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +63,17 @@ class Plugin(Base):
             return None
 
 
+# SQLAlchemy Model
+class PluginEvent(Base):
+    __table_args__ = {"schema": "dispatch_core"}
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    description = Column(String)
+    plugin_id = Column(Integer, ForeignKey(Plugin.id))
+    plugin = relationship(Plugin, backref="plugin_event")
+    search_vector = association_proxy("plugin", "search_vector")
+
+
 class PluginInstance(Base, ProjectMixin):
     id = Column(Integer, primary_key=True)
     enabled = Column(Boolean)
@@ -72,7 +82,6 @@ class PluginInstance(Base, ProjectMixin):
     )
     plugin_id = Column(Integer, ForeignKey(Plugin.id))
     plugin = relationship(Plugin, backref="instances")
-
     # this is some magic that allows us to use the plugin search vectors
     # against our plugin instances
     search_vector = association_proxy("plugin", "search_vector")
@@ -86,6 +95,7 @@ class PluginInstance(Base, ProjectMixin):
             plugin.project_id = self.project_id
             return plugin
         except Exception as e:
+            print(f"Error trying to load plugin with slug {self.slug}: {e}")
             logger.warning(f"Error trying to load plugin with slug {self.slug}: {e}")
             return self.plugin
 
@@ -146,6 +156,24 @@ class PluginRead(PluginBase):
     multiple: bool
     configuration_schema: Any
     description: Optional[str] = Field(None, nullable=True)
+
+
+class PluginEventBase(DispatchBase):
+    name: NameStr
+    plugin: PluginRead
+    description: Optional[str] = Field(None, nullable=True)
+
+
+class PluginEventRead(PluginEventBase):
+    id: PrimaryKey
+
+
+class PluginEventCreate(PluginEventBase):
+    pass
+
+
+class PluginEventPagination(Pagination):
+    items: List[PluginEventRead] = []
 
 
 class PluginInstanceRead(PluginBase):

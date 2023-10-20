@@ -37,8 +37,11 @@ from .factories import (
     FeedbackFactory,
     GroupFactory,
     IncidentCostFactory,
+    IncidentCostModelFactory,
+    IncidentCostModelActivityFactory,
     IncidentCostTypeFactory,
     IncidentFactory,
+    IncidentParticipantActivityFactory,
     IncidentPriorityFactory,
     IncidentRoleFactory,
     IncidentTypeFactory,
@@ -48,6 +51,7 @@ from .factories import (
     ParticipantFactory,
     ParticipantRoleFactory,
     PluginFactory,
+    PluginEventFactory,
     PluginInstanceFactory,
     ProjectFactory,
     RecommendationFactory,
@@ -156,6 +160,8 @@ def conversation_plugin():
     from dispatch.plugins.base import register
     from dispatch.plugins.dispatch_test.conversation import TestConversationPlugin
 
+    print("test conversation plugin")
+    print(dir(TestConversationPlugin))
     register(TestConversationPlugin)
     return TestConversationPlugin
 
@@ -520,6 +526,11 @@ def incident(session):
 
 
 @pytest.fixture
+def incident_participant_activity(session):
+    return IncidentParticipantActivityFactory()
+
+
+@pytest.fixture
 def event(session):
     return EventFactory()
 
@@ -612,3 +623,18 @@ def workflow(session, workflow_plugin_instance):
 @pytest.fixture
 def workflow_instance(session):
     return WorkflowInstanceFactory()
+
+
+@pytest.fixture
+def plugin_event(session):
+    return PluginEventFactory()
+
+
+@pytest.fixture
+def incident_cost_model(session):
+    return IncidentCostModelFactory()
+
+
+@pytest.fixture
+def incident_cost_model_activity(session):
+    return IncidentCostModelActivityFactory()

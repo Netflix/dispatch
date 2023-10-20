@@ -83,10 +83,12 @@ def install_plugins(force):
     from dispatch.common.utils.cli import install_plugins
     from dispatch.database.core import SessionLocal
     from dispatch.plugin import service as plugin_service
-    from dispatch.plugin.models import Plugin
+    from dispatch.plugin.models import Plugin, PluginEvent
     from dispatch.plugins.base import plugins
 
+    print("before utils install plugins")
     install_plugins()
+    print("after utils install plugins")
 
     db_session = SessionLocal()
     for p in plugins.all():
@@ -104,6 +106,15 @@ def install_plugins(force):
                 description=p.description,
             )
             db_session.add(plugin)
+
+            print(f"installing plugin events for plugin {plugin.id}")
+            for pe in p.plugin_events:
+                plugin_event = PluginEvent(
+                    name=pe.name,
+                    description=pe.description,
+                    plugin=plugin,
+                )
+                db_session.add(plugin_event)
         else:
             if force:
                 click.secho(f"Updating plugin... Slug: {p.slug} Version: {p.version}", fg="blue")
@@ -114,6 +125,18 @@ def install_plugins(force):
                 record.author_url = p.author_url
                 record.description = p.description
                 record.type = p.type
+
+            plugin_events = plugin_service.get_all_events_for_plugin(
+                db_session=db_session, plugin_id=record.id
+            )
+            print(f"Updating plugin events for plugin {record.id}")
+            for pe in p.plugin_events:
+                plugin_event = PluginEvent(
+                    name=pe.name,
+                    description=pe.description,
+                    plugin=record,
+                )
+                db_session.add(plugin_event)
 
         db_session.commit()
 

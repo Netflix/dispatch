@@ -45,3 +45,32 @@ def test_delete(session, incident_cost):
 
     delete(db_session=session, incident_cost_id=incident_cost.id)
     assert not get(db_session=session, incident_cost_id=incident_cost.id)
+
+
+def test_calculate_incident_cost(
+    session,
+    incident,
+    incident_cost_model_activity,
+    conversation_plugin_instance,
+    conversation,
+):
+    from dispatch.incident.service import get
+    from dispatch.incident_cost.service import calculate_incident_cost
+
+    from dispatch.plugins.dispatch_slack.events import ChannelActivityEvent
+
+    # Setup
+    conversation_plugin_instance.project_id = incident.project.id
+    incident_cost_model_activity.event.plugin = conversation_plugin_instance.plugin
+
+    incident = get(db_session=session, incident_id=incident.id)
+    incident_cost_model_activity.event.name = ChannelActivityEvent.name
+    incident.incident_cost_model.enabled = True
+    incident.incident_cost_model.activities = [incident_cost_model_activity]
+    incident.conversation = conversation
+
+    cost = calculate_incident_cost(
+        incident_id=incident.id, db_session=session, incident_review=False
+    )
+    print(cost)
+    assert False  # cost > 0

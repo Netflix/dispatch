@@ -1,14 +1,11 @@
 import calendar
+from datetime import date, datetime
+from dateutil.relativedelta import relativedelta
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 import json
 import logging
-from datetime import date, datetime
 from typing import Annotated, List
-
-from dateutil.relativedelta import relativedelta
-
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from starlette.requests import Request
-
 from sqlalchemy.exc import IntegrityError
 
 from dispatch.auth.permissions import (
@@ -22,14 +19,14 @@ from dispatch.auth.service import CurrentUser
 from dispatch.common.utils.views import create_pydantic_include
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
+from dispatch.event import flows as event_flows
+from dispatch.event.models import EventUpdate, EventCreateMinimal
 from dispatch.incident.enums import IncidentStatus
 from dispatch.individual.models import IndividualContactRead
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.participant.models import ParticipantUpdate
 from dispatch.report import flows as report_flows
-from dispatch.event import flows as event_flows
 from dispatch.report.models import ExecutiveReportCreate, TacticalReportCreate
-from dispatch.event.models import EventUpdate, EventCreateMinimal
 
 from .flows import (
     incident_add_or_reactivate_participant_flow,
@@ -63,7 +60,7 @@ def get_current_incident(db_session: DbSession, request: Request) -> Incident:
     if not incident:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "An incident with this id does not existt."}],
+            detail=[{"msg": "An incident with this id does not exist."}],
         )
     return incident
 

@@ -6,7 +6,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import logging
-from typing import List, Optional
+from typing import List, Optional, Any
 
 from blockkit import Message
 from sqlalchemy.orm import Session
@@ -41,6 +41,8 @@ from .service import (
     does_user_exist,
     get_user_avatar_url,
     get_user_profile_by_email,
+    get_channel_messages,
+    get_thread_replies,
     rename_conversation,
     resolve_user,
     send_ephemeral_message,
@@ -51,6 +53,7 @@ from .service import (
 )
 from slack_sdk.errors import SlackApiError
 from .enums import SlackAPIErrorCode
+from .events import *
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +66,7 @@ class SlackConversationPlugin(ConversationPlugin):
     description = "Uses Slack to facilitate conversations."
     version = slack_plugin.__version__
     events = slack_event_router
+    plugin_events = [ChannelActivityEvent, ThreadActivityEvent]
 
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
@@ -80,6 +84,12 @@ class SlackConversationPlugin(ConversationPlugin):
         client = create_slack_client(self.configuration)
         blocks = create_case_message(case=case, channel_id=conversation_id)
         response = send_message(client=client, conversation_id=conversation_id, blocks=blocks)
+        send_message(
+            client=client,
+            conversation_id=conversation_id,
+            text="All real-time case collaboration should be captured in this thread.",
+            ts=response["timestamp"],
+        )
         if case.signal_instances:
             message = create_signal_messages(
                 case_id=case.id, channel_id=conversation_id, db_session=db_session
@@ -300,6 +310,88 @@ class SlackConversationPlugin(ConversationPlugin):
             ConversationCommands.tactical_report: self.configuration.slack_command_report_tactical,
         }
         return command_mappings.get(command, [])
+
+    # TODO(averyl): Implement this thing, add additional filters ...user_middleware?
+    def fetch_incident_events(
+        self, subject: Any, exclusions: List = [], events: List = [], **kwargs
+    ):
+        print("FETCH INCIDENT EVENT")
+        for event in events:
+            try:
+                client = create_slack_client(self.configuration)
+                print(event)
+                return event.fetch_activity(client, subject, exclusions)
+            except SlackApiError as e:
+                if e.response["error"] == SlackAPIErrorCode.CHANNEL_NOT_FOUND:
+                    return None
+                else:
+                    raise e
+            except Exception as e:
+                logger.exception(e)
+                raise e
+
+    # def record_thread_activity(
+    #     client: WebClient, channel: str, ts: str, user_activity: defaultdict
+    # ) -> int:
+    #     has_more = True
+    #     cursor = None
+    #     while has_more:
+    #         thread_history = client.conversations_replies(
+    #             channel=channel, ts=ts, cursor=cursor
+    #         )  # assume we do not have more than 1000 replies
+    #         if thread_history["ok"] and "messages" in thread_history:
+    #             has_more = thread_history["has_more"]
+    #             if has_more:
+    #                 cursor = thread_history["response_metadata"]["next_cursor"]
+    #             for message in thread_history["messages"]:
+    #                 if not "user" in message:
+    #                     print(f"Error retrieving message for thread {ts}")
+    #                     continue
+    #                 user_activity[message["user"]] += [float(message["ts"])]
+
+    # def get_slack_history(client: WebClient, channel: str, user_activity: defaultdict) -> dict:
+    #     has_more = True
+    #     total_messages = 0
+    #     total_threads = 0
+    #     cursor = None
+    #     while has_more:
+    #         history = client.conversations_history(channel=channel, cursor=cursor, limit=100)
+    #         if history["ok"]:
+    #             if not "messages" in history:
+    #                 return
+
+    #             # for large limits
+    #             has_more = history["has_more"]
+    #             if has_more:
+    #                 cursor = history["response_metadata"]["next_cursor"]
+
+    #             for message in history["messages"]:
+    #                 # filter out channel joined messages and bot messages
+    #                 if (
+    #                     "subtype" in message
+    #                     and message["subtype"] == "channel_join"
+    #                     or message["subtype"] == "bot_message"
+    #                 ):
+    #                     continue
+
+    #                 if not "user" in message:
+    #                     print(f"Error retrieving message {message}")
+    #                     continue
+    #                 total_messages += 1
+    #                 user_activity[message["user"]] += [float(message["ts"])]
+
+    #                 # check for thread activity
+    #                 if "reply_count" in message:
+    #                     total_threads += message["reply_count"]
+    #                     record_thread_activity(
+    #                         client, channel, ts=message["thread_ts"], user_activity=user_activity
+    #                     )
+    #         print(f"messages: {total_messages}")
+    #         print(f"thread activity: {total_threads}")
+
+    #     # Additional metrics
+    #     print(f"total number of messages: {total_messages}")
+    #     print(f"total number of thread replies: {total_threads}")
 
 
 @apply(counter, exclude=["__init__"])

@@ -34,6 +34,10 @@ from dispatch.incident.priority.models import IncidentPriority
 from dispatch.incident.severity.models import IncidentSeverity
 from dispatch.incident.type.models import IncidentType
 from dispatch.incident_cost.models import IncidentCost
+from dispatch.incident_cost_model.models import IncidentCostModel
+from dispatch.incident_cost_model_activity.models import IncidentCostModelActivity
+from dispatch.incident_participant_activity.models import IncidentParticipantActivity
+from dispatch.plugin.models import PluginEvent
 from dispatch.incident_cost_type.models import IncidentCostType
 from dispatch.incident_role.models import IncidentRole
 from dispatch.individual.models import IndividualContact
@@ -42,6 +46,7 @@ from dispatch.organization.models import Organization
 from dispatch.participant.models import Participant
 from dispatch.participant_role.models import ParticipantRole
 from dispatch.plugin.models import Plugin, PluginInstance
+from dispatch.plugins.bases.conversation import ConversationPlugin
 from dispatch.project.models import Project
 from dispatch.report.models import Report
 from dispatch.route.models import Recommendation, RecommendationMatch
@@ -138,6 +143,32 @@ class ProjectFactory(BaseFactory):
 
         if extracted:
             self.organization_id = extracted.id
+
+
+class IncidentCostModelFactory(BaseFactory):
+    """Incident Cost Model Factory."""
+
+    id = Sequence(lambda n: f"1{n}")
+    name = FuzzyText()
+    description = FuzzyText()
+    created_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
+    updated_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
+    enabled = Faker().pybool()
+    project = SubFactory(ProjectFactory)
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = IncidentCostModel
+
+    @post_generation
+    def activities(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for activity in extracted:
+                self.activities.append(activity)
 
 
 class ResourceBaseFactory(TimeStampBaseFactory):
@@ -628,6 +659,31 @@ class ServiceFactory(TimeStampBaseFactory):
                 self.terms.append(term)
 
 
+# class ConversationPluginServiceFactory(BaseFactory):
+#     """Conversation Plugin Service Factory."""
+
+#     service_id = Sequence(lambda n: f"service{n}")
+#     service_type = Sequence(lambda n: f"service{n}")
+#     service_name = Sequence(lambda n: f"service{n}")
+#     service_description = Sequence(lambda n: f"service{n}")
+#     service_external_id = Sequence(lambda n: f"service{n}")
+#     service_is_active = True
+#     service_project = SubFactory(ProjectFactory)
+
+#     class Meta:
+#         """Factory Configuration."""
+
+#         model = Service
+
+#     @post_generation
+#     def conversation_plugin(self, create, extracted, **kwargs):
+#         if not create:
+#             return
+
+#         if extracted:
+#             self.conversation_plugin_id = extracted.id
+
+
 class ReportFactory(BaseFactory):
     """Report Factory."""
 
@@ -889,6 +945,8 @@ class IncidentFactory(BaseFactory):
     incident_priority = SubFactory(IncidentPriorityFactory)
     incident_severity = SubFactory(IncidentSeverityFactory)
     project = SubFactory(ProjectFactory)
+    incident_cost_model = SubFactory(IncidentCostModelFactory)
+    conversation = SubFactory(ConversationFactory)
 
     class Meta:
         """Factory Configuration."""
@@ -1213,6 +1271,7 @@ class PluginFactory(BaseFactory):
 class PluginInstanceFactory(BaseFactory):
     """PluginInstance Factory."""
 
+    # id = Sequence(lambda n: f"1{n}")
     enabled = True
     project = SubFactory(ProjectFactory)
     plugin = SubFactory(PluginFactory)
@@ -1221,6 +1280,48 @@ class PluginInstanceFactory(BaseFactory):
         """Factory Configuration."""
 
         model = PluginInstance
+
+
+class PluginEventFactory(BaseFactory):
+    """Plugin Event Factory."""
+
+    id = Sequence(lambda n: f"1{n}")
+    name = FuzzyText()
+    plugin = SubFactory(PluginFactory)
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = PluginEvent
+
+
+class IncidentCostModelActivityFactory(BaseFactory):
+    """Incident Cost Model Activity Factory."""
+
+    response_time_seconds = FuzzyInteger(low=1, high=10000)
+    enabled = Faker().pybool()
+    event = SubFactory(PluginEventFactory)
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = IncidentCostModelActivity
+
+
+class IncidentParticipantActivityFactory(BaseFactory):
+    """Incident Participant Activity Factory."""
+
+    id = Sequence(lambda n: f"1{n}")
+    plugin_event = SubFactory(PluginEventFactory)
+    started_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
+    ended_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
+    participant = SubFactory(ParticipantFactory)
+    incident = SubFactory(IncidentFactory)
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = IncidentParticipantActivity
 
 
 class WorkflowFactory(BaseFactory):

@@ -1,5 +1,5 @@
 from typing import List, Optional
-
+from dispatch.database.core import SessionLocal
 from dispatch.decorators import timer
 from dispatch.case import service as case_service
 from dispatch.incident import service as incident_service
@@ -16,6 +16,14 @@ from .models import Participant, ParticipantCreate, ParticipantUpdate
 def get(*, db_session, participant_id: int) -> Optional[Participant]:
     """Get a participant by its id."""
     return db_session.query(Participant).filter(Participant.id == participant_id).first()
+
+
+def get_all_by_individual_contact_id(db_session: SessionLocal, individual_id: int) -> Participant:
+    return (
+        db_session.query(Participant)
+        .filter(Participant.individual_contact_id == individual_id)
+        .first()
+    )
 
 
 def get_by_incident_id_and_role(
