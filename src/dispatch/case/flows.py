@@ -665,7 +665,12 @@ def case_create_resources_flow(
 
     try:
         # we create the conversation and add participants to the thread
-        conversation_flows.create_case_conversation(case, conversation_target, db_session)
+        conversation = conversation_flows.create_case_conversation(
+            case, conversation_target, db_session
+        )
+
+        if not conversation:
+            raise Exception("Failed to create conversation.")
 
         event_service.log_case_event(
             db_session=db_session,
@@ -699,6 +704,7 @@ def case_create_resources_flow(
             description="Case participants added to conversation.",
             case_id=case.id,
         )
+
     except Exception as e:
         event_service.log_case_event(
             db_session=db_session,
