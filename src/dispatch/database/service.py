@@ -390,7 +390,7 @@ def composite_search(*, db_session, query_str: str, models: List[Base], current_
 
     # TODO can we do this with composite filtering?
     # for model in models:
-    # 	 query = apply_model_specific_filters(model, query, current_user)
+    #    query = apply_model_specific_filters(model, query, current_user)
 
     return s.search(query=query)
 
@@ -497,6 +497,7 @@ def search_filter_sort_paginate(
 ):
     """Common functionality for searching, filtering, sorting, and pagination."""
     model_cls = get_class_by_tablename(model)
+
     try:
         query = db_session.query(model_cls)
 
