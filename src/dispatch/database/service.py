@@ -503,8 +503,6 @@ def search_filter_sort_paginate(
 
         if query_str:
             sort = False if sort_by else True
-            # if model == "SignalInstance":
-            #     model = "Signal"
             query = search(query_str=query_str, query=query, model=model, sort=sort)
 
         query_restricted = apply_model_specific_filters(model_cls, query, current_user, role)
