@@ -160,7 +160,11 @@ export default {
 
   methods: {
     remove(item) {
-      this.searchFilters.splice(this.searchFilters.indexOf(item), 1)
+      const index = this.searchFilters.indexOf(item)
+      if (index !== -1) {
+        this.searchFilters.splice(index, 1)
+        this.$emit("input", this.searchFilters)
+      }
     },
     fetchData() {
       this.error = null
