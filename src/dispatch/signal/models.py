@@ -4,19 +4,20 @@ from typing import List, Optional, Any
 
 from pydantic import Field
 from sqlalchemy import (
-    JSON,
+    select,
     Boolean,
     Column,
     DateTime,
     ForeignKey,
     Integer,
+    JSON,
     PrimaryKeyConstraint,
     String,
     Table,
     UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import JSONB, UUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, column_property
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.auth.models import DispatchUser
@@ -236,8 +237,19 @@ class SignalInstance(Base, TimeStampMixin, ProjectMixin):
     signal = relationship("Signal", backref="instances")
     signal_id = Column(Integer, ForeignKey("signal.id"))
 
+    signal_name = column_property(select([Signal.name]).where(Signal.id == signal_id))
+    signal_description = column_property(select([Signal.description]).where(Signal.id == signal_id))
 
-# Pydantic models...
+    search_vector = Column(
+        TSVectorType(
+            "signal_name",
+            "signal_description",
+            weights={"signal_name": "A", "signal_description": "B"},
+        )
+    )
+
+
+# Pydantic models
 class Service(DispatchBase):
     id: PrimaryKey
     description: Optional[str] = Field(None, nullable=True)
