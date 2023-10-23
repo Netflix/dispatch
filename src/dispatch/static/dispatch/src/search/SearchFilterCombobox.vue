@@ -148,9 +148,12 @@ export default {
   },
 
   methods: {
-    createFilter(value) {
-      this.items.push(value)
-      this.searchFilters.push(value)
+    remove(item) {
+      const index = this.searchFilters.indexOf(item)
+      if (index !== -1) {
+        this.searchFilters.splice(index, 1)
+        this.$emit("input", this.searchFilters)
+      }
     },
     fetchData() {
       this.error = null

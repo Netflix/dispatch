@@ -104,9 +104,9 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-
 import NewEditDialog from "@/signal/NewEditDialog.vue"
 import DeleteDialog from "@/signal/DeleteDialog.vue"
+
 export default {
   name: "SignalTable",
   components: { NewEditDialog, DeleteDialog },

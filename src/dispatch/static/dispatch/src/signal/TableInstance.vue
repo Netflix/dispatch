@@ -8,6 +8,16 @@
     <v-row no-gutters>
       <v-col>
         <v-card elevation="0">
+          <v-card-title>
+            <v-text-field
+              v-model="q"
+              append-icon="search"
+              label="Search"
+              single-line
+              hide-details
+              clearable
+            />
+          </v-card-title>
           <v-data-table-server
             :headers="headers"
             :items="items"
@@ -22,11 +32,20 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
+            <template #item.create_case="{ value }">
+              <v-simple-checkbox v-model="value.signal.create_case" disabled />
+            </template>
             <template #item.case="{ value }">
               <case-popover v-if="value" :value="value" />
             </template>
             <template #item.signal="{ value }">
               <signal-popover :value="value" />
+            </template>
+            <template #item.project.name="{ item, value }">
+              <v-chip size="small" :color="item.project.color">
+                {{ value }}
+            <template #item.canary="{ value }">
+              <v-simple-checkbox v-model="value.signal.canary" disabled />
             </template>
             <template #item.project.name="{ item, value }">
               <v-chip size="small" :color="item.project.color">
@@ -74,29 +93,31 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { formatRelativeDate, formatDate } from "@/filters"
 
-import RouterUtils from "@/router/utils"
-import SignalPopover from "@/signal/SignalPopover.vue"
 import CasePopover from "@/case/CasePopover.vue"
 import RawSignalViewer from "@/signal/RawSignalViewer.vue"
+import RouterUtils from "@/router/utils"
+import SignalPopover from "@/signal/SignalPopover.vue"
 
 export default {
   name: "SignalInstanceTable",
 
   components: {
-    SignalPopover,
     CasePopover,
     RawSignalViewer,
+    SignalPopover,
   },
 
   data() {
     return {
       headers: [
-        { title: "Case", value: "case", sortable: false },
-        { title: "Signal", value: "signal", sortable: false },
-        { title: "Project", value: "project.name", sortable: true },
-        { title: "Filter Action", value: "filter_action", sortable: true },
-        { title: "Created At", value: "created_at" },
-        { title: "", key: "data-table-actions", sortable: false, align: "end" },
+        { text: "Create Case", value: "create_case", sortable: false },
+        { text: "Case", value: "case", sortable: false },
+        { text: "Signal Definition", value: "signal", sortable: false },
+        { text: "Canary", value: "canary", sortable: false },
+        { text: "Filter Action", value: "filter_action", sortable: true },
+        { text: "Project", value: "project.name", sortable: true },
+        { text: "Created At", value: "created_at" },
+        { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },
