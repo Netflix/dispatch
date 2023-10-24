@@ -12,7 +12,7 @@ attrs==22.1.0
     # via -r requirements-dev.in
 backcall==0.2.0
     # via ipython
-black==23.10.0
+black==23.10.1
     # via -r requirements-dev.in
 cfgv==3.4.0
     # via pre-commit
