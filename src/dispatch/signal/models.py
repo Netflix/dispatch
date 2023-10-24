@@ -240,13 +240,13 @@ class SignalInstance(Base, TimeStampMixin, ProjectMixin):
     signal_name = column_property(select([Signal.name]).where(Signal.id == signal_id))
     signal_description = column_property(select([Signal.description]).where(Signal.id == signal_id))
 
-    # search_vector = Column(
-    #    TSVectorType(
-    #        "signal_name",
-    #        "signal_description",
-    #        weights={"signal_name": "A", "signal_description": "B"},
-    #    )
-    # )
+    search_vector = Column(
+        TSVectorType(
+            "signal_name",
+            "signal_description",
+            weights={"signal_name": "A", "signal_description": "B"},
+        )
+    )
 
 
 # Pydantic models
