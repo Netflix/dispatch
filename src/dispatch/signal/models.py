@@ -4,7 +4,6 @@ from typing import List, Optional, Any
 
 from pydantic import Field
 from sqlalchemy import (
-    select,
     Boolean,
     Column,
     DateTime,
@@ -17,7 +16,7 @@ from sqlalchemy import (
     UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import JSONB, UUID
-from sqlalchemy.orm import relationship, column_property
+from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.auth.models import DispatchUser
@@ -236,17 +235,6 @@ class SignalInstance(Base, TimeStampMixin, ProjectMixin):
     raw = Column(JSONB)
     signal = relationship("Signal", backref="instances")
     signal_id = Column(Integer, ForeignKey("signal.id"))
-
-    signal_name = column_property(select([Signal.name]).where(Signal.id == signal_id))
-    signal_description = column_property(select([Signal.description]).where(Signal.id == signal_id))
-
-    search_vector = Column(
-        TSVectorType(
-            "signal_name",
-            "signal_description",
-            weights={"signal_name": "A", "signal_description": "B"},
-        )
-    )
 
 
 # Pydantic models
