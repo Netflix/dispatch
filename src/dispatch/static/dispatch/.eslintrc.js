@@ -6,6 +6,7 @@ module.exports = {
     "plugin:prettier/recommended",
     "plugin:vue/vue3-strongly-recommended",
     "plugin:vuetify/base",
+    "plugin:storybook/recommended"
   ],
   parserOptions: {
     ecmaVersion: 2020,

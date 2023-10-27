@@ -30,6 +30,13 @@ export default defineConfig({
       },
     },
   ],
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: `@import "src/styles/index.scss";`,
+      },
+    },
+  },
   server: {
     port: 8080,
     proxy: {
