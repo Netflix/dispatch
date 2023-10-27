@@ -33,7 +33,7 @@
             loading-text="Loading... Please wait"
           >
             <template #item.create_case="{ value }">
-              <v-simple-checkbox v-model="value.signal.create_case" disabled />
+              <v-checkbox-btn model="value.signal.create_case" disabled />
             </template>
             <template #item.case="{ value }">
               <case-popover v-if="value" :value="value" />
@@ -42,7 +42,7 @@
               <signal-popover :value="value" />
             </template>
             <template #item.canary="{ value }">
-              <v-simple-checkbox v-model="value.signal.canary" disabled />
+              <v-checkbox-btn v-model="value.signal.canary" disabled />
             </template>
             <template #item.project.name="{ item, value }">
               <v-chip size="small" :color="item.project.color">
