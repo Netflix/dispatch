@@ -1,5 +1,5 @@
 <template>
-  <v-card class="widget-card" variant="outlined" elevation="0">
+  <v-card class="widget-card">
     <v-card-text class="pa-0">
       <v-container>
         <v-row dense>

@@ -1,6 +1,6 @@
 <template>
   <v-form @submit.prevent="report()" v-slot="{ isValid }">
-    <v-card class="mx-auto ma-4" max-width="600" flat variant="outlined" :loading="loading">
+    <v-card class="mx-auto ma-4" max-width="600" flat :loading="loading">
       <v-card-text>
         <p class="text-h4 text--primary">
           Report Incident

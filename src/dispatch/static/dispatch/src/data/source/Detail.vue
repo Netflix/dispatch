@@ -1,7 +1,7 @@
 <template>
   <div>
     <new-edit-sheet />
-    <v-toolbar dark flat>
+    <v-toolbar dark>
       <v-toolbar-title>{{ name }}</v-toolbar-title>
 
       <v-spacer />

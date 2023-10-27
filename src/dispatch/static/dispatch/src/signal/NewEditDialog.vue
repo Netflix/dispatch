@@ -116,7 +116,7 @@
         </v-col>
         <v-col cols="12">
           <v-card flat rounded="0">
-            <v-toolbar color="transparent" flat>
+            <v-toolbar color="transparent">
               <v-toolbar-title class="text-subtitle-2"> Case Configuration </v-toolbar-title>
               <template #append>
                 <v-tooltip max-width="250px" location="bottom">
@@ -181,7 +181,7 @@
 
         <v-col cols="12">
           <v-card flat rounded="0">
-            <v-toolbar color="transparent" flat>
+            <v-toolbar color="transparent">
               <v-toolbar-title class="text-subtitle-2"> Entity Configuration </v-toolbar-title>
               <template #append>
                 <v-tooltip max-width="250px" location="bottom">
@@ -205,7 +205,7 @@
         </v-col>
         <v-col cols="12">
           <v-card flat rounded="0">
-            <v-toolbar color="transparent" flat>
+            <v-toolbar color="transparent">
               <v-toolbar-title class="text-subtitle-2"> Filter(s) </v-toolbar-title>
               <template #append>
                 <v-tooltip max-width="250px" location="bottom">
@@ -228,7 +228,7 @@
         </v-col>
         <v-col cols="12">
           <v-card flat rounded="0">
-            <v-toolbar color="transparent" flat>
+            <v-toolbar color="transparent">
               <v-toolbar-title class="text-subtitle-2"> Workflow(s) </v-toolbar-title>
               <template #append>
                 <v-tooltip max-width="250px" location="bottom">

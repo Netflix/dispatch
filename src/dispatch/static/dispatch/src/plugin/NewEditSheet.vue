@@ -22,7 +22,7 @@
         </template>
       </v-list-item>
     </template>
-    <v-card flat>
+    <v-card>
       <v-card-text>
         <v-form v-model="valid">
           <plugin-combobox v-if="!id" label="Plugin" v-model="plugin" />

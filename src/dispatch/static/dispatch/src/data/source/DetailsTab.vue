@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="12" sm="6" md="8">
         <v-card height="100%">
-          <v-toolbar flat>
+          <v-toolbar>
             <v-toolbar-title>Documentation</v-toolbar-title>
             <v-spacer />
             <v-btn icon variant="text" color="info" :loading="loading" @click="save()">
@@ -18,14 +18,14 @@
           </v-toolbar>
           <v-window v-model="tab">
             <v-window-item key="view">
-              <v-card flat>
+              <v-card>
                 <v-card-text>
                   <vue-markdown :source="documentation" />
                 </v-card-text>
               </v-card>
             </v-window-item>
             <v-window-item key="edit">
-              <v-card flat>
+              <v-card>
                 <v-card-text>
                   <div style="height: 400px">
                     <MonacoEditor

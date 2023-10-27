@@ -32,7 +32,7 @@
       <info-widget
         text="Once created, your template can be associated with case or incident types."
       />
-      <v-card flat>
+      <v-card>
         <v-card-text>
           <v-container>
             <v-row>

@@ -1,5 +1,5 @@
 <template>
-  <v-card flat>
+  <v-card>
     <!-- TODO: use vuetify picker components -->
     <v-card-text>
       <v-text-field v-model="selectedDatetime" type="datetime-local" />

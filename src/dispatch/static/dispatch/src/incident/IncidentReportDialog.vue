@@ -1,14 +1,14 @@
 <template>
   <v-dialog v-model="show" persistent max-width="800px">
-    <v-card elevation="0" variant="outlined">
+    <v-card>
       <v-card-title class="text-h6"> Latest Incident Reports </v-card-title>
     </v-card>
     <v-card-text>
-      <v-card variant="outlined">
+      <v-card>
         <v-card-title class="text-h6"> Description </v-card-title>
         <v-card-text>{{ item.description }}</v-card-text>
       </v-card>
-      <v-card variant="outlined">
+      <v-card>
         <v-card-text>
           <div class="text-h6 text--primary">Last Tactical Report</div>
           <div v-if="item.last_tactical_report">
@@ -23,7 +23,7 @@
           <div v-else>No tactical report available.</div>
         </v-card-text>
       </v-card>
-      <v-card variant="outlined">
+      <v-card>
         <v-card-text>
           <div class="text-h6 text--primary">Last Executive Report</div>
           <div v-if="item.last_executive_report">

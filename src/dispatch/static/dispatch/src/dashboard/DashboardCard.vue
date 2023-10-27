@@ -1,5 +1,5 @@
 <template>
-  <v-card :loading="loading" variant="outlined" elevation="0">
+  <v-card :loading="loading">
     <v-card-title>{{ title }}</v-card-title>
     <apexchart :type="type" height="250" :options="localOptions" :series="series" />
   </v-card>

@@ -1,5 +1,5 @@
 <template>
-  <v-card class="grow" elevation="0">
+  <v-card class="grow">
     <v-card-title>
       <v-row>
         <v-col>

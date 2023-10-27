@@ -1,6 +1,6 @@
 <template>
   <v-form @submit.prevent="basicLogin({ email, password })" v-slot="{ isValid }">
-    <v-card class="mx-auto ma-4" max-width="600" flat variant="outlined" :loading="loading">
+    <v-card class="mx-auto ma-4" max-width="600" flat :loading="loading">
       <v-card-title> Login </v-card-title>
       <v-card-text>
         <v-container>

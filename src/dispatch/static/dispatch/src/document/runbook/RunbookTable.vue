@@ -9,11 +9,7 @@
     </v-row>
     <v-row no-gutters>
       <v-col v-for="document in runbookDocumentTypes" :key="document.resource_type">
-        <v-card
-          variant="outlined"
-          elevation="0"
-          @click.stop="createEditShow({ resource_type: document.resource_type })"
-        >
+        <v-card @click.stop="createEditShow({ resource_type: document.resource_type })">
           <div class="d-flex flex-no-wrap justify-space-between">
             <div>
               <v-card-title class="text-h5">{{ document.title }}</v-card-title>
@@ -28,7 +24,7 @@
     </v-row>
     <v-row no-gutters>
       <v-col>
-        <v-card elevation="0">
+        <v-card>
           <v-card-title>
             <v-text-field
               v-model="q"
@@ -42,7 +38,7 @@
           <v-data-table-server
             :headers="headers"
             :items="items"
-            :items-length="total"
+            :items-length="total || 0"
             v-model:page="page"
             v-model:items-per-page="itemsPerPage"
             v-model:sort-by="sortBy"

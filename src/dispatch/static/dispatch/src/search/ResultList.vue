@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mx-auto" variant="flat" :loading="loading" elevation="0">
+  <v-card class="mx-auto" variant="flat" :loading="loading">
     <div class="text-h6 pl-4">Search results for: "{{ query }}"</div>
     <v-expansion-panels>
       <v-expansion-panel>

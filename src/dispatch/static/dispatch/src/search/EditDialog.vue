@@ -25,7 +25,7 @@
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-list-item>
-        <v-card flat>
+        <v-card>
           <v-card-text>
             <v-container>
               <v-row>

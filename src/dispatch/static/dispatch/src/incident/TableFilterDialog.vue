@@ -38,7 +38,7 @@
           <tag-filter-auto-complete v-model="local_tag" label="Tags" />
         </v-list-item>
         <v-list-item>
-          <v-card class="mx-auto" variant="outlined" elevation="0">
+          <v-card class="mx-auto">
             <v-card-title>Incident Participant</v-card-title>
             <v-card-subtitle>Show only incidents with this participant</v-card-subtitle>
             <participant-select

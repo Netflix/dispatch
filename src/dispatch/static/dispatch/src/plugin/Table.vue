@@ -12,7 +12,7 @@
     </v-row>
     <v-row no-gutters>
       <v-col>
-        <v-card elevation="0">
+        <v-card>
           <v-card-title>
             <v-text-field
               v-model="q"
@@ -28,7 +28,7 @@
             :headers="headers"
             :items="items"
             :item-class="row_class"
-            :items-length="total"
+            :items-length="total || 0"
             v-model:page="page"
             v-model:items-per-page="itemsPerPage"
             v-model:sort-by="sortBy"

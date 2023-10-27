@@ -11,7 +11,7 @@
         </v-tabs>
         <v-window v-model="type">
           <v-window-item key="tactical" value="tactical">
-            <v-card elevation="0">
+            <v-card>
               <v-card-text>
                 Tactical reports are only sent to incident participants and are generally used for
                 status reports.
@@ -40,7 +40,7 @@
             </v-card>
           </v-window-item>
           <v-window-item key="executive" value="executive">
-            <v-card elevation="0">
+            <v-card>
               <v-card-text>
                 Executive reports are sent to incident participants in addition to executive
                 distribution lists. These reports are generally more narrative driven and less

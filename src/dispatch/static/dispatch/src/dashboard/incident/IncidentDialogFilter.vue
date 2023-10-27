@@ -32,7 +32,7 @@
           <incident-priority-combobox v-model="filters.incident_priority" />
         </v-list-item>
         <v-list-item>
-          <v-card class="mx-auto" variant="outlined" elevation="0">
+          <v-card class="mx-auto">
             <v-card-title>Incident Participant</v-card-title>
             <v-card-subtitle>Show only incidents with this participant</v-card-subtitle>
             <participant-select

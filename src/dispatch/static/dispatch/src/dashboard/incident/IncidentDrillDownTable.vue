@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card elevation="0">
+    <v-card>
       <v-card-title>
         <v-text-field
           v-model="search"

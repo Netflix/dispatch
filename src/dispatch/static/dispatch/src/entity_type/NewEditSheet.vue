@@ -25,7 +25,7 @@
         </v-list-item>
       </template>
       <v-card flat rounded="0">
-        <v-toolbar color="transparent" flat>
+        <v-toolbar color="transparent">
           <v-toolbar-title class="text-subtitle-2"> Details </v-toolbar-title>
         </v-toolbar>
         <v-card-text>
@@ -78,7 +78,7 @@
         </v-card-text>
       </v-card>
       <v-card flat rounded="0">
-        <v-toolbar color="transparent" flat>
+        <v-toolbar color="transparent">
           <v-toolbar-title class="text-subtitle-2"> Expression Configuration </v-toolbar-title>
         </v-toolbar>
         <v-card-text>

@@ -15,7 +15,7 @@
       <v-container fluid>
         <v-row>
           <v-col>
-            <v-card class="mx-auto ma-4" flat variant="outlined">
+            <v-card class="mx-auto ma-4">
               <v-card-text>
                 <case-summary-table :items="items" :loading="loading" />
               </v-card-text>

@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-card elevation="0">
+    <v-card>
       <div class="d-flex">
         <v-text-field
           v-model="q"

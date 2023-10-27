@@ -1,5 +1,5 @@
 <template>
-  <v-card elevation="1" variant="outlined" class="position-relative">
+  <v-card class="position-relative">
     <v-row>
       <v-col cols="8" style="align-self: center">
         <v-card-title class="pb-0 mb-0">{{ entity.entity_type.name }}</v-card-title>
@@ -23,7 +23,6 @@
       <template #default="{ hover }">
         <v-card
           color="red-lighten-5"
-          variant="outlined"
           rounded="xl"
           class="d-flex align-center mx-4 mt-3 mb-3"
           :elevation="hover ? 2 : 0"
@@ -49,7 +48,6 @@
       <template #default="{ hover }">
         <v-card
           color="red-lighten-5"
-          variant="outlined"
           rounded="xl"
           class="d-flex align-center mx-4 mt-3 mb-3"
           :elevation="hover ? 2 : 0"

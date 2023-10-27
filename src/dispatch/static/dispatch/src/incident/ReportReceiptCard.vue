@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mx-auto ma-4" max-width="600" flat variant="outlined">
+  <v-card class="mx-auto ma-4" max-width="600">
     <v-card-text>
       <p class="text-h3 text--primary">Incident Report</p>
       <p>

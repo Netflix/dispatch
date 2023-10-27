@@ -8,7 +8,7 @@
         <v-card-text>
           <v-row dense>
             <v-col cols="12">
-              <v-card variant="outlined" elevation="0">
+              <v-card>
                 <v-list-item lines="two">
                   <v-list-item-title class="text-h6"> Workflow Details </v-list-item-title>
                   <v-list-item-subtitle

@@ -8,7 +8,6 @@
     return-object
     hide-details
     :loading="loading"
-    variant="outlined"
     density="compact"
   >
     <template #item="{ item: { raw: item }, props }">

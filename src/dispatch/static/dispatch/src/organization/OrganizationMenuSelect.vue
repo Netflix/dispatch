@@ -8,7 +8,6 @@
     return-object
     hide-details
     :loading="loading"
-    variant="outlined"
     density="comfortable"
   >
     <template #item="data">

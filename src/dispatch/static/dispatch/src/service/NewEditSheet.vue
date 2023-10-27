@@ -17,7 +17,7 @@
           </template>
         </v-list-item>
       </template>
-      <v-card flat>
+      <v-card>
         <v-card-text>
           <v-container>
             <v-row>

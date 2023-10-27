@@ -12,7 +12,7 @@
           <v-btn size="small" color="primary" :to="{ name: 'report' }"> Report Incident </v-btn>
         </template>
       </v-app-bar>
-      <v-card class="mx-auto ma-4" max-width="1000" flat variant="outlined">
+      <v-card class="mx-auto ma-4" max-width="1000">
         <v-card-text>
           <incident-summary-table :items="items" :loading="loading" />
         </v-card-text>

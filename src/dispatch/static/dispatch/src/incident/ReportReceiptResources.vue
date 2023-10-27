@@ -2,7 +2,7 @@
   <v-container>
     <v-row dense>
       <v-col cols="12">
-        <v-card variant="outlined" elevation="0">
+        <v-card>
           <v-list-item lines="two">
             <v-list-item-title class="text-h6"> Incident Details </v-list-item-title>
           </v-list-item>
@@ -68,7 +68,7 @@
         </v-card>
       </v-col>
       <v-col cols="12">
-        <v-card variant="outlined" elevation="0">
+        <v-card>
           <v-list-item lines="two">
             <v-list-item-title class="text-h6"> Incident Resources </v-list-item-title>
           </v-list-item>
