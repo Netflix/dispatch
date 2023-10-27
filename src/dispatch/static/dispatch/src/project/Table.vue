@@ -6,8 +6,8 @@
       <v-col class="grow">
         <div class="text-h5">Projects</div>
       </v-col>
-      <v-col class="shrink">
-        <v-btn color="info" class="mb-2" @click="createEditShow()"> New </v-btn>
+      <v-col class="text-right">
+        <v-btn color="info" class="mr-2" @click="createEditShow()"> New </v-btn>
       </v-col>
     </v-row>
     <v-row no-gutters>

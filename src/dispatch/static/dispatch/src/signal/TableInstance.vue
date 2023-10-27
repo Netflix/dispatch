@@ -41,9 +41,6 @@
             <template #item.signal="{ value }">
               <signal-popover :value="value" />
             </template>
-            <template #item.project.name="{ item, value }">
-              <v-chip size="small" :color="item.project.color">
-                {{ value }}
             <template #item.canary="{ value }">
               <v-simple-checkbox v-model="value.signal.canary" disabled />
             </template>
