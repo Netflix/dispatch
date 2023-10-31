@@ -2,9 +2,9 @@
   <v-combobox
     v-model="case_type"
     :items="items"
-    :search-input.sync="search"
+    v-model:search="search"
     :menu-props="{ maxHeight: '400' }"
-    item-text="name"
+    item-title="name"
     item-value="id"
     :label="label"
     placeholder="Start typing to search"
@@ -14,18 +14,16 @@
     no-filter
   >
     <template #item="data">
-      <v-list-item-content>
-        <v-list-item-title>{{ data.item.name }}</v-list-item-title>
-        <v-list-item-subtitle style="width: 200px" class="text-truncate">
-          {{ data.item.description }}
+      <v-list-item v-bind="data.props" :title="null">
+        <v-list-item-title>{{ data.item.raw.name }}</v-list-item-title>
+        <v-list-item-subtitle :title="data.item.raw.description">
+          {{ data.item.raw.description }}
         </v-list-item-subtitle>
-      </v-list-item-content>
+      </v-list-item>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
-        <v-list-item-content>
-          <v-list-item-subtitle> Load More </v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
   </v-combobox>
@@ -41,7 +39,7 @@ export default {
   name: "CaseTypeSelect",
 
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -78,10 +76,10 @@ export default {
   computed: {
     case_type: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },

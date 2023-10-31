@@ -1,21 +1,20 @@
 <template>
-  <v-container grid-list-md>
+  <v-container>
     <query-select v-model="selectedQuery" :project="project" />
     <v-list>
       <v-list-item v-for="(i, idx) in value" :key="i.id">
-        <v-list-item-content>
-          <v-list-item-title>
-            {{ i.name }}
-          </v-list-item-title>
-          <v-list-item-subtitle>
-            {{ i.description }}
-          </v-list-item-subtitle>
-        </v-list-item-content>
-        <v-list-item-action>
-          <v-btn icon @click="remove(idx)">
-            <v-icon> mdi-delete </v-icon>
+        <v-list-item-title>
+          {{ i.name }}
+        </v-list-item-title>
+        <v-list-item-subtitle>
+          {{ i.description }}
+        </v-list-item-subtitle>
+
+        <template #append>
+          <v-btn icon variant="text" @click="remove(idx)">
+            <v-icon>mdi-delete</v-icon>
           </v-btn>
-        </v-list-item-action>
+        </template>
       </v-list-item>
     </v-list>
   </v-container>
@@ -34,7 +33,7 @@ export default {
   },
 
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -52,15 +51,15 @@ export default {
 
   methods: {
     add() {
-      const value = cloneDeep(this.value)
+      const value = cloneDeep(this.modelValue)
       value.push(this.selectedQuery)
       this.selectedQuery = null
-      this.$emit("input", value)
+      this.$emit("update:modelValue", value)
     },
     remove(idx) {
-      const value = cloneDeep(this.value)
+      const value = cloneDeep(this.modelValue)
       value.splice(idx, 1)
-      this.$emit("input", value)
+      this.$emit("update:modelValue", value)
     },
   },
 

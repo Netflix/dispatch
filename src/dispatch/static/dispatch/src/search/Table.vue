@@ -5,7 +5,7 @@
     <delete-dialog />
     <v-row no-gutters>
       <v-col>
-        <v-alert dismissible icon="mdi-school" prominent text type="info">
+        <v-alert closable icon="mdi-school" prominent text type="info">
           Search filters enable you to define under which conditions an individual, oncall service,
           or team need to be engaged in an incident, or when a notification needs to be sent.
         </v-alert>
@@ -21,84 +21,84 @@
     </v-row>
     <v-row no-gutters>
       <v-col>
-        <v-card elevation="0">
+        <v-card>
           <v-card-title>
             <v-text-field
               v-model="q"
-              append-icon="search"
+              append-inner-icon="mdi-magnify"
               label="Search"
               single-line
               hide-details
               clearable
             />
           </v-card-title>
-          <v-data-table
+          <v-data-table-server
             :headers="headers"
             :items="items"
-            :server-items-length="total"
-            :page.sync="page"
-            :items-per-page.sync="itemsPerPage"
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="descending"
+            :items-length="total || 0"
+            v-model:page="page"
+            v-model:items-per-page="itemsPerPage"
+            v-model:sort-by="sortBy"
+            v-model:sort-desc="descending"
             :loading="loading"
             loading-text="Loading... Please wait"
           >
             <!-- TODO(mvilanova): Allow to view the list of individuals, teams, services, and notifications upon clicking on the chip -->
-            <template #[`item.individuals`]="{ item }">
-              <v-chip v-if="item.individuals.length == 0" small color="green" text-color="white">
+            <template #item.individuals="{ item }">
+              <v-chip v-if="item.individuals.length == 0" size="small" color="green">
                 {{ item.individuals.length }}
               </v-chip>
-              <v-chip v-if="item.individuals.length > 0" small color="red" text-color="white">
+              <v-chip v-if="item.individuals.length > 0" size="small" color="red">
                 {{ item.individuals.length }}
               </v-chip>
             </template>
-            <template #[`item.teams`]="{ item }">
-              <v-chip v-if="item.teams.length == 0" small color="green" text-color="white">
+            <template #item.teams="{ item }">
+              <v-chip v-if="item.teams.length == 0" size="small" color="green">
                 {{ item.teams.length }}
               </v-chip>
-              <v-chip v-if="item.teams.length > 0" small color="red" text-color="white">
+              <v-chip v-if="item.teams.length > 0" size="small" color="red">
                 {{ item.teams.length }}
               </v-chip>
             </template>
-            <template #[`item.services`]="{ item }">
-              <v-chip v-if="item.services.length == 0" small color="green" text-color="white">
+            <template #item.services="{ item }">
+              <v-chip v-if="item.services.length == 0" size="small" color="green">
                 {{ item.services.length }}
               </v-chip>
-              <v-chip v-if="item.services.length > 0" small color="red" text-color="white">
+              <v-chip v-if="item.services.length > 0" size="small" color="red">
                 {{ item.services.length }}
               </v-chip>
             </template>
-            <template #[`item.notifications`]="{ item }">
-              <v-chip v-if="item.notifications.length == 0" small color="green" text-color="white">
+            <template #item.notifications="{ item }">
+              <v-chip v-if="item.notifications.length == 0" size="small" color="green">
                 {{ item.notifications.length }}
               </v-chip>
-              <v-chip v-if="item.notifications.length > 0" small color="red" text-color="white">
+              <v-chip v-if="item.notifications.length > 0" size="small" color="red">
                 {{ item.notifications.length }}
               </v-chip>
             </template>
-            <template #[`item.enabled`]="{ item }">
-              <v-simple-checkbox v-model="item.enabled" disabled />
+            <template #item.enabled="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #[`item.created_at`]="{ item }">
-              <v-tooltip bottom>
-                <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
+            <template #item.created_at="{ value }">
+              <v-tooltip location="bottom">
+                <template #activator="{ props }">
+                  <span v-bind="props">{{ formatRelativeDate(value) }}</span>
                 </template>
-                <span>{{ item.created_at | formatDate }}</span>
+                <span>{{ formatDate(value) }}</span>
               </v-tooltip>
             </template>
-            <template #[`item.updated_at`]="{ item }">
-              <v-tooltip bottom>
-                <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ item.updated_at | formatRelativeDate }}</span>
+            <template #item.updated_at="{ value }">
+              <v-tooltip location="bottom">
+                <template #activator="{ props }">
+                  <span v-bind="props">{{ formatRelativeDate(value) }}</span>
                 </template>
-                <span>{{ item.updated_at | formatDate }}</span>
+                <span>{{ formatDate(value) }}</span>
               </v-tooltip>
             </template>
-            <template #[`item.data-table-actions`]="{ item }">
-              <v-menu bottom left>
-                <template #activator="{ on }">
-                  <v-btn icon v-on="on">
+            <template #item.data-table-actions="{ item }">
+              <v-menu location="right" origin="overlap">
+                <template #activator="{ props }">
+                  <v-btn icon variant="text" v-bind="props">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>
                 </template>
@@ -112,7 +112,7 @@
                 </v-list>
               </v-menu>
             </template>
-          </v-data-table>
+          </v-data-table-server>
         </v-card>
       </v-col>
     </v-row>
@@ -122,6 +122,7 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+import { formatRelativeDate, formatDate } from "@/filters"
 
 import DeleteDialog from "@/search/DeleteDialog.vue"
 import SearchFilterCreateDialog from "@/search/SearchFilterCreateDialog.vue"
@@ -135,20 +136,24 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", align: "left", width: "10%" },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Individuals", value: "individuals" },
-        { text: "Teams", value: "teams" },
-        { text: "Services", value: "services" },
-        { text: "Notifications", value: "notifications" },
-        { text: "Creator", value: "creator.email" },
-        { text: "Created At", value: "created_at" },
-        { text: "Updated At", value: "updated_at" },
-        { text: "Enabled", value: "enabled" },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", value: "name", align: "left", width: "10%" },
+        { title: "Description", value: "description", sortable: false },
+        { title: "Individuals", value: "individuals" },
+        { title: "Teams", value: "teams" },
+        { title: "Services", value: "services" },
+        { title: "Notifications", value: "notifications" },
+        { title: "Creator", value: "creator.email" },
+        { title: "Created At", value: "created_at" },
+        { title: "Updated At", value: "updated_at" },
+        { title: "Enabled", value: "enabled" },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
       showEditSheet: false,
     }
+  },
+
+  setup() {
+    return { formatRelativeDate, formatDate }
   },
 
   computed: {
@@ -163,7 +168,6 @@ export default {
       "table.rows.items",
       "table.rows.total",
     ]),
-    ...mapFields("route", ["query"]),
   },
 
   methods: {
@@ -171,7 +175,7 @@ export default {
   },
 
   created() {
-    this.project = [{ name: this.query.project }]
+    this.project = [{ name: this.$route.query.project }]
     this.getAll()
 
     this.$watch(

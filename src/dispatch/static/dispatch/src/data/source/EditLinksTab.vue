@@ -1,15 +1,15 @@
 <template>
-  <v-container grid-list-md>
-    <v-card elevation="0">
+  <v-container>
+    <v-card>
       <div class="d-flex">
         <v-text-field
           v-model="q"
-          append-icon="search"
+          append-inner-icon="mdi-magnify"
           label="Search"
           single-line
           hide-details
-          append-outer-icon="mdi-plus"
-          @click:append-outer="addNew"
+          append-icon="mdi-plus"
+          @click:append="addNew"
           clearable
         />
       </div>
@@ -18,7 +18,7 @@
           <v-text-field
             v-model="editedItem.name"
             :hide-details="true"
-            dense
+            density="compact"
             placeholder="Name"
             single-line
             v-if="item.id === editedItem.id"
@@ -26,7 +26,7 @@
           <v-text-field
             v-model="editedItem.href"
             :hide-details="true"
-            dense
+            density="compact"
             placeholder="Link"
             single-line
             v-if="item.id === editedItem.id"
@@ -41,7 +41,7 @@
           <v-text-field
             v-model="editedItem.description"
             :hide-details="true"
-            dense
+            density="compact"
             placeholder="Description"
             single-line
             v-if="item.id === editedItem.id"
@@ -68,8 +68,6 @@ import { mapFields } from "vuex-map-fields"
 export default {
   name: "SourceEditUsefulLinksTab",
 
-  components: {},
-
   computed: {
     ...mapFields("source", ["selected.links", "selected.loading"]),
   },
@@ -77,16 +75,16 @@ export default {
     q: "",
     headers: [
       {
-        text: "Name",
-        value: "name",
+        title: "Name",
+        key: "name",
         sortable: true,
       },
       {
-        text: "Description",
-        value: "description",
+        title: "Description",
+        key: "description",
         sortable: false,
       },
-      { text: "Actions", value: "actions", sortable: false, width: "100px" },
+      { title: "Actions", key: "actions", sortable: false, width: "100px" },
     ],
     editedIndex: -1,
     editedItem: {

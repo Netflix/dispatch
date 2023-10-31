@@ -11,7 +11,7 @@ const getDefaultSelectedState = () => {
     resource_id: null,
     parameters: [],
     project: null,
-    plugin_instance: { title: null, slug: null },
+    plugin_instance: null,
     name: null,
     id: null,
     loading: false,

@@ -2,32 +2,32 @@
   <v-dialog v-model="showHandoffDialog" persistent max-width="800px">
     <v-card>
       <v-card-title>
-        <span class="headline">Handoff Incidents</span>
+        <span class="text-h5">Handoff Incidents</span>
       </v-card-title>
       <v-card-text> Select the new commander for the selected incidents. </v-card-text>
       <v-card-actions>
-        <v-container grid-list-md>
-          <v-layout wrap>
-            <v-flex xs12>
+        <v-container>
+          <v-row>
+            <v-col cols="12">
               <participant-select
                 v-model="commander"
                 label="Incident Commander"
                 :project="project"
               />
-            </v-flex>
-            <!-- <v-flex xs12> -->
+            </v-col>
+            <!-- <v-col cols="12"> -->
             <!--   <v-checkbox v-model="report" label="Generate Report"/> -->
-            <!-- </v-flex> -->
-            <v-btn color="blue en-1" text @click="closeHandoffDialog()"> Cancel </v-btn>
+            <!-- </v-col> -->
+            <v-btn color="blue en-1" variant="text" @click="closeHandoffDialog()"> Cancel </v-btn>
             <v-btn
               color="red en-1"
-              text
+              variant="text"
               :loading="loading"
               @click="saveBulk({ commander: commander })"
             >
               Handoff
             </v-btn>
-          </v-layout>
+          </v-row>
         </v-container>
       </v-card-actions>
     </v-card>

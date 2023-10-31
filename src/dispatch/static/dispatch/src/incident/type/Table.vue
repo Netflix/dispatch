@@ -3,7 +3,7 @@
     <new-edit-sheet />
     <v-row no-gutters>
       <v-col>
-        <v-alert dismissible icon="mdi-school" prominent text type="info">
+        <v-alert closable icon="mdi-school" prominent text type="info">
           Types categorize incidents. Dispatch allows for configuration on a per-incident type
           basis.
         </v-alert>
@@ -19,38 +19,38 @@
     </v-row>
     <v-row no-gutters>
       <v-col>
-        <v-card elevation="0">
+        <v-card>
           <v-card-title>
             <v-text-field
               v-model="q"
-              append-icon="search"
+              append-inner-icon="mdi-magnify"
               label="Search"
               single-line
               hide-details
               clearable
             />
           </v-card-title>
-          <v-data-table
+          <v-data-table-server
             :headers="headers"
             :items="items"
-            :server-items-length="total"
-            :page.sync="page"
-            :items-per-page.sync="itemsPerPage"
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="descending"
+            :items-length="total || 0"
+            v-model:page="page"
+            v-model:items-per-page="itemsPerPage"
+            v-model:sort-by="sortBy"
+            v-model:sort-desc="descending"
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #item.default="{ item }">
-              <v-simple-checkbox v-model="item.default" disabled />
+            <template #item.default="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #item.enabled="{ item }">
-              <v-simple-checkbox v-model="item.enabled" disabled />
+            <template #item.enabled="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
             <template #item.data-table-actions="{ item }">
-              <v-menu bottom left>
-                <template #activator="{ on }">
-                  <v-btn icon v-on="on">
+              <v-menu location="right" origin="overlap">
+                <template #activator="{ props }">
+                  <v-btn icon variant="text" v-bind="props">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>
                 </template>
@@ -61,7 +61,7 @@
                 </v-list>
               </v-menu>
             </template>
-          </v-data-table>
+          </v-data-table-server>
         </v-card>
       </v-col>
     </v-row>
@@ -85,13 +85,13 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", sortable: true },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Incident Document", value: "incident_template_document.name", sortable: false },
-        { text: "Visibility", value: "visibility", sortable: false },
-        { text: "Default", value: "default", sortable: true },
-        { text: "Enabled", value: "enabled", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", value: "name", sortable: true },
+        { title: "Description", value: "description", sortable: false },
+        { title: "Incident Document", value: "incident_template_document.name", sortable: false },
+        { title: "Visibility", value: "visibility", sortable: false },
+        { title: "Default", value: "default", sortable: true },
+        { title: "Enabled", value: "enabled", sortable: true },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },
@@ -108,11 +108,10 @@ export default {
       "table.rows.items",
       "table.rows.total",
     ]),
-    ...mapFields("route", ["query"]),
   },
 
   created() {
-    this.project = [{ name: this.query.project }]
+    this.project = [{ name: this.$route.query.project }]
 
     this.getAll()
 

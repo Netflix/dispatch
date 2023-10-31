@@ -1,136 +1,108 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
+  <v-form @submit.prevent v-slot="{ isValid }">
     <v-navigation-drawer
       v-model="showCreateEdit"
-      app
-      clipped
-      right
+      location="right"
       width="500"
-      :permanent="$vuetify.breakpoint.mdAndDown"
-      class="overflow-y-auto"
+      :permanent="$vuetify.display.mdAndDown"
     >
       <template #prepend>
-        <v-list-item two-line>
-          <v-list-item-content>
-            <v-list-item-title class="title"> Edit </v-list-item-title>
-            <v-list-item-subtitle>Search Filter</v-list-item-subtitle>
-          </v-list-item-content>
+        <v-list-item lines="two">
+          <v-list-item-title class="text-h6"> Edit </v-list-item-title>
+          <v-list-item-subtitle>Search Filter</v-list-item-subtitle>
+
           <v-btn
             icon
+            variant="text"
             color="info"
             :loading="loading"
-            :disabled="invalid || !validated"
+            :disabled="!isValid.value"
             @click="save()"
           >
-            <v-icon>save</v-icon>
+            <v-icon>mdi-content-save</v-icon>
           </v-btn>
-          <v-btn icon color="secondary" @click="closeCreateEdit">
-            <v-icon>close</v-icon>
+          <v-btn icon variant="text" color="secondary" @click="closeCreateEdit">
+            <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-list-item>
-        <v-card flat>
+        <v-card>
           <v-card-text>
-            <v-container grid-list-md>
-              <v-layout wrap>
-                <v-flex xs12>
-                  <ValidationProvider name="Name" rules="required" immediate>
-                    <v-text-field
-                      v-model="name"
-                      slot-scope="{ errors, valid }"
-                      :error-messages="errors"
-                      :success="valid"
-                      label="Name"
-                      hint="Name of type."
-                      clearable
-                      required
-                    />
-                  </ValidationProvider>
-                </v-flex>
-                <v-flex xs12>
-                  <ValidationProvider name="Description" rules="required" immediate>
-                    <v-textarea
-                      v-model="description"
-                      slot-scope="{ errors, valid }"
-                      :error-messages="errors"
-                      :success="valid"
-                      label="Description"
-                      hint="Description of type."
-                      clearable
-                      required
-                    />
-                  </ValidationProvider>
-                </v-flex>
-              </v-layout>
+            <v-container>
+              <v-row>
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="name"
+                    label="Name"
+                    name="Name"
+                    hint="Name of type."
+                    clearable
+                    required
+                    :rules="[rules.required]"
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-textarea
+                    v-model="description"
+                    label="Description"
+                    name="Description"
+                    hint="Description of type."
+                    clearable
+                    required
+                    :rules="[rules.required]"
+                  />
+                </v-col>
+              </v-row>
               <div class="text-body-2 ml-1 mt-2">Individuals</div>
               <v-divider class="mt-2" />
               <v-list style="max-height: 500px" class="overflow-y-auto">
-                <template v-for="individual in individuals">
-                  <v-list-item :key="individual.id">
-                    <v-list-item-content>
-                      <incident-participant :participant="convertToParticipant(individual)" />
-                    </v-list-item-content>
-                  </v-list-item>
-                </template>
+                <v-list-item v-for="individual in individuals" :key="individual.id">
+                  <incident-participant :participant="convertToParticipant(individual)" />
+                </v-list-item>
               </v-list>
               <div class="text-body-2 ml-1 mt-2">Teams</div>
               <v-divider class="mt-2" />
               <v-list style="max-height: 500px" class="overflow-y-auto">
-                <template v-for="team in teams">
-                  <v-list-item :key="team.id">
-                    <v-list-item-content>
-                      <v-list-item-title>{{ team.name }}</v-list-item-title>
-                    </v-list-item-content>
-                  </v-list-item>
-                </template>
+                <v-list-item v-for="team in teams" :key="team.id">
+                  <v-list-item-title>{{ team.name }}</v-list-item-title>
+                </v-list-item>
               </v-list>
               <div class="text-body-2 ml-1 mt-2">Services</div>
               <v-divider class="mt-2" />
               <v-list style="max-height: 500px" class="overflow-y-auto">
-                <template v-for="service in services">
-                  <v-list-item :key="service.id">
-                    <v-list-item-content>
-                      <v-list-item-title>{{ service.name }}</v-list-item-title>
-                    </v-list-item-content>
-                  </v-list-item>
-                </template>
+                <v-list-item v-for="service in services" :key="service.id">
+                  <v-list-item-title>{{ service.name }}</v-list-item-title>
+                </v-list-item>
               </v-list>
               <div class="text-body-2 ml-1 mt-2">Notifications</div>
               <v-divider class="mt-2" />
               <v-list style="max-height: 500px" class="overflow-y-auto">
-                <template v-for="notification in notifications">
-                  <v-list-item :key="notification.id">
-                    <v-list-item-content>
-                      <v-list-item-title>{{ notification.name }}</v-list-item-title>
-                    </v-list-item-content>
-                  </v-list-item>
-                </template>
+                <v-list-item v-for="notification in notifications" :key="notification.id">
+                  <v-list-item-title>{{ notification.name }}</v-list-item-title>
+                </v-list-item>
               </v-list>
             </v-container>
           </v-card-text>
         </v-card>
       </template>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationProvider, ValidationObserver, extend } from "vee-validate"
-import { required } from "vee-validate/dist/rules"
 import IncidentParticipant from "@/incident/Participant.vue"
-
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
+import { required } from "@/util/form"
 
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "SearchEditDialog",
 
   components: {
-    ValidationProvider,
-    ValidationObserver,
     IncidentParticipant,
   },
 

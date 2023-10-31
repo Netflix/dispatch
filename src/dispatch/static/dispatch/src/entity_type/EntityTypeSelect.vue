@@ -3,26 +3,22 @@
     v-model="entity"
     :items="items"
     :menu-props="{ maxHeight: '400' }"
-    item-text="name"
+    item-title="name"
     label="Type"
     return-object
     :loading="loading"
   >
     <template #item="data">
-      <template>
-        <v-list-item-content>
-          <v-list-item-title>{{ data.item.name }}</v-list-item-title>
-          <v-list-item-subtitle style="width: 200px" class="text-truncate">
-            {{ data.item.description }}
-          </v-list-item-subtitle>
-        </v-list-item-content>
-      </template>
+      <v-list-item v-bind="data.props" :title="null">
+        <v-list-item-title>{{ data.item.raw.name }}</v-list-item-title>
+        <v-list-item-subtitle :title="data.item.raw.description">
+          {{ data.item.raw.description }}
+        </v-list-item-subtitle>
+      </v-list-item>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
-        <v-list-item-content>
-          <v-list-item-subtitle> Load More </v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
   </v-combobox>
@@ -38,7 +34,7 @@ export default {
   name: "EntityTypeSelect",
 
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -62,10 +58,10 @@ export default {
   computed: {
     entity: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },

@@ -16,7 +16,7 @@ export default {
   name: "TaskIncidentBarChartCard",
 
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -77,7 +77,7 @@ export default {
     },
     series() {
       let series = []
-      forEach(this.value, function (value) {
+      forEach(this.modelValue, function (value) {
         let typeCount = map(
           countBy(value, function (item) {
             return item.incident.incident_type.name
@@ -97,7 +97,7 @@ export default {
       return series
     },
     categoryData() {
-      return Object.keys(this.value)
+      return Object.keys(this.modelValue)
     },
   },
 }

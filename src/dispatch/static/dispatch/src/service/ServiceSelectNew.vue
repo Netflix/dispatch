@@ -2,9 +2,9 @@
   <v-combobox
     v-model="service"
     :items="items"
-    :search-input.sync="search"
+    v-model:search="search"
     :menu-props="{ maxHeight: '400' }"
-    item-text="name"
+    item-title="name"
     item-value="id"
     :label="label"
     placeholder="Start typing to search"
@@ -13,9 +13,9 @@
     :loading="loading"
     no-filter
   >
-    <template slot="append-outer">
-      <v-btn icon @click="createEditShow({})">
-        <v-icon>add</v-icon>
+    <template #append>
+      <v-btn icon variant="text" @click="createEditShow({})">
+        <v-icon>mdi-plus</v-icon>
       </v-btn>
       <new-edit-sheet @new-service-created="addItem($event)" />
     </template>
@@ -34,7 +34,7 @@ export default {
   name: "ServiceSelect",
 
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -84,10 +84,10 @@ export default {
   computed: {
     service: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },

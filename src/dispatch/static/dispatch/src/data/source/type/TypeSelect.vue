@@ -4,41 +4,34 @@
     :label="label"
     :loading="loading"
     :menu-props="{ maxHeight: '400' }"
-    :search-input.sync="search"
-    @update:search-input="getFilteredData({ q: $event })"
-    item-text="name"
+    v-model:search="search"
+    @update:search="getFilteredData({ q: $event })"
+    item-title="name"
     item-value="id"
     clearable
     v-model="type"
   >
     <template #no-data>
       <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title>
-            No types matching
-            <strong>"{{ search }}"</strong>
-          </v-list-item-title>
-        </v-list-item-content>
+        <v-list-item-title>
+          No types matching
+          <strong>"{{ search }}"</strong>
+        </v-list-item-title>
       </v-list-item>
     </template>
-    <template #selection="{ item }">
-      {{ item.name }}
-    </template>
     <template #item="data">
-      <v-list-item-content>
+      <v-list-item v-bind="data.props" :title="null">
         <v-list-item-title>
-          {{ data.item.name }}
+          {{ data.item.raw.name }}
         </v-list-item-title>
-        <v-list-item-subtitle style="width: 200px" class="text-truncate">
-          {{ data.item.description }}
+        <v-list-item-subtitle :title="data.item.raw.description">
+          {{ data.item.raw.description }}
         </v-list-item-subtitle>
-      </v-list-item-content>
+      </v-list-item>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
-        <v-list-item-content>
-          <v-list-item-subtitle> Load More </v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
   </v-combobox>
@@ -53,7 +46,7 @@ import SourceTypeApi from "@/data/source/type/api"
 export default {
   name: "SourceTypeSelect",
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -81,11 +74,11 @@ export default {
   computed: {
     type: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         if (typeof value !== "string") {
-          this.$emit("input", value)
+          this.$emit("update:modelValue", value)
         }
       },
     },

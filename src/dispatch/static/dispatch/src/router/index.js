@@ -1,5 +1,4 @@
-import Vue from "vue"
-import Router from "vue-router"
+import { createRouter, createWebHistory } from "vue-router"
 import { publicRoute, protectedRoute } from "./config"
 
 import store from "@/store"
@@ -10,29 +9,28 @@ import userSettings from "@/auth/userSettings"
 
 const routes = protectedRoute.concat(publicRoute)
 
-Vue.use(Router)
-
-const router = new Router({
-  mode: "history",
+const router = createRouter({
+  history: createWebHistory(),
   linkActiveClass: "active",
-  routes: routes,
+  routes,
 })
 
 const authProviderSlug =
   import.meta.env.VITE_DISPATCH_AUTHENTICATION_PROVIDER_SLUG || "dispatch-auth-provider-basic"
 
-const originalPush = Router.prototype.push
-Router.prototype.push = function push(location, onResolve, onReject) {
-  if (onResolve || onReject) return originalPush.call(this, location, onResolve, onReject)
-  return originalPush.call(this, location).catch((err) => {
-    if (Router.isNavigationFailure(err)) {
-      // resolve err
-      return err
-    }
-    // rethrow error
-    return Promise.reject(err)
-  })
-}
+// TODO
+// const originalPush = Router.prototype.push
+// Router.prototype.push = function push(location, onResolve, onReject) {
+//   if (onResolve || onReject) return originalPush.call(this, location, onResolve, onReject)
+//   return originalPush.call(this, location).catch((err) => {
+//     if (Router.isNavigationFailure(err)) {
+//       // resolve err
+//       return err
+//     }
+//     // rethrow error
+//     return Promise.reject(err)
+//   })
+// }
 
 // router guards
 router.beforeEach((to, from, next) => {

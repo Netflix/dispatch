@@ -19,7 +19,7 @@ export default {
   name: "IncidentPriorityBarChartCard",
 
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -113,14 +113,14 @@ export default {
     },
     series() {
       let series = DashboardUtils.createCountedSeriesData(
-        this.value,
+        this.modelValue,
         "incident_priority.name",
         this.priorities
       )
       return series
     },
     categoryData() {
-      return Object.keys(this.value)
+      return Object.keys(this.modelValue)
     },
   },
 }

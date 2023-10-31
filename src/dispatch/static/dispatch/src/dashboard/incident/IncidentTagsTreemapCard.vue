@@ -17,7 +17,7 @@ export default {
   name: "IncidentTreeMapCard",
 
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -57,7 +57,7 @@ export default {
     series() {
       // get all possible tags
       let allTags = []
-      forEach(this.value, function (value) {
+      forEach(this.modelValue, function (value) {
         allTags.push(...value.tags)
       })
 

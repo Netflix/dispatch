@@ -3,8 +3,8 @@
     v-model="plugin"
     :loading="loading"
     :items="items"
-    item-text="plugin.slug"
-    :search-input.sync="search"
+    item-title="plugin.slug"
+    v-model:search="search"
     hide-selected
     :label="label"
     no-filter
@@ -12,34 +12,26 @@
   >
     <template #no-data>
       <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title>
-            No Plugins matching "
-            <strong>{{ search }}</strong
-            >"
-          </v-list-item-title>
-        </v-list-item-content>
+        <v-list-item-title>
+          No Plugins matching "
+          <strong>{{ search }}</strong
+          >"
+        </v-list-item-title>
       </v-list-item>
     </template>
     <template #item="data">
-      <v-list-item-content>
+      <v-list-item v-bind="data.props" :title="null">
         <v-list-item-title>
-          <div>
-            {{ data.item.plugin.title }}
-          </div>
+          {{ data.item.raw.plugin.title }}
         </v-list-item-title>
-        <v-list-item-subtitle>
-          <div style="width: 200px" class="text-truncate">
-            {{ data.item.plugin.description }}
-          </div>
+        <v-list-item-subtitle :title="data.item.raw.plugin.description">
+          {{ data.item.raw.plugin.description }}
         </v-list-item-subtitle>
-      </v-list-item-content>
+      </v-list-item>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
-        <v-list-item-content>
-          <v-list-item-subtitle> Load More </v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
   </v-autocomplete>
@@ -53,7 +45,7 @@ import PluginApi from "@/plugin/api"
 export default {
   name: "PluginCombobox",
   props: {
-    value: {
+    modelValue: {
       type: [Object],
       default: null,
     },
@@ -82,7 +74,7 @@ export default {
   },
 
   created() {
-    this.plugin = cloneDeep(this.value)
+    this.plugin = cloneDeep(this.modelValue)
     this.fetchData()
   },
 
@@ -149,7 +141,7 @@ export default {
       val && val !== this.select && this.getFilteredData(val)
     },
     plugin(val) {
-      this.$emit("input", val)
+      this.$emit("update:modelValue", val)
     },
   },
 }

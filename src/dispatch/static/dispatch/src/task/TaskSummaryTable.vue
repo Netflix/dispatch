@@ -1,86 +1,49 @@
 <template>
-  <div>
-    <new-edit-sheet />
-    <v-data-table :headers="headers" :items="items" :loading="loading">
-      <template #item.description="{ item }">
-        <div class="text-truncate" style="max-width: 400px">
-          {{ item.description }}
-        </div>
-      </template>
-      <template #item.project.name="{ item }">
-        <v-chip small :color="item.project.color" text-color="white">
-          {{ item.project.name }}
-        </v-chip>
-      </template>
-      <template #item.incident_priority.name="{ item }">
-        <incident-priority :priority="item.incident.incident_priority.name" />
-      </template>
-      <template #item.creator.individual_contact.name="{ item }">
-        <participant :participant="item.creator" />
-      </template>
-      <template #item.owner.individual_contact.name="{ item }">
-        <participant :participant="item.owner" />
-      </template>
-      <template #item.incident_type.name="{ item }">
-        {{ item.incident.incident_type.name }}
-      </template>
-      <template #item.assignees="{ item }">
-        <participant
-          v-for="assignee in item.assignees"
-          :key="assignee.id"
-          :participant="assignee"
-        />
-      </template>
-      <template #item.resolve_by="{ item }">
-        <v-tooltip bottom>
-          <template #activator="{ on, attrs }">
-            <span v-bind="attrs" v-on="on">{{ item.resolve_by | formatRelativeDate }}</span>
-          </template>
-          <span>{{ item.resolve_by | formatDate }}</span>
-        </v-tooltip>
-      </template>
-      <template #item.created_at="{ item }">
-        <v-tooltip bottom>
-          <template #activator="{ on, attrs }">
-            <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
-          </template>
-          <span>{{ item.created_at | formatDate }}</span>
-        </v-tooltip>
-      </template>
-      <template #item.resolved_at="{ item }">
-        <v-tooltip bottom>
-          <template #activator="{ on, attrs }">
-            <span v-bind="attrs" v-on="on">{{ item.resolved_by | formatRelativeDate }}</span>
-          </template>
-          <span>{{ item.resolve_by | formatDate }}</span>
-        </v-tooltip>
-      </template>
-      <template #item.source="{ item }">
-        <a :href="item.weblink" target="_blank" style="text-decoration: none">
-          {{ item.source }}
-          <v-icon small>open_in_new</v-icon>
-        </a>
-      </template>
-      <template #item.data-table-actions="{ item }">
-        <v-menu bottom left>
-          <template #activator="{ on }">
-            <v-btn icon v-on="on">
-              <v-icon>mdi-dots-vertical</v-icon>
-            </v-btn>
-          </template>
-          <v-list>
-            <v-list-item @click="createEditShow(item)">
-              <v-list-item-title>View / Edit</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
-      </template>
-    </v-data-table>
-  </div>
+  <new-edit-sheet />
+  <v-data-table :headers="headers" :items="items" :loading="loading">
+    <template #item.description="{ value }">
+      <div class="text-truncate" style="max-width: 400px">
+        {{ value }}
+      </div>
+    </template>
+    <template #item.project.name="{ item, value }">
+      <v-chip size="small" :color="item.project.color">
+        {{ value }}
+      </v-chip>
+    </template>
+    <template #item.incident_priority.name="{ value }">
+      <incident-priority :priority="value" />
+    </template>
+    <template #item.creator="{ value }">
+      <participant :participant="value" />
+    </template>
+    <template #item.owner="{ value }">
+      <participant :participant="value" />
+    </template>
+    <template #item.incident_type.name="{ value }">
+      {{ value }}
+    </template>
+    <template #item.assignees="{ value }">
+      <participant v-for="assignee in value" :key="assignee.id" :participant="assignee" />
+    </template>
+    <template #item.data-table-actions="{ item }">
+      <v-menu location="right" origin="overlap">
+        <template #activator="{ props }">
+          <v-btn icon="mdi-dots-vertical" variant="text" v-bind="props" />
+        </template>
+        <v-list>
+          <v-list-item @click="createEditShow(item)">
+            <v-list-item-title>View / Edit</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </template>
+  </v-data-table>
 </template>
 
 <script>
 import { mapActions } from "vuex"
+import { formatRelativeDate, formatDate } from "@/filters"
 
 import IncidentPriority from "@/incident/priority/IncidentPriority.vue"
 import NewEditSheet from "@/task/NewEditSheet.vue"
@@ -97,16 +60,20 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Incident Name", value: "incident.name", sortable: false },
-        { text: "Status", value: "status", sortable: false },
-        { text: "Creator", value: "creator.individual_contact.name", sortable: false },
-        { text: "Owner", value: "owner.individual_contact.name", sortable: false },
-        { text: "Assignees", value: "assignees", sortable: false },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Project", value: "project.name", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Incident Name", key: "incident.name", sortable: false },
+        { title: "Status", key: "status", sortable: false },
+        { title: "Creator", key: "creator", sortable: false },
+        { title: "Owner", key: "owner", sortable: false },
+        { title: "Assignees", key: "assignees", sortable: false },
+        { title: "Description", key: "description", sortable: false },
+        { title: "Project", key: "project.name", sortable: true },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
+  },
+
+  setup() {
+    return { formatRelativeDate, formatDate }
   },
 
   props: {

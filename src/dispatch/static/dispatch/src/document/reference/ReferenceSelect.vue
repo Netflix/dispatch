@@ -1,34 +1,29 @@
 <template>
-  <ValidationProvider name="reference" immediate>
-    <v-autocomplete
-      v-model="reference"
-      :items="items"
-      :search-input.sync="search"
-      :menu-props="{ maxHeight: '400' }"
-      slot-scope="{ errors, valid }"
-      :error-messages="errors"
-      :success="valid"
-      item-text="name"
-      :label="label"
-      placeholder="Start typing to search"
-      return-object
-      :loading="loading"
-      no-filter
-    >
-      <reference slot="append-outer">
-        <v-btn icon @click="createEditShow({})">
-          <v-icon>add</v-icon>
-        </v-btn>
-        <new-edit-sheet @new-document-created="addItem($event)" />
-      </reference>
-    </v-autocomplete>
-  </ValidationProvider>
+  <v-autocomplete
+    v-model="reference"
+    :items="items"
+    v-model:search="search"
+    :menu-props="{ maxHeight: '400' }"
+    item-title="name"
+    :label="label"
+    placeholder="Start typing to search"
+    return-object
+    :loading="loading"
+    no-filter
+    name="reference"
+  >
+    <template #append-inner>
+      <v-btn icon variant="text" @click="createEditShow({})">
+        <v-icon>mdi-plus</v-icon>
+      </v-btn>
+      <new-edit-sheet @new-document-created="addItem($event)" />
+    </template>
+  </v-autocomplete>
 </template>
 
 <script>
 import { mapActions } from "vuex"
 import { cloneDeep } from "lodash"
-import { ValidationProvider } from "vee-validate"
 
 import DocumentApi from "@/document/api"
 import NewEditSheet from "@/document/reference/TemplateNewEditSheet.vue"
@@ -37,7 +32,7 @@ export default {
   name: "TemplateSelect",
 
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -58,7 +53,6 @@ export default {
   },
 
   components: {
-    ValidationProvider,
     NewEditSheet,
   },
 
@@ -84,10 +78,10 @@ export default {
   computed: {
     reference: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },

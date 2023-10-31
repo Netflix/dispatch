@@ -1,21 +1,28 @@
 <template>
-  <v-navigation-drawer v-model="showCreateEdit" app clipped right width="500">
+  <v-navigation-drawer v-model="showCreateEdit" location="right" width="500">
     <template #prepend>
-      <v-list-item two-line>
-        <v-list-item-content>
-          <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
-          <v-list-item-title v-else class="title"> New </v-list-item-title>
-          <v-list-item-subtitle>Plugin Instance</v-list-item-subtitle>
-        </v-list-item-content>
-        <v-btn icon color="info" :loading="loading" :disabled="!valid" @click="save()">
-          <v-icon>save</v-icon>
-        </v-btn>
-        <v-btn icon color="secondary" @click="closeCreateEdit">
-          <v-icon>close</v-icon>
-        </v-btn>
+      <v-list-item lines="two">
+        <v-list-item-title v-if="id" class="text-h6"> Edit </v-list-item-title>
+        <v-list-item-title v-else class="text-h6"> New </v-list-item-title>
+        <v-list-item-subtitle>Plugin Instance</v-list-item-subtitle>
+        <template #append>
+          <v-btn
+            icon
+            variant="text"
+            color="info"
+            :loading="loading"
+            :disabled="!valid"
+            @click="save()"
+          >
+            <v-icon>mdi-content-save</v-icon>
+          </v-btn>
+          <v-btn icon variant="text" color="secondary" @click="closeCreateEdit">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </template>
       </v-list-item>
     </template>
-    <v-card flat>
+    <v-card>
       <v-card-text>
         <v-form v-model="valid">
           <plugin-combobox v-if="!id" label="Plugin" v-model="plugin" />
@@ -24,7 +31,7 @@
             hint="Each plugin type can only ever have one enabled plugin. Existing enabled plugins will be de-activated."
             label="Enabled"
           />
-          <json-form
+          <!-- <json-form
             v-if="!plugin"
             v-model="configuration"
             :schema="configuration_schema"
@@ -35,7 +42,10 @@
             v-model="configuration"
             :schema="plugin.configuration_schema"
             :options="options"
-          />
+          /> -->
+          <FormKit type="form" v-model="configuration" :actions="false">
+            <FormKitSchema :schema="formkit_configuration_schema" />
+          </FormKit>
         </v-form>
       </v-card-text>
     </v-card>
@@ -43,8 +53,8 @@
 </template>
 
 <script>
-import jsonForm from "@koumoul/vjsf"
-import "@koumoul/vjsf/dist/main.css"
+// import jsonForm from "@koumoul/vjsf"
+// import "@koumoul/vjsf/dist/main.css"
 import { mapFields } from "vuex-map-fields"
 import { mapActions, mapMutations } from "vuex"
 
@@ -54,7 +64,7 @@ export default {
   name: "PluginEditSheet",
 
   components: {
-    jsonForm,
+    // jsonForm,
     PluginCombobox,
   },
 
@@ -74,11 +84,11 @@ export default {
       "selected.enabled",
       "selected.configuration",
       "selected.configuration_schema",
+      "selected.formkit_configuration_schema",
       "selected.loading",
       "selected.plugin",
       "dialogs.showCreateEdit",
     ]),
-    ...mapFields("route", ["query"]),
   },
 
   methods: {
@@ -87,8 +97,8 @@ export default {
   },
 
   created() {
-    if (this.query.project) {
-      this.project = { name: this.query.project }
+    if (this.$route.query.project) {
+      this.project = { name: this.$route.query.project }
     }
   },
 }

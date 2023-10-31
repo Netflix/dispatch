@@ -1,46 +1,45 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
+  <v-form @submit.prevent v-slot="{ isValid }">
     <v-navigation-drawer
       v-model="showNewSheet"
-      app
-      clipped
-      right
+      location="right"
       width="800"
-      :permanent="$vuetify.breakpoint.mdAndDown"
+      :permanent="$vuetify.display.mdAndDown"
     >
       <template #prepend>
-        <v-list-item two-line>
-          <v-list-item-content>
-            <v-list-item-title class="title"> New </v-list-item-title>
-          </v-list-item-content>
-          <v-btn
-            icon
-            color="info"
-            :loading="loading"
-            :disabled="invalid || !validated"
-            @click="save()"
-          >
-            <v-icon>save</v-icon>
-          </v-btn>
-          <v-btn icon color="secondary" @click="closeNewSheet">
-            <v-icon>close</v-icon>
-          </v-btn>
+        <v-list-item lines="two">
+          <v-list-item-title class="text-h6"> New </v-list-item-title>
+
+          <template #append>
+            <v-btn
+              icon
+              variant="text"
+              color="info"
+              :loading="loading"
+              :disabled="!isValid.value"
+              @click="save()"
+            >
+              <v-icon>mdi-content-save</v-icon>
+            </v-btn>
+            <v-btn icon variant="text" color="secondary" @click="closeNewSheet">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </template>
         </v-list-item>
       </template>
       <v-tabs color="primary" v-model="tab">
         <v-tab key="details"> Details </v-tab>
       </v-tabs>
-      <v-tabs-items v-model="tab">
+      <v-window v-model="tab">
         <incident-details-tab />
-      </v-tabs-items>
+      </v-window>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver } from "vee-validate"
 
 import IncidentDetailsTab from "@/incident/DetailsTab.vue"
 
@@ -48,7 +47,6 @@ export default {
   name: "IncidentNewSheet",
 
   components: {
-    ValidationObserver,
     IncidentDetailsTab,
   },
 

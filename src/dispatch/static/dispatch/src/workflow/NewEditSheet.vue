@@ -1,120 +1,110 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
-    <v-navigation-drawer v-model="showCreateEdit" app clipped right width="500">
+  <v-form @submit.prevent v-slot="{ isValid }">
+    <v-navigation-drawer v-model="showCreateEdit" location="right" width="500">
       <template #prepend>
-        <v-list-item two-line>
-          <v-list-item-content>
-            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
-            <v-list-item-title v-else class="title"> New </v-list-item-title>
-            <v-list-item-subtitle>Workflow</v-list-item-subtitle>
-          </v-list-item-content>
-          <v-btn
-            icon
-            color="info"
-            :loading="loading"
-            :disabled="invalid || !validated"
-            @click="save()"
-          >
-            <v-icon>save</v-icon>
-          </v-btn>
-          <v-btn icon color="secondary" @click="closeCreateEdit()">
-            <v-icon>close</v-icon>
-          </v-btn>
+        <v-list-item lines="two">
+          <v-list-item-title v-if="id" class="text-h6"> Edit </v-list-item-title>
+          <v-list-item-title v-else class="text-h6"> New </v-list-item-title>
+          <v-list-item-subtitle>Workflow</v-list-item-subtitle>
+
+          <template #append>
+            <v-btn
+              icon
+              variant="text"
+              color="info"
+              :loading="loading"
+              :disabled="!isValid.value"
+              @click="save()"
+            >
+              <v-icon>mdi-content-save</v-icon>
+            </v-btn>
+            <v-btn icon variant="text" color="secondary" @click="closeCreateEdit()">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </template>
         </v-list-item>
       </template>
-      <v-card flat>
+      <v-card>
         <v-card-text>
-          <v-container grid-list-md>
-            <v-layout wrap>
-              <v-flex xs12>
-                <span class="subtitle-2">Details</span>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="name" rules="required" immediate>
-                  <v-text-field
-                    v-model="name"
-                    slot-scope="{ errors, valid }"
-                    label="Name"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="A name for your workflow."
-                    required
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="resourceId" rules="required" immediate>
-                  <v-text-field
-                    v-model="resource_id"
-                    slot-scope="{ errors, valid }"
-                    label="Resource Id"
-                    :error-messages="errors"
-                    :success="valid"
-                    required
-                    hint="External resource id that refers to this workflow."
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="description" rules="required" immediate>
-                  <v-textarea
-                    v-model="description"
-                    slot-scope="{ errors, valid }"
-                    label="Description"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="The workflow's description."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
+                <span class="text-subtitle-2">Details</span>
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="name"
+                  label="Name"
+                  hint="A name for your workflow."
+                  required
+                  name="name"
+                  :rules="[rules.required]"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="resource_id"
+                  label="Resource Id"
+                  required
+                  hint="External resource id that refers to this workflow."
+                  name="resourceId"
+                  :rules="[rules.required]"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-textarea
+                  v-model="description"
+                  label="Description"
+                  hint="The workflow's description."
+                  clearable
+                  required
+                  name="description"
+                  :rules="[rules.required]"
+                />
+              </v-col>
+              <v-col cols="12">
                 <plugin-instance-combobox
                   v-model="plugin_instance"
                   type="workflow"
                   :project="project"
                   label="Plugin"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-checkbox
                   v-model="enabled"
                   hint="Disabled workflows will not be made available for selection during incidents."
                   label="Enabled"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <workflow-parameters-input v-model="parameters" />
-              </v-flex>
-            </v-layout>
+              </v-col>
+            </v-row>
           </v-container>
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
+import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
-import { required } from "vee-validate/dist/rules"
 
 import PluginInstanceCombobox from "@/plugin/PluginInstanceCombobox.vue"
 import WorkflowParametersInput from "@/workflow/WorkflowParametersInput.vue"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "WorkflowNewEditSheet",
 
   components: {
-    ValidationObserver,
-    ValidationProvider,
     PluginInstanceCombobox,
     WorkflowParametersInput,
   },
@@ -132,7 +122,6 @@ export default {
       "selected.loading",
       "dialogs.showCreateEdit",
     ]),
-    ...mapFields("route", ["query"]),
   },
 
   methods: {
@@ -140,7 +129,9 @@ export default {
   },
 
   created() {
-    this.project = { name: this.query.project }
+    if (this.$route.query.project) {
+      this.project = { name: this.$route.query.project }
+    }
   },
 }
 </script>

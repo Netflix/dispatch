@@ -1,12 +1,12 @@
 <template>
   <v-container>
     <v-row no-gutter>
-      <span class="subtitle-2">{{ label }}</span>
+      <span class="text-subtitle-2">{{ label }}</span>
       <v-spacer />
-      <v-tooltip bottom>
-        <template #activator="{ on }">
-          <v-btn small icon @click="addRole()" v-on="on">
-            <v-icon>add</v-icon>
+      <v-tooltip location="bottom">
+        <template #activator="{ props }">
+          <v-btn size="small" icon variant="text" @click="addRole()" v-bind="props">
+            <v-icon>mdi-plus</v-icon>
           </v-btn>
         </template>
         <span>Add Role</span>
@@ -15,9 +15,11 @@
     <span v-for="(role, idx) in value" :key="idx">
       <v-row align="center" dense>
         <v-col cols="12" sm="1">
-          <v-tooltip bottom>
-            <template #activator="{ on }">
-              <v-btn small icon @click="removeRole(idx)" v-on="on"><v-icon>remove</v-icon></v-btn>
+          <v-tooltip location="bottom">
+            <template #activator="{ props }">
+              <v-btn size="small" icon variant="text" @click="removeRole(idx)" v-bind="props"
+                ><v-icon>mdi-minus</v-icon></v-btn
+              >
             </template>
             <span>Remove Role</span>
           </v-tooltip>
@@ -45,7 +47,7 @@ export default {
   },
 
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -72,14 +74,14 @@ export default {
 
   methods: {
     addRole() {
-      const value = cloneDeep(this.value)
+      const value = cloneDeep(this.modelValue)
       value.push({ role: "Member", default: false, project: null })
-      this.$emit("input", value)
+      this.$emit("update:modelValue", value)
     },
     removeRole(idx) {
-      const value = cloneDeep(this.value)
+      const value = cloneDeep(this.modelValue)
       value.splice(idx)
-      this.$emit("input", value)
+      this.$emit("update:modelValue", value)
     },
   },
 }

@@ -1,46 +1,37 @@
 <template>
   <v-dialog v-model="display" max-width="600px">
-    <template #activator="{ on }">
-      <v-badge :value="numFilters" bordered overlap color="info" :content="numFilters">
-        <v-btn color="secondary" v-on="on"> Filter </v-btn>
+    <template #activator="{ props }">
+      <v-badge :model-value="!!numFilters" bordered color="info" :content="numFilters">
+        <v-btn color="secondary" v-bind="props"> Filter </v-btn>
       </v-badge>
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Dashboard Task Filters</span>
+        <span class="text-h5">Dashboard Task Filters</span>
       </v-card-title>
-      <v-list dense>
+      <v-list density="compact">
         <v-list-item>
-          <v-list-item-content>
-            <date-window-input v-model="filters.created_at" label="Created At" />
-          </v-list-item-content>
+          <date-window-input v-model="filters.created_at" label="Created At" />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <project-combobox v-model="filters.project" label="Projects" />
-          </v-list-item-content>
+          <project-combobox v-model="filters.project" label="Projects" />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <incident-type-combobox v-model="filters.incident_type" />
-          </v-list-item-content>
+          <incident-type-combobox v-model="filters.incident_type" />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <incident-priority-combobox v-model="filters.incident_priority" />
-          </v-list-item-content>
+          <incident-priority-combobox v-model="filters.incident_priority" />
         </v-list-item>
       </v-list>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="info" text @click="applyFilters()"> Apply Filters </v-btn>
+        <v-btn color="info" variant="text" @click="applyFilters()"> Apply Filters </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
 import { sum } from "lodash"
 import startOfMonth from "date-fns/startOfMonth"
 import subMonths from "date-fns/subMonths"
@@ -107,7 +98,6 @@ export default {
         1,
       ])
     },
-    ...mapFields("route", ["query"]),
   },
 
   methods: {
@@ -143,7 +133,7 @@ export default {
           end: today().toISOString().slice(0, -1),
         },
       },
-      ...RouterUtils.deserializeFilters(this.query), // Order matters as values will overwrite
+      ...RouterUtils.deserializeFilters(this.$route.query), // Order matters as values will overwrite
     }
     this.fetchData()
   },

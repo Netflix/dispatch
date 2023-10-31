@@ -1,12 +1,12 @@
 <template>
   <v-container>
     <v-row no-gutter>
-      <span class="subtitle-2">Workflow Parameters</span>
+      <span class="text-subtitle-2">Workflow Parameters</span>
       <v-spacer />
-      <v-tooltip bottom>
-        <template #activator="{ on }">
-          <v-btn small icon @click="addItem()" v-on="on">
-            <v-icon>add</v-icon>
+      <v-tooltip location="bottom">
+        <template #activator="{ props }">
+          <v-btn size="small" icon variant="text" @click="addItem()" v-bind="props">
+            <v-icon>mdi-plus</v-icon>
           </v-btn>
         </template>
         <span>Add Parameters</span>
@@ -15,9 +15,11 @@
     <span v-for="(param, idx) in parameters" :key="idx">
       <v-row align="center" dense>
         <v-col cols="12" sm="1">
-          <v-tooltip bottom>
-            <template #activator="{ on }">
-              <v-btn small icon @click="removeItem(idx)" v-on="on"><v-icon>remove</v-icon></v-btn>
+          <v-tooltip location="bottom">
+            <template #activator="{ props }">
+              <v-btn size="small" icon variant="text" @click="removeItem(idx)" v-bind="props"
+                ><v-icon>mdi-minus</v-icon></v-btn
+              >
             </template>
             <span>Remove Item</span>
           </v-tooltip>
@@ -25,16 +27,16 @@
         <v-col cols="12" sm="5">
           <v-text-field
             label="Key"
-            :value="param.key"
-            @input="updateItemKey(idx, $event)"
+            :model-value="param.key"
+            @update:model-value="updateItemKey(idx, $event)"
             type="text"
           />
         </v-col>
         <v-col cols="12" sm="6">
           <v-text-field
             label="Default Value"
-            :value="param.value"
-            @input="updateItemValue(idx, $event)"
+            :model-value="param.value"
+            @update:model-value="updateItemValue(idx, $event)"
             type="text"
           />
         </v-col>
@@ -49,10 +51,8 @@ import { cloneDeep } from "lodash"
 export default {
   name: "WorkflowParameterInput",
 
-  components: {},
-
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -63,7 +63,7 @@ export default {
   computed: {
     parameters: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
     },
   },
@@ -71,19 +71,19 @@ export default {
   methods: {
     addItem() {
       this.parameters.push({ key: null, value: null })
-      this.$emit("input", this.parameters)
+      this.$emit("update:modelValue", this.parameters)
     },
     removeItem(idx) {
       this.parameters.splice(idx, 1)
-      this.$emit("input", this.parameters)
+      this.$emit("update:modelValue", this.parameters)
     },
     updateItemKey(idx, event) {
       this.parameters[idx]["key"] = event
-      this.$emit("input", this.parameters)
+      this.$emit("update:modelValue", this.parameters)
     },
     updateItemValue(idx, event) {
       this.parameters[idx]["value"] = event
-      this.$emit("input", this.parameters)
+      this.$emit("update:modelValue", this.parameters)
     },
   },
 }

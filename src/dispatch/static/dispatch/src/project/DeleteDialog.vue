@@ -2,7 +2,7 @@
   <v-dialog v-model="showRemove" persistent max-width="800px">
     <v-card>
       <v-card-title>
-        <span class="headline">Delete Project?</span>
+        <span class="text-h5">Delete Project?</span>
       </v-card-title>
       <!--<v-alert
         :value="alert"
@@ -10,14 +10,12 @@
         transition="slide-y-transition"
       >There was an issue deleting.</v-alert>-->
       <v-card-text>
-        <v-container grid-list-md>
-          <v-layout wrap> Are you sure you would like to delete this project? </v-layout>
-        </v-container>
+        <v-container> Are you sure you would like to delete this project? </v-container>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="blue en-1" text @click="closeRemove()"> Cancel </v-btn>
-        <v-btn color="red en-1" text @click="remove()"> Delete </v-btn>
+        <v-btn color="blue en-1" variant="text" @click="closeRemove()"> Cancel </v-btn>
+        <v-btn color="red en-1" variant="text" @click="remove()"> Delete </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

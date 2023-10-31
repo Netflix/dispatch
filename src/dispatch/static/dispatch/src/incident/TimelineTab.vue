@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <v-row justify="end" class="align-items-baseline">
-      <v-switch v-model="showDetails" label="Show details" />
+      <v-switch v-model="showDetails" label="Show details" class="flex-grow-0" />
       <v-btn
         color="secondary"
         class="ml-2 mr-2 mt-3"
@@ -14,125 +14,130 @@
       <edit-event-dialog />
       <delete-event-dialog />
     </v-row>
-    <v-timeline v-if="events && events.length" dense clipped>
-      <v-col class="text-right caption time-zone-notice">(times in UTC)</v-col>
-      <v-row>
-        <div
-          class="add-event"
-          style="--margtop: 0px; --margbot: 5px; --margrule: 20px; margin-left: 85px"
+    <template v-if="events && events.length">
+      <v-timeline density="compact" clipped>
+        <v-timeline-item hide-dot>
+          <v-row>
+            <v-col class="text-right text-caption time-zone-notice">(times in UTC)</v-col>
+            <div class="add-event" style="--margtop: 0px; --margbot: 5px; --margrule: 20px">
+              <div class="horiz-rule" />
+              <div class="add-button">
+                <v-btn
+                  compact
+                  size="small"
+                  variant="plain"
+                  class="up-button"
+                  @click="showNewPreEventDialog(sortedEvents[0].started_at)"
+                >
+                  <v-icon size="small" class="mr-1">mdi-plus-circle-outline</v-icon>Add event
+                </v-btn>
+              </div>
+            </div>
+          </v-row>
+        </v-timeline-item>
+        <v-timeline-item
+          v-for="event in sortedEvents"
+          v-show="showItem(event)"
+          :icon="iconItem(event)"
+          :key="event.id"
+          class="mb-4"
+          :class="classType(event)"
+          dot-color="blue"
         >
-          <div class="horiz-rule" />
-          <div class="add-button">
-            <v-btn
-              compact
-              small
-              plain
-              class="up-button"
-              @click="showNewPreEventDialog(sortedEvents[0].started_at)"
-            >
-              <v-icon small class="mr-1">mdi-plus-circle-outline</v-icon>Add event
-            </v-btn>
-          </div>
-        </div>
-      </v-row>
-      <v-timeline-item
-        v-for="event in sortedEvents"
-        v-show="showItem(event)"
-        :icon="iconItem(event)"
-        :key="event.id"
-        class="mb-4"
-        :class="classType(event)"
-        color="blue"
-      >
-        <v-row justify="space-between">
-          <v-col cols="7">
-            {{ event.description }}
-            <transition-group name="slide" v-if="showDetails">
-              <template v-for="(value, key) in event.details">
-                <v-card flat :key="key">
-                  <v-card-title class="subtitle-1">
-                    {{ key | snakeToCamel }}
-                  </v-card-title>
-                  <v-card-text>{{ value }}</v-card-text>
-                </v-card>
-              </template>
-            </transition-group>
-            <div class="caption">
-              {{ event.source }}
-            </div>
-          </v-col>
-          <v-col cols="1">
-            <div v-if="isEditable(event)" class="custom-event-edit">
-              <v-btn plain small @click="showEditEventDialog(event)">
-                <v-icon>mdi-pencil</v-icon>
-              </v-btn>
-              <br />
-              <v-btn plain small @click="togglePin(event)">
-                <v-hover v-slot="{ hover }">
-                  <v-icon v-if="!isPinned(event)">mdi-pin-outline</v-icon>
-                  <v-icon v-else-if="hover && isPinned(event)">mdi-pin-off</v-icon>
-                  <v-icon v-else-if="!hover && isPinned(event)">mdi-pin</v-icon>
-                </v-hover>
-              </v-btn>
-              <br />
-              <v-btn plain small @click="showDeleteEventDialog(event)">
-                <v-icon>mdi-trash-can</v-icon>
-              </v-btn>
-            </div>
-            <div v-if="isPinned(event) && !isEditable(event)" class="pinned-event">
-              <v-btn plain small @click="togglePin(event)">
-                <v-hover v-slot="{ hover }">
-                  <v-icon v-if="hover">mdi-pin-off</v-icon>
-                  <v-icon v-else>mdi-pin</v-icon>
-                </v-hover>
-              </v-btn>
-            </div>
-            <div v-if="isPinned(event) && isEditable(event)" class="pinned-custom-event">
-              <v-btn plain small @click="togglePin(event)">
-                <v-icon>mdi-pin</v-icon>
-              </v-btn>
-            </div>
-            <div v-else-if="!isPinned(event) && !isEditable(event)" class="pinned-event">
-              <v-btn plain small @click="togglePin(event)">
-                <v-icon>mdi-pin-outline</v-icon>
-              </v-btn>
-            </div>
-          </v-col>
-          <v-col class="text-right" cols="4">
-            <v-col>
-              <v-tooltip bottom>
-                <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on" class="wavy-underline">{{
-                    event.started_at | formatToUTC
-                  }}</span>
+          <v-row justify="space-between">
+            <v-col cols="7">
+              {{ event.description }}
+              <transition-group name="slide" v-if="showDetails">
+                <template v-for="(value, key) in event.details" :key="key">
+                  <v-card>
+                    <v-card-title class="text-subtitle-1">
+                      {{ snakeToCamel(key) }}
+                    </v-card-title>
+                    <v-card-text>{{ value }}</v-card-text>
+                  </v-card>
                 </template>
-                <span class="pre-formatted">{{ event.started_at | formatToTimeZones }}</span>
-              </v-tooltip>
+              </transition-group>
+              <div class="text-caption">
+                {{ event.source }}
+              </div>
             </v-col>
-          </v-col>
-        </v-row>
-        <v-row>
-          <div class="add-event" style="--margtop: -40px; --margbot: 0px; --margrule: 40px">
-            <div class="horiz-rule" />
-            <div class="add-button">
-              <v-btn
-                compact
-                small
-                plain
-                class="up-button"
-                @click="showNewEventDialog(event.started_at)"
-              >
-                <v-icon small class="mr-1">mdi-plus-circle-outline</v-icon>Add event
-              </v-btn>
+            <v-col cols="1">
+              <div v-if="isEditable(event)" class="custom-event-edit">
+                <v-btn variant="plain" @click="showEditEventDialog(event)">
+                  <v-icon>mdi-pencil</v-icon>
+                </v-btn>
+                <br />
+                <v-btn variant="plain" @click="togglePin(event)">
+                  <v-hover v-slot="{ isHovering, props }">
+                    <v-icon v-if="!isPinned(event)" v-bind="props">mdi-pin-outline</v-icon>
+                    <v-icon v-else-if="isHovering && isPinned(event)" v-bind="props">
+                      mdi-pin-off
+                    </v-icon>
+                    <v-icon v-else-if="!isHovering && isPinned(event)" v-bind="props">
+                      mdi-pin
+                    </v-icon>
+                  </v-hover>
+                </v-btn>
+                <br />
+                <v-btn variant="plain" @click="showDeleteEventDialog(event)">
+                  <v-icon>mdi-trash-can</v-icon>
+                </v-btn>
+              </div>
+              <div v-if="isPinned(event) && !isEditable(event)" class="pinned-event">
+                <v-btn variant="plain" @click="togglePin(event)">
+                  <v-hover v-slot="{ isHovering, props }">
+                    <v-icon v-if="isHovering" v-bind="props">mdi-pin-off</v-icon>
+                    <v-icon v-else v-bind="props">mdi-pin</v-icon>
+                  </v-hover>
+                </v-btn>
+              </div>
+              <div v-if="isPinned(event) && isEditable(event)" class="pinned-custom-event">
+                <v-btn variant="plain" @click="togglePin(event)">
+                  <v-icon>mdi-pin</v-icon>
+                </v-btn>
+              </div>
+              <div v-else-if="!isPinned(event) && !isEditable(event)" class="pinned-event">
+                <v-btn variant="plain" @click="togglePin(event)">
+                  <v-icon>mdi-pin-outline</v-icon>
+                </v-btn>
+              </div>
+            </v-col>
+            <v-col class="text-right" cols="4">
+              <v-col>
+                <v-tooltip location="bottom">
+                  <template #activator="{ props }">
+                    <span v-bind="props" class="wavy-underline">{{
+                      formatToUTC(event.started_at)
+                    }}</span>
+                  </template>
+                  <span class="pre-formatted">{{ formatToTimeZones(event.started_at) }}</span>
+                </v-tooltip>
+              </v-col>
+            </v-col>
+          </v-row>
+          <v-row>
+            <div class="add-event" style="--margtop: -40px; --margbot: 0px; --margrule: 40px">
+              <div class="horiz-rule" />
+              <div class="add-button">
+                <v-btn
+                  compact
+                  size="small"
+                  variant="plain"
+                  class="up-button"
+                  @click="showNewEventDialog(event.started_at)"
+                >
+                  <v-icon size="small" class="mr-1">mdi-plus-circle-outline</v-icon>Add event
+                </v-btn>
+              </div>
             </div>
-          </div>
-        </v-row>
-      </v-timeline-item>
-    </v-timeline>
+          </v-row>
+        </v-timeline-item>
+      </v-timeline>
+    </template>
     <div v-else>
       <p class="text-center">No timeline data available.</p>
     </div>
-    <div class="text-caption ml-10" v-if="countHidden() != 0">
+    <div class="text-caption ml-3 mt-10" v-if="countHidden() !== 0">
       {{ "" + countHidden() }} event(s) are hidden due to current filter
     </div>
   </v-container>
@@ -144,6 +149,8 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
 import Util from "@/util"
+import { snakeToCamel, formatToUTC, formatToTimeZones } from "@/filters"
+
 import TimelineFilterDialog from "@/incident/TimelineFilterDialog.vue"
 import EditEventDialog from "@/incident/EditEventDialog.vue"
 import DeleteEventDialog from "@/incident/DeleteEventDialog.vue"
@@ -180,6 +187,10 @@ export default {
       showDetails: false,
       exportLoading: false,
     }
+  },
+
+  setup() {
+    return { snakeToCamel, formatToUTC, formatToTimeZones }
   },
 
   computed: {

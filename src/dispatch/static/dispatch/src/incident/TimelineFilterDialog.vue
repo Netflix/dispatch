@@ -1,81 +1,76 @@
 <template>
   <v-dialog v-model="display" max-width="350px">
-    <template #activator="{ on }">
-      <v-badge
-        :value="numFilters"
-        bordered
-        overlap
-        color="info"
-        :content="numFilters"
-        class="mt-3 mr-3"
-      >
-        <v-btn color="secondary" v-on="on">
-          <v-icon left class="mr-1">mdi-filter</v-icon> Filter
+    <template #activator="{ props }">
+      <v-badge :value="numFilters" bordered color="info" :content="numFilters" class="mt-3 mr-3">
+        <v-btn color="secondary" v-bind="props">
+          <v-icon start class="mr-1">mdi-filter</v-icon> Filter
         </v-btn>
       </v-badge>
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Timeline Filters</span>
+        <span class="text-h5">Timeline Filters</span>
       </v-card-title>
       <v-card-subtitle class="subtitle_top">
         Only show the following types of events
       </v-card-subtitle>
-      <v-list dense>
+      <v-list density="compact">
         <v-list-item>
-          <v-list-item-content class="pl-5 pt-5">
-            <v-row align="center">
-              <v-simple-checkbox v-model="local_filters.assessment_updates" color="#e50815" />
-              <v-icon left class="mr-2">mdi-priority-high</v-icon>
-              Assessment updates
-            </v-row>
-            <span class="text-caption ml-5">Priority, severity, and status</span>
-          </v-list-item-content>
+          <template #prepend>
+            <v-checkbox-btn v-model="local_filters.assessment_updates" color="#e50815" />
+          </template>
+          <v-list-item-title>
+            <v-icon start class="mr-2">mdi-priority-high</v-icon>
+            Assessment updates
+          </v-list-item-title>
+          <v-list-item-subtitle>Priority, severity, and status</v-list-item-subtitle>
         </v-list-item>
         <v-list-item>
-          <v-list-item-content class="pl-5 pt-5">
-            <v-row align="center">
-              <v-simple-checkbox v-model="local_filters.user_curated_events" color="#e50815" />
-              <v-icon left class="mr-2">mdi-text-account</v-icon>
-              User-curated events
-            </v-row>
-            <span class="text-caption ml-5">Custom events and imported messages</span>
-          </v-list-item-content>
+          <template #prepend>
+            <v-checkbox-btn v-model="local_filters.user_curated_events" color="#e50815" />
+          </template>
+          <v-list-item-title>
+            <v-icon start class="mr-2">mdi-text-account</v-icon>
+            User-curated events
+          </v-list-item-title>
+          <v-list-item-subtitle>Custom events and imported messages</v-list-item-subtitle>
         </v-list-item>
         <v-list-item>
-          <v-list-item-content class="pl-5 pt-5">
-            <v-row align="center">
-              <v-simple-checkbox v-model="local_filters.field_updates" color="#e50815" />
-              <v-icon left class="mr-2">mdi-subtitles-outline</v-icon>
-              Field updates
-            </v-row>
-            <span class="text-caption ml-5">Fields like title, description, tags, type, etc.</span>
-          </v-list-item-content>
+          <template #prepend>
+            <v-checkbox-btn v-model="local_filters.field_updates" color="#e50815" />
+          </template>
+          <v-list-item-title>
+            <v-icon start class="mr-2">mdi-subtitles-outline</v-icon>
+            Field updates
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            Fields like title, description, tags, type, etc.
+          </v-list-item-subtitle>
         </v-list-item>
         <v-list-item>
-          <v-list-item-content class="pl-5 pt-5">
-            <v-row align="center">
-              <v-simple-checkbox v-model="local_filters.participant_updates" color="#e50815" />
-              <v-icon left class="mr-2">mdi-account-outline</v-icon>
-              Participant updates
-            </v-row>
-            <span class="text-caption ml-5">Added/removed participants and role changes</span>
-          </v-list-item-content>
+          <template #prepend>
+            <v-checkbox-btn v-model="local_filters.participant_updates" color="#e50815" />
+          </template>
+          <v-list-item-title>
+            <v-icon start class="mr-2">mdi-account-outline</v-icon>
+            Participant updates
+          </v-list-item-title>
+          <v-list-item-subtitle>Added/removed participants and role changes</v-list-item-subtitle>
         </v-list-item>
         <v-list-item>
-          <v-list-item-content class="pl-5 pt-5">
-            <v-row align="center">
-              <v-simple-checkbox v-model="local_filters.other_events" color="#e50815" />
-              <v-icon left class="mr-2">mdi-monitor-star</v-icon>
-              Other events
-            </v-row>
-            <span class="text-caption ml-5">System events, resource creation, etc.</span>
-          </v-list-item-content>
+          <template #prepend>
+            <v-checkbox-btn v-model="local_filters.other_events" color="#e50815" />
+          </template>
+          <v-list-item-title>
+            <v-icon start class="mr-2">mdi-monitor-star</v-icon>
+            Other events
+          </v-list-item-title>
+          <v-list-item-subtitle>System events, resource creation, etc.</v-list-item-subtitle>
         </v-list-item>
       </v-list>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="info" text @click="applyFilters()"> Apply Filters </v-btn>
+        <v-btn color="info" variant="text" @click="applyFilters()"> Apply Filters </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

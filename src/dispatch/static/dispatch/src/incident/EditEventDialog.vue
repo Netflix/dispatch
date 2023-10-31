@@ -2,18 +2,18 @@
   <v-dialog v-model="showEditEventDialog" persistent max-width="750px">
     <v-card>
       <v-card-title>
-        <span v-if="uuid" class="headline">Create new event</span>
-        <span v-else class="headline">Edit event</span>
+        <span v-if="uuid" class="text-h5">Create new event</span>
+        <span v-else class="text-h5">Edit event</span>
       </v-card-title>
       <v-card-text>
-        <v-container grid-list-md class="mt-3">
-          <v-layout wrap>
-            <v-row>
+        <v-container class="mt-3">
+          <v-row>
+            <v-col cols="12">
               <date-time-picker-menu
                 label="Reported At"
                 v-model="started_at"
                 class="time-picker"
-                :timeZone="timezone"
+                :timezone="timezone"
               />
               <v-select
                 v-model="timezone"
@@ -24,11 +24,11 @@
               <v-btn color="green en-1" class="ml-10 mt-3" width="100" @click="setTimeToNow()">
                 Now
               </v-btn>
-            </v-row>
-            <v-row>
-              <span class="ml-8 time-utc"> Time in UTC is {{ started_at | formatToUTC }} </span>
-            </v-row>
-            <v-flex xs12>
+            </v-col>
+            <v-col cols="12">
+              <span class="ml-8 time-utc"> Time in UTC is {{ formatToUTC(started_at) }} </span>
+            </v-col>
+            <v-col cols="12">
               <v-textarea
                 v-model="description"
                 class="mt-3"
@@ -37,15 +37,17 @@
                 clearable
                 required
               />
-            </v-flex>
-          </v-layout>
+            </v-col>
+          </v-row>
         </v-container>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn text @click="closeEditEventDialog()"> Cancel </v-btn>
-        <v-btn v-if="uuid" color="green en-1" text @click="updateExistingEvent()"> OK </v-btn>
-        <v-btn v-else color="green en-1" text @click="storeNewEvent()"> OK </v-btn>
+        <v-btn variant="text" @click="closeEditEventDialog()"> Cancel </v-btn>
+        <v-btn v-if="uuid" color="green en-1" variant="text" @click="updateExistingEvent()">
+          OK
+        </v-btn>
+        <v-btn v-else color="green en-1" variant="text" @click="storeNewEvent()"> OK </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -54,6 +56,7 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+import { formatToUTC } from "@/filters"
 
 import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
 import moment from "moment-timezone"
@@ -66,6 +69,10 @@ export default {
       timezones: ["UTC", "America/Los_Angeles"],
       timezone: "UTC",
     }
+  },
+
+  setup() {
+    return { formatToUTC }
   },
 
   components: {
