@@ -36,7 +36,6 @@
       <template v-if="!policies.length">
         <v-row justify="center"> No {{ label }} policies have been defined. </v-row>
       </template>
-
       <v-expansion-panels ref="sortableElement">
         <v-expansion-panel v-for="(policy, idx) in policies" :key="policy.id">
           <v-expansion-panel-title>
@@ -88,7 +87,6 @@
           </v-expansion-panel-text>
         </v-expansion-panel>
       </v-expansion-panels>
-      <pre>{{ policies }}</pre>
     </v-card-text>
   </v-card>
 </template>
@@ -97,9 +95,8 @@
 import { ref, computed, watch } from "vue"
 import { useSortable } from "@vueuse/integrations/useSortable"
 
-import IncidentRoleApi from "@/incident_role/api"
-
 import IncidentPriorityCombobox from "@/incident/priority/IncidentPriorityCombobox.vue"
+import IncidentRoleApi from "@/incident_role/api"
 import IncidentTypeCombobox from "@/incident/type/IncidentTypeCombobox.vue"
 import ServiceSelectNew from "@/service/ServiceSelectNew.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
