@@ -1,37 +1,39 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
-    <v-navigation-drawer app clipped right width="900">
+  <v-form @submit.prevent v-slot="{ isValid }">
+    <v-navigation-drawer location="right" width="900">
       <template #prepend>
-        <v-list-item two-line>
-          <v-list-item-content>
-            <v-list-item-title class="title">
-              {{ name }}
-            </v-list-item-title>
-            <v-list-item-subtitle>
-              Reported - {{ reported_at | formatRelativeDate }}
-            </v-list-item-subtitle>
-          </v-list-item-content>
-          <v-btn
-            v-if="status == 'New' || status == 'Triage'"
-            @click="showEscalateDialog(selected)"
-            color="error"
-          >
-            <v-icon left> error_outline </v-icon>
-            Escalate Case
-          </v-btn>
-          <v-spacer />
-          <v-btn
-            icon
-            color="info"
-            :loading="loading"
-            :disabled="invalid || !validated"
-            @click="save()"
-          >
-            <v-icon>save</v-icon>
-          </v-btn>
-          <v-btn icon color="secondary" @click="closeEditSheet">
-            <v-icon>close</v-icon>
-          </v-btn>
+        <v-list-item lines="two">
+          <v-list-item-title class="text-h6">
+            {{ name }}
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            Reported - {{ formatRelativeDate(reported_at) }}
+          </v-list-item-subtitle>
+
+          <template #append>
+            <v-btn
+              v-if="status == 'New' || status == 'Triage'"
+              @click="showEscalateDialog(selected)"
+              color="error"
+              prepend-icon="mdi-alert-circle-outline"
+            >
+              Escalate Case
+            </v-btn>
+            <v-spacer />
+            <v-btn
+              icon
+              variant="text"
+              color="info"
+              :loading="loading"
+              :disabled="!isValid.value"
+              @click="save()"
+            >
+              <v-icon>mdi-content-save</v-icon>
+            </v-btn>
+            <v-btn icon variant="text" color="secondary" @click="closeEditSheet">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </template>
         </v-list-item>
       </template>
       <v-tabs color="primary" fixed-tabs v-model="tab">
@@ -43,41 +45,41 @@
         <v-tab key="entities"> Entities </v-tab>
         <v-tab key="signals"> Signals </v-tab>
       </v-tabs>
-      <v-tabs-items v-model="tab">
-        <v-tab-item key="details">
+      <v-window v-model="tab">
+        <v-window-item key="details">
           <case-details-tab />
-        </v-tab-item>
-        <v-tab-item key="resources">
+        </v-window-item>
+        <v-window-item key="resources">
           <case-resources-tab />
-        </v-tab-item>
-        <v-tab-item key="participants">
+        </v-window-item>
+        <v-window-item key="participants">
           <case-participants-tab />
-        </v-tab-item>
-        <v-tab-item key="timeline">
+        </v-window-item>
+        <v-window-item key="timeline">
           <case-timeline-tab />
-        </v-tab-item>
-        <v-tab-item key="workflow_instances">
+        </v-window-item>
+        <v-window-item key="workflow_instances">
           <workflow-instance-tab v-model="workflow_instances" />
-        </v-tab-item>
-        <v-tab-item key="entities">
+        </v-window-item>
+        <v-window-item key="entities">
           <entities-tab
             :selected="selected"
             v-model="signal_instances"
             v-if="selected.signal_instances"
           />
-        </v-tab-item>
-        <v-tab-item key="signal_instances">
+        </v-window-item>
+        <v-window-item key="signal_instances">
           <signal-instance-tab v-model="signal_instances" v-if="selected.signal_instances" />
-        </v-tab-item>
-      </v-tabs-items>
+        </v-window-item>
+      </v-window>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver } from "vee-validate"
+import { formatRelativeDate } from "@/filters"
 
 import CaseDetailsTab from "@/case/DetailsTab.vue"
 import CaseParticipantsTab from "@/case/ParticipantsTab.vue"
@@ -98,13 +100,16 @@ export default {
     WorkflowInstanceTab,
     SignalInstanceTab,
     EntitiesTab,
-    ValidationObserver,
   },
 
   data() {
     return {
       tab: null,
     }
+  },
+
+  setup() {
+    return { formatRelativeDate }
   },
 
   computed: {

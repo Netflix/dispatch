@@ -1,11 +1,10 @@
 <template>
-  <v-menu v-model="menu" :close-on-content-click="false" transition="scale-transition">
-    <template #activator="{ on, attrs }">
+  <v-menu v-model="menu" :close-on-content-click="false">
+    <template #activator="{ props }">
       <v-text-field
         v-model="expiration"
         :label="label"
-        v-bind="attrs"
-        v-on="on"
+        v-bind="props"
         clearable
         readonly
         @click:clear="clearExpiration()"
@@ -14,16 +13,15 @@
     <v-card>
       <v-row>
         <v-col>
-          <v-list>
-            <v-list-item-group color="primary">
-              <v-list-item
-                v-for="(item, index) in expirationShortcuts"
-                :key="index"
-                @click="setExpiration(item.expiration)"
-              >
-                <v-list-item-title class="text-center">{{ item.title }}</v-list-item-title>
-              </v-list-item>
-            </v-list-item-group>
+          <v-list color="primary">
+            <v-list-item
+              v-for="(item, index) in expirationShortcuts"
+              :key="index"
+              :value="item.title"
+              @click="setExpiration(item.expiration)"
+            >
+              <v-list-item-title class="text-center">{{ item.title }}</v-list-item-title>
+            </v-list-item>
           </v-list>
         </v-col>
         <v-col>
@@ -33,8 +31,8 @@
       <v-card-actions>
         <v-spacer />
         <slot name="actions" :parent="this">
-          <v-btn color="grey lighten-1" text @click.native="clearExpiration()">Clear</v-btn>
-          <v-btn text @click="closeMenu()">Ok</v-btn>
+          <v-btn color="grey-lighten-1" variant="text" @click="clearExpiration()"> Clear </v-btn>
+          <v-btn variant="text" @click="closeMenu()">Ok</v-btn>
         </slot>
       </v-card-actions>
     </v-card>
@@ -58,7 +56,7 @@ export default {
   name: "ExpirationInput",
   components: { DateTimePicker },
   props: {
-    value: {
+    modelValue: {
       type: [Date, String],
       default: null,
     },
@@ -104,10 +102,10 @@ export default {
   computed: {
     expiration: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },

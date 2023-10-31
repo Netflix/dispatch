@@ -3,7 +3,7 @@
     <delete-dialog />
     <v-row no-gutters>
       <v-col>
-        <div class="headline">Oncall feedback</div>
+        <div class="text-h5">Feedback</div>
       </v-col>
       <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
@@ -11,25 +11,25 @@
     </v-row>
     <v-row no-gutters>
       <v-col>
-        <v-card elevation="0">
+        <v-card>
           <v-card-title>
             <v-text-field
               v-model="q"
-              append-icon="search"
+              append-icon="mdi-magnify"
               label="Search"
               single-line
               hide-details
               clearable
             />
           </v-card-title>
-          <v-data-table
+          <v-data-table-server
             :headers="headers"
             :items="items"
-            :server-items-length="total"
-            :page.sync="page"
-            :items-per-page.sync="itemsPerPage"
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="descending"
+            :items-length="total || 0"
+            v-model:page="page"
+            v-model:items-per-page="itemsPerPage"
+            v-model:sort-by="sortBy"
+            v-model:sort-desc="descending"
             :loading="loading"
             loading-text="Loading... Please wait"
           >
@@ -41,32 +41,32 @@
               <span v-else>(anonymous)</span>
             </template>
             <template #item.shift_end_at="{ item }">
-              <v-tooltip bottom>
-                <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on" class="wavy-underline">{{
-                    item.shift_end_at | formatToUTC
+              <v-tooltip location="bottom">
+                <template #activator="{ props }">
+                  <span v-bind="props" class="wavy-underline">{{
+                    formatToUTC(item.shift_end_at)
                   }}</span>
                 </template>
-                <span class="pre-formatted">{{ item.shift_end_at | formatToTimeZones }}</span>
+                <span class="pre-formatted">{{ formatToTimeZones(item.shift_end_at) }}</span>
               </v-tooltip>
             </template>
             <template #item.created_at="{ item }">
-              <v-tooltip bottom>
-                <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
+              <v-tooltip location="bottom">
+                <template #activator="{ props }">
+                  <span v-bind="props">{{ formatRelativeDate(item.created_at) }}</span>
                 </template>
-                <span>{{ item.created_at | formatDate }}</span>
+                <span>{{ formatDate(item.created_at) }}</span>
               </v-tooltip>
             </template>
             <template #item.project.name="{ item }">
-              <v-chip small :color="item.project.color" text-color="white">
+              <v-chip size="small" :color="item.project.color">
                 {{ item.project.name }}
               </v-chip>
             </template>
             <template #item.data-table-actions="{ item }">
-              <v-menu bottom left>
-                <template #activator="{ on }">
-                  <v-btn icon v-on="on">
+              <v-menu location="right" origin="overlap">
+                <template #activator="{ props }">
+                  <v-btn icon variant="text" v-bind="props">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>
                 </template>
@@ -77,7 +77,7 @@
                 </v-list>
               </v-menu>
             </template>
-          </v-data-table>
+          </v-data-table-server>
         </v-card>
       </v-col>
     </v-row>
@@ -87,6 +87,7 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+import { formatRelativeDate, formatDate, formatToUTC, formatToTimeZones } from "@/filters"
 
 import DeleteDialog from "@/feedback/service/DeleteDialog.vue"
 import Participant from "@/incident/Participant.vue"
@@ -105,16 +106,20 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Shift End At (UTC)", value: "shift_end_at", sortable: true },
-        { text: "Participant", value: "individual", sortable: true },
-        { text: "Off-Shift Hours", value: "hours", sortable: true },
-        { text: "Rating", value: "rating", sortable: true },
-        { text: "Feedback", value: "feedback", sortable: true },
-        { text: "Project", value: "project.name", sortable: false },
-        { text: "Created At", value: "created_at", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Shift End At (UTC)", value: "shift_end_at", sortable: true },
+        { title: "Participant", value: "individual", sortable: true },
+        { title: "Off-Shift Hours", value: "hours", sortable: true },
+        { title: "Rating", value: "rating", sortable: true },
+        { title: "Feedback", value: "feedback", sortable: true },
+        { title: "Project", value: "project.name", sortable: false },
+        { title: "Created At", value: "created_at", sortable: true },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
+  },
+
+  setup() {
+    return { formatRelativeDate, formatDate, formatToUTC, formatToTimeZones }
   },
 
   computed: {
@@ -129,7 +134,6 @@ export default {
       "table.rows.items",
       "table.rows.total",
     ]),
-    ...mapFields("route", ["query"]),
     ...mapFields("auth", ["currentUser.projects"]),
 
     defaultUserProjects: {
@@ -159,7 +163,7 @@ export default {
   created() {
     this.filters = {
       ...this.filters,
-      ...RouterUtils.deserializeFilters(this.query),
+      ...RouterUtils.deserializeFilters(this.$route.query),
       project: this.defaultUserProjects,
     }
 

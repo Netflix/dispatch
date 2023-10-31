@@ -4,40 +4,32 @@
     :label="label"
     :loading="loading"
     :menu-props="{ maxHeight: '400' }"
-    :search-input.sync="search"
-    @update:search-input="fetchData({ q: $event })"
+    v-model:search="search"
+    @update:search="fetchData({ q: $event })"
     chips
     clearable
-    deletable-chips
+    closable-chips
     hide-selected
-    item-text="name"
+    item-title="name"
     item-value="id"
     multiple
     no-filter
     v-model="incident"
   >
-    <template #selection="{ attr, on, item, selected }">
-      <v-chip v-bind="attr" :input-value="selected" v-on="on" close @click:close="remove(item)">
-        <span v-text="item.name" />
-      </v-chip>
-    </template>
-    <template #item="{ item }">
-      <v-list-item-content>
-        <v-list-item-title>{{ item.name }}</v-list-item-title>
-        <v-list-item-subtitle style="width: 200px" class="text-truncate">
-          {{ item.title }}
+    <template #item="{ item, props }">
+      <v-list-item v-bind="props" :title="null">
+        <v-list-item-title>{{ item.raw.name }}</v-list-item-title>
+        <v-list-item-subtitle :title="item.raw.title">
+          {{ item.raw.title }}
         </v-list-item-subtitle>
-      </v-list-item-content>
+      </v-list-item>
     </template>
     <template #no-data>
       <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title>
-            No incidents matching "
-            <strong>{{ search }}</strong
-            >".
-          </v-list-item-title>
-        </v-list-item-content>
+        <v-list-item-title>
+          No incidents matching "<strong>{{ search }}</strong
+          >".
+        </v-list-item-title>
       </v-list-item>
     </template>
   </v-combobox>
@@ -49,7 +41,7 @@ import { cloneDeep, debounce } from "lodash"
 export default {
   name: "IncidentComboBox",
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -74,7 +66,7 @@ export default {
   computed: {
     incident: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         const incidents = value.filter((v) => {
@@ -83,7 +75,7 @@ export default {
           }
           return true
         })
-        this.$emit("input", incidents)
+        this.$emit("update:modelValue", incidents)
         this.search = null
       },
     },
@@ -94,9 +86,6 @@ export default {
   },
 
   methods: {
-    remove(item) {
-      this.incident.splice(this.incident.indexOf(item), 1)
-    },
     fetchData(filterOptions) {
       this.error = null
       this.loading = "error"

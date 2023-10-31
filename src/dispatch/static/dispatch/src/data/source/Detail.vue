@@ -1,16 +1,16 @@
 <template>
   <div>
     <new-edit-sheet />
-    <v-toolbar dark flat>
+    <v-toolbar dark>
       <v-toolbar-title>{{ name }}</v-toolbar-title>
 
       <v-spacer />
 
       <span v-if="source_status"> Status: {{ source_status.name }}</span>
 
-      <v-menu bottom left>
-        <template #activator="{ on }">
-          <v-btn icon v-on="on">
+      <v-menu location="right" origin="overlap">
+        <template #activator="{ props }">
+          <v-btn icon variant="text" v-bind="props">
             <v-icon>mdi-dots-vertical</v-icon>
           </v-btn>
         </template>
@@ -25,8 +25,7 @@
       </v-menu>
 
       <template #extension>
-        <v-tabs align-with-title>
-          <v-tabs-slider />
+        <v-tabs align-tabs="title">
           <v-tab :to="{ params: { tab: 'details' } }">Details </v-tab>
           <!--<v-tab :to="{ params: { tab: 'schema' } }">Schema </v-tab>-->
           <v-tab :to="{ params: { tab: 'queries' } }">Queries </v-tab>
@@ -34,12 +33,12 @@
         </v-tabs>
       </template>
     </v-toolbar>
-    <v-tabs-items :value="tab">
-      <v-tab-item value="details"><details-tab /></v-tab-item>
-      <v-tab-item disabled value="schema"><schema-tab /></v-tab-item>
-      <v-tab-item value="queries"><queries-tab /></v-tab-item>
-      <v-tab-item value="incidents"><incidents-tab /></v-tab-item>
-    </v-tabs-items>
+    <v-window :model-value="tab">
+      <v-window-item value="details"><details-tab /></v-window-item>
+      <v-window-item disabled value="schema"><schema-tab /></v-window-item>
+      <v-window-item value="queries"><queries-tab /></v-window-item>
+      <v-window-item value="incidents"><incidents-tab /></v-window-item>
+    </v-window>
   </div>
 </template>
 

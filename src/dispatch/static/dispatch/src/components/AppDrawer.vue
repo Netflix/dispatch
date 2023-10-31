@@ -1,93 +1,61 @@
-<style>
-.v-list-item--active::before {
-  background-color: #e50914;
-  display: block;
-  content: "";
-  position: absolute;
-  top: 6px;
-  bottom: 6px;
-  left: -8px;
-  width: 5px;
-  opacity: 0.5 !important;
-  border-radius: 0px 3px 3px 0px;
-  transition: background-color 0.15s linear 0s;
-}
-</style>
 <template>
-  <v-navigation-drawer
-    app
-    permanent
-    :width="mini ? 220 : 440"
-    clipped
-    class="background1"
-    v-if="showChildPane"
-  >
-    <v-layout fill-height no-gutters>
-      <v-navigation-drawer width="220" permanent :mini-variant="mini" mini-variant-width="80px">
-        <v-list dense flat nav>
-          <span v-for="(route, index) in routes" :key="index" :to="route.path">
-            <v-list-item :to="{ name: route.name }">
-              <v-list-item-action>
-                <v-icon>{{ route.meta.icon }}</v-icon>
-              </v-list-item-action>
-              <v-list-item-content>
-                <v-list-item-title>{{ route.meta.title }}</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </span>
-          <v-list-item v-if="mini" @click.stop="toggleMiniNav()">
-            <v-list-item-action>
-              <v-icon>mdi-chevron-right</v-icon>
-            </v-list-item-action>
-            <v-list-item-content>
-              <v-list-item-title>Minimize</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-          <v-list-item v-else @click.stop="toggleMiniNav()">
-            <v-list-item-action>
-              <v-icon>mdi-chevron-left</v-icon>
-            </v-list-item-action>
-            <v-list-item-content>
-              <v-list-item-title>Minimize</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
+  <v-navigation-drawer permanent :width="mini ? 220 : 440" class="background1" v-if="showChildPane">
+    <v-layout class="h-100">
+      <v-navigation-drawer width="220" permanent :rail="mini">
+        <v-list density="compact" nav>
+          <v-list-item
+            v-for="(route, index) in routes"
+            :key="index"
+            :to="{ name: route.name }"
+            :prepend-icon="route.meta.icon"
+            :title="route.meta.title"
+          />
+          <v-list-item
+            @click.stop="toggleMiniNav()"
+            :prepend-icon="mini ? 'mdi-chevron-right' : 'mdi-chevron-left'"
+            title="Minimize"
+          />
         </v-list>
         <template #append>
-          <div class="pa-3">
-            <v-btn v-if="mini" color="error" block :to="{ name: 'report' }">
-              <v-icon> error_outline </v-icon>
-            </v-btn>
-            <v-btn v-else color="error" block :to="{ name: 'report' }">
-              <v-icon left> error_outline </v-icon>
-              Report Incident
-            </v-btn>
-          </div>
+          <v-list-item
+            nav
+            class="ma-2"
+            rounded
+            variant="flat"
+            base-color="error"
+            :to="{ name: 'report' }"
+          >
+            <template #prepend>
+              <v-icon>mdi-alert-circle-outline</v-icon>
+            </template>
+            <v-list-item-title class="text-uppercase text-body-2">
+              Report incident
+            </v-list-item-title>
+          </v-list-item>
         </template>
       </v-navigation-drawer>
       <v-navigation-drawer width="220">
-        <v-list dense nav>
+        <v-list density="compact" nav>
           <v-list-item>
             <v-text-field
               v-if="showFilter"
               v-model="q"
-              append-icon="search"
+              append-inner-icon="mdi-magnify"
               label="Filter"
               single-line
               hide-details
             />
           </v-list-item>
           <span v-for="(subRoutes, group, idx) in children" :key="group">
-            <v-subheader>
-              {{ group | capitalize }}
-            </v-subheader>
+            <v-list-subheader class="text-capitalize">
+              {{ group }}
+            </v-list-subheader>
             <v-list-item
               v-for="(route, subIndex) in subRoutes"
               :key="subIndex"
               :to="{ name: route.name, query: childrenQueryParams }"
             >
-              <v-list-item-content>
-                <v-list-item-title>{{ route.meta.title }}</v-list-item-title>
-              </v-list-item-content>
+              <v-list-item-title>{{ route.meta.title }}</v-list-item-title>
             </v-list-item>
             <v-divider v-if="idx != Object.keys(children).length - 1" />
           </span>
@@ -95,42 +63,46 @@
       </v-navigation-drawer>
     </v-layout>
   </v-navigation-drawer>
-  <v-navigation-drawer app permanent width="220" :mini-variant="mini" clipped v-else>
-    <v-list dense nav>
-      <span v-for="(route, index) in routes" :key="index">
-        <v-list-item :to="{ name: route.name }">
-          <v-list-item-action>
-            <v-icon>{{ route.meta.icon }}</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>{{ route.meta.title }}</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </span>
-      <v-list-item v-if="mini" @click.stop="toggleMiniNav()">
-        <v-list-item-action>
-          <v-icon>mdi-chevron-right</v-icon>
-        </v-list-item-action>
-        <v-list-item-content>
-          <v-list-item-title>Minimize</v-list-item-title>
-        </v-list-item-content>
+  <v-navigation-drawer permanent width="220" :rail="mini" v-else>
+    <v-list density="compact" nav>
+      <v-list-item
+        v-for="(route, index) in routes"
+        :key="index"
+        :to="{ name: route.name }"
+        :prepend-icon="route.meta.icon"
+        :title="route.meta.title"
+      >
+        <v-tooltip v-if="mini" activator="parent" location="right" :text="route.meta.title" />
       </v-list-item>
-      <v-list-item v-else @click.stop="toggleMiniNav()">
-        <v-list-item-action>
-          <v-icon>mdi-chevron-left</v-icon>
-        </v-list-item-action>
-        <v-list-item-content>
-          <v-list-item-title>Minimize</v-list-item-title>
-        </v-list-item-content>
+      <v-list-item
+        @click.stop="toggleMiniNav()"
+        :prepend-icon="mini ? 'mdi-chevron-right' : 'mdi-chevron-left'"
+        title="Minimize"
+      >
+        <v-tooltip v-if="mini" activator="parent" location="right" text="Minimize" />
       </v-list-item>
     </v-list>
     <template #append>
-      <div class="pa-3">
-        <v-btn color="error" block :to="{ name: 'report' }">
-          <v-icon left> error_outline </v-icon>
-          <span v-if="!mini">Report Incident</span>
-        </v-btn>
-      </div>
+      <v-list-item
+        nav
+        class="ma-2"
+        rounded
+        variant="flat"
+        base-color="error"
+        :to="{ name: 'report' }"
+      >
+        <template #prepend>
+          <v-icon>mdi-alert-circle-outline</v-icon>
+        </template>
+        <v-list-item-title class="text-uppercase text-body-2">Report incident</v-list-item-title>
+        <v-tooltip
+          v-if="mini"
+          activator="parent"
+          location="right"
+          content-class="bg-error"
+          text="Report incident"
+        />
+      </v-list-item>
     </template>
   </v-navigation-drawer>
 </template>
@@ -160,7 +132,7 @@ export default {
   created() {
     this.mini = JSON.parse(localStorage.getItem("mini_nav"))
     this.$watch(
-      () => this.$router.currentRoute.query.project,
+      () => this.$router.currentRoute.value.query.project,
       (val) => {
         this.showFilter = val
         if (!val) this.q = ""
@@ -185,7 +157,7 @@ export default {
       )
     },
     childrenQueryParams() {
-      return this.$router.currentRoute.query
+      return this.$router.currentRoute.value.query
     },
     showChildPane() {
       if (Object.keys(this.children).length) {
@@ -215,7 +187,7 @@ export default {
       })
 
       // Filter children if we have a filter string
-      if (this.$router.currentRoute.query.project) {
+      if (this.$router.currentRoute.value.query.project) {
         let q = this.q
         if (q.length) {
           children = children.filter(function (item) {

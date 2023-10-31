@@ -9,7 +9,7 @@
       <escalate-dialog />
       <delete-dialog />
       <v-col>
-        <div class="headline">Cases</div>
+        <div class="text-h5">Cases</div>
       </v-col>
       <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
@@ -19,71 +19,71 @@
     </v-row>
     <v-row no-gutters>
       <v-col>
-        <v-card elevation="0">
+        <v-card>
           <v-card-title>
             <v-text-field
               v-model="q"
-              append-icon="search"
+              append-inner-icon="mdi-magnify"
               label="Search"
               single-line
               hide-details
               clearable
             />
           </v-card-title>
-          <v-data-table
+          <v-data-table-server
             :headers="headers"
             :items="items"
-            :server-items-length="total"
-            :page.sync="page"
-            :items-per-page.sync="itemsPerPage"
+            :items-length="total || 0"
+            v-model:page="page"
+            v-model:items-per-page="itemsPerPage"
             :footer-props="{
               'items-per-page-options': [10, 25, 50, 100],
             }"
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="descending"
+            v-model:sort-by="sortBy"
+            v-model:sort-desc="descending"
             :loading="loading"
             v-model="selected"
             loading-text="Loading... Please wait"
             show-select
             @click:row="showCaseEditSheet"
           >
-            <template #item.case_severity.name="{ item }">
-              <case-severity :severity="item.case_severity.name" />
+            <template #item.case_severity.name="{ value }">
+              <case-severity :severity="value" />
             </template>
-            <template #item.case_priority.name="{ item }">
-              <case-priority :priority="item.case_priority.name" />
+            <template #item.case_priority.name="{ value }">
+              <case-priority :priority="value" />
             </template>
             <template #item.status="{ item }">
               <case-status :status="item.status" :id="item.id" />
             </template>
             <template #item.project.name="{ item }">
-              <v-chip small :color="item.project.color" text-color="white">
+              <v-chip size="small" :color="item.project.color">
                 {{ item.project.name }}
               </v-chip>
             </template>
-            <template #item.assignee="{ item }">
-              <case-participant :participant="item.assignee" />
+            <template #item.assignee="{ value }">
+              <case-participant :participant="value" />
             </template>
-            <template #item.reported_at="{ item }">
-              <v-tooltip bottom>
-                <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ item.reported_at | formatRelativeDate }}</span>
+            <template #item.reported_at="{ value }">
+              <v-tooltip location="bottom">
+                <template #activator="{ props }">
+                  <span v-bind="props">{{ formatRelativeDate(value) }}</span>
                 </template>
-                <span>{{ item.reported_at | formatDate }}</span>
+                <span>{{ formatDate(value) }}</span>
               </v-tooltip>
             </template>
-            <template #item.closed_at="{ item }">
-              <v-tooltip bottom>
-                <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ item.closed_at | formatRelativeDate }}</span>
+            <template #item.closed_at="{ value }">
+              <v-tooltip location="bottom">
+                <template #activator="{ props }">
+                  <span v-bind="props">{{ formatRelativeDate(value) }}</span>
                 </template>
-                <span>{{ item.closed_at | formatDate }}</span>
+                <span>{{ formatDate(value) }}</span>
               </v-tooltip>
             </template>
             <template #item.data-table-actions="{ item }">
-              <v-menu bottom left>
-                <template #activator="{ on }">
-                  <v-btn icon v-on="on">
+              <v-menu location="right" origin="overlap">
+                <template #activator="{ props }">
+                  <v-btn icon variant="text" v-bind="props">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>
                 </template>
@@ -114,7 +114,7 @@
                 </v-list>
               </v-menu>
             </template>
-          </v-data-table>
+          </v-data-table-server>
         </v-card>
       </v-col>
     </v-row>
@@ -125,6 +125,7 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+import { formatRelativeDate, formatDate } from "@/filters"
 
 import BulkEditSheet from "@/case/BulkEditSheet.vue"
 import CaseParticipant from "@/case/Participant.vue"
@@ -166,20 +167,24 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", align: "left", width: "10%" },
-        { text: "Title", value: "title", sortable: false },
-        { text: "Status", value: "status" },
-        { text: "Type", value: "case_type.name", sortable: true },
-        { text: "Severity", value: "case_severity.name", sortable: true },
-        { text: "Priority", value: "case_priority.name", sortable: true },
-        { text: "Project", value: "project.name", sortable: true },
-        { text: "Assignee", value: "assignee", sortable: true },
-        { text: "Reported At", value: "reported_at" },
-        { text: "Closed At", value: "closed_at" },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", value: "name", align: "left", width: "10%" },
+        { title: "Title", value: "title", sortable: false },
+        { title: "Status", value: "status" },
+        { title: "Type", value: "case_type.name", sortable: true },
+        { title: "Severity", value: "case_severity.name", sortable: true },
+        { title: "Priority", value: "case_priority.name", sortable: true },
+        { title: "Project", value: "project.name", sortable: true },
+        { title: "Assignee", value: "assignee", sortable: true },
+        { title: "Reported At", value: "reported_at" },
+        { title: "Closed At", value: "closed_at" },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
       showEditSheet: false,
     }
+  },
+
+  setup() {
+    return { formatRelativeDate, formatDate }
   },
 
   computed: {
@@ -204,7 +209,6 @@ export default {
       "table.rows.selected",
       "table.rows.total",
     ]),
-    ...mapFields("route", ["query"]),
     ...mapFields("auth", ["currentUser.projects"]),
 
     defaultUserProjects: {
@@ -244,7 +248,7 @@ export default {
   created() {
     this.filters = {
       ...this.filters,
-      ...RouterUtils.deserializeFilters(this.query),
+      ...RouterUtils.deserializeFilters(this.$route.query),
       project: this.defaultUserProjects,
     }
 

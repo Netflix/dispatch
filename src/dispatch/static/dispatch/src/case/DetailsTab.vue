@@ -1,51 +1,45 @@
 <template>
-  <v-container grid-list-md>
-    <v-layout wrap>
-      <v-flex xs12>
-        <ValidationProvider name="Title" rules="required" immediate>
-          <v-text-field
-            v-model="title"
-            slot-scope="{ errors, valid }"
-            :error-messages="errors"
-            :success="valid"
-            label="Title"
-            hint="Title of the case."
-            clearable
-            required
-          />
-        </ValidationProvider>
-      </v-flex>
-      <v-flex xs12>
-        <ValidationProvider name="Description" rules="required" immediate>
-          <v-textarea
-            v-model="description"
-            slot-scope="{ errors, valid }"
-            :error-messages="errors"
-            :success="valid"
-            label="Description"
-            hint="Description of the case."
-            clearable
-            required
-          />
-        </ValidationProvider>
-      </v-flex>
-      <v-flex xs12>
+  <v-container>
+    <v-row>
+      <v-col cols="12">
+        <v-text-field
+          v-model="title"
+          label="Title"
+          hint="Title of the case."
+          clearable
+          required
+          name="Title"
+          :rules="[rules.required]"
+        />
+      </v-col>
+      <v-col cols="12">
+        <v-textarea
+          v-model="description"
+          label="Description"
+          hint="Description of the case."
+          clearable
+          required
+          name="Description"
+          :rules="[rules.required]"
+        />
+      </v-col>
+      <v-col cols="12">
         <v-select
           v-model="resolution_reason"
           label="Resolution Reason"
           :items="resolutionReasons"
           hint="The general reason why a given case was resolved."
         />
-      </v-flex>
-      <v-flex xs12>
+      </v-col>
+      <v-col cols="12">
         <v-textarea
           v-model="resolution"
           label="Resolution"
           hint="Description of the actions taken to resolve the case."
           clearable
         />
-      </v-flex>
-      <v-flex xs12>
+      </v-col>
+      <v-col cols="12">
         <participant-select
           v-model="assignee"
           label="Assignee"
@@ -53,8 +47,8 @@
           clearable
           :project="project"
         />
-      </v-flex>
-      <v-flex xs12>
+      </v-col>
+      <v-col cols="12">
         <participant-select
           v-model="reporter"
           label="Reporter"
@@ -62,36 +56,36 @@
           clearable
           :project="project"
         />
-      </v-flex>
-      <v-flex xs6>
+      </v-col>
+      <v-col cols="6">
         <project-select v-model="project" />
-      </v-flex>
-      <v-flex xs6>
+      </v-col>
+      <v-col cols="6">
         <case-type-select v-model="case_type" :project="project" />
-      </v-flex>
-      <v-flex xs6>
+      </v-col>
+      <v-col cols="6">
         <case-severity-select v-model="case_severity" :project="project" />
-      </v-flex>
-      <v-flex xs6>
+      </v-col>
+      <v-col cols="6">
         <case-priority-select v-model="case_priority" :project="project" />
-      </v-flex>
-      <v-flex xs6>
+      </v-col>
+      <v-col cols="6">
         <v-select
           v-model="status"
           label="Status"
           :items="statuses"
           hint="The status of the case."
         />
-      </v-flex>
-      <v-flex xs6>
+      </v-col>
+      <v-col cols="6">
         <v-select
           v-model="visibility"
           label="Visibility"
           :items="visibilities"
           hint="The visibilty of the case."
         />
-      </v-flex>
-      <v-flex xs12>
+      </v-col>
+      <v-col cols="12">
         <v-row>
           <v-col cols="6">
             <date-time-picker-menu label="Reported At" v-model="reported_at" />
@@ -100,8 +94,8 @@
             <date-time-picker-menu label="Triage At" v-model="triage_at" />
           </v-col>
         </v-row>
-      </v-flex>
-      <v-flex xs12>
+      </v-col>
+      <v-col cols="12">
         <v-row>
           <v-col cols="6">
             <date-time-picker-menu label="Escalated At" v-model="escalated_at" />
@@ -110,27 +104,26 @@
             <date-time-picker-menu label="Closed At" v-model="closed_at" />
           </v-col>
         </v-row>
-      </v-flex>
-      <v-flex xs12>
+      </v-col>
+      <v-col cols="12">
         <tag-filter-auto-complete label="Tags" v-model="tags" model="case" :model-id="id" />
-      </v-flex>
-      <v-flex xs12>
+      </v-col>
+      <v-col cols="12">
         <case-filter-combobox label="Related" v-model="related" :project="project" />
-      </v-flex>
-      <v-flex xs12>
+      </v-col>
+      <v-col cols="12">
         <case-filter-combobox label="Duplicates" v-model="duplicates" :project="project" />
-      </v-flex>
-      <v-flex xs12>
+      </v-col>
+      <v-col cols="12">
         <incident-filter-combobox label="Incidents" v-model="incidents" :project="project" />
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
 <script>
-import { ValidationProvider, extend } from "vee-validate"
+import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
-import { required } from "vee-validate/dist/rules"
 
 import CaseFilterCombobox from "@/case/CaseFilterCombobox.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
@@ -142,12 +135,12 @@ import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "CaseDetailsTab",
 
   components: {
@@ -160,7 +153,6 @@ export default {
     ParticipantSelect,
     ProjectSelect,
     TagFilterAutoComplete,
-    ValidationProvider,
   },
 
   data() {

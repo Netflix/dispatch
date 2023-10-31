@@ -1,26 +1,7 @@
 <template>
-  <div>
-    <div v-if="status == 'New'">
-      <v-badge bordered color="red" slot="activator" dot left offset-x="-10" offset-y="12">
-        {{ status }}
-      </v-badge>
-    </div>
-    <div v-if="status == 'Triage'">
-      <v-badge bordered color="orange" slot="activator" dot left offset-x="-10" offset-y="12">
-        {{ status }}
-      </v-badge>
-    </div>
-    <div v-if="status == 'Escalated'">
-      <v-badge bordered color="yellow" slot="activator" dot left offset-x="-10" offset-y="12">
-        {{ status }}
-      </v-badge>
-    </div>
-    <div v-if="status == 'Closed'">
-      <v-badge bordered color="success" dot left offset-x="-10" offset-y="12">
-        {{ status }}
-      </v-badge>
-    </div>
-  </div>
+  <v-badge bordered :color="color" dot location="left" offset-x="-16">
+    {{ status }}
+  </v-badge>
 </template>
 
 <script>
@@ -35,6 +16,19 @@ export default {
     id: {
       type: Number,
       required: true,
+    },
+  },
+
+  computed: {
+    color() {
+      return (
+        {
+          New: "red",
+          Triage: "orange",
+          Escalated: "yellow",
+          Closed: "success",
+        }[this.status] || "error"
+      )
     },
   },
 }

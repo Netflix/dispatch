@@ -1,15 +1,15 @@
 <template>
   <v-dialog v-model="display" max-width="600px">
-    <template #activator="{ on }">
-      <v-badge :value="numFilters" bordered overlap color="info" :content="numFilters">
-        <v-btn color="secondary" v-on="on"> Filter </v-btn>
+    <template #activator="{ props }">
+      <v-badge :model-value="!!numFilters" bordered color="info" :content="numFilters">
+        <v-btn color="secondary" v-bind="props"> Filter </v-btn>
       </v-badge>
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Column Filters</span>
+        <span class="text-h5">Column Filters</span>
       </v-card-title>
-      <v-list dense />
+      <v-list density="compact" />
     </v-card>
   </v-dialog>
 </template>
@@ -19,7 +19,6 @@ import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
 export default {
   name: "WorkflowTableFilterDialog",
-  components: {},
   data() {
     return {
       display: false,

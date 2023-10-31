@@ -1,10 +1,10 @@
 <template>
   <div>
-    <v-menu v-model="menu" bottom right transition="scale-transition" origin="top left">
-      <template #activator="{ on }">
-        <v-chip pill small v-on="on" v-if="participant.individual">
-          <v-avatar color="teal" left>
-            <span class="white--text">{{ participant.individual.name | initials }}</span>
+    <v-menu v-model="menu" origin="overlap">
+      <template #activator="{ props }">
+        <v-chip pill size="small" v-bind="props" v-if="participant.individual">
+          <v-avatar color="teal" start>
+            <span class="text-white">{{ initials(participant.individual.name) }}</span>
           </v-avatar>
           {{ participant.individual.name }}
         </v-chip>
@@ -12,49 +12,56 @@
       <v-card width="300">
         <v-list dark>
           <v-list-item v-if="participant.individual">
-            <v-list-item-avatar color="teal">
-              <span class="white--text">{{ participant.individual.name | initials }}</span>
-            </v-list-item-avatar>
-            <v-list-item-content>
-              <v-list-item-title>{{ participant.individual.name }}</v-list-item-title>
-              <v-list-item-subtitle>{{ participant.individual.email }}</v-list-item-subtitle>
-            </v-list-item-content>
-            <v-list-item-action>
-              <v-btn icon @click="menu = false">
+            <template #prepend>
+              <v-avatar color="teal">
+                <span class="text-white">{{ initials(participant.individual.name) }}</span>
+              </v-avatar>
+            </template>
+
+            <v-list-item-title>{{ participant.individual.name }}</v-list-item-title>
+            <v-list-item-subtitle>{{ participant.individual.email }}</v-list-item-subtitle>
+
+            <template #append>
+              <v-btn icon variant="text" @click="menu = false">
                 <v-icon>mdi-close-circle</v-icon>
               </v-btn>
-            </v-list-item-action>
+            </template>
           </v-list-item>
         </v-list>
         <v-list>
           <v-list-item>
-            <v-list-item-action>
+            <template #prepend>
               <v-icon>mdi-briefcase</v-icon>
-            </v-list-item-action>
+            </template>
+
             <v-list-item-subtitle>{{ participant.individual.email }}</v-list-item-subtitle>
           </v-list-item>
           <v-list-item v-if="participant.individual.company">
-            <v-list-item-action>
-              <v-icon>business</v-icon>
-            </v-list-item-action>
+            <template #prepend>
+              <v-icon>mdi-domain</v-icon>
+            </template>
+
             <v-list-item-subtitle>{{ participant.individual.company }}</v-list-item-subtitle>
           </v-list-item>
           <v-list-item v-if="participant.location">
-            <v-list-item-action>
-              <v-icon>public</v-icon>
-            </v-list-item-action>
+            <template #prepend>
+              <v-icon>mdi-earth</v-icon>
+            </template>
+
             <v-list-item-subtitle>{{ participant.location }}</v-list-item-subtitle>
           </v-list-item>
           <v-list-item v-if="participant.department">
-            <v-list-item-action>
-              <v-icon>groups</v-icon>
-            </v-list-item-action>
+            <template #prepend>
+              <v-icon>mdi-account-group-outline</v-icon>
+            </template>
+
             <v-list-item-subtitle>{{ participant.department }}</v-list-item-subtitle>
           </v-list-item>
           <v-list-item v-if="participant.team">
-            <v-list-item-action>
-              <v-icon>group</v-icon>
-            </v-list-item-action>
+            <template #prepend>
+              <v-icon>mdi-account-multiple-outline</v-icon>
+            </template>
+
             <v-list-item-subtitle>{{ participant.team }}</v-list-item-subtitle>
           </v-list-item>
           <v-list-item
@@ -62,9 +69,10 @@
             :href="participant.individual.weblink"
             target="_blank"
           >
-            <v-list-item-action>
-              <v-icon>open_in_new</v-icon>
-            </v-list-item-action>
+            <template #prepend>
+              <v-icon>mdi-open-in-new</v-icon>
+            </template>
+
             <v-list-item-subtitle>External Profile</v-list-item-subtitle>
           </v-list-item>
         </v-list>
@@ -74,12 +82,18 @@
 </template>
 
 <script>
+import { initials } from "@/filters"
+
 export default {
   name: "CaseParticipant",
 
   data: () => ({
     menu: false,
   }),
+
+  setup() {
+    return { initials }
+  },
 
   props: {
     participant: {

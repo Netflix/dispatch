@@ -1,14 +1,14 @@
 <template>
-  <v-card elevation="1" outlined class="position-relative">
+  <v-card class="position-relative">
     <v-row>
       <v-col cols="8" style="align-self: center">
         <v-card-title class="pb-0 mb-0">{{ entity.entity_type.name }}</v-card-title>
       </v-col>
       <v-col class="text-right" cols="4" v-if="count > 1" style="align-self: center">
-        <v-tooltip bottom>
-          <template #activator="{ on, attrs }">
-            <span v-bind="attrs" v-on="on">
-              <v-badge color="grey" :content="badgeCount" overlap offset-x="45" offset-y="37">
+        <v-tooltip location="bottom">
+          <template #activator="{ props }">
+            <span v-bind="props">
+              <v-badge color="grey" :content="badgeCount" offset-x="45" offset-y="37">
                 <v-card-subtitle />
               </v-badge>
             </span>
@@ -22,15 +22,14 @@
     <v-hover>
       <template #default="{ hover }">
         <v-card
-          color="red lighten-5"
-          outlined
+          color="red-lighten-5"
           rounded="xl"
           class="d-flex align-center mx-4 mt-3 mb-3"
           :elevation="hover ? 2 : 0"
           @click="openSignalInstanceTab"
         >
           <v-card-text class="d-flex align-center">
-            <v-progress-linear v-if="isLoading" height="3" color="red lighten-1" indeterminate />
+            <v-progress-linear v-if="isLoading" height="3" color="red-lighten-1" indeterminate />
             <span v-else>
               <span v-if="signalInstanceCount > 1">
                 Seen in
@@ -48,15 +47,14 @@
     <v-hover>
       <template #default="{ hover }">
         <v-card
-          color="red lighten-5"
-          outlined
+          color="red-lighten-5"
           rounded="xl"
           class="d-flex align-center mx-4 mt-3 mb-3"
           :elevation="hover ? 2 : 0"
           @click="openCaseTab"
         >
           <v-card-text class="d-flex align-center">
-            <v-progress-linear v-if="isLoading" height="3" color="red lighten-1" indeterminate />
+            <v-progress-linear v-if="isLoading" height="3" color="red-lighten-1" indeterminate />
             <span v-else>
               <span v-if="caseCount > 1">
                 Seen in
@@ -107,7 +105,6 @@ export default {
   },
   computed: {
     ...mapFields("entity", ["dialogs.showCaseView"]),
-    ...mapFields("route", ["query"]),
     badgeCount() {
       return this.count >= 100 ? "x99+" : `x${this.count}`
     },

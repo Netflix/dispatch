@@ -1,50 +1,47 @@
 <template>
-  <div>
-    <v-data-table :headers="headers" :items="items" :loading="loading">
-      <template #item.incident_priority.name="{ item }">
-        <incident-priority :priority="item.incident_priority.name" />
-      </template>
-      <template #item.status="{ item }">
-        <incident-status :status="item.status" :id="item.id" />
-      </template>
-      <template #item.commander="{ item }">
-        <incident-participant :participant="item.commander" />
-      </template>
-      <template #item.reporter="{ item }">
-        <incident-participant :participant="item.reporter" />
-      </template>
-      <template #item.project.name="{ item }">
-        <v-chip small :color="item.project.color" text-color="white">
-          {{ item.project.name }}
-        </v-chip>
-      </template>
-      <template #item.reported_at="{ item }">
-        <v-tooltip bottom>
-          <template #activator="{ on, attrs }">
-            <span v-bind="attrs" v-on="on">{{ item.reported_at | formatRelativeDate }}</span>
-          </template>
-          <span>{{ item.reported_at | formatDate }}</span>
-        </v-tooltip>
-      </template>
-      <template #item.data-table-actions="{ item }">
-        <v-menu bottom left>
-          <template #activator="{ on }">
-            <v-btn icon v-on="on">
-              <v-icon>mdi-dots-vertical</v-icon>
-            </v-btn>
-          </template>
-          <v-list>
-            <v-list-item :to="{ name: 'IncidentTableEdit', params: { name: item.name } }">
-              <v-list-item-title>View / Edit</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
-      </template>
-    </v-data-table>
-  </div>
+  <v-data-table hover :headers="headers" :items="items" :loading="loading">
+    <template #item.incident_priority.name="{ value }">
+      <incident-priority :priority="value" />
+    </template>
+    <template #item.status="{ item, value }">
+      <incident-status :status="value" :id="item.id" />
+    </template>
+    <template #item.commander="{ value }">
+      <incident-participant :participant="value" />
+    </template>
+    <template #item.reporter="{ value }">
+      <incident-participant :participant="value" />
+    </template>
+    <template #item.project.name="{ item, value }">
+      <v-chip size="small" :color="item.project.color">
+        {{ value }}
+      </v-chip>
+    </template>
+    <template #item.reported_at="{ value }">
+      <v-tooltip location="bottom">
+        <template #activator="{ props }">
+          <span v-bind="props">{{ formatRelativeDate(value) }}</span>
+        </template>
+        <span>{{ formatDate(value) }}</span>
+      </v-tooltip>
+    </template>
+    <template #item.data-table-actions="{ item }">
+      <v-menu location="right" origin="overlap">
+        <template #activator="{ props }">
+          <v-btn icon="mdi-dots-vertical" variant="text" density="comfortable" v-bind="props" />
+        </template>
+        <v-list>
+          <v-list-item :to="{ name: 'IncidentTableEdit', params: { name: item.name } }">
+            <v-list-item-title>View / Edit</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </template>
+  </v-data-table>
 </template>
 <script>
 import { mapActions } from "vuex"
+import { formatRelativeDate, formatDate } from "@/filters"
 
 import IncidentParticipant from "@/incident/Participant.vue"
 import IncidentPriority from "@/incident/priority/IncidentPriority.vue"
@@ -62,16 +59,20 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", align: "left", width: "10%" },
-        { text: "Title", value: "title", sortable: false },
-        { text: "Status", value: "status" },
-        { text: "Type", value: "incident_type.name" },
-        { text: "Priority", value: "incident_priority.name", width: "10%" },
-        { text: "Project", value: "project.name", sortable: true },
-        { text: "Commander", value: "commander", sortable: false },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", key: "name", align: "left", width: "10%" },
+        { title: "Title", key: "title", sortable: false },
+        { title: "Status", key: "status" },
+        { title: "Type", key: "incident_type.name" },
+        { title: "Priority", key: "incident_priority.name", width: "10%" },
+        { title: "Project", key: "project.name", sortable: true },
+        { title: "Commander", key: "commander", sortable: false },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
+  },
+
+  setup() {
+    return { formatRelativeDate, formatDate }
   },
 
   props: {

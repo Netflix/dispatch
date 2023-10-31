@@ -1,33 +1,28 @@
 <template>
-  <ValidationProvider name="document" immediate>
-    <v-autocomplete
-      v-model="document"
-      :items="items"
-      :search-input.sync="search"
-      :menu-props="{ maxHeight: '400' }"
-      slot-scope="{ errors, valid }"
-      :error-messages="errors"
-      :success="valid"
-      item-text="name"
-      label="Document"
-      placeholder="Start typing to search"
-      return-object
-      :loading="loading"
-      no-filter
-    >
-      <template slot="append-outer">
-        <v-btn icon @click="createEditShow({})">
-          <v-icon>add</v-icon>
-        </v-btn>
-      </template>
-    </v-autocomplete>
-  </ValidationProvider>
+  <v-autocomplete
+    v-model="document"
+    :items="items"
+    v-model:search="search"
+    :menu-props="{ maxHeight: '400' }"
+    item-title="name"
+    label="Document"
+    placeholder="Start typing to search"
+    return-object
+    :loading="loading"
+    no-filter
+    name="document"
+  >
+    <template #append>
+      <v-btn icon variant="text" @click="createEditShow({})">
+        <v-icon>mdi-plus</v-icon>
+      </v-btn>
+    </template>
+  </v-autocomplete>
 </template>
 
 <script>
 import { mapActions } from "vuex"
 import { cloneDeep } from "lodash"
-import { ValidationProvider } from "vee-validate"
 
 import SearchUtils from "@/search/utils"
 import DocumentApi from "@/document/api"
@@ -36,7 +31,7 @@ export default {
   name: "DocumentSelect",
 
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -46,10 +41,6 @@ export default {
       type: [Object],
       default: null,
     },
-  },
-
-  components: {
-    ValidationProvider,
   },
 
   data() {
@@ -74,10 +65,10 @@ export default {
   computed: {
     document: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },

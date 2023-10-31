@@ -31,7 +31,7 @@ const state = {
       q: "",
       page: 1,
       itemsPerPage: 10,
-      sortBy: "text",
+      sortBy: ["text"],
       descending: true,
       filters: {
         project: [],

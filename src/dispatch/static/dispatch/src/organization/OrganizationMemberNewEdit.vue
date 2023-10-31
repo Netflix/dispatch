@@ -1,73 +1,72 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
-    <v-navigation-drawer v-model="showCreateEdit" app clipped right width="500">
+  <v-form @submit.prevent v-slot="{ isValid }">
+    <v-navigation-drawer v-model="showCreateEdit" location="right" width="500">
       <template #prepend>
-        <v-list-item two-line>
-          <v-list-item-content>
-            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
-            <v-list-item-title v-else class="title"> New </v-list-item-title>
-            <v-list-item-subtitle>Member</v-list-item-subtitle>
-          </v-list-item-content>
-          <v-btn
-            icon
-            color="info"
-            :loading="loading"
-            :disabled="invalid || !validated"
-            @click="save()"
-          >
-            <v-icon>save</v-icon>
-          </v-btn>
-          <v-btn icon color="secondary" @click="closeCreateEdit">
-            <v-icon>close</v-icon>
-          </v-btn>
+        <v-list-item lines="two">
+          <v-list-item-title v-if="id" class="text-h6"> Edit </v-list-item-title>
+          <v-list-item-title v-else class="text-h6"> New </v-list-item-title>
+          <v-list-item-subtitle>Member</v-list-item-subtitle>
+
+          <template #append>
+            <v-btn
+              icon
+              variant="text"
+              color="info"
+              :loading="loading"
+              :disabled="!isValid.value"
+              @click="save()"
+            >
+              <v-icon>mdi-content-save</v-icon>
+            </v-btn>
+            <v-btn icon variant="text" color="secondary" @click="closeCreateEdit">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </template>
         </v-list-item>
       </template>
-      <v-card flat>
+      <v-card>
         <v-card-text>
-          <v-container grid-list-md>
-            <v-layout wrap>
-              <v-flex xs12>
-                <span class="subtitle-2">Details</span>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="Email" rules="required" immediate>
-                  <v-text-field
-                    v-model="email"
-                    :disabled="id !== null"
-                    label="Email"
-                    hint="Member's email."
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex v-if="!id" xs12>
-                <ValidationProvider name="Password" rules="required" immediate>
-                  <v-text-field
-                    v-model="password"
-                    :type="'password'"
-                    label="Password"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
-                <span class="subtitle-2">Role</span>
-              </v-flex>
-              <v-flex xs12>
-                <v-radio-group v-model="role" column>
-                  <v-tooltip max-width="250px" left>
-                    <template #activator="{ on, attrs }">
-                      <v-radio v-bind="attrs" v-on="on" label="Member" value="Member" />
+          <v-container>
+            <v-row>
+              <v-col cols="12">
+                <span class="text-subtitle-2">Details</span>
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="email"
+                  :disabled="id !== null"
+                  label="Email"
+                  hint="Member's email."
+                  name="Email"
+                  :rules="[rules.required]"
+                />
+              </v-col>
+              <v-col v-if="!id" cols="12">
+                <v-text-field
+                  v-model="password"
+                  type="password"
+                  label="Password"
+                  name="Password"
+                  :rules="[rules.required]"
+                />
+              </v-col>
+              <v-col cols="12">
+                <span class="text-subtitle-2">Role</span>
+              </v-col>
+              <v-col cols="12">
+                <v-radio-group v-model="role">
+                  <v-tooltip max-width="250px" location="left">
+                    <template #activator="{ props }">
+                      <v-radio v-bind="props" label="Member" value="Member" />
                     </template>
                     <span>
                       Members can view and act on incidents, as well as view most other data within
                       the organization.
                     </span>
                   </v-tooltip>
-                  <v-tooltip max-width="250px" left>
-                    <template #activator="{ on, attrs }">
-                      <v-radio v-bind="attrs" v-on="on" label="Admin" value="Admin" />
+                  <v-tooltip max-width="250px" location="left">
+                    <template #activator="{ props }">
+                      <v-radio v-bind="props" label="Admin" value="Admin" />
                     </template>
                     <span>
                       Admin privileges on any teams of which they're a member. They can create new
@@ -76,18 +75,18 @@
                       they can manage memberships of teams that they are members of.
                     </span>
                   </v-tooltip>
-                  <v-tooltip max-width="250px" left>
-                    <template #activator="{ on, attrs }">
-                      <v-radio v-bind="attrs" v-on="on" label="Manager" value="Manager" />
+                  <v-tooltip max-width="250px" location="left">
+                    <template #activator="{ props }">
+                      <v-radio v-bind="props" label="Manager" value="Manager" />
                     </template>
                     <span>
                       Gains admin access on all teams as well as the ability to add and remove
                       members.
                     </span>
                   </v-tooltip>
-                  <v-tooltip max-width="250px" left>
-                    <template #activator="{ on, attrs }">
-                      <v-radio v-bind="attrs" v-on="on" label="Owner" value="Owner" />
+                  <v-tooltip max-width="250px" location="left">
+                    <template #activator="{ props }">
+                      <v-radio v-bind="props" label="Owner" value="Owner" />
                     </template>
                     <span
                       >Unrestricted access to the organization, its data, and its settings. Can add,
@@ -95,40 +94,41 @@
                     >
                   </v-tooltip>
                 </v-radio-group>
-              </v-flex>
-              <v-flex xs12>
-                <span class="subtitle-2">Settings</span>
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
+                <span class="text-subtitle-2">Settings</span>
+              </v-col>
+              <v-col cols="12">
                 <v-list-item>
-                  <v-list-item-content>
-                    <project-combobox v-model="defaultProjects" label="Default Projects" />
-                  </v-list-item-content>
+                  <project-combobox v-model="defaultProjects" label="Default Projects" />
                 </v-list-item>
-              </v-flex>
-            </v-layout>
+              </v-col>
+            </v-row>
           </v-container>
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
+import { required } from "@/util/form"
 import { map } from "lodash"
 
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider } from "vee-validate"
 
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "MemberEditSheet",
 
   components: {
-    ValidationObserver,
-    ValidationProvider,
     ProjectCombobox,
   },
 
@@ -157,7 +157,6 @@ export default {
           return { project: item, default: true }
         })
         this.projects = wrapped
-        this.$emit("input", wrapped)
       },
     },
   },

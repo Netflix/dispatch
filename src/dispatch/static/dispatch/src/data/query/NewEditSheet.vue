@@ -1,45 +1,48 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
-    <v-navigation-drawer v-model="showCreateEdit" app clipped right width="600">
+  <v-form @submit.prevent v-slot="{ isValid }">
+    <v-navigation-drawer v-model="showCreateEdit" location="right" width="600">
       <template #prepend>
-        <v-list-item two-line>
-          <v-list-item-content>
-            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
-            <v-list-item-title v-else class="title"> New </v-list-item-title>
-            <v-list-item-subtitle>Query</v-list-item-subtitle>
-          </v-list-item-content>
-          <v-btn
-            icon
-            color="info"
-            :loading="loading"
-            :disabled="invalid || !validated"
-            @click="save()"
-          >
-            <v-icon>save</v-icon>
-          </v-btn>
-          <v-btn icon color="secondary" @click="closeCreateEdit">
-            <v-icon>close</v-icon>
-          </v-btn>
+        <v-list-item lines="two">
+          <v-list-item-title v-if="id" class="text-h6"> Edit </v-list-item-title>
+          <v-list-item-title v-else class="text-h6"> New </v-list-item-title>
+          <v-list-item-subtitle>Query</v-list-item-subtitle>
+
+          <template #append>
+            <v-btn
+              icon
+              variant="text"
+              color="info"
+              :loading="loading"
+              :disabled="!isValid.value"
+              @click="save()"
+            >
+              <v-icon>mdi-content-save</v-icon>
+            </v-btn>
+            <v-btn icon variant="text" color="secondary" @click="closeCreateEdit">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </template>
         </v-list-item>
       </template>
-      <v-tabs>
+      <v-tabs v-model="activeTab">
         <v-tab> Basic Info </v-tab>
         <v-tab> Text </v-tab>
-        <v-tab-item>
-          <edit-basic-info-tab />
-        </v-tab-item>
-        <v-tab-item>
-          <edit-text-tab />
-        </v-tab-item>
       </v-tabs>
+      <v-window v-model="activeTab">
+        <v-window-item>
+          <edit-basic-info-tab />
+        </v-window-item>
+        <v-window-item>
+          <edit-text-tab />
+        </v-window-item>
+      </v-window>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver } from "vee-validate"
 
 import EditBasicInfoTab from "@/data/query/EditBasicInfoTab.vue"
 import EditTextTab from "@/data/query/EditTextTab.vue"
@@ -50,8 +53,11 @@ export default {
   components: {
     EditBasicInfoTab,
     EditTextTab,
-    ValidationObserver,
   },
+
+  data: () => ({
+    activeTab: 0,
+  }),
 
   computed: {
     ...mapFields("query", ["selected.id", "selected.loading", "dialogs.showCreateEdit"]),

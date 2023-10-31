@@ -1,6 +1,12 @@
 module.exports = {
   root: true,
-  extends: ["eslint:recommended", "plugin:prettier/recommended", "plugin:vue/strongly-recommended"],
+  plugins: ["eslint-plugin-local-rules"],
+  extends: [
+    "eslint:recommended",
+    "plugin:prettier/recommended",
+    "plugin:vue/vue3-strongly-recommended",
+    "plugin:vuetify/base",
+  ],
   parserOptions: {
     ecmaVersion: 2020,
   },
@@ -17,6 +23,10 @@ module.exports = {
     },
   ],
   rules: {
+    "local-rules/icon-button-variant": "error",
+    // "local-rules/list-item-children": "error",
+    // "local-rules/vee-validate": "error",
+
     // Conflicts with prettier
     "vue/max-attributes-per-line": "off",
     "vue/singleline-html-element-content-newline": "off",
@@ -42,5 +52,6 @@ module.exports = {
     "vue/multi-word-component-names": "off",
     "vue/attribute-hyphenation": "off",
     "vue/require-default-prop": "off",
+    "vue/require-explicit-emits": "off",
   },
 }

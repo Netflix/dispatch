@@ -3,11 +3,11 @@
     v-model="notification.show"
     :timeout="notification.timeout"
     :color="notification.type"
-    @input="setSeen(notification.index)"
+    @update:model-value="setSeen(notification.index)"
   >
     {{ notification.text }}
     <template #action="{ attrs }">
-      <v-btn text v-bind="attrs" @click="setSeen(notification.index)"> Close </v-btn>
+      <v-btn variant="text" v-bind="attrs" @click="setSeen(notification.index)"> Close </v-btn>
     </template>
   </v-snackbar>
 </template>

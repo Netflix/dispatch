@@ -1,60 +1,55 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
-    <v-navigation-drawer v-model="showCreateEdit" app clipped right width="1000">
+  <v-form @submit.prevent v-slot="{ isValid }">
+    <v-navigation-drawer v-model="showCreateEdit" location="right" width="1000">
       <template #prepend>
-        <v-list-item two-line>
-          <v-list-item-content>
-            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
-            <v-list-item-title v-else class="title"> New </v-list-item-title>
-            <v-list-item-subtitle>Entity Type</v-list-item-subtitle>
-          </v-list-item-content>
-          <v-btn
-            icon
-            color="info"
-            :loading="loading"
-            :disabled="invalid || !validated"
-            @click="save()"
-          >
-            <v-icon>save</v-icon>
-          </v-btn>
-          <v-btn icon color="secondary" @click="closeCreateEdit()">
-            <v-icon>close</v-icon>
-          </v-btn>
+        <v-list-item lines="two">
+          <v-list-item-title v-if="id" class="text-h6"> Edit </v-list-item-title>
+          <v-list-item-title v-else class="text-h6"> New </v-list-item-title>
+          <v-list-item-subtitle>Entity Type</v-list-item-subtitle>
+
+          <template #append>
+            <v-btn
+              icon
+              variant="text"
+              color="info"
+              :loading="loading"
+              :disabled="!isValid.value"
+              @click="save()"
+            >
+              <v-icon>mdi-content-save</v-icon>
+            </v-btn>
+            <v-btn icon variant="text" color="secondary" @click="closeCreateEdit()">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </template>
         </v-list-item>
       </template>
-      <v-card flat tile>
-        <v-app-bar color="white" flat>
-          <v-toolbar-title class="subtitle-2"> Details </v-toolbar-title>
-        </v-app-bar>
+      <v-card flat rounded="0">
+        <v-toolbar color="transparent">
+          <v-toolbar-title class="text-subtitle-2"> Details </v-toolbar-title>
+        </v-toolbar>
         <v-card-text>
-          <ValidationProvider name="Name" rules="required" immediate>
-            <v-text-field
-              v-model="name"
-              label="Name"
-              hint="A name for your entity type."
-              slot-scope="{ errors, valid }"
-              :error-messages="errors"
-              :success="valid"
-              clearable
-              required
-            />
-          </ValidationProvider>
-          <ValidationProvider name="Description" immediate>
-            <v-textarea
-              v-model="description"
-              label="Description"
-              hint="A short description."
-              slot-scope="{ errors, valid }"
-              :error-messages="errors"
-              :success="valid"
-              clearable
-              auto-grow
-            />
-          </ValidationProvider>
+          <v-text-field
+            v-model="name"
+            label="Name"
+            hint="A name for your entity type."
+            clearable
+            required
+            name="Name"
+            :rules="[rules.required]"
+          />
+          <v-textarea
+            v-model="description"
+            label="Description"
+            hint="A short description."
+            clearable
+            auto-grow
+            name="Description"
+          />
           <v-radio-group v-model="scope" label="Scope" row>
-            <v-tooltip max-width="250px" left>
-              <template #activator="{ on, attrs }">
-                <v-radio v-bind="attrs" v-on="on" label="Multiple" value="multiple" />
+            <v-tooltip max-width="250px" location="left">
+              <template #activator="{ props }">
+                <v-radio v-bind="props" label="Multiple" value="multiple" />
               </template>
               <span>
                 An entity type with a definition scope of 'multiple' can be associated with one or
@@ -62,9 +57,9 @@
                 multiple definitions.
               </span>
             </v-tooltip>
-            <v-tooltip max-width="250px" left>
-              <template #activator="{ on, attrs }">
-                <v-radio v-bind="attrs" v-on="on" label="All" value="all" />
+            <v-tooltip max-width="250px" location="left">
+              <template #activator="{ props }">
+                <v-radio v-bind="props" label="All" value="all" />
               </template>
               <span>
                 An entity type with a definition scope of 'all' will be associated with all current
@@ -82,11 +77,10 @@
           />
         </v-card-text>
       </v-card>
-      <v-card flat tile>
-        <v-app-bar color="white" flat>
-          <v-toolbar-title class="subtitle-2"> Expression Configuration </v-toolbar-title>
-          <v-spacer />
-        </v-app-bar>
+      <v-card flat rounded="0">
+        <v-toolbar color="transparent">
+          <v-toolbar-title class="text-subtitle-2"> Expression Configuration </v-toolbar-title>
+        </v-toolbar>
         <v-card-text>
           Entity types are used to extract useful metadata out of signals. Define either a RegEx or
           JSON Path expression to pull entities out of a signals raw json.
@@ -100,13 +94,14 @@
             label="Regular Expression"
             hint="A regular expression pattern for your entity type. The first capture group will be used."
           >
-            <template #append-outer>
+            <template #append>
               <v-btn
                 icon
+                variant="text"
                 href="https://cheatography.com/davechild/cheat-sheets/regular-expressions/"
                 target="_blank"
               >
-                <v-icon> mdi-help-circle-outline </v-icon>
+                <v-icon>mdi-help-circle-outline</v-icon>
               </v-btn>
             </template>
           </v-text-field>
@@ -116,13 +111,14 @@
             label="JSON Path"
             hint="The field where the entity will be present. Supports JSON Path expressions."
           >
-            <template #append-outer>
+            <template #append>
               <v-btn
                 icon
+                variant="text"
                 href="https://github.com/json-path/JsonPath#path-examples"
                 target="_blank"
               >
-                <v-icon> mdi-help-circle-outline </v-icon>
+                <v-icon>mdi-help-circle-outline</v-icon>
               </v-btn>
             </template>
           </v-text-field>
@@ -133,18 +129,21 @@
                 <template v-if="!signalInstances.length">
                   No example signals are currently available for this definition.
                 </template>
-                <template v-for="(instance, index) in signalInstances" v-else>
-                  <v-list-item :key="`item-${index}`">
-                    <v-list-item-content>
-                      <v-list-item-title>{{ instance.id }}</v-list-item-title>
-                    </v-list-item-content>
-                    <v-list-item-action>
-                      <v-btn icon @click="updateEditorValue(instance.raw)">
+                <template
+                  v-else
+                  v-for="(instance, index) in signalInstances"
+                  :key="`item-${index}`"
+                >
+                  <v-list-item>
+                    <v-list-item-title>{{ instance.id }}</v-list-item-title>
+
+                    <template #append>
+                      <v-btn icon variant="text" @click="updateEditorValue(instance.raw)">
                         <v-icon>mdi-arrow-right</v-icon>
                       </v-btn>
-                    </v-list-item-action>
+                    </template>
                   </v-list-item>
-                  <v-divider v-if="index < signalInstances.length - 1" :key="`divider-${index}`" />
+                  <v-divider v-if="index < signalInstances.length - 1" />
                 </template>
               </v-list>
             </v-col>
@@ -155,37 +154,26 @@
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
+import { required } from "@/util/form"
 import { mapActions, mapMutations } from "vuex"
 import { mapFields } from "vuex-map-fields"
-import { required } from "vee-validate/dist/rules"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+
 import PlaygroundTextBox from "@/entity_type/playground/PlaygroundTextBox.vue"
 import SearchUtils from "@/search/utils"
 import SignalApi from "@/signal/api"
 import SignalDefinitionCombobox from "@/signal/SignalDefinitionCombobox.vue"
 import { isValidJsonPath, isValidRegex } from "@/entity_type/utils.js"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-extend("regexp", {
-  validate(value) {
-    return isValidRegex(value)
-  },
-  message: "Must be a valid regular expression pattern.",
-})
-extend("jpath", {
-  validate(value) {
-    return isValidJsonPath(value)
-  },
-  message: "Must be a valid JSON path expression.",
-})
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "EntityTypeCreateSheet",
   data() {
     return {
@@ -219,8 +207,6 @@ export default {
   components: {
     PlaygroundTextBox,
     SignalDefinitionCombobox,
-    ValidationObserver,
-    ValidationProvider,
   },
   computed: {
     ...mapFields("entity_type", [
@@ -235,7 +221,6 @@ export default {
       "selected.jpath",
       "selected.loading",
     ]),
-    ...mapFields("route", ["query"]),
   },
   methods: {
     ...mapMutations("playground", ["updatePattern", "updateJsonPath"]),
@@ -293,8 +278,8 @@ export default {
     },
   },
   created() {
-    if (this.query.project) {
-      this.project = { name: this.query.project }
+    if (this.$route.query.project) {
+      this.project = { name: this.$route.query.project }
     }
   },
   watch: {

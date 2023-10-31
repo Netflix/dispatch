@@ -1,41 +1,44 @@
 <template>
   <div>
-    <v-menu v-model="menu" bottom right transition="scale-transition" origin="top left">
-      <template #activator="{ on }">
-        <v-chip pill small v-on="on">
-          <v-avatar color="teal" left>
-            <span class="white--text">{{ "Total Cost" | initials }}</span>
+    <v-menu v-model="menu" origin="overlap">
+      <template #activator="{ props }">
+        <v-chip pill size="small" v-bind="props">
+          <v-avatar color="teal" start>
+            <span class="text-white">TC</span>
           </v-avatar>
-          {{ totalCost | toUSD }}
+          {{ toUSD(totalCost) }}
         </v-chip>
       </template>
       <v-card width="300">
         <v-list dark>
           <v-list-item>
-            <v-list-item-avatar color="teal">
-              <span class="white--text">{{ "Total Cost" | initials }}</span>
-            </v-list-item-avatar>
-            <v-list-item-content>
-              <v-list-item-title>{{ "Total Cost" }}</v-list-item-title>
-              <v-list-item-subtitle>
-                {{ totalCost | toUSD }}
-              </v-list-item-subtitle>
-            </v-list-item-content>
-            <v-list-item-action>
-              <v-btn icon @click="menu = false">
+            <template #prepend>
+              <v-avatar color="teal">
+                <span class="text-white">TC</span>
+              </v-avatar>
+            </template>
+
+            <v-list-item-title>Total Cost</v-list-item-title>
+            <v-list-item-subtitle>
+              {{ toUSD(totalCost) }}
+            </v-list-item-subtitle>
+
+            <template #append>
+              <v-btn icon variant="text" @click="menu = false">
                 <v-icon>mdi-close-circle</v-icon>
               </v-btn>
-            </v-list-item-action>
+            </template>
           </v-list-item>
         </v-list>
         <span v-for="(cost, index) in incidentCosts" :key="index">
           <v-list>
             <v-list-item>
-              <v-list-item-action>
+              <template #prepend>
                 <v-icon>mdi-currency-usd</v-icon>
-              </v-list-item-action>
+              </template>
+
               <v-list-item-subtitle>
-                {{ cost.incident_cost_type.name }}: {{ cost.amount | toUSD }}
+                {{ cost.incident_cost_type.name }}: {{ toUSD(cost.amount) }}
               </v-list-item-subtitle>
             </v-list-item>
           </v-list>
@@ -46,12 +49,18 @@
 </template>
 
 <script>
+import { toUSD } from "@/filters"
+
 export default {
   name: "IncidentCostCard",
 
   data: () => ({
     menu: false,
   }),
+
+  setup() {
+    return { toUSD }
+  },
 
   props: {
     incidentCosts: {

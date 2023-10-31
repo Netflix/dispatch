@@ -2,19 +2,19 @@
   <v-dialog v-model="showEscalateDialog" persistent max-width="800px">
     <v-card v-if="incidentSelected.id">
       <v-card-title>
-        <span class="headline">Case Escalated</span>
+        <span class="text-h5">Case Escalated</span>
       </v-card-title>
       <v-card-text>
         <report-receipt-resources />
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="blue en-1" text @click="closeEscalateDialog()"> Close </v-btn>
+        <v-btn color="blue en-1" variant="text" @click="closeEscalateDialog()"> Close </v-btn>
       </v-card-actions>
     </v-card>
     <v-card v-else>
       <v-card-title>
-        <span class="headline">Escalate Case?</span>
+        <span class="text-h5">Escalate Case?</span>
       </v-card-title>
       <v-card-text>
         Update the fields or accept the pre-filled defaults.
@@ -22,8 +22,13 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="blue en-1" text @click="closeEscalateDialog()"> Cancel </v-btn>
-        <v-btn color="red en-1" text :loading="loading" @click="escalate(incidentSelected)">
+        <v-btn color="blue en-1" variant="text" @click="closeEscalateDialog()"> Cancel </v-btn>
+        <v-btn
+          color="red en-1"
+          variant="text"
+          :loading="loading"
+          @click="escalate(incidentSelected)"
+        >
           Escalate
         </v-btn>
       </v-card-actions>

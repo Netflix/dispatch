@@ -4,20 +4,19 @@
     :items="items"
     :menu-props="{ maxHeight: '400' }"
     label="Organization"
-    item-text="name"
+    item-title="name"
     return-object
     hide-details
     :loading="loading"
-    outlined
-    dense
+    density="comfortable"
   >
     <template #item="data">
-      <v-list-item-content>
-        <v-list-item-title>{{ data.item.name }}</v-list-item-title>
-        <v-list-item-subtitle style="width: 200px" class="text-truncate">
-          {{ data.item.description }}
+      <v-list-item v-bind="data.props" :title="null" density="comfortable">
+        <v-list-item-title>{{ data.item.raw.name }}</v-list-item-title>
+        <v-list-item-subtitle :title="data.item.raw.description">
+          {{ data.item.raw.description }}
         </v-list-item-subtitle>
-      </v-list-item-content>
+      </v-list-item>
     </template>
   </v-autocomplete>
 </template>
@@ -29,7 +28,7 @@ export default {
   name: "OrganizationMenuSelect",
 
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -47,10 +46,10 @@ export default {
   computed: {
     organization: {
       get() {
-        return this.value
+        return this.modelValue
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },

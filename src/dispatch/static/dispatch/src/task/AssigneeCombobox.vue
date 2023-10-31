@@ -2,11 +2,11 @@
   <v-autocomplete
     v-model="assignee"
     :items="items"
-    :search-input.sync="search"
+    v-model:search="search"
     :menu-props="{ maxHeight: '400' }"
     hide-selected
     :label="label"
-    item-text="name"
+    item-title="name"
     multiple
     close
     chips
@@ -18,13 +18,11 @@
   >
     <template #no-data>
       <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title>
-            No individuals matching "
-            <strong>{{ search }}</strong
-            >".
-          </v-list-item-title>
-        </v-list-item-content>
+        <v-list-item-title>
+          No individuals matching "
+          <strong>{{ search }}</strong
+          >".
+        </v-list-item-title>
       </v-list-item>
     </template>
   </v-autocomplete>
@@ -36,7 +34,7 @@ import { map } from "lodash"
 export default {
   name: "AssigneeComboBox",
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -62,7 +60,7 @@ export default {
   computed: {
     assignee: {
       get() {
-        return map(this.value, function (item) {
+        return map(this.modelValue, function (item) {
           return item["individual"]
         })
       },
@@ -73,7 +71,7 @@ export default {
           }
           return item
         })
-        this.$emit("input", wrapped)
+        this.$emit("update:modelValue", wrapped)
       },
     },
   },

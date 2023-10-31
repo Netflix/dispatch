@@ -4,51 +4,44 @@
       <span v-for="instance in workflow_instances" :key="instance.id">
         <v-card>
           <div>
-            <v-card-title class="headline">
+            <v-card-title class="text-h5">
               {{ instance.workflow.name }}
             </v-card-title>
             <v-card-subtitle>{{ instance.workflow.description }}</v-card-subtitle>
-            <v-list subheader>
-              <v-subheader>Details</v-subheader>
+            <v-list>
+              <v-list-subheader>Details</v-list-subheader>
               <v-list-item :href="instance.weblink">
-                <v-list-item-content>
-                  <v-list-item-title>{{ instance.status | capitalize }}</v-list-item-title>
-                  <v-list-item-subtitle>Status</v-list-item-subtitle>
-                </v-list-item-content>
+                <v-list-item-title>{{ capitalize(instance.status) }}</v-list-item-title>
+                <v-list-item-subtitle>Status</v-list-item-subtitle>
 
-                <v-list-item-icon>
-                  <v-icon>open_in_new</v-icon>
-                </v-list-item-icon>
+                <template #append>
+                  <v-icon>mdi-open-in-new</v-icon>
+                </template>
               </v-list-item>
 
               <v-list-item :href="instance.creator.individual.weblink">
-                <v-list-item-content>
-                  <v-list-item-title>{{ instance.creator.individual.name }}</v-list-item-title>
-                  <v-list-item-subtitle>Creator</v-list-item-subtitle>
-                </v-list-item-content>
+                <v-list-item-title>{{ instance.creator.individual.name }}</v-list-item-title>
+                <v-list-item-subtitle>Creator</v-list-item-subtitle>
 
-                <v-list-item-icon>
-                  <v-icon>open_in_new</v-icon>
-                </v-list-item-icon>
+                <template #append>
+                  <v-icon>mdi-open-in-new</v-icon>
+                </template>
               </v-list-item>
               <v-list-item>
-                <v-list-item-content>
-                  <code>{{ instance.parameters }}</code>
-                  <v-list-item-subtitle>Parameters</v-list-item-subtitle>
-                </v-list-item-content>
+                <code>{{ instance.parameters }}</code>
+                <v-list-item-subtitle>Parameters</v-list-item-subtitle>
               </v-list-item>
             </v-list>
-            <v-list subheader>
-              <v-subheader>Artifacts</v-subheader>
+            <v-list>
+              <v-list-subheader>Artifacts</v-list-subheader>
               <span v-for="artifact in instance.artifacts" :key="artifact.id">
                 <v-list-item :href="artifact.weblink">
-                  <v-list-item-content>
-                    <v-list-item-title>{{ artifact.name }}</v-list-item-title>
-                    <v-list-item-subtitle>Name</v-list-item-subtitle>
-                  </v-list-item-content>
-                  <v-list-item-icon>
-                    <v-icon>open_in_new</v-icon>
-                  </v-list-item-icon>
+                  <v-list-item-title>{{ artifact.name }}</v-list-item-title>
+                  <v-list-item-subtitle>Name</v-list-item-subtitle>
+
+                  <template #append>
+                    <v-icon>mdi-open-in-new</v-icon>
+                  </template>
                 </v-list-item>
               </span>
             </v-list>
@@ -64,9 +57,13 @@
 
 <script>
 import { mapFields } from "vuex-map-fields"
+import { capitalize } from "@/filters"
 
 export default {
   name: "IncidentWorkflowInstanceTab",
+  setup() {
+    return { capitalize }
+  },
   computed: {
     ...mapFields("incident", ["selected.workflow_instances"]),
   },

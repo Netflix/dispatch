@@ -1,160 +1,135 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
-    <v-navigation-drawer v-model="showCreateEdit" app clipped right width="500">
+  <v-form @submit.prevent v-slot="{ isValid }">
+    <v-navigation-drawer v-model="showCreateEdit" location="right" width="500">
       <template #prepend>
-        <v-list-item two-line>
-          <v-list-item-content>
-            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
-            <v-list-item-title v-else class="title"> New </v-list-item-title>
-            <v-list-item-subtitle>Project</v-list-item-subtitle>
-          </v-list-item-content>
-          <v-btn
-            icon
-            color="info"
-            :loading="loading"
-            :disabled="invalid || !validated"
-            @click="save()"
-          >
-            <v-icon>save</v-icon>
-          </v-btn>
-          <v-btn icon color="secondary" @click="closeCreateEdit()">
-            <v-icon>close</v-icon>
-          </v-btn>
+        <v-list-item lines="two">
+          <v-list-item-title v-if="id" class="text-h6"> Edit </v-list-item-title>
+          <v-list-item-title v-else class="text-h6"> New </v-list-item-title>
+          <v-list-item-subtitle>Project</v-list-item-subtitle>
+
+          <template #append>
+            <v-btn
+              icon
+              variant="text"
+              color="info"
+              :loading="loading"
+              :disabled="!isValid.value"
+              @click="save()"
+            >
+              <v-icon>mdi-content-save</v-icon>
+            </v-btn>
+            <v-btn icon variant="text" color="secondary" @click="closeCreateEdit()">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </template>
         </v-list-item>
       </template>
-      <v-card flat>
+      <v-card>
         <v-card-text>
-          <v-container grid-list-md>
-            <v-layout wrap>
-              <v-flex xs12>
-                <span class="subtitle-2">Details</span>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="Name" rules="required" immediate>
-                  <v-text-field
-                    v-model="name"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Name"
-                    hint="A name for your project."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="Description" immediate>
-                  <v-text-field
-                    v-model="description"
-                    slot-scope="{ errors, valid }"
-                    label="Description"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="A description for your project."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
+                <span class="text-subtitle-2">Details</span>
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="name"
+                  label="Name"
+                  hint="A name for your project."
+                  clearable
+                  required
+                  name="Name"
+                  :rules="[rules.required]"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="description"
+                  label="Description"
+                  hint="A description for your project."
+                  clearable
+                  required
+                  name="Description"
+                />
+              </v-col>
+              <v-col cols="12">
                 <color-picker-input v-model="color" />
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="Employee Cost" immediate>
-                  <v-text-field
-                    v-model.number="annual_employee_cost"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Annual Employee Cost"
-                    hint="An annual average cost per employee."
-                    clearable
-                    required
-                    type="number"
-                    min="1"
-                    pattern="\d+"
-                    prefix="$"
-                    placeholder="50000"
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="Year Hours" immediate>
-                  <v-text-field
-                    v-model.number="business_year_hours"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Business Year Hours"
-                    hint="Number of working hours in a year. Used to calculate hourly rate."
-                    clearable
-                    required
-                    type="number"
-                    min="1"
-                    pattern="\d+"
-                    placeholder="2080"
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="Owner Email" rules="email" immediate>
-                  <v-text-field
-                    v-model="owner_email"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Owner Email"
-                    hint="The email account of the project owner."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="Owner Conversation" immediate>
-                  <v-text-field
-                    v-model="owner_conversation"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Owner Conversation"
-                    hint="The conversation of the project owner (e.g. Slack channel)."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
-              </v-flex>
-            </v-layout>
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model.number="annual_employee_cost"
+                  label="Annual Employee Cost"
+                  hint="An annual average cost per employee."
+                  clearable
+                  required
+                  type="number"
+                  min="1"
+                  pattern="\d+"
+                  prefix="$"
+                  placeholder="50000"
+                  name="Employee Cost"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model.number="business_year_hours"
+                  label="Business Year Hours"
+                  hint="Number of working hours in a year. Used to calculate hourly rate."
+                  clearable
+                  required
+                  type="number"
+                  min="1"
+                  pattern="\d+"
+                  placeholder="2080"
+                  name="Year Hours"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="owner_email"
+                  label="Owner Email"
+                  hint="The email account of the project owner."
+                  clearable
+                  required
+                  name="Owner Email"
+                  :rules="[rules.email]"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="owner_conversation"
+                  label="Owner Conversation"
+                  hint="The conversation of the project owner (e.g. Slack channel)."
+                  clearable
+                  required
+                  name="Owner Conversation"
+                />
+              </v-col>
+            </v-row>
           </v-container>
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
+import { required, email } from "@/util/form"
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
-import { required, email } from "vee-validate/dist/rules"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 
 import ColorPickerInput from "@/components/ColorPickerInput.vue"
 
-extend("email", email)
-
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-
 export default {
+  setup() {
+    return {
+      rules: { required, email },
+    }
+  },
   name: "ProjectNewEditSheet",
 
   components: {
     ColorPickerInput,
-    ValidationObserver,
-    ValidationProvider,
   },
 
   computed: {
@@ -171,7 +146,6 @@ export default {
       "selected.owner_email",
       "dialogs.showCreateEdit",
     ]),
-    ...mapFields("route", ["params"]),
   },
 
   methods: {
@@ -179,7 +153,10 @@ export default {
   },
 
   created() {
-    this.organization = { name: this.params.organization, slug: this.params.organization }
+    this.organization = {
+      name: this.$route.params.organization,
+      slug: this.$route.params.organization,
+    }
   },
 }
 </script>

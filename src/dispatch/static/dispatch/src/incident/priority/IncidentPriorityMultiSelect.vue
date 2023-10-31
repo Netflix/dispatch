@@ -2,7 +2,7 @@
   <v-select
     v-model="incident_priorities"
     :items="items"
-    item-text="name"
+    item-title="name"
     :menu-props="{ maxHeight: '400' }"
     label="Add Incident Priorities"
     multiple
@@ -21,7 +21,7 @@ import IncidentPriorityApi from "@/incident/priority/api"
 export default {
   name: "IncidentPriorityMultiSelect",
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -43,10 +43,10 @@ export default {
   computed: {
     incident_priorities: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },

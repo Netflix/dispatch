@@ -10,11 +10,11 @@
       <case-popover :value="item" />
     </template>
     <template #item.created_at="{ item }">
-      <v-tooltip bottom>
-        <template #activator="{ on, attrs }">
-          <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
+      <v-tooltip location="bottom">
+        <template #activator="{ props }">
+          <span v-bind="props">{{ formatRelativeDate(item.created_at) }}</span>
         </template>
-        <span>{{ item.created_at | formatDate }}</span>
+        <span>{{ formatDate(item.created_at) }}</span>
       </v-tooltip>
     </template>
   </v-data-table>
@@ -22,7 +22,7 @@
 
 <script>
 import { mapFields } from "vuex-map-fields"
-
+import { formatRelativeDate, formatDate } from "@/filters"
 import CasePopover from "@/case/CasePopover.vue"
 
 export default {
@@ -40,13 +40,16 @@ export default {
     return {
       menu: false,
       headers: [
-        { text: "Case", value: "case", sortable: false },
-        { text: "Priority", value: "case_priority.name", sortable: false },
-        { text: "Status", value: "status", sortable: false },
-        { text: "Created At", value: "created_at" },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Case", key: "case", sortable: false },
+        { title: "Priority", key: "case_priority.name", sortable: false },
+        { title: "Status", key: "status", sortable: false },
+        { title: "Created At", key: "created_at" },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
+  },
+  setup() {
+    return { formatRelativeDate, formatDate }
   },
   computed: {
     ...mapFields("case_management", ["selected.cases"]),

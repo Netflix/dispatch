@@ -1,86 +1,66 @@
 <template>
   <v-dialog v-model="display" max-width="600px">
-    <template #activator="{ on }">
-      <v-badge :value="numFilters" bordered overlap color="info" :content="numFilters">
-        <v-btn color="secondary" v-on="on"> Filter </v-btn>
+    <template #activator="{ props }">
+      <v-badge :model-value="!!numFilters" bordered color="info" :content="numFilters">
+        <v-btn color="secondary" v-bind="props"> Filter </v-btn>
       </v-badge>
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Incident Filters</span>
+        <span class="text-h5">Incident Filters</span>
       </v-card-title>
-      <v-list dense>
+      <v-list density="compact">
         <v-list-item>
-          <v-list-item-content>
-            <date-window-input v-model="local_reported_at" label="Reported At" />
-          </v-list-item-content>
+          <date-window-input v-model="local_reported_at" label="Reported At" />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <date-window-input v-model="local_closed_at" label="Closed At" />
-          </v-list-item-content>
+          <date-window-input v-model="local_closed_at" label="Closed At" />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <project-combobox v-model="local_project" label="Projects" />
-          </v-list-item-content>
+          <project-combobox v-model="local_project" label="Projects" />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <incident-type-combobox v-model="local_incident_type" />
-          </v-list-item-content>
+          <incident-type-combobox v-model="local_incident_type" />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <incident-severity-combobox v-model="local_incident_severity" />
-          </v-list-item-content>
+          <incident-severity-combobox v-model="local_incident_severity" />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <incident-priority-combobox v-model="local_incident_priority" />
-          </v-list-item-content>
+          <incident-priority-combobox v-model="local_incident_priority" />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <incident-status-multi-select v-model="local_status" />
-          </v-list-item-content>
+          <incident-status-multi-select v-model="local_status" />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <tag-type-filter-combobox v-model="local_tag_type" label="Tag Types" />
-          </v-list-item-content>
+          <tag-type-filter-combobox v-model="local_tag_type" label="Tag Types" />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <tag-filter-auto-complete v-model="local_tag" label="Tags" />
-          </v-list-item-content>
+          <tag-filter-auto-complete v-model="local_tag" label="Tags" />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <v-card class="mx-auto" outlined elevation="0">
-              <v-card-title>Incident Participant</v-card-title>
-              <v-card-subtitle>Show only incidents with this participant</v-card-subtitle>
-              <participant-select
-                class="ml-10 mr-5"
-                v-model="local_participant"
-                label="Participant"
-                hint="Show only incidents with this participant"
-                :project="local_project"
-                clearable
-              />
-              <v-checkbox
-                class="ml-10 mr-5"
-                v-model="local_participant_is_commander"
-                label="And this participant is the Incident Commander"
-                :disabled="local_participant == null"
-              />
-            </v-card>
-          </v-list-item-content>
+          <v-card class="mx-auto">
+            <v-card-title>Incident Participant</v-card-title>
+            <v-card-subtitle>Show only incidents with this participant</v-card-subtitle>
+            <participant-select
+              class="ml-10 mr-5"
+              v-model="local_participant"
+              label="Participant"
+              hint="Show only incidents with this participant"
+              :project="local_project"
+              clearable
+            />
+            <v-checkbox
+              class="ml-10 mr-5"
+              v-model="local_participant_is_commander"
+              label="And this participant is the Incident Commander"
+              :disabled="local_participant == null"
+            />
+          </v-card>
         </v-list-item>
       </v-list>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="info" text @click="applyFilters()"> Apply Filters </v-btn>
+        <v-btn color="info" variant="text" @click="applyFilters()"> Apply Filters </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

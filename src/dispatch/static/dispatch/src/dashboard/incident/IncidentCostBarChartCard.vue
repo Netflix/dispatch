@@ -15,7 +15,7 @@ export default {
   name: "IncidentCostBarChartCard",
 
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -94,14 +94,14 @@ export default {
     },
     series() {
       let series = { name: "cost", data: [] }
-      forEach(this.value, function (value) {
+      forEach(this.modelValue, function (value) {
         series.data.push(sumBy(value, "total_cost"))
       })
 
       return [series]
     },
     categoryData() {
-      return Object.keys(this.value)
+      return Object.keys(this.modelValue)
     },
   },
 }
