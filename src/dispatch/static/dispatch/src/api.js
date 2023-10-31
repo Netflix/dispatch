@@ -34,7 +34,7 @@ instance.interceptors.request.use(
 
 instance.interceptors.request.use(function (config) {
   if (!config.url.includes("organization")) {
-    let currentOrganization = router.currentRoute.value.params.organization || null
+    let currentOrganization = router.currentRoute.value.params.organization || "default"
 
     if (currentOrganization) {
       config.url = `${currentOrganization}${config.url}`
