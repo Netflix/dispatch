@@ -1,6 +1,6 @@
 <template>
   <v-list>
-    <v-list-item v-if="ticket" :href="ticket.weblink" target="_blank">
+    <v-list-item v-if="ticket" :href="ticket.weblink" target="_blank" class="my-3">
       <v-list-item-title>Ticket</v-list-item-title>
       <v-list-item-subtitle>{{ ticket.description }}</v-list-item-subtitle>
 
@@ -9,7 +9,7 @@
       </template>
     </v-list-item>
     <v-divider />
-    <v-list-item v-if="conversation" :href="conversation.weblink" target="_blank">
+    <v-list-item v-if="conversation" :href="conversation.weblink" target="_blank" class="my-3">
       <v-list-item-title>Conversation</v-list-item-title>
       <v-list-item-subtitle>{{ conversation.description }}</v-list-item-subtitle>
 
@@ -19,7 +19,7 @@
     </v-list-item>
     <v-divider />
     <span v-for="group in groups" :key="group.resource_id">
-      <v-list-item :href="group.weblink" target="_blank">
+      <v-list-item :href="group.weblink" target="_blank" class="my-3">
         <v-list-item-title>{{ deslug(group.resource_type) }}</v-list-item-title>
         <v-list-item-subtitle>{{ group.description }}</v-list-item-subtitle>
 
@@ -30,7 +30,7 @@
       <v-divider />
     </span>
     <v-divider />
-    <v-list-item v-if="storage" :href="storage.weblink" target="_blank">
+    <v-list-item v-if="storage" :href="storage.weblink" target="_blank" class="my-3">
       <v-list-item-title>Storage</v-list-item-title>
       <v-list-item-subtitle>{{ storage.description }}</v-list-item-subtitle>
 
@@ -40,7 +40,7 @@
     </v-list-item>
     <v-divider />
     <span v-for="document in documents" :key="document.resource_id">
-      <v-list-item :href="document.weblink" target="_blank">
+      <v-list-item :href="document.weblink" target="_blank" class="my-3">
         <v-list-item-title>{{ deslug(document.resource_type) }}</v-list-item-title>
         <v-list-item-subtitle>{{ document.description }}</v-list-item-subtitle>
 
@@ -59,7 +59,7 @@
         (!documents && documentPluginEnabled)
       "
     >
-      <v-list-item v-if="!loading" @click="createAllResources()">
+      <v-list-item v-if="!loading" @click="createAllResources()" class="my-3">
         <v-list-item-title>Recreate Missing Resources</v-list-item-title>
         <v-list-item-subtitle
           >Initiate a retry for creating any missing or unsuccesfully created
@@ -69,7 +69,7 @@
           <v-icon>refresh</v-icon>
         </template>
       </v-list-item>
-      <v-list-item v-else-if="loading">
+      <v-list-item v-else-if="loading" class="my-3">
         <v-list-item-title>Creating resources...</v-list-item-title>
         <v-list-item-subtitle
           >Initiate a retry for creating any missing or unsuccesfully created

@@ -2,7 +2,7 @@
   <div>
     <div v-if="participants && participants.length">
       <span v-for="participant in participants" :key="participant.id">
-        <v-list-item :href="participant.individual.weblink" target="_blank">
+        <v-list-item :href="participant.individual.weblink" target="_blank" class="my-3">
           <v-list-item-title>
             {{ participant.individual.name }} ({{ activeRoles(participant.participant_roles) }})
           </v-list-item-title>
