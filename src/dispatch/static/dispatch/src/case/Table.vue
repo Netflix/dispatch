@@ -45,7 +45,6 @@
             v-model="selected"
             loading-text="Loading... Please wait"
             show-select
-            density="compact"
             @click:row="showCaseEditSheet"
           >
             <template #item.case_severity.name="{ value }">
