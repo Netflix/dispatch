@@ -32,8 +32,8 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #item.create_case="{ value }">
-              <v-checkbox-btn model="value.signal.create_case" disabled />
+            <template #item.signal.create_case="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
             <template #item.case="{ value }">
               <case-popover v-if="value" :value="value" />
@@ -41,11 +41,11 @@
             <template #item.signal="{ value }">
               <signal-popover :value="value" />
             </template>
-            <template #item.canary="{ value }">
-              <v-checkbox-btn v-model="value.signal.canary" disabled />
+            <template #item.signal.canary="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #item.project.name="{ item, value }">
-              <v-chip size="small" :color="item.project.color">
+            <template #item.signal.project.name="{ item, value }">
+              <v-chip size="small" :color="item.signal.project.color">
                 {{ value }}
               </v-chip>
             </template>
@@ -107,14 +107,14 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Create Case", value: "create_case", sortable: false },
-        { text: "Case", value: "case", sortable: false },
-        { text: "Signal Definition", value: "signal", sortable: false },
-        { text: "Canary", value: "canary", sortable: false },
-        { text: "Filter Action", value: "filter_action", sortable: true },
-        { text: "Project", value: "project.name", sortable: true },
-        { text: "Created At", value: "created_at" },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Create Case", value: "signal.create_case", sortable: false },
+        { title: "Case", value: "case", sortable: false },
+        { title: "Signal Definition", value: "signal", sortable: false },
+        { title: "Canary", value: "signal.canary", sortable: false },
+        { title: "Filter Action", value: "filter_action", sortable: true },
+        { title: "Project", value: "signal.project.name", sortable: true },
+        { title: "Created At", value: "created_at" },
+        { title: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },
