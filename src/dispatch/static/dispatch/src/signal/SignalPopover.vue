@@ -4,7 +4,7 @@
       <template #activator="{ props }">
         <v-chip pill size="small" v-bind="props">
           <template #prepend>
-            <v-avatar color="teal">
+            <v-avatar color="teal" start>
               {{ initials(value.name) }}
             </v-avatar>
           </template>
