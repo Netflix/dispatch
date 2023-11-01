@@ -21,95 +21,101 @@
 
         <v-stepper-window>
           <v-stepper-window-item :value="1">
-            <v-list density="compact">
-              <v-list-item>
-                <incident-combobox v-model="incident" />
-              </v-list-item>
-              <v-list-item>
-                <project-combobox v-model="project" label="Projects" />
-              </v-list-item>
-              <v-list-item>
-                <task-status-multi-select v-model="status" />
-              </v-list-item>
-              <v-list-item>
-                <incident-type-combobox v-model="incident_type" label="Incident Type" />
-              </v-list-item>
-              <v-list-item>
-                <incident-priority-combobox v-model="incident_priority" label="Incident Priority" />
-              </v-list-item>
-            </v-list>
-            <v-btn color="info" @click="e1 = 2"> Continue </v-btn>
+            <div class="scrollable-container">
+              <v-list density="compact">
+                <v-list-item>
+                  <incident-combobox v-model="incident" />
+                </v-list-item>
+                <v-list-item>
+                  <project-combobox v-model="project" label="Projects" />
+                </v-list-item>
+                <v-list-item>
+                  <task-status-multi-select v-model="status" />
+                </v-list-item>
+                <v-list-item>
+                  <incident-type-combobox v-model="incident_type" label="Incident Type" />
+                </v-list-item>
+                <v-list-item>
+                  <incident-priority-combobox v-model="incident_priority" label="Incident Priority" />
+                </v-list-item>
+              </v-list>
+              <v-btn color="info" @click="e1 = 2"> Continue </v-btn>
 
-            <v-btn @click="closeExport()" variant="text"> Cancel </v-btn>
+              <v-btn @click="closeExport()" variant="text"> Cancel </v-btn>
+            </div>
           </v-stepper-window-item>
 
           <v-stepper-window-item :value="2">
-            <v-autocomplete
-              v-model="selectedFields"
-              :items="allFields"
-              label="Fields"
-              multiple
-              chips
-              return-object
-            />
-            <v-btn color="info" @click="e1 = 3"> Continue </v-btn>
+            <div class="scrollable-container">
+              <v-autocomplete
+                v-model="selectedFields"
+                :items="allFields"
+                label="Fields"
+                multiple
+                chips
+                return-object
+              />
+              <v-btn color="info" @click="e1 = 3"> Continue </v-btn>
 
-            <v-btn @click="closeExport()" variant="text"> Cancel </v-btn>
+              <v-btn @click="closeExport()" variant="text"> Cancel </v-btn>
+            </div>
           </v-stepper-window-item>
 
           <v-stepper-window-item :value="3">
-            <v-data-table
-              hide-default-footer
-              :headers="selectedFields"
-              :items="items"
-              :loading="previewRowsLoading"
-            >
-              <template #item.description="{ item }">
-                <div class="text-truncate" style="max-width: 400px">
-                  {{ item.description }}
-                </div>
-              </template>
-              <template #item.incident.status="{ item }">
-                <incident-status :status="item.incident.status" :id="item.id" />
-              </template>
-              <template #item.incident_priority.name="{ item }">
-                <incident-priority :priority="item.incident.incident_priority.name" />
-              </template>
-              <template #item.creator.individual_contact.name="{ item }">
-                <participant :participant="item.creator" />
-              </template>
-              <template #item.owner.individual_contact.name="{ item }">
-                <participant :participant="item.owner" />
-              </template>
-              <template #item.incident_type.name="{ item }">
-                {{ item.incident.incident_type.name }}
-              </template>
-              <template #item.assignees="{ item }">
-                <participant
-                  v-for="assignee in item.assignees"
-                  :key="assignee.id"
-                  :participant="assignee"
-                />
-              </template>
-              <template #item.resolve_by="{ item }">
-                {{ formatDate(item.resolve_by) }}
-              </template>
-              <template #item.created_at="{ item }">
-                {{ formatDate(item.created_at) }}
-              </template>
-              <template #item.resolved_at="{ item }">
-                {{ formatDate(item.resolved_at) }}
-              </template>
-              <template #item.source="{ item }">
-                {{ item.source }}
-                <a :href="item.weblink" target="_blank" style="text-decoration: none" />
-              </template>
-            </v-data-table>
-            <v-badge :model-value="!!total" color="info" bordered :content="total">
-              <v-btn color="info" @click="exportToCSV()" :loading="exportLoading"> Export </v-btn>
-            </v-badge>
+            <div class="scrollable-container">
+              <v-data-table
+                hide-default-footer
+                :headers="selectedFields"
+                :items="items"
+                :loading="previewRowsLoading"
+              >
+                <template #item.description="{ item }">
+                  <div class="text-truncate" style="max-width: 400px">
+                    {{ item.description }}
+                  </div>
+                </template>
+                <template #item.incident.status="{ item }">
+                  <incident-status :status="item.incident.status" :id="item.id" />
+                </template>
+                <template #item.incident_priority.name="{ item }">
+                  <incident-priority :priority="item.incident.incident_priority.name" />
+                </template>
+                <template #item.creator.individual_contact.name="{ item }">
+                  <participant :participant="item.creator" />
+                </template>
+                <template #item.owner.individual_contact.name="{ item }">
+                  <participant :participant="item.owner" />
+                </template>
+                <template #item.incident_type.name="{ item }">
+                  {{ item.incident.incident_type.name }}
+                </template>
+                <template #item.assignees="{ item }">
+                  <participant
+                    v-for="assignee in item.assignees"
+                    :key="assignee.id"
+                    :participant="assignee"
+                  />
+                </template>
+                <template #item.resolve_by="{ item }">
+                  {{ formatDate(item.resolve_by) }}
+                </template>
+                <template #item.created_at="{ item }">
+                  {{ formatDate(item.created_at) }}
+                </template>
+                <template #item.resolved_at="{ item }">
+                  {{ formatDate(item.resolved_at) }}
+                </template>
+                <template #item.source="{ item }">
+                  {{ item.source }}
+                  <a :href="item.weblink" target="_blank" style="text-decoration: none" />
+                </template>
+              </v-data-table>
+              <v-badge :model-value="!!total" color="info" bordered :content="total">
+                <v-btn color="info" @click="exportToCSV()" :loading="exportLoading"> Export </v-btn>
+              </v-badge>
 
-            <v-btn @click="closeExport()" variant="text"> Cancel </v-btn>
+              <v-btn @click="closeExport()" variant="text"> Cancel </v-btn>
+            </div>
           </v-stepper-window-item>
         </v-stepper-window>
       </v-stepper>
@@ -234,3 +240,10 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.scrollable-container {
+  max-height: 60vh; /* Adjust as needed */
+  overflow-y: auto;
+}
+</style>
