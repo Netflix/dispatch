@@ -34,7 +34,7 @@ executing==1.2.0
     #   stack-data
 factory-boy==3.3.0
     # via -r requirements-dev.in
-faker==19.11.0
+faker==19.12.1
     # via
     #   -r requirements-dev.in
     #   factory-boy
