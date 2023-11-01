@@ -57,7 +57,7 @@ export default {
       if (!this.project) return null
       const stablePriority = this.project.stable_priority
       if (!stablePriority) return null
-      if (this.status == "Stable" && this.value.name != stablePriority.name) {
+      if (this.status == "Stable" && this.modelValue.name != stablePriority.name) {
         return `Priority must be ${stablePriority.name} for Stable incidents`
       }
       return null
