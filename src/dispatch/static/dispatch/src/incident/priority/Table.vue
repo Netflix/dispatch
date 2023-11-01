@@ -76,31 +76,35 @@
       <v-col>
         <div class="text-body-1 ml-4 mt-6">Incident priority settings</div>
         <v-row align="start" no-gutters>
-          <v-col class="d-flex justify-start">
-            <v-checkbox
-              class="ml-10 mr-5"
-              v-model="restrictStable"
-              label="Restrict Stable status to this priority:"
-              @update:model-value="updateStablePriority"
-            />
-            <v-tooltip max-width="500px" open-delay="50" location="bottom">
-              <template #activator="{ props }">
-                <v-icon v-bind="props">mdi-information</v-icon>
-              </template>
-              <span>
-                If activated, Dispatch will automatically change Stable incidents to this priority.
-                Also, users will not be permitted to change the priority on Stable incidents.
-              </span>
-            </v-tooltip>
-            <span max-width="500px">
+          <div class="d-flex justify-content-start">
+            <v-col cols="10" class="mt-2">
+              <v-checkbox
+                class="ml-10 mr-5"
+                v-model="restrictStable"
+                label="Restrict Stable status to this priority:"
+                @update:model-value="updateStablePriority"
+              />
+            </v-col>
+            <v-col class="mt-5">
+              <v-tooltip max-width="500px" open-delay="50" location="bottom">
+                <template #activator="{ props }">
+                  <v-icon v-bind="props">mdi-information</v-icon>
+                </template>
+                <span>
+                  If activated, Dispatch will automatically change Stable incidents to this priority.
+                  Also, users will not be permitted to change the priority on Stable incidents.
+                </span>
+              </v-tooltip>
+            </v-col>
+            <v-col cols="6">
               <incident-priority-select
                 class="ml-4"
-                max-width="400px"
+                width="400px"
                 v-model="stablePriority"
                 :project="project[0]"
               />
-            </span>
-          </v-col>
+            </v-col>
+          </div>
         </v-row>
       </v-col>
     </v-row>

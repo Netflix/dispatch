@@ -23,7 +23,6 @@
               clearable
             />
           </v-card-title>
-          <pre>{{ itemsPerPage }}</pre>
           <v-data-table-server
             :headers="headers"
             :items="items"
