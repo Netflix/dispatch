@@ -36,7 +36,10 @@
                   <incident-type-combobox v-model="incident_type" label="Incident Type" />
                 </v-list-item>
                 <v-list-item>
-                  <incident-priority-combobox v-model="incident_priority" label="Incident Priority" />
+                  <incident-priority-combobox
+                    v-model="incident_priority"
+                    label="Incident Priority"
+                  />
                 </v-list-item>
               </v-list>
               <v-btn color="info" @click="e1 = 2"> Continue </v-btn>
