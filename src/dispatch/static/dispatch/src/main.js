@@ -8,6 +8,7 @@ import { plugin, defaultConfig } from "@formkit/vue"
 import "roboto-fontface/css/roboto/roboto-fontface.css"
 import "font-awesome/css/font-awesome.css"
 import "@formkit/themes/genesis"
+import "./styles/index.scss"
 
 import * as Sentry from "@sentry/vue"
 
