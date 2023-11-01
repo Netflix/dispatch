@@ -130,7 +130,7 @@ frozenlist==1.4.0
     #   aiosignal
 google-api-core==2.11.1
     # via google-api-python-client
-google-api-python-client==2.104.0
+google-api-python-client==2.106.0
     # via -r requirements-base.in
 google-auth==2.22.0
     # via
@@ -310,6 +310,7 @@ pyjwt[crypto]==2.8.0
     # via
     #   msal
     #   oauthlib
+    #   pyjwt
 pyparsing==3.1.1
     # via
     #   -r requirements-base.in
