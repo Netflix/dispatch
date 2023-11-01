@@ -91,8 +91,9 @@
                   <v-icon v-bind="props">mdi-information</v-icon>
                 </template>
                 <span>
-                  If activated, Dispatch will automatically change Stable incidents to this priority.
-                  Also, users will not be permitted to change the priority on Stable incidents.
+                  If activated, Dispatch will automatically change Stable incidents to this
+                  priority. Also, users will not be permitted to change the priority on Stable
+                  incidents.
                 </span>
               </v-tooltip>
             </v-col>
