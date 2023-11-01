@@ -75,4 +75,5 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                     if entries:
                         client.delete_message_batch(QueueUrl=queue_url, Entries=entries)
         except Exception as e:
+            db_session.rollback()
             log.exception(e)
