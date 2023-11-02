@@ -10,7 +10,7 @@
     no-filter
     return-object
     v-model="participant"
-    @update:modelValue="handleClear"
+    @update:model-value="handleClear"
   >
     <template #no-data>
       <v-list-item>
@@ -96,6 +96,9 @@ export default {
 
     onMounted(() => {
       debouncedGetIndividualData = debounce(getIndividualData, 300)
+      if (this.initialValue && this.initialValue.id) {
+        this.participant = { ...this.initialValue }
+      }
       debouncedGetIndividualData()
     })
 
@@ -129,17 +132,12 @@ export default {
       handleClear,
       initials,
       items,
+      labelProp,
       loading,
       loadMore,
       participant,
       search,
       total,
-    }
-  },
-  mounted() {
-    if (this.initialValue && this.initialValue.id) {
-      this.participant = { ...this.initialValue }
-      debouncedGetIndividualData()
     }
   },
 }
