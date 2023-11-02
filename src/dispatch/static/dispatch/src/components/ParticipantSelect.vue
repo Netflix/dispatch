@@ -33,7 +33,7 @@
       <v-chip pill size="small">
         <template #prepend>
           <v-avatar color="teal" start>
-            <span class="text-white">{{ initials(data.item.raw.individual.name) }}</span>
+            {{ initials(data.item.raw.individual.name) }}
           </v-avatar>
         </template>
         {{ data.item.raw.individual.name }}
