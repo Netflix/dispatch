@@ -45,7 +45,7 @@ botocore==1.31.59
     # via
     #   boto3
     #   s3transfer
-cachetools==5.3.1
+cachetools==5.3.2
     # via
     #   -r requirements-base.in
     #   google-auth
@@ -130,7 +130,7 @@ frozenlist==1.4.0
     #   aiosignal
 google-api-core==2.11.1
     # via google-api-python-client
-google-api-python-client==2.104.0
+google-api-python-client==2.106.0
     # via -r requirements-base.in
 google-auth==2.22.0
     # via
@@ -310,6 +310,7 @@ pyjwt[crypto]==2.8.0
     # via
     #   msal
     #   oauthlib
+    #   pyjwt
 pyparsing==3.1.1
     # via
     #   -r requirements-base.in
@@ -503,7 +504,7 @@ wasabi==1.1.2
     #   weasel
 weasel==0.3.2
     # via spacy
-werkzeug==2.3.7
+werkzeug==3.0.1
     # via schemathesis
 wrapt==1.15.0
     # via deprecated
