@@ -7,17 +7,24 @@
         <settings-breadcrumbs v-model="project" />
       </v-col>
     </v-row>
-    <v-row no-gutters>
+    <v-row no-gutters class="justify-space-between">
       <v-col v-for="document in templateDocumentTypes" :key="document.resource_type">
-        <v-card @click.stop="createEditShow({ resource_type: document.resource_type })">
-          <div class="d-flex flex-no-wrap justify-space-between">
+        <v-card
+          @click.stop="createEditShow({ resource_type: document.resource_type })"
+          outlined
+          elevation="0"
+          style="border: 1px solid rgb(var(--v-borderline))"
+        >
+          <div>
             <div>
-              <v-card-title class="text-h5">{{ document.title }}</v-card-title>
-              <v-card-subtitle>{{ document.description }}</v-card-subtitle>
+              <v-card-title class="text-h5">
+                {{ document.title }}
+                <v-avatar class="ma-3" tile>
+                  <v-icon>{{ document.icon }}</v-icon>
+                </v-avatar>
+              </v-card-title>
+              <v-card-subtitle class="wrap-text">{{ document.description }}</v-card-subtitle>
             </div>
-            <v-avatar class="ma-3" tile>
-              <v-icon size="x-large">{{ document.icon }}</v-icon>
-            </v-avatar>
           </div>
         </v-card>
       </v-col>
@@ -161,3 +168,9 @@ export default {
   },
 }
 </script>
+
+<style scoped lang="css">
+.wrap-text {
+  white-space: normal;
+}
+</style>
