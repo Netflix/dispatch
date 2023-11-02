@@ -9,8 +9,9 @@
     item-title="individual.name"
     no-filter
     return-object
+    chips
     v-model="participant"
-    @update:model-value="handleClear"
+    @update:modelValue="handleClear"
   >
     <template #no-data>
       <v-list-item>
@@ -29,14 +30,12 @@
         <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
-    <template #selection="data">
-      <v-chip pill size="small">
+    <template #chip="data">
+      <v-chip v-bind="data.props" pill>
         <template #prepend>
-          <v-avatar color="teal" start>
-            {{ initials(data.item.raw.individual.name) }}
-          </v-avatar>
+          <v-avatar color="teal" start> {{ initials(data.item.title) }} </v-avatar>
         </template>
-        {{ data.item.raw.individual.name }}
+        {{ data.item.title }}
       </v-chip>
     </template>
   </v-combobox>
@@ -96,10 +95,10 @@ export default {
 
     onMounted(() => {
       debouncedGetIndividualData = debounce(getIndividualData, 300)
-      if (this.initialValue && this.initialValue.id) {
-        this.participant = { ...this.initialValue }
+      if (props.initialValue && props.initialValue.id) {
+        participant = { ...props.initialValue }
+        search = props.initialValue.name
       }
-      debouncedGetIndividualData()
     })
 
     const loadMore = async () => {
@@ -109,7 +108,6 @@ export default {
     }
 
     const handleClear = (newValue) => {
-      console.log("handleClear", newValue)
       if (!newValue) {
         items.value = []
         search.value = null
@@ -120,7 +118,6 @@ export default {
     }
 
     watch(search, async (newVal, oldVal) => {
-      console.log("watch search", newVal, oldVal)
       if (oldVal !== newVal) {
         numItems.value = 10
         await debouncedGetIndividualData(newVal)
@@ -132,7 +129,6 @@ export default {
       handleClear,
       initials,
       items,
-      labelProp,
       loading,
       loadMore,
       participant,
