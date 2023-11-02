@@ -1,5 +1,5 @@
 <template>
-  <v-combobox
+  <v-autocomplete
     :items="items"
     :label="labelProp"
     :loading="loading"
@@ -10,15 +10,15 @@
     no-filter
     return-object
     chips
+    :hide-no-data="false"
+    auto-select-first="exact"
     v-model="participant"
     @update:modelValue="handleClear"
   >
     <template #no-data>
       <v-list-item>
         <v-list-item-title>
-          No individuals matching "
-          <strong>{{ search }}</strong
-          >".
+          No individuals matching <strong>"{{ search }}".</strong>
         </v-list-item-title>
       </v-list-item>
     </template>
@@ -38,7 +38,7 @@
         {{ data.item.title }}
       </v-chip>
     </template>
-  </v-combobox>
+  </v-autocomplete>
 </template>
 
 <script>
@@ -70,7 +70,7 @@ export default {
     let participant = ref(null)
     let currentPage = ref(1)
     let total = ref(0)
-    const search = ref(props.initialValue)
+    const search = ref(props.initialValue.name)
 
     let debouncedGetIndividualData = null
 
@@ -95,10 +95,10 @@ export default {
 
     onMounted(() => {
       debouncedGetIndividualData = debounce(getIndividualData, 300)
-      if (props.initialValue && props.initialValue.id) {
+      if (props.initialValue && props.initialValue.name) {
         participant = { ...props.initialValue }
-        search = props.initialValue.name
       }
+      debouncedGetIndividualData(search.value)
     })
 
     const loadMore = async () => {
