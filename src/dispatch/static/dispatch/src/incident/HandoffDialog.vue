@@ -38,7 +38,7 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
-import ParticipantSelect from "@/incident/ParticipantSelect.vue"
+import ParticipantSelect from "@/components/ParticipantSelect.vue"
 
 export default {
   name: "IncidentHandoffDialog",
