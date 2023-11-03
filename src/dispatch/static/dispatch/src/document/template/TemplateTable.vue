@@ -11,7 +11,7 @@
       <v-col v-for="document in templateDocumentTypes" :key="document.resource_type">
         <v-card
           @click.stop="createEditShow({ resource_type: document.resource_type })"
-          outlined
+          variant="outlined"
           elevation="0"
           style="border: 1px solid rgb(var(--v-borderline))"
         >
@@ -23,7 +23,7 @@
                   <v-icon>{{ document.icon }}</v-icon>
                 </v-avatar>
               </v-card-title>
-              <v-card-subtitle class="wrap-text">{{ document.description }}</v-card-subtitle>
+              <v-card-subtitle class="wrap-text mb-2">{{ document.description }}</v-card-subtitle>
             </div>
           </div>
         </v-card>
