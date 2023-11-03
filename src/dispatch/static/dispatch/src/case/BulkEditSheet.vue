@@ -1,5 +1,11 @@
 <template>
-  <v-bottom-sheet v-model="showBulkEdit" hide-overlay persistent>
+  <v-bottom-sheet
+    v-model="showBulkEdit"
+    :scrim="false"
+    persistent
+    no-click-animation
+    :retain-focus="false"
+  >
     <handoff-dialog />
     <closed-dialog />
     <v-card :loading="bulkEditLoading" rounded="0">
