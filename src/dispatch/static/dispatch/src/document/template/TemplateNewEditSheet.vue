@@ -1,10 +1,11 @@
 <template>
   <v-form @submit.prevent v-slot="{ isValid }">
     <v-navigation-drawer
-      :model-value="showCreateEdit"
-      @update:model-value="() => {}"
+      v-model="showCreateEdit"
       location="right"
       width="500"
+      absolute
+      temporary
     >
       <template #prepend>
         <v-list-item lines="two">
