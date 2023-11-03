@@ -46,6 +46,7 @@
             v-model="selected"
             loading-text="Loading... Please wait"
             show-select
+            return-object
             @click:row="showIncidentEditSheet"
           >
             <template #item.project.name="{ item, value }">
