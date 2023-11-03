@@ -90,10 +90,6 @@ export default {
     okHandler() {
       this.resetPicker()
       let newValue = moment.tz(this.selectedDatetime, this.timezone).utc().format()
-      //console.log(`This is the selectedDateTime: ${this.selectedDatetime}`)
-      //let isoString = parseISO(this.selectedDatetime).toISOString()
-      //let newValue = formatInTimeZone(isoString, this.timezone, "yyyy-MM-dd'T'HH:mm")
-      console.log(`This is the dateitme returned: ${newValue}`)
       this.$emit("update:modelValue", newValue)
     },
     clearHandler() {
