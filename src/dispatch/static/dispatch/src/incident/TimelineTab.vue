@@ -44,6 +44,9 @@
           :class="classType(event)"
           dot-color="blue"
         >
+          <template v-slot:icon>
+            <v-icon color="white" />
+          </template>
           <v-row justify="space-between">
             <v-col cols="7">
               {{ event.description }}

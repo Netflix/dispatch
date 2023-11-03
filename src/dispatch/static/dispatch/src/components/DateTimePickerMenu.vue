@@ -30,7 +30,8 @@
 </template>
 <script>
 import { parseISO } from "date-fns"
-import { format } from "date-fns-tz"
+import { formatInTimeZone, format } from "date-fns-tz"
+import moment from "moment-timezone"
 
 export default {
   name: "DateTimePickerMenu",
@@ -84,12 +85,16 @@ export default {
         initDateTime = parseISO(this.modelValue)
       }
 
-      this.selectedDatetime = format(initDateTime, "yyyy-MM-dd'T'HH:mm", { timeZone: "UTC" })
+      this.selectedDatetime = formatInTimeZone(initDateTime, this.timezone, "yyyy-MM-dd'T'HH:mm")
     },
     okHandler() {
       this.resetPicker()
-      let isoString = parseISO(this.selectedDatetime).toISOString()
-      this.$emit("update:modelValue", isoString)
+      let newValue = moment.tz(this.selectedDatetime, this.timezone).utc().format()
+      //console.log(`This is the selectedDateTime: ${this.selectedDatetime}`)
+      //let isoString = parseISO(this.selectedDatetime).toISOString()
+      //let newValue = formatInTimeZone(isoString, this.timezone, "yyyy-MM-dd'T'HH:mm")
+      console.log(`This is the dateitme returned: ${newValue}`)
+      this.$emit("update:modelValue", newValue)
     },
     clearHandler() {
       this.resetPicker()
@@ -106,6 +111,9 @@ export default {
     modelValue() {
       this.init()
     },
+    timezone() {
+      this.selectedDatetime = formatInTimeZone(parseISO(this.modelValue), this.timezone, "yyyy-MM-dd'T'HH:mm")
+    }
   },
 }
 </script>
