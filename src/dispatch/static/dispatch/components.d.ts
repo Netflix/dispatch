@@ -25,6 +25,7 @@ declare module '@vue/runtime-core' {
     MonacoEditor: typeof import('./src/components/MonacoEditor.vue')['default']
     NotificationSnackbarsWrapper: typeof import('./src/components/NotificationSnackbarsWrapper.vue')['default']
     PageHeader: typeof import('./src/components/PageHeader.vue')['default']
+    ParticipantSelect: typeof import('./src/components/ParticipantSelect.vue')['default']
     Refresh: typeof import('./src/components/Refresh.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

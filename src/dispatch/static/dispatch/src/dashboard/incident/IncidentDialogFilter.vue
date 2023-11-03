@@ -75,7 +75,7 @@ import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import RouterUtils from "@/router/utils"
 import SearchUtils from "@/search/utils"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
-import ParticipantSelect from "@/incident/ParticipantSelect.vue"
+import ParticipantSelect from "@/components/ParticipantSelect.vue"
 
 let today = function () {
   let now = new Date()
