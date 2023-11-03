@@ -7,16 +7,15 @@
     clearable
     hide-selected
     item-title="individual.name"
-    no-filter
+    item-value="individual.id"
     return-object
     chips
     :hide-no-data="false"
-    auto-select-first="exact"
     v-model="participant"
     @update:modelValue="handleClear"
   >
     <template #no-data>
-      <v-list-item>
+      <v-list-item v-if="!loading">
         <v-list-item-title>
           No individuals matching <strong>"{{ search }}".</strong>
         </v-list-item-title>
@@ -66,8 +65,9 @@ export default {
 
     let loading = ref(false)
     let items = ref([])
+    console.log(items)
     let numItems = ref(10)
-    let participant = ref(null)
+    let participant = ref({ ...props.initialValue })
     let currentPage = ref(1)
     let total = ref(0)
     const search = ref(props.initialValue.name)
@@ -84,6 +84,7 @@ export default {
       }
 
       await IndividualApi.getAll(filterOptions).then((response) => {
+        console.log(response.data.items)
         items.value = response.data.items.map(function (x) {
           return { individual: x }
         })
@@ -95,9 +96,6 @@ export default {
 
     onMounted(() => {
       debouncedGetIndividualData = debounce(getIndividualData, 300)
-      if (props.initialValue && props.initialValue.name) {
-        participant = { ...props.initialValue }
-      }
       debouncedGetIndividualData(search.value)
     })
 
@@ -129,6 +127,7 @@ export default {
       handleClear,
       initials,
       items,
+      labelProp,
       loading,
       loadMore,
       participant,
