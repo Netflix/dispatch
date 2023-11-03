@@ -107,7 +107,7 @@ import { mapActions } from "vuex"
 
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import IncidentSelect from "@/incident/IncidentSelect.vue"
-import ParticipantSelect from "@/incident/ParticipantSelect.vue"
+import ParticipantSelect from "@/components/ParticipantSelect.vue"
 import AssigneeCombobox from "@/task/AssigneeCombobox.vue"
 import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
 
