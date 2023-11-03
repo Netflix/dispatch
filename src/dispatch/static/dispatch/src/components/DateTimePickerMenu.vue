@@ -108,8 +108,12 @@ export default {
       this.init()
     },
     timezone() {
-      this.selectedDatetime = formatInTimeZone(parseISO(this.modelValue), this.timezone, "yyyy-MM-dd'T'HH:mm")
-    }
+      this.selectedDatetime = formatInTimeZone(
+        parseISO(this.modelValue),
+        this.timezone,
+        "yyyy-MM-dd'T'HH:mm"
+      )
+    },
   },
 }
 </script>

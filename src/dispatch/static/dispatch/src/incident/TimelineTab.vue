@@ -44,7 +44,7 @@
           :class="classType(event)"
           dot-color="blue"
         >
-          <template v-slot:icon>
+          <template #icon>
             <v-icon color="white" />
           </template>
           <v-row justify="space-between">
