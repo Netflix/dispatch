@@ -38,6 +38,7 @@
             :loading="loading"
             loading-text="Loading... Please wait"
             show-select
+            return-object
           >
             <template #item.description="{ item }">
               <div class="text-truncate" style="max-width: 400px">
