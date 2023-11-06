@@ -20,6 +20,7 @@ anyio==3.7.1
     # via
     #   fastapi
     #   httpcore
+    #   httpx
     #   starlette
 async-timeout==4.0.3
     # via aiohttp
@@ -158,7 +159,7 @@ httplib2==0.22.0
     #   google-api-python-client
     #   google-auth-httplib2
     #   oauth2client
-httpx==0.24.1
+httpx==0.25.1
     # via
     #   -r requirements-base.in
     #   schemathesis
