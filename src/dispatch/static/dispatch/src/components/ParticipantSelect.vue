@@ -1,7 +1,7 @@
 <template>
   <v-autocomplete
     :items="items"
-    :label="labelProp"
+    :label="label"
     :loading="loading"
     v-model:search="search"
     clearable
@@ -12,7 +12,7 @@
     chips
     :hide-no-data="false"
     v-model="participant"
-    @update:modelValue="handleClear"
+    @update:model-value="handleClear"
   >
     <template #no-data>
       <v-list-item v-if="!loading">
@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import { ref, watch, toRefs, onMounted } from "vue"
+import { ref, watch, onMounted } from "vue"
 import { initials } from "@/filters"
 import { debounce } from "lodash"
 
@@ -50,8 +50,7 @@ import IndividualApi from "@/individual/api"
 export default {
   name: "ParticipantSelect",
   props: {
-    labelProp: {
-      // Define the labelProp
+    label: {
       type: String,
       default: "Participant",
     },
@@ -61,11 +60,8 @@ export default {
     },
   },
   setup(props) {
-    const { labelProp } = toRefs(props) // toRefs make props reactive
-
     let loading = ref(false)
     let items = ref([])
-    console.log(items)
     let numItems = ref(10)
     let participant = ref({ ...props.initialValue })
     let currentPage = ref(1)
@@ -84,7 +80,6 @@ export default {
       }
 
       await IndividualApi.getAll(filterOptions).then((response) => {
-        console.log(response.data.items)
         items.value = response.data.items.map(function (x) {
           return { individual: x }
         })
@@ -127,7 +122,6 @@ export default {
       handleClear,
       initials,
       items,
-      labelProp,
       loading,
       loadMore,
       participant,

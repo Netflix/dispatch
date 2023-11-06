@@ -10,7 +10,7 @@
     :hide-no-data="false"
     v-model:search="search"
     v-model="selectedModel"
-    @update:modelValue="handleClear"
+    @update:model-value="handleClear"
   >
     <template #no-data>
       <v-list-item v-if="!loading">
@@ -21,11 +21,7 @@
     </template>
     <template #item="{ props, item }">
       <slot name="item" :props="props" :item="item">
-        <v-list-item
-          v-bind="props"
-          :title="item.title"
-          :subtitle="item.raw[subtitle]"
-        ></v-list-item>
+        <v-list-item v-bind="props" :title="item.title" :subtitle="item.raw[subtitle]" />
       </slot>
     </template>
     <template #append-item v-if="items.length < total.value">
@@ -72,7 +68,7 @@ export default {
   },
   emits: ["update:modelValue"],
   setup(props, { emit }) {
-    const { resource, title, identifier, subtitle, label, modelValue } = toRefs(props)
+    const { resource, modelValue } = toRefs(props)
 
     let loading = ref(false)
     let items = ref([])
@@ -80,7 +76,7 @@ export default {
     let currentPage = ref(1)
     let total = ref(0)
     let selectedModel = ref(modelValue.value)
-    let search = ref(modelValue.value ? modelValue.value[title.value] : "")
+    let search = ref(modelValue.value ? modelValue.value[props.title.value] : "")
 
     let debouncedGetData = debounce((searchVal, page = currentPage.value) => {
       loading.value = true
@@ -130,18 +126,21 @@ export default {
       emit(
         "update:modelValue",
         newVal
-          ? items.value.find((item) => item[identifier.value] == newVal[identifier.value])
+          ? items.value.find(
+              (item) => item[props.identifier.value] == newVal[props.identifier.value]
+            )
           : null
       )
+    })
+
+    watch(modelValue, (newValue) => {
+      selectedModel.value = newValue
+      search.value = newValue ? newValue[props.title] : ""
     })
 
     return {
       initials,
       items,
-      label,
-      title,
-      identifier,
-      subtitle,
       loading,
       handleClear,
       loadMore,

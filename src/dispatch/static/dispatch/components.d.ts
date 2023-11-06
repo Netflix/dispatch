@@ -26,6 +26,7 @@ declare module '@vue/runtime-core' {
     MonacoEditor: typeof import('./src/components/MonacoEditor.vue')['default']
     NotificationSnackbarsWrapper: typeof import('./src/components/NotificationSnackbarsWrapper.vue')['default']
     PageHeader: typeof import('./src/components/PageHeader.vue')['default']
+    ParticipantAutoComplete: typeof import('./src/components/ParticipantAutoComplete.vue')['default']
     ParticipantSelect: typeof import('./src/components/ParticipantSelect.vue')['default']
     ProjectAutoComplete: typeof import('./src/components/ProjectAutoComplete.vue')['default']
     Refresh: typeof import('./src/components/Refresh.vue')['default']

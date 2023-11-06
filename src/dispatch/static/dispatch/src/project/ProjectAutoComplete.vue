@@ -4,10 +4,9 @@
     title="name"
     identifier="id"
     subtitle="description"
-    v-model="modelValue"
+    v-model="internalModelValue"
     :label="label"
-  >
-  </AutoComplete>
+  />
 </template>
 
 <script>
@@ -22,7 +21,7 @@ export default {
   props: {
     modelValue: {
       type: Object,
-      default: () => null,
+      default: () => ({}),
     },
     label: {
       type: String,
@@ -47,7 +46,7 @@ export default {
     })
 
     return {
-      modelValue: internalModelValue,
+      internalModelValue,
     }
   },
 }
