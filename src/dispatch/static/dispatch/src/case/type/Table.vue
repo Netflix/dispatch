@@ -1,6 +1,7 @@
 <template>
   <v-container fluid>
     <new-edit-sheet />
+    <new-template-sheet @new-document-created="addItem($event)" />
     <v-row no-gutters>
       <v-col>
         <v-alert closable icon="mdi-school" prominent text type="info">
@@ -83,6 +84,7 @@ import { mapActions } from "vuex"
 
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
 import NewEditSheet from "@/case/type/NewEditSheet.vue"
+import NewTemplateSheet from "@/document/template/TemplateNewEditSheet.vue"
 
 export default {
   name: "CaseTypeTable",
@@ -90,6 +92,7 @@ export default {
   components: {
     NewEditSheet,
     SettingsBreadcrumbs,
+    NewTemplateSheet,
   },
 
   data() {

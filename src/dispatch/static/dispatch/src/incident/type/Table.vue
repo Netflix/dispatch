@@ -1,6 +1,7 @@
 <template>
   <v-container fluid>
     <new-edit-sheet />
+    <new-template-sheet @new-document-created="addItem($event)" />
     <v-row no-gutters>
       <v-col>
         <v-alert closable icon="mdi-school" prominent text type="info">
@@ -74,6 +75,7 @@ import { mapActions } from "vuex"
 
 import NewEditSheet from "@/incident/type/NewEditSheet.vue"
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
+import NewTemplateSheet from "@/document/template/TemplateNewEditSheet.vue"
 
 export default {
   name: "IncidentTypeTable",
@@ -81,6 +83,7 @@ export default {
   components: {
     NewEditSheet,
     SettingsBreadcrumbs,
+    NewTemplateSheet,
   },
   data() {
     return {
