@@ -40,7 +40,6 @@ import { mapActions } from "vuex"
 import { cloneDeep } from "lodash"
 
 import DocumentApi from "@/document/api"
-import NewEditSheet from "@/document/template/TemplateNewEditSheet.vue"
 
 export default {
   name: "TemplateSelect",
@@ -70,10 +69,6 @@ export default {
         return "Template to associate"
       },
     },
-  },
-
-  components: {
-    NewEditSheet,
   },
 
   data() {
