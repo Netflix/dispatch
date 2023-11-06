@@ -131,8 +131,8 @@ import CaseSeveritySelect from "@/case/severity/CaseSeveritySelect.vue"
 import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
 import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
-import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 import ProjectAutoComplete from "@/project/ProjectAutoComplete.vue"
+import ParticipantSelect from "@/components/ParticipantSelect.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 
 export default {

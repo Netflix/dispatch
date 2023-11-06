@@ -8,26 +8,35 @@
       <v-card-text>
         <v-container class="mt-3">
           <v-row>
-            <v-col cols="12">
+            <v-col cols="5">
               <date-time-picker-menu
                 label="Reported At"
                 v-model="started_at"
                 class="time-picker"
                 :timezone="timezone"
               />
+              <span
+                class="ml-10 time-utc text-caption"
+                style="position: absolute; margin-top: -20px"
+              >
+                Time in UTC is {{ formatToUTC(started_at) }}
+              </span>
+            </v-col>
+            <v-col cols="5">
               <v-select
                 v-model="timezone"
                 label="Time zone"
                 :items="timezones"
                 class="ml-2 time-zone-select"
               />
+            </v-col>
+            <v-col cols="1">
               <v-btn color="green en-1" class="ml-10 mt-3" width="100" @click="setTimeToNow()">
                 Now
               </v-btn>
             </v-col>
-            <v-col cols="12">
-              <span class="ml-8 time-utc"> Time in UTC is {{ formatToUTC(started_at) }} </span>
-            </v-col>
+          </v-row>
+          <v-row>
             <v-col cols="12">
               <v-textarea
                 v-model="description"
