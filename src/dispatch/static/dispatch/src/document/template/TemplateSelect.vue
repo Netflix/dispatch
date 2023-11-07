@@ -18,7 +18,6 @@
       <v-btn icon variant="text" @click="createEditShow({ resource_type: resourceType })">
         <v-icon>mdi-plus</v-icon>
       </v-btn>
-      <new-edit-sheet @new-document-created="addItem($event)" />
     </template>
     <template #no-data>
       <v-list-item>
@@ -41,7 +40,6 @@ import { mapActions } from "vuex"
 import { cloneDeep } from "lodash"
 
 import DocumentApi from "@/document/api"
-import NewEditSheet from "@/document/template/TemplateNewEditSheet.vue"
 
 export default {
   name: "TemplateSelect",
@@ -71,10 +69,6 @@ export default {
         return "Template to associate"
       },
     },
-  },
-
-  components: {
-    NewEditSheet,
   },
 
   data() {

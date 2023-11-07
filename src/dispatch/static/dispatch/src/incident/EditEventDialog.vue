@@ -14,12 +14,13 @@
                 v-model="started_at"
                 class="time-picker"
                 :timezone="timezone"
+                @update:modelValue="update_started_at"
               />
               <span
                 class="ml-10 time-utc text-caption"
                 style="position: absolute; margin-top: -20px"
               >
-                Time in UTC is {{ formatToUTC(started_at) }}
+                Time in UTC is {{ formatToUTC(started_at_in_utc) }}
               </span>
             </v-col>
             <v-col cols="5">
@@ -77,6 +78,7 @@ export default {
     return {
       timezones: ["UTC", "America/Los_Angeles"],
       timezone: "UTC",
+      started_at_in_utc: "",
     }
   },
 
@@ -109,9 +111,14 @@ export default {
     setTimeToNow() {
       this.eventStart = new Date()
     },
+    update_started_at(val) {
+      this.started_at = val
+      this.started_at_in_utc = val
+    }
   },
   mounted() {
     this.init()
+    this.started_at_in_utc = this.started_at
   },
 }
 </script>
