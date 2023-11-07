@@ -197,7 +197,12 @@ export default {
   },
 
   computed: {
-    ...mapFields("incident", ["selected.events", "selected.name", "timeline_filters", "dialogs.showEditEventDialog",]),
+    ...mapFields("incident", [
+      "selected.events",
+      "selected.name",
+      "timeline_filters",
+      "dialogs.showEditEventDialog",
+    ]),
 
     sortedEvents: function () {
       return this.events.slice().sort((a, b) => new Date(a.started_at) - new Date(b.started_at))
