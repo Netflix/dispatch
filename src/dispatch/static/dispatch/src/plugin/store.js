@@ -165,15 +165,7 @@ function convertToFormkit(json_schema) {
   formkit_schema.push(title)
   for (const [key, value] of Object.entries(json_schema.properties)) {
     var obj = {}
-    if (value.format == "password") {
-      obj = {
-        $formkit: "password",
-        name: key,
-        label: value.title,
-        help: value.description,
-        validation: "required",
-      }
-    } else if (value.type == "string") {
+    if (value.type == "string" || value.type == "password") {
       obj = {
         $formkit: "text",
         name: key,
