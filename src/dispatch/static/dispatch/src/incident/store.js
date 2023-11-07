@@ -247,7 +247,7 @@ const actions = {
     commit("SET_DIALOG_SHOW_HANDOFF", false)
     commit("RESET_SELECTED")
   },
-  showEditEventDialog({ commit }, event) {
+  showNewEditEventDialog({ commit }, event) {
     state.selected.currentEvent = event
     commit("SET_DIALOG_EDIT_EVENT", true)
   },
