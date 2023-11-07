@@ -11,7 +11,7 @@
         Export
       </v-btn>
       <timeline-filter-dialog ref="filter_dialog" />
-      <edit-event-dialog />
+      <edit-event-dialog v-if="showEditEventDialog" />
       <delete-event-dialog />
     </v-row>
     <template v-if="events && events.length">
@@ -66,7 +66,7 @@
             </v-col>
             <v-col cols="1">
               <div v-if="isEditable(event)" class="custom-event-edit">
-                <v-btn variant="plain" @click="showEditEventDialog(event)">
+                <v-btn variant="plain" @click="showNewEditEventDialog(event)">
                   <v-icon>mdi-pencil</v-icon>
                 </v-btn>
                 <br />
@@ -197,7 +197,12 @@ export default {
   },
 
   computed: {
-    ...mapFields("incident", ["selected.events", "selected.name", "timeline_filters"]),
+    ...mapFields("incident", [
+      "selected.events",
+      "selected.name",
+      "timeline_filters",
+      "dialogs.showEditEventDialog",
+    ]),
 
     sortedEvents: function () {
       return this.events.slice().sort((a, b) => new Date(a.started_at) - new Date(b.started_at))
@@ -206,7 +211,7 @@ export default {
   methods: {
     ...mapActions("incident", [
       "showNewEventDialog",
-      "showEditEventDialog",
+      "showNewEditEventDialog",
       "showDeleteEventDialog",
       "showNewPreEventDialog",
       "togglePin",
