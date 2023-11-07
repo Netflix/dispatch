@@ -360,7 +360,7 @@ def find_entities(
                                         entity_type=entity_type,
                                         project=signal_instance.project,
                                     )
-                except jsonpath_ng.PathNotFound:
+                except jsonpath_ng.JSONPathError:
                     # field not found in signal_instance.raw
                     pass
 
