@@ -48,19 +48,19 @@ export default {
       default: function () {
         return [
           {
-            "id": 1,
-            "type": "Privacy Assessment",
-            "status": "Complete",
-            "creator": {"name": "David Whittaker"},
-            "created_at": "2023-11-07T01:50Z"
+            id: 1,
+            type: "Privacy Assessment",
+            status: "Complete",
+            creator: { name: "David Whittaker" },
+            created_at: "2023-11-07T01:50Z",
           },
           {
-            "id": 2,
-            "type": "Materiality Assessment",
-            "status": "Draft",
-            "creator": {"name": "Kyle Smith"},
-            "created_at": "2023-11-07T14:50Z"
-          }
+            id: 2,
+            type: "Materiality Assessment",
+            status: "Draft",
+            creator: { name: "Kyle Smith" },
+            created_at: "2023-11-07T14:50Z",
+          },
         ]
       },
     },
@@ -74,7 +74,7 @@ export default {
         { title: "Creator", value: "creator.name" },
         { title: "Created At", value: "created_at" },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
-      ]
+      ],
     }
   },
   setup() {
