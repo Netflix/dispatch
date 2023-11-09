@@ -194,7 +194,7 @@ export const protectedRoute = [
           component: () => import("@/case/Table.vue"),
           children: [
             {
-              path: "/:organization/cases/:name",
+              path: "/:organization/cases/:name/edit",
               name: "CaseTableEdit",
               component: () => import("@/case/EditSheet.vue"),
               props: true,
@@ -203,6 +203,13 @@ export const protectedRoute = [
               },
             },
           ],
+        },
+        {
+          path: "/:organization/cases/:name/page",
+          name: "CasePage",
+          meta: { title: "Page" },
+          component: () => import("@/case/Page.vue"),
+          props: true,
         },
       ],
     },
