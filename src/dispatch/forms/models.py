@@ -1,0 +1,74 @@
+from datetime import datetime
+from pydantic import Field
+from typing import Optional, List
+
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, String
+from sqlalchemy_utils import TSVectorType
+from sqlalchemy.orm import relationship
+
+from dispatch.database.core import Base
+from dispatch.individual.models import IndividualContactReadMinimal
+from dispatch.models import DispatchBase, TimeStampMixin, PrimaryKey, Pagination, ProjectMixin
+from dispatch.project.models import ProjectRead
+from dispatch.incident.models import IncidentReadMinimal
+from dispatch.forms.type import FormsTypeRead
+from .enums import FormStatus, FormAttorneyStatus
+
+
+class Forms(TimeStampMixin, ProjectMixin, Base):
+    # Columns
+    id = Column(Integer, primary_key=True)
+    form_data = Column(String, nullable=True)
+    created_at = Column(DateTime, nullable=True)
+    status = Column(String, default=FormStatus.new, nullable=True)
+    attorney_status = Column(String, default=FormAttorneyStatus.not_reviewed, nullable=True)
+    memo_link = Column(String, nullable=True)
+
+    # Relationships
+    creator_id = Column(Integer, ForeignKey("individual_contact.id"))
+    creator = relationship("IndividualContact")
+
+    incident_id = Column(Integer, ForeignKey("incident.id"))
+    incident = relationship("Incident")
+
+    form_type_id = Column(Integer, ForeignKey("forms_type.id"))
+    form_type = relationship("FormsType")
+
+    search_vector = Column(
+        TSVectorType(
+            "form_type",
+            "status",
+            regconfig="pg_catalog.simple",
+        )
+    )
+
+
+# Pydantic models
+class FormsBase(DispatchBase):
+    type: Optional[FormsTypeRead]
+    creator: Optional[IndividualContactReadMinimal]
+    data: Optional[str] = Field(None, nullable=True)
+    status: Optional[str] = Field(None, nullable=True)
+    attorney_status: Optional[str] = Field(None, nullable=True)
+    project: Optional[ProjectRead]
+    created_at: Optional[datetime]
+    incident: Optional[IncidentReadMinimal]
+    memo_link: Optional[str] = Field(None, nullable=True)
+
+
+class FormsCreate(FormsBase):
+    pass
+
+
+class FormsUpdate(FormsBase):
+    id: PrimaryKey = None
+
+
+class FormsRead(FormsBase):
+    id: PrimaryKey
+    project: Optional[ProjectRead]
+
+
+class FormsPagination(Pagination):
+    items: List[FormsRead]
+    total: int

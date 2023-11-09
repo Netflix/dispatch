@@ -136,7 +136,7 @@ export const protectedRoute = [
       name: "incidents",
       meta: {
         title: "Incidents",
-        icon: "mdi-file-multiple",
+        icon: "mdi-lock-open-alert-outline",
         group: "incidents",
         requiresAuth: true,
         menu: true,
@@ -283,6 +283,27 @@ export const protectedRoute = [
       ],
     },
     {
+      path: "forms",
+      component: DefaultLayout,
+      name: "forms",
+      meta: {
+        title: "Forms",
+        icon: "mdi-file-document-outline",
+        group: "forms",
+        menu: true,
+        requiresAuth: true,
+      },
+      redirect: { name: "FormsTable" },
+      children: [
+        {
+          path: "/:organization/forms",
+          name: "FormsTable",
+          meta: { title: "Forms" },
+          component: () => import("@/forms/Table.vue"),
+        },
+      ],
+    },
+    {
       path: "feedback",
       component: DefaultLayout,
       name: "feedback",
@@ -401,6 +422,12 @@ export const protectedRoute = [
             name: "IncidentRolesTable",
             meta: { title: "Roles", subMenu: "project", group: "incident" },
             component: () => import("@/incident_role/Table.vue"),
+          },
+          {
+            path: "incidentFormTypes",
+            name: "IncidentFormTypesTable",
+            meta: { title: "Form Types", subMenu: "project", group: "incident" },
+            component: () => import("@/forms/types/Table.vue"),
           },
           {
             path: "caseTypes",

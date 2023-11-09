@@ -39,6 +39,7 @@
     "vue3-apexcharts": "^1.4.4",
     "vue3-markdown-it": "^1.0.10",
     "vuetify": "3.3.22",
+    "vuetify3-resize-drawer": "^2.1.1",
     "vuex": "^4.1.0",
     "vuex-map-fields": "^1.4.1"
   },
