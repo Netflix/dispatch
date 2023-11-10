@@ -14,7 +14,7 @@
                 v-model="started_at"
                 class="time-picker"
                 :timezone="timezone"
-                @update:modelValue="update_started_at"
+                @update:model-value="update_started_at"
               />
               <span
                 class="ml-10 time-utc text-caption"
@@ -114,7 +114,7 @@ export default {
     update_started_at(val) {
       this.started_at = val
       this.started_at_in_utc = val
-    }
+    },
   },
   mounted() {
     this.init()
