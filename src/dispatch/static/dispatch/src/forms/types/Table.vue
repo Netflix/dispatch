@@ -44,8 +44,15 @@
             <template #item.default="{ value }">
               <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #item.editable="{ value }">
+            <template #item.enabled="{ value }">
               <v-checkbox-btn :model-value="value" disabled />
+            </template>
+            <template #item.creator="{ item }">
+              <participant
+                v-if="item.creator"
+                :participant="convertToParticipant(item.creator)"
+              />
+              <span v-else>(anonymous)</span>
             </template>
             <template #item.created_at="{ item }">
               <v-tooltip location="bottom">
@@ -53,6 +60,14 @@
                   <span v-bind="props">{{ formatRelativeDate(item.created_at) }}</span>
                 </template>
                 <span>{{ formatDate(item.created_at) }}</span>
+              </v-tooltip>
+            </template>
+            <template #item.updated_at="{ value }">
+              <v-tooltip location="bottom">
+                <template #activator="{ props }">
+                  <span v-bind="props">{{ formatRelativeDate(value) }}</span>
+                </template>
+                <span>{{ formatDate(value) }}</span>
               </v-tooltip>
             </template>
             <template #item.data-table-actions="{ item }">
@@ -87,13 +102,15 @@ import { formatRelativeDate, formatDate } from "@/filters"
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
 import DeleteDialog from "@/forms/types/DeleteDialog.vue"
 import NewEditSheet from "@/forms/types/NewEditSheet.vue"
+import Participant from "@/incident/Participant.vue"
 
 export default {
-  name: "IncidentCostTypeTable",
+  name: "FormsTypeTable",
 
   components: {
     DeleteDialog,
     NewEditSheet,
+    Participant,
     SettingsBreadcrumbs,
   },
 
@@ -102,7 +119,7 @@ export default {
       headers: [
         { title: "Type", value: "name", sortable: false },
         { title: "Description", value: "description", sortable: false },
-        { title: "Enabled", value: "editable", sortable: true },
+        { title: "Enabled", value: "enabled", sortable: true },
         { title: "Creator", value: "creator", sortable: true },
         { title: "Created At", value: "created_at", sortable: true },
         { title: "Updated At", value: "updated_at", sortable: true },
@@ -116,7 +133,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("incident_cost_type", [
+    ...mapFields("forms_type", [
       "table.options.q",
       "table.options.page",
       "table.options.itemsPerPage",
@@ -152,7 +169,15 @@ export default {
   },
 
   methods: {
-    ...mapActions("incident_cost_type", ["getAll", "createEditShow", "removeShow"]),
+    ...mapActions("forms_type", ["getAll", "createEditShow", "removeShow"]),
+    convertToParticipant(individual) {
+      return {
+        individual: {
+          name: individual.name,
+          email: individual.email,
+        },
+      }
+    },
   },
 }
 </script>

@@ -1,5 +1,20 @@
 <template>
-  <v-btn color="info" class="ml-6" @click="showNewSheet()"> Create New </v-btn>
+  <div>
+    <v-menu anchor="bottom end">
+      <template #activator="{ props }">
+        <v-btn v-bind="props" color="info" class="ml-6"> Create New </v-btn>
+      </template>
+      <div>
+        <v-list>
+          <template v-for="form_type in form_types">
+            <v-list-item :key="form_type.id" v-if="form_type.enabled" @click="blank(form_type)">
+              <v-list-item-title>{{ form_type.name }}</v-list-item-title>
+            </v-list-item>
+          </template>
+        </v-list>
+      </div>
+    </v-menu>
+  </div>
   <v-data-table
     :headers="headers"
     :items="modelValue"
@@ -38,6 +53,8 @@
 </template>
 
 <script>
+import { mapFields } from "vuex-map-fields"
+import { mapActions } from "vuex"
 import { formatRelativeDate, formatDate } from "@/filters"
 
 export default {
@@ -79,6 +96,18 @@ export default {
   },
   setup() {
     return { formatRelativeDate, formatDate }
+  },
+  computed: {
+    ...mapFields("forms", ["form_types"]),
+  },
+  methods: {
+    ...mapActions("forms", ["getAll"]),
+    blank(form_type) {
+      console.log(`**** Got form type ${JSON.stringify(form_type)}`)
+    },
+  },
+  created() {
+    this.getAll()
   },
 }
 </script>

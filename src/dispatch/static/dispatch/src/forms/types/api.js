@@ -15,11 +15,11 @@ export default {
     return API.post(`${resource}`, payload)
   },
 
-  update(formTypeId, payload) {
-    return API.put(`${resource}/${formTypeId}`, payload)
+  update(formTypeId, creator_id, payload) {
+    return API.put(`${resource}/${formTypeId}/${creator_id}`, payload)
   },
 
-  delete(formTypeId) {
-    return API.delete(`${resource}/${formTypeId}`)
+  delete(formTypeId, creator_id) {
+    return API.delete(`${resource}/${formTypeId}/${creator_id}`)
   },
 }

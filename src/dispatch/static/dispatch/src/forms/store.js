@@ -9,11 +9,14 @@ const getDefaultSelectedState = () => {
   return {
     id: null,
     name: null,
-    description: null,
-    enabled: false,
     created_at: null,
     updated_at: null,
-    form_schema: "",
+    incident: null,
+    form_data: "",
+    status: null,
+    attorney_status: null,
+    memo_link: null,
+    form_type: null,
     creator: null,
     project: null,
   }
@@ -44,6 +47,7 @@ const state = {
     },
     loading: false,
   },
+  form_types: [],
 }
 
 const getters = {
@@ -60,7 +64,7 @@ const actions = {
     return FormsTypeApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)
-        commit("SET_TABLE_ROWS", response.data)
+        commit("SET_FORM_TYPES", response.data)
       })
       .catch(() => {
         commit("SET_TABLE_LOADING", false)
@@ -149,6 +153,9 @@ const mutations = {
   },
   SET_TABLE_ROWS(state, value) {
     state.table.rows = value
+  },
+  SET_FORM_TYPES(state, value) {
+    state.form_types = value.items
   },
   SET_DIALOG_CREATE_EDIT(state, value) {
     state.dialogs.showCreateEdit = value

@@ -5,7 +5,7 @@
         <v-list-item lines="two">
           <v-list-item-title v-if="id" class="text-h6"> Edit </v-list-item-title>
           <v-list-item-title v-else class="text-h6"> New </v-list-item-title>
-          <v-list-item-subtitle>Incident Cost Type</v-list-item-subtitle>
+          <v-list-item-subtitle>Form Type</v-list-item-subtitle>
 
           <template #append>
             <v-btn
@@ -53,14 +53,14 @@
               </v-col>
               <v-col cols="12">
                 <v-checkbox
-                  v-model="editable"
+                  v-model="enabled"
                   label="Enabled"
                   hint="Whether this form type is enabled."
                 />
               </v-col>
               <v-col cols="12">
                 <v-textarea
-                  v-model="description"
+                  v-model="form_schema"
                   label="Form Schema"
                   hint="The schema defining this form."
                   clearable
@@ -80,39 +80,32 @@ import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
-import IncidentCostTypeCategorySelect from "@/incident_cost_type/IncidentCostTypeCategorySelect.vue"
-
 export default {
   setup() {
     return {
       rules: { required },
     }
   },
-  name: "IncidentCostTypeNewEditSheet",
-
-  components: {
-    IncidentCostTypeCategorySelect,
-  },
+  name: "FormsTypeNewEditSheet",
 
   computed: {
-    ...mapFields("incident_cost_type", [
+    ...mapFields("forms_type", [
       "selected.name",
       "selected.description",
-      "selected.category",
-      "selected.details",
-      "selected.editable",
+      "selected.enabled",
+      "selected.loading",
       "selected.id",
       "selected.project",
-      "selected.loading",
+      "selected.form_schema",
       "dialogs.showCreateEdit",
     ]),
-    ...mapFields("incident_cost_type", {
+    ...mapFields("forms_type", {
       default_incident_cost_type: "selected.default",
     }),
   },
 
   methods: {
-    ...mapActions("incident_cost_type", ["save", "closeCreateEdit"]),
+    ...mapActions("forms_type", ["save", "closeCreateEdit"]),
   },
 
   created() {

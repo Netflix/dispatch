@@ -11,7 +11,7 @@ from dispatch.individual.models import IndividualContactReadMinimal
 from dispatch.models import DispatchBase, TimeStampMixin, PrimaryKey, Pagination, ProjectMixin
 from dispatch.project.models import ProjectRead
 from dispatch.incident.models import IncidentReadMinimal
-from dispatch.forms.type import FormsTypeRead
+from dispatch.forms.type.models import FormsTypeRead
 from .enums import FormStatus, FormAttorneyStatus
 
 
@@ -19,7 +19,6 @@ class Forms(TimeStampMixin, ProjectMixin, Base):
     # Columns
     id = Column(Integer, primary_key=True)
     form_data = Column(String, nullable=True)
-    created_at = Column(DateTime, nullable=True)
     status = Column(String, default=FormStatus.new, nullable=True)
     attorney_status = Column(String, default=FormAttorneyStatus.not_reviewed, nullable=True)
     memo_link = Column(String, nullable=True)
@@ -34,13 +33,7 @@ class Forms(TimeStampMixin, ProjectMixin, Base):
     form_type_id = Column(Integer, ForeignKey("forms_type.id"))
     form_type = relationship("FormsType")
 
-    search_vector = Column(
-        TSVectorType(
-            "form_type",
-            "status",
-            regconfig="pg_catalog.simple",
-        )
-    )
+    search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
 
 # Pydantic models
@@ -51,7 +44,6 @@ class FormsBase(DispatchBase):
     status: Optional[str] = Field(None, nullable=True)
     attorney_status: Optional[str] = Field(None, nullable=True)
     project: Optional[ProjectRead]
-    created_at: Optional[datetime]
     incident: Optional[IncidentReadMinimal]
     memo_link: Optional[str] = Field(None, nullable=True)
 
@@ -67,6 +59,8 @@ class FormsUpdate(FormsBase):
 class FormsRead(FormsBase):
     id: PrimaryKey
     project: Optional[ProjectRead]
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
 
 class FormsPagination(Pagination):
