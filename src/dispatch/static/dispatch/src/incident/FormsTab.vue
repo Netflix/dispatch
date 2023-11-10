@@ -31,6 +31,11 @@
         <span>{{ formatDate(item.created_at) }}</span>
       </v-tooltip>
     </template>
+    <template #item.memo_link="{ item }">
+      <v-btn v-if="item.memo_link" :href="item.memo_link" target="_blank" icon variant="text">
+        <v-icon>mdi-open-in-new</v-icon>
+      </v-btn>
+    </template>
     <template #item.data-table-actions="{ item }">
       <v-menu location="right" origin="overlap">
         <template #activator="{ props }">
@@ -70,6 +75,8 @@ export default {
             status: "Complete",
             creator: { name: "David Whittaker" },
             created_at: "2023-11-07T01:50Z",
+            attorney_status: "Reviewed: No action required",
+            memo_link: "https://www.google.com",
           },
           {
             id: 2,
@@ -77,6 +84,8 @@ export default {
             status: "Draft",
             creator: { name: "Kyle Smith" },
             created_at: "2023-11-07T14:50Z",
+            attorney_status: "Not reviewed",
+            memo_link: null,
           },
         ]
       },
@@ -90,6 +99,8 @@ export default {
         { title: "Status", value: "status" },
         { title: "Creator", value: "creator.name" },
         { title: "Created At", value: "created_at" },
+        { title: "Attorney Status", value: "attorney_status" },
+        { title: "Memo Link", value: "memo_link" },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
