@@ -19,7 +19,7 @@
               <v-card-text>
                 Entity types are used to extract useful metadata out of signals. Define either a
                 RegEx or JSON Path expression to pull entities out of a signals raw json.
-                <v-radio-group label="Type" v-model="type" row>
+                <v-radio-group label="Type" v-model="type" inline>
                   <v-radio label="Regular Expression" value="regex" />
                   <v-radio label="JSON Path" value="json" />
                 </v-radio-group>
