@@ -27,10 +27,10 @@ export class IncidentsPage {
       .getByRole("button")
       .nth(2)
     this.EditMenu = page.getByTestId("incident-table-edit")
-    this.EditViewEdit = page.getByRole("menuitem", { name: "View / Edit" })
-    this.EditCreateReport = page.getByRole("menuitem", { name: "Create Report" })
-    this.EditRunWorkflow = page.getByRole("menuitem", { name: "Run Workflow" })
-    this.EditDelete = page.getByRole("menuitem", { name: "Delete" })
+    this.EditViewEdit = page.getByText("View / Edit", { exact: true })
+    this.EditCreateReport = page.getByText("Create Report", { exact: true })
+    this.EditRunWorkflow = page.getByText("Run Workflow", { exact: true })
+    this.EditDelete = page.getByText("Delete", { exact: true })
   }
 
   async goto() {
