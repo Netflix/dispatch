@@ -97,7 +97,7 @@ export class ReportIncidentPage {
   }
 
   async resetPageView() {
-    await this.pageBorder.click()
+    // await this.pageBorder.click()
   }
 
   async pageObjectModel(
