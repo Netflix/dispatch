@@ -18,13 +18,13 @@ test.describe("Authenticated Dispatch App", () => {
 
       await reportIncidentPage.reportIncident(title, description, project, type, priority, tags)
       // Soft validate that we get redirected to the incident submission form
-      await expect
-        .soft(page)
-        .toHaveURL(
-          encodeURI(
-            `./default/incidents/report?project=${project}&incident_priority=${priority}&incident_type=${type}&title=${title}&description=${description}` + tags.map((tag) => "&tag=" + tag).join("")
-          )
-        )
+      let expectedURL = encodeURI(
+        `/default/incidents/report?project=${project}&incident_priority=${priority}&incident_type=${type}&title=${title}&description=${description}` + tags.map((tag) => "&tag=" + tag).join("")
+      )
+      // replace + with %20
+      let pageURL = page.url().replace(/\+/g, "%20")
+
+      await expect.soft(pageURL).toContain(expectedURL)
 
       // Soft validate that we recieve the report form.
       await expect
