@@ -36,7 +36,7 @@
                     <v-radio-group
                       label="Action"
                       v-model="action"
-                      row
+                      inline
                       class="justify-right"
                       name="Action"
                       :rules="[rules.required]"
