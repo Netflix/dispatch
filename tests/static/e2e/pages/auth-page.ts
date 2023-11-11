@@ -27,7 +27,7 @@ export class AuthPage {
     this.registerButton = page.getByRole("button", { name: "Register" })
     // Shared Components
     this.emailLabel = page.getByLabel("Email")
-    this.passwordLabel = page.getByLabel("Password")
+    this.passwordLabel = page.getByLabel("Password", { exact: true })
   }
 
   async gotoLogin() {
