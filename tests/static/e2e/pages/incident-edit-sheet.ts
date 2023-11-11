@@ -19,7 +19,7 @@ export class IncidentsPage {
     this.CloseButton = page.getByRole("button", { name: "Close" })
 
     this.CostsTab = page.getByRole("tab", { name: "Costs" })
-    this.CostsAmount = page.getByLabel("Amount")
+    this.CostsAmount = page.getByLabel("Amount", { exact: true })
   }
 
   async goto(incident: string) {

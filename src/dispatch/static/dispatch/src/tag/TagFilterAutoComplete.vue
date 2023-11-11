@@ -7,7 +7,6 @@
     @update:search="getFilteredData()"
     chips
     closable-chips
-    clearable
     item-title="name"
     item-value="id"
     hide-selected
