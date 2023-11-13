@@ -209,7 +209,7 @@ export const protectedRoute = [
           name: "CasePage",
           meta: { title: "Page" },
           component: () => import("@/case/Page.vue"),
-          props: true,
+          //props: true,
         },
       ],
     },
