@@ -3,10 +3,6 @@ import "vuetify/styles"
 import { createVuetify } from "vuetify"
 import * as components from "vuetify/components"
 import * as directives from "vuetify/directives"
-import { VDataTable, VDataTableServer } from "vuetify/labs/VDataTable"
-import { VBottomSheet } from "vuetify/labs/VBottomSheet"
-import { VDatePicker } from "vuetify/labs/VDatePicker"
-import * as VStepper from "vuetify/labs/VStepper"
 
 export function vuetifyPlugin(app) {
   const vuetify = createVuetify({
@@ -61,11 +57,6 @@ export function vuetifyPlugin(app) {
       },
     },
     components: {
-      VDataTable,
-      VDataTableServer,
-      VBottomSheet,
-      VDatePicker,
-      ...VStepper,
       ...components,
     },
     directives,
