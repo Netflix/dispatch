@@ -68,7 +68,8 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
     ]
 
     if case.signal_instances:
-        fields.append(f"*Variant* \n {case.signal_instances[0].signal.variant}")
+        if variant := case.signal_instances[0].signal.variant:
+            fields.append(f"*Variant* \n {variant}")
 
     blocks = [
         Context(elements=[f"* {case.name} - Case Details*"]),
