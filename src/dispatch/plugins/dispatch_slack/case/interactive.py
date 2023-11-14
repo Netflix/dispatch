@@ -24,7 +24,7 @@ from sqlalchemy.orm import Session
 from dispatch.auth.models import DispatchUser
 from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
-from dispatch.case.enums import CaseStatus
+from dispatch.case.enums import CaseStatus, CaseResolutionReason
 from dispatch.case.models import Case, CaseCreate, CaseRead, CaseUpdate
 from dispatch.conversation import flows as conversation_flows
 from dispatch.entity import service as entity_service
@@ -1635,7 +1635,7 @@ def handle_engagement_submission_event(
     # Send the MFA push notification
     response = mfa_plugin.instance.send_push_notification(
         username=engaged_user,
-        type="Are you confirming suspicious behavior in Dispatch?",
+        type="Are you confirming the behavior as expected in Dispatch?",
     )
     if response == PushResponseResult.allow:
         send_engagment_response(
@@ -1687,15 +1687,15 @@ def send_engagment_response(
         engagement_status = SignalEngagementStatus.approved
     else:
         title = "MFA Failed"
-        message_text = f":warning: {engaged_user} attempted to confirm the behavior *as expected*. But, the MFA validation failed, reason: `{response}`\n\n *Context Provided* \n```{context_from_user}```"
+        message_text = f":warning: {engaged_user} attempted to confirm the behavior *as expected*, but the MFA validation failed. Reason: `{response}`\n\n *Context Provided* \n```{context_from_user}```"
         engagement_status = SignalEngagementStatus.denied
 
         if response == PushResponseResult.timeout:
             text = "Confirmation failed, the MFA request timed out."
         elif response == PushResponseResult.user_not_found:
-            text = "User not found in MFA provider"
+            text = "User not found in MFA provider."
         else:
-            text = "Confirmation failed, you must accept the MFA prompt."
+            text = "Confirmation failed. You must accept the MFA prompt."
 
     send_success_modal(
         client=client,
@@ -1745,7 +1745,8 @@ def resolve_case(
 ) -> None:
     case_in = CaseUpdate(
         title=case.title,
-        resolution=f"Automatically resolved through signal engagement. Context: {context_from_user}",
+        resolution_reason=CaseResolutionReason.user_acknowledge,
+        resolution=f"Case resolved through user engagement. User context: {context_from_user}",
         visibility=case.visibility,
         status=CaseStatus.closed,
     )
@@ -1755,7 +1756,7 @@ def resolve_case(
         blocks=blocks, ts=case.conversation.thread_id, channel=case.conversation.channel_id
     )
     client.chat_postMessage(
-        text="Automatically resolved case.",
+        text="Case has been resolved.",
         channel=case.conversation.channel_id,
         thread_ts=case.conversation.thread_id,
     )
