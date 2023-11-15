@@ -28,7 +28,7 @@
     </template>
     <template #item="data">
       <v-list-item v-bind="data.props" :title="null">
-        <v-list-item-title> {{ data.item.raw.name }} </v-list-item-title>
+        <v-list-item-title> {{ data.item.raw.value }} </v-list-item-title>
         <v-list-item-subtitle :title="data.item.raw.entity_type.name">
           {{ data.item.raw.entity_type.name }}
         </v-list-item-subtitle>
