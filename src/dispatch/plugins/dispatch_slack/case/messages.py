@@ -192,9 +192,6 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
     ).json()
 
     signal_metadata_blocks = [
-        Section(
-            text=f"*{first_instance_signal.name}* - {first_instance_signal.variant}",
-        ),
         Actions(
             elements=[
                 Button(
@@ -214,7 +211,9 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
                 ),
             ]
         ),
-        Section(text=f"Total instances in this case: *{num_of_instances}*\n"),
+        Section(text="*Alerts*"),
+        Divider(),
+        Section(text=f"{num_of_instances} alerts observed in this case."),
         Section(text="\n*Entities*"),
         Divider(),
     ]
