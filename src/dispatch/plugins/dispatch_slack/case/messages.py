@@ -211,7 +211,7 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
                 ),
             ]
         ),
-        Section(text="*Signal Instances*"),
+        Section(text="*Alerts*"),
         Divider(),
         Section(text=f"{num_of_instances} alerts observed in this case."),
         Section(text="\n*Entities*"),
