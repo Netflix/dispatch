@@ -1,18 +1,23 @@
 <template>
   <v-form @submit.prevent="report()" v-slot="{ isValid }">
-    <v-card class="mx-auto ma-4" max-width="600" flat :loading="loading">
+    <v-card
+      class="mx-auto ma-4"
+      title="Report Incident"
+      max-width="600"
+      variant="outlined"
+      :loading="loading"
+    >
+      <template v-slot:append>
+        <v-tooltip location="bottom">
+          <template #activator="{ props }">
+            <v-btn icon variant="text" v-bind="props" @click="copyView">
+              <v-icon>mdi-content-copy</v-icon>
+            </v-btn>
+          </template>
+          <span>Copy current fields as template.</span>
+        </v-tooltip>
+      </template>
       <v-card-text>
-        <p class="text-h4 text--primary">
-          Report Incident
-          <v-tooltip location="bottom">
-            <template #activator="{ props }">
-              <v-btn icon variant="text" v-bind="props" @click="copyView">
-                <v-icon>mdi-content-copy</v-icon>
-              </v-btn>
-            </template>
-            <span>Copy current fields as template.</span>
-          </v-tooltip>
-        </p>
         <p>
           If you suspect an incident and need help, please fill out this form to the best of your
           abilities.
@@ -24,61 +29,64 @@
             <v-icon size="small">mdi-open-in-new</v-icon>
           </a>
         </p>
-        <v-container>
-          <v-row>
-            <v-col cols="12">
-              <v-textarea
-                v-model="title"
-                label="Title"
-                hint="A brief explanatory title. You can change this later."
-                clearable
-                auto-grow
-                rows="2"
-                required
-                name="Title"
-                :rules="[rules.required]"
-              />
-            </v-col>
-            <v-col cols="12">
-              <v-textarea
-                v-model="description"
-                label="Description"
-                hint="A summary of what you know so far. It's all right if this is incomplete."
-                clearable
-                auto-grow
-                rows="3"
-                required
-                name="Description"
-                :rules="[rules.required]"
-              />
-            </v-col>
-            <v-col cols="12">
-              <project-select v-model="project" />
-            </v-col>
-            <v-col cols="12">
-              <incident-type-select :project="project" v-model="incident_type" />
-            </v-col>
-            <v-col cols="12">
-              <incident-priority-select :project="project" v-model="incident_priority" />
-            </v-col>
-            <v-col cols="12">
-              <tag-filter-auto-complete :project="project" v-model="tags" label="Tags" />
-            </v-col>
-          </v-row>
-          <v-btn
-            color="info"
-            variant="flat"
-            :loading="loading"
-            :disabled="!isValid.value"
-            type="submit"
-          >
-            Submit
-            <template #loader>
-              <v-progress-linear indeterminate color="white" />
-            </template>
-          </v-btn>
-        </v-container>
+        <v-row>
+          <v-col cols="12">
+            <v-textarea
+              v-model="title"
+              label="Title"
+              hint="A brief explanatory title. You can change this later."
+              clearable
+              auto-grow
+              rows="2"
+              required
+              name="Title"
+              :rules="[rules.required]"
+            />
+          </v-col>
+          <v-col cols="12">
+            <v-textarea
+              v-model="description"
+              label="Description"
+              hint="A summary of what you know so far. It's all right if this is incomplete."
+              clearable
+              auto-grow
+              rows="3"
+              required
+              name="Description"
+              :rules="[rules.required]"
+            />
+          </v-col>
+          <v-col cols="12">
+            <project-select v-model="project" />
+          </v-col>
+          <v-col cols="12">
+            <incident-type-select :project="project" v-model="incident_type" />
+          </v-col>
+          <v-col cols="12">
+            <incident-priority-select :project="project" v-model="incident_priority" />
+          </v-col>
+          <v-col cols="12">
+            <tag-filter-auto-complete :project="project" v-model="tags" label="Tags" />
+          </v-col>
+        </v-row>
       </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+
+        <v-btn
+          color="info"
+          block
+          variant="flat"
+          :loading="loading"
+          :disabled="!isValid.value"
+          type="submit"
+        >
+          Submit
+          <template #loader>
+            <v-progress-linear indeterminate color="white" />
+          </template>
+        </v-btn>
+      </v-card-actions>
     </v-card>
   </v-form>
 </template>
