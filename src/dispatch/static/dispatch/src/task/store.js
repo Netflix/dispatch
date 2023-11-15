@@ -50,7 +50,7 @@ const state = {
       },
       q: "",
       page: 1,
-      itemsPerPage: 10,
+      itemsPerPage: 25,
       sortBy: ["created_at"],
       descending: [true],
     },
