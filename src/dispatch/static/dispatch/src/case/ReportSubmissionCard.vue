@@ -1,18 +1,24 @@
 <template>
   <v-form @submit.prevent v-slot="{ isValid }">
-    <v-card class="mx-auto ma-4" max-width="600" flat :loading="loading">
+    <v-card
+      class="mx-auto ma-4"
+      max-width="600"
+      variant="outlined"
+      title="          Open a Case
+"
+      :loading="loading"
+    >
+      <template v-slot:append>
+        <v-tooltip location="bottom">
+          <template #activator="{ props }">
+            <v-btn icon variant="text" v-bind="props" @click="copyView">
+              <v-icon>mdi-content-copy</v-icon>
+            </v-btn>
+          </template>
+          <span>Copy current fields as template.</span>
+        </v-tooltip>
+      </template>
       <v-card-text>
-        <p class="text-h4 text--primary">
-          Open a Case
-          <v-tooltip location="bottom">
-            <template #activator="{ props }">
-              <v-btn icon variant="text" v-bind="props" @click="copyView">
-                <v-icon>mdi-content-copy</v-icon>
-              </v-btn>
-            </template>
-            <span>Copy current fields as template.</span>
-          </v-tooltip>
-        </p>
         <p>
           Cases are meant to triage events that do not raise to the level of incidents, but can be
           escalated to incidents if necessary. If you suspect a security issue and need help, please
@@ -68,23 +74,25 @@
                 <tag-filter-auto-complete :project="project" v-model="tags" label="Tags" />
               </v-col>
             </v-row>
-            <template>
-              <v-btn
-                color="info"
-                variant="flat"
-                :loading="loading"
-                :disabled="!isValid.value"
-                @click="report()"
-              >
-                Submit
-                <template #loader>
-                  <v-progress-linear indeterminate color="white" />
-                </template>
-              </v-btn>
-            </template>
           </v-container>
         </v-form>
       </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn
+          color="info"
+          variant="flat"
+          block
+          :loading="loading"
+          :disabled="!isValid.value"
+          @click="report()"
+        >
+          Submit
+          <template #loader>
+            <v-progress-linear indeterminate color="white" />
+          </template>
+        </v-btn>
+      </v-card-actions>
     </v-card>
   </v-form>
 </template>
