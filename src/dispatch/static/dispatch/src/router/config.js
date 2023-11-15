@@ -299,7 +299,7 @@ export const protectedRoute = [
           path: "/:organization/forms",
           name: "FormsTable",
           meta: { title: "Forms" },
-          component: () => import("@/forms/Table.vue"),
+          component: () => import("@/forms/table/Table.vue"),
         },
       ],
     },

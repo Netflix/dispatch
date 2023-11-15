@@ -1,4 +1,6 @@
 <template>
+  <new-edit-dialog />
+  <delete-dialog />
   <div>
     <v-menu anchor="bottom end">
       <template #activator="{ props }">
@@ -7,7 +9,11 @@
       <div>
         <v-list>
           <template v-for="form_type in form_types">
-            <v-list-item :key="form_type.id" v-if="form_type.enabled" @click="blank(form_type)">
+            <v-list-item
+              :key="form_type.id"
+              v-if="form_type.enabled"
+              @click="createShow(form_type.id)"
+            >
               <v-list-item-title>{{ form_type.name }}</v-list-item-title>
             </v-list-item>
           </template>
@@ -17,7 +23,7 @@
   </div>
   <v-data-table
     :headers="headers"
-    :items="modelValue"
+    :items="items"
     :items-per-page="-1"
     disable-pagination
     hide-default-footer
@@ -31,10 +37,25 @@
         <span>{{ formatDate(item.created_at) }}</span>
       </v-tooltip>
     </template>
+    <template #item.updated_at="{ item }">
+      <v-tooltip location="bottom">
+        <template #activator="{ props }">
+          <span v-bind="props">{{ formatRelativeDate(item.updated_at) }}</span>
+        </template>
+        <span>{{ formatDate(item.updated_at) }}</span>
+      </v-tooltip>
+    </template>
     <template #item.memo_link="{ item }">
       <v-btn v-if="item.memo_link" :href="item.memo_link" target="_blank" icon variant="text">
         <v-icon>mdi-open-in-new</v-icon>
       </v-btn>
+    </template>
+    <template #item.form_type="{ item }">
+      <span v-if="item.form_type">{{ item.form_type.name }}</span>
+    </template>
+    <template #item.creator="{ item }">
+      <participant v-if="item.creator" :participant="convertToParticipant(item.creator)" />
+      <span v-else>(anonymous)</span>
     </template>
     <template #item.data-table-actions="{ item }">
       <v-menu location="right" origin="overlap">
@@ -44,10 +65,10 @@
           </v-btn>
         </template>
         <v-list>
-          <v-list-item :to="{ name: 'FormsTableEdit', params: { name: item.id } }">
+          <v-list-item @click="editShow(item)">
             <v-list-item-title>View / Edit</v-list-item-title>
           </v-list-item>
-          <v-list-item :to="{ name: 'FormsTableDelete', params: { name: item.id } }">
+          <v-list-item @click="showDeleteDialog(item)">
             <v-list-item-title>Delete</v-list-item-title>
           </v-list-item>
         </v-list>
@@ -61,44 +82,24 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { formatRelativeDate, formatDate } from "@/filters"
+import NewEditDialog from "@/forms/EditForm.vue"
+import DeleteDialog from "@/forms/DeleteDialog.vue"
+import Participant from "@/incident/Participant.vue"
+
 
 export default {
-  name: "InicdentFormsTab",
-  props: {
-    modelValue: {
-      type: Array,
-      default: function () {
-        return [
-          {
-            id: 1,
-            type: "Privacy Assessment",
-            status: "Complete",
-            creator: { name: "David Whittaker" },
-            created_at: "2023-11-07T01:50Z",
-            attorney_status: "Reviewed: No action required",
-            memo_link: "https://www.google.com",
-          },
-          {
-            id: 2,
-            type: "Materiality Assessment",
-            status: "Draft",
-            creator: { name: "Kyle Smith" },
-            created_at: "2023-11-07T14:50Z",
-            attorney_status: "Not reviewed",
-            memo_link: null,
-          },
-        ]
-      },
-    },
-  },
+  name: "IncidentFormsTab",
+  components: { NewEditDialog, DeleteDialog, Participant },
+  props: {},
   data() {
     return {
       menu: false,
       headers: [
-        { title: "Type", value: "type" },
+        { title: "Type", value: "form_type" },
         { title: "Status", value: "status" },
-        { title: "Creator", value: "creator.name" },
+        { title: "Creator", value: "creator" },
         { title: "Created At", value: "created_at" },
+        { title: "Updated At", value: "updated_at" },
         { title: "Attorney Status", value: "attorney_status" },
         { title: "Memo Link", value: "memo_link" },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
@@ -109,16 +110,94 @@ export default {
     return { formatRelativeDate, formatDate }
   },
   computed: {
-    ...mapFields("forms", ["form_types"]),
+    ...mapFields("forms", [
+      "form_types",
+      "table.loading",
+      "table.rows.items",
+      "incident_id",
+      "project_id",
+      "table.options.filters",
+    ]),
+    ...mapFields("incident", { selected_incident: "selected" }),
   },
   methods: {
-    ...mapActions("forms", ["getAll"]),
+    ...mapActions("forms", ["getAll", "createShow", "editShow", "showDeleteDialog"]),
     blank(form_type) {
       console.log(`**** Got form type ${JSON.stringify(form_type)}`)
     },
+    convertToParticipant(individual) {
+      return {
+        individual: {
+          name: individual.name,
+          email: individual.email,
+        },
+      }
+    },
   },
   created() {
+    // this.filters = {
+    //   ...this.filters,
+    //   ...RouterUtils.deserializeFilters(this.$route.query),
+    //   project: this.defaultUserProjects,
+    //   incident_id: this.incident.id,
+    // }
+    // this.filters = {
+    //   ...this.filters,
+    //   //...RouterUtils.deserializeFilters(this.$route.query),
+    //   project_id: this.incident.project.id,
+    // }
+    this.project_id = this.selected_incident.project.id
+    this.incident_id = this.selected_incident.id
+
+    // this.$watch(
+    //   (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending, vm.project, vm.incident, vm.status],
+    //   () => {
+    //     this.page = 1
+    //     RouterUtils.updateURLFilters(this.filters)
+    //     this.getAll()
+    //   }
+    // )
+
+    // let filterOptions = {
+    //   itemsPerPage: -1,
+    //   sortBy: [],
+    //   descending: [false],
+    // }
+
+    // if (this.project) {
+    //   filterOptions = {
+    //     ...filterOptions,
+    //     filters: {
+    //       project: [this.project],
+    //     },
+    //   }
+    // }
+
+    // let enabledFilter = [
+    //   {
+    //     model: "Forms",
+    //     field: "incident_id",
+    //     op: "==",
+    //     value: this.incident.id,
+    //   },
+    // ]
+
+    // filterOptions = SearchUtils.createParametersFromTableOptions(
+    //   { ...filterOptions },
+    //   "Forms",
+    //   enabledFilter
+    // )
+    // console.log(`*** Got filter options: ${JSON.stringify(filterOptions)}`)
+
     this.getAll()
+
+    this.$watch(
+      (vm) => [vm.project, vm.selected_incident],
+      () => {
+        console.log(`*** Got selected_incident on watch: ${JSON.stringify(this.selected_incident)}`)
+        this.getAll()
+      }
+    )
   },
 }
 </script>

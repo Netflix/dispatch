@@ -1,15 +1,20 @@
+import logging
 from typing import Optional
 
 from sqlalchemy.orm import Session
 
 from .models import Forms, FormsCreate, FormsUpdate
+from dispatch.individual import service as individual_service
+from dispatch.project import service as project_service
+
+log = logging.getLogger(__name__)
 
 
-def get(*, form_id: int, db_session: Session) -> Optional[Forms]:
+def get(*, forms_id: int, db_session: Session) -> Optional[Forms]:
     """Gets a from by its id."""
     return (
         db_session.query(Forms)
-        .filter(Forms.id == form_id)
+        .filter(Forms.id == forms_id)
         .one_or_none()
     )
 
@@ -19,20 +24,21 @@ def get_all(*, db_session: Session):
     return db_session.query(Forms)
 
 
-def create(*, form_in: FormsCreate, db_session: Session) -> Forms:
+def create(*, forms_in: dict, db_session: Session, creator) -> Forms:
     """Creates form data."""
 
-    creator_id = (
-        None if not form_in.creator else form_in.creator.id
+    log.debug(f"**** Creating new form inside create: {forms_in}")
+
+    individual = individual_service.get_by_email_and_project(
+        db_session=db_session, email=creator.email, project_id=forms_in["project_id"]
     )
 
-    project_id = None if not form_in.project else form_in.project.id
-
+    log.debug(f"**** Creating new form {forms_in}")
     form = Forms(
-        **form_in.dict(exclude={"creator", "project"}),
-        creator_id=creator_id,
-        project_id=project_id,
+        **forms_in,
+        creator_id=individual.id,
     )
+
     db_session.add(form)
     db_session.commit()
     return form
@@ -40,27 +46,27 @@ def create(*, form_in: FormsCreate, db_session: Session) -> Forms:
 
 def update(
     *,
-    form: Forms,
-    form_in: FormsUpdate,
+    forms: Forms,
+    forms_in: FormsUpdate,
     db_session: Session,
 ) -> Forms:
     """Updates a form."""
-    form_data = form.dict()
-    update_data = form_in.dict(skip_defaults=True)
+    form_data = forms.dict()
+    update_data = forms_in.dict(skip_defaults=True)
 
     for field in form_data:
         if field in update_data:
-            setattr(form, field, update_data[field])
+            setattr(forms, field, update_data[field])
 
     db_session.commit()
-    return form
+    return forms
 
 
-def delete(*, db_session, form_id: int):
+def delete(*, db_session, forms_id: int):
     """Deletes a form."""
     form = (
         db_session.query(Forms)
-        .filter(Forms.id == form_id)
+        .filter(Forms.id == forms_id)
         .one_or_none()
     )
     db_session.delete(form)

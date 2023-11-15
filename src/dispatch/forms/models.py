@@ -33,14 +33,12 @@ class Forms(TimeStampMixin, ProjectMixin, Base):
     form_type_id = Column(Integer, ForeignKey("forms_type.id"))
     form_type = relationship("FormsType")
 
-    search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
-
 
 # Pydantic models
 class FormsBase(DispatchBase):
-    type: Optional[FormsTypeRead]
+    form_type: Optional[FormsTypeRead]
     creator: Optional[IndividualContactReadMinimal]
-    data: Optional[str] = Field(None, nullable=True)
+    form_data: Optional[str] = Field(None, nullable=True)
     status: Optional[str] = Field(None, nullable=True)
     attorney_status: Optional[str] = Field(None, nullable=True)
     project: Optional[ProjectRead]

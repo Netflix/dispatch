@@ -48,10 +48,7 @@
               <v-checkbox-btn :model-value="value" disabled />
             </template>
             <template #item.creator="{ item }">
-              <participant
-                v-if="item.creator"
-                :participant="convertToParticipant(item.creator)"
-              />
+              <participant v-if="item.creator" :participant="convertToParticipant(item.creator)" />
               <span v-else>(anonymous)</span>
             </template>
             <template #item.created_at="{ item }">

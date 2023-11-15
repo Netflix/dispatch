@@ -9,6 +9,7 @@ from dispatch.project import service as project_service
 
 log = logging.getLogger(__name__)
 
+
 def get(*, forms_type_id: int, db_session: Session) -> Optional[FormsType]:
     """Gets a from type by its id."""
     return (

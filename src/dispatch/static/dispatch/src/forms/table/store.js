@@ -4,7 +4,6 @@ import { debounce } from "lodash"
 import SearchUtils from "@/search/utils"
 import FormsTypeApi from "@/forms/types/api"
 import FormsApi from "@/forms/api"
-import { ref } from "vue"
 import { be } from "date-fns/locale"
 
 const getDefaultSelectedState = () => {
@@ -30,7 +29,7 @@ const state = {
   },
   dialogs: {
     showCreateEdit: false,
-    showDeleteDialog: false,
+    showRemove: false,
   },
   table: {
     rows: {
@@ -43,7 +42,10 @@ const state = {
       itemsPerPage: 10,
       sortBy: ["created_at"],
       descending: [true],
-      filters: {},
+      filters: {
+        project: [],
+        forms_type: null,
+      },
     },
     loading: false,
   },
@@ -52,6 +54,20 @@ const state = {
   page_schema: null,
   incident_id: null,
   project_id: null,
+}
+
+const defaultOptions = {
+  options: {
+    q: "",
+    page: 1,
+    itemsPerPage: 10,
+    sortBy: ["created_at"],
+    descending: [true],
+    filters: {
+      project: [],
+      forms_type: null,
+    },
+  },
 }
 
 const getters = {
@@ -75,6 +91,8 @@ function getCurrentPage() {
       name: "users",
       prefixIcon: "avatarMan",
       id: "users",
+      min: "1",
+      max: "100",
       value: "3",
       label: "Users",
       help: "How many users do you need on your plan?",
@@ -117,7 +135,6 @@ function createPayload() {
     if (validKeys.includes(key)) payload[key] = state.selected[key]
   })
   payload["form_data"] = JSON.stringify(payload["form_data"])
-  console.log(`**** The form data is now : ${JSON.stringify(payload["form_data"])}`)
   payload["project_id"] = state.selected.project.id
   return payload
 }
@@ -164,41 +181,14 @@ function save({ commit, dispatch }) {
 
 const actions = {
   getAll: debounce(({ commit, state }) => {
-    let incidentFilter = [
-      {
-        model: "Incident",
-        field: "id",
-        op: "==",
-        value: state.incident_id,
-      },
-    ]
-    let filterOptions = SearchUtils.createParametersFromTableOptions(
-      { ...state.table.options },
-      "Forms",
-      incidentFilter
-    )
+    console.log(`**** Params: ${JSON.stringify(state.table.options)}`)
+    let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options }, "Forms")
     commit("SET_TABLE_LOADING", "primary")
-    console.log(`**** Params: ${JSON.stringify(filterOptions)}`)
-    let projectFilter = [
-      {
-        model: "Project",
-        field: "id",
-        op: "==",
-        value: state.project_id,
-      },
-    ]
-    let formsTypeFilter = SearchUtils.createParametersFromTableOptions(
-      { ...state.table.options },
-      "FormsType",
-      projectFilter
-    )
-    commit("SET_TABLE_LOADING", "primary")
-    console.log(`**** Params: ${JSON.stringify(filterOptions)}`)
-    console.log(`**** Params: ${JSON.stringify(formsTypeFilter)}`)
-    FormsApi.getAll(filterOptions)
+    console.log(`**** Params: ${JSON.stringify(params)}`)
+    FormsApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_ROWS", response.data)
-        return FormsTypeApi.getAll(formsTypeFilter)
+        return FormsTypeApi.getAll()
           .then((response) => {
             commit("SET_TABLE_LOADING", false)
             commit("SET_FORM_TYPES", response.data)
@@ -230,15 +220,15 @@ const actions = {
     commit("SET_PAGE_SCHEMA", getCurrentPage())
     commit("SET_DIALOG_CREATE_EDIT", true)
   },
-  showDeleteDialog({ commit }, form) {
+  removeShow({ commit }, formsType) {
     commit("SET_DIALOG_DELETE", true)
-    commit("SET_SELECTED", form)
+    commit("SET_SELECTED", formsType)
   },
   closeCreateEdit({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
     commit("RESET_SELECTED")
   },
-  closeDeleteDialog({ commit }) {
+  closeRemove({ commit }) {
     commit("SET_DIALOG_DELETE", false)
     commit("RESET_SELECTED")
   },
@@ -250,15 +240,15 @@ const actions = {
     state.selected.status = "Completed"
     save({ commit, dispatch })
   },
-  deleteForm({ commit, dispatch }) {
-    return FormsApi.delete(state.selected.id, state.selected.creator.id)
+  remove({ commit, dispatch }) {
+    return FormsTypeApi.delete(state.selected.id, state.selected.creator.id)
       .then(function () {
         commit("SET_SELECTED_LOADING", false)
-        dispatch("closeDeleteDialog")
+        dispatch("closeRemove")
         dispatch("getAll")
         commit(
           "notification_backend/addBeNotification",
-          { text: "Form deleted successfully.", type: "success" },
+          { text: "Form type deleted successfully.", type: "success" },
           { root: true }
         )
       })
@@ -272,7 +262,6 @@ const mutations = {
   updateField,
   SET_SELECTED(state, value) {
     state.selected = Object.assign(state.selected, value)
-    state.selected.form_data = JSON.parse(state.selected.form_data)
   },
   SET_FORM_SCHEMA(state, value) {
     console.log(`**** Got form schema: ${value}`)
@@ -300,7 +289,7 @@ const mutations = {
     state.dialogs.showCreateEdit = value
   },
   SET_DIALOG_DELETE(state, value) {
-    state.dialogs.showDeleteDialog = value
+    state.dialogs.showRemove = value
   },
   RESET_SELECTED(state) {
     // do not reset project

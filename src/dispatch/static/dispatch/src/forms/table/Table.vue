@@ -39,43 +39,6 @@
             show-select
             return-object
           >
-            <template #item.description="{ item }">
-              <div class="text-truncate" style="max-width: 400px">
-                {{ item.description }}
-              </div>
-            </template>
-            <template #item.project.name="{ item }">
-              <v-chip size="small" :color="item.project.color">
-                {{ item.project.name }}
-              </v-chip>
-            </template>
-            <template #item.incident_priority.name="{ item }">
-              <incident-priority :priority="item.incident.incident_priority.name" />
-            </template>
-            <template #item.creator.individual_contact.name="{ item }">
-              <participant :participant="item.creator" />
-            </template>
-            <template #item.owner.individual_contact.name="{ item }">
-              <participant :participant="item.owner" />
-            </template>
-            <template #item.incident_type.name="{ item }">
-              {{ item.incident.incident_type.name }}
-            </template>
-            <template #item.assignees="{ item }">
-              <participant
-                v-for="assignee in item.assignees"
-                :key="assignee.id"
-                :participant="assignee"
-              />
-            </template>
-            <template #item.resolve_by="{ item }">
-              <v-tooltip location="bottom">
-                <template #activator="{ props }">
-                  <span v-bind="props">{{ formatRelativeDate(item.resolve_by) }}</span>
-                </template>
-                <span>{{ formatDate(item.resolve_by) }}</span>
-              </v-tooltip>
-            </template>
             <template #item.created_at="{ item }">
               <v-tooltip location="bottom">
                 <template #activator="{ props }">
@@ -84,19 +47,31 @@
                 <span>{{ formatDate(item.created_at) }}</span>
               </v-tooltip>
             </template>
-            <template #item.resolved_at="{ item }">
+            <template #item.updated_at="{ item }">
               <v-tooltip location="bottom">
                 <template #activator="{ props }">
-                  <span v-bind="props">{{ formatRelativeDate(item.resolved_at) }}</span>
+                  <span v-bind="props">{{ formatRelativeDate(item.updated_at) }}</span>
                 </template>
-                <span>{{ formatDate(item.resolved_at) }}</span>
+                <span>{{ formatDate(item.updated_at) }}</span>
               </v-tooltip>
             </template>
-            <template #item.source="{ item }">
-              <a :href="item.weblink" target="_blank" style="text-decoration: none">
-                {{ item.source }}
-                <v-icon size="small">mdi-open-in-new</v-icon>
-              </a>
+            <template #item.form_type="{ item }">
+              <span v-if="item.form_type">{{ item.form_type.name }}</span>
+            </template>
+            <template #item.creator="{ item }">
+              <participant v-if="item.creator" :participant="convertToParticipant(item.creator)" />
+              <span v-else>(anonymous)</span>
+            </template>
+            <template #item.memo_link="{ item }">
+              <v-btn
+                v-if="item.memo_link"
+                :href="item.memo_link"
+                target="_blank"
+                icon
+                variant="text"
+              >
+                <v-icon>mdi-open-in-new</v-icon>
+              </v-btn>
             </template>
             <template #item.data-table-actions="{ item }">
               <v-menu location="right" origin="overlap">
@@ -127,20 +102,18 @@ import { formatRelativeDate, formatDate } from "@/filters"
 
 import BulkEditSheet from "@/task/BulkEditSheet.vue"
 import DeleteDialog from "@/task/DeleteDialog.vue"
-import IncidentPriority from "@/incident/priority/IncidentPriority.vue"
 import NewEditSheet from "@/task/NewEditSheet.vue"
 import Participant from "@/incident/Participant.vue"
 import RouterUtils from "@/router/utils"
 import TableExportDialog from "@/task/TableExportDialog.vue"
-import TableFilterDialog from "@/task/TableFilterDialog.vue"
+import TableFilterDialog from "@/forms/table/TableFilterDialog.vue"
 
 export default {
-  name: "TaskTable",
+  name: "FormsTable",
 
   components: {
     BulkEditSheet,
     DeleteDialog,
-    IncidentPriority,
     NewEditSheet,
     Participant,
     TableExportDialog,
@@ -151,30 +124,39 @@ export default {
     return {
       headers: [
         { title: "Incident Name", value: "incident.name" },
-        { title: "Type", value: "type" },
+        { title: "Type", value: "form_type" },
         { title: "Status", value: "status" },
-        { title: "Creator", value: "creator.name" },
+        { title: "Creator", value: "creator" },
         { title: "Created At", value: "created_at" },
+        { title: "Updated At", value: "updated_at" },
+        { title: "Attorney Status", value: "attorney_status" },
+        { title: "Memo Link", value: "memo_link" },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
-      items: [
-          {
-            "id": 1,
-            "incident": {"name": "SEC-1000"},
-            "type": "Privacy Assessment",
-            "status": "Complete",
-            "creator": {"name": "David Whittaker"},
-            "created_at": "2023-11-07T01:50Z"
-          },
-          {
-            "id": 2,
-            "incident": {"name": "SEC-1000"},
-            "type": "Materiality Assessment",
-            "status": "Draft",
-            "creator": {"name": "Kyle Smith"},
-            "created_at": "2023-11-07T14:50Z"
-          }
-        ]
+      // items: [
+      //   {
+      //     id: 1,
+      //     form_type: "Privacy Assessment",
+      //     incident: { name: "dispatch-default-test-278" },
+      //     form_type_id: 2,
+      //     status: "Complete",
+      //     creator: { name: "David Whittaker" },
+      //     created_at: "2023-11-07T01:50Z",
+      //     attorney_status: "Reviewed: No action required",
+      //     memo_link: "https://www.google.com",
+      //   },
+      //   {
+      //     id: 2,
+      //     form_type: "Materiality Assessment",
+      //     incident: { name: "dispatch-default-test-278" },
+      //     form_type_id: 1,
+      //     status: "Draft",
+      //     creator: { name: "Kyle Smith" },
+      //     created_at: "2023-11-07T14:50Z",
+      //     attorney_status: "Not reviewed",
+      //     memo_link: null,
+      //   },
+      // ],
     }
   },
 
@@ -183,22 +165,15 @@ export default {
   },
 
   computed: {
-    ...mapFields("task", [
-      "table.options",
-      "table.options.q",
-      "table.options.page",
-      "table.options.itemsPerPage",
-      "table.options.sortBy",
-      "table.options.descending",
-      "table.options.filters",
-      "table.options.filters.creator",
-      "table.options.filters.assignee",
-      "table.options.filters.incident",
-      "table.options.filters.incident_type",
-      "table.options.filters.incident_priority",
-      "table.options.filters.status",
-      "table.options.filters.project",
+    ...mapFields("forms_table", [
       "table.loading",
+      "table.options.descending",
+      "table.options.filters.project",
+      "table.options.filters.forms_type",
+      "table.options.itemsPerPage",
+      "table.options.page",
+      "table.options.q",
+      "table.options.sortBy",
       "table.rows.items",
       "table.rows.total",
       "table.rows.selected",
@@ -218,7 +193,15 @@ export default {
   },
 
   methods: {
-    ...mapActions("task", ["getAll", "createEditShow", "removeShow"]),
+    ...mapActions("forms_table", ["getAll", "createEditShow", "removeShow"]),
+    convertToParticipant(individual) {
+      return {
+        individual: {
+          name: individual.name,
+          email: individual.email,
+        },
+      }
+    },
   },
 
   created() {
@@ -245,7 +228,7 @@ export default {
         vm.descending,
         vm.project,
         vm.incident,
-        vm.incident_type,
+        vm.forms_type,
         vm.incident_priority,
         vm.status,
       ],

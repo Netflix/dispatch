@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
@@ -16,7 +17,7 @@ from dispatch.exceptions import ExistsError
 from .models import FormsRead, FormsCreate, FormsUpdate, FormsPagination
 from .service import get, create, update, delete
 
-
+log = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -37,13 +38,15 @@ def get_form(db_session: DbSession, form_id: PrimaryKey):
         )
     return form
 
+
 @router.post("", response_model=FormsRead)
 def create_forms(
     db_session: DbSession,
-    forms_in: FormsCreate,
+    forms_in: dict,
     current_user: CurrentUser,
 ):
     """Create a new form."""
+    log.debug(f"**** Creating new form from router: {forms_in}")
     try:
         return create(
             db_session=db_session, creator=current_user, forms_in=forms_in
@@ -91,19 +94,20 @@ def update_forms(
         ) from None
     return forms
 
+
 # here the individual_contact_id is the creator of the form
 # used to validate if they have permission to delete
 @router.delete(
-    "/{form_id}/{individual_contact_id}",
+    "/{forms_id}/{individual_contact_id}",
     response_model=None,
     dependencies=[Depends(PermissionsDependency([FeedbackDeletePermission]))],
 )
-def delete_form(db_session: DbSession, form_id: PrimaryKey):
+def delete_form(db_session: DbSession, forms_id: PrimaryKey):
     """Delete a form, returning only an HTTP 200 OK if successful."""
-    form = get(db_session=db_session, form_id=form_id)
+    form = get(db_session=db_session, forms_id=forms_id)
     if not form:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=[{"msg": "A form with this id does not exist."}],
         )
-    delete(db_session=db_session, form_id=form_id)
+    delete(db_session=db_session, forms_id=forms_id)

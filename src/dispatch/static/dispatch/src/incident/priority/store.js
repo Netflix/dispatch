@@ -83,6 +83,7 @@ const actions = {
       { ...state.table.options },
       "IncidentPriority"
     )
+    console.log(`**** params: ${JSON.stringify(params)}`)
     return IncidentPriorityApi.getAll(params)
       .then((response) => {
         if (response.data.items[0]) {

@@ -11,6 +11,7 @@ import document from "@/document/store"
 import entity from "@/entity/store"
 import entity_type from "@/entity_type/store"
 import forms from "@/forms/store"
+import forms_table from "@/forms/table/store"
 import forms_type from "@/forms/types/store"
 import incident_feedback from "@/feedback/incident/store"
 import incident from "@/incident/store"
@@ -61,6 +62,7 @@ export default createStore({
     entity,
     entity_type,
     forms,
+    forms_table,
     forms_type,
     incident_feedback,
     incident,

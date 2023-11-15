@@ -133,11 +133,13 @@ const getters = {
 
 const actions = {
   getAll: debounce(({ commit, state }) => {
+    console.log(`**** Table options is ${JSON.stringify(state.table.options)}`)
     commit("SET_TABLE_LOADING", "primary")
     let params = SearchUtils.createParametersFromTableOptions(
       { ...state.table.options },
       "Incident"
     )
+    console.log(`**** Params is ${JSON.stringify(params)}`)
     return IncidentApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)
