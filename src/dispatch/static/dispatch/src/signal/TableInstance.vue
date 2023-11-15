@@ -41,9 +41,6 @@
             <template #item.signal="{ value }">
               <signal-popover :value="value" />
             </template>
-            <template #item.signal.canary="{ value }">
-              <v-checkbox-btn :model-value="value" disabled />
-            </template>
             <template #item.signal.project.name="{ item, value }">
               <v-chip size="small" :color="item.signal.project.color">
                 {{ value }}
@@ -110,7 +107,6 @@ export default {
         { title: "Create Case", value: "signal.create_case", sortable: false },
         { title: "Case", value: "case", sortable: false },
         { title: "Signal Definition", value: "signal", sortable: false },
-        { title: "Canary", value: "signal.canary", sortable: false },
         { title: "Filter Action", value: "filter_action", sortable: true },
         { title: "Project", value: "signal.project.name", sortable: true },
         { title: "Created At", value: "created_at" },
