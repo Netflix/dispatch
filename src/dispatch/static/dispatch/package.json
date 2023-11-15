@@ -2,6 +2,22 @@
   "name": "dispatch",
   "version": "0.1.0",
   "private": true,
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,jsx,vue,ts,tsx}": [
+      "prettier --write",
+      "eslint --fix",
+      "git add"
+    ],
+    "*.{html,css,less,ejs}": [
+      "prettier --write",
+      "git add"
+    ]
+  },
   "scripts": {
     "serve": "cross-env NODE_ENV=dev NODE_OPTIONS='--max-http-header-size=100000' vite",
     "build": "vite build --out-dir dist",
@@ -54,6 +70,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-vue": "^9.7.0",
     "eslint-plugin-vuetify": "^2.0.5",
+    "husky": "^8.0.3",
     "jquery": "^3.6.0",
     "jwt-decode": "^3.1.2",
     "prettier": "^2.7.1",
