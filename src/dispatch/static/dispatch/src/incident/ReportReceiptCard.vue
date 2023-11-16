@@ -1,7 +1,6 @@
 <template>
-  <v-card class="mx-auto ma-4" max-width="600">
+  <v-card class="mx-auto ma-4" variant="outlined" title="Incident Report" max-width="600">
     <v-card-text>
-      <p class="text-h3 text--primary">Incident Report</p>
       <p>
         This page will be populated with incident resources as they are created (if available). If
         you have any questions, please feel free to review the Frequently Asked Questions (FAQ)
@@ -171,14 +170,13 @@
           </span>
         </v-list-group>
       </v-list>
-      <v-container>
-        <v-col cols="12">
-          <v-btn color="info" variant="flat" @click="resetSelected()">
-            Report another incident
-          </v-btn>
-        </v-col>
-      </v-container>
     </v-card-text>
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn color="info" block variant="flat" @click="resetSelected()">
+        Report Another Incident
+      </v-btn>
+    </v-card-actions>
   </v-card>
 </template>
 
