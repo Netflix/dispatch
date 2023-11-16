@@ -26,7 +26,7 @@
             :to="{ name: 'report' }"
           >
             <template #prepend>
-              <v-icon>mdi-alert-circle-outline</v-icon>
+              <v-icon color="white">mdi-alert-circle-outline</v-icon>
             </template>
             <v-list-item-title class="text-uppercase text-body-2">
               Report incident
