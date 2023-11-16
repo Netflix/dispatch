@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="showCreateEdit" persistent max-width="1000px">
-    <v-card>
+    <v-card variant="flat">
       <template #prepend>
         <v-list-item lines="two">
           <v-list-item-title v-if="id" class="text-h6"> Edit </v-list-item-title>
@@ -12,7 +12,7 @@
         </v-list-item>
       </template>
       <v-card-text>
-        <FormKit style="margin-left: 20px" type="form" v-model="form_data" :actions="false">
+        <FormKit style="margin-left: 20px; outline: #4CAF50 solid 10px;" type="form" v-model="form_data" :actions="false">
           <FormKitSchema :schema="page_schema" />
         </FormKit>
       </v-card-text>
@@ -37,7 +37,22 @@
       </v-container>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="red en-1" variant="text" @click="showCreateEdit = false"> Exit without saving </v-btn>
+
+        <div>
+          <v-menu anchor="bottom end">
+            <template #activator="{ props }">
+              <v-btn v-bind="props" color="red en-1" variant="text"> Exit without saving </v-btn>
+            </template>
+            <v-list>
+              <v-list-item @click="showCreateEdit = false">
+                <v-list-item-title> You will lose any changes. Continue? </v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="showCreateEdit = true">
+                <v-list-item-title> Cancel </v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </div>
         <v-btn color="blue en-1" variant="text" @click="saveAsDraft()"> Save as Draft </v-btn>
         <v-btn color="blue en-1" variant="text" @click="saveAsCompleted()"> Submit </v-btn>
       </v-card-actions>
@@ -72,13 +87,19 @@ export default {
       "selected.attorney_status",
       "selected.memo_link",
       "selected.project",
+      "selected.incident",
       "page_schema",
     ]),
-    ...mapFields("incident", { incident: "selected" }),
+    ...mapFields("incident", { selected_incident: "selected" }),
   },
 
   methods: {
-    ...mapActions("forms", ["closeCreateEdit", "saveAsDraft", "saveAsCompleted"]),
+    ...mapActions("forms", [
+      "closeCreateEdit",
+      "saveAsDraft",
+      "saveAsCompleted",
+      "closeCreateEdit",
+    ]),
   },
 
   data() {
@@ -98,11 +119,22 @@ export default {
   watch: {
     form_data() {
       console.log(`*** Got form_data: ${JSON.stringify(this.form_data)}`)
+      if (this.incident) {
+        this.incident_id = this.incident.id
+        this.project = this.incident.project
+      } else {
+        this.incident_id = this.selected_incident.id
+        this.project = this.selected_incident.project
+      }
       console.log(`*** Got incident: ${JSON.stringify(this.incident.id)}`)
-      this.incident_id = this.incident.id
-      this.project = this.incident.project
+
       console.log(`*** Got project: ${JSON.stringify(this.project)}`)
     },
   },
 }
 </script>
+<style>
+:root {
+  --fk-max-width-input: 100em !important;
+}
+</style>

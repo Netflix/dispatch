@@ -29,7 +29,7 @@ const state = {
   },
   dialogs: {
     showCreateEdit: false,
-    showRemove: false,
+    showDeleteDialog: false,
   },
   table: {
     rows: {
@@ -220,15 +220,15 @@ const actions = {
     commit("SET_PAGE_SCHEMA", getCurrentPage())
     commit("SET_DIALOG_CREATE_EDIT", true)
   },
-  removeShow({ commit }, formsType) {
+  showDeleteDialog({ commit }, form) {
     commit("SET_DIALOG_DELETE", true)
-    commit("SET_SELECTED", formsType)
+    commit("SET_SELECTED", form)
   },
   closeCreateEdit({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
     commit("RESET_SELECTED")
   },
-  closeRemove({ commit }) {
+  closeDeleteDialog({ commit }) {
     commit("SET_DIALOG_DELETE", false)
     commit("RESET_SELECTED")
   },
@@ -289,7 +289,7 @@ const mutations = {
     state.dialogs.showCreateEdit = value
   },
   SET_DIALOG_DELETE(state, value) {
-    state.dialogs.showRemove = value
+    state.dialogs.showDeleteDialog = value
   },
   RESET_SELECTED(state) {
     // do not reset project

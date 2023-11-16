@@ -58,8 +58,22 @@ const getters = {
   getField,
 }
 
-function getCurrentPage() {
-  console.log(`**** Page was just requested`)
+function getCurrentPage(form_schema) {
+  console.log(`**** Page was just requested - about to reconstruct from ${form_schema}`)
+  let schema = JSON.parse(form_schema)
+  let output_schema = []
+  for (let item of schema) {
+    if (item.type == "boolean") {
+      output_schema.push({
+        $formkit: "checkbox",
+        name: item.name,
+        label: item.title,
+        hint: item.hint ? item.hint : null,
+        if: item.if ? item.if : null,
+      })
+    }
+  }
+  return output_schema
   return [
     {
       $formkit: "text",
@@ -77,7 +91,7 @@ function getCurrentPage() {
       id: "users",
       value: "3",
       label: "Users",
-      help: "How many users do you need on your plan?",
+      help: "How many users do you need on your plan? http://formkit.com/pricing",
     },
     {
       $formkit: "checkbox",
@@ -149,6 +163,7 @@ function save({ commit, dispatch }) {
       .then(() => {
         commit("SET_DIALOG_CREATE_EDIT", false)
         dispatch("getAll")
+        dispatch("forms_table/getAll", null, { root: true })
         commit("SET_SELECTED_LOADING", false)
         commit(
           "notification_backend/addBeNotification",
@@ -216,7 +231,7 @@ const actions = {
     state.selected.form_type_id = form_type_id
     FormsTypeApi.get(form_type_id)
       .then((response) => {
-        commit("SET_PAGE_SCHEMA", getCurrentPage())
+        commit("SET_PAGE_SCHEMA", getCurrentPage(response.data.form_schema))
         commit("SET_FORM_TYPE", response.data)
         commit("SET_DIALOG_CREATE_EDIT", true)
       })
@@ -226,8 +241,8 @@ const actions = {
   },
   editShow({ commit }, selected) {
     commit("SET_SELECTED", selected)
-    console.log(`**** Edit form type: ${JSON.stringify(selected.form_type)}`)
-    commit("SET_PAGE_SCHEMA", getCurrentPage())
+    // console.log(`**** Edit form type: ${JSON.stringify(selected)}`)
+    commit("SET_PAGE_SCHEMA", getCurrentPage(selected.form_type.form_schema))
     commit("SET_DIALOG_CREATE_EDIT", true)
   },
   showDeleteDialog({ commit }, form) {
@@ -235,6 +250,7 @@ const actions = {
     commit("SET_SELECTED", form)
   },
   closeCreateEdit({ commit }) {
+    console.log(`**** CAlling closeCreateEdit`)
     commit("SET_DIALOG_CREATE_EDIT", false)
     commit("RESET_SELECTED")
   },
@@ -256,6 +272,7 @@ const actions = {
         commit("SET_SELECTED_LOADING", false)
         dispatch("closeDeleteDialog")
         dispatch("getAll")
+        dispatch("forms_table/getAll", null, { root: true })
         commit(
           "notification_backend/addBeNotification",
           { text: "Form deleted successfully.", type: "success" },

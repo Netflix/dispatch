@@ -1,4 +1,6 @@
 <template>
+  <new-edit-dialog />
+  <delete-dialog />
   <v-container fluid>
     <v-row no-gutters>
       <new-edit-sheet />
@@ -14,7 +16,7 @@
     </v-row>
     <v-row no-gutters>
       <v-col>
-        <v-card>
+        <v-card variant="flat">
           <v-card-title>
             <v-text-field
               v-model="q"
@@ -55,6 +57,11 @@
                 <span>{{ formatDate(item.updated_at) }}</span>
               </v-tooltip>
             </template>
+            <template #item.project="{ item }">
+              <v-chip size="small" :color="item.project.color">
+                {{ item.project.name }}
+              </v-chip>
+            </template>
             <template #item.form_type="{ item }">
               <span v-if="item.form_type">{{ item.form_type.name }}</span>
             </template>
@@ -81,8 +88,11 @@
                   </v-btn>
                 </template>
                 <v-list>
-                  <v-list-item @click="createEditShow(item)">
+                  <v-list-item @click="editShow(item)">
                     <v-list-item-title>View / Edit</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item @click="showDeleteDialog(item)">
+                    <v-list-item-title>Delete</v-list-item-title>
                   </v-list-item>
                 </v-list>
               </v-menu>
@@ -100,9 +110,8 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { formatRelativeDate, formatDate } from "@/filters"
 
-import BulkEditSheet from "@/task/BulkEditSheet.vue"
-import DeleteDialog from "@/task/DeleteDialog.vue"
-import NewEditSheet from "@/task/NewEditSheet.vue"
+import NewEditDialog from "@/forms/EditForm.vue"
+import DeleteDialog from "@/forms/DeleteDialog.vue"
 import Participant from "@/incident/Participant.vue"
 import RouterUtils from "@/router/utils"
 import TableExportDialog from "@/task/TableExportDialog.vue"
@@ -112,9 +121,8 @@ export default {
   name: "FormsTable",
 
   components: {
-    BulkEditSheet,
     DeleteDialog,
-    NewEditSheet,
+    NewEditDialog,
     Participant,
     TableExportDialog,
     TableFilterDialog,
@@ -123,6 +131,7 @@ export default {
   data() {
     return {
       headers: [
+        { title: "Project", value: "project" },
         { title: "Incident Name", value: "incident.name" },
         { title: "Type", value: "form_type" },
         { title: "Status", value: "status" },
@@ -193,7 +202,8 @@ export default {
   },
 
   methods: {
-    ...mapActions("forms_table", ["getAll", "createEditShow", "removeShow"]),
+    ...mapActions("forms_table", ["getAll"]),
+    ...mapActions("forms", ["editShow", "showDeleteDialog"]),
     convertToParticipant(individual) {
       return {
         individual: {
@@ -227,9 +237,6 @@ export default {
         vm.sortBy,
         vm.descending,
         vm.project,
-        vm.incident,
-        vm.forms_type,
-        vm.incident_priority,
         vm.status,
       ],
       () => {
