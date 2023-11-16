@@ -27,7 +27,7 @@
       </v-card-text>
       <v-card-actions>
         <div class="text-subheader-2 pl-4 text-medium-emphasis">
-          Have a account? <router-link :to="{ name: 'BasicLogin' }"> Login </router-link>
+          Have an account? <router-link :to="{ name: 'BasicLogin' }"> Login </router-link>
         </div>
         <v-spacer />
         <v-btn
