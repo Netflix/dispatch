@@ -3,8 +3,8 @@
     v-model="project"
     :items="items"
     :menu-props="{ maxHeight: '400' }"
-    label="Project"
     item-title="name"
+    variant="outlined"
     return-object
     hide-details
     :loading="loading"

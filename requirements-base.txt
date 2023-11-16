@@ -250,7 +250,7 @@ oauthlib[signedtoken]==3.2.2
     #   atlassian-python-api
     #   jira
     #   requests-oauthlib
-openai==1.2.4
+openai==1.3.0
     # via -r requirements-base.in
 packaging==23.1
     # via
@@ -269,7 +269,7 @@ patsy==0.5.3
     # via statsmodels
 pbr==5.11.1
     # via jira
-pdpyras==5.1.2
+pdpyras==5.1.3
     # via -r requirements-base.in
 pluggy==1.2.0
     # via pytest
@@ -281,7 +281,7 @@ preshed==3.0.8
     # via
     #   spacy
     #   thinc
-protobuf==4.25.0
+protobuf==4.25.1
     # via
     #   -r requirements-base.in
     #   google-api-core
@@ -407,7 +407,7 @@ six==1.16.0
     #   validators
 slack-bolt==1.18.0
     # via -r requirements-base.in
-slack-sdk==3.23.1
+slack-sdk==3.24.0
     # via
     #   -r requirements-base.in
     #   slack-bolt

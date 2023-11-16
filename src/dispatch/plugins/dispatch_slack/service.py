@@ -247,7 +247,9 @@ def add_users_to_conversation_thread(
         add_users_to_conversation(client=client, conversation_id=conversation_id, user_ids=user_ids)
         blocks = Message(
             blocks=[
-                Section(text="Looping in individuals to help resolve this case...", fields=users)
+                Section(
+                    text="Adding the following individuals to help resolve this case:", fields=users
+                )
             ]
         ).build()["blocks"]
         send_message(client=client, conversation_id=conversation_id, blocks=blocks, ts=thread_id)

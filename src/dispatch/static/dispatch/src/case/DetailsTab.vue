@@ -58,7 +58,7 @@
         />
       </v-col>
       <v-col cols="6">
-        <project-auto-complete v-model="project" />
+        <project-select v-model="project" />
       </v-col>
       <v-col cols="6">
         <case-type-select v-model="case_type" :project="project" />
@@ -82,7 +82,7 @@
           v-model="visibility"
           label="Visibility"
           :items="visibilities"
-          hint="The visibilty of the case."
+          hint="The visibility of the case."
         />
       </v-col>
       <v-col cols="12">
@@ -131,7 +131,7 @@ import CaseSeveritySelect from "@/case/severity/CaseSeveritySelect.vue"
 import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
 import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
-import ProjectAutoComplete from "@/project/ProjectAutoComplete.vue"
+import ProjectSelect from "@/project/ProjectSelect.vue"
 import ParticipantSelect from "@/components/ParticipantSelect.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 
@@ -151,7 +151,7 @@ export default {
     DateTimePickerMenu,
     IncidentFilterCombobox,
     ParticipantSelect,
-    ProjectAutoComplete,
+    ProjectSelect,
     TagFilterAutoComplete,
   },
 

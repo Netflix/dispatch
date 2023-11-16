@@ -22,7 +22,7 @@ let SENTRY_DSN = import.meta.env.VITE_DISPATCH_SENTRY_DSN
 if (SENTRY_ENABLED) {
   const APP_HOSTNAME = document.location.host
 
-  let DSN = `https://1:1@${APP_HOSTNAME}/0`
+  let DSN = `https://1:1@${APP_HOSTNAME}/api/0`
 
   // Allow global override
   if (SENTRY_DSN) {

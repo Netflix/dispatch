@@ -10,9 +10,7 @@
           </router-link>
         </template>
       </v-app-bar>
-      <v-card>
-        <router-view :key="$route.path" />
-      </v-card>
+      <router-view :key="$route.path" />
     </v-main>
   </v-app>
 </template>

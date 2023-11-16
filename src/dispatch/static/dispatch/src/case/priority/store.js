@@ -35,7 +35,7 @@ const state = {
     options: {
       q: "",
       page: 1,
-      itemsPerPage: 10,
+      itemsPerPage: 25,
       sortBy: ["view_order"],
       descending: [false],
       filters: {

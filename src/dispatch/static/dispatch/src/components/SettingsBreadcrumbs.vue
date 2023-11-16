@@ -16,7 +16,7 @@
         <project-menu-select v-model="project" />
       </v-breadcrumbs-item>
       <v-breadcrumbs-item v-else :to="item.to" :disabled="item.disabled" class="text-capitalize">
-        {{ item.text }}
+        {{ item.title }}
       </v-breadcrumbs-item>
     </template>
   </v-breadcrumbs>

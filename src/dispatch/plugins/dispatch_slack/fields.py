@@ -619,7 +619,7 @@ def entity_select(
 ):
     """Creates an entity select."""
     entity_options = [
-        {"text": str(entity.value), "value": entity.id}
+        {"text": entity.entity_type.name[:75], "value": entity.id}
         for entity in entity_service.get_all_desc_by_signal(
             db_session=db_session, signal_id=signal_id
         )
