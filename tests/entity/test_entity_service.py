@@ -1,5 +1,6 @@
 from dispatch.entity_type.models import EntityType
 from dispatch.entity import service as entity_service
+from tests.factories import SignalInstanceFactory
 
 
 def test_get(session, entity):
@@ -164,3 +165,67 @@ def test_find_entities_with_no_regex_or_field(session, signal_instance, project)
     ]
     entities = entity_service.find_entities(session, signal_instance, entity_types)
     assert len(entities) == 0
+
+
+def test_find_entities_handles_key_error(session, signal_instance, project):
+    # Define an entity type that will cause a KeyError due to incorrect JSONPath usage
+    # The JSONPath expression tries to access a dictionary with an index, which is invalid
+    entity_type_with_invalid_jsonpath = EntityType(
+        name="EntityType with Invalid JSONPath",
+        jpath="dictionary[0].value",
+        regular_expression=None,
+        project=project,
+    )
+
+    # Override the signal_instance fixture to include problematic 'dictionary' field
+    # that is a dictionary, not a list
+    signal_instance = SignalInstanceFactory(
+        raw={
+            "id": "4893bde0-f8bc-4472-a7dc-8b44b26b2198",
+            "dictionary": {
+                "value": "pompompurin",
+            },
+        }
+    )
+
+    # Attempt to find entities using the entity type with the invalid JSONPath expression
+    entities = entity_service.find_entities(
+        session, signal_instance, [entity_type_with_invalid_jsonpath]
+    )
+
+    # The service should handle the KeyError and not return any entities for the invalid JSONPath
+    assert len(entities) == 0
+
+
+def test_find_entities_multiple_entity_types(session, signal_instance, project):
+    # A test that checks if the function correctly processes multiple entity types, some valid and some invalid.
+    entity_type_valid = EntityType(
+        name="EntityType with Valid JSONPath and Regex",
+        jpath="dictionary.value",
+        regular_expression=None,
+        project=project,
+    )
+
+    entity_type_invalid_jsonpath = EntityType(
+        name="EntityType with Invalid JSONPath",
+        jpath="dictionary[0].value",
+        regular_expression=None,
+        project=project,
+    )
+
+    signal_instance = SignalInstanceFactory(
+        raw={
+            "id": "4893bde0-f8bc-4472-a7dc-8b44b26b2198",
+            "dictionary": {
+                "value": "pompompurin",
+            },
+        }
+    )
+
+    entities = entity_service.find_entities(
+        session, signal_instance, [entity_type_valid, entity_type_invalid_jsonpath]
+    )
+
+    # The service should find one entity with valid JSONPath and Regex and ignore the invalid one
+    assert len(entities) == 1
+    assert entities[0].value == "pompompurin"
