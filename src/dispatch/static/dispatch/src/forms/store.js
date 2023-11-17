@@ -40,7 +40,7 @@ const state = {
     options: {
       q: "",
       page: 1,
-      itemsPerPage: 10,
+      itemsPerPage: -1,
       sortBy: ["created_at"],
       descending: [true],
       filters: {},
@@ -59,20 +59,62 @@ const getters = {
 }
 
 function getCurrentPage(form_schema) {
-  console.log(`**** Page was just requested - about to reconstruct from ${form_schema}`)
+  // console.log(`**** Page was just requested - about to reconstruct from ${form_schema}`)
   let schema = JSON.parse(form_schema)
   let output_schema = []
   for (let item of schema) {
+    let obj = {
+      name: item.name,
+      label: item.title,
+      help: item.hint ? item.hint : null,
+      if: item.if ? item.if : null,
+    }
+    if (item.type == "text") {
+      obj = {
+        $formkit: "text",
+        ...obj,
+      }
+      output_schema.push(obj)
+    }
     if (item.type == "boolean") {
-      output_schema.push({
+      obj = {
         $formkit: "checkbox",
-        name: item.name,
-        label: item.title,
-        hint: item.hint ? item.hint : null,
-        if: item.if ? item.if : null,
-      })
+        ...obj,
+      }
+      output_schema.push(obj)
+    }
+    if (item.type == "select") {
+      console.log(`**** The item multiple is ${item.multiple}}`)
+      if (item.multiple) {
+        if (true) {
+          obj = {
+            $formkit: "checkbox",
+            multiple: true,
+            options: item.options,
+            ...obj,
+          }
+        } else {
+          obj = {
+            $formkit: "select",
+            multiple: true,
+            options: item.options,
+            ...obj,
+            help: "Select all that apply by holding command (macOS) or control (PC).",
+          }
+        }
+        output_schema.push(obj)
+      } else {
+        obj = {
+          $formkit: "checkbox",
+          options: item.options,
+          validation: "max:1",
+          ...obj,
+        }
+        output_schema.push(obj)
+      }
     }
   }
+  console.log(`**** Page was just requested - reconstructed to ${JSON.stringify(output_schema)}`)
   return output_schema
   return [
     {

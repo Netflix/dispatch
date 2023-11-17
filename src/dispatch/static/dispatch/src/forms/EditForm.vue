@@ -12,8 +12,8 @@
         </v-list-item>
       </template>
       <v-card-text>
-        <FormKit style="margin-left: 20px; outline: #4CAF50 solid 10px;" type="form" v-model="form_data" :actions="false">
-          <FormKitSchema :schema="page_schema" />
+        <FormKit style="margin-left: 20px; margin-right: 20px" type="form" v-model="form_data" :actions="false">
+          <FormKitSchema :schema="page_schema" :data="form_data" />
         </FormKit>
       </v-card-text>
       <v-divider />
@@ -136,5 +136,6 @@ export default {
 <style>
 :root {
   --fk-max-width-input: 100em !important;
+  --fk-font-size-help: 0.75em !important;
 }
 </style>
