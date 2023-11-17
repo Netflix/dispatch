@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import logging
 from typing import Generator, Optional, Sequence, Union, NewType, NamedTuple
 import re
 
@@ -14,6 +15,9 @@ from dispatch.entity.models import Entity, EntityCreate, EntityUpdate, EntityRea
 from dispatch.entity_type import service as entity_type_service
 from dispatch.entity_type.models import EntityType
 from dispatch.signal.models import Signal, SignalInstance
+
+
+log = logging.getLogger(__name__)
 
 
 def get(*, db_session: Session, entity_id: int) -> Optional[Entity]:
@@ -255,7 +259,7 @@ def find_entities(
         list[Entity]: A list of entities found in the SignalInstance.
     """
 
-    def _find_entites_by_regex(
+    def _find_entities_by_regex(
         val: Union[dict, str, list],
         signal_instance: SignalInstance,
         entity_type_pairs: list[EntityTypePair],
@@ -287,7 +291,7 @@ def find_entities(
 
             >>> signal_instance = SignalInstance(raw={"text": "John Doe was born on 1987-05-12."})
 
-            >>> entities = list(_find_entites_by_regex(signal_instance.raw, signal_instance, entity_type_pairs))
+            >>> entities = list(_find_entities_by_regex(signal_instance.raw, signal_instance, entity_type_pairs))
 
             >>> entities[0].value
             'John Doe'
@@ -301,7 +305,7 @@ def find_entities(
         # If the value is a dictionary, search its key-value pairs recursively
         if isinstance(val, dict):
             for _, subval in val.items():
-                yield from _find_entites_by_regex(
+                yield from _find_entities_by_regex(
                     subval,
                     signal_instance,
                     entity_type_pairs,
@@ -310,7 +314,7 @@ def find_entities(
         # If the value is a list, search its items recursively
         elif isinstance(val, list):
             for item in val:
-                yield from _find_entites_by_regex(
+                yield from _find_entities_by_regex(
                     item,
                     signal_instance,
                     entity_type_pairs,
@@ -360,9 +364,18 @@ def find_entities(
                                         entity_type=entity_type,
                                         project=signal_instance.project,
                                     )
-                except jsonpath_ng.JSONPathError:
-                    # field not found in signal_instance.raw
-                    pass
+                except KeyError:
+                    log.warning(
+                        f"Unable to extract entity {str(jpath)} is not a valid JSONPath for Instance {signal_instance.id}."
+                        f"A KeyError usually occurs when the JSONPath includes a list index lookup against a dictionary value."
+                        f"  Example: dictionary[0].value"
+                    )
+                    continue
+                except Exception as e:  # Add this to handle general exceptions
+                    log.exception(
+                        f"An error occurred while extracting entity {str(jpath)} from Instance {signal_instance.id}: {str(e)}"
+                    )
+                    continue
 
     # Create a list of (entity type, regular expression, jpath) tuples
     entity_type_pairs = [
@@ -386,7 +399,7 @@ def find_entities(
     entities = [
         entity
         for _, val in signal_instance.raw.items()
-        for entity in _find_entites_by_regex(val, signal_instance, filtered_entity_type_pairs)
+        for entity in _find_entities_by_regex(val, signal_instance, filtered_entity_type_pairs)
     ]
 
     entities.extend(
