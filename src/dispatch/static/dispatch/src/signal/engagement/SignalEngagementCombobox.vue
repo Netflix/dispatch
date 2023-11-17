@@ -15,7 +15,7 @@
                 pill
                 @click:close="remove(item)"
               >
-                {{ item ? item.name : "Unknown" }}
+                {{ item ? item.title : "Unknown" }}
               </v-chip>
             </template>
             <v-card>
@@ -78,7 +78,7 @@ export default {
     },
     label: {
       type: String,
-      default: "Add Engagment(s)",
+      default: "Add Engagement(s)",
     },
     project: {
       type: Object,
