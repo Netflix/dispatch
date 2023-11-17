@@ -365,7 +365,7 @@ def find_entities(
                                         project=signal_instance.project,
                                     )
                 except KeyError:
-                    log.exception(
+                    log.warning(
                         f"Unable to extract entity {str(jpath)} is not a valid JSONPath for Instance {signal_instance.id}."
                         f"A KeyError usually occurs when the JSONPath includes a list index lookup against a dictionary value."
                         f"  Example: dictionary[0].value"
