@@ -177,7 +177,7 @@ def test_find_entities_handles_key_error(session, signal_instance, project):
         project=project,
     )
 
-    # Override the signal_instance fixture to include problematic 'additionalMetadata' field
+    # Override the signal_instance fixture to include problematic 'dictionary' field
     # that is a dictionary, not a list
     signal_instance = SignalInstanceFactory(
         raw={
