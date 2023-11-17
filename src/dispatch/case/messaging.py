@@ -77,6 +77,10 @@ def send_case_triage_reminder(case: Case, db_session: SessionLocal):
         }
     ]
 
+    if not case.assignee:
+        log.warning("Case triage reminder message not sent. No assignee.")
+        return
+
     plugin.instance.send_direct(
         case.assignee.individual.email,
         message_text,
