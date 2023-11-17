@@ -30,7 +30,7 @@ def get_by_channel_id_ignoring_channel_type(
     if not conversation:
         conversation = query.filter(Conversation.thread_id == thread_id).one_or_none()
 
-        if not conversation:
+        if not conversation and query.count() <= 1:
             conversation = query.one_or_none()
 
     if conversation:
