@@ -46,6 +46,8 @@
           hint="The organization member to which the case is assigned."
           clearable
           :project="project"
+          name="Assignee"
+          :rules="[only_one]"
         />
       </v-col>
       <v-col cols="12">
@@ -55,6 +57,8 @@
           hint="The organization member who reported the case."
           clearable
           :project="project"
+          name="Reporter"
+          :rules="[only_one]"
         />
       </v-col>
       <v-col cols="6">
@@ -160,6 +164,13 @@ export default {
       statuses: ["New", "Triage", "Escalated", "Closed"],
       visibilities: ["Open", "Restricted"],
       resolutionReasons: ["False Positive", "User Acknowledged", "Mitigated", "Escalated"],
+      only_one: (value) => {
+        console.log(`**** the participant rules is ${value}`)
+        if (value && value.length > 1) {
+          return "Only one is allowed"
+        }
+        return true
+      },
     }
   },
 

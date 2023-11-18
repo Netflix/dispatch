@@ -40,7 +40,7 @@
           required
           :project="project"
           name="Reporter"
-          :rules="[rules.required]"
+          :rules="[required_and_only_one]"
         />
       </v-col>
       <v-col cols="6">
@@ -52,7 +52,7 @@
           required
           :project="project"
           name="Incident Commander"
-          :rules="[rules.required]"
+          :rules="[required_and_only_one]"
         />
       </v-col>
       <v-col cols="6">
@@ -153,6 +153,15 @@ export default {
     return {
       statuses: ["Active", "Stable", "Closed"],
       visibilities: ["Open", "Restricted"],
+      required_and_only_one: (value) => {
+        if (!value || value.length == 0) {
+          return "This field is required"
+        }
+        if (value && value.length > 1) {
+          return "Only one is allowed"
+        }
+        return true
+      },
     }
   },
 
