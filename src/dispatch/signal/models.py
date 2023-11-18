@@ -382,7 +382,7 @@ class SignalInstanceCreate(SignalInstanceBase):
 class SignalInstanceRead(SignalInstanceBase):
     id: uuid.UUID
     fingerprint: Optional[str]
-    signal: SignalRead
+    signal: Optional[SignalRead]
 
 
 class SignalInstancePagination(Pagination):
