@@ -10,7 +10,7 @@ asttokens==2.2.1
     #   stack-data
 attrs==22.1.0
     # via -r requirements-dev.in
-black==23.10.1
+black==23.11.0
     # via -r requirements-dev.in
 cfgv==3.4.0
     # via pre-commit
@@ -32,7 +32,7 @@ executing==1.2.0
     #   stack-data
 factory-boy==3.3.0
     # via -r requirements-dev.in
-faker==19.13.0
+faker==20.0.3
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -86,7 +86,7 @@ python-dateutil==2.8.2
     # via faker
 pyyaml==6.0.1
     # via pre-commit
-ruff==0.1.4
+ruff==0.1.5
     # via -r requirements-dev.in
 six==1.16.0
     # via

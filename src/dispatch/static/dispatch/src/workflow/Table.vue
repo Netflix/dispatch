@@ -20,7 +20,7 @@
     </v-row>
     <v-row no-gutters>
       <v-col>
-        <v-card>
+        <v-card variant="flat">
           <v-card-title>
             <v-text-field
               v-model="q"

@@ -1,7 +1,6 @@
 <template>
   <v-app>
     <notification-snackbars-wrapper />
-
     <v-main>
       <v-app-bar flat style="border-bottom: 1px solid #d2d2d2 !important" color="background0">
         <template #prepend>

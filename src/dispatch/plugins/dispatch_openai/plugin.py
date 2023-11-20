@@ -7,8 +7,7 @@
 """
 import logging
 
-import openai
-from openai import util
+from openai import OpenAI
 
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_openai as openai_plugin
@@ -35,19 +34,24 @@ class OpenAIPlugin(ArtificialIntelligencePlugin):
         self.configuration_schema = OpenAIConfiguration
 
     def completion(self, prompt: str) -> dict:
-        openai.api_key = self.api_key
+        client = OpenAI(api_key=self.api_key)
 
         try:
-            response = openai.Completion.create(
-                max_tokens=self.max_tokens,
+            completion = client.chat.completions.create(
                 model=self.model,
-                n=self.n,
-                prompt=prompt,
-                stop=self.stop,
-                temperature=self.temperature,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": self.system_message,
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    },
+                ],
             )
         except Exception as e:
             logger.error(e)
             raise
 
-        return util.convert_to_dict(response)
+        return completion.choices[0].message
