@@ -1,14 +1,13 @@
 <template>
-  <v-combobox
+  <v-select
     :items="items"
     :label="label"
     :loading="loading"
     :menu-props="{ maxHeight: '400' }"
-    v-model:search="search"
-    @update:search="getFilteredData({ q: $event })"
     item-title="name"
     item-value="id"
     v-model="project"
+    return-object
   >
     <template #no-data>
       <v-list-item>
@@ -31,7 +30,7 @@
         <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
-  </v-combobox>
+  </v-select>
 </template>
 
 <script>
@@ -84,7 +83,7 @@ export default {
       this.error = null
       this.loading = "error"
       let filterOptions = {
-        q: this.search,
+        q: "",
         itemsPerPage: this.numItems,
         sortBy: ["name"],
         descending: [false],
@@ -92,13 +91,6 @@ export default {
 
       ProjectApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
-
-        if (this.project) {
-          // check to see if the current selection is available in the list and if not we add it
-          if (!this.items.find((match) => match.id === this.project.id)) {
-            this.items = [this.project].concat(this.items)
-          }
-        }
 
         this.total = response.data.total
 
