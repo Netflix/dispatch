@@ -240,8 +240,8 @@ const actions = {
     commit("SET_DIALOG_SHOW_EXPORT", false)
   },
   showHandoffDialog({ commit }, value) {
-    commit("SET_DIALOG_SHOW_HANDOFF", true)
     commit("SET_SELECTED", value)
+    commit("SET_DIALOG_SHOW_HANDOFF", true)
   },
   closeHandoffDialog({ commit }) {
     commit("SET_DIALOG_SHOW_HANDOFF", false)
@@ -354,6 +354,12 @@ const actions = {
   },
   save({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
+    if (Array.isArray(state.selected.reporter)) {
+      state.selected.reporter = state.selected.reporter[0]
+    }
+    if (Array.isArray(state.selected.commander)) {
+      state.selected.commander = state.selected.commander[0]
+    }
     if (!state.selected.id) {
       return IncidentApi.create(state.selected)
         .then(() => {

@@ -68,7 +68,7 @@
                   clearable
                   required
                   name="owner"
-                  :rules="[rules.required]"
+                  :rules="[required_and_only_one]"
                 />
               </v-col>
               <v-col cols="12">
@@ -130,6 +130,15 @@ export default {
   data() {
     return {
       statuses: ["Open", "Resolved"],
+      required_and_only_one: (value) => {
+        if (!value || value.length == 0) {
+          return "This field is required"
+        }
+        if (value && value.length > 1) {
+          return "Only one is allowed"
+        }
+        return true
+      },
     }
   },
 
