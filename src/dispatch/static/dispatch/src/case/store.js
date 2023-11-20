@@ -289,6 +289,12 @@ const actions = {
       })
   },
   save({ commit, dispatch }) {
+    if (Array.isArray(state.selected.reporter)) {
+      state.selected.reporter = state.selected.reporter[0]
+    }
+    if (Array.isArray(state.selected.assignee)) {
+      state.selected.assignee = state.selected.assignee[0]
+    }
     commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
       return CaseApi.create(state.selected)

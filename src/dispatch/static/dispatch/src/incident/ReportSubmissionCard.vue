@@ -7,7 +7,7 @@
       variant="outlined"
       :loading="loading"
     >
-      <template v-slot:append>
+      <template #append>
         <v-tooltip location="bottom">
           <template #activator="{ props }">
             <v-btn icon variant="text" v-bind="props" @click="copyView">
@@ -71,7 +71,7 @@
         </v-row>
       </v-card-text>
       <v-card-actions>
-        <v-spacer></v-spacer>
+        <v-spacer />
 
         <v-btn
           color="info"
