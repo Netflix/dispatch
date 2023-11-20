@@ -360,7 +360,6 @@ const actions = {
     if (Array.isArray(state.selected.commander)) {
       state.selected.commander = state.selected.commander[0]
     }
-    console.log(`**** the new commander is ${JSON.stringify(state.selected.commander)}`)
     if (!state.selected.id) {
       return IncidentApi.create(state.selected)
         .then(() => {

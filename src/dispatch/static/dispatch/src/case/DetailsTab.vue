@@ -165,7 +165,6 @@ export default {
       visibilities: ["Open", "Restricted"],
       resolutionReasons: ["False Positive", "User Acknowledged", "Mitigated", "Escalated"],
       only_one: (value) => {
-        console.log(`**** the participant rules is ${value}`)
         if (value && value.length > 1) {
           return "Only one is allowed"
         }

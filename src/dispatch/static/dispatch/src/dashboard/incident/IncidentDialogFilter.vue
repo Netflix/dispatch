@@ -151,7 +151,6 @@ export default {
         if (Array.isArray(this.local_participant)) {
           this.local_participant = this.local_participant[0]
         }
-        console.log(`**** the local_participant is ${JSON.stringify(this.local_participant)}`)
         if (this.local_participant_is_commander) {
           this.filters.commander = this.local_participant
           this.filters.participant = null

@@ -86,7 +86,6 @@ export default {
 
       if (props.project) {
         if (Array.isArray(props.project) && props.project.length > 0) {
-          console.log(`**** the project is ${JSON.stringify(props.project)}`)
           filterOptions = {
             filters: {
               project: props.project,
@@ -157,11 +156,7 @@ export default {
   },
   watch: {
     project(val) {
-      console.log(`**** the project is ${JSON.stringify(val)}`)
       this.getIndividualData()
-    },
-    participant(val,oldval) {
-      console.log(`**** the model is ${JSON.stringify(val)}`)
     },
   },
 }
