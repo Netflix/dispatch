@@ -11,6 +11,7 @@
     return-object
     v-model="participant"
     chips
+    multiple
     @update:model-value="handleClear"
     :menu-props="{ closeOnContentClick: true }"
   >
@@ -84,11 +85,21 @@ export default {
       }
 
       if (props.project) {
-        filterOptions = {
-          filters: {
-            project: [props.project],
-          },
-          ...filterOptions,
+        if (Array.isArray(props.project) && props.project.length > 0) {
+          console.log(`**** the project is ${JSON.stringify(props.project)}`)
+          filterOptions = {
+            filters: {
+              project: props.project,
+            },
+            ...filterOptions,
+          }
+        } else {
+          filterOptions = {
+            filters: {
+              project: [props.project],
+            },
+            ...filterOptions,
+          }
         }
       }
       filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })

@@ -240,8 +240,8 @@ const actions = {
     commit("SET_DIALOG_SHOW_EXPORT", false)
   },
   showHandoffDialog({ commit }, value) {
-    commit("SET_DIALOG_SHOW_HANDOFF", true)
     commit("SET_SELECTED", value)
+    commit("SET_DIALOG_SHOW_HANDOFF", true)
   },
   closeHandoffDialog({ commit }) {
     commit("SET_DIALOG_SHOW_HANDOFF", false)

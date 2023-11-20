@@ -161,6 +161,9 @@ export default {
       this.status = this.local_status
       this.tag = this.local_tag
       this.tag_type = this.local_tag_type
+      if (Array.isArray(this.local_participant)) {
+        this.local_participant = this.local_participant[0]
+      }
       this.participant = this.local_participant
       if (this.local_participant_is_commander) {
         this.commander = this.local_participant
