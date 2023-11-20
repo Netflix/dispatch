@@ -291,6 +291,9 @@ def _should_update_signal_message(signal_instance: SignalInstance) -> bool:
     """
     global _last_nonupdated_signal_cache
 
+    if signal_instance.case_id:
+        return False
+
     case_id = str(signal_instance.case_id)
 
     if case_id not in _last_nonupdated_signal_cache:
