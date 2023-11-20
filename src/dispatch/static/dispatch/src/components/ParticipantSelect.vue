@@ -155,7 +155,7 @@ export default {
     }
   },
   watch: {
-    project(val) {
+    project() {
       this.getIndividualData()
     },
   },
