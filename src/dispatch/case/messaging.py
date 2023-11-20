@@ -68,6 +68,10 @@ def send_case_triage_reminder(case: Case, db_session: SessionLocal):
         log.warning("Case triage reminder message not sent. No conversation plugin enabled.")
         return
 
+    if not case.assignee:
+        log.warning("Case triage reminder message not sent. No assignee.")
+        return
+
     items = [
         {
             "name": case.name,
