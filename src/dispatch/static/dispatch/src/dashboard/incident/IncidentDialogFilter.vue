@@ -148,6 +148,9 @@ export default {
   methods: {
     applyFilters() {
       if (this.local_participant) {
+        if (Array.isArray(this.local_participant)) {
+          this.local_participant = this.local_participant[0]
+        }
         if (this.local_participant_is_commander) {
           this.filters.commander = this.local_participant
           this.filters.participant = null
