@@ -4,15 +4,16 @@
     :label="label"
     :loading="loading"
     v-model:search="search"
-    clearable
+    closable-chips
     hide-selected
     item-title="individual.name"
     item-value="individual.id"
     return-object
-    chips
-    :hide-no-data="false"
     v-model="participant"
+    chips
+    multiple
     @update:model-value="handleClear"
+    :menu-props="{ closeOnContentClick: true }"
   >
     <template #no-data>
       <v-list-item v-if="!loading">
@@ -32,9 +33,9 @@
     <template #chip="data">
       <v-chip v-bind="data.props" pill>
         <template #prepend>
-          <v-avatar color="teal" start> {{ initials(data.item.title) }} </v-avatar>
+          <v-avatar color="teal" start> {{ initials(data.item.raw.individual.name) }} </v-avatar>
         </template>
-        {{ data.item.title }}
+        {{ data.item.raw.individual.name }}
       </v-chip>
     </template>
   </v-autocomplete>
@@ -44,7 +45,7 @@
 import { ref, watch, onMounted } from "vue"
 import { initials } from "@/filters"
 import { debounce } from "lodash"
-
+import SearchUtils from "@/search/utils"
 import IndividualApi from "@/individual/api"
 
 export default {
@@ -57,6 +58,10 @@ export default {
     initialValue: {
       type: Object,
       default: () => ({}),
+    },
+    project: {
+      type: [Object],
+      default: null,
     },
   },
   setup(props) {
@@ -78,6 +83,25 @@ export default {
         descending: [false],
         itemsPerPage: numItems.value * page,
       }
+
+      if (props.project) {
+        if (Array.isArray(props.project) && props.project.length > 0) {
+          filterOptions = {
+            filters: {
+              project: props.project,
+            },
+            ...filterOptions,
+          }
+        } else {
+          filterOptions = {
+            filters: {
+              project: [props.project],
+            },
+            ...filterOptions,
+          }
+        }
+      }
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
 
       await IndividualApi.getAll(filterOptions).then((response) => {
         items.value = response.data.items.map(function (x) {
@@ -101,6 +125,7 @@ export default {
     }
 
     const handleClear = (newValue) => {
+      search.value = null
       if (!newValue) {
         items.value = []
         search.value = null
@@ -128,6 +153,11 @@ export default {
       search,
       total,
     }
+  },
+  watch: {
+    project() {
+      this.getIndividualData()
+    },
   },
 }
 </script>

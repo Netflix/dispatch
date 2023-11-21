@@ -21,7 +21,7 @@ export class ReportIncidentPage {
     this.reportHeader = page.getByText("Report Incident").first()
     this.titleTextBox = page.getByLabel("Title", { exact: true })
     this.descriptionTextBox = page.getByLabel("Description", { exact: true })
-    this.projectDropdown = page.getByRole("combobox").filter({ hasText: "Project" }).locator("i")
+    this.projectDropdown = page.getByRole("button", { name: "Project" })
     this.typeDropdown = page.getByRole("button", { name: "Type" })
     this.priorityDropdown = page.getByRole("button", { name: "Priority" })
     this.tagsDropdown = page.getByRole("combobox").filter({ hasText: "Tags" }).locator("i")
