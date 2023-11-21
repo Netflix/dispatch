@@ -84,9 +84,9 @@ function getCurrentPage(form_schema) {
       output_schema.push(obj)
     }
     if (item.type == "select") {
-      console.log(`**** The item multiple is ${item.multiple}}`)
+      console.log(`**** The item multiple is ${item.multiple}`)
       if (item.multiple) {
-        if (true) {
+        if (item.multiple == false) {
           obj = {
             $formkit: "checkbox",
             multiple: true,

@@ -32,9 +32,6 @@ class FormsType(ProjectMixin, TimeStampMixin, Base):
     creator_id = Column(Integer, ForeignKey("individual_contact.id"))
     creator = relationship("IndividualContact")
 
-    # the catalog here is simple to help matching "named entities"
-    search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
-
 
 # Pydantic models
 class FormsTypeBase(DispatchBase):

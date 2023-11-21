@@ -7,7 +7,7 @@
           <v-list-item-title v-else class="text-h6"> New </v-list-item-title>
           <v-list-item-subtitle>
             {{ form_type.name }} form for incident
-            <span class="font-weight-black">{{ incident.name }}</span>
+            <span class="font-weight-black">{{ selected_incident?.name }}</span>
           </v-list-item-subtitle>
         </v-list-item>
       </template>
