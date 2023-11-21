@@ -29,7 +29,11 @@
       <case-resources-tab v-model="resources"></case-resources-tab>
     </v-window-item>
     <v-window-item key="signals" class="tab">
-      <case-signal-instance-tab :loading="loading" v-model="signalInstances" />
+      <case-signal-instance-tab
+        :loading="loading"
+        v-model="signalInstances"
+        :selected-signal-id="selectedSignalId"
+      />
     </v-window-item>
     <v-window-item key="entities" class="tab">
       <entities-tab v-model="entities" />
@@ -53,12 +57,17 @@ export default {
         signal_instances: [],
         resources: [],
         entities: [],
+        events: [],
       }),
       required: true,
     },
     loading: {
       type: Boolean,
       default: false,
+    },
+    selectedSignalId: {
+      type: String,
+      default: "",
     },
   },
   components: {
@@ -75,6 +84,7 @@ export default {
     const resources = ref(props.modelValue.resources)
     const entities = ref(props.modelValue.entities)
     const events = ref(props.modelValue.events)
+    console.log("Got events for timeline", events)
 
     watch(loading, (newValue) => {
       internalLoading.value = newValue
@@ -86,6 +96,15 @@ export default {
       entities.value = newValue.entities
       events.value = newValue.events
     })
+
+    watch(
+      () => props.selectedSignalId,
+      (id) => {
+        if (id) {
+          tab.value = "signals" // Assuming 'signals' is the key for the signals tab
+        }
+      }
+    )
 
     return {
       tab,

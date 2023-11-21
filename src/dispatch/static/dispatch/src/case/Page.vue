@@ -5,7 +5,7 @@
       <v-breadcrumbs :items="breadcrumbItems"></v-breadcrumbs>
     </v-col>
     <v-col class="text-right">
-      <case-status-toggle v-model="caseDetails.status" />
+      <!-- <case-status-toggle v-model="caseDetails.status" /> -->
     </v-col>
   </v-row>
   <v-row class="pl-6 pr-6" no-gutters>
@@ -38,12 +38,12 @@
     </v-col>
   </v-row>
   <v-row no-gutters>
-    <case-tabs :loading="loading" v-model="caseDetails" />
+    <case-tabs :loading="loading" v-model="caseDetails" :selected-signal-id="selectedSignalId" />
   </v-row>
 </template>
 
 <script>
-import { computed, ref, watchEffect, onMounted, reactive } from "vue"
+import { computed, ref, watchEffect, onMounted, reactive, watch } from "vue"
 import { useRoute } from "vue-router"
 
 import CaseApi from "@/case/api"
@@ -101,6 +101,7 @@ export default {
 
     const caseDetails = ref(caseDefaults)
     const loading = ref(false)
+    const selectedSignalId = ref(null)
 
     const fetchDetails = async () => {
       const caseName = route.params.name
@@ -126,12 +127,32 @@ export default {
       }
     }
 
-    onMounted(fetchDetails)
+    // Watch for changes in route.params.name
+    watch(
+      () => route.params.name,
+      (newName, oldName) => {
+        if (newName !== oldName) {
+          fetchDetails(newName)
+        }
+      },
+      { immediate: true } // This ensures it runs on initial mount as well
+    )
 
     watchEffect(() => {
-      route.params.name
-      fetchDetails()
+      console.log("Route params:", route.params)
     })
+
+    watch(
+      () => route.value,
+      (currentRoute) => {
+        console.log("Current route:", currentRoute)
+        if (currentRoute.params.id) {
+          selectedSignalId.value = currentRoute.params.id
+          console.log("Selected signal ID:", selectedSignalId.value)
+        }
+      },
+      { deep: true }
+    )
 
     const breadcrumbItems = computed(() => {
       let items = [
@@ -152,6 +173,7 @@ export default {
       breadcrumbItems,
       loading,
       caseDetails,
+      selectedSignalId,
     }
   },
 }

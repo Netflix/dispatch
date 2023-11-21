@@ -1,82 +1,467 @@
 <template>
-  <v-skeleton-loader :loading="isLoading" type="table" height="500px">
-    <v-row>
-      <v-col cols="3">
-        <template v-if="!signalInstances.length">
-          No example signals are currently available for this definition.
-        </template>
-        <v-virtual-scroll v-else :items="signalInstances" height="800" item-height="50">
-          <template v-slot="{ item, index }">
-            <v-list-item class="mb-n1">
-              <v-list-item-content>
-                <v-list-item-subtitle>
-                  <b>{{ index + 1 }} </b> {{ item.created_at }}</v-list-item-subtitle
-                >
-              </v-list-item-content>
-              <v-list-item-action>
-                <v-btn icon @click="updateEditorValue(item)">
-                  <v-icon small>mdi-arrow-right</v-icon>
-                </v-btn>
-              </v-list-item-action>
-            </v-list-item>
-            <v-divider v-if="index < signalInstances.length - 1"></v-divider>
-          </template>
-        </v-virtual-scroll>
-        <template v-else> </template>
+  <v-card width="100%" elevation="0">
+    <v-row no-gutters align="center">
+      <v-col>
+        <v-card-subtitle class="pl-6">
+          {{ item.id }}
+        </v-card-subtitle>
+        <v-card-subtitle class="mt-n8 mb-n4 pl-6">
+          {{ item.created_at | formatRelativeDate }}
+        </v-card-subtitle>
       </v-col>
-      <v-divider vertical></v-divider>
-      <v-col cols="9">
-        <new-raw-signal-viewer v-if="selectedSignalInstance" :item="selectedSignalInstance" />
+      <v-col cols="auto">
+        <v-btn x-small outlined class="mr-2" @click="parseEditorJSON">
+          <v-icon dense small class="pr-2"> mdi-code-json </v-icon>Beautify
+        </v-btn>
+        <v-btn x-small outlined class="mr-6" @click="copyToClipboard">
+          <v-icon dense small class="pr-2"> mdi-content-cut </v-icon>Copy</v-btn
+        >
       </v-col>
     </v-row>
-  </v-skeleton-loader>
+    <v-card-text>
+      <div class="playground-editor" style="height: 800px">
+        <div id="playground-editor" style="height: 800px"></div>
+      </div>
+    </v-card-text>
+    <v-snackbar v-model="snackbar" elevation="24" color="green" :timeout="3000">
+      Copied to clipboard!
+    </v-snackbar>
+  </v-card>
 </template>
 
 <script>
-import SignalInstanceTab from "@/signal/SignalInstanceTab.vue"
-import NewRawSignalViewer from "@/signal/NewRawSignalViewer.vue"
-import CaseApi from "@/case/api"
+import * as monaco from "monaco-editor"
+import jsonpath from "jsonpath"
+import json_to_ast from "json-to-ast"
 export default {
-  name: "SignalInstanceCardViewer",
-  components: {
-    NewRawSignalViewer,
-    SignalInstanceTab,
-  },
-  props: {
-    caseId: {
-      type: Number,
-    },
-  },
+  name: "NewRawSignalViewer",
   data() {
     return {
-      menu: false,
-      workflowRunDialog: false,
-      signalInstances: [],
-      selectedSignalInstance: null, // add this line
-      isLoading: true,
+      entityVals: [],
+      matches: [],
+      decoration: [],
+      noHighlight: [],
+      editor: null,
+      monaco: null,
+      model: null,
     }
   },
-  methods: {
-    fetchSignalInstances(caseId) {
-      this.isLoading = true
-      return CaseApi.getAllSignalInstances(caseId).then((response) => {
-        this.signalInstances = response.data.instances.flat()
-        this.updateEditorValue(this.signalInstances[0])
-        this.isLoading = false
-      })
+  props: {
+    item: {
+      type: Object,
+      required: true,
     },
-    updateEditorValue(instance) {
-      console.log(instance)
-      this.selectedSignalInstance = instance
+  },
+  computed: {
+    raw_str: {
+      get: function () {
+        return JSON.stringify(this.item.raw, null, "\t") || "[]"
+      },
     },
   },
   watch: {
-    caseId(newCaseId) {
-      this.fetchSignalInstances(newCaseId)
+    item: {
+      handler(newValue, oldValue) {
+        console.log("NEW VAL %O", newValue)
+        oldValue.entities.forEach((entity) => {
+          console.log("GOT %O", entity)
+          console.log(entity.value)
+        })
+        this.editor.getModel().findMatches("sub_string", true, false, false, null, true)
+        this.editor.setValue(this.raw(newValue.raw))
+      },
     },
   },
-  created() {
-    this.fetchSignalInstances(this.caseId)
+  mounted() {
+    monaco.editor.defineTheme("myCustomTheme", {
+      base: "vs", // can also be vs-dark or hc-black
+      inherit: true, // can also be false to completely replace the builtin rules
+      rules: [
+        {
+          token: "string.value.json",
+          foreground: "#ef4444",
+        },
+        {
+          token: "string.key.json",
+          foreground: "#0a0a0a",
+        },
+      ],
+      colors: {
+        "editor.foreground": "#000000",
+      },
+    })
+    const editorOptions = {
+      minimap: { enabled: false },
+      renderLineHighlight: "none",
+      automaticLayout: true,
+      value: this.raw_str,
+      lineDecorationsWidth: 0,
+      language: "json",
+      theme: "myCustomTheme",
+      overviewRulerLanes: 0,
+      hideCursorInOverviewRuler: true,
+      scrollbar: {
+        vertical: "hidden",
+        horizontal: "hidden",
+      },
+      wordWrap: true,
+    }
+    let uuid = crypto.randomUUID()
+    // Create a unique URI for the in-memory model
+    const modelUri = monaco.Uri.parse(`inmemory://playground-${uuid}`)
+    // Create the model with an osquery log as the initial value
+    const model = monaco.editor.createModel(this.raw_str, "json", modelUri)
+    // Create the editor and pass the model to the options
+    const editor = monaco.editor.create(
+      document.getElementById("playground-editor"),
+      editorOptions,
+      {
+        model,
+      }
+    )
+    // Store the references to the model and editor
+    this.model = model
+    this.editor = editor
+    this.monaco = monaco
+    this.item.entities.forEach((entity) => {
+      console.log("GOT ENTITY %O", entity)
+      console.log(entity.value)
+      console.log("JPATH %O", entity.entity_type.jpath)
+      const post = this.editor.getModel().findMatches(entity.value, true, false, false, null, true)
+      console.log("POST %O", post)
+      this.updateDecorations(null, entity.entity_type.jpath)
+    })
+    monaco.languages.registerHoverProvider("json", {
+      provideHover: (model, position) => {
+        const word = model.getWordAtPosition(position)
+        if (word) {
+          const hoveredWord = word.word
+          const entity = this.item.entities.find((entity) => entity.value === hoveredWord)
+          if (entity) {
+            const range = new monaco.Range(
+              position.lineNumber,
+              word.startColumn,
+              position.lineNumber,
+              word.endColumn
+            )
+            console.log(entity)
+            const content = `**Entity Type**: ${entity.entity_type.name}\n\n**Pattern**: ${entity.entity_type.jpath}\n\n**Value**: ${entity.value}`
+            return {
+              contents: [{ value: content }],
+              range: range,
+            }
+          }
+        }
+        return null
+      },
+    })
+    // this.updateDecorations(this.pattern, this.jpath)
+    this.editor.layout()
+  },
+  methods: {
+    raw() {
+      return JSON.stringify(this.item.raw, null, "\t") || "[]"
+    },
+    parseEditorJSON() {
+      // Get the current value from the editor
+      const currentValue = this.editor.getValue()
+      // Attempt to parse the string as JSON
+      let jsonValue = JSON.parse(currentValue)
+      // Parse any stringified JSON properties within the JSON
+      this.parseJSONProperties(jsonValue)
+      // Convert the parsed and modified JSON back to a string
+      const updatedValue = JSON.stringify(jsonValue, null, "\t")
+      // Set the new value in the editor
+      this.editor.setValue(updatedValue)
+      this.item.entities.forEach((entity) => {
+        console.log("GOT ENTITY %O", entity)
+        console.log(entity.value)
+        console.log("JPATH %O", entity.entity_type.jpath)
+        const post = this.editor
+          .getModel()
+          .findMatches(entity.value, true, false, false, null, true)
+        console.log("POST %O", post)
+        this.updateDecorations(null, entity.entity_type.jpath)
+      })
+    },
+    // Updated parseJSONProperties method
+    parseJSONProperties(item) {
+      // Iterate over each property of the item
+      for (let key in item) {
+        // Check if the property's value is a string
+        if (typeof item[key] === "string") {
+          try {
+            // Attempt to parse the string as JSON
+            item[key] = JSON.parse(item[key])
+            // Check if the parsed JSON is an object or array and recursively parse its properties
+            if (typeof item[key] === "object") {
+              this.parseJSONProperties(item[key])
+            }
+          } catch (error) {
+            // If the string cannot be parsed as JSON, leave it as a string
+          }
+        } else if (typeof item[key] === "object") {
+          // If the property's value is an object or array, recursively parse its properties
+          this.parseJSONProperties(item[key])
+        }
+      }
+    },
+    /**
+     * Update the decorations in the editor
+     *
+     * @param {string} pattern The pattern to match against
+     * @param {string} jpath The jpath to use
+     */
+    updateDecorations(pattern, jpath) {
+      if (!pattern && !jpath) {
+        return
+      }
+      console.log("GOT JPATH %O", jpath)
+      const model = this.editor.getModel()
+      const editorText = model.getValue()
+      if (!editorText) {
+        return
+      }
+      try {
+        JSON.parse(editorText)
+      } catch (e) {
+        this.clearAllDecorations()
+        return
+      }
+      let regex = null
+      if (pattern) {
+        regex = new RegExp(pattern, "g")
+      }
+      this.matches = []
+      if (jpath) {
+        const jpathMatches = jsonpath.query(JSON.parse(editorText), jpath)
+        if (jpathMatches.length) {
+          jpathMatches.forEach((jpathMatch) => {
+            if (!pattern) {
+              this.matches.push({
+                value: jpathMatch,
+                index: editorText.indexOf(jpathMatch),
+              })
+            } else {
+              jpathMatch = jpathMatch.toString()
+              this.findMatchesWithRegex(regex, editorText, jpathMatch)
+            }
+          })
+        }
+      } else {
+        let values = this.flattenValues(JSON.parse(editorText))
+        values.forEach((value) => {
+          value = value.toString()
+          this.findMatchesWithRegex(regex, editorText, value)
+        })
+      }
+      if (!this.matches.length) {
+        return
+      }
+      const ranges = []
+      const ast = json_to_ast(model.getValue())
+      if (jpath) {
+        const nodes = jsonpath.nodes(JSON.parse(editorText), jpath)
+        const jpathTree = nodes.map((node) => node.path.filter((item) => item !== "$"))
+        for (const p of jpathTree) {
+          const el = this.extractPath(ast, p)
+          /**
+           * JSON Paths can return an Object of matches, which is not supported.
+           *
+           * @see test_find_entities_with_field_only, case #2, in test_entity_service.py
+           */
+          if (el.value.type === "Object") {
+            break
+          }
+          let valueToMatch
+          let alignIndex
+          // matchAll cannot be called on numbers
+          if (typeof el.value.value === "number") {
+            // matchAll cannot be called on string
+            valueToMatch = el.value.raw
+            // There's no parentheses
+            alignIndex = 0
+          } else {
+            valueToMatch = el.value.value
+            // There's parentheses, which we don't want to match on
+            alignIndex = 1
+          }
+          if (!pattern) {
+            ranges.push(
+              new this.monaco.Range(
+                el.value.loc.start.line,
+                el.value.loc.start.column + alignIndex,
+                el.value.loc.end.line,
+                el.value.loc.end.column - alignIndex
+              )
+            )
+          } else {
+            const matches = valueToMatch.matchAll(regex)
+            for (const match of matches) {
+              ranges.push(
+                new this.monaco.Range(
+                  el.value.loc.start.line,
+                  el.value.loc.start.column + match.index + alignIndex,
+                  el.value.loc.start.line,
+                  el.value.loc.start.column + match.index + match[0].length + alignIndex
+                )
+              )
+            }
+          }
+        }
+      } else {
+        const seenIndexes = new Set()
+        for (const match of this.matches) {
+          let startPos, endPos
+          // Values must be coerced to strings to get their length
+          match.value = match.value.toString()
+          // Position of first occurence
+          startPos = model.getPositionAt(match.index)
+          endPos = model.getPositionAt(match.index + match.value.length)
+          // Push the first occurence of the pattern to ranges for decoration
+          ranges.push(this.newRange(startPos, endPos))
+          let indexOfNext = editorText.indexOf(match.value, editorText.indexOf(match.value) + 1)
+          /**
+           * Loop through the model until we extract all occurences.
+           *
+           * @see Array.prototype.indexOf(), always returns -1 when searchElement is NaN
+           */
+          while (indexOfNext !== -1) {
+            if (seenIndexes.has(indexOfNext)) {
+              break
+            }
+            startPos = model.getPositionAt(indexOfNext)
+            endPos = model.getPositionAt(indexOfNext + match.value.length)
+            ranges.push(this.newRange(startPos, endPos))
+            seenIndexes.add(indexOfNext)
+            indexOfNext = editorText.indexOf(match.value, indexOfNext + 1)
+          }
+        }
+      }
+      this.applyNewDecorations(ranges)
+    },
+    newRange(startPos, endPos) {
+      return new this.monaco.Range(
+        startPos.lineNumber,
+        startPos.column,
+        endPos.lineNumber,
+        endPos.column
+      )
+    },
+    /**
+     * Extracts the path to a value within an abstract syntax tree (AST)
+     *
+     * @param {Object} ast - The abstract syntax tree to extract the path from
+     * @param {Array} path - An array of keys or indices representing the path to the desired value
+     * @returns {Object} An object with two properties: 'value' and 'path', where 'value' is the extracted value and 'path' is the full path to the value
+     * @returns {null} If the value is not found in the AST or if either the 'ast' or 'path' arguments are missing
+     */
+    extractPath(ast, path) {
+      // Return null if either the ast or path is missing
+      if (!ast || !path) return null
+      // Keep track of the current node in the iteration and the current path
+      let currentNode = ast
+      let currentPath = []
+      // Iterate over the path elements
+      for (let i = 0; i < path.length; i++) {
+        // Add the current path element to the current path
+        currentPath.push(path[i])
+        if (currentNode.type === "Object") {
+          // Find the property node in the children of the current node that matches the current path element
+          let propertyNode = currentNode.children.find((child) => {
+            return (
+              child.type === "Property" &&
+              child.key.type === "Identifier" &&
+              child.key.value === path[i]
+            )
+          })
+          // If the property node is not found, return null
+          if (!propertyNode) return null
+          // Set the current node to the value of the property node
+          currentNode = propertyNode.value
+        } else if (currentNode.type === "Array") {
+          // Get the current path element as the index
+          let index = path[i]
+          // If the index is out of bounds, return null
+          if (index >= currentNode.children.length) return null
+          // Set the current node to the child at the given index
+          currentNode = currentNode.children[index]
+        } else {
+          // Return null if the current node is neither an object nor an array
+          return null
+        }
+      }
+      return { value: currentNode, path: currentPath }
+    },
+    flattenValues(obj) {
+      if (typeof obj === "string") {
+        return [obj]
+      }
+      let values = []
+      for (let key in obj) {
+        let value = obj[key]
+        if (Array.isArray(value)) {
+          value.forEach((val) => {
+            values = values.concat(this.flattenValues(val))
+          })
+        } else if (typeof value === "object") {
+          values = values.concat(this.flattenValues(value))
+        } else {
+          values.push(value)
+        }
+      }
+      return values
+    },
+    findMatchesWithRegex(regex, editorText, value) {
+      try {
+        const matches = value.matchAll(regex)
+        for (const match of matches) {
+          this.matches.push({
+            value: match[0],
+            index: editorText.indexOf(value) + match.index,
+          })
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    },
+    applyNewDecorations(ranges) {
+      try {
+        this.decoration = this.editor.deltaDecorations(
+          this.decoration,
+          ranges.map((range) => {
+            return {
+              range,
+              options: {
+                isWholeLine: false,
+                className: "decorate",
+              },
+            }
+          })
+        )
+      } catch (error) {
+        console.error(error)
+      }
+    },
+    clearAllDecorations() {
+      this.decoration = this.editor.deltaDecorations(this.decoration, this.noHighlight)
+    },
+    copyToClipboard() {
+      navigator.clipboard
+        .writeText(this.raw_str)
+        .then(() => {
+          this.snackbar = true
+        })
+        .catch((err) => {
+          console.error("Could not copy text: ", err)
+        })
+    },
   },
 }
 </script>
+
+<style>
+.decorate {
+  background-color: rgba(255, 199, 199, 0.726);
+}
+</style>

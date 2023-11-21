@@ -209,7 +209,14 @@ export const protectedRoute = [
           name: "CasePage",
           meta: { title: "Page" },
           component: () => import("@/case/Page.vue"),
-          //props: true,
+          children: [
+            {
+              path: "signal/:id",
+              name: "SignalDetails",
+              component: () => import("@/case/Page.vue"), // Use the same component to avoid re-render
+              props: true,
+            },
+          ],
         },
       ],
     },
