@@ -1,5 +1,6 @@
 <template>
   <new-edit-dialog />
+  <attorney-edit-form />
   <delete-dialog />
   <v-container fluid>
     <v-row no-gutters>
@@ -69,17 +70,6 @@
               <participant v-if="item.creator" :participant="convertToParticipant(item.creator)" />
               <span v-else>(anonymous)</span>
             </template>
-            <template #item.memo_link="{ item }">
-              <v-btn
-                v-if="item.memo_link"
-                :href="item.memo_link"
-                target="_blank"
-                icon
-                variant="text"
-              >
-                <v-icon>mdi-open-in-new</v-icon>
-              </v-btn>
-            </template>
             <template #item.data-table-actions="{ item }">
               <v-menu location="right" origin="overlap">
                 <template #activator="{ props }">
@@ -90,6 +80,9 @@
                 <v-list>
                   <v-list-item @click="editShow(item)">
                     <v-list-item-title>View / Edit</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item @click="attorneyEditShow(item)">
+                    <v-list-item-title>Attorney Review</v-list-item-title>
                   </v-list-item>
                   <v-list-item @click="showDeleteDialog(item)">
                     <v-list-item-title>Delete</v-list-item-title>
@@ -111,6 +104,7 @@ import { mapActions } from "vuex"
 import { formatRelativeDate, formatDate } from "@/filters"
 
 import NewEditDialog from "@/forms/EditForm.vue"
+import AttorneyEditForm from "./AttorneyEditForm.vue"
 import DeleteDialog from "@/forms/DeleteDialog.vue"
 import Participant from "@/incident/Participant.vue"
 import RouterUtils from "@/router/utils"
@@ -126,6 +120,7 @@ export default {
     Participant,
     TableExportDialog,
     TableFilterDialog,
+    AttorneyEditForm,
   },
 
   data() {
@@ -139,7 +134,6 @@ export default {
         { title: "Created At", value: "created_at" },
         { title: "Updated At", value: "updated_at" },
         { title: "Attorney Status", value: "attorney_status" },
-        { title: "Memo Link", value: "memo_link" },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
       // items: [
@@ -203,7 +197,7 @@ export default {
 
   methods: {
     ...mapActions("forms_table", ["getAll"]),
-    ...mapActions("forms", ["editShow", "showDeleteDialog"]),
+    ...mapActions("forms", ["editShow", "showDeleteDialog", "attorneyEditShow"]),
     convertToParticipant(individual) {
       return {
         individual: {
@@ -238,6 +232,7 @@ export default {
         vm.descending,
         vm.project,
         vm.status,
+        vm.forms_type,
       ],
       () => {
         this.page = 1

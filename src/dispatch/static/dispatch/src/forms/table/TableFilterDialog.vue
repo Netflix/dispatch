@@ -19,8 +19,30 @@
         :items="enabledFormTypes"
         item-title="name"
         label="Form Type"
+        multiple
+        chips
         return-object
-        clearable
+        clearable-chips
+        class="ml-4 mr-4"
+      />
+      <v-select
+        v-model="status"
+        :items="['Completed', 'Draft']"
+        label="Status"
+        multiple
+        chips
+        return-object
+        clearable-chips
+        class="ml-4 mr-4"
+      />
+      <v-select
+        v-model="attorney_status"
+        :items="['Not reviewed', 'Reviewed: no action required', 'Reviewed: action required']"
+        label="Attorney Status"
+        multiple
+        chips
+        return-object
+        clearable-chips
         class="ml-4 mr-4"
       />
       <v-card-actions>
@@ -36,6 +58,7 @@ import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
 
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
+import { th } from "date-fns/locale"
 
 export default {
   name: "ServiceFeedbackTableFilterDialog",
@@ -65,11 +88,28 @@ export default {
     ...mapFields("forms_table", [
       "table.options.filters.project",
       "table.options.filters.forms_type",
+      "table.options.filters.status",
+      "table.options.filters.attorney_status",
       "form_types",
     ]),
 
     numFilters: function () {
-      return sum([this.project?.length, this.forms_type?.length])
+      let projects = 0
+      if (this.project) {
+        if (Array.isArray(this.project)) {
+          if (this.project.length > 0) {
+            projects = 1
+          }
+        } else {
+          projects = 1
+        }
+      }
+      return sum([
+        projects,
+        this.local_form_type?.length > 0,
+        this.status.length > 0,
+        this.attorney_status.length > 0,
+      ])
     },
 
     enabledFormTypes: function () {
@@ -80,10 +120,15 @@ export default {
   methods: {
     applyFilters() {
       // we set the filter values
-      console.log(`**** The form type is ${JSON.stringify(this.local_form_type)}`)
       this.project = this.local_project
-      if (this.local_form_type) {
-        this.forms_type = [{ id: this.local_form_type.id }]
+      if (this.local_form_type && this.local_form_type.length > 0) {
+        // just get the id from each of the local_form_type
+        let types = []
+        this.local_form_type.forEach((item) => {
+          types.push({ id: item.id })
+        })
+        this.forms_type = types
+        console.log(`*** Got form_types: ${JSON.stringify(this.forms_type)}`)
       } else {
         this.forms_type = []
       }

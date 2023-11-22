@@ -4,6 +4,7 @@ import { debounce } from "lodash"
 import SearchUtils from "@/search/utils"
 import FormsTypeApi from "@/forms/types/api"
 import FormsApi from "@/forms/api"
+import IncidentApi from "@/incident/api"
 import { ref } from "vue"
 import { be } from "date-fns/locale"
 
@@ -31,6 +32,7 @@ const state = {
   dialogs: {
     showCreateEdit: false,
     showDeleteDialog: false,
+    showAttorneyEdit: false,
   },
   table: {
     rows: {
@@ -50,12 +52,99 @@ const state = {
   form_types: [],
   current_page: 1,
   page_schema: null,
+  page_data: null,
   incident_id: null,
   project_id: null,
+  incident_data: null,
 }
 
 const getters = {
   getField,
+}
+
+function buildFormDoc(form_schema, form_data) {
+  // Used to build the read-only answers given the questions in form_schema and the answers in form_data
+  console.log(`**** Building doc using ${form_data}`)
+  let schema = JSON.parse(form_schema)
+  let data = JSON.parse(form_data)
+  let output_qa = []
+  for (let item of schema) {
+    let name = item.name
+    let label = item.title
+    // find the key in form_data corresponding to this name
+    let answer = data[name]
+    if (answer && Array.isArray(answer) && answer.length == 0) {
+      answer = ""
+    }
+    // add the label and answer to the output_qa array
+    if (answer) {
+      output_qa.push({
+        question: label,
+        answer,
+      })
+    }
+  }
+  return output_qa
+}
+
+function formatTacticalReport(tactical_report) {
+  let output = ""
+  if (tactical_report) {
+    output = `Created: ${tactical_report.created_at}, Conditions: ${tactical_report.details.conditions}, Actions: ${tactical_report.details.actions}, Needs: ${tactical_report.details.needs}`
+  }
+  return output
+}
+
+function buildIncidentDoc(incident) {
+  // todo - will need to use api to get incident so you can retrieve the last_tactical_report
+  // console.log(`**** Building incident doc using ${JSON.stringify(incident)}`)
+  let output_qa = []
+  if (incident) {
+    output_qa.push({
+      question: "Name",
+      answer: incident.name,
+    })
+    output_qa.push({
+      question: "Created At",
+      answer: incident.created_at,
+    })
+    output_qa.push({
+      question: "Description",
+      answer: incident.description,
+    })
+    output_qa.push({
+      question: "Type",
+      answer: incident.incident_type.name,
+    })
+    output_qa.push({
+      question: "Priority",
+      answer: incident.incident_priority.name,
+    })
+    output_qa.push({
+      question: "Status",
+      answer: incident.status,
+    })
+    output_qa.push({
+      question: "Severity",
+      answer: incident.incident_severity.name,
+    })
+    output_qa.push({
+      question: "Last tactical report",
+      answer: formatTacticalReport(incident.last_tactical_report),
+    })
+  }
+  let incident_doc = ""
+  for (let document of incident.documents) {
+    if (document.resource_type == "dispatch-incident-document") {
+      incident_doc = document.weblink
+    }
+  }
+  return {
+    data: output_qa,
+    slack_channel: incident.conversation?.weblink,
+    incident_doc: incident_doc,
+    name: incident.name,
+  }
 }
 
 function getCurrentPage(form_schema) {
@@ -185,6 +274,7 @@ function save({ commit, dispatch }) {
       .then(() => {
         console.log("**** Form created successfully")
         commit("SET_DIALOG_CREATE_EDIT", false)
+        commit("SET_DIALOG_ATTORNEY_EDIT", false)
         dispatch("getAll")
         commit("SET_SELECTED_LOADING", false)
         commit(
@@ -204,12 +294,13 @@ function save({ commit, dispatch }) {
     )
       .then(() => {
         commit("SET_DIALOG_CREATE_EDIT", false)
+        commit("SET_DIALOG_ATTORNEY_EDIT", false)
         dispatch("getAll")
         dispatch("forms_table/getAll", null, { root: true })
         commit("SET_SELECTED_LOADING", false)
         commit(
           "notification_backend/addBeNotification",
-          { text: "Form type updated successfully.", type: "success" },
+          { text: "Form updated successfully.", type: "success" },
           { root: true }
         )
       })
@@ -287,13 +378,25 @@ const actions = {
     commit("SET_PAGE_SCHEMA", getCurrentPage(selected.form_type.form_schema))
     commit("SET_DIALOG_CREATE_EDIT", true)
   },
+  attorneyEditShow({ commit }, selected) {
+    commit("SET_SELECTED", selected)
+    console.log(`**** The incident is: ${JSON.stringify(selected.incident)}`)
+    commit("SET_PAGE_DATA", buildFormDoc(selected.form_type.form_schema, selected.form_data))
+    IncidentApi.get(selected.incident.id).then((response) => {
+      commit("SET_INCIDENT_DATA", buildIncidentDoc(response.data))
+      commit("SET_DIALOG_ATTORNEY_EDIT", true)
+    })
+  },
   showDeleteDialog({ commit }, form) {
     commit("SET_DIALOG_DELETE", true)
     commit("SET_SELECTED", form)
   },
   closeCreateEdit({ commit }) {
-    console.log(`**** CAlling closeCreateEdit`)
     commit("SET_DIALOG_CREATE_EDIT", false)
+    commit("RESET_SELECTED")
+  },
+  closeAttorneyEdit({ commit }) {
+    commit("SET_DIALOG_ATTORNEY_EDIT", false)
     commit("RESET_SELECTED")
   },
   closeDeleteDialog({ commit }) {
@@ -306,6 +409,9 @@ const actions = {
   },
   saveAsCompleted({ commit, dispatch }) {
     state.selected.status = "Completed"
+    save({ commit, dispatch })
+  },
+  saveAttorneyAnalysis({ commit, dispatch }) {
     save({ commit, dispatch })
   },
   deleteForm({ commit, dispatch }) {
@@ -340,6 +446,12 @@ const mutations = {
   SET_PAGE_SCHEMA(state, value) {
     state.page_schema = value
   },
+  SET_PAGE_DATA(state, value) {
+    state.page_data = value
+  },
+  SET_INCIDENT_DATA(state, value) {
+    state.incident_data = value
+  },
   SET_FORM_TYPE(state, value) {
     state.selected.form_type = value
   },
@@ -358,6 +470,9 @@ const mutations = {
   SET_DIALOG_CREATE_EDIT(state, value) {
     state.dialogs.showCreateEdit = value
   },
+  SET_DIALOG_ATTORNEY_EDIT(state, value) {
+    state.dialogs.showAttorneyEdit = value
+  },
   SET_DIALOG_DELETE(state, value) {
     state.dialogs.showDeleteDialog = value
   },
@@ -366,6 +481,9 @@ const mutations = {
     let project = state.selected.project
     state.selected = { ...getDefaultSelectedState() }
     state.selected.project = project
+    state.incident_id = null
+    state.project_id = null
+    state.page_schema = null
   },
 }
 

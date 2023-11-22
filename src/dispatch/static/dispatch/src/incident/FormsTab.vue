@@ -45,11 +45,6 @@
         <span>{{ formatDate(item.updated_at) }}</span>
       </v-tooltip>
     </template>
-    <template #item.memo_link="{ item }">
-      <v-btn v-if="item.memo_link" :href="item.memo_link" target="_blank" icon variant="text">
-        <v-icon>mdi-open-in-new</v-icon>
-      </v-btn>
-    </template>
     <template #item.form_type="{ item }">
       <span v-if="item.form_type">{{ item.form_type.name }}</span>
     </template>
@@ -101,7 +96,6 @@ export default {
         { title: "Created At", value: "created_at" },
         { title: "Updated At", value: "updated_at" },
         { title: "Attorney Status", value: "attorney_status" },
-        { title: "Memo Link", value: "memo_link" },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
