@@ -40,10 +40,10 @@
         </v-row>
         <v-row style="margin-top: -40px">
           <v-col cols="6">
-            <v-textarea v-model="memo_link" label="Open questions" />
+            <v-textarea v-model="attorney_questions" label="Open questions" />
           </v-col>
           <v-col cols="6">
-            <v-textarea v-model="memo_link" label="Attorney analysis" />
+            <v-textarea v-model="attorney_analysis" label="Attorney analysis" />
           </v-col>
         </v-row>
       </v-container>
@@ -96,7 +96,8 @@ export default {
       "selected.form_data",
       "selected.incident_id",
       "selected.attorney_status",
-      "selected.memo_link",
+      "selected.attorney_analysis",
+      "selected.attorney_questions",
       "selected.project",
       "selected.incident",
       "page_data",

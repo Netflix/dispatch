@@ -136,30 +136,6 @@ export default {
         { title: "Attorney Status", value: "attorney_status" },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
-      // items: [
-      //   {
-      //     id: 1,
-      //     form_type: "Privacy Assessment",
-      //     incident: { name: "dispatch-default-test-278" },
-      //     form_type_id: 2,
-      //     status: "Complete",
-      //     creator: { name: "David Whittaker" },
-      //     created_at: "2023-11-07T01:50Z",
-      //     attorney_status: "Reviewed: No action required",
-      //     memo_link: "https://www.google.com",
-      //   },
-      //   {
-      //     id: 2,
-      //     form_type: "Materiality Assessment",
-      //     incident: { name: "dispatch-default-test-278" },
-      //     form_type_id: 1,
-      //     status: "Draft",
-      //     creator: { name: "Kyle Smith" },
-      //     created_at: "2023-11-07T14:50Z",
-      //     attorney_status: "Not reviewed",
-      //     memo_link: null,
-      //   },
-      // ],
     }
   },
 
