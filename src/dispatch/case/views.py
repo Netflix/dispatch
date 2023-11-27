@@ -23,7 +23,7 @@ from dispatch.database.service import CommonParameters, search_filter_sort_pagin
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.incident.models import IncidentCreate, IncidentRead
 from dispatch.incident import service as incident_service
-from dispatch.participant.models import ParticipantUpdate
+from dispatch.participant.models import ParticipantUpdate, ParticipantReadMinimal
 from dispatch.individual.models import IndividualContactRead
 
 from .flows import (
@@ -35,10 +35,10 @@ from .flows import (
     case_triage_create_flow,
     case_update_flow,
     case_create_resources_flow,
-    get_case_participants,
+    get_case_participants_flow,
 )
 from .models import Case, CaseCreate, CasePagination, CaseRead, CaseUpdate, CaseExpandedPagination
-from .service import create, delete, get, update
+from .service import create, delete, get, update, get_participants
 
 
 log = logging.getLogger(__name__)
@@ -73,6 +73,20 @@ def get_case(
 ):
     """Retrieves the details of a single case."""
     return current_case
+
+
+@router.get(
+    "/{case_id}/participants/minimal",
+    response_model=List[ParticipantReadMinimal],
+    summary="Retrieves a minimal list of case participants.",
+    dependencies=[Depends(PermissionsDependency([CaseViewPermission]))],
+)
+def get_case_participants_minimal(
+    case_id: PrimaryKey,
+    db_session: DbSession,
+):
+    """Retrieves the details of a single case."""
+    return get_participants(case_id=case_id, db_session=db_session)
 
 
 @router.get("", summary="Retrieves a list of cases.")
@@ -159,7 +173,7 @@ def create_case_resources(
     background_tasks: BackgroundTasks,
 ):
     """Creates resources for an existing case."""
-    individual_participants, team_participants = get_case_participants(
+    individual_participants, team_participants = get_case_participants_flow(
         case=current_case, db_session=db_session
     )
     background_tasks.add_task(
