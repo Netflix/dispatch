@@ -24,13 +24,9 @@
     <v-spacer />
     <v-toolbar-items>
       <v-btn icon variant="text" @click="toggleDarkTheme">
-        <v-icon
-          :icon="
-            $vuetify.theme.current.dark ? 'mdi-white-balance-sunny' : 'mdi-moon-waxing-crescent'
-          "
-        />
+        <v-icon :icon="dark_theme ? 'mdi-white-balance-sunny' : 'mdi-moon-waxing-crescent'" />
         <v-tooltip activator="parent" location="bottom">
-          Dark Mode {{ $vuetify.theme.current.dark ? "Off" : "On" }}
+          Dark Mode {{ dark_theme ? "Off" : "On" }}
         </v-tooltip>
       </v-btn>
       <v-btn icon variant="text">
@@ -158,6 +154,7 @@ export default {
   data: () => ({
     organizations: [],
     query: "",
+    dark_theme: false,
   }),
   setup() {
     return { formatHash }
@@ -205,6 +202,7 @@ export default {
     toggleDarkTheme() {
       this.$vuetify.theme.global.name = this.$vuetify.theme.global.current.dark ? "light" : "dark"
       localStorage.setItem("dark_theme", this.$vuetify.theme.global.current.dark.toString())
+      this.dark_theme = !this.dark_theme
     },
     switchOrganizations(slug) {
       this.$router.push({ params: { organization: slug } }).then(() => {
@@ -233,8 +231,12 @@ export default {
     let theme = localStorage.getItem("dark_theme")
     if (theme) {
       if (theme === "true") {
+        this.dark_theme = true
+        if (this.$vuetify.theme.global) this.$vuetify.theme.global.name = "dark"
         this.$vuetify.theme.dark = true
       } else {
+        this.dark_theme = false
+        if (this.$vuetify.theme.global) this.$vuetify.theme.global.name = "light"
         this.$vuetify.theme.dark = false
       }
     }
