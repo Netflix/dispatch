@@ -42,7 +42,7 @@ identify==2.5.27
     # via pre-commit
 iniconfig==2.0.0
     # via pytest
-ipython==8.17.2
+ipython==8.18.0
     # via -r requirements-dev.in
 jedi==0.19.0
     # via ipython
