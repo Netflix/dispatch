@@ -107,8 +107,8 @@ export default {
       return sum([
         projects,
         this.local_form_type?.length > 0,
-        this.status.length > 0,
-        this.attorney_status.length > 0,
+        this.status?.length > 0,
+        this.attorney_status?.length > 0,
       ])
     },
 
