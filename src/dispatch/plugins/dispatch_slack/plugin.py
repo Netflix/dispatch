@@ -189,9 +189,7 @@ class SlackConversationPlugin(ConversationPlugin):
             error = exception.response["error"]
             if error == SlackAPIErrorCode.IS_ARCHIVED:
                 # swallow send errors if the channel is archived
-                message = (
-                    f"SlackAPIError trying to send: {exception.response}. Message: {text}. Type: {notification_type}"
-                )
+                message = f"SlackAPIError trying to send: {exception.response}. Message: {text}. Type: {notification_type}"
                 logger.error(message)
             else:
                 raise exception
