@@ -81,9 +81,9 @@ def signal_instance_create_flow(
         db_session=db_session,
         signal_instance=signal_instance,
     ):
-        # If the signal was deduplicated, we can assume a case exists,
-        # and we need to update the corresponding signal message
-        if _should_update_signal_message(signal_instance):
+        # If a case exists and the signal was deduplicated,
+        # we need to update the corresponding signal message
+        if signal_instance.case_id and _should_update_signal_message(signal_instance):
             update_signal_message(
                 db_session=db_session,
                 signal_instance=signal_instance,
@@ -290,9 +290,6 @@ def _should_update_signal_message(signal_instance: SignalInstance) -> bool:
     Determine if the signal message should be updated based on the filter action and time since the last update.
     """
     global _last_nonupdated_signal_cache
-
-    if signal_instance.case_id:
-        return False
 
     case_id = str(signal_instance.case_id)
 
