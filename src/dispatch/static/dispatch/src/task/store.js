@@ -101,6 +101,9 @@ const actions = {
     commit("SET_DIALOG_SHOW_EXPORT", false)
   },
   save({ commit, dispatch }) {
+    if (Array.isArray(state.selected.owner)) {
+      state.selected.owner = state.selected.owner[0]
+    }
     commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
       return TaskApi.create(state.selected)

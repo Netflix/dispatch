@@ -172,7 +172,7 @@
       </v-list>
     </v-card-text>
     <v-card-actions>
-      <v-spacer></v-spacer>
+      <v-spacer />
       <v-btn color="info" block variant="flat" @click="resetSelected()">
         Report Another Incident
       </v-btn>
