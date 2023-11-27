@@ -30,6 +30,12 @@ def create_evergreen_reminder(
     db_session: SessionLocal, project: Project, owner_email: str, resource_groups: Any
 ):
     """Contains the logic for evergreen reminders."""
+    if not owner_email:
+        log.warning(
+            "Evergreen reminder not sent. No owner email. Project: {project.name}. Organization: {project.organization.name}"
+        )
+        return
+
     plugin = plugin_service.get_active_instance(
         db_session=db_session, plugin_type="email", project_id=project.id
     )
