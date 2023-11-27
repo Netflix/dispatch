@@ -3,18 +3,25 @@
     <v-row>
       <!-- Column for Data Table -->
       <v-col cols="3">
-        <v-card min-width="350" max-width="350">
+        <v-card min-width="350" max-width="350" class="signal-card" elevation="0">
           <v-card-title> Alerts </v-card-title>
 
           <v-divider></v-divider>
 
           <v-virtual-scroll :items="signalInstances" height="800">
-            <template v-for="(item, index) in signalInstances" :key="item.id">
-              <div class="pa-2" :class="index % 2 === 0 ? 'bg-grey-lighten-2' : ''">
-                {{ item.signal.name }}
+            <template v-slot:default="{ item }">
+              <div class="d-flex align-center">
+                <hover-card :item="item">
+                  <span style="font-size: 0.75rem">
+                    {{ item.signal.name }}
+                  </span>
+                </hover-card>
+                <span style="font-size: 0.75rem" class="pl-1">
+                  · {{ formatRelativeDate(item.created_at) }}
+                </span>
                 <!-- Other data fields... -->
-                <v-btn icon variant="text" @click="selectItem(item)">
-                  <v-icon>mdi-play-circle-outline</v-icon>
+                <v-btn icon dense size="x-small" variant="text" @click="selectItem(item)">
+                  <v-icon size="medium">mdi-play-circle-outline</v-icon>
                 </v-btn>
               </div>
             </template>
@@ -23,109 +30,100 @@
       </v-col>
       <!-- Column for Raw Signal Viewer -->
       <v-col cols="9">
-        <raw-signal-viewer2 class="fill-width" :value="selectedItem" />
+        <v-card elevation="0" class="signal-card pt-2">
+          <span style="font-size: 0.75rem">
+            <!-- {{ selectedItem.signal.name }} -->
+          </span>
+          <raw-signal-viewer2 :value="selectedItem" />
+        </v-card>
       </v-col>
     </v-row>
   </v-container>
 </template>
 
-<script>
-import { ref, toRefs, watch } from "vue"
-import { formatRelativeDate, formatDate } from "@/filters"
-import SignalPopover from "@/signal/SignalPopover.vue"
-import RawSignalViewer2 from "@/signal/NewRawSignalViewer2.vue"
-import WorkflowRunModal from "@/workflow/RunModal.vue"
+<script setup lang="ts">
+import { ref, watch, defineProps, withDefaults, toRef, watchEffect } from "vue"
 import { useRoute, useRouter } from "vue-router"
+import { formatRelativeDate } from "@/filters"
 
-export default {
-  name: "SignalInstanceTab",
-  components: {
-    SignalPopover,
-    RawSignalViewer2,
-    WorkflowRunModal,
-  },
-  props: {
+import RawSignalViewer2 from "@/signal/NewRawSignalViewer2.vue"
+import HoverCard from "@/components/HoverCard.vue"
+
+// Define props
+const props = withDefaults(
+  defineProps<{
     modelValue: {
-      type: Array,
-      default: () => [],
-      required: true,
-    },
+      type: any[]
+      required: true
+    }
     loading: {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
-    selectedSignalId: String,
-  },
-  setup(props) {
-    const { modelValue, loading } = toRefs(props)
-    const signalInstances = ref(props.modelValue)
-    const internalLoading = ref(props.loading)
-
-    // Reactive property for selected item
-    const selectedItem = ref({})
-
-    const router = useRouter()
-
-    console.log("Got signalInstances", signalInstances)
-
-    watch(modelValue, (newValue) => {
-      signalInstances.value = newValue
-    })
-
-    watch(loading, (newValue) => {
-      internalLoading.value = newValue
-    })
-
-    const headers = ref([
-      { title: "Signal", key: "signal", sortable: false },
-      { title: "Created At", key: "created_at" },
-      { title: "", key: "data-table-actions", sortable: false, align: "end" },
-    ])
-
-    function showRun(payload) {
-      store.dispatch("workflow/showRun", payload)
+      type: boolean
+      default: false
+      required: true
     }
+    selectedSignalId: string
+  }>(),
+  {
+    modelValue: [],
+    loading: false,
+  }
+)
 
-    // Method to update the selected item
-    const selectItem = (item) => {
-      console.log("Got item", item)
-      selectedItem.value = item
-      router.push({ name: "SignalDetails", params: { id: item.raw.id } })
-    }
+const signalInstances = toRef(props, "modelValue")
+const internalLoading = toRef(props, "loading")
+const signalIdToIndexMap = ref({})
+const selectedItem = ref(signalInstances.value[0])
 
-    watch(
-      () => props.selectedSignalId,
-      (id) => {
-        if (id) {
-          const selectedSignal = signalInstances.value.find((signal) => signal.id === id)
-          if (selectedSignal) {
-            selectItem(selectedSignal)
-          }
-        }
-      }
-    )
+const router = useRouter()
+const route = useRoute()
 
-    return {
-      formatRelativeDate,
-      formatDate,
-      signalInstances,
-      headers,
-      showRun,
-      internalLoading,
-      selectedItem,
-      selectItem,
-    }
-  },
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    signalInstances.value = newValue
+  }
+)
+
+watch(
+  () => props.loading,
+  (newValue) => {
+    internalLoading.value = newValue
+  }
+)
+
+const headers = ref([
+  { title: "Signal", key: "signal", sortable: false },
+  { title: "Created At", key: "created_at" },
+  { title: "", key: "data-table-actions", sortable: false, align: "end" },
+])
+
+const selectItem = (item) => {
+  console.log("Got item", item)
+  selectedItem.value = item
+  router.push({ name: "SignalDetails", params: { signal_id: item.raw.id } })
 }
+
+watch(
+  [signalInstances, () => route.params],
+  ([newSignalInstances, newParams]) => {
+    signalIdToIndexMap.value = newSignalInstances.reduce((map, signal, index) => {
+      map[signal.raw.id] = index
+      return map
+    }, {})
+
+    const newSignalId = newParams.signal_id
+    const index = signalIdToIndexMap.value[newSignalId]
+    if (index !== undefined) {
+      selectedItem.value = newSignalInstances[index]
+    }
+  },
+  { immediate: true, deep: true }
+)
 </script>
 
 <style scoped>
-.fill-width {
-  width: 100%;
-}
-
-.overflow-auto {
-  overflow: auto;
+.signal-card {
+  border: 0.5px solid rgb(216, 216, 216) !important;
+  border-radius: 8px !important;
 }
 </style>

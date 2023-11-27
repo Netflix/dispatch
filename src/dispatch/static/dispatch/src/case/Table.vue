@@ -92,7 +92,7 @@
                   <v-list-item
                     :to="{
                       name: 'CasePage',
-                      params: { name: item.name },
+                      params: { id: item.id },
                     }"
                   >
                     <v-list-item-title>View</v-list-item-title>
@@ -133,7 +133,7 @@
 
 <script>
 import { mapFields } from "vuex-map-fields"
-import { mapActions } from "vuex"
+import { mapActions, mapMutations } from "vuex"
 import { formatRelativeDate, formatDate } from "@/filters"
 
 import BulkEditSheet from "@/case/BulkEditSheet.vue"

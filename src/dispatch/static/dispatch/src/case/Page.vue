@@ -1,180 +1,115 @@
 <template>
-  <case-attributes-drawer v-model="caseDetails" />
-  <v-row align="center" justify="space-between" no-gutters>
-    <v-col>
-      <v-breadcrumbs :items="breadcrumbItems"></v-breadcrumbs>
-    </v-col>
-    <v-col class="text-right">
-      <!-- <case-status-toggle v-model="caseDetails.status" /> -->
-    </v-col>
-  </v-row>
-  <v-row class="pl-6 pr-6" no-gutters>
-    <v-col>
-      <editable-text-area v-model="caseDetails.title" :loading="loading" label="Title" />
-    </v-col>
-  </v-row>
-  <v-row class="pl-6 pr-6" no-gutters>
-    <v-col>
-      <editable-text-area
-        v-model="caseDetails.description"
-        :loading="loading"
-        label="Description"
-      />
-    </v-col>
-  </v-row>
-  <v-row class="pl-6 pr-6" no-gutters>
-    <v-col>
-      <editable-text-area v-model="caseDetails.resolution" :loading="loading" label="Resolution" />
-    </v-col>
-    <v-col cols="3">
-      <v-skeleton-loader v-if="loading" type="text"></v-skeleton-loader>
-      <v-select
-        v-else
-        variant="underlined"
-        density="compact"
-        v-model="caseDetails.resolution_reason"
-      >
-      </v-select>
-    </v-col>
-  </v-row>
-  <v-row no-gutters>
-    <case-tabs :loading="loading" v-model="caseDetails" :selected-signal-id="selectedSignalId" />
-  </v-row>
+  <div>
+    <PageHeader
+      :case-name="caseDetails.name"
+      :case-visibility="caseDetails.visibility"
+      @toggle-drawer="toggleDrawer"
+      :is-drawer-open="isDrawerOpen"
+    ></PageHeader>
+    <CaseAttributesDrawer v-model="caseDetails" :open="isDrawerOpen" />
+    <VDivider></VDivider>
+    <div class="container mx-auto px-4">
+      <TiptapTitle :title="true" v-model="caseDetails.title" class="pl-8 pb-6 pt-6" />
+      <Tiptap v-model="caseDetails.description" class="pl-8 pb-8 pr-8" />
+      <CaseStatusSelectGroup :_case="caseDetails" class="pl-4 pb-8" />
+      <CaseTabs :loading="loading" v-model="caseDetails" />
+    </div>
+  </div>
 </template>
 
-<script>
-import { computed, ref, watchEffect, onMounted, reactive, watch } from "vue"
-import { useRoute } from "vue-router"
+<script setup lang="ts">
+import { computed, ref, watchEffect, watch } from "vue"
+import { useStore } from "vuex"
 
+import { useRoute } from "vue-router"
 import CaseApi from "@/case/api"
 import CaseAttributesDrawer from "@/case/CaseAttributesDrawer.vue"
-import CaseStatus from "@/case/CaseStatus.vue"
-import CaseStatusToggle from "@/case/CaseStatusToggle.vue"
+import PageHeader from "@/case//PageHeader.vue"
 import CaseTabs from "@/case/CaseTabs.vue"
-import EditableTextArea from "@/components/EditableTextArea.vue"
+import Tiptap from "@/components/Tiptap.vue"
+import TiptapTitle from "@/components/TiptapTitle.vue"
+import CaseStatusSelectGroup from "@/case/CaseStatusSelectGroup.vue"
 
-export default {
-  name: "CasePage",
-  components: {
-    CaseAttributesDrawer,
-    CaseStatusToggle,
-    CaseTabs,
-    CaseStatus,
-    EditableTextArea,
-  },
-  setup(props, { root }) {
-    const route = useRoute()
+const route = useRoute()
+const store = useStore()
 
-    const caseDefaults = {
-      status: "New",
-      assignee: null,
-      case_priority: null,
-      case_severity: null,
-      case_type: null,
-      closed_at: null,
-      description: "",
-      documents: [],
-      duplicates: [],
-      escalated_at: null,
-      participants: [],
-      events: [],
-      groups: [],
-      id: null,
-      incidents: [],
-      name: null,
-      project: null,
-      related: [],
-      reporter: null,
-      reported_at: null,
-      resolution_reason: "",
-      resolution: "",
-      title: "",
-      signal_instances: [],
-      storage: null,
-      tags: [],
-      ticket: null,
-      triage_at: null,
-      visibility: "",
-      conversation: null,
-      workflow_instances: null,
-    }
-
-    const caseDetails = ref(caseDefaults)
-    const loading = ref(false)
-    const selectedSignalId = ref(null)
-
-    const fetchDetails = async () => {
-      const caseName = route.params.name
-      loading.value = true
-      try {
-        CaseApi.getAll({
-          filter: JSON.stringify([
-            { and: [{ model: "Case", field: "name", op: "==", value: caseName }] },
-          ]),
-        }).then((response) => {
-          if (response.data.items.length) {
-            // get the full data set
-            CaseApi.get(response.data.items[0].id).then((response) => {
-              caseDetails.value = response.data
-              loading.value = false
-            })
-          }
-        })
-      } catch (e) {
-        console.error("Failed to fetch case details", e)
-        caseDetails.value = {}
-        loading.value = false
-      }
-    }
-
-    // Watch for changes in route.params.name
-    watch(
-      () => route.params.name,
-      (newName, oldName) => {
-        if (newName !== oldName) {
-          fetchDetails(newName)
-        }
-      },
-      { immediate: true } // This ensures it runs on initial mount as well
-    )
-
-    watchEffect(() => {
-      console.log("Route params:", route.params)
-    })
-
-    watch(
-      () => route.value,
-      (currentRoute) => {
-        console.log("Current route:", currentRoute)
-        if (currentRoute.params.id) {
-          selectedSignalId.value = currentRoute.params.id
-          console.log("Selected signal ID:", selectedSignalId.value)
-        }
-      },
-      { deep: true }
-    )
-
-    const breadcrumbItems = computed(() => {
-      let items = [
-        {
-          title: "Cases",
-          disabled: false,
-          href: `/${route.params.organization}/cases`,
-        },
-        {
-          title: caseDetails.value.name,
-          disabled: true,
-        },
-      ]
-      return items
-    })
-
-    return {
-      breadcrumbItems,
-      loading,
-      caseDetails,
-      selectedSignalId,
-    }
-  },
+const caseDefaults = {
+  status: "New",
+  assignee: null,
+  case_priority: null,
+  case_severity: null,
+  case_type: null,
+  closed_at: null,
+  description: "",
+  documents: [],
+  duplicates: [],
+  escalated_at: null,
+  participants: [],
+  events: [],
+  groups: [],
+  id: null,
+  incidents: [],
+  name: null,
+  project: null,
+  related: [],
+  reporter: null,
+  reported_at: null,
+  resolution_reason: "",
+  resolution: "",
+  title: "",
+  signal_instances: [],
+  storage: null,
+  tags: [],
+  ticket: null,
+  triage_at: null,
+  visibility: "",
+  conversation: null,
+  workflow_instances: null,
 }
+
+const caseDetails = ref(caseDefaults)
+const loading = ref(false)
+const isDrawerOpen = ref(true)
+
+const toggleDrawer = () => {
+  isDrawerOpen.value = !isDrawerOpen.value
+}
+
+const fetchDetails = async () => {
+  const caseId = parseInt(route.params.id, 10)
+  loading.value = true
+  try {
+    // get the full data set
+    CaseApi.get(caseId).then((response) => {
+      caseDetails.value = response.data
+
+      // Save the fetched case details to the Vuex store
+      store.commit("case_management/SET_SELECTED", response.data)
+    })
+  } catch (e) {
+    console.error("Failed to fetch case details", e)
+    caseDetails.value = caseDefaults
+    loading.value = false
+  }
+}
+
+watch(
+  () => route.params.id,
+  (newName, oldName) => {
+    if (newName !== oldName) {
+      fetchDetails()
+    }
+  },
+  { immediate: true }
+)
 </script>
+
+<style scoped>
+.container {
+  max-width: 1920px; /* for example */
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>

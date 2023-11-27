@@ -1,48 +1,79 @@
 <template>
-  <v-tabs v-model="tab" background-color="transparent" grow>
-    <v-tab key="main">
-      <v-skeleton-loader v-if="internalLoading" type="text"></v-skeleton-loader>
-      <v-icon v-else dense small> mdi-clock-outline </v-icon>
-      Timeline
-    </v-tab>
-    <v-tab key="resources">
-      <v-icon dense small> mdi-semantic-web </v-icon>
-      Resources
-    </v-tab>
-    <v-tab key="signals" :disabled="signalInstances?.length === 0">
-      <v-icon dense small> mdi-broadcast </v-icon>
-      Signals
-      <v-badge v-if="signalInstances?.length" inline :content="signalInstances?.length"> </v-badge>
-    </v-tab>
-    <v-tab key="entities" :disabled="entities?.length === 0">
-      <v-icon dense small> mdi-account-group </v-icon>
-      Entities
-      <v-badge v-if="entities?.length" inline :content="entities?.length"> </v-badge>
-    </v-tab>
-  </v-tabs>
-  <v-divider></v-divider>
-  <v-window v-model="tab">
-    <v-window-item key="main" class="tab">
-      <case-timeline-tab v-model="events"></case-timeline-tab>
-    </v-window-item>
-    <v-window-item key="resources" class="tab">
-      <case-resources-tab v-model="resources"></case-resources-tab>
-    </v-window-item>
-    <v-window-item key="signals" class="tab">
-      <case-signal-instance-tab
-        :loading="loading"
-        v-model="signalInstances"
-        :selected-signal-id="selectedSignalId"
-      />
-    </v-window-item>
-    <v-window-item key="entities" class="tab">
-      <entities-tab v-model="entities" />
-    </v-window-item>
-  </v-window>
+  <div>
+    <div class="pl-6 pr-8">
+      <div class="button-group-container">
+        <v-btn-toggle
+          v-model="tab"
+          mandatory
+          variant="outlined"
+          rounded="lg"
+          selected-class="selected-button"
+        >
+          <v-btn
+            class="text-subtitle-2 unselected-button"
+            height="24px"
+            value="main"
+            variant="plain"
+            :ripple="false"
+          >
+            <span class="button-text">Timeline</span>
+          </v-btn>
+          <v-btn
+            class="text-subtitle-2 unselected-button"
+            height="24px"
+            value="signals"
+            variant="plain"
+            :ripple="false"
+            :disabled="signalInstances?.length === 0"
+          >
+            <span class="button-text">Alerts</span>
+            <v-badge
+              v-if="signalInstances?.length"
+              inline
+              :content="signalInstances?.length"
+              class="small-badge"
+            >
+            </v-badge>
+          </v-btn>
+          <v-btn
+            class="text-subtitle-2 unselected-button"
+            height="24px"
+            value="graph"
+            variant="plain"
+            :ripple="false"
+            :disabled="entities?.length === 0"
+          >
+            <span class="button-text">Graph</span>
+            <v-badge v-if="entities?.length" inline :content="entities?.length"> </v-badge>
+          </v-btn>
+        </v-btn-toggle>
+      </div>
+      <v-divider></v-divider>
+    </div>
+
+    <v-window v-model="tab">
+      <v-window-item value="main" class="tab">
+        <case-timeline-tab v-model="events"></case-timeline-tab>
+      </v-window-item>
+      <v-window-item value="signals" class="tab">
+        <case-signal-instance-tab
+          :loading="loading"
+          v-model="signalInstances"
+          :selected-signal-id="selectedSignalId"
+        />
+      </v-window-item>
+      <v-window-item value="graph" class="tab">
+        <GraphTab :signal-instances="signalInstances" />
+      </v-window-item>
+    </v-window>
+  </div>
 </template>
 
 <script>
 import { ref, watch, toRefs } from "vue"
+import { useRoute, useRouter } from "vue-router"
+
+import GraphTab from "@/case/GraphTab.vue"
 import CaseResourcesTab from "@/case/ResourcesTab.vue"
 import EntitiesTab from "@/entity/EntitiesTab.vue"
 import CaseSignalInstanceTab from "@/case/CaseSignalInstanceTab.vue"
@@ -65,19 +96,19 @@ export default {
       type: Boolean,
       default: false,
     },
-    selectedSignalId: {
-      type: String,
-      default: "",
-    },
   },
   components: {
     CaseResourcesTab,
     EntitiesTab,
     CaseSignalInstanceTab,
     CaseTimelineTab,
+    GraphTab,
   },
   setup(props) {
-    const tab = ref(null)
+    const tab = ref("main")
+    const route = useRoute()
+    const router = useRouter()
+
     const { modelValue, loading } = toRefs(props)
     const signalInstances = ref(props.modelValue.signal_instances)
     const internalLoading = ref(props.loading)
@@ -85,6 +116,7 @@ export default {
     const entities = ref(props.modelValue.entities)
     const events = ref(props.modelValue.events)
     console.log("Got events for timeline", events)
+    console.log("Got signalInstances", signalInstances.value)
 
     watch(loading, (newValue) => {
       internalLoading.value = newValue
@@ -92,18 +124,37 @@ export default {
 
     watch(modelValue, (newValue) => {
       signalInstances.value = newValue.signal_instances
+      console.log("Got signalInstances", signalInstances.value)
       resources.value = newValue.resources
       entities.value = newValue.entities
       events.value = newValue.events
     })
 
     watch(
-      () => props.selectedSignalId,
-      (id) => {
-        if (id) {
-          tab.value = "signals" // Assuming 'signals' is the key for the signals tab
+      () => tab.value,
+      (tabValue) => {
+        if (tabValue === "main") {
+          router.push({ name: "CasePage", params: { id: route.id } })
+        }
+
+        if (tabValue === "signals") {
+          router.push({
+            name: "SignalDetails",
+            params: { signal_id: signalInstances.value[0].raw.id },
+          })
         }
       }
+    )
+
+    watch(
+      () => route.params,
+      (newParams) => {
+        const newSignalId = newParams.signal_id
+        if (newSignalId) {
+          tab.value = "signals"
+        }
+      },
+      { immediate: true, deep: true }
     )
 
     return {
@@ -126,7 +177,49 @@ export default {
   line-height: 1.5; /* Spacing for better readability */
   font-family: "Inter", sans-serif; /* A modern, readable typeface */
 }
+
 .tab {
   transition: all 0.2s ease;
 }
+
+.button-group-container {
+  background-color: rgb(244, 245, 248);
+  margin-bottom: 10px;
+  border-radius: 8px; /* Adjust as necessary */
+  z-index: 1;
+  height: 24px !important;
+
+  transform: scale(0.95);
+  display: inline-flex; /* Shrink container to content's size */
+}
+
+.selected-button {
+  background: white !important;
+  background-color: white !important;
+  color: white !important;
+  box-shadow: rgba(0, 0, 0, 0.09) 0px 1px 4px;
+  border: 1px solid black !important;
+  border-color: rgb(223, 225, 228) !important;
+  height: 24px !important;
+  border-width: 1px;
+  border-radius: 7px !important; /* Adjust the value as necessary */
+}
+
+.small-badge {
+  transform: scale(0.9);
+}
+
+.selected-button .button-text {
+  color: rgb(40, 42, 28) !important;
+}
+
+.selected-button.v-btn--variant-plain {
+  opacity: 1 !important;
+}
+
+/* .unselected-button {
+  border: none !important;
+  color: rgb(107, 111, 118);
+  background-color: rgb(244, 245, 248);
+} */
 </style>

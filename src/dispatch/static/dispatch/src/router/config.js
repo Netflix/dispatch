@@ -46,7 +46,7 @@ export const publicRoute = [
   },
   {
     path: "/implicit/callback",
-    name: "PKCEImplicityCallback",
+    name: "PKCEImplicitlyCallback",
     meta: { requiresAuth: true },
   },
   {
@@ -205,13 +205,13 @@ export const protectedRoute = [
           ],
         },
         {
-          path: "/:organization/cases/:name/page",
+          path: "/:organization/cases/:id",
           name: "CasePage",
           meta: { title: "Page" },
           component: () => import("@/case/Page.vue"),
           children: [
             {
-              path: "signal/:id",
+              path: "signal/:signal_id",
               name: "SignalDetails",
               component: () => import("@/case/Page.vue"), // Use the same component to avoid re-render
               props: true,

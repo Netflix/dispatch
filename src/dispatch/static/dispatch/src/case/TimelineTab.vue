@@ -1,23 +1,39 @@
 <script setup lang="ts">
-import { ref, computed } from "vue"
+import { ref, computed, watchEffect } from "vue"
 import Util from "@/util"
-import { snakeToCamel, formatToUTC, formatToTimeZones } from "@/filters"
+import FancyMenu from "@/components/FancyMenu.vue"
+import { useRoute } from "vue-router"
+import CaseApi from "@/case/api"
+import { formatRelativeDate } from "@/filters"
+
+const route = useRoute()
 
 // Define Props
 const props = defineProps({
   modelValue: {
     type: Array,
-    required: true,
+    required: false,
+    default: () => [],
   },
+})
+
+const events = ref([])
+
+watchEffect(async () => {
+  if (props.modelValue.length > 0) {
+    events.value = props.modelValue
+  } else if (route.params.id) {
+    const caseId = parseInt(route.params.id, 10)
+    const caseData = await CaseApi.get(caseId)
+    events.value = caseData.data.events
+  }
 })
 
 const showDetails = ref(false)
 const exportLoading = ref(false)
 
-console.log("The timeline got", props.modelValue)
-
 const sortedEvents = computed(() => {
-  return props.modelValue.slice().sort((a, b) => new Date(a.started_at) - new Date(b.started_at))
+  return events.value.slice().sort((a, b) => new Date(a.started_at) - new Date(b.started_at))
 })
 
 const exportToCSV = () => {
@@ -28,106 +44,93 @@ const exportToCSV = () => {
   exportLoading.value = false
 }
 
-const getAvatarGradient = (participant: string) => {
-  let hash = 5381
-  for (let i = 0; i < participant.length; i++) {
-    hash = ((hash << 5) + hash) ^ participant.charCodeAt(i) // Using XOR operator for better distribution
-  }
-
-  const hue = Math.abs(hash) % 360 // Ensure hue is a positive number
-  const fromColor = `hsl(${hue}, 95%, 50%)`
-  const toColor = `hsl(${(hue + 120) % 360}, 95%, 50%)` // Getting triadic color by adding 120 to hue
-
-  return `linear-gradient(${fromColor}, ${toColor})`
+const sourceIconMap = {
+  "Dispatch Plugin - Ticket Management": {
+    icon: "mdi-jira",
+    sourceName: "Dispatch",
+  },
+  "Slack Plugin - Conversation Management": {
+    icon: "mdi-slack",
+    sourceName: "Dispatch",
+  },
+  "Dispatch Core App": {
+    icon: "mdi-file-document",
+    sourceName: "Dispatch",
+  },
+  "Dispatch Plugin - Participant Resolver": {
+    icon: "mdi-account-check",
+    sourceName: "Dispatch",
+  },
+  // Add more mappings as needed...
 }
+
+const handleSelection = (selection: string) => {
+  if (selection === "Export") {
+    exportToCSV()
+  }
+}
+
+const descriptionMap = {
+  "Case created": "created a case",
+  "Case ticket created": "created a case ticket",
+  "Case participants resolved": "resolved case participants",
+  "Case conversation created": "started a case conversation",
+  "Conversation added to case": "added conversation to case",
+  "Case participants added to conversation.": "added case participants to conversation",
+  // Add more mappings as needed...
+}
+
+const menu = ref(false)
 </script>
 
 <template>
-  <v-container>
+  <v-container class="pl-8 pr-8">
     <v-row justify="end">
-      <v-switch v-model="showDetails" label="Show details" />
-      <v-btn
-        color="secondary"
-        class="ml-2 mr-2 mt-3"
-        @click="exportToCSV()"
-        :loading="exportLoading"
-      >
-        Export
-      </v-btn>
+      <!-- <v-switch v-model="showDetails" label="Show details" /> -->
+      <FancyMenu :options="['Export']" @selection-changed="handleSelection" />
     </v-row>
     <template v-if="sortedEvents && sortedEvents.length">
       <v-timeline density="compact" clipped line-thickness="1">
-        <v-timeline-item class="mb-12" size="x-small">
-          <template v-slot:icon>
-            <v-avatar size="18px" :style="{ background: getAvatarGradient('Will Sheldon') }">
-            </v-avatar>
-          </template>
-          <v-card class="rounded-lg dispatch-side-card">
-            <v-textarea
-              name="input-7-1"
-              variant="text"
-              label="Label"
-              auto-grow
-              rows="4"
-              row-height="30"
-              model-value="The Woodman set to work at once, and so sharp was his axe that the tree was soon chopped nearly through."
-            >
-            </v-textarea>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn
-                @click="comment"
-                class="ma-2 text-subtitle-2 font-weight-regular cn-button"
-                elevation="1"
-              >
-                Comment
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-timeline-item>
-        <v-timeline-item hide-dot>
-          <v-col class="text-right text-caption">(times in UTC)</v-col>
-        </v-timeline-item>
         <v-timeline-item
           v-for="event in sortedEvents"
           :key="event.id"
           class="mb-4"
-          dot-color="blue"
+          :dot-color="sourceIconMap[event.source]?.icon ? 'transparent' : 'grey'"
+          :class="{ 'has-icon': !!sourceIconMap[event.source]?.icon }"
           size="x-small"
         >
-          <v-row justify="space-between">
-            <v-col cols="7">
-              {{ event.description }}
-              <transition-group name="slide" v-if="showDetails">
-                <template v-for="(value, key) in event.details" :key="key">
-                  <v-card>
-                    <v-card-title class="text-subtitle-1">
-                      {{ snakeToCamel(key) }}
-                    </v-card-title>
-                    <v-card-text>{{ value }}</v-card-text>
-                  </v-card>
-                </template>
-              </transition-group>
-              <div class="text-caption">
-                {{ event.source }}
+          <template v-slot:icon>
+            <v-icon size="small" v-if="sourceIconMap[event.source]?.icon">{{
+              sourceIconMap[event.source].icon
+            }}</v-icon>
+          </template>
+          <v-row>
+            <v-col cols="12">
+              <div>
+                <span style="font-size: 0.75rem">
+                  <b>
+                    {{ sourceIconMap[event.source]?.sourceName || event.source }}
+                  </b>
+                  {{ descriptionMap[event.description] || event.description }} ·
+                  {{ formatRelativeDate(event.started_at) }}
+                </span>
               </div>
             </v-col>
-            <v-col class="text-right" cols="4">
-              <v-tooltip location="bottom">
-                <template #activator="{ props }">
-                  <span v-bind="props" class="wavy-underline">{{
-                    formatToUTC(event.started_at)
-                  }}</span>
-                </template>
-                <span class="pre-formatted">{{ formatToTimeZones(event.started_at) }}</span>
-              </v-tooltip>
-            </v-col>
           </v-row>
+        </v-timeline-item>
+
+        <v-timeline-item hide-dot>
+          <v-col class="text-right text-caption">(times in UTC)</v-col>
         </v-timeline-item>
       </v-timeline>
     </template>
     <div v-else>
-      <p class="text-center">No timeline data available.</p>
+      <v-skeleton-loader
+        v-for="(loader, index) in Array(10)"
+        :key="index"
+        :type="index % 2 === 0 ? 'paragraph' : 'article'"
+        max-width="400px"
+      ></v-skeleton-loader>
     </div>
   </v-container>
 </template>

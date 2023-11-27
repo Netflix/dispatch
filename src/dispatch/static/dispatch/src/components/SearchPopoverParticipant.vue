@@ -1,10 +1,27 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, watchEffect, defineEmits, computed } from "vue"
+import { ref, onMounted, onUnmounted, watch, defineEmits, computed } from "vue"
 import IndividualApi from "@/individual/api"
+import Hotkey from "@/atomics/Hotkey.vue"
+import FancyTooltip from "@/components/FancyTooltip.vue"
 import type { Ref } from "vue"
+import { useStore } from "vuex"
+import CaseApi from "@/case/api"
 
-const props = defineProps<{ participant: string }>()
+const props = withDefaults(
+  defineProps<{
+    participant: string
+    hotkey: string
+    label: string
+    tooltipLabel: string
+    type: string
+    hotkeys: string[]
+  }>(),
+  {
+    hotkey: "a",
+  }
+)
 
+const store = useStore()
 const menu: Ref<boolean> = ref(false)
 const activator = ref(null) // A ref for the button acting as the activator
 const participants: Ref<string[]> = ref([])
@@ -15,7 +32,7 @@ const searchQuery: Ref<string> = ref("")
 const handleHotkey = (event: KeyboardEvent) => {
   const key = event.key.toLowerCase()
 
-  if (key === "a" && !menu.value) {
+  if (key === props.hotkey && !menu.value) {
     toggleMenu()
   }
 
@@ -35,7 +52,6 @@ const fetchParticipants = async () => {
   try {
     const options = { itemsPerPage: -1 }
     const response = await IndividualApi.getAll(options)
-    console.log("Got response for participants", response.data.items)
     participants.value = response.data.items.map((item: any) => item.name)
   } catch (error) {
     console.error("Error fetching participants:", error)
@@ -47,9 +63,42 @@ onMounted(() => {
   window.addEventListener("keyup", handleHotkey)
 })
 
-watch(selectedParticipant, (newValue: string) => {
+watch(selectedParticipant, async (newValue: string) => {
   if (newValue && newValue !== props.participant) {
+    // Emit the participant-selected event with the participant name
     emit("participant-selected", newValue)
+
+    // Fetch the participant object from the API
+    const response = await IndividualApi.getAll({
+      filter: JSON.stringify([
+        { and: [{ model: "IndividualContact", field: "name", op: "==", value: newValue }] },
+      ]),
+    })
+
+    const individual = response.data.items[0]
+    console.log("Found individual", individual)
+
+    // Check if the participant was found
+    if (!individual) {
+      console.error(`No individual found with name ${newValue}`)
+      return
+    }
+
+    // Get the case details from the Vuex store
+    const caseDetails = store.state.case_management.selected
+
+    // Depending on the type of participant, update the respective field in the case details
+    if (props.type === "assignee") {
+      caseDetails.assignee.individual = individual
+    } else if (props.type === "reporter") {
+      caseDetails.reporter.individual = individual
+    }
+
+    console.log("Updating caseDetails", caseDetails)
+    // Call the CaseApi.update method to update the case details
+    await CaseApi.update(caseDetails.id, caseDetails)
+
+    console.log("Case details updated", caseDetails)
   }
 })
 
@@ -136,20 +185,25 @@ const toggleMenu = () => {
       transition="false"
     >
       <template v-slot:activator="{ props: menu }">
-        <v-btn
-          class="text-subtitle-2 font-weight-regular"
-          prepend-icon="mdi-account"
-          variant="text"
-          v-bind="menu"
-        >
-          <template v-slot:prepend>
-            <v-avatar
-              size="12px"
-              :style="{ background: getAvatarGradient(selectedParticipant) }"
-            ></v-avatar>
+        <FancyTooltip :text="props.tooltipLabel" :hotkeys="[hotkey.toUpperCase()]">
+          <template v-slot:activator="{ tooltip }">
+            <v-btn
+              class="menu-activator text-subtitle-2 font-weight-regular"
+              variant="text"
+              v-bind="{ ...tooltip, ...menu }"
+            >
+              <template v-slot:prepend>
+                <v-avatar
+                  size="14px"
+                  :style="{ background: getAvatarGradient(selectedParticipant) }"
+                ></v-avatar>
+              </template>
+              <span style="font-size: 0.8125rem; font-weight: 500; color: rgb(60, 65, 73)">
+                {{ selectedParticipant }}
+              </span>
+            </v-btn>
           </template>
-          {{ selectedParticipant }}
-        </v-btn>
+        </FancyTooltip>
       </template>
 
       <v-card min-width="200" class="rounded-lg dispatch-side-card">
@@ -157,7 +211,6 @@ const toggleMenu = () => {
           <v-col align-self="start">
             <v-text-field
               v-model="searchQuery"
-              label="Search participant..."
               density="compact"
               variant="solo"
               single-line
@@ -165,12 +218,12 @@ const toggleMenu = () => {
               flat
             >
               <template v-slot:label>
-                <span class="text-subtitle-2 font-weight-regular"> Assign to... </span>
+                <span class="text-subtitle-2 font-weight-regular"> {{ props.label }} </span>
               </template>
             </v-text-field>
           </v-col>
           <v-col align-self="end" cols="2" class="pb-2">
-            <span class="hotkey">A</span>
+            <Hotkey :hotkey="props.hotkey.toUpperCase()" />
           </v-col>
         </v-row>
         <v-divider></v-divider>
@@ -183,6 +236,7 @@ const toggleMenu = () => {
             @mouseleave="hoveredParticipant = ''"
             density="compact"
             rounded="lg"
+            class="ml-1 mr-1"
             active-class="ma-4"
           >
             <template v-slot:prepend>
@@ -212,23 +266,6 @@ const toggleMenu = () => {
 </template>
 
 <style scoped>
-.hotkey {
-  vertical-align: baseline;
-  text-transform: capitalize;
-  text-align: center;
-  color: rgba(0, 0, 0, 0.816);
-  font-size: 11px;
-  line-height: 110%;
-  border-radius: 4px;
-  padding-left: 4px;
-  padding-right: 4px;
-  padding-top: 1px;
-  min-width: 17px;
-  border: 0.5px solid rgb(216, 216, 216);
-  background-color: rgb(254, 255, 254);
-  box-shadow: rgba(0, 0, 0, 0.086) 0px 2px 0px 0px;
-}
-
 .dispatch-side-card {
   backdrop-filter: blur(12px) saturate(190%) contrast(50%) brightness(130%) !important;
   border: 0.5px solid rgb(216, 216, 216) !important;
@@ -240,5 +277,14 @@ const toggleMenu = () => {
 
 .item-title-font {
   font-size: 13px !important;
+}
+
+.menu-activator {
+  border: 1px solid transparent;
+}
+
+.menu-activator:hover {
+  border: 1px solid rgb(239, 241, 244) !important;
+  border-radius: 4px; /* adjust as needed */
 }
 </style>

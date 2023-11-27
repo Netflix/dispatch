@@ -1,6 +1,6 @@
 <template>
   <v-item-group mandatory>
-    <v-dialog v-model="dialogVisable" max-width="600">
+    <v-dialog v-model="dialogVisible" max-width="600">
       <v-card>
         <v-card-title>Update Case Status</v-card-title>
         <v-card-text
@@ -27,40 +27,52 @@
             <div class="overlap-card" :class="status.hoverClass" @click="openDialog(status.name)">
               <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
-                  <v-sheet outlined color="grey lighten-1" :class="status.sheetClass">
-                    <v-card
-                      class="d-flex align-center"
-                      :class="status.sheetClass"
-                      height="30"
-                      width="100%"
-                      @click="toggle"
-                      flat
-                      color="grey lighten-4"
-                      v-bind="attrs"
-                      v-on="on"
-                    >
-                      <v-scroll-y-transition>
-                        <div v-if="isActiveStatus(status.name)" class="flex-grow-1 text-center">
-                          <v-badge
-                            :color="status.color"
-                            bordered
-                            dot
-                            left
-                            offset-x="-10"
-                            offset-y="0"
-                          >
-                          </v-badge
-                          >{{ status.label }}
-                        </div>
+                  <v-sheet outlined color="grey-lighten-1" :class="status.sheetClass">
+                    <FancyTooltip :text="status.tooltip" hotkeys="">
+                      <template v-slot:activator="{ tooltip }">
+                        <v-card
+                          class="d-flex align-center"
+                          :class="status.sheetClass"
+                          height="30"
+                          width="100%"
+                          @click="toggle"
+                          variant="flat"
+                          color="grey-lighten-4"
+                          v-bind="{ ...attrs, ...tooltip }"
+                          v-on="on"
+                        >
+                          <v-scroll-y-transition>
+                            <div
+                              v-if="isActiveStatus(status.name)"
+                              class="flex-grow-1 text-center dispatch-font-enabled"
+                            >
+                              <v-badge
+                                :color="status.color"
+                                bordered
+                                dot
+                                left
+                                offset-x="10"
+                                offset-y="-8"
+                              >
+                              </v-badge
+                              >{{ status.label }}
+                            </div>
 
-                        <div v-else class="flex-grow-1 text-center text--disabled">
-                          {{ status.label }}
-                        </div>
-                        <span>{{
-                          status.tooltip ? status.tooltip : `Not yet ${status.label.toLowerCase()}`
-                        }}</span>
-                      </v-scroll-y-transition>
-                    </v-card>
+                            <div
+                              v-else
+                              class="flex-grow-1 text-center text--disabled dispatch-font"
+                            >
+                              {{ status.label }}
+                            </div>
+                            <span>{{
+                              status.tooltip
+                                ? status.tooltip
+                                : `Not yet ${status.label.toLowerCase()}`
+                            }}</span>
+                          </v-scroll-y-transition>
+                        </v-card>
+                      </template>
+                    </FancyTooltip>
                   </v-sheet>
                 </template>
                 <span>{{
@@ -77,6 +89,8 @@
 
 <script>
 import { mapActions } from "vuex"
+import FancyTooltip from "@/components/FancyTooltip.vue"
+
 export default {
   name: "CaseStatusSelectGroup",
   props: {
@@ -86,10 +100,13 @@ export default {
       default: () => ({}),
     },
   },
+  components: {
+    FancyTooltip,
+  },
   data() {
     return {
       selectedStatus: null,
-      dialogVisable: false,
+      dialogVisible: false,
     }
   },
   computed: {
@@ -100,7 +117,7 @@ export default {
           label: "New",
           color: "red",
           hoverClass: "hover-card-three",
-          sheetClass: "rounded-l-xl arrow",
+          sheetClass: "rounded-s-xl arrow",
           tooltip: this._case.created_at,
         },
         {
@@ -124,7 +141,7 @@ export default {
           label: "Escalated",
           color: "red",
           hoverClass: "",
-          sheetClass: "rounded-r-xl",
+          sheetClass: "rounded-e-xl end-sheet",
           tooltip: this._case.escalated_at,
         },
       ]
@@ -135,12 +152,12 @@ export default {
     changeStatus(newStatus) {
       this._case.status = newStatus
       this.save_page()
-      this.dialogVisable = false
+      this.dialogVisible = false
       this.selectedStatus = null
     },
     openDialog(newStatus) {
       this.selectedStatus = newStatus
-      this.dialogVisable = true
+      this.dialogVisible = true
     },
     isActiveStatus(status) {
       return this._case.status === status
@@ -152,17 +169,28 @@ export default {
 <style scoped>
 .arrow {
   clip-path: polygon(0% 0%, 95% 0%, 100% 50%, 95% 100%, 0% 100%);
+  padding-top: 1px;
+  padding-left: 1px;
+  padding-bottom: 1px;
+  padding-right: 1px;
+}
+
+.end-sheet {
+  padding-top: 1px;
+  padding-left: 1px;
+  padding-bottom: 1px;
+  padding-right: 1px;
 }
 .overlap-card {
-  margin-left: -15px;
+  margin-left: -20px;
   border-radius: 75%;
-  box-shadow: 0 1px 6px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px 0px rgba(0, 0, 0, 0.1);
 }
 .overlap-card:first-child {
   margin-left: 0;
 }
 .overlap-card:last-child {
-  margin-right: -15px;
+  margin-right: -20px;
 }
 .hover-card {
   position: relative;
@@ -175,5 +203,25 @@ export default {
 .hover-card-three {
   position: relative;
   z-index: 3;
+}
+
+.dispatch-font {
+  color: rgb(107, 111, 118) !important;
+  font-size: 0.9125rem !important;
+  font-weight: 400;
+}
+
+.dispatch-font-enabled {
+  color: rgb(4, 4, 4) !important;
+  font-size: 0.9125rem !important;
+  font-weight: 500;
+}
+
+::v-deep .v-badge__badge {
+  border-color: black !important;
+}
+
+::v-deep .v-badge--dot .v-badge__badge {
+  border-color: black !important;
 }
 </style>
