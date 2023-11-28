@@ -7,7 +7,9 @@
         v-bind="props"
         append-icon="mdi-calendar"
         hint="Format: yyyy-mm-dd ~ yyyy-mm-dd"
-        @click:append="clearWindow"
+        clearable
+        :rules="dateRules"
+        @click:clear="clearWindow"
       />
     </template>
     <v-card>
@@ -36,7 +38,6 @@
 </template>
 
 <script>
-import endOfMonth from "date-fns/endOfMonth"
 import endOfYear from "date-fns/endOfYear"
 import startOfMonth from "date-fns/startOfMonth"
 import startOfYear from "date-fns/startOfYear"
@@ -74,6 +75,12 @@ export default {
       start: null,
       end: null,
       windowText: null,
+      dateRules: [
+        (value) =>
+          !value ||
+          /^(\d{4}-\d{2}-\d{2} ~ \d{4}-\d{2}-\d{2})$/.test(value) ||
+          "Invalid date (expected format: yyyy-mm-dd ~ yyyy-mm-dd)",
+      ],
       windows: [
         { title: "Today", start: today(), end: today() },
         { title: "Yesterday", start: subDays(today(), 1), end: subDays(today(), 1) },
@@ -107,7 +114,6 @@ export default {
   },
 
   created() {
-    console.log(this.modelValue)
     if (this.modelValue.start) {
       this.start = new Date(this.modelValue.start)
     }
@@ -119,10 +125,19 @@ export default {
   watch: {
     windowText: {
       handler(value) {
-        let parts = value.split("~")
-        if (parts.length == 2) {
-          this.start = new Date(parts[0].trim())
-          this.end = new Date(parts[1].trim())
+        if (this.dateRules.every((rule) => rule(value) === true)) {
+          if (value) {
+            let parts = value.split("~")
+            if (parts.length == 2) {
+              if (this.formatDate(this.start) !== parts[0]) {
+                this.start = this.getDatetime(parts[0])
+              }
+
+              if (this.formatDate(this.end) !== parts[1]) {
+                this.end = this.getDatetime(parts[1])
+              }
+            }
+          }
         }
       },
     },
@@ -152,7 +167,7 @@ export default {
 
   methods: {
     formatDate: function (value) {
-      return value ? format(value, DATE_FORMAT) : null
+      return format(value, DATE_FORMAT)
     },
     clearWindow: function () {
       this.start = null
@@ -163,11 +178,18 @@ export default {
       this.end = item.end
       this.setWindowText()
     },
+    getDatetime: function (value) {
+      return new Date(value)
+    },
     setWindowText: function () {
-      let startDate = this.formatDate(this.start)
-      let endDate = this.formatDate(this.end)
+      let startDate = this.start ? this.formatDate(this.start) : ""
+      let endDate = this.end ? this.formatDate(this.end) : ""
 
-      this.windowText = `${startDate} ~ ${endDate}`
+      if (startDate && endDate) {
+        this.windowText = `${startDate} ~ ${endDate}`
+      } else {
+        this.windowText = null
+      }
     },
   },
 }
