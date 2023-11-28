@@ -26,6 +26,7 @@
     "preview": "vite preview --open --port 8080"
   },
   "dependencies": {
+    "@date-io/date-fns": "^2.17.0",
     "@formkit/themes": "^1.2.2",
     "@formkit/vue": "^1.2.2",
     "@json2csv/plainjs": "^6.1.1",
@@ -54,7 +55,7 @@
     "vue-router": "^4.2.4",
     "vue3-apexcharts": "^1.4.4",
     "vue3-markdown-it": "^1.0.10",
-    "vuetify": "3.4.0",
+    "vuetify": "^3.4.3",
     "vuex": "^4.1.0",
     "vuex-map-fields": "^1.4.1"
   },
