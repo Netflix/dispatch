@@ -74,7 +74,6 @@ import { ref, watch, toRefs } from "vue"
 import { useRoute, useRouter } from "vue-router"
 
 import GraphTab from "@/case/GraphTab.vue"
-import CaseResourcesTab from "@/case/ResourcesTab.vue"
 import EntitiesTab from "@/entity/EntitiesTab.vue"
 import CaseSignalInstanceTab from "@/case/CaseSignalInstanceTab.vue"
 import CaseTimelineTab from "@/case/TimelineTab.vue"
@@ -98,7 +97,6 @@ export default {
     },
   },
   components: {
-    CaseResourcesTab,
     EntitiesTab,
     CaseSignalInstanceTab,
     CaseTimelineTab,
@@ -115,8 +113,6 @@ export default {
     const resources = ref(props.modelValue.resources)
     const entities = ref(props.modelValue.entities)
     const events = ref(props.modelValue.events)
-    console.log("Got events for timeline", events)
-    console.log("Got signalInstances", signalInstances.value)
 
     watch(loading, (newValue) => {
       internalLoading.value = newValue
@@ -216,10 +212,4 @@ export default {
 .selected-button.v-btn--variant-plain {
   opacity: 1 !important;
 }
-
-/* .unselected-button {
-  border: none !important;
-  color: rgb(107, 111, 118);
-  background-color: rgb(244, 245, 248);
-} */
 </style>

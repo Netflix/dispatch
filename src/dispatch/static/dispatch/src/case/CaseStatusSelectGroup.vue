@@ -3,14 +3,13 @@
     <v-dialog v-model="dialogVisible" max-width="600">
       <v-card>
         <v-card-title>Update Case Status</v-card-title>
-        <v-card-text
-          >Are you sure you want to change the case status from {{ _case.status }} to
-          {{ selectedStatus }}</v-card-text
-        >
-
+        <v-card-text>
+          Are you sure you want to change the case status from {{ _case.status }} to
+          {{ selectedStatus }}
+        </v-card-text>
         <v-btn
           class="ml-6 mb-4"
-          small
+          size="small"
           color="info"
           elevation="1"
           @click="changeStatus(selectedStatus)"
@@ -23,62 +22,42 @@
     <v-container fluid>
       <v-row no-gutters>
         <v-col v-for="status in statuses" :key="status.name" cols="6" md="2">
-          <v-item v-slot="{ active, toggle }">
+          <v-item v-slot="{ toggle }">
             <div class="overlap-card" :class="status.hoverClass" @click="openDialog(status.name)">
-              <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-sheet outlined color="grey-lighten-1" :class="status.sheetClass">
-                    <FancyTooltip :text="status.tooltip" hotkeys="">
-                      <template v-slot:activator="{ tooltip }">
-                        <v-card
-                          class="d-flex align-center"
-                          :class="status.sheetClass"
-                          height="30"
-                          width="100%"
-                          @click="toggle"
-                          variant="flat"
-                          color="grey-lighten-4"
-                          v-bind="{ ...attrs, ...tooltip }"
-                          v-on="on"
+              <v-sheet outlined color="grey-lighten-1" :class="status.sheetClass">
+                <FancyTooltip :text="status.tooltip" hotkeys="">
+                  <template #activator="{ tooltip }">
+                    <v-card
+                      class="d-flex align-center"
+                      :class="status.sheetClass"
+                      height="30"
+                      width="100%"
+                      @click="toggle"
+                      variant="flat"
+                      color="grey-lighten-4"
+                      v-bind="tooltip"
+                    >
+                      <v-scroll-y-transition>
+                        <div
+                          v-if="isActiveStatus(status.name)"
+                          class="flex-grow-1 text-center dispatch-font-enabled"
                         >
-                          <v-scroll-y-transition>
-                            <div
-                              v-if="isActiveStatus(status.name)"
-                              class="flex-grow-1 text-center dispatch-font-enabled"
-                            >
-                              <v-badge
-                                :color="status.color"
-                                bordered
-                                dot
-                                left
-                                offset-x="10"
-                                offset-y="-8"
-                              >
-                              </v-badge
-                              >{{ status.label }}
-                            </div>
+                          <v-badge :color="status.color" bordered dot offset-x="10" offset-y="-8">
+                          </v-badge
+                          >{{ status.label }}
+                        </div>
 
-                            <div
-                              v-else
-                              class="flex-grow-1 text-center text--disabled dispatch-font"
-                            >
-                              {{ status.label }}
-                            </div>
-                            <span>{{
-                              status.tooltip
-                                ? status.tooltip
-                                : `Not yet ${status.label.toLowerCase()}`
-                            }}</span>
-                          </v-scroll-y-transition>
-                        </v-card>
-                      </template>
-                    </FancyTooltip>
-                  </v-sheet>
-                </template>
-                <span>{{
-                  status.tooltip ? status.tooltip : `Not yet ${status.label.toLowerCase()}`
-                }}</span>
-              </v-tooltip>
+                        <div v-else class="flex-grow-1 text-center text--disabled dispatch-font">
+                          {{ status.label }}
+                        </div>
+                        <span>{{
+                          status.tooltip ? status.tooltip : `Not yet ${status.label.toLowerCase()}`
+                        }}</span>
+                      </v-scroll-y-transition>
+                    </v-card>
+                  </template>
+                </FancyTooltip>
+              </v-sheet>
             </div>
           </v-item>
         </v-col>
