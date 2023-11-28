@@ -31,8 +31,6 @@ watchEffect(() => {
   // Clear existing elements
   let elementsTemp = []
 
-  console.log("Got props", props.signalInstances)
-
   const uniqueEntities = {} // Create an object to store unique entities
 
   // Check if signalInstances is not null
@@ -75,7 +73,6 @@ watchEffect(() => {
     })
 
     // Create a new force simulation
-    console.log("Running Simulation")
     const simulation = forceSimulation(elementsTemp.filter(isNode))
       .force(
         "link",
