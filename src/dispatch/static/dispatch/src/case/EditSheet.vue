@@ -56,7 +56,7 @@
           <case-participants-tab />
         </v-window-item>
         <v-window-item key="timeline">
-          <case-timeline-tab />
+          <case-timeline-tab-v1 />
         </v-window-item>
         <v-window-item key="workflow_instances">
           <workflow-instance-tab v-model="workflow_instances" />
@@ -84,7 +84,7 @@ import { formatRelativeDate } from "@/filters"
 import CaseDetailsTab from "@/case/DetailsTab.vue"
 import CaseParticipantsTab from "@/case/ParticipantsTab.vue"
 import CaseResourcesTab from "@/case/ResourcesTab.vue"
-import CaseTimelineTab from "@/case/TimelineTab.vue"
+import CaseTimelineTabV1 from "@/case/CaseTimelineTabV1.vue"
 import WorkflowInstanceTab from "@/workflow/WorkflowInstanceTab.vue"
 import SignalInstanceTab from "@/signal/SignalInstanceTab.vue"
 import EntitiesTab from "@/entity/EntitiesTab.vue"
@@ -96,7 +96,7 @@ export default {
     CaseDetailsTab,
     CaseResourcesTab,
     CaseParticipantsTab,
-    CaseTimelineTab,
+    CaseTimelineTabV1,
     WorkflowInstanceTab,
     SignalInstanceTab,
     EntitiesTab,
