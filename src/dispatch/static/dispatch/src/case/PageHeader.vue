@@ -1,24 +1,21 @@
 <template>
   <v-app-bar class="border-bottom" elevation="0" density="compact" scroll-behavior="fixed">
     <v-breadcrumbs :items="breadcrumbItems" class="pl-7 text-subtitle-2" density="compact">
-      <template v-slot:divider>
-        <v-icon size="x-small" icon="mdi-chevron-right"></v-icon>
+      <template #divider>
+        <v-icon size="x-small" icon="mdi-chevron-right" />
       </template>
     </v-breadcrumbs>
-    <template v-slot:append>
-      <v-divider vertical></v-divider>
-      <v-spacer :style="{ 'margin-right': '176.7px' }"></v-spacer>
-
+    <template #append>
       <FancyTooltip text="View case participants" :hotkeys="['L', 'q']">
-        <template v-slot:activator="{ tooltip }">
+        <template #activator="{ tooltip }">
           <AvatarGroup :participants="caseParticipants" class="pl-3" v-bind="tooltip" />
         </template>
       </FancyTooltip>
-      <LockButton :case-visibility="caseVisibility" />
-
-      <v-divider vertical inset></v-divider>
+      <LockButton :case-visibility="caseVisibility" class="ml-n2 mr-n2" />
+      <EscalateButton class="ml-n4" />
+      <v-divider vertical inset />
       <FancyTooltip text="Case details" :hotkeys="['⌘', '⇧', 'I']">
-        <template v-slot:activator="{ tooltip }">
+        <template #activator="{ tooltip }">
           <v-btn variant="plain" :ripple="false" @click="toggleDrawer" v-bind="tooltip">
             <v-icon>{{ isDrawerOpen ? "mdi-book-open" : "mdi-book-open-outline" }}</v-icon>
           </v-btn>
@@ -44,6 +41,10 @@ const props = defineProps({
     required: true,
   },
   caseVisibility: {
+    type: String,
+    required: true,
+  },
+  caseStatus: {
     type: String,
     required: true,
   },

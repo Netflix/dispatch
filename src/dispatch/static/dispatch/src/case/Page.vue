@@ -3,14 +3,16 @@
     <PageHeader
       :case-name="caseDetails.name"
       :case-visibility="caseDetails.visibility"
-      @toggle-drawer="toggleDrawer"
+      :case-status="caseDetails.status"
       :is-drawer-open="isDrawerOpen"
-    ></PageHeader>
+      @toggle-drawer="toggleDrawer"
+    />
     <CaseAttributesDrawer v-model="caseDetails" :open="isDrawerOpen" />
-    <VDivider></VDivider>
+    <VDivider />
     <div class="container mx-auto px-4">
-      <TiptapTitle :title="true" v-model="caseDetails.title" class="pl-8 pb-6 pt-6" />
-      <Tiptap v-model="caseDetails.description" class="pl-8 pb-8 pr-8" />
+      <Tiptap :title="true" v-model="caseDetails.title" class="pl-8 pb-6 pt-6" />
+      <Tiptap :description="true" v-model="caseDetails.description" class="pl-8 pb-6" />
+      <!-- <Tiptap v-model="caseDetails.description" class="pl-8 pb-8 pr-8" /> -->
       <CaseStatusSelectGroup :_case="caseDetails" class="pl-4 pb-8" />
       <CaseTabs :loading="loading" v-model="caseDetails" />
     </div>
@@ -18,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watchEffect, watch } from "vue"
+import { ref, watch, watchEffect } from "vue"
 import { useStore } from "vuex"
 
 import { useRoute } from "vue-router"
@@ -27,7 +29,6 @@ import CaseAttributesDrawer from "@/case/CaseAttributesDrawer.vue"
 import PageHeader from "@/case//PageHeader.vue"
 import CaseTabs from "@/case/CaseTabs.vue"
 import Tiptap from "@/components/Tiptap.vue"
-import TiptapTitle from "@/components/TiptapTitle.vue"
 import CaseStatusSelectGroup from "@/case/CaseStatusSelectGroup.vue"
 
 const route = useRoute()

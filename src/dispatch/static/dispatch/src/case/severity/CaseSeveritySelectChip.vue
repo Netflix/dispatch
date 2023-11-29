@@ -1,15 +1,14 @@
 <template>
   <v-menu offset-y>
-    <template v-slot:activator="{ on, attrs }">
+    <template #activator="{ props }">
       <v-chip
-        v-bind="attrs"
-        v-on="on"
-        small
+        v-bind="props"
+        size="small"
         class="mr-2 hover-outline"
         :text-color="getSeverityMetaColor(_case.case_severity)"
         :color="getSeverityColor(_case.case_severity)"
       >
-        <v-icon dense small class="pr-2" :color="getSeverityMetaColor(_case.case_severity)">
+        <v-icon size="small" class="pr-2" :color="getSeverityMetaColor(_case.case_severity)">
           mdi-alert-plus-outline
         </v-icon>
         <b>{{ _case.case_severity.name }}</b>

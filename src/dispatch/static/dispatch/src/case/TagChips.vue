@@ -1,11 +1,18 @@
 <template>
-  <v-chip-group active-class="primary--text" column>
-    <v-chip flat close small v-for="tag in _case.tags" :key="tag" @click:close="removeTag(tag)">
+  <v-chip-group selected-class="primary--text" column>
+    <v-chip
+      flat
+      closable
+      size="small"
+      v-for="tag in _case.tags"
+      :key="tag"
+      @click:close="removeTag(tag)"
+    >
       {{ tag }}
     </v-chip>
-    <v-chip flat small @click="toggleTagInput">
-      <span v-if="!isAddingTag">Add tag <v-icon class="ml-1" small>mdi-plus</v-icon></span>
-      <span v-else>Close <v-icon class="ml-1" small>mdi-close</v-icon></span>
+    <v-chip flat size="small" @click="toggleTagInput">
+      <span v-if="!isAddingTag">Add tag <v-icon class="ml-1" size="small">mdi-plus</v-icon></span>
+      <span v-else>Close <v-icon class="ml-1" size="small">mdi-close</v-icon></span>
     </v-chip>
     <v-dialog v-model="isAddingTag" max-width="500">
       <v-card>
@@ -15,7 +22,7 @@
           v-if="isAddingTag"
           v-model="selectedTag"
           :items="availableTags"
-          item-text="name"
+          item-title="name"
           item-value="name"
           prepend-inner-icon="search"
           return-object
@@ -23,16 +30,21 @@
           dense
           small
           rounded
-          solo
+          variant="solo"
           multiple
-          @change="addTag"
+          @update:model-value="addTag"
           placeholder="Search tags..."
           cache-items
           class="autocomplete-menu pt-2 mx-2"
-        >
-        </v-autocomplete>
+        />
 
-        <v-btn class="ml-6 mb-4" small color="info" elevation="1" @click="changeStatus(newStatus)">
+        <v-btn
+          class="ml-6 mb-4"
+          size="small"
+          color="info"
+          elevation="1"
+          @click="changeStatus(newStatus)"
+        >
           Update
         </v-btn>
       </v-card>
@@ -119,7 +131,7 @@ export default {
         // we add a project filter
         filters["project"] = [this.project]
       }
-      // we add a filter to only retrun discoverable tags
+      // we add a filter to only return discoverable tags
       filters["tagFilter"] = [{ model: "Tag", field: "discoverable", op: "==", value: "true" }]
       if (filterOptions.q) {
         if (filterOptions.q.indexOf("/") != -1) {

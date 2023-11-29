@@ -24,7 +24,7 @@
         <v-col v-for="status in statuses" :key="status.name" cols="6" md="2">
           <v-item v-slot="{ toggle }">
             <div class="overlap-card" :class="status.hoverClass" @click="openDialog(status.name)">
-              <v-sheet outlined color="grey-lighten-1" :class="status.sheetClass">
+              <v-sheet variant="outlined" color="grey-lighten-1" :class="status.sheetClass">
                 <FancyTooltip :text="status.tooltip" hotkeys="">
                   <template #activator="{ tooltip }">
                     <v-card
@@ -42,9 +42,13 @@
                           v-if="isActiveStatus(status.name)"
                           class="flex-grow-1 text-center dispatch-font-enabled"
                         >
-                          <v-badge :color="status.color" bordered dot offset-x="10" offset-y="-8">
-                          </v-badge
-                          >{{ status.label }}
+                          <v-badge
+                            :color="status.color"
+                            bordered
+                            dot
+                            offset-x="10"
+                            offset-y="-8"
+                          />{{ status.label }}
                         </div>
 
                         <div v-else class="flex-grow-1 text-center text--disabled dispatch-font">

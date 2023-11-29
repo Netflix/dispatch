@@ -1,7 +1,7 @@
 <template>
   <v-menu offset-y>
-    <template v-slot:activator="{ on, attrs }">
-      <v-chip v-bind="attrs" v-on="on" small class="mr-2 hover-outline" color="#edf2f7">
+    <template #activator="{ props }">
+      <v-chip v-bind="props" size="small" class="mr-2 hover-outline" color="#edf2f7">
         {{ value ? value.name : "None" }}
       </v-chip>
     </template>

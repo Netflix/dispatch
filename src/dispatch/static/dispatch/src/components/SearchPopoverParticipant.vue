@@ -2,6 +2,8 @@
 import { ref, onMounted, onUnmounted, watch, defineEmits, computed } from "vue"
 import IndividualApi from "@/individual/api"
 import Hotkey from "@/atomics/Hotkey.vue"
+import { useHotKey } from "@/composables/useHotkey"
+
 import FancyTooltip from "@/components/FancyTooltip.vue"
 import type { Ref } from "vue"
 import { useStore } from "vuex"
@@ -23,26 +25,15 @@ const props = withDefaults(
 
 const store = useStore()
 const menu: Ref<boolean> = ref(false)
-const activator = ref(null) // A ref for the button acting as the activator
 const participants: Ref<string[]> = ref([])
 const selectedParticipant: Ref<string> = ref("")
 const hoveredParticipant: Ref<string> = ref("")
 const searchQuery: Ref<string> = ref("")
 
-const handleHotkey = (event: KeyboardEvent) => {
-  const key = event.key.toLowerCase()
-
-  if (key === props.hotkey && !menu.value) {
+useHotKey(["a"], () => {
+  if (!menu.value) {
     toggleMenu()
   }
-
-  if (key === "escape" && menu.value) {
-    toggleMenu()
-  }
-}
-
-onUnmounted(() => {
-  window.removeEventListener("keyup", handleHotkey)
 })
 
 const emit = defineEmits(["participant-selected"])
@@ -60,7 +51,6 @@ const fetchParticipants = async () => {
 
 onMounted(() => {
   fetchParticipants()
-  window.addEventListener("keyup", handleHotkey)
 })
 
 watch(selectedParticipant, async (newValue: string) => {
@@ -171,7 +161,6 @@ const toggleMenu = () => {
   if (!menu.value) {
     hoveredParticipant.value = ""
   }
-  console.log("Toggled menu")
 }
 </script>
 

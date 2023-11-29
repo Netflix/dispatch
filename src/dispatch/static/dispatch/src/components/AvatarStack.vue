@@ -13,14 +13,14 @@
       </v-avatar>
 
       <v-menu offset-y v-model="menu" :close-on-content-click="false">
-        <template v-slot:activator="{ on, attrs }">
+        <template #activator="{ props }">
           <v-btn
             icon
+            variant="text"
             v-if="overflowItems.length"
-            v-bind="attrs"
             class="overlapped-avatar"
             :style="`right: ${shownItems.length * 25}px`"
-            v-on="on"
+            v-bind="props"
           >
             <v-icon>mdi-dots-horizontal</v-icon>
           </v-btn>

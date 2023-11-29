@@ -23,7 +23,7 @@
         </v-card-text>
       </v-card>
     </div>
-    <slot></slot>
+    <slot />
   </div>
 </template>
 

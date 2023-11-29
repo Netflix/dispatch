@@ -19,7 +19,7 @@ export default {
       required: true,
     },
   },
-  setup(props, { emit }) {
+  setup(props) {
     const toggleExclusive = ref(props.modelValue)
 
     return { toggleExclusive }

@@ -2,7 +2,7 @@
 <template>
   <div>
     <FancyTooltip text="Change case visibility" :hotkeys="['L']">
-      <template v-slot:activator="{ tooltip }">
+      <template #activator="{ tooltip }">
         <v-btn variant="plain" :ripple="false" v-bind="tooltip" @click="dialog = true">
           <v-icon>{{ lockIcon }}</v-icon>
         </v-btn>
@@ -18,8 +18,8 @@
           >.
         </v-card-text>
         <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn text @click="updateVisibility">Confirm</v-btn>
+          <v-spacer />
+          <v-btn variant="text" @click="updateVisibility">Confirm</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -31,6 +31,7 @@ import { ref, watch, computed } from "vue"
 import { useStore } from "vuex"
 import FancyTooltip from "@/components/FancyTooltip.vue"
 import CaseApi from "@/case/api"
+import { E } from "../../dist/assets/index.e9481c97"
 
 const props = defineProps({
   caseVisibility: {
@@ -43,7 +44,9 @@ const store = useStore()
 const dialog = ref(false)
 const visibility = ref(props.caseVisibility)
 
-console.log("Case visibility is", visibility)
+const lockIcon = computed(() => (visibility.value === "Open" ? "mdi-lock-open" : "mdi-lock"))
+
+const toggleVisibility = computed(() => (visibility.value === "Open" ? "Restricted" : "Open"))
 
 watch(
   () => props.caseVisibility,
@@ -64,7 +67,6 @@ async function updateVisibility() {
 
   try {
     await CaseApi.update(caseDetails.id, caseDetails)
-    console.log("Case visibility updated successfully to", visibility.value)
   } catch (e) {
     console.error("Failed to update case visibility", e)
 
@@ -80,8 +82,4 @@ async function updateVisibility() {
     )
   }
 }
-
-const lockIcon = computed(() => (visibility.value === "Open" ? "mdi-lock-open" : "mdi-lock"))
-
-const toggleVisibility = computed(() => (visibility.value === "Open" ? "Restricted" : "Open"))
 </script>

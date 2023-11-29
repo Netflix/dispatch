@@ -1,15 +1,19 @@
 <template>
   <v-menu offset-y>
-    <template v-slot:activator="{ on, attrs }">
+    <template #activator="{ props }">
       <v-chip
-        v-bind="attrs"
-        v-on="on"
-        small
+        v-bind="props"
+        size="small"
         class="mr-2 hover-outline"
         :text-color="getPriorityMetaColor(_case.case_priority)"
         :color="getPriorityColor(_case.case_priority)"
       >
-        <v-icon dense small class="pr-2" :color="getPriorityMetaColor(_case.case_priority)">
+        <v-icon
+          size="small"
+          size="small"
+          class="pr-2"
+          :color="getPriorityMetaColor(_case.case_priority)"
+        >
           mdi-alert-plus-outline
         </v-icon>
         <b>{{ _case.case_priority.name }}</b>

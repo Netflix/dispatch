@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-skeleton-loader v-if="internalLoading" type="text"></v-skeleton-loader>
+    <v-skeleton-loader v-if="internalLoading" type="text" />
     <v-textarea
       v-else
       :disabled="isEditable"
@@ -9,10 +9,9 @@
       variant="underlined"
       density="compact"
       v-model="textField"
-      @input="onInput"
+      @update:model-value="onInput"
       auto-grow
-    >
-    </v-textarea>
+    />
   </div>
 </template>
 

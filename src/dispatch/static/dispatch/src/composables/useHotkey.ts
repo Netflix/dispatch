@@ -8,6 +8,7 @@ type Key = keyof typeof KeyboardEvent.prototype
  *
  * @param keyCombination - An array of keys that form the hotkey.
  * @param callback - A function to call when the hotkey is pressed.
+ * @param allowFocusSteal - A boolean to allow the hotkeys to steal focus from an active element.
  *
  * Usage:
  * ```
@@ -25,12 +26,21 @@ type Key = keyof typeof KeyboardEvent.prototype
  * })
  * ```
  */
-export function useHotKey(keyCombination: Key[], callback: (event: KeyboardEvent) => void) {
+export function useHotKey(
+  keyCombination: Key[],
+  callback: (event: KeyboardEvent) => void,
+  allowFocusSteal: boolean = false
+) {
   // Define a ref to keep track of keys that are currently pressed
   // This is a record where the keys are Key types and the values are booleans
   let keysPressed: Ref<Record<Key, boolean>> = ref({} as Record<Key, boolean>)
 
   const handleKeyDown = (event: KeyboardEvent) => {
+    // Check if the user wants to ignore keys pressed when an element is focused
+    if (document.activeElement !== document.body && !allowFocusSteal) {
+      return
+    }
+
     // When a key is pressed, add it to the keysPressed record
     keysPressed.value[event.key] = true
 
@@ -46,6 +56,11 @@ export function useHotKey(keyCombination: Key[], callback: (event: KeyboardEvent
   }
 
   const handleKeyUp = (event: KeyboardEvent) => {
+    // Check if the user wants to ignore keys released when an element is focused
+    if (document.activeElement !== document.body && !allowFocusSteal) {
+      return
+    }
+
     // When a key is released, remove it from the keysPressed record
     delete keysPressed.value[event.key]
   }

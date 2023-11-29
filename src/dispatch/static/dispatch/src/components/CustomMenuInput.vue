@@ -1,13 +1,13 @@
 <template>
-  <v-input :value="value" @click="menu = !menu" readonly append-icon="mdi-menu-down">
-    <template v-slot:prepend>
+  <v-input :model-value="value" @click="menu = !menu" readonly append-icon="mdi-menu-down">
+    <template #prepend>
       <!-- Icon and label here-->
     </template>
 
-    <template v-slot:append>
+    <template #append>
       <v-menu v-model="menu" :close-on-content-click="false">
-        <template v-slot:activator="{ on }">
-          <v-icon v-on="on">mdi-menu-down</v-icon>
+        <template #activator="{ props }">
+          <v-icon v-bind="props">mdi-menu-down</v-icon>
         </template>
         <v-list>
           <v-list-item v-for="(item, index) in items" :key="index" @click="selectItem(item)">

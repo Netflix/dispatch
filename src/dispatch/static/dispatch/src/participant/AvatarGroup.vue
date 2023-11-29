@@ -47,8 +47,14 @@ watch(
 )
 
 const visibleParticipants = computed(() => orderedParticipants.value.slice(0, 3))
-const hiddenParticipants = computed(() => orderedParticipants.value.slice(1))
-
+// Correct the calculation of hiddenParticipants
+const hiddenParticipants = computed(() => {
+  if (orderedParticipants.value.length > 3) {
+    return orderedParticipants.value.slice(3)
+  } else {
+    return []
+  }
+})
 const filteredParticipants = computed(() => {
   const lowerCaseQuery = searchQuery.value.toLowerCase()
 
@@ -93,10 +99,16 @@ const toggleMenu = () => {
       offset="10"
       transition="false"
     >
-      <template v-slot:activator="{ props: menu }">
+      <template #activator="{ props: menu }">
         <v-btn variant="text" v-bind="menu">
           <!-- Display Visible Participants -->
           <div class="avatar-row">
+            <!-- Display +n Avatar -->
+            <div v-if="hiddenParticipants.length > 0" class="avatar-container">
+              <v-avatar size="20px" class="extra-avatar">
+                +{{ hiddenParticipants.length }}
+              </v-avatar>
+            </div>
             <div
               v-for="(participant, index) in visibleParticipants"
               :key="index"
@@ -106,8 +118,7 @@ const toggleMenu = () => {
                 size="20px"
                 :style="{ background: getAvatarGradient(participant.individual.name) }"
                 v-on="on"
-              >
-              </v-avatar>
+              />
             </div>
           </div>
         </v-btn>
@@ -124,7 +135,7 @@ const toggleMenu = () => {
               hide-details
               flat
             >
-              <template v-slot:label>
+              <template #label>
                 <span class="text-subtitle-2 font-weight-regular"> Change participants... </span>
               </template>
             </v-text-field>
@@ -135,7 +146,7 @@ const toggleMenu = () => {
             <Hotkey hotkey="P" />
           </v-col>
         </v-row>
-        <v-divider></v-divider>
+        <v-divider />
         <v-list lines="one">
           <v-list-item
             v-for="(participant, index) in filteredParticipants"
@@ -147,17 +158,17 @@ const toggleMenu = () => {
             rounded="lg"
             active-class="ma-4"
           >
-            <template v-slot:prepend>
+            <template #prepend>
               <v-avatar
                 class="mr-n2"
                 size="12px"
                 :style="{ background: getAvatarGradient(participant.individual.name) }"
-              ></v-avatar>
+              />
               <!-- <v-icon class="mr-n6 ml-n2" size="x-small" icon="mdi-account"></v-icon> -->
             </template>
-            <v-list-item-title class="item-title-font">{{
-              participant.individual.name
-            }}</v-list-item-title>
+            <v-list-item-title class="item-title-font">
+              {{ participant.individual.name }}
+            </v-list-item-title>
           </v-list-item>
         </v-list>
       </v-card>
@@ -179,6 +190,15 @@ const toggleMenu = () => {
   border-radius: 50%; /* Make the border circular */
   position: relative;
   margin-right: -5px; /* Adjust this value to change the overlapping amount */
+}
+
+.extra-avatar {
+  background-color: white;
+  color: rgb(60, 65, 73);
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .hotkey {

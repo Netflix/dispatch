@@ -32,8 +32,7 @@
               inline
               :content="signalInstances?.length"
               class="small-badge"
-            >
-            </v-badge>
+            />
           </v-btn>
           <v-btn
             class="text-subtitle-2 unselected-button"
@@ -44,16 +43,16 @@
             :disabled="entities?.length === 0"
           >
             <span class="button-text">Graph</span>
-            <v-badge v-if="entities?.length" inline :content="entities?.length"> </v-badge>
+            <v-badge v-if="entities?.length" inline :content="entities?.length" />
           </v-btn>
         </v-btn-toggle>
       </div>
-      <v-divider></v-divider>
+      <v-divider />
     </div>
 
     <v-window v-model="tab">
       <v-window-item value="main" class="tab">
-        <case-timeline-tab v-model="events"></case-timeline-tab>
+        <case-timeline-tab v-model="events" />
       </v-window-item>
       <v-window-item value="signals" class="tab">
         <case-signal-instance-tab

@@ -34,7 +34,7 @@
           <span style="font-size: 0.75rem">
             <!-- {{ selectedItem.signal.name }} -->
           </span>
-          <raw-signal-viewer2 :value="selectedItem" />
+          <raw-signal-viewer :value="selectedItem" />
         </v-card>
       </v-col>
     </v-row>
@@ -42,11 +42,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, defineProps, withDefaults, toRef, watchEffect } from "vue"
+import { ref, watch, defineProps, withDefaults, toRef } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { formatRelativeDate } from "@/filters"
 
-import RawSignalViewer2 from "@/signal/NewRawSignalViewer2.vue"
+import RawSignalViewer from "@/signal/NewRawSignalViewer.vue"
 import HoverCard from "@/components/HoverCard.vue"
 
 // Define props

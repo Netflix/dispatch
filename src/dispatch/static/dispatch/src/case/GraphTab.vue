@@ -3,7 +3,7 @@ import { Panel, VueFlow, isNode, useVueFlow, MarkerType } from "@vue-flow/core"
 import { Background } from "@vue-flow/background"
 import { Controls } from "@vue-flow/controls"
 import { MiniMap } from "@vue-flow/minimap"
-import { ref, watchEffect, onMounted } from "vue"
+import { ref, watchEffect } from "vue"
 import { forceSimulation, forceLink, forceManyBody, forceCenter } from "d3-force"
 import SignalInstanceNode from "@/case/SignalInstanceNode.vue"
 
@@ -54,7 +54,6 @@ watchEffect(() => {
       instance.entities.forEach((entity, entityIndex) => {
         // Check if entity is not already in uniqueEntities
         if (!uniqueEntities[entity.id]) {
-          console.log("Entity ID: ", entity.id) // Log the entity id
           const entityNode = {
             id: `${entity.id}`,
             label: entity.value,
@@ -188,7 +187,7 @@ function openSignalViewer(signalInstance) {
     :max-zoom="4"
   >
     <template #node-signal="signalInstanceNodeProps">
-      <SignalInstanceNode v-bind="signalInstanceNodeProps" @openViewer="openSignalViewer" />
+      <SignalInstanceNode v-bind="signalInstanceNodeProps" @open-viewer="openSignalViewer" />
     </template>
     <Background :pattern-color="dark ? '#FFFFFB' : '#aaa'" gap="8" />
 

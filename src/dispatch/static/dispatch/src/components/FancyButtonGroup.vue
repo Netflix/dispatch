@@ -44,12 +44,7 @@ watchEffect(() => {
         >
           <slot :name="button.value" v-bind="button">
             <span class="button-text">{{ button.text }}</span>
-            <v-badge
-              v-if="button.badge"
-              inline
-              :content="button.badge"
-              class="small-badge"
-            ></v-badge>
+            <v-badge v-if="button.badge" inline :content="button.badge" class="small-badge" />
           </slot>
         </v-btn>
       </v-btn-toggle>
