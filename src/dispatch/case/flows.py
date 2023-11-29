@@ -36,7 +36,7 @@ from .service import get
 log = logging.getLogger(__name__)
 
 
-def get_case_participants(case: Case, db_session: SessionLocal):
+def get_case_participants_flow(case: Case, db_session: SessionLocal):
     """Get additional case participants based on priority, type and description."""
     individual_contacts = []
     team_contacts = []
@@ -187,7 +187,7 @@ def case_new_create_flow(
     ticket_flows.create_case_ticket(case=case, db_session=db_session)
 
     # we resolve participants
-    individual_participants, team_participants = get_case_participants(
+    individual_participants, team_participants = get_case_participants_flow(
         case=case, db_session=db_session
     )
 

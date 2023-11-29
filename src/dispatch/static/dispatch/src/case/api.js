@@ -13,6 +13,12 @@ export default {
     return API.get(`/${resource}/${caseId}`)
   },
 
+  getParticipants(caseId, minimal = true) {
+    return API.get(`/${resource}/${caseId}/participants`, {
+      params: { minimal },
+    })
+  },
+
   create(payload) {
     return API.post(`/${resource}`, payload)
   },
