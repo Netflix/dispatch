@@ -1,7 +1,5 @@
-<script setup>
-import { Handle, Position } from "@vue-flow/core"
-import { defineEmits } from "vue"
-
+<script setup lang="ts">
+import { Position } from "@vue-flow/core"
 
 const props = defineProps<{
   label: string

@@ -1,6 +1,5 @@
 <script setup>
 import { ref, computed, watch } from "vue"
-import Hotkey from "@/atomics/Hotkey.vue"
 import { useHotKey } from "@/composables/useHotkey"
 
 const props = defineProps({
@@ -14,13 +13,13 @@ const props = defineProps({
   },
 })
 
-const isMenuOpen = ref(false)
+const menu = ref(false)
 let orderedParticipants = ref([])
 const hoveredParticipant = ref("")
 const searchQuery = ref("")
 
 useHotKey(["Meta", "Shift", "p"], () => {
-  if (!isMenuOpen.value) {
+  if (!menu.value) {
     toggleMenu()
   }
 })
@@ -83,8 +82,8 @@ const getAvatarGradient = (participant) => {
 }
 
 const toggleMenu = () => {
-  isMenuOpen.value = !isMenuOpen.value
-  if (!isMenuOpen.value) {
+  menu.value = !menu.value
+  if (!menu.value) {
     hoveredParticipant.value = ""
   }
 }
@@ -124,29 +123,6 @@ const toggleMenu = () => {
         </v-btn>
       </template>
       <v-card min-width="255" class="rounded-lg dispatch-side-card">
-        <v-row no-gutters>
-          <v-col align-self="start">
-            <v-text-field
-              v-model="searchQuery"
-              label="Search participant..."
-              density="compact"
-              variant="solo"
-              single-line
-              hide-details
-              flat
-            >
-              <template #label>
-                <span class="text-subtitle-2 font-weight-regular"> Change participants... </span>
-              </template>
-            </v-text-field>
-          </v-col>
-          <v-col align-self="end" cols="4" class="pb-2">
-            <Hotkey hotkey="⌘" style="margin-right: 3px" />
-            <Hotkey hotkey="⇧" style="margin-right: 3px" />
-            <Hotkey hotkey="P" />
-          </v-col>
-        </v-row>
-        <v-divider />
         <v-list lines="one">
           <v-list-item
             v-for="(participant, index) in filteredParticipants"

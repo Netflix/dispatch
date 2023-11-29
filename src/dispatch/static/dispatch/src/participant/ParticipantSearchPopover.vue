@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, defineEmits, computed } from "vue"
+import { ref, onMounted, watch, computed } from "vue"
 import IndividualApi from "@/individual/api"
 import Hotkey from "@/atomics/Hotkey.vue"
 import { useHotKey } from "@/composables/useHotkey"
@@ -30,7 +30,7 @@ const selectedParticipant: Ref<string> = ref("")
 const hoveredParticipant: Ref<string> = ref("")
 const searchQuery: Ref<string> = ref("")
 
-useHotKey(["a"], () => {
+useHotKey([props.hotkey], () => {
   if (!menu.value) {
     toggleMenu()
   }
@@ -66,7 +66,6 @@ watch(selectedParticipant, async (newValue: string) => {
     })
 
     const individual = response.data.items[0]
-    console.log("Found individual", individual)
 
     // Check if the participant was found
     if (!individual) {
@@ -84,11 +83,8 @@ watch(selectedParticipant, async (newValue: string) => {
       caseDetails.reporter.individual = individual
     }
 
-    console.log("Updating caseDetails", caseDetails)
     // Call the CaseApi.update method to update the case details
     await CaseApi.update(caseDetails.id, caseDetails)
-
-    console.log("Case details updated", caseDetails)
   }
 })
 
