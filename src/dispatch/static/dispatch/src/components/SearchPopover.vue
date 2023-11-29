@@ -67,7 +67,7 @@ const toggleMenu = () => {
       offset="10"
       transition="false"
     >
-      <template v-slot:activator="{ props: menu }">
+      <template #activator="{ props: menu }">
         <v-btn
           class="menu-activator text-subtitle-2 font-weight-regular"
           variant="text"
@@ -91,7 +91,7 @@ const toggleMenu = () => {
               hide-details
               flat
             >
-              <template v-slot:label>
+              <template #label>
                 <span class="text-subtitle-2 font-weight-regular"> {{ props.label }} </span>
               </template>
             </v-text-field>
@@ -102,7 +102,7 @@ const toggleMenu = () => {
             </div>
           </v-col>
         </v-row>
-        <v-divider></v-divider>
+        <v-divider />
         <v-list lines="one">
           <template v-for="(item, _) in filteredItems" :key="index">
             <v-list-item

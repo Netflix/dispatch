@@ -50,6 +50,5 @@ const selectCasePriority = async (casePriorityName: string) => {
     @item-selected="selectCasePriority"
     label="Set priority..."
     :hotkeys="[]"
-  >
-  </SearchPopover>
+  />
 </template>

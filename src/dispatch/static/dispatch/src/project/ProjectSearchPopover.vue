@@ -52,6 +52,5 @@ const selectProject = async (projectName: string) => {
     label="Set project to..."
     @item-selected="selectProject"
     :hotkeys="[]"
-  >
-  </SearchPopover>
+  />
 </template>

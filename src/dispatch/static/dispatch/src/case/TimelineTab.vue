@@ -99,10 +99,10 @@ const menu = ref(false)
           :class="{ 'has-icon': !!sourceIconMap[event.source]?.icon }"
           size="x-small"
         >
-          <template v-slot:icon>
-            <v-icon size="small" v-if="sourceIconMap[event.source]?.icon">{{
-              sourceIconMap[event.source].icon
-            }}</v-icon>
+          <template #icon>
+            <v-icon size="small" v-if="sourceIconMap[event.source]?.icon">
+              {{ sourceIconMap[event.source].icon }}
+            </v-icon>
           </template>
           <v-row>
             <v-col cols="12">
@@ -130,7 +130,7 @@ const menu = ref(false)
         :key="index"
         :type="index % 2 === 0 ? 'paragraph' : 'article'"
         max-width="400px"
-      ></v-skeleton-loader>
+      />
     </div>
   </v-container>
 </template>

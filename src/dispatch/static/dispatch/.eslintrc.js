@@ -1,6 +1,6 @@
 module.exports = {
   root: true,
-  plugins: ["eslint-plugin-local-rules"],
+  plugins: ["eslint-plugin-local-rules", "@typescript-eslint"],
   extends: [
     "eslint:recommended",
     "plugin:prettier/recommended",
@@ -9,9 +9,11 @@ module.exports = {
   ],
   parserOptions: {
     ecmaVersion: 2020,
+    parser: "@typescript-eslint/parser",
   },
   env: {
     browser: true,
+    es2021: true,
     node: true,
   },
   overrides: [

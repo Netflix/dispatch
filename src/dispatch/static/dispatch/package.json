@@ -38,6 +38,8 @@
     "@tiptap/pm": "^2.1.12",
     "@tiptap/starter-kit": "^2.1.12",
     "@tiptap/vue-3": "^2.1.12",
+    "@typescript-eslint/eslint-plugin": "^6.13.1",
+    "@typescript-eslint/parser": "^6.13.1",
     "@vue-flow/background": "^1.2.0",
     "@vue-flow/controls": "^1.1.0",
     "@vue-flow/core": "^1.26.0",

@@ -34,6 +34,5 @@ const selectCaseResolution = async (caseResolutionName: string) => {
     @item-selected="selectCaseResolution"
     label="Set resolution..."
     :hotkeys="[]"
-  >
-  </SearchPopover>
+  />
 </template>

@@ -38,9 +38,9 @@ const props = withDefaults(
 <template>
   <!-- This is a tooltip component that displays text and hotkeys. -->
   <v-tooltip :location="props.location" open-delay="750" transition="fade-transition">
-    <template v-slot:activator="{ props: tooltip }">
+    <template #activator="{ props: tooltip }">
       <!-- Tooltip activator slot. Pass the activator component here. -->
-      <slot name="activator" :tooltip="tooltip"></slot>
+      <slot name="activator" :tooltip="tooltip" />
     </template>
 
     <v-row no-gutters>
