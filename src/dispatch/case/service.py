@@ -371,12 +371,23 @@ def delete(*, db_session, case_id: int):
     db_session.commit()
 
 
-def get_participants(*, db_session: Session, case_id: int) -> list[Participant] | None:
+def get_participants(
+    *, db_session: Session, case_id: int, minimal: bool = False
+) -> list[Participant] | None:
     """Returns a list of participants based on the given case id."""
-    case = (
-        db_session.query(Case)
-        .options(joinedload(Case.participants))
-        .filter(Case.id == case_id)
-        .first()
-    )
+    if minimal:
+        case = (
+            db_session.query(Case)
+            .join(Case.participants)  # Use join for minimal
+            .filter(Case.id == case_id)
+            .first()
+        )
+    else:
+        case = (
+            db_session.query(Case)
+            .options(joinedload(Case.participants))  # Use joinedload for full objects
+            .filter(Case.id == case_id)
+            .first()
+        )
+
     return case.participants if case else None

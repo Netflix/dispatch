@@ -23,7 +23,7 @@ from dispatch.database.service import CommonParameters, search_filter_sort_pagin
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.incident.models import IncidentCreate, IncidentRead
 from dispatch.incident import service as incident_service
-from dispatch.participant.models import ParticipantUpdate, ParticipantReadMinimal
+from dispatch.participant.models import ParticipantUpdate, ParticipantRead, ParticipantReadMinimal
 from dispatch.individual.models import IndividualContactRead
 
 from .flows import (
@@ -87,6 +87,25 @@ def get_case_participants_minimal(
 ):
     """Retrieves the details of a single case."""
     return get_participants(case_id=case_id, db_session=db_session)
+
+
+@router.get(
+    "/{case_id}/participants",
+    summary="Retrieves a list of case participants.",
+    dependencies=[Depends(PermissionsDependency([CaseViewPermission]))],
+)
+def get_case_participants(
+    case_id: PrimaryKey,
+    db_session: DbSession,
+    minimal: bool = Query(default=False),
+):
+    """Retrieves the details of a single case."""
+    participants = get_participants(case_id=case_id, db_session=db_session, minimal=minimal)
+
+    if minimal:
+        return [ParticipantReadMinimal.from_orm(p) for p in participants]
+    else:
+        return [ParticipantRead.from_orm(p) for p in participants]
 
 
 @router.get("", summary="Retrieves a list of cases.")

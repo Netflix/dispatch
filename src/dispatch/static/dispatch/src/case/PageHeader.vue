@@ -67,7 +67,8 @@ const fetchParticipants = async () => {
   loading.value = true
   try {
     // get case participants
-    CaseApi.getParticipants(caseId).then((response) => {
+    CaseApi.getParticipants(caseId, true).then((response) => {
+      // Pass true to fetch minimal data
       caseParticipants.value = response.data
     })
     loading.value = false
