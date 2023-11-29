@@ -21,7 +21,7 @@ onMounted(async () => {
     const response = await CaseSeverityApi.getAll()
     caseSeveritys.value = response.data.items.map((item: any) => item.name)
   } catch (error) {
-    console.error("Error fetching priorities:", error)
+    console.error("Error fetching case severities:", error)
   }
 })
 
@@ -48,8 +48,8 @@ const selectCaseSeverity = async (caseSeverityName: string) => {
     :items="caseSeveritys"
     :initialValue="caseSeverity"
     @item-selected="selectCaseSeverity"
-    label="Set case type..."
-    :hotkeys="['q']"
+    label="Set case severity..."
+    :hotkeys="[]"
   >
     <template v-slot:default="{ item }">
       <v-list-item-title class="item-title-font">{{ item }}</v-list-item-title>

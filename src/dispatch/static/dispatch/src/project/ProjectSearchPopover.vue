@@ -21,7 +21,7 @@ onMounted(async () => {
     const response = await ProjectApi.getAll()
     projects.value = response.data.items.map((item: any) => item.name)
   } catch (error) {
-    console.error("Error fetching priorities:", error)
+    console.error("Error fetching projects:", error)
   }
 })
 

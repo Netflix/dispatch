@@ -117,7 +117,6 @@ export default {
 
     watch(modelValue, (newValue) => {
       signalInstances.value = newValue.signal_instances
-      console.log("Got signalInstances", signalInstances.value)
       resources.value = newValue.resources
       entities.value = newValue.entities
       events.value = newValue.events

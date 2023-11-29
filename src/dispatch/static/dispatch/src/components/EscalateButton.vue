@@ -10,7 +10,6 @@
 
 <script setup lang="ts">
 import { useStore } from "vuex"
-import FancyTooltip from "@/components/FancyTooltip.vue"
 import CaseEscalateDialog from "@/case/EscalateDialog.vue"
 
 const store = useStore()
