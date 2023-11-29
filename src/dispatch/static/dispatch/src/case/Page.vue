@@ -10,8 +10,18 @@
     <CaseAttributesDrawer v-model="caseDetails" :open="isDrawerOpen" />
     <VDivider />
     <div class="container mx-auto px-4">
-      <RichEditor :title="true" v-model="caseDetails.title" class="pl-8 pb-6 pt-6" />
-      <RichEditor :description="true" v-model="caseDetails.description" class="pl-8 pb-6" />
+      <RichEditor
+        :title="true"
+        v-model="caseDetails.title"
+        class="pl-8 pb-6 pt-6"
+        @update:model-value="handleTitleUpdate"
+      />
+      <RichEditor
+        :description="true"
+        v-model="caseDetails.description"
+        class="pl-8 pb-6"
+        @update:model-value="handleDescriptionUpdate"
+      />
       <CaseStatusSelectGroup v-model="caseDetails" class="pl-4 pb-8" />
       <CaseTabs :loading="loading" v-model="caseDetails" />
     </div>
@@ -90,6 +100,24 @@ const fetchDetails = async () => {
     console.error("Failed to fetch case details", e)
     caseDetails.value = caseDefaults
     loading.value = false
+  }
+}
+
+const handleTitleUpdate = (newTitle) => {
+  caseDetails.value.title = newTitle
+  saveCaseDetails()
+}
+
+const handleDescriptionUpdate = (newDescription) => {
+  caseDetails.value.description = newDescription
+  saveCaseDetails()
+}
+
+const saveCaseDetails = async () => {
+  try {
+    await CaseApi.update(caseDetails.value.id, caseDetails.value)
+  } catch (e) {
+    console.error("Failed to save case details", e)
   }
 }
 

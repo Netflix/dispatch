@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, defineProps, watchEffect } from "vue"
+import { ref, defineProps, watchEffect, watch } from "vue"
 
+import CaseApi from "@/case/api"
 import CaseResolutionSearchPopover from "@/case/CaseResolutionSearchPopover.vue"
 import CasePrioritySearchPopover from "@/case/priority/CasePrioritySearchPopover.vue"
 import CaseSeveritySearchPopover from "@/case/severity/CaseSeveritySearchPopover.vue"
@@ -24,6 +25,16 @@ const props = defineProps({
 // Define the emits
 const emit = defineEmits(["update:modelValue", "update:open"])
 const drawerVisible = ref(props.open)
+// Create a local state for modelValue
+const modelValue = ref({ ...props.modelValue })
+
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    modelValue.value = newVal
+  },
+  { immediate: true }
+)
 
 watchEffect(() => {
   drawerVisible.value = props.open
@@ -32,6 +43,20 @@ watchEffect(() => {
 watchEffect(() => {
   emit("update:open", drawerVisible.value)
 })
+
+const handleResolutionUpdate = (newResolution) => {
+  modelValue.value.resolution = newResolution
+  emit("update:modelValue", { ...modelValue.value }) // Emit the updated modelValue
+  saveCaseDetails()
+}
+
+const saveCaseDetails = async () => {
+  try {
+    await CaseApi.update(modelValue.value.id, modelValue.value)
+  } catch (e) {
+    console.error("Failed to save case details", e)
+  }
+}
 </script>
 
 <template>
@@ -191,6 +216,7 @@ watchEffect(() => {
         <RichEditor
           :resolution="true"
           v-model="modelValue.resolution"
+          @update:model-value="handleResolutionUpdate"
           style="min-height: 400px; margin: 10px; font-size: 0.9125rem; font-weight: 400"
         />
         <v-row class="pb-2 pr-4 pl-4">

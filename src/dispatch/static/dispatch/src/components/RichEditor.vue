@@ -8,8 +8,6 @@
 import { ref, onMounted, onBeforeUnmount, watch } from "vue"
 import { Editor, EditorContent } from "@tiptap/vue-3"
 import StarterKit from "@tiptap/starter-kit"
-import CaseApi from "@/case/api"
-import { useStore } from "vuex"
 
 const props = defineProps({
   modelValue: {
@@ -30,9 +28,9 @@ const props = defineProps({
   },
 })
 
-const store = useStore()
 const editor = ref(null)
 const plainTextValue = ref("")
+const emit = defineEmits(["update:modelValue"])
 
 watch(
   () => props.modelValue,
@@ -59,22 +57,8 @@ onMounted(() => {
       let content = editor.value?.getHTML()
       // remove the HTML tags
       plainTextValue.value = content.replace(/<\/?[^>]+(>|$)/g, "")
-      // Get the case details from the Vuex store
-      const caseDetails = store.state.case_management.selected
-      // Update the title value
-      if (props.title) {
-        caseDetails.title = plainTextValue.value
-      }
-
-      if (props.description) {
-        caseDetails.description = plainTextValue.value
-      }
-
-      if (props.resolution) {
-        caseDetails.resolution = plainTextValue.value
-      }
-      // Save the changes
-      CaseApi.update(caseDetails.id, caseDetails)
+      // Emitting the updated plain text
+      emit("update:modelValue", plainTextValue.value)
     },
     keyboardShortcuts: {
       Enter: () => {}, // Override Enter key to do nothing
