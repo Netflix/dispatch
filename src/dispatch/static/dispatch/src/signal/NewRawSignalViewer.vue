@@ -1,6 +1,5 @@
 <script setup>
-import { ref, computed } from "vue"
-import * as monaco from "monaco-editor"
+import { computed } from "vue"
 import MonacoEditor from "@/components/MonacoEditor.vue"
 
 // Define Props
@@ -11,7 +10,7 @@ const props = defineProps({
   },
 })
 
-const editor = ref(null)
+const raw_str = computed(() => JSON.stringify(props.value.raw, null, "\t") || "[]")
 
 const editorBeforeMount = (monaco) => {
   monaco.languages.registerHoverProvider("json", {
@@ -58,9 +57,6 @@ const editorOptions = {
     enabled: false,
   },
 }
-
-// Computed property for raw_str
-const raw_str = computed(() => JSON.stringify(props.value.raw, null, "\t") || "[]")
 </script>
 
 <template>
