@@ -49,6 +49,8 @@ from .service import (
     unarchive_conversation,
     update_message,
 )
+from slack_sdk.errors import SlackApiError
+from .enums import SlackAPIErrorCode
 
 logger = logging.getLogger(__name__)
 
@@ -162,26 +164,35 @@ class SlackConversationPlugin(ConversationPlugin):
         **kwargs,
     ):
         """Sends a new message based on data and type."""
-        client = create_slack_client(self.configuration)
-        messages = []
-        if not blocks:
-            blocks = create_message_blocks(message_template, notification_type, items, **kwargs)
+        try:
+            client = create_slack_client(self.configuration)
+            messages = []
+            if not blocks:
+                blocks = create_message_blocks(message_template, notification_type, items, **kwargs)
 
-            for c in chunks(blocks, 50):
-                messages.append(
-                    send_message(
-                        client,
-                        conversation_id,
-                        text,
-                        ts,
-                        Message(blocks=c).build()["blocks"],
-                        persist,
+                for c in chunks(blocks, 50):
+                    messages.append(
+                        send_message(
+                            client,
+                            conversation_id,
+                            text,
+                            ts,
+                            Message(blocks=c).build()["blocks"],
+                            persist,
+                        )
                     )
-                )
-        else:
-            for c in chunks(blocks, 50):
-                messages.append(send_message(client, conversation_id, text, ts, c, persist))
-        return messages
+            else:
+                for c in chunks(blocks, 50):
+                    messages.append(send_message(client, conversation_id, text, ts, c, persist))
+            return messages
+        except SlackApiError as exception:
+            error = exception.response["error"]
+            if error == SlackAPIErrorCode.IS_ARCHIVED:
+                # swallow send errors if the channel is archived
+                message = f"SlackAPIError trying to send: {exception.response}. Message: {text}. Type: {notification_type}"
+                logger.error(message)
+            else:
+                raise exception
 
     def send_direct(
         self,
