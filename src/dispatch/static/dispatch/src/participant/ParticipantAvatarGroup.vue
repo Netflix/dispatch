@@ -28,7 +28,6 @@ watch(
   () => props.participants,
   (newVal) => {
     if (newVal) {
-      console.log("Watched new val", newVal)
       const assignee = newVal.find((participant) =>
         props.highlightedParticipants.includes(participant.individual.name)
       )

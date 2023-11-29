@@ -2,6 +2,7 @@
 import { ref, defineProps, watchEffect } from "vue"
 
 import CaseApi from "@/case/api"
+import CaseResolutionSearchPopover from "@/case/CaseResolutionSearchPopover.vue"
 import CasePrioritySearchPopover from "@/case/priority/CasePrioritySearchPopover.vue"
 import CaseSeveritySearchPopover from "@/case/severity/CaseSeveritySearchPopover.vue"
 import CaseTypeSearchPopover from "@/case/type/CaseTypeSearchPopover.vue"
@@ -137,27 +138,10 @@ const onSelectReason = async (reason: string) => {
         ></tiptap>
         <v-row class="pb-2 pr-4 pl-4">
           <v-col cols="8" class="d-flex align-center">
-            <v-menu offset-y bottom>
-              <template v-slot:activator="{ on }">
-                <v-chip v-on="on" size="small" color="white-lighten-2">
-                  <v-icon small left> mdi-pencil </v-icon>
-                  {{
-                    modelValue.resolution_reason
-                      ? modelValue.resolution_reason
-                      : "Select a resolution reason"
-                  }}
-                </v-chip>
-              </template>
-              <v-list>
-                <v-list-item
-                  v-for="reason in resolutionReasons"
-                  :key="reason"
-                  @click="onSelectReason(reason)"
-                >
-                  <v-list-item-title>{{ reason }}</v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
+            <CaseResolutionSearchPopover
+              :case-resolution="modelValue.resolution_reason"
+              class="pl-6"
+            />
           </v-col>
           <!-- <v-col cols="4" class="d-flex justify-end align-center">
             <v-btn variant="text" elevation="1" @click="onSubmit()" class="dispatch-button-out">

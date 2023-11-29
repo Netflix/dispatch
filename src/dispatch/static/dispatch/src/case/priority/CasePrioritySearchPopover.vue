@@ -48,7 +48,7 @@ const selectCasePriority = async (casePriorityName: string) => {
     :items="casePriorities"
     :initialValue="casePriority"
     @item-selected="selectCasePriority"
-    label="Set case type..."
+    label="Set priority..."
     :hotkeys="['t']"
   >
     <template v-slot:default="{ item }">
