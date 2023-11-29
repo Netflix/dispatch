@@ -51,12 +51,5 @@ const selectCasePriority = async (casePriorityName: string) => {
     label="Set priority..."
     :hotkeys="[]"
   >
-    <template v-slot:default="{ item }">
-      <v-list-item-title class="dispatch-text-title">{{ item }}</v-list-item-title>
-    </template>
   </SearchPopover>
 </template>
-
-<style lang="scss" scoped>
-@import "@/styles/index.scss";
-</style>

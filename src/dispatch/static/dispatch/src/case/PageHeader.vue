@@ -6,11 +6,11 @@
       </template>
     </v-breadcrumbs>
     <template #append>
-      <FancyTooltip text="View case participants" :hotkeys="['⌘', '⇧', 'P']">
+      <DTooltip text="View case participants" :hotkeys="['⌘', '⇧', 'P']">
         <template #activator="{ tooltip }">
           <ParticipantAvatarGroup :participants="caseParticipants" class="pl-3" v-bind="tooltip" />
         </template>
-      </FancyTooltip>
+      </DTooltip>
       <LockButton
         :subject-visibility="caseVisibility"
         subject-type="case_management"
@@ -18,13 +18,13 @@
       />
       <EscalateButton class="ml-n4" />
       <v-divider vertical inset />
-      <FancyTooltip text="Case details" :hotkeys="['⌘', '⇧', 'I']">
+      <DTooltip text="Case details" :hotkeys="['⌘', '⇧', 'I']">
         <template #activator="{ tooltip }">
           <v-btn variant="plain" :ripple="false" @click="toggleDrawer" v-bind="tooltip">
             <v-icon>{{ isDrawerOpen ? "mdi-book-open" : "mdi-book-open-outline" }}</v-icon>
           </v-btn>
         </template>
-      </FancyTooltip>
+      </DTooltip>
     </template>
   </v-app-bar>
 </template>
@@ -34,7 +34,7 @@ import { useRoute } from "vue-router"
 import { computed, ref } from "vue"
 import LockButton from "@/components/LockButton.vue"
 import EscalateButton from "@/case/EscalateButton.vue"
-import FancyTooltip from "@/components/FancyTooltip.vue"
+import DTooltip from "@/components/DTooltip.vue"
 import ParticipantAvatarGroup from "@/participant/ParticipantAvatarGroup.vue"
 import CaseApi from "@/case/api"
 

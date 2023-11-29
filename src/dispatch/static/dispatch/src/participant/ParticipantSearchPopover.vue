@@ -4,7 +4,7 @@ import IndividualApi from "@/individual/api"
 import Hotkey from "@/atomics/Hotkey.vue"
 import { useHotKey } from "@/composables/useHotkey"
 
-import FancyTooltip from "@/components/FancyTooltip.vue"
+import DTooltip from "@/components/DTooltip.vue"
 import type { Ref } from "vue"
 import { useStore } from "vuex"
 import CaseApi from "@/case/api"
@@ -170,7 +170,7 @@ const toggleMenu = () => {
       transition="false"
     >
       <template v-slot:activator="{ props: menu }">
-        <FancyTooltip :text="props.tooltipLabel" :hotkeys="[hotkey.toUpperCase()]">
+        <DTooltip :text="props.tooltipLabel" :hotkeys="[hotkey.toUpperCase()]">
           <template v-slot:activator="{ tooltip }">
             <v-btn
               class="menu-activator text-subtitle-2 font-weight-regular"
@@ -188,7 +188,7 @@ const toggleMenu = () => {
               </span>
             </v-btn>
           </template>
-        </FancyTooltip>
+        </DTooltip>
       </template>
 
       <v-card min-width="200" class="rounded-lg dispatch-side-card">

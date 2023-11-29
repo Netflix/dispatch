@@ -25,7 +25,7 @@
           <v-item v-slot="{ toggle }">
             <div class="overlap-card" :class="status.hoverClass" @click="openDialog(status.name)">
               <v-sheet variant="outlined" color="grey-lighten-1" :class="status.sheetClass">
-                <FancyTooltip :text="status.tooltip" hotkeys="">
+                <DTooltip :text="status.tooltip" hotkeys="">
                   <template #activator="{ tooltip }">
                     <v-card
                       class="d-flex align-center"
@@ -60,7 +60,7 @@
                       </v-scroll-y-transition>
                     </v-card>
                   </template>
-                </FancyTooltip>
+                </DTooltip>
               </v-sheet>
             </div>
           </v-item>
@@ -72,7 +72,7 @@
 
 <script>
 import { mapActions } from "vuex"
-import FancyTooltip from "@/components/FancyTooltip.vue"
+import DTooltip from "@/components/DTooltip.vue"
 
 export default {
   name: "CaseStatusSelectGroup",
@@ -84,7 +84,7 @@ export default {
     },
   },
   components: {
-    FancyTooltip,
+    DTooltip,
   },
   data() {
     return {

@@ -115,7 +115,7 @@ const toggleMenu = () => {
               active-class="ma-4"
             >
               <span class="dispatch-text-title">
-                <slot :item="item" />
+                <slot :item="item">{{ item }}</slot>
               </span>
             </v-list-item>
           </template>

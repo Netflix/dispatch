@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watchEffect } from "vue"
 import Util from "@/util"
-import FancyMenu from "@/components/FancyMenu.vue"
+import DMenu from "@/components/DMenu.vue"
 import { useRoute } from "vue-router"
 import CaseApi from "@/case/api"
 import { formatRelativeDate } from "@/filters"
@@ -87,7 +87,7 @@ const menu = ref(false)
   <v-container class="pl-8 pr-8">
     <v-row justify="end">
       <!-- <v-switch v-model="showDetails" label="Show details" /> -->
-      <FancyMenu :options="['Export']" @selection-changed="handleSelection" />
+      <DMenu :options="['Export']" @selection-changed="handleSelection" />
     </v-row>
     <template v-if="sortedEvents && sortedEvents.length">
       <v-timeline density="compact" clipped line-thickness="1">
