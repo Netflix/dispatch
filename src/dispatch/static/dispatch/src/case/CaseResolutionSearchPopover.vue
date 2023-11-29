@@ -30,10 +30,10 @@ const selectCaseResolution = async (caseResolutionName: string) => {
   <SearchPopover
     :items="caseResolutions"
     class="dispatch-button-out"
-    :initialValue="caseResolution || 'set reason'"
+    :initialValue="caseResolution || 'Resolution Reason'"
     @item-selected="selectCaseResolution"
     label="Set resolution..."
-    :hotkeys="['t']"
+    :hotkeys="[]"
   >
     <template v-slot:default="{ item }">
       <v-list-item-title class="item-title-font">{{ item }}</v-list-item-title>

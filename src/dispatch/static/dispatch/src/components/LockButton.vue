@@ -1,13 +1,9 @@
 <!-- LockButton.vue -->
 <template>
   <div>
-    <FancyTooltip text="Change case visibility" :hotkeys="['L']">
-      <template #activator="{ tooltip }">
-        <v-btn variant="plain" :ripple="false" v-bind="tooltip" @click="dialog = true">
-          <v-icon>{{ lockIcon }}</v-icon>
-        </v-btn>
-      </template>
-    </FancyTooltip>
+    <v-btn variant="plain" :ripple="false" @click="dialog = true">
+      <v-icon>{{ lockIcon }}</v-icon>
+    </v-btn>
 
     <v-dialog v-model="dialog" max-width="600px">
       <v-card>
@@ -29,7 +25,6 @@
 <script setup lang="ts">
 import { ref, watch, computed } from "vue"
 import { useStore } from "vuex"
-import FancyTooltip from "@/components/FancyTooltip.vue"
 import CaseApi from "@/case/api"
 
 const props = defineProps({

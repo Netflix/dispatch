@@ -1,13 +1,9 @@
 <!-- EscalateButton.vue -->
 <template>
   <div>
-    <FancyTooltip text="Escalate case" :hotkeys="['E']">
-      <template #activator="{ tooltip }">
-        <v-btn variant="plain" :ripple="false" v-bind="tooltip" @click="showDialog">
-          <v-icon>mdi-fire</v-icon>
-        </v-btn>
-      </template>
-    </FancyTooltip>
+    <v-btn variant="plain" :ripple="false" @click="showDialog">
+      <v-icon>mdi-fire</v-icon>
+    </v-btn>
     <CaseEscalateDialog />
   </div>
 </template>

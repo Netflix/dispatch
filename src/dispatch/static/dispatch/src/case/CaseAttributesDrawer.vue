@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { ref, defineProps, watchEffect } from "vue"
 
-import CaseApi from "@/case/api"
 import CaseResolutionSearchPopover from "@/case/CaseResolutionSearchPopover.vue"
 import CasePrioritySearchPopover from "@/case/priority/CasePrioritySearchPopover.vue"
 import CaseSeveritySearchPopover from "@/case/severity/CaseSeveritySearchPopover.vue"
 import CaseTypeSearchPopover from "@/case/type/CaseTypeSearchPopover.vue"
 import ParticipantSearchPopover from "@/participant/ParticipantSearchPopover.vue"
-
 import ProjectSearchPopover from "@/project/ProjectSearchPopover.vue"
 
 // Define the props
@@ -26,7 +24,6 @@ const props = defineProps({
 // Define the emits
 const emit = defineEmits(["update:modelValue", "update:open"])
 const drawerVisible = ref(props.open)
-const resolutionReasons = ref(["False Positive", "User Acknowledged", "Mitigated", "Escalated"])
 
 watchEffect(() => {
   drawerVisible.value = props.open
@@ -35,12 +32,6 @@ watchEffect(() => {
 watchEffect(() => {
   emit("update:open", drawerVisible.value)
 })
-
-const onSelectReason = async (reason: string) => {
-  props.modelValue.resolution_reason = reason
-  await CaseApi.update(props.modelValue.id, props.modelValue)
-  // other logic as necessary
-}
 </script>
 
 <template>
@@ -123,42 +114,18 @@ const onSelectReason = async (reason: string) => {
         </v-row>
       </div>
 
-      <v-divider class="mt-8 mb-8"></v-divider>
-      <div class="pl-6 dispatch-font-title">Investigation Write-Up</div>
-      <div class="pl-6 dispatch-font">
-        Document your findings and provide the rationale for any decisions you made as part of this
-        case.
-      </div>
-
-      <v-card flat color="grey-lighten-5" class="rounded-lg mt-6 ml-2 mr-2">
-        <tiptap
-          :resolution="true"
-          v-model="modelValue.resolution"
-          style="min-height: 400px; margin: 10px; font-size: 0.9125rem; font-weight: 400"
-        ></tiptap>
-        <v-row class="pb-2 pr-4 pl-4">
-          <v-col cols="8" class="d-flex align-center">
-            <CaseResolutionSearchPopover
-              :case-resolution="modelValue.resolution_reason"
-              class="pl-6"
-            />
-          </v-col>
-          <!-- <v-col cols="4" class="d-flex justify-end align-center">
-            <v-btn variant="text" elevation="1" @click="onSubmit()" class="dispatch-button-out">
-              Submit
-            </v-btn>
-          </v-col> -->
-        </v-row>
-      </v-card>
-      <v-divider class="mt-8 mb-8"></v-divider>
+      <v-divider class="mt-8 mb-8" />
 
       <div class="pl-3">
-        <v-row align="center">
+        <v-row no-gutters align="center">
           <v-col cols="8">
             <v-btn
               class="text-subtitle-2 font-weight-regular"
               prepend-icon="mdi-jira"
               variant="text"
+              :disabled="!modelValue.ticket"
+              :href="modelValue.ticket && modelValue.ticket.weblink"
+              target="_blank"
             >
               Ticket
             </v-btn>
@@ -171,18 +138,25 @@ const onSelectReason = async (reason: string) => {
               class="text-subtitle-2 font-weight-regular"
               prepend-icon="mdi-slack"
               variant="text"
+              :disabled="!modelValue.conversation"
+              :href="modelValue.conversation && modelValue.conversation.weblink"
+              target="_blank"
             >
               Conversation
             </v-btn>
           </v-col>
         </v-row>
 
+        <!-- For documents, consider the first document's weblink as an example -->
         <v-row no-gutters class="pt-6" align="center">
           <v-col cols="8">
             <v-btn
               class="text-subtitle-2 font-weight-regular"
               prepend-icon="mdi-file-document"
               variant="text"
+              :disabled="!modelValue.documents.length"
+              :href="modelValue.documents.length && modelValue.documents[0].weblink"
+              target="_blank"
             >
               Document
             </v-btn>
@@ -195,12 +169,39 @@ const onSelectReason = async (reason: string) => {
               class="text-subtitle-2 font-weight-regular"
               prepend-icon="mdi-folder-google-drive"
               variant="text"
+              :disabled="!modelValue.storage"
+              :href="modelValue.storage && modelValue.storage.weblink"
+              target="_blank"
             >
               Storage
             </v-btn>
           </v-col>
         </v-row>
       </div>
+
+      <v-divider class="mt-8 mb-8" />
+
+      <div class="pl-6 dispatch-font-title">Investigation Write-Up</div>
+      <div class="pl-6 dispatch-font">
+        Document your findings and provide the rationale for any decisions you made as part of this
+        case.
+      </div>
+
+      <v-card flat color="grey-lighten-5" class="rounded-lg mt-6 ml-2 mr-2">
+        <tiptap
+          :resolution="true"
+          v-model="modelValue.resolution"
+          style="min-height: 400px; margin: 10px; font-size: 0.9125rem; font-weight: 400"
+        />
+        <v-row class="pb-2 pr-4 pl-4">
+          <v-col cols="12" class="d-flex justify-end align-center">
+            <CaseResolutionSearchPopover
+              :case-resolution="modelValue.resolution_reason"
+              class="pl-6"
+            />
+          </v-col>
+        </v-row>
+      </v-card>
     </v-navigation-drawer>
   </div>
 </template>
