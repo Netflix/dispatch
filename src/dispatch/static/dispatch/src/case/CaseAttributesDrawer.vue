@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { ref, computed, defineProps, defineEmits, onUpdated, watchEffect } from "vue"
+import { ref, defineProps, watchEffect } from "vue"
+
 import CaseApi from "@/case/api"
-import SearchPopoverCasePriority from "@/components/SearchPopoverCasePriority.vue"
-import CaseTypeSearchPopover from "@/case/type/CaseTypeSearchPopover.vue"
+import CasePrioritySearchPopover from "@/case/priority/CasePrioritySearchPopover.vue"
 import CaseSeveritySearchPopover from "@/case/severity/CaseSeveritySearchPopover.vue"
+import CaseTypeSearchPopover from "@/case/type/CaseTypeSearchPopover.vue"
+import ParticipantSearchPopover from "@/participant/ParticipantSearchPopover.vue"
 
 import ProjectSearchPopover from "@/project/ProjectSearchPopover.vue"
-import SearchPopoverStatus from "@/components/SearchPopoverStatus.vue"
-import SearchPopoverParticipant from "@/components/SearchPopoverParticipant.vue"
 
 // Define the props
 const props = defineProps({
@@ -34,64 +34,11 @@ watchEffect(() => {
 watchEffect(() => {
   emit("update:open", drawerVisible.value)
 })
-// Setup
-const isMenuOpen = ref(false)
-const participants = computed({
-  get: () => props.modelValue.participants,
-  set: (value) => emit("update:modelValue", value),
-})
-
-const visibility = computed({
-  get: () => props.modelValue.visibility,
-  set: (value) => emit("update:modelValue", value),
-})
-
-onUpdated(() => {
-  console.log("Got case", props.modelValue)
-})
 
 const onSelectReason = async (reason: string) => {
   props.modelValue.resolution_reason = reason
   await CaseApi.update(props.modelValue.id, props.modelValue)
   // other logic as necessary
-}
-
-// New ref for tiptap content
-const editorContent = ref("")
-
-// Updated onSubmit function
-const onSubmit = async () => {
-  // Use editorContent here
-  props.modelValue.resolution = editorContent.value
-  console.log("Got editorConte", editorContent.value)
-
-  // Now you can call the API to save the case
-  // await CaseApi.update(props.modelValue.id, props.modelValue)
-  // Other logic as necessary...
-}
-
-const handlePriorityChange = async (newPriority: string) => {
-  // Check for case ID
-  if (!props.modelValue.id) {
-    console.error("Case ID is missing")
-    return
-  }
-
-  try {
-    // Update the case with the new priority
-    const updatedCase = await CaseApi.update(props.modelValue.id, {
-      ...props.modelValue,
-      priority: newPriority,
-    })
-
-    // Emit an event to update the parent component's modelValue
-    // emit("update:modelValue", updatedCase)
-
-    // Optionally, show a success notification
-  } catch (error) {
-    console.error("Error updating case priority:", error)
-    // Optionally, handle the error, such as showing an error notification
-  }
 }
 </script>
 
@@ -106,13 +53,12 @@ const handlePriorityChange = async (newPriority: string) => {
             <div class="dispatch-font">Assignee</div>
           </v-col>
           <v-col cols="10">
-            <SearchPopoverParticipant
+            <ParticipantSearchPopover
               :participant="modelValue.assignee?.individual.name"
               type="assignee"
               label="Assign to..."
               tooltip-label="Update Assignee"
               hotkey="a"
-              @status-selected="handlePriorityChange"
               class="pl-8"
             />
           </v-col>
@@ -122,38 +68,25 @@ const handlePriorityChange = async (newPriority: string) => {
             <div class="dispatch-font">Reporter</div>
           </v-col>
           <v-col cols="10">
-            <SearchPopoverParticipant
+            <ParticipantSearchPopover
               :participant="modelValue.reporter?.individual.name"
               type="reporter"
               label="Set reporter to..."
               tooltip-label="Update Reporter"
               hotkey="r"
-              @status-selected="handlePriorityChange"
               class="pl-8"
             />
           </v-col>
         </v-row>
-        <v-row no-gutters align="center" class="pt-6">
-          <v-col cols="1">
-            <div class="dispatch-font">Status</div>
-          </v-col>
-          <v-col cols="10">
-            <SearchPopoverStatus
-              :status="modelValue.status"
-              @status-selected="handlePriorityChange"
-              class="pl-8"
-            />
-          </v-col>
-        </v-row>
+
         <v-row no-gutters align="center" class="pt-6">
           <v-col cols="1">
             <div class="dispatch-font">Priority</div>
           </v-col>
           <v-col cols="10">
-            <SearchPopoverCasePriority
-              :priority="modelValue.case_priority?.name"
-              @priority-selected="handlePriorityChange"
-              class="pl-8"
+            <CasePrioritySearchPopover
+              :case-priority="modelValue.case_priority?.name"
+              class="pl-6"
             />
           </v-col>
         </v-row>

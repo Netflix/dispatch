@@ -10,7 +10,7 @@ type CaseType = {
   name: string
 }
 
-const props = defineProps<{ caseType: string }>()
+defineProps<{ caseType: string }>()
 
 const store = useStore()
 
@@ -26,9 +26,6 @@ onMounted(async () => {
 })
 
 const selectCaseType = async (caseTypeName: string) => {
-  // Handle selected case type here
-  console.log(caseTypeName)
-
   // Fetch the participant object from the API
   const response = await CaseTypeApi.getAll({
     filter: JSON.stringify([
@@ -43,7 +40,6 @@ const selectCaseType = async (caseTypeName: string) => {
   caseDetails.case_type = caseType
 
   await CaseApi.update(caseDetails.id, caseDetails)
-  console.log("Got the new case type")
 }
 </script>
 
@@ -53,7 +49,7 @@ const selectCaseType = async (caseTypeName: string) => {
     :initialValue="caseType"
     @item-selected="selectCaseType"
     label="Set case type..."
-    :hotkeys="['c']"
+    :hotkeys="['t']"
   >
     <template v-slot:default="{ item }">
       <v-list-item-title class="item-title-font">{{ item }}</v-list-item-title>

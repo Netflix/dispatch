@@ -6,9 +6,9 @@
       </template>
     </v-breadcrumbs>
     <template #append>
-      <FancyTooltip text="View case participants" :hotkeys="['L', 'q']">
+      <FancyTooltip text="View case participants" :hotkeys="['⌘', '⇧', 'P']">
         <template #activator="{ tooltip }">
-          <AvatarGroup :participants="caseParticipants" class="pl-3" v-bind="tooltip" />
+          <ParticipantAvatarGroup :participants="caseParticipants" class="pl-3" v-bind="tooltip" />
         </template>
       </FancyTooltip>
       <LockButton :case-visibility="caseVisibility" class="ml-n2 mr-n2" />
@@ -27,10 +27,10 @@
 
 <script setup lang="ts">
 import { useRoute } from "vue-router"
-import { computed, ref, defineEmits } from "vue"
+import { computed, ref } from "vue"
 import LockButton from "@/components/LockButton.vue"
 import FancyTooltip from "@/components/FancyTooltip.vue"
-import AvatarGroup from "@/participant/AvatarGroup.vue"
+import ParticipantAvatarGroup from "@/participant/ParticipantAvatarGroup.vue"
 import CaseApi from "@/case/api"
 
 const route = useRoute()

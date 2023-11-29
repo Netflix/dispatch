@@ -27,8 +27,8 @@
     </template>
     <template #item="data">
       <v-list-item-content>
-        <v-list-item-title v-text="data.item.individual.name" />
-        <v-list-item-subtitle v-text="data.item.individual.email" />
+        <v-list-item-title v-model="data.item.individual.name" />
+        <v-list-item-subtitle v-model="data.item.individual.email" />
       </v-list-item-content>
     </template>
     <template #chip="{ attr, on, item, selected }">

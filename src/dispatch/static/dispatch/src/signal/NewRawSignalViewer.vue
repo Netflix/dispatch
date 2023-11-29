@@ -1,5 +1,10 @@
 <script setup>
 import { computed } from "vue"
+
+// Necessary import for JSON language server
+// eslint-disable-next-line no-unused-vars
+import * as monaco from "monaco-editor"
+
 import MonacoEditor from "@/components/MonacoEditor.vue"
 
 // Define Props

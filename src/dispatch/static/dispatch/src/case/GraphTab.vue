@@ -5,7 +5,7 @@ import { Controls } from "@vue-flow/controls"
 import { MiniMap } from "@vue-flow/minimap"
 import { ref, watchEffect } from "vue"
 import { forceSimulation, forceLink, forceManyBody, forceCenter } from "d3-force"
-import SignalInstanceNode from "@/case/SignalInstanceNode.vue"
+import SignalInstanceNode from "@/signal/SignalInstanceNode.vue"
 
 // Define props
 const props = defineProps({

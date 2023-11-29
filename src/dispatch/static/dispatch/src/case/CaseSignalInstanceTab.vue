@@ -4,18 +4,12 @@
       <!-- Column for Data Table -->
       <v-col cols="3">
         <v-card min-width="350" max-width="350" class="signal-card" elevation="0">
-          <v-card-title> Alerts </v-card-title>
-
-          <v-divider></v-divider>
-
-          <v-virtual-scroll :items="signalInstances" height="800">
+          <v-virtual-scroll :items="signalInstances" height="800" class="pt-2">
             <template v-slot:default="{ item }">
               <div class="d-flex align-center">
-                <hover-card :item="item">
-                  <span style="font-size: 0.75rem">
-                    {{ item.signal.name }}
-                  </span>
-                </hover-card>
+                <span style="font-size: 0.8rem" class="pl-8">
+                  {{ item.signal.name }}
+                </span>
                 <span style="font-size: 0.75rem" class="pl-1">
                   · {{ formatRelativeDate(item.created_at) }}
                 </span>
@@ -42,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, defineProps, withDefaults, toRef } from "vue"
+import { ref, watch, withDefaults, toRef } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { formatRelativeDate } from "@/filters"
 

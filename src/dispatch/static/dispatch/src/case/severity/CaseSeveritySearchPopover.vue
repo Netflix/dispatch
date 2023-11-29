@@ -10,7 +10,7 @@ type CaseSeverity = {
   name: string
 }
 
-const props = defineProps<{ caseSeverity: string }>()
+defineProps<{ caseSeverity: string }>()
 
 const store = useStore()
 
@@ -26,9 +26,6 @@ onMounted(async () => {
 })
 
 const selectCaseSeverity = async (caseSeverityName: string) => {
-  // Handle selected case type here
-  console.log(caseSeverityName)
-
   // Fetch the participant object from the API
   const response = await CaseSeverityApi.getAll({
     filter: JSON.stringify([
@@ -40,7 +37,7 @@ const selectCaseSeverity = async (caseSeverityName: string) => {
 
   // Get the case details from the Vuex store
   const caseDetails = store.state.case_management.selected
-  caseDetails.case_type = caseSeverity
+  caseDetails.case_severity = caseSeverity
 
   await CaseApi.update(caseDetails.id, caseDetails)
 }
@@ -52,7 +49,7 @@ const selectCaseSeverity = async (caseSeverityName: string) => {
     :initialValue="caseSeverity"
     @item-selected="selectCaseSeverity"
     label="Set case type..."
-    :hotkeys="['c']"
+    :hotkeys="['q']"
   >
     <template v-slot:default="{ item }">
       <v-list-item-title class="item-title-font">{{ item }}</v-list-item-title>

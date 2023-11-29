@@ -49,7 +49,8 @@ export function useHotKey(
     // If so, call the provided callback function
     if (
       keyCombination.every((key) => keysPressed.value[key]) &&
-      event.key === keyCombination[keyCombination.length - 1]
+      event.key === keyCombination[keyCombination.length - 1] &&
+      Object.keys(keysPressed.value).length === keyCombination.length
     ) {
       callback(event)
     }

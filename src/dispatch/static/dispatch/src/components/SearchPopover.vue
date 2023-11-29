@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, ref, defineEmits, watch } from "vue"
+import { computed, ref, watch } from "vue"
 import { useHotKey } from "@/composables/useHotkey"
 import type { Ref } from "vue"
 
 const props = defineProps<{
-  hotkeys: Array<string>
+  hotkeys: string[]
   initialValue: string
-  items: Array<any>
+  items: any[]
   label: string
 }>()
 
@@ -41,7 +41,6 @@ useHotKey(props.hotkeys, () => {
 })
 
 const selectItem = (item: any) => {
-  console.log("Got select item")
   selectedItem.value = item
   menu.value = false
   emit("item-selected", item)
@@ -97,10 +96,10 @@ const toggleMenu = () => {
               </template>
             </v-text-field>
           </v-col>
-          <v-col align-self="end" cols="2" class="pb-2">
-            <template v-for="(hotkey, _) in props.hotkeys" :key="`hotkey-${index}`">
+          <v-col align-self="end" cols="3" class="pb-2">
+            <div v-for="(hotkey, index) in props.hotkeys" :key="`hotkey-${index}`">
               <Hotkey :hotkey="hotkey.toUpperCase()" />
-            </template>
+            </div>
           </v-col>
         </v-row>
         <v-divider></v-divider>

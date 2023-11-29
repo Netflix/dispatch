@@ -12,8 +12,7 @@
     <div class="container mx-auto px-4">
       <Tiptap :title="true" v-model="caseDetails.title" class="pl-8 pb-6 pt-6" />
       <Tiptap :description="true" v-model="caseDetails.description" class="pl-8 pb-6" />
-      <!-- <Tiptap v-model="caseDetails.description" class="pl-8 pb-8 pr-8" /> -->
-      <CaseStatusSelectGroup :_case="caseDetails" class="pl-4 pb-8" />
+      <CaseStatusSelectGroup v-model="caseDetails" class="pl-4 pb-8" />
       <CaseTabs :loading="loading" v-model="caseDetails" />
     </div>
   </div>

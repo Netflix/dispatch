@@ -4,7 +4,7 @@
       <v-card>
         <v-card-title>Update Case Status</v-card-title>
         <v-card-text>
-          Are you sure you want to change the case status from {{ _case.status }} to
+          Are you sure you want to change the case status from {{ modelValue.status }} to
           {{ selectedStatus }}
         </v-card-text>
         <v-btn
@@ -77,7 +77,7 @@ import FancyTooltip from "@/components/FancyTooltip.vue"
 export default {
   name: "CaseStatusSelectGroup",
   props: {
-    _case: {
+    modelValue: {
       type: Object,
       required: false,
       default: () => ({}),
@@ -101,7 +101,7 @@ export default {
           color: "red",
           hoverClass: "hover-card-three",
           sheetClass: "rounded-s-xl arrow",
-          tooltip: this._case.created_at,
+          tooltip: this.modelValue.created_at,
         },
         {
           name: "Triage",
@@ -109,7 +109,7 @@ export default {
           color: "red",
           hoverClass: "hover-card-two",
           sheetClass: "arrow",
-          tooltip: this._case.triage_at,
+          tooltip: this.modelValue.triage_at,
         },
         {
           name: "Closed",
@@ -117,7 +117,7 @@ export default {
           color: "green",
           hoverClass: "hover-card",
           sheetClass: "arrow",
-          tooltip: this._case.closed_at,
+          tooltip: this.modelValue.closed_at,
         },
         {
           name: "Escalated",
@@ -125,7 +125,7 @@ export default {
           color: "red",
           hoverClass: "",
           sheetClass: "rounded-e-xl end-sheet",
-          tooltip: this._case.escalated_at,
+          tooltip: this.modelValue.escalated_at,
         },
       ]
     },
@@ -133,7 +133,8 @@ export default {
   methods: {
     ...mapActions("case_management", ["save_page"]),
     changeStatus(newStatus) {
-      this._case.status = newStatus
+      // eslint-disable-next-line vue/no-mutating-props
+      this.modelValue.status = newStatus
       this.save_page()
       this.dialogVisible = false
       this.selectedStatus = null
@@ -143,7 +144,7 @@ export default {
       this.dialogVisible = true
     },
     isActiveStatus(status) {
-      return this._case.status === status
+      return this.modelValue.status === status
     },
   },
 }

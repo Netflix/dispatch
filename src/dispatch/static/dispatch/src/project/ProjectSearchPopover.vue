@@ -12,7 +12,7 @@ type Project = {
 
 const store = useStore()
 
-const props = defineProps<{ project: string }>()
+defineProps<{ project: string }>()
 
 const projects: Ref<Project[]> = ref([])
 
@@ -49,8 +49,9 @@ const selectProject = async (projectName: string) => {
   <SearchPopover
     :items="projects"
     :initialValue="project"
+    label="Set project to..."
     @item-selected="selectProject"
-    :hotkeys="['c']"
+    :hotkeys="[]"
   >
     <template v-slot:default="{ item }">
       <v-list-item-title class="item-title-font">{{ item }}</v-list-item-title>
