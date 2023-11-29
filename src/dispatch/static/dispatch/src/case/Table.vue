@@ -91,11 +91,19 @@
                 <v-list>
                   <v-list-item
                     :to="{
+                      name: 'CasePage',
+                      params: { id: item.id },
+                    }"
+                  >
+                    <v-list-item-title>View</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item
+                    :to="{
                       name: 'CaseTableEdit',
                       params: { name: item.name },
                     }"
                   >
-                    <v-list-item-title>View / Edit</v-list-item-title>
+                    <v-list-item-title>Edit</v-list-item-title>
                   </v-list-item>
                   <v-list-item
                     @click="showRun({ type: 'case', data: item })"
