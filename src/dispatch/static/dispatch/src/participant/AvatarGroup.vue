@@ -14,13 +14,13 @@ const props = defineProps({
   },
 })
 
-const menu = ref(false)
+const isMenuOpen = ref(false)
 let orderedParticipants = ref([])
 const hoveredParticipant = ref("")
 const searchQuery = ref("")
 
 useHotKey(["Meta", "Shift", "p"], () => {
-  if (!menu.value) {
+  if (!isMenuOpen.value) {
     toggleMenu()
   }
 })
@@ -83,8 +83,8 @@ const getAvatarGradient = (participant) => {
 }
 
 const toggleMenu = () => {
-  menu.value = !menu.value
-  if (!menu.value) {
+  isMenuOpen.value = !isMenuOpen.value
+  if (!isMenuOpen.value) {
     hoveredParticipant.value = ""
   }
 }
