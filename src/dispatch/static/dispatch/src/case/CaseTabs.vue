@@ -73,7 +73,6 @@ import { ref, watch, toRefs } from "vue"
 import { useRoute, useRouter } from "vue-router"
 
 import GraphTab from "@/case/GraphTab.vue"
-import EntitiesTab from "@/entity/EntitiesTab.vue"
 import CaseSignalInstanceTab from "@/case/CaseSignalInstanceTab.vue"
 import CaseTimelineTab from "@/case/TimelineTab.vue"
 
@@ -96,7 +95,6 @@ export default {
     },
   },
   components: {
-    EntitiesTab,
     CaseSignalInstanceTab,
     CaseTimelineTab,
     GraphTab,
