@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Panel, VueFlow, isNode, useVueFlow, MarkerType } from "@vue-flow/core"
+import { VueFlow, isNode, useVueFlow, MarkerType } from "@vue-flow/core"
 import { Background } from "@vue-flow/background"
 import { Controls } from "@vue-flow/controls"
 import { MiniMap } from "@vue-flow/minimap"
@@ -156,6 +156,7 @@ function updatePos() {
 /**
  * toObject transforms your current graph data to an easily persist-able object
  */
+// eslint-disable-next-line no-unused-vars
 function logToObject() {
   return console.log(toObject())
 }
@@ -163,10 +164,12 @@ function logToObject() {
 /**
  * Resets the current viewpane transformation (zoom & pan)
  */
+// eslint-disable-next-line no-unused-vars
 function resetTransform() {
   return setTransform({ x: 0, y: 0, zoom: 1 })
 }
 
+// eslint-disable-next-line no-unused-vars
 function toggleClass() {
   return (dark.value = !dark.value)
 }
