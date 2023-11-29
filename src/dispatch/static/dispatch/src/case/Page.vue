@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, watchEffect } from "vue"
+import { ref, watch } from "vue"
 import { useStore } from "vuex"
 
 import { useRoute } from "vue-router"

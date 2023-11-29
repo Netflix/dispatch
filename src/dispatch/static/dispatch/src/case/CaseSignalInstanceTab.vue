@@ -91,14 +91,7 @@ watch(
   }
 )
 
-const headers = ref([
-  { title: "Signal", key: "signal", sortable: false },
-  { title: "Created At", key: "created_at" },
-  { title: "", key: "data-table-actions", sortable: false, align: "end" },
-])
-
 const selectItem = (item) => {
-  console.log("Got item", item)
   selectedItem.value = item
   router.push({ name: "SignalDetails", params: { signal_id: item.raw.id } })
 }

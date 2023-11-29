@@ -31,7 +31,6 @@ import { ref, watch, computed } from "vue"
 import { useStore } from "vuex"
 import FancyTooltip from "@/components/FancyTooltip.vue"
 import CaseApi from "@/case/api"
-import { E } from "../../dist/assets/index.e9481c97"
 
 const props = defineProps({
   caseVisibility: {

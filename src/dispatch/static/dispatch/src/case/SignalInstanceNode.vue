@@ -1,8 +1,12 @@
 <script setup>
 import { Handle, Position } from "@vue-flow/core"
-import { ref, defineEmits } from "vue"
+import { defineEmits } from "vue"
 
-const props = defineProps(["label", "data"])
+
+const props = defineProps<{
+  label: string
+  data: any
+}>()
 
 const emit = defineEmits(["openViewer"])
 

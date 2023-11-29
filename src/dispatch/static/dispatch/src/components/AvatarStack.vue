@@ -12,7 +12,7 @@
         {{ item }}
       </v-avatar>
 
-      <v-menu offset-y v-model="menu" :close-on-content-click="false">
+      <v-menu location="start" v-model="menu" :close-on-content-click="false">
         <template #activator="{ props }">
           <v-btn
             icon
@@ -46,8 +46,6 @@ export default {
   name: "AvatarStack",
   props: {
     modelValue: Array,
-    default: () => [],
-    required: true,
   },
   emits: ["update:modelValue"],
 
