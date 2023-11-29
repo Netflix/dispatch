@@ -36,31 +36,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, withDefaults, toRef } from "vue"
+import { ref, watch, toRef } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { formatRelativeDate } from "@/filters"
 
 import RawSignalViewer from "@/signal/NewRawSignalViewer.vue"
 
-// Define props
-const props = withDefaults(
-  defineProps<{
-    modelValue: {
-      type: any[]
-      required: true
-    }
-    loading: {
-      type: boolean
-      default: false
-      required: true
-    }
-    selectedSignalId: string
-  }>(),
-  {
-    modelValue: [],
-    loading: false,
-  }
-)
+const props = defineProps({
+  modelValue: {
+    type: Array as () => any[],
+    default: () => [],
+    required: true,
+  },
+  loading: {
+    type: Boolean,
+    default: () => false,
+    required: true,
+  },
+  selectedSignalId: {
+    type: String,
+    default: () => "",
+  },
+})
 
 const signalInstances = toRef(props, "modelValue")
 const internalLoading = toRef(props, "loading")

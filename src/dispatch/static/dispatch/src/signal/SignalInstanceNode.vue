@@ -6,7 +6,7 @@ defineProps<{
   data: any
 }>()
 
-const emit = defineEmits(["openViewer"])
+defineEmits(["openViewer"])
 
 // TODO: (wshel) Future release
 // function openViewer() {

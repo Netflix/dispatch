@@ -7,8 +7,8 @@
       offset="10"
       transition="false"
     >
-      <template #activator="{ props: menu }">
-        <v-btn class="text-subtitle-2 font-weight-regular" variant="text" v-bind="menu">
+      <template #activator="{ props: menuProps }">
+        <v-btn class="text-subtitle-2 font-weight-regular" variant="text" v-bind="menuProps">
           <v-icon>mdi-dots-horizontal</v-icon>
         </v-btn>
       </template>
@@ -36,7 +36,7 @@
 import { ref } from "vue"
 import type { Ref } from "vue"
 
-const props = defineProps<{ options: string[] }>()
+defineProps<{ options: string[] }>()
 
 const menu: Ref<boolean> = ref(false)
 

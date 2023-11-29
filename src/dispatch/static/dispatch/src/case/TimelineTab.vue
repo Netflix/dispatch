@@ -29,7 +29,6 @@ watchEffect(async () => {
   }
 })
 
-const showDetails = ref(false)
 const exportLoading = ref(false)
 
 const sortedEvents = computed(() => {
@@ -79,8 +78,6 @@ const descriptionMap = {
   "Case participants added to conversation.": "added case participants to conversation",
   // Add more mappings as needed...
 }
-
-const menu = ref(false)
 </script>
 
 <template>

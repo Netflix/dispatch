@@ -169,13 +169,13 @@ const toggleMenu = () => {
       offset="10"
       transition="false"
     >
-      <template #activator="{ props: menu }">
+      <template #activator="{ props: menuProps }">
         <DTooltip :text="props.tooltipLabel" :hotkeys="[hotkey.toUpperCase()]">
           <template #activator="{ tooltip }">
             <v-btn
               class="menu-activator text-subtitle-2 font-weight-regular"
               variant="text"
-              v-bind="{ ...tooltip, ...menu }"
+              v-bind="{ ...tooltip, ...menuProps }"
             >
               <template #prepend>
                 <v-avatar
@@ -214,10 +214,10 @@ const toggleMenu = () => {
         <v-divider />
         <v-list lines="one">
           <v-list-item
-            v-for="(participant, index) in filteredParticipants"
+            v-for="(filteredParticipant, index) in filteredParticipants"
             :key="index"
-            @click="selectParticipant(participant)"
-            @mouseover="hoveredParticipant = participant"
+            @click="selectParticipant(filteredParticipant)"
+            @mouseover="hoveredParticipant = filteredParticipant"
             @mouseleave="hoveredParticipant = ''"
             density="compact"
             rounded="lg"
@@ -228,14 +228,16 @@ const toggleMenu = () => {
               <v-avatar
                 class="mr-n2"
                 size="12px"
-                :style="{ background: getAvatarGradient(participant) }"
+                :style="{ background: getAvatarGradient(filteredParticipant) }"
               />
               <!-- <v-icon class="mr-n6 ml-n2" size="x-small" icon="mdi-account"></v-icon> -->
             </template>
-            <v-list-item-title class="dispatch-text-title">{{ participant }}</v-list-item-title>
+            <v-list-item-title class="dispatch-text-title">
+              {{ filteredParticipant }}
+            </v-list-item-title>
             <template #append>
               <v-icon
-                v-if="participant === selectedParticipant"
+                v-if="filteredParticipant === selectedParticipant"
                 class="ml-2"
                 size="x-small"
                 :color="hoveredParticipant === selectedParticipant ? 'black' : ''"
