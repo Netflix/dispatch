@@ -1,5 +1,5 @@
 import { getField, updateField } from "vuex-map-fields"
-import { debounce } from "lodash"
+import { debounce, filter } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import SignalApi from "@/signal/api"
@@ -117,6 +117,14 @@ const actions = {
     return SignalApi.getAllInstances(params)
       .then((response) => {
         commit("SET_INSTANCE_TABLE_LOADING", false)
+
+        // We filter out instances based on the given query parameter provided
+        if (params.q) {
+          response.data.items = filter(response.data.items, function (item) {
+            return item.signal.name.includes(params.q) || item.signal.description.includes(params.q)
+          })
+        }
+
         commit("SET_INSTANCE_TABLE_ROWS", response.data)
       })
       .catch(() => {
