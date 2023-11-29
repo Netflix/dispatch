@@ -11,7 +11,11 @@
           <ParticipantAvatarGroup :participants="caseParticipants" class="pl-3" v-bind="tooltip" />
         </template>
       </FancyTooltip>
-      <LockButton :case-visibility="caseVisibility" class="ml-n2 mr-n2" />
+      <LockButton
+        :subject-visibility="caseVisibility"
+        subject-type="case_management"
+        class="ml-n2 mr-n2"
+      />
       <EscalateButton class="ml-n4" />
       <v-divider vertical inset />
       <FancyTooltip text="Case details" :hotkeys="['⌘', '⇧', 'I']">

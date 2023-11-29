@@ -1,4 +1,3 @@
-<!-- LockButton.vue -->
 <template>
   <div>
     <v-btn variant="plain" :ripple="false" @click="dialog = true">
@@ -7,10 +6,10 @@
 
     <v-dialog v-model="dialog" max-width="600px">
       <v-card>
-        <v-card-title>Change Case Visibility</v-card-title>
+        <v-card-title>Change {{ subjectTitle }} Visibility</v-card-title>
         <v-card-text>
-          You are about to change the case visibility from <b>{{ visibility }}</b> to
-          <b>{{ toggleVisibility }}</b
+          You are about to change the {{ subjectTitle.toLowerCase() }} visibility from
+          <b>{{ visibility }}</b> to <b>{{ toggleVisibility }}</b
           >.
         </v-card-text>
         <v-card-actions>
@@ -26,9 +25,14 @@
 import { ref, watch, computed } from "vue"
 import { useStore } from "vuex"
 import CaseApi from "@/case/api"
+import IncidentApi from "@/incident/api"
 
 const props = defineProps({
-  caseVisibility: {
+  subjectVisibility: {
+    type: String,
+    required: true,
+  },
+  subjectType: {
     type: String,
     required: true,
   },
@@ -36,14 +40,16 @@ const props = defineProps({
 
 const store = useStore()
 const dialog = ref(false)
-const visibility = ref(props.caseVisibility)
+const visibility = ref(props.subjectVisibility)
 
 const lockIcon = computed(() => (visibility.value === "Open" ? "mdi-lock-open" : "mdi-lock"))
 
 const toggleVisibility = computed(() => (visibility.value === "Open" ? "Restricted" : "Open"))
 
+const subjectTitle = computed(() => (props.subjectType === "incident" ? "Incident" : "Case"))
+
 watch(
-  () => props.caseVisibility,
+  () => props.subjectVisibility,
   (newVal) => {
     visibility.value = newVal
   },
@@ -51,25 +57,25 @@ watch(
 )
 
 async function updateVisibility() {
-  const caseDetails = store.state.case_management.selected
+  const subject = store.state[props.subjectType].selected
   const previousVisibility = visibility.value // Store the previous visibility value
 
   // Optimistically update the UI
   visibility.value = toggleVisibility.value
-  caseDetails.visibility = visibility.value
+  subject.visibility = visibility.value
   dialog.value = false
 
   try {
-    await CaseApi.update(caseDetails.id, caseDetails)
+    await (props.subjectType === "incident" ? IncidentApi : CaseApi).update(subject.id, subject)
   } catch (e) {
-    console.error("Failed to update case visibility", e)
+    console.error(`Failed to update ${props.subjectType} visibility`, e)
 
     // If the API call fails, revert the visibility change and show a toast
     visibility.value = previousVisibility
     store.commit(
       "notification_backend/addBeNotification",
       {
-        text: "Failed to update case visibility",
+        text: `Failed to update ${props.subjectType} visibility`,
         type: "error",
       },
       { root: true }
