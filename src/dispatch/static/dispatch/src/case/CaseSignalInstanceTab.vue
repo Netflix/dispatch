@@ -10,7 +10,7 @@
                 <span style="font-size: 0.8rem" class="pl-8">
                   {{ item.signal.name }}
                 </span>
-                <span style="font-size: 0.75rem" class="pl-1">
+                <span class="pl-1 dispatch-text-paragraph">
                   · {{ formatRelativeDate(item.created_at) }}
                 </span>
                 <!-- Other data fields... -->
@@ -25,7 +25,7 @@
       <!-- Column for Raw Signal Viewer -->
       <v-col cols="9">
         <v-card elevation="0" class="signal-card pt-2">
-          <span style="font-size: 0.75rem">
+          <span class="dispatch-text-paragraph">
             <!-- {{ selectedItem.signal.name }} -->
           </span>
           <raw-signal-viewer :value="selectedItem" />
@@ -41,7 +41,6 @@ import { useRoute, useRouter } from "vue-router"
 import { formatRelativeDate } from "@/filters"
 
 import RawSignalViewer from "@/signal/NewRawSignalViewer.vue"
-import HoverCard from "@/components/HoverCard.vue"
 
 // Define props
 const props = withDefaults(
@@ -108,7 +107,8 @@ watch(
 )
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import "@/styles/index.scss";
 .signal-card {
   border: 0.5px solid rgb(216, 216, 216) !important;
   border-radius: 8px !important;

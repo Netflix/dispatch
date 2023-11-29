@@ -232,7 +232,7 @@ const toggleMenu = () => {
               ></v-avatar>
               <!-- <v-icon class="mr-n6 ml-n2" size="x-small" icon="mdi-account"></v-icon> -->
             </template>
-            <v-list-item-title class="item-title-font">{{ participant }}</v-list-item-title>
+            <v-list-item-title class="dispatch-text-title">{{ participant }}</v-list-item-title>
             <template v-slot:append>
               <v-icon
                 v-if="participant === selectedParticipant"
@@ -250,19 +250,8 @@ const toggleMenu = () => {
   </div>
 </template>
 
-<style scoped>
-.dispatch-side-card {
-  backdrop-filter: blur(12px) saturate(190%) contrast(50%) brightness(130%) !important;
-  border: 0.5px solid rgb(216, 216, 216) !important;
-  border-radius: 8px !important;
-  box-shadow: rgba(0, 0, 0, 0.09) 0px 3px 12px !important;
-  color: rgb(60, 65, 73) !important;
-  opacity: 2 !important;
-}
-
-.item-title-font {
-  font-size: 13px !important;
-}
+<style lang="scss" scoped>
+@import "@/styles/index.scss";
 
 .menu-activator {
   border: 1px solid transparent;

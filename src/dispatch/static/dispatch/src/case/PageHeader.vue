@@ -29,6 +29,7 @@
 import { useRoute } from "vue-router"
 import { computed, ref } from "vue"
 import LockButton from "@/components/LockButton.vue"
+import EscalateButton from "@/case/EscalateButton.vue"
 import FancyTooltip from "@/components/FancyTooltip.vue"
 import ParticipantAvatarGroup from "@/participant/ParticipantAvatarGroup.vue"
 import CaseApi from "@/case/api"

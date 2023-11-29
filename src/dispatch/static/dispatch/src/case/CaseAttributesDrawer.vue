@@ -188,7 +188,7 @@ watchEffect(() => {
       </div>
 
       <v-card flat color="grey-lighten-5" class="rounded-lg mt-6 ml-2 mr-2">
-        <tiptap
+        <RichEditor
           :resolution="true"
           v-model="modelValue.resolution"
           style="min-height: 400px; margin: 10px; font-size: 0.9125rem; font-weight: 400"
@@ -206,7 +206,8 @@ watchEffect(() => {
   </div>
 </template>
 
-<style scope>
+<style lang="scss" scoped>
+@import "@/styles/index.scss";
 .dispatch-font {
   color: rgb(107, 111, 118) !important;
   font-size: 0.8125rem !important;
@@ -217,27 +218,5 @@ watchEffect(() => {
   color: rgb(20, 21, 22) !important;
   font-size: 1.2125rem !important;
   font-weight: 500;
-}
-
-.dispatch-button-out {
-  text-transform: none !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  margin: 0px !important;
-  font-weight: 500px !important;
-  line-height: normal !important;
-  transition-property: border, background-color, color, opacity !important;
-  transition-duration: 0.15s !important;
-  user-select: none !important;
-  box-shadow: rgba(0, 0, 0, 0.09) 0px 1px 4px !important;
-  background-color: rgb(255, 255, 255) !important;
-  border: 1px solid rgb(223, 225, 228) !important;
-  border-radius: 4px !important;
-  color: rgb(60, 65, 73) !important;
-  min-width: 28px !important;
-  height: 28px !important;
-  padding: 0px 14px !important;
-  font-size: 0.75rem !important;
 }
 </style>

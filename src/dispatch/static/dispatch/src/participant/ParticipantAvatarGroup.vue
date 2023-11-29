@@ -141,7 +141,7 @@ const toggleMenu = () => {
               />
               <!-- <v-icon class="mr-n6 ml-n2" size="x-small" icon="mdi-account"></v-icon> -->
             </template>
-            <v-list-item-title class="item-title-font">
+            <v-list-item-title class="dispatch-text-title">
               {{ participant.individual.name }}
             </v-list-item-title>
           </v-list-item>
@@ -151,7 +151,9 @@ const toggleMenu = () => {
   </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
+@import "@/styles/index.scss";
+
 .avatar-row {
   display: flex;
   align-items: center;
@@ -191,18 +193,5 @@ const toggleMenu = () => {
   border: 0.5px solid rgb(216, 216, 216);
   background-color: rgb(254, 255, 254);
   box-shadow: rgba(0, 0, 0, 0.086) 0px 2px 0px 0px;
-}
-
-.dispatch-side-card {
-  backdrop-filter: blur(12px) saturate(190%) contrast(50%) brightness(130%) !important;
-  border: 0.5px solid rgb(216, 216, 216) !important;
-  border-radius: 8px !important;
-  box-shadow: rgba(0, 0, 0, 0.09) 0px 3px 12px !important;
-  color: rgb(60, 65, 73) !important;
-  opacity: 2 !important;
-}
-
-.item-title-font {
-  font-size: 13px !important;
 }
 </style>

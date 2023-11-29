@@ -52,13 +52,11 @@ const selectCaseType = async (caseTypeName: string) => {
     :hotkeys="[]"
   >
     <template v-slot:default="{ item }">
-      <v-list-item-title class="item-title-font">{{ item }}</v-list-item-title>
+      <v-list-item-title class="dispatch-text-title">{{ item }}</v-list-item-title>
     </template>
   </SearchPopover>
 </template>
 
-<style scoped>
-.item-title-font {
-  font-size: 13px !important;
-}
+<style lang="scss" scoped>
+@import "@/styles/index.scss";
 </style>

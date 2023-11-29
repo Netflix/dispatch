@@ -74,7 +74,7 @@ const toggleMenu = () => {
           v-bind="menu"
           :ripple="false"
         >
-          <span style="font-size: 0.8125rem; font-weight: 500; color: rgb(60, 65, 73)">
+          <span class="dispatch-text-subtitle">
             {{ selectedItem }}
           </span>
         </v-btn>
@@ -114,7 +114,7 @@ const toggleMenu = () => {
               class="ml-1 mr-1"
               active-class="ma-4"
             >
-              <span class="item-title-font">
+              <span class="dispatch-text-title">
                 <slot :item="item" />
               </span>
             </v-list-item>
@@ -125,19 +125,8 @@ const toggleMenu = () => {
   </div>
 </template>
 
-<style scoped>
-.dispatch-side-card {
-  backdrop-filter: blur(12px) saturate(190%) contrast(50%) brightness(130%) !important;
-  border: 0.5px solid rgb(216, 216, 216) !important;
-  border-radius: 8px !important;
-  box-shadow: rgba(0, 0, 0, 0.09) 0px 3px 12px !important;
-  color: rgb(60, 65, 73) !important;
-  opacity: 2 !important;
-}
-
-.item-title-font {
-  font-size: 13px !important;
-}
+<style lang="scss" scoped>
+@import "@/styles/index.scss";
 
 .menu-activator {
   border: 1px solid transparent;

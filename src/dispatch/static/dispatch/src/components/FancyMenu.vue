@@ -24,7 +24,7 @@
             rounded="lg"
             active-class="ma-4"
           >
-            <v-list-item-title class="item-title-font">{{ option }}</v-list-item-title>
+            <v-list-item-title class="dispatch-text-title">{{ option }}</v-list-item-title>
           </v-list-item>
         </v-list>
       </v-card>
@@ -48,17 +48,6 @@ const selectOption = (option: string) => {
 }
 </script>
 
-<style scoped>
-.dispatch-side-card {
-  backdrop-filter: blur(12px) saturate(190%) contrast(50%) brightness(130%) !important;
-  border: 0.5px solid rgb(216, 216, 216) !important;
-  border-radius: 8px !important;
-  box-shadow: rgba(0, 0, 0, 0.09) 0px 3px 12px !important;
-  color: rgb(60, 65, 73) !important;
-  opacity: 2 !important;
-}
-
-.item-title-font {
-  font-size: 13px !important;
-}
+<style lang="scss" scoped>
+@import "@/styles/index.scss";
 </style>

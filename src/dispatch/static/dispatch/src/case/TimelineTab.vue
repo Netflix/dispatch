@@ -107,7 +107,7 @@ const menu = ref(false)
           <v-row>
             <v-col cols="12">
               <div>
-                <span style="font-size: 0.75rem">
+                <span class="dispatch-text-paragraph">
                   <b>
                     {{ sourceIconMap[event.source]?.sourceName || event.source }}
                   </b>
@@ -135,25 +135,7 @@ const menu = ref(false)
   </v-container>
 </template>
 
-<style scoped src="@/styles/timeline.css">
-.cn-button {
-  border-radius: 4px !important;
-  font-weight: 500 !important;
-  line-height: normal !important;
-  border: 1px solid rgb(223, 225, 228) !important;
-  box-shadow: rgba(0, 0, 0, 0.09) 0px 1px 4px !important;
-  background-color: rgb(255, 255, 255) !important;
-  color: rgb(60, 65, 73) !important;
-  height: 28px !important;
-  padding: 0px 14px !important;
-}
-
-.dispatch-side-card {
-  backdrop-filter: blur(12px) saturate(190%) contrast(50%) brightness(130%) !important;
-  border: 0.5px solid rgb(216, 216, 216) !important;
-  border-radius: 8px !important;
-  box-shadow: rgba(0, 0, 0, 0.09) 0px 3px 12px !important;
-  color: rgb(60, 65, 73) !important;
-  opacity: 2 !important;
-}
+<style lang="scss" scoped>
+@import "@/styles/index.scss";
+@import "@/styles/timeline.css";
 </style>

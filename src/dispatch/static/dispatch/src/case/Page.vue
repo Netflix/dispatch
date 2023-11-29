@@ -10,8 +10,8 @@
     <CaseAttributesDrawer v-model="caseDetails" :open="isDrawerOpen" />
     <VDivider />
     <div class="container mx-auto px-4">
-      <Tiptap :title="true" v-model="caseDetails.title" class="pl-8 pb-6 pt-6" />
-      <Tiptap :description="true" v-model="caseDetails.description" class="pl-8 pb-6" />
+      <RichEditor :title="true" v-model="caseDetails.title" class="pl-8 pb-6 pt-6" />
+      <RichEditor :description="true" v-model="caseDetails.description" class="pl-8 pb-6" />
       <CaseStatusSelectGroup v-model="caseDetails" class="pl-4 pb-8" />
       <CaseTabs :loading="loading" v-model="caseDetails" />
     </div>
@@ -27,7 +27,7 @@ import CaseApi from "@/case/api"
 import CaseAttributesDrawer from "@/case/CaseAttributesDrawer.vue"
 import PageHeader from "@/case//PageHeader.vue"
 import CaseTabs from "@/case/CaseTabs.vue"
-import Tiptap from "@/components/Tiptap.vue"
+import RichEditor from "@/components/RichEditor.vue"
 import CaseStatusSelectGroup from "@/case/CaseStatusSelectGroup.vue"
 
 const route = useRoute()
