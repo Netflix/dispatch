@@ -37,7 +37,7 @@ watchEffect(() => {
 <template>
   <div>
     <v-navigation-drawer v-model="drawerVisible" location="right" width="400">
-      <v-divider></v-divider>
+      <v-divider />
 
       <div class="pl-6">
         <v-row no-gutters align="center" class="pt-6">
