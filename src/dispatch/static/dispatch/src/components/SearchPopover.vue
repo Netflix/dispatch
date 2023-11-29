@@ -67,11 +67,11 @@ const toggleMenu = () => {
       offset="10"
       transition="false"
     >
-      <template v-slot:activator="{ props: menu }">
+      <template #activator="{ props: menuProps }">
         <v-btn
           class="menu-activator text-subtitle-2 font-weight-regular"
           variant="text"
-          v-bind="menu"
+          v-bind="menuProps"
           :ripple="false"
         >
           <span class="dispatch-text-subtitle">
@@ -91,7 +91,7 @@ const toggleMenu = () => {
               hide-details
               flat
             >
-              <template v-slot:label>
+              <template #label>
                 <span class="text-subtitle-2 font-weight-regular"> {{ props.label }} </span>
               </template>
             </v-text-field>
@@ -102,9 +102,9 @@ const toggleMenu = () => {
             </div>
           </v-col>
         </v-row>
-        <v-divider></v-divider>
+        <v-divider />
         <v-list lines="one">
-          <template v-for="(item, _) in filteredItems" :key="index">
+          <div v-for="(item, index) in filteredItems" :key="`item-${index}`">
             <v-list-item
               @click="selectItem(item)"
               @mouseover="hoveredData = item"
@@ -118,7 +118,7 @@ const toggleMenu = () => {
                 <slot :item="item">{{ item }}</slot>
               </span>
             </v-list-item>
-          </template>
+          </div>
         </v-list>
       </v-card>
     </v-menu>

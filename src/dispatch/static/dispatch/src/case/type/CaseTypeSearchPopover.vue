@@ -51,7 +51,7 @@ const selectCaseType = async (caseTypeName: string) => {
     label="Set case type..."
     :hotkeys="[]"
   >
-    <template v-slot:default="{ item }">
+    <template #default="{ item }">
       <v-list-item-title class="dispatch-text-title">{{ item }}</v-list-item-title>
     </template>
   </SearchPopover>

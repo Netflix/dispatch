@@ -169,19 +169,19 @@ const toggleMenu = () => {
       offset="10"
       transition="false"
     >
-      <template v-slot:activator="{ props: menu }">
+      <template #activator="{ props: menuProps }">
         <DTooltip :text="props.tooltipLabel" :hotkeys="[hotkey.toUpperCase()]">
-          <template v-slot:activator="{ tooltip }">
+          <template #activator="{ tooltip }">
             <v-btn
               class="menu-activator text-subtitle-2 font-weight-regular"
               variant="text"
-              v-bind="{ ...tooltip, ...menu }"
+              v-bind="{ ...tooltip, ...menuProps }"
             >
-              <template v-slot:prepend>
+              <template #prepend>
                 <v-avatar
                   size="14px"
                   :style="{ background: getAvatarGradient(selectedParticipant) }"
-                ></v-avatar>
+                />
               </template>
               <span style="font-size: 0.8125rem; font-weight: 500; color: rgb(60, 65, 73)">
                 {{ selectedParticipant }}
@@ -202,7 +202,7 @@ const toggleMenu = () => {
               hide-details
               flat
             >
-              <template v-slot:label>
+              <template #label>
                 <span class="text-subtitle-2 font-weight-regular"> {{ props.label }} </span>
               </template>
             </v-text-field>
@@ -211,31 +211,33 @@ const toggleMenu = () => {
             <Hotkey :hotkey="props.hotkey.toUpperCase()" />
           </v-col>
         </v-row>
-        <v-divider></v-divider>
+        <v-divider />
         <v-list lines="one">
           <v-list-item
-            v-for="(participant, index) in filteredParticipants"
+            v-for="(filteredParticipant, index) in filteredParticipants"
             :key="index"
-            @click="selectParticipant(participant)"
-            @mouseover="hoveredParticipant = participant"
+            @click="selectParticipant(filteredParticipant)"
+            @mouseover="hoveredParticipant = filteredParticipant"
             @mouseleave="hoveredParticipant = ''"
             density="compact"
             rounded="lg"
             class="ml-1 mr-1"
             active-class="ma-4"
           >
-            <template v-slot:prepend>
+            <template #prepend>
               <v-avatar
                 class="mr-n2"
                 size="12px"
-                :style="{ background: getAvatarGradient(participant) }"
-              ></v-avatar>
+                :style="{ background: getAvatarGradient(filteredParticipant) }"
+              />
               <!-- <v-icon class="mr-n6 ml-n2" size="x-small" icon="mdi-account"></v-icon> -->
             </template>
-            <v-list-item-title class="dispatch-text-title">{{ participant }}</v-list-item-title>
-            <template v-slot:append>
+            <v-list-item-title class="dispatch-text-title">
+              {{ filteredParticipant }}
+            </v-list-item-title>
+            <template #append>
               <v-icon
-                v-if="participant === selectedParticipant"
+                v-if="filteredParticipant === selectedParticipant"
                 class="ml-2"
                 size="x-small"
                 :color="hoveredParticipant === selectedParticipant ? 'black' : ''"

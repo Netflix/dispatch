@@ -50,6 +50,5 @@ const selectCaseSeverity = async (caseSeverityName: string) => {
     @item-selected="selectCaseSeverity"
     label="Set case severity..."
     :hotkeys="[]"
-  >
-  </SearchPopover>
+  />
 </template>

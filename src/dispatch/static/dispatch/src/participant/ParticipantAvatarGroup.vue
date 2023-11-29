@@ -97,8 +97,8 @@ const toggleMenu = () => {
       offset="10"
       transition="false"
     >
-      <template #activator="{ props: menu }">
-        <v-btn variant="text" v-bind="menu">
+      <template #activator="{ props: menuProps }">
+        <v-btn variant="text" v-bind="menuProps">
           <!-- Display Visible Participants -->
           <div class="avatar-row">
             <!-- Display +n Avatar -->

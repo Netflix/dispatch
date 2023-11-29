@@ -139,21 +139,6 @@ onConnect((params) => addEdges(params))
 const dark = ref(false)
 
 /**
- * To update node properties you can simply use your elements v-model and mutate the elements directly
- * Changes should always be reflected on the graph reactively, without the need to overwrite the elements
- */
-function updatePos() {
-  return elements.value.forEach((el) => {
-    if (isNode(el)) {
-      el.position = {
-        x: Math.random() * 400,
-        y: Math.random() * 400,
-      }
-    }
-  })
-}
-
-/**
  * toObject transforms your current graph data to an easily persist-able object
  */
 // eslint-disable-next-line no-unused-vars
