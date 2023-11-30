@@ -4,12 +4,13 @@ import type { Ref } from "vue"
 
 import CaseApi from "@/case/api"
 import SearchPopover from "@/components/SearchPopover.vue"
+import { useSavingState } from "@/composables/useSavingState"
 import { useStore } from "vuex"
 
 defineProps<{ caseResolution: string }>()
 
 const store = useStore()
-
+const { setSaving } = useSavingState()
 const caseResolutions: Ref<string[]> = ref([
   "False Positive",
   "User Acknowledged",
@@ -22,7 +23,9 @@ const selectCaseResolution = async (caseResolutionName: string) => {
   const caseDetails = store.state.case_management.selected
   caseDetails.resolution_reason = caseResolutionName
 
+  setSaving(true)
   await CaseApi.update(caseDetails.id, caseDetails)
+  setSaving(false)
 }
 </script>
 

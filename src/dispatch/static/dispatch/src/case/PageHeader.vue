@@ -5,6 +5,8 @@
         <v-icon size="x-small" icon="mdi-chevron-right" />
       </template>
     </v-breadcrumbs>
+    <SavingState :updatedAt="caseUpdatedAt" />
+
     <template #append>
       <DTooltip text="View case participants" :hotkeys="['⌘', '⇧', 'P']">
         <template #activator="{ tooltip }">
@@ -36,6 +38,7 @@ import LockButton from "@/components/LockButton.vue"
 import EscalateButton from "@/case/EscalateButton.vue"
 import DTooltip from "@/components/DTooltip.vue"
 import ParticipantAvatarGroup from "@/participant/ParticipantAvatarGroup.vue"
+import SavingState from "@/components/SavingState.vue"
 import CaseApi from "@/case/api"
 
 const route = useRoute()
@@ -50,6 +53,10 @@ const props = defineProps({
     required: true,
   },
   caseStatus: {
+    type: String,
+    required: true,
+  },
+  caseUpdatedAt: {
     type: String,
     required: true,
   },
