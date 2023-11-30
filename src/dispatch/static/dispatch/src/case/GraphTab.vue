@@ -41,7 +41,7 @@ watchEffect(() => {
       const instanceNode = {
         id: instance.raw.id,
         type: "signal",
-        label: instance.raw.name,
+        label: instance.signal.name,
         data: instance.raw,
         position: { x: 100 * (index + 1), y: 100 * (index + 1) },
         class: "light",
