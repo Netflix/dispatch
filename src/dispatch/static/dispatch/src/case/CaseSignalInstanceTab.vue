@@ -3,8 +3,8 @@
     <v-row>
       <!-- Column for Data Table -->
       <v-col cols="3">
-        <v-card min-width="350" max-width="350" class="signal-card" elevation="0">
-          <v-virtual-scroll :items="signalInstances" height="800" class="pt-2">
+        <v-card min-width="350" class="signal-card" elevation="0">
+          <v-virtual-scroll :items="signalInstances" height="828" class="pt-2">
             <template #default="{ item }">
               <div class="d-flex align-center">
                 <span style="font-size: 0.8rem" class="pl-8">
