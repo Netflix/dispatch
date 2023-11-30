@@ -152,7 +152,7 @@ const actions = {
             "notification_backend/addBeNotification",
             {
               text: `Case '${payload.name}' could not be found.`,
-              type: "error",
+              type: "exception",
             },
             { root: true }
           )
