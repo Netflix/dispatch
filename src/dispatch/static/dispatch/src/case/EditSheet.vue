@@ -15,7 +15,7 @@
               v-if="status == 'New' || status == 'Triage'"
               @click="showEscalateDialog(selected)"
               color="error"
-              prepend-icon="mdi-alert-circle-outline"
+              prepend-icon="mdi-fire"
             >
               Escalate Case
             </v-btn>

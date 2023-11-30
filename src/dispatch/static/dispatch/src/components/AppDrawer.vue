@@ -26,7 +26,7 @@
             :to="{ name: 'report' }"
           >
             <template #prepend>
-              <v-icon color="white">mdi-alert-circle-outline</v-icon>
+              <v-icon color="white">mdi-fire</v-icon>
             </template>
             <v-list-item-title class="text-uppercase text-body-2">
               Report incident
@@ -92,7 +92,7 @@
         :to="{ name: 'report' }"
       >
         <template #prepend>
-          <v-icon>mdi-alert-circle-outline</v-icon>
+          <v-icon color="white">mdi-fire</v-icon>
         </template>
         <v-list-item-title class="text-uppercase text-body-2">Report incident</v-list-item-title>
         <v-tooltip
