@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue"
 import CaseTypeApi from "@/case/type/api"
 import CaseApi from "@/case/api"
 import SearchPopover from "@/components/SearchPopover.vue"
+import { useSavingState } from "@/composables/useSavingState"
 import type { Ref } from "vue"
 import { useStore } from "vuex"
 
@@ -13,7 +14,7 @@ type CaseType = {
 defineProps<{ caseType: string }>()
 
 const store = useStore()
-
+const { setSaving } = useSavingState()
 const caseTypes: Ref<CaseType[]> = ref([])
 
 onMounted(async () => {
@@ -39,7 +40,9 @@ const selectCaseType = async (caseTypeName: string) => {
   const caseDetails = store.state.case_management.selected
   caseDetails.case_type = caseType
 
+  setSaving(true)
   await CaseApi.update(caseDetails.id, caseDetails)
+  setSaving(false)
 }
 </script>
 

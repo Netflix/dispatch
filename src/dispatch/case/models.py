@@ -279,6 +279,7 @@ class CaseRead(CaseBase):
     tags: Optional[List[TagRead]] = []
     ticket: Optional[TicketRead] = None
     triage_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     workflow_instances: Optional[List[WorkflowInstanceRead]] = []
 
 
