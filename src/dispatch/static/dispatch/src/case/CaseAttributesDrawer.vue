@@ -147,27 +147,24 @@ const handleResolutionUpdate = (newResolution) => {
 
       <v-divider class="mt-8 mb-8" />
 
-      <div class="pl-6 dispatch-font-title">Investigation Write-Up</div>
+      <div class="pl-6 dispatch-font-title">Resolution</div>
       <div class="pl-6 dispatch-font">
         Document your findings and provide the rationale for any decisions you made as part of this
         case.
       </div>
-
-      <v-card flat color="grey-lighten-5" class="rounded-lg mt-6 ml-2 mr-2">
+      <div class="pl-6 pt-4">
+        <CaseResolutionSearchPopover :case-resolution="modelValue.resolution_reason" />
+      </div>
+      <v-card flat color="grey-lighten-5" class="rounded-lg mt-4 ml-4 mr-4">
         <RichEditor
           :resolution="true"
           :model-value="modelValue.resolution"
           @update:model-value="handleResolutionUpdate"
           style="min-height: 400px; margin: 10px; font-size: 0.9125rem; font-weight: 400"
         />
-        <v-row class="pb-2 pr-4 pl-4">
-          <v-col cols="12" class="d-flex justify-end align-center">
-            <CaseResolutionSearchPopover
-              :case-resolution="modelValue.resolution_reason"
-              class="pl-6"
-            />
-          </v-col>
-        </v-row>
+        <!-- <v-row class="pb-2 pr-4 pl-4">
+          <v-col cols="12" class="d-flex justify-end align-center"> </v-col>
+        </v-row> -->
       </v-card>
 
       <v-divider class="mt-8 mb-8" />
