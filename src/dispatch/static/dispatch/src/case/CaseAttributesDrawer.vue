@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, defineProps, watchEffect, watch } from "vue"
+import { debounce } from "lodash"
 
 import CaseApi from "@/case/api"
 import CaseResolutionSearchPopover from "@/case/CaseResolutionSearchPopover.vue"
@@ -45,12 +46,6 @@ watchEffect(() => {
   emit("update:open", drawerVisible.value)
 })
 
-const handleResolutionUpdate = (newResolution) => {
-  modelValue.value.resolution = newResolution
-  emit("update:modelValue", { ...modelValue.value }) // Emit the updated modelValue
-  saveCaseDetails()
-}
-
 const saveCaseDetails = async () => {
   try {
     setSaving(true)
@@ -59,6 +54,14 @@ const saveCaseDetails = async () => {
   } catch (e) {
     console.error("Failed to save case details", e)
   }
+}
+
+const debouncedSave = debounce(saveCaseDetails, 1000)
+
+const handleResolutionUpdate = (newResolution) => {
+  modelValue.value.resolution = newResolution
+  emit("update:modelValue", { ...modelValue.value })
+  debouncedSave()
 }
 </script>
 
@@ -153,7 +156,7 @@ const saveCaseDetails = async () => {
       <v-card flat color="grey-lighten-5" class="rounded-lg mt-6 ml-2 mr-2">
         <RichEditor
           :resolution="true"
-          v-model="modelValue.resolution"
+          :model-value="modelValue.resolution"
           @update:model-value="handleResolutionUpdate"
           style="min-height: 400px; margin: 10px; font-size: 0.9125rem; font-weight: 400"
         />

@@ -32,8 +32,10 @@
 <script setup lang="ts">
 import { ref, watch } from "vue"
 import { useStore } from "vuex"
-
 import { useRoute } from "vue-router"
+
+import { debounce } from "lodash"
+
 import CaseApi from "@/case/api"
 import CaseAttributesDrawer from "@/case/CaseAttributesDrawer.vue"
 import PageHeader from "@/case//PageHeader.vue"
@@ -107,16 +109,6 @@ const fetchDetails = async () => {
   }
 }
 
-const handleTitleUpdate = (newTitle) => {
-  caseDetails.value.title = newTitle
-  saveCaseDetails()
-}
-
-const handleDescriptionUpdate = (newDescription) => {
-  caseDetails.value.description = newDescription
-  saveCaseDetails()
-}
-
 const saveCaseDetails = async () => {
   try {
     setSaving(true)
@@ -125,6 +117,18 @@ const saveCaseDetails = async () => {
   } catch (e) {
     console.error("Failed to save case details", e)
   }
+}
+
+const debouncedSave = debounce(saveCaseDetails, 1000)
+
+const handleTitleUpdate = (newTitle) => {
+  caseDetails.value.title = newTitle
+  debouncedSave()
+}
+
+const handleDescriptionUpdate = (newDescription) => {
+  caseDetails.value.description = newDescription
+  debouncedSave()
 }
 
 watch(

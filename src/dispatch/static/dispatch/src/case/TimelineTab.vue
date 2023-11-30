@@ -4,7 +4,8 @@ import Util from "@/util"
 import DMenu from "@/components/DMenu.vue"
 import { useRoute } from "vue-router"
 import CaseApi from "@/case/api"
-import { formatRelativeDate } from "@/filters"
+import { formatRelativeDate, formatToUTC } from "@/filters"
+import DTooltip from "@/components/DTooltip.vue"
 
 const route = useRoute()
 
@@ -109,7 +110,13 @@ const descriptionMap = {
                     {{ sourceIconMap[event.source]?.sourceName || event.source }}
                   </b>
                   {{ descriptionMap[event.description] || event.description }} ·
-                  {{ formatRelativeDate(event.started_at) }}
+                  <DTooltip :text="formatToUTC(event.started_at)" hotkeys="">
+                    <template #activator="{ tooltip }">
+                      <span class="dispatch-text-paragraph" v-bind="tooltip">
+                        {{ formatRelativeDate(event.started_at) }}
+                      </span>
+                    </template>
+                  </DTooltip>
                 </span>
               </div>
             </v-col>
