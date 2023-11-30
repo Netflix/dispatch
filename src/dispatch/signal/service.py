@@ -422,42 +422,47 @@ def update(*, db_session: Session, signal: Signal, signal_in: SignalUpdate) -> S
         if field in update_data:
             setattr(signal, field, update_data[field])
 
-    tags = []
-    for t in signal_in.tags:
-        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
-    signal.tags = tags
+    if signal_in.tags:
+        tags = []
+        for t in signal_in.tags:
+            tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
+        signal.tags = tags
 
-    entity_types = []
-    for e in signal_in.entity_types:
-        entity_type = entity_type_service.get(db_session=db_session, entity_type_id=e.id)
-        entity_types.append(entity_type)
+    if signal_in.entity_types:
+        entity_types = []
+        for e in signal_in.entity_types:
+            entity_type = entity_type_service.get(db_session=db_session, entity_type_id=e.id)
+            entity_types.append(entity_type)
 
-    signal.entity_types = entity_types
+        signal.entity_types = entity_types
 
-    engagements = []
-    for eng in signal_in.engagements:
-        signal_engagement = get_signal_engagement_by_name_or_raise(
-            db_session=db_session, project_id=signal.project.id, signal_engagement_in=eng
-        )
-        engagements.append(signal_engagement)
+    if signal_in.engagements:
+        engagements = []
+        for eng in signal_in.engagements:
+            signal_engagement = get_signal_engagement_by_name_or_raise(
+                db_session=db_session, project_id=signal.project.id, signal_engagement_in=eng
+            )
+            engagements.append(signal_engagement)
 
-    signal.engagements = engagements
+        signal.engagements = engagements
 
-    filters = []
-    for f in signal_in.filters:
-        signal_filter = get_signal_filter_by_name_or_raise(
-            db_session=db_session, project_id=signal.project.id, signal_filter_in=f
-        )
-        filters.append(signal_filter)
+    if signal_in.filters:
+        filters = []
+        for f in signal_in.filters:
+            signal_filter = get_signal_filter_by_name_or_raise(
+                db_session=db_session, project_id=signal.project.id, signal_filter_in=f
+            )
+            filters.append(signal_filter)
 
-    signal.filters = filters
+        signal.filters = filters
 
-    workflows = []
-    for w in signal_in.workflows:
-        workflow = workflow_service.get_by_name_or_raise(db_session=db_session, workflow_in=w)
-        workflows.append(workflow)
+    if signal_in.workflows:
+        workflows = []
+        for w in signal_in.workflows:
+            workflow = workflow_service.get_by_name_or_raise(db_session=db_session, workflow_in=w)
+            workflows.append(workflow)
 
-    signal.workflows = workflows
+        signal.workflows = workflows
 
     if signal_in.oncall_service:
         oncall_service = service_service.get(
