@@ -8,6 +8,7 @@ import CaseSeveritySearchPopover from "@/case/severity/CaseSeveritySearchPopover
 import CaseTypeSearchPopover from "@/case/type/CaseTypeSearchPopover.vue"
 import ParticipantSearchPopover from "@/participant/ParticipantSearchPopover.vue"
 import ProjectSearchPopover from "@/project/ProjectSearchPopover.vue"
+import { useSavingState } from "@/composables/useSavingState"
 
 // Define the props
 const props = defineProps({
@@ -25,7 +26,7 @@ const props = defineProps({
 // Define the emits
 const emit = defineEmits(["update:modelValue", "update:open"])
 const drawerVisible = ref(props.open)
-// Create a local state for modelValue
+const { setSaving } = useSavingState()
 const modelValue = ref({ ...props.modelValue })
 
 watch(
@@ -52,7 +53,9 @@ const handleResolutionUpdate = (newResolution) => {
 
 const saveCaseDetails = async () => {
   try {
+    setSaving(true)
     await CaseApi.update(modelValue.value.id, modelValue.value)
+    setSaving(false)
   } catch (e) {
     console.error("Failed to save case details", e)
   }

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from "vue"
+import { useSavingState } from "@/composables/useSavingState"
 import IndividualApi from "@/individual/api"
 import Hotkey from "@/atomics/Hotkey.vue"
 import { useHotKey } from "@/composables/useHotkey"
@@ -24,6 +25,7 @@ const props = withDefaults(
 )
 
 const store = useStore()
+const { setSaving } = useSavingState()
 const menu: Ref<boolean> = ref(false)
 const participants: Ref<string[]> = ref([])
 const selectedParticipant: Ref<string> = ref("")
@@ -83,8 +85,13 @@ watch(selectedParticipant, async (newValue: string) => {
       caseDetails.reporter.individual = individual
     }
 
-    // Call the CaseApi.update method to update the case details
-    await CaseApi.update(caseDetails.id, caseDetails)
+    setSaving(true)
+    try {
+      await CaseApi.update(caseDetails.id, caseDetails)
+    } catch (error) {
+      console.error("Error updating case:", error)
+    }
+    setSaving(false)
   }
 })
 
