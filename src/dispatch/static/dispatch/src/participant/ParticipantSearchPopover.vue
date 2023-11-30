@@ -101,7 +101,7 @@ watch(
     if (newVal) {
       selectedParticipant.value = newVal
     } else {
-      selectedParticipant.value = "Select assignee"
+      selectedParticipant.value = props.type === "assignee" ? "Select assignee" : "Select reporter"
     }
   },
   { immediate: true }
@@ -186,9 +186,15 @@ const toggleMenu = () => {
             >
               <template #prepend>
                 <v-avatar
+                  v-if="
+                    selectedParticipant !== 'Select assignee' &&
+                    selectedParticipant !== 'Select reporter'
+                  "
                   size="14px"
                   :style="{ background: getAvatarGradient(selectedParticipant) }"
                 />
+                <v-icon v-else size="14px">mdi-account-reactivate</v-icon>
+                <!-- Show icon if selectedParticipant is default -->
               </template>
               <span style="font-size: 0.8125rem; font-weight: 500; color: rgb(60, 65, 73)">
                 {{ selectedParticipant }}
