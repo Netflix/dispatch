@@ -32,9 +32,23 @@ const editor = ref(null)
 const plainTextValue = ref("")
 const emit = defineEmits(["update:modelValue"])
 
+const userIsTyping = ref(false)
+
+const handleKeyDown = () => {
+  userIsTyping.value = true
+}
+
+const handleBlur = () => {
+  userIsTyping.value = false
+}
+
 watch(
   () => props.modelValue,
   (value) => {
+    if (userIsTyping.value) {
+      return
+    }
+
     const isSame = editor.value?.getHTML() === value
 
     if (isSame) {
@@ -44,7 +58,7 @@ watch(
     if (props.title) {
       editor.value?.chain().focus().setContent(`<h2>${value}</h2>`, false).run()
     } else {
-      editor.value?.chain().focus().setContent(`${value}`, false).run()
+      editor.value?.chain().setContent(`${value}`, false).run()
     }
   }
 )
@@ -62,6 +76,10 @@ onMounted(() => {
     },
     keyboardShortcuts: {
       Enter: () => {}, // Override Enter key to do nothing
+    },
+    editorProps: {
+      handleKeyDown,
+      handleBlur,
     },
   })
 })
