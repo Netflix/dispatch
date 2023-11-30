@@ -4,6 +4,7 @@
       :case-name="caseDetails.name"
       :case-visibility="caseDetails.visibility"
       :case-status="caseDetails.status"
+      :case-updated-at="caseDetails.updated_at"
       :is-drawer-open="isDrawerOpen"
       @toggle-drawer="toggleDrawer"
     />
@@ -39,6 +40,7 @@ import PageHeader from "@/case//PageHeader.vue"
 import CaseTabs from "@/case/CaseTabs.vue"
 import RichEditor from "@/components/RichEditor.vue"
 import CaseStatusSelectGroup from "@/case/CaseStatusSelectGroup.vue"
+import { useSavingState } from "@/composables/useSavingState"
 
 const route = useRoute()
 const store = useStore()
@@ -72,6 +74,7 @@ const caseDefaults = {
   tags: [],
   ticket: null,
   triage_at: null,
+  updated_at: null,
   visibility: "",
   conversation: null,
   workflow_instances: null,
@@ -80,6 +83,7 @@ const caseDefaults = {
 const caseDetails = ref(caseDefaults)
 const loading = ref(false)
 const isDrawerOpen = ref(true)
+const { setSaving } = useSavingState()
 
 const toggleDrawer = () => {
   isDrawerOpen.value = !isDrawerOpen.value
@@ -115,7 +119,9 @@ const handleDescriptionUpdate = (newDescription) => {
 
 const saveCaseDetails = async () => {
   try {
+    setSaving(true)
     await CaseApi.update(caseDetails.value.id, caseDetails.value)
+    setSaving(false)
   } catch (e) {
     console.error("Failed to save case details", e)
   }

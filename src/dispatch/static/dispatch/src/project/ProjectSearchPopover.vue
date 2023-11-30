@@ -2,6 +2,8 @@
 import { ref, onMounted } from "vue"
 import ProjectApi from "@/project/api"
 import SearchPopover from "@/components/SearchPopover.vue"
+import { useSavingState } from "@/composables/useSavingState"
+
 import type { Ref } from "vue"
 import { useStore } from "vuex"
 import CaseApi from "@/case/api"
@@ -13,7 +15,7 @@ type Project = {
 const store = useStore()
 
 defineProps<{ project: string }>()
-
+const { setSaving } = useSavingState()
 const projects: Ref<Project[]> = ref([])
 
 onMounted(async () => {
@@ -39,9 +41,11 @@ const selectProject = async (projectName: string) => {
 
   caseDetails.project = project
 
+  setSaving(true)
   CaseApi.update(caseDetails.id, caseDetails)
     .then(() => console.log("Case details updated successfully"))
     .catch((e) => console.error("Failed to update case details", e))
+  setSaving(false)
 }
 </script>
 

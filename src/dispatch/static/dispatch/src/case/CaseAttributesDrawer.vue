@@ -8,6 +8,7 @@ import CaseSeveritySearchPopover from "@/case/severity/CaseSeveritySearchPopover
 import CaseTypeSearchPopover from "@/case/type/CaseTypeSearchPopover.vue"
 import ParticipantSearchPopover from "@/participant/ParticipantSearchPopover.vue"
 import ProjectSearchPopover from "@/project/ProjectSearchPopover.vue"
+import { useSavingState } from "@/composables/useSavingState"
 
 // Define the props
 const props = defineProps({
@@ -25,7 +26,7 @@ const props = defineProps({
 // Define the emits
 const emit = defineEmits(["update:modelValue", "update:open"])
 const drawerVisible = ref(props.open)
-// Create a local state for modelValue
+const { setSaving } = useSavingState()
 const modelValue = ref({ ...props.modelValue })
 
 watch(
@@ -52,7 +53,9 @@ const handleResolutionUpdate = (newResolution) => {
 
 const saveCaseDetails = async () => {
   try {
+    setSaving(true)
     await CaseApi.update(modelValue.value.id, modelValue.value)
+    setSaving(false)
   } catch (e) {
     console.error("Failed to save case details", e)
   }
@@ -141,6 +144,31 @@ const saveCaseDetails = async () => {
 
       <v-divider class="mt-8 mb-8" />
 
+      <div class="pl-6 dispatch-font-title">Investigation Write-Up</div>
+      <div class="pl-6 dispatch-font">
+        Document your findings and provide the rationale for any decisions you made as part of this
+        case.
+      </div>
+
+      <v-card flat color="grey-lighten-5" class="rounded-lg mt-6 ml-2 mr-2">
+        <RichEditor
+          :resolution="true"
+          v-model="modelValue.resolution"
+          @update:model-value="handleResolutionUpdate"
+          style="min-height: 400px; margin: 10px; font-size: 0.9125rem; font-weight: 400"
+        />
+        <v-row class="pb-2 pr-4 pl-4">
+          <v-col cols="12" class="d-flex justify-end align-center">
+            <CaseResolutionSearchPopover
+              :case-resolution="modelValue.resolution_reason"
+              class="pl-6"
+            />
+          </v-col>
+        </v-row>
+      </v-card>
+
+      <v-divider class="mt-8 mb-8" />
+
       <div class="pl-3">
         <v-row no-gutters align="center">
           <v-col cols="8">
@@ -188,7 +216,7 @@ const saveCaseDetails = async () => {
           </v-col>
         </v-row>
 
-        <v-row no-gutters class="pt-6" align="center">
+        <v-row no-gutters class="pt-6 pb-6" align="center">
           <v-col cols="8">
             <v-btn
               class="text-subtitle-2 font-weight-regular"
@@ -203,31 +231,6 @@ const saveCaseDetails = async () => {
           </v-col>
         </v-row>
       </div>
-
-      <v-divider class="mt-8 mb-8" />
-
-      <div class="pl-6 dispatch-font-title">Investigation Write-Up</div>
-      <div class="pl-6 dispatch-font">
-        Document your findings and provide the rationale for any decisions you made as part of this
-        case.
-      </div>
-
-      <v-card flat color="grey-lighten-5" class="rounded-lg mt-6 ml-2 mr-2">
-        <RichEditor
-          :resolution="true"
-          v-model="modelValue.resolution"
-          @update:model-value="handleResolutionUpdate"
-          style="min-height: 400px; margin: 10px; font-size: 0.9125rem; font-weight: 400"
-        />
-        <v-row class="pb-2 pr-4 pl-4">
-          <v-col cols="12" class="d-flex justify-end align-center">
-            <CaseResolutionSearchPopover
-              :case-resolution="modelValue.resolution_reason"
-              class="pl-6"
-            />
-          </v-col>
-        </v-row>
-      </v-card>
     </v-navigation-drawer>
   </div>
 </template>
