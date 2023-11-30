@@ -78,7 +78,7 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
             accessory=Button(
                 text="View",
                 action_id="button-link",
-                url=f"{DISPATCH_UI_URL}/{case.project.organization.slug}/cases/{case.name}",
+                url=f"{DISPATCH_UI_URL}/{case.project.organization.slug}/cases/{case.id}",
             ),
         ),
         Section(text=f"*Description* \n {case.description}"),
