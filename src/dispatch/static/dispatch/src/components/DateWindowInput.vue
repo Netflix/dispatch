@@ -23,10 +23,10 @@
             </v-list>
           </v-col>
           <v-col>
-            <v-date-picker title="Start Date" v-model="start" show-adjacent-months></v-date-picker>
+            <v-date-picker title="Start Date" v-model="start" show-adjacent-months />
           </v-col>
           <v-col>
-            <v-date-picker title="End Date" v-model="end" show-adjacent-months></v-date-picker>
+            <v-date-picker title="End Date" v-model="end" show-adjacent-months />
           </v-col>
         </v-row>
       </v-container>
