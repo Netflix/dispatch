@@ -26,7 +26,7 @@ test("mounts correctly", () => {
   expect(wrapper.exists()).toBe(true)
 })
 
-test("opens dialog on button click", async ({}) => {
+test("opens dialog on button click", async () => {
   const wrapper = mount(LockButton, {
     props: {
       subjectVisibility: "Open",
