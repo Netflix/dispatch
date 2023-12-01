@@ -76,6 +76,7 @@ const state = {
           start: null,
           end: null,
         },
+        signal: [],
       },
       q: "",
       page: 1,

@@ -4,6 +4,9 @@
       <v-col>
         <div class="text-h5">Signals</div>
       </v-col>
+      <v-col class="text-right">
+        <table-filter-dialog/>
+      </v-col>
     </v-row>
     <v-row no-gutters>
       <v-col>
@@ -32,9 +35,6 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #item.signal.create_case="{ value }">
-              <v-checkbox-btn :model-value="value" disabled />
-            </template>
             <template #item.case="{ value }">
               <case-popover v-if="value" :value="value" />
             </template>
@@ -91,6 +91,7 @@ import CasePopover from "@/case/CasePopover.vue"
 import RawSignalViewer from "@/signal/RawSignalViewer.vue"
 import RouterUtils from "@/router/utils"
 import SignalPopover from "@/signal/SignalPopover.vue"
+import TableFilterDialog from "@/signal/TableFilterDialog.vue"
 
 export default {
   name: "SignalInstanceTable",
@@ -99,12 +100,12 @@ export default {
     CasePopover,
     RawSignalViewer,
     SignalPopover,
+    TableFilterDialog,
   },
 
   data() {
     return {
       headers: [
-        { title: "Create Case", value: "signal.create_case", sortable: false },
         { title: "Case", value: "case", sortable: false },
         { title: "Signal Definition", value: "signal", sortable: false },
         { title: "Filter Action", value: "filter_action", sortable: true },
@@ -124,6 +125,7 @@ export default {
       "instanceTable.loading",
       "instanceTable.options.descending",
       "instanceTable.options.filters",
+      "instanceTable.options.filters.signal",
       "instanceTable.options.itemsPerPage",
       "instanceTable.options.page",
       "instanceTable.options.q",
@@ -166,7 +168,7 @@ export default {
     )
 
     this.$watch(
-      (vm) => [vm.q, vm.sortBy, vm.itemsPerPage, vm.descending, vm.created_at, vm.project],
+      (vm) => [vm.q, vm.sortBy, vm.itemsPerPage, vm.descending, vm.created_at, vm.project, vm.signal],
       () => {
         this.page = 1
         RouterUtils.updateURLFilters(this.filters)
