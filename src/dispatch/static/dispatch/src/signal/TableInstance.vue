@@ -5,7 +5,7 @@
         <div class="text-h5">Signals</div>
       </v-col>
       <v-col class="text-right">
-        <table-filter-dialog/>
+        <table-filter-dialog />
       </v-col>
     </v-row>
     <v-row no-gutters>
@@ -168,7 +168,15 @@ export default {
     )
 
     this.$watch(
-      (vm) => [vm.q, vm.sortBy, vm.itemsPerPage, vm.descending, vm.created_at, vm.project, vm.signal],
+      (vm) => [
+        vm.q,
+        vm.sortBy,
+        vm.itemsPerPage,
+        vm.descending,
+        vm.created_at,
+        vm.project,
+        vm.signal
+      ],
       () => {
         this.page = 1
         RouterUtils.updateURLFilters(this.filters)

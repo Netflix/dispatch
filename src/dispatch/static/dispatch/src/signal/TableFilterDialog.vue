@@ -33,7 +33,6 @@ export default {
   name: "SignalInstanceTableFilterDialog",
 
   components: {
-    DateWindowInput,
     SignalDefinitionCombobox,
   },
 
@@ -45,13 +44,9 @@ export default {
   },
 
   computed: {
-    ...mapFields("signal", [
-      "instanceTable.options.filters.signal",
-    ]),
+    ...mapFields("signal", ["instanceTable.options.filters.signal"]),
     numFilters: function () {
-      return sum([
-        this.signal.length
-      ])
+      return sum([this.signal.length])
     },
   },
 
