@@ -181,8 +181,9 @@ def build_filters(filter_spec):
 
                 if not _is_iterable_filter(fn_args):
                     raise BadFilterFormat(
-                        "`{}` value must be an iterable across the function "
-                        "arguments".format(boolean_function.key)
+                        "`{}` value must be an iterable across the function " "arguments".format(
+                            boolean_function.key
+                        )
                     )
                 if boolean_function.only_one_arg and len(fn_args) != 1:
                     raise BadFilterFormat(
@@ -291,7 +292,7 @@ def apply_filters(query, filter_spec, model_cls=None, do_auto_join=True):
 
     :param filter_spec:
                     A dict or an iterable of dicts, where each one includes
-                    the necesary information to create a filter to be applied to the
+                    the necessary information to create a filter to be applied to the
                     query.
 
                     Example::
@@ -337,7 +338,7 @@ def apply_filters(query, filter_spec, model_cls=None, do_auto_join=True):
 
 
 def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query):
-    """Applies any model specific implicity joins."""
+    """Applies any model specific implicitly joins."""
     # this is required because by default sqlalchemy-filter's auto-join
     # knows nothing about how to join many-many relationships.
     model_map = {
@@ -402,15 +403,19 @@ def search(*, query_str: str, query: Query, model: str, sort=False):
     if not query_str.strip():
         return query
 
-    vector = search_model.search_vector
+    if hasattr(search_model, "search_vector"):
+        vector = search_model.search_vector
+        query = query.filter(vector.op("@@")(func.tsq_parse(query_str)))
 
-    query = query.filter(
-        or_(
-            vector.op("@@")(func.tsq_parse(query_str)),
-            search_model.name.ilike(f"%{query_str}%"),
-            search_model.name == query_str,
+    elif hasattr(search_model, "name"):
+        query = query.filter(
+            or_(
+                search_model.name.ilike(f"%{query_str}%"),
+                search_model.name == query_str,
+            )
         )
-    )
+    else:
+        raise Exception(f"Search not supported for model: {model}")
 
     if sort:
         query = query.order_by(desc(func.ts_rank_cd(vector, func.tsq_parse(query_str))))
@@ -523,8 +528,6 @@ def search_filter_sort_paginate(
         raise ValidationError(
             [ErrorWrapper(InvalidFilterError(msg=str(e)), loc="filter")], model=BaseModel
         ) from None
-    except Exception as e:
-        log.exception(e)
 
     if items_per_page == -1:
         items_per_page = None
@@ -555,7 +558,7 @@ def search_filter_sort_paginate(
 def restricted_incident_filter(query: orm.Query, current_user: DispatchUser, role: UserRoles):
     """Adds additional incident filters to query (usually for permissions)."""
     if role == UserRoles.member:
-        # We filter out resticted incidents for users with a member role if the user is not an incident participant
+        # We filter out restricted incidents for users with a member role if the user is not an incident participant
         query = (
             query.join(Participant, Incident.id == Participant.incident_id)
             .join(IndividualContact)
