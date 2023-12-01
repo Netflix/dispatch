@@ -71,7 +71,7 @@ instance.interceptors.response.use(
           "notification_backend/addBeNotification",
           {
             text: errorText,
-            type: "error",
+            type: "exception",
           },
           { root: true }
         )
@@ -83,7 +83,7 @@ instance.interceptors.response.use(
           "notification_backend/addBeNotification",
           {
             text: errorText,
-            type: "error",
+            type: "exception",
           },
           { root: true }
         )
@@ -95,7 +95,7 @@ instance.interceptors.response.use(
           "notification_backend/addBeNotification",
           {
             text: errorText,
-            type: "error",
+            type: "exception",
           },
           { root: true }
         )
@@ -116,7 +116,7 @@ instance.interceptors.response.use(
           "notification_backend/addBeNotification",
           {
             text: errorText,
-            type: "error",
+            type: "exception",
           },
           { root: true }
         )

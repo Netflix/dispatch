@@ -182,12 +182,11 @@ class SignalRead(DispatchBase):
 
 
 class SignalInstanceRead(DispatchBase):
-    signal: SignalRead
-    entities: Optional[List[EntityRead]] = []
-    tags: Optional[List[TagRead]] = []
-    raw: Any
-    fingerprint: Optional[str]
     created_at: datetime
+    entities: Optional[List[EntityRead]] = []
+    raw: Any
+    signal: SignalRead
+    tags: Optional[List[TagRead]] = []
 
 
 class ProjectRead(DispatchBase):
@@ -279,6 +278,7 @@ class CaseRead(CaseBase):
     tags: Optional[List[TagRead]] = []
     ticket: Optional[TicketRead] = None
     triage_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     workflow_instances: Optional[List[WorkflowInstanceRead]] = []
 
 

@@ -29,6 +29,7 @@ const getDefaultSelectedState = () => {
     reported_at: null,
     resolution_reason: null,
     resolution: null,
+    saving: false,
     signals: [],
     status: null,
     storage: null,
@@ -36,6 +37,7 @@ const getDefaultSelectedState = () => {
     ticket: null,
     title: null,
     triage_at: null,
+    updated_at: null,
     visibility: null,
     conversation: null,
     workflow_instances: null,
@@ -93,6 +95,7 @@ const state = {
       sortBy: ["reported_at"],
       descending: [true],
     },
+    saving: false,
     loading: false,
     bulkEditLoading: false,
   },
@@ -149,7 +152,7 @@ const actions = {
             "notification_backend/addBeNotification",
             {
               text: `Case '${payload.name}' could not be found.`,
-              type: "error",
+              type: "exception",
             },
             { root: true }
           )
@@ -446,6 +449,9 @@ const mutations = {
   },
   SET_SELECTED_LOADING(state, value) {
     state.selected.loading = value
+  },
+  SET_SELECTED_SAVING(state, value) {
+    state.selected.saving = value
   },
 }
 

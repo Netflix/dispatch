@@ -46,7 +46,7 @@ export const publicRoute = [
   },
   {
     path: "/implicit/callback",
-    name: "PKCEImplicityCallback",
+    name: "PKCEImplicitlyCallback",
     meta: { requiresAuth: true },
   },
   {
@@ -194,13 +194,27 @@ export const protectedRoute = [
           component: () => import("@/case/Table.vue"),
           children: [
             {
-              path: "/:organization/cases/:name",
+              path: "/:organization/cases/:name/edit",
               name: "CaseTableEdit",
               component: () => import("@/case/EditSheet.vue"),
               props: true,
               meta: {
                 showEditSheet: true,
               },
+            },
+          ],
+        },
+        {
+          path: "/:organization/cases/:id",
+          name: "CasePage",
+          meta: { title: "Page" },
+          component: () => import("@/case/Page.vue"),
+          children: [
+            {
+              path: "signal/:signal_id",
+              name: "SignalDetails",
+              component: () => import("@/case/Page.vue"), // Use the same component to avoid re-render
+              props: true,
             },
           ],
         },
