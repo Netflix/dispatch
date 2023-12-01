@@ -41,15 +41,28 @@ useHotKey([props.hotkey], () => {
 const emit = defineEmits(["participant-selected"])
 
 // Fetch priorities
-const fetchParticipants = async () => {
+const fetchParticipants = async (query = "") => {
   try {
-    const options = { itemsPerPage: -1 }
+    const options = {
+      filter: JSON.stringify([
+        { and: [{ model: "IndividualContact", field: "name", op: "like", value: `%${query}%` }] },
+      ]),
+      itemsPerPage: 10,
+    }
     const response = await IndividualApi.getAll(options)
     participants.value = response.data.items.map((item: any) => item.name)
   } catch (error) {
     console.error("Error fetching participants:", error)
   }
 }
+
+watch(
+  searchQuery,
+  async (newValue: string) => {
+    await fetchParticipants(newValue)
+  },
+  { immediate: true }
+)
 
 onMounted(() => {
   fetchParticipants()
