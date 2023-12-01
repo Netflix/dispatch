@@ -403,19 +403,21 @@ def search(*, query_str: str, query: Query, model: str, sort=False):
     if not query_str.strip():
         return query
 
+    search = []
     if hasattr(search_model, "search_vector"):
         vector = search_model.search_vector
-        query = query.filter(vector.op("@@")(func.tsq_parse(query_str)))
+        search.append(vector.op("@@")(func.tsq_parse(query_str)))
 
-    elif hasattr(search_model, "name"):
-        query = query.filter(
-            or_(
-                search_model.name.ilike(f"%{query_str}%"),
-                search_model.name == query_str,
-            )
+    if hasattr(search_model, "name"):
+        search.append(
+            search_model.name.ilike(f"%{query_str}%"),
         )
-    else:
+        search.append(search_model.name == query_str)
+
+    if not search:
         raise Exception(f"Search not supported for model: {model}")
+
+    query = query.filter(or_(*search))
 
     if sort:
         query = query.order_by(desc(func.ts_rank_cd(vector, func.tsq_parse(query_str))))
