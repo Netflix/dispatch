@@ -175,7 +175,7 @@ export default {
         vm.descending,
         vm.created_at,
         vm.project,
-        vm.signal
+        vm.signal,
       ],
       () => {
         this.page = 1

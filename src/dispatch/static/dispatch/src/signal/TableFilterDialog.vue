@@ -26,7 +26,6 @@
 import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
 
-import DateWindowInput from "@/components/DateWindowInput.vue"
 import SignalDefinitionCombobox from "@/signal/SignalDefinitionCombobox.vue"
 
 export default {
