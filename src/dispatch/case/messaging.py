@@ -37,7 +37,7 @@ def send_case_close_reminder(case: Case, db_session: SessionLocal):
     items = [
         {
             "name": case.name,
-            "dispatch_ui_case_url": f"{DISPATCH_UI_URL}/{case.project.organization.name}/cases/{case.name}",  # noqa
+            "dispatch_ui_case_url": f"{DISPATCH_UI_URL}/{case.project.organization.name}/cases/{case.id}",  # noqa
             "title": case.title,
             "status": case.status,
         }
@@ -77,7 +77,7 @@ def send_case_triage_reminder(case: Case, db_session: SessionLocal):
             "name": case.name,
             "title": case.title,
             "status": case.status,
-            "dispatch_ui_case_url": f"{DISPATCH_UI_URL}/{case.project.organization.name}/cases/{case.name}",  # noqa
+            "dispatch_ui_case_url": f"{DISPATCH_UI_URL}/{case.project.organization.name}/cases/{case.id}",  # noqa
         }
     ]
 
