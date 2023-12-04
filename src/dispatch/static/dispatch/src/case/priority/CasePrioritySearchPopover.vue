@@ -32,6 +32,7 @@ const selectCasePriority = async (casePriorityName: string) => {
     filter: JSON.stringify([
       { and: [{ model: "CasePriority", field: "name", op: "==", value: casePriorityName }] },
     ]),
+    itemsPerPage: -1,
   })
 
   const caseType = response.data.items[0]

@@ -32,6 +32,7 @@ const selectCaseSeverity = async (caseSeverityName: string) => {
     filter: JSON.stringify([
       { and: [{ model: "CaseSeverity", field: "name", op: "==", value: caseSeverityName }] },
     ]),
+    itemsPerPage: -1,
   })
 
   const caseSeverity = response.data.items[0]

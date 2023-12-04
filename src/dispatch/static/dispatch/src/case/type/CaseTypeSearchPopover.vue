@@ -32,6 +32,7 @@ const selectCaseType = async (caseTypeName: string) => {
     filter: JSON.stringify([
       { and: [{ model: "CaseType", field: "name", op: "==", value: caseTypeName }] },
     ]),
+    itemsPerPage: -1,
   })
 
   const caseType = response.data.items[0]

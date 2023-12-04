@@ -33,6 +33,7 @@ const selectProject = async (projectName: string) => {
     filter: JSON.stringify([
       { and: [{ model: "Project", field: "name", op: "==", value: projectName }] },
     ]),
+    itemsPerPage: -1,
   })
 
   const project = response.data.items[0]
