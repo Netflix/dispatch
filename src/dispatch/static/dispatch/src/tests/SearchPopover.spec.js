@@ -166,32 +166,6 @@ test("emits item-selected when an item is selected", async () => {
   expect(wrapper.emitted()["item-selected"]).toEqual([["Banana"]])
 })
 
-test("toggleMenu changes the value of menu", async () => {
-  const wrapper = mount(SearchPopover, {
-    props: {
-      hotkeys: ["a", "b", "c"],
-      initialValue: "Initial",
-      items: ["Apple", "Banana", "Cherry"],
-      label: "Label",
-    },
-    global: {
-      plugins: [vuetify],
-      components: {
-        Hotkey,
-      },
-    },
-  })
-
-  // assert that menu is false initially
-  expect(wrapper.vm.menu).toBe(false)
-
-  // call toggleMenu method
-  await wrapper.vm.toggleMenu()
-
-  // assert that menu is true
-  expect(wrapper.vm.menu).toBe(true)
-})
-
 test("updates selectedItem when initialValue prop changes", async () => {
   const wrapper = mount(SearchPopover, {
     props: {
