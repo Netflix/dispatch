@@ -20,7 +20,8 @@ const projects: Ref<Project[]> = ref([])
 
 onMounted(async () => {
   try {
-    const response = await ProjectApi.getAll()
+    const options = { itemsPerPage: -1 }
+    const response = await ProjectApi.getAll(options)
     projects.value = response.data.items.map((item: any) => item.name)
   } catch (error) {
     console.error("Error fetching projects:", error)
@@ -33,7 +34,6 @@ const selectProject = async (projectName: string) => {
     filter: JSON.stringify([
       { and: [{ model: "Project", field: "name", op: "==", value: projectName }] },
     ]),
-    itemsPerPage: -1,
   })
 
   const project = response.data.items[0]

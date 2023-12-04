@@ -19,7 +19,8 @@ const caseSeveritys: Ref<CaseSeverity[]> = ref([])
 
 onMounted(async () => {
   try {
-    const response = await CaseSeverityApi.getAll()
+    const options = { itemsPerPage: -1 }
+    const response = await CaseSeverityApi.getAll(options)
     caseSeveritys.value = response.data.items.map((item: any) => item.name)
   } catch (error) {
     console.error("Error fetching case severities:", error)
@@ -32,7 +33,6 @@ const selectCaseSeverity = async (caseSeverityName: string) => {
     filter: JSON.stringify([
       { and: [{ model: "CaseSeverity", field: "name", op: "==", value: caseSeverityName }] },
     ]),
-    itemsPerPage: -1,
   })
 
   const caseSeverity = response.data.items[0]

@@ -19,7 +19,8 @@ const caseTypes: Ref<CaseType[]> = ref([])
 
 onMounted(async () => {
   try {
-    const response = await CaseTypeApi.getAll()
+    const options = { itemsPerPage: -1 }
+    const response = await CaseTypeApi.getAll(options)
     caseTypes.value = response.data.items.map((item: any) => item.name)
   } catch (error) {
     console.error("Error fetching case types:", error)
@@ -32,7 +33,6 @@ const selectCaseType = async (caseTypeName: string) => {
     filter: JSON.stringify([
       { and: [{ model: "CaseType", field: "name", op: "==", value: caseTypeName }] },
     ]),
-    itemsPerPage: -1,
   })
 
   const caseType = response.data.items[0]
