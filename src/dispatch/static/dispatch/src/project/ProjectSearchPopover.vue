@@ -20,7 +20,8 @@ const projects: Ref<Project[]> = ref([])
 
 onMounted(async () => {
   try {
-    const response = await ProjectApi.getAll()
+    const options = { itemsPerPage: -1 }
+    const response = await ProjectApi.getAll(options)
     projects.value = response.data.items.map((item: any) => item.name)
   } catch (error) {
     console.error("Error fetching projects:", error)

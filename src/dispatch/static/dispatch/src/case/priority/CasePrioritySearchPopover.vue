@@ -19,7 +19,8 @@ const casePriorities: Ref<CasePriority[]> = ref([])
 
 onMounted(async () => {
   try {
-    const response = await CasePriorityApi.getAll()
+    const options = { itemsPerPage: -1 }
+    const response = await CasePriorityApi.getAll(options)
     casePriorities.value = response.data.items.map((item: any) => item.name)
   } catch (error) {
     console.error("Error fetching priorities:", error)
