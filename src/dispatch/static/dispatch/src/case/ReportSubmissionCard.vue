@@ -160,18 +160,6 @@ export default {
       this.descriptionValid = !!this.description
       this.checkFormValidity()
     },
-    project() {
-      this.projectValid = !!this.project
-      this.checkFormValidity()
-    },
-    case_type() {
-      this.caseTypeValid = !!this.case_type
-      this.checkFormValidity()
-    },
-    case_priority() {
-      this.casePriorityValid = !!this.case_priority
-      this.checkFormValidity()
-    },
   },
 
   methods: {
@@ -225,12 +213,7 @@ export default {
       )
     },
     checkFormValidity() {
-      this.formIsValid =
-        this.titleValid &&
-        this.descriptionValid &&
-        this.projectValid &&
-        this.caseTypeValid &&
-        this.casePriorityValid
+      this.formIsValid = this.titleValid && this.descriptionValid
     },
     ...mapActions("case_management", ["report", "get", "resetSelected"]),
   },
