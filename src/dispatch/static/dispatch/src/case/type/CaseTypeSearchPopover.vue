@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue"
+import { watch, ref } from "vue"
 import CaseTypeApi from "@/case/type/api"
 import CaseApi from "@/case/api"
 import SearchPopover from "@/components/SearchPopover.vue"
@@ -11,21 +11,35 @@ type CaseType = {
   name: string
 }
 
-defineProps<{ caseType: string }>()
+const props = defineProps<{ caseType: string; project: string }>()
 
 const store = useStore()
 const { setSaving } = useSavingState()
 const caseTypes: Ref<CaseType[]> = ref([])
+const currentProject: Ref<string> = ref(props.project)
 
-onMounted(async () => {
-  try {
-    const options = { itemsPerPage: -1 }
-    const response = await CaseTypeApi.getAll(options)
-    caseTypes.value = response.data.items.map((item: any) => item.name)
-  } catch (error) {
-    console.error("Error fetching case types:", error)
-  }
-})
+watch(
+  () => props.project,
+  async (newVal) => {
+    currentProject.value = newVal
+    if (newVal) {
+      try {
+        const options = {
+          itemsPerPage: -1,
+          filter: JSON.stringify([
+            { and: [{ model: "Project", field: "name", op: "==", value: newVal }] },
+          ]),
+        }
+
+        const response = await CaseTypeApi.getAll(options)
+        caseTypes.value = response.data.items.map((item: any) => item.name)
+      } catch (error) {
+        console.error("Error fetching priorities:", error)
+      }
+    }
+  },
+  { immediate: true }
+)
 
 const selectCaseType = async (caseTypeName: string) => {
   // Fetch the participant object from the API

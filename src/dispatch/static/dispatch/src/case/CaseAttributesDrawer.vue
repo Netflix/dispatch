@@ -109,6 +109,7 @@ const handleResolutionUpdate = (newResolution) => {
           <v-col cols="10">
             <CasePrioritySearchPopover
               :case-priority="modelValue.case_priority?.name"
+              :project="modelValue.project?.name"
               class="pl-6"
             />
           </v-col>
@@ -121,6 +122,7 @@ const handleResolutionUpdate = (newResolution) => {
           <v-col cols="10">
             <CaseSeveritySearchPopover
               :case-severity="modelValue.case_severity?.name"
+              :project="modelValue.project?.name"
               class="pl-6"
             />
           </v-col>
@@ -131,7 +133,11 @@ const handleResolutionUpdate = (newResolution) => {
             <div class="dispatch-font">Type</div>
           </v-col>
           <v-col cols="10">
-            <CaseTypeSearchPopover :case-type="modelValue.case_type?.name" class="pl-6" />
+            <CaseTypeSearchPopover
+              :case-type="modelValue.case_type?.name"
+              :project="modelValue.project?.name"
+              class="pl-6"
+            />
           </v-col>
         </v-row>
 
