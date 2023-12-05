@@ -1,4 +1,5 @@
 import API from "@/api"
+import { result } from "lodash"
 
 const resource = "incidents"
 
@@ -73,5 +74,8 @@ export default {
 
   createAllResources(incidentId, payload) {
     return API.post(`/${resource}/${incidentId}/resources`, payload)
+  },
+  exportTimeline(incidentId, timeline_filters){
+    return API.post(`/${resource}/${incidentId}/exportTimeline`, timeline_filters)
   },
 }
