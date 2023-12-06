@@ -70,83 +70,107 @@
   </v-item-group>
 </template>
 
-<script>
-import { mapActions } from "vuex"
+<script setup>
+import { computed, watch, ref } from "vue"
+import { useStore } from "vuex"
+import { useSavingState } from "@/composables/useSavingState"
 import DTooltip from "@/components/DTooltip.vue"
+import CaseApi from "@/case/api"
 
-export default {
-  name: "CaseStatusSelectGroup",
-  props: {
-    modelValue: {
-      type: Object,
-      required: false,
-      default: () => ({}),
-    },
+const props = defineProps({
+  modelValue: {
+    type: Object,
+    required: false,
+    default: () => ({}),
   },
-  components: {
-    DTooltip,
+})
+
+const store = useStore()
+const { setSaving } = useSavingState()
+let selectedStatus = ref(null)
+let dialogVisible = ref(false)
+let activeStatus = ref(props.modelValue.status)
+
+const statuses = computed(() => [
+  {
+    name: "New",
+    label: "Created",
+    color: "red",
+    hoverClass: "hover-card-three",
+    sheetClass: "rounded-s-xl arrow",
+    tooltip: props.modelValue.created_at,
   },
-  data() {
-    return {
-      selectedStatus: null,
-      dialogVisible: false,
-    }
+  {
+    name: "Triage",
+    label: "Triaged",
+    color: "red",
+    hoverClass: "hover-card-two",
+    sheetClass: "arrow",
+    tooltip: props.modelValue.triage_at,
   },
-  computed: {
-    statuses() {
-      return [
-        {
-          name: "New",
-          label: "New",
-          color: "red",
-          hoverClass: "hover-card-three",
-          sheetClass: "rounded-s-xl arrow",
-          tooltip: this.modelValue.created_at,
-        },
-        {
-          name: "Triage",
-          label: "Triaged",
-          color: "red",
-          hoverClass: "hover-card-two",
-          sheetClass: "arrow",
-          tooltip: this.modelValue.triage_at,
-        },
-        {
-          name: "Closed",
-          label: "Resolved",
-          color: "green",
-          hoverClass: "hover-card",
-          sheetClass: "arrow",
-          tooltip: this.modelValue.closed_at,
-        },
-        {
-          name: "Escalated",
-          label: "Escalated",
-          color: "red",
-          hoverClass: "",
-          sheetClass: "rounded-e-xl end-sheet",
-          tooltip: this.modelValue.escalated_at,
-        },
-      ]
-    },
+  {
+    name: "Closed",
+    label: "Resolved",
+    color: "green",
+    hoverClass: "hover-card",
+    sheetClass: "arrow",
+    tooltip: props.modelValue.closed_at,
   },
-  methods: {
-    ...mapActions("case_management", ["save_page"]),
-    changeStatus(newStatus) {
-      // eslint-disable-next-line vue/no-mutating-props
-      this.modelValue.status = newStatus
-      this.save_page()
-      this.dialogVisible = false
-      this.selectedStatus = null
-    },
-    openDialog(newStatus) {
-      this.selectedStatus = newStatus
-      this.dialogVisible = true
-    },
-    isActiveStatus(status) {
-      return this.modelValue.status === status
-    },
+  {
+    name: "Escalated",
+    label: "Escalated",
+    color: "red",
+    hoverClass: "",
+    sheetClass: "rounded-e-xl end-sheet",
+    tooltip: props.modelValue.escalated_at,
   },
+])
+
+const changeStatus = async (newStatus) => {
+  const caseDetails = store.state.case_management.selected
+  const previousStatus = activeStatus.value
+
+  // Optimistically update the UI
+  activeStatus.value = newStatus
+  selectedStatus.value = null
+  dialogVisible.value = false
+  caseDetails.status = newStatus
+
+  try {
+    setSaving(true)
+    await CaseApi.update(caseDetails.id, caseDetails)
+    setSaving(false)
+  } catch (e) {
+    console.error(`Failed to update case status`, e)
+
+    // If the API call fails, revert the active status change
+    activeStatus.value = previousStatus
+
+    store.commit(
+      "notification_backend/addBeNotification",
+      {
+        text: `Failed to update case status`,
+        type: "exception",
+      },
+      { root: true }
+    )
+  }
+}
+
+const openDialog = (newStatus) => {
+  selectedStatus.value = newStatus
+  dialogVisible.value = true
+}
+
+watch(
+  () => props.modelValue.status,
+  (newStatus) => {
+    activeStatus.value = newStatus
+  }
+)
+
+const isActiveStatus = (status) => {
+  return activeStatus.value === status
 }
 </script>
 
