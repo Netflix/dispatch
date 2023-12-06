@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue"
+import { ref, watch } from "vue"
 import CasePriorityApi from "@/case/priority/api"
 import CaseApi from "@/case/api"
 import SearchPopover from "@/components/SearchPopover.vue"
@@ -11,21 +11,35 @@ type CasePriority = {
   name: string
 }
 
-defineProps<{ casePriority: string }>()
+const props = defineProps<{ casePriority: string; project: string }>()
 
 const store = useStore()
 const { setSaving } = useSavingState()
 const casePriorities: Ref<CasePriority[]> = ref([])
+const currentProject: Ref<string> = ref(props.project)
 
-onMounted(async () => {
-  try {
-    const options = { itemsPerPage: -1 }
-    const response = await CasePriorityApi.getAll(options)
-    casePriorities.value = response.data.items.map((item: any) => item.name)
-  } catch (error) {
-    console.error("Error fetching priorities:", error)
-  }
-})
+watch(
+  () => props.project,
+  async (newVal) => {
+    currentProject.value = newVal
+    if (newVal) {
+      try {
+        const options = {
+          itemsPerPage: -1,
+          filter: JSON.stringify([
+            { and: [{ model: "Project", field: "name", op: "==", value: newVal }] },
+          ]),
+        }
+
+        const response = await CasePriorityApi.getAll(options)
+        casePriorities.value = response.data.items.map((item: any) => item.name)
+      } catch (error) {
+        console.error("Error fetching priorities:", error)
+      }
+    }
+  },
+  { immediate: true }
+)
 
 const selectCasePriority = async (casePriorityName: string) => {
   // Fetch the participant object from the API
