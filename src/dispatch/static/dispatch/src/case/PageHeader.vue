@@ -33,7 +33,6 @@
 
 <script setup lang="ts">
 import { useRoute } from "vue-router"
-import { useStore } from "vuex"
 import { computed, ref, watch } from "vue"
 import LockButton from "@/components/LockButton.vue"
 import EscalateButton from "@/case/EscalateButton.vue"
@@ -44,7 +43,6 @@ import CaseApi from "@/case/api"
 import type { Ref } from "vue"
 
 const route = useRoute()
-const store = useStore()
 
 const props = defineProps({
   caseId: {
