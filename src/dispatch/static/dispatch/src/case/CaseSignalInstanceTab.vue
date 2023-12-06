@@ -7,7 +7,7 @@
           <v-virtual-scroll :items="signalInstances" height="828" class="pt-2">
             <template #default="{ item }">
               <div class="d-flex align-center">
-                <span style="font-size: 0.8rem" class="pl-8">
+                <span class="pl-8 signal-name">
                   {{ item.signal.name }}
                 </span>
                 <span class="pl-1 dispatch-text-paragraph">
@@ -109,5 +109,12 @@ watch(
 .signal-card {
   border: 0.5px solid rgb(216, 216, 216) !important;
   border-radius: 8px !important;
+}
+
+.signal-name {
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
