@@ -5,7 +5,6 @@ import * as components from "vuetify/components"
 import * as directives from "vuetify/directives"
 import { describe, expect, it, vi, afterEach, beforeEach } from "vitest"
 import CaseStatusSelectGroup from "@/case/CaseStatusSelectGroup.vue"
-import CaseApi from "@/case/api"
 
 const vuetify = createVuetify({
   components,
@@ -42,9 +41,6 @@ describe("CaseStatusSelectGroup", () => {
         },
       },
     })
-
-    // Mock the API
-    mockUpdate = vi.spyOn(CaseApi, "update").mockImplementation(() => Promise.resolve())
 
     // Mount the component
     wrapper = mount(CaseStatusSelectGroup, {
