@@ -113,7 +113,7 @@ export default {
         },
         {
           name: "Closed",
-          label: "Resolved",
+          label: "Closed",
           color: "green",
           hoverClass: "hover-card",
           sheetClass: "arrow",
