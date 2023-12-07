@@ -1459,7 +1459,7 @@ def signal_button_click(
     if len(raw_text) > 2900:
         blocks = [
             Section(
-                text="Alert data too large to view in Slack. View the alert in Dispatch to see the entire alert.\n"
+                text="The alert data exceeds Slack's viewing limit. Please check Dispatch for full details.\n"
             ),
             Section(text=f"```{raw_text[:2750]}...```"),
         ]
