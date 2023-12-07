@@ -20,6 +20,7 @@ const getDefaultSelectedState = () => {
     duplicates: [],
     events: null,
     id: null,
+    incident_cost_model: null,
     incident_costs: null,
     incident_priority: null,
     incident_severity: null,

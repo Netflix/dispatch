@@ -30,4 +30,10 @@ export default {
   deleteInstance(instanceId) {
     return API.delete(`/${resource}/instances/${instanceId}`)
   },
+
+  getAllPluginEvents(options) {
+    return API.get(`/${resource}/plugin_events`, {
+      params: { ...options },
+    })
+  },
 }

@@ -12,6 +12,7 @@ import entity from "@/entity/store"
 import entity_type from "@/entity_type/store"
 import incident_feedback from "@/feedback/incident/store"
 import incident from "@/incident/store"
+import incident_cost_model from "@/incident_cost_model/store"
 import incident_cost_type from "@/incident_cost_type/store"
 import incident_priority from "@/incident/priority/store"
 import incident_severity from "@/incident/severity/store"
@@ -60,6 +61,7 @@ export default createStore({
     entity_type,
     incident_feedback,
     incident,
+    incident_cost_model,
     incident_cost_type,
     incident_priority,
     incident_severity,

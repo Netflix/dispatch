@@ -103,6 +103,14 @@
         />
       </v-col>
       <v-col cols="12">
+        <incident-cost-model-combobox
+          :project="project"
+          v-model="incident_cost_model"
+          :rules="[only_one]"
+          hint="If unassigned, defaults to the classic incident cost model. See (%link)"
+        />
+      </v-col>
+      <v-col cols="12">
         <incident-filter-combobox label="Duplicates" v-model="duplicates" :project="project" />
       </v-col>
       <v-col cols="12">
@@ -121,6 +129,7 @@ import { mapFields } from "vuex-map-fields"
 
 import CaseFilterCombobox from "@/case/CaseFilterCombobox.vue"
 import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
+import IncidentCostModelCombobox from "@/incident_cost_model/IncidentCostModelCombobox.vue"
 import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
 import IncidentPrioritySelect from "@/incident/priority/IncidentPrioritySelect.vue"
 import IncidentSeveritySelect from "@/incident/severity/IncidentSeveritySelect.vue"
@@ -140,6 +149,7 @@ export default {
   components: {
     CaseFilterCombobox,
     DateTimePickerMenu,
+    IncidentCostModelCombobox,
     IncidentFilterCombobox,
     IncidentPrioritySelect,
     IncidentSeveritySelect,
@@ -162,6 +172,12 @@ export default {
         }
         return true
       },
+      only_one: (value) => {
+        if (value && value.length > 1) {
+          return "Only one is allowed"
+        }
+        return true
+      },
     }
   },
 
@@ -173,6 +189,7 @@ export default {
       "selected.description",
       "selected.duplicates",
       "selected.id",
+      "selected.incident_cost_model",
       "selected.incident_priority",
       "selected.incident_severity",
       "selected.incident_type",
