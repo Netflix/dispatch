@@ -1459,8 +1459,9 @@ def signal_button_click(
     if len(raw_text) > 2900:
         blocks = [
             Section(
-                text=f"```{raw_text[:2750]}... \n Signal text too long, please vist Dispatch UI for full details.```"
-            )
+                text="Alert data too large to view in Slack. View the alert in Dispatch to see the entire alert.\n"
+            ),
+            Section(text=f"```{raw_text[:2750]}...```"),
         ]
     else:
         blocks = [Section(text=f"```{raw_text}```")]
@@ -1619,7 +1620,7 @@ def handle_engagement_submission_event(
     # Check if last_mfa_time was within the last hour
     last_hour = datetime.now() - timedelta(hours=1)
     if (user.last_mfa_time and user.last_mfa_time > last_hour) or mfa_enabled is False:
-        return send_engagment_response(
+        return send_engagement_response(
             case=case,
             client=client,
             context_from_user=context_from_user,
@@ -1638,7 +1639,7 @@ def handle_engagement_submission_event(
         type="Are you confirming the behavior as expected in Dispatch?",
     )
     if response == PushResponseResult.allow:
-        send_engagment_response(
+        send_engagement_response(
             case=case,
             client=client,
             context_from_user=context_from_user,
@@ -1654,7 +1655,7 @@ def handle_engagement_submission_event(
         db_session.commit()
         return
     else:
-        return send_engagment_response(
+        return send_engagement_response(
             case=case,
             client=client,
             context_from_user=context_from_user,
@@ -1668,7 +1669,7 @@ def handle_engagement_submission_event(
         )
 
 
-def send_engagment_response(
+def send_engagement_response(
     case: Case,
     client: WebClient,
     context_from_user: str,
@@ -1710,7 +1711,7 @@ def send_engagment_response(
     )
 
     if response == PushResponseResult.allow:
-        # We only update engagment message (which removes Confirm/Deny button) for success
+        # We only update engagement message (which removes Confirm/Deny button) for success
         # this allows the user to retry the confirmation if the MFA check failed
         blocks = create_signal_engagement_message(
             case=case,
