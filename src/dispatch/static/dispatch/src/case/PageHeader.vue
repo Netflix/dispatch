@@ -33,17 +33,22 @@
 
 <script setup lang="ts">
 import { useRoute } from "vue-router"
-import { computed, ref } from "vue"
+import { computed, ref, watch } from "vue"
 import LockButton from "@/components/LockButton.vue"
 import EscalateButton from "@/case/EscalateButton.vue"
 import DTooltip from "@/components/DTooltip.vue"
 import ParticipantAvatarGroup from "@/participant/ParticipantAvatarGroup.vue"
 import SavingState from "@/components/SavingState.vue"
 import CaseApi from "@/case/api"
+import type { Ref } from "vue"
 
 const route = useRoute()
 
 const props = defineProps({
+  caseId: {
+    type: Number,
+    required: true,
+  },
   caseName: {
     type: String,
     required: true,
@@ -68,22 +73,28 @@ const props = defineProps({
 
 const caseParticipants = ref([])
 const loading = ref(false)
+const caseIdRef: Ref<any> = ref(props.caseId)
 
-const fetchParticipants = async () => {
-  const caseId = route.params.id
-  loading.value = true
-  try {
-    // get case participants
-    CaseApi.getParticipants(caseId, true).then((response) => {
-      // Pass true to fetch minimal data
-      caseParticipants.value = response.data
-    })
-    loading.value = false
-  } catch (e) {
-    console.error("Failed to fetch case participants", e)
-    loading.value = false
-  }
-}
+watch(
+  () => props.caseId,
+  async (caseId) => {
+    caseIdRef.value = caseId
+    if (caseId) {
+      try {
+        // get case participants
+        CaseApi.getParticipants(caseIdRef.value, true).then((response) => {
+          // Pass true to fetch minimal data
+          caseParticipants.value = response.data
+        })
+        loading.value = false
+      } catch (e) {
+        console.error("Failed to fetch case participants", e)
+        loading.value = false
+      }
+    }
+  },
+  { immediate: true }
+)
 
 const emit = defineEmits(["toggle-drawer"])
 
@@ -105,9 +116,6 @@ const breadcrumbItems = computed(() => {
   ]
   return items
 })
-
-// Fetch participants immediately when the component is created
-fetchParticipants()
 </script>
 
 <style scoped>

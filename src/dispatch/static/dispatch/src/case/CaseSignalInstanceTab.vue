@@ -2,12 +2,12 @@
   <v-container>
     <v-row>
       <!-- Column for Data Table -->
-      <v-col cols="3">
-        <v-card min-width="350" class="signal-card" elevation="0">
+      <v-col cols="3" class="d-flex">
+        <v-card class="signal-card flex-card" elevation="0">
           <v-virtual-scroll :items="signalInstances" height="828" class="pt-2">
             <template #default="{ item }">
               <div class="d-flex align-center">
-                <span style="font-size: 0.8rem" class="pl-8">
+                <span class="pl-8 signal-name">
                   {{ item.signal.name }}
                 </span>
                 <span class="pl-1 dispatch-text-paragraph">
@@ -23,8 +23,8 @@
         </v-card>
       </v-col>
       <!-- Column for Raw Signal Viewer -->
-      <v-col cols="9">
-        <v-card elevation="0" class="signal-card pt-2">
+      <v-col cols="9" class="d-flex">
+        <v-card class="signal-card flex-card" elevation="0">
           <span class="dispatch-text-paragraph">
             <!-- {{ selectedItem.signal.name }} -->
           </span>
@@ -109,5 +109,18 @@ watch(
 .signal-card {
   border: 0.5px solid rgb(216, 216, 216) !important;
   border-radius: 8px !important;
+}
+
+.flex-card {
+  flex: 1;
+  min-width: 0; // Allow the card to shrink below its content size
+  overflow: hidden; // Clip the content and add ... if the content is too big
+}
+
+.signal-name {
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
