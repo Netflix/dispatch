@@ -205,7 +205,7 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
                     value=button_metadata,
                 ),
             ]
-            # The button URL must have at least one characters.
+            # The button URL must have at least one character.
             # Otherwise, Slack will raise a Validation error.
             # external_url is not a required field. If it's empty, an empty list is added,
             # which effectively doesn't add anything to the elements list.
