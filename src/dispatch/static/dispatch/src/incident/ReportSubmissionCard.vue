@@ -272,7 +272,8 @@ export default {
         vm.tags,
       ],
       () => {
-        if (Array.isArray(this.local_commander)) this.commander_email = this.local_commander[0].individual.email
+        if (Array.isArray(this.local_commander))
+          this.commander_email = this.local_commander[0].individual.email
         var queryParams = {
           project: this.project ? this.project.name : null,
           incident_priority: this.incident_priority ? this.incident_priority.name : null,
