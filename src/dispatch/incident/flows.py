@@ -73,25 +73,6 @@ def get_incident_participants(
                 project_id=incident.project.id,
                 db_session=db_session,
             )
-            log.debug(f"**** list of individual_contacts recommended: {[(ind.name, ind.engage_only_if_next_oncall) for ind, _ in individual_contacts]}")
-            # if any of the ind.engage_only_if_next_oncall are true then
-            if any([ind.engage_only_if_next_oncall for ind, _ in individual_contacts]):
-                # we get the active oncall plugin
-                role = ParticipantRoleType.incident_commander
-                incident_role = resolve_role(db_session=db_session, role=role, incident=incident)
-                service_external_id = incident_role.service.external_id if incident_role and incident_role.service else None
-                log.debug(f"**** service_external_id: {service_external_id}")
-                oncall_plugin = plugin_service.get_active_instance(
-                    db_session=db_session, project_id=incident.project.id, plugin_type="oncall"
-                )
-                if oncall_plugin and service_external_id:
-                    for ind, serv in individual_contacts:
-                        next_oncall = oncall_plugin.instance.get_next_oncall(service_id=service_external_id)
-                        if ind.engage_only_if_next_oncall and ind.email == next_oncall:
-                            individual_contacts.remove((ind, serv))
-                            log.debug(f"**** individual_contacts removed: {ind.name} - {ind.email} - {oncall['email']}")
-                            log.debug(f"**** new list of individual_contacts recommended: {[(ind.name, ind.engage_only_if_next_oncall) for ind, serv in individual_contacts]}")
-
             event_service.log_incident_event(
                 db_session=db_session,
                 source=plugin.plugin.title,

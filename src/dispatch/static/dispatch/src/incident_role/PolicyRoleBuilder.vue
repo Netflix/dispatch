@@ -68,20 +68,20 @@
               </v-list-item>
               <v-list-item>
                 <service-select-new
-                  label="Target Service"
+                  label="Oncall Service"
                   :project="project"
                   v-model="policy.service"
                 />
               </v-list-item>
               <v-list-item>
                 <v-checkbox v-if="label === 'Incident Commander'"
-                  v-model="policy.enabled"
+                  v-model="policy.engage_next_oncall"
                   label="Add next on-call as an Observer"
                   hint="Check this if you would like this policy to be considered when resolving the role."
                 />
               </v-list-item>
               <v-list-item>
-                <v-checkbox style="margin-top:-20px"
+                <v-checkbox style="margin-top:-18px"
                   v-model="policy.enabled"
                   label="Enabled"
                   hint="Check this if you would like this policy to be considered when resolving the role."
@@ -155,6 +155,7 @@ function add() {
     role: props.label,
     project: props.project,
     enabled: false,
+    engage_next_oncall: false,
     service: null,
     incident_priorities: [],
     incident_types: [],

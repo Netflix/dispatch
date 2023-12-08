@@ -203,6 +203,4 @@ def get_next_oncall(client: APISession, schedule_id: str) -> Optional[str]:
     next_shift = (now + timedelta(hours=13)).isoformat(timespec="minutes") + "Z"
     next_oncall = get_oncall_at_time(client=client, schedule_id=schedule_id, utctime=next_shift)
 
-    # **** TEST FOR NOW
-    return "amacasaet@netflix.com"
     return None if not next_oncall else next_oncall["email"]
