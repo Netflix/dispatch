@@ -224,7 +224,9 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
 
     # add commander
     commander_email = commander_service_id = None
-    if incident_in.commander:
+    if incident_in.commander_email:
+        commander_email = incident_in.commander_email
+    elif incident_in.commander:
         commander_email = incident_in.commander.individual.email
     else:
         commander_email, commander_service_id = resolve_and_associate_role(
