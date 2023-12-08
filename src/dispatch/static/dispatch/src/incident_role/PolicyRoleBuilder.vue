@@ -74,7 +74,14 @@
                 />
               </v-list-item>
               <v-list-item>
-                <v-checkbox
+                <v-checkbox v-if="label === 'Incident Commander'"
+                  v-model="policy.enabled"
+                  label="Add next on-call as an Observer"
+                  hint="Check this if you would like this policy to be considered when resolving the role."
+                />
+              </v-list-item>
+              <v-list-item>
+                <v-checkbox style="margin-top:-20px"
                   v-model="policy.enabled"
                   label="Enabled"
                   hint="Check this if you would like this policy to be considered when resolving the role."
