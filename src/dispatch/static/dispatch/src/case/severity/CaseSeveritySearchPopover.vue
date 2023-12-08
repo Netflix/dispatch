@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue"
+import { watch, ref } from "vue"
 import CaseSeverityApi from "@/case/severity/api"
 import CaseApi from "@/case/api"
 import SearchPopover from "@/components/SearchPopover.vue"
@@ -11,20 +11,35 @@ type CaseSeverity = {
   name: string
 }
 
-defineProps<{ caseSeverity: string }>()
+const props = defineProps<{ caseSeverity: string; project: string }>()
 
 const store = useStore()
 const { setSaving } = useSavingState()
 const caseSeveritys: Ref<CaseSeverity[]> = ref([])
+const currentProject: Ref<string> = ref(props.project)
 
-onMounted(async () => {
-  try {
-    const response = await CaseSeverityApi.getAll()
-    caseSeveritys.value = response.data.items.map((item: any) => item.name)
-  } catch (error) {
-    console.error("Error fetching case severities:", error)
-  }
-})
+watch(
+  () => props.project,
+  async (newVal) => {
+    currentProject.value = newVal
+    if (newVal) {
+      try {
+        const options = {
+          itemsPerPage: -1,
+          filter: JSON.stringify([
+            { and: [{ model: "Project", field: "name", op: "==", value: newVal }] },
+          ]),
+        }
+
+        const response = await CaseSeverityApi.getAll(options)
+        caseSeveritys.value = response.data.items.map((item: any) => item.name)
+      } catch (error) {
+        console.error("Error fetching priorities:", error)
+      }
+    }
+  },
+  { immediate: true }
+)
 
 const selectCaseSeverity = async (caseSeverityName: string) => {
   // Fetch the participant object from the API

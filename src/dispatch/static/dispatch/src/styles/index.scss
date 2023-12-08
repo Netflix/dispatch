@@ -50,3 +50,21 @@
   padding: 0px 14px !important;
   font-size: 0.75rem !important;
 }
+
+.v-theme--light{
+    .formkit-input {
+        --fk-color-input: rgb(0,0,0);;
+    }
+    .formkit-help {
+        --fk-color-help: rgb(0,0,0);
+    }
+}
+
+.v-theme--dark{
+    .formkit-input {
+        --fk-color-input: rgb(255,255,255);;
+    }
+    .formkit-help {
+        --fk-color-help: rgb(255,255,255);;
+    }
+}

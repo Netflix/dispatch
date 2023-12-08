@@ -92,7 +92,7 @@
                   <v-list-item
                     :to="{
                       name: 'CasePage',
-                      params: { id: item.id },
+                      params: { name: item.name },
                     }"
                   >
                     <v-list-item-title>View</v-list-item-title>

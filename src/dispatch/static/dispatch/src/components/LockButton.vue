@@ -76,7 +76,7 @@ async function updateVisibility() {
       "notification_backend/addBeNotification",
       {
         text: `Failed to update ${props.subjectType} visibility`,
-        type: "error",
+        type: "exception",
       },
       { root: true }
     )

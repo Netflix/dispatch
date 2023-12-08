@@ -1,6 +1,7 @@
 <template>
   <div>
     <PageHeader
+      :case-id="caseDetails.id"
       :case-name="caseDetails.name"
       :case-visibility="caseDetails.visibility"
       :case-status="caseDetails.status"
@@ -92,21 +93,36 @@ const toggleDrawer = () => {
 }
 
 const fetchDetails = async () => {
-  const caseId = parseInt(route.params.id, 10)
+  const caseName = route.params.name
   loading.value = true
-  try {
-    // get the full data set
-    CaseApi.get(caseId).then((response) => {
-      caseDetails.value = response.data
 
-      // Save the fetched case details to the Vuex store
-      store.commit("case_management/SET_SELECTED", response.data)
-    })
-  } catch (e) {
-    console.error("Failed to fetch case details", e)
-    caseDetails.value = caseDefaults
+  CaseApi.getAll({
+    filter: JSON.stringify([
+      { and: [{ model: "Case", field: "name", op: "==", value: caseName }] },
+    ]),
+  }).then((response) => {
+    if (response.data.items.length) {
+      // get the full data set
+      return CaseApi.get(response.data.items[0].id).then((response) => {
+        caseDetails.value = response.data
+
+        // Save the fetched case details to the Vuex store
+        store.commit("case_management/SET_SELECTED", response.data)
+        loading.value = false
+      })
+    } else {
+      caseDetails.value = caseDefaults
+      store.commit(
+        "notification_backend/addBeNotification",
+        {
+          text: `Case '${caseName}' could not be found.`,
+          type: "exception",
+        },
+        { root: true }
+      )
+    }
     loading.value = false
-  }
+  })
 }
 
 const saveCaseDetails = async () => {
@@ -132,7 +148,7 @@ const handleDescriptionUpdate = (newDescription) => {
 }
 
 watch(
-  () => route.params.id,
+  () => route.params.name,
   (newName, oldName) => {
     if (newName !== oldName) {
       fetchDetails()

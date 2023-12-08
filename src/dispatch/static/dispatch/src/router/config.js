@@ -205,7 +205,7 @@ export const protectedRoute = [
           ],
         },
         {
-          path: "/:organization/cases/:id",
+          path: "/:organization/cases/:name",
           name: "CasePage",
           meta: { title: "Page" },
           component: () => import("@/case/Page.vue"),
