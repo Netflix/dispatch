@@ -30,7 +30,6 @@ from dispatch.storage import flows as storage_flows
 from dispatch.task.enums import TaskStatus
 from dispatch.ticket import flows as ticket_flows
 from dispatch.tag.flows import check_for_tag_change
-from dispatch.incident_role.service import resolve_role
 
 from .messaging import (
     # get_suggested_document_items,
