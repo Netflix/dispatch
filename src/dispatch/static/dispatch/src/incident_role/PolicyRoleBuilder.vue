@@ -78,7 +78,7 @@
                   v-if="label === 'Incident Commander'"
                   v-model="policy.engage_next_oncall"
                   label="Add next on-call as an Observer"
-                  hint="Check this if you would like this policy to be considered when resolving the role."
+                  hint="Check this if you would like the next oncall incident commander to be added as an observer."
                 />
               </v-list-item>
               <v-list-item>
