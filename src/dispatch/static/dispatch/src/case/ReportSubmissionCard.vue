@@ -226,34 +226,33 @@ export default {
     }
 
     if (this.$route.query.case_type) {
-      this.case_type = this.$route.query.case_type
-    }
-    let filterOptions = {
-      q: "",
-      sortBy: ["name"],
-      descending: [false],
-      itemsPerPage: this.numItems,
-    }
-
-    if (this.project) {
-      filterOptions = {
-        filters: {
-          project: [this.project],
-          name: [this.$route.query.case_type],
-          enabled: ["true"],
-        },
-        ...filterOptions,
+      let filterOptions = {
+        q: "",
+        sortBy: ["name"],
+        descending: [false],
+        itemsPerPage: this.numItems,
       }
-    }
 
-    filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
-    CaseTypeApi.getAll(filterOptions).then((response) => {
-      if (response.data.items.length > 0) {
-        this.case_type = response.data.items[0]
-      } else {
-        this.case_type = this.$route.query.case_type
+      if (this.project) {
+        filterOptions = {
+          filters: {
+            project: [this.project],
+            name: [this.$route.query.case_type],
+            enabled: ["true"],
+          },
+          ...filterOptions,
+        }
       }
-    })
+
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+      CaseTypeApi.getAll(filterOptions).then((response) => {
+        if (response.data.items.length > 0) {
+          this.case_type = response.data.items[0]
+        } else {
+          this.case_type = this.$route.query.case_type
+        }
+      })
+    }
 
     if (this.$route.query.case_priority) {
       this.case_priority = { name: this.$route.query.case_priority }
