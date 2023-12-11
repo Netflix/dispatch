@@ -127,7 +127,6 @@ export default {
       }
       filterOptions.itemsPerPage = this.numItems
       CaseTypeApi.getAll(filterOptions).then((response) => {
-
         this.total = response.data.total
         this.loading = false
 
