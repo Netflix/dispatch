@@ -1,7 +1,7 @@
 """Adds forms types
 
 Revision ID: 99d317cbc848
-Revises: f2605bfc1f59
+Revises: 2f06fd73eae6
 Create Date: 2023-11-09 16:07:51.636218
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy_utils
 
 # revision identifiers, used by Alembic.
 revision = "99d317cbc848"
-down_revision = "f2605bfc1f59"
+down_revision = "2f06fd73eae6"
 branch_labels = None
 depends_on = None
 

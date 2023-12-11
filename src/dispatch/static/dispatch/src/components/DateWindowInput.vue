@@ -2,12 +2,14 @@
   <v-menu v-model="menu" :close-on-content-click="false">
     <template #activator="{ props }">
       <v-text-field
-        v-model="windowRange"
+        v-model="windowText"
         :label="label"
         v-bind="props"
+        append-icon="mdi-calendar"
+        hint="Format: yyyy-mm-dd ~ yyyy-mm-dd"
         clearable
-        readonly
-        @click:clear="clearWindowRange()"
+        :rules="dateRules"
+        @click:clear="clearWindow"
       />
     </template>
     <v-card>
@@ -15,46 +17,40 @@
         <v-row>
           <v-col>
             <v-list>
-              <v-list-item
-                v-for="(item, index) in windowRanges"
-                :key="index"
-                :value="index"
-                @click="setWindowRange(item.window)"
-              >
+              <v-list-item v-for="(item, index) in windows" :key="index" @click="setWindow(item)">
                 <v-list-item-title>{{ item.title }}</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-col>
           <v-col>
-            <!-- TODO: use vuetify picker components -->
-            <v-text-field type="date" v-model="windowStartInput" prepend-icon="mdi-calendar" />
+            <v-date-picker title="Start Date" v-model="start" show-adjacent-months />
           </v-col>
           <v-col>
-            <v-text-field type="date" v-model="windowEndInput" prepend-icon="mdi-calendar" />
+            <v-date-picker title="End Date" v-model="end" show-adjacent-months />
           </v-col>
         </v-row>
       </v-container>
+      <v-card-actions class="justify-end">
+        <v-btn color="info" variant="text" @click="menu = false"> Ok </v-btn>
+      </v-card-actions>
     </v-card>
   </v-menu>
 </template>
 
 <script>
-import { cloneDeep } from "lodash"
-
-import endOfMonth from "date-fns/endOfMonth"
 import endOfYear from "date-fns/endOfYear"
-import parseISO from "date-fns/fp/parseISO"
 import startOfMonth from "date-fns/startOfMonth"
 import startOfYear from "date-fns/startOfYear"
 import subDays from "date-fns/subDays"
 import subMonths from "date-fns/subMonths"
 import subYears from "date-fns/subYears"
-import { endOfQuarter, startOfQuarter, subQuarters } from "date-fns"
+import { format, endOfQuarter, startOfQuarter, subQuarters } from "date-fns"
 
 let today = function () {
-  let now = new Date()
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  return new Date()
 }
+
+const DATE_FORMAT = "yyyy-MM-dd"
 
 export default {
   name: "DateWindowInput",
@@ -63,8 +59,9 @@ export default {
     modelValue: {
       type: Object,
       default: function () {
-        return {}
+        return { start: null, end: null }
       },
+      required: true,
     },
     label: {
       type: String,
@@ -75,134 +72,124 @@ export default {
   data() {
     return {
       menu: false,
-      windowStartInput: null,
-      windowEndInput: null,
-      windowRanges: [
-        { title: "Today", window: { start: today(), end: today() } },
-        { title: "This Month", window: { start: startOfMonth(today()), end: today() } },
+      start: null,
+      end: null,
+      windowText: null,
+      dateRules: [
+        (value) =>
+          !value ||
+          /^(\d{4}-\d{2}-\d{2} ~ \d{4}-\d{2}-\d{2})$/.test(value) ||
+          "Invalid date (expected format: yyyy-mm-dd ~ yyyy-mm-dd)",
+      ],
+      windows: [
+        { title: "Today", start: today(), end: today() },
+        { title: "Yesterday", start: subDays(today(), 1), end: subDays(today(), 1) },
+        { title: "This Month", start: startOfMonth(today()), end: today() },
         {
           title: "This Quarter",
-          window: { start: startOfQuarter(today()), end: endOfQuarter(today()) },
+          start: startOfQuarter(today()),
+          end: endOfQuarter(today()),
         },
         {
           title: "This Year",
-          window: { start: startOfYear(today()), end: endOfYear(today()) },
+          start: startOfYear(today()),
+          end: endOfYear(today()),
         },
-        { title: "Yesterday", window: { start: subDays(today(), 1), end: subDays(today(), 1) } },
-        { title: "Last 7 Days", window: { start: subDays(today(), 7), end: today() } },
-        { title: "Last 30 Days", window: { start: subDays(today(), 30), end: today() } },
-        {
-          title: "Last Month",
-          window: {
-            start: startOfMonth(subMonths(today(), 1)),
-            end: endOfMonth(subMonths(today(), 1)),
-          },
-        },
+        { title: "Last 7 Days", start: subDays(today(), 7), end: today() },
+        { title: "Last 30 Days", start: subDays(today(), 30), end: today() },
+        { title: "Last 3 Months", start: subMonths(today(), 3), end: today() },
+        { title: "Last 12 Months", start: subMonths(today(), 12), end: today() },
         {
           title: "Last Quarter",
-          window: {
-            start: startOfQuarter(subQuarters(today(), 1)),
-            end: endOfQuarter(subQuarters(today(), 1)),
-          },
+          start: startOfQuarter(subQuarters(today(), 1)),
+          end: endOfQuarter(subQuarters(today(), 1)),
         },
         {
           title: "Last Year",
-          window: {
-            start: startOfYear(subYears(today(), 1)),
-            end: endOfYear(subYears(today(), 1)),
-          },
+          start: startOfYear(subYears(today(), 1)),
+          end: endOfYear(subYears(today(), 1)),
         },
       ],
     }
   },
 
-  computed: {
-    windowRange: function () {
-      return `${this.windowStartFormatted} ~ ${this.windowEndFormatted}`
-    },
-    window: {
-      get() {
-        if (Object.keys(this.modelValue).length > 1) {
-          return cloneDeep(this.modelValue)
-        }
-        return {
-          start: null,
-          end: null,
-        }
-      },
-      set(value) {
-        this.$emit("update:modelValue", value)
-      },
-    },
-    windowStartFormatted() {
-      if (this.window.start) {
-        return this.window.start.substr(0, 10)
-      }
-      return ""
-    },
-    windowEndFormatted() {
-      if (this.window.end) {
-        return this.window.end.substr(0, 10)
-      }
-      return ""
-    },
+  created() {
+    if (this.modelValue.start) {
+      this.start = new Date(this.modelValue.start)
+    }
+    if (this.modelValue.end) {
+      this.end = new Date(this.modelValue.end)
+    }
   },
 
   watch: {
-    window: {
+    windowText: {
       handler(value) {
-        if (value.start) {
-          this.windowStartInput = value.start.substr(0, 10)
-        }
-        if (value.end) {
-          this.windowEndInput = value.end.substr(0, 10)
+        if (this.dateRules.every((rule) => rule(value) === true)) {
+          if (value) {
+            let parts = value.split("~")
+            if (parts.length == 2) {
+              if (this.formatDate(this.start) !== parts[0]) {
+                this.start = this.getDatetime(parts[0])
+              }
+
+              if (this.formatDate(this.end) !== parts[1]) {
+                this.end = this.getDatetime(parts[1])
+              }
+            }
+          }
         }
       },
-      immediate: true,
     },
-    windowStartInput: function (value) {
-      if (value) {
-        this.setWindowStart(value)
-      }
+    start: {
+      handler(value) {
+        if (value) {
+          this.$emit("update:modelValue", {
+            start: this.formatDate(value),
+            end: this.formatDate(this.end),
+          })
+        }
+        this.setWindowText()
+      },
     },
-    windowEndInput: function (value) {
-      if (value) {
-        this.setWindowEnd(value)
-      }
+    end: {
+      handler(value) {
+        if (value) {
+          this.$emit("update:modelValue", {
+            start: this.formatDate(this.start),
+            end: this.formatDate(value),
+          })
+        }
+        this.setWindowText()
+      },
     },
   },
 
   methods: {
-    setWindowRange: function (range) {
-      range.start.setHours(0, 0, 0, 0)
-      range.end.setHours(23, 59, 59, 999)
-      this.window = {
-        start: this.toLocalISOString(range.start),
-        end: this.toLocalISOString(range.end),
+    formatDate: function (value) {
+      return format(value, DATE_FORMAT)
+    },
+    clearWindow: function () {
+      this.start = null
+      this.end = null
+    },
+    setWindow: function (item) {
+      this.start = item.start
+      this.end = item.end
+      this.setWindowText()
+    },
+    getDatetime: function (value) {
+      return new Date(value)
+    },
+    setWindowText: function () {
+      let startDate = this.start ? this.formatDate(this.start) : ""
+      let endDate = this.end ? this.formatDate(this.end) : ""
+
+      if (startDate && endDate) {
+        this.windowText = `${startDate} ~ ${endDate}`
+      } else {
+        this.windowText = null
       }
-    },
-    clearWindowRange: function () {
-      this.window = {}
-    },
-    setWindowStart: function (start) {
-      start = parseISO(start)
-      start.setHours(0, 0, 0, 0)
-      this.window = {
-        start: this.toLocalISOString(start),
-        end: this.window.end,
-      }
-    },
-    setWindowEnd: function (end) {
-      end = parseISO(end)
-      end.setHours(23, 59, 59, 999)
-      this.window = {
-        start: this.window.start,
-        end: this.toLocalISOString(end),
-      }
-    },
-    toLocalISOString: function (date) {
-      let tzOffset = date.getTimezoneOffset() * 60000 // offset in milliseconds
-      return new Date(date - tzOffset).toISOString().slice(0, -1)
     },
   },
 }
