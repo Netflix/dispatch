@@ -105,7 +105,7 @@ export default {
         q: "",
         sortBy: ["name"],
         descending: [false],
-        itemsPerPage: this.numItems,
+        itemsPerPage: -1,
       }
 
       if (this.project) {
@@ -120,8 +120,13 @@ export default {
 
       filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
 
+      if (this.items.length == 0) {
+        CaseTypeApi.getAll(filterOptions).then((response) => {
+          this.items = response.data.items
+        })
+      }
+      filterOptions.itemsPerPage = this.numItems
       CaseTypeApi.getAll(filterOptions).then((response) => {
-        this.items = response.data.items
 
         this.total = response.data.total
         this.loading = false
