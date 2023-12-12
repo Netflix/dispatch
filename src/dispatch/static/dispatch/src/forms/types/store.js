@@ -5,6 +5,8 @@ import SearchUtils from "@/search/utils"
 import FormsTypeApi from "@/forms/types/api"
 import { be } from "date-fns/locale"
 
+const hasFormkitPro = import.meta.env.VITE_FORMKIT_PRO_PROJECT_KEY
+
 const getDefaultSelectedState = () => {
   return {
     id: null,
@@ -44,6 +46,7 @@ const state = {
     },
     loading: false,
   },
+  has_formkit_pro: hasFormkitPro,
 }
 
 const getters = {

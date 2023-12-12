@@ -59,6 +59,7 @@ const state = {
   incident_id: null,
   project_id: null,
   incident_data: null,
+  has_formkit_pro: hasFormkitPro,
 }
 
 const getters = {
@@ -152,6 +153,8 @@ function buildIncidentDoc(incident) {
 
 function getCurrentPage(form_schema) {
   // console.log(`**** Page was just requested - about to reconstruct from ${form_schema}`)
+  state.has_formkit_pro = hasFormkitPro
+  console.log(`**** Has formkit pro: ${state.has_formkit_pro}`)
   let schema = JSON.parse(form_schema)
   let output_schema = []
   for (let item of schema) {
@@ -467,6 +470,7 @@ const mutations = {
   },
   SET_PAGE_SCHEMA(state, value) {
     state.page_schema = value
+    state.has_formkit_pro = hasFormkitPro
   },
   SET_PAGE_DATA(state, value) {
     state.page_data = value

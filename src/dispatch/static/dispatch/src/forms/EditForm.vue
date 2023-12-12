@@ -16,6 +16,7 @@
           <FormKitSchema :schema="page_schema" :data="form_data" />
         </FormKit>
       </v-card-text>
+      <div v-if="!has_formkit_pro" class="ml-11 text-caption text-grey">For more advanced form components, upgrade to <a href="https://formkit.com/pro" target="_blank" rel="noopener noreferrer">FormKit Pro</a></div>
       <v-card-actions>
         <v-spacer />
         <div>
@@ -70,8 +71,13 @@ export default {
       "selected.project",
       "selected.incident",
       "page_schema",
+      "has_formkit_pro",
     ]),
     ...mapFields("incident", { selected_incident: "selected" }),
+  },
+
+  created() {
+    console.log(`*** Got hasFormKitPro: ${this.has_formkit_pro}`)
   },
 
   methods: {
@@ -85,6 +91,7 @@ export default {
   watch: {
     form_data() {
       console.log(`*** Got form_data: ${JSON.stringify(this.form_data)}`)
+      console.log(`*** Got hasFormKitPro: ${this.has_formkit_pro}`)
       console.log(`*** Got incident: ${JSON.stringify(this.incident)} and the selected_incident: ${JSON.stringify(this.selected_incident)}`)
       if (!this.incident_id) {
         if (this.incident) {
