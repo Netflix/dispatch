@@ -128,7 +128,7 @@ frozenlist==1.4.0
     #   aiosignal
 google-api-core==2.11.1
     # via google-api-python-client
-google-api-python-client==2.108.0
+google-api-python-client==2.110.0
     # via -r requirements-base.in
 google-auth==2.22.0
     # via
@@ -218,7 +218,7 @@ markupsafe==2.1.3
     #   jinja2
     #   mako
     #   werkzeug
-msal==1.25.0
+msal==1.26.0
     # via -r requirements-base.in
 multidict==6.0.4
     # via
@@ -246,7 +246,7 @@ oauthlib[signedtoken]==3.2.2
     #   atlassian-python-api
     #   jira
     #   requests-oauthlib
-openai==1.3.6
+openai==1.3.8
     # via -r requirements-base.in
 packaging==23.1
     # via
@@ -257,7 +257,7 @@ packaging==23.1
     #   statsmodels
     #   thinc
     #   weasel
-pandas==2.1.3
+pandas==2.1.4
     # via
     #   -r requirements-base.in
     #   statsmodels
@@ -403,7 +403,7 @@ six==1.16.0
     #   validators
 slack-bolt==1.18.1
     # via -r requirements-base.in
-slack-sdk==3.26.0
+slack-sdk==3.26.1
     # via
     #   -r requirements-base.in
     #   slack-bolt
