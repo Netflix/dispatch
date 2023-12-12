@@ -509,7 +509,7 @@ werkzeug==3.0.1
     # via schemathesis
 wrapt==1.15.0
     # via deprecated
-yarl==1.9.2
+yarl==1.9.4
     # via
     #   aiohttp
     #   schemathesis
