@@ -8,6 +8,8 @@ import IncidentApi from "@/incident/api"
 import { ref } from "vue"
 import { be } from "date-fns/locale"
 
+const hasFormkitPro = import.meta.env.VITE_FORMKIT_PRO_PROJECT_KEY
+
 const getDefaultSelectedState = () => {
   return {
     id: null,
@@ -174,7 +176,6 @@ function getCurrentPage(form_schema) {
       output_schema.push(obj)
     }
     if (item.type == "select") {
-      console.log(`**** The item multiple is ${item.multiple}`)
       if (item.multiple) {
         if (item.multiple == false) {
           obj = {
@@ -184,21 +185,40 @@ function getCurrentPage(form_schema) {
             ...obj,
           }
         } else {
-          obj = {
-            $formkit: "select",
-            multiple: true,
-            options: item.options,
-            ...obj,
-            help: "Select all that apply by holding command (macOS) or control (PC).",
+          if (hasFormkitPro) {
+            obj = {
+              $formkit: "dropdown",
+              multiple: true,
+              options: item.options,
+              "selection-appearance": "tags",
+              ...obj,
+            }
+          } else {
+            obj = {
+              $formkit: "checkbox",
+              multiple: true,
+              options: item.options,
+              ...obj,
+              help: "Select all that apply by holding command (macOS) or control (PC).",
+            }
           }
         }
         output_schema.push(obj)
       } else {
-        obj = {
-          $formkit: "checkbox",
-          options: item.options,
-          validation: "max:1",
-          ...obj,
+        if (hasFormkitPro) {
+          obj = {
+            $formkit: "dropdown",
+            options: item.options,
+            "selection-removable": true,
+            ...obj,
+          }
+        } else {
+          obj = {
+            $formkit: "checkbox",
+            options: item.options,
+            validation: "max:1",
+            ...obj,
+          }
         }
         output_schema.push(obj)
       }
