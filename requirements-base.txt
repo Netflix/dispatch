@@ -170,7 +170,7 @@ hypothesis-graphql==0.10.0
     # via schemathesis
 hypothesis-jsonschema==0.22.1
     # via schemathesis
-idna==3.4
+idna==3.6
     # via
     #   anyio
     #   email-validator
@@ -246,7 +246,7 @@ oauthlib[signedtoken]==3.2.2
     #   atlassian-python-api
     #   jira
     #   requests-oauthlib
-openai==1.3.7
+openai==1.3.8
     # via -r requirements-base.in
 packaging==23.1
     # via
@@ -257,7 +257,7 @@ packaging==23.1
     #   statsmodels
     #   thinc
     #   weasel
-pandas==2.1.3
+pandas==2.1.4
     # via
     #   -r requirements-base.in
     #   statsmodels
@@ -509,7 +509,7 @@ werkzeug==3.0.1
     # via schemathesis
 wrapt==1.15.0
     # via deprecated
-yarl==1.9.2
+yarl==1.9.4
     # via
     #   aiohttp
     #   schemathesis
