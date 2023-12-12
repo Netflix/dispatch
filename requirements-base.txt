@@ -170,7 +170,7 @@ hypothesis-graphql==0.10.0
     # via schemathesis
 hypothesis-jsonschema==0.22.1
     # via schemathesis
-idna==3.4
+idna==3.6
     # via
     #   anyio
     #   email-validator
@@ -509,7 +509,7 @@ werkzeug==3.0.1
     # via schemathesis
 wrapt==1.15.0
     # via deprecated
-yarl==1.9.2
+yarl==1.9.4
     # via
     #   aiohttp
     #   schemathesis
