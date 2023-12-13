@@ -229,7 +229,7 @@ def export_timeline(
     """Filters events based on user filter"""
     for e in event.all():
         time_header = "Time (UTC)"
-        event_timestamp = e.started_at
+        event_timestamp = e.started_at.strftime("%Y-%m-%d %H:%M:%S")
         if not e.owner:
             e.owner = "Dispatch"
         if timeline_filters.get("timezone").strip() == "America/Los_Angeles":
@@ -294,30 +294,32 @@ def export_timeline(
                                 "startIndex": curr_table_start,
                                 "endIndex": curr_table_end,
                             }
-                        },
+                        }
                     }
                 ]
                 if plugin.instance.delete_table(document_id=doc_id, request=delete_table_request):
                     log.debug("Existing Table in the doc has been deleted")
 
+            else:
+                curr_table_start += 1
             # Insert new table with required rows & columns
-            inser_table_request = [
+            insert_table_request = [
                 {
                     "insertTable": {
                         "rows": len(table_data) + 1,
                         "columns": num_columns,
-                        "location": {"index": curr_table_start},
+                        "location": {"index": curr_table_start - 1},
                     }
                 }
             ]
-            if plugin.instance.insert(document_id=doc_id, request=inser_table_request):
+            if plugin.instance.insert(document_id=doc_id, request=insert_table_request):
                 log.debug("Table skeleton inserted successfully")
 
             else:
                 return False
 
             # Formatting & inserting empty table
-            request = [
+            insert_data_request = [
                 {
                     "updateTableCellStyle": {
                         "tableCellStyle": {
@@ -332,14 +334,14 @@ def export_timeline(
                             "tableCellLocation": {
                                 "columnIndex": 0,
                                 "rowIndex": 0,
-                                "tableStartLocation": {"index": curr_table_start + 1},
+                                "tableStartLocation": {"index": curr_table_start},
                             },
                         },
                     }
                 }
             ]
 
-            if plugin.instance.insert(document_id=doc_id, request=request):
+            if plugin.instance.insert(document_id=doc_id, request=insert_data_request):
                 log.debug("Table Formatted successfully")
 
             else:
@@ -355,15 +357,18 @@ def export_timeline(
             ]
             str_len = 0
             row_idx = 0
+            insert_data_request = []
             for index, text in zip(cell_indices, data_to_insert):
                 # Adjusting index based on string length
                 new_idx = index + str_len
 
-                request = [{"insertText": {"location": {"index": new_idx}, "text": text}}]
+                insert_data_request.append(
+                    {"insertText": {"location": {"index": new_idx}, "text": text}}
+                )
 
                 # Header field formatting
                 if text in column_headers:
-                    request.append(
+                    insert_data_request.append(
                         {
                             "updateTextStyle": {
                                 "range": {"startIndex": new_idx, "endIndex": new_idx + len(text)},
@@ -381,7 +386,7 @@ def export_timeline(
 
                 # Formating for date rows
                 if text == "\t":
-                    request.append(
+                    insert_data_request.append(
                         {
                             "updateTableCellStyle": {
                                 "tableCellStyle": {
@@ -396,7 +401,7 @@ def export_timeline(
                                     "columnSpan": 3,
                                     "rowSpan": 1,
                                     "tableCellLocation": {
-                                        "tableStartLocation": {"index": curr_table_start + 1},
+                                        "tableStartLocation": {"index": curr_table_start},
                                         "columnIndex": 0,
                                         "rowIndex": row_idx // 3,
                                     },
@@ -407,7 +412,7 @@ def export_timeline(
 
                 # Formating for time column
                 if row_idx % num_columns == 0:
-                    request.append(
+                    insert_data_request.append(
                         {
                             "updateTextStyle": {
                                 "range": {"startIndex": new_idx, "endIndex": new_idx + len(text)},
@@ -422,7 +427,7 @@ def export_timeline(
                 row_idx += 1
                 str_len += len(text) if text else 0
 
-                data_inserted = plugin.instance.insert(document_id=doc_id, request=request)
+            data_inserted = plugin.instance.insert(document_id=doc_id, request=insert_data_request)
         if not data_inserted:
             return False
     else:
