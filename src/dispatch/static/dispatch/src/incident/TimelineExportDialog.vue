@@ -31,7 +31,7 @@
             <v-checkbox
               class="ml-5"
               style="margin-top: -30px"
-              v-if="isActive()"
+              v-if="!isActive()"
               label="Review Document"
               v-model="reviewDocument"
             ></v-checkbox>
