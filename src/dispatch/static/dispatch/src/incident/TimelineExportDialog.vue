@@ -10,30 +10,59 @@
       </v-list>
     </v-menu>
 
-    <v-dialog v-model="showExportDialog" max-width="800px">
+    <v-dialog v-model="showExportDialog" persistent max-width="800px">
       <v-card>
         <v-card-title>
-          <span class="headline" style="margin-bottom: 10px;">Export Timeline Events</span>
+          <span class="headline" style="margin-bottom: 10px">Export Timeline Events</span>
         </v-card-title>
 
         <v-card-subtitle class="subtitle_top">
-          Select the document & timezone to export the events
+          Exports the current filtered timeline events directly into a document
         </v-card-subtitle>
 
         <v-card-text>
-          <v-checkbox label="Incident Document" v-model="incidentDocument"></v-checkbox>
-          <v-checkbox v-if="isActive() == false" label="Review Document" v-model="reviewDocument"></v-checkbox>
-          <v-select v-model="timezone" label="Time zone" :items="timezones" class="ml-2 time-zone-select" />
+          <v-card class="rounded-0">
+            <div class="ml-5 mt-5 text-grey">Select incident document(s) for export</div>
+            <v-checkbox
+              label="Incident Document"
+              v-model="incidentDocument"
+              class="ml-5"
+            ></v-checkbox>
+            <v-checkbox
+              class="ml-5"
+              style="margin-top: -30px"
+              v-if="isActive()"
+              label="Review Document"
+              v-model="reviewDocument"
+            ></v-checkbox>
+            <div class="ml-8 mb-2 error text-caption" v-if="!incidentDocument && !reviewDocument">
+              At least one must be selected
+            </div>
+          </v-card>
+          <v-select
+            v-model="timezone"
+            label="Time zone"
+            :items="timezones"
+            class="mt-3 ml-2 time-zone-select"
+          />
         </v-card-text>
 
-        <div class="note-message"> Note: Exporting events will overwrite the table under Timeline in the document(s).
+        <div class="note-message font-weight-bold">
+          Note: Exporting events will overwrite the table under Timeline in the document(s).
         </div>
 
         <v-card-actions>
-          <v-btn color="info" text @click="handleDocExport()"> Submit </v-btn>
-          <v-btn color="info" text @click="cancel()"> Cancel </v-btn>
+          <v-spacer />
+          <v-btn color="red en-1" text @click="cancel()"> Cancel </v-btn>
+          <v-btn
+            color="blue en-1"
+            text
+            @click="handleDocExport()"
+            :disabled="!incidentDocument && !reviewDocument"
+          >
+            Submit
+          </v-btn>
         </v-card-actions>
-
       </v-card>
     </v-dialog>
   </div>
@@ -54,21 +83,17 @@ const eventTypeToFilter = {
 
 export default {
   data: () => ({
-    items: [
-      { title: 'Click Me' },
-      { title: 'Click Me1' },
-    ],
+    items: [{ title: "Click Me" }, { title: "Click Me1" }],
   }),
   name: "TimelineExportDialog",
   props: {
     showItem: Function,
-    extractOwner: Function
+    extractOwner: Function,
   },
-
 
   data() {
     return {
-      incidentDocument: false,
+      incidentDocument: true,
       reviewDocument: false,
       showExportDialog: false,
       timezones: ["UTC", "America/Los_Angeles"],
@@ -77,7 +102,12 @@ export default {
     }
   },
   computed: {
-    ...mapFields("incident", ["selected.events", "selected.name", "timeline_filters", "selected.status"]),
+    ...mapFields("incident", [
+      "selected.events",
+      "selected.name",
+      "timeline_filters",
+      "selected.status",
+    ]),
 
     sortedEvents: function () {
       return this.events.slice().sort((a, b) => new Date(a.started_at) - new Date(b.started_at))
@@ -106,7 +136,6 @@ export default {
         })),
         this.name + "-timeline-export.csv"
       )
-
     },
     init() {
       const local_zone_name = moment.tz.guess() || "America/Los_Angeles"
@@ -119,16 +148,16 @@ export default {
       this.init()
     },
     isActive() {
-      if (this.status == 'Active') {
+      if (this.status == "Active") {
         return true
       }
       return false
     },
     handleDocExport() {
       let user_timeline_filters = this.getUserFilters()
-      user_timeline_filters['incidentDocument'] = this.incidentDocument
-      user_timeline_filters['reviewDocument'] = this.reviewDocument
-      user_timeline_filters['timezone'] = this.timezone
+      user_timeline_filters["incidentDocument"] = this.incidentDocument
+      user_timeline_filters["reviewDocument"] = this.reviewDocument
+      user_timeline_filters["timezone"] = this.timezone
       this.$store.dispatch("incident/exportDoc", user_timeline_filters)
       this.showExportDialog = false
     },
@@ -136,16 +165,14 @@ export default {
     getUserFilters() {
       for (const key in eventTypeToFilter) {
         if (this.timeline_filters[eventTypeToFilter[key]] === true) {
-          this.user_timeline_filters[key] = false;
-        }
-        else {
-          this.user_timeline_filters[key] = true;
+          this.user_timeline_filters[key] = false
+        } else {
+          this.user_timeline_filters[key] = true
         }
       }
       return this.user_timeline_filters
     },
-  }
-
+  },
 }
 </script>
 <style>
@@ -153,5 +180,9 @@ export default {
   color: rgb(243, 89, 89);
   margin-left: 30px;
   margin-bottom: 10px;
+}
+.error {
+  color: rgb(243, 89, 89);
+  margin-top: -30px;
 }
 </style>

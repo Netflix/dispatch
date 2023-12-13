@@ -230,7 +230,7 @@ def export_timeline(
     for e in event.all():
         time_header = "Time (UTC)"
         event_timestamp = e.started_at
-        if e.owner == "":
+        if not e.owner:
             e.owner = "Dispatch"
         if timeline_filters.get("timezone").strip() == "America/Los_Angeles":
             time_header = "Time (PST/PDT)"
@@ -420,7 +420,7 @@ def export_timeline(
                     )
 
                 row_idx += 1
-                str_len += len(text)
+                str_len += len(text) if text else 0
 
                 data_inserted = plugin.instance.insert(document_id=doc_id, request=request)
         if not data_inserted:
