@@ -56,3 +56,9 @@ export default {
   },
 }
 </script>
+
+<style>
+.mdi-school {
+  color: white !important;
+}
+</style>
