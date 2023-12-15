@@ -568,7 +568,16 @@ def update_instance(
     return signal_instance
 
 
-def filter_snooze(*, db_session: Session, signal_instance: SignalInstance) -> bool:
+def filter_snooze(*, db_session: Session, signal_instance: SignalInstance) -> SignalInstance:
+    """Filters a signal instance for snoozing.
+
+    Args:
+        db_session (Session): Database session.
+        signal_instance (SignalInstance): Signal instance to be filtered.
+
+    Returns:
+        SignalInstance: The filtered signal instance.
+    """
     for f in signal_instance.signal.filters:
         if f.mode != SignalFilterMode.active:
             continue
@@ -598,7 +607,16 @@ def filter_snooze(*, db_session: Session, signal_instance: SignalInstance) -> bo
     return signal_instance
 
 
-def filter_dedup(*, db_session: Session, signal_instance: SignalInstance) -> bool:
+def filter_dedup(*, db_session: Session, signal_instance: SignalInstance) -> SignalInstance:
+    """Filters a signal instance for deduplication.
+
+    Args:
+        db_session (Session): Database session.
+        signal_instance (SignalInstance): Signal instance to be filtered.
+
+    Returns:
+        SignalInstance: The filtered signal instance.
+    """
     for f in signal_instance.signal.filters:
         if f.mode != SignalFilterMode.active:
             continue
