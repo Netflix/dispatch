@@ -132,7 +132,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, toRefs } from "vue"
+import { ref, computed, watch } from "vue"
 import { useStore } from "vuex"
 import { useRoute, useRouter } from "vue-router"
 import { formatRelativeDate, formatDate } from "@/filters"
