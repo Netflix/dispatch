@@ -34,19 +34,19 @@
             :headers="headers"
             :items="items"
             :items-length="total || 0"
-            v-model:page="page"
-            v-model:items-per-page="itemsPerPage"
-            :footer-props="{
-              'items-per-page-options': [10, 25, 50, 100],
-            }"
-            v-model:sort-by="sortBy"
-            v-model:sort-desc="descending"
             :loading="loading"
             v-model="selected"
             loading-text="Loading... Please wait"
             show-select
             return-object
             @click:row="showCasePage"
+            v-model:page="page"
+            v-model:items-per-page="itemsPerPage"
+            v-model:sort-by="sortBy"
+            v-model:sort-desc="descending"
+            :footer-props="{
+              'items-per-page-options': [10, 25, 50, 100],
+            }"
           >
             <template #item.case_severity.name="{ value }">
               <case-severity :severity="value" />
@@ -190,8 +190,12 @@ const getAll = () => store.dispatch("case_management/getAll")
 
 const items = computed(() => caseManagement.value.table.rows.items)
 const total = computed(() => caseManagement.value.table.rows.total)
-const selected = computed(() => caseManagement.value.table.rows.selected)
 const loading = computed(() => caseManagement.value.table.loading)
+
+const selected = ref([])
+watch(selected, (newVal) => {
+  caseManagement.value.table.rows.selected = newVal
+})
 
 const showCasePage = (e, { item }) => {
   router.push({ name: "CasePage", params: { name: item.name } })
