@@ -74,7 +74,7 @@ export class ReportIncidentPage {
 
   async selectProject(project: string) {
     await this.projectDropdown.click()
-    await this.page.getByText(project, { exact: true }).click()
+    await this.page.getByText(project, { exact: true }).first().click()
   }
 
   async selectType(type: string) {
