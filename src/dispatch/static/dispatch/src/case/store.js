@@ -441,6 +441,9 @@ const mutations = {
   SET_DIALOG_ESCALATE(state, value) {
     state.dialogs.showEscalateDialog = value
   },
+  SET_FILTERS(state, payload) {
+    state.table.options.filters = payload
+  },
   RESET_SELECTED(state) {
     state.selected = Object.assign(state.selected, getDefaultSelectedState())
   },

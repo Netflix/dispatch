@@ -46,9 +46,10 @@
   </v-dialog>
 </template>
 
-<script>
+<script setup>
+import { ref, computed } from "vue"
+import { useStore } from "vuex"
 import { sum } from "lodash"
-import { mapFields } from "vuex-map-fields"
 
 import CasePriorityCombobox from "@/case/priority/CasePriorityCombobox.vue"
 import CaseSeverityCombobox from "@/case/severity/CaseSeverityCombobox.vue"
@@ -59,85 +60,68 @@ import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
 
-export default {
-  name: "CaseTableFilterDialog",
-
-  components: {
-    CasePriorityCombobox,
-    CaseSeverityCombobox,
-    CaseStatusMultiSelect,
-    CaseTypeCombobox,
-    DateWindowInput,
-    ProjectCombobox,
-    TagFilterAutoComplete,
-    TagTypeFilterCombobox,
-  },
-
-  props: {
-    projects: {
-      type: Array,
-      default: function () {
-        return []
-      },
+const store = useStore()
+const props = defineProps({
+  projects: {
+    type: Array,
+    default: function () {
+      return []
     },
   },
+})
 
-  data() {
-    return {
-      display: false,
-      local_case_priority: [],
-      local_case_severity: [],
-      local_case_type: [],
-      local_closed_at: {},
-      local_project: this.projects,
-      local_reported_at: {},
-      local_status: [],
-      local_tag: [],
-      local_tag_type: [],
-    }
-  },
+const display = ref(false)
+const local_case_priority = ref([])
+const local_case_severity = ref([])
+const local_case_type = ref([])
+const local_closed_at = ref({})
+const local_project = ref(props.projects)
+const local_reported_at = ref({})
+const local_status = ref([])
+const local_tag = ref([])
+const local_tag_type = ref([])
 
-  computed: {
-    ...mapFields("case_management", [
-      "table.options.filters.case_priority",
-      "table.options.filters.case_severity",
-      "table.options.filters.case_type",
-      "table.options.filters.closed_at",
-      "table.options.filters.project",
-      "table.options.filters.reported_at",
-      "table.options.filters.status",
-      "table.options.filters.tag",
-      "table.options.filters.tag_type",
-    ]),
-    numFilters: function () {
-      return sum([
-        this.case_priority.length,
-        this.case_severity.length,
-        this.case_type.length,
-        this.project.length,
-        this.status.length,
-        this.tag.length,
-        this.tag_type.length,
-      ])
-    },
-  },
+const case_priority = computed(
+  () => store.state.case_management.table.options.filters.case_priority
+)
+const case_severity = computed(
+  () => store.state.case_management.table.options.filters.case_severity
+)
+const case_type = computed(() => store.state.case_management.table.options.filters.case_type)
+const closed_at = computed(() => store.state.case_management.table.options.filters.closed_at)
+const project = computed(() => store.state.case_management.table.options.filters.project)
+const reported_at = computed(() => store.state.case_management.table.options.filters.reported_at)
+const status = computed(() => store.state.case_management.table.options.filters.status)
+const tag = computed(() => store.state.case_management.table.options.filters.tag)
+const tag_type = computed(() => store.state.case_management.table.options.filters.tag_type)
 
-  methods: {
-    applyFilters() {
-      // we set the filter values
-      this.case_priority = this.local_case_priority
-      this.case_severity = this.local_case_severity
-      this.case_type = this.local_case_type
-      this.closed_at = this.local_closed_at
-      this.project = this.local_project
-      this.reported_at = this.local_reported_at
-      this.status = this.local_status
-      this.tag = this.local_tag
-      this.tag_type = this.local_tag_type
+const numFilters = computed(() => {
+  return sum([
+    case_priority.value?.length || 0,
+    case_severity.value?.length || 0,
+    case_type.value?.length || 0,
+    project.value?.length || 0,
+    status.value?.length || 0,
+    tag.value?.length || 0,
+    tag_type.value?.length || 0,
+  ])
+})
 
-      // we close the dialog
-      this.display = false
-    },
-  },
+const applyFilters = () => {
+  const filters = {
+    case_priority: local_case_priority.value,
+    case_severity: local_case_severity.value,
+    case_type: local_case_type.value,
+    closed_at: local_closed_at.value,
+    project: local_project.value,
+    reported_at: local_reported_at.value,
+    status: local_status.value,
+    tag: local_tag.value,
+    tag_type: local_tag_type.value,
+  }
+
+  // Commit the mutation to update the filters in the Vuex store
+  store.commit("case_management/SET_FILTERS", filters)
+  display.value = false
 }
 </script>

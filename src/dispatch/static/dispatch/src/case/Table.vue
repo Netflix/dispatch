@@ -131,9 +131,10 @@
   </v-container>
 </template>
 
-<script>
-import { mapFields } from "vuex-map-fields"
-import { mapActions } from "vuex"
+<script setup>
+import { ref, computed, watch, toRefs } from "vue"
+import { useStore } from "vuex"
+import { useRoute, useRouter } from "vue-router"
 import { formatRelativeDate, formatDate } from "@/filters"
 
 import BulkEditSheet from "@/case/BulkEditSheet.vue"
@@ -149,149 +150,90 @@ import RouterUtils from "@/router/utils"
 import TableExportDialog from "@/case/TableExportDialog.vue"
 import TableFilterDialog from "@/case/TableFilterDialog.vue"
 
-export default {
-  name: "CaseTable",
+const store = useStore()
+const router = useRouter()
+const route = useRoute()
 
-  components: {
-    BulkEditSheet,
-    CaseParticipant,
-    CasePriority,
-    CaseSeverity,
-    CaseStatus,
-    DeleteDialog,
-    EscalateDialog,
-    NewSheet,
-    WorkflowRunModal,
-    TableExportDialog,
-    TableFilterDialog,
-  },
+const showEditSheet = ref(false)
 
-  props: {
-    name: {
-      type: String,
-      default: null,
-    },
-  },
+const headers = [
+  { title: "Name", value: "name", align: "left", width: "10%" },
+  { title: "Title", value: "title", sortable: false },
+  { title: "Status", value: "status" },
+  { title: "Type", value: "case_type.name", sortable: true },
+  { title: "Severity", value: "case_severity.name", sortable: true },
+  { title: "Priority", value: "case_priority.name", sortable: true },
+  { title: "Project", value: "project.name", sortable: true },
+  { title: "Assignee", value: "assignee", sortable: true },
+  { title: "Reported At", value: "reported_at" },
+  { title: "Closed At", value: "closed_at" },
+  { title: "", key: "data-table-actions", sortable: false, align: "end" },
+]
 
-  data() {
-    return {
-      headers: [
-        { title: "Name", value: "name", align: "left", width: "10%" },
-        { title: "Title", value: "title", sortable: false },
-        { title: "Status", value: "status" },
-        { title: "Type", value: "case_type.name", sortable: true },
-        { title: "Severity", value: "case_severity.name", sortable: true },
-        { title: "Priority", value: "case_priority.name", sortable: true },
-        { title: "Project", value: "project.name", sortable: true },
-        { title: "Assignee", value: "assignee", sortable: true },
-        { title: "Reported At", value: "reported_at" },
-        { title: "Closed At", value: "closed_at" },
-        { title: "", key: "data-table-actions", sortable: false, align: "end" },
-      ],
-      showEditSheet: false,
-    }
-  },
+const caseManagement = computed(() => store.state.case_management)
+const auth = computed(() => store.state.auth)
 
-  setup() {
-    return { formatRelativeDate, formatDate }
-  },
+const defaultUserProjects = computed(() => {
+  let d = null
+  if (auth.value.projects) {
+    let d = auth.value.projects.filter((v) => v.default === true)
+    return d.map((v) => v.project)
+  }
+  return d
+})
 
-  computed: {
-    ...mapFields("case_management", [
-      "table.loading",
-      "table.options.descending",
-      "table.options.filters",
-      "table.options.filters.assignee",
-      "table.options.filters.case_priority",
-      "table.options.filters.case_severity",
-      "table.options.filters.case_type",
-      "table.options.filters.project",
-      "table.options.filters.reported_at",
-      "table.options.filters.status",
-      "table.options.filters.tag",
-      "table.options.filters.tag_type",
-      "table.options.itemsPerPage",
-      "table.options.page",
-      "table.options.q",
-      "table.options.sortBy",
-      "table.rows.items",
-      "table.rows.selected",
-      "table.rows.total",
-    ]),
-    ...mapFields("auth", ["currentUser.projects"]),
+const showRun = (data) => store.dispatch("workflow/showRun", data)
+const showNewSheet = () => store.dispatch("case_management/showNewSheet")
+const showDeleteDialog = (item) => store.dispatch("case_management/showDeleteDialog", item)
+const showEscalateDialog = (item) => store.dispatch("case_management/showEscalateDialog", item)
+const getAll = () => store.dispatch("case_management/getAll")
 
-    defaultUserProjects: {
-      get() {
-        let d = null
-        if (this.projects) {
-          let d = this.projects.filter((v) => v.default === true)
-          return d.map((v) => v.project)
-        }
-        return d
-      },
-    },
-  },
+const items = computed(() => caseManagement.value.table.rows.items)
+const total = computed(() => caseManagement.value.table.rows.total)
+const selected = computed(() => caseManagement.value.table.rows.selected)
+const loading = computed(() => caseManagement.value.table.loading)
+const itemsPerPage = computed(() => caseManagement.value.table.options.itemsPerPage)
+const page = computed(() => caseManagement.value.table.options.page)
+const sortBy = computed(() => caseManagement.value.table.options.sortBy)
+const descending = computed(() => caseManagement.value.table.options.descending)
 
-  methods: {
-    ...mapActions("workflow", ["showRun"]),
-    ...mapActions("case_management", [
-      "getAll",
-      "showNewSheet",
-      "showDeleteDialog",
-      "showEscalateDialog",
-    ]),
-    showCasePage(e, { item }) {
-      this.$router.push({ name: "CasePage", params: { name: item.name } })
-    },
-  },
-
-  watch: {
-    $route: {
-      immediate: true,
-      handler: function (newVal) {
-        this.showEditSheet = newVal.meta && newVal.meta.showEditSheet
-      },
-    },
-  },
-
-  created() {
-    this.filters = {
-      ...this.filters,
-      ...RouterUtils.deserializeFilters(this.$route.query),
-      project: this.defaultUserProjects,
-    }
-
-    this.getAll()
-
-    this.$watch(
-      (vm) => [vm.page],
-      () => {
-        this.getAll()
-      }
-    )
-
-    this.$watch(
-      (vm) => [
-        vm.case_priority,
-        vm.case_severity,
-        vm.case_type,
-        vm.descending,
-        vm.itemsPerPage,
-        vm.project,
-        vm.q,
-        vm.reported_at.end,
-        vm.reported_at.start,
-        vm.sortBy,
-        vm.status,
-        vm.tag,
-        vm.tag_type,
-      ],
-      () => {
-        this.page = 1
-        RouterUtils.updateURLFilters(this.filters)
-        this.getAll()
-      }
-    )
-  },
+const showCasePage = (e, { item }) => {
+  router.push({ name: "CasePage", params: { name: item.name } })
 }
+
+watch(
+  route,
+  (newVal) => {
+    showEditSheet.value = newVal.meta && newVal.meta.showEditSheet
+  },
+  { immediate: true }
+)
+
+getAll()
+
+// Deserialize the URL filters and apply them to the local filters
+const filters = {
+  ...RouterUtils.deserializeFilters(route.query),
+  project: defaultUserProjects,
+}
+
+store.commit("case_management/SET_FILTERS", filters)
+
+// Define q as a ref
+const q = ref("")
+
+watch(
+  () => [q.value, caseManagement.value.table.options.filters],
+  (newFilters, oldFilters) => {
+    // Check if the filters have changed
+    if (JSON.stringify(newFilters) !== JSON.stringify(oldFilters)) {
+      // Update the URL filters
+      RouterUtils.updateURLFilters(newFilters)
+
+      // Fetch all items with the updated filters
+      getAll()
+    }
+  },
+  { deep: true } // Required to watch object properties inside filters
+)
 </script>
