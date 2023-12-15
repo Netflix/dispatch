@@ -45,36 +45,24 @@
   </v-bottom-sheet>
 </template>
 
-<script>
-import { mapFields } from "vuex-map-fields"
-import { mapActions } from "vuex"
-
+<script setup>
+import { computed, ref, watchEffect } from "vue"
+import { useStore } from "vuex"
 import HandoffDialog from "@/case/HandoffDialog.vue"
 import ClosedDialog from "@/case/ClosedDialog.vue"
 
-export default {
-  name: "CaseBulkEditSheet",
+const store = useStore()
 
-  components: {
-    HandoffDialog,
-    ClosedDialog,
-  },
+const selected = computed(() => store.state.case_management.table.rows.selected)
+const bulkEditLoading = computed(() => store.state.case_management.table.bulkEditLoading)
+const showBulkEdit = ref(false)
 
-  computed: {
-    ...mapFields("case_management", ["table.rows.selected", "table.bulkEditLoading"]),
+watchEffect(() => {
+  showBulkEdit.value = selected.value.length > 0
+})
 
-    showBulkEdit: function () {
-      return this.selected.length ? true : false
-    },
-  },
-
-  methods: {
-    ...mapActions("case_management", [
-      "saveBulk",
-      "deleteBulk",
-      "showHandoffDialog",
-      "showClosedDialog",
-    ]),
-  },
-}
+const saveBulk = (status) => store.dispatch("case_management/saveBulk", status)
+const deleteBulk = () => store.dispatch("case_management/deleteBulk")
+const showHandoffDialog = () => store.dispatch("case_management/showHandoffDialog")
+const showClosedDialog = () => store.dispatch("case_management/showClosedDialog")
 </script>
