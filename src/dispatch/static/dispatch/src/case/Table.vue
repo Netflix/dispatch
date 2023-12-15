@@ -46,7 +46,7 @@
             loading-text="Loading... Please wait"
             show-select
             return-object
-            @click:row="showCaseEditSheet"
+            @click:row="showCasePage"
           >
             <template #item.case_severity.name="{ value }">
               <case-severity :severity="value" />
@@ -240,8 +240,8 @@ export default {
       "showDeleteDialog",
       "showEscalateDialog",
     ]),
-    showCaseEditSheet(item) {
-      this.$router.push({ name: "CaseTableEdit", params: { name: item.name } })
+    showCasePage(e, { item }) {
+      this.$router.push({ name: "CasePage", params: { name: item.name } })
     },
   },
 
