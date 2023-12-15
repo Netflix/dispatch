@@ -1,8 +1,8 @@
 <template>
   <v-dialog v-model="display" max-width="600px">
-    <template #activator="{ props }">
+    <template #activator="{ props: filterProps }">
       <v-badge :model-value="!!numFilters" bordered color="info" :content="numFilters">
-        <v-btn color="secondary" v-bind="props"> Filter </v-btn>
+        <v-btn color="secondary" v-bind="filterProps"> Filter </v-btn>
       </v-badge>
     </template>
     <v-card>
@@ -88,9 +88,7 @@ const case_severity = computed(
   () => store.state.case_management.table.options.filters.case_severity
 )
 const case_type = computed(() => store.state.case_management.table.options.filters.case_type)
-const closed_at = computed(() => store.state.case_management.table.options.filters.closed_at)
 const project = computed(() => store.state.case_management.table.options.filters.project)
-const reported_at = computed(() => store.state.case_management.table.options.filters.reported_at)
 const status = computed(() => store.state.case_management.table.options.filters.status)
 const tag = computed(() => store.state.case_management.table.options.filters.tag)
 const tag_type = computed(() => store.state.case_management.table.options.filters.tag_type)
