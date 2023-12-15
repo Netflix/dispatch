@@ -192,10 +192,6 @@ const items = computed(() => caseManagement.value.table.rows.items)
 const total = computed(() => caseManagement.value.table.rows.total)
 const selected = computed(() => caseManagement.value.table.rows.selected)
 const loading = computed(() => caseManagement.value.table.loading)
-const itemsPerPage = computed(() => caseManagement.value.table.options.itemsPerPage)
-const page = computed(() => caseManagement.value.table.options.page)
-const sortBy = computed(() => caseManagement.value.table.options.sortBy)
-const descending = computed(() => caseManagement.value.table.options.descending)
 
 const showCasePage = (e, { item }) => {
   router.push({ name: "CasePage", params: { name: item.name } })
@@ -216,14 +212,9 @@ const filters = {
   ...RouterUtils.deserializeFilters(route.query),
   project: defaultUserProjects,
 }
-
 store.commit("case_management/SET_FILTERS", filters)
-
-// Define q as a ref
-const q = ref("")
-
 watch(
-  () => [q.value, caseManagement.value.table.options.filters],
+  () => caseManagement.value.table.options.filters,
   (newFilters, oldFilters) => {
     // Check if the filters have changed
     if (JSON.stringify(newFilters) !== JSON.stringify(oldFilters)) {
@@ -235,5 +226,50 @@ watch(
     }
   },
   { deep: true } // Required to watch object properties inside filters
+)
+
+const q = ref(caseManagement.value.table.options.q)
+watch(
+  () => q.value,
+  (newValue) => {
+    caseManagement.value.table.options.q = newValue
+    getAll()
+  }
+)
+
+const page = ref(caseManagement.value.table.options.page)
+watch(
+  () => page.value,
+  (newValue) => {
+    caseManagement.value.table.options.page = newValue
+    getAll()
+  }
+)
+
+const itemsPerPage = ref(caseManagement.value.table.options.itemsPerPage)
+watch(
+  () => itemsPerPage.value,
+  (newValue) => {
+    caseManagement.value.table.options.itemsPerPage = newValue
+    getAll()
+  }
+)
+
+const sortBy = ref(caseManagement.value.table.options.sortBy)
+watch(
+  () => sortBy.value,
+  (newValue) => {
+    caseManagement.value.table.options.sortBy = newValue
+    getAll()
+  }
+)
+
+const descending = ref(caseManagement.value.table.options.descending)
+watch(
+  () => descending.value,
+  (newValue) => {
+    caseManagement.value.table.options.descending = newValue
+    getAll()
+  }
 )
 </script>

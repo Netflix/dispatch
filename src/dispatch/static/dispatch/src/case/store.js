@@ -444,6 +444,9 @@ const mutations = {
   SET_FILTERS(state, payload) {
     state.table.options.filters = payload
   },
+  SET_Q(state, value) {
+    state.table.options.q = value
+  },
   RESET_SELECTED(state) {
     state.selected = Object.assign(state.selected, getDefaultSelectedState())
   },
