@@ -12,7 +12,7 @@
         <v-card-actions class="pt-4">
           <v-spacer />
 
-          <v-btn class="dismiss-button" @click="changeStatus(selectedStatus)"> Submit </v-btn>
+          <v-btn @click="changeStatus(selectedStatus)"> Submit </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -28,7 +28,7 @@
         <v-card-actions class="pt-4">
           <v-spacer />
 
-          <v-btn class="dismiss-button" @click="alreadySelectedDialog = false"> Dismiss </v-btn>
+          <v-btn @click="alreadySelectedDialog = false"> Dismiss </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
