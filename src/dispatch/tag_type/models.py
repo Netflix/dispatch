@@ -24,6 +24,9 @@ class TagType(Base, TimeStampMixin, ProjectMixin):
     name = Column(String)
     description = Column(String)
     exclusive = Column(Boolean, default=False)
+    discoverable = Column(Boolean, default=True)
+    color = Column(String)
+    icon = Column(String)
     search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
 
@@ -31,7 +34,10 @@ class TagType(Base, TimeStampMixin, ProjectMixin):
 class TagTypeBase(DispatchBase):
     name: NameStr
     exclusive: Optional[bool] = False
+    discoverable: Optional[bool] = True
     description: Optional[str] = Field(None, nullable=True)
+    color: Optional[str] = Field(None, nullable=True)
+    icon: Optional[str] = Field(None, nullable=True)
 
 
 class TagTypeCreate(TagTypeBase):
