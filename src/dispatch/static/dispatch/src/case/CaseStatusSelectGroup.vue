@@ -3,11 +3,16 @@
     <v-dialog v-model="dialogVisible" max-width="660">
       <v-card class="mx-auto">
         <v-card-title class="ml-2">Update Case Status</v-card-title>
-        <v-card-text>
+        <v-card-text class="dispatch-text-title">
           Are you sure you want to change the case status from
-          <v-chip :color="statusColors[modelValue.status]">{{ modelValue.status }}</v-chip> to
-          <v-chip :color="statusColors[selectedStatus]">{{ selectedStatus }}</v-chip
-          >?
+          <v-chip size="small" class="ml-1 mr-1" :color="statusColors[modelValue.status]">{{
+            modelValue.status
+          }}</v-chip>
+          to
+          <v-chip size="small" class="ml-1 mr-1" :color="statusColors[selectedStatus]">{{
+            selectedStatus
+          }}</v-chip>
+          ?
         </v-card-text>
         <v-card-actions class="pt-4">
           <v-spacer />
@@ -20,10 +25,19 @@
     <v-dialog v-model="alreadySelectedDialog" max-width="600">
       <v-card class="mx-auto">
         <v-card-title class="ml-2">Status Not Changed</v-card-title>
-        <v-card-text>
+        <v-card-text class="dispatch-text-title">
           This case was moved to the status
-          <v-chip :color="statusColors[selectedStatus]">{{ selectedStatus }}</v-chip> on
-          {{ selectedStatusTooltip }}
+          <v-chip size="small" class="ml-1 mr-1" :color="statusColors[selectedStatus]">{{
+            selectedStatus
+          }}</v-chip>
+          on
+          <DTooltip :text="formatToTimeZones(selectedStatusTooltip)" hotkeys="">
+            <template #activator="{ tooltip }">
+              <v-chip class="ml-1" v-bind="tooltip">
+                {{ formatToUTC(selectedStatusTooltip) }}
+              </v-chip>
+            </template>
+          </DTooltip>
         </v-card-text>
         <v-card-actions class="pt-4">
           <v-spacer />
@@ -88,6 +102,7 @@
 import { computed, watch, ref } from "vue"
 import { useStore } from "vuex"
 import { useSavingState } from "@/composables/useSavingState"
+import { formatToUTC, formatToTimeZones } from "@/filters"
 import DTooltip from "@/components/DTooltip.vue"
 import CaseApi from "@/case/api"
 
