@@ -688,7 +688,7 @@ def handle_timeline_added_event(
         event_service.log_incident_event(
             db_session=db_session,
             source=f"Slack message from {individual.name}",
-            description=f'"{message_text}," said {individual.name}',
+            description=message_text,
             incident_id=context["subject"].id,
             individual_id=individual.id,
             started_at=message_ts_utc,
@@ -1072,7 +1072,7 @@ def handle_add_timeline_submission_event(
         db_session=db_session,
         source=f"Slack message from {participant.individual.name}",
         started_at=event_dt_utc,
-        description=f'"{event_description}," said {participant.individual.name}',
+        description=event_description,
         incident_id=context["subject"].id,
         individual_id=participant.individual.id,
         type=EventType.imported_message,

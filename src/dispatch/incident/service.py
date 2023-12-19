@@ -208,6 +208,8 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
             "status": incident.status,
             "visibility": incident.visibility,
         },
+        individual_id=incident_in.reporter.individual.id,
+        owner=incident_in.reporter.individual.name,
         incident_id=incident.id,
         owner=reporter_name,
         pinned=True,
