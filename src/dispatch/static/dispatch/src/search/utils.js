@@ -62,7 +62,7 @@ export default {
   createSortExpression(sort) {
     let sortBy = []
     let descending = []
-    each(sort, function (value, key) {
+    each(sort, function (value) {
       if (value.key) {
         sortBy.push(value.key)
         descending.push(value.order == "desc" ? true : false)
