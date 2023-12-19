@@ -68,6 +68,17 @@
           <v-col cols="12">
             <tag-filter-auto-complete :project="project" v-model="tags" label="Tags" />
           </v-col>
+          <v-col cols="12">
+            <participant-select
+              v-model="local_commander"
+              label="Optional: Incident Commander"
+              hint="If not entered, the current on-call will be assigned."
+              clearable
+              :project="project"
+              name="Optional: Incident Commander"
+              :rules="[only_one]"
+            />
+          </v-col>
         </v-row>
       </v-card-text>
       <v-card-actions>
@@ -105,6 +116,7 @@ import IncidentPrioritySelect from "@/incident/priority/IncidentPrioritySelect.v
 import IncidentTypeSelect from "@/incident/type/IncidentTypeSelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
+import ParticipantSelect from "@/components/ParticipantSelect.vue"
 
 export default {
   setup() {
@@ -119,12 +131,20 @@ export default {
     IncidentPrioritySelect,
     ProjectSelect,
     TagFilterAutoComplete,
+    ParticipantSelect,
   },
 
   data() {
     return {
       isSubmitted: false,
       project_faq: null,
+      local_commander: null,
+      only_one: (value) => {
+        if (value && value.length > 1) {
+          return "Only one is allowed"
+        }
+        return true
+      },
     }
   },
 
@@ -132,7 +152,7 @@ export default {
     ...mapFields("incident", [
       "selected.incident_priority",
       "selected.incident_type",
-      "selected.commander",
+      "selected.commander_email",
       "selected.title",
       "selected.tags",
       "selected.description",
@@ -248,9 +268,12 @@ export default {
         vm.incident_type,
         vm.title,
         vm.description,
+        vm.local_commander,
         vm.tags,
       ],
       () => {
+        if (Array.isArray(this.local_commander))
+          this.commander_email = this.local_commander[0].individual.email
         var queryParams = {
           project: this.project ? this.project.name : null,
           incident_priority: this.incident_priority ? this.incident_priority.name : null,
@@ -258,6 +281,7 @@ export default {
           title: this.title,
           description: this.description,
           tag: this.tags ? this.tags.map((tag) => tag.name) : null,
+          commander_email: this.commander_email,
         }
         Object.keys(queryParams).forEach((key) => (queryParams[key] ? {} : delete queryParams[key]))
         router

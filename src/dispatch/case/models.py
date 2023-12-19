@@ -287,6 +287,7 @@ class CaseUpdate(CaseBase):
     case_priority: Optional[CasePriorityBase]
     case_severity: Optional[CaseSeverityBase]
     case_type: Optional[CaseTypeBase]
+    closed_at: Optional[datetime] = None
     duplicates: Optional[List[CaseRead]] = []
     related: Optional[List[CaseRead]] = []
     reporter: Optional[ParticipantUpdate]

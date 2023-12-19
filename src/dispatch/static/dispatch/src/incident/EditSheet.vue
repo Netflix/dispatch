@@ -147,7 +147,9 @@ export default {
 
   methods: {
     fetchDetails() {
-      this.getDetails({ name: this.$route.params.name })
+      if (this.$route.params.name) {
+        this.getDetails({ name: this.$route.params.name })
+      }
     },
     ...mapActions("incident", ["save", "getDetails", "closeEditSheet"]),
   },
