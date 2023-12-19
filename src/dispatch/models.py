@@ -1,9 +1,10 @@
-from typing import Optional
+from typing import Optional, Literal
 from datetime import datetime, timedelta
 
 from pydantic.fields import Field
 from pydantic.networks import EmailStr
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
+from pydantic.errors import EmailError
 from pydantic.types import conint, constr, SecretStr
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, event, ForeignKey
@@ -140,7 +141,7 @@ class ResourceBase(DispatchBase):
 
 
 class ContactBase(DispatchBase):
-    email: EmailStr
+    email: str
     name: Optional[str] = Field(None, nullable=True)
     is_active: Optional[bool] = True
     is_external: Optional[bool] = False
@@ -148,3 +149,12 @@ class ContactBase(DispatchBase):
     contact_type: Optional[str] = Field(None, nullable=True)
     notes: Optional[str] = Field(None, nullable=True)
     owner: Optional[str] = Field(None, nullable=True)
+
+    @validator("email", pre=True)
+    @classmethod
+    def validate_email(cls, v: str) -> EmailStr | Literal["unknown@email.com"]:
+        try:
+            EmailStr.validate(v)
+            return EmailStr(v)
+        except EmailError:
+            return "unknown@email.com"
