@@ -4,7 +4,11 @@ import { vuetifyPlugin } from "./vuetify/"
 import router from "./router/"
 import store from "./store"
 import "@formkit/themes/genesis"
-import "@formkit/pro/genesis"
+if (import.meta.env.VITE_FORMKIT_PRO_PROJECT_KEY) {
+  import("@formkit/pro/genesis").then((module) => {
+    new module()
+  })
+}
 
 import { createProPlugin, inputs } from "@formkit/pro"
 import { plugin, defaultConfig } from "@formkit/vue"
