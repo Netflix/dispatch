@@ -3,7 +3,6 @@ import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import FormsTypeApi from "@/forms/types/api"
-import { be } from "date-fns/locale"
 
 const hasFormkitPro = import.meta.env.VITE_FORMKIT_PRO_PROJECT_KEY
 

@@ -58,7 +58,6 @@ import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
 
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
-import { th } from "date-fns/locale"
 
 export default {
   name: "ServiceFeedbackTableFilterDialog",

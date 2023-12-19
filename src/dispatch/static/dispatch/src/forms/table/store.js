@@ -4,7 +4,6 @@ import { debounce } from "lodash"
 import SearchUtils from "@/search/utils"
 import FormsTypeApi from "@/forms/types/api"
 import FormsApi from "@/forms/api"
-import { be } from "date-fns/locale"
 
 const getDefaultSelectedState = () => {
   return {
@@ -55,20 +54,6 @@ const state = {
   page_schema: null,
   incident_id: null,
   project_id: null,
-}
-
-const defaultOptions = {
-  options: {
-    q: "",
-    page: 1,
-    itemsPerPage: 10,
-    sortBy: ["created_at"],
-    descending: [true],
-    filters: {
-      project: [],
-      forms_type: null,
-    },
-  },
 }
 
 const getters = {

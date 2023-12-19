@@ -11,7 +11,7 @@
         </v-list-item>
       </template>
       <span class="text-h5 ml-10 mt-3 mb-3">Incident Information</span>
-      <span class="ml-10" v-for="item in incident_data.data">
+      <span class="ml-10" v-for="item in incident_data.data" :key="item">
         <b>{{ item.question }}</b
         >: {{ item.answer }}<br />
       </span>
@@ -25,7 +25,7 @@
       </span>
       <v-divider class="mt-5" />
       <span class="text-h5 ml-10 mt-3 mb-3">Form Data</span>
-      <span class="ml-10" v-for="item in page_data">
+      <span class="ml-10" v-for="item in page_data" :key="item">
         <b>{{ item.question }}</b
         >: {{ item.answer }}<br />
       </span>
