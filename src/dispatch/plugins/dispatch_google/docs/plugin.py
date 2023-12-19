@@ -128,6 +128,7 @@ class GoogleDocsDocumentPlugin(DocumentPlugin):
         except Exception as e:
             log.exception(e)
             return table_exists, header_index, -1, table_indices
+        return table_exists, header_index, -1, table_indices
 
     def delete_table(self, document_id: str, request):
         try:
