@@ -697,7 +697,7 @@ def handle_timeline_added_event(
             individual_id=individual.id if individual else None,
             started_at=message_ts_utc,
             type=EventType.imported_message,
-            owner=individual.name if individual else "Unknown",
+            owner=individual.name if individual else None,
         )
 
 
