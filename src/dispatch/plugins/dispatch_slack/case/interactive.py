@@ -1750,6 +1750,7 @@ def resolve_case(
         resolution=f"Case resolved through user engagement. User context: {context_from_user}",
         visibility=case.visibility,
         status=CaseStatus.closed,
+        closed_at=datetime.utcnow(),
     )
     case = case_service.update(db_session=db_session, case=case, case_in=case_in, current_user=user)
     blocks = create_case_message(case=case, channel_id=channel_id)
