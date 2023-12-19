@@ -76,7 +76,6 @@ const getters = {
 }
 
 function getCurrentPage() {
-  console.log(`**** Page was just requested`)
   return [
     {
       $formkit: "text",
@@ -146,7 +145,6 @@ function save({ commit, dispatch }) {
   if (!state.selected.id) {
     return FormsApi.create(createPayload(state.selected))
       .then(() => {
-        console.log("**** Form created successfully")
         commit("SET_DIALOG_CREATE_EDIT", false)
         dispatch("getAll")
         commit("SET_SELECTED_LOADING", false)
@@ -183,10 +181,8 @@ function save({ commit, dispatch }) {
 
 const actions = {
   getAll: debounce(({ commit, state }) => {
-    console.log(`**** Params: ${JSON.stringify(state.table.options)}`)
     let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options }, "Forms")
     commit("SET_TABLE_LOADING", "primary")
-    console.log(`**** Params: ${JSON.stringify(params)}`)
     FormsApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_ROWS", response.data)
@@ -218,7 +214,6 @@ const actions = {
   },
   editShow({ commit }, selected) {
     commit("SET_SELECTED", selected)
-    console.log(`**** Edit form type: ${JSON.stringify(selected.form_type)}`)
     commit("SET_PAGE_SCHEMA", getCurrentPage())
     commit("SET_DIALOG_CREATE_EDIT", true)
   },
@@ -266,7 +261,6 @@ const mutations = {
     state.selected = Object.assign(state.selected, value)
   },
   SET_FORM_SCHEMA(state, value) {
-    console.log(`**** Got form schema: ${value}`)
     state.selected.form_schema = value
   },
   SET_PAGE_SCHEMA(state, value) {

@@ -68,7 +68,6 @@ const getters = {
 
 function buildFormDoc(form_schema, form_data) {
   // Used to build the read-only answers given the questions in form_schema and the answers in form_data
-  console.log(`**** Building doc using ${form_data}`)
   let schema = JSON.parse(form_schema)
   let data = JSON.parse(form_data)
   let output_qa = []
@@ -101,7 +100,6 @@ function formatTacticalReport(tactical_report) {
 
 function buildIncidentDoc(incident) {
   // todo - will need to use api to get incident so you can retrieve the last_tactical_report
-  // console.log(`**** Building incident doc using ${JSON.stringify(incident)}`)
   let output_qa = []
   if (incident) {
     output_qa.push({
@@ -152,9 +150,7 @@ function buildIncidentDoc(incident) {
 }
 
 function getCurrentPage(form_schema) {
-  // console.log(`**** Page was just requested - about to reconstruct from ${form_schema}`)
   state.has_formkit_pro = hasFormkitPro
-  console.log(`**** Has formkit pro: ${state.has_formkit_pro}`)
   let schema = JSON.parse(form_schema)
   let output_schema = []
   for (let item of schema) {
@@ -227,48 +223,7 @@ function getCurrentPage(form_schema) {
       }
     }
   }
-  console.log(`**** Page was just requested - reconstructed to ${JSON.stringify(output_schema)}`)
   return output_schema
-  return [
-    {
-      $formkit: "text",
-      name: "email",
-      prefixIcon: "email",
-      label: "Email",
-      value: "hello@formkit.com",
-      help: "This email will be used for account notifications.",
-      validation: "required|email",
-    },
-    {
-      $formkit: "number",
-      name: "users",
-      prefixIcon: "avatarMan",
-      id: "users",
-      value: "3",
-      label: "Users",
-      help: "How many users do you need on your plan? http://formkit.com/pricing",
-    },
-    {
-      $formkit: "checkbox",
-      name: "eu_company",
-      id: "eu",
-      label: "Are you located in the European Union?",
-    },
-    {
-      $formkit: "select",
-      // 👀  Oooo, conditionals!
-      if: "$get(eu).value",
-      name: "cookie_notice",
-      label: "Cookie notice frequency",
-      prefixIcon: "warning",
-      options: {
-        refresh: "Every page load",
-        hourly: "Ever hour",
-        daily: "Every day",
-      },
-      help: "How often should we display a cookie notice?",
-    },
-  ]
 }
 
 function createPayload() {
@@ -287,7 +242,6 @@ function createPayload() {
     if (validKeys.includes(key)) payload[key] = state.selected[key]
   })
   payload["form_data"] = JSON.stringify(payload["form_data"])
-  console.log(`**** The form data is now : ${JSON.stringify(payload["form_data"])}`)
   payload["project_id"] = state.selected.project.id
   return payload
 }
@@ -297,7 +251,6 @@ function save({ commit, dispatch }) {
   if (!state.selected.id) {
     return FormsApi.create(createPayload(state.selected))
       .then(() => {
-        console.log("**** Form created successfully")
         commit("SET_DIALOG_CREATE_EDIT", false)
         commit("SET_DIALOG_ATTORNEY_EDIT", false)
         dispatch("getAll")
@@ -351,7 +304,6 @@ const actions = {
       incidentFilter
     )
     commit("SET_TABLE_LOADING", "primary")
-    console.log(`**** Params: ${JSON.stringify(filterOptions)}`)
     let projectFilter = [
       {
         model: "Project",
@@ -366,8 +318,6 @@ const actions = {
       projectFilter
     )
     commit("SET_TABLE_LOADING", "primary")
-    console.log(`**** Params: ${JSON.stringify(filterOptions)}`)
-    console.log(`**** Params: ${JSON.stringify(formsTypeFilter)}`)
     FormsApi.getAll(filterOptions)
       .then((response) => {
         commit("SET_TABLE_ROWS", response.data)
@@ -399,13 +349,11 @@ const actions = {
   },
   editShow({ commit }, selected) {
     commit("SET_SELECTED", selected)
-    // console.log(`**** Edit form type: ${JSON.stringify(selected)}`)
     commit("SET_PAGE_SCHEMA", getCurrentPage(selected.form_type.form_schema))
     commit("SET_DIALOG_CREATE_EDIT", true)
   },
   attorneyEditShow({ commit }, selected) {
     commit("SET_SELECTED", selected)
-    console.log(`**** The incident is: ${JSON.stringify(selected.incident)}`)
     commit("SET_PAGE_DATA", buildFormDoc(selected.form_type.form_schema, selected.form_data))
     IncidentApi.get(selected.incident.id).then((response) => {
       commit("SET_INCIDENT_DATA", buildIncidentDoc(response.data))
@@ -465,7 +413,6 @@ const mutations = {
     state.selected.form_data = JSON.parse(state.selected.form_data)
   },
   SET_FORM_SCHEMA(state, value) {
-    console.log(`**** Got form schema: ${value}`)
     state.selected.form_schema = value
   },
   SET_PAGE_SCHEMA(state, value) {

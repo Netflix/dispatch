@@ -116,9 +116,6 @@ export default {
   },
   methods: {
     ...mapActions("forms", ["getAll", "createShow", "editShow", "showDeleteDialog"]),
-    blank(form_type) {
-      console.log(`**** Got form type ${JSON.stringify(form_type)}`)
-    },
     convertToParticipant(individual) {
       return {
         individual: {
@@ -129,66 +126,14 @@ export default {
     },
   },
   created() {
-    // this.filters = {
-    //   ...this.filters,
-    //   ...RouterUtils.deserializeFilters(this.$route.query),
-    //   project: this.defaultUserProjects,
-    //   incident_id: this.incident.id,
-    // }
-    // this.filters = {
-    //   ...this.filters,
-    //   //...RouterUtils.deserializeFilters(this.$route.query),
-    //   project_id: this.incident.project.id,
-    // }
     this.project_id = this.selected_incident.project.id
     this.incident_id = this.selected_incident.id
-
-    // this.$watch(
-    //   (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending, vm.project, vm.incident, vm.status],
-    //   () => {
-    //     this.page = 1
-    //     RouterUtils.updateURLFilters(this.filters)
-    //     this.getAll()
-    //   }
-    // )
-
-    // let filterOptions = {
-    //   itemsPerPage: -1,
-    //   sortBy: [],
-    //   descending: [false],
-    // }
-
-    // if (this.project) {
-    //   filterOptions = {
-    //     ...filterOptions,
-    //     filters: {
-    //       project: [this.project],
-    //     },
-    //   }
-    // }
-
-    // let enabledFilter = [
-    //   {
-    //     model: "Forms",
-    //     field: "incident_id",
-    //     op: "==",
-    //     value: this.incident.id,
-    //   },
-    // ]
-
-    // filterOptions = SearchUtils.createParametersFromTableOptions(
-    //   { ...filterOptions },
-    //   "Forms",
-    //   enabledFilter
-    // )
-    // console.log(`*** Got filter options: ${JSON.stringify(filterOptions)}`)
 
     this.getAll()
 
     this.$watch(
       (vm) => [vm.project, vm.selected_incident],
       () => {
-        console.log(`*** Got selected_incident on watch: ${JSON.stringify(this.selected_incident)}`)
         this.getAll()
       }
     )

@@ -12,12 +12,10 @@ export default {
   },
 
   create(payload) {
-    console.log("**** create payload", JSON.stringify(payload))
-    return API.post(`${resource}`, payload)
+    return   API.post(`${resource}`, payload)
   },
 
   update(formId, creator_id, payload) {
-    console.log("**** update payload", JSON.stringify(payload))
     return API.put(`${resource}/${formId}/${creator_id}`, payload)
   },
 

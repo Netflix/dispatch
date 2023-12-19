@@ -46,7 +46,6 @@ def create_forms(
     current_user: CurrentUser,
 ):
     """Create a new form."""
-    log.debug(f"**** Creating new form from router: {forms_in}")
     try:
         return create(
             db_session=db_session, creator=current_user, forms_in=forms_in

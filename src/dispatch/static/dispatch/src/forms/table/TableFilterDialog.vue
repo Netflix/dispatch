@@ -128,7 +128,6 @@ export default {
           types.push({ id: item.id })
         })
         this.forms_type = types
-        console.log(`*** Got form_types: ${JSON.stringify(this.forms_type)}`)
       } else {
         this.forms_type = []
       }

@@ -76,23 +76,12 @@ export default {
     ...mapFields("incident", { selected_incident: "selected" }),
   },
 
-  created() {
-    console.log(`*** Got hasFormKitPro: ${this.has_formkit_pro}`)
-  },
-
   methods: {
-    ...mapActions("forms", [
-      "closeCreateEdit",
-      "saveAsDraft",
-      "saveAsCompleted",
-    ]),
+    ...mapActions("forms", ["closeCreateEdit", "saveAsDraft", "saveAsCompleted"]),
   },
 
   watch: {
     form_data() {
-      console.log(`*** Got form_data: ${JSON.stringify(this.form_data)}`)
-      console.log(`*** Got hasFormKitPro: ${this.has_formkit_pro}`)
-      console.log(`*** Got incident: ${JSON.stringify(this.incident)} and the selected_incident: ${JSON.stringify(this.selected_incident)}`)
       if (!this.incident_id) {
         if (this.incident) {
           this.incident_id = this.incident.id
@@ -103,8 +92,6 @@ export default {
           this.project = this.selected_incident.project
         }
       }
-      console.log(`*** Got incident id: ${JSON.stringify(this.incident.id)}`)
-      console.log(`*** Got project: ${JSON.stringify(this.project)}`)
     },
   },
 }

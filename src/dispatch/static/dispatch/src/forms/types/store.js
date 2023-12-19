@@ -88,7 +88,6 @@ const actions = {
     commit("RESET_SELECTED")
   },
   save({ commit, dispatch }) {
-    console.log(`**** Save form type: ${JSON.stringify(state.selected)}`)
     commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
       return FormsTypeApi.create(state.selected)

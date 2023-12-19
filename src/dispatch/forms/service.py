@@ -27,13 +27,10 @@ def get_all(*, db_session: Session):
 def create(*, forms_in: dict, db_session: Session, creator) -> Forms:
     """Creates form data."""
 
-    log.debug(f"**** Creating new form inside create: {forms_in}")
-
     individual = individual_service.get_by_email_and_project(
         db_session=db_session, email=creator.email, project_id=forms_in["project_id"]
     )
 
-    log.debug(f"**** Creating new form {forms_in}")
     form = Forms(
         **forms_in,
         creator_id=individual.id,
