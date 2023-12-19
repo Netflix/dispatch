@@ -1,8 +1,6 @@
 import { Ref, ref } from "vue"
 import { useEventListener } from "@/composables/useEventListener"
 
-type Key = keyof typeof KeyboardEvent.prototype
-
 /**
  * A composable function to handle hotkeys.
  *
@@ -27,7 +25,7 @@ type Key = keyof typeof KeyboardEvent.prototype
  * ```
  */
 export function useHotKey(
-  keyCombination: Key[],
+  keyCombination: string[],
   callback: (event: KeyboardEvent) => void,
   allowFocusSteal: boolean = false
 ) {
