@@ -679,10 +679,14 @@ def handle_timeline_added_event(
         incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
         # we fetch the individual who sent the message
-        message_sender_email = get_user_email(client=client, user_id=message_sender_id)
-        individual = individual_service.get_by_email_and_project(
-            db_session=db_session, email=message_sender_email, project_id=incident.project.id
-        )
+        # if user is not found, we default to "Unknown"
+        try:
+            message_sender_email = get_user_email(client=client, user_id=message_sender_id)
+            individual = individual_service.get_by_email_and_project(
+                db_session=db_session, email=message_sender_email, project_id=incident.project.id
+            )
+        except Exception:
+            individual = None
 
         # we log the event
         event_service.log_incident_event(
@@ -690,10 +694,10 @@ def handle_timeline_added_event(
             source=f"Slack message from {individual.name}",
             description=message_text,
             incident_id=context["subject"].id,
-            individual_id=individual.id,
+            individual_id=individual.id if individual else None,
             started_at=message_ts_utc,
             type=EventType.imported_message,
-            owner=individual.name,
+            owner=individual.name if individual else "Unknown",
         )
 
 
