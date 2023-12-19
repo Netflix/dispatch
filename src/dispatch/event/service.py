@@ -202,8 +202,6 @@ def delete_incident_event(
     """Deletes an event."""
     event = get_by_uuid(db_session=db_session, uuid=uuid)
     log.debug("Deleting incident event")
-    log.debug(event)
-    log.debug(event.id)
     delete(db_session=db_session, event_id=event.id)
 
 
@@ -298,7 +296,7 @@ def export_timeline(
                     }
                 ]
                 if plugin.instance.delete_table(document_id=doc_id, request=delete_table_request):
-                    log.debug("Existing Table in the doc has been deleted")
+                    log.debug("Existing table in the doc has been deleted")
 
             else:
                 curr_table_start += 1

@@ -87,6 +87,8 @@ class GoogleDocsDocumentPlugin(DocumentPlugin):
             header_section = False
             table_exists = False
             table_indices = []
+            log.debug(document_content)
+            headingId = ""
             for i, element in enumerate(document_content):
                 if "paragraph" in element and "elements" in element["paragraph"]:
                     for item in element["paragraph"]["elements"]:
@@ -94,20 +96,26 @@ class GoogleDocsDocumentPlugin(DocumentPlugin):
                             if item["textRun"]["content"].strip() == header:
                                 header_index = element["endIndex"]
                                 header_section = True
+                                headingId = element["paragraph"].get("paragraphStyle")["headingId"]
 
                             elif header_section:
+                                # Gets the end index of any text below the header
                                 if (
                                     header_section
                                     and item["textRun"]["content"].strip()
-                                    and "headingId"
-                                    not in element["paragraph"].get("paragraphStyle", {})
+                                    and element["paragraph"].get("paragraphStyle")["headingId"]
+                                    != headingId
                                 ):
                                     header_index = item["endIndex"]
                                 # checking if we are past header in question
-                                if any(
-                                    "headingId" in style
-                                    for style in element["paragraph"]["paragraphStyle"]
-                                    for style in element["paragraph"].get("paragraphStyle", {})
+                                if (
+                                    any(
+                                        "headingId" in style
+                                        for style in element["paragraph"]["paragraphStyle"]
+                                        for style in element["paragraph"].get("paragraphStyle", {})
+                                    )
+                                    and element["paragraph"].get("paragraphStyle")["headingId"]
+                                    != headingId
                                 ):
                                     past_header = True
                                     header_section = False
