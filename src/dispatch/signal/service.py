@@ -568,6 +568,106 @@ def update_instance(
     return signal_instance
 
 
+def filter_snooze(*, db_session: Session, signal_instance: SignalInstance) -> SignalInstance:
+    """Filters a signal instance for snoozing.
+
+    Args:
+        db_session (Session): Database session.
+        signal_instance (SignalInstance): Signal instance to be filtered.
+
+    Returns:
+        SignalInstance: The filtered signal instance.
+    """
+    for f in signal_instance.signal.filters:
+        if f.mode != SignalFilterMode.active:
+            continue
+
+        if f.action != SignalFilterAction.snooze:
+            continue
+
+        if f.expiration.replace(tzinfo=timezone.utc) <= datetime.now(timezone.utc):
+            continue
+
+        query = db_session.query(SignalInstance).filter(
+            SignalInstance.signal_id == signal_instance.signal_id
+        )
+        query = apply_filter_specific_joins(SignalInstance, f.expression, query)
+        query = apply_filters(query, f.expression)
+        # an expression is not required for snoozing, if absent we snooze regardless of entity
+        if f.expression:
+            instances = query.filter(SignalInstance.id == signal_instance.id).all()
+
+            if instances:
+                signal_instance.filter_action = SignalFilterAction.snooze
+                break
+        else:
+            signal_instance.filter_action = SignalFilterAction.snooze
+            break
+
+    return signal_instance
+
+
+def filter_dedup(*, db_session: Session, signal_instance: SignalInstance) -> SignalInstance:
+    """Filters a signal instance for deduplication.
+
+    Args:
+        db_session (Session): Database session.
+        signal_instance (SignalInstance): Signal instance to be filtered.
+
+    Returns:
+        SignalInstance: The filtered signal instance.
+    """
+    for f in signal_instance.signal.filters:
+        if f.mode != SignalFilterMode.active:
+            continue
+
+        if f.action != SignalFilterAction.deduplicate:
+            continue
+
+        query = db_session.query(SignalInstance).filter(
+            SignalInstance.signal_id == signal_instance.signal_id
+        )
+        query = apply_filter_specific_joins(SignalInstance, f.expression, query)
+        query = apply_filters(query, f.expression)
+
+        window = datetime.now(timezone.utc) - timedelta(minutes=f.window)
+        query = query.filter(SignalInstance.created_at >= window)
+        query = query.join(SignalInstance.entities).filter(
+            Entity.id.in_([e.id for e in signal_instance.entities])
+        )
+        query = query.filter(SignalInstance.id != signal_instance.id)
+
+        # get the earliest instance
+        query = query.order_by(asc(SignalInstance.created_at))
+        instances = query.all()
+
+        if instances:
+            # associate with existing case
+            signal_instance.case_id = instances[0].case_id
+            signal_instance.filter_action = SignalFilterAction.deduplicate
+            break
+    # apply default deduplication rule
+    else:
+        default_dedup_window = datetime.now(timezone.utc) - timedelta(hours=1)
+        instance = (
+            db_session.query(SignalInstance)
+            .filter(
+                SignalInstance.signal_id == signal_instance.signal_id,
+                SignalInstance.created_at >= default_dedup_window,
+                SignalInstance.id != signal_instance.id,
+                SignalInstance.case_id.isnot(None),  # noqa
+            )
+            .with_entities(SignalInstance.case_id)
+            .order_by(desc(SignalInstance.created_at))
+            .first()
+        )
+        if instance:
+            signal_instance.case_id = instance.case_id
+            signal_instance.filter_action = SignalFilterAction.deduplicate
+
+    return signal_instance
+
+
 def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bool:
     """
     Apply filter actions to the signal instance.
@@ -585,83 +685,18 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
     Returns:
         bool: True if the signal instance is filtered, False otherwise.
     """
-
     filtered = False
-    for f in signal_instance.signal.filters:
-        if f.mode != SignalFilterMode.active:
-            continue
 
-        query = db_session.query(SignalInstance).filter(
-            SignalInstance.signal_id == signal_instance.signal_id
-        )
-        query = apply_filter_specific_joins(SignalInstance, f.expression, query)
-        query = apply_filters(query, f.expression)
+    signal_instance = filter_snooze(db_session=db_session, signal_instance=signal_instance)
 
-        # order matters, check for snooze before deduplication
-        # we check to see if the current instances match's it's signals snooze filter
-        if f.action == SignalFilterAction.snooze:
-            if f.expiration.replace(tzinfo=timezone.utc) <= datetime.now(timezone.utc):
-                continue
+    # we only dedupe if we haven't been snoozed
+    if not signal_instance.filter_action:
+        signal_instance = filter_dedup(db_session=db_session, signal_instance=signal_instance)
 
-            # an expression is not required for snoozing, if absent we snooze regardless of entity
-            if f.expression:
-                instances = query.filter(SignalInstance.id == signal_instance.id).all()
-
-                if instances:
-                    signal_instance.filter_action = SignalFilterAction.snooze
-                    filtered = True
-                    break
-            else:
-                signal_instance.filter_action = SignalFilterAction.snooze
-                filtered = True
-                break
-
-        elif f.action == SignalFilterAction.deduplicate:
-            window = datetime.now(timezone.utc) - timedelta(minutes=f.window)
-            query = query.filter(SignalInstance.created_at >= window)
-            query = query.join(SignalInstance.entities).filter(
-                Entity.id.in_([e.id for e in signal_instance.entities])
-            )
-            query = query.filter(SignalInstance.id != signal_instance.id)
-
-            # get the earliest instance
-            query = query.order_by(asc(SignalInstance.created_at))
-            instances = query.all()
-
-            if instances:
-                # associate with existing case
-                signal_instance.case_id = instances[0].case_id
-                signal_instance.filter_action = SignalFilterAction.deduplicate
-                filtered = True
-                break
-    else:
-        # Check if there's a deduplication rule set on the signal
-        has_dedup_filter = any(
-            f.action == SignalFilterAction.deduplicate for f in signal_instance.signal.filters
-        )
-        # Apply the default deduplication rule if there's no deduplication rule set on the signal
-        # and the signal instance is not snoozed
-        if not has_dedup_filter and not filtered:
-            default_dedup_window = datetime.now(timezone.utc) - timedelta(hours=1)
-            instance = (
-                db_session.query(SignalInstance)
-                .filter(
-                    SignalInstance.signal_id == signal_instance.signal_id,
-                    SignalInstance.created_at >= default_dedup_window,
-                    SignalInstance.id != signal_instance.id,
-                    SignalInstance.case_id.isnot(None),  # noqa
-                )
-                .with_entities(SignalInstance.case_id)
-                .order_by(desc(SignalInstance.created_at))
-                .first()
-            )
-            if instance:
-                signal_instance.case_id = instance.case_id
-                signal_instance.filter_action = SignalFilterAction.deduplicate
-                filtered = True
-
-    if not filtered:
+    if not signal_instance.filter_action:
         signal_instance.filter_action = SignalFilterAction.none
+    else:
+        filtered = True
 
     db_session.commit()
     return filtered
