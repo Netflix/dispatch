@@ -81,7 +81,6 @@ import NewEditDialog from "@/forms/EditForm.vue"
 import DeleteDialog from "@/forms/DeleteDialog.vue"
 import Participant from "@/incident/Participant.vue"
 
-
 export default {
   name: "IncidentFormsTab",
   components: { NewEditDialog, DeleteDialog, Participant },

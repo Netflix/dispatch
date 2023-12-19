@@ -23,7 +23,6 @@ let SENTRY_ENABLED = import.meta.env.VITE_DISPATCH_SENTRY_ENABLED
 let SENTRY_DSN = import.meta.env.VITE_DISPATCH_SENTRY_DSN
 const FORMKIT_PRO_PROJECT_KEY = import.meta.env.VITE_FORMKIT_PRO_PROJECT_KEY
 
-
 if (SENTRY_ENABLED) {
   const APP_HOSTNAME = document.location.host
 

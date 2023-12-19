@@ -12,11 +12,19 @@
         </v-list-item>
       </template>
       <v-card-text v-if="page_schema">
-        <FormKit style="margin-left: 20px; margin-right: 20px" type="form" v-model="form_data" :actions="false">
+        <FormKit
+          style="margin-left: 20px; margin-right: 20px"
+          type="form"
+          v-model="form_data"
+          :actions="false"
+        >
           <FormKitSchema :schema="page_schema" :data="form_data" />
         </FormKit>
       </v-card-text>
-      <div v-if="!has_formkit_pro" class="ml-11 text-caption text-grey">For more advanced form components, upgrade to <a href="https://formkit.com/pro" target="_blank" rel="noopener noreferrer">FormKit Pro</a></div>
+      <div v-if="!has_formkit_pro" class="ml-11 text-caption text-grey">
+        For more advanced form components, upgrade to
+        <a href="https://formkit.com/pro" target="_blank" rel="noopener noreferrer">FormKit Pro</a>
+      </div>
       <v-card-actions>
         <v-spacer />
         <div>
@@ -25,7 +33,12 @@
               <v-btn v-bind="props" color="red en-1" variant="text"> Exit without saving </v-btn>
             </template>
             <v-list>
-              <v-list-item @click="showCreateEdit = false; closeCreateEdit()">
+              <v-list-item
+                @click="
+                  showCreateEdit = false
+                  closeCreateEdit()
+                "
+              >
                 <v-list-item-title> You will lose any changes. Continue? </v-list-item-title>
               </v-list-item>
               <v-list-item @click="showCreateEdit = true">

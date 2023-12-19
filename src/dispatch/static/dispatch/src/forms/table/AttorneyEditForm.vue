@@ -12,22 +12,28 @@
       </template>
       <span class="text-h5 ml-10 mt-3 mb-3">Incident Information</span>
       <span class="ml-10" v-for="item in incident_data.data">
-        <b>{{ item.question }}</b>: {{ item.answer }}<br />
+        <b>{{ item.question }}</b
+        >: {{ item.answer }}<br />
       </span>
       <span class="ml-10" v-if="incident_data.slack_channel">
-        <b>Slack channel</b>: <a :href="incident_data.slack_channel">#{{ incident_data.name }}</a> <br />
+        <b>Slack channel</b>: <a :href="incident_data.slack_channel">#{{ incident_data.name }}</a>
+        <br />
       </span>
       <span class="ml-10" v-if="incident_data.incident_doc">
-        <b>Incident document</b>: <a :href="incident_data.incident_doc">{{ incident_data.name }} Incident Document</a> <br />
+        <b>Incident document</b>:
+        <a :href="incident_data.incident_doc">{{ incident_data.name }} Incident Document</a> <br />
       </span>
       <v-divider class="mt-5" />
       <span class="text-h5 ml-10 mt-3 mb-3">Form Data</span>
       <span class="ml-10" v-for="item in page_data">
-        <b>{{  item.question }}</b>: {{  item.answer }}<br />
+        <b>{{ item.question }}</b
+        >: {{ item.answer }}<br />
       </span>
       <v-divider class="mt-5" />
       <span class="text-h5 ml-10 mt-3">Attorney Section</span>
-      <span class="text-caption ml-10">To be completed by counsel only. This section is privileged and confidential.</span>
+      <span class="text-caption ml-10"
+        >To be completed by counsel only. This section is privileged and confidential.</span
+      >
       <v-container class="ml-6">
         <v-row>
           <v-col cols="5">
@@ -56,7 +62,12 @@
               <v-btn v-bind="props" color="red en-1" variant="text"> Exit without saving </v-btn>
             </template>
             <v-list>
-              <v-list-item @click="showAttorneyEdit = false; closeAttorneyEdit()">
+              <v-list-item
+                @click="
+                  showAttorneyEdit = false
+                  closeAttorneyEdit()
+                "
+              >
                 <v-list-item-title> You will lose any changes. Continue? </v-list-item-title>
               </v-list-item>
               <v-list-item @click="showAttorneyEdit = true">
@@ -65,7 +76,9 @@
             </v-list>
           </v-menu>
         </div>
-        <v-btn color="blue en-1" variant="text" @click="saveAttorneyAnalysis()"> Update form </v-btn>
+        <v-btn color="blue en-1" variant="text" @click="saveAttorneyAnalysis()">
+          Update form
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

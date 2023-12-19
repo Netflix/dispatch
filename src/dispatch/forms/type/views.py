@@ -50,7 +50,7 @@ def create_forms_type(
         return create(
             db_session=db_session, creator=current_user, forms_type_in=forms_type_in
         )
-    except IntegrityError as e:
+    except IntegrityError:
         raise ValidationError(
             [
                 ErrorWrapper(

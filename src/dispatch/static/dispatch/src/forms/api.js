@@ -12,7 +12,7 @@ export default {
   },
 
   create(payload) {
-    return   API.post(`${resource}`, payload)
+    return API.post(`${resource}`, payload)
   },
 
   update(formId, creator_id, payload) {

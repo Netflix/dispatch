@@ -67,7 +67,12 @@
                   name="Form Schema"
                 />
               </v-col>
-              <div v-if="!has_formkit_pro" class="ml-11 text-caption text-grey">For more advanced form components, upgrade to <a href="https://formkit.com/pro" target="_blank" rel="noopener noreferrer">FormKit Pro</a></div>
+              <div v-if="!has_formkit_pro" class="ml-11 text-caption text-grey">
+                For more advanced form components, upgrade to
+                <a href="https://formkit.com/pro" target="_blank" rel="noopener noreferrer"
+                  >FormKit Pro</a
+                >
+              </div>
             </v-row>
           </v-container>
         </v-card-text>

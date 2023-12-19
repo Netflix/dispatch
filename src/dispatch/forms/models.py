@@ -2,8 +2,7 @@ from datetime import datetime
 from pydantic import Field
 from typing import Optional, List
 
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, String
-from sqlalchemy_utils import TSVectorType
+from sqlalchemy import Column, Integer, ForeignKey, String
 from sqlalchemy.orm import relationship
 
 from dispatch.database.core import Base
