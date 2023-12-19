@@ -20,6 +20,7 @@ from .service import (
     oncall_shift_check,
     get_escalation_policy,
     get_service,
+    get_next_oncall,
 )
 
 
@@ -114,3 +115,13 @@ class PagerDutyOncallPlugin(OncallPlugin):
         except Exception as e:
             log.error("Error trying to retrieve schedule_id from service_id")
             log.exception(e)
+
+    def get_next_oncall(self, service_id: str) -> Optional[str]:
+        schedule_id = self.get_schedule_id_from_service_id(service_id)
+
+        client = APISession(self.configuration.api_key.get_secret_value())
+        client.url = self.configuration.pagerduty_api_url
+        return get_next_oncall(
+            client=client,
+            schedule_id=schedule_id,
+        )

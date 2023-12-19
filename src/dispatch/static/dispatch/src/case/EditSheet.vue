@@ -139,7 +139,9 @@ export default {
 
   methods: {
     fetchDetails() {
-      this.getDetails({ name: this.$route.params.name })
+      if (this.$route.params.name) {
+        this.getDetails({ name: this.$route.params.name })
+      }
     },
     ...mapActions("case_management", [
       "save",

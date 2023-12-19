@@ -76,9 +76,9 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
         Section(
             text=f"*Title* \n {case.title}.",
             accessory=Button(
-                text="View",
+                text="Open in Dispatch",
                 action_id="button-link",
-                url=f"{DISPATCH_UI_URL}/{case.project.organization.slug}/cases/{case.id}",
+                url=f"{DISPATCH_UI_URL}/{case.project.organization.slug}/cases/{case.name}",
             ),
         ),
         Section(text=f"*Description* \n {case.description}"),
@@ -204,12 +204,20 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
                     action_id=SignalNotificationActions.snooze,
                     value=button_metadata,
                 ),
+            ]
+            # The button URL must have at least one character.
+            # Otherwise, Slack will raise a Validation error.
+            # external_url is not a required field. If it's empty, an empty list is added,
+            # which effectively doesn't add anything to the elements list.
+            + [
                 Button(
                     text="Response Plan",
                     action_id="button-link",
                     url=first_instance_signal.external_url,
-                ),
+                )
             ]
+            if first_instance_signal.external_url
+            else []
         ),
         Section(text="*Alerts*"),
         Divider(),

@@ -1,11 +1,10 @@
 <template>
-  <v-form @submit.prevent v-slot="{ isValid }">
+  <v-form ref="form" @submit.prevent>
     <v-card
       class="mx-auto ma-4"
       max-width="600"
       variant="outlined"
-      title="          Open a Case
-"
+      title="          Open a Case"
       :loading="loading"
     >
       <template #append>
@@ -32,50 +31,48 @@
             <v-icon size="small">mdi-open-in-new</v-icon>
           </a>
         </p>
-        <v-form>
-          <v-container>
-            <v-row>
-              <v-col cols="12">
-                <v-textarea
-                  v-model="title"
-                  label="Title"
-                  hint="A brief explanatory title. You can change this later."
-                  clearable
-                  auto-grow
-                  rows="2"
-                  required
-                  name="Title"
-                  :rules="[rules.required]"
-                />
-              </v-col>
-              <v-col cols="12">
-                <v-textarea
-                  v-model="description"
-                  label="Description"
-                  hint="A summary of what you know so far. It's all right if this is incomplete."
-                  clearable
-                  auto-grow
-                  rows="3"
-                  required
-                  name="Description"
-                  :rules="[rules.required]"
-                />
-              </v-col>
-              <v-col cols="12">
-                <project-select v-model="project" />
-              </v-col>
-              <v-col cols="12">
-                <case-type-select :project="project" v-model="case_type" />
-              </v-col>
-              <v-col cols="12">
-                <case-priority-select :project="project" v-model="case_priority" />
-              </v-col>
-              <v-col cols="12">
-                <tag-filter-auto-complete :project="project" v-model="tags" label="Tags" />
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-form>
+        <v-container>
+          <v-row>
+            <v-col cols="12">
+              <v-textarea
+                v-model="title"
+                label="Title"
+                hint="A brief explanatory title. You can change this later."
+                clearable
+                auto-grow
+                rows="2"
+                required
+                name="Title"
+                :rules="[rules.required]"
+              />
+            </v-col>
+            <v-col cols="12">
+              <v-textarea
+                v-model="description"
+                label="Description"
+                hint="A summary of what you know so far. It's all right if this is incomplete."
+                clearable
+                auto-grow
+                rows="3"
+                required
+                name="Description"
+                :rules="[rules.required]"
+              />
+            </v-col>
+            <v-col cols="12">
+              <project-select v-model="project" />
+            </v-col>
+            <v-col cols="12">
+              <case-type-select :project="project" v-model="case_type" />
+            </v-col>
+            <v-col cols="12">
+              <case-priority-select :project="project" v-model="case_priority" />
+            </v-col>
+            <v-col cols="12">
+              <tag-filter-auto-complete :project="project" v-model="tags" label="Tags" />
+            </v-col>
+          </v-row>
+        </v-container>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
@@ -84,7 +81,7 @@
           variant="flat"
           block
           :loading="loading"
-          :disabled="!isValid.value"
+          :disabled="!formIsValid"
           @click="report()"
         >
           Submit
@@ -108,6 +105,8 @@ import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import DocumentApi from "@/document/api"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
+import SearchUtils from "@/search/utils"
+import CaseTypeApi from "@/case/type/api"
 
 export default {
   setup() {
@@ -128,6 +127,12 @@ export default {
     return {
       isSubmitted: false,
       project_faq: null,
+      formIsValid: false,
+      titleValid: false,
+      descriptionValid: false,
+      projectValid: false,
+      caseTypeValid: false,
+      casePriorityValid: false,
     }
   },
 
@@ -146,6 +151,17 @@ export default {
       "selected.project",
       "selected.id",
     ]),
+  },
+
+  watch: {
+    title() {
+      this.titleValid = !!this.title
+      this.checkFormValidity()
+    },
+    description() {
+      this.descriptionValid = !!this.description
+      this.checkFormValidity()
+    },
   },
 
   methods: {
@@ -198,6 +214,9 @@ export default {
         }
       )
     },
+    checkFormValidity() {
+      this.formIsValid = this.titleValid && this.descriptionValid
+    },
     ...mapActions("case_management", ["report", "get", "resetSelected"]),
   },
 
@@ -207,7 +226,32 @@ export default {
     }
 
     if (this.$route.query.case_type) {
-      this.case_type = { name: this.$route.query.case_type }
+      let filterOptions = {
+        q: "",
+        sortBy: ["name"],
+        descending: [false],
+        itemsPerPage: this.numItems,
+      }
+
+      if (this.project) {
+        filterOptions = {
+          filters: {
+            project: [this.project],
+            name: [this.$route.query.case_type],
+            enabled: ["true"],
+          },
+          ...filterOptions,
+        }
+      }
+
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+      CaseTypeApi.getAll(filterOptions).then((response) => {
+        if (response.data.items.length > 0) {
+          this.case_type = response.data.items[0]
+        } else {
+          this.case_type = this.$route.query.case_type
+        }
+      })
     }
 
     if (this.$route.query.case_priority) {

@@ -194,3 +194,13 @@ def oncall_shift_check(client: APISession, schedule_id: str, hour: int) -> Optio
 
     if previous_oncall["email"] != next_oncall["email"]:
         return previous_oncall
+
+
+def get_next_oncall(client: APISession, schedule_id: str) -> Optional[str]:
+    """Retrieves the email of the next oncall person. Assumes 12-hour shifts"""
+    now = datetime.utcnow()
+
+    next_shift = (now + timedelta(hours=13)).isoformat(timespec="minutes") + "Z"
+    next_oncall = get_oncall_at_time(client=client, schedule_id=schedule_id, utctime=next_shift)
+
+    return None if not next_oncall else next_oncall["email"]
