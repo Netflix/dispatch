@@ -67,7 +67,7 @@ const handleResolutionUpdate = (newResolution) => {
 
 <template>
   <div>
-    <v-navigation-drawer v-model="drawerVisible" location="right" width="400">
+    <v-navigation-drawer v-model="drawerVisible" location="right" width="450">
       <v-divider />
 
       <div class="pl-6">
@@ -77,12 +77,12 @@ const handleResolutionUpdate = (newResolution) => {
           </v-col>
           <v-col cols="10">
             <ParticipantSearchPopover
-              :participant="modelValue.assignee?.individual.name"
+              :participant="modelValue.assignee?.individual"
               type="assignee"
               label="Assign to..."
               tooltip-label="Update Assignee"
               hotkey="a"
-              class="pl-8"
+              class="pl-10"
             />
           </v-col>
         </v-row>
@@ -92,12 +92,12 @@ const handleResolutionUpdate = (newResolution) => {
           </v-col>
           <v-col cols="10">
             <ParticipantSearchPopover
-              :participant="modelValue.reporter?.individual.name"
+              :participant="modelValue.reporter?.individual"
               type="reporter"
               label="Set reporter to..."
               tooltip-label="Update Reporter"
               hotkey="r"
-              class="pl-8"
+              class="pl-10"
             />
           </v-col>
         </v-row>
@@ -110,7 +110,7 @@ const handleResolutionUpdate = (newResolution) => {
             <CasePrioritySearchPopover
               :case-priority="modelValue.case_priority?.name"
               :project="modelValue.project?.name"
-              class="pl-6"
+              class="pl-8"
             />
           </v-col>
         </v-row>
@@ -123,7 +123,7 @@ const handleResolutionUpdate = (newResolution) => {
             <CaseSeveritySearchPopover
               :case-severity="modelValue.case_severity?.name"
               :project="modelValue.project?.name"
-              class="pl-6"
+              class="pl-8"
             />
           </v-col>
         </v-row>
@@ -136,7 +136,7 @@ const handleResolutionUpdate = (newResolution) => {
             <CaseTypeSearchPopover
               :case-type="modelValue.case_type?.name"
               :project="modelValue.project?.name"
-              class="pl-6"
+              class="pl-8"
             />
           </v-col>
         </v-row>
@@ -146,7 +146,7 @@ const handleResolutionUpdate = (newResolution) => {
             <div class="dispatch-font">Project</div>
           </v-col>
           <v-col cols="10">
-            <ProjectSearchPopover :project="modelValue.project?.name" class="pl-6" />
+            <ProjectSearchPopover :project="modelValue.project?.name" class="pl-8" />
           </v-col>
         </v-row>
       </div>
