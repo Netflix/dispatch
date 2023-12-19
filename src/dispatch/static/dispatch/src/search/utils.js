@@ -59,7 +59,7 @@ export default {
       filter: JSON.stringify(expression),
     }
   },
-  createSortExpression(sort, model) {
+  createSortExpression(sort) {
     let sortBy = []
     let descending = []
     each(sort, function (value, key) {
