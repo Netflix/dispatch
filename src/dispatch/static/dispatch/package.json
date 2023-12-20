@@ -98,9 +98,5 @@
     "vite-plugin-monaco-editor": "^1.1.0",
     "vite-plugin-vuetify": "^1.0.2",
     "vitest": "^0.34.6"
-  },
-  "optionalDependencies": {
-    "@formkit/pro": "npm:@formkit-enterprise/pro@^0.119.0"
   }
-
 }
