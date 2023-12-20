@@ -19,10 +19,16 @@ let SENTRY_ENABLED = import.meta.env.VITE_DISPATCH_SENTRY_ENABLED
 let SENTRY_DSN = import.meta.env.VITE_DISPATCH_SENTRY_DSN
 let FORMKIT_ENTERPRISE_TOKEN = import.meta.env.FORMKIT_ENTERPRISE_TOKEN
 
+let isUsingFormkitEnterprise = false
+
 if (FORMKIT_ENTERPRISE_TOKEN) {
-  import("@formkit-enterprise/pro").then((module) => {
-    // Use the module here
-  })
+  import("@formkit-enterprise/pro")
+    .then(() => {
+      isUsingFormkitEnterprise = true
+    })
+    .catch((error) => {
+      console.error("Error loading @formkit-enterprise/pro", error)
+    })
 }
 
 if (SENTRY_ENABLED) {
@@ -47,3 +53,5 @@ app.use(router)
 app.use(store)
 
 app.mount("#app")
+
+export { isUsingFormkitEnterprise }
