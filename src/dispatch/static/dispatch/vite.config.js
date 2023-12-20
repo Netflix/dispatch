@@ -48,6 +48,9 @@ export default defineConfig({
       },
     ],
   },
+  optimizeDeps: {
+    exclude: ["@formkit/pro", "@formkit/pro/genesis"],
+  },
   build: {
     chunkSizeWarningLimit: 600,
   },
