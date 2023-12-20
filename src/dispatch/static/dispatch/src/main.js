@@ -4,6 +4,13 @@ import { vuetifyPlugin } from "./vuetify/"
 import router from "./router/"
 import store from "./store"
 import "@formkit/themes/genesis"
+const proModule = import.meta.env.VITE_FORMKIT_PRO_PROJECT_KEY
+  ? await import(
+      /* @vite-ignore */
+      "@formkit/pro"
+    )
+  : null
+
 import(
   /* @vite-ignore */
   `${import.meta.env.VITE_FORMKIT_PRO_PROJECT_KEY ? "@formkit/pro/genesis" : ""}`
@@ -11,7 +18,6 @@ import(
   new module()
 })
 
-import { createProPlugin, inputs } from "@formkit/pro"
 import { plugin, defaultConfig } from "@formkit/vue"
 import VResizeDrawer from "vuetify3-resize-drawer"
 
@@ -45,7 +51,7 @@ if (SENTRY_ENABLED) {
 
 // Configure plugins
 if (FORMKIT_PRO_PROJECT_KEY) {
-  const pro = createProPlugin(FORMKIT_PRO_PROJECT_KEY, inputs)
+  const pro = proModule.createProPlugin(FORMKIT_PRO_PROJECT_KEY, proModule.inputs)
   app.use(plugin, defaultConfig({ plugins: [pro] }))
 } else {
   app.use(plugin, defaultConfig)
