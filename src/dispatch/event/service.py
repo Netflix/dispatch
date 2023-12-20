@@ -193,15 +193,6 @@ def delete_incident_event(
     delete(db_session=db_session, event_id=event.id)
 
 
-def delete_incident_event(
-    db_session,
-    uuid: str,
-):
-    """Deletes an event."""
-    event = get_by_uuid(db_session=db_session, uuid=uuid)
-    log.debug("Deleting incident event")
-    delete(db_session=db_session, event_id=event.id)
-
 
 def export_timeline(
     db_session,
@@ -236,7 +227,7 @@ def export_timeline(
                 .replace(tzinfo=None)
             )
         date, time = str(event_timestamp).split(" ")
-        if e.pinned == True or timeline_filters.get(e.type) == True:
+        if e.pinned or timeline_filters.get(e.type):
             if date in dates:
                 table_data.append(
                     {time_header: time, "Description": e.description, "Owner": e.owner}
@@ -354,7 +345,7 @@ def export_timeline(
             str_len = 0
             row_idx = 0
             insert_data_request = []
-            for index, text in zip(cell_indices, data_to_insert):
+            for index, text in zip(cell_indices, data_to_insert, strict=True):
                 # Adjusting index based on string length
                 new_idx = index + str_len
 
