@@ -30,6 +30,7 @@
     "@date-io/date-fns": "^2.17.0",
     "@formkit/themes": "^1.2.2",
     "@formkit/vue": "^1.3.0",
+    "@formkit/pro": "npm:@formkit-enterprise/pro@^0.119.0",
     "@json2csv/plainjs": "^6.1.3",
     "@json2csv/transforms": "^6.1.3",
     "@mdi/font": "^5.9.55",
@@ -97,8 +98,5 @@
     "vite-plugin-monaco-editor": "^1.1.0",
     "vite-plugin-vuetify": "^1.0.2",
     "vitest": "^0.34.6"
-  },
-  "optionalDependencies": {
-    "@formkit/pro": "npm:@formkit-enterprise/pro@^0.119.0"
   }
 }
