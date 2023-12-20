@@ -1,7 +1,7 @@
 <template>
   <div class="d-flex justify-space-around">
     <v-menu>
-      <template v-slot:activator="{ props }">
+      <template #activator="{ props }">
         <v-btn color="secondary" class="ml-2 mr-2 mt-3" v-bind="props"> Export </v-btn>
       </template>
       <v-list>
@@ -13,7 +13,7 @@
     <v-dialog v-model="showExportDialog" persistent max-width="800px">
       <v-card>
         <v-card-title>
-          <span class="headline" style="margin-bottom: 10px">Export Timeline Events</span>
+          <span class="text-h5" style="margin-bottom: 10px">Export Timeline Events</span>
         </v-card-title>
 
         <v-card-subtitle class="subtitle_top">
@@ -23,19 +23,18 @@
         <v-card-text>
           <v-card class="rounded-0">
             <div class="ml-5 mt-5 text-grey">Select incident document(s) for export</div>
-            <v-checkbox
-              label="Incident Document"
-              v-model="incidentDocument"
-              class="ml-5"
-            ></v-checkbox>
+            <v-checkbox label="Incident Document" v-model="incidentDocument" class="ml-5" />
             <v-checkbox
               class="ml-5"
               style="margin-top: -30px"
               v-if="!isActive()"
               label="Review Document"
               v-model="reviewDocument"
-            ></v-checkbox>
-            <div class="ml-8 mb-2 error text-caption" v-if="!incidentDocument && !reviewDocument">
+            />
+            <div
+              class="ml-8 mb-2 bg-error text-caption"
+              v-if="!incidentDocument && !reviewDocument"
+            >
               At least one must be selected
             </div>
           </v-card>
@@ -53,10 +52,10 @@
 
         <v-card-actions>
           <v-spacer />
-          <v-btn color="red en-1" text @click="cancel()"> Cancel </v-btn>
+          <v-btn color="red en-1" variant="text" @click="cancel()"> Cancel </v-btn>
           <v-btn
             color="blue en-1"
-            text
+            variant="text"
             @click="handleDocExport()"
             :disabled="!incidentDocument && !reviewDocument"
           >
@@ -72,6 +71,7 @@
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 import Util from "@/util"
+import moment from "moment-timezone"
 const eventTypeToFilter = {
   Other: "other_events",
   "Field updated": "field_updates",
@@ -82,9 +82,9 @@ const eventTypeToFilter = {
 }
 
 export default {
-  data: () => ({
-    items: [{ title: "Click Me" }, { title: "Click Me1" }],
-  }),
+  // data: () => ({
+  //   items: [{ title: "Click Me" }, { title: "Click Me1" }],
+  // }),
   name: "TimelineExportDialog",
   props: {
     showItem: Function,

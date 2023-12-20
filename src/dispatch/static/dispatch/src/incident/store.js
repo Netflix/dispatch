@@ -283,7 +283,7 @@ const actions = {
     commit("SET_DIALOG_EDIT_EVENT", false)
   },
   exportDoc({ commit }, timeline_filters) {
-    IncidentApi.exportTimeline(state.selected.id,timeline_filters).then((response) => {
+    IncidentApi.exportTimeline(state.selected.id, timeline_filters).then((response) => {
       commit("SET_SELECTED", response.data)
     })
     commit(

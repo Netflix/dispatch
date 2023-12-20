@@ -5,13 +5,13 @@
         <v-card-title class="ml-2">Update Case Status</v-card-title>
         <v-card-text class="dispatch-text-title">
           Are you sure you want to change the case status from
-          <v-chip size="small" class="ml-1 mr-1" :color="statusColors[modelValue.status]">{{
-            modelValue.status
-          }}</v-chip>
+          <v-chip size="small" class="ml-1 mr-1" :color="statusColors[modelValue.status]">
+            {{ modelValue.status }}
+          </v-chip>
           to
-          <v-chip size="small" class="ml-1 mr-1" :color="statusColors[selectedStatus]">{{
-            selectedStatus
-          }}</v-chip>
+          <v-chip size="small" class="ml-1 mr-1" :color="statusColors[selectedStatus]">
+            {{ selectedStatus }}
+          </v-chip>
           ?
         </v-card-text>
         <v-card-actions class="pt-4">
@@ -27,9 +27,9 @@
         <v-card-title class="ml-2">Status Not Changed</v-card-title>
         <v-card-text class="dispatch-text-title">
           This case was moved to the status
-          <v-chip size="small" class="ml-1 mr-1" :color="statusColors[selectedStatus]">{{
-            selectedStatus
-          }}</v-chip>
+          <v-chip size="small" class="ml-1 mr-1" :color="statusColors[selectedStatus]">
+            {{ selectedStatus }}
+          </v-chip>
           on
           <DTooltip :text="formatToTimeZones(selectedStatusTooltip)" hotkeys="">
             <template #activator="{ tooltip }">

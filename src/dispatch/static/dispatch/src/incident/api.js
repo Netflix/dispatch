@@ -75,7 +75,7 @@ export default {
   createAllResources(incidentId, payload) {
     return API.post(`/${resource}/${incidentId}/resources`, payload)
   },
-  exportTimeline(incidentId, timeline_filters){
+  exportTimeline(incidentId, timeline_filters) {
     return API.post(`/${resource}/${incidentId}/exportTimeline`, timeline_filters)
   },
 }

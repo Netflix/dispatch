@@ -87,7 +87,6 @@ class GoogleDocsDocumentPlugin(DocumentPlugin):
             header_section = False
             table_exists = False
             table_indices = []
-            log.debug(document_content)
             headingId = ""
             for i, element in enumerate(document_content):
                 if "paragraph" in element and "elements" in element["paragraph"]:
@@ -100,12 +99,7 @@ class GoogleDocsDocumentPlugin(DocumentPlugin):
 
                             elif header_section:
                                 # Gets the end index of any text below the header
-                                if (
-                                    header_section
-                                    and item["textRun"]["content"].strip()
-                                    and element["paragraph"].get("paragraphStyle")["headingId"]
-                                    != headingId
-                                ):
+                                if header_section and item["textRun"]["content"].strip():
                                     header_index = item["endIndex"]
                                 # checking if we are past header in question
                                 if (

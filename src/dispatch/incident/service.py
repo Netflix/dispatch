@@ -209,7 +209,6 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
             "visibility": incident.visibility,
         },
         individual_id=incident_in.reporter.individual.id,
-        owner=incident_in.reporter.individual.name,
         incident_id=incident.id,
         owner=reporter_name,
         pinned=True,
@@ -281,7 +280,9 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
         )
 
     # add observer (if engage_next_oncall is enabled)
-    incident_role = resolve_role(db_session=db_session, role=ParticipantRoleType.incident_commander, incident=incident)
+    incident_role = resolve_role(
+        db_session=db_session, role=ParticipantRoleType.incident_commander, incident=incident
+    )
     if incident_role and incident_role.engage_next_oncall:
         oncall_plugin = plugin_service.get_active_instance(
             db_session=db_session, project_id=incident.project.id, plugin_type="oncall"
@@ -289,7 +290,9 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
         if not oncall_plugin:
             log.debug("Resolved observer role not available since oncall plugin is not active.")
         else:
-            oncall_email = oncall_plugin.instance.get_next_oncall(service_id=incident_role.service.external_id)
+            oncall_email = oncall_plugin.instance.get_next_oncall(
+                service_id=incident_role.service.external_id
+            )
             if oncall_email:
                 participant_flows.add_participant(
                     oncall_email,

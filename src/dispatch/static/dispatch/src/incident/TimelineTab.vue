@@ -17,16 +17,28 @@
             <div class="add-event" style="--margtop: 0px; --margbot: 5px; --margrule: 20px">
               <div class="horiz-rule" />
               <div class="add-button">
-                <v-btn compact size="small" variant="plain" class="up-button"
-                  @click="showNewPreEventDialog(sortedEvents[0].started_at)">
+                <v-btn
+                  compact
+                  size="small"
+                  variant="plain"
+                  class="up-button"
+                  @click="showNewPreEventDialog(sortedEvents[0].started_at)"
+                >
                   <v-icon size="small" class="mr-1">mdi-plus-circle-outline</v-icon>Add event
                 </v-btn>
               </div>
             </div>
           </v-row>
         </v-timeline-item>
-        <v-timeline-item v-for="event in sortedEvents" v-show="showItem(event)" :icon="iconItem(event)" :key="event.id"
-          class="mb-4" :class="classType(event)" dot-color="blue">
+        <v-timeline-item
+          v-for="event in sortedEvents"
+          v-show="showItem(event)"
+          :icon="iconItem(event)"
+          :key="event.id"
+          class="mb-4"
+          :class="classType(event)"
+          dot-color="blue"
+        >
           <template #icon>
             <v-icon color="white" />
           </template>
@@ -105,8 +117,13 @@
             <div class="add-event" style="--margtop: -40px; --margbot: 0px; --margrule: 40px">
               <div class="horiz-rule" />
               <div class="add-button">
-                <v-btn compact size="small" variant="plain" class="up-button"
-                  @click="showNewEventDialog(event.started_at)">
+                <v-btn
+                  compact
+                  size="small"
+                  variant="plain"
+                  class="up-button"
+                  @click="showNewEventDialog(event.started_at)"
+                >
                   <v-icon size="small" class="mr-1">mdi-plus-circle-outline</v-icon>Add event
                 </v-btn>
               </div>
@@ -193,7 +210,6 @@ export default {
       "showDeleteEventDialog",
       "showNewPreEventDialog",
       "togglePin",
-
     ]),
     iconItem(event) {
       if (event.description == "Incident created") return "mdi-flare"
@@ -232,9 +248,5 @@ export default {
   },
 }
 </script>
-
-
-
-
 
 <style scoped src="@/styles/timeline.css" />
