@@ -6,10 +6,7 @@ import store from "./store"
 import "@formkit/themes/genesis"
 
 import.meta.env.VITE_FORMKIT_PRO_PROJECT_KEY
-  ? await import(
-      /* @vite-ignore */
-      "@formkit/pro/genesis"
-    )
+  ? await import(/* @vite-ignore */ "@formkit/pro/genesis")
   : null
 
 import { plugin, defaultConfig } from "@formkit/vue"
@@ -50,10 +47,7 @@ app.use(store)
 app.component("VResizeDrawer", VResizeDrawer)
 if (FORMKIT_PRO_PROJECT_KEY) {
   const proModule = import.meta.env.VITE_FORMKIT_PRO_PROJECT_KEY
-    ? await import(
-        /* @vite-ignore */
-        "@formkit/pro"
-      )
+    ? await import(/* @vite-ignore */ "@formkit/pro")
     : null
   const pro = proModule.createProPlugin(FORMKIT_PRO_PROJECT_KEY, proModule.inputs)
   app.use(plugin, defaultConfig({ plugins: [pro] }))

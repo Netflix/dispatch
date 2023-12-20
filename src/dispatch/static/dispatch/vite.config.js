@@ -46,7 +46,6 @@ export default defineConfig({
         find: "@",
         replacement: path.resolve(__dirname, "./src"),
       },
-      { genesis: import.meta.env.VITE_FORMKIT_PRO_PROJECT_KEY ? "@formkit/pro/genesis" : "" },
     ],
   },
   build: {
