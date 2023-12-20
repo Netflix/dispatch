@@ -1,5 +1,5 @@
 import API from "@/api"
-import { result } from "lodash"
+//import { result } from "lodash"
 
 const resource = "incidents"
 
