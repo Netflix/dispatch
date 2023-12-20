@@ -17,6 +17,13 @@ const app = createApp(App)
 // Configure sentry
 let SENTRY_ENABLED = import.meta.env.VITE_DISPATCH_SENTRY_ENABLED
 let SENTRY_DSN = import.meta.env.VITE_DISPATCH_SENTRY_DSN
+let FORMKIT_ENTERPRISE_TOKEN = import.meta.env.FORMKIT_ENTERPRISE_TOKEN
+
+if (FORMKIT_ENTERPRISE_TOKEN) {
+  import("@formkit-enterprise/pro").then((module) => {
+    // Use the module here
+  })
+}
 
 if (SENTRY_ENABLED) {
   const APP_HOSTNAME = document.location.host
