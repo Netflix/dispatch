@@ -4,6 +4,7 @@ import { vuetifyPlugin } from "./vuetify/"
 import router from "./router/"
 import store from "./store"
 import { plugin, defaultConfig } from "@formkit/vue"
+import { createProPlugin, autocomplete } from "@formkit/pro"
 
 import "roboto-fontface/css/roboto/roboto-fontface.css"
 import "font-awesome/css/font-awesome.css"
@@ -22,13 +23,18 @@ let FORMKIT_ENTERPRISE_TOKEN = import.meta.env.FORMKIT_ENTERPRISE_TOKEN
 let isUsingFormkitEnterprise = false
 
 if (FORMKIT_ENTERPRISE_TOKEN) {
-  import("@formkit-enterprise/pro")
-    .then(() => {
-      isUsingFormkitEnterprise = true
+  const pro = createProPlugin(FORMKIT_ENTERPRISE_TOKEN, {
+    autocomplete,
+  })
+  app.use(
+    plugin,
+    defaultConfig({
+      plugins: [pro],
     })
-    .catch((error) => {
-      console.error("Error loading @formkit-enterprise/pro", error)
-    })
+  )
+  isUsingFormkitEnterprise = true
+} else {
+  app.use(plugin, defaultConfig)
 }
 
 if (SENTRY_ENABLED) {
@@ -47,7 +53,6 @@ if (SENTRY_ENABLED) {
 }
 
 // Configure plugins
-app.use(plugin, defaultConfig)
 app.use(vuetifyPlugin)
 app.use(router)
 app.use(store)
