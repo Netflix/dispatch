@@ -18,6 +18,23 @@ const app = createApp(App)
 // Configure sentry
 let SENTRY_ENABLED = import.meta.env.VITE_DISPATCH_SENTRY_ENABLED
 let SENTRY_DSN = import.meta.env.VITE_DISPATCH_SENTRY_DSN
+
+if (SENTRY_ENABLED) {
+  const APP_HOSTNAME = document.location.host
+
+  let DSN = `https://1:1@${APP_HOSTNAME}/api/0`
+
+  // Allow global override
+  if (SENTRY_DSN) {
+    DSN = SENTRY_DSN
+  }
+  Sentry.init({
+    app,
+    dsn: DSN,
+  })
+}
+
+// Configure formkit
 let FORMKIT_ENTERPRISE_TOKEN = import.meta.env.FORMKIT_ENTERPRISE_TOKEN
 
 let isUsingFormkitEnterprise = false
@@ -35,21 +52,6 @@ if (FORMKIT_ENTERPRISE_TOKEN) {
   isUsingFormkitEnterprise = true
 } else {
   app.use(plugin, defaultConfig)
-}
-
-if (SENTRY_ENABLED) {
-  const APP_HOSTNAME = document.location.host
-
-  let DSN = `https://1:1@${APP_HOSTNAME}/api/0`
-
-  // Allow global override
-  if (SENTRY_DSN) {
-    DSN = SENTRY_DSN
-  }
-  Sentry.init({
-    app,
-    dsn: DSN,
-  })
 }
 
 // Configure plugins
