@@ -33,7 +33,7 @@
               <v-btn v-bind="props" color="red en-1" variant="text"> Exit without saving </v-btn>
             </template>
             <v-list>
-              <v-list-item @click="showCreateEdit = false; closeCreateEdit()">
+              <v-list-item @click="closeDialog()">
                 <v-list-item-title> You will lose any changes. Continue? </v-list-item-title>
               </v-list-item>
               <v-list-item @click="showCreateEdit = true">
@@ -86,6 +86,10 @@ export default {
 
   methods: {
     ...mapActions("forms", ["closeCreateEdit", "saveAsDraft", "saveAsCompleted"]),
+    closeDialog() {
+      this.showCreateEdit = false
+      this.closeCreateEdit()
+    },
   },
 
   watch: {

@@ -62,7 +62,7 @@
               <v-btn v-bind="props" color="red en-1" variant="text"> Exit without saving </v-btn>
             </template>
             <v-list>
-              <v-list-item @click="showAttorneyEdit = false; closeAttorneyEdit()">
+              <v-list-item @click="closeDialog()">
                 <v-list-item-title> You will lose any changes. Continue? </v-list-item-title>
               </v-list-item>
               <v-list-item @click="showAttorneyEdit = true">
@@ -116,6 +116,10 @@ export default {
 
   methods: {
     ...mapActions("forms", ["closeAttorneyEdit", "saveAttorneyAnalysis"]),
+    closeDialog() {
+      this.showAttorneyEdit = false
+      this.closeAttorneyEdit()
+    },
   },
 
   data() {
