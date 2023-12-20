@@ -68,6 +68,7 @@ def create_tactical_report(
         details={"conditions": conditions, "actions": actions, "needs": needs},
         incident_id=incident_id,
         individual_id=participant.individual.id,
+        owner=participant.individual.name,
     )
 
     # we send the tactical report to the conversation
@@ -147,6 +148,7 @@ def create_executive_report(
         details={"current_status": current_status, "overview": overview, "next_steps": next_steps},
         incident_id=incident_id,
         individual_id=participant.individual.id,
+        owner=participant.individual.name,
     )
 
     # we create a new document for the executive report
