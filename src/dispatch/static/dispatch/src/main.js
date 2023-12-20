@@ -4,19 +4,13 @@ import { vuetifyPlugin } from "./vuetify/"
 import router from "./router/"
 import store from "./store"
 import "@formkit/themes/genesis"
-const proModule = import.meta.env.VITE_FORMKIT_PRO_PROJECT_KEY
+
+import.meta.env.VITE_FORMKIT_PRO_PROJECT_KEY
   ? await import(
       /* @vite-ignore */
-      "@formkit/pro"
+      "@formkit/pro/genesis"
     )
   : null
-
-import(
-  /* @vite-ignore */
-  `${import.meta.env.VITE_FORMKIT_PRO_PROJECT_KEY ? "@formkit/pro/genesis" : ""}`
-).then((module) => {
-  new module()
-})
 
 import { plugin, defaultConfig } from "@formkit/vue"
 import VResizeDrawer from "vuetify3-resize-drawer"
@@ -50,15 +44,20 @@ if (SENTRY_ENABLED) {
 }
 
 // Configure plugins
+app.use(vuetifyPlugin)
+app.use(router)
+app.use(store)
+app.component("VResizeDrawer", VResizeDrawer)
 if (FORMKIT_PRO_PROJECT_KEY) {
+  const proModule = import.meta.env.VITE_FORMKIT_PRO_PROJECT_KEY
+    ? await import(
+        /* @vite-ignore */
+        "@formkit/pro"
+      )
+    : null
   const pro = proModule.createProPlugin(FORMKIT_PRO_PROJECT_KEY, proModule.inputs)
   app.use(plugin, defaultConfig({ plugins: [pro] }))
 } else {
   app.use(plugin, defaultConfig)
 }
-app.use(vuetifyPlugin)
-app.use(router)
-app.use(store)
-app.component("VResizeDrawer", VResizeDrawer)
-
 app.mount("#app")
