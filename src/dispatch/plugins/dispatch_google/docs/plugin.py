@@ -88,7 +88,7 @@ class GoogleDocsDocumentPlugin(DocumentPlugin):
             table_exists = False
             table_indices = []
             headingId = ""
-            for i, element in enumerate(document_content):
+            for element in document_content:
                 if "paragraph" in element and "elements" in element["paragraph"]:
                     for item in element["paragraph"]["elements"]:
                         if "textRun" in item:

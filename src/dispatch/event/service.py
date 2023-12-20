@@ -5,8 +5,6 @@ import logging
 import json
 import pytz
 
-from requests import HTTPError
-
 from dispatch.auth import service as auth_service
 from dispatch.case import service as case_service
 from dispatch.incident import service as incident_service
