@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 from typing import List
 
+from pydantic import BaseModel, EmailStr, validator, ValidationError
 from sqlalchemy.orm import Session
 
 from dispatch.case import service as case_service
@@ -608,107 +609,177 @@ def case_assign_role_flow(
     role_flow.assign_role_flow(case, participant_email, participant_role, db_session)
 
 
+class ParticipantEmails(BaseModel):
+    emails: List[EmailStr]
+
+    @validator("emails", each_item=True)
+    def validate_email(cls, v):
+        return v
+
+
+class AlreadyExists(Exception):
+    """Exception raised when a resource already exists."""
+
+    def __init__(self, resource_name: str, message: str = "Resource already exists"):
+        self.resource_name = resource_name
+        self.message = message
+        super().__init__(f"{resource_name}: {message}")
+
+
+class InvalidEmailError(ValueError):
+    """Exception raised for invalid email addresses."""
+
+    def __init__(self, email: str):
+        super().__init__(f"Invalid email address: {email}")
+
+
+class CaseResourceCreationFlow:
+    def __init__(self, db_session: Session, case: Case):
+        self.db_session = db_session
+        self.case = case
+
+    def create_resources(
+        self,
+        individual_participants: list[str],
+        team_participants: list[str],
+        conversation_target: str | None = None,
+        create_all_resources: bool = True,
+    ) -> None:
+        """Create all necessary resources for a case."""
+        if self.case.assignee:
+            individual_participants.append(self.case.assignee.individual.email)
+
+        try:
+            # Validate email addresses
+            individual_emails = ParticipantEmails(emails=individual_participants)
+            team_emails = ParticipantEmails(emails=team_participants)
+        except ValidationError as e:
+            # Handle invalid email addresses
+            raise InvalidEmailError(str(e)) from e
+
+        if create_all_resources:
+            self.create_group(individual_emails, team_emails)
+            self.create_storage(individual_emails)
+            self.create_document()
+            self.update_document()
+
+        self.create_conversation(conversation_target, individual_emails)
+        self.update_ticket()
+
+    def create_group(
+        self,
+        individual_participants: ParticipantEmails,
+        team_participants: ParticipantEmails,
+    ) -> None:
+        """Create a new group for the case if it does not exist."""
+        if self.case.groups:
+            raise AlreadyExists(resource_name="Group", message="Case group already exists.")
+
+        participant_emails = set(individual_participants) | {t.email for t in team_participants}
+        group_flows.create_group(
+            subject=self.case,
+            group_type=GroupType.tactical,
+            group_participants=list(participant_emails),
+            db_session=self.db_session,
+        )
+
+    def create_storage(self, individual_participants: ParticipantEmails) -> None:
+        """Create a storage resource for the case if it does not exist."""
+        if self.case.storage:
+            raise AlreadyExists(resource_name="Storage", message="Case storage already exists.")
+
+        storage_members = [p.email for p in individual_participants]
+        if self.case.tactical_group:
+            storage_members.append(self.case.tactical_group.email)
+
+        storage_flows.create_storage(
+            subject=self.case, storage_members=storage_members, db_session=self.db_session
+        )
+
+    def create_document(self) -> None:
+        """Create a document for the case if it does not exist."""
+        if self.case.case_document:
+            raise AlreadyExists(resource_name="Document", message="Case document already exists.")
+
+        document_flows.create_document(
+            subject=self.case,
+            document_type=DocumentResourceTypes.case,
+            document_template=self.case.case_type.case_template_document,
+            db_session=self.db_session,
+        )
+
+    def update_document(self) -> None:
+        """Update the case document."""
+        if self.case.case_document:
+            raise AlreadyExists(resource_name="Document", message="Case document already exists.")
+
+        document_flows.update_document(
+            document=self.case.case_document,
+            project_id=self.case.project.id,
+            db_session=self.db_session,
+        )
+
+    def create_conversation(
+        self, conversation_target: str | None, individual_participants: ParticipantEmails
+    ) -> None:
+        """Create a conversation thread for the case and add participants."""
+        if self.case.case_document:
+            raise AlreadyExists(
+                resource_name="Conversation", message="Case conversation already exists."
+            )
+
+        try:
+            conversation_flows.create_case_conversation(
+                self.case, conversation_target, self.db_session
+            )
+            all_participants = individual_participants + (
+                [self.case.assignee.individual.email] if self.case.assignee else []
+            )
+            conversation_flows.add_case_participants(
+                case=self.case, participant_emails=all_participants, db_session=self.db_session
+            )
+            # Log events for success
+            event_service.log_case_event(
+                db_session=self.db_session,
+                source="Dispatch Core App",
+                description="Conversation added to case",
+                case_id=self.case.id,
+            )
+        except Exception as e:
+            # Log events for failure
+            event_service.log_case_event(
+                db_session=self.db_session,
+                source="Dispatch Core App",
+                description=f"Creation of case conversation failed. Reason: {e}",
+                case_id=self.case.id,
+            )
+            # Re-raise the exception to ensure the error is not silently swallowed
+            raise
+
+    def update_ticket(self) -> None:
+        """Update the case ticket."""
+        if not self.case.ticket:
+            raise AlreadyExists(
+                resource_name="Ticket", message="Case ticket does not exist for update."
+            )
+
+        ticket_flows.update_case_ticket(case=self.case, db_session=self.db_session)
+
+
+# Usage of CaseResourceCreationFlow within the case_create_resources_flow function
 def case_create_resources_flow(
     db_session: Session,
     case_id: int,
-    individual_participants: List[str],
-    team_participants: List[str],
+    individual_participants: list[str],
+    team_participants: list[str],
     conversation_target: str = None,
     create_all_resources: bool = True,
 ) -> None:
     """Runs the case resource creation flow."""
-    case = get(db_session=db_session, case_id=case_id)
-
-    if case.assignee:
-        individual_participants.append((case.assignee.individual, None))
-
-    if create_all_resources:
-        # we create the tactical group
-        direct_participant_emails = [i.email for i, _ in individual_participants]
-
-        indirect_participant_emails = [t.email for t in team_participants]
-
-        if not case.groups:
-            group_flows.create_group(
-                subject=case,
-                group_type=GroupType.tactical,
-                group_participants=list(
-                    set(direct_participant_emails + indirect_participant_emails)
-                ),
-                db_session=db_session,
-            )
-
-        # we create the storage folder
-        storage_members = []
-        if case.tactical_group:
-            storage_members = [case.tactical_group.email]
-        # direct add members if not group exists
-        else:
-            storage_members = direct_participant_emails
-
-        if not case.storage:
-            storage_flows.create_storage(
-                subject=case, storage_members=storage_members, db_session=db_session
-            )
-
-        # we create the investigation document
-        if not case.case_document:
-            document_flows.create_document(
-                subject=case,
-                document_type=DocumentResourceTypes.case,
-                document_template=case.case_type.case_template_document,
-                db_session=db_session,
-            )
-
-        # we update the case document
-        document_flows.update_document(
-            document=case.case_document, project_id=case.project.id, db_session=db_session
-        )
-
-    try:
-        # we create the conversation and add participants to the thread
-        conversation_flows.create_case_conversation(case, conversation_target, db_session)
-
-        event_service.log_case_event(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description="Conversation added to case",
-            case_id=case.id,
-        )
-        # wait until all resources are created before adding suggested participants
-        individual_participants = [x.email for x, _ in individual_participants]
-
-        for email in individual_participants:
-            # we don't rely on on this flow to add folks to the conversation because in this case
-            # we want to do it in bulk
-            case_add_or_reactivate_participant_flow(
-                db_session=db_session,
-                user_email=email,
-                case_id=case.id,
-                add_to_conversation=False,
-            )
-        # explicitly add the assignee to the conversation
-        all_participants = individual_participants + [case.assignee.individual.email]
-
-        # # we add the participant to the conversation
-        conversation_flows.add_case_participants(
-            case=case, participant_emails=all_participants, db_session=db_session
-        )
-
-        event_service.log_case_event(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description="Case participants added to conversation.",
-            case_id=case.id,
-        )
-    except Exception as e:
-        event_service.log_case_event(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description=f"Creation of case conversation failed. Reason: {e}",
-            case_id=case.id,
-        )
-        log.exception(e)
-
-    # we update the ticket
-    ticket_flows.update_case_ticket(case=case, db_session=db_session)
+    resource_creation_flow = CaseResourceCreationFlow(db_session, case_id)
+    resource_creation_flow.create_resources(
+        individual_participants,
+        team_participants,
+        conversation_target,
+        create_all_resources,
+    )
