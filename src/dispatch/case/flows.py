@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from functools import wraps
 from typing import List
 
 from pydantic import BaseModel, EmailStr, ValidationError
@@ -609,6 +610,22 @@ def case_assign_role_flow(
     role_flow.assign_role_flow(case, participant_email, participant_role, db_session)
 
 
+def check_resource_exists(attribute_name: str):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            if getattr(self.case, attribute_name):
+                raise AlreadyExists(
+                    resource_name=attribute_name.capitalize(),
+                    message=f"{attribute_name.capitalize()} already exists for the case.",
+                )
+            return func(self, *args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
 class ParticipantEmails(BaseModel):
     emails: List[EmailStr]
 
@@ -665,15 +682,13 @@ class CaseResourceCreationFlow:
         self.create_conversation(conversation_target, individual_emails)
         self.update_ticket()
 
+    @check_resource_exists("groups")
     def create_group(
         self,
         individual_participants: ParticipantEmails,
         team_participants: ParticipantEmails,
     ) -> None:
         """Create a new group for the case if it does not exist."""
-        if self.case.groups:
-            raise AlreadyExists(resource_name="Group", message="Case group already exists.")
-
         participant_emails = set(individual_participants) | {t.email for t in team_participants}
         group_flows.create_group(
             subject=self.case,
@@ -682,11 +697,9 @@ class CaseResourceCreationFlow:
             db_session=self.db_session,
         )
 
+    @check_resource_exists("storage")
     def create_storage(self, individual_participants: ParticipantEmails) -> None:
         """Create a storage resource for the case if it does not exist."""
-        if self.case.storage:
-            raise AlreadyExists(resource_name="Storage", message="Case storage already exists.")
-
         storage_members = [p.email for p in individual_participants]
         if self.case.tactical_group:
             storage_members.append(self.case.tactical_group.email)
@@ -695,6 +708,7 @@ class CaseResourceCreationFlow:
             subject=self.case, storage_members=storage_members, db_session=self.db_session
         )
 
+    @check_resource_exists("document")
     def create_document(self) -> None:
         """Create a document for the case if it does not exist."""
         if self.case.case_document:
@@ -709,23 +723,17 @@ class CaseResourceCreationFlow:
 
     def update_document(self) -> None:
         """Update the case document."""
-        if self.case.case_document:
-            raise AlreadyExists(resource_name="Document", message="Case document already exists.")
-
         document_flows.update_document(
             document=self.case.case_document,
             project_id=self.case.project.id,
             db_session=self.db_session,
         )
 
+    @check_resource_exists("conversation")
     def create_conversation(
         self, conversation_target: str | None, individual_participants: ParticipantEmails
     ) -> None:
         """Create a conversation thread for the case and add participants."""
-        if self.case.case_document:
-            raise AlreadyExists(
-                resource_name="Conversation", message="Case conversation already exists."
-            )
 
         try:
             conversation_flows.create_case_conversation(
@@ -757,11 +765,6 @@ class CaseResourceCreationFlow:
 
     def update_ticket(self) -> None:
         """Update the case ticket."""
-        if self.case.ticket:
-            raise AlreadyExists(
-                resource_name="Ticket", message="Case ticket does not exist for update."
-            )
-
         ticket_flows.update_case_ticket(case=self.case, db_session=self.db_session)
 
 
