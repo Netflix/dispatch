@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from typing import List
 
-from pydantic import BaseModel, EmailStr, validator, ValidationError
+from pydantic import BaseModel, EmailStr, ValidationError
 from sqlalchemy.orm import Session
 
 from dispatch.case import service as case_service
@@ -612,9 +612,8 @@ def case_assign_role_flow(
 class ParticipantEmails(BaseModel):
     emails: List[EmailStr]
 
-    @validator("emails", each_item=True)
-    def validate_email(cls, v):
-        return v
+    def add_email(self, email: str):
+        self.emails.append(email)
 
 
 class AlreadyExists(Exception):
@@ -758,7 +757,7 @@ class CaseResourceCreationFlow:
 
     def update_ticket(self) -> None:
         """Update the case ticket."""
-        if not self.case.ticket:
+        if self.case.ticket:
             raise AlreadyExists(
                 resource_name="Ticket", message="Case ticket does not exist for update."
             )
