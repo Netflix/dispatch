@@ -887,7 +887,6 @@ class SignalInstanceFactory(BaseFactory):
     id = LazyFunction(uuid.uuid4)
     project = SubFactory(ProjectFactory)
     case = SubFactory(CaseFactory)
-    fingerprint = fake.md5()
     signal = SubFactory(SignalFactory)
     raw = {
         "action": [{"type": "AWS_API_CALL", "value": {"Api": "assumerole", "ServiceName": "sts"}}],

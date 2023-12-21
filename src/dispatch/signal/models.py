@@ -229,7 +229,6 @@ class SignalInstance(Base, TimeStampMixin, ProjectMixin):
     case_type = relationship("CaseType", backref="signal_instances")
     case_priority_id = Column(Integer, ForeignKey(CasePriority.id))
     case_priority = relationship("CasePriority", backref="signal_instances")
-    fingerprint = Column(String)
     filter_action = Column(String)
     canary = Column(Boolean, default=False)
     raw = Column(JSONB)
@@ -381,7 +380,6 @@ class SignalInstanceCreate(SignalInstanceBase):
 
 class SignalInstanceRead(SignalInstanceBase):
     id: uuid.UUID
-    fingerprint: Optional[str]
     signal: SignalRead
 
 

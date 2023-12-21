@@ -5,7 +5,6 @@ import SearchUtils from "@/search/utils"
 import IncidentApi from "@/incident/api"
 import PluginApi from "@/plugin/api"
 import router from "@/router"
-
 import moment from "moment-timezone"
 
 const getDefaultSelectedState = () => {
@@ -181,7 +180,7 @@ const actions = {
             "notification_backend/addBeNotification",
             {
               text: `Incident '${payload.name}' could not be found.`,
-              type: "error",
+              type: "exception",
             },
             { root: true }
           )
@@ -284,6 +283,18 @@ const actions = {
     })
     commit("SET_DIALOG_EDIT_EVENT", false)
   },
+  exportDoc({ commit }, timeline_filters) {
+    IncidentApi.exportTimeline(state.selected.id, timeline_filters).then((response) => {
+      commit("SET_SELECTED", response.data)
+    })
+    commit(
+      "notification_backend/addBeNotification",
+      { text: "Data exported successfully. This may take a few minutes.", type: "success" },
+      { root: true }
+    )
+    commit("SET_DIALOG_EDIT_EVENT", false)
+  },
+
   closeDeleteEventDialog({ commit }) {
     commit("SET_DIALOG_DELETE_EVENT", false)
   },

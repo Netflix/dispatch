@@ -36,6 +36,8 @@ def create_case_conversation(case: Case, conversation_target: str, db_session: S
     if not conversation_target:
         conversation_target = case.case_type.conversation_target
 
+    conversation = None
+
     if conversation_target:
         try:
             conversation = plugin.instance.create_threaded(

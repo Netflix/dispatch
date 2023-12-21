@@ -163,16 +163,16 @@ export default {
     return {
       statuses: ["Active", "Stable", "Closed"],
       visibilities: ["Open", "Restricted"],
-      required_and_only_one: (value) => {
-        if (!value || value.length == 0) {
-          return "This field is required"
-        }
+      only_one: (value) => {
         if (value && value.length > 1) {
           return "Only one is allowed"
         }
         return true
       },
-      only_one: (value) => {
+      required_and_only_one: (value) => {
+        if (!value || value.length == 0) {
+          return "This field is required"
+        }
         if (value && value.length > 1) {
           return "Only one is allowed"
         }

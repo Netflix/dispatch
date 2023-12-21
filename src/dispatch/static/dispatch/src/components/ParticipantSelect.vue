@@ -85,12 +85,14 @@ export default {
       }
 
       if (props.project) {
-        if (Array.isArray(props.project) && props.project.length > 0) {
-          filterOptions = {
-            filters: {
-              project: props.project,
-            },
-            ...filterOptions,
+        if (Array.isArray(props.project)) {
+          if (props.project.length > 0) {
+            filterOptions = {
+              filters: {
+                project: props.project,
+              },
+              ...filterOptions,
+            }
           }
         } else {
           filterOptions = {

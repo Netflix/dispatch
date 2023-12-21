@@ -297,6 +297,7 @@ class IncidentBase(DispatchBase):
 
 class IncidentCreate(IncidentBase):
     commander: Optional[ParticipantUpdate]
+    commander_email: Optional[str]
     incident_cost_model: Optional[IncidentCostModelRead] = None
     incident_priority: Optional[IncidentPriorityCreate]
     incident_severity: Optional[IncidentSeverityCreate]

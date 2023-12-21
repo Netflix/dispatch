@@ -3,6 +3,7 @@ import logging
 from datetime import datetime, timedelta
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 
 from dispatch.auth.models import DispatchUser
@@ -12,6 +13,7 @@ from dispatch.case.type import service as case_type_service
 from dispatch.event import service as event_service
 from dispatch.exceptions import NotFoundError
 from dispatch.incident import service as incident_service
+from dispatch.participant.models import Participant
 from dispatch.participant import flows as participant_flows
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.project import service as project_service
@@ -367,3 +369,25 @@ def delete(*, db_session, case_id: int):
     """Deletes an existing case."""
     db_session.query(Case).filter(Case.id == case_id).delete()
     db_session.commit()
+
+
+def get_participants(
+    *, db_session: Session, case_id: int, minimal: bool = False
+) -> list[Participant] | None:
+    """Returns a list of participants based on the given case id."""
+    if minimal:
+        case = (
+            db_session.query(Case)
+            .join(Case.participants)  # Use join for minimal
+            .filter(Case.id == case_id)
+            .first()
+        )
+    else:
+        case = (
+            db_session.query(Case)
+            .options(joinedload(Case.participants))  # Use joinedload for full objects
+            .filter(Case.id == case_id)
+            .first()
+        )
+
+    return case.participants if case else None

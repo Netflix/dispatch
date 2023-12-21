@@ -2,15 +2,10 @@
   <v-container>
     <v-row justify="end" class="align-items-baseline">
       <v-switch v-model="showDetails" label="Show details" class="flex-grow-0" />
-      <v-btn
-        color="secondary"
-        class="ml-2 mr-2 mt-3"
-        @click="exportToCSV()"
-        :loading="exportLoading"
-      >
-        Export
-      </v-btn>
+
+      <timeline-export-dialog :showItem="showItem" :extractOwner="extractOwner" />
       <timeline-filter-dialog ref="filter_dialog" />
+
       <edit-event-dialog v-if="showEditEventDialog" />
       <delete-event-dialog />
     </v-row>
@@ -151,10 +146,10 @@ import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
-import Util from "@/util"
 import { snakeToCamel, formatToUTC, formatToTimeZones } from "@/filters"
 
 import TimelineFilterDialog from "@/incident/TimelineFilterDialog.vue"
+import TimelineExportDialog from "./TimelineExportDialog.vue"
 import EditEventDialog from "@/incident/EditEventDialog.vue"
 import DeleteEventDialog from "@/incident/DeleteEventDialog.vue"
 
@@ -183,12 +178,12 @@ export default {
     TimelineFilterDialog,
     EditEventDialog,
     DeleteEventDialog,
+    TimelineExportDialog,
   },
 
   data() {
     return {
       showDetails: false,
-      exportLoading: false,
     }
   },
 
@@ -216,30 +211,6 @@ export default {
       "showNewPreEventDialog",
       "togglePin",
     ]),
-    exportToCSV() {
-      this.exportLoading = true
-      const selected_items = []
-      let items = this.sortedEvents
-      items.forEach((item) => {
-        if (this.showItem(item)) {
-          selected_items.push(item)
-        }
-      })
-
-      Util.exportCSV(
-        selected_items.map((item) => ({
-          "Time (in UTC)": item.started_at,
-          Description: item.description,
-          Owner: this.extractOwner(item),
-        })),
-        this.name + "-timeline-export.csv"
-      )
-      this.exportLoading = false
-    },
-    showItem(event) {
-      if (event.pinned) return true
-      return !this.timeline_filters[eventTypeToFilter[event.type]]
-    },
     iconItem(event) {
       if (event.description == "Incident created") return "mdi-flare"
       return eventTypeToIcon[event.type]
@@ -255,6 +226,12 @@ export default {
           return this.timeline_filters[eventTypeToFilter[e.type]] || false
         })
       )
+    },
+    showItem(event) {
+      if (event.pinned) {
+        return true
+      }
+      return !this.timeline_filters[eventTypeToFilter[event.type]]
     },
     isEditable(event) {
       return event.type == "Custom event" || event.type == "Imported message"

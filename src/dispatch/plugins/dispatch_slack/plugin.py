@@ -84,12 +84,6 @@ class SlackConversationPlugin(ConversationPlugin):
         client = create_slack_client(self.configuration)
         blocks = create_case_message(case=case, channel_id=conversation_id)
         response = send_message(client=client, conversation_id=conversation_id, blocks=blocks)
-        send_message(
-            client=client,
-            conversation_id=conversation_id,
-            text="All real-time case collaboration should be captured in this thread.",
-            ts=response["timestamp"],
-        )
         if case.signal_instances:
             message = create_signal_messages(
                 case_id=case.id, channel_id=conversation_id, db_session=db_session
