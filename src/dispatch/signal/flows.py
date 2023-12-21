@@ -52,6 +52,72 @@ def signal_instance_update_flow(
     return signal_instance
 
 
+def apply_signal_instance_overrides(
+    case_id: int,
+    signal_instance: SignalInstance,
+    db_session: Session = None,
+):
+    """Applies overrides to the signal instance.
+
+    We want the following order of precedence:
+     1. signal instance overrides
+     2. signal definition overrides
+     3. case type defaults
+    Args:
+        signal_instance (SignalInstance): _description_
+    """
+
+    if signal_instance.create_case is False:
+        return signal_instance
+    elif signal_instance.signal.create_case is False:
+        return signal_instance
+
+    # default to signal definition case priority
+    case_priority = signal_instance.signal.case_priority
+    if signal_instance.case_priority:
+        case_priority = signal_instance.case_priority
+
+    # default to signal definition case type
+    case_type = signal_instance.signal.case_type
+    if signal_instance.case_type:
+        case_type = signal_instance.case_type
+
+    # default to case type conversation target
+    conversation_target = signal_instance.case_type.conversation_target
+    if signal_instance.conversation_target:
+        conversation_target = signal_instance.conversation_target
+    elif signal_instance.signal.conversation_target:
+        conversation_target = signal_instance.signal.conversation_target
+
+    service = signal_instance.signal.oncall_service
+    if signal_instance.oncall_service:
+        service = signal_instance.oncall_service
+
+    assignee = None
+    if service:
+        email = service_flows.resolve_oncall(service=service, db_session=db_session)
+        assignee = {"individual": {"email": email}}
+
+    case_in = CaseCreate(
+        title=signal_instance.signal.name,
+        description=signal_instance.signal.description,
+        case_priority=case_priority,
+        project=signal_instance.project,
+        case_type=case_type,
+        assignee=assignee,
+    )
+    case_flows.case_new_create_flow(
+        db_session=db_session,
+        organization_slug=None,
+        service_id=None,
+        conversation_target=conversation_target,
+        case_id=case_id,
+        create_all_resources=False,
+    )
+
+    return case_in
+
+
 def signal_instance_create_flow(
     signal_instance_id: int,
     db_session: Session = None,
@@ -94,61 +160,16 @@ def signal_instance_create_flow(
     if signal_instance.canary:
         return signal_instance
 
-    if not signal_instance.signal.create_case:
-        return signal_instance
-
-    # processes overrides for case creation
-    # we want the following order of precedence:
-    # 1. signal instance overrides
-    # 2. signal definition overrides
-    # 3. case type defaults
-
-    if signal_instance.case_priority:
-        case_priority = signal_instance.case_priority
-    else:
-        case_priority = signal_instance.signal.case_priority
-
-    # if the signal has provided a case type use it's values instead of the definitions
-    conversation_target = None
-    if signal_instance.case_type:
-        case_type = signal_instance.case_type
-        if signal_instance.signal.conversation_target:
-            conversation_target = signal_instance.case_type.conversation_target
-    else:
-        case_type = signal_instance.signal.case_type
-
-        if signal_instance.signal.conversation_target:
-            conversation_target = signal_instance.signal.conversation_target
-
-    assignee = None
-    if signal_instance.signal.oncall_service:
-        email = service_flows.resolve_oncall(
-            service=signal_instance.signal.oncall_service, db_session=db_session
-        )
-        assignee = {"individual": {"email": email}}
-
-    # create a case if not duplicate or snoozed and case creation is enabled
-    case_in = CaseCreate(
-        title=signal_instance.signal.name,
-        description=signal_instance.signal.description,
-        case_priority=case_priority,
-        project=signal_instance.project,
-        case_type=case_type,
-        assignee=assignee,
+    case_in = apply_signal_instance_overrides(
+        case_id=signal_instance.case_id,
+        signal_instance=signal_instance,
+        db_session=db_session,
     )
+    # TODO there is a lot of overlap between this and the case create flow
     case = case_service.create(db_session=db_session, case_in=case_in, current_user=current_user)
     signal_instance.case = case
 
     db_session.commit()
-
-    case_flows.case_new_create_flow(
-        db_session=db_session,
-        organization_slug=None,
-        service_id=None,
-        conversation_target=conversation_target,
-        case_id=case.id,
-        create_all_resources=False,
-    )
 
     if signal_instance.signal.engagements and entities:
         signal_flows.engage_signal_identity(
