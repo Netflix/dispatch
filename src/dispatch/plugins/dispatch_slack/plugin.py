@@ -5,16 +5,17 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+from blockkit import Message
 import logging
 from typing import List, Optional, Any
-
-from blockkit import Message
+from slack_sdk.errors import SlackApiError
 from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
 from dispatch.case.models import Case
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.decorators import apply, counter, timer
+from dispatch.plugin import service as plugin_service
 from dispatch.plugins import dispatch_slack as slack_plugin
 from dispatch.plugins.bases import ContactPlugin, ConversationPlugin
 from dispatch.plugins.dispatch_slack.config import (
@@ -24,11 +25,16 @@ from dispatch.plugins.dispatch_slack.config import (
 from dispatch.signal.enums import SignalEngagementStatus
 from dispatch.signal.models import SignalEngagement, SignalInstance
 
-from .case.messages import create_case_message, create_signal_messages
 
+from .case.messages import (
+    create_case_message,
+    create_signal_messages,
+    create_signal_engagement_message,
+)
 from .endpoints import router as slack_event_router
+from .enums import SlackAPIErrorCode
+from .events import ChannelActivityEvent, ThreadActivityEvent
 from .messaging import create_message_blocks
-from .case.messages import create_signal_engagement_message
 from .service import (
     add_conversation_bookmark,
     add_users_to_conversation,
@@ -41,8 +47,6 @@ from .service import (
     does_user_exist,
     get_user_avatar_url,
     get_user_profile_by_email,
-    get_channel_messages,
-    get_thread_replies,
     rename_conversation,
     resolve_user,
     send_ephemeral_message,
@@ -51,9 +55,7 @@ from .service import (
     unarchive_conversation,
     update_message,
 )
-from slack_sdk.errors import SlackApiError
-from .enums import SlackAPIErrorCode
-from .events import *
+
 
 logger = logging.getLogger(__name__)
 
@@ -305,87 +307,28 @@ class SlackConversationPlugin(ConversationPlugin):
         }
         return command_mappings.get(command, [])
 
-    # TODO(averyl): Implement this thing, add additional filters ...user_middleware?
     def fetch_incident_events(
-        self, subject: Any, exclusions: List = [], events: List = [], **kwargs
+        self, db_session: Session, subject: Any, plugin_event_id: int, oldest: str = "0", **kwargs
     ):
-        print("FETCH INCIDENT EVENT")
-        for event in events:
-            try:
-                client = create_slack_client(self.configuration)
-                print(event)
-                return event.fetch_activity(client, subject, exclusions)
-            except SlackApiError as e:
-                if e.response["error"] == SlackAPIErrorCode.CHANNEL_NOT_FOUND:
-                    return None
-                else:
-                    raise e
-            except Exception as e:
-                logger.exception(e)
-                raise e
+        """Fetches incident events from the Slack plugin.
 
-    # def record_thread_activity(
-    #     client: WebClient, channel: str, ts: str, user_activity: defaultdict
-    # ) -> int:
-    #     has_more = True
-    #     cursor = None
-    #     while has_more:
-    #         thread_history = client.conversations_replies(
-    #             channel=channel, ts=ts, cursor=cursor
-    #         )  # assume we do not have more than 1000 replies
-    #         if thread_history["ok"] and "messages" in thread_history:
-    #             has_more = thread_history["has_more"]
-    #             if has_more:
-    #                 cursor = thread_history["response_metadata"]["next_cursor"]
-    #             for message in thread_history["messages"]:
-    #                 if not "user" in message:
-    #                     print(f"Error retrieving message for thread {ts}")
-    #                     continue
-    #                 user_activity[message["user"]] += [float(message["ts"])]
+        Args:
+            subject: An Incident or Case object.
+            plugin_event_id: The plugin event id.
+            oldest: The oldest timestamp to fetch events from.
 
-    # def get_slack_history(client: WebClient, channel: str, user_activity: defaultdict) -> dict:
-    #     has_more = True
-    #     total_messages = 0
-    #     total_threads = 0
-    #     cursor = None
-    #     while has_more:
-    #         history = client.conversations_history(channel=channel, cursor=cursor, limit=100)
-    #         if history["ok"]:
-    #             if not "messages" in history:
-    #                 return
-
-    #             # for large limits
-    #             has_more = history["has_more"]
-    #             if has_more:
-    #                 cursor = history["response_metadata"]["next_cursor"]
-
-    #             for message in history["messages"]:
-    #                 # filter out channel joined messages and bot messages
-    #                 if (
-    #                     "subtype" in message
-    #                     and message["subtype"] == "channel_join"
-    #                     or message["subtype"] == "bot_message"
-    #                 ):
-    #                     continue
-
-    #                 if not "user" in message:
-    #                     print(f"Error retrieving message {message}")
-    #                     continue
-    #                 total_messages += 1
-    #                 user_activity[message["user"]] += [float(message["ts"])]
-
-    #                 # check for thread activity
-    #                 if "reply_count" in message:
-    #                     total_threads += message["reply_count"]
-    #                     record_thread_activity(
-    #                         client, channel, ts=message["thread_ts"], user_activity=user_activity
-    #                     )
-    #         print(f"messages: {total_messages}")
-    #         print(f"thread activity: {total_threads}")
-
-    #     # Additional metrics
-    #     print(f"total number of messages: {total_messages}")
-    #     print(f"total number of thread replies: {total_threads}")
+        Returns:
+            A sorted list of tuples (utc_dt, user_id).
+        """
+        try:
+            client = create_slack_client(self.configuration)
+            plugin_event = plugin_service.get_plugin_event_by_id(
+                db_session=db_session, plugin_event_id=plugin_event_id
+            )
+            return self.get_event(plugin_event).fetch_activity(client, subject, oldest=oldest)
+        except Exception as e:
+            logger.exception(e)
+            raise e
 
 
 @apply(counter, exclude=["__init__"])

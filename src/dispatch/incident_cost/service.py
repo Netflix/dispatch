@@ -1,16 +1,20 @@
+from datetime import datetime, timedelta, timezone
 import logging
 import math
-from datetime import datetime
-
 from typing import List, Optional
 
 from dispatch.database.core import SessionLocal
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
+from dispatch.incident.models import Incident
 from dispatch.incident_cost_type import service as incident_cost_type_service
-from dispatch.participant_role.models import ParticipantRoleType
-from dispatch.service import service as service_service
+from dispatch.incident_cost_type.models import IncidentCostTypeRead
+from dispatch.incident_participant_activity import service as incident_participant_activity_service
+from dispatch.incident_participant_activity.models import IncidentParticipantActivityCreate
+from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantRead
+from dispatch.participant_role.models import ParticipantRoleType
+from dispatch.plugin import service as plugin_service
 
 from .models import IncidentCost, IncidentCostCreate, IncidentCostUpdate
 
@@ -108,163 +112,95 @@ def get_engagement_multiplier(participant_role: str):
     return engagement_mappings.get(participant_role)
 
 
-# from dispatch.incident_participant_activity.models import IncidentParticipantActivityRead
-
-# def calculate_incident_cost(*, db_session, incident_cost_model_id: int) -> float:
-#     """Calculates the cost of an incident."""
-#     incident_cost_model = get_cost_model_by_id(
-#         db_session=db_session, incident_cost_model_id=incident_cost_model_id
-#     )
-
-#     # aggregate the user activities
-#     user_activity = defaultdict(list[IncidentParticipantActivityRead])
-#     for activity in incident_cost_model.activities:
-#         # TODO(averyl): implement below
-#         event_user_activity = activity.event.get_timestamps_for_all_users()
-
-#         # contains the user activity, their timestamps, and duration?
-#         # TODO(averyl): I should include the duration points here too...
-#         user_activity = {
-#             i: user_activity.get(i, []) + event_user_activity.get(i, [])
-#             for i in set(user_activity) | set(event_user_activity)
-#         }
-
-#     # calculate the level of effort
-#     from datetime import datetime
-
-#     # y = {'user': [PluginEventRead()]}
-#     # per = PluginEventRead()
-#     y = {}
-#     timestamp = datetime.now(1)
-
-#     activity = IncidentCostModelActivityCreate()
-#     if activity.enabled:
-#         y["user"] = [timestamp, activity.response_time_seconds]
-
-#     return
+def get_incident_review_hours(incident: Incident) -> int:
+    """Calculate the time spent in incident review related activities."""
+    num_participants = len(incident.participants)
+    incident_review_prep = (
+        1  # we make the assumption that it takes an hour to prepare the incident review
+    )
+    incident_review_meeting = (
+        num_participants * 0.5 * 1
+    )  # we make the assumption that only half of the incident participants will attend the 1-hour, incident review session
+    return incident_review_prep + incident_review_meeting
 
 
-def calculate_incident_cost(
-    incident_id: int, db_session: SessionLocal, incident_review=True
+def calculate_incident_response_cost_with_cost_model(
+    incident: Incident, db_session: SessionLocal
 ) -> int:
     """Calculates the cost of an incident using the incident's cost model."""
-    from dispatch.plugin import service as plugin_service
-    from dispatch.participant import service as participant_service
-
-    from dispatch.incident_participant_activity.service import (
-        create_or_update,
-    )
-    from dispatch.incident_participant_activity.models import IncidentParticipantActivityCreate
-
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
-    # move this under cost model
-    # Get the cost model. Iterate through all the listed activities we want to record.
-    for activity in incident.incident_cost_model.activities:
-        # get the plugin event associated with this activity
-        plugin_instance = plugin_service.get_active_instance_by_slug(
-            db_session=db_session,
-            slug=activity.event.plugin.slug,
-            project_id=incident.project.id,
-        )
-        incident_events = {}
-
-        if not plugin_instance:
-            raise ValueError(
-                f"Cannot fetch cost model activity. Its associated plugin {activity.event.plugin.title} does not exist."
-            )
-
-        try:
-            # TODO(averyl): fetch all plugin events since last update
-            incident_events = plugin_instance.instance.fetch_incident_events(
-                db_session=db_session,
-                subject=incident,
-                events=[activity.event.name],
-            )
-        except Exception as e:
-            log.exception(e)
-
-        # from dispatch.incident_cost_model_activity.models import IncidentCostModelActivity
-        # )  # dict{user: (started_at: timestamp, activity)} = plugin_service.get_all_activities(db_session=db_session, activity=activity.id)
-        incident_cost = 0
-        for message in incident_events["messages"]:
-            print(f"new event (message): {str(message)}")
-
-            # get the recorded activities that fall within the update period.
-            # this should also handle if previous incidents have been left hanging bc duration isn't over yet.
-            # we want to return all incomplete activities..?
-
-            # Calculate the response cost only if we can get the participant's id from the message
-            participant_activity = create_or_update(
-                db_session=db_session,
-                activity_in=IncidentParticipantActivityCreate(
-                    cost_model_activity=activity,
-                    started_at=datetime.fromtimestamp(float(message["ts"])),
-                    participant=ParticipantRead(
-                        id=1
-                    ),  # message["user"], # TODO(averyl): get the participant from the message
-                    incident=incident,
-                ),
-            )
-
-            if not participant_activity:
-                print("failed to create participant activity")
-
-            # we calculate and round up the hourly rate
-            if participant_activity:
-                hourly_rate = math.ceil(
-                    incident.project.annual_employee_cost / incident.project.business_year_hours
-                )
-                participants_total_response_time_seconds = activity.response_time_seconds
-                additional_incident_cost = math.ceil(
-                    ((participants_total_response_time_seconds / SECONDS_IN_HOUR)) * hourly_rate
-                )
-
-                print(
-                    participants_total_response_time_seconds,
-                    "/",
-                    SECONDS_IN_HOUR,
-                    "*",
-                    hourly_rate,
-                    "=",
-                    additional_incident_cost,
-                    ", not rounded = ",
-                    ((participants_total_response_time_seconds / SECONDS_IN_HOUR)) * hourly_rate,
-                )
-                incident_cost += additional_incident_cost
-
-        return incident.total_cost + incident_cost
-
-        # calculate the time spent on the activity
-        # get last update time
-        # if create_or_update resulted in a create:
-        #     incident_cost += activity_duration for timed_out incidents with the largest end_at time.
-        # if create_or_update resulted in an update:
-        #     incident_cost += timedelta between now and last update
-
-        # alternatively. we could create all the participant activities
-        # then get all user activities from the last update. Even if duration isn't finished, the ended_at field should be set to the ended_at duration...
-
-    return incident.total_cost
-
-
-def calculate_incident_response_cost(
-    incident_id: int, db_session: SessionLocal, incident_review=True
-):
-    """Calculates the response cost of a given incident."""
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     participants_total_response_time_seconds = 0
-    if incident.incident_cost_model:
-        print(
-            f"Calculating {incident.name} incident cost with model {incident.incident_cost_model.name}."
+
+    # Get the cost model. Iterate through all the listed activities we want to record.
+    for activity in incident.incident_cost_model.activities:
+        plugin_instance = plugin_service.get_active_instance_by_slug(
+            db_session=db_session,
+            slug=activity.plugin_event.plugin.slug,
+            project_id=incident.project.id,
         )
-        return calculate_incident_cost(
-            incident_id=incident_id, db_session=db_session, incident_review=incident_review
+        if not plugin_instance:
+            log.warning(
+                f"Cannot fetch cost model activity. Its associated plugin {activity.plugin_event.plugin.title} is not enabled."
+            )
+            continue
+
+        oldest = "0"
+        response_cost_type = incident_cost_type_service.get_default(
+            db_session=db_session, project_id=incident.project.id
+        )
+        incident_response_cost = get_by_incident_id_and_incident_cost_type_id(
+            db_session=db_session,
+            incident_id=incident.id,
+            incident_cost_type_id=response_cost_type.id,
+        )
+        if incident_response_cost:
+            oldest = incident_response_cost.updated_at.replace(tzinfo=timezone.utc).timestamp()
+
+        # Array of sorted (timestamp, user_id) tuples.
+        incident_events = plugin_instance.instance.fetch_incident_events(
+            db_session=db_session,
+            subject=incident,
+            plugin_event_id=activity.plugin_event.id,
+            oldest=oldest,
         )
 
-    log.info("No incident cost model. Defaulting to classic incident cost model. See (%link)")
+        for ts, user_id in incident_events:
+            participant = participant_service.get_by_incident_id_and_conversation_id(
+                db_session=db_session,
+                incident_id=incident.id,
+                user_conversation_id=user_id,
+            )
+            if not participant:
+                log.warning("Cannot resolve participant.")
+                continue
 
+            activity_in = IncidentParticipantActivityCreate(
+                plugin_event=activity.plugin_event,
+                started_at=ts,
+                ended_at=ts + timedelta(seconds=activity.response_time_seconds),
+                participant=ParticipantRead(id=participant.id),
+                incident=incident,
+            )
+
+            if participant_response_time := incident_participant_activity_service.create_or_update(
+                db_session=db_session, activity_in=activity_in
+            ):
+                participants_total_response_time_seconds += (
+                    participant_response_time.total_seconds()
+                )
+
+    # Calculate and round up the hourly rate.
+    hourly_rate = math.ceil(
+        incident.project.annual_employee_cost / incident.project.business_year_hours
+    )
+    additional_incident_cost = math.ceil(
+        ((participants_total_response_time_seconds / SECONDS_IN_HOUR)) * hourly_rate
+    )
+    return incident.total_cost + additional_incident_cost
+
+
+def calculate_incident_response_cost_with_classic_model(incident: Incident, incident_review=True):
+    participants_total_response_time_seconds = 0
     for participant in incident.participants:
         participant_total_roles_time_seconds = 0
 
@@ -326,28 +262,77 @@ def calculate_incident_response_cost(
             participant_total_roles_time_seconds += participant_role_time_seconds
 
         participants_total_response_time_seconds += participant_total_roles_time_seconds
-
-    # we calculate the time spent in incident review related activities
-    incident_review_hours = 0
     if incident_review:
-        num_participants = len(incident.participants)
-        incident_review_prep = (
-            1  # we make the assumption that it takes an hour to prepare the incident review
-        )
-        incident_review_meeting = (
-            num_participants * 0.5 * 1
-        )  # we make the assumption that only half of the incident participants will attend the 1-hour, incident review session
-        incident_review_hours = incident_review_prep + incident_review_meeting
-
+        incident_review_hours = get_incident_review_hours(incident)
     # we calculate and round up the hourly rate
     hourly_rate = math.ceil(
         incident.project.annual_employee_cost / incident.project.business_year_hours
     )
 
     # we calculate and round up the incident cost
-    incident_cost = math.ceil(
+    return math.ceil(
         ((participants_total_response_time_seconds / SECONDS_IN_HOUR) + incident_review_hours)
         * hourly_rate
     )
 
-    return incident_cost
+
+def calculate_incident_response_cost(
+    incident_id: int, db_session: SessionLocal, incident_review=True
+) -> int:
+    """Calculates the response cost of a given incident."""
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+    if not incident:
+        log.warning(f"Incident with id {incident_id} not found.")
+        return 0
+    if incident.incident_cost_model and incident.incident_cost_model.enabled:
+        log.info(
+            f"Calculating {incident.name} incident cost with model {incident.incident_cost_model}."
+        )
+        return calculate_incident_response_cost_with_cost_model(
+            incident=incident, db_session=db_session
+        )
+
+    else:
+        log.info("No incident cost model found. Defaulting to classic incident cost model.")
+        return calculate_incident_response_cost_with_classic_model(
+            incident=incident, incident_review=incident_review
+        )
+
+
+def update_incident_response_cost(incident_id: int, db_session: SessionLocal) -> int:
+    """Updates the response cost of a given incident."""
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+    response_cost_type = incident_cost_type_service.get_default(
+        db_session=db_session, project_id=incident.project.id
+    )
+
+    if response_cost_type is None:
+        log.warning(
+            f"A default cost type for response cost doesn't exist in the {incident.project.name} project and organization {incident.project.organization.name}. Response costs for incident {incident.name} won't be calculated."
+        )
+        return 0
+
+    incident_response_cost = get_by_incident_id_and_incident_cost_type_id(
+        db_session=db_session,
+        incident_id=incident.id,
+        incident_cost_type_id=response_cost_type.id,
+    )
+    if incident_response_cost is None:
+        # we create the response cost if it doesn't exist
+        incident_cost_type = IncidentCostTypeRead.from_orm(response_cost_type)
+        incident_cost_in = IncidentCostCreate(
+            incident_cost_type=incident_cost_type, project=incident.project
+        )
+        incident_response_cost = create(db_session=db_session, incident_cost_in=incident_cost_in)
+    amount = calculate_incident_response_cost(incident_id=incident.id, db_session=db_session)
+    # we don't need to update the cost amount if it hasn't changed
+    if incident_response_cost.amount == amount:
+        return incident_response_cost.amount
+
+    # we save the new incident cost amount
+    incident_response_cost.amount = amount
+    incident.incident_costs.append(incident_response_cost)
+    db_session.add(incident)
+    db_session.commit()
+
+    return incident_response_cost.amount

@@ -114,15 +114,8 @@ class IPlugin(local):
         return self.resource_links
 
     def get_event(self, event) -> Optional[IPluginEvent]:
-        print("get event")
         for plugin_event in self.plugin_events:
-            if plugin_event.name == event.name:
-                return plugin_event
-
-    def get_event_by_name(self, event_name: str) -> Optional[IPluginEvent]:
-        print("get event")
-        for plugin_event in self.plugin_events:
-            if plugin_event.name == event_name:
+            if plugin_event.slug == event.slug:
                 return plugin_event
 
     def fetch_incident_events(self, **kwargs):

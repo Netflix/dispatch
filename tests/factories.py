@@ -35,7 +35,7 @@ from dispatch.incident.severity.models import IncidentSeverity
 from dispatch.incident.type.models import IncidentType
 from dispatch.incident_cost.models import IncidentCost
 from dispatch.incident_cost_model.models import IncidentCostModel
-from dispatch.incident_cost_model_activity.models import IncidentCostModelActivity
+from dispatch.incident_cost_model.models import IncidentCostModelActivity
 from dispatch.incident_participant_activity.models import IncidentParticipantActivity
 from dispatch.plugin.models import PluginEvent
 from dispatch.incident_cost_type.models import IncidentCostType
@@ -520,6 +520,7 @@ class ParticipantFactory(BaseFactory):
     location = Sequence(lambda n: f"location{n}")
     added_reason = Sequence(lambda n: f"added_reason{n}")
     after_hours_notification = Faker().pybool()
+    user_conversation_id = FuzzyText()
 
     class Meta:
         """Factory Configuration."""
@@ -1286,6 +1287,7 @@ class PluginEventFactory(BaseFactory):
 
     id = Sequence(lambda n: f"1{n}")
     name = FuzzyText()
+    slug = Sequence(lambda n: f"1{n}")  # Ensures unique slug
     plugin = SubFactory(PluginFactory)
 
     class Meta:
@@ -1299,7 +1301,7 @@ class IncidentCostModelActivityFactory(BaseFactory):
 
     response_time_seconds = FuzzyInteger(low=1, high=10000)
     enabled = Faker().pybool()
-    event = SubFactory(PluginEventFactory)
+    plugin_event = SubFactory(PluginEventFactory)
 
     class Meta:
         """Factory Configuration."""
@@ -1312,8 +1314,10 @@ class IncidentParticipantActivityFactory(BaseFactory):
 
     id = Sequence(lambda n: f"1{n}")
     plugin_event = SubFactory(PluginEventFactory)
-    started_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
-    ended_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
+    started_at = FuzzyDateTime(
+        start_dt=datetime(2020, 1, 1, tzinfo=UTC), end_dt=datetime(2020, 2, 1, tzinfo=UTC)
+    )
+    ended_at = FuzzyDateTime(start_dt=datetime(2020, 2, 2, tzinfo=UTC))
     participant = SubFactory(ParticipantFactory)
     incident = SubFactory(IncidentFactory)
 

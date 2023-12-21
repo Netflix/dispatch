@@ -22,7 +22,7 @@ from .service import (
 log = logging.getLogger(__name__)
 
 
-@scheduler.add(every(30).seconds, name="calculate-incidents-response-cost")
+@scheduler.add(every(5).minutes, name="calculate-incidents-response-cost")
 @timer
 @scheduled_project_task
 def calculate_incidents_response_cost(db_session: SessionLocal, project: Project):
@@ -67,8 +67,6 @@ def calculate_incidents_response_cost(db_session: SessionLocal, project: Project
 
             # we calculate the response cost amount
             amount = calculate_incident_response_cost(incident.id, db_session)
-            # TODO(averyl): Remove this print statement
-            print(f"incident cost for incident {incident.name} is {amount}")
             # we don't need to update the cost amount if it hasn't changed
             if incident_response_cost.amount == amount:
                 continue

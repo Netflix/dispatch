@@ -1,5 +1,8 @@
-from datetime import datetime
-from sqlalchemy import func, select
+from datetime import datetime, timedelta
+
+from dispatch.database.core import SessionLocal
+from dispatch.participant import service as participant_service
+from dispatch.plugin import service as plugin_service
 
 from .models import (
     IncidentParticipantActivity,
@@ -7,54 +10,22 @@ from .models import (
     IncidentParticipantActivityCreate,
     IncidentParticipantActivityUpdate,
 )
-from dispatch.database.core import SessionLocal
-from dispatch.incident import service as incident_service
-from dispatch.participant import service as participant_service
-from dispatch.plugin import service as plugin_service
 
 
-# TODO(averyl) records user activity in the db
-# def create_incident_activity_for_user(
-#     db_session: SessionLocal, incident_id: int, individual_contact_id: int
-# ):
-# check the last record in the table for the incident, individual, activity timestamp, activity
-# filtering: the ended_at of the recorded activity should occur after the last update_time.
-
-# if the last record has exceeded the duration for that activity, then create a new record
-# else, update the last record's ended_at
-#   if the last activity is the same as this current activity, update the last record's ended_at
-#   elif the last activity is different from this current activity, set the ended at for the last activity to the current activity's started_at.
-#       create a new record for the current activity.
-
-# corner case:
-# if the last record's ended_at is overlapped with the current activity's started_at, then we need to update the last record's ended_at to the current activity's started_at.
-# update the incident cost if needed
-# pass
-
-
-# TODO(averyl): finish this tomorrow. use the above logic
-def create_or_update(
-    db_session: SessionLocal, activity_in: IncidentParticipantActivityCreate
-) -> IncidentParticipantActivity:
-    prev_participant_activities = get_all_incident_participant_activities_from_last_update(
-        db_session=db_session, incident_id=activity_in.incident.id
+def get_all_incident_participant_activities_from_last_update(
+    db_session: SessionLocal,
+    incident_id: int,
+) -> list[IncidentParticipantActivityRead]:
+    """Fetches the most recent recorded participant incident activities for each participant for a given incident."""
+    return (
+        db_session.query(IncidentParticipantActivity)
+        .distinct(IncidentParticipantActivity.participant_id)
+        .filter(IncidentParticipantActivity.incident_id == incident_id)
+        .order_by(
+            IncidentParticipantActivity.participant_id, IncidentParticipantActivity.ended_at.desc()
+        )
+        .all()
     )
-
-    for activity in prev_participant_activities:
-        if activity.plugin_event.id == activity_in.plugin_event.id:
-            activity.ended_at = activity_in.ended_at
-            db_session.commit()
-            return activity
-
-    incident_participant_activity = IncidentParticipantActivity()
-    incident_participant_activity.plugin_event_id = activity_in.plugin_event.id
-    incident_participant_activity.participant_id = activity_in.participant.id
-    incident_participant_activity.incident_id = activity_in.incident.id
-
-    db_session.add(incident_participant_activity)
-    db_session.commit()
-
-    return incident_participant_activity
 
 
 def create(*, db_session: SessionLocal, activity_in: IncidentParticipantActivityCreate):
@@ -83,7 +54,19 @@ def update(
     return activity
 
 
-def get_all_incident_participant_activities(
+def get_last_incident_participant_activity(
+    db_session: SessionLocal, incident_id: int
+) -> IncidentParticipantActivity:
+    """Returns the last recorded participant incident activity for a given incident."""
+    return (
+        db_session.query(IncidentParticipantActivity)
+        .filter(IncidentParticipantActivity.incident_id == incident_id)
+        .order_by(IncidentParticipantActivity.ended_at.desc())
+        .first()
+    )
+
+
+def get_all_incident_participant_activities_for_incident(
     db_session: SessionLocal,
     incident_id: int,
 ) -> list[IncidentParticipantActivityRead]:
@@ -94,42 +77,67 @@ def get_all_incident_participant_activities(
     )
 
 
-def get_all_incident_participant_activities_from_last_update(
-    db_session: SessionLocal,
-    incident_id: int,
-) -> list[IncidentParticipantActivityRead]:
-    """Fetches the most recent recorded participant incident activities for each participant for a given incident."""
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-    subquery = db_session.query(
-        IncidentParticipantActivity.participant_id, func.max(IncidentParticipantActivity.ended_at)
-    ).group_by(IncidentParticipantActivity.participant_id)
-
+def get_incident_participant_activity_from_last_update(
+    db_session: SessionLocal, incident_id: int, participant_id: int
+) -> IncidentParticipantActivity:
     return (
-        db_session.query(IncidentParticipantActivity, func.max())
+        db_session.query(IncidentParticipantActivity)
         .filter(IncidentParticipantActivity.incident_id == incident_id)
-        .filter(IncidentParticipantActivity.ended_at > incident.updated_at)
-        .filter(IncidentParticipantActivity.participant_id.in_(select(subquery)))
-        .all()
+        .filter(IncidentParticipantActivity.participant_id == participant_id)
+        .order_by(IncidentParticipantActivity.ended_at.desc())
+        .first()
     )
 
 
-# Used for calculating the number of hours a particilar individual has spent on incidents.
+def create_or_update(
+    db_session: SessionLocal, activity_in: IncidentParticipantActivityCreate
+) -> timedelta:
+    """Creates or updates a participant activity. Returns the change of the participant's total incident response time."""
+    delta = timedelta(seconds=0)
+
+    prev_activity = get_incident_participant_activity_from_last_update(
+        db_session=db_session,
+        incident_id=activity_in.incident.id,
+        participant_id=activity_in.participant.id,
+    )
+
+    # There's continuous participant activity.
+    if prev_activity and activity_in.started_at < prev_activity.ended_at:
+        # Continuation of current plugin event.
+        if activity_in.plugin_event.id == prev_activity.plugin_event.id:
+            delta = activity_in.ended_at - prev_activity.ended_at
+            prev_activity.ended_at = activity_in.ended_at
+            db_session.commit()
+            return delta
+
+        # New activity is associated with a different plugin event.
+        delta += activity_in.started_at - prev_activity.ended_at
+        prev_activity.ended_at = activity_in.started_at
+
+    create(db_session=db_session, activity_in=activity_in)
+    delta += activity_in.ended_at - activity_in.started_at
+    return delta
+
+
 def get_participant_incident_activities_by_individual_contact(
-    db_session: SessionLocal, incident_id: int, individual_contact_id: int
+    db_session: SessionLocal, individual_contact_id: int
 ) -> list[IncidentParticipantActivity]:
-    participant = participant_service.get_by_individual_contact_id(
+    """Fetches all recorded participant incident activities across all incidents for a given individual."""
+    participants = participant_service.get_by_individual_contact_id(
         db_session=db_session, individual_id=individual_contact_id
     )
+
     return (
         db_session.query(IncidentParticipantActivity)
-        .filter(IncidentParticipantActivity.incident_id == incident_id)
-        .filter(IncidentParticipantActivity.participant_id == participant.id)
+        .filter(
+            IncidentParticipantActivity.participant_id.in_(
+                [participant.id for participant in participants]
+            )
+        )
         .all()
     )
 
 
-# showing recorded incident activities by plugin.
-# This is used for calculating the time spent in each activity.
 def get_all_recorded_incident_partcipant_activities_for_plugin(
     db_session: SessionLocal,
     incident_id: int,

@@ -66,13 +66,22 @@ def test_get_plugin_event_by_id(*, session, plugin_event):
     assert plugin_event_out.id == plugin_event.id
 
 
+def test_get_plugin_event_by_slug(*, session, plugin_event):
+    """Returns a project based on the given project name."""
+    from dispatch.plugin.service import get_plugin_event_by_slug
+
+    plugin_event_out = get_plugin_event_by_slug(db_session=session, slug=plugin_event.slug)
+    assert plugin_event_out
+    assert plugin_event_out.id == plugin_event.id
+
+
 def test_register_plugin_event(session, plugin):
     from dispatch.plugin.service import create_plugin_event, get_plugin_event_by_id
     from dispatch.plugin.models import PluginEventCreate
 
     plugin_event = create_plugin_event(
         db_session=session,
-        plugin_event_in=PluginEventCreate(name="foo", plugin=plugin),
+        plugin_event_in=PluginEventCreate(name="foo", slug="bar", plugin=plugin),
     )
     assert plugin_event
 
@@ -84,15 +93,18 @@ def test_register_plugin_event(session, plugin):
 def test_get_all_events_for_plugin(*, session, plugin_event):
     from dispatch.plugin.service import get_all_events_for_plugin
 
-    events_out = get_all_events_for_plugin(db_session=session, plugin_id=plugin_event.plugin.id)
+    plugin_events_out = get_all_events_for_plugin(
+        db_session=session, plugin_id=plugin_event.plugin.id
+    )
 
-    # assert plugin_event in events_out
-    for event in events_out:
+    # Assert membership of plugin_event.
+    for plugin_event_out in plugin_events_out:
         if (
-            event.id == plugin_event.id
-            and event.name == plugin_event.name
-            and event.plugin.id == plugin_event.plugin.id
-            and event.description == plugin_event.description
+            plugin_event_out.id == plugin_event.id
+            and plugin_event_out.name == plugin_event.name
+            and plugin_event_out.plugin.id == plugin_event.plugin.id
+            and plugin_event_out.description == plugin_event.description
+            and plugin_event_out.slug == plugin_event.slug
         ):
             return
     assert False

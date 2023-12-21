@@ -170,6 +170,13 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
         project_id=project.id,
     )
 
+    incident_cost_model = None
+    if incident_in.incident_cost_model:
+        incident_cost_model = incident_cost_model_service.get_cost_model_by_id(
+            db_session=db_session,
+            incident_cost_model_id=incident_in.incident_cost_model.id,
+        )
+
     visibility = incident_type.visibility
     if incident_in.visibility:
         visibility = incident_in.visibility
@@ -189,7 +196,7 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
         tags=tag_objs,
         title=incident_in.title,
         visibility=visibility,
-        incident_cost_model=incident_in.incident_cost_model,
+        incident_cost_model=incident_cost_model,
     )
 
     db_session.add(incident)
@@ -401,6 +408,10 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
 
     db_session.commit()
 
+    # Update total incident reponse cost.
+    incident_cost_service.update_incident_response_cost(
+        incident_id=incident.id, db_session=db_session
+    )
     return incident
 
 

@@ -1,19 +1,19 @@
-import functools
-import logging
-import time
-
-from typing import Dict, List, Optional, NoReturn
-
-from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
-
 from blockkit import Message, Section
+from datetime import datetime
+import functools
+import heapq
+import logging
+
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
 from slack_sdk.web.slack_response import SlackResponse
+import time
+from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
+from typing import Dict, List, Optional, NoReturn
+
 
 from .config import SlackConversationConfiguration
 from .enums import SlackAPIErrorCode, SlackAPIGetEndpoints, SlackAPIPostEndpoints
-from dispatch.conversation.enums import ConversationCommands, ConversationFilters
 
 
 Conversation = dict[str, str]
@@ -379,17 +379,16 @@ def is_user(config: SlackConversationConfiguration, user_id: str) -> bool:
     return user_id != config.app_user_slug and user_id != "USLACKBOT"
 
 
-def get_thread_replies(
-    client: WebClient, conversation_id: str, ts: str, cursor: str = None, exclusions: List[str] = []
-) -> dict:
-    """Gets all threads for a given message."""
+def get_thread_activity(
+    client: WebClient, conversation_id: str, ts: str, oldest: str = "0"
+) -> List:
+    """Gets all messages for a given Slack thread.
 
-    result = {
-        "id": conversation_id,
-        "ts": ts,
-        "messages": [],
-    }
-
+    Returns:
+        A sorted list of tuples (utc_dt, user_id) of each thread reply.
+    """
+    result = []
+    cursor = None
     while True:
         response = make_call(
             client,
@@ -397,79 +396,58 @@ def get_thread_replies(
             channel=conversation_id,
             ts=ts,
             cursor=cursor,
+            oldest=oldest,
         )
         if not "ok" in response or not "messages" in response:
             break
 
-        result["messages"] += response["messages"]
+        for message in response["messages"]:
+            if "bot_id" in message:
+                continue
+
+            # Resolves users for messages.
+            if "user" in message:
+                user_id = resolve_user(client, message["user"])["id"]
+                heapq.heappush(result, (datetime.utcfromtimestamp(float(message["ts"])), user_id))
 
         if not response["has_more"]:
             break
         cursor = response["response_metadata"]["next_cursor"]
 
-    return result
+    return heapq.nsmallest(len(result), result)
 
 
-def get_channel_messages(
-    client: WebClient, conversation_id: str, cursor: str = None, exclusions: List[str] = []
-) -> dict:
-    """Gets all messages for a given conversation."""
-    result = {
-        "id": conversation_id,
-        "messages": [],
-    }
+def get_channel_activity(client: WebClient, conversation_id: str, oldest: str = "0") -> List:
+    """Gets all top-level messages for a given Slack channel.
+
+    Returns:
+        A sorted list of tuples (utc_dt, user_id) of each message in the channel.
+    """
+    result = []
+    cursor = None
     while True:
         response = make_call(
             client,
             SlackAPIGetEndpoints.conversations_history,
             channel=conversation_id,
             cursor=cursor,
+            oldest=oldest,
         )
+
         if not "ok" in response or not "messages" in response:
             break
 
-        # filter out messages of a specific type
-        if exclusions:
-            pass
+        for message in response["messages"]:
+            if "bot_id" in message:
+                continue
 
-        result["messages"] += response["messages"]
+            # Resolves users for messages.
+            if "user" in message:
+                user_id = resolve_user(client, message["user"])["id"]
+                heapq.heappush(result, (datetime.utcfromtimestamp(float(message["ts"])), user_id))
 
         if not response["has_more"]:
             break
         cursor = response["response_metadata"]["next_cursor"]
 
-    return result
-
-
-def get_messages_and_thread_replies(
-    client: WebClient, conversation_id: str, exclusions=List[ConversationFilters]
-):
-    """Gets all messages and threads for a given Slack channel."""
-    result = get_channel_messages(client, conversation_id)
-
-    for message in result["messages"]:
-        if "reply_count" in message:
-            thread_replies = get_thread_replies(
-                client, conversation_id=conversation_id, ts=message["thread_ts"]
-            )
-            result["messages"] += thread_replies["messages"]
-
-    # Sort messages in order.
-    result["messages"].sort(key=lambda x: x["ts"])
-    return result
-
-    # TODO(averyl): add exclusion filtering
-    # for exclusion in exclusions:
-    #     # filter out channel joined messages and bot messages
-    #     if (
-    #         "subtype" in message
-    #         and message["subtype"] == "channel_join"
-    #         or message["subtype"] == "bot_message"
-    #     ):
-    #         continue
-
-    #     if not "user" in message:
-    #         print(f"Error retrieving message {message}")
-    #         continue
-    #     total_messages += 1
-    #     user_activity[message["user"]] += [float(message["ts"])]
+    return heapq.nsmallest(len(result), result)

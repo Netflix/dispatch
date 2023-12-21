@@ -18,11 +18,11 @@ def get(*, db_session, participant_id: int) -> Optional[Participant]:
     return db_session.query(Participant).filter(Participant.id == participant_id).first()
 
 
-def get_all_by_individual_contact_id(db_session: SessionLocal, individual_id: int) -> Participant:
+def get_by_individual_contact_id(db_session: SessionLocal, individual_id: int) -> List[Participant]:
     return (
         db_session.query(Participant)
         .filter(Participant.individual_contact_id == individual_id)
-        .first()
+        .all()
     )
 
 
@@ -128,12 +128,12 @@ def get_by_case_id_and_conversation_id(
 
 def get_all(*, db_session) -> List[Optional[Participant]]:
     """Get all participants."""
-    return db_session.query(Participant)
+    return db_session.query(Participant).all()
 
 
 def get_all_by_incident_id(*, db_session, incident_id: int) -> List[Optional[Participant]]:
     """Get all participants by incident id."""
-    return db_session.query(Participant).filter(Participant.incident_id == incident_id)
+    return db_session.query(Participant).filter(Participant.incident_id == incident_id).all()
 
 
 def get_or_create(

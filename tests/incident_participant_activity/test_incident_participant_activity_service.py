@@ -3,12 +3,12 @@ def test_create_incident_participant_activity(
 ):
     from dispatch.incident_participant_activity.service import (
         create,
-        get_all_incident_participant_activities,
+        get_all_incident_participant_activities_for_incident,
     )
     from dispatch.incident_participant_activity.models import IncidentParticipantActivityCreate
 
     activity_in = IncidentParticipantActivityCreate(
-        plugin_event=incident_cost_model_activity.event,
+        plugin_event=incident_cost_model_activity.plugin_event,
         participant=participant,
         incident=incident,
     )
@@ -16,22 +16,24 @@ def test_create_incident_participant_activity(
     activity_out = create(db_session=session, activity_in=activity_in)
     assert activity_out
 
-    activities = get_all_incident_participant_activities(
+    activities = get_all_incident_participant_activities_for_incident(
         db_session=session, incident_id=incident.id
     )
     assert activities
     assert activity_out in activities
 
 
-# Running both test_create_incident_participant_activity and test_get_incident_activities_by_individual results in flaky test results.
-def test_get_incident_activities_by_individual(session, incident_participant_activity):
+def test_get_participant_incident_activities_by_individual_contact(
+    session, incident_participant_activity, participant
+):
+    """Tests that we can get all incident participant activities for an individual across all incidents."""
     from dispatch.incident_participant_activity.service import (
         get_participant_incident_activities_by_individual_contact,
     )
 
+    incident_participant_activity.participant = participant
     activities = get_participant_incident_activities_by_individual_contact(
         db_session=session,
-        incident_id=incident_participant_activity.incident.id,
         individual_contact_id=incident_participant_activity.participant.individual_contact_id,
     )
 
@@ -39,19 +41,161 @@ def test_get_incident_activities_by_individual(session, incident_participant_act
     assert incident_participant_activity.id in [activity.id for activity in activities]
 
 
-# TODO(averyl): create a list of incident participant activities to serve as the existing base.
-# create 4 new incident participant activities.
-# 1. unique plugin with overlap time -> last existing item should be curtailed at starting time? new item has starting time
-# 2. unique plugin with no overlap time -> new item should be created
-# 3. existing plugin with overlap time -> last existing item should be updated with new ending time
-# 4. existing plugin with no overlap time -> new item should be created
-def test_create_or_update_incident_activities(session, incident_participant_activity):
-    # from dispatch.incident_participant_activity.service import create_or_update
-    from pprint import pprint
+def test_create_or_update_incident_participant_activity__same_plugin_no_overlap(
+    session, incident_participant_activity
+):
+    """Tests that a new incident participant activity is created when there is no time overlap with previously recorded activities."""
+    from datetime import timedelta
+    from dispatch.incident_participant_activity.models import IncidentParticipantActivityCreate
+    from dispatch.incident_participant_activity.service import (
+        create_or_update,
+        get_all_incident_participant_activities_for_incident,
+    )
 
-    mutations = []
+    orig_activities = get_all_incident_participant_activities_for_incident(
+        db_session=session, incident_id=incident_participant_activity.incident.id
+    )
 
-    pass
+    started_at = incident_participant_activity.ended_at + timedelta(seconds=1)
+    ended_at = incident_participant_activity.ended_at + timedelta(seconds=10)
+
+    activity_in = IncidentParticipantActivityCreate(
+        plugin_event=incident_participant_activity.plugin_event,
+        started_at=started_at,
+        ended_at=ended_at,
+        participant=incident_participant_activity.participant,
+        incident=incident_participant_activity.incident,
+    )
+
+    assert ended_at - started_at == create_or_update(db_session=session, activity_in=activity_in)
+    activities = get_all_incident_participant_activities_for_incident(
+        db_session=session, incident_id=incident_participant_activity.incident.id
+    )
+    assert activities
+    assert len(activities) == len(orig_activities) + 1
+    assert incident_participant_activity.id in [activity.id for activity in activities]
+
+
+def test_create_or_update_incident_participant_activity__new_plugin_no_overlap(
+    session, incident_participant_activity, plugin_event
+):
+    """Tests that a new incident participant activity is created when there is no time overlap with previously recorded activities."""
+    from datetime import timedelta
+    from dispatch.incident_participant_activity.models import IncidentParticipantActivityCreate
+    from dispatch.incident_participant_activity.service import (
+        create_or_update,
+        get_all_incident_participant_activities_for_incident,
+    )
+
+    assert incident_participant_activity.plugin_event.id != plugin_event.id
+    orig_activities = get_all_incident_participant_activities_for_incident(
+        db_session=session, incident_id=incident_participant_activity.incident.id
+    )
+
+    started_at = incident_participant_activity.ended_at + timedelta(seconds=1)
+    ended_at = started_at + timedelta(seconds=10)
+
+    activity_in = IncidentParticipantActivityCreate(
+        plugin_event=plugin_event,
+        started_at=started_at,
+        ended_at=ended_at,
+        participant=incident_participant_activity.participant,
+        incident=incident_participant_activity.incident,
+    )
+    assert ended_at - started_at == create_or_update(db_session=session, activity_in=activity_in)
+
+    activities = get_all_incident_participant_activities_for_incident(
+        db_session=session, incident_id=incident_participant_activity.incident.id
+    )
+    assert activities
+    assert len(activities) == len(orig_activities) + 1
+    assert incident_participant_activity.id in [activity.id for activity in activities]
+
+
+def test_create_or_update_incident_participant_activity__same_plugin_with_overlap(
+    session, incident_participant_activity
+):
+    """Tests only updating an existing incident participant activity.
+
+    Tests that the previously recorded incident participant activity is updated when there is continuous activity with the same plugin event.
+    """
+    from datetime import timedelta
+    from dispatch.incident_participant_activity.models import IncidentParticipantActivityCreate
+    from dispatch.incident_participant_activity.service import (
+        create_or_update,
+        get_all_incident_participant_activities_for_incident,
+    )
+
+    orig_activities = get_all_incident_participant_activities_for_incident(
+        db_session=session, incident_id=incident_participant_activity.incident.id
+    )
+
+    # Start new incident activity in the middle of the existing recorded incident activity.
+    started_at = (
+        incident_participant_activity.started_at
+        + (incident_participant_activity.ended_at - incident_participant_activity.started_at) / 2
+    )
+    ended_at = incident_participant_activity.ended_at + timedelta(seconds=10)
+
+    activity_in = IncidentParticipantActivityCreate(
+        plugin_event=incident_participant_activity.plugin_event,
+        started_at=started_at,
+        ended_at=ended_at,
+        participant=incident_participant_activity.participant,
+        incident=incident_participant_activity.incident,
+    )
+
+    assert timedelta(seconds=10) == create_or_update(db_session=session, activity_in=activity_in)
+    activities = get_all_incident_participant_activities_for_incident(
+        db_session=session, incident_id=incident_participant_activity.incident.id
+    )
+    assert activities
+    assert len(activities) == len(orig_activities)
+    assert incident_participant_activity.id in [activity.id for activity in activities]
+
+
+def test_create_or_update_incident_participant_activity__new_plugin_with_overlap(
+    session, incident_participant_activity, plugin_event
+):
+    """Tests updating an existing incident participant activity and creating a new incident participant activity.
+
+    Tests that the previously recorded incident participant activity is updated and a new incident participant
+    activity is created when there is continuous participant activity coming from a different plugin event.
+    """
+    from datetime import timedelta
+    from dispatch.incident_participant_activity.models import IncidentParticipantActivityCreate
+    from dispatch.incident_participant_activity.service import (
+        create_or_update,
+        get_all_incident_participant_activities_for_incident,
+    )
+
+    assert incident_participant_activity.plugin_event.id != plugin_event.id
+    orig_activities = get_all_incident_participant_activities_for_incident(
+        db_session=session, incident_id=incident_participant_activity.incident.id
+    )
+
+    # Start new incident activity in the middle of the existing recorded incident activity.
+    started_at = (
+        incident_participant_activity.started_at
+        + (incident_participant_activity.ended_at - incident_participant_activity.started_at) / 2
+    )
+    ended_at = incident_participant_activity.ended_at + timedelta(seconds=10)
+
+    activity_in = IncidentParticipantActivityCreate(
+        plugin_event=plugin_event,
+        started_at=started_at,
+        ended_at=ended_at,
+        participant=incident_participant_activity.participant,
+        incident=incident_participant_activity.incident,
+    )
+
+    assert timedelta(seconds=10) == create_or_update(db_session=session, activity_in=activity_in)
+    activities = get_all_incident_participant_activities_for_incident(
+        db_session=session, incident_id=incident_participant_activity.incident.id
+    )
+    assert activities
+    assert len(activities) == len(orig_activities) + 1
+    assert incident_participant_activity.id in [activity.id for activity in activities]
 
 
 def test_get_incidents_by_plugin(session, incident_participant_activity):

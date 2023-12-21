@@ -4,7 +4,7 @@ from pydantic import Field, SecretStr
 from pydantic.json import pydantic_encoder
 from typing import Any, List, Optional
 
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, PrimaryKeyConstraint, Table
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Table
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
@@ -16,7 +16,6 @@ from dispatch.database.core import Base
 from dispatch.models import DispatchBase, ProjectMixin, Pagination, PrimaryKey, NameStr
 from dispatch.plugins.base import plugins
 from dispatch.project.models import ProjectRead
-
 
 logger = logging.getLogger(__name__)
 
@@ -68,10 +67,19 @@ class PluginEvent(Base):
     __table_args__ = {"schema": "dispatch_core"}
     id = Column(Integer, primary_key=True)
     name = Column(String)
+    slug = Column(String, unique=True)
     description = Column(String)
     plugin_id = Column(Integer, ForeignKey(Plugin.id))
-    plugin = relationship(Plugin, backref="plugin_event")
-    search_vector = association_proxy("plugin", "search_vector")
+    plugin = relationship(Plugin, foreign_keys=[plugin_id])
+
+    search_vector = Column(
+        TSVectorType(
+            "name",
+            "slug",
+            "description",
+            weights={"name": "A", "slug": "B", "description": "C"},
+        )
+    )
 
 
 class PluginInstance(Base, ProjectMixin):
@@ -82,6 +90,7 @@ class PluginInstance(Base, ProjectMixin):
     )
     plugin_id = Column(Integer, ForeignKey(Plugin.id))
     plugin = relationship(Plugin, backref="instances")
+
     # this is some magic that allows us to use the plugin search vectors
     # against our plugin instances
     search_vector = association_proxy("plugin", "search_vector")
@@ -95,7 +104,6 @@ class PluginInstance(Base, ProjectMixin):
             plugin.project_id = self.project_id
             return plugin
         except Exception as e:
-            print(f"Error trying to load plugin with slug {self.slug}: {e}")
             logger.warning(f"Error trying to load plugin with slug {self.slug}: {e}")
             return self.plugin
 
@@ -160,6 +168,7 @@ class PluginRead(PluginBase):
 
 class PluginEventBase(DispatchBase):
     name: NameStr
+    slug: str
     plugin: PluginRead
     description: Optional[str] = Field(None, nullable=True)
 

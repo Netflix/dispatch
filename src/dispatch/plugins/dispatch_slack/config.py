@@ -58,14 +58,6 @@ class SlackConversationConfiguration(SlackConfiguration):
         title="Timeline Event Reaction",
         description="Defines the emoji that Dispatch will monitor for adding slack messages to the timeline.",
     )
-
-    thread_activity_event: str = Field(
-        "thread-activity-event", title="Get Thread Activity Events", description="enum"
-    )
-    channel_activity_event: str = Field(
-        "channel-activity-event", title="Get Channel Activity Events", description="enum"
-    )
-
     slack_command_list_tasks: str = Field(
         "/dispatch-list-tasks",
         title="List Tasks Command String",

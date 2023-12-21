@@ -1,6 +1,7 @@
+from datetime import datetime
+from slack_sdk import WebClient
 from typing import Any
 
-from slack_sdk import WebClient
 from dispatch.plugins.bases import ConversationPlugin
 from dispatch.plugins.dispatch_slack.events import ChannelActivityEvent
 
@@ -28,25 +29,11 @@ class TestConversationPlugin(ConversationPlugin):
         return
 
     def fetch_incident_events(self, subject: Any, **kwargs):
-        print("fetching incident events")
-        print(self.plugin_events)
         client = TestWebClient()
-        for event in self.plugin_events:
-            event.fetch_activity(client=client, subject=subject, exclusions=[])
-        return {
-            "id": "123456",
-            "messages": [
-                {
-                    "type": "message",
-                    "user": "U123ABC456",
-                    "text": "I find you punny and would like to smell your nose letter",
-                    "ts": "1512085950.000216",
-                },
-                {
-                    "type": "message",
-                    "user": "U222BBB222",
-                    "text": "What, you want to smell my shoes better?",
-                    "ts": "1512104434.000490",
-                },
-            ],
-        }
+        for plugin_event in self.plugin_events:
+            plugin_event.fetch_activity(client=client, subject=subject)
+        return [
+            (datetime.utcfromtimestamp(1512085950.000216), "0XDECAFBAD"),
+            (datetime.utcfromtimestamp(1512104434.000490), "0XDECAFBAD"),
+            (datetime.utcfromtimestamp(1512104534.000490), "0X8BADF00D"),
+        ]

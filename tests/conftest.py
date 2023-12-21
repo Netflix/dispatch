@@ -160,8 +160,6 @@ def conversation_plugin():
     from dispatch.plugins.base import register
     from dispatch.plugins.dispatch_test.conversation import TestConversationPlugin
 
-    print("test conversation plugin")
-    print(dir(TestConversationPlugin))
     register(TestConversationPlugin)
     return TestConversationPlugin
 

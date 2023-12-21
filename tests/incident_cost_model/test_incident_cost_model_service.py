@@ -2,16 +2,16 @@
 
 
 def test_create_incident_cost_model_activity(session, plugin_event):
-    from dispatch.incident_cost_model_activity.service import create_cost_model_activity
-    from dispatch.incident_cost_model_activity.models import IncidentCostModelActivityCreate
+    from dispatch.incident_cost_model.service import create_incident_cost_model_activity
+    from dispatch.incident_cost_model.models import IncidentCostModelActivityCreate
 
     incident_cost_model_activity_in = IncidentCostModelActivityCreate(
-        event=plugin_event,
+        plugin_event=plugin_event,
         response_time_seconds=5,
         enabled=True,
     )
 
-    activity = create_cost_model_activity(
+    activity = create_incident_cost_model_activity(
         db_session=session, incident_cost_model_activity_in=incident_cost_model_activity_in
     )
 
@@ -19,17 +19,17 @@ def test_create_incident_cost_model_activity(session, plugin_event):
 
 
 def test_update_incident_cost_model_activity(session, incident_cost_model_activity):
-    from dispatch.incident_cost_model_activity.service import create_cost_model_activity, update
-    from dispatch.incident_cost_model_activity.models import IncidentCostModelActivityUpdate
+    from dispatch.incident_cost_model.service import update_incident_cost_model_activity
+    from dispatch.incident_cost_model.models import IncidentCostModelActivityUpdate
 
     incident_cost_model_activity_in = IncidentCostModelActivityUpdate(
         id=incident_cost_model_activity.id,
-        event=incident_cost_model_activity.event,
+        plugin_event=incident_cost_model_activity.plugin_event,
         response_time_seconds=incident_cost_model_activity.response_time_seconds + 2,
         enabled=incident_cost_model_activity.enabled,
     )
 
-    activity = update(
+    activity = update_incident_cost_model_activity(
         db_session=session, incident_cost_model_activity_in=incident_cost_model_activity_in
     )
 
@@ -38,14 +38,19 @@ def test_update_incident_cost_model_activity(session, incident_cost_model_activi
 
 
 def test_delete_incident_cost_model_activity(session, incident_cost_model_activity):
-    from dispatch.incident_cost_model_activity.service import delete, get_by_id
+    from dispatch.incident_cost_model.service import (
+        delete_incident_cost_model_activity,
+        get_incident_cost_model_activity_by_id,
+    )
     from sqlalchemy.orm.exc import NoResultFound
 
-    delete(db_session=session, incident_cost_model_activity_id=incident_cost_model_activity.id)
+    delete_incident_cost_model_activity(
+        db_session=session, incident_cost_model_activity_id=incident_cost_model_activity.id
+    )
     deleted = False
 
     try:
-        get_by_id(
+        get_incident_cost_model_activity_by_id(
             db_session=session, incident_cost_model_activity_id=incident_cost_model_activity.id
         )
     except NoResultFound:
@@ -88,7 +93,7 @@ def test_create_incident_cost_model(session, incident_cost_model_activity, proje
     activity_out = incident_cost_model.activities[0]
     assert activity_out.response_time_seconds == incident_cost_model_activity.response_time_seconds
     assert activity_out.enabled == incident_cost_model_activity.enabled
-    assert activity_out.event.id == incident_cost_model_activity.event.id
+    assert activity_out.plugin_event.id == incident_cost_model_activity.plugin_event.id
 
     # Validate cost model retrieval
     cost_model = get_cost_model_by_id(
@@ -105,12 +110,12 @@ def test_create_incident_cost_model(session, incident_cost_model_activity, proje
 def test_fail_create_incident_cost_model(session, plugin_event, project):
     """Tests that an incident cost model cannot be created with duplicate plugin events."""
     from dispatch.incident_cost_model.models import IncidentCostModelCreate
-    from dispatch.incident_cost_model_activity.models import IncidentCostModelActivityCreate
+    from dispatch.incident_cost_model.models import IncidentCostModelActivityCreate
     from datetime import datetime
-    from dispatch.incident_cost_model.service import create, get_cost_model_by_id
+    from dispatch.incident_cost_model.service import create
 
     incident_cost_model_activity_in = IncidentCostModelActivityCreate(
-        event=plugin_event,
+        plugin_event=plugin_event,
         response_time_seconds=5,
         enabled=True,
     )
@@ -130,11 +135,9 @@ def test_fail_create_incident_cost_model(session, plugin_event, project):
         project=project,
     )
     try:
-        incident_cost_model = create(
-            db_session=session, incident_cost_model_in=incident_cost_model_in
-        )
+        create(db_session=session, incident_cost_model_in=incident_cost_model_in)
     except KeyError as e:
-        assert "Duplicate event ids" in str(e)
+        assert "Duplicate plugin event ids" in str(e)
 
 
 def test_update_cost_model(session, incident_cost_model, incident_cost_model_activity):
@@ -157,13 +160,13 @@ def test_update_cost_model(session, incident_cost_model, incident_cost_model_act
     ) in zip(updated_cost_model.activities, incident_cost_model.activities):
         assert actual.response_time_seconds == expected.response_time_seconds
         assert actual.enabled == expected.enabled
-        assert actual.event.id == expected.event.id
+        assert actual.plugin_event.id == expected.plugin_event.id
 
 
 def test_delete_cost_model(session, incident_cost_model, incident_cost_model_activity):
     from dispatch.incident_cost_model.service import delete, get_cost_model_by_id
-    from dispatch.incident_cost_model_activity import (
-        service as incident_cost_model_activity_service,
+    from dispatch.incident_cost_model import (
+        service as incident_cost_model_service,
     )
     from sqlalchemy.orm.exc import NoResultFound
 
@@ -177,11 +180,11 @@ def test_delete_cost_model(session, incident_cost_model, incident_cost_model_act
         deleted = True
 
     try:
-        incident_cost_model_activity_service.get_by_id(
+        incident_cost_model_service.get_incident_cost_model_activity_by_id(
             db_session=session, incident_cost_model_activity_id=incident_cost_model_activity.id
         )
     except NoResultFound:
         deleted = deleted and True
 
-    # One or more items were not deleted.
+    # Fails if the cost model and all its activities are not deleted.
     assert deleted

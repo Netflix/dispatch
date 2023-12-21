@@ -1,8 +1,7 @@
-from typing import List, Optional
-
 from sqlalchemy import Column, ForeignKey, Integer, Numeric
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
+from typing import List, Optional
 
 from dispatch.database.core import Base
 from dispatch.incident_cost_type.models import IncidentCostTypeRead
@@ -10,7 +9,6 @@ from dispatch.models import DispatchBase, Pagination, PrimaryKey, ProjectMixin, 
 from dispatch.project.models import ProjectRead
 
 
-# TODO(averyl): Do we want an updated_at field? What about existing entries that don't have this field?
 # SQLAlchemy Model
 class IncidentCost(Base, TimeStampMixin, ProjectMixin):
     # columns

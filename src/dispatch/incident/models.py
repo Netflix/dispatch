@@ -235,11 +235,11 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
 
     @hybrid_property
     def total_cost(self):
+        total_cost = 0
         if self.incident_costs:
-            total_cost = 0
             for cost in self.incident_costs:
                 total_cost += cost.amount
-            return total_cost
+        return total_cost
 
     @observes("participants")
     def participant_observer(self, participants):

@@ -1,8 +1,6 @@
 import logging
-
-from typing import List, Optional
-
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from typing import List, Optional
 
 from dispatch.exceptions import InvalidConfigurationError
 from dispatch.plugins.bases import OncallPlugin
@@ -178,8 +176,13 @@ def delete_instance(*, db_session, plugin_instance_id: int):
 
 
 def get_plugin_event_by_id(*, db_session, plugin_event_id: int) -> Optional[PluginEvent]:
-    """Returns a project based on the given project name."""
+    """Returns a plugin event based on the plugin event id."""
     return db_session.query(PluginEvent).filter(PluginEvent.id == plugin_event_id).one_or_none()
+
+
+def get_plugin_event_by_slug(*, db_session, slug: str) -> Optional[PluginEvent]:
+    """Returns a project based on the plugin event slug."""
+    return db_session.query(PluginEvent).filter(PluginEvent.slug == slug).one_or_none()
 
 
 def get_all_events_for_plugin(*, db_session, plugin_id: int) -> List[Optional[PluginEvent]]:
