@@ -154,6 +154,7 @@ function getCurrentPage(form_schema) {
   for (let item of schema) {
     let obj = {
       name: item.name,
+      id: item.name,
       label: item.title,
       help: item.hint ? item.hint : null,
       if: item.if ? item.if : null,
@@ -161,6 +162,13 @@ function getCurrentPage(form_schema) {
     if (item.type == "text") {
       obj = {
         $formkit: "text",
+        ...obj,
+      }
+      output_schema.push(obj)
+    }
+    if (item.type == "date") {
+      obj = {
+        $formkit: "date",
         ...obj,
       }
       output_schema.push(obj)
