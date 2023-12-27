@@ -660,31 +660,6 @@ class ServiceFactory(TimeStampBaseFactory):
                 self.terms.append(term)
 
 
-# class ConversationPluginServiceFactory(BaseFactory):
-#     """Conversation Plugin Service Factory."""
-
-#     service_id = Sequence(lambda n: f"service{n}")
-#     service_type = Sequence(lambda n: f"service{n}")
-#     service_name = Sequence(lambda n: f"service{n}")
-#     service_description = Sequence(lambda n: f"service{n}")
-#     service_external_id = Sequence(lambda n: f"service{n}")
-#     service_is_active = True
-#     service_project = SubFactory(ProjectFactory)
-
-#     class Meta:
-#         """Factory Configuration."""
-
-#         model = Service
-
-#     @post_generation
-#     def conversation_plugin(self, create, extracted, **kwargs):
-#         if not create:
-#             return
-
-#         if extracted:
-#             self.conversation_plugin_id = extracted.id
-
-
 class ReportFactory(BaseFactory):
     """Report Factory."""
 
