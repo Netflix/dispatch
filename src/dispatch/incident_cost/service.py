@@ -194,7 +194,7 @@ def calculate_incident_response_cost_with_cost_model(
         incident.project.annual_employee_cost / incident.project.business_year_hours
     )
     additional_incident_cost = math.ceil(
-        ((participants_total_response_time_seconds / SECONDS_IN_HOUR)) * hourly_rate
+        (participants_total_response_time_seconds / SECONDS_IN_HOUR) * hourly_rate
     )
     return incident.total_cost + additional_incident_cost
 

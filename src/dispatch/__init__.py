@@ -30,14 +30,14 @@ try:
     from dispatch.group.models import Group  # noqa lgtm[py/unused-import]
     from dispatch.incident_cost.models import IncidentCost  # noqa lgtm[py/unused-import]
     from dispatch.incident_cost_model.models import (
-        IncidentCostModel,
-        IncidentCostModelActivity,
-    )  # noqa lgtm[py/unused-import]
+        IncidentCostModel,  # noqa lgtm[py/unused-import]
+        IncidentCostModelActivity,  # noqa lgtm[py/unused-import]
+    )
     from dispatch.incident_cost_type.models import IncidentCostType  # noqa lgtm[py/unused-import]
     from dispatch.incident_role.models import IncidentRole  # noqa lgtm[py/unused-import]
     from dispatch.incident_participant_activity.models import (
-        IncidentParticipantActivity,
-    )  # noqa lgtm[py/unused-import]
+        IncidentParticipantActivity,  # noqa lgtm[py/unused-import]
+    )
     from dispatch.incident.priority.models import IncidentPriority  # noqa lgtm[py/unused-import]
     from dispatch.incident.severity.models import IncidentSeverity  # noqa lgtm[py/unused-import]
     from dispatch.incident.type.models import IncidentType  # noqa lgtm[py/unused-import]

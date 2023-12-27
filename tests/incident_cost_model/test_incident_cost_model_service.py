@@ -140,27 +140,124 @@ def test_fail_create_incident_cost_model(session, plugin_event, project):
         assert "Duplicate plugin event ids" in str(e)
 
 
-def test_update_cost_model(session, incident_cost_model, incident_cost_model_activity):
+def test_update_cost_model(
+    session, incident_cost_model, incident_cost_model_activity, plugin_event
+):
+    import copy
     from dispatch.incident_cost_model.service import update
+    from dispatch.incident_cost_model.models import (
+        IncidentCostModelActivityCreate,
+        IncidentCostModelActivityUpdate,
+        IncidentCostModelUpdate,
+    )
 
-    incident_cost_model.activities.append(incident_cost_model_activity)
-    incident_cost_model.description = "new description"
-    incident_cost_model.name == "new name"
-    incident_cost_model.enabled == True
+    # Update: adding new cost model activities
+    add_incident_cost_model_activity_0 = IncidentCostModelActivityCreate(
+        plugin_event=plugin_event, response_time_seconds=1, enabled=True
+    )
+    add_incident_cost_model_activity_1 = IncidentCostModelActivityCreate(
+        plugin_event=incident_cost_model_activity.plugin_event,
+        response_time_seconds=2,
+        enabled=True,
+    )
+    add_update_incident_cost_model_in = IncidentCostModelUpdate(
+        id=incident_cost_model.id,
+        name="new name",
+        description="new description",
+        enabled=True,
+        project=incident_cost_model.project,
+        activities=[add_incident_cost_model_activity_0, add_incident_cost_model_activity_1],
+    )
 
-    updated_cost_model = update(db_session=session, incident_cost_model_in=incident_cost_model)
+    add_update_incident_cost_model = update(
+        db_session=session, incident_cost_model_in=add_update_incident_cost_model_in
+    )
 
-    assert updated_cost_model.description == incident_cost_model.description
-    assert updated_cost_model.name == incident_cost_model.name
-    assert updated_cost_model.enabled == incident_cost_model.enabled
-    assert len(updated_cost_model.activities) == len(updated_cost_model.activities)
+    assert (
+        add_update_incident_cost_model.description == add_update_incident_cost_model_in.description
+    )
+    assert add_update_incident_cost_model.name == add_update_incident_cost_model_in.name
+    assert add_update_incident_cost_model.enabled == add_update_incident_cost_model_in.enabled
+    assert len(add_update_incident_cost_model.activities) == len(
+        add_update_incident_cost_model_in.activities
+    )
     for (
         actual,
         expected,
-    ) in zip(updated_cost_model.activities, incident_cost_model.activities):
+    ) in zip(
+        add_update_incident_cost_model.activities,
+        add_update_incident_cost_model_in.activities,
+        strict=True,
+    ):
         assert actual.response_time_seconds == expected.response_time_seconds
         assert actual.enabled == expected.enabled
         assert actual.plugin_event.id == expected.plugin_event.id
+
+    id_0 = add_update_incident_cost_model.activities[0].id
+    id_1 = add_update_incident_cost_model.activities[1].id
+
+    # Update: modifying existing cost model activities
+    modify_incident_cost_model_activity_0 = IncidentCostModelActivityUpdate(
+        plugin_event=plugin_event, response_time_seconds=3, enabled=True, id=id_0
+    )
+    modify_incident_cost_model_activity_1 = IncidentCostModelActivityUpdate(
+        plugin_event=incident_cost_model_activity.plugin_event,
+        response_time_seconds=4,
+        enabled=True,
+        id=id_1,
+    )
+    modify_update_incident_cost_model_in = IncidentCostModelUpdate(
+        id=incident_cost_model.id,
+        name="new name",
+        description="new description",
+        enabled=True,
+        project=incident_cost_model.project,
+        activities=[modify_incident_cost_model_activity_0, modify_incident_cost_model_activity_1],
+    )
+    modify_update_incident_cost_model = update(
+        db_session=session,
+        incident_cost_model_in=copy.deepcopy(modify_update_incident_cost_model_in),
+    )
+
+    assert (
+        modify_update_incident_cost_model.description
+        == modify_update_incident_cost_model_in.description
+    )
+    assert modify_update_incident_cost_model.name == modify_update_incident_cost_model_in.name
+    assert modify_update_incident_cost_model.enabled == modify_update_incident_cost_model_in.enabled
+    assert len(modify_update_incident_cost_model.activities) == len(
+        modify_update_incident_cost_model_in.activities
+    )
+    for (
+        actual,
+        expected,
+    ) in zip(
+        modify_update_incident_cost_model.activities,
+        modify_update_incident_cost_model_in.activities,
+        strict=True,
+    ):
+        assert actual.response_time_seconds == expected.response_time_seconds
+        assert actual.enabled == expected.enabled
+        assert actual.plugin_event.id == expected.plugin_event.id
+
+    # Update: deleting existing cost model activities
+    retained_incident_cost_model_activity = modify_incident_cost_model_activity_1
+    delete_update_incident_cost_model_in = IncidentCostModelUpdate(
+        id=incident_cost_model.id,
+        name=incident_cost_model.name,
+        description=incident_cost_model.description,
+        enabled=incident_cost_model.enabled,
+        project=incident_cost_model.project,
+        activities=[retained_incident_cost_model_activity],
+    )
+    delete_update_incident_cost_model = update(
+        db_session=session, incident_cost_model_in=delete_update_incident_cost_model_in
+    )
+    assert len(delete_update_incident_cost_model.activities) == 1
+    assert (
+        delete_update_incident_cost_model.activities[0].plugin_event.id
+        == retained_incident_cost_model_activity.plugin_event.id
+    )
 
 
 def test_delete_cost_model(session, incident_cost_model, incident_cost_model_activity):

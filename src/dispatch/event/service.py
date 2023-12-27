@@ -193,7 +193,6 @@ def delete_incident_event(
     delete(db_session=db_session, event_id=event.id)
 
 
-
 def export_timeline(
     db_session,
     timeline_filters: str,

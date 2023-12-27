@@ -107,7 +107,7 @@ def test_calculate_incident_response_cost_with_cost_model(
     )
     expected_incident_cost = (
         math.ceil(
-            ((participants_total_response_time_seconds.seconds / SECONDS_IN_HOUR)) * hourly_rate
+            (participants_total_response_time_seconds.seconds / SECONDS_IN_HOUR) * hourly_rate
         )
         + orig_total_incident_cost
     )

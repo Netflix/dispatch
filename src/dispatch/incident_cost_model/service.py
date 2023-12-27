@@ -132,8 +132,9 @@ def update(*, db_session, incident_cost_model_in: IncidentCostModelUpdate) -> In
     for activity in incident_cost_model.activities:
         updated = False
         for idx_in, activity_in in enumerate(incident_cost_model_in.activities):
-            if activity.id == activity_in.id:
+            if activity.plugin_event.id == activity_in.plugin_event.id:
                 update_activities.append((activity, activity_in))
+                incident_cost_model_in.activities.pop(idx_in)
                 updated = True
                 break
         if updated:
@@ -148,7 +149,6 @@ def update(*, db_session, incident_cost_model_in: IncidentCostModelUpdate) -> In
         activity.plugin_event = plugin_service.get_plugin_event_by_id(
             db_session=db_session, plugin_event_id=activity_in.plugin_event.id
         )
-        incident_cost_model_in.activities.pop(idx_in)
 
     for activity in delete_activities:
         incident_cost_model_service.delete_incident_cost_model_activity(

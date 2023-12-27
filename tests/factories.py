@@ -46,7 +46,6 @@ from dispatch.organization.models import Organization
 from dispatch.participant.models import Participant
 from dispatch.participant_role.models import ParticipantRole
 from dispatch.plugin.models import Plugin, PluginInstance
-from dispatch.plugins.bases.conversation import ConversationPlugin
 from dispatch.project.models import Project
 from dispatch.report.models import Report
 from dispatch.route.models import Recommendation, RecommendationMatch

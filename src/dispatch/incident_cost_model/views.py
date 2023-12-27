@@ -49,11 +49,11 @@ def get_incident_cost_models(common: CommonParameters):
     "",
     summary="Creates a new incident cost model.",
     response_model=IncidentCostModelRead,
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def create_incident_cost_model(
     db_session: DbSession,
     incident_cost_model_in: IncidentCostModelCreate,
-    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 ):
     """Create an incident cost model."""
     return create(db_session=db_session, incident_cost_model_in=incident_cost_model_in)
@@ -63,12 +63,12 @@ def create_incident_cost_model(
     "/{incident_cost_model_id}",
     summary="Modifies an existing incident cost model.",
     response_model=IncidentCostModelRead,
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_incident_cost_model(
     incident_cost_model_id: PrimaryKey,
     db_session: DbSession,
     incident_cost_model_in: IncidentCostModelUpdate,
-    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 ):
     """Modifies an existing incident cost model."""
     return update(db_session=db_session, incident_cost_model_in=incident_cost_model_in)
@@ -78,12 +78,12 @@ def update_incident_cost_model(
     "/{incident_cost_model_id}",
     response_model=None,
     summary="Deletes an incident cost model and its activities.",
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def delete_incident_cost_model(
     incident_cost_model_id: PrimaryKey,
     db_session: DbSession,
     current_incident_cost_model: CurrentIncidentCostModel,
-    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 ):
     """Deletes an incident and its external resources."""
     try:

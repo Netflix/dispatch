@@ -98,6 +98,7 @@ def test_get_all_events_for_plugin(*, session, plugin_event):
     )
 
     # Assert membership of plugin_event.
+    is_member = False
     for plugin_event_out in plugin_events_out:
         if (
             plugin_event_out.id == plugin_event.id
@@ -106,5 +107,6 @@ def test_get_all_events_for_plugin(*, session, plugin_event):
             and plugin_event_out.description == plugin_event.description
             and plugin_event_out.slug == plugin_event.slug
         ):
-            return
-    assert False
+            is_member = True
+            break
+    assert is_member
