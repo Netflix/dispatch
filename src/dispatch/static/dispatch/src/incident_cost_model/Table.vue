@@ -6,8 +6,8 @@
       <v-col>
         <v-alert closable icon="mdi-school" prominent text type="info">
           Incident cost models allow users to create customized cost calculations for each incident.
-          This feature uses plugin-based tracking to provide a comprehensive view of participant activity,
-          enabling a granular understanding of incident costs.
+          This feature uses plugin-based tracking to provide a comprehensive view of participant
+          activity, enabling a granular understanding of incident costs.
         </v-alert>
       </v-col>
     </v-row>

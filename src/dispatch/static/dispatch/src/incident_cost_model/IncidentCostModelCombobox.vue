@@ -1,132 +1,130 @@
 <template>
-    <v-combobox
-      :items="items"
-      :label="label"
-      :loading="loading"
-      v-model:search="search"
-      @update:search="getFilteredData()"
-      chips
-      hide-selected
-      item-title="name"
-      item-value="id"
-      no-filter
-      clearable
-      v-model="incident_cost_model"
-      :rules="[is_valid]"
-    >
-      <template slot="selection" slot-scope="data">
-        <v-chip :selected="data.selected">
+  <v-combobox
+    :items="items"
+    :label="label"
+    :loading="loading"
+    v-model:search="search"
+    @update:search="getFilteredData()"
+    chips
+    hide-selected
+    item-title="name"
+    item-value="id"
+    no-filter
+    clearable
+    v-model="incident_cost_model"
+    :rules="[is_valid]"
+  >
+    <template #chip="data">
+      <v-chip :value="data.selected">
+        {{ item.raw.name }}
+      </v-chip>
+    </template>
+    <template #item="data">
+      <v-list-item v-bind="data.props" :title="null">
+        <v-list-item-title>
+          {{ data.item.raw.name }}
+        </v-list-item-title>
+        <v-list-item-subtitle :title="data.item.raw.description">
+          {{ data.item.raw.description }}
+        </v-list-item-subtitle>
+      </v-list-item>
+    </template>
+    <template #append-item>
+      <v-list-item v-if="more" @click="loadMore()">
+        <v-list-item-subtitle> Load More </v-list-item-subtitle>
+      </v-list-item>
+    </template>
+  </v-combobox>
+</template>
 
-            {{ item.raw.name }}
+<script>
+import { cloneDeep, debounce } from "lodash"
 
-        </v-chip>
-        </template>
-      <template #item="data">
-        <v-list-item v-bind="data.props" :title="null">
-          <v-list-item-title>
-            {{ data.item.raw.name }}
-          </v-list-item-title>
-          <v-list-item-subtitle :title="data.item.raw.description">
-            {{ data.item.raw.description }}
-          </v-list-item-subtitle>
-        </v-list-item>
-      </template>
-      <template #append-item>
-        <v-list-item v-if="more" @click="loadMore()">
-          <v-list-item-subtitle> Load More </v-list-item-subtitle>
-        </v-list-item>
-      </template>
-    </v-combobox>
-  </template>
+import IncidentCostModelApi from "@/incident_cost_model/api"
+import SearchUtils from "@/search/utils"
 
-  <script>
-  import {  cloneDeep, debounce } from "lodash"
+export default {
+  name: "IncidentCostModelCombobox",
 
-  import IncidentCostModelApi from "@/incident_cost_model/api"
-  import SearchUtils from "@/search/utils"
-
-  export default {
-    name: "IncidentCostModelCombobox",
-
-    props: {
-      modelValue: {
-        type: Object,
-        default: function () {
-          return {}
-        },
-      },
-      label: {
-        type: String,
-        default: "Incident Cost Model",
+  props: {
+    modelValue: {
+      type: Object,
+      default: function () {
+        return {}
       },
     },
-    data() {
-      return {
-        loading: false,
-        items: [],
-        more: false,
-        numItems: 5,
-        search: null,
-        is_valid: (value) => {
-          if (typeof value === "string") {
-            return "Invalid incident cost model"
-          }
-          return true
-        },
-      }
+    label: {
+      type: String,
+      default: "Incident Cost Model",
     },
+  },
+  data() {
+    return {
+      loading: false,
+      items: [],
+      more: false,
+      numItems: 5,
+      search: null,
+      is_valid: (value) => {
+        if (typeof value === "string") {
+          return "Invalid incident cost model"
+        }
+        return true
+      },
+    }
+  },
 
-    computed: {
-      incident_cost_model: {
-        get() {
-          return cloneDeep(this.modelValue)
-        },
-        set(value) {
-          this.$emit("update:modelValue", value)
-        },
+  computed: {
+    incident_cost_model: {
+      get() {
+        return cloneDeep(this.modelValue)
+      },
+      set(value) {
+        this.$emit("update:modelValue", value)
       },
     },
+  },
 
-    created() {
+  created() {
+    this.fetchData()
+  },
+
+  methods: {
+    loadMore() {
+      this.numItems = this.numItems + 5
       this.fetchData()
     },
+    fetchData() {
+      this.error = null
+      this.loading = "error"
 
-    methods: {
-      loadMore() {
-        this.numItems = this.numItems + 5
-        this.fetchData()
-      },
-      fetchData() {
-        this.error = null
-        this.loading = "error"
+      let filterOptions = {
+        q: this.search,
+        sortBy: ["name"],
+        descending: [false],
+        itemsPerPage: this.numItems,
+        filters: {
+          project: [this.project],
+        },
+      }
 
-        let filterOptions = {
-          q: this.search,
-          sortBy: ["name"],
-          descending: [false],
-          itemsPerPage: this.numItems,
-          filters: {
-            project: [this.project],
-          },
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+
+      IncidentCostModelApi.getAll(filterOptions).then((response) => {
+        this.items = response.data.items
+        this.total = response.data.total
+
+        this.more = false
+        if (this.items.length < this.total) {
+          this.more = true
         }
 
-        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
-
-        IncidentCostModelApi.getAll(filterOptions).then((response) => {
-          this.items = response.data.items
-          this.total = response.data.total
-
-          this.more = false
-          if (this.items.length < this.total) {
-            this.more = true
-          }
-
-          this.loading = false
-        })
-      },
-      getFilteredData: debounce(function () {
-        this.fetchData()
-      }, 500),
+        this.loading = false
+      })
     },
-  }
-  </script>
+    getFilteredData: debounce(function () {
+      this.fetchData()
+    }, 500),
+  },
+}
+</script>

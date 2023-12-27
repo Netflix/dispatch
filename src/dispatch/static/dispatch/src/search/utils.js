@@ -1,4 +1,3 @@
-import { el } from "date-fns/locale"
 import { forEach, each, has } from "lodash"
 
 const toPascalCase = (str) =>

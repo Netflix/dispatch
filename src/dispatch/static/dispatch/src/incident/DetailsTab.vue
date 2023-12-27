@@ -113,7 +113,7 @@
       </v-col>
       <v-col cols="12">
         <incident-filter-combobox label="Duplicates" v-model="duplicates" :project="project" />
-    </v-col>
+      </v-col>
       <v-col cols="12">
         <case-filter-combobox label="Cases" v-model="cases" />
       </v-col>

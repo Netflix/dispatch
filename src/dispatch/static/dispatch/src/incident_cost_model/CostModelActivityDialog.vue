@@ -5,14 +5,14 @@
         <v-card-title>
           <v-list-item lines="two">
             <v-list-item-title class="text-h6"> New Incident Cost Model Activity</v-list-item-title>
-            <v-list-item-subtitle></v-list-item-subtitle>
+            <v-list-item-subtitle />
           </v-list-item>
         </v-card-title>
         <v-card-text>
           <span class="text-subheader-2 text-medium-emphasis">
-            Select the plugins and their specific events you want to monitor.
-            Assign a quantifiable amount of effort to the plugin event, represented in seconds of work time,
-            for the selected plugin event.
+            Select the plugins and their specific events you want to monitor. Assign a quantifiable
+            amount of effort to the plugin event, represented in seconds of work time, for the
+            selected plugin event.
           </span>
         </v-card-text>
         <v-card-text>
@@ -74,7 +74,9 @@
                   />
                 </template>
 
-                <span> Work effort associated with this plugin event, measured in number of seconds. </span>
+                <span>
+                  Work effort associated with this plugin event, measured in number of seconds.
+                </span>
               </v-tooltip>
             </v-col>
           </v-row>

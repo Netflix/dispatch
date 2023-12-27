@@ -2,7 +2,6 @@ import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
-import router from "@/router"
 import IncidentCostModelApi from "@/incident_cost_model/api"
 
 const getDefaultSelectedState = () => {
