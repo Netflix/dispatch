@@ -2,7 +2,7 @@
   <cost-model-activity-dialog @update:model-value="addActivity($event)" />
   <v-container>
     <v-row no-gutter align="center">
-      <span class="text-subtitle-1"> Cost Model Activity Title </span>
+      <span class="text-subtitle-1"> Cost Model Activity </span>
       <v-spacer />
 
       <v-tooltip location="bottom">
@@ -13,9 +13,6 @@
         </template>
         <span>Add Activity</span>
       </v-tooltip>
-    </v-row>
-    <v-row>
-      <v-divider class="mt-2" />
     </v-row>
     <span v-for="(activity, activity_idx) in activities" :key="activity_idx">
       <v-row align="center" dense>
@@ -36,7 +33,7 @@
           </v-tooltip>
           <span>
             <v-chip class="short" size="small" :color="project.color">
-              {{ activity.event.plugin.title.substring(0, 20) }}
+              {{ activity.plugin_event.plugin.title.substring(0, 20) }}
             </v-chip>
           </span>
         </v-col>
@@ -44,7 +41,7 @@
         <v-col cols="12" sm="4">
           <span>
             <v-chip class="short" size="small" :color="project.color">
-              {{ activity.event.name.substring(0, 20) }}
+              {{ activity.plugin_event.name.substring(0, 20) }}
             </v-chip>
           </span>
         </v-col>
@@ -100,11 +97,11 @@ export default {
 
     addActivity(activity) {
       for (let i = 0; i < this.activities.length; i++) {
-        if (this.activities[i].event.id == activity.event.id) {
+        if (this.activities[i].plugin_event.id == activity.plugin_event.id) {
           this.$store.commit(
             "notification_backend/addBeNotification",
             {
-              text: "Failed to add incident cost model activity. Please ensure all events are unique for each cost model.",
+              text: "Failed to add incident cost model activity. Please ensure all plugin events are unique for each cost model.",
             },
             { root: true }
           )

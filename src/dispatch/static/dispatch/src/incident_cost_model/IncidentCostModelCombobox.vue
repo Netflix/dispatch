@@ -6,25 +6,16 @@
       v-model:search="search"
       @update:search="getFilteredData()"
       chips
-      closable-chips
       hide-selected
       item-title="name"
       item-value="id"
       no-filter
       clearable
       v-model="incident_cost_model"
-
+      :rules="[is_valid]"
     >
-      <template #no-data>
-        <v-list-item>
-          <v-list-item-title>
-            No cost models matching "<strong>{{ search }}</strong
-            >"
-          </v-list-item-title>
-        </v-list-item>
-      </template>
-      <template #chip="{ item, props }">
-        <v-chip v-bind="props">
+      <template slot="selection" slot-scope="data">
+        <v-chip :selected="data.selected">
 
             {{ item.raw.name }}
 
@@ -76,14 +67,18 @@
         more: false,
         numItems: 5,
         search: null,
+        is_valid: (value) => {
+          if (typeof value === "string") {
+            return "Invalid incident cost model"
+          }
+          return true
+        },
       }
     },
 
     computed: {
       incident_cost_model: {
         get() {
-          console.log('this cost model')
-          console.log(this.modelValue)
           return cloneDeep(this.modelValue)
         },
         set(value) {

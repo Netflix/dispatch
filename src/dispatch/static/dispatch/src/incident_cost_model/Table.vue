@@ -2,6 +2,15 @@
   <v-container fluid>
     <new-edit-sheet />
     <delete-dialog />
+    <v-row no-gutters>
+      <v-col>
+        <v-alert closable icon="mdi-school" prominent text type="info">
+          Incident cost models allow users to create customized cost calculations for each incident.
+          This feature uses plugin-based tracking to provide a comprehensive view of participant activity,
+          enabling a granular understanding of incident costs.
+        </v-alert>
+      </v-col>
+    </v-row>
     <v-row align="center" justify="space-between" no-gutters>
       <v-col cols="8">
         <settings-breadcrumbs v-model="project" />

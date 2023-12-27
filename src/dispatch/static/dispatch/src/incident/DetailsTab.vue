@@ -106,13 +106,14 @@
         <incident-cost-model-combobox
           :project="project"
           v-model="incident_cost_model"
-          :rules="[only_one]"
-          hint="If unassigned, defaults to the classic incident cost model. See (%link)"
+          persistent-hint
+          clearable
+          hint="If unassigned, the incident cost calculation defaults to the classic incident cost model."
         />
       </v-col>
       <v-col cols="12">
         <incident-filter-combobox label="Duplicates" v-model="duplicates" :project="project" />
-      </v-col>
+    </v-col>
       <v-col cols="12">
         <case-filter-combobox label="Cases" v-model="cases" />
       </v-col>
@@ -163,12 +164,6 @@ export default {
     return {
       statuses: ["Active", "Stable", "Closed"],
       visibilities: ["Open", "Restricted"],
-      only_one: (value) => {
-        if (value && value.length > 1) {
-          return "Only one is allowed"
-        }
-        return true
-      },
       required_and_only_one: (value) => {
         if (!value || value.length == 0) {
           return "This field is required"

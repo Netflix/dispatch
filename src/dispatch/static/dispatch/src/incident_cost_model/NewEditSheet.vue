@@ -28,7 +28,8 @@
         <v-form v-model="valid">
           <v-checkbox
             v-model="enabled"
-            hint="Each plugin type can only ever have one enabled plugin. Existing enabled plugins will be de-activated."
+            hint="When an incident is associated with a disabled cost model, the
+            incident will automatically revert to the traditional incident cost model."
             label="Enabled"
           />
           <v-text-field

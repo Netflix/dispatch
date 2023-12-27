@@ -12,22 +12,13 @@
     clearable
     return-object
   >
-    <template #no-data>
-      <v-list-item>
-        <v-list-item-title>
-          No Plugin Events matching "
-          <strong>{{ search }}</strong
-          >"
-        </v-list-item-title>
-      </v-list-item>
-    </template>
     <template #item="data">
       <v-list-item v-bind="data.props" :title="null">
         <v-list-item-title>
           {{ data.item.raw.name }}
         </v-list-item-title>
-        <v-list-item-subtitle :title="data.item.raw.description">
-          {{ data.item.raw.description }}
+        <v-list-item-subtitle :title="data.item.raw.slug">
+          {{ data.item.raw.slug }}
         </v-list-item-subtitle>
       </v-list-item>
     </template>
@@ -78,24 +69,6 @@ export default {
     this.fetchData()
   },
 
-  compute: {
-    plugin_event: {
-      get() {
-        let val = cloneDeep(this.modelValue)
-        return val
-      },
-      set(value) {
-        this.search = null
-        const plugin_event = value.filter((v) => {
-          if (typeof v === "string") {
-            return false
-          }
-          return true
-        })
-        this.$emit("update:modelValue", plugin_event)
-      },
-    },
-  },
   methods: {
     loadMore() {
       this.numItems = this.numItems + 5
@@ -117,11 +90,7 @@ export default {
           plugin: [this.plugin.plugin],
         },
       }
-      filterOptions = SearchUtils.createParametersFromTableOptions(
-        { ...filterOptions },
-        "PluginEvent"
-      )
-
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
       PluginApi.getAllPluginEvents(filterOptions).then((response) => {
         this.items = response.data.items
         this.total = response.data.total

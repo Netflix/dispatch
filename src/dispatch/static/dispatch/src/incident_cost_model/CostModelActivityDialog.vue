@@ -4,20 +4,22 @@
       <v-card>
         <v-card-title>
           <v-list-item lines="two">
-            <v-list-item-title class="text-h6"> New </v-list-item-title>
-            <v-list-item-subtitle>Incident Cost Model Activity </v-list-item-subtitle>
+            <v-list-item-title class="text-h6"> New Incident Cost Model Activity</v-list-item-title>
+            <v-list-item-subtitle></v-list-item-subtitle>
           </v-list-item>
         </v-card-title>
         <v-card-text>
-          <v-container>
-            <div>Assign the response time for a given plugin event.</div>
-          </v-container>
+          <span class="text-subheader-2 text-medium-emphasis">
+            Select the plugins and their specific events you want to monitor.
+            Assign a quantifiable amount of effort to the plugin event, represented in seconds of work time,
+            for the selected plugin event.
+          </span>
         </v-card-text>
         <v-card-text>
           <v-spacer />
           <v-row align="center" dense>
             <v-col cols="12" sm="4">
-              <v-tooltip location="bottom" text="idk">
+              <v-tooltip location="bottom">
                 <template #activator="{ props }">
                   <plugin-instance-combobox
                     :model-value="plugin"
@@ -38,7 +40,7 @@
                 <template #activator="{ props }">
                   <span v-bind="props">
                     <plugin-event-combobox
-                      :model-value="event"
+                      :model-value="plugin_event"
                       @update:model-value="setPluginEvent($event)"
                       :plugin="plugin"
                       label="Plugin Event"
@@ -49,8 +51,9 @@
                   </span>
                 </template>
 
-                <span v-if="plugin">Select Plugin Events</span>
-                <span v-else>Please select a plugin first.</span>
+                <span v-if="!plugin">Please select a plugin first.</span>
+                <span v-else-if="!plugin_event || !plugin_event.name">Select Plugin Event</span>
+                <span v-else>{{ plugin_event.description }}</span>
               </v-tooltip>
             </v-col>
 
@@ -71,7 +74,7 @@
                   />
                 </template>
 
-                <span> Activity effort measured in number of seconds. </span>
+                <span> Work effort associated with this plugin event, measured in number of seconds. </span>
               </v-tooltip>
             </v-col>
           </v-row>
@@ -104,7 +107,7 @@ export default {
   data() {
     return {
       enabled: true,
-      event: null,
+      plugin_event: null,
       plugin: null,
       response_time_seconds: 300,
       valid: false,
@@ -149,7 +152,7 @@ export default {
     addCostModelActivity() {
       let activity = {
         enabled: this.enabled,
-        event: this.event,
+        plugin_event: this.plugin_event,
         response_time_seconds: this.response_time_seconds,
       }
 
@@ -160,11 +163,11 @@ export default {
       this.closeActivity()
     },
     setPlugin(plugin) {
-      this.event = null
+      this.plugin_event = null
       this.plugin = plugin
     },
-    setPluginEvent(event) {
-      this.event = event
+    setPluginEvent(plugin_event) {
+      this.plugin_event = plugin_event
     },
   },
 }
