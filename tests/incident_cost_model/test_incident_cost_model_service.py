@@ -63,6 +63,7 @@ def test_delete_incident_cost_model_activity(session, incident_cost_model_activi
 
 
 def test_create_incident_cost_model(session, incident_cost_model_activity, project):
+    """Tests that an incident cost model can be created."""
     from dispatch.incident_cost_model.models import IncidentCostModelCreate
     from datetime import datetime
     from dispatch.incident_cost_model.service import create, get_cost_model_by_id
@@ -140,10 +141,17 @@ def test_fail_create_incident_cost_model(session, plugin_event, project):
         assert "Duplicate plugin event ids" in str(e)
 
 
-def test_update_cost_model(
-    session, incident_cost_model, incident_cost_model_activity, plugin_event
-):
+def test_update_cost_model(session, incident_cost_model):
+    """Tests that a cost model and all its activities are updated.
+
+    The update test cases are:
+        - Adding a new cost model activity to the existing cost model
+        - Modifying an existing cost model activity
+        - Deleting a cost model activity from the existing cost model
+    """
     import copy
+    from tests.factories import PluginEventFactory
+
     from dispatch.incident_cost_model.service import update
     from dispatch.incident_cost_model.models import (
         IncidentCostModelActivityCreate,
@@ -151,12 +159,15 @@ def test_update_cost_model(
         IncidentCostModelUpdate,
     )
 
+    plugin_event_0 = PluginEventFactory()
+    plugin_event_1 = PluginEventFactory()
+
     # Update: adding new cost model activities
     add_incident_cost_model_activity_0 = IncidentCostModelActivityCreate(
-        plugin_event=plugin_event, response_time_seconds=1, enabled=True
+        plugin_event=plugin_event_0, response_time_seconds=1, enabled=True
     )
     add_incident_cost_model_activity_1 = IncidentCostModelActivityCreate(
-        plugin_event=incident_cost_model_activity.plugin_event,
+        plugin_event=plugin_event_1,
         response_time_seconds=2,
         enabled=True,
     )
@@ -198,10 +209,10 @@ def test_update_cost_model(
 
     # Update: modifying existing cost model activities
     modify_incident_cost_model_activity_0 = IncidentCostModelActivityUpdate(
-        plugin_event=plugin_event, response_time_seconds=3, enabled=True, id=id_0
+        plugin_event=plugin_event_0, response_time_seconds=3, enabled=True, id=id_0
     )
     modify_incident_cost_model_activity_1 = IncidentCostModelActivityUpdate(
-        plugin_event=incident_cost_model_activity.plugin_event,
+        plugin_event=plugin_event_1,
         response_time_seconds=4,
         enabled=True,
         id=id_1,
@@ -261,6 +272,7 @@ def test_update_cost_model(
 
 
 def test_delete_cost_model(session, incident_cost_model, incident_cost_model_activity):
+    """Tests that a cost model and all its activities are deleted."""
     from dispatch.incident_cost_model.service import delete, get_cost_model_by_id
     from dispatch.incident_cost_model import (
         service as incident_cost_model_service,

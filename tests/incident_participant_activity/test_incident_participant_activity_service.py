@@ -1,6 +1,4 @@
-def test_create_incident_participant_activity(
-    session, incident_cost_model_activity, participant, incident
-):
+def test_create_incident_participant_activity(session, plugin_event, participant, incident):
     from dispatch.incident_participant_activity.service import (
         create,
         get_all_incident_participant_activities_for_incident,
@@ -8,7 +6,7 @@ def test_create_incident_participant_activity(
     from dispatch.incident_participant_activity.models import IncidentParticipantActivityCreate
 
     activity_in = IncidentParticipantActivityCreate(
-        plugin_event=incident_cost_model_activity.plugin_event,
+        plugin_event=plugin_event,
         participant=participant,
         incident=incident,
     )
@@ -199,6 +197,7 @@ def test_create_or_update_incident_participant_activity__new_plugin_with_overlap
 
 
 def test_get_incidents_by_plugin(session, incident_participant_activity):
+    """Tests retrieval of all of an incident's recorded participant activity from a specific plugin."""
     from dispatch.incident_participant_activity.service import (
         get_all_recorded_incident_partcipant_activities_for_plugin,
     )
