@@ -34,10 +34,8 @@ from dispatch.incident.priority.models import IncidentPriority
 from dispatch.incident.severity.models import IncidentSeverity
 from dispatch.incident.type.models import IncidentType
 from dispatch.incident_cost.models import IncidentCost
-from dispatch.incident_cost_model.models import IncidentCostModel
-from dispatch.incident_cost_model.models import IncidentCostModelActivity
+from dispatch.incident_cost_model.models import IncidentCostModel, IncidentCostModelActivity
 from dispatch.incident_participant_activity.models import IncidentParticipantActivity
-from dispatch.plugin.models import PluginEvent
 from dispatch.incident_cost_type.models import IncidentCostType
 from dispatch.incident_role.models import IncidentRole
 from dispatch.individual.models import IndividualContact
@@ -45,7 +43,7 @@ from dispatch.notification.models import Notification
 from dispatch.organization.models import Organization
 from dispatch.participant.models import Participant
 from dispatch.participant_role.models import ParticipantRole
-from dispatch.plugin.models import Plugin, PluginInstance
+from dispatch.plugin.models import Plugin, PluginInstance, PluginEvent
 from dispatch.project.models import Project
 from dispatch.report.models import Report
 from dispatch.route.models import Recommendation, RecommendationMatch
