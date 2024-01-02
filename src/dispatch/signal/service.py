@@ -12,6 +12,7 @@ from dispatch.case.type import service as case_type_service
 from dispatch.case.type.models import CaseType
 from dispatch.database.service import apply_filter_specific_joins, apply_filters
 from dispatch.entity_type import service as entity_type_service
+from dispatch.entity_type.models import EntityType
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 from dispatch.service import service as service_service
@@ -29,6 +30,7 @@ from .exceptions import (
 )
 
 from .models import (
+    assoc_signal_entity_types,
     Signal,
     SignalCreate,
     SignalEngagement,
@@ -80,6 +82,18 @@ def get_signal_engagement(
         db_session.query(SignalEngagement)
         .filter(SignalEngagement.id == signal_engagement_id)
         .one_or_none()
+    )
+
+
+def get_all_by_entity_type(*, db_session: Session, entity_type_id: int) -> list[SignalInstance]:
+    """Fetches all signal instances associated with a given entity type."""
+    return (
+        db_session.query(SignalInstance)
+        .join(SignalInstance.signal)
+        .join(assoc_signal_entity_types)
+        .join(EntityType)
+        .filter(assoc_signal_entity_types.c.entity_type_id == entity_type_id)
+        .all()
     )
 
 

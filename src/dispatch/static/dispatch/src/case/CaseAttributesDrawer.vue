@@ -7,6 +7,7 @@ import CaseResolutionSearchPopover from "@/case/CaseResolutionSearchPopover.vue"
 import CasePrioritySearchPopover from "@/case/priority/CasePrioritySearchPopover.vue"
 import CaseSeveritySearchPopover from "@/case/severity/CaseSeveritySearchPopover.vue"
 import CaseTypeSearchPopover from "@/case/type/CaseTypeSearchPopover.vue"
+import DTooltip from "@/components/DTooltip.vue"
 import ParticipantSearchPopover from "@/participant/ParticipantSearchPopover.vue"
 import ProjectSearchPopover from "@/project/ProjectSearchPopover.vue"
 import { useSavingState } from "@/composables/useSavingState"
@@ -153,90 +154,33 @@ const handleResolutionUpdate = (newResolution) => {
 
       <v-divider class="mt-8 mb-8" />
 
-      <div class="pl-6 dispatch-font-title">Resolution</div>
-      <div class="pl-6 dispatch-font">
-        Document your findings and provide the rationale for any decisions you made as part of this
-        case.
-      </div>
-      <div class="pl-6 pt-4">
+      <div class="pl-6 pt-4 pr-6 d-flex align-center justify-space-between">
+        <div class="d-flex align-center justify-start">
+          <div class="dispatch-font-title pr-2">Resolution</div>
+          <DTooltip
+            text="Document your findings and provide the rationale for any decisions you made as part of this case."
+            hotkeys=""
+          >
+            <template #activator="{ tooltip }">
+              <v-btn
+                v-bind="tooltip"
+                variant="plain"
+                density="compact"
+                size="x-small"
+                icon="mdi-information-outline"
+              />
+            </template>
+          </DTooltip>
+        </div>
         <CaseResolutionSearchPopover :case-resolution="modelValue.resolution_reason" />
       </div>
       <v-card flat color="grey-lighten-5" class="rounded-lg mt-4 ml-4 mr-4">
         <RichEditor
-          :resolution="true"
-          :model-value="modelValue.resolution"
+          :content="modelValue.resolution"
           @update:model-value="handleResolutionUpdate"
           style="min-height: 400px; margin: 10px; font-size: 0.9125rem; font-weight: 400"
         />
-        <!-- <v-row class="pb-2 pr-4 pl-4">
-          <v-col cols="12" class="d-flex justify-end align-center"> </v-col>
-        </v-row> -->
       </v-card>
-
-      <v-divider class="mt-8 mb-8" />
-
-      <div class="pl-3">
-        <v-row no-gutters align="center">
-          <v-col cols="8">
-            <v-btn
-              class="text-subtitle-2 font-weight-regular"
-              prepend-icon="mdi-jira"
-              variant="text"
-              :disabled="!modelValue.ticket"
-              :href="modelValue.ticket && modelValue.ticket.weblink"
-              target="_blank"
-            >
-              Ticket
-            </v-btn>
-          </v-col>
-        </v-row>
-
-        <v-row no-gutters class="pt-6" align="center">
-          <v-col cols="8">
-            <v-btn
-              class="text-subtitle-2 font-weight-regular"
-              prepend-icon="mdi-slack"
-              variant="text"
-              :disabled="!modelValue.conversation"
-              :href="modelValue.conversation && modelValue.conversation.weblink"
-              target="_blank"
-            >
-              Conversation
-            </v-btn>
-          </v-col>
-        </v-row>
-
-        <!-- For documents, consider the first document's weblink as an example -->
-        <v-row no-gutters class="pt-6" align="center">
-          <v-col cols="8">
-            <v-btn
-              class="text-subtitle-2 font-weight-regular"
-              prepend-icon="mdi-file-document"
-              variant="text"
-              :disabled="!modelValue.documents.length"
-              :href="modelValue.documents.length && modelValue.documents[0].weblink"
-              target="_blank"
-            >
-              Document
-            </v-btn>
-          </v-col>
-        </v-row>
-
-        <v-row no-gutters class="pt-6 pb-6" align="center">
-          <v-col cols="8">
-            <v-btn
-              class="text-subtitle-2 font-weight-regular"
-              prepend-icon="mdi-folder-google-drive"
-              variant="text"
-              :disabled="!modelValue.storage"
-              :href="modelValue.storage && modelValue.storage.weblink"
-              target="_blank"
-            >
-              Storage
-            </v-btn>
-          </v-col>
-        </v-row>
-      </div>
     </v-navigation-drawer>
   </div>
 </template>

@@ -6,30 +6,24 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch } from "vue"
+import Placeholder from "@tiptap/extension-placeholder"
 import { Editor, EditorContent } from "@tiptap/vue-3"
 import StarterKit from "@tiptap/starter-kit"
 
 const props = defineProps({
-  modelValue: {
+  content: {
     type: String,
     default: "",
   },
-  title: {
-    type: Boolean,
-    default: false,
-  },
-  description: {
-    type: Boolean,
-    default: false,
-  },
-  resolution: {
-    type: Boolean,
-    default: false,
+  placeholder: {
+    type: String,
+    default: "",
   },
 })
 
 const editor = ref(null)
 const plainTextValue = ref("")
+
 const emit = defineEmits(["update:modelValue"])
 
 const userIsTyping = ref(false)
@@ -43,7 +37,7 @@ const handleBlur = () => {
 }
 
 watch(
-  () => props.modelValue,
+  () => props.content,
   (value) => {
     if (userIsTyping.value) {
       return
@@ -55,18 +49,28 @@ watch(
       return
     }
 
-    if (props.title) {
-      editor.value?.chain().focus().setContent(`<h2>${value}</h2>`, false).run()
-    } else {
-      editor.value?.chain().setContent(`${value}`, false).run()
-    }
+    editor.value?.chain().setContent(`${value}`, false).run()
   }
 )
 
 onMounted(() => {
   editor.value = new Editor({
-    extensions: [StarterKit.configure({ heading: { levels: [2] } })],
-    content: props.modelValue,
+    extensions: [
+      StarterKit.configure({ heading: { levels: [1, 2, 3, 4, 5, 6] } }),
+      Placeholder.configure({
+        // Use a placeholder:
+        placeholder: props.placeholder,
+        // Use different placeholders depending on the node type:
+        // placeholder: ({ node }) => {
+        //   if (node.type.name === 'heading') {
+        //     return 'What’s the title?'
+        //   }
+
+        //   return 'Can you add some further context?'
+        // },
+      }),
+    ],
+    content: props.content,
     onUpdate: () => {
       let content = editor.value?.getHTML()
       // remove the HTML tags
@@ -98,9 +102,44 @@ defineExpose({ plainTextValue })
   > * + * {
     margin-top: 0.75em;
   }
+
+  code {
+    background-color: rgba(#616161, 0.1);
+    color: #616161;
+  }
+
+  &:focus {
+    outline: none;
+  }
 }
 
-input[type="checkbox"] {
-  margin-right: 4px;
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #adb5bd;
+  pointer-events: none;
+  height: 0;
+}
+
+.content {
+  padding: 1rem 0 0;
+
+  h3 {
+    margin: 1rem 0 0.5rem;
+  }
+
+  pre {
+    border-radius: 5px;
+    color: #333;
+  }
+
+  code {
+    display: block;
+    white-space: pre-wrap;
+    font-size: 0.8rem;
+    padding: 0.75rem 1rem;
+    background-color: #e9ecef;
+    color: #495057;
+  }
 }
 </style>

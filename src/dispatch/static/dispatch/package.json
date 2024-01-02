@@ -37,6 +37,7 @@
     "@openid/appauth": "^1.3.1",
     "@sentry/vue": "^6.19.7",
     "@tanstack/vue-query": "^5.8.7",
+    "@tiptap/extension-placeholder": "^2.1.13",
     "@tiptap/pm": "^2.1.12",
     "@tiptap/starter-kit": "^2.1.12",
     "@tiptap/vue-3": "^2.1.12",
