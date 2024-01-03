@@ -1,4 +1,5 @@
 import jsonpath from "jsonpath"
+import json_to_ast from "json-to-ast"
 
 /**
  * Finds the path to a key in an object hierarchy.
@@ -29,7 +30,8 @@ export function findPath<T>(obj: T, key: keyof any, value: any, path: string = "
     }
   } else if (typeof obj === "object" && obj !== null) {
     for (const [k, v] of Object.entries(obj)) {
-      const currentPath = `${path}.${k}`
+      // Check if key contains special characters (non-alphanumeric or underscore)
+      const currentPath = /\W/.test(k) ? `${path}['${k}']` : `${path}.${k}`
       if (k === key && simpleDeepEqual(v, value)) return currentPath
       if (typeof v === "object") {
         const result = findPath(v, key, value, currentPath)

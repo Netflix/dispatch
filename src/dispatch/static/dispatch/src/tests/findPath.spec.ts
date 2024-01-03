@@ -3,6 +3,15 @@ import { expect, describe, it } from "vitest"
 
 import { findPath } from "@/util/jpath"
 
+function testFindPath<T>(obj: T, key: keyof any, value: any, expectedPath: string | null) {
+  const result = findPath(obj, key, value)
+  expect(result).toBe(expectedPath)
+  if (expectedPath) {
+    const jsonpathResult = jsonpath.query(obj, result as string)
+    expect(jsonpathResult[0]).toBe(value)
+  }
+}
+
 describe("findPath", () => {
   it("should find the correct path to the key", () => {
     const obj = {
@@ -17,10 +26,9 @@ describe("findPath", () => {
 
     const key = "c"
     const value = "value"
+    const expectedPath = "$.a.b.c"
 
-    const result = findPath(obj, key, value)
-
-    expect(result).toBe("$.a.b.c")
+    testFindPath(obj, key, value, expectedPath)
   })
 
   it("should return null if the key-value pair does not exist", () => {
@@ -36,10 +44,62 @@ describe("findPath", () => {
 
     const key = "f"
     const value = "non-existent value"
-
     const result = findPath(obj, key, value)
 
     expect(result).toBeNull()
+  })
+
+  it("should handle keys with special characters", () => {
+    const obj = {
+      "a:b": {
+        "/c": "value",
+      },
+    }
+
+    const key = "/c"
+    const value = "value"
+    const expectedPath = "$['a:b']['/c']"
+
+    testFindPath(obj, key, value, expectedPath)
+  })
+
+  it("should handle keys with $", () => {
+    const obj = {
+      a$b: {
+        c: "value",
+      },
+    }
+
+    const key = "c"
+    const value = "value"
+    const expectedPath = "$['a$b'].c"
+    testFindPath(obj, key, value, expectedPath)
+  })
+
+  it("should handle keys with @", () => {
+    const obj = {
+      "a@b": {
+        c: "value",
+      },
+    }
+
+    const key = "c"
+    const value = "value"
+    const expectedPath = "$['a@b'].c"
+    testFindPath(obj, key, value, expectedPath)
+  })
+
+  it("should handle keys with *", () => {
+    const obj = {
+      "a*b": {
+        c: "value",
+      },
+    }
+
+    const key = "c"
+    const value = "value"
+    const expectedPath = "$['a*b'].c"
+    testFindPath(obj, key, value, expectedPath)
   })
 
   const geigerAlert = {

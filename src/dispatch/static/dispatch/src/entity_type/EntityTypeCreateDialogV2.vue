@@ -34,7 +34,7 @@
 
           <RichEditor v-model="description" placeholder="Add description..." class="pt-2" />
           <v-text-field
-            :model-value="newEntityTypeJpath"
+            v-model="newEntityTypeJpath"
             @update:model-value="(newJpath) => updateDecorations(newJpath)"
             bg-color="white"
             color="grey-lighten-2"
@@ -110,22 +110,28 @@ import SignalApi from "@/signal/api"
 import MonacoEditor from "@/components/MonacoEditor.vue"
 import RichEditor from "@/components/RichEditor.vue"
 
-const props = withDefaults(
-  defineProps<{
-    dialog: Boolean
-    newEntityTypeJpath: string
-    editorValue: string
-    signalId: number
-    signalObj: Record<string, any>
-  }>(),
-  {
-    dialog: false,
-    newEntityTypeJpath: "",
-    editorValue: "",
-    signalId: 0,
-    signalObj: {},
-  }
-)
+const props = defineProps({
+  dialog: {
+    type: Boolean,
+    default: false,
+  },
+  newEntityTypeJpath: {
+    type: String,
+    default: "",
+  },
+  editorValue: {
+    type: String,
+    default: "",
+  },
+  signalId: {
+    type: Number,
+    default: 0,
+  },
+  signalObj: {
+    type: Object as () => Record<string, any>,
+    default: () => ({}),
+  },
+})
 
 watchEffect(() => {
   if (props.dialog) {
@@ -143,6 +149,14 @@ let projectName = ref(selectedCase.value?.project?.name)
 
 let name = ref("")
 let description = ref("")
+let newEntityTypeJpath = ref(props.newEntityTypeJpath)
+watch(
+  () => props.newEntityTypeJpath,
+  (newJpath) => {
+    newEntityTypeJpath.value = newJpath
+  }
+)
+
 let jpath = ref(props.newEntityTypeJpath)
 let signalId = ref(props.signalId)
 let jpathInUse = ref(false)
@@ -206,6 +220,7 @@ const emit = defineEmits(["update:dialog", "new-entity-type"])
 function closeDialog() {
   jpath.value = ""
   name.value = ""
+  newEntityTypeJpath.value = props.newEntityTypeJpath // Add this line
   jpathInUse.value = false
   emit("update:dialog", false)
 }
@@ -240,7 +255,11 @@ const editorMounted = (editor, monaco) => {
   editorInstance = editor
   monacoInstance = monaco
 
-  updateDecorations()
+  try {
+    updateDecorations()
+  } catch (error) {
+    console.error("Error updating decorations:", error)
+  }
 
   // Set the initial view position to the decoration match
   // This ensures the decorated text is always in view on mount and not hidden
@@ -253,7 +272,11 @@ const editorMounted = (editor, monaco) => {
   }
 
   editor.onDidChangeModelContent(() => {
-    updateDecorations()
+    try {
+      updateDecorations()
+    } catch (error) {
+      console.error("Error updating decorations:", error)
+    }
   })
 }
 
@@ -300,7 +323,7 @@ const saveEntityType = async () => {
     name: name.value,
     description: description.value,
     enabled: true,
-    jpath: props.newEntityTypeJpath,
+    jpath: newEntityTypeJpath.value,
     scope: "multiple",
     project: selectedCase.value.project,
     regular_expression: null,
