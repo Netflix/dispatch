@@ -6,7 +6,7 @@
     persistent
   >
     <template #default="{ isActive }">
-      <v-card height="700px" class="flex-container hov-card" color="#fafafa">
+      <v-card v-if="isActive" height="700px" class="flex-container hov-card" color="#fafafa">
         <v-card-title class="mb-n6 font-weight-regular d-flex align-center">
           <div class="d-flex align-center">
             <v-btn class="dispatch-button" variant="text" :ripple="false" disabled>
@@ -91,7 +91,7 @@
               color="rgb(109, 119, 212)"
             />
             <span class="pr-4 ml-n2 text-caption">Create more</span>
-            <v-btn class="create-entity-button" text="Create Entity Type" @click="saveEntityType" />
+            <v-btn class="create-entity-button" @click="saveEntityType"> Create Entity Type </v-btn>
           </div>
         </v-card-actions>
       </v-card>
