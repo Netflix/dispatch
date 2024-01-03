@@ -85,7 +85,7 @@ const descriptionMap = {
   <v-container class="pl-8 pr-8">
     <v-row justify="end">
       <!-- <v-switch v-model="showDetails" label="Show details" /> -->
-      <DMenu :options="['Export']" @selection-changed="handleSelection" />
+      <DMenu :options="['Export timeline as CSV']" @selection-changed="handleSelection" />
     </v-row>
     <template v-if="sortedEvents && sortedEvents.length">
       <v-timeline density="compact" clipped line-thickness="1">

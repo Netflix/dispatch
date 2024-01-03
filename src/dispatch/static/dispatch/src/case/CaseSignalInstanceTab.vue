@@ -2,11 +2,14 @@
   <v-container>
     <v-row>
       <!-- Column for Data Table -->
-      <v-col cols="3" class="d-flex">
-        <v-card class="signal-card flex-card" elevation="0">
-          <v-virtual-scroll :items="signalInstances" height="828" class="pt-2">
+      <v-col cols="3" class="d-flex mr-n4">
+        <v-card class="signal-card flex-card grey-bg" elevation="0">
+          <v-virtual-scroll :items="signalInstances" height="828" class="pt-0">
             <template #default="{ item }">
-              <div class="d-flex align-center">
+              <div
+                class="d-flex align-center"
+                :class="{ 'selected-row': selectedItem.raw.id === item.raw.id }"
+              >
                 <span class="pl-8 signal-name">
                   {{ item.signal.name }}
                 </span>
@@ -24,10 +27,7 @@
       </v-col>
       <!-- Column for Raw Signal Viewer -->
       <v-col cols="9" class="d-flex">
-        <v-card class="signal-card flex-card" elevation="0">
-          <span class="dispatch-text-paragraph">
-            <!-- {{ selectedItem.signal.name }} -->
-          </span>
+        <v-card class="signal-card flex-card pt-2 pb-2" elevation="0">
           <raw-signal-viewer :value="selectedItem" />
         </v-card>
       </v-col>
@@ -122,5 +122,13 @@ watch(
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.grey-bg {
+  background-color: rgb(244, 245, 248); /* Use your preferred highlight color */
+}
+
+.selected-row {
+  background-color: rgb(254, 255, 254); /* Use your preferred highlight color */
 }
 </style>
