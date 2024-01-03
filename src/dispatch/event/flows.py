@@ -28,7 +28,6 @@ def log_incident_event(
         db_session=db_session,
         incident_id=incident_id,
         individual_id=individual.id,
-        owner=individual.name,
         **event_in.__dict__,
     )
 
