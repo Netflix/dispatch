@@ -48,7 +48,7 @@ def create_entity_type(db_session: DbSession, entity_type_in: EntityTypeCreate):
         entity_type = create(db_session=db_session, entity_type_in=entity_type_in)
     except IntegrityError:
         raise ValidationError(
-            [ErrorWrapper(ExistsError(msg="A entity with this name already exists."), loc="name")],
+            [ErrorWrapper(ExistsError(msg="An entity with this name already exists."), loc="name")],
             model=EntityTypeCreate,
         ) from None
     return entity_type
