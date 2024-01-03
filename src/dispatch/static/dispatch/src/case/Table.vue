@@ -40,13 +40,12 @@
             show-select
             return-object
             @click:row="showCasePage"
-            v-model:page="page"
-            v-model:items-per-page="itemsPerPage"
-            v-model:sort-by="sortBy"
-            v-model:sort-desc="descending"
+            :sort-by="['reported_at']"
             :footer-props="{
               'items-per-page-options': [10, 25, 50, 100],
             }"
+            :options="options.value"
+            @update:options="loadItems"
           >
             <template #item.case_severity.name="{ value }">
               <case-severity :severity="value" />
@@ -165,8 +164,8 @@ const headers = [
   { title: "Priority", value: "case_priority.name", sortable: true },
   { title: "Project", value: "project.name", sortable: true },
   { title: "Assignee", value: "assignee", sortable: true },
-  { title: "Reported At", value: "reported_at" },
-  { title: "Closed At", value: "closed_at" },
+  { title: "Reported At", value: "reported_at", sortable: true },
+  { title: "Closed At", value: "closed_at", sortable: true },
   { title: "", key: "data-table-actions", sortable: false, align: "end" },
 ]
 
@@ -186,7 +185,9 @@ const showRun = (data) => store.dispatch("workflow/showRun", data)
 const showNewSheet = () => store.dispatch("case_management/showNewSheet")
 const showDeleteDialog = (item) => store.dispatch("case_management/showDeleteDialog", item)
 const showEscalateDialog = (item) => store.dispatch("case_management/showEscalateDialog", item)
-const getAll = () => store.dispatch("case_management/getAll")
+const getAll = () => {
+  store.dispatch("case_management/getAll", caseManagement.value.table.options)
+}
 
 const items = computed(() => caseManagement.value.table.rows.items)
 const total = computed(() => caseManagement.value.table.rows.total)
@@ -201,6 +202,25 @@ const showCasePage = (e, { item }) => {
   router.push({ name: "CasePage", params: { name: item.name } })
 }
 
+const options = ref({
+  page: caseManagement.value.table.options.page,
+  itemsPerPage: caseManagement.value.table.options.itemsPerPage,
+  sortBy: caseManagement.value.table.options.sortBy,
+  descending: caseManagement.value.table.options.descending,
+})
+
+function loadItems({ page, itemsPerPage, sortBy }) {
+  console.log("Got items", page, itemsPerPage, sortBy)
+  // Convert sortBy and sortDesc to the expected format
+
+  options.value.page = page
+  options.value.itemsPerPage = itemsPerPage
+  options.value.sortBy = sortBy
+
+  console.log("Got the sortBy", sortBy)
+  store.dispatch("case_management/getAll")
+}
+
 watch(
   route,
   (newVal) => {
@@ -208,8 +228,6 @@ watch(
   },
   { immediate: true }
 )
-
-getAll()
 
 // Deserialize the URL filters and apply them to the local filters
 const filters = {
@@ -230,50 +248,5 @@ watch(
     }
   },
   { deep: true } // Required to watch object properties inside filters
-)
-
-const q = ref(caseManagement.value.table.options.q)
-watch(
-  () => q.value,
-  (newValue) => {
-    caseManagement.value.table.options.q = newValue
-    getAll()
-  }
-)
-
-const page = ref(caseManagement.value.table.options.page)
-watch(
-  () => page.value,
-  (newValue) => {
-    caseManagement.value.table.options.page = newValue
-    getAll()
-  }
-)
-
-const itemsPerPage = ref(caseManagement.value.table.options.itemsPerPage)
-watch(
-  () => itemsPerPage.value,
-  (newValue) => {
-    caseManagement.value.table.options.itemsPerPage = newValue
-    getAll()
-  }
-)
-
-const sortBy = ref(caseManagement.value.table.options.sortBy)
-watch(
-  () => sortBy.value,
-  (newValue) => {
-    caseManagement.value.table.options.sortBy = newValue
-    getAll()
-  }
-)
-
-const descending = ref(caseManagement.value.table.options.descending)
-watch(
-  () => descending.value,
-  (newValue) => {
-    caseManagement.value.table.options.descending = newValue
-    getAll()
-  }
 )
 </script>
