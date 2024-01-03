@@ -58,7 +58,7 @@ def create_entity_type(db_session: DbSession, entity_type_in: EntityTypeCreate):
 def recalculate(
     db_session: DbSession, entity_type_id: PrimaryKey, signal_instance_id: Union[str, PrimaryKey]
 ):
-    """Create a new entity."""
+    """Recalculates the associated entities for a signal instance."""
     entity_type = get(
         db_session=db_session,
         entity_type_id=entity_type_id,
