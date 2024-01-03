@@ -76,7 +76,7 @@ def recalculate(
     if not signal_instance:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "A signal_instance with this id does not exist."}],
+            detail=[{"msg": "A signal instance with this id does not exist."}],
         )
 
     return recalculate_entity_flow(
