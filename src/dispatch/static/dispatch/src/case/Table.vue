@@ -210,14 +210,10 @@ const options = ref({
 })
 
 function loadItems({ page, itemsPerPage, sortBy }) {
-  console.log("Got items", page, itemsPerPage, sortBy)
-  // Convert sortBy and sortDesc to the expected format
-
   options.value.page = page
   options.value.itemsPerPage = itemsPerPage
   options.value.sortBy = sortBy
 
-  console.log("Got the sortBy", sortBy)
   store.dispatch("case_management/getAll")
 }
 
