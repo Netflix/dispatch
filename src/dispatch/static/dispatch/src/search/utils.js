@@ -59,14 +59,10 @@ export default {
       filter: JSON.stringify(expression),
     }
   },
-  createSortExpression(sort) {
-    let sortBy = []
+  createSortExpression(sortBy, sortDesc) {
     let descending = []
-    each(sort, function (value) {
-      if (value.key) {
-        sortBy.push(value.key)
-        descending.push(value.order == "desc" ? true : false)
-      }
+    each(sortBy, function (sortField, index) {
+      descending.push(sortDesc && sortDesc[index] ? true : false)
     })
     return [sortBy, descending]
   },
