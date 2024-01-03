@@ -246,7 +246,7 @@ oauthlib[signedtoken]==3.2.2
     #   atlassian-python-api
     #   jira
     #   requests-oauthlib
-openai==1.5.0
+openai==1.6.1
     # via -r requirements-base.in
 packaging==23.1
     # via
@@ -492,7 +492,7 @@ urllib3==1.26.18
     #   pdpyras
     #   requests
     #   sentry-sdk
-uvicorn==0.24.0.post1
+uvicorn==0.25.0
     # via -r requirements-base.in
 uvloop==0.19.0
     # via -r requirements-base.in
