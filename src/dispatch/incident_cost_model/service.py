@@ -17,7 +17,7 @@ from dispatch.project import service as project_service
 log = logging.getLogger(__name__)
 
 
-def has_unique_plugin_event(incident_cost_model_in: IncidentCostModelRead):
+def has_unique_plugin_event(incident_cost_model_in: IncidentCostModelRead) -> bool:
     seen = set()
     for activity in incident_cost_model_in.activities:
         if activity.plugin_event.id in seen:
