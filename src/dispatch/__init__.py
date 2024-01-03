@@ -68,6 +68,11 @@ try:
     from dispatch.case.severity.models import CaseSeverity  # noqa lgtm[py/unused-import]
     from dispatch.case.type.models import CaseType  # noqa lgtm[py/unused-import]
     from dispatch.signal.models import Signal  # noqa lgtm[py/unused-import]
+    from dispatch.feedback.service.reminder.models import ServiceFeedbackReminder  # noqa lgtm[py/unused-import]
+    from dispatch.forms.type.models import FormsType  # noqa lgtm[py/unused-import]
+    from dispatch.forms.models import Forms  # noqa lgtm[py/unused-import]
+
+
 except Exception:
     traceback.print_exc()
 

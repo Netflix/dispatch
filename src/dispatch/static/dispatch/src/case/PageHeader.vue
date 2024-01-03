@@ -1,13 +1,23 @@
 <template>
   <v-app-bar class="border-bottom" elevation="0" density="compact" scroll-behavior="fixed">
-    <v-breadcrumbs :items="breadcrumbItems" class="pl-7 text-subtitle-2" density="compact">
-      <template #divider>
-        <v-icon size="x-small" icon="mdi-chevron-right" />
-      </template>
-    </v-breadcrumbs>
-    <SavingState :updatedAt="caseUpdatedAt" />
+    <div style="display: flex; align-items: center">
+      <v-breadcrumbs :items="breadcrumbItems" class="pl-7 text-subtitle-2" density="compact">
+        <template #divider>
+          <v-icon size="x-small" icon="mdi-chevron-right" />
+        </template>
+      </v-breadcrumbs>
+
+      <v-fade-transition>
+        <div v-if="activeTab !== 'main'" style="display: flex; align-items: center">
+          <v-icon icon="mdi-chevron-right" class="ml-n1 mr-2" style="font-size: 14px" />
+          <p class="text-subtitle-2">{{ caseTitle }}</p>
+        </div>
+      </v-fade-transition>
+    </div>
 
     <template #append>
+      <SavingState :updatedAt="caseUpdatedAt" />
+
       <DTooltip text="View case participants" :hotkeys="['⌘', '⇧', 'P']">
         <template #activator="{ tooltip }">
           <ParticipantAvatarGroup :participants="caseParticipants" class="pl-3" v-bind="tooltip" />
@@ -68,6 +78,18 @@ const props = defineProps({
   isDrawerOpen: {
     type: Boolean,
     default: true,
+  },
+  caseTitle: {
+    type: String,
+    default: "",
+  },
+  caseDescription: {
+    type: String,
+    default: "",
+  },
+  activeTab: {
+    type: String,
+    default: "main",
   },
 })
 

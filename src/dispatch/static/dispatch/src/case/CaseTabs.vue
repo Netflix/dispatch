@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="pl-6 pr-8">
+    <div class="pl-6 pr-8 d-flex justify-space-between align-center">
       <div class="button-group-container">
         <v-btn-toggle
           v-model="tab"
@@ -47,8 +47,55 @@
           </v-btn>
         </v-btn-toggle>
       </div>
-      <v-divider />
+
+      <div>
+        <!-- Ticket Button -->
+        <v-btn
+          class="text-subtitle-2 font-weight-regular"
+          icon="mdi-jira"
+          variant="text"
+          size="small"
+          :disabled="!modelValue.ticket"
+          :href="modelValue.ticket && modelValue.ticket.weblink"
+          target="_blank"
+        />
+
+        <!-- Conversation Button -->
+        <v-btn
+          class="text-subtitle-2 font-weight-regular"
+          icon="mdi-slack"
+          variant="text"
+          size="small"
+          :disabled="!modelValue.conversation"
+          :href="modelValue.conversation && modelValue.conversation.weblink"
+          target="_blank"
+        />
+
+        <!-- Document Button -->
+        <v-btn
+          class="text-subtitle-2 font-weight-regular"
+          icon="mdi-file-document"
+          variant="text"
+          size="small"
+          :disabled="!modelValue.documents.length"
+          :href="modelValue.documents.length && modelValue.documents[0].weblink"
+          target="_blank"
+        />
+
+        <!-- Storage Button -->
+        <v-btn
+          class="text-subtitle-2 font-weight-regular"
+          icon="mdi-folder-google-drive"
+          variant="text"
+          size="small"
+          :disabled="!modelValue.storage"
+          :href="modelValue.storage && modelValue.storage.weblink"
+          target="_blank"
+        />
+      </div>
     </div>
+
+    <v-divider />
 
     <v-window v-model="tab">
       <v-window-item value="main" class="tab">
@@ -68,7 +115,7 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, watch, toRefs } from "vue"
 import { useRoute, useRouter } from "vue-router"
 
@@ -76,90 +123,87 @@ import GraphTab from "@/case/GraphTab.vue"
 import CaseSignalInstanceTab from "@/case/CaseSignalInstanceTab.vue"
 import CaseTimelineTab from "@/case/TimelineTab.vue"
 
-export default {
-  name: "CaseTabs",
-  props: {
-    modelValue: {
-      type: Object,
-      default: () => ({
-        signal_instances: [],
-        resources: [],
-        entities: [],
-        events: [],
-      }),
-      required: true,
-    },
-    loading: {
-      type: Boolean,
-      default: false,
-    },
+const props = defineProps({
+  modelValue: {
+    type: Object,
+    default: () => ({
+      signal_instances: [],
+      resources: [],
+      entities: [],
+      events: [],
+    }),
   },
-  components: {
-    CaseSignalInstanceTab,
-    CaseTimelineTab,
-    GraphTab,
+  activeTab: {
+    type: String,
+    default: "main",
   },
-  setup(props) {
-    const tab = ref("main")
-    const route = useRoute()
-    const router = useRouter()
+  loading: {
+    type: Boolean,
+    default: false,
+  },
+})
 
-    const { modelValue, loading } = toRefs(props)
-    const signalInstances = ref(props.modelValue.signal_instances)
-    const internalLoading = ref(props.loading)
-    const resources = ref(props.modelValue.resources)
-    const entities = ref(props.modelValue.entities)
-    const events = ref(props.modelValue.events)
+const emit = defineEmits(["update:activeTab"])
 
-    watch(loading, (newValue) => {
-      internalLoading.value = newValue
-    })
+const { modelValue, loading, activeTab } = toRefs(props)
+const tab = ref(activeTab.value)
+const signalInstances = ref(modelValue.value.signal_instances)
+const resources = ref(modelValue.value.resources)
+const entities = ref(modelValue.value.entities)
+const events = ref(modelValue.value.events)
+const internalLoading = ref(loading.value)
 
-    watch(modelValue, (newValue) => {
-      signalInstances.value = newValue.signal_instances
-      resources.value = newValue.resources
-      entities.value = newValue.entities
-      events.value = newValue.events
-    })
+watch(loading, (newValue) => {
+  internalLoading.value = newValue
+})
 
-    watch(
-      () => tab.value,
-      (tabValue) => {
-        if (tabValue === "main") {
-          router.push({ name: "CasePage", params: { id: route.id } })
-        }
+watch(modelValue, (newValue) => {
+  signalInstances.value = newValue.signal_instances
+  resources.value = newValue.resources
+  entities.value = newValue.entities
+  events.value = newValue.events
+})
 
-        if (tabValue === "signals") {
-          router.push({
-            name: "SignalDetails",
-            params: { signal_id: signalInstances.value[0].raw.id },
-          })
-        }
-      }
-    )
+const route = useRoute()
+const router = useRouter()
 
-    watch(
-      () => route.params,
-      (newParams) => {
-        const newSignalId = newParams.signal_id
-        if (newSignalId) {
-          tab.value = "signals"
-        }
-      },
-      { immediate: true, deep: true }
-    )
+watch(
+  () => tab.value,
+  (tabValue) => {
+    console.log("Emitting", tabValue)
+    emit("update:activeTab", tabValue)
+    // ...
+  }
+)
 
-    return {
-      tab,
-      signalInstances,
-      internalLoading,
-      events,
-      resources,
-      entities,
+watch(
+  () => tab.value,
+  (tabValue) => {
+    if (tabValue === "main") {
+      router.push({ name: "CasePage", params: { id: route.id } })
+    }
+
+    if (tabValue === "signals") {
+      router.push({
+        name: "SignalDetails",
+        params: { signal_id: signalInstances.value[0].raw.id },
+      })
+    }
+  }
+)
+
+watch(
+  () => route.params,
+  (newParams) => {
+    const newSignalId = newParams.signal_id
+    if (newSignalId) {
+      tab.value = "signals"
     }
   },
-}
+  { immediate: true, deep: true }
+)
 </script>
+
 <style scoped>
 .v-tab {
   text-transform: initial; /* Keeping the text's original state */

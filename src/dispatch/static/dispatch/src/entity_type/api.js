@@ -26,4 +26,8 @@ export default {
   delete(entityTypeId) {
     return API.delete(`${resource}/${entityTypeId}`)
   },
+
+  recalculate(entityTypeId, signalInstanceId) {
+    return API.put(`${resource}/recalculate/${entityTypeId}/${signalInstanceId}`)
+  },
 }

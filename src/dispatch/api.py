@@ -39,6 +39,8 @@ from dispatch.notification.views import router as notification_router
 from dispatch.organization.views import router as organization_router
 from dispatch.plugin.views import router as plugin_router
 from dispatch.project.views import router as project_router
+from dispatch.forms.views import router as forms_router
+from dispatch.forms.type.views import router as forms_type_router
 
 
 from dispatch.signal.views import router as signal_router
@@ -227,7 +229,12 @@ authenticated_organization_api_router.include_router(
 authenticated_organization_api_router.include_router(
     incident_role_router, prefix="/incident_roles", tags=["role"]
 )
-
+authenticated_organization_api_router.include_router(
+    forms_router, prefix="/forms", tags=["forms"]
+)
+authenticated_organization_api_router.include_router(
+    forms_type_router, prefix="/forms_type", tags=["forms_type"]
+)
 
 @api_router.get("/healthcheck", include_in_schema=False)
 def healthcheck():
