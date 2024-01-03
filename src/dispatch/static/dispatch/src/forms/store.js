@@ -155,6 +155,7 @@ function getCurrentPage(form_schema) {
     let obj = {
       name: item.name,
       id: item.name,
+      key: item.name,
       label: item.title,
       help: item.hint ? item.hint : null,
       if: item.if ? item.if : null,
