@@ -66,7 +66,7 @@ def recalculate(
     if not entity_type:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "A entity_type with this id does not exist."}],
+            detail=[{"msg": "An entity type with this id does not exist."}],
         )
 
     signal_instance = get_signal_instance(
