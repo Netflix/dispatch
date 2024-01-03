@@ -24,7 +24,7 @@ router = APIRouter()
 
 
 def get_current_incident_cost_model(db_session: DbSession, request: Request) -> IncidentCostModel:
-    """Fetches incident or returns a 404."""
+    """Fetches the current incident cost model or returns a 404."""
     incident_cost_model = get_cost_model_by_id(
         db_session=db_session, incident_cost_model_id=request.path_params["incident_cost_model_id"]
     )
@@ -85,7 +85,7 @@ def delete_incident_cost_model(
     db_session: DbSession,
     current_incident_cost_model: CurrentIncidentCostModel,
 ):
-    """Deletes an incident and its external resources."""
+    """Deletes an incident cost model and its external resources."""
     try:
         delete(incident_cost_model_id=current_incident_cost_model.id, db_session=db_session)
     except IntegrityError as e:
@@ -96,7 +96,6 @@ def delete_incident_cost_model(
                 {
                     "msg": (
                         f"Incident Cost Model {current_incident_cost_model.name} could not be deleted. "
-                        "Make sure the incident has no relationships to other incidents before deleting it.",
                     )
                 }
             ],

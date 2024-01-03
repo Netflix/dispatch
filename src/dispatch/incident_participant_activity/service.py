@@ -29,6 +29,7 @@ def get_all_incident_participant_activities_from_last_update(
 
 
 def create(*, db_session: SessionLocal, activity_in: IncidentParticipantActivityCreate):
+    """Creates a new record for an incident participant's activity."""
     activity = IncidentParticipantActivity(
         plugin_event_id=activity_in.plugin_event.id,
         started_at=activity_in.started_at,
@@ -49,6 +50,7 @@ def update(
     activity: IncidentParticipantActivity,
     activity_in: IncidentParticipantActivityUpdate,
 ) -> IncidentParticipantActivity:
+    """Updates an existing record for an incident participant's activity."""
     activity.ended_at = activity_in.ended_at
     db_session.commit()
     return activity
@@ -70,6 +72,7 @@ def get_all_incident_participant_activities_for_incident(
     db_session: SessionLocal,
     incident_id: int,
 ) -> list[IncidentParticipantActivityRead]:
+    """Fetches all recorded participant incident activities for a given incident."""
     return (
         db_session.query(IncidentParticipantActivity)
         .filter(IncidentParticipantActivity.incident_id == incident_id)
@@ -80,6 +83,7 @@ def get_all_incident_participant_activities_for_incident(
 def get_incident_participant_activity_from_last_update(
     db_session: SessionLocal, incident_id: int, participant_id: int
 ) -> IncidentParticipantActivity:
+    """Fetches the most recent recorded participant incident activity for a given incident and participant."""
     return (
         db_session.query(IncidentParticipantActivity)
         .filter(IncidentParticipantActivity.incident_id == incident_id)
