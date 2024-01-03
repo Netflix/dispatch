@@ -32,7 +32,7 @@ def has_unique_plugin_event(incident_cost_model_in: IncidentCostModelRead) -> bo
 def get_incident_cost_model_activity_by_id(
     *, db_session, incident_cost_model_activity_id: int
 ) -> IncidentCostModelActivity:
-    """Returns an incident cost model based on the given incident cost model id."""
+    """Returns an incident cost model activity based on the given incident cost model activity id."""
     return (
         db_session.query(IncidentCostModelActivity)
         .filter(IncidentCostModelActivity.id == incident_cost_model_activity_id)
