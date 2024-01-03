@@ -23,7 +23,7 @@ def recalculate_entity_flow(
     entity_types = entity_type_service.get_all(
         db_session=db_session, scope=EntityScopeEnum.all
     ).all()
-    entity_types = signal_instance.signal.entity_types + [entity_type]
+    entity_types = signal_instance.signal.entity_types.append(entity_type)
 
     if entity_types:
         entities = entity_service.find_entities(
