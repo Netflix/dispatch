@@ -90,7 +90,7 @@ def delete(*, db_session, incident_cost_model_id: int):
     )
     if not incident_cost_model:
         raise ValueError(
-            "Unable to delete incident cost model. No incident cost model found with that id."
+            f"Unable to delete incident cost model. No incident cost model found with id {incident_cost_model_id}."
         )
 
     for activity in incident_cost_model.activities:
