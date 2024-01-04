@@ -8,7 +8,7 @@
  * @see https://github.com/FE-Mars/monaco-editor-vue
  */
 
-import * as monaco from "monaco-editor/esm/vs/editor/editor.api"
+import * as monaco from "monaco-editor"
 
 function noop() {}
 
