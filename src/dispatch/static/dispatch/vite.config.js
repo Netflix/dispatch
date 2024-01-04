@@ -2,6 +2,7 @@ import { defineConfig } from "vite"
 import vue from "@vitejs/plugin-vue"
 import vuetify from "vite-plugin-vuetify"
 import monacoEditorPlugin from "vite-plugin-monaco-editor"
+import topLevelAwait from "vite-plugin-top-level-await"
 
 import Components from "unplugin-vue-components/vite"
 
@@ -29,6 +30,12 @@ export default defineConfig({
         }
       },
     },
+    topLevelAwait({
+      // The export name of top-level await promise for each chunk module
+      promiseExportName: "__tla",
+      // The function to generate import names of top-level await promise in each chunk module
+      promiseImportName: (i) => `__tla_${i}`,
+    }),
   ],
   server: {
     port: 8080,
