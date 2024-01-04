@@ -64,7 +64,7 @@
     "lodash": "^4.17.21",
     "mjml": "^4.14.1",
     "moment-timezone": "^0.5.43",
-    "monaco-editor": "0.43.0",
+    "monaco-editor": "0.45.0",
     "register-service-worker": "^1.7.2",
     "roboto-fontface": "^0.10.0",
     "sortablejs": "^1.15.0",
