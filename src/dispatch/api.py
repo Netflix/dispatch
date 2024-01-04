@@ -229,12 +229,11 @@ authenticated_organization_api_router.include_router(
 authenticated_organization_api_router.include_router(
     incident_role_router, prefix="/incident_roles", tags=["role"]
 )
-authenticated_organization_api_router.include_router(
-    forms_router, prefix="/forms", tags=["forms"]
-)
+authenticated_organization_api_router.include_router(forms_router, prefix="/forms", tags=["forms"])
 authenticated_organization_api_router.include_router(
     forms_type_router, prefix="/forms_type", tags=["forms_type"]
 )
+
 
 @api_router.get("/healthcheck", include_in_schema=False)
 def healthcheck():

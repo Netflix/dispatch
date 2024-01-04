@@ -53,10 +53,8 @@ def update_incident_cost_model_activity(
     *, db_session, incident_cost_model_activity_in: IncidentCostModelActivityUpdate
 ):
     """Updates an incident cost model activity."""
-    incident_cost_model_activity = IncidentCostModelActivity(
-        response_time_seconds=incident_cost_model_activity_in.response_time_seconds,
-        enabled=incident_cost_model_activity_in.enabled,
-        plugin_event_id=incident_cost_model_activity_in.plugin_event.id,
+    incident_cost_model_activity = get_incident_cost_model_activity_by_id(
+        db_session=db_session, incident_cost_model_activity_id=incident_cost_model_activity_in.id
     )
 
     incident_cost_model_activity.response_time_seconds = (
@@ -91,11 +89,6 @@ def delete(*, db_session, incident_cost_model_id: int):
     if not incident_cost_model:
         raise ValueError(
             f"Unable to delete incident cost model. No incident cost model found with id {incident_cost_model_id}."
-        )
-
-    for activity in incident_cost_model.activities:
-        incident_cost_model_service.delete_incident_cost_model_activity(
-            db_session=db_session, incident_cost_model_activity_id=activity.id
         )
 
     db_session.delete(incident_cost_model)
