@@ -174,8 +174,9 @@ const auth = computed(() => store.state.auth)
 
 const defaultUserProjects = computed(() => {
   let d = null
-  if (auth.value.projects) {
-    let d = auth.value.projects.filter((v) => v.default === true)
+
+  if (auth.value.currentUser.projects) {
+    let d = auth.value.currentUser.projects.filter((v) => v.default === true)
     return d.map((v) => v.project)
   }
   return d
