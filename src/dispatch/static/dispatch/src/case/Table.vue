@@ -225,6 +225,15 @@ watch(
   { immediate: true }
 )
 
+const q = ref(caseManagement.value.table.options.q)
+watch(
+  () => q.value,
+  (newValue) => {
+    caseManagement.value.table.options.q = newValue
+    getAll()
+  }
+)
+
 // Deserialize the URL filters and apply them to the local filters
 const filters = {
   ...RouterUtils.deserializeFilters(route.query),
