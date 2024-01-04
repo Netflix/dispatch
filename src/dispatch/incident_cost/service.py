@@ -291,7 +291,6 @@ def calculate_incident_response_cost(
         return calculate_incident_response_cost_with_cost_model(
             incident=incident, db_session=db_session
         )
-
     else:
         log.info("No incident cost model found. Defaulting to classic incident cost model.")
         return calculate_incident_response_cost_with_classic_model(
