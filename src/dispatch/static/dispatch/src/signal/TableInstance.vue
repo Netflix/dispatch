@@ -11,16 +11,16 @@
     <v-row no-gutters>
       <v-col>
         <v-card variant="flat">
-          <v-card-title>
-            <v-text-field
-              v-model="q"
-              append-icon="search"
-              label="Search"
-              single-line
-              hide-details
-              clearable
-            />
-          </v-card-title>
+          <!-- <v-card-title> -->
+          <!--   <v-text-field -->
+          <!--     v-model="q" -->
+          <!--     append-icon="search" -->
+          <!--     label="Search" -->
+          <!--     single-line -->
+          <!--     hide-details -->
+          <!--     clearable -->
+          <!--   /> -->
+          <!-- </v-card-title> -->
           <v-data-table-server
             :headers="headers"
             :items="items"
@@ -128,7 +128,7 @@ export default {
       "instanceTable.options.filters.signal",
       "instanceTable.options.itemsPerPage",
       "instanceTable.options.page",
-      "instanceTable.options.q",
+      // "instanceTable.options.q",
       "instanceTable.options.sortBy",
       "instanceTable.rows.items",
       "instanceTable.rows.total",
@@ -169,7 +169,7 @@ export default {
 
     this.$watch(
       (vm) => [
-        vm.q,
+        // vm.q,
         vm.sortBy,
         vm.itemsPerPage,
         vm.descending,

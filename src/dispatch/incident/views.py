@@ -380,6 +380,29 @@ def update_custom_event(
     )
 
 
+@router.post(
+    "/{incident_id}/exportTimeline",
+    summary="Exports timeline events.",
+    dependencies=[Depends(PermissionsDependency([IncidentCommanderOrScribePermission]))],
+)
+def export_timeline_event(
+    db_session: DbSession,
+    organization: OrganizationSlug,
+    incident_id: PrimaryKey,
+    current_incident: CurrentIncident,
+    timeline_filters: dict,
+    current_user: CurrentUser,
+    background_tasks: BackgroundTasks,
+):
+    result = background_tasks.add_task(
+        event_flows.export_timeline,
+        timeline_filters=timeline_filters,
+        incident_id=incident_id,
+        organization_slug=organization,
+    )
+    return result
+
+
 @router.delete(
     "/{incident_id}/event/{event_uuid}",
     summary="Deletes a custom event.",

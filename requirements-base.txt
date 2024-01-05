@@ -31,7 +31,7 @@ attrs==22.1.0
     #   jsonschema
 backoff==2.2.1
     # via schemathesis
-bcrypt==4.1.1
+bcrypt==4.1.2
     # via -r requirements-base.in
 blis==0.7.10
     # via thinc
@@ -229,7 +229,7 @@ murmurhash==1.0.9
     #   preshed
     #   spacy
     #   thinc
-numpy==1.26.2
+numpy==1.26.3
     # via
     #   -r requirements-base.in
     #   blis
@@ -246,7 +246,7 @@ oauthlib[signedtoken]==3.2.2
     #   atlassian-python-api
     #   jira
     #   requests-oauthlib
-openai==1.4.0
+openai==1.6.1
     # via -r requirements-base.in
 packaging==23.1
     # via
@@ -319,7 +319,7 @@ pyrate-limiter==2.10.0
     # via schemathesis
 pyrsistent==0.19.3
     # via jsonschema
-pytest==7.4.3
+pytest==7.4.4
     # via
     #   pytest-subtests
     #   schemathesis
@@ -492,7 +492,7 @@ urllib3==1.26.18
     #   pdpyras
     #   requests
     #   sentry-sdk
-uvicorn==0.24.0.post1
+uvicorn==0.25.0
     # via -r requirements-base.in
 uvloop==0.19.0
     # via -r requirements-base.in

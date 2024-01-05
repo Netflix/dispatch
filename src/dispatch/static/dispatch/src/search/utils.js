@@ -27,15 +27,22 @@ export default {
     return options, queryParams
   },
   createParametersFromTableOptions(options, model, rawFilters) {
+    let [sortBy, descending] = this.createSortExpression(options.sortBy, model)
     let expression = this.createFilterExpression(options.filters, model)
     delete options.filters
+    delete options.sortBy
 
     if (!expression.length) {
       if (rawFilters != null && typeof rawFilters[Symbol.iterator] === "function") {
         expression = { and: [...rawFilters] }
-        return { ...options, filter: JSON.stringify(expression) }
+        return {
+          ...options,
+          sortBy: sortBy,
+          descending: descending,
+          filter: JSON.stringify(expression),
+        }
       } else {
-        return options
+        return { ...options, sortBy: sortBy, descending: descending }
       }
     }
 
@@ -45,7 +52,19 @@ export default {
       expression = { and: expression }
     }
 
-    return { ...options, filter: JSON.stringify(expression) }
+    return {
+      ...options,
+      sortBy: sortBy,
+      descending: descending,
+      filter: JSON.stringify(expression),
+    }
+  },
+  createSortExpression(sortBy, sortDesc) {
+    let descending = []
+    each(sortBy, function (sortField, index) {
+      descending.push(sortDesc && sortDesc[index] ? true : false)
+    })
+    return [sortBy, descending]
   },
   /**
    * Create a filter expression for searching for items in a database
