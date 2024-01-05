@@ -1,8 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 import logging
-from starlette.requests import Request
 from sqlalchemy.exc import IntegrityError
-from typing import Annotated
 
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 from dispatch.database.core import DbSession
@@ -10,13 +8,12 @@ from dispatch.database.service import CommonParameters, search_filter_sort_pagin
 from dispatch.models import PrimaryKey
 
 from .models import (
-    IncidentCostModel,
-    IncidentCostModelRead,
     IncidentCostModelCreate,
-    IncidentCostModelUpdate,
     IncidentCostModelPagination,
+    IncidentCostModelRead,
+    IncidentCostModelUpdate,
 )
-from .service import create, update, delete, get_cost_model_by_id
+from .service import create, update, delete
 
 log = logging.getLogger(__name__)
 
