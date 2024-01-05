@@ -69,9 +69,13 @@ def find_schedule_and_send(
 ):
     """
     Given PagerDuty schedule_id, determine if the shift ended for the previous oncall person and
-    send the health metrics feedback request
+    send the health metrics feedback request - note that if current and previous oncall is the
+    same, then did_oncall_just_go_off_shift will return None
     """
     current_oncall = oncall_plugin.instance.did_oncall_just_go_off_shift(schedule_id, hour)
+
+    if current_oncall is None:
+        return
 
     individual = individual_service.get_by_email_and_project(
         db_session=db_session, email=current_oncall["email"], project_id=project.id
