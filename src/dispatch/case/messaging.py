@@ -20,7 +20,7 @@ from dispatch.plugin import service as plugin_service
 log = logging.getLogger(__name__)
 
 
-def send_case_close_reminder(case: Case, db_session: SessionLocal):
+def send_case_close_reminder(case: Case, db_session: SessionLocal) -> None:
     """
     Sends a direct message to the assignee reminding them to close the case if possible.
     """
@@ -30,8 +30,12 @@ def send_case_close_reminder(case: Case, db_session: SessionLocal):
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=case.project.id, plugin_type="conversation"
     )
-    if not plugin:
+    if plugin is None:
         log.warning("Case close reminder message not sent. No conversation plugin enabled.")
+        return
+    
+    if case.assignee is None:
+        log.warning(f"Case close reminder message not sent. No assignee for {case.name}.")
         return
 
     items = [
@@ -54,7 +58,7 @@ def send_case_close_reminder(case: Case, db_session: SessionLocal):
     log.debug(f"Case close reminder sent to {case.assignee.individual.email}.")
 
 
-def send_case_triage_reminder(case: Case, db_session: SessionLocal):
+def send_case_triage_reminder(case: Case, db_session: SessionLocal) -> None:
     """
     Sends a direct message to the assignee reminding them to triage the case if possible.
     """
@@ -64,12 +68,12 @@ def send_case_triage_reminder(case: Case, db_session: SessionLocal):
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=case.project.id, plugin_type="conversation"
     )
-    if not plugin:
+    if plugin is None:
         log.warning("Case triage reminder message not sent. No conversation plugin enabled.")
         return
 
-    if not case.assignee:
-        log.warning("Case triage reminder message not sent. No assignee.")
+    if case.assignee is None:
+        log.warning(f"Case triage reminder message not sent. No assignee for {case.name}.")
         return
 
     items = [
