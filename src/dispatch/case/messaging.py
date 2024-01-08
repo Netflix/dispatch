@@ -33,7 +33,6 @@ def send_case_close_reminder(case: Case, db_session: SessionLocal) -> None:
     if plugin is None:
         log.warning("Case close reminder message not sent. No conversation plugin enabled.")
         return
-    
     if case.assignee is None:
         log.warning(f"Case close reminder message not sent. No assignee for {case.name}.")
         return
