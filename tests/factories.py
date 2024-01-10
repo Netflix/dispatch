@@ -34,8 +34,8 @@ from dispatch.incident.priority.models import IncidentPriority
 from dispatch.incident.severity.models import IncidentSeverity
 from dispatch.incident.type.models import IncidentType
 from dispatch.incident_cost.models import IncidentCost
-from dispatch.incident_cost_model.models import IncidentCostModel, IncidentCostModelActivity
-from dispatch.incident_participant_activity.models import IncidentParticipantActivity
+from dispatch.cost_model.models import CostModel, CostModelActivity
+from dispatch.participant_activity.models import ParticipantActivity
 from dispatch.incident_cost_type.models import IncidentCostType
 from dispatch.incident_role.models import IncidentRole
 from dispatch.individual.models import IndividualContact
@@ -142,8 +142,8 @@ class ProjectFactory(BaseFactory):
             self.organization_id = extracted.id
 
 
-class IncidentCostModelFactory(BaseFactory):
-    """Incident Cost Model Factory."""
+class CostModelFactory(BaseFactory):
+    """Cost Model Factory."""
 
     id = Sequence(lambda n: f"1{n}")
     name = FuzzyText()
@@ -156,7 +156,7 @@ class IncidentCostModelFactory(BaseFactory):
     class Meta:
         """Factory Configuration."""
 
-        model = IncidentCostModel
+        model = CostModel
 
     @post_generation
     def activities(self, create, extracted, **kwargs):
@@ -917,7 +917,7 @@ class IncidentFactory(BaseFactory):
     incident_priority = SubFactory(IncidentPriorityFactory)
     incident_severity = SubFactory(IncidentSeverityFactory)
     project = SubFactory(ProjectFactory)
-    incident_cost_model = SubFactory(IncidentCostModelFactory)
+    cost_model = SubFactory(CostModelFactory)
     conversation = SubFactory(ConversationFactory)
 
     class Meta:
@@ -1268,8 +1268,8 @@ class PluginEventFactory(BaseFactory):
         model = PluginEvent
 
 
-class IncidentCostModelActivityFactory(BaseFactory):
-    """Incident Cost Model Activity Factory."""
+class CostModelActivityFactory(BaseFactory):
+    """Cost Model Activity Factory."""
 
     response_time_seconds = FuzzyInteger(low=1, high=10000)
     enabled = Faker().pybool()
@@ -1278,11 +1278,11 @@ class IncidentCostModelActivityFactory(BaseFactory):
     class Meta:
         """Factory Configuration."""
 
-        model = IncidentCostModelActivity
+        model = CostModelActivity
 
 
-class IncidentParticipantActivityFactory(BaseFactory):
-    """Incident Participant Activity Factory."""
+class ParticipantActivityFactory(BaseFactory):
+    """Participant Activity Factory."""
 
     id = Sequence(lambda n: f"1{n}")
     plugin_event = SubFactory(PluginEventFactory)
@@ -1296,7 +1296,7 @@ class IncidentParticipantActivityFactory(BaseFactory):
     class Meta:
         """Factory Configuration."""
 
-        model = IncidentParticipantActivity
+        model = ParticipantActivity
 
 
 class WorkflowFactory(BaseFactory):

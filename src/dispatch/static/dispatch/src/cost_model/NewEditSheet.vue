@@ -4,7 +4,7 @@
       <v-list-item lines="two">
         <v-list-item-title v-if="id" class="text-h6"> Edit </v-list-item-title>
         <v-list-item-title v-else class="text-h6"> New </v-list-item-title>
-        <v-list-item-subtitle>Incident Cost Model</v-list-item-subtitle>
+        <v-list-item-subtitle>Cost Model</v-list-item-subtitle>
 
         <template #append>
           <v-btn
@@ -29,13 +29,13 @@
           <v-checkbox
             v-model="enabled"
             hint="When an incident is associated with a disabled cost model, the
-            incident will automatically revert to the traditional incident cost model."
+            incident will automatically revert to the traditional cost model."
             label="Enabled"
           />
           <v-text-field
             v-model="name"
             label="Name"
-            hint="Name of the incident cost model."
+            hint="Name of the cost model."
             clearable
             required
             name="Name"
@@ -45,7 +45,7 @@
           <v-textarea
             v-model="description"
             label="Description"
-            hint="Description of the incident cost model."
+            hint="Description of the cost model."
             clearable
             required
             name="Description"
@@ -61,10 +61,10 @@
 import { mapFields } from "vuex-map-fields"
 import { required } from "@/util/form"
 import { mapActions } from "vuex"
-import CostModelActivityInput from "@/incident_cost_model/CostModelActivityInput.vue"
+import CostModelActivityInput from "@/cost_model/CostModelActivityInput.vue"
 
 export default {
-  name: "IncidentCostModelEditSheet",
+  name: "CostModelEditSheet",
   data() {
     return {
       valid: false,
@@ -82,7 +82,7 @@ export default {
     }
   },
   computed: {
-    ...mapFields("incident_cost_model", [
+    ...mapFields("cost_model", [
       "selected.id",
       "selected.name",
       "selected.enabled",
@@ -92,13 +92,13 @@ export default {
       "selected.project",
       "selected.loading",
       "selected.activities",
-      "selected.incident_cost_model",
+      "selected.cost_model",
       "dialogs.showCreateEdit",
     ]),
   },
 
   methods: {
-    ...mapActions("incident_cost_model", ["save", "closeCreateEdit"]),
+    ...mapActions("cost_model", ["save", "closeCreateEdit"]),
   },
 
   created() {

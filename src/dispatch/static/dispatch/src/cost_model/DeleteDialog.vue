@@ -2,7 +2,7 @@
   <v-dialog v-model="showRemove" persistent max-width="800px">
     <v-card>
       <v-card-title>
-        <span class="text-h5">Delete Incident Cost Model?</span>
+        <span class="text-h5">Delete Cost Model?</span>
       </v-card-title>
       <v-card-text>
         <v-container> Are you sure you would like to delete "{{ name }}"? </v-container>
@@ -20,15 +20,15 @@
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 export default {
-  name: "IncidentCostModelDeleteDialog",
+  name: "CostModelDeleteDialog",
   data() {
     return {}
   },
   computed: {
-    ...mapFields("incident_cost_model", ["dialogs.showRemove", "selected.name"]),
+    ...mapFields("cost_model", ["dialogs.showRemove", "selected.name"]),
   },
   methods: {
-    ...mapActions("incident_cost_model", ["remove", "closeRemove"]),
+    ...mapActions("cost_model", ["remove", "closeRemove"]),
   },
 }
 </script>

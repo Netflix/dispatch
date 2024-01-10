@@ -11,12 +11,12 @@
     item-value="id"
     no-filter
     clearable
-    v-model="incident_cost_model"
+    v-model="cost_model"
     :rules="[is_valid]"
   >
     <template #chip="data">
       <v-chip :value="data.selected">
-        {{ item.raw.name }}
+        {{ data.item.raw.name }}
       </v-chip>
     </template>
     <template #item="data">
@@ -40,11 +40,11 @@
 <script>
 import { cloneDeep, debounce } from "lodash"
 
-import IncidentCostModelApi from "@/incident_cost_model/api"
+import CostModelApi from "@/cost_model/api"
 import SearchUtils from "@/search/utils"
 
 export default {
-  name: "IncidentCostModelCombobox",
+  name: "CostModelCombobox",
 
   props: {
     modelValue: {
@@ -55,7 +55,7 @@ export default {
     },
     label: {
       type: String,
-      default: "Incident Cost Model",
+      default: "Cost Model",
     },
   },
   data() {
@@ -67,7 +67,7 @@ export default {
       search: null,
       is_valid: (value) => {
         if (typeof value === "string") {
-          return "Invalid incident cost model"
+          return "Invalid cost model"
         }
         return true
       },
@@ -75,7 +75,7 @@ export default {
   },
 
   computed: {
-    incident_cost_model: {
+    cost_model: {
       get() {
         return cloneDeep(this.modelValue)
       },
@@ -110,7 +110,7 @@ export default {
 
       filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
 
-      IncidentCostModelApi.getAll(filterOptions).then((response) => {
+      CostModelApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.total = response.data.total
 

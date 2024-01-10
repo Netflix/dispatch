@@ -20,6 +20,10 @@ try:
     from dispatch.route.models import Recommendation  # noqa lgtm[py/unused-import]
     from dispatch.conference.models import Conference  # noqa lgtm[py/unused-import]
     from dispatch.conversation.models import Conversation  # noqa lgtm[py/unused-import]
+    from dispatch.cost_model.models import (
+        CostModel,  # noqa lgtm[py/unused-import]
+        CostModelActivity,  # noqa lgtm[py/unused-import]
+    )
     from dispatch.definition.models import Definition  # noqa lgtm[py/unused-import]
     from dispatch.document.models import Document  # noqa lgtm[py/unused-import]
     from dispatch.event.models import Event  # noqa lgtm[py/unused-import]
@@ -29,21 +33,17 @@ try:
     from dispatch.feedback.service.models import ServiceFeedback  # noqa lgtm[py/unused-import]
     from dispatch.group.models import Group  # noqa lgtm[py/unused-import]
     from dispatch.incident_cost.models import IncidentCost  # noqa lgtm[py/unused-import]
-    from dispatch.incident_cost_model.models import (
-        IncidentCostModel,  # noqa lgtm[py/unused-import]
-        IncidentCostModelActivity,  # noqa lgtm[py/unused-import]
-    )
     from dispatch.incident_cost_type.models import IncidentCostType  # noqa lgtm[py/unused-import]
     from dispatch.incident_role.models import IncidentRole  # noqa lgtm[py/unused-import]
-    from dispatch.incident_participant_activity.models import (
-        IncidentParticipantActivity,  # noqa lgtm[py/unused-import]
-    )
     from dispatch.incident.priority.models import IncidentPriority  # noqa lgtm[py/unused-import]
     from dispatch.incident.severity.models import IncidentSeverity  # noqa lgtm[py/unused-import]
     from dispatch.incident.type.models import IncidentType  # noqa lgtm[py/unused-import]
     from dispatch.individual.models import IndividualContact  # noqa lgtm[py/unused-import]
     from dispatch.notification.models import Notification  # noqa lgtm[py/unused-import]
     from dispatch.participant.models import Participant  # noqa lgtm[py/unused-import]
+    from dispatch.participant_activity.models import (
+        ParticipantActivity,  # noqa lgtm[py/unused-import]
+    )
     from dispatch.participant_role.models import ParticipantRole  # noqa lgtm[py/unused-import]
     from dispatch.plugin.models import Plugin, PluginEvent  # noqa lgtm[py/unused-import]
     from dispatch.report.models import Report  # noqa lgtm[py/unused-import]
@@ -68,7 +68,9 @@ try:
     from dispatch.case.severity.models import CaseSeverity  # noqa lgtm[py/unused-import]
     from dispatch.case.type.models import CaseType  # noqa lgtm[py/unused-import]
     from dispatch.signal.models import Signal  # noqa lgtm[py/unused-import]
-    from dispatch.feedback.service.reminder.models import ServiceFeedbackReminder  # noqa lgtm[py/unused-import]
+    from dispatch.feedback.service.reminder.models import (
+        ServiceFeedbackReminder,
+    )  # noqa lgtm[py/unused-import]
     from dispatch.forms.type.models import FormsType  # noqa lgtm[py/unused-import]
     from dispatch.forms.models import Forms  # noqa lgtm[py/unused-import]
 

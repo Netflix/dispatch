@@ -30,7 +30,7 @@ from dispatch.incident.severity.views import router as incident_severity_router
 from dispatch.incident.type.views import router as incident_type_router
 from dispatch.incident.views import router as incident_router
 from dispatch.incident_cost.views import router as incident_cost_router
-from dispatch.incident_cost_model.views import router as incident_cost_model_router
+from dispatch.cost_model.views import router as cost_model_router
 from dispatch.incident_cost_type.views import router as incident_cost_type_router
 from dispatch.incident_role.views import router as incident_role_router
 from dispatch.individual.views import router as individual_contact_router
@@ -199,6 +199,11 @@ authenticated_organization_api_router.include_router(
     tags=["case_severities"],
 )
 authenticated_organization_api_router.include_router(
+    cost_model_router,
+    prefix="/cost_models",
+    tags=["cost_models"],
+)
+authenticated_organization_api_router.include_router(
     workflow_router, prefix="/workflows", tags=["workflows"]
 )
 authenticated_organization_api_router.include_router(
@@ -215,11 +220,6 @@ authenticated_organization_api_router.include_router(
 )
 authenticated_organization_api_router.include_router(
     incident_cost_router, prefix="/incident_costs", tags=["incident_costs"]
-)
-authenticated_organization_api_router.include_router(
-    incident_cost_model_router,
-    prefix="/incident_cost_models",
-    tags=["incident_cost_models"],
 )
 authenticated_organization_api_router.include_router(
     incident_cost_type_router,

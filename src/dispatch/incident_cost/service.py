@@ -9,10 +9,10 @@ from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import Incident
 from dispatch.incident_cost_type import service as incident_cost_type_service
 from dispatch.incident_cost_type.models import IncidentCostTypeRead
-from dispatch.incident_participant_activity import service as incident_participant_activity_service
-from dispatch.incident_participant_activity.models import IncidentParticipantActivityCreate
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantRead
+from dispatch.participant_activity import service as participant_activity_service
+from dispatch.participant_activity.models import ParticipantActivityCreate
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 
@@ -132,7 +132,7 @@ def calculate_incident_response_cost_with_cost_model(
     participants_total_response_time_seconds = 0
 
     # Get the cost model. Iterate through all the listed activities we want to record.
-    for activity in incident.incident_cost_model.activities:
+    for activity in incident.cost_model.activities:
         plugin_instance = plugin_service.get_active_instance_by_slug(
             db_session=db_session,
             slug=activity.plugin_event.plugin.slug,
@@ -174,7 +174,7 @@ def calculate_incident_response_cost_with_cost_model(
                 log.warning("Cannot resolve participant.")
                 continue
 
-            activity_in = IncidentParticipantActivityCreate(
+            activity_in = ParticipantActivityCreate(
                 plugin_event=activity.plugin_event,
                 started_at=ts,
                 ended_at=ts + timedelta(seconds=activity.response_time_seconds),
@@ -182,7 +182,7 @@ def calculate_incident_response_cost_with_cost_model(
                 incident=incident,
             )
 
-            if participant_response_time := incident_participant_activity_service.create_or_update(
+            if participant_response_time := participant_activity_service.create_or_update(
                 db_session=db_session, activity_in=activity_in
             ):
                 participants_total_response_time_seconds += (
@@ -284,10 +284,8 @@ def calculate_incident_response_cost(
     if not incident:
         log.warning(f"Incident with id {incident_id} not found.")
         return 0
-    if incident.incident_cost_model and incident.incident_cost_model.enabled:
-        log.info(
-            f"Calculating {incident.name} incident cost with model {incident.incident_cost_model}."
-        )
+    if incident.cost_model and incident.cost_model.enabled:
+        log.info(f"Calculating {incident.name} incident cost with model {incident.cost_model}.")
         return calculate_incident_response_cost_with_cost_model(
             incident=incident, db_session=db_session
         )

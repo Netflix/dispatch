@@ -5,7 +5,7 @@
     <v-row no-gutters>
       <v-col>
         <v-alert closable icon="mdi-school" prominent text type="info">
-          Incident cost models allow users to create customized cost calculations for each incident.
+          Cost models allow users to create customized cost calculations for each incident.
           This feature uses plugin-based tracking to provide a comprehensive view of participant
           activity, enabling a granular understanding of incident costs.
         </v-alert>
@@ -85,11 +85,11 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
-import DeleteDialog from "@/incident_cost_model/DeleteDialog.vue"
-import NewEditSheet from "@/incident_cost_model/NewEditSheet.vue"
+import DeleteDialog from "@/cost_model/DeleteDialog.vue"
+import NewEditSheet from "@/cost_model/NewEditSheet.vue"
 
 export default {
-  name: "IncidentCostModelTable",
+  name: "CostModelTable",
 
   components: {
     NewEditSheet,
@@ -109,7 +109,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("incident_cost_model", [
+    ...mapFields("cost_model", [
       "table.options.q",
       "table.options.page",
       "table.options.itemsPerPage",
@@ -143,7 +143,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("incident_cost_model", [
+    ...mapActions("cost_model", [
       "createEditShow",
       "removeShow",
       "getAll",

@@ -11,6 +11,7 @@ from sqlalchemy_utils import TSVectorType, observes
 
 from dispatch.conference.models import ConferenceRead
 from dispatch.conversation.models import ConversationRead
+from dispatch.cost_model.models import CostModelRead
 from dispatch.database.core import Base
 from dispatch.document.models import Document, DocumentRead
 from dispatch.enums import Visibility
@@ -38,7 +39,6 @@ from dispatch.incident_cost.models import (
     IncidentCostRead,
     IncidentCostUpdate,
 )
-from dispatch.incident_cost_model.models import IncidentCostModelRead
 from dispatch.messaging.strings import INCIDENT_RESOLUTION_DEFAULT
 from dispatch.models import (
     DispatchBase,
@@ -225,12 +225,10 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     notifications_group_id = Column(Integer, ForeignKey("group.id"))
     notifications_group = relationship("Group", foreign_keys=[notifications_group_id])
 
-    incident_cost_model_id = Column(
-        Integer, ForeignKey("incident_cost_model.id"), nullable=True, default=None
-    )
-    incident_cost_model = relationship(
-        "IncidentCostModel",
-        foreign_keys=[incident_cost_model_id],
+    cost_model_id = Column(Integer, ForeignKey("cost_model.id"), nullable=True, default=None)
+    cost_model = relationship(
+        "CostModel",
+        foreign_keys=[cost_model_id],
     )
 
     @hybrid_property
@@ -298,7 +296,7 @@ class IncidentBase(DispatchBase):
 class IncidentCreate(IncidentBase):
     commander: Optional[ParticipantUpdate]
     commander_email: Optional[str]
-    incident_cost_model: Optional[IncidentCostModelRead] = None
+    cost_model: Optional[CostModelRead] = None
     incident_priority: Optional[IncidentPriorityCreate]
     incident_severity: Optional[IncidentSeverityCreate]
     incident_type: Optional[IncidentTypeCreate]
@@ -315,9 +313,9 @@ class IncidentReadMinimal(IncidentBase):
     closed_at: Optional[datetime] = None
     commander: Optional[ParticipantReadMinimal]
     commanders_location: Optional[str]
+    cost_model: Optional[CostModelRead] = None
     created_at: Optional[datetime] = None
     duplicates: Optional[List[IncidentReadMinimal]] = []
-    incident_cost_model: Optional[IncidentCostModelRead] = None
     incident_costs: Optional[List[IncidentCostRead]] = []
     incident_priority: IncidentPriorityReadMinimal
     incident_severity: IncidentSeverityReadMinimal
@@ -341,10 +339,10 @@ IncidentReadMinimal.update_forward_refs()
 class IncidentUpdate(IncidentBase):
     cases: Optional[List[CaseRead]] = []
     commander: Optional[ParticipantUpdate]
+    cost_model: Optional[CostModelRead] = None
     delay_executive_report_reminder: Optional[datetime] = None
     delay_tactical_report_reminder: Optional[datetime] = None
     duplicates: Optional[List[IncidentReadMinimal]] = []
-    incident_cost_model: Optional[IncidentCostModelRead] = None
     incident_costs: Optional[List[IncidentCostUpdate]] = []
     incident_priority: IncidentPriorityBase
     incident_severity: IncidentSeverityBase
@@ -379,13 +377,13 @@ class IncidentRead(IncidentBase):
     commanders_location: Optional[str]
     conference: Optional[ConferenceRead] = None
     conversation: Optional[ConversationRead] = None
+    cost_model: Optional[CostModelRead] = None
     created_at: Optional[datetime] = None
     delay_executive_report_reminder: Optional[datetime] = None
     delay_tactical_report_reminder: Optional[datetime] = None
     documents: Optional[List[DocumentRead]] = []
     duplicates: Optional[List[IncidentReadMinimal]] = []
     events: Optional[List[EventRead]] = []
-    incident_cost_model: Optional[IncidentCostModelRead] = None
     incident_costs: Optional[List[IncidentCostRead]] = []
     incident_priority: IncidentPriorityRead
     incident_severity: IncidentSeverityRead

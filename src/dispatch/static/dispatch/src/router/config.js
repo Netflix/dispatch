@@ -408,6 +408,12 @@ export const protectedRoute = [
             component: () => import("@/workflow/Table.vue"),
           },
           {
+            path: "costModels",
+            name: "CostModelTable",
+            meta: { title: "Cost Models", subMenu: "project", group: "general" },
+            component: () => import("@/cost_model/Table.vue"),
+          },
+          {
             path: "incidentTypes",
             name: "IncidentTypeTable",
             meta: { title: "Types", subMenu: "project", group: "incident" },
@@ -424,12 +430,6 @@ export const protectedRoute = [
             name: "IncidentSeverityTable",
             meta: { title: "Severities", subMenu: "project", group: "incident" },
             component: () => import("@/incident/severity/Table.vue"),
-          },
-          {
-            path: "incidentCostModels",
-            name: "IncidentCostModelTable",
-            meta: { title: "Cost Models", subMenu: "project", group: "incident" },
-            component: () => import("@/incident_cost_model/Table.vue"),
           },
           {
             path: "incidentCostTypes",

@@ -37,17 +37,17 @@ from .factories import (
     FeedbackFactory,
     GroupFactory,
     IncidentCostFactory,
-    IncidentCostModelFactory,
-    IncidentCostModelActivityFactory,
+    CostModelFactory,
+    CostModelActivityFactory,
     IncidentCostTypeFactory,
     IncidentFactory,
-    IncidentParticipantActivityFactory,
     IncidentPriorityFactory,
     IncidentRoleFactory,
     IncidentTypeFactory,
     IndividualContactFactory,
     NotificationFactory,
     OrganizationFactory,
+    ParticipantActivityFactory,
     ParticipantFactory,
     ParticipantRoleFactory,
     PluginFactory,
@@ -524,8 +524,8 @@ def incident(session):
 
 
 @pytest.fixture
-def incident_participant_activity(session):
-    return IncidentParticipantActivityFactory()
+def participant_activity(session):
+    return ParticipantActivityFactory()
 
 
 @pytest.fixture
@@ -629,10 +629,10 @@ def plugin_event(session):
 
 
 @pytest.fixture
-def incident_cost_model(session):
-    return IncidentCostModelFactory()
+def cost_model(session):
+    return CostModelFactory()
 
 
 @pytest.fixture
-def incident_cost_model_activity(session):
-    return IncidentCostModelActivityFactory()
+def cost_model_activity(session):
+    return CostModelActivityFactory()

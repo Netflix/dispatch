@@ -63,7 +63,7 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { cloneDeep } from "lodash"
-import CostModelActivityDialog from "@/incident_cost_model/CostModelActivityDialog.vue"
+import CostModelActivityDialog from "@/cost_model/CostModelActivityDialog.vue"
 
 export default {
   name: "CostModelActivityInput",
@@ -84,7 +84,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("incident_cost_model", ["selected", "selected.project"]),
+    ...mapFields("cost_model", ["selected", "selected.project"]),
     activities: {
       get() {
         return cloneDeep(this.modelValue)
@@ -93,7 +93,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("incident_cost_model", ["createActivityShow"]),
+    ...mapActions("cost_model", ["createActivityShow"]),
 
     addActivity(activity) {
       for (let i = 0; i < this.activities.length; i++) {
@@ -101,7 +101,7 @@ export default {
           this.$store.commit(
             "notification_backend/addBeNotification",
             {
-              text: "Failed to add incident cost model activity. Please ensure all plugin events are unique for each cost model.",
+              text: "Failed to add cost model activity. Please ensure all plugin events are unique for each cost model.",
             },
             { root: true }
           )

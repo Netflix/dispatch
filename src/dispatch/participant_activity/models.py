@@ -11,7 +11,7 @@ from dispatch.plugin.models import PluginEvent, PluginEventRead
 
 
 # SQLAlchemy Models
-class IncidentParticipantActivity(Base):
+class ParticipantActivity(Base):
     id = Column(Integer, primary_key=True)
 
     plugin_event_id = Column(Integer, ForeignKey(PluginEvent.id))
@@ -28,7 +28,7 @@ class IncidentParticipantActivity(Base):
 
 
 # Pydantic Models
-class IncidentParticipantActivityBase(DispatchBase):
+class ParticipantActivityBase(DispatchBase):
     plugin_event: PluginEventRead
     started_at: Optional[datetime] = None
     ended_at: Optional[datetime] = None
@@ -36,13 +36,13 @@ class IncidentParticipantActivityBase(DispatchBase):
     incident: IncidentRead
 
 
-class IncidentParticipantActivityRead(IncidentParticipantActivityBase):
+class ParticipantActivityRead(ParticipantActivityBase):
     id: PrimaryKey
 
 
-class IncidentParticipantActivityCreate(IncidentParticipantActivityBase):
+class ParticipantActivityCreate(ParticipantActivityBase):
     pass
 
 
-class IncidentParticipantActivityUpdate(IncidentParticipantActivityBase):
+class ParticipantActivityUpdate(ParticipantActivityBase):
     id: PrimaryKey

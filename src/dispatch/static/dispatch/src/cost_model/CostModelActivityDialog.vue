@@ -4,7 +4,7 @@
       <v-card>
         <v-card-title>
           <v-list-item lines="two">
-            <v-list-item-title class="text-h6"> New Incident Cost Model Activity</v-list-item-title>
+            <v-list-item-title class="text-h6"> New Cost Model Activity</v-list-item-title>
             <v-list-item-subtitle />
           </v-list-item>
         </v-card-title>
@@ -100,7 +100,7 @@ import PluginInstanceCombobox from "@/plugin/PluginInstanceCombobox.vue"
 import PluginEventCombobox from "@/plugin/PluginEventCombobox.vue"
 
 export default {
-  name: "IncidentCostModelActivityDialog",
+  name: "CostModelActivityDialog",
   components: {
     PluginInstanceCombobox,
     PluginEventCombobox,
@@ -146,10 +146,10 @@ export default {
     },
   },
   computed: {
-    ...mapFields("incident_cost_model", ["dialogs.showActivity", "selected.project"]),
+    ...mapFields("cost_model", ["dialogs.showActivity", "selected.project"]),
   },
   methods: {
-    ...mapActions("incident_cost_model", ["closeActivity", "save"]),
+    ...mapActions("cost_model", ["closeActivity", "save"]),
 
     addCostModelActivity() {
       let activity = {

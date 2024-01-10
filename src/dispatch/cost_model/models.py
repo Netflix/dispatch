@@ -26,23 +26,21 @@ from dispatch.models import (
 from dispatch.plugin.models import PluginEventRead, PluginEvent
 from dispatch.project.models import ProjectRead
 
-assoc_incident_cost_model_activities = Table(
-    "assoc_incident_cost_model_activities",
+assoc_cost_model_activities = Table(
+    "assoc_cost_model_activities",
     Base.metadata,
+    Column("cost_model_id", Integer, ForeignKey("cost_model.id", ondelete="CASCADE")),
     Column(
-        "incident_cost_model_id", Integer, ForeignKey("incident_cost_model.id", ondelete="CASCADE")
-    ),
-    Column(
-        "incident_cost_model_activity_id",
+        "cost_model_activity_id",
         Integer,
-        ForeignKey("incident_cost_model_activity.id", ondelete="CASCADE"),
+        ForeignKey("cost_model_activity.id", ondelete="CASCADE"),
     ),
-    PrimaryKeyConstraint("incident_cost_model_id", "incident_cost_model_activity_id"),
+    PrimaryKeyConstraint("cost_model_id", "cost_model_activity_id"),
 )
 
 
 # SQLAlchemy Model
-class IncidentCostModelActivity(Base):
+class CostModelActivity(Base):
     id = Column(Integer, primary_key=True)
     plugin_event_id = Column(Integer, ForeignKey(PluginEvent.id, ondelete="CASCADE"))
     plugin_event = relationship(PluginEvent, backref="plugin_event")
@@ -50,17 +48,17 @@ class IncidentCostModelActivity(Base):
     enabled = Column(Boolean, default=True)
 
 
-class IncidentCostModel(Base, TimeStampMixin, ProjectMixin):
+class CostModel(Base, TimeStampMixin, ProjectMixin):
     __table_args__ = (UniqueConstraint("name", "project_id"),)
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
     enabled = Column(Boolean)
     activities = relationship(
-        "IncidentCostModelActivity",
-        secondary=assoc_incident_cost_model_activities,
+        "CostModelActivity",
+        secondary=assoc_cost_model_activities,
         lazy="subquery",
-        backref="incident_cost_model",
+        backref="cost_model",
     )
     search_vector = Column(
         TSVectorType("name", "description", weights={"name": "A", "description": "B"})
@@ -68,25 +66,25 @@ class IncidentCostModel(Base, TimeStampMixin, ProjectMixin):
 
 
 # Pydantic Models
-class IncidentCostModelActivityBase(DispatchBase):
+class CostModelActivityBase(DispatchBase):
     plugin_event: PluginEventRead
     response_time_seconds: Optional[int] = 300
     enabled: Optional[bool] = Field(True, nullable=True)
 
 
-class IncidentCostModelActivityCreate(IncidentCostModelActivityBase):
+class CostModelActivityCreate(CostModelActivityBase):
     pass
 
 
-class IncidentCostModelActivityRead(IncidentCostModelActivityBase):
+class CostModelActivityRead(CostModelActivityBase):
     id: PrimaryKey
 
 
-class IncidentCostModelActivityUpdate(IncidentCostModelActivityBase):
+class CostModelActivityUpdate(CostModelActivityBase):
     id: Optional[PrimaryKey]
 
 
-class IncidentCostModelBase(DispatchBase):
+class CostModelBase(DispatchBase):
     name: NameStr
     description: Optional[str] = Field(None, nullable=True)
     enabled: Optional[bool] = Field(True, nullable=True)
@@ -95,19 +93,19 @@ class IncidentCostModelBase(DispatchBase):
     project: ProjectRead
 
 
-class IncidentCostModelUpdate(IncidentCostModelBase):
+class CostModelUpdate(CostModelBase):
     id: PrimaryKey
-    activities: Optional[List[IncidentCostModelActivityUpdate]] = []
+    activities: Optional[List[CostModelActivityUpdate]] = []
 
 
-class IncidentCostModelCreate(IncidentCostModelBase):
-    activities: Optional[List[IncidentCostModelActivityCreate]] = []
+class CostModelCreate(CostModelBase):
+    activities: Optional[List[CostModelActivityCreate]] = []
 
 
-class IncidentCostModelRead(IncidentCostModelBase):
+class CostModelRead(CostModelBase):
     id: PrimaryKey
-    activities: Optional[List[IncidentCostModelActivityRead]] = []
+    activities: Optional[List[CostModelActivityRead]] = []
 
 
-class IncidentCostModelPagination(Pagination):
-    items: List[IncidentCostModelRead] = []
+class CostModelPagination(Pagination):
+    items: List[CostModelRead] = []

@@ -2,7 +2,7 @@ import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
-import IncidentCostModelApi from "@/incident_cost_model/api"
+import CostModelApi from "@/cost_model/api"
 
 const getDefaultSelectedState = () => {
   return {
@@ -36,7 +36,7 @@ const state = {
       q: "",
       page: 1,
       itemsPerPage: 25,
-      sortBy: ["IncidentCostModel.created_at"],
+      sortBy: ["CostModel.created_at"],
       descending: [true],
       filters: {
         project: [],
@@ -55,9 +55,9 @@ const actions = {
     commit("SET_TABLE_LOADING", "primary")
     let params = SearchUtils.createParametersFromTableOptions(
       { ...state.table.options },
-      "IncidentCostModel"
+      "CostModel"
     )
-    return IncidentCostModelApi.getAll(params)
+    return CostModelApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)
         commit("SET_TABLE_ROWS", response.data)
@@ -93,14 +93,14 @@ const actions = {
   save({ commit, state, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
-      return IncidentCostModelApi.create(state.selected)
+      return CostModelApi.create(state.selected)
         .then(() => {
           commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
-            { text: "Incident cost model created successfully.", type: "success" },
+            { text: "Cost model created successfully.", type: "success" },
             { root: true }
           )
         })
@@ -108,14 +108,14 @@ const actions = {
           commit("SET_SELECTED_LOADING", false)
         })
     } else {
-      return IncidentCostModelApi.update(state.selected.id, state.selected)
+      return CostModelApi.update(state.selected.id, state.selected)
         .then(() => {
           commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
-            { text: "Incident cost model updated successfully.", type: "success" },
+            { text: "Cost model updated successfully.", type: "success" },
             { root: true }
           )
         })
@@ -125,12 +125,12 @@ const actions = {
     }
   },
   remove({ commit, state, dispatch }) {
-    return IncidentCostModelApi.delete(state.selected.id).then(function () {
+    return CostModelApi.delete(state.selected.id).then(function () {
       dispatch("closeRemove")
       dispatch("getAll")
       commit(
         "notification_backend/addBeNotification",
-        { text: "Incident cost model deleted successfully.", type: "success" },
+        { text: "Cost model deleted successfully.", type: "success" },
         { root: true }
       )
     })

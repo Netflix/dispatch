@@ -51,7 +51,7 @@ def test_calculate_incident_response_cost_with_cost_model(
     session,
     incident,
     incident_cost_type,
-    incident_cost_model_activity,
+    cost_model_activity,
     conversation_plugin_instance,
     conversation,
     participant,
@@ -64,7 +64,7 @@ def test_calculate_incident_response_cost_with_cost_model(
         update_incident_response_cost,
     )
     from dispatch.incident_cost_type import service as incident_cost_type_service
-    from dispatch.incident_participant_activity.service import (
+    from dispatch.participant_activity.service import (
         get_all_incident_participant_activities_for_incident,
     )
     from dispatch.plugins.dispatch_slack.events import ChannelActivityEvent
@@ -74,7 +74,7 @@ def test_calculate_incident_response_cost_with_cost_model(
 
     # Set incoming plugin events.
     conversation_plugin_instance.project_id = incident.project.id
-    incident_cost_model_activity.plugin_event.plugin = conversation_plugin_instance.plugin
+    cost_model_activity.plugin_event.plugin = conversation_plugin_instance.plugin
     participant.user_conversation_id = "0XDECAFBAD"
     participant.incident = incident
 
@@ -86,9 +86,9 @@ def test_calculate_incident_response_cost_with_cost_model(
 
     # Set up incident.
     incident = get(db_session=session, incident_id=incident.id)
-    incident_cost_model_activity.plugin_event.slug = ChannelActivityEvent.slug
-    incident.incident_cost_model.enabled = True
-    incident.incident_cost_model.activities = [incident_cost_model_activity]
+    cost_model_activity.plugin_event.slug = ChannelActivityEvent.slug
+    incident.cost_model.enabled = True
+    incident.cost_model.activities = [cost_model_activity]
     incident.conversation = conversation
 
     # Calculates and updates the incident cost.
