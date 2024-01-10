@@ -5,8 +5,8 @@
     <v-row no-gutters>
       <v-col>
         <v-alert closable icon="mdi-school" prominent text type="info">
-          Cost models allow users to create customized cost calculations for each incident.
-          This feature uses plugin-based tracking to provide a comprehensive view of participant
+          Cost models allow users to create customized cost calculations for each incident. This
+          feature uses plugin-based tracking to provide a comprehensive view of participant
           activity, enabling a granular understanding of incident costs.
         </v-alert>
       </v-col>
@@ -143,12 +143,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("cost_model", [
-      "createEditShow",
-      "removeShow",
-      "getAll",
-      "createActivityShow",
-    ]),
+    ...mapActions("cost_model", ["createEditShow", "removeShow", "getAll", "createActivityShow"]),
   },
 }
 </script>
