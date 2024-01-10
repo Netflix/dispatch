@@ -62,3 +62,7 @@ class Scheduler:
 
 
 scheduler = Scheduler()
+
+
+def stop_scheduler(signum, frame):
+    scheduler.stop()
