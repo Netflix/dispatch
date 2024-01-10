@@ -211,8 +211,10 @@ class SlackConversationPlugin(ConversationPlugin):
         blocks: Optional[List] = None,
         **kwargs,
     ):
-        """Sends a message directly to a user."""
+        """Sends a message directly to a user if the user exists."""
         client = create_slack_client(self.configuration)
+        if not does_user_exist(client, user):
+            return {}
         user_id = resolve_user(client, user)["id"]
 
         if not blocks:
@@ -233,8 +235,10 @@ class SlackConversationPlugin(ConversationPlugin):
         blocks: Optional[List] = None,
         **kwargs,
     ):
-        """Sends an ephemeral message to a user in a channel."""
+        """Sends an ephemeral message to a user in a channel if the user exists."""
         client = create_slack_client(self.configuration)
+        if not does_user_exist(client, user):
+            return {}
         user_id = resolve_user(client, user)["id"]
 
         if not blocks:

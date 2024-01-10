@@ -373,7 +373,7 @@ def delete(*, db_session, case_id: int):
 
 def get_participants(
     *, db_session: Session, case_id: int, minimal: bool = False
-) -> list[Participant] | None:
+) -> list[Participant]:
     """Returns a list of participants based on the given case id."""
     if minimal:
         case = (
@@ -390,4 +390,4 @@ def get_participants(
             .first()
         )
 
-    return case.participants if case else None
+    return [] if case is None or case.participants is None else case.participants

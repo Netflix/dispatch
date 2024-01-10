@@ -659,7 +659,7 @@ def dispatch_scheduler():
 
 @dispatch_scheduler.command("list")
 def list_tasks():
-    """Prints and runs all currently configured periodic tasks, in seperate event loop."""
+    """Prints and runs all currently configured periodic tasks, in separate event loop."""
     from tabulate import tabulate
 
     table = []
@@ -678,6 +678,7 @@ def start_tasks(tasks, exclude, eager):
     import signal
 
     from dispatch.common.utils.cli import install_plugins
+    from dispatch.scheduler import stop_scheduler
 
     install_plugins()
 
@@ -704,7 +705,7 @@ def start_tasks(tasks, exclude, eager):
     # registers a handler to stop future scheduling when encountering sigterm
     signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
     for s in signals:
-        signal.signal(s, scheduler.stop)
+        signal.signal(s, stop_scheduler)
 
     click.secho("Starting scheduler...", fg="blue")
     scheduler.start()
