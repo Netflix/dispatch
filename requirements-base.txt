@@ -104,8 +104,6 @@ deprecated==1.2.14
     # via
     #   atlassian-python-api
     #   limits
-deprecation==2.1.0
-    # via pdpyras
 distro==1.9.0
     # via openai
 dnspython==2.4.2
@@ -248,7 +246,6 @@ openai==1.7.0
     # via -r requirements-base.in
 packaging==23.2
     # via
-    #   deprecation
     #   limits
     #   pytest
     #   spacy
@@ -263,7 +260,7 @@ patsy==0.5.6
     # via statsmodels
 pbr==6.0.0
     # via jira
-pdpyras==5.1.3
+pdpyras==5.2.0
     # via -r requirements-base.in
 pluggy==1.3.0
     # via pytest
