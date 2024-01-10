@@ -127,7 +127,7 @@ import IncidentSeveritySelect from "@/incident/severity/IncidentSeveritySelect.v
 import IncidentTypeSelect from "@/incident/type/IncidentTypeSelect.vue"
 import ParticipantSelect from "@/components/ParticipantSelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
-import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
+import TagFilterAutoComplete from "@/tag/TagPicker.vue"
 
 export default {
   setup() {

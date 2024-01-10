@@ -52,12 +52,45 @@
                   name="Description"
                 />
               </v-col>
-              <v-col>
+              <v-col cols="12">
+                <color-picker-input v-model="color" />
+              </v-col>
+              <v-col cols="12">
+                <icon-picker-input v-model="icon" :color="color" />
+              </v-col>
+
+              <v-col cols="5">
+                <v-checkbox
+                  v-model="discoverable"
+                  label="Discoverable"
+                  hint="Should this type be visible the selection boxes?"
+                />
+              </v-col>
+              <v-col cols="7">
+                <v-tooltip max-width="500px" open-delay="50" location="bottom">
+                  <template #activator="{ props }">
+                    <v-icon class="mt-4" v-bind="props">mdi-information</v-icon>
+                  </template>
+                  <span>
+                    If activated, this type will be visible in incident and case tag type selection
+                    boxes.
+                  </span>
+                </v-tooltip>
+              </v-col>
+              <v-col cols="5">
                 <v-checkbox
                   v-model="exclusive"
                   label="Exclusive"
                   hint="Should an incident only have one tag of this type?"
                 />
+              </v-col>
+              <v-col cols="7">
+                <v-tooltip max-width="500px" open-delay="50" location="bottom">
+                  <template #activator="{ props }">
+                    <v-icon class="mt-4" v-bind="props">mdi-information</v-icon>
+                  </template>
+                  <span> If activated, only one tag of this type is allowed per incident. </span>
+                </v-tooltip>
               </v-col>
             </v-row>
           </v-container>
@@ -72,6 +105,9 @@ import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
+import ColorPickerInput from "@/components/ColorPickerInput.vue"
+import IconPickerInput from "@/components/IconPickerInput.vue"
+
 export default {
   setup() {
     return {
@@ -80,6 +116,11 @@ export default {
   },
   name: "TagTypeNewEditSheet",
 
+  components: {
+    ColorPickerInput,
+    IconPickerInput,
+  },
+
   computed: {
     ...mapFields("tag_type", [
       "dialogs.showCreateEdit",
@@ -87,6 +128,9 @@ export default {
       "selected.name",
       "selected.project",
       "selected.description",
+      "selected.discoverable",
+      "selected.icon",
+      "selected.color",
       "selected.exclusive",
       "selected.loading",
     ]),
