@@ -398,7 +398,7 @@ def get_thread_activity(
             cursor=cursor,
             oldest=oldest,
         )
-        if "ok" not in response or "messages" not in response:
+        if not response["ok"] or "messages" not in response:
             break
 
         for message in response["messages"]:
@@ -434,7 +434,7 @@ def get_channel_activity(client: WebClient, conversation_id: str, oldest: str = 
             oldest=oldest,
         )
 
-        if "ok" not in response or "messages" not in response:
+        if not response["ok"] or "messages" not in response:
             break
 
         for message in response["messages"]:
