@@ -9,6 +9,7 @@ import { mapMutations, mapGetters } from "vuex"
 import loader from "@monaco-editor/loader"
 import jsonpath from "jsonpath"
 import json_to_ast from "json-to-ast"
+import { markRaw } from "vue"
 
 export default {
   name: "PlaygroundTextBox",
@@ -42,8 +43,8 @@ export default {
       )
       // Store the references to the model and editor
       this.model = model
-      this.editor = editor
-      this.monaco = monaco
+      this.editor = markRaw(editor)
+      this.monaco = markRaw(monaco)
 
       // Register an event listener for when the content of the model changes
       this.editor.onDidChangeModelContent(() => {
@@ -53,7 +54,7 @@ export default {
       this.editor.layout()
     })
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.editor.dispose()
     this.model.dispose()
   },

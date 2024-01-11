@@ -1,145 +1,121 @@
 <template>
   <v-dialog v-model="showCreate" persistent max-width="800px">
-    <template #activator="{ on }">
-      <v-btn icon v-on="on">
-        <v-icon>add</v-icon>
+    <template #activator="{ props }">
+      <v-btn icon variant="text" v-bind="props">
+        <v-icon>mdi-plus</v-icon>
       </v-btn>
     </template>
     <v-card>
-      <v-card-title>
-        <span class="headline">Create Search Filter</span>
+      <v-card-title class="d-flex">
+        <span class="text-h5">Create Search Filter</span>
         <v-spacer />
-        <span>
-          <v-radio-group v-model="subject" class="justify-right" row>
-            <v-radio label="Incident" value="incident" />
-            <v-radio label="Case" value="case" />
-          </v-radio-group>
-        </span>
+        <v-radio-group v-model="subject" class="flex-0-0" inline>
+          <v-radio label="Incident" value="incident" />
+          <v-radio label="Case" value="case" />
+        </v-radio-group>
       </v-card-title>
       <v-stepper v-model="step">
         <v-stepper-header>
-          <v-stepper-step :complete="step > 1" step="1" editable> Filter </v-stepper-step>
+          <v-stepper-item :complete="step > 1" :value="1" editable> Filter </v-stepper-item>
           <v-divider />
 
-          <v-stepper-step :complete="step > 2" step="2" editable> Preview </v-stepper-step>
+          <v-stepper-item :complete="step > 2" :value="2" editable> Preview </v-stepper-item>
           <v-divider />
 
-          <v-stepper-step step="3" editable> Save </v-stepper-step>
+          <v-stepper-item :value="3" editable> Save </v-stepper-item>
         </v-stepper-header>
 
-        <v-stepper-items>
-          <v-stepper-content step="1">
+        <v-stepper-window>
+          <v-stepper-window-item :value="1">
             <v-card>
               <v-card-text>
-                <v-tabs color="primary" right>
+                <v-tabs v-model="activeTab" color="primary" align-tabs="end">
                   <v-tab>Basic</v-tab>
                   <v-tab>Advanced</v-tab>
-                  <v-tab-item>
-                    <v-list v-if="subject == 'incident'" dense>
+                </v-tabs>
+                <v-window v-model="activeTab">
+                  <v-window-item>
+                    <v-list v-if="subject == 'incident'" density="compact">
                       <v-list-item>
-                        <v-list-item-content>
-                          <tag-filter-auto-complete
-                            :project="project"
-                            v-model="filters.tag"
-                            label="Tags"
-                          />
-                        </v-list-item-content>
+                        <tag-filter-auto-complete
+                          :project="project"
+                          v-model="filters.tag"
+                          label="Tags"
+                        />
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>
-                          <tag-type-filter-combobox
-                            :project="project"
-                            v-model="filters.tag_type"
-                            label="Tag Types"
-                          />
-                        </v-list-item-content>
+                        <tag-type-filter-combobox
+                          :project="project"
+                          v-model="filters.tag_type"
+                          label="Tag Types"
+                        />
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>
-                          <incident-type-combobox
-                            :project="project"
-                            v-model="filters.incident_type"
-                          />
-                        </v-list-item-content>
+                        <incident-type-combobox
+                          :project="project"
+                          v-model="filters.incident_type"
+                        />
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>
-                          <incident-priority-combobox
-                            :project="project"
-                            v-model="filters.incident_priority"
-                          />
-                        </v-list-item-content>
+                        <incident-priority-combobox
+                          :project="project"
+                          v-model="filters.incident_priority"
+                        />
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>
-                          <incident-status-multi-select v-model="filters.status" />
-                        </v-list-item-content>
+                        <incident-status-multi-select v-model="filters.status" />
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>
-                          <v-select
-                            :items="visibilities"
-                            v-model="filters.visibility"
-                            name="visibility"
-                            item-text="name"
-                            return-object
-                            label="Visibility"
-                          />
-                        </v-list-item-content>
+                        <v-select
+                          :items="visibilities"
+                          v-model="filters.visibility"
+                          name="visibility"
+                          item-title="name"
+                          return-object
+                          label="Visibility"
+                        />
                       </v-list-item>
                     </v-list>
                     <v-list v-else>
                       <v-list-item>
-                        <v-list-item-content>
-                          <tag-filter-auto-complete
-                            :project="project"
-                            v-model="filters.tag"
-                            label="Tags"
-                          />
-                        </v-list-item-content>
+                        <tag-filter-auto-complete
+                          :project="project"
+                          v-model="filters.tag"
+                          label="Tags"
+                        />
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>
-                          <tag-type-filter-combobox
-                            :project="project"
-                            v-model="filters.tag_type"
-                            label="Tag Types"
-                          />
-                        </v-list-item-content>
+                        <tag-type-filter-combobox
+                          :project="project"
+                          v-model="filters.tag_type"
+                          label="Tag Types"
+                        />
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>
-                          <case-type-combobox :project="project" v-model="filters.case_type" />
-                        </v-list-item-content>
+                        <case-type-combobox :project="project" v-model="filters.case_type" />
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>
-                          <case-priority-combobox
-                            :project="project"
-                            v-model="filters.case_priority"
-                          />
-                        </v-list-item-content>
+                        <case-priority-combobox
+                          :project="project"
+                          v-model="filters.case_priority"
+                        />
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>
-                          <incident-status-multi-select v-model="filters.status" />
-                        </v-list-item-content>
+                        <incident-status-multi-select v-model="filters.status" />
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>
-                          <v-select
-                            :items="visibilities"
-                            v-model="filters.visibility"
-                            name="visibility"
-                            item-text="name"
-                            return-object
-                            label="Visibility"
-                          />
-                        </v-list-item-content>
+                        <v-select
+                          :items="visibilities"
+                          v-model="filters.visibility"
+                          name="visibility"
+                          item-title="name"
+                          return-object
+                          label="Visibility"
+                        />
                       </v-list-item>
                     </v-list>
-                  </v-tab-item>
-                  <v-tab-item>
+                  </v-window-item>
+                  <v-window-item>
                     <div style="height: 400px">
                       <MonacoEditor
                         v-model="expression_str"
@@ -147,18 +123,18 @@
                         language="json"
                       />
                     </div>
-                  </v-tab-item>
-                </v-tabs>
+                  </v-window-item>
+                </v-window>
               </v-card-text>
               <v-card-actions>
                 <v-spacer />
-                <v-btn @click="closeCreateDialog()" text> Cancel </v-btn>
+                <v-btn @click="closeCreateDialog()" variant="text"> Cancel </v-btn>
                 <v-btn color="info" @click="step = 2"> Continue </v-btn>
               </v-card-actions>
             </v-card>
-          </v-stepper-content>
+          </v-stepper-window-item>
 
-          <v-stepper-content step="2">
+          <v-stepper-window-item :value="2">
             <v-card>
               <v-card-text>
                 Examples matching your filter:
@@ -178,70 +154,65 @@
               </v-card-text>
               <v-card-actions>
                 <v-spacer />
-                <v-btn @click="closeCreateDialog()" text> Cancel </v-btn>
+                <v-btn @click="closeCreateDialog()" variant="text"> Cancel </v-btn>
                 <v-btn color="info" @click="step = 3" :loading="loading"> Continue </v-btn>
               </v-card-actions>
             </v-card>
-          </v-stepper-content>
-          <v-stepper-content step="3">
-            <ValidationObserver disabled v-slot="{ invalid, validated }">
+          </v-stepper-window-item>
+          <v-stepper-window-item :value="3">
+            <v-form @submit.prevent v-slot="{ isValid }">
               <v-card>
                 <v-card-text>
                   Provide a name and description for your filter.
-                  <ValidationProvider name="Name" rules="required" immediate>
-                    <v-text-field
-                      v-model="name"
-                      label="Name"
-                      hint="A name for your saved search."
-                      slot-scope="{ errors, valid }"
-                      :error-messages="errors"
-                      :success="valid"
-                      clearable
-                      required
-                    />
-                  </ValidationProvider>
-                  <ValidationProvider name="Description" rules="required" immediate>
-                    <v-textarea
-                      v-model="description"
-                      label="Description"
-                      hint="A short description."
-                      slot-scope="{ errors, valid }"
-                      :error-messages="errors"
-                      :success="valid"
-                      clearable
-                      auto-grow
-                      required
-                    />
-                  </ValidationProvider>
+                  <v-text-field
+                    v-model="name"
+                    label="Name"
+                    hint="A name for your saved search."
+                    clearable
+                    required
+                    name="Name"
+                    :rules="[rules.required]"
+                  />
+                  <v-textarea
+                    v-model="description"
+                    label="Description"
+                    hint="A short description."
+                    clearable
+                    auto-grow
+                    required
+                    name="Description"
+                    :rules="[rules.required]"
+                  />
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer />
-                  <v-btn @click="closeCreateDialog()" text> Cancel </v-btn>
+                  <v-btn @click="closeCreateDialog()" variant="text"> Cancel </v-btn>
                   <v-btn
                     color="info"
                     @click="saveFilter()"
                     :loading="loading"
-                    :disabled="invalid || !validated"
+                    :disabled="!isValid.value"
                   >
                     Save
                   </v-btn>
                 </v-card-actions>
               </v-card>
-            </ValidationObserver>
-          </v-stepper-content>
-        </v-stepper-items>
+            </v-form>
+          </v-stepper-window-item>
+        </v-stepper-window>
       </v-stepper>
     </v-card>
   </v-dialog>
 </template>
 
 <script>
-import MonacoEditor from "monaco-editor-vue"
+import MonacoEditor from "@/components/MonacoEditor.vue"
 
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { required } from "@/util/form"
+
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
-import { required } from "vee-validate/dist/rules"
+
 import CaseApi from "@/case/api"
 import CasePriorityCombobox from "@/case/priority/CasePriorityCombobox.vue"
 import CaseTypeCombobox from "@/case/type/CaseTypeCombobox.vue"
@@ -254,18 +225,14 @@ import IncidentTypeCombobox from "@/incident/type/IncidentTypeCombobox.vue"
 import SearchUtils from "@/search/utils"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
+
 export default {
-  name: "SearchFilterCreateDialog",
-  props: {
-    value: {
-      type: Object,
-      default: null,
-    },
+  setup() {
+    return {
+      rules: { required },
+    }
   },
+  name: "SearchFilterCreateDialog",
   data() {
     return {
       visibilities: [{ name: "Open" }, { name: "Restricted" }],
@@ -288,6 +255,7 @@ export default {
         { text: "Case Type", value: "case_type.name", sortable: false },
         { text: "Case Priority", value: "case_priority.name", sortable: false },
       ],
+      activeTab: 0,
       step: 1,
       previewRows: {
         items: [],
@@ -317,8 +285,6 @@ export default {
     IncidentTypeCombobox,
     TagFilterAutoComplete,
     TagTypeFilterCombobox,
-    ValidationObserver,
-    ValidationProvider,
     MonacoEditor,
   },
   computed: {
@@ -332,7 +298,6 @@ export default {
       "loading",
       "dialogs.showCreate",
     ]),
-    ...mapFields("route", ["query"]),
     expression_str: {
       get: function () {
         return JSON.stringify(this.expression, null, "\t") || "[]"
@@ -347,7 +312,7 @@ export default {
     saveFilter() {
       // reset local data
       this.save("incident").then((filter) => {
-        this.$emit("input", filter)
+        this.$emit("save", filter)
       })
     },
     resetFilters() {
@@ -385,8 +350,8 @@ export default {
     },
   },
   created() {
-    if (this.query.project) {
-      this.project = { name: this.query.project }
+    if (this.$route.query.project) {
+      this.project = { name: this.$route.query.project }
     }
     this.getPreviewData()
     this.$watch(

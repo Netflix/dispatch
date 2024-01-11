@@ -12,48 +12,48 @@
     </v-row>
     <v-row no-gutters>
       <v-col>
-        <v-card elevation="0">
+        <v-card variant="flat">
           <v-card-title>
             <v-text-field
               v-model="q"
-              append-icon="search"
+              append-inner-icon="mdi-magnify"
               label="Search"
               single-line
               hide-details
               clearable
             />
           </v-card-title>
-          <v-data-table
+          <v-data-table-server
             :headers="headers"
             :items="items"
             :item-class="row_class"
-            :server-items-length="total"
-            :page.sync="page"
-            :items-per-page.sync="itemsPerPage"
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="descending"
+            :items-length="total || 0"
+            v-model:page="page"
+            v-model:items-per-page="itemsPerPage"
+            v-model:sort-by="sortBy"
+            v-model:sort-desc="descending"
             :loading="loading"
             loading-text="Loading... Please wait"
           >
             <template #item.author="{ item }">
               <a :href="item.author_url" target="_blank" style="text-decoration: none">
                 {{ item.author }}
-                <v-icon small>open_in_new</v-icon>
+                <v-icon size="small">mdi-open-in-new</v-icon>
               </a>
             </template>
-            <template #item.enabled="{ item }">
-              <v-simple-checkbox v-model="item.enabled" disabled />
+            <template #item.enabled="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #item.plugin.multiple="{ item }">
-              <v-simple-checkbox v-model="item.plugin.multiple" disabled />
+            <template #item.plugin.multiple="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #item.plugin.required="{ item }">
-              <v-simple-checkbox v-model="item.plugin.required" disabled />
+            <template #item.plugin.required="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
             <template #item.data-table-actions="{ item }">
-              <v-menu bottom left>
-                <template #activator="{ on }">
-                  <v-btn icon v-on="on">
+              <v-menu location="right" origin="overlap">
+                <template #activator="{ props }">
+                  <v-btn icon variant="text" v-bind="props">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>
                 </template>
@@ -67,7 +67,7 @@
                 </v-list>
               </v-menu>
             </template>
-          </v-data-table>
+          </v-data-table-server>
         </v-card>
       </v-col>
     </v-row>
@@ -93,15 +93,15 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Title", value: "plugin.title", sortable: true },
-        { text: "Slug", value: "plugin.slug", sortable: true },
-        { text: "Author", value: "plugin.author", sortable: true },
-        { text: "Version", value: "plugin.version", sortable: true },
-        { text: "Enabled", value: "enabled", sortable: true },
-        { text: "Required", value: "plugin.required", sortable: true },
-        { text: "Multiple Allowed", value: "plugin.multiple", sortable: true },
-        { text: "Type", value: "plugin.type", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Title", value: "plugin.title", sortable: true },
+        { title: "Slug", value: "plugin.slug", sortable: true },
+        { title: "Author", value: "plugin.author", sortable: true },
+        { title: "Version", value: "plugin.version", sortable: true },
+        { title: "Enabled", value: "enabled", sortable: true },
+        { title: "Required", value: "plugin.required", sortable: true },
+        { title: "Multiple Allowed", value: "plugin.multiple", sortable: true },
+        { title: "Type", value: "plugin.type", sortable: true },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },
@@ -118,11 +118,10 @@ export default {
       "table.rows.items",
       "table.rows.total",
     ]),
-    ...mapFields("route", ["query"]),
   },
 
   created() {
-    this.project = [{ name: this.query.project }]
+    this.project = [{ name: this.$route.query.project }]
 
     this.getAllInstances()
 

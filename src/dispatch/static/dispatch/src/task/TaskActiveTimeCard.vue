@@ -17,7 +17,7 @@ export default {
   name: "TaskActiveTimeCard",
 
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -48,7 +48,7 @@ export default {
   computed: {
     series() {
       let series = { name: "Average Hours Active", data: [] }
-      forEach(this.value, function (value) {
+      forEach(this.modelValue, function (value) {
         series.data.push(
           Math.round(
             sumBy(value, function (item) {
@@ -77,7 +77,7 @@ export default {
           },
         },
         xaxis: {
-          categories: Object.keys(this.value) || [],
+          categories: Object.keys(this.modelValue) || [],
           title: {
             text: this.interval,
           },

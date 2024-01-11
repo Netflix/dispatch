@@ -68,14 +68,15 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
     ]
 
     if case.signal_instances:
-        fields.append(f"*Variant* \n {case.signal_instances[0].signal.variant}")
+        if variant := case.signal_instances[0].signal.variant:
+            fields.append(f"*Variant* \n {variant}")
 
     blocks = [
         Context(elements=[f"* {case.name} - Case Details*"]),
         Section(
             text=f"*Title* \n {case.title}.",
             accessory=Button(
-                text="View",
+                text="Open in Dispatch",
                 action_id="button-link",
                 url=f"{DISPATCH_UI_URL}/{case.project.organization.slug}/cases/{case.name}",
             ),
@@ -190,30 +191,37 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
         channel_id=channel_id,
     ).json()
 
+    # Define the initial elements with "Raw Data" and "Snooze" buttons
+    elements = [
+        Button(
+            text="Raw Data",
+            action_id=SignalNotificationActions.view,
+            value=button_metadata,
+        ),
+        Button(
+            text="Snooze",
+            action_id=SignalNotificationActions.snooze,
+            value=button_metadata,
+        ),
+    ]
+
+    # Check if `first_instance_signal.external_url` is not empty
+    if first_instance_signal.external_url:
+        # If `first_instance_signal.external_url` is not empty, add the "Response Plan" button
+        elements.append(
+            Button(
+                text="Response Plan",
+                action_id="button-link",
+                url=first_instance_signal.external_url,
+            )
+        )
+
+    # Create the Actions block with the elements
     signal_metadata_blocks = [
-        Section(
-            text=f"*{first_instance_signal.name}* - {first_instance_signal.variant}",
-        ),
-        Actions(
-            elements=[
-                Button(
-                    text="Raw Data",
-                    action_id=SignalNotificationActions.view,
-                    value=button_metadata,
-                ),
-                Button(
-                    text="Snooze",
-                    action_id=SignalNotificationActions.snooze,
-                    value=button_metadata,
-                ),
-                Button(
-                    text="Response Plan",
-                    action_id="button-link",
-                    url=first_instance_signal.external_url,
-                ),
-            ]
-        ),
-        Section(text=f"Total instances in this case: *{num_of_instances}*\n"),
+        Actions(elements=elements),
+        Section(text="*Alerts*"),
+        Divider(),
+        Section(text=f"{num_of_instances} alerts observed in this case."),
         Section(text="\n*Entities*"),
         Divider(),
     ]

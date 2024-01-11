@@ -1,105 +1,95 @@
 <template>
   <v-dialog v-model="showExport" persistent max-width="800px">
-    <template #activator="{ on }">
-      <v-btn color="secondary" class="ml-2" v-on="on"> Export </v-btn>
+    <template #activator="{ props }">
+      <v-btn color="secondary" class="ml-2" v-bind="props"> Export </v-btn>
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Export Cases</span>
+        <span class="text-h5">Export Cases</span>
       </v-card-title>
       <v-stepper v-model="e1">
         <v-stepper-header>
-          <v-stepper-step :complete="e1 > 1" step="1" editable> Filter Data </v-stepper-step>
+          <v-stepper-item :complete="e1 > 1" :value="1" editable> Filter Data </v-stepper-item>
           <v-divider />
-          <v-stepper-step :complete="e1 > 2" step="2" editable> Select Fields </v-stepper-step>
+          <v-stepper-item :complete="e1 > 2" :value="2" editable> Select Fields </v-stepper-item>
           <v-divider />
-          <v-stepper-step step="3" editable> Preview </v-stepper-step>
+          <v-stepper-item :value="3" editable> Preview </v-stepper-item>
         </v-stepper-header>
-        <v-stepper-items>
-          <v-stepper-content step="1">
-            <v-list dense>
-              <v-list-item>
-                <v-list-item-content>
+        <v-stepper-window>
+          <v-stepper-window-item :value="1">
+            <div class="scrollable-container">
+              <v-list density="compact">
+                <v-list-item>
                   <date-window-input v-model="reported_at" label="Reported At" />
-                </v-list-item-content>
-              </v-list-item>
-              <v-list-item>
-                <v-list-item-content>
+                </v-list-item>
+                <v-list-item>
                   <project-combobox v-model="project" label="Projects" />
-                </v-list-item-content>
-              </v-list-item>
-              <v-list-item>
-                <v-list-item-content>
+                </v-list-item>
+                <v-list-item>
                   <tag-filter-auto-complete v-model="tag" label="Tags" />
-                </v-list-item-content>
-              </v-list-item>
-              <v-list-item>
-                <v-list-item-content>
+                </v-list-item>
+                <v-list-item>
                   <tag-type-filter-combobox v-model="tag_type" label="Tag Types" />
-                </v-list-item-content>
-              </v-list-item>
-              <v-list-item>
-                <v-list-item-content>
+                </v-list-item>
+                <v-list-item>
                   <case-type-combobox v-model="case_type" />
-                </v-list-item-content>
-              </v-list-item>
-              <v-list-item>
-                <v-list-item-content>
+                </v-list-item>
+                <v-list-item>
                   <case-severity-combobox v-model="case_severity" />
-                </v-list-item-content>
-              </v-list-item>
-              <v-list-item>
-                <v-list-item-content>
+                </v-list-item>
+                <v-list-item>
                   <case-priority-combobox v-model="case_priority" />
-                </v-list-item-content>
-              </v-list-item>
-              <v-list-item>
-                <v-list-item-content>
+                </v-list-item>
+                <v-list-item>
                   <case-status-multi-select v-model="status" />
-                </v-list-item-content>
-              </v-list-item>
-            </v-list>
-            <v-spacer />
-            <v-btn @click="closeExport()" text> Cancel </v-btn>
-            <v-btn color="info" @click="e1 = 2"> Continue </v-btn>
-          </v-stepper-content>
-          <v-stepper-content step="2">
-            <v-autocomplete
-              v-model="selectedFields"
-              :items="allFields"
-              label="Fields"
-              multiple
-              chips
-              return-object
-            />
-            <v-spacer />
-            <v-btn @click="closeExport()" text> Cancel </v-btn>
-            <v-btn color="info" @click="e1 = 3"> Continue </v-btn>
-          </v-stepper-content>
-          <v-stepper-content step="3">
-            <v-data-table
-              hide-default-footer
-              :headers="selectedFields"
-              :items="items"
-              :loading="previewRowsLoading"
-            >
-              <template #item.case_severity.name="{ item }">
-                <case-severity :severity="item.case_severity.name" />
-              </template>
-              <template #item.case_priority.name="{ item }">
-                <case-priority :priority="item.case_priority.name" />
-              </template>
-              <template #item.status="{ item }">
-                <case-status :status="item.status" :id="item.id" />
-              </template>
-            </v-data-table>
-            <v-spacer />
-            <v-btn @click="closeExport()" text> Cancel </v-btn>
-            <v-badge :value="total" overlap color="info" bordered :content="total">
-              <v-btn color="info" @click="exportToCSV()" :loading="exportLoading"> Export </v-btn>
-            </v-badge>
-          </v-stepper-content>
-        </v-stepper-items>
+                </v-list-item>
+              </v-list>
+              <v-spacer />
+              <v-btn @click="closeExport()" variant="text"> Cancel </v-btn>
+              <v-btn color="info" @click="e1 = 2"> Continue </v-btn>
+            </div>
+          </v-stepper-window-item>
+          <v-stepper-window-item :value="2">
+            <div class="scrollable-container">
+              <v-autocomplete
+                v-model="selectedFields"
+                :items="allFields"
+                label="Fields"
+                multiple
+                chips
+                return-object
+              />
+              <v-spacer />
+              <v-btn @click="closeExport()" variant="text"> Cancel </v-btn>
+              <v-btn color="info" @click="e1 = 3"> Continue </v-btn>
+            </div>
+          </v-stepper-window-item>
+          <v-stepper-window-item :value="3">
+            <div class="scrollable-container">
+              <v-data-table
+                hide-default-footer
+                :headers="selectedFields"
+                :items="items"
+                :loading="previewRowsLoading"
+              >
+                <template #item.case_severity.name="{ item }">
+                  <case-severity :severity="item.case_severity.name" />
+                </template>
+                <template #item.case_priority.name="{ item }">
+                  <case-priority :priority="item.case_priority.name" />
+                </template>
+                <template #item.status="{ item }">
+                  <case-status :status="item.status" :id="item.id" />
+                </template>
+              </v-data-table>
+              <v-spacer />
+              <v-btn @click="closeExport()" variant="text"> Cancel </v-btn>
+              <v-badge :model-value="!!total" color="info" bordered :content="total">
+                <v-btn color="info" @click="exportToCSV()" :loading="exportLoading"> Export </v-btn>
+              </v-badge>
+            </div>
+          </v-stepper-window-item>
+        </v-stepper-window>
       </v-stepper>
     </v-card>
   </v-dialog>
@@ -245,3 +235,10 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.scrollable-container {
+  max-height: 60vh; /* Adjust as needed */
+  overflow-y: auto;
+}
+</style>

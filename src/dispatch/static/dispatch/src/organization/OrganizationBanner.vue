@@ -3,16 +3,13 @@
     v-if="currentOrganization && currentOrganization.banner_enabled"
     :color="currentOrganization.banner_color"
     height="64px"
-    app
   >
     <v-icon color="white" size="36"> mdi-information-outline </v-icon>
-    <span class="white--text">{{ currentOrganization.banner_text }}</span>
+    <span class="text-white">{{ currentOrganization.banner_text }}</span>
   </v-system-bar>
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
-
 import OrganizationApi from "@/organization/api"
 import SearchUtils from "@/search/utils"
 
@@ -21,10 +18,6 @@ export default {
     return {
       currentOrganization: {},
     }
-  },
-
-  computed: {
-    ...mapFields("route", ["params"]),
   },
 
   created() {

@@ -1,64 +1,66 @@
 <template>
-  <v-container fluid grid-list-xl>
-    <v-layout row wrap>
-      <v-flex class="d-flex justify-start" lg6 sm6 xs12>
+  <v-container fluid>
+    <v-row>
+      <v-col class="d-flex justify-start" cols="12" sm="6">
         <v-btn color="info" @click="copyView"> Share View </v-btn>
-      </v-flex>
-      <v-flex class="d-flex justify-end" lg6 sm6 xs12>
+      </v-col>
+      <v-col class="d-flex justify-end" cols="12" sm="6">
         <task-dialog-filter
           v-bind="query"
           @update="update"
           @loading="setLoading"
           :projects="defaultUserProjects"
         />
-      </v-flex>
-    </v-layout>
-    <v-layout row wrap>
-      <v-flex lg3 sm6 xs12>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="12" sm="6" lg="3">
         <stat-widget
-          icon="playlist_add_check"
-          :title="totalTasks | toNumberString"
+          icon="mdi-playlist-check"
+          :title="toNumberString(totalTasks)"
           sup-title="Tasks"
         />
-      </v-flex>
-      <v-flex lg3 sm6 xs12>
+      </v-col>
+      <v-col cols="12" sm="6" lg="3">
+        <stat-widget icon="mdi-clock" :title="toNumberString(totalHours)" sup-title="Total Hours" />
+      </v-col>
+      <v-col cols="12" sm="6" lg="3">
         <stat-widget
-          icon="watch_later"
-          :title="totalHours | toNumberString"
-          sup-title="Total Hours"
+          icon="mdi-account-multiple"
+          :title="toNumberString(uniqTeams)"
+          sup-title="Unique Teams"
         />
-      </v-flex>
-      <v-flex lg3 sm6 xs12>
-        <stat-widget icon="people" :title="uniqTeams | toNumberString" sup-title="Unique Teams" />
-      </v-flex>
-      <v-flex lg3 sm6 xs12>
+      </v-col>
+      <v-col cols="12" sm="6" lg="3">
         <stat-widget
-          icon="person"
-          :title="uniqAssignees | toNumberString"
+          icon="mdi-account"
+          :title="toNumberString(uniqAssignees)"
           sup-title="Unique Assignees"
         />
-      </v-flex>
+      </v-col>
       <!-- Widgets Ends -->
       <!-- Statistics -->
-      <v-flex lg6 sm6 xs12>
+      <v-col cols="12" sm="6">
         <task-incident-priority-bar-chart-card v-model="groupedItems" :loading="loading" />
-      </v-flex>
-      <v-flex lg6 sm6 xs12>
+      </v-col>
+      <v-col cols="12" sm="6">
         <task-incident-type-bar-chart-card v-model="groupedItems" :loading="loading" />
-      </v-flex>
-      <v-flex lg6 sm6 xs12>
+      </v-col>
+      <v-col cols="12" sm="6">
         <task-active-time-card v-model="groupedItems" :loading="loading" />
-      </v-flex>
+      </v-col>
       <!-- Statistics Ends -->
-    </v-layout>
+    </v-row>
   </v-container>
 </template>
 
 <script>
 import { groupBy, sumBy, uniq, map } from "lodash"
 import { mapFields } from "vuex-map-fields"
-import { parseISO } from "date-fns"
+import parseISO from "date-fns/parseISO"
 import differenceInHours from "date-fns/differenceInHours"
+
+import { toNumberString } from "@/filters"
 
 import StatWidget from "@/components/StatWidget.vue"
 import TaskActiveTimeCard from "@/task/TaskActiveTimeCard.vue"
@@ -94,6 +96,10 @@ export default {
     }
   },
 
+  setup() {
+    return { toNumberString }
+  },
+
   methods: {
     update(data) {
       this.items = data
@@ -103,7 +109,7 @@ export default {
     },
     copyView: function () {
       let store = this.$store
-      this.$copyText(window.location).then(
+      navigator.clipboard.writeText(window.location).then(
         function () {
           store.commit(
             "notification_backend/addBeNotification",

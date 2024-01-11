@@ -2,34 +2,34 @@
   <v-dialog v-model="showClosedDialog" persistent max-width="800px">
     <v-card>
       <v-card-title>
-        <span class="headline">Close Cases</span>
+        <span class="text-h5">Close Cases</span>
       </v-card-title>
       <v-card-text>
         Closed cased require a resolution reason and a resolution summary.
       </v-card-text>
       <v-card-actions>
-        <v-container grid-list-md>
-          <v-layout wrap>
-            <v-flex xs12>
+        <v-container>
+          <v-row>
+            <v-col cols="12">
               <v-select
                 v-model="resolutionReason"
                 label="Resolution Reason"
                 :items="resolutionReasons"
                 hint="The general reason why a given case was resolved."
               />
-            </v-flex>
-            <v-flex xs12>
+            </v-col>
+            <v-col cols="12">
               <v-textarea
                 v-model="resolution"
                 label="Resolution"
                 hint="Description of the actions taken to resolve the case."
                 clearable
               />
-            </v-flex>
-            <v-btn color="blue en-1" text @click="closeClosedDialog()"> Cancel </v-btn>
+            </v-col>
+            <v-btn color="blue en-1" variant="text" @click="closeClosedDialog()"> Cancel </v-btn>
             <v-btn
               color="red en-1"
-              text
+              variant="text"
               :loading="loading"
               @click="
                 saveBulk({
@@ -41,7 +41,7 @@
             >
               Close
             </v-btn>
-          </v-layout>
+          </v-row>
         </v-container>
       </v-card-actions>
     </v-card>
@@ -62,8 +62,6 @@ export default {
       resolutionReasons: ["False Positive", "User Acknowledged", "Mitigated", "Escalated"],
     }
   },
-
-  components: {},
 
   computed: {
     ...mapFields("case_management", [

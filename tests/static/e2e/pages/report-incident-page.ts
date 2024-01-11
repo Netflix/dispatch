@@ -19,11 +19,11 @@ export class ReportIncidentPage {
     this.page = page
     this.route = orgSlug + Routes.ReportIncident
     this.reportHeader = page.getByText("Report Incident").first()
-    this.titleTextBox = page.getByLabel("Title")
-    this.descriptionTextBox = page.getByLabel("Description")
-    this.projectDropdown = page.getByRole("combobox").filter({ hasText: "Project" }).locator("i")
-    this.typeDropdown = page.getByRole("button", { name: "Type" })
-    this.priorityDropdown = page.getByRole("button", { name: "Priority" })
+    this.titleTextBox = page.getByLabel("Title", { exact: true })
+    this.descriptionTextBox = page.getByLabel("Description", { exact: true })
+    this.projectDropdown = page.getByRole("combobox").filter({ hasText: "Project" })
+    this.typeDropdown = page.getByRole("combobox").filter({ hasText: "Type" })
+    this.priorityDropdown = page.getByRole("combobox").filter({ hasText: "Priority" })
     this.tagsDropdown = page.getByRole("combobox").filter({ hasText: "Tags" }).locator("i")
     this.submitButton = page.getByRole("button", { name: "Submit" })
     this.loadMore = page.getByText("Load More")
@@ -74,7 +74,7 @@ export class ReportIncidentPage {
 
   async selectProject(project: string) {
     await this.projectDropdown.click()
-    await this.page.getByText(project, { exact: true }).click()
+    await this.page.getByText(project, { exact: true }).first().click()
   }
 
   async selectType(type: string) {
@@ -97,7 +97,7 @@ export class ReportIncidentPage {
   }
 
   async resetPageView() {
-    await this.pageBorder.click()
+    // await this.pageBorder.click()
   }
 
   async pageObjectModel(

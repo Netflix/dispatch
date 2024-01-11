@@ -17,7 +17,7 @@ export default {
   name: "IncidentParticipantsTeamBarChartCard",
 
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -78,18 +78,18 @@ export default {
     },
     series() {
       let allTeams = []
-      forEach(this.value, function (value) {
+      forEach(this.modelValue, function (value) {
         forEach(value, function (value) {
           allTeams.push(value.participants_team)
         })
       })
-      let series = DashboardUtils.createCountedSeriesData(this.value, "participants_team", [
+      let series = DashboardUtils.createCountedSeriesData(this.modelValue, "participants_team", [
         ...new Set(allTeams),
       ])
       return series
     },
     categoryData() {
-      return Object.keys(this.value)
+      return Object.keys(this.modelValue)
     },
   },
 }

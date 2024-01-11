@@ -3,55 +3,52 @@
     :items="items"
     :label="label"
     :loading="loading"
-    :search-input.sync="search"
-    @update:search-input="getFilteredData()"
+    v-model:search="search"
+    @update:search="getFilteredData()"
     chips
-    clearable
-    item-text="name"
+    closable-chips
+    item-title="name"
     item-value="id"
     hide-selected
     multiple
     no-filter
     v-model="tags"
+    :menu-props="{ maxWidth: 0 }"
   >
     <template #no-data>
       <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title>
-            No tags matching "
-            <strong>{{ search }}</strong
-            >"
-          </v-list-item-title>
-        </v-list-item-content>
+        <v-list-item-title>
+          No tags matching "
+          <strong>{{ search }}</strong
+          >"
+        </v-list-item-title>
       </v-list-item>
     </template>
-    <template #selection="{ item, index }">
-      <v-chip close @click:close="remove(index)">
-        <span v-if="item.tag_type">
-          <span v-if="!project">{{ item.project.name }}/</span>{{ item.tag_type.name }}/
+    <template #chip="{ item, props }">
+      <v-chip v-bind="props">
+        <span v-if="item.raw.tag_type">
+          <span v-if="!project">{{ item.raw.project.name }}/</span>{{ item.raw.tag_type.name }}/
         </span>
-        <a :href="item.uri" target="_blank" :title="item.description">
-          {{ item.name }}
+        <a :href="item.raw.uri" target="_blank" :title="item.raw.description">
+          {{ item.raw.name }}
         </a>
       </v-chip>
     </template>
-    <template #item="data">
-      <v-list-item-content>
+    <template #item="{ props, item }">
+      <v-list-item v-bind="props" :title="null">
         <v-list-item-title>
-          <span v-if="!project">{{ data.item.project.name }}/</span>{{ data.item.tag_type.name }}/{{
-            data.item.name
+          <span v-if="!project">{{ item.raw.project.name }}/</span>{{ item.raw.tag_type.name }}/{{
+            item.raw.name
           }}
         </v-list-item-title>
-        <v-list-item-subtitle style="width: 200px" class="text-truncate">
-          {{ data.item.description }}
+        <v-list-item-subtitle :title="item.raw.description">
+          {{ item.raw.description }}
         </v-list-item-subtitle>
-      </v-list-item-content>
+      </v-list-item>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
-        <v-list-item-content>
-          <v-list-item-subtitle> Load More </v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
   </v-combobox>
@@ -67,7 +64,7 @@ export default {
   name: "TagAutoComplete",
 
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -104,7 +101,7 @@ export default {
   computed: {
     tags: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         this.search = null
@@ -114,7 +111,7 @@ export default {
           }
           return true
         })
-        this.$emit("input", tags)
+        this.$emit("update:modelValue", tags)
       },
     },
   },
@@ -203,11 +200,6 @@ export default {
     getFilteredData: debounce(function () {
       this.fetchData()
     }, 500),
-    remove(index) {
-      const value = cloneDeep(this.value)
-      value.splice(index, 1)
-      this.$emit("input", value)
-    },
   },
 }
 </script>

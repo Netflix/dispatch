@@ -4,7 +4,7 @@
     <v-row align="center" justify="space-between" no-gutters>
       <delete-dialog />
       <v-col>
-        <div class="headline">Sources</div>
+        <div class="text-h5">Sources</div>
       </v-col>
       <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
@@ -13,25 +13,25 @@
     </v-row>
     <v-row no-gutters>
       <v-col>
-        <v-card elevation="0">
+        <v-card variant="flat">
           <v-card-title>
             <v-text-field
               v-model="q"
-              append-icon="search"
+              append-inner-icon="mdi-magnify"
               label="Search"
               single-line
               hide-details
               clearable
             />
           </v-card-title>
-          <v-data-table
+          <v-data-table-server
             :headers="headers"
             :items="items"
-            :server-items-length="total"
-            :page.sync="page"
-            :items-per-page.sync="itemsPerPage"
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="descending"
+            :items-length="total || 0"
+            v-model:page="page"
+            v-model:items-per-page="itemsPerPage"
+            v-model:sort-by="sortBy"
+            v-model:sort-desc="descending"
             :loading="loading"
             loading-text="Loading... Please wait"
           >
@@ -46,7 +46,7 @@
               </router-link>
             </template>
             <template #item.project.name="{ item }">
-              <v-chip small :color="item.project.color" text-color="white">
+              <v-chip size="small" :color="item.project.color">
                 {{ item.project.name }}
               </v-chip>
             </template>
@@ -56,7 +56,7 @@
               </span>
             </template>
             <template #item.source_data_format="{ item }">
-              <v-chip v-if="item.source_data_format" small dark>
+              <v-chip v-if="item.source_data_format" size="small">
                 {{ item.source_data_format.name }}
               </v-chip>
             </template>
@@ -68,13 +68,13 @@
             <template #item.owner="{ item }">
               <service-popover v-if="item.owner" :service="item.owner" />
             </template>
-            <template #item.data_last_loaded_at="{ item }">
-              {{ item.data_last_loaded_at | formatRelativeDate }}
+            <template #item.data_last_loaded_at="{ value }">
+              {{ formatRelativeDate(value) }}
             </template>
             <template #item.data-table-actions="{ item }">
-              <v-menu bottom left>
-                <template #activator="{ on }">
-                  <v-btn icon v-on="on">
+              <v-menu location="right" origin="overlap">
+                <template #activator="{ props }">
+                  <v-btn icon variant="text" v-bind="props">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>
                 </template>
@@ -88,7 +88,7 @@
                 </v-list>
               </v-menu>
             </template>
-          </v-data-table>
+          </v-data-table-server>
         </v-card>
       </v-col>
     </v-row>
@@ -98,6 +98,7 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+import { formatRelativeDate } from "@/filters"
 
 import DeleteDialog from "@/data/source/DeleteDialog.vue"
 import NewEditSheet from "@/data/source/NewEditSheet.vue"
@@ -118,21 +119,25 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", sortable: true },
-        { text: "Project", value: "project.name", sortable: false },
-        { text: "Environment", value: "source_environment.name", sortable: true },
-        { text: "Owner", value: "owner" },
-        { text: "Status", value: "source_status", sortable: true },
-        { text: "Type", value: "source_type", sortable: true },
-        { text: "Last Loaded", value: "data_last_loaded_at", sortable: true },
+        { title: "Name", value: "name", sortable: true },
+        { title: "Project", value: "project.name", sortable: false },
+        { title: "Environment", value: "source_environment.name", sortable: true },
+        { title: "Owner", value: "owner" },
+        { title: "Status", value: "source_status", sortable: true },
+        { title: "Type", value: "source_type", sortable: true },
+        { title: "Last Loaded", value: "data_last_loaded_at", sortable: true },
         {
-          text: "",
-          value: "data-table-actions",
+          title: "",
+          key: "data-table-actions",
           sortable: false,
           align: "end",
         },
       ],
     }
+  },
+
+  setup() {
+    return { formatRelativeDate }
   },
 
   computed: {

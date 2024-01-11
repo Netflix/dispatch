@@ -3,25 +3,23 @@
     :items="items"
     :label="label"
     :loading="loading"
-    :search-input.sync="search"
-    @update:search-input="getFilteredData()"
+    v-model:search="search"
+    @update:search="getFilteredData()"
     chips
-    deletable-chips
+    closable-chips
     hide-selected
-    item-text="text"
+    item-title="text"
     multiple
     no-filter
     v-model="terms"
   >
     <template #no-data>
       <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title>
-            No terms matching "
-            <strong>{{ search }}</strong
-            >". Press <kbd>enter</kbd> to create a new one.
-          </v-list-item-title>
-        </v-list-item-content>
+        <v-list-item-title>
+          No terms matching "
+          <strong>{{ search }}</strong
+          >". Press <kbd>enter</kbd> to create a new one.
+        </v-list-item-title>
       </v-list-item>
     </template>
   </v-combobox>
@@ -36,7 +34,7 @@ import TermApi from "@/term/api"
 export default {
   name: "TermCombobox",
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -62,7 +60,7 @@ export default {
   computed: {
     terms: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         this.search = null
@@ -72,7 +70,7 @@ export default {
           }
           return true
         })
-        this.$emit("input", terms)
+        this.$emit("update:modelValue", terms)
       },
     },
   },

@@ -2,48 +2,47 @@
   <v-row no-gutters align="center">
     <v-col cols="12" sm="11">
       <base-combobox
-        :value="value"
         :label="label"
         :api="signalEngagementApi"
         :project="project"
         v-model="engagements"
       >
-        <template #selection="{ attr, item, selected }">
-          <v-menu bottom right transition="scale-transition" origin="top left">
-            <template #activator="{ on }">
+        <template #selection="{ item, props: chipProps }">
+          <v-menu origin="overlap">
+            <template #activator="{ props: activatorProps }">
               <v-chip
-                v-bind="attr"
-                :input-value="selected"
+                v-bind="mergeProps(chipProps, activatorProps)"
                 pill
-                v-on="on"
-                close
                 @click:close="remove(item)"
               >
-                {{ item ? item.name : "Unknown" }}
+                {{ item ? item.title : "Unknown" }}
               </v-chip>
             </template>
             <v-card>
               <v-list dark>
                 <v-list-item>
-                  <v-list-item-avatar color="teal">
-                    <span class="white--text">{{ initials(item) }}</span>
-                  </v-list-item-avatar>
-                  <v-list-item-content>
-                    <v-list-item-title>{{ item ? item.name : "Unknown" }}</v-list-item-title>
-                    <v-list-item-subtitle>{{ item ? item.type : "Unknown" }}</v-list-item-subtitle>
-                  </v-list-item-content>
-                  <v-list-item-action>
-                    <v-btn icon>
+                  <template #prepend>
+                    <v-avatar color="teal">
+                      {{ initials(item) }}
+                    </v-avatar>
+                  </template>
+
+                  <v-list-item-title>{{ item ? item.name : "Unknown" }}</v-list-item-title>
+                  <v-list-item-subtitle>{{ item ? item.type : "Unknown" }}</v-list-item-subtitle>
+
+                  <template #append>
+                    <v-btn icon variant="text">
                       <v-icon>mdi-close-circle</v-icon>
                     </v-btn>
-                  </v-list-item-action>
+                  </template>
                 </v-list-item>
               </v-list>
               <v-list>
                 <v-list-item>
-                  <v-list-item-action>
+                  <template #prepend>
                     <v-icon>mdi-text-box</v-icon>
-                  </v-list-item-action>
+                  </template>
+
                   <v-list-item-subtitle>
                     {{ item ? item.description : "Unknown" }}
                   </v-list-item-subtitle>
@@ -55,16 +54,13 @@
       </base-combobox>
     </v-col>
     <v-col cols="12" sm="1">
-      <signal-engagement-create-dialog
-        v-model="createdItem"
-        :project="project"
-        :signalDefinition="signalDefinition"
-      />
+      <signal-engagement-create-dialog @save="createItem" />
     </v-col>
   </v-row>
 </template>
 
 <script>
+import { mergeProps } from "vue"
 import BaseCombobox from "@/components/BaseCombobox.vue"
 import SignalEngagementApi from "@/signal/engagement/api"
 import SignalEngagementCreateDialog from "@/signal/engagement/SignalEngagementCreateDialog.vue"
@@ -76,50 +72,44 @@ export default {
     SignalEngagementCreateDialog,
   },
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: () => [],
     },
     label: {
       type: String,
-      default: "Add Engagment(s)",
+      default: "Add Engagement(s)",
     },
     project: {
       type: Object,
       required: true,
     },
-    signalDefinition: {
-      type: Object,
-      required: false,
-    },
+  },
+  setup() {
+    return { mergeProps }
   },
   data() {
     return {
       signalEngagementApi: SignalEngagementApi,
-      createdItem: null,
       items: [],
     }
   },
   computed: {
     engagements: {
       get() {
-        return this.value
+        return this.modelValue
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
-    },
-  },
-
-  watch: {
-    createdItem: function (newVal) {
-      this.items.push(newVal)
-      this.engagements.push(newVal)
     },
   },
 
   methods: {
-    // ...
+    createItem(value) {
+      this.items.push(value)
+      this.engagements.push(value)
+    },
     initials(item) {
       if (!item) {
         return "Unknown"

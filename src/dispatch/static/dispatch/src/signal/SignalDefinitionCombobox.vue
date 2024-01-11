@@ -4,77 +4,69 @@
     :label="label"
     :loading="loading"
     :menu-props="{ maxHeight: '400' }"
-    :search-input.sync="search"
-    @update:search-input="getFilteredData({ q: $event })"
+    v-model:search="search"
+    @update:search="getFilteredData({ q: $event })"
     chips
     clearable
     close
-    deletable-chips
+    closable-chips
     hide-selected
-    item-text="name"
+    item-title="name"
     item-value="id"
     multiple
     no-filter
     v-model="signalDefinitions"
   >
-    <template #selection="{ attr, item, selected }">
-      <v-menu v-model="menu" bottom right transition="scale-transition" origin="top left">
-        <template #activator="{ on }">
-          <v-chip
-            v-bind="attr"
-            :input-value="selected"
-            pill
-            v-on="on"
-            close
-            @click:close="remove(item)"
-          >
-            {{ item.name }}
-          </v-chip>
+    <template #chip="{ item, props }">
+      <v-menu v-model="menu" origin="overlap">
+        <template #activator="{ props: menuProps }">
+          <v-chip v-bind="mergeProps(props, menuProps)" pill />
         </template>
         <v-card>
           <v-list dark>
             <v-list-item>
-              <v-list-item-avatar color="teal">
-                <span class="white--text">{{ item.name | initials }}</span>
-              </v-list-item-avatar>
-              <v-list-item-content>
-                <v-list-item-title>{{ item.name }}</v-list-item-title>
-                <v-list-item-subtitle>{{ item.type }}</v-list-item-subtitle>
-              </v-list-item-content>
-              <v-list-item-action>
-                <v-btn icon @click="menu = false">
+              <template #prepend>
+                <v-avatar color="teal">
+                  {{ initials(item.name) }}
+                </v-avatar>
+              </template>
+
+              <v-list-item-title>{{ item.name }}</v-list-item-title>
+              <v-list-item-subtitle>{{ item.type }}</v-list-item-subtitle>
+
+              <template #append>
+                <v-btn icon variant="text" @click="menu = false">
                   <v-icon>mdi-close-circle</v-icon>
                 </v-btn>
-              </v-list-item-action>
+              </template>
             </v-list-item>
           </v-list>
           <v-list>
             <v-list-item>
-              <v-list-item-action>
+              <template #prepend>
                 <v-icon>mdi-text-box</v-icon>
-              </v-list-item-action>
+              </template>
+
               <v-list-item-subtitle>{{ item.description }}</v-list-item-subtitle>
             </v-list-item>
           </v-list>
         </v-card>
       </v-menu>
     </template>
-    <template #item="{ item }">
-      <v-list-item-content>
-        <v-list-item-title>{{ item.name }}</v-list-item-title>
-        <v-list-item-subtitle style="width: 200px" class="text-truncate">
-          {{ item.description }}
+    <template #item="{ props, item }">
+      <v-list-item v-bind="props" :title="null">
+        <v-list-item-title>{{ item.raw.name }}</v-list-item-title>
+        <v-list-item-subtitle :title="item.raw.description">
+          {{ item.raw.description }}
         </v-list-item-subtitle>
-      </v-list-item-content>
+      </v-list-item>
     </template>
     <template #no-data>
       <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title>
-            No signal definition matching "
-            <strong>{{ search }}</strong>
-          </v-list-item-title>
-        </v-list-item-content>
+        <v-list-item-title>
+          No signal definition matching "
+          <strong>{{ search }}</strong>
+        </v-list-item-title>
       </v-list-item>
     </template>
   </v-combobox>
@@ -82,6 +74,8 @@
 
 <script>
 import { cloneDeep, debounce } from "lodash"
+import { initials } from "@/filters"
+import { mergeProps } from "vue"
 
 import SignalApi from "@/signal/api"
 import SearchUtils from "@/search/utils"
@@ -89,7 +83,7 @@ import SearchUtils from "@/search/utils"
 export default {
   name: "SignalDefinitionCombobox",
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -119,10 +113,14 @@ export default {
     }
   },
 
+  setup() {
+    return { initials, mergeProps }
+  },
+
   computed: {
     signalDefinitions: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
         this.search = null
@@ -132,15 +130,12 @@ export default {
           }
           return true
         })
-        this.$emit("input", signalDefinitions)
+        this.$emit("update:modelValue", signalDefinitions)
       },
     },
   },
 
   methods: {
-    remove(item) {
-      this.signalDefinitions.splice(this.signalDefinitions.indexOf(item), 1)
-    },
     fetchData() {
       this.error = null
       this.loading = "error"

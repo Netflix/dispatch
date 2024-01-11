@@ -3,12 +3,13 @@
     :items="items"
     :label="label"
     :loading="loading"
-    :search-input.sync="search"
-    @update:search-input="getFilteredData()"
+    v-model:search="search"
+    @update:search="getFilteredData()"
     chips
+    closable-chips
     clearable
     hide-selected
-    item-text="name"
+    item-title="name"
     item-value="id"
     multiple
     no-filter
@@ -16,33 +17,26 @@
   >
     <template #no-data>
       <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title>
-            No entities matching "
-            <strong>{{ search }}</strong
-            >"
-          </v-list-item-title>
-        </v-list-item-content>
+        <v-list-item-title>
+          No entities matching "<strong>{{ search }}</strong
+          >"
+        </v-list-item-title>
       </v-list-item>
     </template>
-    <template #selection="{ item, index }">
-      <v-chip close @click:close="entities.splice(index, 1)">
-        {{ item.entity_type.name }} / {{ item.value }}
-      </v-chip>
+    <template #chip="{ item, props }">
+      <v-chip v-bind="props"> {{ item.raw.entity_type.name }} / {{ item.raw.value }} </v-chip>
     </template>
     <template #item="data">
-      <v-list-item-content>
-        <v-list-item-title> {{ data.item.name }} </v-list-item-title>
-        <v-list-item-subtitle style="width: 200px" class="text-truncate">
-          {{ data.item.entity_type.name }}
+      <v-list-item v-bind="data.props" :title="null">
+        <v-list-item-title> {{ data.item.raw.value }} </v-list-item-title>
+        <v-list-item-subtitle :title="data.item.raw.entity_type.name">
+          {{ data.item.raw.entity_type.name }}
         </v-list-item-subtitle>
-      </v-list-item-content>
+      </v-list-item>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
-        <v-list-item-content>
-          <v-list-item-subtitle> Load More </v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
   </v-combobox>
@@ -58,21 +52,13 @@ export default {
   name: "EntityFilterCombobox",
 
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: () => [],
     },
     label: {
       type: String,
       default: "Add Entities",
-    },
-    model: {
-      type: String,
-      default: null,
-    },
-    modelId: {
-      type: Number,
-      default: null,
     },
     project: {
       type: Object,
@@ -93,10 +79,10 @@ export default {
   computed: {
     entities: {
       get() {
-        return this.value
+        return this.modelValue
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },

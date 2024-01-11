@@ -129,8 +129,10 @@ def create(*, db_session, task_in: TaskCreate) -> Task:
         db_session=db_session,
         source="Dispatch Core App",
         description=f"New incident task created by {creator.individual.name}",
+        individual_id=creator.individual.id,
         details={"weblink": task.weblink},
         incident_id=incident.id,
+        owner=creator.individual.name,
     )
 
     db_session.add(task)

@@ -2,70 +2,80 @@
   <v-container fluid>
     <v-row no-gutters>
       <v-col>
-        <div class="headline">Signals</div>
+        <div class="text-h5">Signals</div>
+      </v-col>
+      <v-col class="text-right">
+        <table-filter-dialog />
       </v-col>
     </v-row>
     <v-row no-gutters>
       <v-col>
-        <v-card elevation="0">
-          <v-data-table
+        <v-card variant="flat">
+          <!-- <v-card-title> -->
+          <!--   <v-text-field -->
+          <!--     v-model="q" -->
+          <!--     append-icon="search" -->
+          <!--     label="Search" -->
+          <!--     single-line -->
+          <!--     hide-details -->
+          <!--     clearable -->
+          <!--   /> -->
+          <!-- </v-card-title> -->
+          <v-data-table-server
             :headers="headers"
             :items="items"
-            :server-items-length="total"
-            :page.sync="page"
-            :items-per-page.sync="itemsPerPage"
+            :items-length="total || 0"
+            v-model:page="page"
+            v-model:items-per-page="itemsPerPage"
             :footer-props="{
               'items-per-page-options': [10, 25, 50, 100],
             }"
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="descending"
+            v-model:sort-by="sortBy"
+            v-model:sort-desc="descending"
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #item.case="{ item }">
-              <case-popover v-if="item.case" v-model="item.case" />
+            <template #item.case="{ value }">
+              <case-popover v-if="value" :value="value" />
             </template>
-            <template #item.signal="{ item }">
-              <signal-popover v-model="item.signal" />
+            <template #item.signal="{ value }">
+              <signal-popover :value="value" />
             </template>
-            <template #item.project.name="{ item }">
-              <v-chip small :color="item.project.color" text-color="white">
-                {{ item.project.name }}
+            <template #item.signal.project.name="{ item, value }">
+              <v-chip size="small" :color="item.signal.project.color">
+                {{ value }}
               </v-chip>
             </template>
-            <template #item.filter_action="{ item }">
+            <template #item.filter_action="{ value }">
               <v-chip
-                small
-                text-color="white"
+                size="small"
                 :color="
-                  item.filter_action === 'snooze'
-                    ? 'blue-accent-4'
-                    : item.filter_action === 'deduplicate'
-                    ? 'blue-accent-2'
-                    : ''
+                  {
+                    snooze: 'blue-accent-4',
+                    deduplicate: 'blue-accent-2',
+                  }[value]
                 "
               >
                 {{
-                  item.filter_action === "snooze"
-                    ? "Snoozed"
-                    : item.filter_action === "deduplicate"
-                    ? "Duplicate"
-                    : "Not Filtered"
+                  {
+                    snooze: "Snoozed",
+                    deduplicate: "Duplicate",
+                  }[value] || "Not Filtered"
                 }}
               </v-chip>
             </template>
-            <template #item.created_at="{ item }">
-              <v-tooltip bottom>
-                <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
+            <template #item.created_at="{ value }">
+              <v-tooltip location="bottom">
+                <template #activator="{ props }">
+                  <span v-bind="props">{{ formatRelativeDate(value) }}</span>
                 </template>
-                <span>{{ item.created_at | formatDate }}</span>
+                <span>{{ formatDate(value) }}</span>
               </v-tooltip>
             </template>
             <template #item.data-table-actions="{ item }">
-              <raw-signal-viewer v-model="item.raw" />
+              <raw-signal-viewer :value="item.raw" />
             </template>
-          </v-data-table>
+          </v-data-table-server>
         </v-card>
       </v-col>
     </v-row>
@@ -75,32 +85,39 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+import { formatRelativeDate, formatDate } from "@/filters"
 
-import RouterUtils from "@/router/utils"
-import SignalPopover from "@/signal/SignalPopover.vue"
 import CasePopover from "@/case/CasePopover.vue"
 import RawSignalViewer from "@/signal/RawSignalViewer.vue"
+import RouterUtils from "@/router/utils"
+import SignalPopover from "@/signal/SignalPopover.vue"
+import TableFilterDialog from "@/signal/TableFilterDialog.vue"
 
 export default {
   name: "SignalInstanceTable",
 
   components: {
-    SignalPopover,
     CasePopover,
     RawSignalViewer,
+    SignalPopover,
+    TableFilterDialog,
   },
 
   data() {
     return {
       headers: [
-        { text: "Case", value: "case", sortable: false },
-        { text: "Signal", value: "signal", sortable: false },
-        { text: "Project", value: "project.name", sortable: true },
-        { text: "Filter Action", value: "filter_action", sortable: true },
-        { text: "Created At", value: "created_at" },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Case", value: "case", sortable: false },
+        { title: "Signal Definition", value: "signal", sortable: false },
+        { title: "Filter Action", value: "filter_action", sortable: true },
+        { title: "Project", value: "signal.project.name", sortable: true },
+        { title: "Created At", value: "created_at" },
+        { title: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }
+  },
+
+  setup() {
+    return { formatRelativeDate, formatDate }
   },
 
   computed: {
@@ -108,14 +125,14 @@ export default {
       "instanceTable.loading",
       "instanceTable.options.descending",
       "instanceTable.options.filters",
+      "instanceTable.options.filters.signal",
       "instanceTable.options.itemsPerPage",
       "instanceTable.options.page",
-      "instanceTable.options.q",
+      // "instanceTable.options.q",
       "instanceTable.options.sortBy",
       "instanceTable.rows.items",
       "instanceTable.rows.total",
     ]),
-    ...mapFields("route", ["query"]),
     ...mapFields("auth", ["currentUser.projects"]),
 
     defaultUserProjects: {
@@ -137,7 +154,7 @@ export default {
   created() {
     this.filters = {
       ...this.filters,
-      ...RouterUtils.deserializeFilters(this.query),
+      ...RouterUtils.deserializeFilters(this.$route.query),
       project: this.defaultUserProjects,
     }
 
@@ -151,7 +168,15 @@ export default {
     )
 
     this.$watch(
-      (vm) => [vm.q, vm.sortBy, vm.itemsPerPage, vm.descending, vm.created_at, vm.project],
+      (vm) => [
+        // vm.q,
+        vm.sortBy,
+        vm.itemsPerPage,
+        vm.descending,
+        vm.created_at,
+        vm.project,
+        vm.signal,
+      ],
       () => {
         this.page = 1
         RouterUtils.updateURLFilters(this.filters)

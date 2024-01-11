@@ -1,79 +1,62 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
-    <v-card class="mx-auto ma-4" max-width="600" flat outlined :loading="loading">
+  <v-form @submit.prevent="register({ email, password })" v-slot="{ isValid }">
+    <v-card class="mx-auto ma-4" variant="outlined" max-width="600" flat :loading="loading">
       <v-card-title> Register </v-card-title>
       <v-card-text>
         <v-container>
           <v-row>
             <v-col cols="12" md="12">
-              <ValidationProvider name="Email" rules="required|email" immediate>
-                <v-text-field
-                  v-model="email"
-                  label="Email"
-                  slot-scope="{ errors, valid }"
-                  :error-messages="errors"
-                  :success="valid"
-                />
-              </ValidationProvider>
+              <v-text-field
+                v-model="email"
+                label="Email"
+                name="Email"
+                :rules="[rules.required, rules.email]"
+              />
             </v-col>
             <v-col cols="12" md="12">
-              <ValidationProvider name="Password" rules="required" immediate>
-                <v-text-field
-                  v-model="password"
-                  :type="'password'"
-                  label="Password"
-                  slot-scope="{ errors, valid }"
-                  :error-messages="errors"
-                  :success="valid"
-                />
-              </ValidationProvider>
+              <v-text-field
+                v-model="password"
+                type="password"
+                label="Password"
+                name="Password"
+                :rules="[rules.required]"
+              />
             </v-col>
           </v-row>
         </v-container>
       </v-card-text>
       <v-card-actions>
-        <v-list-item two-line>
-          <v-list-item-content>
-            <v-list-item-subtitle>
-              Have a account? <router-link :to="{ name: 'BasicLogin' }"> Login </router-link>
-            </v-list-item-subtitle>
-          </v-list-item-content>
-          <v-row align="center" justify="end">
-            <v-btn
-              color="info"
-              :loading="loading"
-              :disabled="invalid || !validated"
-              @click="register({ email: email, password: password })"
-            >
-              Register
-              <template #loader>
-                <v-progress-linear indeterminate color="white" />
-              </template>
-            </v-btn>
-          </v-row>
-        </v-list-item>
+        <div class="text-subheader-2 pl-4 text-medium-emphasis">
+          Have an account? <router-link :to="{ name: 'BasicLogin' }"> Login </router-link>
+        </div>
+        <v-spacer />
+        <v-btn
+          type="submit"
+          variant="elevated"
+          color="info"
+          :loading="loading"
+          :disabled="!isValid.value"
+        >
+          Register
+          <template #loader>
+            <v-progress-linear indeterminate color="white" />
+          </template>
+        </v-btn>
       </v-card-actions>
     </v-card>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
+import { required, email } from "@/util/form"
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
-import { required, email } from "vee-validate/dist/rules"
-
-extend("email", email)
-
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
 
 export default {
-  components: {
-    ValidationProvider,
-    ValidationObserver,
+  setup() {
+    return {
+      rules: { required, email },
+    }
   },
   data() {
     return {

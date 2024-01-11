@@ -3,45 +3,36 @@
     :items="items"
     :label="label"
     :loading="loading"
-    :search-input.sync="search"
-    @update:search-input="getFilteredData()"
-    deletable-chips
+    v-model:search="search"
+    @update:search="getFilteredData()"
+    closable-chips
     hide-selected
-    item-text="name"
+    item-title="name"
     item-value="id"
     no-filter
     v-model="incident_cost_type"
   >
     <template #no-data>
       <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title>
-            No cost types matching "
-            <strong>{{ search }}</strong
-            >"
-          </v-list-item-title>
-        </v-list-item-content>
+        <v-list-item-title>
+          No cost types matching "<strong>{{ search }}</strong
+          >"
+        </v-list-item-title>
       </v-list-item>
     </template>
     <template #item="data">
-      <v-list-item-content>
+      <v-list-item v-bind="data.props" :title="null">
         <v-list-item-title>
-          <div>
-            {{ data.item.name }}
-          </div>
+          {{ data.item.raw.name }}
         </v-list-item-title>
-        <v-list-item-subtitle>
-          <div style="width: 200px" class="text-truncate">
-            {{ data.item.description }}
-          </div>
+        <v-list-item-subtitle :title="data.item.raw.description">
+          {{ data.item.raw.description }}
         </v-list-item-subtitle>
-      </v-list-item-content>
+      </v-list-item>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
-        <v-list-item-content>
-          <v-list-item-subtitle> Load More </v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
   </v-combobox>
@@ -57,7 +48,7 @@ export default {
   name: "IncidentCostTypeCombobox",
 
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -81,10 +72,10 @@ export default {
   computed: {
     incident_cost_type: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },

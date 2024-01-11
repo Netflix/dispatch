@@ -3,21 +3,19 @@
     v-model="project"
     :items="items"
     :menu-props="{ maxHeight: '400' }"
-    label="Project"
-    item-text="name"
+    item-title="name"
+    variant="outlined"
     return-object
     hide-details
     :loading="loading"
-    outlined
-    dense
+    density="compact"
   >
-    <template #item="data">
-      <v-list-item-content>
-        <v-list-item-title>{{ data.item.name }}</v-list-item-title>
-        <v-list-item-subtitle style="width: 200px" class="text-truncate">
-          {{ data.item.description }}
+    <template #item="{ item: { raw: item }, props }">
+      <v-list-item v-bind="props">
+        <v-list-item-subtitle :title="item.description">
+          {{ item.description }}
         </v-list-item-subtitle>
-      </v-list-item-content>
+      </v-list-item>
     </template>
   </v-autocomplete>
 </template>
@@ -29,7 +27,7 @@ export default {
   name: "ProjectMenuSelect",
 
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -47,10 +45,10 @@ export default {
   computed: {
     project: {
       get() {
-        return this.value
+        return this.modelValue
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },

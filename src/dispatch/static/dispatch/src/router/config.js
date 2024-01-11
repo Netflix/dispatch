@@ -27,14 +27,9 @@ if (registrationEnabled) {
 
 export const publicRoute = [
   {
-    path: "*",
-    meta: { title: "Dispatch" },
-    component: () => import("@/views/error/NotFound.vue"),
-  },
-  {
     path: "/:organization/auth/",
     component: BasicLayout,
-    meta: { title: "Auth", icon: "view_compact", group: "auth" },
+    meta: { title: "Auth", icon: "mdi-view-comfy-outline", group: "auth" },
     children: authPages,
   },
   {
@@ -51,12 +46,17 @@ export const publicRoute = [
   },
   {
     path: "/implicit/callback",
-    name: "PKCEImplicityCallback",
+    name: "PKCEImplicitlyCallback",
     meta: { requiresAuth: true },
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    meta: { title: "Dispatch" },
+    component: () => import("@/views/error/NotFound.vue"),
   },
 ]
 
-// NOTE: The order in which routes are added to the list matters when evaluated. For example, /incidents/report will take precendence over /incidents/:name.
+// NOTE: The order in which routes are added to the list matters when evaluated. For example, /incidents/report will take precedence over /incidents/:name.
 export const protectedRoute = [
   {
     path: "/",
@@ -136,7 +136,7 @@ export const protectedRoute = [
       name: "incidents",
       meta: {
         title: "Incidents",
-        icon: "mdi-file-multiple",
+        icon: "mdi-lock-open-alert-outline",
         group: "incidents",
         requiresAuth: true,
         menu: true,
@@ -194,13 +194,27 @@ export const protectedRoute = [
           component: () => import("@/case/Table.vue"),
           children: [
             {
-              path: "/:organization/cases/:name",
+              path: "/:organization/cases/:name/edit",
               name: "CaseTableEdit",
               component: () => import("@/case/EditSheet.vue"),
               props: true,
               meta: {
                 showEditSheet: true,
               },
+            },
+          ],
+        },
+        {
+          path: "/:organization/cases/:name",
+          name: "CasePage",
+          meta: { title: "Page" },
+          component: () => import("@/case/Page.vue"),
+          children: [
+            {
+              path: "signal/:signal_id",
+              name: "SignalDetails",
+              component: () => import("@/case/Page.vue"), // Use the same component to avoid re-render
+              props: true,
             },
           ],
         },
@@ -279,6 +293,27 @@ export const protectedRoute = [
           name: "TaskTable",
           meta: { title: "List" },
           component: () => import("@/task/Table.vue"),
+        },
+      ],
+    },
+    {
+      path: "forms",
+      component: DefaultLayout,
+      name: "forms",
+      meta: {
+        title: "Forms",
+        icon: "mdi-file-document-outline",
+        group: "forms",
+        menu: true,
+        requiresAuth: true,
+      },
+      redirect: { name: "FormsTable" },
+      children: [
+        {
+          path: "/:organization/forms",
+          name: "FormsTable",
+          meta: { title: "Forms" },
+          component: () => import("@/forms/table/Table.vue"),
         },
       ],
     },
@@ -401,6 +436,12 @@ export const protectedRoute = [
             name: "IncidentRolesTable",
             meta: { title: "Roles", subMenu: "project", group: "incident" },
             component: () => import("@/incident_role/Table.vue"),
+          },
+          {
+            path: "incidentFormTypes",
+            name: "IncidentFormTypesTable",
+            meta: { title: "Form Types", subMenu: "project", group: "incident" },
+            component: () => import("@/forms/types/Table.vue"),
           },
           {
             path: "caseTypes",
@@ -531,7 +572,7 @@ export const protectedRoute = [
       component: DefaultLayout,
       meta: {
         title: "Search",
-        icon: "view_compact",
+        icon: "mdi-view-comfy-outline",
         group: "search",
         noMenu: true,
         requiresAuth: true,

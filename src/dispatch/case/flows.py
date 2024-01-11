@@ -36,7 +36,7 @@ from .service import get
 log = logging.getLogger(__name__)
 
 
-def get_case_participants(case: Case, db_session: SessionLocal):
+def get_case_participants_flow(case: Case, db_session: SessionLocal):
     """Get additional case participants based on priority, type and description."""
     individual_contacts = []
     team_contacts = []
@@ -187,7 +187,7 @@ def case_new_create_flow(
     ticket_flows.create_case_ticket(case=case, db_session=db_session)
 
     # we resolve participants
-    individual_participants, team_participants = get_case_participants(
+    individual_participants, team_participants = get_case_participants_flow(
         case=case, db_session=db_session
     )
 
@@ -202,6 +202,9 @@ def case_new_create_flow(
         create_all_resources=create_all_resources,
     )
 
+    db_session.add(case)
+    db_session.commit()
+
     if case.case_priority.page_assignee:
         if not service_id:
             if case.case_type.oncall_service:
@@ -210,22 +213,21 @@ def case_new_create_flow(
                 log.warning(
                     "Case assignee not paged. No relationship between case type and an oncall service."
                 )
-        else:
-            oncall_plugin = plugin_service.get_active_instance(
-                db_session=db_session, project_id=case.project.id, plugin_type="oncall"
-            )
-            if oncall_plugin:
-                oncall_plugin.instance.page(
-                    service_id=service_id,
-                    incident_name=case.name,
-                    incident_title=case.title,
-                    incident_description=case.description,
-                )
-            else:
-                log.warning("Case assignee not paged. No plugin of type oncall enabled.")
+                return case
 
-    db_session.add(case)
-    db_session.commit()
+        oncall_plugin = plugin_service.get_active_instance(
+            db_session=db_session, project_id=case.project.id, plugin_type="oncall"
+        )
+        if oncall_plugin:
+            oncall_plugin.instance.page(
+                service_id=service_id,
+                incident_name=case.name,
+                incident_title=case.title,
+                incident_description=case.description,
+            )
+        else:
+            log.warning("Case assignee not paged. No plugin of type oncall enabled.")
+            return case
 
     return case
 

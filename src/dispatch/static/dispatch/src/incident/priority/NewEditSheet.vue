@@ -1,161 +1,145 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
-    <v-navigation-drawer v-model="showCreateEdit" app clipped right width="500">
+  <v-form @submit.prevent v-slot="{ isValid }">
+    <v-navigation-drawer v-model="showCreateEdit" location="right" width="500">
       <template #prepend>
-        <v-list-item two-line>
-          <v-list-item-content>
-            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
-            <v-list-item-title v-else class="title"> New </v-list-item-title>
-            <v-list-item-subtitle>Incident Priority</v-list-item-subtitle>
-          </v-list-item-content>
-          <v-btn
-            icon
-            color="info"
-            :loading="loading"
-            :disabled="invalid || !validated"
-            @click="save()"
-          >
-            <v-icon>save</v-icon>
-          </v-btn>
-          <v-btn icon color="secondary" @click="closeCreateEdit()">
-            <v-icon>close</v-icon>
-          </v-btn>
+        <v-list-item lines="two">
+          <v-list-item-title v-if="id" class="text-h6"> Edit </v-list-item-title>
+          <v-list-item-title v-else class="text-h6"> New </v-list-item-title>
+          <v-list-item-subtitle>Incident Priority</v-list-item-subtitle>
+
+          <template #append>
+            <v-btn
+              icon
+              variant="text"
+              color="info"
+              :loading="loading"
+              :disabled="!isValid.value"
+              @click="save()"
+            >
+              <v-icon>mdi-content-save</v-icon>
+            </v-btn>
+            <v-btn icon variant="text" color="secondary" @click="closeCreateEdit()">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </template>
         </v-list-item>
       </template>
-      <v-card flat>
+      <v-card>
         <v-card-text>
-          <v-container grid-list-md>
-            <v-layout wrap>
-              <v-flex xs12>
-                <span class="subtitle-2">Details</span>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="Name" rules="required" immediate>
-                  <v-text-field
-                    v-model="name"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Name"
-                    hint="A name for your incident priority."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="Description" rules="required" immediate>
-                  <v-textarea
-                    v-model="description"
-                    slot-scope="{ errors, valid }"
-                    label="Description"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="A description for your incident priority."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="View Order" rules="required" immediate>
-                  <v-text-field
-                    v-model="view_order"
-                    slot-scope="{ errors, valid }"
-                    label="View Order"
-                    :error-messages="errors"
-                    :success="valid"
-                    type="number"
-                    hint="Enter a value to indicate the order in which you want this priority to be shown in a list (lowest numbers are shown first)."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="Tactical Report Reminder" rules="required" immediate>
-                  <v-text-field
-                    v-model="tactical_report_reminder"
-                    slot-scope="{ errors, valid }"
-                    label="Tactical Report Reminder"
-                    :error-messages="errors"
-                    :success="valid"
-                    type="number"
-                    hint="Number of hours to send a tactical report reminder to the incident commander."
-                    clearable
-                    required
-                    min="1"
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="Executive Report Reminder" rules="required" immediate>
-                  <v-text-field
-                    v-model="executive_report_reminder"
-                    slot-scope="{ errors, valid }"
-                    label="Executive Report Reminder"
-                    :error-messages="errors"
-                    :success="valid"
-                    type="number"
-                    hint="Number of hours to send an executive report reminder to the incident commander."
-                    clearable
-                    required
-                    min="1"
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
+                <span class="text-subtitle-2">Details</span>
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="name"
+                  label="Name"
+                  hint="A name for your incident priority."
+                  clearable
+                  required
+                  name="Name"
+                  :rules="[rules.required]"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-textarea
+                  v-model="description"
+                  label="Description"
+                  hint="A description for your incident priority."
+                  clearable
+                  required
+                  name="Description"
+                  :rules="[rules.required]"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="view_order"
+                  label="View Order"
+                  type="number"
+                  hint="Enter a value to indicate the order in which you want this priority to be shown in a list (lowest numbers are shown first)."
+                  clearable
+                  required
+                  name="View Order"
+                  :rules="[rules.required]"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="tactical_report_reminder"
+                  label="Tactical Report Reminder"
+                  type="number"
+                  hint="Number of hours to send a tactical report reminder to the incident commander."
+                  clearable
+                  required
+                  min="1"
+                  name="Tactical Report Reminder"
+                  :rules="[rules.required]"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="executive_report_reminder"
+                  label="Executive Report Reminder"
+                  type="number"
+                  hint="Number of hours to send an executive report reminder to the incident commander."
+                  clearable
+                  required
+                  min="1"
+                  name="Executive Report Reminder"
+                  :rules="[rules.required]"
+                />
+              </v-col>
+              <v-col cols="12">
                 <v-checkbox
                   v-model="page_commander"
                   label="Page Commander"
                   hint="Would you like Dispatch to page the incident commander on incident creation?"
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <color-picker-input label="Color" v-model="color" />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-checkbox
                   v-model="default_incident_priority"
                   label="Default Incident Priority"
                   hint="Check if this incident priority should be the default."
                 />
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+              <v-col cols="12">
                 <v-checkbox
                   v-model="enabled"
                   label="Enabled"
                   hint="Determines whether this incident priority is availible for new incidents."
                 />
-              </v-flex>
-            </v-layout>
+              </v-col>
+            </v-row>
           </v-container>
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
+import { required } from "@/util/form"
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
-import { required } from "vee-validate/dist/rules"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 
 import ColorPickerInput from "@/components/ColorPickerInput.vue"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "IncidentPriorityNewEditSheet",
 
   components: {
     ColorPickerInput,
-    ValidationObserver,
-    ValidationProvider,
   },
 
   data() {
@@ -181,7 +165,6 @@ export default {
     ...mapFields("incident_priority", {
       default_incident_priority: "selected.default",
     }),
-    ...mapFields("route", ["query"]),
   },
 
   methods: {
@@ -189,8 +172,8 @@ export default {
   },
 
   created() {
-    if (this.query.project) {
-      this.project = { name: this.query.project }
+    if (this.$route.query.project) {
+      this.project = { name: this.$route.query.project }
     }
   },
 }

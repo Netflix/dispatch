@@ -19,7 +19,7 @@ export default {
   name: "IncidentMeanResponseTimeCard",
 
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -50,7 +50,7 @@ export default {
   computed: {
     series() {
       let series = { name: "Mean Response Time", data: [] }
-      forEach(this.value, function (value) {
+      forEach(this.modelValue, function (value) {
         // we filter out active incidents
         value = value.filter((v) => v.status !== "Active")
 
@@ -79,7 +79,7 @@ export default {
           },
         },
         xaxis: {
-          categories: Object.keys(this.value) || [],
+          categories: Object.keys(this.modelValue) || [],
           title: {
             text: this.interval,
           },

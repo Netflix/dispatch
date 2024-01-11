@@ -4,7 +4,7 @@
       <new-edit-sheet />
       <delete-dialog />
       <v-col>
-        <div class="headline">Tasks</div>
+        <div class="text-h5">Tasks</div>
       </v-col>
       <v-spacer />
       <v-col class="text-right">
@@ -15,29 +15,30 @@
     </v-row>
     <v-row no-gutters>
       <v-col>
-        <v-card elevation="0">
+        <v-card variant="flat">
           <v-card-title>
             <v-text-field
               v-model="q"
-              append-icon="search"
+              append-inner-icon="mdi-magnify"
               label="Search"
               single-line
               hide-details
               clearable
             />
           </v-card-title>
-          <v-data-table
+          <v-data-table-server
             :headers="headers"
             :items="items"
-            :server-items-length="total"
-            :page.sync="page"
-            :items-per-page.sync="itemsPerPage"
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="descending"
+            :items-length="total || 0"
+            v-model:page="page"
+            v-model:items-per-page="itemsPerPage"
+            v-model:sort-by="sortBy"
+            v-model:sort-desc="descending"
             v-model="selected"
             :loading="loading"
             loading-text="Loading... Please wait"
             show-select
+            return-object
           >
             <template #item.description="{ item }">
               <div class="text-truncate" style="max-width: 400px">
@@ -45,7 +46,7 @@
               </div>
             </template>
             <template #item.project.name="{ item }">
-              <v-chip small :color="item.project.color" text-color="white">
+              <v-chip size="small" :color="item.project.color">
                 {{ item.project.name }}
               </v-chip>
             </template>
@@ -69,39 +70,39 @@
               />
             </template>
             <template #item.resolve_by="{ item }">
-              <v-tooltip bottom>
-                <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ item.resolve_by | formatRelativeDate }}</span>
+              <v-tooltip location="bottom">
+                <template #activator="{ props }">
+                  <span v-bind="props">{{ formatRelativeDate(item.resolve_by) }}</span>
                 </template>
-                <span>{{ item.resolve_by | formatDate }}</span>
+                <span>{{ formatDate(item.resolve_by) }}</span>
               </v-tooltip>
             </template>
             <template #item.created_at="{ item }">
-              <v-tooltip bottom>
-                <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
+              <v-tooltip location="bottom">
+                <template #activator="{ props }">
+                  <span v-bind="props">{{ formatRelativeDate(item.created_at) }}</span>
                 </template>
-                <span>{{ item.created_at | formatDate }}</span>
+                <span>{{ formatDate(item.created_at) }}</span>
               </v-tooltip>
             </template>
             <template #item.resolved_at="{ item }">
-              <v-tooltip bottom>
-                <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ item.resolved_at | formatRelativeDate }}</span>
+              <v-tooltip location="bottom">
+                <template #activator="{ props }">
+                  <span v-bind="props">{{ formatRelativeDate(item.resolved_at) }}</span>
                 </template>
-                <span>{{ item.resolved_at | formatDate }}</span>
+                <span>{{ formatDate(item.resolved_at) }}</span>
               </v-tooltip>
             </template>
             <template #item.source="{ item }">
               <a :href="item.weblink" target="_blank" style="text-decoration: none">
                 {{ item.source }}
-                <v-icon small>open_in_new</v-icon>
+                <v-icon size="small">mdi-open-in-new</v-icon>
               </a>
             </template>
             <template #item.data-table-actions="{ item }">
-              <v-menu bottom left>
-                <template #activator="{ on }">
-                  <v-btn icon v-on="on">
+              <v-menu location="right" origin="overlap">
+                <template #activator="{ props }">
+                  <v-btn icon variant="text" v-bind="props">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>
                 </template>
@@ -112,7 +113,7 @@
                 </v-list>
               </v-menu>
             </template>
-          </v-data-table>
+          </v-data-table-server>
         </v-card>
       </v-col>
     </v-row>
@@ -123,6 +124,7 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+import { formatRelativeDate, formatDate } from "@/filters"
 
 import BulkEditSheet from "@/task/BulkEditSheet.vue"
 import DeleteDialog from "@/task/DeleteDialog.vue"
@@ -149,22 +151,26 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Incident Name", value: "incident.name", sortable: true },
-        { text: "Incident Priority", value: "incident_priority.name", sortable: true },
-        { text: "Incident Type", value: "incident_type.name", sortable: true },
-        { text: "Status", value: "status", sortable: true },
-        { text: "Creator", value: "creator.individual_contact.name", sortable: true },
-        { text: "Owner", value: "owner.individual_contact.name", sortable: true },
-        { text: "Assignees", value: "assignees", sortable: false },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Source", value: "source", sortable: true },
-        { text: "Project", value: "project.name", sortable: true },
-        { text: "Due By", value: "resolve_by", sortable: true },
-        { text: "Created At", value: "created_at", sortable: true },
-        { text: "Resolved At", value: "resolved_at", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Incident Name", value: "incident.name", sortable: true },
+        { title: "Incident Priority", value: "incident_priority.name", sortable: true },
+        { title: "Incident Type", value: "incident_type.name", sortable: true },
+        { title: "Status", value: "status", sortable: true },
+        { title: "Creator", value: "creator.individual_contact.name", sortable: true },
+        { title: "Owner", value: "owner.individual_contact.name", sortable: true },
+        { title: "Assignees", value: "assignees", sortable: false },
+        { title: "Description", value: "description", sortable: false },
+        { title: "Source", value: "source", sortable: true },
+        { title: "Project", value: "project.name", sortable: true },
+        { title: "Due By", value: "resolve_by", sortable: true },
+        { title: "Created At", value: "created_at", sortable: true },
+        { title: "Resolved At", value: "resolved_at", sortable: true },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
+  },
+
+  setup() {
+    return { formatRelativeDate, formatDate }
   },
 
   computed: {
@@ -188,7 +194,6 @@ export default {
       "table.rows.total",
       "table.rows.selected",
     ]),
-    ...mapFields("route", ["query"]),
     ...mapFields("auth", ["currentUser.projects"]),
 
     defaultUserProjects: {
@@ -210,7 +215,7 @@ export default {
   created() {
     this.filters = {
       ...this.filters,
-      ...RouterUtils.deserializeFilters(this.query),
+      ...RouterUtils.deserializeFilters(this.$route.query),
       project: this.defaultUserProjects,
     }
 

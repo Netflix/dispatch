@@ -2,22 +2,20 @@
   <v-dialog v-model="showRun" persistent max-width="800px">
     <v-card>
       <v-card-title>
-        <span class="headline">Run Workflow</span>
+        <span class="text-h5">Run Workflow</span>
       </v-card-title>
       <span v-if="id">
         <v-card-text>
           <v-row dense>
             <v-col cols="12">
-              <v-card outlined elevation="0">
-                <v-list-item two-line>
-                  <v-list-item-content>
-                    <v-list-item-title class="text-h6"> Workflow Details </v-list-item-title>
-                    <v-list-item-subtitle
-                      >{{ workflow.name }} - {{ workflow.resource_id }}</v-list-item-subtitle
-                    >
-                  </v-list-item-content>
+              <v-card>
+                <v-list-item lines="two">
+                  <v-list-item-title class="text-h6"> Workflow Details </v-list-item-title>
+                  <v-list-item-subtitle
+                    >{{ workflow.name }} - {{ workflow.resource_id }}</v-list-item-subtitle
+                  >
                 </v-list-item>
-                <v-list class="transparent">
+                <v-list class="bg-transparent">
                   <v-list-item>
                     <v-list-item-title>Status</v-list-item-title>
                     <v-list-item-subtitle class="text-right">
@@ -37,7 +35,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn color="blue en-1" text @click="closeRun()"> Close </v-btn>
+          <v-btn color="blue en-1" variant="text" @click="closeRun()"> Close </v-btn>
         </v-card-actions>
       </span>
       <span v-else>
@@ -55,8 +53,8 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn color="blue en-1" text @click="closeRun()"> Cancel </v-btn>
-          <v-btn color="red en-1" text :loading="loading" @click="run()"> Run </v-btn>
+          <v-btn color="blue en-1" variant="text" @click="closeRun()"> Cancel </v-btn>
+          <v-btn color="red en-1" variant="text" :loading="loading" @click="run()"> Run </v-btn>
         </v-card-actions>
       </span>
     </v-card>
@@ -70,14 +68,6 @@ import WorkflowSelect from "@/workflow/WorkflowSelect.vue"
 import WorkflowParametersInput from "@/workflow/WorkflowParametersInput.vue"
 export default {
   name: "WorkflowRunModal",
-  props: {
-    value: {
-      type: Object,
-      default: function () {
-        return {}
-      },
-    },
-  },
 
   data() {
     return {}

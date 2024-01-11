@@ -1,16 +1,23 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
-    <v-card class="mx-auto ma-4" max-width="600" flat outlined :loading="loading">
+  <v-form ref="form" @submit.prevent>
+    <v-card
+      class="mx-auto ma-4"
+      max-width="600"
+      variant="outlined"
+      title="          Open a Case"
+      :loading="loading"
+    >
+      <template #append>
+        <v-tooltip location="bottom">
+          <template #activator="{ props }">
+            <v-btn icon variant="text" v-bind="props" @click="copyView">
+              <v-icon>mdi-content-copy</v-icon>
+            </v-btn>
+          </template>
+          <span>Copy current fields as template.</span>
+        </v-tooltip>
+      </template>
       <v-card-text>
-        <p class="display-1 text--primary">
-          Open a Case
-          <v-tooltip bottom>
-            <template #activator="{ on }">
-              <v-btn icon v-on="on" @click="copyView"><v-icon>mdi-content-copy</v-icon></v-btn>
-            </template>
-            <span>Copy current fields as template.</span>
-          </v-tooltip>
-        </p>
         <p>
           Cases are meant to triage events that do not raise to the level of incidents, but can be
           escalated to incidents if necessary. If you suspect a security issue and need help, please
@@ -21,101 +28,95 @@
           please check out the following FAQ document:
           <a :href="project_faq.weblink" target="_blank" style="text-decoration: none">
             {{ project_faq.name }}
-            <v-icon small>open_in_new</v-icon>
+            <v-icon size="small">mdi-open-in-new</v-icon>
           </a>
         </p>
-        <v-form>
-          <v-container grid-list-md>
-            <v-layout wrap>
-              <v-flex xs12>
-                <ValidationProvider name="Title" rules="required" immediate>
-                  <v-textarea
-                    v-model="title"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Title"
-                    hint="A brief explanatory title. You can change this later."
-                    clearable
-                    auto-grow
-                    rows="2"
-                    required
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="Description" rules="required" immediate>
-                  <v-textarea
-                    v-model="description"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Description"
-                    hint="A summary of what you know so far. It's all right if this is incomplete."
-                    clearable
-                    auto-grow
-                    rows="3"
-                    required
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
-                <project-select v-model="project" />
-              </v-flex>
-              <v-flex xs12>
-                <case-type-select :project="project" v-model="case_type" />
-              </v-flex>
-              <v-flex xs12>
-                <case-priority-select :project="project" v-model="case_priority" />
-              </v-flex>
-              <v-flex xs12>
-                <tag-filter-auto-complete :project="project" v-model="tags" label="Tags" />
-              </v-flex>
-            </v-layout>
-            <template>
-              <v-btn
-                color="info"
-                depressed
-                :loading="loading"
-                :disabled="invalid || !validated"
-                @click="report()"
-              >
-                Submit
-                <template #loader>
-                  <v-progress-linear indeterminate color="white" />
-                </template>
-              </v-btn>
-            </template>
-          </v-container>
-        </v-form>
+        <v-container>
+          <v-row>
+            <v-col cols="12">
+              <v-textarea
+                v-model="title"
+                label="Title"
+                hint="A brief explanatory title. You can change this later."
+                clearable
+                auto-grow
+                rows="2"
+                required
+                name="Title"
+                :rules="[rules.required]"
+              />
+            </v-col>
+            <v-col cols="12">
+              <v-textarea
+                v-model="description"
+                label="Description"
+                hint="A summary of what you know so far. It's all right if this is incomplete."
+                clearable
+                auto-grow
+                rows="3"
+                required
+                name="Description"
+                :rules="[rules.required]"
+              />
+            </v-col>
+            <v-col cols="12">
+              <project-select v-model="project" />
+            </v-col>
+            <v-col cols="12">
+              <case-type-select :project="project" v-model="case_type" />
+            </v-col>
+            <v-col cols="12">
+              <case-priority-select :project="project" v-model="case_priority" />
+            </v-col>
+            <v-col cols="12">
+              <tag-filter-auto-complete :project="project" v-model="tags" label="Tags" />
+            </v-col>
+          </v-row>
+        </v-container>
       </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn
+          color="info"
+          variant="flat"
+          block
+          :loading="loading"
+          :disabled="!formIsValid"
+          @click="report()"
+        >
+          Submit
+          <template #loader>
+            <v-progress-linear indeterminate color="white" />
+          </template>
+        </v-btn>
+      </v-card-actions>
     </v-card>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
+import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
-import { required } from "vee-validate/dist/rules"
+
 import router from "@/router"
 import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import DocumentApi from "@/document/api"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
-
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
+import SearchUtils from "@/search/utils"
+import CaseTypeApi from "@/case/type/api"
 
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "ReportSubmissionCard",
 
   components: {
-    ValidationProvider,
-    ValidationObserver,
     CaseTypeSelect,
     CasePrioritySelect,
     ProjectSelect,
@@ -126,6 +127,12 @@ export default {
     return {
       isSubmitted: false,
       project_faq: null,
+      formIsValid: false,
+      titleValid: false,
+      descriptionValid: false,
+      projectValid: false,
+      caseTypeValid: false,
+      casePriorityValid: false,
     }
   },
 
@@ -144,7 +151,17 @@ export default {
       "selected.project",
       "selected.id",
     ]),
-    ...mapFields("route", ["query"]),
+  },
+
+  watch: {
+    title() {
+      this.titleValid = !!this.title
+      this.checkFormValidity()
+    },
+    description() {
+      this.descriptionValid = !!this.description
+      this.checkFormValidity()
+    },
   },
 
   methods: {
@@ -175,7 +192,7 @@ export default {
     },
     copyView: function () {
       let store = this.$store
-      this.$copyText(window.location).then(
+      navigator.clipboard.writeText(window.location).then(
         function () {
           store.commit(
             "notification_backend/addBeNotification",
@@ -197,20 +214,48 @@ export default {
         }
       )
     },
+    checkFormValidity() {
+      this.formIsValid = this.titleValid && this.descriptionValid
+    },
     ...mapActions("case_management", ["report", "get", "resetSelected"]),
   },
 
   created() {
-    if (this.query.project) {
-      this.project = { name: this.query.project }
+    if (this.$route.query.project) {
+      this.project = { name: this.$route.query.project }
     }
 
-    if (this.query.case_type) {
-      this.case_type = { name: this.query.case_type }
+    if (this.$route.query.case_type) {
+      let filterOptions = {
+        q: "",
+        sortBy: ["name"],
+        descending: [false],
+        itemsPerPage: this.numItems,
+      }
+
+      if (this.project) {
+        filterOptions = {
+          filters: {
+            project: [this.project],
+            name: [this.$route.query.case_type],
+            enabled: ["true"],
+          },
+          ...filterOptions,
+        }
+      }
+
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+      CaseTypeApi.getAll(filterOptions).then((response) => {
+        if (response.data.items.length > 0) {
+          this.case_type = response.data.items[0]
+        } else {
+          this.case_type = this.$route.query.case_type
+        }
+      })
     }
 
-    if (this.query.case_priority) {
-      this.case_priority = { name: this.query.case_priority }
+    if (this.$route.query.case_priority) {
+      this.case_priority = { name: this.$route.query.case_priority }
     }
 
     this.getFAQ()
@@ -236,13 +281,13 @@ export default {
       }
     )
 
-    if (this.query.tag) {
-      if (Array.isArray(this.query.tag)) {
-        this.tags = this.query.tag.map(function (t) {
+    if (this.$route.query.tag) {
+      if (Array.isArray(this.$route.query.tag)) {
+        this.tags = this.$route.query.tag.map(function (t) {
           return { name: t }
         })
       } else {
-        this.tags = [{ name: this.query.tag }]
+        this.tags = [{ name: this.$route.query.tag }]
       }
     }
   },

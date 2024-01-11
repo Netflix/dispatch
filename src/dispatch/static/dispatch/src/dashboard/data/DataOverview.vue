@@ -1,30 +1,30 @@
 <template>
-  <v-container fluid grid-list-xl>
-    <v-layout row wrap>
-      <v-flex class="d-flex justify-start" lg6 sm6 xs12>
+  <v-container fluid>
+    <v-row>
+      <v-col class="d-flex justify-start" cols="12" sm="6">
         <v-btn color="info" @click="copyView"> Share View </v-btn>
-      </v-flex>
-      <v-flex class="d-flex justify-end" lg6 sm6 xs12>
+      </v-col>
+      <v-col class="d-flex justify-end" cols="12" sm="6">
         <dialog-filter
-          @filterOptions="setFilterOptions"
+          @filter-options="setFilterOptions"
           @update="update"
           @loading="setLoading"
           :projects="defaultUserProjects"
         />
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
     <v-row>
       <v-col>
         <stat-widget
           icon="mdi-database"
-          :title="totalSources | toNumberString"
+          :title="toNumberString(totalSources)"
           sup-title="Sources"
         />
       </v-col>
       <v-col>
         <stat-widget
           icon="mdi-database-search"
-          :title="totalSourceCost | toNumberString"
+          :title="toNumberString(totalSourceCost)"
           sup-title="Queries"
         />
       </v-col>
@@ -36,28 +36,28 @@
       <v-col>
         <stat-widget
           icon="mdi-currency-usd"
-          :title="totalSourceCost | toNumberString"
+          :title="toNumberString(totalSourceCost)"
           sup-title="Total Cost"
         />
       </v-col>
       <v-col>
         <stat-widget
           icon="mdi-currency-usd"
-          :title="avgSourceCost | toNumberString"
+          :title="toNumberString(avgSourceCost)"
           sup-title="Average Cost"
         />
       </v-col>
       <v-col>
         <stat-widget
           icon="mdi-clock"
-          :title="avgSourceDelay | toNumberString"
+          :title="toNumberString(avgSourceDelay)"
           sup-title="Average Delay (hours)"
         />
       </v-col>
       <v-col>
         <stat-widget
           icon="mdi-safe"
-          :title="avgSourceRetention | toNumberString"
+          :title="toNumberString(avgSourceRetention)"
           sup-title="Average Retention (days)"
         />
       </v-col>
@@ -76,6 +76,8 @@
 <script>
 import { filter, sumBy } from "lodash"
 import { mapFields } from "vuex-map-fields"
+
+import { toNumberString } from "@/filters"
 
 import DialogFilter from "@/dashboard/data/DataDialogFilter.vue"
 import SourceTop5CostTableCard from "@/data/source/SourceTop5CostTableCard.vue"
@@ -102,6 +104,10 @@ export default {
     }
   },
 
+  setup() {
+    return { toNumberString }
+  },
+
   methods: {
     update(data) {
       this.items = filter(data, function (item) {
@@ -116,7 +122,7 @@ export default {
     },
     copyView: function () {
       let store = this.$store
-      this.$copyText(window.location).then(
+      navigator.clipboard.writeText(window.location).then(
         function () {
           store.commit(
             "notification_backend/addBeNotification",
@@ -141,7 +147,6 @@ export default {
   },
 
   computed: {
-    ...mapFields("route", ["query.project"]),
     ...mapFields("auth", ["currentUser.projects"]),
 
     totalSources() {

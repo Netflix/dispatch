@@ -17,7 +17,7 @@ export default {
   name: "IncidentCommandersLocationBarChartCard",
 
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -77,18 +77,18 @@ export default {
     },
     series() {
       let allLocations = []
-      forEach(this.value, function (value) {
+      forEach(this.modelValue, function (value) {
         forEach(value, function (value) {
           allLocations.push(value.commanders_location)
         })
       })
-      let series = DashboardUtils.createCountedSeriesData(this.value, "commanders_location", [
+      let series = DashboardUtils.createCountedSeriesData(this.modelValue, "commanders_location", [
         ...new Set(allLocations),
       ])
       return series
     },
     categoryData() {
-      return Object.keys(this.value)
+      return Object.keys(this.modelValue)
     },
   },
 }

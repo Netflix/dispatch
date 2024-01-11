@@ -1,34 +1,31 @@
 <template>
-  <v-combobox
+  <v-select
     v-model="case_type"
     :items="items"
-    :search-input.sync="search"
     :menu-props="{ maxHeight: '400' }"
-    item-text="name"
+    item-title="name"
     item-value="id"
     :label="label"
-    placeholder="Start typing to search"
     :hint="hint"
     return-object
     :loading="loading"
     no-filter
+    :error-messages="show_error"
   >
     <template #item="data">
-      <v-list-item-content>
-        <v-list-item-title>{{ data.item.name }}</v-list-item-title>
-        <v-list-item-subtitle style="width: 200px" class="text-truncate">
-          {{ data.item.description }}
+      <v-list-item v-bind="data.props" :title="null">
+        <v-list-item-title>{{ data.item.raw.name }}</v-list-item-title>
+        <v-list-item-subtitle :title="data.item.raw.description">
+          {{ data.item.raw.description }}
         </v-list-item-subtitle>
-      </v-list-item-content>
+      </v-list-item>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
-        <v-list-item-content>
-          <v-list-item-subtitle> Load More </v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
-  </v-combobox>
+  </v-select>
 </template>
 
 <script>
@@ -41,7 +38,7 @@ export default {
   name: "CaseTypeSelect",
 
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -78,11 +75,19 @@ export default {
   computed: {
     case_type: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
+    },
+    show_error() {
+      let items_names = this.items.map((item) => item.name)
+      let selected_item = this.case_type?.name || ""
+      if (items_names.includes(selected_item)) {
+        return null
+      }
+      return "Not a valid case type"
     },
   },
 
@@ -91,39 +96,37 @@ export default {
       this.numItems = this.numItems + 5
       this.fetchData()
     },
+
     fetchData() {
       this.error = null
       this.loading = "error"
 
       let filterOptions = {
-        q: this.search,
+        q: "",
         sortBy: ["name"],
         descending: [false],
-        itemsPerPage: this.numItems,
+        itemsPerPage: -1,
       }
 
       if (this.project) {
         filterOptions = {
-          ...filterOptions,
           filters: {
             project: [this.project],
             enabled: ["true"],
           },
+          ...filterOptions,
         }
       }
 
       filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
 
+      if (this.items.length == 0) {
+        CaseTypeApi.getAll(filterOptions).then((response) => {
+          this.items = response.data.items
+        })
+      }
+      filterOptions.itemsPerPage = this.numItems
       CaseTypeApi.getAll(filterOptions).then((response) => {
-        this.items = response.data.items
-
-        if (this.case_type) {
-          // check to see if the current selection is available in the list and if not we add it
-          if (!this.items.find((match) => match.id === this.case_type.id)) {
-            this.items = [this.case_type].concat(this.items)
-          }
-        }
-
         this.total = response.data.total
         this.loading = false
 

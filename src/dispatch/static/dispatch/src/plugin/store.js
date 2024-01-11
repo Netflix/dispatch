@@ -10,6 +10,7 @@ const getDefaultSelectedState = () => {
     enabled: null,
     configuration: [],
     configuration_schema: {},
+    formkit_configuration_schema: [],
     broken: false,
     project: null,
     plugin_instance: null,
@@ -34,7 +35,7 @@ const state = {
     options: {
       q: "",
       page: 1,
-      itemsPerPage: 10,
+      itemsPerPage: 25,
       sortBy: ["Plugin.slug"],
       descending: [true],
       filters: {
@@ -80,7 +81,7 @@ const actions = {
         "notification_backend/addBeNotification",
         {
           text: "Plugin not installed correctly. Please review the Dispatch logs or contact your Dispatch Administrator",
-          type: "error",
+          type: "exception",
         },
         { root: true }
       )
@@ -152,10 +153,47 @@ const actions = {
   },
 }
 
+function convertToFormkit(json_schema) {
+  if (!json_schema.properties) {
+    return []
+  }
+  var formkit_schema = []
+  var title = {
+    $el: "h1",
+    children: json_schema.description,
+  }
+  formkit_schema.push(title)
+  for (const [key, value] of Object.entries(json_schema.properties)) {
+    var obj = {}
+    if (value.type == "string" || value.type == "password") {
+      obj = {
+        $formkit: "text",
+        name: key,
+        label: value.title,
+        help: value.description,
+        validation: "required",
+      }
+    } else if (value.type == "boolean") {
+      obj = {
+        $cmp: "FormKit",
+        props: {
+          name: key,
+          type: "checkbox",
+          label: value.title,
+          help: value.description,
+        },
+      }
+    }
+    formkit_schema.push(obj)
+  }
+  return formkit_schema
+}
+
 const mutations = {
   updateField,
   SET_SELECTED(state, value) {
     state.selected = Object.assign(state.selected, value)
+    state.selected.formkit_configuration_schema = convertToFormkit(value.configuration_schema)
   },
   SET_SELECTED_LOADING(state, value) {
     state.selected.loading = value

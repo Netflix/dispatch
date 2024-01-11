@@ -2,9 +2,9 @@
   <v-combobox
     v-model="service"
     :items="items"
-    :search-input.sync="search"
+    v-model:search="search"
     :menu-props="{ maxHeight: '400' }"
-    item-text="name"
+    item-title="name"
     item-value="id"
     :label="label"
     placeholder="Start typing to search"
@@ -25,7 +25,7 @@ export default {
   name: "ServiceSelect",
 
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -71,10 +71,10 @@ export default {
   computed: {
     service: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },

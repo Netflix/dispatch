@@ -9,7 +9,6 @@
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
 import SearchUtils from "@/search/utils"
 import RouterUtils from "@/router/utils"
 import IncidentApi from "@/incident/api"
@@ -22,20 +21,10 @@ export default {
     DashboardCard,
   },
 
-  props: {
-    value: {
-      type: Object,
-      default: function () {
-        return {}
-      },
-    },
-  },
-
   computed: {
-    ...mapFields("route", ["query"]),
     filterParam() {
       let params = {}
-      let filters = RouterUtils.deserializeFilters(this.query) // Order matters as values will overwrite
+      let filters = RouterUtils.deserializeFilters(this.$route.query) // Order matters as values will overwrite
       if (filters) {
         delete filters.reported_at
         delete filters.closed_at
@@ -117,14 +106,8 @@ export default {
     },
   },
 
-  created: function () {
-    this.fetchData()
-  },
-
-  watch: {
-    query: function () {
-      this.fetchData()
-    },
+  created() {
+    this.$watch(() => this.$route.query, this.fetchData, { immediate: true })
   },
 }
 </script>

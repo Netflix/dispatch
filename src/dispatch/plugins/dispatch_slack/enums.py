@@ -35,3 +35,4 @@ class SlackAPIErrorCode(DispatchEnum):
     USERS_NOT_FOUND = "users_not_found"
     VIEW_NOT_FOUND = "not_found"  # Could not find corresponding view for the provided view_id
     VIEW_EXPIRED = "expired_trigger_id"  # The provided trigger_id is no longer valid
+    IS_ARCHIVED = "is_archived"  # Channel is archived

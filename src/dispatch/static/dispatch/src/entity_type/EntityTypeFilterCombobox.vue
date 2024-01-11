@@ -3,60 +3,55 @@
     :items="items"
     :label="label"
     :loading="loading"
-    :search-input.sync="search"
-    @update:search-input="getFilteredData()"
+    v-model:search="search"
+    @update:search="getFilteredData()"
     chips
     clearable
-    deletable-chips
+    closable-chips
     hide-selected
-    item-text="name"
+    item-title="name"
     item-value="id"
     multiple
     no-filter
     v-model="entity_types"
   >
-    <template #selection="{ attr, item, selected }">
-      <v-menu bottom right transition="scale-transition" origin="top left">
-        <template #activator="{ on }">
-          <v-chip
-            v-bind="attr"
-            :input-value="selected"
-            pill
-            v-on="on"
-            close
-            @click:close="remove(item)"
-          >
-            {{ item.name }}
-          </v-chip>
+    <template #chip="{ item, props }">
+      <v-menu origin="overlap">
+        <template #activator="{ props: menuProps }">
+          <v-chip v-bind="mergeProps(props, menuProps)" pill />
         </template>
         <v-card>
           <v-list dark>
             <v-list-item>
-              <v-list-item-avatar color="teal">
-                <span class="white--text">{{ item.name | initials }}</span>
-              </v-list-item-avatar>
-              <v-list-item-content>
-                <v-list-item-title>{{ item.name }}</v-list-item-title>
-                <v-list-item-subtitle>{{ item.type }}</v-list-item-subtitle>
-              </v-list-item-content>
-              <v-list-item-action>
-                <v-btn icon>
+              <template #prepend>
+                <v-avatar color="teal">
+                  <span class="text-white">{{ initials(item.name) }}</span>
+                </v-avatar>
+              </template>
+
+              <v-list-item-title>{{ item.name }}</v-list-item-title>
+              <v-list-item-subtitle>{{ item.type }}</v-list-item-subtitle>
+
+              <template #append>
+                <v-btn icon variant="text">
                   <v-icon>mdi-close-circle</v-icon>
                 </v-btn>
-              </v-list-item-action>
+              </template>
             </v-list-item>
           </v-list>
           <v-list>
             <v-list-item>
-              <v-list-item-action>
+              <template #prepend>
                 <v-icon>mdi-text-box</v-icon>
-              </v-list-item-action>
+              </template>
+
               <v-list-item-subtitle>{{ item.description }}</v-list-item-subtitle>
             </v-list-item>
             <v-list-item v-if="item.jpath">
-              <v-list-item-action>
+              <template #prepend>
                 <v-icon>mdi-code-json</v-icon>
-              </v-list-item-action>
+              </template>
+
               <v-list-item-subtitle>
                 <pre>{{ item.jpath }}</pre>
               </v-list-item-subtitle>
@@ -67,33 +62,28 @@
     </template>
     <template #no-data>
       <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title>
-            No entity types matching "
-            <strong>{{ search }}</strong
-            >"
-          </v-list-item-title>
-        </v-list-item-content>
+        <v-list-item-title>
+          No entity types matching "<strong>{{ search }}</strong
+          >"
+        </v-list-item-title>
       </v-list-item>
     </template>
     <template #item="data">
-      <v-list-item-content>
-        <v-list-item-title> {{ data.item.name }} </v-list-item-title>
-        <v-list-item-subtitle style="width: 200px" class="text-truncate">
-          {{ data.item.description }}
+      <v-list-item v-bind="data.props" :title="null">
+        <v-list-item-title> {{ data.item.raw.name }} </v-list-item-title>
+        <v-list-item-subtitle :title="data.item.raw.description">
+          {{ data.item.raw.description }}
         </v-list-item-subtitle>
-      </v-list-item-content>
+      </v-list-item>
     </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
-        <v-list-item-content>
-          <v-list-item-subtitle> Load More </v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
-    <template slot="append-outer">
+    <template #append>
       <entity-type-create-dialog
-        v-model="createdEntityType"
+        @create="createEntityType"
         :project="project"
         :signalDefinition="signalDefinition"
       />
@@ -103,6 +93,8 @@
 
 <script>
 import { debounce } from "lodash"
+import { initials } from "@/filters"
+import { mergeProps } from "vue"
 
 import SearchUtils from "@/search/utils"
 import EntityTypeApi from "@/entity_type/api"
@@ -112,21 +104,13 @@ export default {
   name: "EntityTypeFilterCombobox",
 
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: () => [],
     },
     label: {
       type: String,
       default: "Add Entity Type Filters",
-    },
-    model: {
-      type: String,
-      default: null,
-    },
-    modelId: {
-      type: Number,
-      default: null,
     },
     project: {
       type: Object,
@@ -146,18 +130,21 @@ export default {
       items: [],
       more: false,
       numItems: 5,
-      createdEntityType: null,
       search: null,
     }
+  },
+
+  setup() {
+    return { initials, mergeProps }
   },
 
   computed: {
     entity_types: {
       get() {
-        return this.value
+        return this.modelValue
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },
@@ -172,14 +159,11 @@ export default {
     )
   },
 
-  watch: {
-    createdEntityType: function (newVal) {
-      this.items.push(newVal)
-      this.entity_types.push(newVal)
-    },
-  },
-
   methods: {
+    createEntityType(value) {
+      this.items.push(value)
+      this.entity_types.push(value)
+    },
     loadMore() {
       this.numItems = this.numItems + 5
       this.fetchData()
@@ -216,9 +200,6 @@ export default {
 
         this.loading = false
       })
-    },
-    remove(item) {
-      this.entity_types.splice(this.entity_types.indexOf(item), 1)
     },
     getFilteredData: debounce(function () {
       this.fetchData()

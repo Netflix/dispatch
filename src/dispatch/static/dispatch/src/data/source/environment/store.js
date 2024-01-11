@@ -30,7 +30,7 @@ const state = {
     options: {
       q: "",
       page: 1,
-      itemsPerPage: 10,
+      itemsPerPage: 25,
       sortBy: ["name"],
       descending: [true],
       filters: {
@@ -111,7 +111,7 @@ const actions = {
             "notification_backend/addBeNotification",
             {
               text: `environment '${payload.name}' could not be found.`,
-              type: "error",
+              type: "exception",
             },
             { root: true }
           )

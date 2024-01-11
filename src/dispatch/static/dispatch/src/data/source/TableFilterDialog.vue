@@ -1,59 +1,43 @@
 <template>
   <v-dialog v-model="display" max-width="600px">
-    <template #activator="{ on }">
-      <v-badge :value="numFilters" bordered overlap color="info" :content="numFilters">
-        <v-btn color="secondary" v-on="on"> Filter </v-btn>
+    <template #activator="{ props }">
+      <v-badge :model-value="!!numFilters" bordered color="info" :content="numFilters">
+        <v-btn color="secondary" v-bind="props"> Filter </v-btn>
       </v-badge>
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Data Source Filters</span>
+        <span class="text-h5">Data Source Filters</span>
       </v-card-title>
-      <v-list dense>
+      <v-list density="compact">
         <v-list-item>
-          <v-list-item-content>
-            <environment-combobox v-model="local_source_environment" />
-          </v-list-item-content>
+          <environment-combobox v-model="local_source_environment" />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <transport-combobox v-model="local_source_transport" />
-          </v-list-item-content>
+          <transport-combobox v-model="local_source_transport" />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <data-format-combobox v-model="local_source_data_format" />
-          </v-list-item-content>
+          <data-format-combobox v-model="local_source_data_format" />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <status-combobox v-model="local_source_status" />
-          </v-list-item-content>
+          <status-combobox v-model="local_source_status" />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <type-combobox v-model="local_source_type" />
-          </v-list-item-content>
+          <type-combobox v-model="local_source_type" />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <project-combobox v-model="local_project" label="Projects" />
-          </v-list-item-content>
+          <project-combobox v-model="local_project" label="Projects" />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <tag-filter-auto-complete v-model="local_tag" label="Tags" />
-          </v-list-item-content>
+          <tag-filter-auto-complete v-model="local_tag" label="Tags" />
         </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <tag-type-filter-combobox v-model="local_tag_type" label="Tag Types" />
-          </v-list-item-content>
+          <tag-type-filter-combobox v-model="local_tag_type" label="Tag Types" />
         </v-list-item>
       </v-list>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="info" text @click="applyFilters()"> Apply Filters </v-btn>
+        <v-btn color="info" variant="text" @click="applyFilters()"> Apply Filters </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

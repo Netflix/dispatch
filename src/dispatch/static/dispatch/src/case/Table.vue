@@ -9,7 +9,7 @@
       <escalate-dialog />
       <delete-dialog />
       <v-col>
-        <div class="headline">Cases</div>
+        <div class="text-h5">Cases</div>
       </v-col>
       <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
@@ -19,82 +19,90 @@
     </v-row>
     <v-row no-gutters>
       <v-col>
-        <v-card elevation="0">
+        <v-card variant="flat">
           <v-card-title>
             <v-text-field
               v-model="q"
-              append-icon="search"
+              append-inner-icon="mdi-magnify"
               label="Search"
               single-line
               hide-details
               clearable
             />
           </v-card-title>
-          <v-data-table
+          <v-data-table-server
+            show-select
+            return-object
             :headers="headers"
             :items="items"
-            :server-items-length="total"
-            :page.sync="page"
-            :items-per-page.sync="itemsPerPage"
-            :footer-props="{
-              'items-per-page-options': [10, 25, 50, 100],
-            }"
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="descending"
+            :items-length="total || 0"
             :loading="loading"
             v-model="selected"
             loading-text="Loading... Please wait"
-            show-select
-            @click:row="showCaseEditSheet"
+            :sort-by="['reported_at']"
+            :items-per-page="itemsPerPage"
+            @click:row="showCasePage"
+            @update:options="loadItems"
+            :footer-props="{
+              'items-per-page-options': [10, 25, 50, 100],
+            }"
           >
-            <template #item.case_severity.name="{ item }">
-              <case-severity :severity="item.case_severity.name" />
+            <template #item.case_severity.name="{ value }">
+              <case-severity :severity="value" />
             </template>
-            <template #item.case_priority.name="{ item }">
-              <case-priority :priority="item.case_priority.name" />
+            <template #item.case_priority.name="{ value }">
+              <case-priority :priority="value" />
             </template>
             <template #item.status="{ item }">
               <case-status :status="item.status" :id="item.id" />
             </template>
             <template #item.project.name="{ item }">
-              <v-chip small :color="item.project.color" text-color="white">
+              <v-chip size="small" :color="item.project.color">
                 {{ item.project.name }}
               </v-chip>
             </template>
-            <template #item.assignee="{ item }">
-              <case-participant :participant="item.assignee" />
+            <template #item.assignee="{ value }">
+              <case-participant :participant="value" />
             </template>
-            <template #item.reported_at="{ item }">
-              <v-tooltip bottom>
-                <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ item.reported_at | formatRelativeDate }}</span>
+            <template #item.reported_at="{ value }">
+              <v-tooltip location="bottom">
+                <template #activator="{ props }">
+                  <span v-bind="props">{{ formatRelativeDate(value) }}</span>
                 </template>
-                <span>{{ item.reported_at | formatDate }}</span>
+                <span>{{ formatDate(value) }}</span>
               </v-tooltip>
             </template>
-            <template #item.closed_at="{ item }">
-              <v-tooltip bottom>
-                <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ item.closed_at | formatRelativeDate }}</span>
+            <template #item.closed_at="{ value }">
+              <v-tooltip location="bottom">
+                <template #activator="{ props }">
+                  <span v-bind="props">{{ formatRelativeDate(value) }}</span>
                 </template>
-                <span>{{ item.closed_at | formatDate }}</span>
+                <span>{{ formatDate(value) }}</span>
               </v-tooltip>
             </template>
             <template #item.data-table-actions="{ item }">
-              <v-menu bottom left>
-                <template #activator="{ on }">
-                  <v-btn icon v-on="on">
+              <v-menu location="right" origin="overlap">
+                <template #activator="{ props }">
+                  <v-btn icon variant="text" v-bind="props">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>
                 </template>
                 <v-list>
                   <v-list-item
                     :to="{
+                      name: 'CasePage',
+                      params: { name: item.name },
+                    }"
+                  >
+                    <v-list-item-title>View</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item
+                    :to="{
                       name: 'CaseTableEdit',
                       params: { name: item.name },
                     }"
                   >
-                    <v-list-item-title>View / Edit</v-list-item-title>
+                    <v-list-item-title>Edit</v-list-item-title>
                   </v-list-item>
                   <v-list-item
                     @click="showRun({ type: 'case', data: item })"
@@ -114,7 +122,7 @@
                 </v-list>
               </v-menu>
             </template>
-          </v-data-table>
+          </v-data-table-server>
         </v-card>
       </v-col>
     </v-row>
@@ -122,9 +130,11 @@
   </v-container>
 </template>
 
-<script>
-import { mapFields } from "vuex-map-fields"
-import { mapActions } from "vuex"
+<script setup>
+import { ref, computed, watch } from "vue"
+import { useStore } from "vuex"
+import { useRoute, useRouter } from "vue-router"
+import { formatRelativeDate, formatDate } from "@/filters"
 
 import BulkEditSheet from "@/case/BulkEditSheet.vue"
 import CaseParticipant from "@/case/Participant.vue"
@@ -139,146 +149,113 @@ import RouterUtils from "@/router/utils"
 import TableExportDialog from "@/case/TableExportDialog.vue"
 import TableFilterDialog from "@/case/TableFilterDialog.vue"
 
-export default {
-  name: "CaseTable",
+const store = useStore()
+const router = useRouter()
+const route = useRoute()
 
-  components: {
-    BulkEditSheet,
-    CaseParticipant,
-    CasePriority,
-    CaseSeverity,
-    CaseStatus,
-    DeleteDialog,
-    EscalateDialog,
-    NewSheet,
-    WorkflowRunModal,
-    TableExportDialog,
-    TableFilterDialog,
-  },
+const itemsPerPage = ref(25)
+const showEditSheet = ref(false)
 
-  props: {
-    name: {
-      type: String,
-      default: null,
-    },
-  },
+const headers = [
+  { title: "Name", value: "name", align: "left", width: "10%" },
+  { title: "Title", value: "title", sortable: false },
+  { title: "Status", value: "status" },
+  { title: "Type", value: "case_type.name", sortable: true },
+  { title: "Severity", value: "case_severity.name", sortable: true },
+  { title: "Priority", value: "case_priority.name", sortable: true },
+  { title: "Project", value: "project.name", sortable: true },
+  { title: "Assignee", value: "assignee", sortable: true },
+  { title: "Reported At", value: "reported_at", sortable: true },
+  { title: "Closed At", value: "closed_at", sortable: true },
+  { title: "", key: "data-table-actions", sortable: false, align: "end" },
+]
 
-  data() {
-    return {
-      headers: [
-        { text: "Name", value: "name", align: "left", width: "10%" },
-        { text: "Title", value: "title", sortable: false },
-        { text: "Status", value: "status" },
-        { text: "Type", value: "case_type.name", sortable: true },
-        { text: "Severity", value: "case_severity.name", sortable: true },
-        { text: "Priority", value: "case_priority.name", sortable: true },
-        { text: "Project", value: "project.name", sortable: true },
-        { text: "Assignee", value: "assignee", sortable: true },
-        { text: "Reported At", value: "reported_at" },
-        { text: "Closed At", value: "closed_at" },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
-      ],
-      showEditSheet: false,
-    }
-  },
+const caseManagement = computed(() => store.state.case_management)
+const auth = computed(() => store.state.auth)
 
-  computed: {
-    ...mapFields("case_management", [
-      "table.loading",
-      "table.options.descending",
-      "table.options.filters",
-      "table.options.filters.assignee",
-      "table.options.filters.case_priority",
-      "table.options.filters.case_severity",
-      "table.options.filters.case_type",
-      "table.options.filters.project",
-      "table.options.filters.reported_at",
-      "table.options.filters.status",
-      "table.options.filters.tag",
-      "table.options.filters.tag_type",
-      "table.options.itemsPerPage",
-      "table.options.page",
-      "table.options.q",
-      "table.options.sortBy",
-      "table.rows.items",
-      "table.rows.selected",
-      "table.rows.total",
-    ]),
-    ...mapFields("route", ["query"]),
-    ...mapFields("auth", ["currentUser.projects"]),
+const defaultUserProjects = computed(() => {
+  let d = null
 
-    defaultUserProjects: {
-      get() {
-        let d = null
-        if (this.projects) {
-          let d = this.projects.filter((v) => v.default === true)
-          return d.map((v) => v.project)
-        }
-        return d
-      },
-    },
-  },
+  if (auth.value.currentUser.projects) {
+    let d = auth.value.currentUser.projects.filter((v) => v.default === true)
+    return d.map((v) => v.project)
+  }
+  return d
+})
 
-  methods: {
-    ...mapActions("workflow", ["showRun"]),
-    ...mapActions("case_management", [
-      "getAll",
-      "showNewSheet",
-      "showDeleteDialog",
-      "showEscalateDialog",
-    ]),
-    showCaseEditSheet(item) {
-      this.$router.push({ name: "CaseTableEdit", params: { name: item.name } })
-    },
-  },
+const showRun = (data) => store.dispatch("workflow/showRun", data)
+const showNewSheet = () => store.dispatch("case_management/showNewSheet")
+const showDeleteDialog = (item) => store.dispatch("case_management/showDeleteDialog", item)
+const showEscalateDialog = (item) => store.dispatch("case_management/showEscalateDialog", item)
 
-  watch: {
-    $route: {
-      immediate: true,
-      handler: function (newVal) {
-        this.showEditSheet = newVal.meta && newVal.meta.showEditSheet
-      },
-    },
-  },
-
-  created() {
-    this.filters = {
-      ...this.filters,
-      ...RouterUtils.deserializeFilters(this.query),
-      project: this.defaultUserProjects,
-    }
-
-    this.getAll()
-
-    this.$watch(
-      (vm) => [vm.page],
-      () => {
-        this.getAll()
-      }
-    )
-
-    this.$watch(
-      (vm) => [
-        vm.case_priority,
-        vm.case_severity,
-        vm.case_type,
-        vm.descending,
-        vm.itemsPerPage,
-        vm.project,
-        vm.q,
-        vm.reported_at.end,
-        vm.reported_at.start,
-        vm.sortBy,
-        vm.status,
-        vm.tag,
-        vm.tag_type,
-      ],
-      () => {
-        this.page = 1
-        RouterUtils.updateURLFilters(this.filters)
-        this.getAll()
-      }
-    )
-  },
+const getAll = () => {
+  store.dispatch("case_management/getAll", caseManagement.value.table.options)
 }
+
+const items = computed(() => caseManagement.value.table.rows.items)
+const total = computed(() => caseManagement.value.table.rows.total)
+const loading = computed(() => caseManagement.value.table.loading)
+
+const selected = ref([])
+watch(selected, (newVal) => {
+  caseManagement.value.table.rows.selected = newVal
+})
+
+const showCasePage = (e, { item }) => {
+  router.push({ name: "CasePage", params: { name: item.name } })
+}
+
+function loadItems({ page, itemsPerPage, sortBy }) {
+  caseManagement.value.table.options.page = page
+  caseManagement.value.table.options.itemsPerPage = itemsPerPage
+  // Check if sortBy is an array of objects (after manual click)
+  if (sortBy.length && typeof sortBy[0] === "object") {
+    // Take the first sort option
+    const sortOption = sortBy[0]
+
+    caseManagement.value.table.options.sortBy = [sortOption.key]
+    caseManagement.value.table.options.descending = [sortOption.order === "desc"]
+  } else {
+    caseManagement.value.table.options.sortBy = sortBy
+  }
+  getAll()
+}
+
+watch(
+  route,
+  (newVal) => {
+    showEditSheet.value = newVal.meta && newVal.meta.showEditSheet
+  },
+  { immediate: true }
+)
+
+const q = ref(caseManagement.value.table.options.q)
+watch(
+  () => q.value,
+  (newValue) => {
+    caseManagement.value.table.options.q = newValue
+    getAll()
+  }
+)
+
+// Deserialize the URL filters and apply them to the local filters
+const filters = {
+  ...RouterUtils.deserializeFilters(route.query),
+  project: defaultUserProjects,
+}
+store.commit("case_management/SET_FILTERS", filters)
+watch(
+  () => caseManagement.value.table.options.filters,
+  (newFilters, oldFilters) => {
+    // Check if the filters have changed
+    if (JSON.stringify(newFilters) !== JSON.stringify(oldFilters)) {
+      // Update the URL filters
+      RouterUtils.updateURLFilters(newFilters)
+
+      // Fetch all items with the updated filters
+      getAll()
+    }
+  },
+  { deep: true } // Required to watch object properties inside filters
+)
 </script>

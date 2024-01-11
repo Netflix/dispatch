@@ -1,92 +1,80 @@
 <template>
-  <ValidationObserver v-slot="{ invalid, validated }">
+  <v-form @submit.prevent v-slot="{ isValid }">
     <v-navigation-drawer
       v-model="showCreateEdit"
-      app
-      clipped
-      right
+      location="right"
       width="800"
-      :permanent="$vuetify.breakpoint.mdAndDown"
+      :permanent="$vuetify.display.mdAndDown"
     >
       <template #prepend>
-        <v-list-item two-line>
-          <v-list-item-content>
-            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
-            <v-list-item-title v-else class="title"> New </v-list-item-title>
-            <v-list-item-subtitle>Data Format</v-list-item-subtitle>
-          </v-list-item-content>
-          <v-btn
-            icon
-            color="info"
-            :loading="loading"
-            :disabled="invalid || !validated"
-            @click="save()"
-          >
-            <v-icon>save</v-icon>
-          </v-btn>
-          <v-btn icon color="secondary" @click="closeCreateEdit">
-            <v-icon>close</v-icon>
-          </v-btn>
+        <v-list-item lines="two">
+          <v-list-item-title v-if="id" class="text-h6"> Edit </v-list-item-title>
+          <v-list-item-title v-else class="text-h6"> New </v-list-item-title>
+          <v-list-item-subtitle>Data Format</v-list-item-subtitle>
+
+          <template #append>
+            <v-btn
+              icon
+              variant="text"
+              color="info"
+              :loading="loading"
+              :disabled="!isValid.value"
+              @click="save()"
+            >
+              <v-icon>mdi-content-save</v-icon>
+            </v-btn>
+            <v-btn icon variant="text" color="secondary" @click="closeCreateEdit">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </template>
         </v-list-item>
-        <v-card flat>
+        <v-card>
           <v-card-text>
-            <v-container grid-list-md>
-              <v-layout wrap>
-                <v-flex xs12>
-                  <ValidationProvider name="Name" rules="required" immediate>
-                    <v-text-field
-                      v-model="name"
-                      slot-scope="{ errors, valid }"
-                      :error-messages="errors"
-                      :success="valid"
-                      label="Name"
-                      hint="Name of data format."
-                      clearable
-                      required
-                    />
-                  </ValidationProvider>
-                </v-flex>
-                <v-flex xs12>
-                  <ValidationProvider name="Description" rules="required" immediate>
-                    <v-textarea
-                      v-model="description"
-                      slot-scope="{ errors, valid }"
-                      :error-messages="errors"
-                      :success="valid"
-                      label="Description"
-                      hint="Description of data format."
-                      clearable
-                      required
-                    />
-                  </ValidationProvider>
-                </v-flex>
-              </v-layout>
+            <v-container>
+              <v-row>
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="name"
+                    label="Name"
+                    hint="Name of data format."
+                    clearable
+                    required
+                    name="Name"
+                    :rules="[rules.required]"
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-textarea
+                    v-model="description"
+                    label="Description"
+                    hint="Description of data format."
+                    clearable
+                    required
+                    name="Description"
+                    :rules="[rules.required]"
+                  />
+                </v-col>
+              </v-row>
             </v-container>
           </v-card-text>
         </v-card>
       </template>
     </v-navigation-drawer>
-  </ValidationObserver>
+  </v-form>
 </template>
 
 <script>
+import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationProvider, ValidationObserver, extend } from "vee-validate"
-import { required } from "vee-validate/dist/rules"
-
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
 
 export default {
-  name: "SourceDataFormatNewEditSheet",
-
-  components: {
-    ValidationProvider,
-    ValidationObserver,
+  setup() {
+    return {
+      rules: { required },
+    }
   },
+  name: "SourceDataFormatNewEditSheet",
 
   computed: {
     ...mapFields("sourceDataFormat", [
@@ -97,7 +85,6 @@ export default {
       "selected.loading",
       "dialogs.showCreateEdit",
     ]),
-    ...mapFields("route", ["query"]),
   },
 
   methods: {
@@ -111,8 +98,8 @@ export default {
   },
 
   created() {
-    if (this.query.project) {
-      this.project = { name: this.query.project }
+    if (this.$route.query.project) {
+      this.project = { name: this.$route.query.project }
     }
   },
 }

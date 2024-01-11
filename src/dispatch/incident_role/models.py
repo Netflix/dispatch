@@ -60,6 +60,8 @@ class IncidentRole(Base, TimeStampMixin, ProjectMixin):
     individual_id = Column(Integer, ForeignKey("individual_contact.id"))
     individual = relationship("IndividualContact")
 
+    engage_next_oncall = Column(Boolean, default=False)
+
 
 # Pydantic models
 class IncidentRoleBase(DispatchBase):
@@ -70,6 +72,7 @@ class IncidentRoleBase(DispatchBase):
     incident_priorities: Optional[List[IncidentPriorityRead]]
     service: Optional[ServiceRead]
     individual: Optional[IndividualContactRead]
+    engage_next_oncall: Optional[bool]
 
 
 class IncidentRoleCreateUpdate(IncidentRoleBase):

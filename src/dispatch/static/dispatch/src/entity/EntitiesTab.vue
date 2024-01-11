@@ -5,7 +5,7 @@
         class="pl-6 mt-6"
         label="Time Range"
         v-model="selectedDateTime"
-        @input="onSelectedDateTimeChange"
+        @update:model-value="onSelectedDateTimeChange"
       />
     </v-row>
     <v-row v-if="uniqueEntities.length >= 1">

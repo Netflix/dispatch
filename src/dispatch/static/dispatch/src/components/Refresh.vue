@@ -1,11 +1,11 @@
 <template>
   <v-dialog v-model="show" persistent max-width="500">
     <v-card>
-      <v-card-title class="headline"> Refresh Required </v-card-title>
+      <v-card-title class="text-h5"> Refresh Required </v-card-title>
       <v-card-text>{{ message }}</v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="info" text @click="performRefresh()"> Refresh </v-btn>
+        <v-btn color="info" variant="text" @click="performRefresh()"> Refresh </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

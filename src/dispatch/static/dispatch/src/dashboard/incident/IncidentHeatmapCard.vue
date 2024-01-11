@@ -20,7 +20,7 @@ export default {
   name: "IncidentHeatMapChartCard",
 
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return {}
@@ -79,7 +79,7 @@ export default {
       let series = []
       let weekdays = this.weekdays
 
-      forEach(this.value, function (value, key) {
+      forEach(this.modelValue, function (value, key) {
         let grouping = key
         let dayCounts = map(
           groupBy(value, function (item) {
@@ -114,7 +114,7 @@ export default {
       return series
     },
     categoryData() {
-      return Object.keys(this.value)
+      return Object.keys(this.modelValue)
     },
     weekdays() {
       return [...Array(7).keys()].map((i) => locale.localize.day(i, { width: "abbreviated" }))

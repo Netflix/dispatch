@@ -49,6 +49,8 @@ from .service import (
     unarchive_conversation,
     update_message,
 )
+from slack_sdk.errors import SlackApiError
+from .enums import SlackAPIErrorCode
 
 logger = logging.getLogger(__name__)
 
@@ -78,12 +80,6 @@ class SlackConversationPlugin(ConversationPlugin):
         client = create_slack_client(self.configuration)
         blocks = create_case_message(case=case, channel_id=conversation_id)
         response = send_message(client=client, conversation_id=conversation_id, blocks=blocks)
-        send_message(
-            client=client,
-            conversation_id=conversation_id,
-            text="All real-time case collaboration should be captured in this thread.",
-            ts=response["timestamp"],
-        )
         if case.signal_instances:
             message = create_signal_messages(
                 case_id=case.id, channel_id=conversation_id, db_session=db_session
@@ -168,26 +164,35 @@ class SlackConversationPlugin(ConversationPlugin):
         **kwargs,
     ):
         """Sends a new message based on data and type."""
-        client = create_slack_client(self.configuration)
-        messages = []
-        if not blocks:
-            blocks = create_message_blocks(message_template, notification_type, items, **kwargs)
+        try:
+            client = create_slack_client(self.configuration)
+            messages = []
+            if not blocks:
+                blocks = create_message_blocks(message_template, notification_type, items, **kwargs)
 
-            for c in chunks(blocks, 50):
-                messages.append(
-                    send_message(
-                        client,
-                        conversation_id,
-                        text,
-                        ts,
-                        Message(blocks=c).build()["blocks"],
-                        persist,
+                for c in chunks(blocks, 50):
+                    messages.append(
+                        send_message(
+                            client,
+                            conversation_id,
+                            text,
+                            ts,
+                            Message(blocks=c).build()["blocks"],
+                            persist,
+                        )
                     )
-                )
-        else:
-            for c in chunks(blocks, 50):
-                messages.append(send_message(client, conversation_id, text, ts, c, persist))
-        return messages
+            else:
+                for c in chunks(blocks, 50):
+                    messages.append(send_message(client, conversation_id, text, ts, c, persist))
+            return messages
+        except SlackApiError as exception:
+            error = exception.response["error"]
+            if error == SlackAPIErrorCode.IS_ARCHIVED:
+                # swallow send errors if the channel is archived
+                message = f"SlackAPIError trying to send: {exception.response}. Message: {text}. Type: {notification_type}"
+                logger.error(message)
+            else:
+                raise exception
 
     def send_direct(
         self,
@@ -200,8 +205,10 @@ class SlackConversationPlugin(ConversationPlugin):
         blocks: Optional[List] = None,
         **kwargs,
     ):
-        """Sends a message directly to a user."""
+        """Sends a message directly to a user if the user exists."""
         client = create_slack_client(self.configuration)
+        if not does_user_exist(client, user):
+            return {}
         user_id = resolve_user(client, user)["id"]
 
         if not blocks:
@@ -222,8 +229,10 @@ class SlackConversationPlugin(ConversationPlugin):
         blocks: Optional[List] = None,
         **kwargs,
     ):
-        """Sends an ephemeral message to a user in a channel."""
+        """Sends an ephemeral message to a user in a channel if the user exists."""
         client = create_slack_client(self.configuration)
+        if not does_user_exist(client, user):
+            return {}
         user_id = resolve_user(client, user)["id"]
 
         if not blocks:

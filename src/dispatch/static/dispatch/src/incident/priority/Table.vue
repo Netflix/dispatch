@@ -3,7 +3,7 @@
     <new-edit-sheet />
     <v-row no-gutters>
       <v-col>
-        <v-alert dismissible icon="mdi-school" prominent text type="info">
+        <v-alert closable icon="mdi-school" prominent text type="info">
           Priorities adds another dimension to Dispatch's incident categorization. They also allow
           for some configurability (e.g. only page a command for 'high' priority incidents).
         </v-alert>
@@ -22,41 +22,41 @@
     </v-row>
     <v-row no-gutters>
       <v-col>
-        <v-card elevation="0">
+        <v-card variant="flat">
           <v-card-title>
             <v-text-field
               v-model="q"
-              append-icon="search"
+              append-inner-icon="mdi-magnify"
               label="Search"
               single-line
               hide-details
               clearable
             />
           </v-card-title>
-          <v-data-table
+          <v-data-table-server
             :headers="headers"
             :items="items"
-            :server-items-length="total"
-            :page.sync="page"
-            :items-per-page.sync="itemsPerPage"
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="descending"
+            :items-length="total || 0"
+            v-model:page="page"
+            v-model:items-per-page="itemsPerPage"
+            v-model:sort-by="sortBy"
+            v-model:sort-desc="descending"
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #item.page_commander="{ item }">
-              <v-simple-checkbox v-model="item.page_commander" disabled />
+            <template #item.page_commander="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #item.default="{ item }">
-              <v-simple-checkbox v-model="item.default" disabled />
+            <template #item.default="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #item.enabled="{ item }">
-              <v-simple-checkbox v-model="item.enabled" disabled />
+            <template #item.enabled="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
             <template #item.data-table-actions="{ item }">
-              <v-menu bottom left>
-                <template #activator="{ on }">
-                  <v-btn icon v-on="on">
+              <v-menu location="right" origin="overlap">
+                <template #activator="{ props }">
+                  <v-btn icon variant="text" v-bind="props">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>
                 </template>
@@ -67,7 +67,7 @@
                 </v-list>
               </v-menu>
             </template>
-          </v-data-table>
+          </v-data-table-server>
         </v-card>
       </v-col>
     </v-row>
@@ -76,31 +76,36 @@
       <v-col>
         <div class="text-body-1 ml-4 mt-6">Incident priority settings</div>
         <v-row align="start" no-gutters>
-          <v-col class="d-flex justify-start">
-            <v-checkbox
-              class="ml-10 mr-5"
-              v-model="restrictStable"
-              label="Restrict Stable status to this priority:"
-              @change="updateStablePriority"
-            />
-            <v-tooltip max-width="500px" open-delay="50" bottom>
-              <template #activator="{ on }">
-                <v-icon v-on="on"> mdi-information </v-icon>
-              </template>
-              <span>
-                If activated, Dispatch will automatically change Stable incidents to this priority.
-                Also, users will not be permitted to change the priority on Stable incidents.
-              </span>
-            </v-tooltip>
-            <span max-width="500px">
+          <div class="d-flex justify-content-start">
+            <v-col cols="10" class="mt-2">
+              <v-checkbox
+                class="ml-10 mr-5"
+                v-model="restrictStable"
+                label="Restrict Stable status to this priority:"
+                @update:model-value="updateStablePriority"
+              />
+            </v-col>
+            <v-col class="mt-5">
+              <v-tooltip max-width="500px" open-delay="50" location="bottom">
+                <template #activator="{ props }">
+                  <v-icon v-bind="props">mdi-information</v-icon>
+                </template>
+                <span>
+                  If activated, Dispatch will automatically change Stable incidents to this
+                  priority. Also, users will not be permitted to change the priority on Stable
+                  incidents.
+                </span>
+              </v-tooltip>
+            </v-col>
+            <v-col cols="6">
               <incident-priority-select
                 class="ml-4"
-                max-width="400px"
+                width="400px"
                 v-model="stablePriority"
                 :project="project[0]"
               />
-            </span>
-          </v-col>
+            </v-col>
+          </div>
         </v-row>
       </v-col>
     </v-row>
@@ -126,15 +131,15 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", sortable: true },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Page Commander", value: "page_commander", sortable: true },
-        { text: "Default", value: "default", sortable: true },
-        { text: "Enabled", value: "enabled", sortable: true },
-        { text: "Tactical Report Reminder", value: "tactical_report_reminder", sortable: true },
-        { text: "Executive Report Reminder", value: "executive_report_reminder", sortable: true },
-        { text: "View Order", value: "view_order", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", value: "name", sortable: true },
+        { title: "Description", value: "description", sortable: false },
+        { title: "Page Commander", value: "page_commander", sortable: true },
+        { title: "Default", value: "default", sortable: true },
+        { title: "Enabled", value: "enabled", sortable: true },
+        { title: "Tactical Report Reminder", value: "tactical_report_reminder", sortable: true },
+        { title: "Executive Report Reminder", value: "executive_report_reminder", sortable: true },
+        { title: "View Order", value: "view_order", sortable: true },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
       restrictStable: false,
     }
@@ -153,11 +158,10 @@ export default {
       "table.rows.total",
       "stablePriority",
     ]),
-    ...mapFields("route", ["query", "params"]),
   },
 
   created() {
-    this.project = [{ name: this.query.project }]
+    this.project = [{ name: this.$route.query.project }]
 
     this.getAll()
     this.restrictStable = this.stablePriority != null
@@ -191,3 +195,9 @@ export default {
   },
 }
 </script>
+
+<style>
+.mdi-school {
+  color: white !important;
+}
+</style>

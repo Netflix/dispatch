@@ -5,7 +5,6 @@ import SearchUtils from "@/search/utils"
 import IncidentApi from "@/incident/api"
 import PluginApi from "@/plugin/api"
 import router from "@/router"
-
 import moment from "moment-timezone"
 
 const getDefaultSelectedState = () => {
@@ -107,7 +106,7 @@ const state = {
       },
       q: "",
       page: 1,
-      itemsPerPage: 10,
+      itemsPerPage: 25,
       sortBy: ["reported_at"],
       descending: [true],
     },
@@ -180,7 +179,7 @@ const actions = {
             "notification_backend/addBeNotification",
             {
               text: `Incident '${payload.name}' could not be found.`,
-              type: "error",
+              type: "exception",
             },
             { root: true }
           )
@@ -240,14 +239,14 @@ const actions = {
     commit("SET_DIALOG_SHOW_EXPORT", false)
   },
   showHandoffDialog({ commit }, value) {
-    commit("SET_DIALOG_SHOW_HANDOFF", true)
     commit("SET_SELECTED", value)
+    commit("SET_DIALOG_SHOW_HANDOFF", true)
   },
   closeHandoffDialog({ commit }) {
     commit("SET_DIALOG_SHOW_HANDOFF", false)
     commit("RESET_SELECTED")
   },
-  showEditEventDialog({ commit }, event) {
+  showNewEditEventDialog({ commit }, event) {
     state.selected.currentEvent = event
     commit("SET_DIALOG_EDIT_EVENT", true)
   },
@@ -283,6 +282,18 @@ const actions = {
     })
     commit("SET_DIALOG_EDIT_EVENT", false)
   },
+  exportDoc({ commit }, timeline_filters) {
+    IncidentApi.exportTimeline(state.selected.id, timeline_filters).then((response) => {
+      commit("SET_SELECTED", response.data)
+    })
+    commit(
+      "notification_backend/addBeNotification",
+      { text: "Data exported successfully. This may take a few minutes.", type: "success" },
+      { root: true }
+    )
+    commit("SET_DIALOG_EDIT_EVENT", false)
+  },
+
   closeDeleteEventDialog({ commit }) {
     commit("SET_DIALOG_DELETE_EVENT", false)
   },
@@ -354,6 +365,12 @@ const actions = {
   },
   save({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
+    if (Array.isArray(state.selected.reporter)) {
+      state.selected.reporter = state.selected.reporter[0]
+    }
+    if (Array.isArray(state.selected.commander)) {
+      state.selected.commander = state.selected.commander[0]
+    }
     if (!state.selected.id) {
       return IncidentApi.create(state.selected)
         .then(() => {

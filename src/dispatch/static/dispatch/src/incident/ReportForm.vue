@@ -1,14 +1,16 @@
 <template>
   <v-app>
     <notification-snackbars-wrapper />
-
     <v-main>
-      <v-app-bar app flat style="border-bottom: 1px solid #d2d2d2 !important" color="background0">
-        <router-link :to="{ name: 'IncidentOverview' }" style="text-decoration: none">
-          <span class="button font-weight-bold">D I S P A T C H</span>
-        </router-link>
-        <v-spacer />
-        <v-btn small color="info" :to="{ name: 'status' }"> Active Incidents </v-btn>
+      <v-app-bar flat style="border-bottom: 1px solid #d2d2d2 !important" color="background0">
+        <template #prepend>
+          <router-link :to="{ name: 'IncidentOverview' }" style="text-decoration: none">
+            <span class="button font-weight-bold">D I S P A T C H</span>
+          </router-link>
+        </template>
+        <template #append>
+          <v-btn size="small" color="info" :to="{ name: 'status' }"> Active Incidents </v-btn>
+        </template>
       </v-app-bar>
       <organization-banner />
       <report-receipt-card v-if="id" />

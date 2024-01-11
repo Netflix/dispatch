@@ -1,12 +1,12 @@
 <template>
-  <v-card :loading="loading" outlined elevation="0">
+  <v-card variant="outlined" :loading="loading">
     <v-card-title>{{ title }}</v-card-title>
     <apexchart :type="type" height="250" :options="localOptions" :series="series" />
   </v-card>
 </template>
 
 <script>
-import VueApexCharts from "vue-apexcharts"
+import VueApexCharts from "vue3-apexcharts"
 export default {
   name: "DashboardCard",
 

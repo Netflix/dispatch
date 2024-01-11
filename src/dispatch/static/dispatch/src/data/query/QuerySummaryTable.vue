@@ -1,27 +1,23 @@
 <template>
-  <div>
-    <v-data-table :headers="headers" :items="items">
-      <template #item.project.name="{ item }">
-        <v-chip small :color="item.project.color" text-color="white">
-          {{ item.project.name }}
-        </v-chip>
-      </template>
-      <template #item.data-table-actions="{ item }">
-        <v-menu bottom left>
-          <template #activator="{ on }">
-            <v-btn icon v-on="on">
-              <v-icon>mdi-dots-vertical</v-icon>
-            </v-btn>
-          </template>
-          <v-list>
-            <v-list-item :to="{ name: 'QueryTableEdit', params: { name: item.name } }">
-              <v-list-item-title>View / Edit</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
-      </template>
-    </v-data-table>
-  </div>
+  <v-data-table :headers="headers" :items="items">
+    <template #item.project.name="{ item, value }">
+      <v-chip size="small" :color="item.project.color">
+        {{ value }}
+      </v-chip>
+    </template>
+    <template #item.data-table-actions="{ item }">
+      <v-menu location="right" origin="overlap">
+        <template #activator="{ props }">
+          <v-btn icon="mdi-dots-vertical" variant="text" v-bind="props" />
+        </template>
+        <v-list>
+          <v-list-item :to="{ name: 'QueryTableEdit', params: { name: item.name } }">
+            <v-list-item-title>View / Edit</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </template>
+  </v-data-table>
 </template>
 
 <script>
@@ -29,17 +25,16 @@ import { mapActions } from "vuex"
 export default {
   name: "QuerySummaryTable",
 
-  components: {},
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", sortable: true },
-        { text: "Project", value: "project.name", sortable: false },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Language", value: "language", sortable: true },
+        { title: "Name", key: "name", sortable: true },
+        { title: "Project", key: "project.name", sortable: false },
+        { title: "Description", key: "description", sortable: false },
+        { title: "Language", key: "language", sortable: true },
         {
-          text: "",
-          value: "data-table-actions",
+          title: "",
+          key: "data-table-actions",
           sortable: false,
           align: "end",
         },

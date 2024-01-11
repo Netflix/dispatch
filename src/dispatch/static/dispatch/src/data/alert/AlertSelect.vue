@@ -2,37 +2,25 @@
   <v-autocomplete
     v-model="query"
     :items="items"
-    item-text="name"
-    :search-input.sync="search"
+    item-title="name"
+    :item-props="(item) => ({ subtitle: item.title })"
+    v-model:search="search"
     :menu-props="{ maxHeight: '400' }"
     hide-selected
     :label="label"
     close
     clearable
+    chips
     :loading="loading"
     return-object
     no-filter
   >
-    <template #selection="{ attr, on, item, selected }">
-      <v-chip v-bind="attr" :input-value="selected" v-on="on">
-        <span v-text="item.name" />
-      </v-chip>
-    </template>
-    <template #item="{ item }">
-      <v-list-item-content>
-        <v-list-item-title>{{ item.name }}</v-list-item-title>
-        <v-list-item-subtitle>{{ item.title }}</v-list-item-subtitle>
-      </v-list-item-content>
-    </template>
     <template #no-data>
       <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title>
-            No querys matching "
-            <strong>{{ search }}</strong
-            >".
-          </v-list-item-title>
-        </v-list-item-content>
+        <v-list-item-title>
+          No querys matching "<strong>{{ search }}</strong
+          >".
+        </v-list-item-title>
       </v-list-item>
     </template>
   </v-autocomplete>
@@ -44,7 +32,7 @@ import { cloneDeep } from "lodash"
 export default {
   name: "QuerySelect",
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: function () {
         return null
@@ -69,10 +57,10 @@ export default {
   computed: {
     query: {
       get() {
-        return cloneDeep(this.value)
+        return cloneDeep(this.modelValue)
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },

@@ -9,7 +9,7 @@
       <report-dialog />
       <workflow-run-modal />
       <v-col>
-        <div class="headline">Incidents</div>
+        <div class="text-h5">Incidents</div>
       </v-col>
       <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
@@ -19,75 +19,76 @@
     </v-row>
     <v-row no-gutters>
       <v-col>
-        <v-card elevation="0">
+        <v-card variant="flat">
           <v-card-title>
             <v-text-field
               v-model="q"
-              append-icon="search"
+              append-inner-icon="mdi-magnify"
               label="Search"
               single-line
               hide-details
               clearable
             />
           </v-card-title>
-          <v-data-table
+          <v-data-table-server
             :headers="headers"
             :items="items"
-            :server-items-length="total"
-            :page.sync="page"
-            :items-per-page.sync="itemsPerPage"
+            :items-length="total || 0"
+            v-model:page="page"
+            v-model:items-per-page="itemsPerPage"
             :footer-props="{
               'items-per-page-options': [10, 25, 50, 100],
             }"
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="descending"
+            v-model:sort-by="sortBy"
+            v-model:sort-desc="descending"
             :loading="loading"
             data-testid="incident-data-table"
             v-model="selected"
             loading-text="Loading... Please wait"
             show-select
+            return-object
             @click:row="showIncidentEditSheet"
           >
-            <template #item.project.name="{ item }">
-              <v-chip small :color="item.project.color" text-color="white">
-                {{ item.project.name }}
+            <template #item.project.name="{ item, value }">
+              <v-chip size="small" :color="item.project.color">
+                {{ value }}
               </v-chip>
             </template>
-            <template #item.incident_severity.name="{ item }">
-              <incident-severity :severity="item.incident_severity.name" />
+            <template #item.incident_severity.name="{ value }">
+              <incident-severity :severity="value" />
             </template>
-            <template #item.incident_priority.name="{ item }">
-              <incident-priority :priority="item.incident_priority.name" />
+            <template #item.incident_priority.name="{ value }">
+              <incident-priority :priority="value" />
             </template>
-            <template #item.status="{ item }">
-              <incident-status :status="item.status" :id="item.id" />
+            <template #item.status="{ item, value }">
+              <incident-status :status="value" :id="item.id" />
             </template>
-            <template #item.incident_costs="{ item }">
-              <incident-cost-card :incident-costs="item.incident_costs" />
+            <template #item.incident_costs="{ value }">
+              <incident-cost-card :incident-costs="value" />
             </template>
-            <template #item.commander="{ item }">
-              <incident-participant :participant="item.commander" />
+            <template #item.commander="{ value }">
+              <incident-participant :participant="value" />
             </template>
-            <template #item.reported_at="{ item }">
-              <v-tooltip bottom>
-                <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ item.reported_at | formatRelativeDate }}</span>
+            <template #item.reported_at="{ value }">
+              <v-tooltip location="bottom">
+                <template #activator="{ props }">
+                  <span v-bind="props">{{ formatRelativeDate(value) }}</span>
                 </template>
-                <span>{{ item.reported_at | formatDate }}</span>
+                <span>{{ formatDate(value) }}</span>
               </v-tooltip>
             </template>
-            <template #item.closed_at="{ item }">
-              <v-tooltip bottom>
-                <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ item.closed_at | formatRelativeDate }}</span>
+            <template #item.closed_at="{ value }">
+              <v-tooltip location="bottom">
+                <template #activator="{ props }">
+                  <span v-bind="props">{{ formatRelativeDate(value) }}</span>
                 </template>
-                <span>{{ item.closed_at | formatDate }}</span>
+                <span>{{ formatDate(value) }}</span>
               </v-tooltip>
             </template>
             <template #item.data-table-actions="{ item }">
-              <v-menu bottom left>
-                <template #activator="{ on }">
-                  <v-btn icon v-on="on">
+              <v-menu location="right" origin="overlap">
+                <template #activator="{ props }">
+                  <v-btn icon variant="text" v-bind="props">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>
                 </template>
@@ -116,7 +117,7 @@
                 </v-list>
               </v-menu>
             </template>
-          </v-data-table>
+          </v-data-table-server>
         </v-card>
       </v-col>
     </v-row>
@@ -127,7 +128,7 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-
+import { formatRelativeDate, formatDate } from "@/filters"
 import BulkEditSheet from "@/incident/BulkEditSheet.vue"
 import DeleteDialog from "@/incident/DeleteDialog.vue"
 import IncidentCostCard from "@/incident_cost/IncidentCostCard.vue"
@@ -170,21 +171,25 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", align: "left", width: "10%" },
-        { text: "Title", value: "title", sortable: false },
-        { text: "Status", value: "status" },
-        { text: "Type", value: "incident_type.name" },
-        { text: "Severity", value: "incident_severity.name", width: "10%" },
-        { text: "Priority", value: "incident_priority.name", width: "10%" },
-        { text: "Project", value: "project.name", sortable: true },
-        { text: "Commander", value: "commander", sortable: false },
-        { text: "Cost", value: "incident_costs", sortable: false },
-        { text: "Reported At", value: "reported_at" },
-        { text: "Closed At", value: "closed_at" },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", key: "name", align: "left", width: "10%" },
+        { title: "Title", key: "title", sortable: false },
+        { title: "Status", key: "status" },
+        { title: "Type", key: "incident_type.name" },
+        { title: "Severity", key: "incident_severity.name", width: "10%" },
+        { title: "Priority", key: "incident_priority.name", width: "10%" },
+        { title: "Project", key: "project.name", sortable: true },
+        { title: "Commander", key: "commander", sortable: false },
+        { title: "Cost", key: "incident_costs", sortable: false },
+        { title: "Reported At", key: "reported_at" },
+        { title: "Closed At", key: "closed_at" },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
       showEditSheet: false,
     }
+  },
+
+  setup() {
+    return { formatRelativeDate, formatDate }
   },
 
   computed: {
@@ -211,7 +216,6 @@ export default {
       "table.rows.selected",
       "table.rows.total",
     ]),
-    ...mapFields("route", ["query"]),
     ...mapFields("auth", ["currentUser.projects"]),
 
     defaultUserProjects: {
@@ -229,7 +233,7 @@ export default {
   methods: {
     ...mapActions("incident", ["getAll", "showNewSheet", "showDeleteDialog", "showReportDialog"]),
     ...mapActions("workflow", ["showRun"]),
-    showIncidentEditSheet(item) {
+    showIncidentEditSheet(e, { item }) {
       this.$router.push({ name: "IncidentTableEdit", params: { name: item.name } })
     },
   },
@@ -246,7 +250,7 @@ export default {
   created() {
     this.filters = {
       ...this.filters,
-      ...RouterUtils.deserializeFilters(this.query),
+      ...RouterUtils.deserializeFilters(this.$route.query),
       project: this.defaultUserProjects,
     }
     if (this.filters.commander) {

@@ -619,7 +619,7 @@ def entity_select(
 ):
     """Creates an entity select."""
     entity_options = [
-        {"text": str(entity.value), "value": entity.id}
+        {"text": entity.value[:75], "value": entity.id}
         for entity in entity_service.get_all_desc_by_signal(
             db_session=db_session, signal_id=signal_id
         )
@@ -664,7 +664,7 @@ def signal_definition_select(
     signals: list[Signal],
     action_id: str = DefaultActionIds.signal_definition_select,
     block_id: str = DefaultBlockIds.signal_definition_select,
-    label: str = "Signal Defintions",
+    label: str = "Signal Definitions",
     initial_option: Participant = None,
     **kwargs,
 ):

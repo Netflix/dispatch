@@ -1,127 +1,113 @@
 <template>
   <v-dialog v-model="showCreateEdit" persistent max-width="600px">
-    <ValidationObserver disabled v-slot="{ invalid, validated }">
+    <v-form @submit.prevent v-slot="{ isValid }">
       <v-card>
         <v-card-title>
-          <span class="headline" v-if="id">Edit Organization</span>
-          <span class="headline" v-else>Create an Organization</span>
+          <span class="text-h5" v-if="id">Edit Organization</span>
+          <span class="text-h5" v-else>Create an Organization</span>
         </v-card-title>
         <v-card-text>
           Organizations represent the top-level in your hierarchy. You'll be able to bundle a
           collection of projects within an organization.
-          <ValidationProvider name="Name" rules="required" immediate>
-            <v-text-field
-              v-if="id"
-              v-model="name"
-              label="Name"
-              hint="A name for your organization. Note: it can't be modified once the organization has been created."
-              slot-scope="{ errors, valid }"
-              :error-messages="errors"
-              :success="valid"
-              disabled
-            />
-            <v-text-field
-              v-else
-              v-model="name"
-              label="Name"
-              hint="A name for your organization. Note: it can't be modified once the organization has been created."
-              slot-scope="{ errors, valid }"
-              :error-messages="errors"
-              :success="valid"
-              clearable
-              required
-            />
-          </ValidationProvider>
-          <ValidationProvider name="Description" rules="required" immediate>
-            <v-textarea
-              v-model="description"
-              label="Description"
-              hint="A short description for your organization."
-              slot-scope="{ errors, valid }"
-              :error-messages="errors"
-              :success="valid"
-              clearable
-              auto-grow
-              required
-            />
-          </ValidationProvider>
+          <v-text-field
+            v-if="id"
+            v-model="name"
+            name="Name"
+            label="Name"
+            hint="A name for your organization. Note: it can't be modified once the organization has been created."
+            disabled
+          />
+          <v-text-field
+            v-else
+            v-model="name"
+            name="Name"
+            label="Name"
+            hint="A name for your organization. Note: it can't be modified once the organization has been created."
+            clearable
+            required
+            :rules="[rules.required]"
+          />
+          <v-textarea
+            v-model="description"
+            label="Description"
+            hint="A short description for your organization."
+            clearable
+            auto-grow
+            required
+            name="Description"
+            :rules="[rules.required]"
+          />
         </v-card-text>
-        <v-list-item-title class="subtitle-2 ml-4">
+        <v-list-item-title class="text-subtitle-2 ml-4">
           Banner Settings
-          <v-tooltip max-width="250px" bottom>
-            <template #activator="{ on, attrs }">
-              <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
+          <v-tooltip max-width="250px" location="bottom">
+            <template #activator="{ props }">
+              <v-icon v-bind="props">mdi-help-circle-outline</v-icon>
             </template>
             When enabled, this banner will be presented to users throughout the application when
             using this organization.
           </v-tooltip>
         </v-list-item-title>
         <v-card-text>
-          <ValidationProvider name="text" immediate>
-            <v-textarea
-              v-model="banner_text"
-              label="Text"
-              hint="Any information you would like to include in an organizational banner."
-              slot-scope="{ errors, valid }"
-              :error-messages="errors"
-              :success="valid"
-              clearable
-              auto-grow
-              required
-            />
-          </ValidationProvider>
+          <v-textarea
+            v-model="banner_text"
+            label="Text"
+            hint="Any information you would like to include in an organizational banner."
+            clearable
+            auto-grow
+            required
+            name="text"
+          />
           <color-picker-input label="Color" v-model="banner_color" />
           <v-checkbox v-model="banner_enabled" label="Enabled" />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn text @click="closeCreateEditDialog()"> Cancel </v-btn>
+          <v-btn variant="text" @click="closeCreateEditDialog()"> Cancel </v-btn>
           <v-btn
             v-if="id"
             color="info"
-            text
+            variant="text"
             @click="save()"
             :loading="loading"
-            :disabled="invalid || !validated"
+            :disabled="!isValid.value"
           >
             Update
           </v-btn>
           <v-btn
             v-else
             color="info"
-            text
+            variant="text"
             @click="save()"
             :loading="loading"
-            :disabled="invalid || !validated"
+            :disabled="!isValid.value"
           >
             Create
           </v-btn>
         </v-card-actions>
       </v-card>
-    </ValidationObserver>
+    </v-form>
   </v-dialog>
 </template>
 
 <script>
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { required } from "@/util/form"
+
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
-import { required } from "vee-validate/dist/rules"
 
 import ColorPickerInput from "@/components/ColorPickerInput.vue"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "OrganizationCreateEditDialog",
 
   components: {
     ColorPickerInput,
-    ValidationObserver,
-    ValidationProvider,
   },
 
   data() {

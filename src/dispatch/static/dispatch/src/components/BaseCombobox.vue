@@ -3,24 +3,24 @@
     :items="items"
     :label="label"
     :loading="loading"
-    :search-input.sync="search"
-    @update:search-input="getFilteredData()"
+    v-model:search="search"
+    @update:search="getFilteredData()"
     chips
     clearable
     hide-selected
-    :item-text="getItemName"
+    :item-title="getItemName"
     item-value="id"
     multiple
     no-filter
-    deletable-chips
+    closable-chips
     v-model="selectedItems"
   >
-    <slot name="selection" v-bind="{ attr, item, selected }" />
+    <template #chip="data">
+      <slot name="selection" v-bind="data" />
+    </template>
     <template #append-item>
       <v-list-item v-if="more" @click="loadMore()">
-        <v-list-item-content>
-          <v-list-item-subtitle> Load More </v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
   </v-combobox>
@@ -35,7 +35,7 @@ export default {
   name: "BaseCombobox",
 
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: () => [],
     },
@@ -61,19 +61,16 @@ export default {
       numItems: 5,
       createdItem: null,
       search: null,
-      attr: {},
-      item: null,
-      selected: null,
     }
   },
 
   computed: {
     selectedItems: {
       get() {
-        return this.value
+        return this.modelValue
       },
       set(value) {
-        this.$emit("input", value)
+        this.$emit("update:modelValue", value)
       },
     },
   },

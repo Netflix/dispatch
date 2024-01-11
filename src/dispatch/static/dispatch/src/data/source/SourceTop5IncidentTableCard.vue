@@ -1,5 +1,5 @@
 <template>
-  <v-card :loading="loading" outlined elevation="0">
+  <v-card :loading="loading">
     <v-card-title>Top 5 Incidents</v-card-title>
     <v-data-table
       :headers="headers"
@@ -28,7 +28,7 @@ export default {
   name: "SourceTop5CostTableCard",
 
   props: {
-    value: {
+    modelValue: {
       type: Array,
       default: function () {
         return []
@@ -42,25 +42,23 @@ export default {
     },
   },
 
-  components: {},
-
   data() {
     return {
       headers: [
         {
-          text: "Name",
+          title: "Name",
           align: "start",
           sortable: true,
-          value: "name",
+          key: "name",
         },
-        { text: "Num Incidents", value: "incidents.length" },
+        { title: "Num Incidents", key: "incidents.length" },
       ],
     }
   },
 
   computed: {
     sources() {
-      return sortBy(this.value, ["incident.length"]).slice(0, 5)
+      return sortBy(this.modelValue, ["incident.length"]).slice(0, 5)
     },
   },
 }

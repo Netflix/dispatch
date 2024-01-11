@@ -1,13 +1,11 @@
 <template>
-  <v-layout row justify-center>
-    <v-dialog v-model="loading" persistent content content-class="centered-dialog">
-      <v-container fill-height>
-        <v-layout column justify-center align-center>
-          <v-progress-circular size="100" indeterminate color="info" />
-        </v-layout>
-      </v-container>
-    </v-dialog>
-  </v-layout>
+  <v-dialog v-model="loading" persistent>
+    <v-container fill-height>
+      <div class="d-flex flex-column justify-center align-center">
+        <v-progress-circular size="100" indeterminate color="info" />
+      </div>
+    </v-container>
+  </v-dialog>
 </template>
 
 <script>

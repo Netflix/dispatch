@@ -1,6 +1,4 @@
-import Vue from "vue"
-import Vuex from "vuex"
-import { getField } from "vuex-map-fields"
+import { createStore } from "vuex"
 
 import app from "@/app/store"
 import auth from "@/auth/store"
@@ -12,6 +10,9 @@ import definition from "@/definition/store"
 import document from "@/document/store"
 import entity from "@/entity/store"
 import entity_type from "@/entity_type/store"
+import forms from "@/forms/store"
+import forms_table from "@/forms/table/store"
+import forms_type from "@/forms/types/store"
 import incident_feedback from "@/feedback/incident/store"
 import incident from "@/incident/store"
 import incident_cost_type from "@/incident_cost_type/store"
@@ -48,9 +49,7 @@ import template from "@/document/template/store"
 import term from "@/term/store"
 import workflow from "@/workflow/store"
 
-Vue.use(Vuex)
-
-export default new Vuex.Store({
+export default createStore({
   modules: {
     app,
     auth,
@@ -62,6 +61,9 @@ export default new Vuex.Store({
     document,
     entity,
     entity_type,
+    forms,
+    forms_table,
+    forms_type,
     incident_feedback,
     incident,
     incident_cost_type,
@@ -77,12 +79,6 @@ export default new Vuex.Store({
     project,
     query,
     reference,
-    route: {
-      namespaced: true,
-      getters: {
-        getField,
-      },
-    },
     runbook,
     search,
     service,

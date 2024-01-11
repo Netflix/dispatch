@@ -29,6 +29,7 @@ const getDefaultSelectedState = () => {
     reported_at: null,
     resolution_reason: null,
     resolution: null,
+    saving: false,
     signals: [],
     status: null,
     storage: null,
@@ -36,6 +37,7 @@ const getDefaultSelectedState = () => {
     ticket: null,
     title: null,
     triage_at: null,
+    updated_at: null,
     visibility: null,
     conversation: null,
     workflow_instances: null,
@@ -89,10 +91,11 @@ const state = {
       },
       q: "",
       page: 1,
-      itemsPerPage: 10,
+      itemsPerPage: 25,
       sortBy: ["reported_at"],
       descending: [true],
     },
+    saving: false,
     loading: false,
     bulkEditLoading: false,
   },
@@ -149,7 +152,7 @@ const actions = {
             "notification_backend/addBeNotification",
             {
               text: `Case '${payload.name}' could not be found.`,
-              type: "error",
+              type: "exception",
             },
             { root: true }
           )
@@ -289,6 +292,12 @@ const actions = {
       })
   },
   save({ commit, dispatch }) {
+    if (Array.isArray(state.selected.reporter)) {
+      state.selected.reporter = state.selected.reporter[0]
+    }
+    if (Array.isArray(state.selected.assignee)) {
+      state.selected.assignee = state.selected.assignee[0]
+    }
     commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
       return CaseApi.create(state.selected)
@@ -432,6 +441,9 @@ const mutations = {
   SET_DIALOG_ESCALATE(state, value) {
     state.dialogs.showEscalateDialog = value
   },
+  SET_FILTERS(state, payload) {
+    state.table.options.filters = payload
+  },
   RESET_SELECTED(state) {
     state.selected = Object.assign(state.selected, getDefaultSelectedState())
   },
@@ -440,6 +452,9 @@ const mutations = {
   },
   SET_SELECTED_LOADING(state, value) {
     state.selected.loading = value
+  },
+  SET_SELECTED_SAVING(state, value) {
+    state.selected.saving = value
   },
 }
 

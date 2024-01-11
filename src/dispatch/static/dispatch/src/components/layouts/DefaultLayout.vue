@@ -9,7 +9,7 @@
     <refresh />
     <v-main>
       <div>
-        <v-container ma-0 pa-0 fluid>
+        <v-container fluid class="ma-0 pa-0">
           <router-view />
         </v-container>
       </div>

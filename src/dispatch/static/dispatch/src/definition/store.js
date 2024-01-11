@@ -30,8 +30,8 @@ const state = {
     options: {
       q: "",
       page: 1,
-      itemsPerPage: 10,
-      sortBy: "text",
+      itemsPerPage: 25,
+      sortBy: ["text"],
       descending: true,
       filters: {
         project: [],

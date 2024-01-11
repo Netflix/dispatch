@@ -2,14 +2,17 @@
   <v-app>
     <v-main>
       <organization-banner />
-      <v-app-bar app flat style="border-bottom: 1px solid #d2d2d2 !important" color="background0">
-        <router-link :to="{ name: 'IncidentOverview' }" style="text-decoration: none">
-          <span class="button font-weight-bold">D I S P A T C H</span>
-        </router-link>
-        <v-spacer />
-        <v-btn small color="primary" :to="{ name: 'report' }"> Report Incident </v-btn>
+      <v-app-bar flat style="border-bottom: 1px solid #d2d2d2 !important" color="background0">
+        <template #prepend>
+          <router-link :to="{ name: 'IncidentOverview' }" style="text-decoration: none">
+            <span class="button font-weight-bold">D I S P A T C H</span>
+          </router-link>
+        </template>
+        <template #append>
+          <v-btn size="small" color="primary" :to="{ name: 'report' }"> Report Incident </v-btn>
+        </template>
       </v-app-bar>
-      <v-card class="mx-auto ma-4" max-width="1000" flat outlined>
+      <v-card class="mx-auto ma-4" max-width="1000">
         <v-card-text>
           <incident-summary-table :items="items" :loading="loading" />
         </v-card-text>
@@ -19,7 +22,6 @@
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
 import SearchUtils from "@/search/utils"
 import RouterUtils from "@/router/utils"
 
@@ -46,13 +48,9 @@ export default {
   created() {
     this.filters = {
       ...this.filters,
-      ...RouterUtils.deserializeFilters(this.query),
+      ...RouterUtils.deserializeFilters(this.$route.query),
     }
     this.getActive()
-  },
-
-  computed: {
-    ...mapFields("route", ["query"]),
   },
 
   methods: {

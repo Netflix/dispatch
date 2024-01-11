@@ -31,7 +31,7 @@ const state = {
     options: {
       q: "",
       page: 1,
-      itemsPerPage: 10,
+      itemsPerPage: 25,
       sortBy: ["created_at"],
       descending: [true],
       filters: {
@@ -53,10 +53,14 @@ const actions = {
       { ...state.table.options },
       "ServiceFeedback"
     )
-    return ServiceFeedbackApi.getAll(params).then((response) => {
-      commit("SET_TABLE_LOADING", false)
-      commit("SET_TABLE_ROWS", response.data)
-    })
+    return ServiceFeedbackApi.getAll(params)
+      .then((response) => {
+        commit("SET_TABLE_LOADING", false)
+        commit("SET_TABLE_ROWS", response.data)
+      })
+      .catch(() => {
+        commit("SET_TABLE_LOADING", false)
+      })
   }, 500),
   removeShow({ commit }, feedback) {
     commit("SET_DIALOG_DELETE", true)

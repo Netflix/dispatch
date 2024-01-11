@@ -285,6 +285,7 @@ class IncidentBase(DispatchBase):
 
 class IncidentCreate(IncidentBase):
     commander: Optional[ParticipantUpdate]
+    commander_email: Optional[str]
     incident_priority: Optional[IncidentPriorityCreate]
     incident_severity: Optional[IncidentSeverityCreate]
     incident_type: Optional[IncidentTypeCreate]

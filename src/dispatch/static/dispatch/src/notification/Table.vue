@@ -15,46 +15,46 @@
     </v-row>
     <v-row no-gutters>
       <v-col>
-        <v-card elevation="0">
+        <v-card variant="flat">
           <v-card-title>
             <v-text-field
               v-model="q"
-              append-icon="search"
+              append-inner-icon="mdi-magnify"
               label="Search"
               single-line
               hide-details
               clearable
             />
           </v-card-title>
-          <v-data-table
+          <v-data-table-server
             :headers="headers"
             :items="items"
-            :server-items-length="total"
-            :page.sync="page"
-            :items-per-page.sync="itemsPerPage"
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="descending"
+            :items-length="total || 0"
+            v-model:page="page"
+            v-model:items-per-page="itemsPerPage"
+            v-model:sort-by="sortBy"
+            v-model:sort-desc="descending"
             :loading="loading"
             loading-text="Loading... Please wait"
           >
             <template #item.filters="{ item }">
               <search-filter v-for="filter in item.filters" :key="filter.id" :filter="filter" />
             </template>
-            <template #item.enabled="{ item }">
-              <v-simple-checkbox v-model="item.enabled" disabled />
+            <template #item.enabled="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #item.created_at="{ item }">
-              <v-tooltip bottom>
-                <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
+            <template #item.created_at="{ value }">
+              <v-tooltip location="bottom">
+                <template #activator="{ props }">
+                  <span v-bind="props">{{ formatRelativeDate(value) }}</span>
                 </template>
-                <span>{{ item.created_at | formatDate }}</span>
+                <span>{{ formatDate(value) }}</span>
               </v-tooltip>
             </template>
             <template #item.data-table-actions="{ item }">
-              <v-menu bottom left>
-                <template #activator="{ on }">
-                  <v-btn icon v-on="on">
+              <v-menu location="right" origin="overlap">
+                <template #activator="{ props }">
+                  <v-btn icon variant="text" v-bind="props">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>
                 </template>
@@ -68,7 +68,7 @@
                 </v-list>
               </v-menu>
             </template>
-          </v-data-table>
+          </v-data-table-server>
         </v-card>
       </v-col>
     </v-row>
@@ -82,12 +82,12 @@
               class="ml-10 mr-5"
               v-model="dailyReports"
               label="Send Daily Incident Report"
-              @change="updateDailyReports"
+              @update:model-value="updateDailyReports"
               :disabled="dailyReports == null"
             />
-            <v-tooltip max-width="500px" open-delay="50" bottom>
-              <template #activator="{ on }">
-                <v-icon v-on="on"> mdi-information </v-icon>
+            <v-tooltip max-width="500px" open-delay="50" location="bottom">
+              <template #activator="{ props }">
+                <v-icon v-bind="props"> mdi-information </v-icon>
               </template>
               <span>
                 If activated, Dispatch will send a daily report of incidents that are currently
@@ -104,6 +104,7 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+import { formatRelativeDate, formatDate } from "@/filters"
 
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
 import DeleteDialog from "@/notification/DeleteDialog.vue"
@@ -122,16 +123,20 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Name", value: "name", sortable: false },
-        { text: "Description", value: "description", sortable: false },
-        { text: "Type", value: "type", sortable: false },
-        { text: "Target", value: "target", sortable: false },
-        { text: "Filters", value: "filters", sortable: false },
-        { text: "Enabled", value: "enabled", sortable: false },
-        { text: "Created At", value: "created_at", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+        { title: "Name", value: "name", sortable: false },
+        { title: "Description", value: "description", sortable: false },
+        { title: "Type", value: "type", sortable: false },
+        { title: "Target", value: "target", sortable: false },
+        { title: "Filters", value: "filters", sortable: false },
+        { title: "Enabled", value: "enabled", sortable: false },
+        { title: "Created At", value: "created_at", sortable: true },
+        { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
+  },
+
+  setup() {
+    return { formatRelativeDate, formatDate }
   },
 
   computed: {
@@ -147,11 +152,10 @@ export default {
       "table.rows.total",
       "dailyReports",
     ]),
-    ...mapFields("route", ["query"]),
   },
 
   created() {
-    this.project = [{ name: this.query.project }]
+    this.project = [{ name: this.$route.query.project }]
 
     this.getAll()
 

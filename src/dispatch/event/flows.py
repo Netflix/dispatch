@@ -27,6 +27,7 @@ def log_incident_event(
     event_service.log_incident_event(
         db_session=db_session,
         incident_id=incident_id,
+        individual_id=individual.id,
         **event_in.__dict__,
     )
 
@@ -53,3 +54,18 @@ def delete_incident_event(
         db_session=db_session,
         uuid=event_uuid,
     )
+
+
+@background_task
+def export_timeline(
+    timeline_filters: dict,
+    incident_id: int,
+    db_session=None,
+    organization_slug: str = None,
+):
+    status = event_service.export_timeline(
+        db_session=db_session,
+        timeline_filters=timeline_filters,
+        incident_id=incident_id,
+    )
+    return status

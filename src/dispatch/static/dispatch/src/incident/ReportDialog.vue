@@ -2,16 +2,16 @@
   <v-dialog v-model="showReportDialog" persistent max-width="800px">
     <v-card>
       <v-card-title>
-        <span class="headline">Create Report</span>
+        <span class="text-h5">Create Report</span>
       </v-card-title>
       <v-card-text>
-        <v-tabs color="primary" v-model="type" right>
-          <v-tab key="tactical" href="#tactical"> Tactical </v-tab>
-          <v-tab key="executive" href="#executive"> Executive </v-tab>
+        <v-tabs color="primary" v-model="type" align-tabs="end">
+          <v-tab key="tactical" value="tactical"> Tactical </v-tab>
+          <v-tab key="executive" value="executive"> Executive </v-tab>
         </v-tabs>
-        <v-tabs-items v-model="type">
-          <v-tab-item key="tactical" value="tactical">
-            <v-card elevation="0">
+        <v-window v-model="type">
+          <v-window-item key="tactical" value="tactical">
+            <v-card>
               <v-card-text>
                 Tactical reports are only sent to incident participants and are generally used for
                 status reports.
@@ -38,9 +38,9 @@
                 />
               </v-card-text>
             </v-card>
-          </v-tab-item>
-          <v-tab-item key="executive" value="executive">
-            <v-card elevation="0">
+          </v-window-item>
+          <v-window-item key="executive" value="executive">
+            <v-card>
               <v-card-text>
                 Executive reports are sent to incident participants in addition to executive
                 distribution lists. These reports are generally more narrative driven and less
@@ -68,13 +68,13 @@
                 />
               </v-card-text>
             </v-card>
-          </v-tab-item>
-        </v-tabs-items>
+          </v-window-item>
+        </v-window>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn text @click="closeReportDialog()"> Cancel </v-btn>
-        <v-btn color="info" text @click="createReport()"> Create </v-btn>
+        <v-btn variant="text" @click="closeReportDialog()"> Cancel </v-btn>
+        <v-btn color="info" variant="text" @click="createReport()"> Create </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

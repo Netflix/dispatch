@@ -1,25 +1,25 @@
 <template>
   <v-dialog v-model="dialog" max-width="1000px" persistent :key="componentKey">
-    <template #activator="{ on, attrs }">
-      <v-btn v-bind="attrs" v-on="on" icon><v-icon>add</v-icon></v-btn>
+    <template #activator="{ props }">
+      <v-btn v-bind="props" icon variant="text"><v-icon>mdi-plus</v-icon></v-btn>
     </template>
     <v-card>
       <v-card-title>Create Entity Type </v-card-title>
       <v-stepper v-model="step">
         <v-stepper-header>
-          <v-stepper-step :complete="step > 1" step="1" editable>
+          <v-stepper-item :complete="step > 1" :value="1" editable>
             Define Expression
-          </v-stepper-step>
+          </v-stepper-item>
           <v-divider />
-          <v-stepper-step step="2" editable> Save </v-stepper-step>
+          <v-stepper-item :value="2" editable> Save </v-stepper-item>
         </v-stepper-header>
-        <v-stepper-items>
-          <v-stepper-content step="1">
+        <v-stepper-window>
+          <v-stepper-window-item :value="1">
             <v-card flat height="100%">
               <v-card-text>
                 Entity types are used to extract useful metadata out of signals. Define either a
                 RegEx or JSON Path expression to pull entities out of a signals raw json.
-                <v-radio-group label="Type" v-model="type" row>
+                <v-radio-group label="Type" v-model="type" inline>
                   <v-radio label="Regular Expression" value="regex" />
                   <v-radio label="JSON Path" value="json" />
                 </v-radio-group>
@@ -29,13 +29,14 @@
                   label="Regular Expression"
                   hint="A regular expression pattern for your entity type. The first capture group will be used."
                 >
-                  <template #append-outer>
+                  <template #append>
                     <v-btn
                       icon
+                      variant="text"
                       href="https://cheatography.com/davechild/cheat-sheets/regular-expressions/"
                       target="_blank"
                     >
-                      <v-icon> mdi-help-circle-outline </v-icon>
+                      <v-icon>mdi-help-circle-outline</v-icon>
                     </v-btn>
                   </template>
                 </v-text-field>
@@ -45,14 +46,15 @@
                   label="JSON Path"
                   hint="The field where the entity will be present. Supports JSON Path expressions."
                 >
-                  <template #append-outer>
+                  <template #append>
                     <v-btn
-                      icon
+                      icon="mdi-help-circle-outline"
+                      variant="text"
+                      density="comfortable"
+                      size="small"
                       href="https://github.com/json-path/JsonPath#path-examples"
                       target="_blank"
-                    >
-                      <v-icon> mdi-help-circle-outline </v-icon>
-                    </v-btn>
+                    />
                   </template>
                 </v-text-field>
                 Example signals:
@@ -62,21 +64,21 @@
                       <template v-if="!signalInstances.length">
                         No example signals are currently available for this definition.
                       </template>
-                      <template v-for="(instance, index) in signalInstances" v-else>
-                        <v-list-item :key="`item-${index}`">
-                          <v-list-item-content>
-                            <v-list-item-title>{{ instance.id }}</v-list-item-title>
-                          </v-list-item-content>
-                          <v-list-item-action>
-                            <v-btn icon @click="updateEditorValue(instance.raw)">
+                      <template
+                        v-else
+                        v-for="(instance, index) in signalInstances"
+                        :key="`item-${index}`"
+                      >
+                        <v-list-item>
+                          <v-list-item-title>{{ instance.id }}</v-list-item-title>
+
+                          <template #append>
+                            <v-btn icon variant="text" @click="updateEditorValue(instance.raw)">
                               <v-icon>mdi-arrow-right</v-icon>
                             </v-btn>
-                          </v-list-item-action>
+                          </template>
                         </v-list-item>
-                        <v-divider
-                          v-if="index < signalInstances.length - 1"
-                          :key="`divider-${index}`"
-                        />
+                        <v-divider v-if="index < signalInstances.length - 1" />
                       </template>
                     </v-list>
                   </v-col>
@@ -87,92 +89,73 @@
               </v-card-text>
               <v-card-actions>
                 <v-spacer />
-                <v-btn @click="dialog = false" text> Cancel </v-btn>
+                <v-btn @click="dialog = false" variant="text"> Cancel </v-btn>
                 <v-btn color="info" @click="step = 2" :loading="loading"> Continue </v-btn>
               </v-card-actions>
             </v-card>
-          </v-stepper-content>
-          <v-stepper-content step="2">
-            <ValidationObserver disabled v-slot="{ invalid, validated }">
+          </v-stepper-window-item>
+          <v-stepper-window-item :value="2">
+            <v-form @submit.prevent v-slot="{ isValid }">
               <v-card>
                 <v-card-text>
                   <v-card-text>
                     Provide a name and a description for your entity type:
                   </v-card-text>
-                  <ValidationProvider name="Name" rules="required" immediate>
-                    <v-text-field
-                      v-model="entityType.name"
-                      label="Name"
-                      hint="A name for your saved search."
-                      slot-scope="{ errors, valid }"
-                      :error-messages="errors"
-                      :success="valid"
-                      clearable
-                      required
-                    />
-                  </ValidationProvider>
-                  <ValidationProvider name="Description" immediate>
-                    <v-textarea
-                      v-model="entityType.description"
-                      label="Description"
-                      hint="A short description."
-                      slot-scope="{ errors, valid }"
-                      :error-messages="errors"
-                      :success="valid"
-                      clearable
-                      auto-grow
-                    />
-                  </ValidationProvider>
+                  <v-text-field
+                    v-model="entityType.name"
+                    label="Name"
+                    hint="A name for your saved search."
+                    clearable
+                    required
+                    name="Name"
+                    :rules="[rules.required]"
+                  />
+                  <v-textarea
+                    v-model="entityType.description"
+                    label="Description"
+                    hint="A short description."
+                    clearable
+                    auto-grow
+                    name="Description"
+                  />
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer />
-                  <v-btn @click="dialog = false" text> Cancel </v-btn>
+                  <v-btn @click="dialog = false" variant="text"> Cancel </v-btn>
                   <v-btn
                     color="info"
                     @click="saveEntityType()"
                     :loading="loading"
-                    :disabled="invalid || !validated"
+                    :disabled="!isValid.value"
                   >
                     Save
                   </v-btn>
                 </v-card-actions>
               </v-card>
-            </ValidationObserver>
-          </v-stepper-content>
-        </v-stepper-items>
+            </v-form>
+          </v-stepper-window-item>
+        </v-stepper-window>
       </v-stepper>
     </v-card>
   </v-dialog>
 </template>
 
 <script>
+import { required } from "@/util/form"
 import { mapMutations } from "vuex"
-import { mapFields } from "vuex-map-fields"
-import { required } from "vee-validate/dist/rules"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+
 import PlaygroundTextBox from "@/entity_type/playground/PlaygroundTextBox.vue"
 import SearchUtils from "@/search/utils"
 import SignalApi from "@/signal/api"
 import EntityTypeApi from "@/entity_type/api"
 import { isValidJsonPath, isValidRegex } from "@/entity_type/utils.js"
 
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
-extend("regexp", {
-  validate(value) {
-    return isValidRegex(value)
-  },
-  message: "Must be a valid regular expression pattern.",
-})
-extend("jpath", {
-  validate(value) {
-    return isValidJsonPath(value)
-  },
-  message: "Must be a valid JSON path expression.",
-})
 export default {
+  setup() {
+    return {
+      rules: { required },
+    }
+  },
   name: "EntityTypeCreateDialog",
   props: {
     project: {
@@ -228,11 +211,6 @@ export default {
   },
   components: {
     PlaygroundTextBox,
-    ValidationObserver,
-    ValidationProvider,
-  },
-  computed: {
-    ...mapFields("route", ["query"]),
   },
   methods: {
     ...mapMutations("playground", ["updatePattern", "updateJsonPath"]),
@@ -242,7 +220,7 @@ export default {
         this.loading = false
         this.dialog = false
         this.reset()
-        this.$emit("input", resp.data)
+        this.$emit("create", resp.data)
       })
     },
     isValidRegex,

@@ -34,7 +34,7 @@ instance.interceptors.request.use(
 
 instance.interceptors.request.use(function (config) {
   if (!config.url.includes("organization")) {
-    let currentOrganization = store.state.route.params.organization || null
+    let currentOrganization = router.currentRoute.value.params.organization || "default"
 
     if (currentOrganization) {
       config.url = `${currentOrganization}${config.url}`
@@ -71,7 +71,7 @@ instance.interceptors.response.use(
           "notification_backend/addBeNotification",
           {
             text: errorText,
-            type: "error",
+            type: "exception",
           },
           { root: true }
         )
@@ -83,7 +83,7 @@ instance.interceptors.response.use(
           "notification_backend/addBeNotification",
           {
             text: errorText,
-            type: "error",
+            type: "exception",
           },
           { root: true }
         )
@@ -95,7 +95,7 @@ instance.interceptors.response.use(
           "notification_backend/addBeNotification",
           {
             text: errorText,
-            type: "error",
+            type: "exception",
           },
           { root: true }
         )
@@ -116,7 +116,7 @@ instance.interceptors.response.use(
           "notification_backend/addBeNotification",
           {
             text: errorText,
-            type: "error",
+            type: "exception",
           },
           { root: true }
         )
