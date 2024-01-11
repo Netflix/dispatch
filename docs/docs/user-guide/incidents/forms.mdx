@@ -35,7 +35,8 @@ The `if` attribute can be a complex JavaScript boolean expression. Refer to othe
 ```[ { "type": "boolean", "title": "Is this a good form?", "name": "good_form", "hint": "Check if you like"},
      { "type": "select", "if": "$good_form", "title": "How good?", "options": [ "Very much", "A lot", "It's ok" ], "multiple": false, "name": "like_level"},
      { "type": "text", "if": "$good_form && $like_level && $like_level.includes('A lot')", "title": "Provide more feedback", "name": "feedback"}
-   ]```
+   ]
+```
 
 ## Fill out a form in an incident
 
