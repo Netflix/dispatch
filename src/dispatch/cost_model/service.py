@@ -1,5 +1,6 @@
 from datetime import datetime
 import logging
+from typing import List
 
 from .models import (
     CostModel,
@@ -29,8 +30,15 @@ def has_unique_plugin_event(cost_model_in: CostModelRead) -> bool:
     return True
 
 
+def get_all(*, db_session, project_id: int) -> List[CostModel]:
+    """Returns all cost models."""
+    if project_id:
+        return db_session.query(CostModel).filter(CostModel.project_id == project_id)
+    return db_session.query(CostModel)
+
+
 def get_cost_model_activity_by_id(*, db_session, cost_model_activity_id: int) -> CostModelActivity:
-    """Returns an  activity based on the given  activity id."""
+    """Returns a cost model activity based on the given cost model activity id."""
     return (
         db_session.query(CostModelActivity)
         .filter(CostModelActivity.id == cost_model_activity_id)
@@ -39,7 +47,7 @@ def get_cost_model_activity_by_id(*, db_session, cost_model_activity_id: int) ->
 
 
 def delete_cost_model_activity(*, db_session, cost_model_activity_id: int):
-    """Deletes an  activity."""
+    """Deletes a cost model activity."""
     cost_model_activity = get_cost_model_activity_by_id(
         db_session=db_session, cost_model_activity_id=cost_model_activity_id
     )
@@ -48,7 +56,7 @@ def delete_cost_model_activity(*, db_session, cost_model_activity_id: int):
 
 
 def update_cost_model_activity(*, db_session, cost_model_activity_in: CostModelActivityUpdate):
-    """Updates an  activity."""
+    """Updates a cost model activity."""
     cost_model_activity = get_cost_model_activity_by_id(
         db_session=db_session, cost_model_activity_id=cost_model_activity_in.id
     )
@@ -76,23 +84,25 @@ def create_cost_model_activity(
 
 
 def delete(*, db_session, cost_model_id: int):
-    """Deletes an ."""
+    """Deletes a cost model."""
     cost_model = get_cost_model_by_id(db_session=db_session, cost_model_id=cost_model_id)
     if not cost_model:
-        raise ValueError(f"Unable to delete . No  found with id {cost_model_id}.")
+        raise ValueError(
+            f"Unable to delete cost model. No cost model found with id {cost_model_id}."
+        )
 
     db_session.delete(cost_model)
     db_session.commit()
 
 
 def update(*, db_session, cost_model_in: CostModelUpdate) -> CostModel:
-    """Updates an ."""
+    """Updates a cost model."""
     if not has_unique_plugin_event(cost_model_in):
-        raise KeyError("Unable to update . Duplicate plugin event ids detected.")
+        raise KeyError("Unable to update cost model. Duplicate plugin event ids detected.")
 
     cost_model = get_cost_model_by_id(db_session=db_session, cost_model_id=cost_model_in.id)
     if not cost_model:
-        raise ValueError("Unable to update . No  found with that id.")
+        raise ValueError("Unable to update cost model. No cost model found with that id.")
 
     cost_model.name = cost_model_in.name
     cost_model.description = cost_model_in.description
@@ -149,9 +159,9 @@ def update(*, db_session, cost_model_in: CostModelUpdate) -> CostModel:
 
 
 def create(*, db_session, cost_model_in: CostModelCreate) -> CostModel:
-    """Creates a new ."""
+    """Creates a new cost model."""
     if not has_unique_plugin_event(cost_model_in):
-        raise KeyError("Unable to update . Duplicate plugin event ids detected.")
+        raise KeyError("Unable to update cost model. Duplicate plugin event ids detected.")
 
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=cost_model_in.project
@@ -166,15 +176,15 @@ def create(*, db_session, cost_model_in: CostModelCreate) -> CostModel:
     db_session.add(cost_model)
     db_session.commit()
 
-    # Create activities after the  is created.
-    # We need the  id to map to the activity.
+    # Create activities after the cost model is created.
+    # We need the cost model id to map to the activity.
     if cost_model and cost_model_in.activities:
         for activity_in in cost_model_in.activities:
             activity_out = cost_model_service.create_cost_model_activity(
                 db_session=db_session, cost_model_activity_in=activity_in
             )
             if not activity_out:
-                log.error("Failed to create cost model activity. . Continuing.")
+                log.error("Failed to create cost model activity. Continuing.")
                 continue
 
             cost_model.activities.append(activity_out)
@@ -184,5 +194,5 @@ def create(*, db_session, cost_model_in: CostModelCreate) -> CostModel:
 
 
 def get_cost_model_by_id(*, db_session, cost_model_id: int) -> CostModel:
-    """Returns an  based on the given  id."""
+    """Returns a cost model based on the given cost model id."""
     return db_session.query(CostModel).filter(CostModel.id == cost_model_id).one()

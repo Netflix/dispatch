@@ -79,6 +79,16 @@
               :rules="[only_one]"
             />
           </v-col>
+          <v-col cols="12">
+            <cost-model-combobox
+              :project="project"
+              v-model="cost_model"
+              persistent-hint
+              clearable
+              label="Optional: Cost Model"
+              hint="If unassigned, the incident cost calculation defaults to the classic incident cost model."
+            />
+          </v-col>
         </v-row>
       </v-card-text>
       <v-card-actions>
@@ -111,6 +121,7 @@ import { isNavigationFailure, NavigationFailureType } from "vue-router"
 
 import router from "@/router"
 
+import CostModelCombobox from "@/cost_model/CostModelCombobox.vue"
 import DocumentApi from "@/document/api"
 import IncidentPrioritySelect from "@/incident/priority/IncidentPrioritySelect.vue"
 import IncidentTypeSelect from "@/incident/type/IncidentTypeSelect.vue"
@@ -127,6 +138,7 @@ export default {
   name: "ReportSubmissionCard",
 
   components: {
+    CostModelCombobox,
     IncidentTypeSelect,
     IncidentPrioritySelect,
     ProjectSelect,
@@ -153,6 +165,7 @@ export default {
       "selected.incident_priority",
       "selected.incident_type",
       "selected.commander_email",
+      "selected.cost_model",
       "selected.title",
       "selected.tags",
       "selected.description",

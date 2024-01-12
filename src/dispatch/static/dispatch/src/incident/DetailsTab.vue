@@ -180,11 +180,11 @@ export default {
     ...mapFields("incident", [
       "selected.cases",
       "selected.commander",
+      "selected.cost_model",
       "selected.created_at",
       "selected.description",
       "selected.duplicates",
       "selected.id",
-      "selected.cost_model",
       "selected.incident_priority",
       "selected.incident_severity",
       "selected.incident_type",
