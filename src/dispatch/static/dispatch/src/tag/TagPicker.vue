@@ -122,6 +122,14 @@ import SearchUtils from "@/search/utils"
 import TagApi from "@/tag/api"
 import { cloneDeep, debounce } from "lodash"
 
+const ALL_DISCOVERABILITY_TYPES = [
+  { model: "TagType", field: "discoverable_incident", op: "==", value: "true" },
+  { model: "TagType", field: "discoverable_case", op: "==", value: "true" },
+  { model: "TagType", field: "discoverable_signal", op: "==", value: "true" },
+  { model: "TagType", field: "discoverable_query", op: "==", value: "true" },
+  { model: "TagType", field: "discoverable_source", op: "==", value: "true" },
+]
+
 export default {
   data() {
     return {
@@ -288,14 +296,25 @@ export default {
         // modify the query and add a tag type filter
         let [tagType, query] = filterOptions.q.split("/")
         filterOptions.q = query
-        filters["tagTypeFilter"] = [
-          { model: "TagType", field: "name", op: "==", value: tagType },
-          { model: "TagType", field: "discoverable_" + this.model, op: "==", value: "true" },
-        ]
+        if (this.model) {
+          filters["tagTypeFilter"] = [
+            { model: "TagType", field: "name", op: "==", value: tagType },
+            { model: "TagType", field: "discoverable_" + this.model, op: "==", value: "true" },
+          ]
+        } else {
+          filters["tagTypeFilter"] = [
+            { model: "TagType", field: "name", op: "==", value: tagType },
+            ...ALL_DISCOVERABILITY_TYPES,
+          ]
+        }
       } else {
-        filters["tagTypeFilter"] = [
-          { model: "TagType", field: "discoverable_" + this.model, op: "==", value: "true" },
-        ]
+        if (this.model) {
+          filters["tagTypeFilter"] = [
+            { model: "TagType", field: "discoverable_" + this.model, op: "==", value: "true" },
+          ]
+        } else {
+          filters["tagTypeFilter"] = ALL_DISCOVERABILITY_TYPES
+        }
       }
 
       filterOptions = {

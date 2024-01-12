@@ -100,7 +100,7 @@ import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
 
 import ServiceSelect from "@/service/ServiceSelect.vue"
-import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
+import TagFilterAutoComplete from "@/tag/TagPicker.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import EnvironmentSelect from "@/data/source/environment/EnvironmentSelect.vue"
 import StatusSelect from "@/data/source/status/StatusSelect.vue"

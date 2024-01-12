@@ -35,7 +35,7 @@
           <tag-type-filter-combobox v-model="local_tag_type" label="Tag Types" />
         </v-list-item>
         <v-list-item>
-          <tag-filter-auto-complete v-model="local_tag" label="Tags" />
+          <tag-filter-auto-complete v-model="local_tag" label="Tags" model="incident" />
         </v-list-item>
         <v-list-item>
           <v-card class="mx-auto">
@@ -76,7 +76,7 @@ import IncidentSeverityCombobox from "@/incident/severity/IncidentSeverityCombob
 import IncidentStatusMultiSelect from "@/incident/status/IncidentStatusMultiSelect.vue"
 import IncidentTypeCombobox from "@/incident/type/IncidentTypeCombobox.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
-import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
+import TagFilterAutoComplete from "@/tag/TagPicker.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
 import ParticipantSelect from "@/components/ParticipantSelect.vue"
 

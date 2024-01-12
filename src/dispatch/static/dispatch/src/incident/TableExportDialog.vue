@@ -26,7 +26,7 @@
                   <project-combobox v-model="project" label="Projects" />
                 </v-list-item>
                 <v-list-item>
-                  <tag-filter-auto-complete v-model="tag" label="Tags" />
+                  <tag-filter-auto-complete v-model="tag" label="Tags" model="incident" />
                 </v-list-item>
                 <v-list-item>
                   <tag-type-filter-combobox v-model="tag_type" label="Tag Types" />
@@ -113,7 +113,7 @@ import IncidentStatus from "@/incident/status/IncidentStatus.vue"
 import IncidentStatusMultiSelect from "@/incident/status/IncidentStatusMultiSelect.vue"
 import IncidentTypeCombobox from "@/incident/type/IncidentTypeCombobox.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
-import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
+import TagFilterAutoComplete from "@/tag/TagPicker.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
 
 export default {

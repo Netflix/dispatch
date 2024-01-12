@@ -20,7 +20,7 @@
           <project-combobox v-model="filters.project" label="Projects" />
         </v-list-item>
         <v-list-item>
-          <tag-filter-auto-complete v-model="filters.tag" label="Tags" />
+          <tag-filter-auto-complete v-model="filters.tag" label="Tags" model="case" />
         </v-list-item>
         <v-list-item>
           <case-type-combobox v-model="filters.case_type" />
@@ -54,7 +54,7 @@ import DateWindowInput from "@/components/DateWindowInput.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import RouterUtils from "@/router/utils"
 import SearchUtils from "@/search/utils"
-import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
+import TagFilterAutoComplete from "@/tag/TagPicker.vue"
 
 let today = function () {
   let now = new Date()
