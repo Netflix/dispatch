@@ -30,7 +30,7 @@ oauth2client
 openai
 pandas
 pdpyras
-protobuf
+protobuf<4.24.0,>=3.6.1
 psycopg2-binary
 pydantic==1.*
 pyparsing
