@@ -58,25 +58,59 @@
               <v-col cols="12">
                 <icon-picker-input v-model="icon" :color="color" />
               </v-col>
-
+              <v-divider class="mb-2" />
               <v-col cols="5">
-                <v-checkbox
-                  v-model="discoverable"
-                  label="Discoverable"
-                  hint="Should this type be visible the selection boxes?"
-                />
+                <span class="text-body-1">Discoverablitity</span>
               </v-col>
               <v-col cols="7">
                 <v-tooltip max-width="500px" open-delay="50" location="bottom">
                   <template #activator="{ props }">
-                    <v-icon class="mt-4" v-bind="props">mdi-information</v-icon>
+                    <v-icon v-bind="props">mdi-information</v-icon>
                   </template>
                   <span>
-                    If activated, this type will be visible in incident and case tag type selection
-                    boxes.
+                    If activated, this tag type will be visible in tag selection boxes for these
+                    entities.
                   </span>
                 </v-tooltip>
               </v-col>
+              <v-col cols="12">
+                <v-checkbox
+                  class="discoverable_checkbox"
+                  v-model="discoverable_incident"
+                  hide-details
+                  label="Incidents"
+                  hint="Should this type be visible in incidents?"
+                />
+                <v-checkbox
+                  class="discoverable_checkbox"
+                  v-model="discoverable_case"
+                  hide-details
+                  label="Cases"
+                  hint="Should this type be visible in cases?"
+                />
+                <v-checkbox
+                  class="discoverable_checkbox"
+                  v-model="discoverable_query"
+                  hide-details
+                  label="Queries"
+                  hint="Should this type be visible in queries?"
+                />
+                <v-checkbox
+                  class="discoverable_checkbox"
+                  v-model="discoverable_signal"
+                  hide-details
+                  label="Signals"
+                  hint="Should this type be visible in signals?"
+                />
+                <v-checkbox
+                  class="discoverable_checkbox"
+                  v-model="discoverable_source"
+                  hide-details
+                  label="Sources"
+                  hint="Should this type be visible in sources?"
+                />
+              </v-col>
+              <v-divider />
               <v-col cols="5">
                 <v-checkbox
                   v-model="exclusive"
@@ -128,7 +162,11 @@ export default {
       "selected.name",
       "selected.project",
       "selected.description",
-      "selected.discoverable",
+      "selected.discoverable_incident",
+      "selected.discoverable_case",
+      "selected.discoverable_query",
+      "selected.discoverable_signal",
+      "selected.discoverable_source",
       "selected.icon",
       "selected.color",
       "selected.exclusive",
@@ -150,3 +188,9 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.discoverable_checkbox {
+  margin-top: -20px;
+}
+</style>

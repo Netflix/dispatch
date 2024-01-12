@@ -290,11 +290,11 @@ export default {
         filterOptions.q = query
         filters["tagTypeFilter"] = [
           { model: "TagType", field: "name", op: "==", value: tagType },
-          { model: "TagType", field: "discoverable", op: "==", value: "true" },
+          { model: "TagType", field: "discoverable_" + this.model, op: "==", value: "true" },
         ]
       } else {
         filters["tagTypeFilter"] = [
-          { model: "TagType", field: "discoverable", op: "==", value: "true" },
+          { model: "TagType", field: "discoverable_" + this.model, op: "==", value: "true" },
         ]
       }
 
