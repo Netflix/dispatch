@@ -797,7 +797,7 @@ def handle_new_participant_added(
             )
             participant.user_conversation_id = user_id
         except Exception as e:
-            log.warn(f"Error adding participant {user_id} to case {context['subject'].id}: {e}")
+            log.warn(f"Error adding participant {user_id} to Case {context['subject'].id}: {e}")
             continue
 
 @message_dispatcher.add(
