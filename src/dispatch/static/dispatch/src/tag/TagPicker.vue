@@ -8,9 +8,11 @@
       v-model="dummyText"
       class="main-panel"
     >
-      <v-icon slot="append-inner" class="panel-button">
-        {{ menu ? "mdi-minus" : "mdi-plus" }}
-      </v-icon>
+      <template #prepend-inner>
+        <v-icon class="panel-button">
+          {{ menu ? "mdi-minus" : "mdi-plus" }}
+        </v-icon>
+      </template>
       <div class="form-container mt-2">
         <div class="chip-group" v-show="selectedItems.length">
           <span v-for="(item, index) in selectedItems" :key="item">
