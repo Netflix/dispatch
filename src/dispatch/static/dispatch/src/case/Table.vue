@@ -31,21 +31,21 @@
             />
           </v-card-title>
           <v-data-table-server
+            show-select
+            return-object
             :headers="headers"
             :items="items"
             :items-length="total || 0"
             :loading="loading"
             v-model="selected"
             loading-text="Loading... Please wait"
-            show-select
-            return-object
-            @click:row="showCasePage"
             :sort-by="['reported_at']"
+            :items-per-page="itemsPerPage"
+            @click:row="showCasePage"
+            @update:options="loadItems"
             :footer-props="{
               'items-per-page-options': [10, 25, 50, 100],
             }"
-            :options="options.value"
-            @update:options="loadItems"
           >
             <template #item.case_severity.name="{ value }">
               <case-severity :severity="value" />
@@ -153,6 +153,7 @@ const store = useStore()
 const router = useRouter()
 const route = useRoute()
 
+const itemsPerPage = ref(25)
 const showEditSheet = ref(false)
 
 const headers = [
@@ -186,6 +187,7 @@ const showRun = (data) => store.dispatch("workflow/showRun", data)
 const showNewSheet = () => store.dispatch("case_management/showNewSheet")
 const showDeleteDialog = (item) => store.dispatch("case_management/showDeleteDialog", item)
 const showEscalateDialog = (item) => store.dispatch("case_management/showEscalateDialog", item)
+
 const getAll = () => {
   store.dispatch("case_management/getAll", caseManagement.value.table.options)
 }
@@ -203,19 +205,20 @@ const showCasePage = (e, { item }) => {
   router.push({ name: "CasePage", params: { name: item.name } })
 }
 
-const options = ref({
-  page: caseManagement.value.table.options.page,
-  itemsPerPage: caseManagement.value.table.options.itemsPerPage,
-  sortBy: caseManagement.value.table.options.sortBy,
-  descending: caseManagement.value.table.options.descending,
-})
-
 function loadItems({ page, itemsPerPage, sortBy }) {
-  options.value.page = page
-  options.value.itemsPerPage = itemsPerPage
-  options.value.sortBy = sortBy
+  caseManagement.value.table.options.page = page
+  caseManagement.value.table.options.itemsPerPage = itemsPerPage
+  // Check if sortBy is an array of objects (after manual click)
+  if (sortBy.length && typeof sortBy[0] === "object") {
+    // Take the first sort option
+    const sortOption = sortBy[0]
 
-  store.dispatch("case_management/getAll")
+    caseManagement.value.table.options.sortBy = [sortOption.key]
+    caseManagement.value.table.options.descending = [sortOption.order === "desc"]
+  } else {
+    caseManagement.value.table.options.sortBy = sortBy
+  }
+  getAll()
 }
 
 watch(
