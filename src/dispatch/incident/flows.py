@@ -20,6 +20,8 @@ from dispatch.individual import service as individual_service
 from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import Participant
+from dispatch.individual.models import IndividualContact
+from dispatch.team.models import TeamContact
 from dispatch.participant_role import flows as participant_role_flows
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
@@ -54,7 +56,7 @@ log = logging.getLogger(__name__)
 
 def get_incident_participants(
     incident: Incident, db_session: Session
-) -> tuple[list[Participant | None], list[Participant | None]]:
+) -> tuple[list[IndividualContact | None], list[TeamContact | None]]:
     """
     Get additional participants (individuals and teams) based on
     incident description, type, and priority.
