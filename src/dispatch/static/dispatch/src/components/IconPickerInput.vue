@@ -132,7 +132,7 @@ export default {
     swatchStyle() {
       return {
         // set the color to the color prop
-        backgroundColor: this.color || "#1976D2FF",
+        backgroundColor: this.color || "#000000",
         cursor: "pointer",
         height: "30px",
         width: "30px",

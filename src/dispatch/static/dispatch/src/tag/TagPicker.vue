@@ -87,7 +87,7 @@
                     class="tag-group-rule-desc"
                     v-show="
                       group.isExclusive &&
-                      this.selectedItems.some((item) => item.tag_type.id === group.id)
+                      selectedItems.some((item) => item.tag_type.id === group.id)
                     "
                   >
                     Only 1 tag allowed for this category
@@ -119,10 +119,11 @@
   </span>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, onMounted } from "vue"
+import { cloneDeep } from "lodash"
 import SearchUtils from "@/search/utils"
 import TagApi from "@/tag/api"
-import { cloneDeep, debounce } from "lodash"
 
 const ALL_DISCOVERABILITY_TYPES = [
   { model: "TagType", field: "discoverable_incident", op: "==", value: "true" },
@@ -132,216 +133,199 @@ const ALL_DISCOVERABILITY_TYPES = [
   { model: "TagType", field: "discoverable_source", op: "==", value: "true" },
 ]
 
-export default {
-  data() {
-    return {
-      menu: false,
-      dummyText: " ",
-      items: [],
-      total: 0,
-      more: false,
-      groups: [],
-      searchQuery: "",
-      filteredMenuItems: [],
-      isDropdownOpen: false,
+const menu = ref(false)
+const dummyText = ref(" ")
+const items = ref([])
+const total = ref(0)
+const more = ref(false)
+const groups = ref([])
+const searchQuery = ref("")
+const filteredMenuItems = ref([])
+const isDropdownOpen = ref(false)
+const loading = ref(true)
+
+const props = defineProps({
+  modelValue: {
+    type: Array,
+    default: function () {
+      return []
+    },
+  },
+  project: {
+    type: Object,
+    default: null,
+  },
+  model: {
+    type: String,
+    default: null,
+  },
+  modelId: {
+    type: Number,
+    default: null,
+  },
+})
+
+const fetchData = () => {
+  loading.value = true
+
+  let filterOptions = {
+    q: null,
+    itemsPerPage: 100,
+    sortBy: ["tag_type.name"],
+    descending: [false],
+  }
+
+  let filters = {}
+
+  if (props.project) {
+    filters["project"] = [props.project]
+  }
+
+  // add a filter to only retrun discoverable tags
+  filters["tagFilter"] = [{ model: "Tag", field: "discoverable", op: "==", value: "true" }]
+
+  if (filterOptions.q && filterOptions.q.indexOf("/") != -1) {
+    // modify the query and add a tag type filter
+    let [tagType, query] = filterOptions.q.split("/")
+    filterOptions.q = query
+    if (props.model) {
+      filters["tagTypeFilter"] = [
+        { model: "TagType", field: "name", op: "==", value: tagType },
+        { model: "TagType", field: "discoverable_" + props.model, op: "==", value: "true" },
+      ]
+    } else {
+      filters["tagTypeFilter"] = [
+        { model: "TagType", field: "name", op: "==", value: tagType },
+        ...ALL_DISCOVERABILITY_TYPES,
+      ]
     }
-  },
-  props: {
-    modelValue: {
-      type: Array,
-      default: function () {
-        return []
-      },
-    },
-    project: {
-      type: Object,
-      default: null,
-    },
-    model: {
-      type: String,
-      default: null,
-    },
-    modelId: {
-      type: Number,
-      default: null,
-    },
-  },
-  directives: {
-    // add directive to close dropdown when clicked outside
-    ClickOutside: {
-      bind: function (el, binding, vnode) {
-        el.clickOutsideEvent = function (event) {
-          if (el && !(el == event.target || el.contains(event.target))) {
-            vnode.context[binding.expression](event)
-          }
-        }
-        document.body.addEventListener("click", el.clickOutsideEvent, { passive: true })
-      },
-      unbind: function (el) {
-        document.body.removeEventListener("click", el.clickOutsideEvent)
-      },
-    },
-  },
-  created() {
-    this.fetchData()
-  },
-  computed: {
-    selectedItems: {
-      get() {
-        return cloneDeep(this.modelValue)
-      },
-      set(value) {
-        const tags = value.filter((v) => {
-          if (typeof v === "string") {
-            return false
-          }
-          return true
-        })
-        this.$emit("update:modelValue", tags)
-      },
-    },
-  },
-  methods: {
-    closeMenu() {
-      this.menu = false
-    },
-    toggleMenu() {
-      this.menu = !this.menu
-    },
-    showDropdown(state) {
-      this.isDropdownOpen = state
-    },
-    removeItem(index) {
-      this.selectedItems = this.selectedItems.filter((item) => item.id !== index)
-    },
-    performSearch() {
-      this.filteredMenuItems = []
+  } else {
+    if (props.model) {
+      filters["tagTypeFilter"] = [
+        { model: "TagType", field: "discoverable_" + props.model, op: "==", value: "true" },
+      ]
+    } else {
+      filters["tagTypeFilter"] = ALL_DISCOVERABILITY_TYPES
+    }
+  }
 
-      this.groups.forEach((group) => {
-        const filteredItems = group.menuItems.filter((item) =>
-          item.name.toLowerCase().includes(this.searchQuery.toLowerCase())
-        )
-        this.filteredMenuItems.push(...filteredItems)
-      })
-    },
-    isItemDisabled(group, item) {
-      const isItemSelectedInGroup = this.selectedItems.some(
-        (selectedItem) => selectedItem.tag_type.id === group.id
-      )
-      return (
-        isItemSelectedInGroup &&
-        !this.selectedItems.some((selectedItem) => selectedItem.id === item.id)
-      )
-    },
-    getColorAsStyle(color) {
-      return `color: '${color}'`
-    },
-    getBackgroundColorAsStyle(color) {
-      return `background-color: '${color}'`
-    },
-    loadMore() {
-      this.numItems = this.numItems + 5
-      this.fetchData()
-    },
-    convertTagsToItems(tags) {
-      return tags.map((tag) => {
-        return {
-          ...tag,
-          color: tag.tag_type.color,
-          icon: tag.tag_type.icon,
-        }
-      })
-    },
-    convertData(data) {
-      var groupedObject = data.reduce(function (r, a) {
-        if (!r[a.tag_type.id]) {
-          r[a.tag_type.id] = {
-            id: a.tag_type.id,
-            icon: a.tag_type.icon,
-            label: a.tag_type.name,
-            desc: a.tag_type.description,
-            color: a.tag_type.color,
-            // isRequired: a.tag_type.required,
-            isExclusive: a.tag_type.exclusive,
-            menuItems: [],
-          }
-        }
-        r[a.tag_type.id].menuItems.push(a)
-        return r
-      }, Object.create(null))
-      var temp = Object.keys(groupedObject).map(function (key) {
-        return groupedObject[key]
-      })
-      return temp
-    },
-    fetchData() {
-      this.error = null
-      this.loading = "error"
+  filterOptions = {
+    ...filterOptions,
+    filters: filters,
+  }
 
-      let filterOptions = {
-        q: this.search,
-        itemsPerPage: 100, //this.numItems,
-        sortBy: ["tag_type.name"],
-        descending: [false],
+  filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+
+  TagApi.getAll(filterOptions).then((response) => {
+    items.value = response.data.items
+    total.value = response.data.total
+
+    if (items.value.length < total.value) {
+      more.value = true
+    } else {
+      more.value = false
+    }
+    groups.value = convertData(items.value)
+    loading.value = false
+  })
+}
+
+onMounted(fetchData)
+
+const emit = defineEmits(["update:modelValue"])
+
+const selectedItems = computed({
+  get: () => cloneDeep(props.modelValue),
+  set: (value) => {
+    const tags = value.filter((v) => {
+      if (typeof v === "string") {
+        return false
       }
+      return true
+    })
+    emit("update:modelValue", tags)
+  },
+})
 
-      let filters = {}
+const closeMenu = () => {
+  menu.value = false
+}
 
-      if (this.project) {
-        filters["project"] = [this.project]
+const toggleMenu = () => {
+  menu.value = !menu.value
+}
+
+const showDropdown = (state) => {
+  isDropdownOpen.value = state
+}
+
+const removeItem = (index) => {
+  selectedItems.value = selectedItems.value.filter((item) => item.id !== index)
+}
+
+const performSearch = () => {
+  filteredMenuItems.value = []
+
+  groups.value.forEach((group) => {
+    const filteredItems = group.menuItems.filter((item) =>
+      item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+    )
+    filteredMenuItems.value.push(...filteredItems)
+  })
+}
+
+const isItemDisabled = (group, item) => {
+  const isItemSelectedInGroup = selectedItems.value.some(
+    (selectedItem) => selectedItem.tag_type.id === group.id
+  )
+  return (
+    isItemSelectedInGroup &&
+    !selectedItems.value.some((selectedItem) => selectedItem.id === item.id)
+  )
+}
+
+const getColorAsStyle = (color) => {
+  return `color: '${color}'`
+}
+
+const getBackgroundColorAsStyle = (color) => {
+  return `background-color: '${color}'`
+}
+
+const convertData = (data) => {
+  var groupedObject = data.reduce(function (r, a) {
+    if (!r[a.tag_type.id]) {
+      r[a.tag_type.id] = {
+        id: a.tag_type.id,
+        icon: a.tag_type.icon,
+        label: a.tag_type.name,
+        desc: a.tag_type.description,
+        color: a.tag_type.color,
+        // isRequired: a.tag_type.required,
+        isExclusive: a.tag_type.exclusive,
+        menuItems: [],
       }
+    }
+    r[a.tag_type.id].menuItems.push(a)
+    return r
+  }, Object.create(null))
+  var temp = Object.keys(groupedObject).map(function (key) {
+    return groupedObject[key]
+  })
+  return temp
+}
 
-      // add a filter to only retrun discoverable tags
-      filters["tagFilter"] = [{ model: "Tag", field: "discoverable", op: "==", value: "true" }]
-
-      if (filterOptions.q && filterOptions.q.indexOf("/") != -1) {
-        // modify the query and add a tag type filter
-        let [tagType, query] = filterOptions.q.split("/")
-        filterOptions.q = query
-        if (this.model) {
-          filters["tagTypeFilter"] = [
-            { model: "TagType", field: "name", op: "==", value: tagType },
-            { model: "TagType", field: "discoverable_" + this.model, op: "==", value: "true" },
-          ]
-        } else {
-          filters["tagTypeFilter"] = [
-            { model: "TagType", field: "name", op: "==", value: tagType },
-            ...ALL_DISCOVERABILITY_TYPES,
-          ]
-        }
-      } else {
-        if (this.model) {
-          filters["tagTypeFilter"] = [
-            { model: "TagType", field: "discoverable_" + this.model, op: "==", value: "true" },
-          ]
-        } else {
-          filters["tagTypeFilter"] = ALL_DISCOVERABILITY_TYPES
-        }
+const vClickOutside = {
+  mounted(el, binding) {
+    el.clickOutsideEvent = function (event) {
+      if (!(el === event.target || el.contains(event.target))) {
+        binding.value(event)
       }
-
-      filterOptions = {
-        ...filterOptions,
-        filters: filters,
-      }
-
-      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
-
-      TagApi.getAll(filterOptions).then((response) => {
-        this.items = response.data.items
-        this.total = response.data.total
-
-        if (this.items.length < this.total) {
-          this.more = true
-        } else {
-          this.more = false
-        }
-        this.groups = this.convertData(this.items)
-        this.loading = false
-      })
-    },
-    getFilteredData: debounce(function () {
-      this.fetchData()
-    }, 500),
+    }
+    document.body.addEventListener("click", el.clickOutsideEvent, { passive: true })
+  },
+  unmounted(el) {
+    document.body.removeEventListener("click", el.clickOutsideEvent)
   },
 }
 </script>

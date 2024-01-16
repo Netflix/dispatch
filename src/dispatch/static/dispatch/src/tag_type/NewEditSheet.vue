@@ -53,7 +53,7 @@
                 />
               </v-col>
               <v-col cols="12">
-                <color-picker-input v-model="color" />
+                <color-picker-input v-model="color" default="#000000" />
               </v-col>
               <v-col cols="12">
                 <icon-picker-input v-model="icon" :color="color" />
