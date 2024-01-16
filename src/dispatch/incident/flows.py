@@ -162,7 +162,7 @@ def incident_create_resources(*, incident: Incident, db_session=None) -> Inciden
     )
     if participant_with_observer_role:
         # add to list
-        individual_participants.append(participant_with_observer_role)
+        individual_participants.append(participant_with_observer_role.individual)
 
     # we create the tactical group
     if not incident.tactical_group:
