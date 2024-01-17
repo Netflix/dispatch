@@ -99,7 +99,7 @@ def update_group(
     if group is None:
         log.warning(f"Group not updated. No group provided. Cannot {group_action} for {group_member}.")
         return
-    
+
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=subject.project.id, plugin_type="participant-group"
     )
