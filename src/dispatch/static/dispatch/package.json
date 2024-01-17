@@ -69,7 +69,7 @@
     "roboto-fontface": "^0.10.0",
     "sortablejs": "^1.15.0",
     "swrv": "^1.0.4",
-    "vue": "^3.3.4",
+    "vue": "^3.4.12",
     "vue-router": "^4.2.5",
     "vue3-apexcharts": "^1.4.4",
     "vue3-markdown-it": "^1.0.10",
@@ -80,7 +80,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",
-    "@vitejs/plugin-vue": "^4.5.0",
+    "@vitejs/plugin-vue": "^5.0.3",
     "@vue/test-utils": "^2.4.3",
     "babel-runtime": "^6.26.0",
     "cross-env": "^7.0.3",
@@ -98,9 +98,9 @@
     "resize-observer-polyfill": "^1.5.1",
     "sass": "^1.69.5",
     "unplugin-vue-components": "^0.22.12",
-    "vite": "^4.5.0",
+    "vite": "^5.0.11",
     "vite-plugin-monaco-editor": "^1.1.0",
-    "vite-plugin-vuetify": "^1.0.2",
+    "vite-plugin-vuetify": "^2.0.1",
     "vitest": "^0.34.6"
   }
 }
