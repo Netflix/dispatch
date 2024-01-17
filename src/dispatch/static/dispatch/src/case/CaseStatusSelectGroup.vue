@@ -1,21 +1,49 @@
 <template>
   <v-item-group mandatory>
-    <v-dialog v-model="dialogVisible" max-width="600">
-      <v-card>
-        <v-card-title>Update Case Status</v-card-title>
-        <v-card-text>
-          Are you sure you want to change the case status from {{ modelValue.status }} to
-          {{ selectedStatus }}
+    <v-dialog v-model="dialogVisible" max-width="660">
+      <v-card class="mx-auto">
+        <v-card-title class="ml-2">Update Case Status</v-card-title>
+        <v-card-text class="dispatch-text-title">
+          Are you sure you want to change the case status from
+          <v-chip size="small" class="ml-1 mr-1" :color="statusColors[modelValue.status]">
+            {{ modelValue.status }}
+          </v-chip>
+          to
+          <v-chip size="small" class="ml-1 mr-1" :color="statusColors[selectedStatus]">
+            {{ selectedStatus }}
+          </v-chip>
+          ?
         </v-card-text>
-        <v-btn
-          class="ml-6 mb-4"
-          size="small"
-          color="info"
-          elevation="1"
-          @click="changeStatus(selectedStatus)"
-        >
-          Submit
-        </v-btn>
+        <v-card-actions class="pt-4">
+          <v-spacer />
+
+          <v-btn @click="changeStatus(selectedStatus)"> Submit </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="alreadySelectedDialog" max-width="600">
+      <v-card class="mx-auto">
+        <v-card-title class="ml-2">Status Not Changed</v-card-title>
+        <v-card-text class="dispatch-text-title">
+          This case was moved to the status
+          <v-chip size="small" class="ml-1 mr-1" :color="statusColors[selectedStatus]">
+            {{ selectedStatus }}
+          </v-chip>
+          on
+          <DTooltip :text="formatToTimeZones(selectedStatusTooltip)" hotkeys="">
+            <template #activator="{ tooltip }">
+              <v-chip class="ml-1" v-bind="tooltip">
+                {{ formatToUTC(selectedStatusTooltip) }}
+              </v-chip>
+            </template>
+          </DTooltip>
+        </v-card-text>
+        <v-card-actions class="pt-4">
+          <v-spacer />
+
+          <v-btn @click="alreadySelectedDialog = false"> Dismiss </v-btn>
+        </v-card-actions>
       </v-card>
     </v-dialog>
 
@@ -74,6 +102,7 @@
 import { computed, watch, ref } from "vue"
 import { useStore } from "vuex"
 import { useSavingState } from "@/composables/useSavingState"
+import { formatToUTC, formatToTimeZones } from "@/filters"
 import DTooltip from "@/components/DTooltip.vue"
 import CaseApi from "@/case/api"
 
@@ -90,6 +119,8 @@ const { setSaving } = useSavingState()
 let selectedStatus = ref(null)
 let dialogVisible = ref(false)
 let activeStatus = ref(props.modelValue.status)
+let alreadySelectedDialog = ref(false)
+let selectedStatusTooltip = ref(null)
 
 const statuses = computed(() => [
   {
@@ -126,6 +157,14 @@ const statuses = computed(() => [
   },
 ])
 
+const statusColors = computed(() => {
+  const colorMap = {}
+  statuses.value.forEach((status) => {
+    colorMap[status.name] = status.color
+  })
+  return colorMap
+})
+
 const changeStatus = async (newStatus) => {
   const caseDetails = store.state.case_management.selected
   const previousStatus = activeStatus.value
@@ -158,8 +197,14 @@ const changeStatus = async (newStatus) => {
 }
 
 const openDialog = (newStatus) => {
+  const statusObj = statuses.value.find((status) => status.name === newStatus) // find the status object
   selectedStatus.value = newStatus
-  dialogVisible.value = true
+  selectedStatusTooltip.value = statusObj.tooltip // store the tooltip
+  if (isActiveStatus(newStatus)) {
+    alreadySelectedDialog.value = true
+  } else {
+    dialogVisible.value = true
+  }
 }
 
 watch(
@@ -175,6 +220,8 @@ const isActiveStatus = (status) => {
 </script>
 
 <style scoped>
+@import "@/styles/index.scss";
+
 .arrow {
   clip-path: polygon(0% 0%, 95% 0%, 100% 50%, 95% 100%, 0% 100%);
   padding-top: 1px;

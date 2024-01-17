@@ -259,79 +259,7 @@ def find_entities(
         list[Entity]: A list of entities found in the SignalInstance.
     """
 
-    def _find_entities_by_regex(
-        val: Union[dict, str, list],
-        signal_instance: SignalInstance,
-        entity_type_pairs: list[EntityTypePair],
-    ) -> Generator[EntityCreate, None, None]:
-        """
-        Find entities in a value using regular expressions.
-
-        Args:
-            val: The value to search for entities in.
-            signal_instance (SignalInstance): The SignalInstance being processed.
-            entity_type_pairs (list): A list of (entity_type, entity_regex, field) tuples to search for.
-
-        Yields:
-            EntityCreate: An entity found in the value.
-
-        Examples:
-            >>> entity_type_pairs = [
-            ...     (
-            ...         EntityType("PERSON", r"([A-Z][a-z]+)+"),
-            ...         re.compile(r"([A-Z][a-z]+)+"),
-            ...         None
-            ...     ),
-            ...     (
-            ...         EntityType("DATE", r"(\d{4}(-\d{2}){2}|\d{4}\/\d{2}\/\d{2})"), # noqa
-            ...         re.compile(r"(\d{4}(-\d{2}){2}|\\d{4}\/\d{2}\/\d{2})"), # noqa
-            ...         None
-            ...     )
-            ... ]
-
-            >>> signal_instance = SignalInstance(raw={"text": "John Doe was born on 1987-05-12."})
-
-            >>> entities = list(_find_entities_by_regex(signal_instance.raw, signal_instance, entity_type_pairs))
-
-            >>> entities[0].value
-            'John Doe'
-            >>> entities[0].entity_type.name
-            'PERSON'
-            >>> entities[1].value
-            '1987-05-12'
-            >>> entities[1].entity_type.name
-            'DATE'
-        """
-        # If the value is a dictionary, search its key-value pairs recursively
-        if isinstance(val, dict):
-            for _, subval in val.items():
-                yield from _find_entities_by_regex(
-                    subval,
-                    signal_instance,
-                    entity_type_pairs,
-                )
-
-        # If the value is a list, search its items recursively
-        elif isinstance(val, list):
-            for item in val:
-                yield from _find_entities_by_regex(
-                    item,
-                    signal_instance,
-                    entity_type_pairs,
-                )
-
-        # If the value is a string, search it for entity matches
-        elif isinstance(val, str):
-            for entity_type, entity_regex, _ in entity_type_pairs:
-                # Search the string for matches to the entity type's regular expression
-                if match := entity_regex.search(val):
-                    yield EntityCreate(
-                        value=match.group(0),
-                        entity_type=entity_type,
-                        project=signal_instance.project,
-                    )
-
-    def _find_entities_by_regex_and_jsonpath_expression(
+    def _find_entities_by_jsonpath_expression(
         signal_instance: SignalInstance,
         entity_type_pairs: list[EntityTypePair],
     ) -> Generator[EntityCreate, None, None]:
@@ -345,25 +273,18 @@ def find_entities(
         Yields:
             EntityCreate: An entity found in the SignalInstance.
         """
-        for entity_type, entity_regex, jpath in entity_type_pairs:
+        for entity_type, _, jpath in entity_type_pairs:
             if jpath:
                 try:
                     matches = jpath.find(signal_instance.raw)
                     for match in matches:
                         if isinstance(match.value, str):
-                            if entity_regex is None:
-                                yield EntityCreate(
-                                    value=match.value,
-                                    entity_type=entity_type,
-                                    project=signal_instance.project,
-                                )
-                            else:
-                                if match := entity_regex.search(match.value):
-                                    yield EntityCreate(
-                                        value=match.group(0),
-                                        entity_type=entity_type,
-                                        project=signal_instance.project,
-                                    )
+                            yield EntityCreate(
+                                value=match.value,
+                                entity_type=entity_type,
+                                project=signal_instance.project,
+                            )
+
                 except KeyError:
                     log.warning(
                         f"Unable to extract entity {str(jpath)} is not a valid JSONPath for Instance {signal_instance.id}."
@@ -388,23 +309,9 @@ def find_entities(
         if isinstance(type.regular_expression, str) or type.jpath is not None
     ]
 
-    # Filter the entity type pairs based on the field
-    filtered_entity_type_pairs = [
-        (entity_type, entity_regex, jpath)
-        for entity_type, entity_regex, jpath in entity_type_pairs
-        if not jpath
-    ]
+    entities = []
 
-    # Use the recursive search function to find entities in the raw data
-    entities = [
-        entity
-        for _, val in signal_instance.raw.items()
-        for entity in _find_entities_by_regex(val, signal_instance, filtered_entity_type_pairs)
-    ]
-
-    entities.extend(
-        _find_entities_by_regex_and_jsonpath_expression(signal_instance, entity_type_pairs)
-    )
+    entities.extend(_find_entities_by_jsonpath_expression(signal_instance, entity_type_pairs))
 
     # Filter out duplicate entities
     entities = list(set(entities))

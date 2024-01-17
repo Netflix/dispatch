@@ -35,7 +35,7 @@
           <tag-type-filter-combobox v-model="local_tag_type" label="Tag Types" />
         </v-list-item>
         <v-list-item>
-          <tag-filter-auto-complete v-model="local_tag" label="Tags" />
+          <tag-filter-auto-complete v-model="local_tag" label="Tags" model="case" />
         </v-list-item>
       </v-list>
       <v-card-actions>
@@ -57,7 +57,7 @@ import CaseStatusMultiSelect from "@/case/CaseStatusMultiSelect.vue"
 import CaseTypeCombobox from "@/case/type/CaseTypeCombobox.vue"
 import DateWindowInput from "@/components/DateWindowInput.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
-import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
+import TagFilterAutoComplete from "@/tag/TagPicker.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
 
 const store = useStore()

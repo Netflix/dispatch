@@ -47,6 +47,12 @@
                 </v-list>
               </v-menu>
             </template>
+            <template #item.discoverability="{ item }">
+              <span>{{ combine(item) }}</span>
+            </template>
+            <template #item.exclusive="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
+            </template>
           </v-data-table-server>
         </v-card>
       </v-col>
@@ -61,6 +67,14 @@ import { mapActions } from "vuex"
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
 import NewEditSheet from "@/tag_type/NewEditSheet.vue"
 
+const attribute_to_text = {
+  discoverable_case: "Cases",
+  discoverable_incident: "Incidents",
+  discoverable_query: "Queries",
+  discoverable_signal: "Signals",
+  discoverable_source: "Sources",
+}
+
 export default {
   name: "TagTypeTable",
 
@@ -73,6 +87,8 @@ export default {
       headers: [
         { title: "Name", value: "name", sortable: true },
         { title: "Description", value: "description", sortable: false },
+        { title: "Discoverability", value: "discoverability", sortable: false },
+        { title: "Exclusive", value: "exclusive", sortable: false },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
@@ -116,6 +132,15 @@ export default {
 
   methods: {
     ...mapActions("tag_type", ["getAll", "createEditShow", "removeShow"]),
+    combine(item) {
+      let result = Object.keys(attribute_to_text).reduce((acc, key) => {
+        if (item[key]) {
+          acc.push(attribute_to_text[key])
+        }
+        return acc
+      }, [])
+      return result.join(", ")
+    },
   },
 }
 </script>

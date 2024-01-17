@@ -31,19 +31,18 @@
             />
           </v-card-title>
           <v-data-table-server
+            show-select
+            return-object
             :headers="headers"
             :items="items"
             :items-length="total || 0"
             :loading="loading"
             v-model="selected"
             loading-text="Loading... Please wait"
-            show-select
-            return-object
+            :sort-by="['reported_at']"
+            :items-per-page="itemsPerPage"
             @click:row="showCasePage"
-            v-model:page="page"
-            v-model:items-per-page="itemsPerPage"
-            v-model:sort-by="sortBy"
-            v-model:sort-desc="descending"
+            @update:options="loadItems"
             :footer-props="{
               'items-per-page-options': [10, 25, 50, 100],
             }"
@@ -154,6 +153,7 @@ const store = useStore()
 const router = useRouter()
 const route = useRoute()
 
+const itemsPerPage = ref(25)
 const showEditSheet = ref(false)
 
 const headers = [
@@ -165,8 +165,8 @@ const headers = [
   { title: "Priority", value: "case_priority.name", sortable: true },
   { title: "Project", value: "project.name", sortable: true },
   { title: "Assignee", value: "assignee", sortable: true },
-  { title: "Reported At", value: "reported_at" },
-  { title: "Closed At", value: "closed_at" },
+  { title: "Reported At", value: "reported_at", sortable: true },
+  { title: "Closed At", value: "closed_at", sortable: true },
   { title: "", key: "data-table-actions", sortable: false, align: "end" },
 ]
 
@@ -175,8 +175,9 @@ const auth = computed(() => store.state.auth)
 
 const defaultUserProjects = computed(() => {
   let d = null
-  if (auth.value.projects) {
-    let d = auth.value.projects.filter((v) => v.default === true)
+
+  if (auth.value.currentUser.projects) {
+    let d = auth.value.currentUser.projects.filter((v) => v.default === true)
     return d.map((v) => v.project)
   }
   return d
@@ -186,7 +187,10 @@ const showRun = (data) => store.dispatch("workflow/showRun", data)
 const showNewSheet = () => store.dispatch("case_management/showNewSheet")
 const showDeleteDialog = (item) => store.dispatch("case_management/showDeleteDialog", item)
 const showEscalateDialog = (item) => store.dispatch("case_management/showEscalateDialog", item)
-const getAll = () => store.dispatch("case_management/getAll")
+
+const getAll = () => {
+  store.dispatch("case_management/getAll", caseManagement.value.table.options)
+}
 
 const items = computed(() => caseManagement.value.table.rows.items)
 const total = computed(() => caseManagement.value.table.rows.total)
@@ -201,6 +205,22 @@ const showCasePage = (e, { item }) => {
   router.push({ name: "CasePage", params: { name: item.name } })
 }
 
+function loadItems({ page, itemsPerPage, sortBy }) {
+  caseManagement.value.table.options.page = page
+  caseManagement.value.table.options.itemsPerPage = itemsPerPage
+  // Check if sortBy is an array of objects (after manual click)
+  if (sortBy.length && typeof sortBy[0] === "object") {
+    // Take the first sort option
+    const sortOption = sortBy[0]
+
+    caseManagement.value.table.options.sortBy = [sortOption.key]
+    caseManagement.value.table.options.descending = [sortOption.order === "desc"]
+  } else {
+    caseManagement.value.table.options.sortBy = sortBy
+  }
+  getAll()
+}
+
 watch(
   route,
   (newVal) => {
@@ -209,7 +229,14 @@ watch(
   { immediate: true }
 )
 
-getAll()
+const q = ref(caseManagement.value.table.options.q)
+watch(
+  () => q.value,
+  (newValue) => {
+    caseManagement.value.table.options.q = newValue
+    getAll()
+  }
+)
 
 // Deserialize the URL filters and apply them to the local filters
 const filters = {
@@ -230,50 +257,5 @@ watch(
     }
   },
   { deep: true } // Required to watch object properties inside filters
-)
-
-const q = ref(caseManagement.value.table.options.q)
-watch(
-  () => q.value,
-  (newValue) => {
-    caseManagement.value.table.options.q = newValue
-    getAll()
-  }
-)
-
-const page = ref(caseManagement.value.table.options.page)
-watch(
-  () => page.value,
-  (newValue) => {
-    caseManagement.value.table.options.page = newValue
-    getAll()
-  }
-)
-
-const itemsPerPage = ref(caseManagement.value.table.options.itemsPerPage)
-watch(
-  () => itemsPerPage.value,
-  (newValue) => {
-    caseManagement.value.table.options.itemsPerPage = newValue
-    getAll()
-  }
-)
-
-const sortBy = ref(caseManagement.value.table.options.sortBy)
-watch(
-  () => sortBy.value,
-  (newValue) => {
-    caseManagement.value.table.options.sortBy = newValue
-    getAll()
-  }
-)
-
-const descending = ref(caseManagement.value.table.options.descending)
-watch(
-  () => descending.value,
-  (newValue) => {
-    caseManagement.value.table.options.descending = newValue
-    getAll()
-  }
 )
 </script>

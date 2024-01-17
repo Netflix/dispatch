@@ -2,30 +2,42 @@
   <div>
     <PageHeader
       :case-id="caseDetails.id"
+      :case-description="caseDetails.description"
       :case-name="caseDetails.name"
       :case-visibility="caseDetails.visibility"
       :case-status="caseDetails.status"
+      :case-title="caseDetails.title"
       :case-updated-at="caseDetails.updated_at"
       :is-drawer-open="isDrawerOpen"
+      :active-tab="activeTab"
       @toggle-drawer="toggleDrawer"
     />
     <CaseAttributesDrawer v-model="caseDetails" :open="isDrawerOpen" />
     <VDivider />
     <div class="container mx-auto px-4">
       <RichEditor
-        :title="true"
-        v-model="caseDetails.title"
+        v-if="activeTab !== 'signals' && activeTab !== 'graph'"
+        :content="`<h2>${caseDetails.title}</h2>`"
         class="pl-8 pb-6 pt-6"
         @update:model-value="handleTitleUpdate"
       />
       <RichEditor
-        :description="true"
-        v-model="caseDetails.description"
+        v-if="activeTab !== 'signals' && activeTab !== 'graph'"
+        :content="`${caseDetails.description}`"
         class="pl-8 pb-6"
         @update:model-value="handleDescriptionUpdate"
       />
-      <CaseStatusSelectGroup v-model="caseDetails" class="pl-4 pb-8" />
-      <CaseTabs :loading="loading" v-model="caseDetails" />
+      <CaseStatusSelectGroup
+        v-if="activeTab !== 'signals' && activeTab !== 'graph'"
+        v-model="caseDetails"
+        class="pl-4 pb-8"
+      />
+      <CaseTabs
+        class="pt-8"
+        :loading="loading"
+        v-model="caseDetails"
+        v-model:active-tab="activeTab"
+      />
     </div>
   </div>
 </template>
@@ -86,6 +98,7 @@ const caseDefaults = {
 const caseDetails = ref(caseDefaults)
 const loading = ref(false)
 const isDrawerOpen = ref(true)
+const activeTab = ref("main")
 const { setSaving } = useSavingState()
 
 const toggleDrawer = () => {

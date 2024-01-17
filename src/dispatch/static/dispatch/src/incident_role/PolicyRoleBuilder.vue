@@ -55,7 +55,12 @@
           <v-expansion-panel-text>
             <v-list density="compact">
               <v-list-item>
-                <tag-filter-auto-complete label="Tags" :project="project" v-model="policy.tags" />
+                <tag-filter-auto-complete
+                  label="Tags"
+                  :project="project"
+                  v-model="policy.tags"
+                  model="incident"
+                />
               </v-list-item>
               <v-list-item>
                 <incident-priority-combobox
@@ -108,7 +113,7 @@ import IncidentPriorityCombobox from "@/incident/priority/IncidentPriorityCombob
 import IncidentRoleApi from "@/incident_role/api"
 import IncidentTypeCombobox from "@/incident/type/IncidentTypeCombobox.vue"
 import ServiceSelectNew from "@/service/ServiceSelectNew.vue"
-import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
+import TagFilterAutoComplete from "@/tag/TagPicker.vue"
 
 const props = defineProps({
   label: {

@@ -12,6 +12,9 @@ const getDefaultSelectedState = () => {
     project: null,
     default: false,
     exclusive: false,
+    icon: null,
+    color: null,
+    discoverable: true,
   }
 }
 

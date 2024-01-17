@@ -1,6 +1,6 @@
 <template>
   <v-form @submit.prevent v-slot="{ isValid }">
-    <v-navigation-drawer
+    <VResizeDrawer
       location="right"
       :width="navigation.width"
       ref="drawer"
@@ -38,8 +38,9 @@
         <v-tab value="participants"> Participants </v-tab>
         <v-tab value="timeline"> Timeline </v-tab>
         <v-tab value="tasks"> Tasks </v-tab>
-        <v-tab value="workflows"> Workflows </v-tab>
         <v-tab value="costs"> Costs </v-tab>
+        <v-tab value="forms"> Forms </v-tab>
+        <v-tab value="workflows"> Workflows </v-tab>
       </v-tabs>
       <v-window v-model="tab">
         <v-window-item value="details">
@@ -57,14 +58,17 @@
         <v-window-item value="tasks">
           <incident-tasks-tab />
         </v-window-item>
-        <v-window-item value="workflow_instances">
-          <workflow-instance-tab v-model="workflow_instances" />
-        </v-window-item>
         <v-window-item value="costs">
           <incident-costs-tab />
         </v-window-item>
+        <v-window-item value="forms">
+          <incident-forms-tab />
+        </v-window-item>
+        <v-window-item value="workflow_instances">
+          <workflow-instance-tab v-model="workflow_instances" />
+        </v-window-item>
       </v-window>
-    </v-navigation-drawer>
+    </VResizeDrawer>
   </v-form>
 </template>
 
@@ -80,6 +84,7 @@ import IncidentResourcesTab from "@/incident/ResourcesTab.vue"
 import IncidentTasksTab from "@/incident/TasksTab.vue"
 import IncidentTimelineTab from "@/incident/TimelineTab.vue"
 import WorkflowInstanceTab from "@/workflow/WorkflowInstanceTab.vue"
+import IncidentFormsTab from "@/incident/FormsTab.vue"
 
 export default {
   name: "IncidentEditSheet",
@@ -92,6 +97,7 @@ export default {
     IncidentTasksTab,
     IncidentTimelineTab,
     WorkflowInstanceTab,
+    IncidentFormsTab,
   },
 
   data() {

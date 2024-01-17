@@ -1,3 +1,5 @@
+import logging
+
 from datetime import datetime, timedelta
 from uuid import UUID
 import json
@@ -97,6 +99,8 @@ from dispatch.signal.models import (
     SignalFilterCreate,
     SignalInstance,
 )
+
+log = logging.getLogger(__name__)
 
 
 def configure(config: SlackConversationConfiguration):
@@ -782,16 +786,19 @@ def handle_new_participant_added(
     ack()
     participants = re.findall(r"\<\@([a-zA-Z0-9]*)\>", payload["text"])
     for user_id in participants:
-        user_email = get_user_email(client=client, user_id=user_id)
+        try:
+            user_email = get_user_email(client=client, user_id=user_id)
 
-        participant = case_flows.case_add_or_reactivate_participant_flow(
-            case_id=context["subject"].id,
-            user_email=user_email,
-            db_session=db_session,
-            add_to_conversation=False,
-        )
-        participant.user_conversation_id = user_id
-
+            participant = case_flows.case_add_or_reactivate_participant_flow(
+                case_id=context["subject"].id,
+                user_email=user_email,
+                db_session=db_session,
+                add_to_conversation=False,
+            )
+            participant.user_conversation_id = user_id
+        except Exception as e:
+            log.warn(f"Error adding participant {user_id} to Case {context['subject'].id}: {e}")
+            continue
 
 @message_dispatcher.add(
     subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "channel_leave"]}
@@ -1750,6 +1757,7 @@ def resolve_case(
         resolution=f"Case resolved through user engagement. User context: {context_from_user}",
         visibility=case.visibility,
         status=CaseStatus.closed,
+        closed_at=datetime.utcnow(),
     )
     case = case_service.update(db_session=db_session, case=case, case_in=case_in, current_user=user)
     blocks = create_case_message(case=case, channel_id=channel_id)
