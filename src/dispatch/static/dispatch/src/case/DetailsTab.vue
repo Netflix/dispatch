@@ -137,7 +137,7 @@ import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
 import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import ParticipantSelect from "@/components/ParticipantSelect.vue"
-import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
+import TagFilterAutoComplete from "@/tag/TagPicker.vue"
 
 export default {
   setup() {

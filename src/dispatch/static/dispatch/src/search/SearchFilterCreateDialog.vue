@@ -41,6 +41,7 @@
                           :project="project"
                           v-model="filters.tag"
                           label="Tags"
+                          model="incident"
                         />
                       </v-list-item>
                       <v-list-item>
@@ -223,7 +224,7 @@ import IncidentStatus from "@/incident/status/IncidentStatus.vue"
 import IncidentStatusMultiSelect from "@/incident/status/IncidentStatusMultiSelect.vue"
 import IncidentTypeCombobox from "@/incident/type/IncidentTypeCombobox.vue"
 import SearchUtils from "@/search/utils"
-import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
+import TagFilterAutoComplete from "@/tag/TagPicker.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
 
 export default {

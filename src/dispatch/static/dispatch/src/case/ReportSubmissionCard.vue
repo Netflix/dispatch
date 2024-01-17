@@ -69,7 +69,12 @@
               <case-priority-select :project="project" v-model="case_priority" />
             </v-col>
             <v-col cols="12">
-              <tag-filter-auto-complete :project="project" v-model="tags" label="Tags" />
+              <tag-filter-auto-complete
+                :project="project"
+                v-model="tags"
+                label="Tags"
+                model="case"
+              />
             </v-col>
           </v-row>
         </v-container>
@@ -104,7 +109,7 @@ import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import DocumentApi from "@/document/api"
-import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
+import TagFilterAutoComplete from "@/tag/TagPicker.vue"
 import SearchUtils from "@/search/utils"
 import CaseTypeApi from "@/case/type/api"
 

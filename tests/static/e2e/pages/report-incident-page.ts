@@ -24,7 +24,7 @@ export class ReportIncidentPage {
     this.projectDropdown = page.getByRole("combobox").filter({ hasText: "Project" })
     this.typeDropdown = page.getByRole("combobox").filter({ hasText: "Type" })
     this.priorityDropdown = page.getByRole("combobox").filter({ hasText: "Priority" })
-    this.tagsDropdown = page.getByRole("combobox").filter({ hasText: "Tags" }).locator("i")
+    this.tagsDropdown = page.getByLabel("Tags", { exact: true })
     this.submitButton = page.getByRole("button", { name: "Submit" })
     this.loadMore = page.getByText("Load More")
     this.pageBorder = this.page.locator("span").filter({
@@ -91,7 +91,7 @@ export class ReportIncidentPage {
     await this.tagsDropdown.click()
     for (const tag of tags) {
       if (!(await this.page.getByText("No tags matching").isVisible())) {
-        await this.page.getByText(tag).first().click()
+        await this.page.getByRole('checkbox', { name: tag }).check()
       }
     }
   }
