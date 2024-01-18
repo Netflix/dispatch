@@ -1,15 +1,20 @@
 import logging
-
-from typing import List, Optional
-
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from typing import List, Optional
 
 from dispatch.exceptions import InvalidConfigurationError
 from dispatch.plugins.bases import OncallPlugin
 from dispatch.project import service as project_service
 from dispatch.service import service as service_service
 
-from .models import Plugin, PluginInstance, PluginInstanceCreate, PluginInstanceUpdate
+from .models import (
+    Plugin,
+    PluginInstance,
+    PluginInstanceCreate,
+    PluginInstanceUpdate,
+    PluginEvent,
+    PluginEventCreate,
+)
 
 
 log = logging.getLogger(__name__)
@@ -27,7 +32,7 @@ def get_by_slug(*, db_session, slug: str) -> Plugin:
 
 def get_all(*, db_session) -> List[Optional[Plugin]]:
     """Returns all plugins."""
-    return db_session.query(Plugin)
+    return db_session.query(Plugin).all()
 
 
 def get_by_type(*, db_session, plugin_type: str) -> List[Optional[Plugin]]:
@@ -168,3 +173,28 @@ def delete_instance(*, db_session, plugin_instance_id: int):
     """Deletes a plugin instance."""
     db_session.query(PluginInstance).filter(PluginInstance.id == plugin_instance_id).delete()
     db_session.commit()
+
+
+def get_plugin_event_by_id(*, db_session, plugin_event_id: int) -> Optional[PluginEvent]:
+    """Returns a plugin event based on the plugin event id."""
+    return db_session.query(PluginEvent).filter(PluginEvent.id == plugin_event_id).one_or_none()
+
+
+def get_plugin_event_by_slug(*, db_session, slug: str) -> Optional[PluginEvent]:
+    """Returns a project based on the plugin event slug."""
+    return db_session.query(PluginEvent).filter(PluginEvent.slug == slug).one_or_none()
+
+
+def get_all_events_for_plugin(*, db_session, plugin_id: int) -> List[Optional[PluginEvent]]:
+    """Returns all plugin events for a given plugin."""
+    return db_session.query(PluginEvent).filter(PluginEvent.plugin_id == plugin_id).all()
+
+
+def create_plugin_event(*, db_session, plugin_event_in: PluginEventCreate) -> PluginEvent:
+    """Creates a new plugin event."""
+    plugin_event = PluginEvent(**plugin_event_in.dict(exclude={"plugin"}))
+    plugin_event.plugin = get(db_session=db_session, plugin_id=plugin_event_in.plugin.id)
+    db_session.add(plugin_event)
+    db_session.commit()
+
+    return plugin_event

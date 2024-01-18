@@ -192,7 +192,11 @@ function convertToFormkit(json_schema) {
 const mutations = {
   updateField,
   SET_SELECTED(state, value) {
-    state.selected = Object.assign(state.selected, value)
+    Object.keys(value).forEach(function (key) {
+      if (value[key]) {
+        state.selected[key] = value[key]
+      }
+    })
     state.selected.formkit_configuration_schema = convertToFormkit(value.configuration_schema)
   },
   SET_SELECTED_LOADING(state, value) {

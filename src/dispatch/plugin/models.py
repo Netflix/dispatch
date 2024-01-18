@@ -1,21 +1,19 @@
 import logging
 
-from typing import Any, List, Optional
 from pydantic import Field, SecretStr
 from pydantic.json import pydantic_encoder
-
-from sqlalchemy.orm import relationship
-from sqlalchemy.ext.associationproxy import association_proxy
+from typing import Any, List, Optional
 
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType, StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 
-
-from dispatch.database.core import Base
 from dispatch.config import DISPATCH_ENCRYPTION_KEY
-from dispatch.models import DispatchBase, ProjectMixin, Pagination, PrimaryKey
+from dispatch.database.core import Base
+from dispatch.models import DispatchBase, ProjectMixin, Pagination, PrimaryKey, NameStr
 from dispatch.plugins.base import plugins
 from dispatch.project.models import ProjectRead
 
@@ -62,6 +60,26 @@ class Plugin(Base):
                 f"Error trying to load configuration_schema for plugin with slug {self.slug}: {e}"
             )
             return None
+
+
+# SQLAlchemy Model
+class PluginEvent(Base):
+    __table_args__ = {"schema": "dispatch_core"}
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    slug = Column(String, unique=True)
+    description = Column(String)
+    plugin_id = Column(Integer, ForeignKey(Plugin.id))
+    plugin = relationship(Plugin, foreign_keys=[plugin_id])
+
+    search_vector = Column(
+        TSVectorType(
+            "name",
+            "slug",
+            "description",
+            weights={"name": "A", "slug": "B", "description": "C"},
+        )
+    )
 
 
 class PluginInstance(Base, ProjectMixin):
@@ -146,6 +164,25 @@ class PluginRead(PluginBase):
     multiple: bool
     configuration_schema: Any
     description: Optional[str] = Field(None, nullable=True)
+
+
+class PluginEventBase(DispatchBase):
+    name: NameStr
+    slug: str
+    plugin: PluginRead
+    description: Optional[str] = Field(None, nullable=True)
+
+
+class PluginEventRead(PluginEventBase):
+    id: PrimaryKey
+
+
+class PluginEventCreate(PluginEventBase):
+    pass
+
+
+class PluginEventPagination(Pagination):
+    items: List[PluginEventRead] = []
 
 
 class PluginInstanceRead(PluginBase):

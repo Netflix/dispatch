@@ -1,0 +1,105 @@
+# Cost Model
+
+Our Cost Model is a feature that enables teams to estimate response cost for each incident. Users can opt in to create and use personalized cost calculations for each incident based on participant activity.
+
+If no cost model is assigned to an incident, the default classic cost model will be used. See [Incident Cost Type](../administration/settings/incident/incident-cost-type.mdx###calculating-incident-cost).
+
+<div style={{textAlign: 'center'}}>
+
+![](/img/admin-ui-cost-model.png)
+
+</div>
+
+## Key Features
+
+### Customizable Cost Models
+Users have the flexibility to define their unique cost models based on their organization's workflow and tools. This customization can be tailored to each incident, providing a versitile approach to cost calculation. The cost model for an incident can be changed at any time during its lifespan. All participant activity costs moving forward will be calculated using the new cost model.
+
+### Plugin-Based Tracking
+Users can track costs from their existing tools by using our plugin-based tracking system. Users have the flexibility to select which plugins and specific plugin events they want to track, offering a targeted approach to cost calculation.
+
+### Effort Assignment
+For each tracked activity, users can assign a quantifiable measure of effort, represented in seconds of work time. This feature provides a more accurate representation of the cost of an incident.
+
+### Incident Cost Calculation
+Incident cost calculation is based on the cost model and effort assignment for each tracked participant activity. This helps in understanding resource utilization and cost of an incident.
+
+
+## Currently Supported Plugin Events
+
+### Slack: Channel Activity
+This event tracks activity within a specific Slack channel. By periodically polling channel messages, this gathers insights into the activity and engagement levels of each participant.
+
+### Slack: Thread Activity
+This event tracks activity within a specific Slack thread. By periodically polling thread replies, this gathers insights into the activity and engagement levels of each participant.
+
+
+<div style={{textAlign: 'center'}}>
+
+![](/img/admin-ui-edit-cost-model.png)
+
+</div>
+
+## Cost Calculation Examples
+
+Below, we illustrate the use of the cost model through two examples. These are based on the following values:
+
+<b>Cost Model 1</b>
+
+| Plugin Event | Response Time (seconds)
+|  ------------ | -------------
+| Slack Channel Activity | 300
+
+The employee hourly rate can be adjusted by modifying the `Annual Employee Cost` and `Business Year Hours` fields in the [project settings](../administration/settings/project.mdx). In these examples, we will use the following value:
+```
+hourly_rate = 100
+```
+
+#### Example 1
+
+Consider the following Slack channel activity for `Incident 1`:
+
+| Slack Channel Activity Timestamp | Participant
+|  ------------ | -------------
+| 100 | Cookie Doe
+| 200 | Nate Flex
+
+The resulting recorded participant activity will be:
+
+| Participant | started_at | ended_at | Plugin Event | Incident
+|  ------------ | ------------- | ------------- |  ------------- | -------------
+| Cookie Doe | 100 | 400 | Slack Channel Activity | Incident 1
+| Nate Flex | 200 | 500 | Slack Channel Activity | Incident 1
+
+
+The incident cost is then calculated as:
+
+```
+( (400 - 100) + (500-200) ) / SECONDS_IN_HOUR * hourly_rate = $16.67
+```
+
+#### Example 2
+
+Consider the following Slack channel activity for `Incident 2`:
+
+| Slack Channel Activity Timestamp | Participant
+|  ------------ | -------------
+| 100 | Cookie Doe
+| 150 | Cookie Doe
+| 200 | Nate Flex
+| 500 | Cookie Doe
+
+The resulting recorded participant activity will be:
+
+| Participant | started_at | ended_at | Plugin Event | Incident
+|  ------------ | ------------- | ------------- |  ------------- | -------------
+| Cookie Doe | 100 | 450 | Slack Channel Activity | Incident 2
+| Nate Flex | 200 | 500 | Slack Channel Activity | Incident 2
+| Cookie Doe | 500 | 800 | Slack Channel Activity | Incident 2
+
+
+The incident cost is then calculated as:
+
+```
+( (450 - 100) + (500 - 200) + (800 - 500) ) / SECONDS_IN_HOUR * hourly_rate = $26.39
+```

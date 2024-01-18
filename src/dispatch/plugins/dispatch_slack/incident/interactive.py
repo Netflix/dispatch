@@ -28,6 +28,7 @@ from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
 from dispatch.config import DISPATCH_UI_URL
+from dispatch.cost_model import service as cost_model_service
 from dispatch.database.service import search_filter_sort_paginate
 from dispatch.enums import Visibility, EventType
 from dispatch.event import service as event_service
@@ -56,6 +57,7 @@ from dispatch.plugins.dispatch_slack.fields import (
     DefaultActionIds,
     DefaultBlockIds,
     TimezoneOptions,
+    cost_model_select,
     datetime_picker_block,
     description_input,
     incident_priority_select,
@@ -316,6 +318,12 @@ def handle_update_incident_project_select_action(
         tag_multi_select(
             optional=True,
             initial_options=[t.name for t in incident.tags],
+        ),
+        cost_model_select(
+            db_session=db_session,
+            initial_option={"text": incident.cost_model.name, "value": incident.cost_model.id},
+            project_id=incident.project.id,
+            optional=True,
         ),
     ]
 
@@ -1811,6 +1819,12 @@ def handle_update_incident_command(
             optional=True,
             initial_options=[{"text": t.name, "value": t.id} for t in incident.tags],
         ),
+        cost_model_select(
+            db_session=db_session,
+            initial_option={"text": incident.cost_model.name, "value": incident.cost_model.id},
+            project_id=incident.project.id,
+            optional=True,
+        ),
     ]
 
     modal = Modal(
@@ -1858,6 +1872,10 @@ def handle_update_incident_submission_event(
         tag = tag_service.get(db_session=db_session, tag_id=int(t["value"]))
         tags.append(tag)
 
+    cost_model = cost_model_service.get_cost_model_by_id(
+        db_session=db_session,
+        cost_model_id=int(form_data[DefaultBlockIds.cost_model_select]["value"]),
+    )
     incident_in = IncidentUpdate(
         title=form_data[DefaultBlockIds.title_input],
         description=form_data[DefaultBlockIds.description_input],
@@ -1867,6 +1885,7 @@ def handle_update_incident_submission_event(
         incident_priority={"name": form_data[DefaultBlockIds.incident_priority_select]["name"]},
         status=form_data[DefaultBlockIds.incident_status_select]["name"],
         tags=tags,
+        cost_model=cost_model,
     )
 
     previous_incident = IncidentRead.from_orm(incident)
@@ -2035,6 +2054,13 @@ def handle_report_incident_submission_event(
     if form_data.get(DefaultBlockIds.incident_severity_select):
         incident_severity = {"name": form_data[DefaultBlockIds.incident_severity_select]["name"]}
 
+    cost_model = None
+    if form_data.get(DefaultBlockIds.cost_model_select):
+        cost_model = cost_model_service.get_cost_model_by_id(
+            db_session=db_session,
+            cost_model_id=int(form_data[DefaultBlockIds.cost_model_select]["value"]),
+        )
+
     incident_in = IncidentCreate(
         title=form_data[DefaultBlockIds.title_input],
         description=form_data[DefaultBlockIds.description_input],
@@ -2044,6 +2070,7 @@ def handle_report_incident_submission_event(
         project=project,
         reporter=ParticipantUpdate(individual=IndividualContactRead(email=user.email)),
         tags=tags,
+        cost_model=cost_model,
     )
 
     blocks = [
@@ -2125,6 +2152,7 @@ def handle_report_incident_project_select_action(
         incident_severity_select(db_session=db_session, project_id=project.id, optional=True),
         incident_priority_select(db_session=db_session, project_id=project.id, optional=True),
         tag_multi_select(optional=True),
+        cost_model_select(db_session=db_session, project_id=project.id, optional=True),
     ]
 
     modal = Modal(
