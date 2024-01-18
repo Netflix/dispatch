@@ -24,6 +24,7 @@
                   <plugin-instance-combobox
                     :model-value="plugin"
                     @update:model-value="setPlugin($event)"
+                    :requires-plugin-events="true"
                     :project="project"
                     label="Plugin"
                     required

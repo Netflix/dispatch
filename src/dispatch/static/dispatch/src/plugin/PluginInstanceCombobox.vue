@@ -57,6 +57,10 @@ export default {
       type: String,
       default: "Plugins",
     },
+    requiresPluginEvents: {
+      type: Boolean,
+      default: false,
+    },
     project: {
       type: [Object],
       default: null,
@@ -83,7 +87,7 @@ export default {
       this.numItems = this.numItems + 5
       this.fetchData()
     },
-    fetchData() {
+    async fetchData() {
       this.error = null
       this.loading = "error"
       let filter = {
@@ -112,11 +116,25 @@ export default {
         })
       }
 
+      // Only display plugins that have PluginEvents.
+      if (this.requiresPluginEvents) {
+        await PluginApi.getAllPluginEvents().then((response) => {
+          let plugin_events = response.data.items
+
+          filter["and"].push({
+            model: "Plugin",
+            field: "slug",
+            op: "in",
+            value: plugin_events.map((p) => p.plugin.slug),
+          })
+        })
+      }
+
       let filterOptions = {
         q: this.search,
         sortBy: ["slug"],
         itemsPerPage: this.numItems,
-        filter: JSON.stringify(this.filter),
+        filter: JSON.stringify(filter),
       }
 
       PluginApi.getAllInstances(filterOptions).then((response) => {
