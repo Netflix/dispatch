@@ -1,7 +1,7 @@
 """Adds cost model tables: cost_model, cost_model_activity, participant_activity
 
 Revision ID: 065c59f15267
-Revises: 99d317cbc848
+Revises: 6c1a250b1e4b
 Create Date: 2023-12-27 13:44:18.845443
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy_utils
 
 # revision identifiers, used by Alembic.
 revision = "065c59f15267"
-down_revision = "99d317cbc848"
+down_revision = "6c1a250b1e4b"
 branch_labels = None
 depends_on = None
 
