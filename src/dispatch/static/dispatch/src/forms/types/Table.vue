@@ -51,6 +51,9 @@
               <participant v-if="item.creator" :participant="convertToParticipant(item.creator)" />
               <span v-else>(anonymous)</span>
             </template>
+            <template #item.service="{ item }">
+              <v-chip v-if="item.service" size="small" pill>{{ item.service.name }}</v-chip>
+            </template>
             <template #item.created_at="{ item }">
               <v-tooltip location="bottom">
                 <template #activator="{ props }">
@@ -118,6 +121,7 @@ export default {
         { title: "Description", value: "description", sortable: false },
         { title: "Enabled", value: "enabled", sortable: true },
         { title: "Creator", value: "creator", sortable: true },
+        { title: "Service", value: "service", sortable: true },
         { title: "Created At", value: "created_at", sortable: true },
         { title: "Updated At", value: "updated_at", sortable: true },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },

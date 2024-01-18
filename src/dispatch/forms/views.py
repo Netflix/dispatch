@@ -1,5 +1,5 @@
 import logging
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Response
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from sqlalchemy.exc import IntegrityError
@@ -13,6 +13,7 @@ from dispatch.auth.service import CurrentUser
 from dispatch.database.service import search_filter_sort_paginate, CommonParameters
 from dispatch.models import PrimaryKey
 from dispatch.exceptions import ExistsError
+from dispatch.forms.type.service import send_email_to_service
 
 from .models import FormsRead, FormsUpdate, FormsPagination
 from .service import get, create, update, delete
@@ -30,7 +31,7 @@ def get_forms(commons: CommonParameters):
 @router.get("/{form_id}", response_model=FormsRead)
 def get_form(db_session: DbSession, form_id: PrimaryKey):
     """Get a form by its id."""
-    form = get(db_session=db_session, form_id=form_id)
+    form = get(db_session=db_session, forms_id=form_id)
     if not form:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -38,6 +39,22 @@ def get_form(db_session: DbSession, form_id: PrimaryKey):
         )
     return form
 
+
+@router.post("/completed/{form_id}", response_model=FormsRead)
+def sendEmailToService(db_session: DbSession, form_id: PrimaryKey):
+    """Sends an email to service indicating form is complete"""
+    form = get(db_session=db_session, forms_id=form_id)
+    if not form:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A form with this id does not exist."}],
+        )
+    if not form.form_type or not form.form_type.service:
+        log.debug(f"**** No form type or form type service got: {form}")
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    log.debug(f"**** Would send email to service {form.form_type.service}")
+    send_email_to_service(db_session=db_session, service=form.form_type.service, form=form)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @router.post("", response_model=FormsRead)
 def create_forms(

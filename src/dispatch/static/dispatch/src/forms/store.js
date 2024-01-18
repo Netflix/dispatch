@@ -389,6 +389,7 @@ const actions = {
   },
   saveAsCompleted({ commit, dispatch }) {
     state.selected.status = "Completed"
+    FormsApi.sendEmailToService(state.selected.id)
     save({ commit, dispatch })
   },
   saveAttorneyAnalysis({ commit, dispatch }) {

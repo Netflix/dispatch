@@ -67,6 +67,12 @@
                   name="Form Schema"
                 />
               </v-col>
+              <v-col cols="12">
+                <span class="text-body-1 text-medium-emphasis mt-2">
+                  Send an email to this oncall when a form is submitted as complete.
+                </span>
+                <service-select label="Oncall Service" :project="project" v-model="service" />
+              </v-col>
               <div v-if="!has_formkit_pro" class="ml-11 text-caption text-grey">
                 For more advanced form components, upgrade to
                 <a href="https://formkit.com/pro" target="_blank" rel="noopener noreferrer"
@@ -85,6 +91,7 @@
 import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+import ServiceSelect from "@/service/ServiceSelect.vue"
 
 export default {
   setup() {
@@ -94,6 +101,10 @@ export default {
   },
   name: "FormsTypeNewEditSheet",
 
+  components: {
+    ServiceSelect,
+  },
+
   computed: {
     ...mapFields("forms_type", [
       "selected.name",
@@ -102,6 +113,7 @@ export default {
       "selected.loading",
       "selected.id",
       "selected.project",
+      "selected.service",
       "selected.form_schema",
       "dialogs.showCreateEdit",
       "has_formkit_pro",
