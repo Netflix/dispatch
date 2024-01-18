@@ -78,7 +78,7 @@ def get_by_incident_id_and_service_id(
         db_session.query(Participant)
         .filter(Participant.incident_id == incident_id)
         .filter(Participant.service_id == service_id)
-        .one_or_none()
+        .first()
     )
 
 
