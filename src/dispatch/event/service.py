@@ -36,7 +36,9 @@ def get_by_case_id(*, db_session, case_id: int) -> list[Event | None]:
 def get_by_incident_id(*, db_session, incident_id: int) -> list[Event | None]:
     """Get events by incident id."""
 
-    return db_session.query(Event).filter(Event.incident_id == incident_id)
+    return (
+        db_session.query(Event).filter(Event.incident_id == incident_id).order_by(Event.started_at)
+    )
 
 
 def get_by_uuid(*, db_session, uuid: str) -> list[Event | None]:
@@ -224,6 +226,7 @@ def export_timeline(
                 pytz.utc.localize(e.started_at)
                 .astimezone(pytz.timezone(timeline_filters.get("timezone").strip()))
                 .replace(tzinfo=None)
+                .strftime("%Y-%m-%d %H:%M:%S")
             )
         date, time = str(event_timestamp).split(" ")
         if e.pinned or timeline_filters.get(e.type):
@@ -233,7 +236,7 @@ def export_timeline(
                 )
             else:
                 dates.add(date)
-                table_data.append({time_header: date, "Description": "\t", "owner": "\t"})
+                table_data.append({time_header: date, "Description": "\t", "Owner": "\t"})
                 table_data.append(
                     {time_header: time, "Description": e.description, "Owner": e.owner}
                 )

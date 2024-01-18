@@ -66,7 +66,12 @@
             <incident-priority-select :project="project" v-model="incident_priority" />
           </v-col>
           <v-col cols="12">
-            <tag-filter-auto-complete :project="project" v-model="tags" label="Tags" />
+            <tag-filter-auto-complete
+              :project="project"
+              v-model="tags"
+              label="Tags"
+              model="incident"
+            />
           </v-col>
           <v-col cols="12">
             <participant-select
@@ -126,7 +131,7 @@ import DocumentApi from "@/document/api"
 import IncidentPrioritySelect from "@/incident/priority/IncidentPrioritySelect.vue"
 import IncidentTypeSelect from "@/incident/type/IncidentTypeSelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
-import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
+import TagFilterAutoComplete from "@/tag/TagPicker.vue"
 import ParticipantSelect from "@/components/ParticipantSelect.vue"
 
 export default {

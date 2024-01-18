@@ -20,6 +20,8 @@ from dispatch.individual import service as individual_service
 from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import Participant
+from dispatch.individual.models import IndividualContact
+from dispatch.team.models import TeamContact
 from dispatch.participant_role import flows as participant_role_flows
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
@@ -54,7 +56,7 @@ log = logging.getLogger(__name__)
 
 def get_incident_participants(
     incident: Incident, db_session: Session
-) -> tuple[list[Participant | None], list[Participant | None]]:
+) -> tuple[list[IndividualContact | None], list[TeamContact | None]]:
     """
     Get additional participants (individuals and teams) based on
     incident description, type, and priority.
@@ -155,6 +157,16 @@ def incident_create_resources(*, incident: Incident, db_session=None) -> Inciden
     # we resolve individual and team participants
     individual_participants, team_participants = get_incident_participants(incident, db_session)
     tactical_participant_emails = [i.email for i, _ in individual_participants]
+
+    # we add any observer added in create (like new oncall participant)
+    participant_with_observer_role = participant_service.get_by_incident_id_and_role(
+        db_session=db_session, incident_id=incident.id, role=ParticipantRoleType.observer
+    )
+    if participant_with_observer_role:
+        # add to list
+        individual_participants.append(
+            (participant_with_observer_role.individual, participant_with_observer_role.service_id)
+        )
 
     # we create the tactical group
     if not incident.tactical_group:
