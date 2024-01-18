@@ -6,6 +6,7 @@ import case_management from "@/case/store"
 import case_priority from "@/case/priority/store"
 import case_severity from "@/case/severity/store"
 import case_type from "@/case/type/store"
+import cost_model from "@/cost_model/store"
 import definition from "@/definition/store"
 import document from "@/document/store"
 import entity from "@/entity/store"
@@ -66,6 +67,7 @@ export default createStore({
     forms_type,
     incident_feedback,
     incident,
+    cost_model,
     incident_cost_type,
     incident_priority,
     incident_severity,

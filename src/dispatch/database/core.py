@@ -92,8 +92,9 @@ class CustomBase:
         for key in self.__repr_attrs__:
             if not hasattr(self, key):
                 raise KeyError(
-                    "{} has incorrect attribute '{}' in "
-                    "__repr__attrs__".format(self.__class__, key)
+                    "{} has incorrect attribute '{}' in " "__repr__attrs__".format(
+                        self.__class__, key
+                    )
                 )
             value = getattr(self, key)
             wrap_in_quote = isinstance(value, str)

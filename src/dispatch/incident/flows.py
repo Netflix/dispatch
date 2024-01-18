@@ -685,7 +685,7 @@ def incident_update_flow(
         group_plugin = plugin_service.get_active_instance(
             db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
         )
-        if group_plugin:
+        if group_plugin and incident.notifications_group:
             team_participant_emails = [x.email for x in team_participants]
             group_plugin.instance.add(incident.notifications_group.email, team_participant_emails)
 

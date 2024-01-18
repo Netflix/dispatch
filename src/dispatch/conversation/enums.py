@@ -20,3 +20,8 @@ class ConversationButtonActions(DispatchEnum):
     service_feedback = "service-feedback"
     subscribe_user = "subscribe-user"
     update_task_status = "update-task-status"
+
+
+class ConversationFilters(DispatchEnum):
+    exclude_bots = "exclude-bots"
+    exclude_channel_join = "exclude-channel-join"

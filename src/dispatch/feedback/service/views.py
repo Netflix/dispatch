@@ -17,9 +17,9 @@ router = APIRouter()
 
 
 @router.get(
-        "",
-        response_model=ServiceFeedbackPagination,
-        dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+    "",
+    response_model=ServiceFeedbackPagination,
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def get_feedback_entries(commons: CommonParameters):
     """Get all feedback entries, or only those matching a given search term."""
@@ -27,9 +27,9 @@ def get_feedback_entries(commons: CommonParameters):
 
 
 @router.get(
-        "/{service_feedback_id}",
-        response_model=ServiceFeedbackRead,
-        dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+    "/{service_feedback_id}",
+    response_model=ServiceFeedbackRead,
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def get_feedback(db_session: DbSession, service_feedback_id: PrimaryKey):
     """Get a feedback entry by its id."""

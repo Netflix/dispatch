@@ -6,6 +6,7 @@ from dispatch.auth.permissions import SensitiveProjectActionPermission, Permissi
 from dispatch.models import PrimaryKey
 
 from .models import (
+    PluginEventPagination,
     PluginInstanceRead,
     PluginInstanceCreate,
     PluginInstanceUpdate,
@@ -103,3 +104,9 @@ def delete_plugin_instances(
             detail=[{"msg": "A plugin instance with this id does not exist."}],
         )
     delete_instance(db_session=db_session, plugin_instance_id=plugin_instance_id)
+
+
+@router.get("/plugin_events", response_model=PluginEventPagination)
+def get_plugin_events(common: CommonParameters):
+    """Get all plugins."""
+    return search_filter_sort_paginate(model="PluginEvent", **common)

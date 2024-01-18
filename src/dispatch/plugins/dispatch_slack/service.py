@@ -1,15 +1,16 @@
-import functools
-import logging
-import time
-
-from typing import Dict, List, Optional, NoReturn
-
-from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
-
 from blockkit import Message, Section
+from datetime import datetime
+import functools
+import heapq
+import logging
+
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
 from slack_sdk.web.slack_response import SlackResponse
+import time
+from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
+from typing import Dict, List, Optional, NoReturn
+
 
 from .config import SlackConversationConfiguration
 from .enums import SlackAPIErrorCode, SlackAPIGetEndpoints, SlackAPIPostEndpoints
@@ -376,3 +377,77 @@ def add_pin(client: WebClient, conversation_id: str, timestamp: str) -> SlackRes
 def is_user(config: SlackConversationConfiguration, user_id: str) -> bool:
     """Returns true if it's a regular user, false if Dispatch or Slackbot bot."""
     return user_id != config.app_user_slug and user_id != "USLACKBOT"
+
+
+def get_thread_activity(
+    client: WebClient, conversation_id: str, ts: str, oldest: str = "0"
+) -> List:
+    """Gets all messages for a given Slack thread.
+
+    Returns:
+        A sorted list of tuples (utc_dt, user_id) of each thread reply.
+    """
+    result = []
+    cursor = None
+    while True:
+        response = make_call(
+            client,
+            SlackAPIGetEndpoints.conversations_replies,
+            channel=conversation_id,
+            ts=ts,
+            cursor=cursor,
+            oldest=oldest,
+        )
+        if not response["ok"] or "messages" not in response:
+            break
+
+        for message in response["messages"]:
+            if "bot_id" in message:
+                continue
+
+            # Resolves users for messages.
+            if "user" in message:
+                user_id = resolve_user(client, message["user"])["id"]
+                heapq.heappush(result, (datetime.utcfromtimestamp(float(message["ts"])), user_id))
+
+        if not response["has_more"]:
+            break
+        cursor = response["response_metadata"]["next_cursor"]
+
+    return heapq.nsmallest(len(result), result)
+
+
+def get_channel_activity(client: WebClient, conversation_id: str, oldest: str = "0") -> List:
+    """Gets all top-level messages for a given Slack channel.
+
+    Returns:
+        A sorted list of tuples (utc_dt, user_id) of each message in the channel.
+    """
+    result = []
+    cursor = None
+    while True:
+        response = make_call(
+            client,
+            SlackAPIGetEndpoints.conversations_history,
+            channel=conversation_id,
+            cursor=cursor,
+            oldest=oldest,
+        )
+
+        if not response["ok"] or "messages" not in response:
+            break
+
+        for message in response["messages"]:
+            if "bot_id" in message:
+                continue
+
+            # Resolves users for messages.
+            if "user" in message:
+                user_id = resolve_user(client, message["user"])["id"]
+                heapq.heappush(result, (datetime.utcfromtimestamp(float(message["ts"])), user_id))
+
+        if not response["has_more"]:
+            break
+        cursor = response["response_metadata"]["next_cursor"]
+
+    return heapq.nsmallest(len(result), result)

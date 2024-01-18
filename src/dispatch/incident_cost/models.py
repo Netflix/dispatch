@@ -1,8 +1,7 @@
-from typing import List, Optional
-
 from sqlalchemy import Column, ForeignKey, Integer, Numeric
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
+from typing import List, Optional
 
 from dispatch.database.core import Base
 from dispatch.incident_cost_type.models import IncidentCostTypeRead

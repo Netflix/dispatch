@@ -67,7 +67,6 @@ def calculate_incidents_response_cost(db_session: SessionLocal, project: Project
 
             # we calculate the response cost amount
             amount = calculate_incident_response_cost(incident.id, db_session)
-
             # we don't need to update the cost amount if it hasn't changed
             if incident_response_cost.amount == amount:
                 continue

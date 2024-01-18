@@ -1,6 +1,5 @@
-from typing import List, Optional
-
 from sqlalchemy.sql.expression import true
+from typing import List, Optional
 
 from dispatch.project import service as project_service
 
@@ -44,7 +43,7 @@ def get_by_name(
 
 def get_all(*, db_session) -> List[Optional[IncidentCostType]]:
     """Gets all incident cost types."""
-    return db_session.query(IncidentCostType)
+    return db_session.query(IncidentCostType).all()
 
 
 def create(*, db_session, incident_cost_type_in: IncidentCostTypeCreate) -> IncidentCostType:
