@@ -22,6 +22,7 @@ reminder_select_values = {
 class MessageType(DispatchEnum):
     evergreen_reminder = "evergreen-reminder"
     incident_closed_information_review_reminder = "incident-closed-information-review-reminder"
+    incident_completed_form_notification = "incident-completed-form-notification"
     incident_daily_report = "incident-daily-report"
     incident_executive_report = "incident-executive-report"
     incident_feedback_daily_report = "incident-feedback-daily-report"
@@ -197,6 +198,16 @@ Description of the actions taken to resolve the incident.
 
 CASE_RESOLUTION_DEFAULT = """
 Description of the actions taken to resolve the case.
+""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_COMPLETED_FORM_DESCRIPTION = """
+ A new {{form_type}} form related to incident {{name}} has been
+ submitted that requires your immediate attention. This form details
+ aspects related to potential legal implications. You can review the
+ detailed report by clicking on the link above. Please note, the information
+ contained in this report is confidential.
 """.replace(
     "\n", " "
 ).strip()
@@ -416,6 +427,11 @@ CASE_STATUS = {
     "status_mapping": CASE_STATUS_DESCRIPTIONS,
 }
 
+FORM_TYPE_DESCRIPTION = {
+    "title": "{{form_type}} form for incident {{name}}",
+    "title_link": "{{form_weblink}}",
+    "text": "{{form_type_description}}",
+}
 
 if config.DISPATCH_MARKDOWN_IN_INCIDENT_DESC:
     INCIDENT_DESCRIPTION = {"title": "Description", "text": "{{description | markdown}}"}
@@ -530,6 +546,12 @@ INCIDENT_PARTICIPANT_WELCOME = {
     "text": INCIDENT_PARTICIPANT_WELCOME_DESCRIPTION,
 }
 
+INCIDENT_COMPLETED_FORM = {
+    "title": "Completed {{form_type}} form notification for {{name}}",
+    "title_link": "{{form_weblink}}",
+    "text": INCIDENT_COMPLETED_FORM_DESCRIPTION,
+}
+
 INCIDENT_PARTICIPANT_WELCOME_MESSAGE = [
     INCIDENT_PARTICIPANT_WELCOME,
     INCIDENT_TITLE,
@@ -546,6 +568,15 @@ INCIDENT_PARTICIPANT_WELCOME_MESSAGE = [
     INCIDENT_CONFERENCE,
     INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
     INCIDENT_FAQ_DOCUMENT,
+]
+
+INCIDENT_COMPLETED_FORM_MESSAGE = [
+    INCIDENT_COMPLETED_FORM,
+    FORM_TYPE_DESCRIPTION,
+    INCIDENT_TITLE,
+    INCIDENT_DESCRIPTION,
+    INCIDENT_STATUS,
+    INCIDENT_COMMANDER,
 ]
 
 INCIDENT_NOTIFICATION_COMMON = [INCIDENT_TITLE]

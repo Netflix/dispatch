@@ -217,6 +217,55 @@ def send_welcome_email_to_participant(
     log.debug(f"Welcome email sent to {participant_email}.")
 
 
+def send_completed_form_email(
+    participant_email: str, incident: Incident, db_session: SessionLocal
+):
+    """Sends an email to notify about a completed incident form."""
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="email"
+    )
+    if not plugin:
+        log.warning("Completed form notification email not sent, not email plugin configured.")
+        return
+
+    incident_description = (
+        incident.description
+        if len(incident.description) <= 500
+        else f"{incident.description[:500]}..."
+    )
+
+    message_kwargs = {
+        "name": incident.name,
+        "title": incident.title,
+        "description": incident_description,
+        "status": incident.status,
+        "commander_fullname": incident.commander.individual.name,
+        "commander_team": incident.commander.team,
+        "commander_weblink": incident.commander.individual.weblink,
+        "contact_fullname": incident.commander.individual.name,
+        "contact_weblink": incident.commander.individual.weblink,
+        "form_type": incident.commander.individual.weblink,
+        "form_type_description": incident.commander.individual.weblink,
+        "form_weblink": incident.commander.individual.weblink,
+    }
+
+    notification_text = "Incident Form Completed Notification"
+
+    # Can raise exception "tenacity.RetryError: RetryError". (Email may still go through).
+    try:
+        plugin.instance.send(
+            participant_email,
+            notification_text,
+            INCIDENT_COMPLETED_FORM_MESSAGE,
+            MessageType.incident_completed_form_notification,
+            **message_kwargs,
+        )
+    except Exception as e:
+        log.error(f"Error in sending completed form notification email to {participant_email}: {e}")
+
+    log.debug(f"Completed form notification email sent to {participant_email}.")
+
+
 @timer
 def send_incident_welcome_participant_messages(
     participant_email: str, incident: Incident, db_session: SessionLocal

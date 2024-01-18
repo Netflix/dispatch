@@ -4,7 +4,6 @@
   <delete-dialog />
   <v-container fluid>
     <v-row no-gutters>
-      <new-edit-sheet />
       <delete-dialog />
       <v-col>
         <div class="text-h5">Forms</div>
@@ -94,7 +93,6 @@
         </v-card>
       </v-col>
     </v-row>
-    <bulk-edit-sheet />
   </v-container>
 </template>
 
@@ -173,7 +171,12 @@ export default {
 
   methods: {
     ...mapActions("forms_table", ["getAll"]),
-    ...mapActions("forms", ["editShow", "showDeleteDialog", "attorneyEditShow"]),
+    ...mapActions("forms", [
+      "editShow",
+      "showDeleteDialog",
+      "attorneyEditShow",
+      "attorneyEditShowById",
+    ]),
     convertToParticipant(individual) {
       return {
         individual: {
@@ -181,6 +184,18 @@ export default {
           email: individual.email,
         },
       }
+    },
+  },
+
+  watch: {
+    $route: {
+      immediate: true,
+      handler: function (newVal) {
+        this.showAttorneyEdit = newVal.meta && newVal.meta.showAttorneyEdit
+        if (this.$route.params.id && this.showAttorneyEdit) {
+          this.attorneyEditShowById(this.$route.params.id)
+        }
+      },
     },
   },
 

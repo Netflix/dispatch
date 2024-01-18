@@ -367,6 +367,28 @@ const actions = {
       commit("SET_DIALOG_ATTORNEY_EDIT", true)
     })
   },
+  attorneyEditShowById({ commit }, form_id) {
+    commit("SET_TABLE_LOADING", true)
+    FormsApi.get(form_id)
+      .then((response) => {
+        let selected = response.data
+        commit("SET_TABLE_LOADING", false)
+        commit("SET_SELECTED", selected)
+        commit("SET_PAGE_DATA", buildFormDoc(selected.form_type.form_schema, selected.form_data))
+        IncidentApi.get(selected.incident.id).then((response) => {
+          commit("SET_INCIDENT_DATA", buildIncidentDoc(response.data))
+          commit("SET_DIALOG_ATTORNEY_EDIT", true)
+        })
+      })
+      .catch(() => {
+        commit("SET_TABLE_LOADING", false)
+        commit(
+          "notification_backend/addBeNotification",
+          { text: "Form id not found.", type: "exception" },
+          { root: true }
+        )
+      })
+  },
   showDeleteDialog({ commit }, form) {
     commit("SET_DIALOG_DELETE", true)
     commit("SET_SELECTED", form)
