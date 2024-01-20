@@ -158,14 +158,6 @@ def incident_create_resources(*, incident: Incident, db_session=None) -> Inciden
     individual_participants, team_participants = get_incident_participants(incident, db_session)
     tactical_participant_emails = [i.email for i, _ in individual_participants]
 
-    # we add any observer added in create (like new oncall participant)
-    participant_with_observer_role = participant_service.get_by_incident_id_and_role(
-        db_session=db_session, incident_id=incident.id, role=ParticipantRoleType.observer
-    )
-    if participant_with_observer_role:
-        # add to list
-        individual_participants.append(participant_with_observer_role.individual)
-
     # we create the tactical group
     if not incident.tactical_group:
         group_flows.create_group(
@@ -248,6 +240,14 @@ def incident_create_resources(*, incident: Incident, db_session=None) -> Inciden
         if resolve_attr(incident, role)
     ]
     user_emails = list(dict.fromkeys(user_emails))
+
+    # we add any observer added in create (like new oncall participant)
+    participant_with_observer_role = participant_service.get_by_incident_id_and_role(
+        db_session=db_session, incident_id=incident.id, role=ParticipantRoleType.observer
+    )
+    if participant_with_observer_role:
+        # add to list
+        user_emails.append(participant_with_observer_role.individual.email)
 
     for user_email in user_emails:
         # we add the participant to the tactical group
@@ -685,7 +685,7 @@ def incident_update_flow(
         group_plugin = plugin_service.get_active_instance(
             db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
         )
-        if group_plugin:
+        if group_plugin and incident.notifications_group:
             team_participant_emails = [x.email for x in team_participants]
             group_plugin.instance.add(incident.notifications_group.email, team_participant_emails)
 

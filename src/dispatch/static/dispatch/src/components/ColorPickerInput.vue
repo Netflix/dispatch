@@ -30,6 +30,12 @@ export default {
         return "Color"
       },
     },
+    default: {
+      type: String,
+      default: function () {
+        return "#1976D2FF"
+      },
+    },
   },
 
   data() {
@@ -41,7 +47,7 @@ export default {
   computed: {
     color: {
       get() {
-        return this.modelValue || "#1976D2FF"
+        return this.modelValue || this.default || "#1976D2FF"
       },
       set(value) {
         this.$emit("update:modelValue", value)

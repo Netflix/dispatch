@@ -66,7 +66,12 @@
             <incident-priority-select :project="project" v-model="incident_priority" />
           </v-col>
           <v-col cols="12">
-            <tag-filter-auto-complete :project="project" v-model="tags" label="Tags" />
+            <tag-filter-auto-complete
+              :project="project"
+              v-model="tags"
+              label="Tags"
+              model="incident"
+            />
           </v-col>
           <v-col cols="12">
             <participant-select
@@ -77,6 +82,16 @@
               :project="project"
               name="Optional: Incident Commander"
               :rules="[only_one]"
+            />
+          </v-col>
+          <v-col cols="12">
+            <cost-model-combobox
+              :project="project"
+              v-model="cost_model"
+              persistent-hint
+              clearable
+              label="Optional: Cost Model"
+              hint="If unassigned, the incident cost calculation defaults to the classic incident cost model."
             />
           </v-col>
         </v-row>
@@ -111,11 +126,12 @@ import { isNavigationFailure, NavigationFailureType } from "vue-router"
 
 import router from "@/router"
 
+import CostModelCombobox from "@/cost_model/CostModelCombobox.vue"
 import DocumentApi from "@/document/api"
 import IncidentPrioritySelect from "@/incident/priority/IncidentPrioritySelect.vue"
 import IncidentTypeSelect from "@/incident/type/IncidentTypeSelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
-import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
+import TagFilterAutoComplete from "@/tag/TagPicker.vue"
 import ParticipantSelect from "@/components/ParticipantSelect.vue"
 
 export default {
@@ -127,6 +143,7 @@ export default {
   name: "ReportSubmissionCard",
 
   components: {
+    CostModelCombobox,
     IncidentTypeSelect,
     IncidentPrioritySelect,
     ProjectSelect,
@@ -153,6 +170,7 @@ export default {
       "selected.incident_priority",
       "selected.incident_type",
       "selected.commander_email",
+      "selected.cost_model",
       "selected.title",
       "selected.tags",
       "selected.description",

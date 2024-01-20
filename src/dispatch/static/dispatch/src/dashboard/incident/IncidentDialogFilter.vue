@@ -20,7 +20,7 @@
           <project-combobox v-model="filters.project" label="Projects" />
         </v-list-item>
         <v-list-item>
-          <tag-filter-auto-complete v-model="filters.tag" label="Tags" />
+          <tag-filter-auto-complete v-model="filters.tag" label="Tags" model="incident" />
         </v-list-item>
         <v-list-item>
           <incident-type-combobox v-model="filters.incident_type" />
@@ -74,7 +74,7 @@ import IncidentTypeCombobox from "@/incident/type/IncidentTypeCombobox.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import RouterUtils from "@/router/utils"
 import SearchUtils from "@/search/utils"
-import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
+import TagFilterAutoComplete from "@/tag/TagPicker.vue"
 import ParticipantSelect from "@/components/ParticipantSelect.vue"
 
 let today = function () {

@@ -1,5 +1,5 @@
 from typing import List, Optional
-
+from dispatch.database.core import SessionLocal
 from dispatch.decorators import timer
 from dispatch.case import service as case_service
 from dispatch.incident import service as incident_service
@@ -16,6 +16,14 @@ from .models import Participant, ParticipantCreate, ParticipantUpdate
 def get(*, db_session, participant_id: int) -> Optional[Participant]:
     """Get a participant by its id."""
     return db_session.query(Participant).filter(Participant.id == participant_id).first()
+
+
+def get_by_individual_contact_id(db_session: SessionLocal, individual_id: int) -> List[Participant]:
+    return (
+        db_session.query(Participant)
+        .filter(Participant.individual_contact_id == individual_id)
+        .all()
+    )
 
 
 def get_by_incident_id_and_role(
@@ -78,7 +86,7 @@ def get_by_incident_id_and_service_id(
         db_session.query(Participant)
         .filter(Participant.incident_id == incident_id)
         .filter(Participant.service_id == service_id)
-        .one_or_none()
+        .first()
     )
 
 
@@ -120,12 +128,12 @@ def get_by_case_id_and_conversation_id(
 
 def get_all(*, db_session) -> List[Optional[Participant]]:
     """Get all participants."""
-    return db_session.query(Participant)
+    return db_session.query(Participant).all()
 
 
 def get_all_by_incident_id(*, db_session, incident_id: int) -> List[Optional[Participant]]:
     """Get all participants by incident id."""
-    return db_session.query(Participant).filter(Participant.incident_id == incident_id)
+    return db_session.query(Participant).filter(Participant.incident_id == incident_id).all()
 
 
 def get_or_create(

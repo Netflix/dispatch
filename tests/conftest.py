@@ -37,6 +37,8 @@ from .factories import (
     FeedbackFactory,
     GroupFactory,
     IncidentCostFactory,
+    CostModelFactory,
+    CostModelActivityFactory,
     IncidentCostTypeFactory,
     IncidentFactory,
     IncidentPriorityFactory,
@@ -45,9 +47,11 @@ from .factories import (
     IndividualContactFactory,
     NotificationFactory,
     OrganizationFactory,
+    ParticipantActivityFactory,
     ParticipantFactory,
     ParticipantRoleFactory,
     PluginFactory,
+    PluginEventFactory,
     PluginInstanceFactory,
     ProjectFactory,
     RecommendationFactory,
@@ -520,6 +524,11 @@ def incident(session):
 
 
 @pytest.fixture
+def participant_activity(session):
+    return ParticipantActivityFactory()
+
+
+@pytest.fixture
 def event(session):
     return EventFactory()
 
@@ -612,3 +621,18 @@ def workflow(session, workflow_plugin_instance):
 @pytest.fixture
 def workflow_instance(session):
     return WorkflowInstanceFactory()
+
+
+@pytest.fixture
+def plugin_event(session):
+    return PluginEventFactory()
+
+
+@pytest.fixture
+def cost_model(session):
+    return CostModelFactory()
+
+
+@pytest.fixture
+def cost_model_activity(session):
+    return CostModelActivityFactory()

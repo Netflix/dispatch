@@ -5,16 +5,17 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import logging
-from typing import List, Optional
-
 from blockkit import Message
+import logging
+from typing import List, Optional, Any
+from slack_sdk.errors import SlackApiError
 from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
 from dispatch.case.models import Case
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.decorators import apply, counter, timer
+from dispatch.plugin import service as plugin_service
 from dispatch.plugins import dispatch_slack as slack_plugin
 from dispatch.plugins.bases import ContactPlugin, ConversationPlugin
 from dispatch.plugins.dispatch_slack.config import (
@@ -24,11 +25,16 @@ from dispatch.plugins.dispatch_slack.config import (
 from dispatch.signal.enums import SignalEngagementStatus
 from dispatch.signal.models import SignalEngagement, SignalInstance
 
-from .case.messages import create_case_message, create_signal_messages
 
+from .case.messages import (
+    create_case_message,
+    create_signal_messages,
+    create_signal_engagement_message,
+)
 from .endpoints import router as slack_event_router
+from .enums import SlackAPIErrorCode
+from .events import ChannelActivityEvent, ThreadActivityEvent
 from .messaging import create_message_blocks
-from .case.messages import create_signal_engagement_message
 from .service import (
     add_conversation_bookmark,
     add_users_to_conversation,
@@ -49,8 +55,7 @@ from .service import (
     unarchive_conversation,
     update_message,
 )
-from slack_sdk.errors import SlackApiError
-from .enums import SlackAPIErrorCode
+
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +68,7 @@ class SlackConversationPlugin(ConversationPlugin):
     description = "Uses Slack to facilitate conversations."
     version = slack_plugin.__version__
     events = slack_event_router
+    plugin_events = [ChannelActivityEvent, ThreadActivityEvent]
 
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
@@ -304,6 +310,29 @@ class SlackConversationPlugin(ConversationPlugin):
             ConversationCommands.tactical_report: self.configuration.slack_command_report_tactical,
         }
         return command_mappings.get(command, [])
+
+    def fetch_incident_events(
+        self, db_session: Session, subject: Any, plugin_event_id: int, oldest: str = "0", **kwargs
+    ):
+        """Fetches incident events from the Slack plugin.
+
+        Args:
+            subject: An Incident or Case object.
+            plugin_event_id: The plugin event id.
+            oldest: The oldest timestamp to fetch events from.
+
+        Returns:
+            A sorted list of tuples (utc_dt, user_id).
+        """
+        try:
+            client = create_slack_client(self.configuration)
+            plugin_event = plugin_service.get_plugin_event_by_id(
+                db_session=db_session, plugin_event_id=plugin_event_id
+            )
+            return self.get_event(plugin_event).fetch_activity(client, subject, oldest=oldest)
+        except Exception as e:
+            logger.exception(e)
+            raise e
 
 
 @apply(counter, exclude=["__init__"])

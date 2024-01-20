@@ -17,7 +17,7 @@
           <tag-type-filter-combobox v-model="local_tag_type" label="Tag Types" />
         </v-list-item>
         <v-list-item>
-          <tag-filter-auto-complete v-model="local_tag" label="Tags" />
+          <tag-filter-auto-complete v-model="local_tag" label="Tags" model="query" />
         </v-list-item>
       </v-list>
       <v-card-actions>
@@ -33,7 +33,7 @@ import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
 
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
-import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
+import TagFilterAutoComplete from "@/tag/TagPicker.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
 
 export default {

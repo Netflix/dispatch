@@ -42,7 +42,22 @@
           <incident-priority-select :project="project" v-model="incident_priority" />
         </v-col>
         <v-col cols="12">
-          <tag-filter-auto-complete :project="project" v-model="tags" label="Tags" />
+          <tag-filter-auto-complete
+            :project="project"
+            v-model="tags"
+            label="Tags"
+            model="incident"
+          />
+        </v-col>
+        <v-col cols="12">
+          <cost-model-combobox
+            :project="project"
+            v-model="cost_model"
+            persistent-hint
+            clearable
+            label="Optional: Cost Model"
+            hint="If unassigned, the incident cost calculation defaults to the classic incident cost model."
+          />
         </v-col>
       </v-row>
     </v-container>
@@ -53,10 +68,11 @@
 import { mapFields } from "vuex-map-fields"
 import { required } from "@/util/form"
 
+import CostModelCombobox from "@/cost_model/CostModelCombobox.vue"
 import IncidentPrioritySelect from "@/incident/priority/IncidentPrioritySelect.vue"
 import IncidentTypeSelect from "@/incident/type/IncidentTypeSelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
-import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
+import TagFilterAutoComplete from "@/tag/TagPicker.vue"
 
 export default {
   setup() {
@@ -67,6 +83,7 @@ export default {
   name: "ReportSubmissionForm",
 
   components: {
+    CostModelCombobox,
     IncidentPrioritySelect,
     IncidentTypeSelect,
     ProjectSelect,
@@ -93,6 +110,7 @@ export default {
       "selected.commander",
       "selected.conference",
       "selected.conversation",
+      "selected.cost_model",
       "selected.description",
       "selected.documents",
       "selected.id",
