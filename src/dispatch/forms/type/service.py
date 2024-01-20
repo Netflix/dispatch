@@ -71,9 +71,9 @@ def update(
 
     service = forms_type_in.service
     if service:
-        setattr(forms_type, "service_id", service.id)
+        forms_type.service_id = service.id
     else:
-        setattr(forms_type, "service_id", None)
+        forms_type.service_id = None
 
     db_session.commit()
     return forms_type
