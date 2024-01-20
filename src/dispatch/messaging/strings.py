@@ -206,7 +206,7 @@ INCIDENT_COMPLETED_FORM_DESCRIPTION = """
  A new {{form_type}} form related to incident {{name}} has been
  submitted that requires your immediate attention. This form details
  aspects related to potential legal implications. You can review the
- detailed report by clicking on the link above. Please note, the information
+ detailed report by clicking on the link below. Please note, the information
  contained in this report is confidential.
 """.replace(
     "\n", " "
@@ -433,6 +433,11 @@ FORM_TYPE_DESCRIPTION = {
     "text": "{{form_type_description}}",
 }
 
+INCIDENT_DATA_SECTION = {
+    "type": "context",
+    "text": "Key details about incident {{name}}",
+}
+
 if config.DISPATCH_MARKDOWN_IN_INCIDENT_DESC:
     INCIDENT_DESCRIPTION = {"title": "Description", "text": "{{description | markdown}}"}
 else:
@@ -548,7 +553,6 @@ INCIDENT_PARTICIPANT_WELCOME = {
 
 INCIDENT_COMPLETED_FORM = {
     "title": "Completed {{form_type}} form notification for {{name}}",
-    "title_link": "{{form_weblink}}",
     "text": INCIDENT_COMPLETED_FORM_DESCRIPTION,
 }
 
@@ -573,6 +577,7 @@ INCIDENT_PARTICIPANT_WELCOME_MESSAGE = [
 INCIDENT_COMPLETED_FORM_MESSAGE = [
     INCIDENT_COMPLETED_FORM,
     FORM_TYPE_DESCRIPTION,
+    INCIDENT_DATA_SECTION,
     INCIDENT_TITLE,
     INCIDENT_DESCRIPTION,
     INCIDENT_STATUS,

@@ -10,6 +10,7 @@ from dispatch.service import service as service_service
 from dispatch.plugin import service as plugin_service
 from dispatch.forms.models import Forms
 from dispatch.service.models import Service
+from dispatch.incident.messaging import send_completed_form_email
 
 log = logging.getLogger(__name__)
 
@@ -68,6 +69,12 @@ def update(
         if field in update_data:
             setattr(forms_type, field, update_data[field])
 
+    service = forms_type_in.service
+    if service:
+        setattr(forms_type, "service_id", service.id)
+    else:
+        setattr(forms_type, "service_id", None)
+
     db_session.commit()
     return forms_type
 
@@ -97,4 +104,5 @@ def send_email_to_service(
         log.debug("Unable to send email since oncall plugin is not active.")
     else:
         current_oncall = oncall_plugin.instance.get(service.external_id)
-        log.debug(f"**** Would send email to {current_oncall}")
+        if current_oncall:
+            send_completed_form_email(current_oncall, form, db_session)

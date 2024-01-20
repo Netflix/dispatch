@@ -50,11 +50,11 @@ def sendEmailToService(db_session: DbSession, form_id: PrimaryKey):
             detail=[{"msg": "A form with this id does not exist."}],
         )
     if not form.form_type or not form.form_type.service:
-        log.debug(f"**** No form type or form type service got: {form}")
+        log.warning(f"Missing form type or form type service for form: {form}")
         return Response(status_code=status.HTTP_204_NO_CONTENT)
-    log.debug(f"**** Would send email to service {form.form_type.service}")
     send_email_to_service(db_session=db_session, service=form.form_type.service, form=form)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
 
 @router.post("", response_model=FormsRead)
 def create_forms(

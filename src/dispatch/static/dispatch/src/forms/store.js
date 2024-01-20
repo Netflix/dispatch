@@ -257,7 +257,7 @@ function save({ commit, dispatch }) {
   commit("SET_SELECTED_LOADING", true)
   if (!state.selected.id) {
     return FormsApi.create(createPayload(state.selected))
-      .then(() => {
+      .then((response) => {
         commit("SET_DIALOG_CREATE_EDIT", false)
         commit("SET_DIALOG_ATTORNEY_EDIT", false)
         dispatch("getAll")
@@ -267,6 +267,9 @@ function save({ commit, dispatch }) {
           { text: "Form type created successfully.", type: "success" },
           { root: true }
         )
+        if (state.selected.status == "Completed") {
+          FormsApi.sendEmailToService(response.data.id)
+        }
       })
       .catch(() => {
         commit("SET_SELECTED_LOADING", false)
@@ -277,7 +280,7 @@ function save({ commit, dispatch }) {
       state.selected.creator.id,
       createPayload(state.selected)
     )
-      .then(() => {
+      .then((response) => {
         commit("SET_DIALOG_CREATE_EDIT", false)
         commit("SET_DIALOG_ATTORNEY_EDIT", false)
         dispatch("getAll")
@@ -288,6 +291,9 @@ function save({ commit, dispatch }) {
           { text: "Form updated successfully.", type: "success" },
           { root: true }
         )
+        if (state.selected.status == "Completed") {
+          FormsApi.sendEmailToService(response.data.id)
+        }
       })
       .catch(() => {
         commit("SET_SELECTED_LOADING", false)
@@ -411,7 +417,6 @@ const actions = {
   },
   saveAsCompleted({ commit, dispatch }) {
     state.selected.status = "Completed"
-    FormsApi.sendEmailToService(state.selected.id)
     save({ commit, dispatch })
   },
   saveAttorneyAnalysis({ commit, dispatch }) {

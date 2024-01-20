@@ -118,9 +118,6 @@ export default {
       "dialogs.showCreateEdit",
       "has_formkit_pro",
     ]),
-    ...mapFields("forms_type", {
-      default_incident_cost_type: "selected.default",
-    }),
   },
 
   methods: {
