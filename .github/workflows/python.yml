@@ -19,10 +19,8 @@ jobs:
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v2
-      - name: Set up Python 3.11
+      - name: Set up Python 3.12
         uses: actions/setup-python@v2
-        with:
-          python-version: 3.11.2
       - uses: actions/cache@v2
         with:
           path: ~/.cache/pip
