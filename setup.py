@@ -390,10 +390,11 @@ setup(
         "Intended Audience :: Developers",
         "License :: OSI Approved :: Apache",
         "Programming Language :: Python :: 3.11.2",
+        "Programming Language :: Python :: 3.12"
     ],
     package_dir={"": "src"},
     packages=find_packages("src"),
-    python_requires=">=3.11",
+    python_requires=">=3.12",
     install_requires=install_requires,
     extras_require={"dev": dev_requires},
     cmdclass=cmdclass,
