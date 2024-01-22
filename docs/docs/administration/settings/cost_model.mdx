@@ -2,7 +2,7 @@
 
 Our Cost Model is a feature that enables teams to estimate response cost for each incident. Users can opt in to create and use personalized cost calculations for each incident based on participant activity.
 
-If no cost model is assigned to an incident, the default classic cost model will be used. See [Incident Cost Type](../administration/settings/incident/incident-cost-type.mdx###calculating-incident-cost).
+If no cost model is assigned to an incident, the default classic cost model will be used. See [Incident Cost Type](./incident/incident-cost-type.mdx###calculating-incident-cost).
 
 <div style={{textAlign: 'center'}}>
 
@@ -50,7 +50,7 @@ Below, we illustrate the use of the cost model through two examples. These are b
 |  ------------ | -------------
 | Slack Channel Activity | 300
 
-The employee hourly rate can be adjusted by modifying the `Annual Employee Cost` and `Business Year Hours` fields in the [project settings](../administration/settings/project.mdx). In these examples, we will use the following value:
+The employee hourly rate can be adjusted by modifying the `Annual Employee Cost` and `Business Year Hours` fields in the [project settings](./project.mdx). In these examples, we will use the following value:
 ```
 hourly_rate = 100
 ```
@@ -75,7 +75,7 @@ The resulting recorded participant activity will be:
 The incident cost is then calculated as:
 
 ```
-( (400 - 100) + (500-200) ) / SECONDS_IN_HOUR * hourly_rate = $16.67
+( (400 - 100) + (500 - 200) ) / SECONDS_IN_HOUR * hourly_rate = $16.67
 ```
 
 #### Example 2

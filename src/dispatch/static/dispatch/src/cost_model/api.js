@@ -1,6 +1,6 @@
 import API from "@/api"
 
-const resource = "/cost_models"
+const resource = "cost_models"
 
 export default {
   getAll(options) {
