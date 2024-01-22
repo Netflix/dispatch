@@ -302,7 +302,8 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
             oncall_email = oncall_plugin.instance.get_next_oncall(
                 service_id=incident_role.service.external_id
             )
-            if oncall_email:
+            # no need to add as observer if already added as commander
+            if oncall_email and commander_email != oncall_email:
                 participant_flows.add_participant(
                     oncall_email,
                     incident,
