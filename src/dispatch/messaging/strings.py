@@ -177,11 +177,11 @@ Description of the actions taken to resolve the case.
 """.replace("\n", " ").strip()
 
 INCIDENT_COMPLETED_FORM_DESCRIPTION = """
- A new {{form_type}} form related to incident {{name}} has been
- submitted that requires your immediate attention. This form details
- aspects related to potential legal implications. You can review the
- detailed report by clicking on the link below. Please note, the information
- contained in this report is confidential.
+A new {{form_type}} form related to incident {{name}} has been
+submitted that requires your immediate attention. This form details
+aspects related to potential legal implications. You can review the
+detailed report by clicking on the link below. Please note, the information
+contained in this report is confidential.
 """.replace(
     "\n", " "
 ).strip()

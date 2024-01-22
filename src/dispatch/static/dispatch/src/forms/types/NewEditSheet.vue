@@ -69,7 +69,7 @@
               </v-col>
               <v-col cols="12">
                 <span class="text-body-1 text-medium-emphasis mt-2">
-                  Send an email to this oncall when a form is submitted as complete.
+                  Send an email to this oncall when a form is submitted as complete (optional).
                 </span>
                 <service-select label="Oncall Service" :project="project" v-model="service" />
               </v-col>

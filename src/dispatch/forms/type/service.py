@@ -40,15 +40,19 @@ def create(*, db_session: Session, forms_type_in: FormsTypeCreate, creator) -> F
         db_session=db_session, email=creator.email, project_id=project.id
     )
 
-    service = service_service.get(
-        db_session=db_session, service_id=forms_type_in.service.id
-    )
+    service_id = None
+    if forms_type_in.service:
+        service = service_service.get(
+            db_session=db_session, service_id=forms_type_in.service.id
+        )
+        if service:
+            service_id = service.id
 
     form_type = FormsType(
         **forms_type_in.dict(exclude={"creator", "project", "service"}),
         creator_id=individual.id,
         project_id=project.id,
-        service_id=service.id,
+        service_id=service_id,
     )
     db_session.add(form_type)
     db_session.commit()
