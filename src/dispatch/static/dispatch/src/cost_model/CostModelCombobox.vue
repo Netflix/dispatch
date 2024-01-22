@@ -34,6 +34,21 @@
         <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
+    <template #append>
+      <DTooltip text="View cost model documentation" hotkeys="">
+        <template #activator="{ tooltip }">
+          <v-btn
+            icon
+            v-bind="tooltip"
+            variant="text"
+            href="https://netflix.github.io/dispatch/docs/administration/settings/cost_model"
+            target="_blank"
+          >
+            <v-icon>mdi-information-outline</v-icon>
+          </v-btn>
+        </template>
+      </DTooltip>
+    </template>
   </v-combobox>
 </template>
 
