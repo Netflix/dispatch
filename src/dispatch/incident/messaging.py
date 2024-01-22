@@ -227,7 +227,7 @@ def send_completed_form_email(
         db_session=db_session, project_id=form.project.id, plugin_type="email"
     )
     if not plugin:
-        log.warning("Completed form notification email not sent, not email plugin configured.")
+        log.warning("Completed form notification email not sent. No email plugin configured.")
         return
 
     incident_description = (
