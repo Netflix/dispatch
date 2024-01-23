@@ -257,7 +257,7 @@ function save({ commit, dispatch }) {
   commit("SET_SELECTED_LOADING", true)
   if (!state.selected.id) {
     return FormsApi.create(createPayload(state.selected))
-      .then(() => {
+      .then((response) => {
         commit("SET_DIALOG_CREATE_EDIT", false)
         commit("SET_DIALOG_ATTORNEY_EDIT", false)
         dispatch("getAll")
@@ -267,6 +267,9 @@ function save({ commit, dispatch }) {
           { text: "Form type created successfully.", type: "success" },
           { root: true }
         )
+        if (state.selected.status == "Completed") {
+          FormsApi.sendEmailToService(response.data.id)
+        }
       })
       .catch(() => {
         commit("SET_SELECTED_LOADING", false)
@@ -277,7 +280,7 @@ function save({ commit, dispatch }) {
       state.selected.creator.id,
       createPayload(state.selected)
     )
-      .then(() => {
+      .then((response) => {
         commit("SET_DIALOG_CREATE_EDIT", false)
         commit("SET_DIALOG_ATTORNEY_EDIT", false)
         dispatch("getAll")
@@ -288,6 +291,9 @@ function save({ commit, dispatch }) {
           { text: "Form updated successfully.", type: "success" },
           { root: true }
         )
+        if (state.selected.status == "Completed") {
+          FormsApi.sendEmailToService(response.data.id)
+        }
       })
       .catch(() => {
         commit("SET_SELECTED_LOADING", false)
@@ -366,6 +372,28 @@ const actions = {
       commit("SET_INCIDENT_DATA", buildIncidentDoc(response.data))
       commit("SET_DIALOG_ATTORNEY_EDIT", true)
     })
+  },
+  attorneyEditShowById({ commit }, form_id) {
+    commit("SET_TABLE_LOADING", true)
+    FormsApi.get(form_id)
+      .then((response) => {
+        let selected = response.data
+        commit("SET_TABLE_LOADING", false)
+        commit("SET_SELECTED", selected)
+        commit("SET_PAGE_DATA", buildFormDoc(selected.form_type.form_schema, selected.form_data))
+        IncidentApi.get(selected.incident.id).then((response) => {
+          commit("SET_INCIDENT_DATA", buildIncidentDoc(response.data))
+          commit("SET_DIALOG_ATTORNEY_EDIT", true)
+        })
+      })
+      .catch(() => {
+        commit("SET_TABLE_LOADING", false)
+        commit(
+          "notification_backend/addBeNotification",
+          { text: "Form id not found.", type: "exception" },
+          { root: true }
+        )
+      })
   },
   showDeleteDialog({ commit }, form) {
     commit("SET_DIALOG_DELETE", true)

@@ -17,6 +17,7 @@ from dispatch.models import (
     TimeStampMixin,
 )
 from dispatch.project.models import ProjectRead
+from dispatch.service.models import ServiceRead
 
 
 class FormsType(ProjectMixin, TimeStampMixin, Base):
@@ -31,6 +32,9 @@ class FormsType(ProjectMixin, TimeStampMixin, Base):
     creator_id = Column(Integer, ForeignKey("individual_contact.id"))
     creator = relationship("IndividualContact")
 
+    service_id = Column(Integer, ForeignKey("service.id"))
+    service = relationship("Service")
+
 
 # Pydantic models
 class FormsTypeBase(DispatchBase):
@@ -40,6 +44,7 @@ class FormsTypeBase(DispatchBase):
     form_schema: Optional[str] = Field(None, nullable=True)
     creator: Optional[IndividualContactReadMinimal]
     project: Optional[ProjectRead]
+    service: Optional[ServiceRead]
 
 
 class FormsTypeCreate(FormsTypeBase):

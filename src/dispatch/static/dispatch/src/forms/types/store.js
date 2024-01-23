@@ -15,6 +15,7 @@ const getDefaultSelectedState = () => {
     created_at: null,
     updated_at: null,
     form_schema: "",
+    service: null,
     creator: null,
     project: null,
   }

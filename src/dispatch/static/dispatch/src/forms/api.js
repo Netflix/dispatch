@@ -22,4 +22,8 @@ export default {
   delete(formId, creator_id) {
     return API.delete(`${resource}/${formId}/${creator_id}`)
   },
+
+  sendEmailToService(formId) {
+    return API.post(`${resource}/completed/${formId}`)
+  },
 }
