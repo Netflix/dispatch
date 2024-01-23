@@ -242,7 +242,7 @@ oauthlib[signedtoken]==3.2.2
     #   atlassian-python-api
     #   jira
     #   requests-oauthlib
-openai==1.8.0
+openai==1.9.0
     # via -r requirements-base.in
 packaging==23.2
     # via
@@ -252,7 +252,7 @@ packaging==23.2
     #   statsmodels
     #   thinc
     #   weasel
-pandas==2.1.4
+pandas==2.2.0
     # via
     #   -r requirements-base.in
     #   statsmodels
@@ -291,7 +291,7 @@ pyasn1-modules==0.3.0
     #   oauth2client
 pycparser==2.21
     # via cffi
-pydantic==1.10.13
+pydantic==1.10.14
     # via
     #   -r requirements-base.in
     #   blockkit
