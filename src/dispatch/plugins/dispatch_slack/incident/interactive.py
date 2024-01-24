@@ -1823,7 +1823,7 @@ def handle_update_incident_command(
             db_session=db_session,
             initial_option={"text": incident.cost_model.name, "value": incident.cost_model.id}
             if incident.cost_model
-            else {},
+            else None,
             project_id=incident.project.id,
             optional=True,
         ),
