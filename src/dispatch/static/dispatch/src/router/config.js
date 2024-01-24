@@ -314,6 +314,16 @@ export const protectedRoute = [
           name: "FormsTable",
           meta: { title: "Forms" },
           component: () => import("@/forms/table/Table.vue"),
+          children: [
+            {
+              path: "/:organization/forms/:id",
+              name: "FormsTableAttorneyEdit",
+              component: () => import("@/forms/table/Table.vue"),
+              meta: {
+                showAttorneyEdit: true,
+              },
+            },
+          ],
         },
       ],
     },

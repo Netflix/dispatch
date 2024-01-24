@@ -15,6 +15,7 @@ from dispatch.event import service as event_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import Incident, IncidentRead
 from dispatch.notification import service as notification_service
+from dispatch.forms.models import Forms
 from dispatch.messaging.strings import (
     INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_NOTIFICATION,
     INCIDENT_CLOSED_RATING_FEEDBACK_NOTIFICATION,
@@ -35,6 +36,7 @@ from dispatch.messaging.strings import (
     INCIDENT_SEVERITY_CHANGE,
     INCIDENT_STATUS_CHANGE,
     INCIDENT_TYPE_CHANGE,
+    INCIDENT_COMPLETED_FORM_MESSAGE,
     MessageType,
 )
 from dispatch.participant import service as participant_service
@@ -215,6 +217,55 @@ def send_welcome_email_to_participant(
         log.error(f"Error in sending welcome email to {participant_email}: {e}")
 
     log.debug(f"Welcome email sent to {participant_email}.")
+
+
+def send_completed_form_email(
+    participant_email: str, form: Forms, db_session: SessionLocal
+):
+    """Sends an email to notify about a completed incident form."""
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=form.project.id, plugin_type="email"
+    )
+    if not plugin:
+        log.warning("Completed form notification email not sent. No email plugin configured.")
+        return
+
+    incident_description = (
+        form.incident.description
+        if len(form.incident.description) <= 500
+        else f"{form.incident.description[:500]}..."
+    )
+
+    message_kwargs = {
+        "name": form.incident.name,
+        "title": form.incident.title,
+        "description": incident_description,
+        "status": form.incident.status,
+        "commander_fullname": form.incident.commander.individual.name,
+        "commander_team": form.incident.commander.team,
+        "commander_weblink": form.incident.commander.individual.weblink,
+        "contact_fullname": form.incident.commander.individual.name,
+        "contact_weblink": form.incident.commander.individual.weblink,
+        "form_type": form.form_type.name,
+        "form_type_description": form.form_type.description,
+        "form_weblink": f"{DISPATCH_UI_URL}/{form.project.organization.name}/forms/{form.id}",
+    }
+
+    notification_text = "Incident Form Completed Notification"
+
+    # Can raise exception "tenacity.RetryError: RetryError". (Email may still go through).
+    try:
+        plugin.instance.send(
+            participant_email,
+            notification_text,
+            INCIDENT_COMPLETED_FORM_MESSAGE,
+            MessageType.incident_completed_form_notification,
+            **message_kwargs,
+        )
+    except Exception as e:
+        log.error(f"Error in sending completed form notification email to {participant_email}: {e}")
+
+    log.debug(f"Completed form notification email sent to {participant_email}.")
 
 
 @timer

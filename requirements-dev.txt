@@ -32,7 +32,7 @@ executing==2.0.1
     #   stack-data
 factory-boy==3.3.0
     # via -r requirements-dev.in
-faker==22.2.0
+faker==22.5.0
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -94,15 +94,13 @@ six==1.16.0
     #   python-dateutil
 stack-data==0.6.3
     # via ipython
-toml==0.10.2
-    # via vulture
 traitlets==5.14.1
     # via
     #   ipython
     #   matplotlib-inline
 virtualenv==20.25.0
     # via pre-commit
-vulture==2.10
+vulture==2.11
     # via -r requirements-dev.in
 wcwidth==0.2.12
     # via prompt-toolkit

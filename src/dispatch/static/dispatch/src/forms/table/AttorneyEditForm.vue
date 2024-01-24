@@ -84,7 +84,7 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
 export default {
-  name: "FormEditor",
+  name: "FormsTableAttorneyEdit",
 
   props: {
     value: {
