@@ -52,7 +52,7 @@ def calculate_incidents_response_cost(db_session: SessionLocal, project: Project
             # after the incident was marked as stable
             if incident.status == IncidentStatus.closed:
                 if incident_response_cost:
-                    if incident_response_cost.updated_at > incident.stable_at:
+                    if incident.stable_at is None or incident_response_cost.updated_at > incident.stable_at:
                         continue
 
             if incident_response_cost is None:
