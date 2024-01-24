@@ -57,7 +57,7 @@
               <v-list-item>
                 <tag-filter-auto-complete
                   label="Tags"
-                  :project="project"
+                  project="project"
                   v-model="policy.tags"
                   model="incident"
                 />

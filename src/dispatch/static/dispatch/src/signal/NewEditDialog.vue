@@ -108,6 +108,7 @@
                     v-model="tags"
                     model="signal"
                     :model-id="id"
+                    :project="project"
                   />
                 </v-col>
               </v-row>
