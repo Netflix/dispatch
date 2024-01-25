@@ -17,7 +17,12 @@
           <tag-type-filter-combobox v-model="local_tag_type" label="Tag Types" />
         </v-list-item>
         <v-list-item>
-          <tag-filter-auto-complete v-model="local_tag" label="Tags" model="query" />
+          <tag-filter-auto-complete
+            v-model="local_tag"
+            label="Tags"
+            model="query"
+            :project="local_project"
+          />
         </v-list-item>
       </v-list>
       <v-card-actions>

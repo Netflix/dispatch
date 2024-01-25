@@ -26,7 +26,12 @@
                   <project-combobox v-model="project" label="Projects" />
                 </v-list-item>
                 <v-list-item>
-                  <tag-filter-auto-complete v-model="tag" label="Tags" model="incident" />
+                  <tag-filter-auto-complete
+                    v-model="tag"
+                    label="Tags"
+                    model="incident"
+                    :project="project"
+                  />
                 </v-list-item>
                 <v-list-item>
                   <tag-type-filter-combobox v-model="tag_type" label="Tag Types" />

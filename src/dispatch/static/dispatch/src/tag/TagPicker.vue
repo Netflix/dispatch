@@ -120,7 +120,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue"
+import { ref, computed, onMounted, watch } from "vue"
 import { cloneDeep } from "lodash"
 import SearchUtils from "@/search/utils"
 import TagApi from "@/tag/api"
@@ -165,6 +165,13 @@ const props = defineProps({
   },
 })
 
+watch(
+  () => props.project,
+  () => {
+    fetchData()
+  }
+)
+
 const fetchData = () => {
   loading.value = true
 
@@ -178,7 +185,13 @@ const fetchData = () => {
   let filters = {}
 
   if (props.project) {
-    filters["project"] = [props.project]
+    if (Array.isArray(props.project)) {
+      if (props.project.length > 0) {
+        filters["project"] = props.project
+      }
+    } else {
+      filters["project"] = [props.project]
+    }
   }
 
   // add a filter to only retrun discoverable tags
