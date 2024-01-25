@@ -319,16 +319,18 @@ def handle_update_incident_project_select_action(
             optional=True,
             initial_options=[t.name for t in incident.tags],
         ),
-        cost_model_select(
-            db_session=db_session,
-            initial_option={"text": incident.cost_model.name, "value": incident.cost_model.id}
-            if incident.cost_model
-            else None,
-            project_id=incident.project.id,
-            optional=True,
-        ),
     ]
+    cost_model_block = cost_model_select(
+        db_session=db_session,
+        initial_option={"text": incident.cost_model.name, "value": incident.cost_model.id}
+        if incident.cost_model
+        else None,
+        project_id=incident.project.id,
+        optional=True,
+    )
 
+    if cost_model_block:
+        blocks.append(cost_model_block)
     modal = Modal(
         title="Update Incident",
         blocks=blocks,
@@ -2162,8 +2164,14 @@ def handle_report_incident_project_select_action(
         incident_severity_select(db_session=db_session, project_id=project.id, optional=True),
         incident_priority_select(db_session=db_session, project_id=project.id, optional=True),
         tag_multi_select(optional=True),
-        cost_model_select(db_session=db_session, project_id=project.id, optional=True),
     ]
+
+    cost_model_block = (
+        cost_model_select(db_session=db_session, project_id=project.id, optional=True),
+    )
+
+    if cost_model_block:
+        blocks.append(cost_model_block)
 
     modal = Modal(
         title="Report Incident",
