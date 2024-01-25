@@ -110,7 +110,13 @@
         </v-row>
       </v-col>
       <v-col cols="12">
-        <tag-filter-auto-complete label="Tags" v-model="tags" model="case" :model-id="id" />
+        <tag-filter-auto-complete
+          label="Tags"
+          v-model="tags"
+          model="case"
+          :model-id="id"
+          :project="project"
+        />
       </v-col>
       <v-col cols="12">
         <case-filter-combobox label="Related" v-model="related" :project="project" />

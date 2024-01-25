@@ -331,6 +331,7 @@ def handle_update_incident_project_select_action(
 
     if cost_model_block:
         blocks.append(cost_model_block)
+
     modal = Modal(
         title="Update Incident",
         blocks=blocks,
