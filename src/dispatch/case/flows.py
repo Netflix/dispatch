@@ -622,6 +622,9 @@ def case_create_resources_flow(
     if case.assignee:
         individual_participants.append((case.assignee.individual, None))
 
+    if case.reporter:
+        individual_participants.append((case.reporter.individual, None))
+
     if create_all_resources:
         # we create the tactical group
         direct_participant_emails = [i.email for i, _ in individual_participants]
