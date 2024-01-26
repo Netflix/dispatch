@@ -405,11 +405,6 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
     incident.visibility = incident_in.visibility
 
     db_session.commit()
-
-    # Update total incident reponse cost.
-    incident_cost_service.update_incident_response_cost(
-        incident_id=incident.id, db_session=db_session
-    )
     return incident
 
 

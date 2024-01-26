@@ -16,6 +16,7 @@ from dispatch.group import flows as group_flows
 from dispatch.group.enums import GroupType, GroupAction
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentRead
+from dispatch.incident_cost import service as incident_cost_service
 from dispatch.individual import service as individual_service
 from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
@@ -665,6 +666,11 @@ def incident_update_flow(
 
     # we update the external ticket
     ticket_flows.update_incident_ticket(incident_id=incident.id, db_session=db_session)
+
+    # Update total incident reponse cost.
+    incident_cost_service.update_incident_response_cost(
+        incident_id=incident.id, db_session=db_session
+    )
 
     if incident.status == IncidentStatus.active:
         # we re-resolve and add individuals to the incident
