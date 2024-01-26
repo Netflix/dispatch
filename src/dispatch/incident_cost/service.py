@@ -225,7 +225,8 @@ def calculate_incident_response_cost_with_classic_model(incident: Incident, inci
                     participant_role_renounced_at = participant_role.renounced_at
             else:
                 # Fixes race condition where the updated incident is marked as stable, but the update flow has not yet completed.
-                incident.stable_at = datetime.utcnow()
+                if not incident.stable_at:
+                    incident.stable_at = datetime.utcnow()
 
                 # we set the renounced_at default time to the stable_at time
                 participant_role_renounced_at = incident.stable_at
