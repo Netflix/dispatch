@@ -214,28 +214,22 @@ def calculate_incident_response_cost_with_classic_model(incident: Incident, inci
                 continue
 
             participant_role_assumed_at = participant_role.assumed_at
+            # we set the renounced_at default time to the current time
+            participant_role_renounced_at = datetime.utcnow()
 
             if incident.status == IncidentStatus.active:
-                # we set the renounced_at default time to the current time
-                participant_role_renounced_at = datetime.utcnow()
-
                 if participant_role.renounced_at:
                     # the participant left the conversation or got assigned another role
                     # we use the role's renounced_at time
                     participant_role_renounced_at = participant_role.renounced_at
             else:
-                # Fixes race condition where the updated incident is marked as stable, but the update flow has not yet completed.
-                incident_stable_at = incident.stable_at
-
-                if not incident_stable_at:
-                    incident_stable_at = datetime.utcnow()
-
-                # we set the renounced_at default time to the stable_at time
-                participant_role_renounced_at = incident_stable_at
+                # we set the renounced_at default time to the stable_at time if the stable_at time exists
+                if incident.stable_at:
+                    participant_role_renounced_at = incident.stable_at
 
                 if participant_role.renounced_at:
                     # the participant left the conversation or got assigned another role
-                    if participant_role.renounced_at < incident_stable_at:
+                    if participant_role.renounced_at < incident.stable_at:
                         # we use the role's renounced_at time if it happened before the
                         # incident was marked as stable or closed
                         participant_role_renounced_at = participant_role.renounced_at
