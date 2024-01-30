@@ -147,7 +147,6 @@ def update_user(
     # if trying to change the password, make sure this user is the current user
     # or has current user has role of admin or above
     if not user.check_password(user_in.password):
-        print(f"current user: {current_user.id} and the user in is {user_id}")
         if user_id != current_user.id:
             current_user_organization_role = current_user.get_organization_role(organization)
             if current_user_organization_role == UserRoles.member:
