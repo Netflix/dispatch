@@ -144,6 +144,22 @@ def update_user(
             detail=[{"msg": "A user with this id does not exist."}],
         )
 
+    # if trying to change the password, make sure this user is the current user
+    # or has current user has role of admin or above
+    if not user.check_password(user_in.password):
+        print(f"current user: {current_user.id} and the user in is {user_id}")
+        if user_id != current_user.id:
+            current_user_organization_role = current_user.get_organization_role(organization)
+            if current_user_organization_role == UserRoles.member:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=[
+                        {
+                            "msg": "You don't have permission to update this user's password. Please contact the organization's owner."
+                        }
+                    ],
+                )
+
     if user_in.role:
         user_organization_role = user.get_organization_role(organization)
         if user_organization_role != user_in.role:
