@@ -1,3 +1,4 @@
+import logging
 from typing import List, Optional
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
@@ -12,6 +13,8 @@ from .models import (
     CasePriorityRead,
     CasePriorityUpdate,
 )
+
+log = logging.getLogger(__name__)
 
 
 def get(*, db_session, case_priority_id: int) -> Optional[CasePriority]:
@@ -86,6 +89,10 @@ def get_by_name_or_default(
 ) -> CasePriority:
     """Returns a case priority based on a name or the default if not specified."""
     if case_priority_in:
+        if not case_priority_in.project or case_priority_in.project.id != project_id:
+            log.warning(
+                "The selected case severity is not associated with the same project as the case. Searching for the nearest matching case severity."
+            )
         if case_priority_in.name:
             return get_by_name_or_raise(
                 db_session=db_session,

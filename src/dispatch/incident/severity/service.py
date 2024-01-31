@@ -1,3 +1,4 @@
+import logging
 from typing import List, Optional
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
@@ -12,6 +13,8 @@ from .models import (
     IncidentSeverityRead,
     IncidentSeverityUpdate,
 )
+
+log = logging.getLogger(__name__)
 
 
 def get(*, db_session, incident_severity_id: int) -> Optional[IncidentSeverity]:
@@ -91,6 +94,10 @@ def get_by_name_or_default(
 ) -> IncidentSeverity:
     """Returns an incident severity based on a name or the default if not specified."""
     if incident_severity_in:
+        if not incident_severity_in.project or incident_severity_in.project.id != project_id:
+            log.warning(
+                "The selected incident severity is not associated with the same project as the incident. Searching for the nearest matching incident severity."
+            )
         if incident_severity_in.name:
             return get_by_name_or_raise(
                 db_session=db_session,

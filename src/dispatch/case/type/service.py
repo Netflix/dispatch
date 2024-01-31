@@ -1,3 +1,4 @@
+import logging
 from typing import List, Optional
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
@@ -10,6 +11,8 @@ from dispatch.project import service as project_service
 from dispatch.service import service as service_service
 
 from .models import CaseType, CaseTypeCreate, CaseTypeRead, CaseTypeUpdate
+
+log = logging.getLogger(__name__)
 
 
 def get(*, db_session, case_type_id: int) -> Optional[CaseType]:
@@ -75,6 +78,10 @@ def get_by_name_or_raise(*, db_session, project_id: int, case_type_in=CaseTypeRe
 def get_by_name_or_default(*, db_session, project_id: int, case_type_in=CaseTypeRead) -> CaseType:
     """Returns a case type based on a name or the default if not specified."""
     if case_type_in:
+        if not case_type_in.project or case_type_in.project.id != project_id:
+            log.warning(
+                "The selected case type is not associated with the same project as the case. Searching for the nearest matching case type."
+            )
         if case_type_in.name:
             return get_by_name_or_raise(
                 db_session=db_session, project_id=project_id, case_type_in=case_type_in

@@ -1,3 +1,4 @@
+import logging
 from typing import List, Optional
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
@@ -12,6 +13,8 @@ from .models import (
     IncidentPriorityRead,
     IncidentPriorityUpdate,
 )
+
+log = logging.getLogger(__name__)
 
 
 def get(*, db_session, incident_priority_id: int) -> Optional[IncidentPriority]:
@@ -90,6 +93,10 @@ def get_by_name_or_default(
 ) -> IncidentPriority:
     """Returns a incident priority based on a name or the default if not specified."""
     if incident_priority_in:
+        if not incident_priority_in.project or incident_priority_in.project.id != project_id:
+            log.warning(
+                "The selected incident priority is not associated with the same project as the incident. Searching for the nearest matching incident priority."
+            )
         if incident_priority_in.name:
             return get_by_name_or_raise(
                 db_session=db_session,

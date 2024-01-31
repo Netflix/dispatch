@@ -1,3 +1,4 @@
+import logging
 from typing import List, Optional
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
@@ -8,6 +9,8 @@ from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 
 from .models import IncidentType, IncidentTypeCreate, IncidentTypeRead, IncidentTypeUpdate
+
+log = logging.getLogger(__name__)
 
 
 def get(*, db_session, incident_type_id: int) -> Optional[IncidentType]:
@@ -81,6 +84,10 @@ def get_by_name_or_default(
 ) -> IncidentType:
     """Returns a incident_type based on a name or the default if not specified."""
     if incident_type_in:
+        if not incident_type_in.project or incident_type_in.project.id != project_id:
+            log.warning(
+                "The selected incident type is not associated with the same project as the incident. Searching for the nearest matching incident type."
+            )
         if incident_type_in.name:
             return get_by_name_or_raise(
                 db_session=db_session, project_id=project_id, incident_type_in=incident_type_in
