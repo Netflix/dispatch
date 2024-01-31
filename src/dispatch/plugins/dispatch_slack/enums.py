@@ -27,6 +27,7 @@ class SlackAPIPostEndpoints(DispatchEnum):
 
 
 class SlackAPIErrorCode(DispatchEnum):
+    ALREADY_IN_CHANNEL = "already_in_channel"
     CHANNEL_NOT_FOUND = "channel_not_found"
     CHANNEL_NOT_ARCHIVED = "not_archived"
     FATAL_ERROR = "fatal_error"
