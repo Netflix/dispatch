@@ -330,7 +330,7 @@ python-jose==3.3.0
     # via -r requirements-base.in
 python-multipart==0.0.6
     # via -r requirements-base.in
-python-slugify==8.0.1
+python-slugify==8.0.2
     # via -r requirements-base.in
 pytz==2023.3.post1
     # via
