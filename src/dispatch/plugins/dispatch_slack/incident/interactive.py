@@ -329,6 +329,7 @@ def handle_update_incident_project_select_action(
         optional=True,
     )
 
+    # We only add the cost model block if it exists. This is because blockkit throws an error when trying to render a null block.
     if cost_model_block:
         blocks.append(cost_model_block)
 
@@ -1838,6 +1839,7 @@ def handle_update_incident_command(
         optional=True,
     )
 
+    # We only add the cost model block if it exists. This is because blockkit throws an error when trying to render a null block.
     if cost_model_block:
         blocks.append(cost_model_block)
 
@@ -2170,10 +2172,11 @@ def handle_report_incident_project_select_action(
         tag_multi_select(optional=True),
     ]
 
-    cost_model_block = (
-        cost_model_select(db_session=db_session, project_id=project.id, optional=True),
+    cost_model_block = cost_model_select(
+        db_session=db_session, project_id=project.id, optional=True
     )
 
+    # We only add the cost model block if it exists. This is because blockkit throws an error when trying to render a null block.
     if cost_model_block:
         blocks.append(cost_model_block)
 

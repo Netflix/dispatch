@@ -801,6 +801,7 @@ def handle_new_participant_added(
             log.warn(f"Error adding participant {user_id} to Case {context['subject'].id}: {e}")
             continue
 
+
 @message_dispatcher.add(
     subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
@@ -930,8 +931,15 @@ def escalate_button_click(
             project_id=case.project.id,
         ),
         incident_priority_select(db_session=db_session, project_id=case.project.id, optional=True),
-        cost_model_select(db_session=db_session, project_id=case.project.id, optional=True),
     ]
+
+    cost_model_block = cost_model_select(
+        db_session=db_session, project_id=case.project.id, optional=True
+    )
+
+    # We only add the cost model block if it exists. This is because blockkit throws an error when trying to render a null block.
+    if cost_model_block:
+        blocks.append(cost_model_block)
 
     modal = Modal(
         title="Escalate Case",
