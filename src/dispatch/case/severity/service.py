@@ -91,7 +91,7 @@ def get_by_name_or_default(
     if case_severity_in:
         if not case_severity_in.project or case_severity_in.project.id != project_id:
             log.warning(
-                "The selected case severity is not associated with the same project as the case. Searching for the nearest matching case severity."
+                f"Selected case severity and case are not associated with the same project. Searching for the nearest matching case severity within project {project_id}."
             )
         if case_severity_in.name:
             return get_by_name_or_raise(

@@ -86,7 +86,7 @@ def get_by_name_or_default(
     if incident_type_in:
         if not incident_type_in.project or incident_type_in.project.id != project_id:
             log.warning(
-                "The selected incident type is not associated with the same project as the incident. Searching for the nearest matching incident type."
+                f"Selected incident type and incident are not associated with the same project. Searching for the nearest matching incident type within project {project_id}."
             )
         if incident_type_in.name:
             return get_by_name_or_raise(

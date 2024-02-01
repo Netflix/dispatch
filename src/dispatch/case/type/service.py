@@ -80,7 +80,7 @@ def get_by_name_or_default(*, db_session, project_id: int, case_type_in=CaseType
     if case_type_in:
         if not case_type_in.project or case_type_in.project.id != project_id:
             log.warning(
-                "The selected case type is not associated with the same project as the case. Searching for the nearest matching case type."
+                f"Selected case type and case are not associated with the same project. Searching for the nearest matching case type within project {project_id}."
             )
         if case_type_in.name:
             return get_by_name_or_raise(
