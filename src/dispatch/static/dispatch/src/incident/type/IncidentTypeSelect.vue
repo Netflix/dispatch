@@ -7,6 +7,7 @@
     :label="label"
     return-object
     :loading="loading"
+    :rules="[type_in_project]"
   >
     <template #item="{ props, item }">
       <v-list-item v-bind="props" :title="null">
@@ -63,6 +64,11 @@ export default {
       items: [],
       more: false,
       numItems: 5,
+      error: null,
+      type_in_project: () => {
+        this.validateType()
+        return this.error
+      },
     }
   },
 
@@ -73,6 +79,7 @@ export default {
       },
       set(value) {
         this.$emit("update:modelValue", value)
+        this.validateType()
       },
     },
   },
@@ -81,6 +88,15 @@ export default {
     loadMore() {
       this.numItems = this.numItems + 5
       this.fetchData()
+    },
+    validateType() {
+      const project_id = this.project?.id || 0
+      const in_project = this.incident_type?.project?.id == project_id
+      if (in_project) {
+        this.error = true
+      } else {
+        this.error = "Only types in selected project are allowed"
+      }
     },
     fetchData() {
       this.error = null
@@ -132,6 +148,8 @@ export default {
       (vm) => [vm.project],
       () => {
         this.fetchData()
+        this.validateType()
+        this.$emit("update:modelValue", this.incident_type)
       }
     )
   },
