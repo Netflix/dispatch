@@ -332,7 +332,7 @@ python-multipart==0.0.6
     # via -r requirements-base.in
 python-slugify==8.0.2
     # via -r requirements-base.in
-pytz==2023.3.post1
+pytz==2024.1
     # via
     #   -r requirements-base.in
     #   pandas
