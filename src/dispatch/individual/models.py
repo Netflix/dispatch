@@ -1,6 +1,6 @@
 from datetime import datetime
-from typing import List, Optional
-from pydantic import Field, HttpUrl
+from typing import List, Optional, Union
+from pydantic import Field, HttpUrl, validator
 
 from sqlalchemy import Column, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -63,11 +63,18 @@ class IndividualContact(Base, ContactMixin, ProjectMixin):
 
 
 class IndividualContactBase(ContactBase):
-    weblink: Optional[HttpUrl] = Field(None, nullable=True)
+    weblink: Union[HttpUrl, str] = Field(None, nullable=True)
     mobile_phone: Optional[str] = Field(None, nullable=True)
     office_phone: Optional[str] = Field(None, nullable=True)
     title: Optional[str] = Field(None, nullable=True)
     external_id: Optional[str] = Field(None, nullable=True)
+
+    @validator("weblink")
+    def weblink_validator(cls, v):
+        if not isinstance(v, HttpUrl) and len(v) > 0:
+            raise ValueError(
+                "weblink is not an empty string and not a valid weblink")
+        return v
 
 
 class IndividualContactCreate(IndividualContactBase):
