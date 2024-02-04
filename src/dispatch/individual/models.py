@@ -71,7 +71,7 @@ class IndividualContactBase(ContactBase):
 
     @validator("weblink")
     def weblink_validator(cls, v):
-        if not v:
+        if v is None:
             return v
         if not isinstance(v, HttpUrl) and len(v) > 0:
             raise ValueError(
