@@ -75,7 +75,7 @@ class IndividualContactBase(ContactBase):
             return v
         if not isinstance(v, HttpUrl) and len(v) > 0:
             raise ValueError(
-                f"weblink is not an empty string and not a valid weblink")
+                "weblink is not an empty string and not a valid weblink")
         return v
 
 
