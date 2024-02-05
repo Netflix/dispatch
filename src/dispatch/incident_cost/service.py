@@ -229,7 +229,7 @@ def calculate_incident_response_cost_with_classic_model(incident: Incident, inci
 
                 if participant_role.renounced_at:
                     # the participant left the conversation or got assigned another role
-                    if participant_role.renounced_at < incident.stable_at:
+                    if participant_role.renounced_at < participant_role_renounced_at:
                         # we use the role's renounced_at time if it happened before the
                         # incident was marked as stable or closed
                         participant_role_renounced_at = participant_role.renounced_at
