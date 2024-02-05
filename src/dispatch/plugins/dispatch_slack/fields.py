@@ -265,7 +265,7 @@ def static_select_block(
     return Input(
         element=StaticSelect(
             placeholder=placeholder,
-            options=[PlainOption(**x) for x in options],
+            options=[PlainOption(**x) for x in options] if options else None,
             initial_option=PlainOption(**initial_option) if initial_option else None,
             action_id=action_id,
         ),
@@ -287,7 +287,7 @@ def multi_select_block(
     return Input(
         element=MultiStaticSelect(
             placeholder=placeholder,
-            options=[PlainOption(**x) for x in options],
+            options=[PlainOption(**x) for x in options] if options else None,
             action_id=action_id,
         ),
         block_id=block_id,
@@ -629,6 +629,9 @@ def cost_model_select(
         {"text": cost_model.name, "value": cost_model.id}
         for cost_model in cost_model_service.get_all(db_session=db_session, project_id=project_id)
     ]
+
+    if not len(cost_model_options):
+        return
 
     return static_select_block(
         placeholder="Select Cost Model",

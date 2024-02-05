@@ -29,7 +29,12 @@
           <project-combobox v-model="local_project" label="Projects" />
         </v-list-item>
         <v-list-item>
-          <tag-filter-auto-complete v-model="local_tag" label="Tags" model="source" />
+          <tag-filter-auto-complete
+            v-model="local_tag"
+            label="Tags"
+            model="source"
+            :project="local_project"
+          />
         </v-list-item>
         <v-list-item>
           <tag-type-filter-combobox v-model="local_tag_type" label="Tag Types" />

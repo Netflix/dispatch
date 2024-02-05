@@ -20,7 +20,12 @@
           <project-combobox v-model="filters.project" label="Projects" />
         </v-list-item>
         <v-list-item>
-          <tag-filter-auto-complete v-model="filters.tag" label="Tags" model="case" />
+          <tag-filter-auto-complete
+            v-model="filters.tag"
+            label="Tags"
+            model="case"
+            :project="filters.project"
+          />
         </v-list-item>
         <v-list-item>
           <case-type-combobox v-model="filters.case_type" />

@@ -214,22 +214,22 @@ def calculate_incident_response_cost_with_classic_model(incident: Incident, inci
                 continue
 
             participant_role_assumed_at = participant_role.assumed_at
+            # we set the renounced_at default time to the current time
+            participant_role_renounced_at = datetime.utcnow()
 
             if incident.status == IncidentStatus.active:
-                # we set the renounced_at default time to the current time
-                participant_role_renounced_at = datetime.utcnow()
-
                 if participant_role.renounced_at:
                     # the participant left the conversation or got assigned another role
                     # we use the role's renounced_at time
                     participant_role_renounced_at = participant_role.renounced_at
             else:
-                # we set the renounced_at default time to the stable_at time
-                participant_role_renounced_at = incident.stable_at
+                # we set the renounced_at default time to the stable_at time if the stable_at time exists
+                if incident.stable_at:
+                    participant_role_renounced_at = incident.stable_at
 
                 if participant_role.renounced_at:
                     # the participant left the conversation or got assigned another role
-                    if participant_role.renounced_at < incident.stable_at:
+                    if participant_role.renounced_at < participant_role_renounced_at:
                         # we use the role's renounced_at time if it happened before the
                         # incident was marked as stable or closed
                         participant_role_renounced_at = participant_role.renounced_at
@@ -285,12 +285,12 @@ def calculate_incident_response_cost(
         log.warning(f"Incident with id {incident_id} not found.")
         return 0
     if incident.cost_model and incident.cost_model.enabled:
-        log.info(f"Calculating {incident.name} incident cost with model {incident.cost_model}.")
+        log.debug(f"Calculating {incident.name} incident cost with model {incident.cost_model}.")
         return calculate_incident_response_cost_with_cost_model(
             incident=incident, db_session=db_session
         )
     else:
-        log.info("No incident cost model found. Defaulting to classic incident cost model.")
+        log.debug("No incident cost model found. Defaulting to classic incident cost model.")
         return calculate_incident_response_cost_with_classic_model(
             incident=incident, incident_review=incident_review
         )

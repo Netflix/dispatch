@@ -13,6 +13,9 @@
           {{ menu ? "mdi-minus" : "mdi-plus" }}
         </v-icon>
       </template>
+      <template #append>
+        <v-icon class="panel-button" @click.stop="copyTags">mdi-content-copy</v-icon>
+      </template>
       <div class="form-container mt-2">
         <div class="chip-group" v-show="selectedItems.length">
           <span v-for="(item, index) in selectedItems" :key="item">
@@ -117,10 +120,15 @@
       </div>
     </v-card>
   </span>
+  <v-snackbar v-model="snackbar" :timeout="2400" color="success">
+    <v-row class="fill-height" align="center">
+      <v-col class="text-center">Tags copied to the clipboard</v-col>
+    </v-row>
+  </v-snackbar>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue"
+import { ref, computed, onMounted, watch } from "vue"
 import { cloneDeep } from "lodash"
 import SearchUtils from "@/search/utils"
 import TagApi from "@/tag/api"
@@ -143,6 +151,7 @@ const searchQuery = ref("")
 const filteredMenuItems = ref([])
 const isDropdownOpen = ref(false)
 const loading = ref(true)
+const snackbar = ref(false)
 
 const props = defineProps({
   modelValue: {
@@ -165,6 +174,13 @@ const props = defineProps({
   },
 })
 
+watch(
+  () => props.project,
+  () => {
+    fetchData()
+  }
+)
+
 const fetchData = () => {
   loading.value = true
 
@@ -178,7 +194,13 @@ const fetchData = () => {
   let filters = {}
 
   if (props.project) {
-    filters["project"] = [props.project]
+    if (Array.isArray(props.project)) {
+      if (props.project.length > 0) {
+        filters["project"] = props.project
+      }
+    } else {
+      filters["project"] = [props.project]
+    }
   }
 
   // add a filter to only retrun discoverable tags
@@ -246,6 +268,12 @@ const selectedItems = computed({
     emit("update:modelValue", tags)
   },
 })
+
+const copyTags = () => {
+  const tags = selectedItems.value.map((item) => `${item.tag_type.name}/${item.name}`)
+  navigator.clipboard.writeText(tags.join(", "))
+  snackbar.value = true
+}
 
 const closeMenu = () => {
   menu.value = false
