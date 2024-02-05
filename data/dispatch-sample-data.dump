@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 14.6 (Debian 14.6-1.pgdg110+1)
--- Dumped by pg_dump version 14.8 (Homebrew)
+-- Dumped by pg_dump version 14.10 (Homebrew)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -1917,7 +1917,8 @@ CREATE TABLE dispatch_core.dispatch_user (
     search_vector tsvector,
     updated_at timestamp without time zone,
     created_at timestamp without time zone,
-    last_mfa_time timestamp without time zone
+    last_mfa_time timestamp without time zone,
+    experimental_features boolean
 );
 
 
@@ -2022,6 +2023,44 @@ CREATE TABLE dispatch_core.plugin (
 ALTER TABLE dispatch_core.plugin OWNER TO postgres;
 
 --
+-- Name: plugin_event; Type: TABLE; Schema: dispatch_core; Owner: postgres
+--
+
+CREATE TABLE dispatch_core.plugin_event (
+    id integer NOT NULL,
+    name character varying,
+    slug character varying,
+    description character varying,
+    plugin_id integer,
+    search_vector tsvector
+);
+
+
+ALTER TABLE dispatch_core.plugin_event OWNER TO postgres;
+
+--
+-- Name: plugin_event_id_seq; Type: SEQUENCE; Schema: dispatch_core; Owner: postgres
+--
+
+CREATE SEQUENCE dispatch_core.plugin_event_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE dispatch_core.plugin_event_id_seq OWNER TO postgres;
+
+--
+-- Name: plugin_event_id_seq; Type: SEQUENCE OWNED BY; Schema: dispatch_core; Owner: postgres
+--
+
+ALTER SEQUENCE dispatch_core.plugin_event_id_seq OWNED BY dispatch_core.plugin_event.id;
+
+
+--
 -- Name: plugin_id_seq; Type: SEQUENCE; Schema: dispatch_core; Owner: postgres
 --
 
@@ -2118,6 +2157,18 @@ CREATE TABLE dispatch_organization_default.assoc_case_tags (
 
 
 ALTER TABLE dispatch_organization_default.assoc_case_tags OWNER TO postgres;
+
+--
+-- Name: assoc_cost_model_activities; Type: TABLE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE TABLE dispatch_organization_default.assoc_cost_model_activities (
+    cost_model_id integer NOT NULL,
+    cost_model_activity_id integer NOT NULL
+);
+
+
+ALTER TABLE dispatch_organization_default.assoc_cost_model_activities OWNER TO postgres;
 
 --
 -- Name: assoc_document_filters; Type: TABLE; Schema: dispatch_organization_default; Owner: postgres
@@ -2596,6 +2647,82 @@ ALTER SEQUENCE dispatch_organization_default.conversation_id_seq OWNED BY dispat
 
 
 --
+-- Name: cost_model; Type: TABLE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE TABLE dispatch_organization_default.cost_model (
+    id integer NOT NULL,
+    name character varying,
+    description character varying,
+    enabled boolean,
+    search_vector tsvector,
+    project_id integer,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+ALTER TABLE dispatch_organization_default.cost_model OWNER TO postgres;
+
+--
+-- Name: cost_model_activity; Type: TABLE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE TABLE dispatch_organization_default.cost_model_activity (
+    id integer NOT NULL,
+    plugin_event_id integer,
+    response_time_seconds integer,
+    enabled boolean
+);
+
+
+ALTER TABLE dispatch_organization_default.cost_model_activity OWNER TO postgres;
+
+--
+-- Name: cost_model_activity_id_seq; Type: SEQUENCE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE SEQUENCE dispatch_organization_default.cost_model_activity_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE dispatch_organization_default.cost_model_activity_id_seq OWNER TO postgres;
+
+--
+-- Name: cost_model_activity_id_seq; Type: SEQUENCE OWNED BY; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER SEQUENCE dispatch_organization_default.cost_model_activity_id_seq OWNED BY dispatch_organization_default.cost_model_activity.id;
+
+
+--
+-- Name: cost_model_id_seq; Type: SEQUENCE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE SEQUENCE dispatch_organization_default.cost_model_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE dispatch_organization_default.cost_model_id_seq OWNER TO postgres;
+
+--
+-- Name: cost_model_id_seq; Type: SEQUENCE OWNED BY; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER SEQUENCE dispatch_organization_default.cost_model_id_seq OWNED BY dispatch_organization_default.cost_model.id;
+
+
+--
 -- Name: definition; Type: TABLE; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -2824,7 +2951,10 @@ CREATE TABLE dispatch_organization_default.event (
     updated_at timestamp without time zone,
     created_at timestamp without time zone,
     dispatch_user_id integer,
-    case_id integer
+    case_id integer,
+    type character varying,
+    owner character varying,
+    pinned boolean
 );
 
 
@@ -2890,6 +3020,92 @@ ALTER TABLE dispatch_organization_default.feedback_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE dispatch_organization_default.feedback_id_seq OWNED BY dispatch_organization_default.feedback.id;
+
+
+--
+-- Name: forms; Type: TABLE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE TABLE dispatch_organization_default.forms (
+    id integer NOT NULL,
+    form_data character varying,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone,
+    status character varying,
+    attorney_status character varying,
+    attorney_questions character varying,
+    attorney_analysis character varying,
+    creator_id integer,
+    incident_id integer,
+    form_type_id integer,
+    project_id integer
+);
+
+
+ALTER TABLE dispatch_organization_default.forms OWNER TO postgres;
+
+--
+-- Name: forms_id_seq; Type: SEQUENCE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE SEQUENCE dispatch_organization_default.forms_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE dispatch_organization_default.forms_id_seq OWNER TO postgres;
+
+--
+-- Name: forms_id_seq; Type: SEQUENCE OWNED BY; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER SEQUENCE dispatch_organization_default.forms_id_seq OWNED BY dispatch_organization_default.forms.id;
+
+
+--
+-- Name: forms_type; Type: TABLE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE TABLE dispatch_organization_default.forms_type (
+    id integer NOT NULL,
+    name character varying,
+    description character varying,
+    enabled boolean,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone,
+    form_schema character varying,
+    creator_id integer,
+    project_id integer,
+    service_id integer
+);
+
+
+ALTER TABLE dispatch_organization_default.forms_type OWNER TO postgres;
+
+--
+-- Name: forms_type_id_seq; Type: SEQUENCE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE SEQUENCE dispatch_organization_default.forms_type_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE dispatch_organization_default.forms_type_id_seq OWNER TO postgres;
+
+--
+-- Name: forms_type_id_seq; Type: SEQUENCE OWNED BY; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER SEQUENCE dispatch_organization_default.forms_type_id_seq OWNED BY dispatch_organization_default.forms_type.id;
 
 
 --
@@ -2970,7 +3186,8 @@ CREATE TABLE dispatch_organization_default.incident (
     notifications_group_id integer,
     incident_severity_id integer,
     delay_executive_report_reminder timestamp without time zone,
-    delay_tactical_report_reminder timestamp without time zone
+    delay_tactical_report_reminder timestamp without time zone,
+    cost_model_id integer
 );
 
 
@@ -3137,7 +3354,8 @@ CREATE TABLE dispatch_organization_default.incident_role (
     individual_id integer,
     project_id integer,
     updated_at timestamp without time zone,
-    created_at timestamp without time zone
+    created_at timestamp without time zone,
+    engage_next_oncall boolean
 );
 
 
@@ -3454,6 +3672,44 @@ CREATE TABLE dispatch_organization_default.participant (
 ALTER TABLE dispatch_organization_default.participant OWNER TO postgres;
 
 --
+-- Name: participant_activity; Type: TABLE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE TABLE dispatch_organization_default.participant_activity (
+    id integer NOT NULL,
+    plugin_event_id integer,
+    started_at timestamp without time zone,
+    ended_at timestamp without time zone,
+    participant_id integer,
+    incident_id integer
+);
+
+
+ALTER TABLE dispatch_organization_default.participant_activity OWNER TO postgres;
+
+--
+-- Name: participant_activity_id_seq; Type: SEQUENCE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE SEQUENCE dispatch_organization_default.participant_activity_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE dispatch_organization_default.participant_activity_id_seq OWNER TO postgres;
+
+--
+-- Name: participant_activity_id_seq; Type: SEQUENCE OWNED BY; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER SEQUENCE dispatch_organization_default.participant_activity_id_seq OWNED BY dispatch_organization_default.participant_activity.id;
+
+
+--
 -- Name: participant_id_seq; Type: SEQUENCE; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -3566,7 +3822,9 @@ CREATE TABLE dispatch_organization_default.project (
     annual_employee_cost integer,
     business_year_hours integer,
     owner_email character varying,
-    owner_conversation character varying
+    owner_conversation character varying,
+    send_daily_reports boolean,
+    stable_priority_id integer
 );
 
 
@@ -3809,11 +4067,97 @@ CREATE TABLE dispatch_organization_default.service (
     evergreen boolean,
     evergreen_owner character varying,
     evergreen_reminder_interval integer,
-    evergreen_last_reminder_at timestamp without time zone
+    evergreen_last_reminder_at timestamp without time zone,
+    health_metrics boolean
 );
 
 
 ALTER TABLE dispatch_organization_default.service OWNER TO postgres;
+
+--
+-- Name: service_feedback; Type: TABLE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE TABLE dispatch_organization_default.service_feedback (
+    rating character varying,
+    feedback character varying,
+    id integer NOT NULL,
+    hours numeric,
+    shift_start_at timestamp without time zone,
+    shift_end_at timestamp without time zone,
+    schedule character varying,
+    individual_contact_id integer,
+    search_vector tsvector,
+    updated_at timestamp without time zone,
+    created_at timestamp without time zone,
+    project_id integer
+);
+
+
+ALTER TABLE dispatch_organization_default.service_feedback OWNER TO postgres;
+
+--
+-- Name: service_feedback_id_seq; Type: SEQUENCE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE SEQUENCE dispatch_organization_default.service_feedback_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE dispatch_organization_default.service_feedback_id_seq OWNER TO postgres;
+
+--
+-- Name: service_feedback_id_seq; Type: SEQUENCE OWNED BY; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER SEQUENCE dispatch_organization_default.service_feedback_id_seq OWNED BY dispatch_organization_default.service_feedback.id;
+
+
+--
+-- Name: service_feedback_reminder; Type: TABLE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE TABLE dispatch_organization_default.service_feedback_reminder (
+    id integer NOT NULL,
+    reminder_at timestamp without time zone,
+    schedule_id character varying,
+    schedule_name character varying,
+    shift_end_at timestamp without time zone,
+    individual_contact_id integer,
+    project_id integer,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+ALTER TABLE dispatch_organization_default.service_feedback_reminder OWNER TO postgres;
+
+--
+-- Name: service_feedback_reminder_id_seq; Type: SEQUENCE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE SEQUENCE dispatch_organization_default.service_feedback_reminder_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE dispatch_organization_default.service_feedback_reminder_id_seq OWNER TO postgres;
+
+--
+-- Name: service_feedback_reminder_id_seq; Type: SEQUENCE OWNED BY; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER SEQUENCE dispatch_organization_default.service_feedback_reminder_id_seq OWNED BY dispatch_organization_default.service_feedback_reminder.id;
+
 
 --
 -- Name: service_id_seq; Type: SEQUENCE; Schema: dispatch_organization_default; Owner: postgres
@@ -3988,7 +4332,6 @@ CREATE TABLE dispatch_organization_default.signal_instance (
     id uuid NOT NULL,
     case_id integer,
     signal_id integer,
-    fingerprint character varying,
     raw jsonb,
     project_id integer,
     updated_at timestamp without time zone,
@@ -3996,7 +4339,8 @@ CREATE TABLE dispatch_organization_default.signal_instance (
     filter_action character varying,
     engagement_thread_ts character varying,
     case_type_id integer,
-    case_priority_id integer
+    case_priority_id integer,
+    canary boolean
 );
 
 
@@ -4341,7 +4685,14 @@ CREATE TABLE dispatch_organization_default.tag_type (
     project_id integer,
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
-    exclusive boolean
+    exclusive boolean,
+    discoverable_case boolean DEFAULT true,
+    discoverable_incident boolean DEFAULT true,
+    discoverable_query boolean DEFAULT true,
+    discoverable_signal boolean DEFAULT true,
+    discoverable_source boolean DEFAULT true,
+    color character varying,
+    icon character varying
 );
 
 
@@ -6364,6 +6715,13 @@ ALTER TABLE ONLY dispatch_core.plugin ALTER COLUMN id SET DEFAULT nextval('dispa
 
 
 --
+-- Name: plugin_event id; Type: DEFAULT; Schema: dispatch_core; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_core.plugin_event ALTER COLUMN id SET DEFAULT nextval('dispatch_core.plugin_event_id_seq'::regclass);
+
+
+--
 -- Name: alert id; Type: DEFAULT; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -6413,6 +6771,20 @@ ALTER TABLE ONLY dispatch_organization_default.conversation ALTER COLUMN id SET 
 
 
 --
+-- Name: cost_model id; Type: DEFAULT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.cost_model ALTER COLUMN id SET DEFAULT nextval('dispatch_organization_default.cost_model_id_seq'::regclass);
+
+
+--
+-- Name: cost_model_activity id; Type: DEFAULT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.cost_model_activity ALTER COLUMN id SET DEFAULT nextval('dispatch_organization_default.cost_model_activity_id_seq'::regclass);
+
+
+--
 -- Name: definition id; Type: DEFAULT; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -6452,6 +6824,20 @@ ALTER TABLE ONLY dispatch_organization_default.event ALTER COLUMN id SET DEFAULT
 --
 
 ALTER TABLE ONLY dispatch_organization_default.feedback ALTER COLUMN id SET DEFAULT nextval('dispatch_organization_default.feedback_id_seq'::regclass);
+
+
+--
+-- Name: forms id; Type: DEFAULT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.forms ALTER COLUMN id SET DEFAULT nextval('dispatch_organization_default.forms_id_seq'::regclass);
+
+
+--
+-- Name: forms_type id; Type: DEFAULT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.forms_type ALTER COLUMN id SET DEFAULT nextval('dispatch_organization_default.forms_type_id_seq'::regclass);
 
 
 --
@@ -6539,6 +6925,13 @@ ALTER TABLE ONLY dispatch_organization_default.participant ALTER COLUMN id SET D
 
 
 --
+-- Name: participant_activity id; Type: DEFAULT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.participant_activity ALTER COLUMN id SET DEFAULT nextval('dispatch_organization_default.participant_activity_id_seq'::regclass);
+
+
+--
 -- Name: participant_role id; Type: DEFAULT; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -6599,6 +6992,20 @@ ALTER TABLE ONLY dispatch_organization_default.search_filter ALTER COLUMN id SET
 --
 
 ALTER TABLE ONLY dispatch_organization_default.service ALTER COLUMN id SET DEFAULT nextval('dispatch_organization_default.service_id_seq'::regclass);
+
+
+--
+-- Name: service_feedback id; Type: DEFAULT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.service_feedback ALTER COLUMN id SET DEFAULT nextval('dispatch_organization_default.service_feedback_id_seq'::regclass);
+
+
+--
+-- Name: service_feedback_reminder id; Type: DEFAULT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.service_feedback_reminder ALTER COLUMN id SET DEFAULT nextval('dispatch_organization_default.service_feedback_reminder_id_seq'::regclass);
 
 
 --
@@ -6942,7 +7349,7 @@ ALTER TABLE ONLY public.workflow_instance ALTER COLUMN id SET DEFAULT nextval('p
 --
 
 COPY dispatch_core.alembic_version (version_num) FROM stdin;
-3dd4d12844dc
+ed0b0388fa3f
 \.
 
 
@@ -6950,11 +7357,14 @@ COPY dispatch_core.alembic_version (version_num) FROM stdin;
 -- Data for Name: dispatch_user; Type: TABLE DATA; Schema: dispatch_core; Owner: postgres
 --
 
-COPY dispatch_core.dispatch_user (id, email, password, search_vector, updated_at, created_at, last_mfa_time) FROM stdin;
-1	test@email.com	\\x24326224313224335178516e33684c3138414a6645764370787856427555364b3037586b4555615468345a6d5652697737722f6133506d4233314357	'test@email.com':1A	2021-07-27 18:03:54.011712	2021-07-27 18:03:53.987587	\N
-496	kglisson@example.com	\\x24326224313224475a57777a53673452745579676d37456b6b3658757547497a55414b3977566953572e526f7876554e56795848544f334b36583647	'kglisson@example.com':1A	2021-07-27 19:50:07.978675	2021-07-27 19:47:26.818131	\N
-129	dispatch@example.com	\\x24326224313224652f674233756651656365474b376b6a6d7a44473175367a6e563677663030437777575055694d657156566c6c4272346c746a6832	'dispatch@example.com':1A	2021-07-27 18:45:54.472619	2021-07-27 18:44:28.472455	\N
-4236	kglisson@acme.com	\\x2432622431322465334576387136706d757450674b446f6e465231337547766a4b436b5951325a48694e57754837546e4f696d74547255786d47344b	'kglisson@acme.com':1A	2022-03-04 18:11:31.450294	2021-08-04 21:14:27.722495	\N
+COPY dispatch_core.dispatch_user (id, email, password, search_vector, updated_at, created_at, last_mfa_time, experimental_features) FROM stdin;
+1	test@email.com	\\x24326224313224335178516e33684c3138414a6645764370787856427555364b3037586b4555615468345a6d5652697737722f6133506d4233314357	'test@email.com':1A	2021-07-27 18:03:54.011712	2021-07-27 18:03:53.987587	\N	\N
+496	kglisson@example.com	\\x24326224313224475a57777a53673452745579676d37456b6b3658757547497a55414b3977566953572e526f7876554e56795848544f334b36583647	'kglisson@example.com':1A	2021-07-27 19:50:07.978675	2021-07-27 19:47:26.818131	\N	\N
+129	dispatch@example.com	\\x24326224313224652f674233756651656365474b376b6a6d7a44473175367a6e563677663030437777575055694d657156566c6c4272346c746a6832	'dispatch@example.com':1A	2021-07-27 18:45:54.472619	2021-07-27 18:44:28.472455	\N	\N
+4236	kglisson@acme.com	\\x2432622431322465334576387136706d757450674b446f6e465231337547766a4b436b5951325a48694e57754837546e4f696d74547255786d47344b	'kglisson@acme.com':1A	2022-03-04 18:11:31.450294	2021-08-04 21:14:27.722495	\N	\N
+4259	pjvxm@example.com	\\x24326224313224533765652f4343326f634d596a2e7973704257715765464943647644717059612f57545371476b44584274727146786c4c37737557	'pjvxm@example.com':1A	2024-02-04 02:51:09.621875	2024-02-04 02:51:09.572056	\N	f
+4258	oo65l@example.com	\\x243262243132244b54304547624477685137454f524e46436449656865535877464b6353654a44517458547270796a734650656e4b6e4b6541427675	'oo65l@example.com':1A	2024-02-04 02:51:09.623427	2024-02-04 02:51:09.569227	\N	f
+4260	3p1t6@example.com	\\x243262243132246f4861584a436b366d686e4f624e584930336c666a65676d47534d35497046636a585231634e43472f727a514a4a6b5a307a516e53	'3p1t6@example.com':1A	2024-02-04 02:51:09.922722	2024-02-04 02:51:09.896716	\N	f
 \.
 
 
@@ -6967,6 +7377,9 @@ COPY dispatch_core.dispatch_user_organization (dispatch_user_id, organization_id
 129	1	Owner	2021-07-27 18:45:54.477286	2021-07-27 18:44:28.473467
 496	1	Owner	2021-07-27 19:50:07.983374	2021-07-27 19:47:26.819394
 4236	1	Member	2021-08-04 21:14:27.726854	2021-08-04 21:14:27.726861
+4259	1	Member	2024-02-04 02:51:09.597753	2024-02-04 02:51:09.597759
+4258	1	Member	2024-02-04 02:51:09.598371	2024-02-04 02:51:09.598376
+4260	1	Member	2024-02-04 02:51:09.905611	2024-02-04 02:51:09.905615
 \.
 
 
@@ -7003,11 +7416,19 @@ COPY dispatch_core.plugin (id, title, slug, description, version, author, author
 
 
 --
+-- Data for Name: plugin_event; Type: TABLE DATA; Schema: dispatch_core; Owner: postgres
+--
+
+COPY dispatch_core.plugin_event (id, name, slug, description, plugin_id, search_vector) FROM stdin;
+\.
+
+
+--
 -- Data for Name: alembic_version; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
 COPY dispatch_organization_default.alembic_version (version_num) FROM stdin;
-a3fb1380cf76
+d4bbb234d0bc
 \.
 
 
@@ -7036,6 +7457,14 @@ COPY dispatch_organization_default.assoc_case_tags (case_id, tag_id) FROM stdin;
 
 
 --
+-- Data for Name: assoc_cost_model_activities; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
+--
+
+COPY dispatch_organization_default.assoc_cost_model_activities (cost_model_id, cost_model_activity_id) FROM stdin;
+\.
+
+
+--
 -- Data for Name: assoc_document_filters; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -7049,6 +7478,7 @@ COPY dispatch_organization_default.assoc_document_filters (document_id, search_f
 
 COPY dispatch_organization_default.assoc_incident_tags (incident_id, tag_id) FROM stdin;
 2	1
+7	1
 \.
 
 
@@ -7231,6 +7661,22 @@ slack-conversation	dispatch-default-default-6	https://slack.com/app_redirect?cha
 
 
 --
+-- Data for Name: cost_model; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
+--
+
+COPY dispatch_organization_default.cost_model (id, name, description, enabled, search_vector, project_id, created_at, updated_at) FROM stdin;
+\.
+
+
+--
+-- Data for Name: cost_model_activity; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
+--
+
+COPY dispatch_organization_default.cost_model_activity (id, plugin_event_id, response_time_seconds, enabled) FROM stdin;
+\.
+
+
+--
 -- Data for Name: definition; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -7265,6 +7711,9 @@ COPY dispatch_organization_default.dispatch_user_project (dispatch_user_id, proj
 129	1	Member	2021-07-27 18:44:28.479945	2021-07-27 18:44:28.47995	\N
 496	1	Member	2021-07-27 19:47:26.825534	2021-07-27 19:47:26.825539	\N
 4236	1	Member	2021-08-04 21:14:27.744061	2021-08-04 21:14:27.744069	\N
+4259	1	Member	2024-02-04 02:51:09.617693	2024-02-04 02:51:09.617687	t
+4258	1	Member	2024-02-04 02:51:09.619586	2024-02-04 02:51:09.619583	t
+4260	1	Member	2024-02-04 02:51:09.916668	2024-02-04 02:51:09.916659	t
 \.
 
 
@@ -7301,64 +7750,67 @@ COPY dispatch_organization_default.entity_type (id, name, description, jpath, re
 -- Data for Name: event; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default.event (id, uuid, started_at, ended_at, source, description, details, individual_id, incident_id, search_vector, updated_at, created_at, dispatch_user_id, case_id) FROM stdin;
-29	49557f6b-2628-4b14-88f0-68fce5ecd67f	2021-07-27 19:54:05.75815	2021-07-27 19:54:05.75815	Dispatch Core App	The incident status has been changed from Active to Stable	null	\N	4	'activ':11B 'app':3A 'chang':9B 'core':2A 'dispatch':1A 'incid':5B 'stabl':13B 'status':6B	2021-07-27 19:54:05.772009	2021-07-27 19:54:05.758732	\N	\N
-2	e08315a0-31d6-4437-97fa-8e0e301e9156	2021-07-27 19:47:56.293577	2021-07-27 19:47:56.293577	Dispatch Core App	Incident created	null	\N	2	'app':3A 'core':2A 'creat':5B 'dispatch':1A 'incid':4B	2021-07-27 19:47:56.305149	2021-07-27 19:47:56.294086	\N	\N
-3	bc36af33-865f-4d33-9691-789530899043	2021-07-27 19:47:58.180227	2021-07-27 19:47:58.180227	Dispatch Core App	Kevin Glisson added to incident with Reporter role	null	\N	2	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B 'kevin':4B 'report':10B 'role':11B	2021-07-27 19:47:58.193746	2021-07-27 19:47:58.180704	\N	\N
-4	34596f8e-a2ee-47a7-b07b-fd06b0dff034	2021-07-27 19:47:58.244569	2021-07-27 19:47:58.244569	Dispatch Core App	Kevin Glisson added to incident with Incident Commander role	null	\N	2	'ad':6B 'app':3A 'command':11B 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B,10B 'kevin':4B 'role':12B	2021-07-27 19:47:58.25909	2021-07-27 19:47:58.245143	\N	\N
-5	e1c27b93-668f-4515-8211-e5565b7b9cde	2021-07-27 19:47:58.314789	2021-07-27 19:47:58.314789	Dispatch Core App	Kevin Glisson added to incident with Liaison role	null	\N	2	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B 'kevin':4B 'liaison':10B 'role':11B	2021-07-27 19:47:58.327942	2021-07-27 19:47:58.315231	\N	\N
-6	30c0fbee-6f25-4a13-b58e-d709a153e675	2021-07-27 19:47:58.416893	2021-07-27 19:47:58.416893	Dispatch Plugin - Ticket Management	Ticket created	null	\N	2	'creat':6B 'dispatch':1A 'manag':4A 'plugin':2A 'ticket':3A,5B	2021-07-27 19:47:58.435201	2021-07-27 19:47:58.417773	\N	\N
-7	113e46da-145f-48f9-8bd5-996e094662bd	2021-07-27 19:48:09.864668	2021-07-27 19:48:09.864668	Google Group Plugin - Participant Group Management	Tactical and notification groups created	null	\N	2	'creat':11B 'googl':1A 'group':2A,5A,10B 'manag':6A 'notif':9B 'particip':4A 'plugin':3A 'tactic':7B	2021-07-27 19:48:09.897076	2021-07-27 19:48:09.866061	\N	\N
-8	9e56cb0c-1717-4f98-994c-9b4f719d4be6	2021-07-27 19:48:09.922736	2021-07-27 19:48:09.922736	Dispatch Core App	Tactical and notification groups added to incident	null	\N	2	'ad':8B 'app':3A 'core':2A 'dispatch':1A 'group':7B 'incid':10B 'notif':6B 'tactic':4B	2021-07-27 19:48:09.938657	2021-07-27 19:48:09.924632	\N	\N
-9	c4e9010b-4816-4170-8132-230224247474	2021-07-27 19:48:11.60449	2021-07-27 19:48:11.60449	Google Calendar Plugin - Conference Management	Incident conference created	null	\N	2	'calendar':2A 'confer':4A,7B 'creat':8B 'googl':1A 'incid':6B 'manag':5A 'plugin':3A	2021-07-27 19:48:11.626794	2021-07-27 19:48:11.6052	\N	\N
-10	390cb9fd-6a65-4e20-bd08-fdabb29575cf	2021-07-27 19:48:11.638431	2021-07-27 19:48:11.638431	Dispatch Core App	Conference added to incident	null	\N	2	'ad':5B 'app':3A 'confer':4B 'core':2A 'dispatch':1A 'incid':7B	2021-07-27 19:48:11.653171	2021-07-27 19:48:11.640634	\N	\N
-11	2f72c7e9-dd0b-4012-8a45-f9a14fd2d292	2021-07-27 19:48:12.750551	2021-07-27 19:48:12.750551	Slack Plugin - Conversation Management	Incident conversation created	null	\N	2	'convers':3A,6B 'creat':7B 'incid':5B 'manag':4A 'plugin':2A 'slack':1A	2021-07-27 19:48:12.765715	2021-07-27 19:48:12.751284	\N	\N
-12	1a1688bf-6a9d-4dbf-85d8-7a7473ce6bd6	2021-07-27 19:48:12.778119	2021-07-27 19:48:12.778119	Dispatch Core App	Conversation added to incident	null	\N	2	'ad':5B 'app':3A 'convers':4B 'core':2A 'dispatch':1A 'incid':7B	2021-07-27 19:48:12.797313	2021-07-27 19:48:12.780851	\N	\N
-13	e466ae85-f69a-4205-88b9-02d38067ae42	2021-07-27 19:48:23.80163	2021-07-27 19:48:23.80163	Dispatch Core App	Incident participants added to incident	null	\N	2	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'incid':4B,8B 'particip':5B	2021-07-27 19:48:23.821511	2021-07-27 19:48:23.802091	\N	\N
-14	98872d38-28d8-447b-8959-3e0f0d5ef967	2021-07-27 19:48:23.847811	2021-07-27 19:48:23.847811	Dispatch Core App	Incident notifications sent	null	\N	2	'app':3A 'core':2A 'dispatch':1A 'incid':4B 'notif':5B 'sent':6B	2021-07-27 19:48:23.868016	2021-07-27 19:48:23.848395	\N	\N
-28	9bdc350c-17dc-4620-a12f-a7caef66d5b9	2021-07-27 19:53:27.379661	2021-07-27 19:53:27.379661	Dispatch Core App	Incident notifications sent	null	\N	4	'app':3A 'core':2A 'dispatch':1A 'incid':4B 'notif':5B 'sent':6B	2021-07-27 19:53:27.404884	2021-07-27 19:53:27.38054	\N	\N
-16	4dbe489a-e720-4c8f-a085-e843d1bf8a44	2021-07-27 19:52:57.762162	2021-07-27 19:52:57.762162	Dispatch Core App	Incident created	null	\N	4	'app':3A 'core':2A 'creat':5B 'dispatch':1A 'incid':4B	2021-07-27 19:52:57.77186	2021-07-27 19:52:57.762571	\N	\N
-17	bf3f08c2-3d94-4783-8181-22952bc0323b	2021-07-27 19:52:59.37065	2021-07-27 19:52:59.37065	Dispatch Core App	Kevin Glisson added to incident with Reporter role	null	\N	4	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B 'kevin':4B 'report':10B 'role':11B	2021-07-27 19:52:59.381702	2021-07-27 19:52:59.371169	\N	\N
-18	e9c821c9-4688-459b-b5c3-01d954fb60e5	2021-07-27 19:52:59.426042	2021-07-27 19:52:59.426042	Dispatch Core App	Kevin Glisson added to incident with Incident Commander role	null	\N	4	'ad':6B 'app':3A 'command':11B 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B,10B 'kevin':4B 'role':12B	2021-07-27 19:52:59.4361	2021-07-27 19:52:59.426481	\N	\N
-19	b22a5a27-7490-47e5-97df-cee2cdf704ec	2021-07-27 19:52:59.479856	2021-07-27 19:52:59.479856	Dispatch Core App	Kevin Glisson added to incident with Liaison role	null	\N	4	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B 'kevin':4B 'liaison':10B 'role':11B	2021-07-27 19:52:59.489004	2021-07-27 19:52:59.480284	\N	\N
-20	b3f9a89e-499d-4b13-9307-c0d3f268cd8f	2021-07-27 19:52:59.531497	2021-07-27 19:52:59.531497	Dispatch Plugin - Ticket Management	Ticket created	null	\N	4	'creat':6B 'dispatch':1A 'manag':4A 'plugin':2A 'ticket':3A,5B	2021-07-27 19:52:59.542519	2021-07-27 19:52:59.531965	\N	\N
-21	fdbb0a06-6103-41e0-8928-6717d4d6bdd7	2021-07-27 19:53:10.827467	2021-07-27 19:53:10.827467	Google Group Plugin - Participant Group Management	Tactical and notification groups created	null	\N	4	'creat':11B 'googl':1A 'group':2A,5A,10B 'manag':6A 'notif':9B 'particip':4A 'plugin':3A 'tactic':7B	2021-07-27 19:53:10.837657	2021-07-27 19:53:10.827908	\N	\N
-22	f7db3521-a173-4810-bb8d-906fae813385	2021-07-27 19:53:10.852037	2021-07-27 19:53:10.852037	Dispatch Core App	Tactical and notification groups added to incident	null	\N	4	'ad':8B 'app':3A 'core':2A 'dispatch':1A 'group':7B 'incid':10B 'notif':6B 'tactic':4B	2021-07-27 19:53:10.863075	2021-07-27 19:53:10.854458	\N	\N
-23	7ee29eb2-eb53-4568-8740-687715fe3244	2021-07-27 19:53:12.690793	2021-07-27 19:53:12.690793	Google Calendar Plugin - Conference Management	Incident conference created	null	\N	4	'calendar':2A 'confer':4A,7B 'creat':8B 'googl':1A 'incid':6B 'manag':5A 'plugin':3A	2021-07-27 19:53:12.735069	2021-07-27 19:53:12.692004	\N	\N
-24	5b5c5178-e215-4b03-9a0f-0eecef30764d	2021-07-27 19:53:12.757005	2021-07-27 19:53:12.757005	Dispatch Core App	Conference added to incident	null	\N	4	'ad':5B 'app':3A 'confer':4B 'core':2A 'dispatch':1A 'incid':7B	2021-07-27 19:53:12.789824	2021-07-27 19:53:12.766925	\N	\N
-25	4ce347ba-8bb3-43cd-aa89-6925a5abe635	2021-07-27 19:53:13.910679	2021-07-27 19:53:13.910679	Slack Plugin - Conversation Management	Incident conversation created	null	\N	4	'convers':3A,6B 'creat':7B 'incid':5B 'manag':4A 'plugin':2A 'slack':1A	2021-07-27 19:53:13.922948	2021-07-27 19:53:13.911156	\N	\N
-26	01f553ab-6076-4b26-885b-d5a663582f36	2021-07-27 19:53:13.931279	2021-07-27 19:53:13.931279	Dispatch Core App	Conversation added to incident	null	\N	4	'ad':5B 'app':3A 'convers':4B 'core':2A 'dispatch':1A 'incid':7B	2021-07-27 19:53:13.944528	2021-07-27 19:53:13.93326	\N	\N
-27	fa5a2de2-55d2-4367-bf45-5af76d66c037	2021-07-27 19:53:27.32766	2021-07-27 19:53:27.32766	Dispatch Core App	Incident participants added to incident	null	\N	4	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'incid':4B,8B 'particip':5B	2021-07-27 19:53:27.349556	2021-07-27 19:53:27.328643	\N	\N
-31	f33e4fe2-2e34-48a5-b5ce-6381f2cef8be	2021-07-27 20:06:15.278243	2021-07-27 20:06:15.278243	Dispatch Core App	Incident created	null	\N	5	'app':3A 'core':2A 'creat':5B 'dispatch':1A 'incid':4B	2021-07-27 20:06:15.312985	2021-07-27 20:06:15.27966	\N	\N
-39	c9635f42-89a6-40a4-9d3f-21d973bbe30c	2021-07-27 20:06:30.176489	2021-07-27 20:06:30.176489	Dispatch Core App	Conference added to incident	null	\N	5	'ad':5B 'app':3A 'confer':4B 'core':2A 'dispatch':1A 'incid':7B	2021-07-27 20:06:30.194772	2021-07-27 20:06:30.178632	\N	\N
-30	99528494-bd9c-47e2-af62-e2a9fa8cfee2	2021-07-27 19:54:05.78089	2021-07-27 19:54:05.78089	Incident Participant	Kevin Glisson marked the incident as Stable	null	2	4	'glisson':4B 'incid':1A,7B 'kevin':3B 'mark':5B 'particip':2A 'stabl':9B	2021-07-27 19:54:05.799518	2021-07-27 19:54:05.781404	\N	\N
-32	d1fa6a89-2ba9-4d15-89c1-253abf63a3a2	2021-07-27 20:06:16.908774	2021-07-27 20:06:16.908774	Dispatch Core App	Kevin Glisson added to incident with Reporter role	null	\N	5	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B 'kevin':4B 'report':10B 'role':11B	2021-07-27 20:06:16.922622	2021-07-27 20:06:16.909275	\N	\N
-36	f624f934-1d41-474a-8f7b-bba918465582	2021-07-27 20:06:28.35038	2021-07-27 20:06:28.35038	Google Group Plugin - Participant Group Management	Tactical and notification groups created	null	\N	5	'creat':11B 'googl':1A 'group':2A,5A,10B 'manag':6A 'notif':9B 'particip':4A 'plugin':3A 'tactic':7B	2021-07-27 20:06:28.363617	2021-07-27 20:06:28.350863	\N	\N
-42	aff9ebed-f588-42c9-8cde-dcf3c2231561	2021-07-27 20:06:41.583368	2021-07-27 20:06:41.583368	Dispatch Core App	Incident participants added to incident	null	\N	5	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'incid':4B,8B 'particip':5B	2021-07-27 20:06:41.595314	2021-07-27 20:06:41.58404	\N	\N
-49	ff5df909-ed07-47bb-9120-3127856f73ad	2021-07-27 20:11:43.928812	2021-07-27 20:11:43.928812	Google Group Plugin - Participant Group Management	Tactical and notification groups created	null	\N	6	'creat':11B 'googl':1A 'group':2A,5A,10B 'manag':6A 'notif':9B 'particip':4A 'plugin':3A 'tactic':7B	2021-07-27 20:11:43.942367	2021-07-27 20:11:43.929272	\N	\N
-50	52e93cc0-1d00-42c5-8e98-6ab7f9775578	2021-07-27 20:11:43.966374	2021-07-27 20:11:43.966374	Dispatch Core App	Tactical and notification groups added to incident	null	\N	6	'ad':8B 'app':3A 'core':2A 'dispatch':1A 'group':7B 'incid':10B 'notif':6B 'tactic':4B	2021-07-27 20:11:43.983846	2021-07-27 20:11:43.971549	\N	\N
-52	ebf60d7f-5740-4fb9-a55f-195b1f995eb6	2021-07-27 20:11:45.396347	2021-07-27 20:11:45.396347	Dispatch Core App	Documents added to incident	null	\N	6	'ad':5B 'app':3A 'core':2A 'dispatch':1A 'document':4B 'incid':7B	2021-07-27 20:11:45.410134	2021-07-27 20:11:45.396813	\N	\N
-54	da58b6e3-05bb-407e-8c4f-bead96ea7564	2021-07-27 20:11:47.206694	2021-07-27 20:11:47.206694	Dispatch Core App	Conference added to incident	null	\N	6	'ad':5B 'app':3A 'confer':4B 'core':2A 'dispatch':1A 'incid':7B	2021-07-27 20:11:47.221122	2021-07-27 20:11:47.208661	\N	\N
-57	2f5d5c41-13e7-4e6a-ab03-40b67b62faba	2021-07-27 20:11:58.989198	2021-07-27 20:11:58.989198	Dispatch Core App	Incident participants added to incident	null	\N	6	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'incid':4B,8B 'particip':5B	2021-07-27 20:11:59.001975	2021-07-27 20:11:58.989674	\N	\N
-33	4dd9a5d8-4bad-4b1c-a3ac-27dafc162394	2021-07-27 20:06:16.987165	2021-07-27 20:06:16.987165	Dispatch Core App	Kevin Glisson added to incident with Incident Commander role	null	\N	5	'ad':6B 'app':3A 'command':11B 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B,10B 'kevin':4B 'role':12B	2021-07-27 20:06:17.002968	2021-07-27 20:06:16.987704	\N	\N
-34	af3eff3c-0342-4aa7-a7ca-23a80dc0fff2	2021-07-27 20:06:17.051194	2021-07-27 20:06:17.051194	Dispatch Core App	Kevin Glisson added to incident with Liaison role	null	\N	5	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B 'kevin':4B 'liaison':10B 'role':11B	2021-07-27 20:06:17.062652	2021-07-27 20:06:17.051675	\N	\N
-35	6ee1463f-f308-4992-b479-b3b2b54b44e9	2021-07-27 20:06:17.115146	2021-07-27 20:06:17.115146	Dispatch Plugin - Ticket Management	Ticket created	null	\N	5	'creat':6B 'dispatch':1A 'manag':4A 'plugin':2A 'ticket':3A,5B	2021-07-27 20:06:17.131931	2021-07-27 20:06:17.11566	\N	\N
-37	5c846eae-e681-402d-9c7e-8dc0e359c7d3	2021-07-27 20:06:28.38158	2021-07-27 20:06:28.38158	Dispatch Core App	Tactical and notification groups added to incident	null	\N	5	'ad':8B 'app':3A 'core':2A 'dispatch':1A 'group':7B 'incid':10B 'notif':6B 'tactic':4B	2021-07-27 20:06:28.395437	2021-07-27 20:06:28.383165	\N	\N
-38	db45a35e-93ec-461d-a9b3-ebc4e075d081	2021-07-27 20:06:30.137656	2021-07-27 20:06:30.137656	Google Calendar Plugin - Conference Management	Incident conference created	null	\N	5	'calendar':2A 'confer':4A,7B 'creat':8B 'googl':1A 'incid':6B 'manag':5A 'plugin':3A	2021-07-27 20:06:30.166434	2021-07-27 20:06:30.139734	\N	\N
-40	9e1d954c-7668-4faf-a95a-e25ea4a82e09	2021-07-27 20:06:31.264981	2021-07-27 20:06:31.264981	Slack Plugin - Conversation Management	Incident conversation created	null	\N	5	'convers':3A,6B 'creat':7B 'incid':5B 'manag':4A 'plugin':2A 'slack':1A	2021-07-27 20:06:31.280714	2021-07-27 20:06:31.26551	\N	\N
-41	83288834-75cb-4e44-8be8-cc62347894de	2021-07-27 20:06:31.290579	2021-07-27 20:06:31.290579	Dispatch Core App	Conversation added to incident	null	\N	5	'ad':5B 'app':3A 'convers':4B 'core':2A 'dispatch':1A 'incid':7B	2021-07-27 20:06:31.304529	2021-07-27 20:06:31.29202	\N	\N
-43	0ba2f55e-ec9b-4f9e-95e4-68b0f50c8445	2021-07-27 20:06:41.611774	2021-07-27 20:06:41.611774	Dispatch Core App	Incident notifications sent	null	\N	5	'app':3A 'core':2A 'dispatch':1A 'incid':4B 'notif':5B 'sent':6B	2021-07-27 20:06:41.627956	2021-07-27 20:06:41.612213	\N	\N
-44	74fddbad-1c2e-4620-aab4-5bc341b19fd2	2021-07-27 20:11:30.531955	2021-07-27 20:11:30.531955	Dispatch Core App	Incident created	null	\N	6	'app':3A 'core':2A 'creat':5B 'dispatch':1A 'incid':4B	2021-07-27 20:11:30.543425	2021-07-27 20:11:30.532627	\N	\N
-45	f7ab4553-0c76-4f03-b0d9-fe6171e02cb8	2021-07-27 20:11:32.374781	2021-07-27 20:11:32.374781	Dispatch Core App	Kevin Glisson added to incident with Reporter role	null	\N	6	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B 'kevin':4B 'report':10B 'role':11B	2021-07-27 20:11:32.3914	2021-07-27 20:11:32.375392	\N	\N
-46	a5367169-cee2-4070-8acd-e25b586164b0	2021-07-27 20:11:32.452052	2021-07-27 20:11:32.452052	Dispatch Core App	Kevin Glisson added to incident with Incident Commander role	null	\N	6	'ad':6B 'app':3A 'command':11B 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B,10B 'kevin':4B 'role':12B	2021-07-27 20:11:32.467419	2021-07-27 20:11:32.452485	\N	\N
-47	572417cc-ecbc-426a-a28c-48eda55cc560	2021-07-27 20:11:32.514367	2021-07-27 20:11:32.514367	Dispatch Core App	Kevin Glisson added to incident with Liaison role	null	\N	6	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B 'kevin':4B 'liaison':10B 'role':11B	2021-07-27 20:11:32.527335	2021-07-27 20:11:32.514892	\N	\N
-48	7ae8bd56-d996-4da2-9f0c-68f11c970661	2021-07-27 20:11:32.600598	2021-07-27 20:11:32.600598	Dispatch Plugin - Ticket Management	Ticket created	null	\N	6	'creat':6B 'dispatch':1A 'manag':4A 'plugin':2A 'ticket':3A,5B	2021-07-27 20:11:32.616295	2021-07-27 20:11:32.601402	\N	\N
-51	f2d13f13-2236-4408-a242-50ab2a714730	2021-07-27 20:11:45.348881	2021-07-27 20:11:45.348881	Dispatch Core App	Creation of incident storage failed. Reason: Request failed. Errors: {'error': {'errors': [{'domain': 'global', 'reason': 'notFound', 'message': 'File not found: 1rxGkxQFdKxtwEKN-p-k5Fe8JC6f5uNg8.', 'locationType': 'parameter', 'location': 'fileId'}], 'code': 404, 'message': 'File not found: 1rxGkxQFdKxtwEKN-p-k5Fe8JC6f5uNg8.'}}	null	\N	6	'1rxgkxqfdkxtwekn':24B,38B '1rxgkxqfdkxtwekn-p-k5fe8jc6f5ung8':23B,37B '404':32B 'app':3A 'code':31B 'core':2A 'creation':4B 'dispatch':1A 'domain':15B 'error':12B,13B,14B 'fail':8B,11B 'file':20B,34B 'fileid':30B 'found':22B,36B 'global':16B 'incid':6B 'k5fe8jc6f5ung8':26B,40B 'locat':29B 'locationtyp':27B 'messag':19B,33B 'notfound':18B 'p':25B,39B 'paramet':28B 'reason':9B,17B 'request':10B 'storag':7B	2021-07-27 20:11:45.382849	2021-07-27 20:11:45.350277	\N	\N
-53	0fad1b80-d626-4c97-b535-dfdf0098485e	2021-07-27 20:11:47.168067	2021-07-27 20:11:47.168067	Google Calendar Plugin - Conference Management	Incident conference created	null	\N	6	'calendar':2A 'confer':4A,7B 'creat':8B 'googl':1A 'incid':6B 'manag':5A 'plugin':3A	2021-07-27 20:11:47.1984	2021-07-27 20:11:47.168696	\N	\N
-55	6c0b289e-5dff-470a-aed7-0caf9405c082	2021-07-27 20:11:48.26168	2021-07-27 20:11:48.26168	Slack Plugin - Conversation Management	Incident conversation created	null	\N	6	'convers':3A,6B 'creat':7B 'incid':5B 'manag':4A 'plugin':2A 'slack':1A	2021-07-27 20:11:48.278603	2021-07-27 20:11:48.26263	\N	\N
-56	6fe13da1-de96-41dd-ba9a-29a752060b46	2021-07-27 20:11:48.28756	2021-07-27 20:11:48.28756	Dispatch Core App	Conversation added to incident	null	\N	6	'ad':5B 'app':3A 'convers':4B 'core':2A 'dispatch':1A 'incid':7B	2021-07-27 20:11:48.307412	2021-07-27 20:11:48.290557	\N	\N
-58	d66ec104-af72-46df-80a8-2b32a6fa8944	2021-07-27 20:11:59.021607	2021-07-27 20:11:59.021607	Dispatch Core App	Incident notifications sent	null	\N	6	'app':3A 'core':2A 'dispatch':1A 'incid':4B 'notif':5B 'sent':6B	2021-07-27 20:11:59.04991	2021-07-27 20:11:59.022365	\N	\N
-59	7e011a9d-9bb9-4770-b5e3-1a21197e60c2	2021-07-28 17:13:49.192243	2021-07-28 17:13:49.192243	Dispatch Core App	New incident task created by Kevin Glisson	{"weblink": null}	\N	4	'app':3A 'core':2A 'creat':7B 'dispatch':1A 'glisson':10B 'incid':5B 'kevin':9B 'new':4B 'task':6B	2021-07-28 17:13:49.218153	2021-07-28 17:13:49.199624	\N	\N
+COPY dispatch_organization_default.event (id, uuid, started_at, ended_at, source, description, details, individual_id, incident_id, search_vector, updated_at, created_at, dispatch_user_id, case_id, type, owner, pinned) FROM stdin;
+29	49557f6b-2628-4b14-88f0-68fce5ecd67f	2021-07-27 19:54:05.75815	2021-07-27 19:54:05.75815	Dispatch Core App	The incident status has been changed from Active to Stable	null	\N	4	'activ':11B 'app':3A 'chang':9B 'core':2A 'dispatch':1A 'incid':5B 'stabl':13B 'status':6B	2021-07-27 19:54:05.772009	2021-07-27 19:54:05.758732	\N	\N	\N	\N	\N
+2	e08315a0-31d6-4437-97fa-8e0e301e9156	2021-07-27 19:47:56.293577	2021-07-27 19:47:56.293577	Dispatch Core App	Incident created	null	\N	2	'app':3A 'core':2A 'creat':5B 'dispatch':1A 'incid':4B	2021-07-27 19:47:56.305149	2021-07-27 19:47:56.294086	\N	\N	\N	\N	\N
+3	bc36af33-865f-4d33-9691-789530899043	2021-07-27 19:47:58.180227	2021-07-27 19:47:58.180227	Dispatch Core App	Kevin Glisson added to incident with Reporter role	null	\N	2	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B 'kevin':4B 'report':10B 'role':11B	2021-07-27 19:47:58.193746	2021-07-27 19:47:58.180704	\N	\N	\N	\N	\N
+4	34596f8e-a2ee-47a7-b07b-fd06b0dff034	2021-07-27 19:47:58.244569	2021-07-27 19:47:58.244569	Dispatch Core App	Kevin Glisson added to incident with Incident Commander role	null	\N	2	'ad':6B 'app':3A 'command':11B 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B,10B 'kevin':4B 'role':12B	2021-07-27 19:47:58.25909	2021-07-27 19:47:58.245143	\N	\N	\N	\N	\N
+5	e1c27b93-668f-4515-8211-e5565b7b9cde	2021-07-27 19:47:58.314789	2021-07-27 19:47:58.314789	Dispatch Core App	Kevin Glisson added to incident with Liaison role	null	\N	2	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B 'kevin':4B 'liaison':10B 'role':11B	2021-07-27 19:47:58.327942	2021-07-27 19:47:58.315231	\N	\N	\N	\N	\N
+6	30c0fbee-6f25-4a13-b58e-d709a153e675	2021-07-27 19:47:58.416893	2021-07-27 19:47:58.416893	Dispatch Plugin - Ticket Management	Ticket created	null	\N	2	'creat':6B 'dispatch':1A 'manag':4A 'plugin':2A 'ticket':3A,5B	2021-07-27 19:47:58.435201	2021-07-27 19:47:58.417773	\N	\N	\N	\N	\N
+7	113e46da-145f-48f9-8bd5-996e094662bd	2021-07-27 19:48:09.864668	2021-07-27 19:48:09.864668	Google Group Plugin - Participant Group Management	Tactical and notification groups created	null	\N	2	'creat':11B 'googl':1A 'group':2A,5A,10B 'manag':6A 'notif':9B 'particip':4A 'plugin':3A 'tactic':7B	2021-07-27 19:48:09.897076	2021-07-27 19:48:09.866061	\N	\N	\N	\N	\N
+8	9e56cb0c-1717-4f98-994c-9b4f719d4be6	2021-07-27 19:48:09.922736	2021-07-27 19:48:09.922736	Dispatch Core App	Tactical and notification groups added to incident	null	\N	2	'ad':8B 'app':3A 'core':2A 'dispatch':1A 'group':7B 'incid':10B 'notif':6B 'tactic':4B	2021-07-27 19:48:09.938657	2021-07-27 19:48:09.924632	\N	\N	\N	\N	\N
+9	c4e9010b-4816-4170-8132-230224247474	2021-07-27 19:48:11.60449	2021-07-27 19:48:11.60449	Google Calendar Plugin - Conference Management	Incident conference created	null	\N	2	'calendar':2A 'confer':4A,7B 'creat':8B 'googl':1A 'incid':6B 'manag':5A 'plugin':3A	2021-07-27 19:48:11.626794	2021-07-27 19:48:11.6052	\N	\N	\N	\N	\N
+10	390cb9fd-6a65-4e20-bd08-fdabb29575cf	2021-07-27 19:48:11.638431	2021-07-27 19:48:11.638431	Dispatch Core App	Conference added to incident	null	\N	2	'ad':5B 'app':3A 'confer':4B 'core':2A 'dispatch':1A 'incid':7B	2021-07-27 19:48:11.653171	2021-07-27 19:48:11.640634	\N	\N	\N	\N	\N
+11	2f72c7e9-dd0b-4012-8a45-f9a14fd2d292	2021-07-27 19:48:12.750551	2021-07-27 19:48:12.750551	Slack Plugin - Conversation Management	Incident conversation created	null	\N	2	'convers':3A,6B 'creat':7B 'incid':5B 'manag':4A 'plugin':2A 'slack':1A	2021-07-27 19:48:12.765715	2021-07-27 19:48:12.751284	\N	\N	\N	\N	\N
+12	1a1688bf-6a9d-4dbf-85d8-7a7473ce6bd6	2021-07-27 19:48:12.778119	2021-07-27 19:48:12.778119	Dispatch Core App	Conversation added to incident	null	\N	2	'ad':5B 'app':3A 'convers':4B 'core':2A 'dispatch':1A 'incid':7B	2021-07-27 19:48:12.797313	2021-07-27 19:48:12.780851	\N	\N	\N	\N	\N
+13	e466ae85-f69a-4205-88b9-02d38067ae42	2021-07-27 19:48:23.80163	2021-07-27 19:48:23.80163	Dispatch Core App	Incident participants added to incident	null	\N	2	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'incid':4B,8B 'particip':5B	2021-07-27 19:48:23.821511	2021-07-27 19:48:23.802091	\N	\N	\N	\N	\N
+14	98872d38-28d8-447b-8959-3e0f0d5ef967	2021-07-27 19:48:23.847811	2021-07-27 19:48:23.847811	Dispatch Core App	Incident notifications sent	null	\N	2	'app':3A 'core':2A 'dispatch':1A 'incid':4B 'notif':5B 'sent':6B	2021-07-27 19:48:23.868016	2021-07-27 19:48:23.848395	\N	\N	\N	\N	\N
+28	9bdc350c-17dc-4620-a12f-a7caef66d5b9	2021-07-27 19:53:27.379661	2021-07-27 19:53:27.379661	Dispatch Core App	Incident notifications sent	null	\N	4	'app':3A 'core':2A 'dispatch':1A 'incid':4B 'notif':5B 'sent':6B	2021-07-27 19:53:27.404884	2021-07-27 19:53:27.38054	\N	\N	\N	\N	\N
+16	4dbe489a-e720-4c8f-a085-e843d1bf8a44	2021-07-27 19:52:57.762162	2021-07-27 19:52:57.762162	Dispatch Core App	Incident created	null	\N	4	'app':3A 'core':2A 'creat':5B 'dispatch':1A 'incid':4B	2021-07-27 19:52:57.77186	2021-07-27 19:52:57.762571	\N	\N	\N	\N	\N
+17	bf3f08c2-3d94-4783-8181-22952bc0323b	2021-07-27 19:52:59.37065	2021-07-27 19:52:59.37065	Dispatch Core App	Kevin Glisson added to incident with Reporter role	null	\N	4	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B 'kevin':4B 'report':10B 'role':11B	2021-07-27 19:52:59.381702	2021-07-27 19:52:59.371169	\N	\N	\N	\N	\N
+18	e9c821c9-4688-459b-b5c3-01d954fb60e5	2021-07-27 19:52:59.426042	2021-07-27 19:52:59.426042	Dispatch Core App	Kevin Glisson added to incident with Incident Commander role	null	\N	4	'ad':6B 'app':3A 'command':11B 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B,10B 'kevin':4B 'role':12B	2021-07-27 19:52:59.4361	2021-07-27 19:52:59.426481	\N	\N	\N	\N	\N
+19	b22a5a27-7490-47e5-97df-cee2cdf704ec	2021-07-27 19:52:59.479856	2021-07-27 19:52:59.479856	Dispatch Core App	Kevin Glisson added to incident with Liaison role	null	\N	4	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B 'kevin':4B 'liaison':10B 'role':11B	2021-07-27 19:52:59.489004	2021-07-27 19:52:59.480284	\N	\N	\N	\N	\N
+20	b3f9a89e-499d-4b13-9307-c0d3f268cd8f	2021-07-27 19:52:59.531497	2021-07-27 19:52:59.531497	Dispatch Plugin - Ticket Management	Ticket created	null	\N	4	'creat':6B 'dispatch':1A 'manag':4A 'plugin':2A 'ticket':3A,5B	2021-07-27 19:52:59.542519	2021-07-27 19:52:59.531965	\N	\N	\N	\N	\N
+21	fdbb0a06-6103-41e0-8928-6717d4d6bdd7	2021-07-27 19:53:10.827467	2021-07-27 19:53:10.827467	Google Group Plugin - Participant Group Management	Tactical and notification groups created	null	\N	4	'creat':11B 'googl':1A 'group':2A,5A,10B 'manag':6A 'notif':9B 'particip':4A 'plugin':3A 'tactic':7B	2021-07-27 19:53:10.837657	2021-07-27 19:53:10.827908	\N	\N	\N	\N	\N
+22	f7db3521-a173-4810-bb8d-906fae813385	2021-07-27 19:53:10.852037	2021-07-27 19:53:10.852037	Dispatch Core App	Tactical and notification groups added to incident	null	\N	4	'ad':8B 'app':3A 'core':2A 'dispatch':1A 'group':7B 'incid':10B 'notif':6B 'tactic':4B	2021-07-27 19:53:10.863075	2021-07-27 19:53:10.854458	\N	\N	\N	\N	\N
+23	7ee29eb2-eb53-4568-8740-687715fe3244	2021-07-27 19:53:12.690793	2021-07-27 19:53:12.690793	Google Calendar Plugin - Conference Management	Incident conference created	null	\N	4	'calendar':2A 'confer':4A,7B 'creat':8B 'googl':1A 'incid':6B 'manag':5A 'plugin':3A	2021-07-27 19:53:12.735069	2021-07-27 19:53:12.692004	\N	\N	\N	\N	\N
+24	5b5c5178-e215-4b03-9a0f-0eecef30764d	2021-07-27 19:53:12.757005	2021-07-27 19:53:12.757005	Dispatch Core App	Conference added to incident	null	\N	4	'ad':5B 'app':3A 'confer':4B 'core':2A 'dispatch':1A 'incid':7B	2021-07-27 19:53:12.789824	2021-07-27 19:53:12.766925	\N	\N	\N	\N	\N
+25	4ce347ba-8bb3-43cd-aa89-6925a5abe635	2021-07-27 19:53:13.910679	2021-07-27 19:53:13.910679	Slack Plugin - Conversation Management	Incident conversation created	null	\N	4	'convers':3A,6B 'creat':7B 'incid':5B 'manag':4A 'plugin':2A 'slack':1A	2021-07-27 19:53:13.922948	2021-07-27 19:53:13.911156	\N	\N	\N	\N	\N
+26	01f553ab-6076-4b26-885b-d5a663582f36	2021-07-27 19:53:13.931279	2021-07-27 19:53:13.931279	Dispatch Core App	Conversation added to incident	null	\N	4	'ad':5B 'app':3A 'convers':4B 'core':2A 'dispatch':1A 'incid':7B	2021-07-27 19:53:13.944528	2021-07-27 19:53:13.93326	\N	\N	\N	\N	\N
+27	fa5a2de2-55d2-4367-bf45-5af76d66c037	2021-07-27 19:53:27.32766	2021-07-27 19:53:27.32766	Dispatch Core App	Incident participants added to incident	null	\N	4	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'incid':4B,8B 'particip':5B	2021-07-27 19:53:27.349556	2021-07-27 19:53:27.328643	\N	\N	\N	\N	\N
+31	f33e4fe2-2e34-48a5-b5ce-6381f2cef8be	2021-07-27 20:06:15.278243	2021-07-27 20:06:15.278243	Dispatch Core App	Incident created	null	\N	5	'app':3A 'core':2A 'creat':5B 'dispatch':1A 'incid':4B	2021-07-27 20:06:15.312985	2021-07-27 20:06:15.27966	\N	\N	\N	\N	\N
+39	c9635f42-89a6-40a4-9d3f-21d973bbe30c	2021-07-27 20:06:30.176489	2021-07-27 20:06:30.176489	Dispatch Core App	Conference added to incident	null	\N	5	'ad':5B 'app':3A 'confer':4B 'core':2A 'dispatch':1A 'incid':7B	2021-07-27 20:06:30.194772	2021-07-27 20:06:30.178632	\N	\N	\N	\N	\N
+30	99528494-bd9c-47e2-af62-e2a9fa8cfee2	2021-07-27 19:54:05.78089	2021-07-27 19:54:05.78089	Incident Participant	Kevin Glisson marked the incident as Stable	null	2	4	'glisson':4B 'incid':1A,7B 'kevin':3B 'mark':5B 'particip':2A 'stabl':9B	2021-07-27 19:54:05.799518	2021-07-27 19:54:05.781404	\N	\N	\N	\N	\N
+32	d1fa6a89-2ba9-4d15-89c1-253abf63a3a2	2021-07-27 20:06:16.908774	2021-07-27 20:06:16.908774	Dispatch Core App	Kevin Glisson added to incident with Reporter role	null	\N	5	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B 'kevin':4B 'report':10B 'role':11B	2021-07-27 20:06:16.922622	2021-07-27 20:06:16.909275	\N	\N	\N	\N	\N
+36	f624f934-1d41-474a-8f7b-bba918465582	2021-07-27 20:06:28.35038	2021-07-27 20:06:28.35038	Google Group Plugin - Participant Group Management	Tactical and notification groups created	null	\N	5	'creat':11B 'googl':1A 'group':2A,5A,10B 'manag':6A 'notif':9B 'particip':4A 'plugin':3A 'tactic':7B	2021-07-27 20:06:28.363617	2021-07-27 20:06:28.350863	\N	\N	\N	\N	\N
+42	aff9ebed-f588-42c9-8cde-dcf3c2231561	2021-07-27 20:06:41.583368	2021-07-27 20:06:41.583368	Dispatch Core App	Incident participants added to incident	null	\N	5	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'incid':4B,8B 'particip':5B	2021-07-27 20:06:41.595314	2021-07-27 20:06:41.58404	\N	\N	\N	\N	\N
+49	ff5df909-ed07-47bb-9120-3127856f73ad	2021-07-27 20:11:43.928812	2021-07-27 20:11:43.928812	Google Group Plugin - Participant Group Management	Tactical and notification groups created	null	\N	6	'creat':11B 'googl':1A 'group':2A,5A,10B 'manag':6A 'notif':9B 'particip':4A 'plugin':3A 'tactic':7B	2021-07-27 20:11:43.942367	2021-07-27 20:11:43.929272	\N	\N	\N	\N	\N
+50	52e93cc0-1d00-42c5-8e98-6ab7f9775578	2021-07-27 20:11:43.966374	2021-07-27 20:11:43.966374	Dispatch Core App	Tactical and notification groups added to incident	null	\N	6	'ad':8B 'app':3A 'core':2A 'dispatch':1A 'group':7B 'incid':10B 'notif':6B 'tactic':4B	2021-07-27 20:11:43.983846	2021-07-27 20:11:43.971549	\N	\N	\N	\N	\N
+52	ebf60d7f-5740-4fb9-a55f-195b1f995eb6	2021-07-27 20:11:45.396347	2021-07-27 20:11:45.396347	Dispatch Core App	Documents added to incident	null	\N	6	'ad':5B 'app':3A 'core':2A 'dispatch':1A 'document':4B 'incid':7B	2021-07-27 20:11:45.410134	2021-07-27 20:11:45.396813	\N	\N	\N	\N	\N
+54	da58b6e3-05bb-407e-8c4f-bead96ea7564	2021-07-27 20:11:47.206694	2021-07-27 20:11:47.206694	Dispatch Core App	Conference added to incident	null	\N	6	'ad':5B 'app':3A 'confer':4B 'core':2A 'dispatch':1A 'incid':7B	2021-07-27 20:11:47.221122	2021-07-27 20:11:47.208661	\N	\N	\N	\N	\N
+57	2f5d5c41-13e7-4e6a-ab03-40b67b62faba	2021-07-27 20:11:58.989198	2021-07-27 20:11:58.989198	Dispatch Core App	Incident participants added to incident	null	\N	6	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'incid':4B,8B 'particip':5B	2021-07-27 20:11:59.001975	2021-07-27 20:11:58.989674	\N	\N	\N	\N	\N
+33	4dd9a5d8-4bad-4b1c-a3ac-27dafc162394	2021-07-27 20:06:16.987165	2021-07-27 20:06:16.987165	Dispatch Core App	Kevin Glisson added to incident with Incident Commander role	null	\N	5	'ad':6B 'app':3A 'command':11B 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B,10B 'kevin':4B 'role':12B	2021-07-27 20:06:17.002968	2021-07-27 20:06:16.987704	\N	\N	\N	\N	\N
+34	af3eff3c-0342-4aa7-a7ca-23a80dc0fff2	2021-07-27 20:06:17.051194	2021-07-27 20:06:17.051194	Dispatch Core App	Kevin Glisson added to incident with Liaison role	null	\N	5	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B 'kevin':4B 'liaison':10B 'role':11B	2021-07-27 20:06:17.062652	2021-07-27 20:06:17.051675	\N	\N	\N	\N	\N
+35	6ee1463f-f308-4992-b479-b3b2b54b44e9	2021-07-27 20:06:17.115146	2021-07-27 20:06:17.115146	Dispatch Plugin - Ticket Management	Ticket created	null	\N	5	'creat':6B 'dispatch':1A 'manag':4A 'plugin':2A 'ticket':3A,5B	2021-07-27 20:06:17.131931	2021-07-27 20:06:17.11566	\N	\N	\N	\N	\N
+37	5c846eae-e681-402d-9c7e-8dc0e359c7d3	2021-07-27 20:06:28.38158	2021-07-27 20:06:28.38158	Dispatch Core App	Tactical and notification groups added to incident	null	\N	5	'ad':8B 'app':3A 'core':2A 'dispatch':1A 'group':7B 'incid':10B 'notif':6B 'tactic':4B	2021-07-27 20:06:28.395437	2021-07-27 20:06:28.383165	\N	\N	\N	\N	\N
+38	db45a35e-93ec-461d-a9b3-ebc4e075d081	2021-07-27 20:06:30.137656	2021-07-27 20:06:30.137656	Google Calendar Plugin - Conference Management	Incident conference created	null	\N	5	'calendar':2A 'confer':4A,7B 'creat':8B 'googl':1A 'incid':6B 'manag':5A 'plugin':3A	2021-07-27 20:06:30.166434	2021-07-27 20:06:30.139734	\N	\N	\N	\N	\N
+40	9e1d954c-7668-4faf-a95a-e25ea4a82e09	2021-07-27 20:06:31.264981	2021-07-27 20:06:31.264981	Slack Plugin - Conversation Management	Incident conversation created	null	\N	5	'convers':3A,6B 'creat':7B 'incid':5B 'manag':4A 'plugin':2A 'slack':1A	2021-07-27 20:06:31.280714	2021-07-27 20:06:31.26551	\N	\N	\N	\N	\N
+41	83288834-75cb-4e44-8be8-cc62347894de	2021-07-27 20:06:31.290579	2021-07-27 20:06:31.290579	Dispatch Core App	Conversation added to incident	null	\N	5	'ad':5B 'app':3A 'convers':4B 'core':2A 'dispatch':1A 'incid':7B	2021-07-27 20:06:31.304529	2021-07-27 20:06:31.29202	\N	\N	\N	\N	\N
+43	0ba2f55e-ec9b-4f9e-95e4-68b0f50c8445	2021-07-27 20:06:41.611774	2021-07-27 20:06:41.611774	Dispatch Core App	Incident notifications sent	null	\N	5	'app':3A 'core':2A 'dispatch':1A 'incid':4B 'notif':5B 'sent':6B	2021-07-27 20:06:41.627956	2021-07-27 20:06:41.612213	\N	\N	\N	\N	\N
+44	74fddbad-1c2e-4620-aab4-5bc341b19fd2	2021-07-27 20:11:30.531955	2021-07-27 20:11:30.531955	Dispatch Core App	Incident created	null	\N	6	'app':3A 'core':2A 'creat':5B 'dispatch':1A 'incid':4B	2021-07-27 20:11:30.543425	2021-07-27 20:11:30.532627	\N	\N	\N	\N	\N
+45	f7ab4553-0c76-4f03-b0d9-fe6171e02cb8	2021-07-27 20:11:32.374781	2021-07-27 20:11:32.374781	Dispatch Core App	Kevin Glisson added to incident with Reporter role	null	\N	6	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B 'kevin':4B 'report':10B 'role':11B	2021-07-27 20:11:32.3914	2021-07-27 20:11:32.375392	\N	\N	\N	\N	\N
+46	a5367169-cee2-4070-8acd-e25b586164b0	2021-07-27 20:11:32.452052	2021-07-27 20:11:32.452052	Dispatch Core App	Kevin Glisson added to incident with Incident Commander role	null	\N	6	'ad':6B 'app':3A 'command':11B 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B,10B 'kevin':4B 'role':12B	2021-07-27 20:11:32.467419	2021-07-27 20:11:32.452485	\N	\N	\N	\N	\N
+47	572417cc-ecbc-426a-a28c-48eda55cc560	2021-07-27 20:11:32.514367	2021-07-27 20:11:32.514367	Dispatch Core App	Kevin Glisson added to incident with Liaison role	null	\N	6	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B 'kevin':4B 'liaison':10B 'role':11B	2021-07-27 20:11:32.527335	2021-07-27 20:11:32.514892	\N	\N	\N	\N	\N
+48	7ae8bd56-d996-4da2-9f0c-68f11c970661	2021-07-27 20:11:32.600598	2021-07-27 20:11:32.600598	Dispatch Plugin - Ticket Management	Ticket created	null	\N	6	'creat':6B 'dispatch':1A 'manag':4A 'plugin':2A 'ticket':3A,5B	2021-07-27 20:11:32.616295	2021-07-27 20:11:32.601402	\N	\N	\N	\N	\N
+51	f2d13f13-2236-4408-a242-50ab2a714730	2021-07-27 20:11:45.348881	2021-07-27 20:11:45.348881	Dispatch Core App	Creation of incident storage failed. Reason: Request failed. Errors: {'error': {'errors': [{'domain': 'global', 'reason': 'notFound', 'message': 'File not found: 1rxGkxQFdKxtwEKN-p-k5Fe8JC6f5uNg8.', 'locationType': 'parameter', 'location': 'fileId'}], 'code': 404, 'message': 'File not found: 1rxGkxQFdKxtwEKN-p-k5Fe8JC6f5uNg8.'}}	null	\N	6	'1rxgkxqfdkxtwekn':24B,38B '1rxgkxqfdkxtwekn-p-k5fe8jc6f5ung8':23B,37B '404':32B 'app':3A 'code':31B 'core':2A 'creation':4B 'dispatch':1A 'domain':15B 'error':12B,13B,14B 'fail':8B,11B 'file':20B,34B 'fileid':30B 'found':22B,36B 'global':16B 'incid':6B 'k5fe8jc6f5ung8':26B,40B 'locat':29B 'locationtyp':27B 'messag':19B,33B 'notfound':18B 'p':25B,39B 'paramet':28B 'reason':9B,17B 'request':10B 'storag':7B	2021-07-27 20:11:45.382849	2021-07-27 20:11:45.350277	\N	\N	\N	\N	\N
+53	0fad1b80-d626-4c97-b535-dfdf0098485e	2021-07-27 20:11:47.168067	2021-07-27 20:11:47.168067	Google Calendar Plugin - Conference Management	Incident conference created	null	\N	6	'calendar':2A 'confer':4A,7B 'creat':8B 'googl':1A 'incid':6B 'manag':5A 'plugin':3A	2021-07-27 20:11:47.1984	2021-07-27 20:11:47.168696	\N	\N	\N	\N	\N
+55	6c0b289e-5dff-470a-aed7-0caf9405c082	2021-07-27 20:11:48.26168	2021-07-27 20:11:48.26168	Slack Plugin - Conversation Management	Incident conversation created	null	\N	6	'convers':3A,6B 'creat':7B 'incid':5B 'manag':4A 'plugin':2A 'slack':1A	2021-07-27 20:11:48.278603	2021-07-27 20:11:48.26263	\N	\N	\N	\N	\N
+56	6fe13da1-de96-41dd-ba9a-29a752060b46	2021-07-27 20:11:48.28756	2021-07-27 20:11:48.28756	Dispatch Core App	Conversation added to incident	null	\N	6	'ad':5B 'app':3A 'convers':4B 'core':2A 'dispatch':1A 'incid':7B	2021-07-27 20:11:48.307412	2021-07-27 20:11:48.290557	\N	\N	\N	\N	\N
+58	d66ec104-af72-46df-80a8-2b32a6fa8944	2021-07-27 20:11:59.021607	2021-07-27 20:11:59.021607	Dispatch Core App	Incident notifications sent	null	\N	6	'app':3A 'core':2A 'dispatch':1A 'incid':4B 'notif':5B 'sent':6B	2021-07-27 20:11:59.04991	2021-07-27 20:11:59.022365	\N	\N	\N	\N	\N
+59	7e011a9d-9bb9-4770-b5e3-1a21197e60c2	2021-07-28 17:13:49.192243	2021-07-28 17:13:49.192243	Dispatch Core App	New incident task created by Kevin Glisson	{"weblink": null}	\N	4	'app':3A 'core':2A 'creat':7B 'dispatch':1A 'glisson':10B 'incid':5B 'kevin':9B 'new':4B 'task':6B	2021-07-28 17:13:49.218153	2021-07-28 17:13:49.199624	\N	\N	\N	\N	\N
+60	2627886d-5466-47d8-a702-6596a17561a8	2024-02-04 02:51:26.185354	2024-02-04 02:51:26.185354	Dispatch Core App	Incident created	{"title": "Incident Test Created by Playwright", "description": "Test description created by Playwright", "type": "Denial of Service", "severity": "Undetermined", "priority": "Low", "status": "Active", "visibility": "Open"}	\N	7	'app':3A 'core':2A 'creat':5B 'dispatch':1A 'incid':4B	2024-02-04 02:51:26.366892	2024-02-04 02:51:26.190379	\N	\N	Other	\N	t
+61	5501e170-a4a6-4c29-a582-9d8e6367c35b	2024-02-04 02:51:26.752647	2024-02-04 02:51:26.752647	Dispatch Core App	3p1t6@example.com added to incident with Reporter role	null	\N	7	'3p1t6@example.com':4B 'ad':5B 'app':3A 'core':2A 'dispatch':1A 'incid':7B 'report':9B 'role':10B	2024-02-04 02:51:26.940241	2024-02-04 02:51:26.753164	\N	\N	Participant updated		f
+62	c1baff75-d46a-4cae-a793-9dab11d749e1	2024-02-04 02:51:27.112502	2024-02-04 02:51:27.112502	Dispatch Core App	3p1t6@example.com added to incident with Incident Commander role	null	\N	7	'3p1t6@example.com':4B 'ad':5B 'app':3A 'command':10B 'core':2A 'dispatch':1A 'incid':7B,9B 'role':11B	2024-02-04 02:51:27.222527	2024-02-04 02:51:27.113162	\N	\N	Participant updated		f
 \.
 
 
@@ -7367,6 +7819,22 @@ COPY dispatch_organization_default.event (id, uuid, started_at, ended_at, source
 --
 
 COPY dispatch_organization_default.feedback (id, rating, feedback, incident_id, participant_id, updated_at, created_at, search_vector) FROM stdin;
+\.
+
+
+--
+-- Data for Name: forms; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
+--
+
+COPY dispatch_organization_default.forms (id, form_data, created_at, updated_at, status, attorney_status, attorney_questions, attorney_analysis, creator_id, incident_id, form_type_id, project_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: forms_type; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
+--
+
+COPY dispatch_organization_default.forms_type (id, name, description, enabled, created_at, updated_at, form_schema, creator_id, project_id, service_id) FROM stdin;
 \.
 
 
@@ -7390,11 +7858,12 @@ google-group-participant-notifications-group	04k668n30umn23k	https://groups.goog
 -- Data for Name: incident; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default.incident (id, name, title, description, status, visibility, reported_at, stable_at, closed_at, search_vector, incident_priority_id, incident_type_id, duplicate_id, project_id, created_at, updated_at, resolution, participants_team, participants_location, commanders_location, reporters_location, commander_id, reporter_id, liaison_id, scribe_id, incident_document_id, incident_review_document_id, tactical_group_id, notifications_group_id, incident_severity_id, delay_executive_report_reminder, delay_tactical_report_reminder) FROM stdin;
-2	dispatch-default-default-2	This is just a test	A very bad situation	Active	Open	2021-07-27 19:47:56.28659	\N	\N	'2':14A 'bad':8C 'default':12A,13A 'dispatch':11A 'dispatch-default-default':10A 'situat':9C 'test':5B	3	3	\N	1	2021-07-27 19:47:56.286601	2021-07-27 19:48:23.867097	Description of the actions taken to resolve the incident.	Unknown	America/Los_Angeles	America/Los_Angeles	America/Los_Angeles	1	1	1	\N	\N	\N	1	2	1	\N	\N
-4	dispatch-default-default-4	Heartbleed	Sad PKI noises	Stable	Open	2021-07-27 19:52:57.757214	2021-07-27 19:54:03.96021	\N	'4':9A 'default':7A,8A 'dispatch':6A 'dispatch-default-default':5A 'heartble':1B 'nois':4C 'pki':3C 'sad':2C	1	1	\N	1	2021-07-27 19:52:57.757221	2021-07-28 17:13:49.216785	Description of the actions taken to resolve the incident.	Unknown	America/Los_Angeles	America/Los_Angeles	America/Los_Angeles	2	2	2	\N	\N	\N	3	4	1	\N	\N
-5	dispatch-default-default-5	Solarwinds	More like a solar tornado.	Active	Open	2021-07-27 20:06:15.252697	\N	\N	'5':11A 'default':9A,10A 'dispatch':8A 'dispatch-default-default':7A 'like':3C 'solar':5C 'solarwind':1B 'tornado':6C	2	1	\N	1	2021-07-27 20:06:15.252705	2021-07-27 20:06:41.627061	Description of the actions taken to resolve the incident.	Unknown	America/Los_Angeles	America/Los_Angeles	America/Los_Angeles	3	3	3	\N	\N	\N	5	6	1	\N	\N
-6	dispatch-default-default-6	Kaseya	Those backups are good right?	Active	Open	2021-07-27 20:11:30.525883	\N	\N	'6':11A 'backup':3C 'default':9A,10A 'dispatch':8A 'dispatch-default-default':7A 'good':5C 'kaseya':1B 'right':6C	3	1	\N	1	2021-07-27 20:11:30.525893	2021-07-27 20:11:59.048666	Description of the actions taken to resolve the incident.	Unknown	America/Los_Angeles	America/Los_Angeles	America/Los_Angeles	4	4	4	\N	\N	\N	7	8	1	\N	\N
+COPY dispatch_organization_default.incident (id, name, title, description, status, visibility, reported_at, stable_at, closed_at, search_vector, incident_priority_id, incident_type_id, duplicate_id, project_id, created_at, updated_at, resolution, participants_team, participants_location, commanders_location, reporters_location, commander_id, reporter_id, liaison_id, scribe_id, incident_document_id, incident_review_document_id, tactical_group_id, notifications_group_id, incident_severity_id, delay_executive_report_reminder, delay_tactical_report_reminder, cost_model_id) FROM stdin;
+2	dispatch-default-default-2	This is just a test	A very bad situation	Active	Open	2021-07-27 19:47:56.28659	\N	\N	'2':14A 'bad':8C 'default':12A,13A 'dispatch':11A 'dispatch-default-default':10A 'situat':9C 'test':5B	3	3	\N	1	2021-07-27 19:47:56.286601	2021-07-27 19:48:23.867097	Description of the actions taken to resolve the incident.	Unknown	America/Los_Angeles	America/Los_Angeles	America/Los_Angeles	1	1	1	\N	\N	\N	1	2	1	\N	\N	\N
+4	dispatch-default-default-4	Heartbleed	Sad PKI noises	Stable	Open	2021-07-27 19:52:57.757214	2021-07-27 19:54:03.96021	\N	'4':9A 'default':7A,8A 'dispatch':6A 'dispatch-default-default':5A 'heartble':1B 'nois':4C 'pki':3C 'sad':2C	1	1	\N	1	2021-07-27 19:52:57.757221	2021-07-28 17:13:49.216785	Description of the actions taken to resolve the incident.	Unknown	America/Los_Angeles	America/Los_Angeles	America/Los_Angeles	2	2	2	\N	\N	\N	3	4	1	\N	\N	\N
+5	dispatch-default-default-5	Solarwinds	More like a solar tornado.	Active	Open	2021-07-27 20:06:15.252697	\N	\N	'5':11A 'default':9A,10A 'dispatch':8A 'dispatch-default-default':7A 'like':3C 'solar':5C 'solarwind':1B 'tornado':6C	2	1	\N	1	2021-07-27 20:06:15.252705	2021-07-27 20:06:41.627061	Description of the actions taken to resolve the incident.	Unknown	America/Los_Angeles	America/Los_Angeles	America/Los_Angeles	3	3	3	\N	\N	\N	5	6	1	\N	\N	\N
+6	dispatch-default-default-6	Kaseya	Those backups are good right?	Active	Open	2021-07-27 20:11:30.525883	\N	\N	'6':11A 'backup':3C 'default':9A,10A 'dispatch':8A 'dispatch-default-default':7A 'good':5C 'kaseya':1B 'right':6C	3	1	\N	1	2021-07-27 20:11:30.525893	2021-07-27 20:11:59.048666	Description of the actions taken to resolve the incident.	Unknown	America/Los_Angeles	America/Los_Angeles	America/Los_Angeles	4	4	4	\N	\N	\N	7	8	1	\N	\N	\N
+7	\N	Incident Test Created by Playwright	Test description created by Playwright	Active	Open	2024-02-04 02:51:26.109901	\N	\N	'creat':3B,8C 'descript':7C 'incid':1B 'playwright':5B,10C 'test':2B,6C	3	5	\N	1	2024-02-04 02:51:26.109912	2024-02-04 02:51:27.220352	Description of the actions taken to resolve the incident.	example.com	Unknown	Unknown	Unknown	5	5	\N	\N	\N	\N	\N	\N	1	\N	\N	\N
 \.
 
 
@@ -7435,7 +7904,7 @@ COPY dispatch_organization_default.incident_priority (id, name, description, pag
 -- Data for Name: incident_role; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default.incident_role (id, role, enabled, "order", service_id, individual_id, project_id, updated_at, created_at) FROM stdin;
+COPY dispatch_organization_default.incident_role (id, role, enabled, "order", service_id, individual_id, project_id, updated_at, created_at, engage_next_oncall) FROM stdin;
 \.
 
 
@@ -7492,7 +7961,8 @@ COPY dispatch_organization_default.incident_type (id, name, slug, description, e
 
 COPY dispatch_organization_default.individual_contact (is_active, is_external, contact_type, email, company, notes, owner, id, name, mobile_phone, office_phone, title, weblink, external_id, team_contact_id, search_vector, project_id, created_at, updated_at) FROM stdin;
 t	f	\N	klibby@hackers.com	NA	\N	\N	1	Kate Libby	\N	\N	\N	\N	\N	\N	'kate':1 'klibby@hackers.com':3 'libbi':2 'na':4	1	2021-07-27 19:20:56.65442	2021-07-27 19:20:56.654425
-t	f	\N	kglisson@example.com	\N	\N	\N	2	Kevin Glisson	\N	\N	\N	Unknown	\N	\N	'glisson':2 'kevin':1 'kglisson@example.com':3	1	2021-07-27 19:47:58.101502	2021-07-27 20:11:32.504414
+t	f	\N	kglisson@example.com	\N	\N	\N	2	Kevin Glisson	\N	\N	\N	\N	\N	\N	'glisson':2 'kevin':1 'kglisson@example.com':3	1	2021-07-27 19:47:58.101502	2021-07-27 20:11:32.504414
+t	f	\N	3p1t6@example.com	\N	\N	\N	3	3p1t6@example.com	\N	\N	\N		\N	\N	'3p1t6@example.com':1,2	1	2024-02-04 02:51:26.417963	2024-02-04 02:51:27.068243
 \.
 
 
@@ -7522,6 +7992,15 @@ COPY dispatch_organization_default.participant (id, team, department, location, 
 2	Unknown	Unknown	America/Los_Angeles	\N	\N	f	\N	4	2	\N	\N
 3	Unknown	Unknown	America/Los_Angeles	\N	\N	f	\N	5	2	\N	\N
 4	Unknown	Unknown	America/Los_Angeles	\N	\N	f	\N	6	2	\N	\N
+5	example.com	Unknown	Unknown	\N	\N	f	\N	7	3	\N	\N
+\.
+
+
+--
+-- Data for Name: participant_activity; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
+--
+
+COPY dispatch_organization_default.participant_activity (id, plugin_event_id, started_at, ended_at, participant_id, incident_id) FROM stdin;
 \.
 
 
@@ -7542,6 +8021,8 @@ COPY dispatch_organization_default.participant_role (id, assumed_at, renounced_a
 10	2021-07-27 20:11:32.314039	\N	Reporter	4	1
 11	2021-07-27 20:11:32.427753	\N	Incident Commander	4	1
 12	2021-07-27 20:11:32.491482	\N	Liaison	4	1
+13	2024-02-04 02:51:26.570736	\N	Reporter	5	0
+14	2024-02-04 02:51:27.008425	\N	Incident Commander	5	0
 \.
 
 
@@ -7570,8 +8051,8 @@ COPY dispatch_organization_default.plugin_instance (id, enabled, configuration, 
 -- Data for Name: project; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default.project (id, name, description, "default", color, organization_id, search_vector, annual_employee_cost, business_year_hours, owner_email, owner_conversation) FROM stdin;
-1	default	Default dispatch project.	t	\N	1	'default':1A,2B 'dispatch':3B 'project':4B	650000	2080	team@acme.com	\N
+COPY dispatch_organization_default.project (id, name, description, "default", color, organization_id, search_vector, annual_employee_cost, business_year_hours, owner_email, owner_conversation, send_daily_reports, stable_priority_id) FROM stdin;
+1	default	Default dispatch project.	t	\N	1	'default':1A,2B 'dispatch':3B 'project':4B	650000	2080	team@acme.com	\N	\N	\N
 \.
 
 
@@ -7626,7 +8107,23 @@ COPY dispatch_organization_default.search_filter (id, name, description, express
 -- Data for Name: service; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default.service (id, is_active, name, type, description, external_id, search_vector, project_id, updated_at, created_at, evergreen, evergreen_owner, evergreen_reminder_interval, evergreen_last_reminder_at) FROM stdin;
+COPY dispatch_organization_default.service (id, is_active, name, type, description, external_id, search_vector, project_id, updated_at, created_at, evergreen, evergreen_owner, evergreen_reminder_interval, evergreen_last_reminder_at, health_metrics) FROM stdin;
+\.
+
+
+--
+-- Data for Name: service_feedback; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
+--
+
+COPY dispatch_organization_default.service_feedback (rating, feedback, id, hours, shift_start_at, shift_end_at, schedule, individual_contact_id, search_vector, updated_at, created_at, project_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: service_feedback_reminder; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
+--
+
+COPY dispatch_organization_default.service_feedback_reminder (id, reminder_at, schedule_id, schedule_name, shift_end_at, individual_contact_id, project_id, created_at, updated_at) FROM stdin;
 \.
 
 
@@ -7658,7 +8155,7 @@ COPY dispatch_organization_default.signal_filter (evergreen, evergreen_owner, ev
 -- Data for Name: signal_instance; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default.signal_instance (id, case_id, signal_id, fingerprint, raw, project_id, updated_at, created_at, filter_action, engagement_thread_ts, case_type_id, case_priority_id) FROM stdin;
+COPY dispatch_organization_default.signal_instance (id, case_id, signal_id, raw, project_id, updated_at, created_at, filter_action, engagement_thread_ts, case_type_id, case_priority_id, canary) FROM stdin;
 \.
 
 
@@ -7737,7 +8234,7 @@ COPY dispatch_organization_default.storage (resource_type, resource_id, weblink,
 --
 
 COPY dispatch_organization_default.tag (id, name, description, uri, source, discoverable, tag_type_id, search_vector, project_id, created_at, updated_at, external_id) FROM stdin;
-1	ExampleTag	Generic tag	https://example.com	dispatch	t	1	'exampletag':1 'generic':2 'tag':3	1	2021-07-27 19:00:23.285171	2021-07-27 19:52:34.873368	\N
+1	ExampleTag	Generic tag	https://example.com	dispatch	t	1	'exampletag':1 'generic':2 'tag':3	1	2021-07-27 19:00:23.285171	2024-02-04 02:51:26.063006	\N
 \.
 
 
@@ -7745,11 +8242,11 @@ COPY dispatch_organization_default.tag (id, name, description, uri, source, disc
 -- Data for Name: tag_type; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default.tag_type (id, name, description, search_vector, project_id, created_at, updated_at, exclusive) FROM stdin;
-2	email	Represents an email address.	'email':1	1	2021-07-27 18:59:15.242081	2021-07-27 18:59:15.242077	\N
-3	domain-name	Represents a domain name.	'domain':2 'domain-nam':1 'name':3	1	2021-07-27 18:59:27.697621	2021-07-27 18:59:27.697617	\N
-4	handle	Represents an internet handle.	'handl':1	1	2021-07-27 18:59:49.885602	2021-07-27 18:59:49.885596	\N
-1	default	Default dispatch tag type.	'default':1	1	2021-07-27 18:59:02.975601	2021-07-27 19:00:23.284092	\N
+COPY dispatch_organization_default.tag_type (id, name, description, search_vector, project_id, created_at, updated_at, exclusive, discoverable_case, discoverable_incident, discoverable_query, discoverable_signal, discoverable_source, color, icon) FROM stdin;
+2	email	Represents an email address.	'email':1	1	2021-07-27 18:59:15.242081	2021-07-27 18:59:15.242077	\N	t	t	t	t	t	\N	\N
+3	domain-name	Represents a domain name.	'domain':2 'domain-nam':1 'name':3	1	2021-07-27 18:59:27.697621	2021-07-27 18:59:27.697617	\N	t	t	t	t	t	\N	\N
+4	handle	Represents an internet handle.	'handl':1	1	2021-07-27 18:59:49.885602	2021-07-27 18:59:49.885596	\N	t	t	t	t	t	\N	\N
+1	default	Default dispatch tag type.	'default':1	1	2021-07-27 18:59:02.975601	2021-07-27 19:00:23.284092	\N	t	t	t	t	t	\N	\N
 \.
 
 
@@ -8429,7 +8926,7 @@ COPY public.workflow_term (term_id, workflow_id) FROM stdin;
 -- Name: dispatch_user_id_seq; Type: SEQUENCE SET; Schema: dispatch_core; Owner: postgres
 --
 
-SELECT pg_catalog.setval('dispatch_core.dispatch_user_id_seq', 4257, true);
+SELECT pg_catalog.setval('dispatch_core.dispatch_user_id_seq', 4260, true);
 
 
 --
@@ -8437,6 +8934,13 @@ SELECT pg_catalog.setval('dispatch_core.dispatch_user_id_seq', 4257, true);
 --
 
 SELECT pg_catalog.setval('dispatch_core.organization_id_seq', 1, true);
+
+
+--
+-- Name: plugin_event_id_seq; Type: SEQUENCE SET; Schema: dispatch_core; Owner: postgres
+--
+
+SELECT pg_catalog.setval('dispatch_core.plugin_event_id_seq', 1, false);
 
 
 --
@@ -8496,6 +9000,20 @@ SELECT pg_catalog.setval('dispatch_organization_default.conversation_id_seq', 4,
 
 
 --
+-- Name: cost_model_activity_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
+--
+
+SELECT pg_catalog.setval('dispatch_organization_default.cost_model_activity_id_seq', 1, false);
+
+
+--
+-- Name: cost_model_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
+--
+
+SELECT pg_catalog.setval('dispatch_organization_default.cost_model_id_seq', 1, false);
+
+
+--
 -- Name: definition_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -8527,7 +9045,7 @@ SELECT pg_catalog.setval('dispatch_organization_default.entity_type_id_seq', 1, 
 -- Name: event_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
 --
 
-SELECT pg_catalog.setval('dispatch_organization_default.event_id_seq', 59, true);
+SELECT pg_catalog.setval('dispatch_organization_default.event_id_seq', 62, true);
 
 
 --
@@ -8535,6 +9053,20 @@ SELECT pg_catalog.setval('dispatch_organization_default.event_id_seq', 59, true)
 --
 
 SELECT pg_catalog.setval('dispatch_organization_default.feedback_id_seq', 1, false);
+
+
+--
+-- Name: forms_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
+--
+
+SELECT pg_catalog.setval('dispatch_organization_default.forms_id_seq', 1, false);
+
+
+--
+-- Name: forms_type_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
+--
+
+SELECT pg_catalog.setval('dispatch_organization_default.forms_type_id_seq', 1, false);
 
 
 --
@@ -8562,7 +9094,7 @@ SELECT pg_catalog.setval('dispatch_organization_default.incident_cost_type_id_se
 -- Name: incident_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
 --
 
-SELECT pg_catalog.setval('dispatch_organization_default.incident_id_seq', 6, true);
+SELECT pg_catalog.setval('dispatch_organization_default.incident_id_seq', 7, true);
 
 
 --
@@ -8597,7 +9129,7 @@ SELECT pg_catalog.setval('dispatch_organization_default.incident_type_id_seq', 3
 -- Name: individual_contact_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
 --
 
-SELECT pg_catalog.setval('dispatch_organization_default.individual_contact_id_seq', 2, true);
+SELECT pg_catalog.setval('dispatch_organization_default.individual_contact_id_seq', 3, true);
 
 
 --
@@ -8615,17 +9147,24 @@ SELECT pg_catalog.setval('dispatch_organization_default.notification_id_seq', 1,
 
 
 --
+-- Name: participant_activity_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
+--
+
+SELECT pg_catalog.setval('dispatch_organization_default.participant_activity_id_seq', 1, false);
+
+
+--
 -- Name: participant_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
 --
 
-SELECT pg_catalog.setval('dispatch_organization_default.participant_id_seq', 4, true);
+SELECT pg_catalog.setval('dispatch_organization_default.participant_id_seq', 5, true);
 
 
 --
 -- Name: participant_role_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
 --
 
-SELECT pg_catalog.setval('dispatch_organization_default.participant_role_id_seq', 12, true);
+SELECT pg_catalog.setval('dispatch_organization_default.participant_role_id_seq', 14, true);
 
 
 --
@@ -8675,6 +9214,20 @@ SELECT pg_catalog.setval('dispatch_organization_default.report_id_seq', 1, false
 --
 
 SELECT pg_catalog.setval('dispatch_organization_default.search_filter_id_seq', 2, true);
+
+
+--
+-- Name: service_feedback_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
+--
+
+SELECT pg_catalog.setval('dispatch_organization_default.service_feedback_id_seq', 1, false);
+
+
+--
+-- Name: service_feedback_reminder_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
+--
+
+SELECT pg_catalog.setval('dispatch_organization_default.service_feedback_reminder_id_seq', 1, false);
 
 
 --
@@ -9069,6 +9622,22 @@ ALTER TABLE ONLY dispatch_core.organization
 
 
 --
+-- Name: plugin_event plugin_event_pkey; Type: CONSTRAINT; Schema: dispatch_core; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_core.plugin_event
+    ADD CONSTRAINT plugin_event_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: plugin_event plugin_event_slug_key; Type: CONSTRAINT; Schema: dispatch_core; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_core.plugin_event
+    ADD CONSTRAINT plugin_event_slug_key UNIQUE (slug);
+
+
+--
 -- Name: plugin plugin_pkey; Type: CONSTRAINT; Schema: dispatch_core; Owner: postgres
 --
 
@@ -9114,6 +9683,14 @@ ALTER TABLE ONLY dispatch_organization_default.assoc_case_incidents
 
 ALTER TABLE ONLY dispatch_organization_default.assoc_case_tags
     ADD CONSTRAINT assoc_case_tags_pkey PRIMARY KEY (case_id, tag_id);
+
+
+--
+-- Name: assoc_cost_model_activities assoc_cost_model_activities_pkey; Type: CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.assoc_cost_model_activities
+    ADD CONSTRAINT assoc_cost_model_activities_pkey PRIMARY KEY (cost_model_id, cost_model_activity_id);
 
 
 --
@@ -9333,6 +9910,30 @@ ALTER TABLE ONLY dispatch_organization_default.conversation
 
 
 --
+-- Name: cost_model_activity cost_model_activity_pkey; Type: CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.cost_model_activity
+    ADD CONSTRAINT cost_model_activity_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: cost_model cost_model_name_project_id_key; Type: CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.cost_model
+    ADD CONSTRAINT cost_model_name_project_id_key UNIQUE (name, project_id);
+
+
+--
+-- Name: cost_model cost_model_pkey; Type: CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.cost_model
+    ADD CONSTRAINT cost_model_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: definition definition_pkey; Type: CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -9426,6 +10027,30 @@ ALTER TABLE ONLY dispatch_organization_default.event
 
 ALTER TABLE ONLY dispatch_organization_default.feedback
     ADD CONSTRAINT feedback_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: forms forms_pkey; Type: CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.forms
+    ADD CONSTRAINT forms_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: forms_type forms_type_name_project_id_key; Type: CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.forms_type
+    ADD CONSTRAINT forms_type_name_project_id_key UNIQUE (name, project_id);
+
+
+--
+-- Name: forms_type forms_type_pkey; Type: CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.forms_type
+    ADD CONSTRAINT forms_type_pkey PRIMARY KEY (id);
 
 
 --
@@ -9573,6 +10198,14 @@ ALTER TABLE ONLY dispatch_organization_default.notification
 
 
 --
+-- Name: participant_activity participant_activity_pkey; Type: CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.participant_activity
+    ADD CONSTRAINT participant_activity_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: participant participant_pkey; Type: CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -9658,6 +10291,22 @@ ALTER TABLE ONLY dispatch_organization_default.search_filter
 
 ALTER TABLE ONLY dispatch_organization_default.service
     ADD CONSTRAINT service_external_id_project_id_key UNIQUE (external_id, project_id);
+
+
+--
+-- Name: service_feedback service_feedback_pkey; Type: CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.service_feedback
+    ADD CONSTRAINT service_feedback_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: service_feedback_reminder service_feedback_reminder_pkey; Type: CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.service_feedback_reminder
+    ADD CONSTRAINT service_feedback_reminder_pkey PRIMARY KEY (id);
 
 
 --
@@ -10587,6 +11236,13 @@ CREATE INDEX organization_search_vector_idx ON dispatch_core.organization USING 
 
 
 --
+-- Name: plugin_event_search_vector_idx; Type: INDEX; Schema: dispatch_core; Owner: postgres
+--
+
+CREATE INDEX plugin_event_search_vector_idx ON dispatch_core.plugin_event USING gin (search_vector);
+
+
+--
 -- Name: plugin_search_vector_idx; Type: INDEX; Schema: dispatch_core; Owner: postgres
 --
 
@@ -10626,6 +11282,13 @@ CREATE INDEX case_severity_search_vector_idx ON dispatch_organization_default.ca
 --
 
 CREATE INDEX case_type_search_vector_idx ON dispatch_organization_default.case_type USING gin (search_vector);
+
+
+--
+-- Name: cost_model_search_vector_idx; Type: INDEX; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE INDEX cost_model_search_vector_idx ON dispatch_organization_default.cost_model USING gin (search_vector);
 
 
 --
@@ -10745,6 +11408,13 @@ CREATE INDEX report_search_vector_idx ON dispatch_organization_default.report US
 --
 
 CREATE INDEX search_filter_search_vector_idx ON dispatch_organization_default.search_filter USING gin (search_vector);
+
+
+--
+-- Name: service_feedback_search_vector_idx; Type: INDEX; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE INDEX service_feedback_search_vector_idx ON dispatch_organization_default.service_feedback USING gin (search_vector);
 
 
 --
@@ -11352,6 +12022,14 @@ ALTER TABLE ONLY dispatch_core.dispatch_user_organization
 
 
 --
+-- Name: plugin_event plugin_event_plugin_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_core; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_core.plugin_event
+    ADD CONSTRAINT plugin_event_plugin_id_fkey FOREIGN KEY (plugin_id) REFERENCES dispatch_core.plugin(id);
+
+
+--
 -- Name: alert alert_source_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -11389,6 +12067,22 @@ ALTER TABLE ONLY dispatch_organization_default.assoc_case_tags
 
 ALTER TABLE ONLY dispatch_organization_default.assoc_case_tags
     ADD CONSTRAINT assoc_case_tags_tag_id_fkey FOREIGN KEY (tag_id) REFERENCES dispatch_organization_default.tag(id) ON DELETE CASCADE;
+
+
+--
+-- Name: assoc_cost_model_activities assoc_cost_model_activities_cost_model_activity_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.assoc_cost_model_activities
+    ADD CONSTRAINT assoc_cost_model_activities_cost_model_activity_id_fkey FOREIGN KEY (cost_model_activity_id) REFERENCES dispatch_organization_default.cost_model_activity(id) ON DELETE CASCADE;
+
+
+--
+-- Name: assoc_cost_model_activities assoc_cost_model_activities_cost_model_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.assoc_cost_model_activities
+    ADD CONSTRAINT assoc_cost_model_activities_cost_model_id_fkey FOREIGN KEY (cost_model_id) REFERENCES dispatch_organization_default.cost_model(id) ON DELETE CASCADE;
 
 
 --
@@ -11816,6 +12510,22 @@ ALTER TABLE ONLY dispatch_organization_default.conversation
 
 
 --
+-- Name: cost_model_activity cost_model_activity_plugin_event_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.cost_model_activity
+    ADD CONSTRAINT cost_model_activity_plugin_event_id_fkey FOREIGN KEY (plugin_event_id) REFERENCES dispatch_core.plugin_event(id) ON DELETE CASCADE;
+
+
+--
+-- Name: cost_model cost_model_project_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.cost_model
+    ADD CONSTRAINT cost_model_project_id_fkey FOREIGN KEY (project_id) REFERENCES dispatch_organization_default.project(id) ON DELETE CASCADE;
+
+
+--
 -- Name: definition definition_project_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -11976,6 +12686,62 @@ ALTER TABLE ONLY dispatch_organization_default.feedback
 
 
 --
+-- Name: forms forms_creator_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.forms
+    ADD CONSTRAINT forms_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES dispatch_organization_default.individual_contact(id);
+
+
+--
+-- Name: forms forms_form_type_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.forms
+    ADD CONSTRAINT forms_form_type_id_fkey FOREIGN KEY (form_type_id) REFERENCES dispatch_organization_default.forms_type(id);
+
+
+--
+-- Name: forms forms_incident_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.forms
+    ADD CONSTRAINT forms_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES dispatch_organization_default.incident(id);
+
+
+--
+-- Name: forms forms_project_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.forms
+    ADD CONSTRAINT forms_project_id_fkey FOREIGN KEY (project_id) REFERENCES dispatch_organization_default.project(id) ON DELETE CASCADE;
+
+
+--
+-- Name: forms_type forms_type_creator_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.forms_type
+    ADD CONSTRAINT forms_type_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES dispatch_organization_default.individual_contact(id);
+
+
+--
+-- Name: forms_type forms_type_project_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.forms_type
+    ADD CONSTRAINT forms_type_project_id_fkey FOREIGN KEY (project_id) REFERENCES dispatch_organization_default.project(id) ON DELETE CASCADE;
+
+
+--
+-- Name: forms_type forms_type_service_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.forms_type
+    ADD CONSTRAINT forms_type_service_id_fkey FOREIGN KEY (service_id) REFERENCES dispatch_organization_default.service(id);
+
+
+--
 -- Name: group group_case_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -12013,6 +12779,14 @@ ALTER TABLE ONLY dispatch_organization_default.incident_cost
 
 ALTER TABLE ONLY dispatch_organization_default.incident_cost
     ADD CONSTRAINT incident_cost_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES dispatch_organization_default.incident(id) ON DELETE CASCADE;
+
+
+--
+-- Name: incident incident_cost_model_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.incident
+    ADD CONSTRAINT incident_cost_model_id_fkey FOREIGN KEY (cost_model_id) REFERENCES dispatch_organization_default.cost_model(id);
 
 
 --
@@ -12320,6 +13094,30 @@ ALTER TABLE ONLY dispatch_organization_default.notification
 
 
 --
+-- Name: participant_activity participant_activity_incident_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.participant_activity
+    ADD CONSTRAINT participant_activity_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES dispatch_organization_default.incident(id);
+
+
+--
+-- Name: participant_activity participant_activity_participant_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.participant_activity
+    ADD CONSTRAINT participant_activity_participant_id_fkey FOREIGN KEY (participant_id) REFERENCES dispatch_organization_default.participant(id);
+
+
+--
+-- Name: participant_activity participant_activity_plugin_event_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.participant_activity
+    ADD CONSTRAINT participant_activity_plugin_event_id_fkey FOREIGN KEY (plugin_event_id) REFERENCES dispatch_core.plugin_event(id);
+
+
+--
 -- Name: participant participant_added_by_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -12392,6 +13190,14 @@ ALTER TABLE ONLY dispatch_organization_default.project
 
 
 --
+-- Name: project project_stable_priority_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.project
+    ADD CONSTRAINT project_stable_priority_id_fkey FOREIGN KEY (stable_priority_id) REFERENCES dispatch_organization_default.incident_priority(id);
+
+
+--
 -- Name: query query_project_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -12453,6 +13259,38 @@ ALTER TABLE ONLY dispatch_organization_default.search_filter
 
 ALTER TABLE ONLY dispatch_organization_default.search_filter
     ADD CONSTRAINT search_filter_project_id_fkey FOREIGN KEY (project_id) REFERENCES dispatch_organization_default.project(id) ON DELETE CASCADE;
+
+
+--
+-- Name: service_feedback service_feedback_individual_contact_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.service_feedback
+    ADD CONSTRAINT service_feedback_individual_contact_id_fkey FOREIGN KEY (individual_contact_id) REFERENCES dispatch_organization_default.individual_contact(id);
+
+
+--
+-- Name: service_feedback service_feedback_project_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.service_feedback
+    ADD CONSTRAINT service_feedback_project_id_fkey FOREIGN KEY (project_id) REFERENCES dispatch_organization_default.project(id);
+
+
+--
+-- Name: service_feedback_reminder service_feedback_reminder_individual_contact_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.service_feedback_reminder
+    ADD CONSTRAINT service_feedback_reminder_individual_contact_id_fkey FOREIGN KEY (individual_contact_id) REFERENCES dispatch_organization_default.individual_contact(id);
+
+
+--
+-- Name: service_feedback_reminder service_feedback_reminder_project_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.service_feedback_reminder
+    ADD CONSTRAINT service_feedback_reminder_project_id_fkey FOREIGN KEY (project_id) REFERENCES dispatch_organization_default.project(id);
 
 
 --
