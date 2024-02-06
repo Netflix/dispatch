@@ -25,7 +25,8 @@ def get_by_channel_id_ignoring_channel_type(
 
     # The code below disambiguates between incident threads, case threads, and incident messages
     if not thread_id:
-        conversation = query.one_or_none()
+        # assume incident message
+        conversation = query.first()
 
     if not conversation:
         conversation = query.filter(Conversation.thread_id == thread_id).one_or_none()
