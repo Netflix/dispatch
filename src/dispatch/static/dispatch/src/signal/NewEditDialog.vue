@@ -109,6 +109,7 @@
                     model="signal"
                     :model-id="id"
                     :project="project"
+                    show-copy
                   />
                 </v-col>
               </v-row>
