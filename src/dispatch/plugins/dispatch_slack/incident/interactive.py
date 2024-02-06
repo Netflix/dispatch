@@ -322,9 +322,11 @@ def handle_update_incident_project_select_action(
     ]
     cost_model_block = cost_model_select(
         db_session=db_session,
-        initial_option={"text": incident.cost_model.name, "value": incident.cost_model.id}
-        if incident.cost_model
-        else None,
+        initial_option=(
+            {"text": incident.cost_model.name, "value": incident.cost_model.id}
+            if incident.cost_model
+            else None
+        ),
         project_id=incident.project.id,
         optional=True,
     )
@@ -513,12 +515,16 @@ def handle_list_participants_command(
                         f"*Team*\n {participant_team}, {participant_department}",
                         f"*Location* \n{participant_location}",
                         f"*Incident Role(s)* \n{(', ').join(participant_roles)}",
-                        f"*Added By* \n{participant.added_by.individual.name}"
-                        if participant.added_by
-                        else "*Added By* \nUnknown",
-                        f"*Added Reason* \n{participant.added_reason}"
-                        if participant.added_reason
-                        else "*Added Reason* \nUnknown",
+                        (
+                            f"*Added By* \n{participant.added_by.individual.name}"
+                            if participant.added_by
+                            else "*Added By* \nUnknown"
+                        ),
+                        (
+                            f"*Added Reason* \n{participant.added_reason}"
+                            if participant.added_reason
+                            else "*Added Reason* \nUnknown"
+                        ),
                     ],
                     accessory=accessory,
                 ),
@@ -630,9 +636,11 @@ def draw_task_modal(
             blocks.append(
                 Section(
                     fields=[
-                        f"*Description:* \n <{task.weblink}|{task.description}>"
-                        if task.weblink
-                        else f"*Description:* \n {task.description}",
+                        (
+                            f"*Description:* \n <{task.weblink}|{task.description}>"
+                            if task.weblink
+                            else f"*Description:* \n {task.description}"
+                        ),
                         f"*Creator:* \n <{task.creator.individual.weblink}|{task.creator.individual.name}>",
                         f"*Assignees:* \n {', '.join(assignees)}",
                     ],
@@ -1831,9 +1839,11 @@ def handle_update_incident_command(
 
     cost_model_block = cost_model_select(
         db_session=db_session,
-        initial_option={"text": incident.cost_model.name, "value": incident.cost_model.id}
-        if incident.cost_model
-        else None,
+        initial_option=(
+            {"text": incident.cost_model.name, "value": incident.cost_model.id}
+            if incident.cost_model
+            else None
+        ),
         project_id=incident.project.id,
         optional=True,
     )
@@ -2170,8 +2180,8 @@ def handle_report_incident_project_select_action(
         tag_multi_select(optional=True),
     ]
 
-    cost_model_block = (
-        cost_model_select(db_session=db_session, project_id=project.id, optional=True),
+    cost_model_block = cost_model_select(
+        db_session=db_session, project_id=project.id, optional=True
     )
 
     if cost_model_block:
