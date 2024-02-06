@@ -400,7 +400,7 @@ slack-sdk==3.26.2
     # via
     #   -r requirements-base.in
     #   slack-bolt
-slowapi==0.1.8
+slowapi==0.1.9
     # via -r requirements-base.in
 smart-open==6.4.0
     # via
