@@ -13,7 +13,7 @@
           {{ menu ? "mdi-minus" : "mdi-plus" }}
         </v-icon>
       </template>
-      <template #append>
+      <template #append v-if="showCopy">
         <v-icon class="panel-button" @click.stop="copyTags">mdi-content-copy</v-icon>
       </template>
       <div class="form-container mt-2">
@@ -171,6 +171,10 @@ const props = defineProps({
   modelId: {
     type: Number,
     default: null,
+  },
+  showCopy: {
+    type: Boolean,
+    default: false,
   },
 })
 
