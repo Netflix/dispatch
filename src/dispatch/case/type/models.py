@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import Field, validator, HttpUrl
+from pydantic import Field, validator, AnyHttpUrl
 from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.event import listen
 from sqlalchemy.ext.hybrid import hybrid_method
@@ -60,7 +60,7 @@ class Document(DispatchBase):
     name: NameStr
     resource_id: Optional[str] = Field(None, nullable=True)
     resource_type: Optional[str] = Field(None, nullable=True)
-    weblink: Optional[HttpUrl] = Field(None, nullable=True)
+    weblink: Optional[AnyHttpUrl] = Field(None, nullable=True)
 
 
 class IncidentType(DispatchBase):
