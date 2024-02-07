@@ -710,13 +710,13 @@ def handle_timeline_added_event(
             individual = None
 
         source = "Slack message"
-
-        # if the individual is not found, see if we can find by id
+        # if the individual is not found, see if it is a bot
         if individual is None:
-            if actor_user_id := context["actor_user_id"]:
+            if bot_user_id := context["bot_user_id"]:
                 try:
-                    user = dispatch_slack_service.get_user_info_by_id(client, actor_user_id)
-                    source = f"Slack message from {user.name}"
+                    bot = dispatch_slack_service.get_user_info_by_id(client, bot_user_id)
+                    bot_name = bot["profile"]["real_name"]
+                    source = f"Slack message from {bot_name}"
                 except Exception:
                     pass
         else:
