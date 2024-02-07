@@ -169,6 +169,16 @@ export const protectedRoute = [
                 showTimeline: true,
               },
             },
+            {
+              path: "/:organization/incidents/:name/forms",
+              name: "IncidentTableEditForms",
+              component: () => import("@/incident/EditSheet.vue"),
+              props: true,
+              meta: {
+                showEditSheet: true,
+                showForms: true,
+              },
+            },
           ],
         },
       ],

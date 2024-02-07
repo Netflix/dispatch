@@ -111,7 +111,7 @@ export default {
       "project_id",
       "table.options.filters",
     ]),
-    ...mapFields("incident", { selected_incident: "selected" }),
+    ...mapFields("incident", { selected_incident: "selected", project: "selected.project" }),
   },
   methods: {
     ...mapActions("forms", ["getAll", "createShow", "editShow", "showDeleteDialog"]),
@@ -123,17 +123,23 @@ export default {
         },
       }
     },
+    getFormsData() {
+      if (this.selected_incident) {
+        this.incident_id = this.selected_incident.id
+      }
+      if (this.project) {
+        this.project_id = this.project.id
+      }
+      this.getAll()
+    },
   },
   created() {
-    this.project_id = this.selected_incident.project.id
-    this.incident_id = this.selected_incident.id
-
-    this.getAll()
+    this.getFormsData()
 
     this.$watch(
-      (vm) => [vm.project, vm.selected_incident],
+      (vm) => [vm.project, vm.selected_incident, vm.project],
       () => {
-        this.getAll()
+        this.getFormsData()
       }
     )
   },
