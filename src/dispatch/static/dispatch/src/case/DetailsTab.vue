@@ -116,6 +116,7 @@
           model="case"
           :model-id="id"
           :project="project"
+          show-copy
         />
       </v-col>
       <v-col cols="12">
