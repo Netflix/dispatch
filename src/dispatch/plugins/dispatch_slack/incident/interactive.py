@@ -709,10 +709,12 @@ def handle_timeline_added_event(
         except Exception:
             individual = None
 
+        source = f"Slack message from {individual.name}" if individual else "Slack message"
+
         # we log the event
         event_service.log_incident_event(
             db_session=db_session,
-            source=f"Slack message from {individual.name}",
+            source=source,
             description=message_text,
             incident_id=context["subject"].id,
             individual_id=individual.id if individual else None,
