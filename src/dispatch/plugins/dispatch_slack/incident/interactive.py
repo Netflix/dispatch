@@ -709,10 +709,23 @@ def handle_timeline_added_event(
         except Exception:
             individual = None
 
+        source = "Slack message"
+        # if the individual is not found, see if it is a bot
+        if individual is None:
+            if bot_user_id := context["bot_user_id"]:
+                try:
+                    bot = dispatch_slack_service.get_user_info_by_id(client, bot_user_id)
+                    bot_name = bot["profile"]["real_name"]
+                    source = f"Slack message from {bot_name}"
+                except Exception:
+                    pass
+        else:
+            source = f"Slack message from {individual.name}"
+
         # we log the event
         event_service.log_incident_event(
             db_session=db_session,
-            source=f"Slack message from {individual.name}",
+            source=source,
             description=message_text,
             incident_id=context["subject"].id,
             individual_id=individual.id if individual else None,
