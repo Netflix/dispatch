@@ -7,6 +7,7 @@
     label="Severity"
     return-object
     :loading="loading"
+    :rules="[is_severity_in_project]"
   >
     <template #item="data">
       <v-list-item v-bind="data.props" :title="null">
@@ -44,6 +45,11 @@ export default {
     return {
       loading: false,
       items: [],
+      error: null,
+      is_severity_in_project: () => {
+        this.validateSeverity()
+        return this.error
+      },
     }
   },
 
@@ -54,11 +60,21 @@ export default {
       },
       set(value) {
         this.$emit("update:modelValue", value)
+        this.validateSeverity()
       },
     },
   },
 
   methods: {
+    validateSeverity() {
+      const project_id = this.project?.id || 0
+      const in_project = this.case_severity?.project?.id == project_id
+      if (in_project) {
+        this.error = true
+      } else {
+        this.error = "Only severities in selected project are allowed"
+      }
+    },
     fetchData() {
       this.error = null
       this.loading = "error"
@@ -104,6 +120,8 @@ export default {
       (vm) => [vm.project],
       () => {
         this.fetchData()
+        this.validateSeverity()
+        this.$emit("update:modelValue", this.case_severity)
       }
     )
   },
