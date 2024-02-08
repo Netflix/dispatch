@@ -100,6 +100,7 @@
           :project="project"
           model="incident"
           :model-id="id"
+          show-copy
         />
       </v-col>
       <v-col cols="12">

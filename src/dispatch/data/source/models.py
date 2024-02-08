@@ -1,6 +1,6 @@
 from typing import Optional, List
 from datetime import datetime
-from pydantic import Field
+from pydantic import Field, AnyHttpUrl
 
 from sqlalchemy import (
     JSON,
@@ -122,7 +122,7 @@ class SourceBase(DispatchBase):
     size: Optional[int] = Field(None, nullable=True)
     external_id: Optional[str] = Field(None, nullable=True)
     aggregated: Optional[bool] = Field(False, nullable=True)
-    links: Optional[List] = []
+    links: Optional[List[AnyHttpUrl]] = []
     tags: Optional[List[TagRead]] = []
     incidents: Optional[List[IncidentRead]] = []
     queries: Optional[List[QueryReadMinimal]] = []

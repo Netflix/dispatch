@@ -2,7 +2,7 @@ from collections import Counter, defaultdict
 from datetime import datetime
 from typing import ForwardRef, List, Optional
 
-from pydantic import validator, Field
+from pydantic import validator, Field, AnyHttpUrl
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -263,7 +263,7 @@ class TaskRead(DispatchBase):
     created_at: Optional[datetime]
     description: Optional[str] = Field(None, nullable=True)
     status: TaskStatus = TaskStatus.open
-    weblink: Optional[str]
+    weblink: Optional[AnyHttpUrl] = Field(None, nullable=True)
 
 
 class TaskReadMinimal(DispatchBase):

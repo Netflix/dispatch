@@ -145,10 +145,13 @@ def update_user(
         )
 
     if user_in.role:
+        # New user role is provided
         user_organization_role = user.get_organization_role(organization)
         if user_organization_role != user_in.role:
+            # New user role provided is different than current user role
             current_user_organization_role = current_user.get_organization_role(organization)
             if current_user_organization_role != UserRoles.owner:
+                # We don't allow the role change if user requesting the change does not have owner role
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail=[
@@ -162,6 +165,9 @@ def update_user(
     user_in.organizations = [
         UserOrganization(role=user_in.role, organization=OrganizationRead(name=organization))
     ]
+
+    # we currently only allow user password changes via CLI, not UI/API.
+    user_in.password = None
 
     return update(db_session=db_session, user=user, user_in=user_in)
 

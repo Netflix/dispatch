@@ -1,6 +1,6 @@
 from typing import Optional, NewType
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, AnyHttpUrl
 
 from dispatch.enums import DispatchEnum
 
@@ -27,7 +27,7 @@ class TaskMetadata(SubjectMetadata):
 
 
 class MonitorMetadata(SubjectMetadata):
-    weblink: str
+    weblink: Optional[AnyHttpUrl] = Field(None, nullable=True)
     plugin_instance_id: int
 
 

@@ -10,7 +10,7 @@ import json
 import requests
 from requests.auth import HTTPBasicAuth
 
-from pydantic import Field, SecretStr, HttpUrl
+from pydantic import Field, SecretStr, AnyHttpUrl
 
 from jinja2 import Template
 from jira import JIRA
@@ -54,10 +54,10 @@ class JiraConfiguration(BaseConfigurationModel):
     password: SecretStr = Field(
         title="Password", description="Password to use to authenticate to Jira API."
     )
-    api_url: HttpUrl = Field(
+    api_url: AnyHttpUrl = Field(
         title="API URL", description="This URL is used for communication with API."
     )
-    browser_url: HttpUrl = Field(
+    browser_url: AnyHttpUrl = Field(
         title="Browser URL", description="This URL is used to construct browser weblinks."
     )
 

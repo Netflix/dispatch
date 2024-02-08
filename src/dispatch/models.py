@@ -2,7 +2,7 @@ from typing import Optional
 from datetime import datetime, timedelta
 
 from pydantic.fields import Field
-from pydantic.networks import EmailStr
+from pydantic.networks import EmailStr, AnyHttpUrl
 from pydantic import BaseModel
 from pydantic.types import conint, constr, SecretStr
 
@@ -136,7 +136,7 @@ class EvergreenBase(DispatchBase):
 class ResourceBase(DispatchBase):
     resource_type: Optional[str] = Field(None, nullable=True)
     resource_id: Optional[str] = Field(None, nullable=True)
-    weblink: Optional[str] = Field(None, nullable=True)
+    weblink: Optional[AnyHttpUrl] = Field(None, nullable=True)
 
 
 class ContactBase(DispatchBase):

@@ -1,4 +1,4 @@
-from pydantic import Field, SecretStr, HttpUrl
+from pydantic import Field, SecretStr, AnyHttpUrl
 
 from enum import Enum
 from dispatch.config import BaseConfigurationModel
@@ -14,7 +14,7 @@ class HostingType(str, Enum):
 class ConfluenceConfigurationBase(BaseConfigurationModel):
     """Atlassian Confluence configuration description."""
 
-    api_url: HttpUrl = Field(
+    api_url: AnyHttpUrl = Field(
         title="API URL", description="This URL is used for communication with API."
     )
     hosting_type: HostingType = Field(

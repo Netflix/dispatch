@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic import validator, Field
+from pydantic import validator, Field, AnyHttpUrl
 from dispatch.models import NameStr, PrimaryKey
 
 from sqlalchemy import Column, Boolean, ForeignKey, Integer, String, JSON
@@ -76,7 +76,7 @@ class Document(DispatchBase):
     resource_type: Optional[str] = Field(None, nullable=True)
     resource_id: Optional[str] = Field(None, nullable=True)
     description: Optional[str] = Field(None, nullable=True)
-    weblink: str
+    weblink: Optional[AnyHttpUrl] = Field(None, nullable=True)
 
 
 # Pydantic models...
