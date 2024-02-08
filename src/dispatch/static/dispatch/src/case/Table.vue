@@ -11,10 +11,26 @@
       <v-col>
         <div class="text-h5">Cases</div>
       </v-col>
+      <v-col>
+        <v-list-item
+          nav
+          rounded
+          variant="flat"
+          base-color="error"
+          :to="{ name: 'caseReport' }"
+          width="200px"
+          hide-details
+        >
+          <template #prepend>
+            <v-icon color="white">mdi-fire</v-icon>
+          </template>
+          <v-list-item-title class="text-uppercase text-body-2">Report case</v-list-item-title>
+        </v-list-item>
+      </v-col>
       <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
         <table-export-dialog />
-        <v-btn color="info" class="ml-2" @click="showNewSheet()"> New </v-btn>
+        <!-- <v-btn color="info" class="ml-2" @click="showNewSheet()"> New </v-btn> -->
       </v-col>
     </v-row>
     <v-row no-gutters>
