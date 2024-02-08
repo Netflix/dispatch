@@ -18,7 +18,6 @@
           <v-icon start color="white">mdi-fire</v-icon>
           <span class="text-uppercase text-body-2 font-weight-bold">Report incident</span>
         </v-btn>
-        <!-- <v-btn color="info" class="ml-2" @click="showNewSheet()"> New </v-btn> -->
       </v-col>
     </v-row>
     <v-row no-gutters>
@@ -235,7 +234,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("incident", ["getAll", "showNewSheet", "showDeleteDialog", "showReportDialog"]),
+    ...mapActions("incident", ["getAll", "showDeleteDialog", "showReportDialog"]),
     ...mapActions("workflow", ["showRun"]),
     showIncidentEditSheet(e, { item }) {
       this.$router.push({ name: "IncidentTableEdit", params: { name: item.name } })
