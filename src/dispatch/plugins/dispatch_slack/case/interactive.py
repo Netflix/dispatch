@@ -29,6 +29,7 @@ from dispatch.case import service as case_service
 from dispatch.case.enums import CaseStatus, CaseResolutionReason
 from dispatch.case.models import Case, CaseCreate, CaseRead, CaseUpdate
 from dispatch.conversation import flows as conversation_flows
+from dispatch.database.core import refetch_db_session
 from dispatch.entity import service as entity_service
 from dispatch.enums import UserRoles
 from dispatch.exceptions import ExistsError
@@ -1023,6 +1024,11 @@ def handle_escalation_submission_event(
     """Handles the escalation submission event."""
     ack_handle_escalation_submission_event(ack=ack)
 
+    # NOTE(mvilanova): we refetch the db session here because using the db_middleware causes Slack Bolt to throw the following exception:
+    # Skipped setting 'db_session' to a copied request for lazy listeners due to a deep-copy creation error. Consider passing the value not as part of context object (error: cannot pickle
+    # '_thread._local' object):/Users/mvilanova/.pyenv/versions/dispatch-dev-py3.11.2/lib/python3.11/site-packages/slack_bolt/context/context.py:to_copyable:27
+    db_session = refetch_db_session(context["subject"].organization_slug)
+
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
     case.status = CaseStatus.escalated
     db_session.commit()
@@ -1037,9 +1043,10 @@ def handle_escalation_submission_event(
         thread_ts=case.conversation.thread_id,
     )
 
-    incident = case_flows.case_escalated_status_flow(
+    case_flows.case_escalated_status_flow(
         case=case, organization_slug=context["subject"].organization_slug, db_session=db_session
     )
+    incident = case.incident[0]
 
     conversation_flows.add_incident_participants(
         incident=incident, participant_emails=[user.email], db_session=db_session
@@ -1075,9 +1082,10 @@ def handle_escalation_submission_event(
     )
 
 
-app.view(CaseEscalateActions.submit, middleware=[action_context_middleware, db_middleware])(
-    ack=ack_handle_escalation_submission_event, lazy=[handle_escalation_submission_event]
-)
+app.view(
+    CaseEscalateActions.submit,
+    middleware=[action_context_middleware, user_middleware],
+)(ack=ack_handle_escalation_submission_event, lazy=[handle_escalation_submission_event])
 
 
 @app.action(
