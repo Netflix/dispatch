@@ -22,7 +22,7 @@
           class="ml-2"
           hide-details
         >
-          <v-icon start color="white">mdi-fire</v-icon>
+          <v-icon start color="white">mdi-shield-search</v-icon>
           <span class="text-uppercase text-body-2 font-weight-bold">Report case</span>
         </v-btn>
         <!-- <v-btn color="info" class="ml-2" @click="showNewSheet()"> New </v-btn> -->
