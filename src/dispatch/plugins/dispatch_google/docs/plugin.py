@@ -5,9 +5,10 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import unicodedata
+
 import logging
-from typing import Any, List
+from typing import Any, Iterator, List, Tuple
+import unicodedata
 
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins.bases import DocumentPlugin
@@ -23,7 +24,80 @@ def remove_control_characters(s):
     return "".join(ch for ch in s if unicodedata.category(ch)[0] != "C")
 
 
-def replace_text(client: Any, document_id: str, replacements: List[str]):
+def find_links(obj: Any, find_key: str) -> Iterator[List[Any]]:
+    """Enumerate all the links found.
+    Returns a path of object, from leaf to parents to root.
+
+    This method was originally implemented in the open source library `Beancount`.
+    The original source code can be found at
+    https://github.com/beancount/beancount/blob/master/tools/transform_links_in_docs.py.
+    BeanCount is licensed under the GNU GPLv2.0 license.
+    """
+    if isinstance(obj, dict):
+        for key, value in obj.items():
+            if key == find_key:
+                yield [value, obj]
+            else:
+                for found in find_links(value, find_key):
+                    found.append(obj)
+                    yield found
+    elif isinstance(obj, list):
+        for value in obj:
+            for found in find_links(value, find_key):
+                found.append(obj)
+                yield found
+
+
+def iter_links(document: dict) -> List[Tuple[str, str]]:
+    """Find all the links and return them.
+
+    This method was originally implemented in the open source library `Beancount`.
+    The original source code can be found at
+    https://github.com/beancount/beancount/blob/master/tools/transform_links_in_docs.py.
+    BeanCount is licensed under the GNU GPLv2.0 license.
+    """
+    for jpath in find_links(document, "link"):
+        for item in jpath:
+            if "textRun" in item:
+                link = item["textRun"]["textStyle"]["link"]
+                if "url" not in link:
+                    continue
+                url = link["url"]
+                yield (url, item)
+
+
+def replace_weblinks(client: Any, document_id: str, replacements: List[str]) -> None:
+    """Replaces hyperlinks in specified document.
+
+    If the url contains a placeholder, it will be replaced with the value in the replacements list.
+    """
+    requests = []
+    document_content = client.get(documentId=document_id).execute().get("body").get("content")
+
+    for url, item in iter_links(document_content):
+        for k, v in replacements.items():
+            if k in url and v:
+                requests.append(
+                    {
+                        "updateTextStyle": {
+                            "range": {
+                                "startIndex": item["startIndex"],
+                                "endIndex": (item["endIndex"]),
+                            },
+                            "textStyle": {"link": {"url": url.replace(k, v)}},
+                            "fields": "link",
+                        }
+                    }
+                )
+
+    if not requests:
+        return
+
+    body = {"requests": requests}
+    return client.batchUpdate(documentId=document_id, body=body).execute()
+
+
+def replace_text(client: Any, document_id: str, replacements: List[str]) -> None:
     """Replaces text in specified document."""
     requests = []
     for k, v in replacements.items():
@@ -57,6 +131,7 @@ class GoogleDocsDocumentPlugin(DocumentPlugin):
         # TODO escape and use f strings? (kglisson)
         kwargs = {"{{" + k + "}}": v for k, v in kwargs.items()}
         client = get_service(self.configuration, "docs", "v1", self.scopes).documents()
+        replace_weblinks(client, document_id, kwargs)
         return replace_text(client, document_id, kwargs)
 
     def insert(self, document_id: str, request):
