@@ -630,7 +630,7 @@ def cost_model_select(
         for cost_model in cost_model_service.get_all(db_session=db_session, project_id=project_id)
     ]
 
-    if not len(cost_model_options):
+    if not cost_model_options:
         return
 
     return static_select_block(

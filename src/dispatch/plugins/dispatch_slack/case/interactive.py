@@ -221,9 +221,11 @@ def _draw_list_signal_modal(
         ),
     ).build()
 
-    client.views_open(
-        trigger_id=body["trigger_id"], view=modal
-    ) if first_render is True else client.views_update(view_id=body["view"]["id"], view=modal)
+    (
+        client.views_open(trigger_id=body["trigger_id"], view=modal)
+        if first_render is True
+        else client.views_update(view_id=body["view"]["id"], view=modal)
+    )
 
 
 def _build_signal_list_modal_blocks(
@@ -801,6 +803,7 @@ def handle_new_participant_added(
             log.warn(f"Error adding participant {user_id} to Case {context['subject'].id}: {e}")
             continue
 
+
 @message_dispatcher.add(
     subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
@@ -921,17 +924,23 @@ def escalate_button_click(
         ),
         incident_type_select(
             db_session=db_session,
-            initial_option={
-                "text": case.case_type.incident_type.name,
-                "value": case.case_type.incident_type.id,
-            }
-            if case.case_type.incident_type
-            else None,
+            initial_option=(
+                {
+                    "text": case.case_type.incident_type.name,
+                    "value": case.case_type.incident_type.id,
+                }
+                if case.case_type.incident_type
+                else None
+            ),
             project_id=case.project.id,
         ),
         incident_priority_select(db_session=db_session, project_id=case.project.id, optional=True),
-        cost_model_select(db_session=db_session, project_id=case.project.id, optional=True),
     ]
+
+    if cost_model_select_block := cost_model_select(
+        db_session=db_session, project_id=case.project.id, optional=True
+    ):
+        blocks.append(cost_model_select_block)
 
     modal = Modal(
         title="Escalate Case",
@@ -1209,9 +1218,11 @@ def resolve_button_click(
 
     reason = case.resolution_reason
     blocks = [
-        case_resolution_reason_select(initial_option={"text": reason, "value": reason})
-        if reason
-        else case_resolution_reason_select(),
+        (
+            case_resolution_reason_select(initial_option={"text": reason, "value": reason})
+            if reason
+            else case_resolution_reason_select()
+        ),
         resolution_input(initial_value=case.resolution),
     ]
 
