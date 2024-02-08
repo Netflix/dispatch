@@ -7,7 +7,7 @@
       variant="outlined"
       v-model="dummyText"
       class="main-panel"
-      :rules="[tag_in_project]"
+      :rules="[is_tag_in_project]"
     >
       <template #prepend-inner>
         <v-icon class="panel-button">
@@ -174,7 +174,7 @@ watch(
     validateTags(selectedItems.value)
   }
 )
-const tag_in_project = () => {
+const is_tag_in_project = () => {
   return error.value
 }
 

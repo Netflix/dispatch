@@ -7,7 +7,7 @@
     label="Severity"
     return-object
     :loading="loading"
-    :rules="[severity_in_project]"
+    :rules="[is_severity_in_project]"
   >
     <template #item="data">
       <v-list-item v-bind="data.props" :title="null">
@@ -46,7 +46,7 @@ export default {
       loading: false,
       items: [],
       error: null,
-      severity_in_project: () => {
+      is_severity_in_project: () => {
         this.validateSeverity()
         return this.error
       },

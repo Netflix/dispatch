@@ -9,7 +9,7 @@
     return-object
     :loading="loading"
     :error-messages="show_error"
-    :rules="[priority_in_project]"
+    :rules="[is_priority_in_project]"
   />
 </template>
 
@@ -43,7 +43,7 @@ export default {
       loading: false,
       items: [],
       error: null,
-      priority_in_project: () => {
+      is_priority_in_project: () => {
         this.validatePriority()
         return this.error
       },

@@ -7,7 +7,7 @@
     label="Priority"
     return-object
     :loading="loading"
-    :rules="[priority_in_project]"
+    :rules="[is_priority_in_project]"
   >
     <template #item="data">
       <v-list-item v-bind="data.props" :title="null">
@@ -46,7 +46,7 @@ export default {
       loading: false,
       items: [],
       error: null,
-      priority_in_project: () => {
+      is_priority_in_project: () => {
         this.validatePriority()
         return this.error
       },

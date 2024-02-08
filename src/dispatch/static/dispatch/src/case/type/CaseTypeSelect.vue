@@ -11,7 +11,7 @@
     :loading="loading"
     no-filter
     :error-messages="show_error"
-    :rules="[type_in_project]"
+    :rules="[is_type_in_project]"
   >
     <template #item="data">
       <v-list-item v-bind="data.props" :title="null">
@@ -71,7 +71,7 @@ export default {
       more: false,
       numItems: 5,
       error: null,
-      type_in_project: () => {
+      is_type_in_project: () => {
         this.validateType()
         return this.error
       },
