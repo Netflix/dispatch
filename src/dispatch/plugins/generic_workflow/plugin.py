@@ -33,7 +33,7 @@ import logging
 import requests
 import json
 
-from pydantic import Field, SecretStr, HttpUrl
+from pydantic import Field, SecretStr, AnyHttpUrl
 from tenacity import TryAgain, retry, stop_after_attempt, wait_exponential
 
 from dispatch.config import BaseConfigurationModel
@@ -52,7 +52,7 @@ class GenericWorkflowConfiguration(BaseConfigurationModel):
      workflow_id, workflow_instance_id, incident_id and incident_name.
     """
 
-    api_url: HttpUrl = Field(
+    api_url: AnyHttpUrl = Field(
         title="API URL", description="This API endpoint to GET or POST workflow info from/to."
     )
     auth_header: SecretStr = Field(
