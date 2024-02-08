@@ -7,13 +7,14 @@
       variant="outlined"
       v-model="dummyText"
       class="main-panel"
+      :rules="[is_tag_in_project]"
     >
       <template #prepend-inner>
         <v-icon class="panel-button">
           {{ menu ? "mdi-minus" : "mdi-plus" }}
         </v-icon>
       </template>
-      <template #append>
+      <template #append v-if="showCopy">
         <v-icon class="panel-button" @click.stop="copyTags">mdi-content-copy</v-icon>
       </template>
       <div class="form-container mt-2">
@@ -22,15 +23,15 @@
             <v-chip
               label
               :key="index"
-              :color="item.tag_type.color"
+              :color="item.tag_type?.color"
               closable
               class="tag-chip"
               @click:close="removeItem(item.id)"
             >
               <span class="mr-2">
                 <v-icon
-                  v-if="item.tag_type.icon"
-                  :icon="'mdi-' + item.tag_type.icon"
+                  v-if="item.tag_type?.icon"
+                  :icon="'mdi-' + item.tag_type?.icon"
                   size="18"
                   :style="getColorAsStyle(item.color)"
                 />
@@ -151,6 +152,7 @@ const searchQuery = ref("")
 const filteredMenuItems = ref([])
 const isDropdownOpen = ref(false)
 const loading = ref(true)
+const error = ref(true)
 const snackbar = ref(false)
 
 const props = defineProps({
@@ -172,14 +174,22 @@ const props = defineProps({
     type: Number,
     default: null,
   },
+  showCopy: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 watch(
   () => props.project,
   () => {
     fetchData()
+    validateTags(selectedItems.value)
   }
 )
+const is_tag_in_project = () => {
+  return error.value
+}
 
 const fetchData = () => {
   loading.value = true
@@ -201,6 +211,7 @@ const fetchData = () => {
     } else {
       filters["project"] = [props.project]
     }
+    validateTags(selectedItems.value)
   }
 
   // add a filter to only retrun discoverable tags
@@ -256,6 +267,18 @@ onMounted(fetchData)
 
 const emit = defineEmits(["update:modelValue"])
 
+function validateTags(value) {
+  const project_id = props.project?.id || 0
+  const all_tags_in_project = value.every((tag) => tag.project?.id == project_id)
+  if (all_tags_in_project) {
+    error.value = true
+    dummyText.value += " "
+  } else {
+    error.value = "Only tags in selected project are allowed"
+    dummyText.value += " "
+  }
+}
+
 const selectedItems = computed({
   get: () => cloneDeep(props.modelValue),
   set: (value) => {
@@ -266,6 +289,8 @@ const selectedItems = computed({
       return true
     })
     emit("update:modelValue", tags)
+    // check to make sure all tags in project
+    validateTags(value)
   },
 })
 
@@ -288,7 +313,9 @@ const showDropdown = (state) => {
 }
 
 const removeItem = (index) => {
-  selectedItems.value = selectedItems.value.filter((item) => item.id !== index)
+  const value = selectedItems.value.filter((item) => item.id !== index)
+  selectedItems.value = value
+  validateTags(value)
 }
 
 const performSearch = () => {
