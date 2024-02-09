@@ -1568,8 +1568,8 @@ def handle_report_tactical_command(
         needs = tactical_report.details.get("needs")
 
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    outstanding_actions = "" if actions is None else actions
     if incident.tasks:
-        outstanding_actions = "" if actions is None else actions
         outstanding_actions += "\n\nOutstanding Incident Tasks:\n".join(
             [
                 "-" + task.description
