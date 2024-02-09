@@ -1021,6 +1021,10 @@ def ack_handle_escalation_submission_event(ack: Ack) -> None:
     ack(response_action="update", view=modal)
 
 
+@app.view(
+    CaseEscalateActions.submit,
+    middleware=[action_context_middleware, user_middleware, db_middleware],
+)
 def handle_escalation_submission_event(
     ack: Ack,
     body: dict,
@@ -1046,9 +1050,10 @@ def handle_escalation_submission_event(
         thread_ts=case.conversation.thread_id,
     )
 
-    incident = case_flows.case_escalated_status_flow(
+    case_flows.case_escalated_status_flow(
         case=case, organization_slug=context["subject"].organization_slug, db_session=db_session
     )
+    incident = case.incidents[0]
 
     conversation_flows.add_incident_participants(
         incident=incident, participant_emails=[user.email], db_session=db_session
@@ -1082,11 +1087,6 @@ def handle_escalation_submission_event(
         view_id=body["view"]["id"],
         view=modal,
     )
-
-
-app.view(CaseEscalateActions.submit, middleware=[action_context_middleware, db_middleware])(
-    ack=ack_handle_escalation_submission_event, lazy=[handle_escalation_submission_event]
-)
 
 
 @app.action(

@@ -9,6 +9,7 @@
     return-object
     :loading="loading"
     :error-messages="show_error"
+    :rules="[is_priority_in_project]"
   />
 </template>
 
@@ -41,6 +42,11 @@ export default {
     return {
       loading: false,
       items: [],
+      error: null,
+      is_priority_in_project: () => {
+        this.validatePriority()
+        return this.error
+      },
     }
   },
 
@@ -51,6 +57,7 @@ export default {
       },
       set(value) {
         this.$emit("update:modelValue", value)
+        this.validatePriority()
       },
     },
     show_error() {
@@ -65,6 +72,15 @@ export default {
   },
 
   methods: {
+    validatePriority() {
+      const project_id = this.project?.id || 0
+      const in_project = this.incident_priorities?.project?.id == project_id
+      if (in_project) {
+        this.error = true
+      } else {
+        this.error = "Only priorities in selected project are allowed"
+      }
+    },
     fetchData() {
       this.error = null
       this.loading = "error"
@@ -110,6 +126,8 @@ export default {
       (vm) => [vm.project, vm.status],
       () => {
         this.fetchData()
+        this.validatePriority()
+        this.$emit("update:modelValue", this.incident_priorities)
       }
     )
   },
