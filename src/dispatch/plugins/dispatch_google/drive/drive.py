@@ -279,7 +279,7 @@ def delete_file(client: Any, file_id: str):
     """Moves a folder or file from a Google Drive to trash.
 
     Note: This is a soft delete, the file will still exist in the trash."""
-    response = make_call(
+    make_call(
         client.files(),
         "update",
         body={"trashed": True},
