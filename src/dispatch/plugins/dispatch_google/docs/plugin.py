@@ -24,7 +24,7 @@ def remove_control_characters(s):
     return "".join(ch for ch in s if unicodedata.category(ch)[0] != "C")
 
 
-def find_links(obj: Any, find_key: str) -> Iterator[List[Any]]:
+def find_links(obj: dict | list, find_key: str) -> Iterator[list[Any]]:
     """Enumerate all the links found.
     Returns a path of object, from leaf to parents to root.
 
@@ -48,7 +48,7 @@ def find_links(obj: Any, find_key: str) -> Iterator[List[Any]]:
                 yield found
 
 
-def iter_links(document: dict) -> List[Tuple[str, str]]:
+def iter_links(document: dict) -> list[tuple[str, str]]:
     """Find all the links and return them.
 
     This method was originally implemented in the open source library `Beancount`.
