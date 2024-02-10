@@ -138,8 +138,11 @@ export default {
     $route: {
       immediate: true,
       handler(newVal) {
-        if (newVal.meta && newVal.meta.showTimeline) {
+        if (!newVal.meta) return
+        if (newVal.meta.showTimeline) {
           this.tab = 3
+        } else if (newVal.meta.showForms) {
+          this.tab = 6
         }
       },
     },
