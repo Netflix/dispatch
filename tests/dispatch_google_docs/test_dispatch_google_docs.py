@@ -53,13 +53,13 @@ def test_iter_links():
     """
     from dispatch.plugins.dispatch_google.docs.plugin import iter_links
 
+    has_link = False
     for url, item in iter_links(_DOCUMENT.get("body").get("content")):
         assert url == "https://www.netflix.com"
         assert item.get("endIndex") == 40
         assert item.get("startIndex") == 0
         assert "textRun" in item
         assert item.get("textRun").get("content") == "Incident Conversation Commands Reference"
+        has_link = True
 
-        return
-
-    assert False
+    assert has_link
