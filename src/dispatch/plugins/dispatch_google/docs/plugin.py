@@ -58,16 +58,16 @@ def find_links(obj: dict, find_key: str) -> iter(list[Any]):
                 yield found
 
 
-def iter_links(document_content: dict) -> list[tuple[str, str]]:
+def iter_links(document_content: list) -> list[tuple[str, str]]:
     """Find all the links and return them.
     Parameters:
-        document_content (dict): The contents of the body of a Google Doc (googleapi.discovery.Resource).
+        document_content (list): The contents of the body of a Google Doc (googleapi.discovery.Resource).
 
     Returns:
         list: A list of tuples containing the hyperlink url (str) and its corresponding hyperlink element (str).
         e.g. [('https://www.netflix.com', {...{"textRun": {"textStyle": {"link": {"url": "https://www.netflix.com"}}}}})]
 
-    See https://developers.google.com/docs/api/samples/output-json for an example of a Google Doc Resource.
+    See https://developers.google.com/docs/api/samples/output-json.
 
     This method was originally implemented in the open source library `Beancount`.
     The original source code can be found at
