@@ -8,6 +8,7 @@
 
 import logging
 from typing import Any
+from collections.abc import Generator
 import unicodedata
 
 from googleapiclient.discovery import Resource
@@ -58,7 +59,7 @@ def find_links(obj: dict, find_key: str) -> iter(list[Any]):
                 yield found
 
 
-def iter_links(document_content: list) -> list[tuple[str, str]]:
+def iter_links(document_content: list) -> Generator[list[tuple[str, str]], None, None]:
     """Find all the links and return them.
     Parameters:
         document_content (list): The contents of the body of a Google Doc (googleapi.discovery.Resource).
@@ -97,8 +98,14 @@ def replace_weblinks(client: Resource, document_id: str, replacements: list[str]
     Returns:
         None
     """
+    document = client.get(documentId=document_id).execute()
+
+    if not document:
+        log.warning(f"Document with id {document_id} not found.")
+        return
+
+    document_content = document.get("body").get("content")
     requests = []
-    document_content = client.get(documentId=document_id).execute().get("body").get("content")
 
     for url, item in iter_links(document_content):
         for k, v in replacements.items():
