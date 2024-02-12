@@ -85,18 +85,18 @@ def iter_links(document_content: list) -> Generator[list[tuple[str, str]], None,
                 yield (url, item)
 
 
-def replace_weblinks(client: Resource, document_id: str, replacements: list[str]) -> None:
+def replace_weblinks(client: Resource, document_id: str, replacements: list[str]) -> int:
     """Replaces hyperlinks in specified document.
 
     If the url contains a placeholder, it will be replaced with the value in the replacements list.
 
     Parameters:
-        client (Resource): the Google API client.
-        document_id (str): the document id.
+        client (Resource): The Google API client.
+        document_id (str): The document id.
         replacements (list[str]): A list of string replacements to make.
 
     Returns:
-        None
+        int: The number of hyperlink update requests made.
     """
     document = client.get(documentId=document_id).execute()
 
@@ -124,22 +124,24 @@ def replace_weblinks(client: Resource, document_id: str, replacements: list[str]
                 )
 
     if not requests:
-        return
+        return 0
 
     body = {"requests": requests}
     client.batchUpdate(documentId=document_id, body=body).execute()
 
+    return len(requests)
 
-def replace_text(client: Resource, document_id: str, replacements: list[str]) -> None:
+
+def replace_text(client: Resource, document_id: str, replacements: list[str]) -> int:
     """Replaces text in specified document.
 
     Parameters:
-        client (Resource): the Google API client.
-        document_id (str): the document id.
+        client (Resource): The Google API client.
+        document_id (str): The document id.
         replacements (list[str]): A list of string replacements to make.
 
     Returns:
-        None
+        int: The number of replacement requests made.
     """
     requests = []
     for k, v in replacements.items():
@@ -148,6 +150,8 @@ def replace_text(client: Resource, document_id: str, replacements: list[str]) ->
         )
     body = {"requests": requests}
     client.batchUpdate(documentId=document_id, body=body).execute()
+
+    return len(requests)
 
 
 @apply(timer, exclude=["__init__"])

@@ -3,7 +3,7 @@ from googleapiclient.discovery import Resource
 from googleapiclient.http import HttpRequestMock, BatchHttpRequest
 from httplib2 import Response
 
-_DOCUMENT = {
+_DOCUMENT_SUCCESS = {
     "body": {
         "content": [
             {
@@ -17,7 +17,7 @@ _DOCUMENT = {
                             "textRun": {
                                 "content": "Incident Conversation Commands Reference",
                                 "textStyle": {
-                                    "link": {"url": "https://www.netflix.com"},
+                                    "link": {"url": "https://www.netflix.com/login"},
                                 },
                             },
                         }
@@ -28,23 +28,14 @@ _DOCUMENT = {
     }
 }
 
-
-class TestDocumentResource(Resource):
-    """A mock Google Document Resource"""
-
-    def __init__(self, document: dict = _DOCUMENT):
-        self.document = document
-
-    def get(self, attr: str) -> dict:
-        """Returns a resource from the document."""
-        return self.document[attr]
+_DOCUMENT_FAIL = {"body": {"content": []}}
 
 
 class TestResource(Resource):
     """A mock Google API Client"""
 
-    def __init__(self):
-        pass
+    def __init__(self, has_link: bool = True):
+        self.has_link = has_link
 
     def batchUpdate(self, **kwargs) -> BatchHttpRequest:
         """Performs one or more update API requests."""
@@ -55,10 +46,12 @@ class TestResource(Resource):
 
     def get(self, documentId: int) -> HttpRequestMock:
         """Returns a mock HTTP request to fetch a document."""
+        document = _DOCUMENT_SUCCESS if self.has_link else _DOCUMENT_FAIL
+
         return HttpRequestMock(
             resp=Response({"status": 200}),
             content="",
-            postproc=lambda _x, _y: TestDocumentResource(),
+            postproc=lambda _x, _y: document,
         )
 
 
