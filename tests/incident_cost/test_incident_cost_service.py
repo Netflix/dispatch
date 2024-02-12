@@ -40,11 +40,67 @@ def test_update(session, incident_cost, incident_cost_type):
     assert incident_cost.amount == amount
 
 
+def test_create_or_update__create(session, incident_cost_type, project):
+    from dispatch.incident_cost.service import get_or_create
+    from dispatch.incident_cost.models import IncidentCostUpdate
+
+    amount = 10002
+
+    incident_cost_in = IncidentCostUpdate(
+        amount=amount,
+        incident_cost_type=incident_cost_type,
+        project=project,
+    )
+    t_incident_cost = get_or_create(db_session=session, incident_cost_in=incident_cost_in)
+    assert t_incident_cost
+    assert t_incident_cost.amount == amount
+
+
+def test_create_or_update__get(session, incident_cost, incident_cost_type):
+    from dispatch.incident_cost.service import get_or_create
+    from dispatch.incident_cost.models import IncidentCostUpdate
+
+    incident_cost_in = IncidentCostUpdate(
+        id=incident_cost.id, incident_cost_type=incident_cost_type
+    )
+    t_incident_cost = get_or_create(db_session=session, incident_cost_in=incident_cost_in)
+    assert t_incident_cost
+    assert t_incident_cost.id == incident_cost.id
+    assert t_incident_cost.amount == incident_cost.amount
+
+
 def test_delete(session, incident_cost):
     from dispatch.incident_cost.service import delete, get
 
     delete(db_session=session, incident_cost_id=incident_cost.id)
     assert not get(db_session=session, incident_cost_id=incident_cost.id)
+
+
+def test_get_by_incident_id_and_incident_cost_type_id(session, incident, incident_cost):
+    from dispatch.incident_cost.service import get_by_incident_id_and_incident_cost_type_id
+
+    incident_cost.incident = incident
+
+    t_incident_cost = get_by_incident_id_and_incident_cost_type_id(
+        db_session=session,
+        incident_id=incident_cost.incident.id,
+        incident_cost_type_id=incident_cost.incident_cost_type_id,
+    )
+
+    assert t_incident_cost
+    assert t_incident_cost.id == incident_cost.id
+
+
+def test_get_by_incident_id_and_incident_cost_type_id__none(session, incident, incident_cost):
+    from dispatch.incident_cost.service import get_by_incident_id_and_incident_cost_type_id
+
+    t_incident_cost = get_by_incident_id_and_incident_cost_type_id(
+        db_session=session,
+        incident_id=incident.id,
+        incident_cost_type_id=incident_cost.incident_cost_type_id,
+    )
+
+    assert not t_incident_cost
 
 
 def test_calculate_incident_response_cost_with_cost_model(
@@ -114,3 +170,19 @@ def test_calculate_incident_response_cost_with_cost_model(
 
     assert cost
     assert cost == expected_incident_cost == incident.total_cost
+
+
+def test_get_by_incident_id(session, incident_cost):
+    from dispatch.incident_cost.service import get_by_incident_id
+
+    incident_costs = get_by_incident_id(
+        db_session=session, incident_id=incident_cost.incident_id
+    ).all()
+    print(incident_costs)
+    assert incident_cost.id in [cost.id for cost in incident_costs]
+
+
+def test_get_by_incident_id__no_incident_costs(session, incident):
+    from dispatch.incident_cost.service import get_by_incident_id
+
+    assert not get_by_incident_id(db_session=session, incident_id=incident.id).all()

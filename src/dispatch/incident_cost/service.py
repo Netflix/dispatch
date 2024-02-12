@@ -16,7 +16,7 @@ from dispatch.participant_activity.models import ParticipantActivityCreate
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 
-from .models import IncidentCost, IncidentCostCreate, IncidentCostUpdate
+from .models import IncidentCost, IncidentCostCreate, IncidentCostUpdate, IncidentCostRead
 
 
 HOURS_IN_DAY = 24
@@ -36,8 +36,14 @@ def get_by_incident_id(*, db_session, incident_id: int) -> List[Optional[Inciden
 
 def get_by_incident_id_and_incident_cost_type_id(
     *, db_session, incident_id: int, incident_cost_type_id: int
-) -> List[Optional[IncidentCost]]:
+) -> Optional[IncidentCost]:
     """Gets incident costs by their incident id and incident cost type id."""
+    print(
+        db_session.query(IncidentCost)
+        .filter(IncidentCost.incident_id == incident_id)
+        .filter(IncidentCost.incident_cost_type_id == incident_cost_type_id)
+        .all()
+    )
     return (
         db_session.query(IncidentCost)
         .filter(IncidentCost.incident_id == incident_id)
@@ -51,7 +57,7 @@ def get_all(*, db_session) -> List[Optional[IncidentCost]]:
     return db_session.query(IncidentCost)
 
 
-def get_or_create(*, db_session, incident_cost_in: IncidentCostCreate) -> IncidentCost:
+def get_or_create(*, db_session, incident_cost_in: IncidentCostUpdate) -> IncidentCost:
     """Gets or creates an incident cost."""
     if incident_cost_in.id:
         incident_cost = get(db_session=db_session, incident_cost_id=incident_cost_in.id)
@@ -314,7 +320,7 @@ def update_incident_response_cost(incident_id: int, db_session: SessionLocal) ->
         incident_id=incident.id,
         incident_cost_type_id=response_cost_type.id,
     )
-    if incident_response_cost is None:
+    if not incident_response_cost:
         # we create the response cost if it doesn't exist
         incident_cost_type = IncidentCostTypeRead.from_orm(response_cost_type)
         incident_cost_in = IncidentCostCreate(

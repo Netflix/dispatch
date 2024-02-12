@@ -1137,6 +1137,8 @@ class FeedbackFactory(BaseFactory):
 class IncidentCostFactory(BaseFactory):
     """Incident Cost Factory."""
 
+    # Avoid collisions
+    id = Sequence(lambda n: 10 + n)
     amount = FuzzyInteger(low=0, high=10000)
 
     class Meta:
@@ -1164,6 +1166,7 @@ class IncidentCostFactory(BaseFactory):
 class IncidentCostTypeFactory(BaseFactory):
     """Incident Cost Type Factory."""
 
+    id = Sequence(lambda n: 10 + n)
     name = FuzzyText()
     description = FuzzyText()
     category = FuzzyText()
