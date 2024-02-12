@@ -18,7 +18,7 @@ const FeatureList = [
     Svg: require("@site/static/img/undraw_docusaurus_tree.svg").default,
     description: (
       <>
-        Dispatch lets you focus on your incident, let Dispatch manage timelines, documenation and
+        Dispatch lets you focus on your incident, let Dispatch manage timelines, documentation and
         people leaving you to focus on resolve the incident.
       </>
     ),
