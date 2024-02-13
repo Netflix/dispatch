@@ -979,6 +979,12 @@ def incident_remove_participant_flow(
     """Runs the remove participant flow."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
+    if not incident:
+        log.warn(
+            f"Unable to remove participant from incident with id {incident_id}. An incident with this id does not exist."
+        )
+        return
+
     participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=incident.id, email=user_email
     )
