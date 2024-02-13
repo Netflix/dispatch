@@ -147,6 +147,8 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     case_priority = relationship("CasePriority", backref="signals")
     create_case = Column(Boolean, default=True)
     conversation_target = Column(String)
+    default = Column(Boolean, default=False)
+
     oncall_service_id = Column(Integer, ForeignKey("service.id"))
     oncall_service = relationship("Service", foreign_keys=[oncall_service_id])
     engagements = relationship(
@@ -293,21 +295,22 @@ class SignalFilterPagination(Pagination):
 
 
 class SignalBase(DispatchBase):
-    name: str
-    owner: str
-    conversation_target: Optional[str]
-    description: Optional[str]
-    variant: Optional[str]
-    case_type: Optional[CaseTypeRead]
     case_priority: Optional[CasePriorityRead]
-    external_id: str
-    enabled: Optional[bool] = False
-    external_url: Optional[str]
+    case_type: Optional[CaseTypeRead]
+    conversation_target: Optional[str]
     create_case: Optional[bool] = True
-    oncall_service: Optional[Service]
-    source: Optional[SourceBase]
     created_at: Optional[datetime] = None
+    default: Optional[bool] = False
+    description: Optional[str]
+    enabled: Optional[bool] = False
+    external_id: str
+    external_url: Optional[str]
+    name: str
+    oncall_service: Optional[Service]
+    owner: str
     project: ProjectRead
+    source: Optional[SourceBase]
+    variant: Optional[str]
 
 
 class SignalCreate(SignalBase):

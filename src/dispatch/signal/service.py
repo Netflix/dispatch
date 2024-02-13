@@ -3,25 +3,27 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional, Union
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
+
 from sqlalchemy import desc, asc, or_
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.expression import true
 
 from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.type import service as case_type_service
 from dispatch.case.type.models import CaseType
 from dispatch.database.service import apply_filter_specific_joins, apply_filters
+from dispatch.entity import service as entity_service
+from dispatch.entity.models import Entity
 from dispatch.entity_type import service as entity_type_service
+from dispatch.entity_type.models import EntityScopeEnum
 from dispatch.entity_type.models import EntityType
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 from dispatch.service import service as service_service
 from dispatch.tag import service as tag_service
 from dispatch.workflow import service as workflow_service
-from dispatch.entity.models import Entity
 from sqlalchemy.exc import IntegrityError
-from dispatch.entity_type.models import EntityScopeEnum
-from dispatch.entity import service as entity_service
 
 from .exceptions import (
     SignalNotDefinedException,
@@ -100,7 +102,7 @@ def get_all_by_entity_type(*, db_session: Session, entity_type_id: int) -> list[
 def get_signal_engagement_by_name(
     *, db_session, project_id: int, name: str
 ) -> Optional[SignalEngagement]:
-    """Gets a signal engagement by it's name."""
+    """Gets a signal engagement by its name."""
     return (
         db_session.query(SignalEngagement)
         .filter(SignalEngagement.project_id == project_id)
@@ -257,7 +259,7 @@ def get_signal_filter_by_name_or_raise(
 
 
 def get_signal_filter_by_name(*, db_session, project_id: int, name: str) -> Optional[SignalFilter]:
-    """Gets a signal filter by it's name."""
+    """Gets a signal filter by its name."""
     return (
         db_session.query(SignalFilter)
         .filter(SignalFilter.project_id == project_id)
@@ -274,7 +276,7 @@ def get_signal_filter(*, db_session: Session, signal_filter_id: int) -> SignalFi
 def get_signal_instance(
     *, db_session: Session, signal_instance_id: int | str
 ) -> Optional[SignalInstance]:
-    """Gets a signal instance by it's UUID."""
+    """Gets a signal instance by its UUID."""
     return (
         db_session.query(SignalInstance)
         .filter(SignalInstance.id == signal_instance_id)
@@ -283,8 +285,17 @@ def get_signal_instance(
 
 
 def get(*, db_session: Session, signal_id: Union[str, int]) -> Optional[Signal]:
-    """Gets a signal by id or external_id."""
+    """Gets a signal by id."""
     return db_session.query(Signal).filter(Signal.id == signal_id).one_or_none()
+
+
+def get_default(*, db_session: Session, project_id: int) -> Optional[Signal]:
+    """Gets the default signal definition."""
+    return (
+        db_session.query(Signal)
+        .filter(Signal.project_id == project_id, Signal.default == true())
+        .one_or_none()
+    )
 
 
 def get_by_primary_or_external_id(
@@ -302,7 +313,7 @@ def get_by_primary_or_external_id(
 def get_by_variant_or_external_id(
     *, db_session: Session, project_id: int, external_id: str = None, variant: str = None
 ) -> Optional[Signal]:
-    """Gets a signal it's external id (and variant if supplied)."""
+    """Gets a signal by its variant or external id."""
     if variant:
         return (
             db_session.query(Signal)
@@ -319,7 +330,7 @@ def get_by_variant_or_external_id(
 def get_all_by_conversation_target(
     *, db_session: Session, project_id: int, conversation_target: str
 ) -> list[Signal]:
-    """Gets all signals for a given conversation target. (e.g. #conversation-channel)"""
+    """Gets all signals for a given conversation target (e.g. #conversation-channel)"""
     return (
         db_session.query(Signal)
         .join(CaseType)
@@ -343,11 +354,11 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
             exclude={
                 "project",
                 "case_type",
-                "case_priority",
+                "case_prioity",
                 "source",
                 "filters",
                 "tags",
-                "entity_types",
+                "entty_types",
                 "oncall_service",
                 "workflows",
             }

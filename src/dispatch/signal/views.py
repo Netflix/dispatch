@@ -3,6 +3,7 @@ from typing import Union
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response, status, Depends
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
+
 from sqlalchemy.exc import IntegrityError
 
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
@@ -76,44 +77,43 @@ def create_signal_instance(
         external_id = signal_instance_in.raw.get("externalId")
         variant = signal_instance_in.raw.get("variant")
 
-        if external_id or variant:
-            signal = signal_service.get_by_variant_or_external_id(
-                db_session=db_session,
-                project_id=project.id,
-                external_id=external_id,
-                variant=variant,
-            )
-
-            signal_instance_in.signal = signal
-        else:
-            msg = "An external id or variant must be provided."
+        if not external_id or not variant:
+            msg = "A detection external id or variant must be provided in order to get the signal definition."
             log.warn(msg)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=[{"msg": msg}],
             ) from None
 
-    if not signal:
-        msg = f"No signal definition found. External Id: {external_id} Variant: {variant}"
+        signal_definition = signal_service.get_by_variant_or_external_id(
+            db_session=db_session,
+            project_id=project.id,
+            external_id=external_id,
+            variant=variant,
+        )
+
+    if not signal_definition:
+        # we get the default signal definition
+        signal_definition = signal_service.get_default(
+            db_session=db_session,
+            project_id=project.id,
+        )
+
+    if not signal_definition:
+        msg = f"No signal definition could be found by external id {external_id} or variant {variant}, and no default exists."
         log.warn(msg)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=[{"msg": msg}],
         ) from None
 
-    if not signal.enabled:
-        msg = f"Signal definition not enabled. Signal Name: {signal.name}"
-        log.info(msg)
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=[{"msg": msg}],
-        ) from None
+    signal_instance_in.signal = signal_definition
 
     try:
         signal_instance = signal_service.create_instance(
             db_session=db_session, signal_instance_in=signal_instance_in
         )
-        signal_instance.signal = signal
+        signal_instance.signal = signal_definition
         db_session.commit()
     except IntegrityError:
         db_session.rollback()
