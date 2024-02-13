@@ -12,7 +12,9 @@ TIMEOUT = 300
 socket.setdefaulttimeout(TIMEOUT)
 
 
-def get_service(config: GoogleConfiguration, service_name: str, version: str, scopes: list):
+def get_service(
+    config: GoogleConfiguration, service_name: str, version: str, scopes: list
+) -> googleapiclient.discovery.Resource:
     """Formats specified credentials for Google clients."""
     data = {
         "type": "service_account",
