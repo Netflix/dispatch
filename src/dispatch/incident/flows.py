@@ -981,7 +981,7 @@ def incident_remove_participant_flow(
 
     if not incident:
         log.warn(
-            f"Unable to remove participant from incident with id {incident_id}. There's no incident with this id."
+            f"Unable to remove participant from incident with id {incident_id}. An incident with this id does not exist."
         )
         return
 
