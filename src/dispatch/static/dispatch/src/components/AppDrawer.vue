@@ -16,23 +16,6 @@
             title="Minimize"
           />
         </v-list>
-        <template #append>
-          <v-list-item
-            nav
-            class="ma-2"
-            rounded
-            variant="flat"
-            base-color="error"
-            :to="{ name: 'report' }"
-          >
-            <template #prepend>
-              <v-icon color="white">mdi-fire</v-icon>
-            </template>
-            <v-list-item-title class="text-uppercase text-body-2">
-              Report incident
-            </v-list-item-title>
-          </v-list-item>
-        </template>
       </v-navigation-drawer>
       <v-navigation-drawer width="220">
         <v-list density="compact" nav>
@@ -82,28 +65,6 @@
         <v-tooltip v-if="mini" activator="parent" location="right" text="Minimize" />
       </v-list-item>
     </v-list>
-    <template #append>
-      <v-list-item
-        nav
-        class="ma-2"
-        rounded
-        variant="flat"
-        base-color="error"
-        :to="{ name: 'report' }"
-      >
-        <template #prepend>
-          <v-icon color="white">mdi-fire</v-icon>
-        </template>
-        <v-list-item-title class="text-uppercase text-body-2">Report incident</v-list-item-title>
-        <v-tooltip
-          v-if="mini"
-          activator="parent"
-          location="right"
-          content-class="bg-error"
-          text="Report incident"
-        />
-      </v-list-item>
-    </template>
   </v-navigation-drawer>
 </template>
 <script>
