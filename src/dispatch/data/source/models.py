@@ -101,6 +101,12 @@ class QueryReadMinimal(DispatchBase):
     name: str
     description: str
 
+class Link(DispatchBase):
+    id: Optional[int]
+    name: Optional[str]
+    description: Optional[str]
+    href: Optional[AnyHttpUrl]
+
 
 # Pydantic models
 class SourceBase(DispatchBase):
@@ -122,7 +128,7 @@ class SourceBase(DispatchBase):
     size: Optional[int] = Field(None, nullable=True)
     external_id: Optional[str] = Field(None, nullable=True)
     aggregated: Optional[bool] = Field(False, nullable=True)
-    links: Optional[List[AnyHttpUrl]] = []
+    links: Optional[List[Link]] = Field(default_factory=list)
     tags: Optional[List[TagRead]] = []
     incidents: Optional[List[IncidentRead]] = []
     queries: Optional[List[QueryReadMinimal]] = []
