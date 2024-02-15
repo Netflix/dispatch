@@ -1,3 +1,4 @@
+import logging
 import json
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Union
@@ -47,6 +48,8 @@ from .models import (
     SignalInstanceCreate,
     SignalUpdate,
 )
+
+log = logging.getLogger(__name__)
 
 
 def create_signal_engagement(
@@ -150,7 +153,6 @@ def create_signal_instance(*, db_session: Session, signal_instance_in: SignalIns
         signal_definition = (
             db_session.query(Signal).filter(Signal.external_id == external_id).one_or_none()
         )
-        signal_instance_in.signal = signal_definition
 
     if not signal_definition:
         # we get the default signal definition
@@ -158,10 +160,14 @@ def create_signal_instance(*, db_session: Session, signal_instance_in: SignalIns
             db_session=db_session,
             project_id=project.id,
         )
+        msg = "Default signal definition used for signal instance with external id {external_id}"
+        log.warn(msg)
 
     if not signal_definition:
         msg = f"No signal definition could be found by external id {external_id}, and no default exists."
         raise SignalNotDefinedException(msg)
+
+    signal_instance_in.signal = signal_definition
 
     try:
         signal_instance = create_instance(

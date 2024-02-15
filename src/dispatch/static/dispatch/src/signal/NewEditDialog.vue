@@ -92,11 +92,12 @@
                 <v-col cols="12">
                   <v-text-field
                     v-model="external_id"
-                    label="External ID"
+                    label="External ID (required)"
                     hint="This ID will be used to correctly associate incoming signals to this definition."
                     persistent-hint
                     clearable
                     name="externalId"
+                    :rules="[rules.required]"
                   />
                 </v-col>
                 <v-col cols="12">

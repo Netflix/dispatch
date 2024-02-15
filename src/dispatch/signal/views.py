@@ -74,17 +74,9 @@ def create_signal_instance(
     )
 
     if not signal_instance_in.signal:
+        # we try to get the signal definition by external id or variant
         external_id = signal_instance_in.raw.get("externalId")
         variant = signal_instance_in.raw.get("variant")
-
-        if not external_id or not variant:
-            msg = "A detection external id or variant must be provided in order to get the signal definition."
-            log.warn(msg)
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=[{"msg": msg}],
-            ) from None
-
         signal_definition = signal_service.get_by_variant_or_external_id(
             db_session=db_session,
             project_id=project.id,
@@ -98,6 +90,8 @@ def create_signal_instance(
             db_session=db_session,
             project_id=project.id,
         )
+        msg = "Default signal definition used for signal instance with external id {external_id} or variant {variant}."
+        log.warn(msg)
 
     if not signal_definition:
         msg = f"No signal definition could be found by external id {external_id} or variant {variant}, and no default exists."
