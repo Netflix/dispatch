@@ -104,8 +104,15 @@ export default {
       this.fetchData()
     },
     validateType() {
-      const project_id = this.project?.id || 0
-      const in_project = this.case_type?.project?.id == project_id
+      let in_project
+      if (this.project?.name) {
+        let project_name = this.project?.name || ""
+        in_project = this.case_type?.project?.name == project_name
+      } else {
+        let project_id = this.project?.id || 0
+        in_project = this.case_type?.project?.id == project_id
+      }
+
       if (in_project) {
         this.error = true
       } else {

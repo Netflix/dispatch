@@ -31,6 +31,14 @@
               <v-row no-gutters>
                 <v-col cols="12">
                   <v-checkbox
+                    v-model="default"
+                    label="Default"
+                    hint="Whether this signal definition is the default or not."
+                    persistent-hint
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-checkbox
                     v-model="enabled"
                     label="Enabled"
                     hint="Determines whether this signal definition is currently active and should be used to process signals."
@@ -84,12 +92,11 @@
                 <v-col cols="12">
                   <v-text-field
                     v-model="external_id"
-                    label="External ID (required)"
+                    label="External ID"
                     hint="This ID will be used to correctly associate incoming signals to this definition."
                     persistent-hint
                     clearable
                     name="externalId"
-                    :rules="[rules.required]"
                   />
                 </v-col>
                 <v-col cols="12">
@@ -147,7 +154,7 @@
                   <case-priority-select
                     v-model="case_priority"
                     :project="project"
-                    label="Case Priority"
+                    label="Priority"
                   />
                 </v-col>
                 <v-col cols="12">
@@ -256,10 +263,10 @@ import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
-import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
-import ServiceSelect from "@/service/ServiceSelect.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
+import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import EntityTypeFilterCombobox from "@/entity_type/EntityTypeFilterCombobox.vue"
+import ServiceSelect from "@/service/ServiceSelect.vue"
 import SignalEngagementCombobox from "@/signal/engagement/SignalEngagementCombobox.vue"
 import SignalFilterCombobox from "@/signal/filter/SignalFilterCombobox.vue"
 import TagFilterAutoComplete from "@/tag/TagPicker.vue"
@@ -274,12 +281,12 @@ export default {
   name: "SignalNewEditDialog",
 
   components: {
-    ServiceSelect,
-    CaseTypeSelect,
     CasePrioritySelect,
+    CaseTypeSelect,
+    EntityTypeFilterCombobox,
+    ServiceSelect,
     SignalEngagementCombobox,
     SignalFilterCombobox,
-    EntityTypeFilterCombobox,
     TagFilterAutoComplete,
     WorkflowCombobox,
   },
@@ -288,28 +295,29 @@ export default {
     ...mapFields("signal", [
       "dialogs.showCreateEdit",
       "selected",
-      "selected.id",
-      "selected.name",
-      "selected.description",
-      "selected.enabled",
-      "selected.variant",
-      "selected.owner",
-      "selected.external_id",
-      "selected.external_url",
-      "selected.case_type",
       "selected.case_priority",
-      "selected.filters",
-      "selected.engagements",
-      "selected.entity_types",
-      "selected.signal_definition",
-      "selected.oncall_service",
+      "selected.case_type",
       "selected.conversation_target",
       "selected.create_case",
+      "selected.default",
+      "selected.description",
+      "selected.enabled",
+      "selected.engagements",
+      "selected.entity_types",
+      "selected.external_id",
+      "selected.external_url",
+      "selected.filters",
+      "selected.id",
+      "selected.loading",
+      "selected.name",
+      "selected.oncall_service",
+      "selected.owner",
+      "selected.project",
+      "selected.signal_definition",
       "selected.source",
       "selected.tags",
+      "selected.variant",
       "selected.workflows",
-      "selected.project",
-      "selected.loading",
     ]),
   },
 
