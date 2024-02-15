@@ -27,7 +27,6 @@ from sqlalchemy.exc import IntegrityError
 
 from .exceptions import (
     SignalNotDefinedException,
-    SignalNotEnabledException,
     SignalNotIdentifiedException,
 )
 
@@ -135,32 +134,40 @@ def get_signal_engagement_by_name_or_raise(
 
 
 def create_signal_instance(*, db_session: Session, signal_instance_in: SignalInstanceCreate):
+    """Creates a new signal instance."""
+    project = project_service.get_by_name_or_default(
+        db_session=db_session, project_in=signal_instance_in.project
+    )
+
     if not signal_instance_in.signal:
         external_id = signal_instance_in.external_id
 
         # this assumes the external_ids are uuids
-        if external_id:
-            signal = (
-                db_session.query(Signal).filter(Signal.external_id == external_id).one_or_none()
-            )
-            signal_instance_in.signal = signal
-        else:
-            msg = "An externalId must be provided."
+        if not external_id:
+            msg = "A detection external id must be provided in order to get the signal definition."
             raise SignalNotIdentifiedException(msg)
 
-    if not signal:
-        msg = f"No signal definition found. ExternalId: {external_id}"
-        raise SignalNotDefinedException(msg)
+        signal_definition = (
+            db_session.query(Signal).filter(Signal.external_id == external_id).one_or_none()
+        )
+        signal_instance_in.signal = signal_definition
 
-    if not signal.enabled:
-        msg = f"Signal definition not enabled. SignalName: {signal.name} ExternalId: {signal.external_id}"
-        raise SignalNotEnabledException(msg)
+    if not signal_definition:
+        # we get the default signal definition
+        signal_definition = get_default(
+            db_session=db_session,
+            project_id=project.id,
+        )
+
+    if not signal_definition:
+        msg = f"No signal definition could be found by external id {external_id}, and no default exists."
+        raise SignalNotDefinedException(msg)
 
     try:
         signal_instance = create_instance(
             db_session=db_session, signal_instance_in=signal_instance_in
         )
-        signal_instance.signal = signal
+        signal_instance.signal = signal_definition
         db_session.commit()
     except IntegrityError:
         db_session.rollback()
