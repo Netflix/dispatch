@@ -9,6 +9,7 @@
     :loading="loading"
     :error-messages="show_error"
     :rules="[is_priority_in_project]"
+    clearable
   >
     <template #item="data">
       <v-list-item v-bind="data.props" :title="null">
@@ -67,7 +68,7 @@ export default {
     show_error() {
       let items_names = this.items.map((item) => item.name)
       let selected_item = this.case_priority?.name || ""
-      if (items_names.includes(selected_item)) {
+      if (items_names.includes(selected_item) || selected_item == "") {
         return null
       }
       return "Not a valid case priority"

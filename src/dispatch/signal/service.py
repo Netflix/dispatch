@@ -359,14 +359,14 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
     signal = Signal(
         **signal_in.dict(
             exclude={
-                "project",
+                "case_priority",
                 "case_type",
-                "case_prioity",
-                "source",
+                "entity_types",
                 "filters",
-                "tags",
-                "entty_types",
                 "oncall_service",
+                "project",
+                "source",
+                "tags",
                 "workflows",
             }
         ),

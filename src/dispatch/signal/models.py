@@ -303,7 +303,7 @@ class SignalBase(DispatchBase):
     default: Optional[bool] = False
     description: Optional[str]
     enabled: Optional[bool] = False
-    external_id: str
+    external_id: Optional[str]
     external_url: Optional[str]
     name: str
     oncall_service: Optional[Service]
