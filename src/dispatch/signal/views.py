@@ -266,7 +266,6 @@ def get_signal(db_session: DbSession, signal_id: Union[str, PrimaryKey]):
 @router.post("", response_model=SignalRead)
 def create_signal(db_session: DbSession, signal_in: SignalCreate):
     """Creates a new signal."""
-    print(signal_in)
     return create(db_session=db_session, signal_in=signal_in)
 
 
