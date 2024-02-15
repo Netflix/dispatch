@@ -31,7 +31,7 @@
               <v-row no-gutters>
                 <v-col cols="12">
                   <v-checkbox
-                    v-model="default"
+                    v-model="default_signal"
                     label="Default"
                     hint="Whether this signal definition is the default or not."
                     persistent-hint
@@ -300,7 +300,6 @@ export default {
       "selected.case_type",
       "selected.conversation_target",
       "selected.create_case",
-      "selected.default",
       "selected.description",
       "selected.enabled",
       "selected.engagements",
@@ -320,6 +319,9 @@ export default {
       "selected.variant",
       "selected.workflows",
     ]),
+    ...mapFields("signal", {
+      default_signal: "selected.default",
+    }),
   },
 
   methods: {
