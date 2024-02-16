@@ -107,8 +107,6 @@ def create_signal_instance(
         signal_instance = signal_service.create_instance(
             db_session=db_session, signal_instance_in=signal_instance_in
         )
-        signal_instance.signal = signal_definition
-        db_session.commit()
     except IntegrityError:
         db_session.rollback()
         signal_instance = signal_service.update_instance(

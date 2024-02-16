@@ -542,25 +542,23 @@ def create_instance(
         db_session=db_session, project_in=signal_instance_in.project
     )
 
-    signal = get(db_session=db_session, signal_id=signal_instance_in.signal.id)
-
     # we round trip the raw data to json-ify date strings
     signal_instance = SignalInstance(
         **signal_instance_in.dict(
             exclude={
                 "case",
-                "case_type",
                 "case_priority",
-                "signal",
-                "project",
+                "case_type",
                 "entities",
-                "raw",
                 "external_id",
+                "project",
+                "raw",
+                "signal",
             }
         ),
         raw=json.loads(json.dumps(signal_instance_in.raw)),
         project=project,
-        signal=signal,
+        signal=signal_instance_in.signal,
     )
 
     # if the signal has an existing uuid we propgate it as our primary key
