@@ -7,7 +7,9 @@
     label="Priority"
     return-object
     :loading="loading"
+    :error-messages="show_error"
     :rules="[is_priority_in_project]"
+    clearable
   >
     <template #item="data">
       <v-list-item v-bind="data.props" :title="null">
@@ -63,12 +65,27 @@ export default {
         this.validatePriority()
       },
     },
+    show_error() {
+      let items_names = this.items.map((item) => item.name)
+      let selected_item = this.case_priority?.name || ""
+      if (items_names.includes(selected_item) || selected_item == "") {
+        return null
+      }
+      return "Not a valid case priority"
+    },
   },
 
   methods: {
     validatePriority() {
-      const project_id = this.project?.id || 0
-      const in_project = this.case_priority?.project?.id == project_id
+      let in_project
+      if (this.project?.name) {
+        let project_name = this.project?.name || ""
+        in_project = this.case_priority?.project?.name == project_name
+      } else {
+        let project_id = this.project?.id || 0
+        in_project = this.case_priority?.project?.id == project_id
+      }
+
       if (in_project) {
         this.error = true
       } else {
