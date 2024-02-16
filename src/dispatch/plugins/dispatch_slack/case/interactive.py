@@ -1764,6 +1764,13 @@ def resolve_case(
     context_from_user: str,
     user: DispatchUser,
 ) -> None:
+    case_flows.case_status_transition_flow_dispatcher(
+        case=case,
+        current_status=CaseStatus.closed,
+        db_session=db_session,
+        previous_status=case.status,
+        organization_slug=case.project.organization.slug,
+    )
     case_in = CaseUpdate(
         title=case.title,
         resolution_reason=CaseResolutionReason.user_acknowledge,
@@ -1773,6 +1780,7 @@ def resolve_case(
         closed_at=datetime.utcnow(),
     )
     case = case_service.update(db_session=db_session, case=case, case_in=case_in, current_user=user)
+
     blocks = create_case_message(case=case, channel_id=channel_id)
     client.chat_update(
         blocks=blocks, ts=case.conversation.thread_id, channel=case.conversation.channel_id
