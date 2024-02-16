@@ -135,6 +135,7 @@ def signal_instance_create_flow(
         project=signal_instance.project,
         case_type=case_type,
         assignee=assignee,
+        reporter=assignee,
     )
     case = case_service.create(db_session=db_session, case_in=case_in, current_user=current_user)
     signal_instance.case = case
