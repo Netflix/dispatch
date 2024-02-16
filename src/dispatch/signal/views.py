@@ -90,7 +90,7 @@ def create_signal_instance(
             db_session=db_session,
             project_id=project.id,
         )
-        msg = "Default signal definition used for signal instance with external id {external_id} or variant {variant}."
+        msg = f"Default signal definition used for signal instance with external id {external_id} or variant {variant}."
         log.warn(msg)
 
     if not signal_definition:
