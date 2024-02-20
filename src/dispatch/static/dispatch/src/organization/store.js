@@ -1,7 +1,7 @@
 import OrganizationApi from "@/organization/api"
 
 import { getField, updateField } from "vuex-map-fields"
-import router from "@/router/"
+import router from "@/router"
 
 const getDefaultSelectedState = () => {
   return {
