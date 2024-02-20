@@ -124,7 +124,7 @@ frozenlist==1.4.1
     #   aiosignal
 google-api-core==2.15.0
     # via google-api-python-client
-google-api-python-client==2.116.0
+google-api-python-client==2.118.0
     # via -r requirements-base.in
 google-auth==2.26.1
     # via
@@ -396,7 +396,7 @@ six==1.16.0
     #   validators
 slack-bolt==1.18.1
     # via -r requirements-base.in
-slack-sdk==3.26.2
+slack-sdk==3.27.0
     # via
     #   -r requirements-base.in
     #   slack-bolt
@@ -413,7 +413,7 @@ sniffio==1.3.0
     #   openai
 sortedcontainers==2.4.0
     # via hypothesis
-spacy==3.7.3
+spacy==3.7.4
     # via -r requirements-base.in
 spacy-legacy==3.0.12
     # via spacy
