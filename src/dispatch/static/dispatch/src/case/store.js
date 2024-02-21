@@ -3,6 +3,7 @@ import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import CaseApi from "@/case/api"
+import ProjectApi from "@/project/api"
 import PluginApi from "@/plugin/api"
 import AuthApi from "@/auth/api"
 import router from "@/router"
@@ -100,6 +101,7 @@ const state = {
     loading: false,
     bulkEditLoading: false,
   },
+  default_project: null,
   current_user_role: null,
 }
 
@@ -114,6 +116,12 @@ const getters = {
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
+    let default_params = {
+      filter: { field: "default", op: "==", value: true },
+    }
+    ProjectApi.getAll(default_params).then((response) => {
+      commit("SET_DEFAULT_PROJECT", response.data.items[0])
+    })
     AuthApi.getUserRole().then((response) => {
       commit("SET_CURRENT_USER_ROLE", response.data)
     })
@@ -460,6 +468,9 @@ const mutations = {
   },
   SET_SELECTED_SAVING(state, value) {
     state.selected.saving = value
+  },
+  SET_DEFAULT_PROJECT(state, value) {
+    state.default_project = value
   },
   SET_CURRENT_USER_ROLE(state, value) {
     state.current_user_role = value

@@ -202,8 +202,9 @@ const defaultUserProjects = computed(() => {
 })
 
 const showRun = (data) => store.dispatch("workflow/showRun", data)
-const showDeleteDialog = (item) => store.dispatch("case_management/showDeleteDialog", item)
 const showEscalateDialog = (item) => store.dispatch("case_management/showEscalateDialog", item)
+const showDeleteDialog = (item) => store.dispatch("case_management/showDeleteDialog", item)
+const showNewSheet = () => store.dispatch("case_management/showNewSheet")
 
 const getAll = () => {
   store.dispatch("case_management/getAll", caseManagement.value.table.options)

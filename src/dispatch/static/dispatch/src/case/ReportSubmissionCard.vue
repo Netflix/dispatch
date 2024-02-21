@@ -109,6 +109,8 @@ import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import DocumentApi from "@/document/api"
+import ProjectApi from "@/project/api"
+import AuthApi from "@/auth/api"
 import TagFilterAutoComplete from "@/tag/TagPicker.vue"
 import SearchUtils from "@/search/utils"
 import CaseTypeApi from "@/case/type/api"
@@ -155,7 +157,9 @@ export default {
       "selected.ticket",
       "selected.project",
       "selected.id",
+      "default_project",
     ]),
+    ...mapFields("auth", ["currentUser.projects"]),
   },
 
   watch: {
@@ -228,6 +232,28 @@ export default {
   created() {
     if (this.$route.query.project) {
       this.project = { name: this.$route.query.project }
+    } else if (this.projects.length) {
+      this.project = { name: this.projects[0].project.name }
+    } else {
+      // if no user projects stored yet, get the default project for the user
+      // if no default user project, then get the default project for the organization
+      AuthApi.getUserInfo().then((response) => {
+        let default_user_project = response.data.projects.filter((v) => v.default === true)
+        if (default_user_project.length) {
+          this.project = { name: default_user_project[0].project.name }
+        } else if (this.default_project) {
+          this.project = { name: this.default_project.name }
+        } else {
+          let default_params = {
+            filter: { field: "default", op: "==", value: true },
+          }
+          ProjectApi.getAll(default_params).then((response) => {
+            if (response.data.items.length) {
+              this.project = { name: response.data.items[0].name }
+            }
+          })
+        }
+      })
     }
 
     if (this.$route.query.case_type) {

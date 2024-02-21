@@ -115,7 +115,6 @@ const state = {
     },
     loading: false,
     bulkEditLoading: false,
-    default_project: null,
   },
   timeline_filters: {
     field_updates: true,
@@ -124,6 +123,7 @@ const state = {
     participant_updates: true,
     other_events: true,
   },
+  default_project: null,
   current_user_role: null,
 }
 
