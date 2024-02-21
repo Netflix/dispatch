@@ -4,6 +4,7 @@ import functools
 import heapq
 import logging
 
+from requests import Timeout
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
 from slack_sdk.web.slack_response import SlackResponse
@@ -63,6 +64,10 @@ def make_call(client: WebClient, endpoint: str, **kwargs) -> SlackResponse:
             time.sleep(wait)
             raise TryAgain from None
         raise exception
+    except Timeout as exception:
+        log.warn(f"Timeout error {exception} for slack. Endpoint: {endpoint}. Kwargs: {kwargs}")
+        time.sleep(300)
+        raise TryAgain from None
 
 
 def list_conversation_messages(client: WebClient, conversation_id: str, **kwargs) -> SlackResponse:
