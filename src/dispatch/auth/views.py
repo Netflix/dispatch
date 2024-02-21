@@ -181,6 +181,16 @@ def get_me(
     return current_user
 
 
+@auth_router.get("/myrole")
+def get_my_role(
+    *,
+    db_session: DbSession,
+    current_user: CurrentUser,
+    organization: OrganizationSlug,
+):
+    return current_user.get_organization_role(organization)
+
+
 @auth_router.post("/login", response_model=UserLoginResponse)
 def login_user(
     user_in: UserLogin,

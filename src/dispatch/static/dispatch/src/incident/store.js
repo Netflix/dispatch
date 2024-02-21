@@ -3,7 +3,9 @@ import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import IncidentApi from "@/incident/api"
+import ProjectApi from "@/project/api"
 import PluginApi from "@/plugin/api"
+import AuthApi from "@/auth/api"
 import router from "@/router"
 import moment from "moment-timezone"
 
@@ -113,6 +115,7 @@ const state = {
     },
     loading: false,
     bulkEditLoading: false,
+    default_project: null,
   },
   timeline_filters: {
     field_updates: true,
@@ -121,6 +124,7 @@ const state = {
     participant_updates: true,
     other_events: true,
   },
+  current_user_role: null,
 }
 
 const getters = {
@@ -134,6 +138,15 @@ const getters = {
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
+    let default_params = {
+      filter: { field: "default", op: "==", value: true },
+    }
+    ProjectApi.getAll(default_params).then((response) => {
+      commit("SET_DEFAULT_PROJECT", response.data.items[0])
+    })
+    AuthApi.getUserRole().then((response) => {
+      commit("SET_CURRENT_USER_ROLE", response.data)
+    })
     let params = SearchUtils.createParametersFromTableOptions(
       { ...state.table.options },
       "Incident"
@@ -605,6 +618,12 @@ const mutations = {
   },
   SET_SELECTED_LOADING(state, value) {
     state.selected.loading = value
+  },
+  SET_DEFAULT_PROJECT(state, value) {
+    state.default_project = value
+  },
+  SET_CURRENT_USER_ROLE(state, value) {
+    state.current_user_role = value
   },
 }
 

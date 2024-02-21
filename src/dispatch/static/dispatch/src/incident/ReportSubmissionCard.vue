@@ -128,6 +128,8 @@ import router from "@/router"
 
 import CostModelCombobox from "@/cost_model/CostModelCombobox.vue"
 import DocumentApi from "@/document/api"
+import ProjectApi from "@/project/api"
+import AuthApi from "@/auth/api"
 import IncidentPrioritySelect from "@/incident/priority/IncidentPrioritySelect.vue"
 import IncidentTypeSelect from "@/incident/type/IncidentTypeSelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
@@ -183,7 +185,9 @@ export default {
       "selected.ticket",
       "selected.project",
       "selected.id",
+      "default_project",
     ]),
+    ...mapFields("auth", ["currentUser.projects"]),
   },
 
   methods: {
@@ -242,6 +246,28 @@ export default {
   created() {
     if (this.$route.query.project) {
       this.project = { name: this.$route.query.project }
+    } else if (this.projects.length) {
+      this.project = { name: this.projects[0].project.name }
+    } else {
+      // if no user projects stored yet, get the default project for the user
+      // if no default user project, then get the default project for the organization
+      AuthApi.getUserInfo().then((response) => {
+        let default_user_project = response.data.projects.filter((v) => v.default === true)
+        if (default_user_project.length) {
+          this.project = { name: default_user_project[0].project.name }
+        } else if (this.default_project) {
+          this.project = { name: this.default_project.name }
+        } else {
+          let default_params = {
+            filter: { field: "default", op: "==", value: true },
+          }
+          ProjectApi.getAll(default_params).then((response) => {
+            if (response.data.items.length) {
+              this.project = { name: response.data.items[0].name }
+            }
+          })
+        }
+      })
     }
 
     if (this.$route.query.incident_type) {

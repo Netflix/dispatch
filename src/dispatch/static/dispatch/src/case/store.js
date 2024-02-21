@@ -4,6 +4,7 @@ import { debounce } from "lodash"
 import SearchUtils from "@/search/utils"
 import CaseApi from "@/case/api"
 import PluginApi from "@/plugin/api"
+import AuthApi from "@/auth/api"
 import router from "@/router"
 
 const getDefaultSelectedState = () => {
@@ -99,6 +100,7 @@ const state = {
     loading: false,
     bulkEditLoading: false,
   },
+  current_user_role: null,
 }
 
 const getters = {
@@ -112,6 +114,9 @@ const getters = {
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
+    AuthApi.getUserRole().then((response) => {
+      commit("SET_CURRENT_USER_ROLE", response.data)
+    })
     let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options }, "Case")
     return CaseApi.getAll(params)
       .then((response) => {
@@ -455,6 +460,9 @@ const mutations = {
   },
   SET_SELECTED_SAVING(state, value) {
     state.selected.saving = value
+  },
+  SET_CURRENT_USER_ROLE(state, value) {
+    state.current_user_role = value
   },
 }
 
