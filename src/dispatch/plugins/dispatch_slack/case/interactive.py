@@ -1250,7 +1250,6 @@ def triage_button_click(
         previous_status=case.status,
         organization_slug=context["subject"].organization_slug,
     )
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
     case.status = CaseStatus.triage
     db_session.commit()
     case_flows.update_conversation(case, db_session)
