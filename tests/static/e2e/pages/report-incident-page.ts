@@ -49,12 +49,16 @@ export class ReportIncidentPage {
     tags: string[]
   ) {
     await this.goto()
+    // give time for default project to settle
+    await this.page.waitForTimeout(5000);
     await this.addTitle(title)
     await this.addDescription(description)
     await this.selectProject(project)
     await this.selectType(type)
     await this.selectPriority(priority)
     await this.selectTags(tags)
+    // click outside tag select to update URL
+    await this.page.waitForTimeout(5000);
     await this.resetPageView()
     await Promise.all([
       await this.submitButton.click(),

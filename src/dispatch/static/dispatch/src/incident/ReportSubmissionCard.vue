@@ -252,6 +252,10 @@ export default {
       // if no user projects stored yet, get the default project for the user
       // if no default user project, then get the default project for the organization
       AuthApi.getUserInfo().then((response) => {
+        if (this.project) {
+          // if the user has already selected something, exit
+          return
+        }
         let default_user_project = response.data.projects.filter((v) => v.default === true)
         if (default_user_project.length) {
           this.project = { name: default_user_project[0].project.name }
@@ -262,7 +266,7 @@ export default {
             filter: { field: "default", op: "==", value: true },
           }
           ProjectApi.getAll(default_params).then((response) => {
-            if (response.data.items.length) {
+            if (response.data.items.length && !this.project) {
               this.project = { name: response.data.items[0].name }
             }
           })
