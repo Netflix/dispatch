@@ -245,7 +245,15 @@ export default {
 
   created() {
     if (this.$route.query.project) {
-      this.project = { name: this.$route.query.project }
+      let default_params = {
+        filter: { field: "name", op: "==", value: this.$route.query.project },
+      }
+      // get full project object from api
+      ProjectApi.getAll(default_params).then((response) => {
+        if (response.data.items.length && !this.project) {
+          this.project = response.data.items[0]
+        }
+      })
     } else if (this.projects.length && !this.project) {
       this.project = this.projects[0].project
     } else {
