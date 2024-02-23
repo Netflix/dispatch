@@ -299,7 +299,12 @@ function validateTags(value) {
     if (are_required_tags_selected(value)) {
       error.value = true
     } else {
-      error.value = "Please select at least one tag from each required category"
+      const required_tag_types = groups.value
+        .filter((tag_type) => tag_type.isRequired)
+        .map((tag_type) => tag_type.label)
+      error.value = `Please select at least one tag from each required category (${required_tag_types.join(
+        ", "
+      )})`
     }
   } else {
     error.value = "Only tags in selected project are allowed"
