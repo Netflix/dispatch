@@ -246,7 +246,7 @@ export default {
   created() {
     if (this.$route.query.project) {
       this.project = { name: this.$route.query.project }
-    } else if (this.projects.length) {
+    } else if (this.projects.length && !this.project) {
       this.project = { name: this.projects[0].project.name }
     } else {
       // if no user projects stored yet, get the default project for the user

@@ -50,7 +50,7 @@ export class ReportIncidentPage {
   ) {
     await this.goto()
     // give time for default project to settle
-    await this.page.waitForTimeout(1500);
+    await this.page.waitForTimeout(3000);
     await this.addTitle(title)
     await this.addDescription(description)
     await this.selectProject(project)
