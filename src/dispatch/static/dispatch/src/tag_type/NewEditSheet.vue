@@ -123,7 +123,9 @@
                   <template #activator="{ props }">
                     <v-icon class="mt-4" v-bind="props">mdi-information</v-icon>
                   </template>
-                  <span> If activated, only one tag of this type is allowed per incident. </span>
+                  <span>
+                    If activated, only one tag of this type is allowed per discoverable type.
+                  </span>
                 </v-tooltip>
               </v-col>
               <v-col cols="5">
@@ -138,7 +140,9 @@
                   <template #activator="{ props }">
                     <v-icon class="mt-4" v-bind="props">mdi-information</v-icon>
                   </template>
-                  <span> If activated, only one tag of this type is allowed per incident. </span>
+                  <span>
+                    If activated, at least one tag of this type is required per discoverable type.
+                  </span>
                 </v-tooltip>
               </v-col>
             </v-row>
