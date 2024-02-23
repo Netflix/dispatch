@@ -1242,6 +1242,8 @@ def triage_button_click(
     ack: Ack, body: dict, db_session: Session, context: BoltContext, client: WebClient
 ):
     ack()
+    
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
     # we run the case status transition flow
     case_flows.case_status_transition_flow_dispatcher(
         case=case,
