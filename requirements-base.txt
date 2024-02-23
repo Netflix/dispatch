@@ -124,7 +124,7 @@ frozenlist==1.4.1
     #   aiosignal
 google-api-core==2.15.0
     # via google-api-python-client
-google-api-python-client==2.118.0
+google-api-python-client==2.119.0
     # via -r requirements-base.in
 google-auth==2.26.1
     # via
@@ -214,7 +214,7 @@ markupsafe==2.1.3
     #   jinja2
     #   mako
     #   werkzeug
-msal==1.26.0
+msal==1.27.0
     # via -r requirements-base.in
 multidict==6.0.4
     # via
