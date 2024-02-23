@@ -298,15 +298,13 @@ function validateTags(value) {
   if (all_tags_in_project) {
     if (are_required_tags_selected(value)) {
       error.value = true
-      dummyText.value += " "
     } else {
       error.value = "Please select at least one tag from each required category"
-      dummyText.value += " "
     }
   } else {
     error.value = "Only tags in selected project are allowed"
-    dummyText.value += " "
   }
+  dummyText.value += " "
 }
 
 const selectedItems = computed({
