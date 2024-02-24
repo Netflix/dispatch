@@ -1243,6 +1243,14 @@ def triage_button_click(
 ):
     ack()
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    # we run the case status transition flow
+    case_flows.case_status_transition_flow_dispatcher(
+        case=case,
+        current_status=CaseStatus.triage,
+        db_session=db_session,
+        previous_status=case.status,
+        organization_slug=context["subject"].organization_slug,
+    )
     case.status = CaseStatus.triage
     db_session.commit()
     case_flows.update_conversation(case, db_session)
