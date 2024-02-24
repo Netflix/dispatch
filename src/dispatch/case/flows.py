@@ -62,37 +62,6 @@ def get_case_participants_flow(case: Case, db_session: SessionLocal):
     return individual_contacts, team_contacts
 
 
-def add_participants_to_conversation(
-    participant_emails: List[str], case: Case, db_session: SessionLocal
-):
-    """Adds one or more participants to the case conversation."""
-    if not case.conversation:
-        log.warning(
-            "Case participant(s) not added to conversation. No conversation available for this case."
-        )
-    plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=case.project.id, plugin_type="conversation"
-    )
-    if not plugin:
-        log.warning(
-            "Incident participant(s) not added to conversation. No conversation plugin enabled."
-        )
-        return
-
-    try:
-        plugin.instance.add_to_thread(
-            case.conversation.channel_id, case.conversation.thread_id, participant_emails
-        )
-    except Exception as e:
-        event_service.log_case_event(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description=f"Adding participant(s) to case conversation failed. Reason: {e}",
-            case_id=case.id,
-        )
-        log.exception(e)
-
-
 @background_task
 def case_add_or_reactivate_participant_flow(
     user_email: str,
@@ -148,7 +117,9 @@ def case_add_or_reactivate_participant_flow(
     if case.status != CaseStatus.closed:
         # we add the participant to the conversation
         if add_to_conversation:
-            add_participants_to_conversation([participant.individual.email], case, db_session)
+            conversation_flows.add_case_participants(
+                case, [participant.individual.email], db_session
+            )
 
     return participant
 
