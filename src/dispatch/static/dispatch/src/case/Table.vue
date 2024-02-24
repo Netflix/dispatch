@@ -25,6 +25,14 @@
           <v-icon start color="white">mdi-shield-search</v-icon>
           <span class="text-uppercase text-body-2 font-weight-bold">Report case</span>
         </v-btn>
+        <v-btn
+          v-if="userAdminOrAbove(currentUserRole)"
+          color="info"
+          class="ml-2"
+          @click="showNewSheet()"
+        >
+          New
+        </v-btn>
       </v-col>
     </v-row>
     <v-row no-gutters>
@@ -194,8 +202,9 @@ const defaultUserProjects = computed(() => {
 })
 
 const showRun = (data) => store.dispatch("workflow/showRun", data)
-const showDeleteDialog = (item) => store.dispatch("case_management/showDeleteDialog", item)
 const showEscalateDialog = (item) => store.dispatch("case_management/showEscalateDialog", item)
+const showDeleteDialog = (item) => store.dispatch("case_management/showDeleteDialog", item)
+const showNewSheet = () => store.dispatch("case_management/showNewSheet")
 
 const getAll = () => {
   store.dispatch("case_management/getAll", caseManagement.value.table.options)
@@ -204,6 +213,7 @@ const getAll = () => {
 const items = computed(() => caseManagement.value.table.rows.items)
 const total = computed(() => caseManagement.value.table.rows.total)
 const loading = computed(() => caseManagement.value.table.loading)
+const currentUserRole = computed(() => caseManagement.value.current_user_role)
 
 const selected = ref([])
 watch(selected, (newVal) => {
@@ -228,6 +238,10 @@ function loadItems({ page, itemsPerPage, sortBy }) {
     caseManagement.value.table.options.sortBy = sortBy
   }
   getAll()
+}
+
+function userAdminOrAbove(role) {
+  return ["Admin", "Owner", "Manager"].includes(role)
 }
 
 watch(
