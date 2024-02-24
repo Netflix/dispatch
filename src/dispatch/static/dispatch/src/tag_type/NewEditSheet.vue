@@ -123,7 +123,26 @@
                   <template #activator="{ props }">
                     <v-icon class="mt-4" v-bind="props">mdi-information</v-icon>
                   </template>
-                  <span> If activated, only one tag of this type is allowed per incident. </span>
+                  <span>
+                    If activated, only one tag of this type is allowed per discoverable type.
+                  </span>
+                </v-tooltip>
+              </v-col>
+              <v-col cols="5">
+                <v-checkbox
+                  v-model="required"
+                  label="Required"
+                  hint="Is this tag type required for new entities of the discoverable types?"
+                />
+              </v-col>
+              <v-col cols="7">
+                <v-tooltip max-width="500px" open-delay="50" location="bottom">
+                  <template #activator="{ props }">
+                    <v-icon class="mt-4" v-bind="props">mdi-information</v-icon>
+                  </template>
+                  <span>
+                    If activated, at least one tag of this type is required per discoverable type.
+                  </span>
                 </v-tooltip>
               </v-col>
             </v-row>
@@ -170,6 +189,7 @@ export default {
       "selected.icon",
       "selected.color",
       "selected.exclusive",
+      "selected.required",
       "selected.loading",
     ]),
     ...mapFields("tag_type", {

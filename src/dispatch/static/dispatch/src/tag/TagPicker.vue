@@ -7,7 +7,7 @@
       variant="outlined"
       v-model="dummyText"
       class="main-panel"
-      :rules="[is_tag_in_project]"
+      :rules="[check_for_error]"
     >
       <template #prepend-inner>
         <v-icon class="panel-button">
@@ -80,7 +80,7 @@
                       :style="getBackgroundColorAsStyle(group.color)"
                     />
                     <strong v-text="group.label" />
-                    <!-- <span v-show="group.isRequired" class="tag-group-rule">Required</span> -->
+                    <span v-show="group.isRequired" class="tag-group-rule">Required</span>
                     <span v-show="group.isExclusive" class="tag-group-rule">Exclusive</span>
                     <span class="tag-group-icon-down"><v-icon>mdi-chevron-down</v-icon></span>
                     <v-icon class="tag-group-icon-up">mdi-chevron-up</v-icon>
@@ -187,8 +187,21 @@ watch(
     validateTags(selectedItems.value)
   }
 )
-const is_tag_in_project = () => {
+const check_for_error = () => {
   return error.value
+}
+
+function are_required_tags_selected(sel) {
+  // iterate through all tag types and ensure that at least one tag of each required tag type is selected
+  const tagTypes = groups.value
+  for (let i = 0; i < tagTypes.length; i++) {
+    if (tagTypes[i].isRequired) {
+      if (!sel.some((item) => item.tag_type?.id === tagTypes[i]?.id)) {
+        return false
+      }
+    }
+  }
+  return true
 }
 
 const fetchData = () => {
@@ -260,6 +273,7 @@ const fetchData = () => {
     }
     groups.value = convertData(items.value)
     loading.value = false
+    validateTags(selectedItems.value)
   })
 }
 
@@ -269,14 +283,33 @@ const emit = defineEmits(["update:modelValue"])
 
 function validateTags(value) {
   const project_id = props.project?.id || 0
-  const all_tags_in_project = value.every((tag) => tag.project?.id == project_id)
+  var all_tags_in_project = false
+  if (project_id) {
+    all_tags_in_project = value.every((tag) => tag.project?.id == project_id)
+  } else {
+    const project_name = props.project?.name
+    if (!project_name) {
+      error.value = true
+      dummyText.value += " "
+      return
+    }
+    all_tags_in_project = value.every((tag) => tag.project?.name == project_name)
+  }
   if (all_tags_in_project) {
-    error.value = true
-    dummyText.value += " "
+    if (are_required_tags_selected(value)) {
+      error.value = true
+    } else {
+      const required_tag_types = groups.value
+        .filter((tag_type) => tag_type.isRequired)
+        .map((tag_type) => tag_type.label)
+      error.value = `Please select at least one tag from each required category (${required_tag_types.join(
+        ", "
+      )})`
+    }
   } else {
     error.value = "Only tags in selected project are allowed"
-    dummyText.value += " "
   }
+  dummyText.value += " "
 }
 
 const selectedItems = computed({
@@ -356,7 +389,7 @@ const convertData = (data) => {
         label: a.tag_type.name,
         desc: a.tag_type.description,
         color: a.tag_type.color,
-        // isRequired: a.tag_type.required,
+        isRequired: a.tag_type.required,
         isExclusive: a.tag_type.exclusive,
         menuItems: [],
       }

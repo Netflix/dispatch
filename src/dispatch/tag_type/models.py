@@ -24,6 +24,7 @@ class TagType(Base, TimeStampMixin, ProjectMixin):
     name = Column(String)
     description = Column(String)
     exclusive = Column(Boolean, default=False)
+    required = Column(Boolean, default=False)
     discoverable_case = Column(Boolean, default=True)
     discoverable_incident = Column(Boolean, default=True)
     discoverable_query = Column(Boolean, default=True)
@@ -38,6 +39,7 @@ class TagType(Base, TimeStampMixin, ProjectMixin):
 class TagTypeBase(DispatchBase):
     name: NameStr
     exclusive: Optional[bool] = False
+    required: Optional[bool] = False
     discoverable_case: Optional[bool] = True
     discoverable_incident: Optional[bool] = True
     discoverable_query: Optional[bool] = True
