@@ -231,25 +231,37 @@ export default {
 
   created() {
     if (this.$route.query.project) {
-      this.project = { name: this.$route.query.project }
-    } else if (this.projects.length) {
-      this.project = { name: this.projects[0].project.name }
+      let params = {
+        filter: { field: "name", op: "==", value: this.$route.query.project },
+      }
+      // get full project object from api
+      ProjectApi.getAll(params).then((response) => {
+        if (response.data.items.length && !this.project) {
+          this.project = response.data.items[0]
+        }
+      })
+    } else if (this.projects.length && !this.project) {
+      this.project = this.projects[0].project
     } else {
       // if no user projects stored yet, get the default project for the user
       // if no default user project, then get the default project for the organization
       AuthApi.getUserInfo().then((response) => {
+        if (this.project) {
+          // if the user has already selected something, exit
+          return
+        }
         let default_user_project = response.data.projects.filter((v) => v.default === true)
         if (default_user_project.length) {
-          this.project = { name: default_user_project[0].project.name }
+          this.project = default_user_project[0].project
         } else if (this.default_project) {
-          this.project = { name: this.default_project.name }
+          this.project = this.default_project
         } else {
           let default_params = {
             filter: { field: "default", op: "==", value: true },
           }
           ProjectApi.getAll(default_params).then((response) => {
-            if (response.data.items.length) {
-              this.project = { name: response.data.items[0].name }
+            if (response.data.items.length && !this.project) {
+              this.project = response.data.items[0]
             }
           })
         }
