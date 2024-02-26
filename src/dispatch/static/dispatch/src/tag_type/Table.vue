@@ -50,6 +50,9 @@
             <template #item.discoverability="{ item }">
               <span>{{ combine(item) }}</span>
             </template>
+            <template #item.required="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
+            </template>
             <template #item.exclusive="{ value }">
               <v-checkbox-btn :model-value="value" disabled />
             </template>
@@ -88,6 +91,7 @@ export default {
         { title: "Name", value: "name", sortable: true },
         { title: "Description", value: "description", sortable: false },
         { title: "Discoverability", value: "discoverability", sortable: false },
+        { title: "Required", value: "required", sortable: false },
         { title: "Exclusive", value: "exclusive", sortable: false },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
