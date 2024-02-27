@@ -151,6 +151,7 @@ export default {
       "table.options.filters.reported_at",
       "table.options.filters.status",
       "table.options.filters.tag",
+      "table.options.filters.tag_all",
       "table.options.filters.tag_type",
       "table.options.filters.commander",
       "table.options.filters.participant",

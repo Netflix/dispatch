@@ -502,6 +502,9 @@ def search_filter_sort_paginate(
     try:
         query = db_session.query(model_cls)
 
+        print(f"**** the filter spec is {filter_spec}")
+        print(f"**** the query_str is {query_str}")
+
         if query_str:
             sort = False if sort_by else True
             query = search(query_str=query_str, query=query, model=model, sort=sort)
@@ -509,6 +512,8 @@ def search_filter_sort_paginate(
         query_restricted = apply_model_specific_filters(model_cls, query, current_user, role)
 
         if filter_spec:
+            # to do - remove the TagAll from the filter_spec, then add back in
+            # one at a time
             query = apply_filter_specific_joins(model_cls, filter_spec, query)
             query = apply_filters(query, filter_spec, model_cls)
 
