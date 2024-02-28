@@ -1,31 +1,33 @@
+import logging
 import json
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Union
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
+
 from sqlalchemy import desc, asc, or_
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.expression import true
 
 from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.type import service as case_type_service
 from dispatch.case.type.models import CaseType
 from dispatch.database.service import apply_filter_specific_joins, apply_filters
+from dispatch.entity import service as entity_service
+from dispatch.entity.models import Entity
 from dispatch.entity_type import service as entity_type_service
+from dispatch.entity_type.models import EntityScopeEnum
 from dispatch.entity_type.models import EntityType
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 from dispatch.service import service as service_service
 from dispatch.tag import service as tag_service
 from dispatch.workflow import service as workflow_service
-from dispatch.entity.models import Entity
 from sqlalchemy.exc import IntegrityError
-from dispatch.entity_type.models import EntityScopeEnum
-from dispatch.entity import service as entity_service
 
 from .exceptions import (
     SignalNotDefinedException,
-    SignalNotEnabledException,
     SignalNotIdentifiedException,
 )
 
@@ -46,6 +48,8 @@ from .models import (
     SignalInstanceCreate,
     SignalUpdate,
 )
+
+log = logging.getLogger(__name__)
 
 
 def create_signal_engagement(
@@ -100,7 +104,7 @@ def get_all_by_entity_type(*, db_session: Session, entity_type_id: int) -> list[
 def get_signal_engagement_by_name(
     *, db_session, project_id: int, name: str
 ) -> Optional[SignalEngagement]:
-    """Gets a signal engagement by it's name."""
+    """Gets a signal engagement by its name."""
     return (
         db_session.query(SignalEngagement)
         .filter(SignalEngagement.project_id == project_id)
@@ -133,32 +137,43 @@ def get_signal_engagement_by_name_or_raise(
 
 
 def create_signal_instance(*, db_session: Session, signal_instance_in: SignalInstanceCreate):
+    """Creates a new signal instance."""
+    project = project_service.get_by_name_or_default(
+        db_session=db_session, project_in=signal_instance_in.project
+    )
+
     if not signal_instance_in.signal:
         external_id = signal_instance_in.external_id
 
         # this assumes the external_ids are uuids
-        if external_id:
-            signal = (
-                db_session.query(Signal).filter(Signal.external_id == external_id).one_or_none()
-            )
-            signal_instance_in.signal = signal
-        else:
-            msg = "An externalId must be provided."
+        if not external_id:
+            msg = "A detection external id must be provided in order to get the signal definition."
             raise SignalNotIdentifiedException(msg)
 
-    if not signal:
-        msg = f"No signal definition found. ExternalId: {external_id}"
+        signal_definition = (
+            db_session.query(Signal).filter(Signal.external_id == external_id).one_or_none()
+        )
+
+    if not signal_definition:
+        # we get the default signal definition
+        signal_definition = get_default(
+            db_session=db_session,
+            project_id=project.id,
+        )
+        msg = f"Default signal definition used for signal instance with external id {external_id}"
+        log.warn(msg)
+
+    if not signal_definition:
+        msg = f"No signal definition could be found by external id {external_id}, and no default exists."
         raise SignalNotDefinedException(msg)
 
-    if not signal.enabled:
-        msg = f"Signal definition not enabled. SignalName: {signal.name} ExternalId: {signal.external_id}"
-        raise SignalNotEnabledException(msg)
+    signal_instance_in.signal = signal_definition
 
     try:
         signal_instance = create_instance(
             db_session=db_session, signal_instance_in=signal_instance_in
         )
-        signal_instance.signal = signal
+        signal_instance.signal = signal_definition
         db_session.commit()
     except IntegrityError:
         db_session.rollback()
@@ -257,7 +272,7 @@ def get_signal_filter_by_name_or_raise(
 
 
 def get_signal_filter_by_name(*, db_session, project_id: int, name: str) -> Optional[SignalFilter]:
-    """Gets a signal filter by it's name."""
+    """Gets a signal filter by its name."""
     return (
         db_session.query(SignalFilter)
         .filter(SignalFilter.project_id == project_id)
@@ -274,7 +289,7 @@ def get_signal_filter(*, db_session: Session, signal_filter_id: int) -> SignalFi
 def get_signal_instance(
     *, db_session: Session, signal_instance_id: int | str
 ) -> Optional[SignalInstance]:
-    """Gets a signal instance by it's UUID."""
+    """Gets a signal instance by its UUID."""
     return (
         db_session.query(SignalInstance)
         .filter(SignalInstance.id == signal_instance_id)
@@ -283,8 +298,17 @@ def get_signal_instance(
 
 
 def get(*, db_session: Session, signal_id: Union[str, int]) -> Optional[Signal]:
-    """Gets a signal by id or external_id."""
+    """Gets a signal by id."""
     return db_session.query(Signal).filter(Signal.id == signal_id).one_or_none()
+
+
+def get_default(*, db_session: Session, project_id: int) -> Optional[Signal]:
+    """Gets the default signal definition."""
+    return (
+        db_session.query(Signal)
+        .filter(Signal.project_id == project_id, Signal.default == true())
+        .one_or_none()
+    )
 
 
 def get_by_primary_or_external_id(
@@ -302,7 +326,7 @@ def get_by_primary_or_external_id(
 def get_by_variant_or_external_id(
     *, db_session: Session, project_id: int, external_id: str = None, variant: str = None
 ) -> Optional[Signal]:
-    """Gets a signal it's external id (and variant if supplied)."""
+    """Gets a signal by its variant or external id."""
     if variant:
         return (
             db_session.query(Signal)
@@ -319,7 +343,7 @@ def get_by_variant_or_external_id(
 def get_all_by_conversation_target(
     *, db_session: Session, project_id: int, conversation_target: str
 ) -> list[Signal]:
-    """Gets all signals for a given conversation target. (e.g. #conversation-channel)"""
+    """Gets all signals for a given conversation target (e.g. #conversation-channel)"""
     return (
         db_session.query(Signal)
         .join(CaseType)
@@ -341,14 +365,14 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
     signal = Signal(
         **signal_in.dict(
             exclude={
-                "project",
-                "case_type",
                 "case_priority",
-                "source",
-                "filters",
-                "tags",
+                "case_type",
                 "entity_types",
+                "filters",
                 "oncall_service",
+                "project",
+                "source",
+                "tags",
                 "workflows",
             }
         ),
@@ -525,13 +549,13 @@ def create_instance(
         **signal_instance_in.dict(
             exclude={
                 "case",
-                "case_type",
                 "case_priority",
-                "signal",
-                "project",
+                "case_type",
                 "entities",
-                "raw",
                 "external_id",
+                "project",
+                "raw",
+                "signal",
             }
         ),
         raw=json.loads(json.dumps(signal_instance_in.raw)),

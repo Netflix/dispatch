@@ -11,6 +11,8 @@
     :loading="loading"
     no-filter
     :error-messages="show_error"
+    :rules="[is_type_in_project]"
+    clearable
   >
     <template #item="data">
       <v-list-item v-bind="data.props" :title="null">
@@ -69,6 +71,11 @@ export default {
       search: null,
       more: false,
       numItems: 5,
+      error: null,
+      is_type_in_project: () => {
+        this.validateType()
+        return this.error
+      },
     }
   },
 
@@ -79,12 +86,13 @@ export default {
       },
       set(value) {
         this.$emit("update:modelValue", value)
+        this.validateType()
       },
     },
     show_error() {
       let items_names = this.items.map((item) => item.name)
       let selected_item = this.case_type?.name || ""
-      if (items_names.includes(selected_item)) {
+      if (items_names.includes(selected_item) || selected_item == "") {
         return null
       }
       return "Not a valid case type"
@@ -96,7 +104,22 @@ export default {
       this.numItems = this.numItems + 5
       this.fetchData()
     },
+    validateType() {
+      let in_project
+      if (this.project?.name) {
+        let project_name = this.project?.name || ""
+        in_project = this.case_type?.project?.name == project_name
+      } else {
+        let project_id = this.project?.id || 0
+        in_project = this.case_type?.project?.id == project_id
+      }
 
+      if (in_project) {
+        this.error = true
+      } else {
+        this.error = "Only types in selected project are allowed"
+      }
+    },
     fetchData() {
       this.error = null
       this.loading = "error"
@@ -155,6 +178,8 @@ export default {
       (vm) => [vm.project],
       () => {
         this.fetchData()
+        this.validateType()
+        this.$emit("update:modelValue", this.case_type)
       }
     )
   },

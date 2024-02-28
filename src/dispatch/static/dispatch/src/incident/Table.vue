@@ -14,7 +14,18 @@
       <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
         <table-export-dialog />
-        <v-btn color="info" class="ml-2" @click="showNewSheet()"> New </v-btn>
+        <v-btn nav variant="flat" color="error" :to="{ name: 'report' }" class="ml-2" hide-details>
+          <v-icon start color="white">mdi-fire</v-icon>
+          <span class="text-uppercase text-body-2 font-weight-bold">Report incident</span>
+        </v-btn>
+        <v-btn
+          v-if="userAdminOrAbove(current_user_role)"
+          color="info"
+          class="ml-2"
+          @click="showNewSheet()"
+        >
+          New
+        </v-btn>
       </v-col>
     </v-row>
     <v-row no-gutters>
@@ -215,6 +226,7 @@ export default {
       "table.rows.items",
       "table.rows.selected",
       "table.rows.total",
+      "current_user_role",
     ]),
     ...mapFields("auth", ["currentUser.projects"]),
 
@@ -235,6 +247,10 @@ export default {
     ...mapActions("workflow", ["showRun"]),
     showIncidentEditSheet(e, { item }) {
       this.$router.push({ name: "IncidentTableEdit", params: { name: item.name } })
+    },
+
+    userAdminOrAbove(role) {
+      return ["Admin", "Owner", "Manager"].includes(role)
     },
   },
 

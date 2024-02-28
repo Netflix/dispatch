@@ -229,12 +229,16 @@ def add_conversation_bookmark(incident: Incident, resource: Resource, db_session
 
     try:
         title = deslug_and_capitalize_resource_type(resource.resource_type)
-        plugin.instance.add_bookmark(
-            incident.conversation.channel_id,
-            resource.weblink,
-            title=title,
-        ) if resource else log.warning(
-            f"{resource.name} bookmark not added. No {resource.name.lower()} available for this incident."
+        (
+            plugin.instance.add_bookmark(
+                incident.conversation.channel_id,
+                resource.weblink,
+                title=title,
+            )
+            if resource
+            else log.warning(
+                f"{resource.name} bookmark not added. No {resource.name.lower()} available for this incident."
+            )
         )
     except Exception as e:
         event_service.log_incident_event(
@@ -262,37 +266,49 @@ def add_conversation_bookmarks(incident: Incident, db_session: SessionLocal):
         return
 
     try:
-        plugin.instance.add_bookmark(
-            incident.conversation.channel_id,
-            resolve_attr(incident, "incident_document.weblink"),
-            title="Incident Document",
-        ) if incident.incident_document else log.warning(
-            "Incident document bookmark not added. No document available for this incident."
+        (
+            plugin.instance.add_bookmark(
+                incident.conversation.channel_id,
+                resolve_attr(incident, "incident_document.weblink"),
+                title="Incident Document",
+            )
+            if incident.incident_document
+            else log.warning(
+                "Incident document bookmark not added. No document available for this incident."
+            )
         )
 
-        plugin.instance.add_bookmark(
-            incident.conversation.channel_id,
-            resolve_attr(incident, "conference.weblink"),
-            title="Video Conference",
-        ) if incident.conference else log.warning(
-            "Conference bookmark not added. No conference available for this incident."
+        (
+            plugin.instance.add_bookmark(
+                incident.conversation.channel_id,
+                resolve_attr(incident, "conference.weblink"),
+                title="Video Conference",
+            )
+            if incident.conference
+            else log.warning(
+                "Conference bookmark not added. No conference available for this incident."
+            )
         )
 
-        plugin.instance.add_bookmark(
-            incident.conversation.channel_id,
-            resolve_attr(incident, "storage.weblink"),
-            title="Storage Folder",
-        ) if incident.storage else log.warning(
-            "Storage bookmark not added. No storage available for this incident."
+        (
+            plugin.instance.add_bookmark(
+                incident.conversation.channel_id,
+                resolve_attr(incident, "storage.weblink"),
+                title="Storage Folder",
+            )
+            if incident.storage
+            else log.warning("Storage bookmark not added. No storage available for this incident.")
         )
 
         ticket_weblink = resolve_attr(incident, "ticket.weblink")
-        plugin.instance.add_bookmark(
-            incident.conversation.channel_id,
-            ticket_weblink,
-            title="Ticket",
-        ) if incident.ticket else log.warning(
-            "Ticket bookmark not added. No ticket available for this incident."
+        (
+            plugin.instance.add_bookmark(
+                incident.conversation.channel_id,
+                ticket_weblink,
+                title="Ticket",
+            )
+            if incident.ticket
+            else log.warning("Ticket bookmark not added. No ticket available for this incident.")
         )
 
         dispatch_weblink = f"{DISPATCH_UI_URL}/{incident.project.organization.name}/incidents/{incident.name}?project={incident.project.name}"

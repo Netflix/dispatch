@@ -7,6 +7,7 @@
       variant="outlined"
       v-model="dummyText"
       class="main-panel"
+      :rules="[check_for_error]"
     >
       <template #prepend-inner>
         <v-icon class="panel-button">
@@ -22,15 +23,15 @@
             <v-chip
               label
               :key="index"
-              :color="item.tag_type.color"
+              :color="item.tag_type?.color"
               closable
               class="tag-chip"
               @click:close="removeItem(item.id)"
             >
               <span class="mr-2">
                 <v-icon
-                  v-if="item.tag_type.icon"
-                  :icon="'mdi-' + item.tag_type.icon"
+                  v-if="item.tag_type?.icon"
+                  :icon="'mdi-' + item.tag_type?.icon"
                   size="18"
                   :style="getColorAsStyle(item.color)"
                 />
@@ -79,7 +80,7 @@
                       :style="getBackgroundColorAsStyle(group.color)"
                     />
                     <strong v-text="group.label" />
-                    <!-- <span v-show="group.isRequired" class="tag-group-rule">Required</span> -->
+                    <span v-show="group.isRequired" class="tag-group-rule">Required</span>
                     <span v-show="group.isExclusive" class="tag-group-rule">Exclusive</span>
                     <span class="tag-group-icon-down"><v-icon>mdi-chevron-down</v-icon></span>
                     <v-icon class="tag-group-icon-up">mdi-chevron-up</v-icon>
@@ -151,6 +152,7 @@ const searchQuery = ref("")
 const filteredMenuItems = ref([])
 const isDropdownOpen = ref(false)
 const loading = ref(true)
+const error = ref(true)
 const snackbar = ref(false)
 
 const props = defineProps({
@@ -182,8 +184,25 @@ watch(
   () => props.project,
   () => {
     fetchData()
+    validateTags(selectedItems.value)
   }
 )
+const check_for_error = () => {
+  return error.value
+}
+
+function are_required_tags_selected(sel) {
+  // iterate through all tag types and ensure that at least one tag of each required tag type is selected
+  const tagTypes = groups.value
+  for (let i = 0; i < tagTypes.length; i++) {
+    if (tagTypes[i].isRequired) {
+      if (!sel.some((item) => item.tag_type?.id === tagTypes[i]?.id)) {
+        return false
+      }
+    }
+  }
+  return true
+}
 
 const fetchData = () => {
   loading.value = true
@@ -205,6 +224,7 @@ const fetchData = () => {
     } else {
       filters["project"] = [props.project]
     }
+    validateTags(selectedItems.value)
   }
 
   // add a filter to only retrun discoverable tags
@@ -253,12 +273,44 @@ const fetchData = () => {
     }
     groups.value = convertData(items.value)
     loading.value = false
+    validateTags(selectedItems.value)
   })
 }
 
 onMounted(fetchData)
 
 const emit = defineEmits(["update:modelValue"])
+
+function validateTags(value) {
+  const project_id = props.project?.id || 0
+  var all_tags_in_project = false
+  if (project_id) {
+    all_tags_in_project = value.every((tag) => tag.project?.id == project_id)
+  } else {
+    const project_name = props.project?.name
+    if (!project_name) {
+      error.value = true
+      dummyText.value += " "
+      return
+    }
+    all_tags_in_project = value.every((tag) => tag.project?.name == project_name)
+  }
+  if (all_tags_in_project) {
+    if (are_required_tags_selected(value)) {
+      error.value = true
+    } else {
+      const required_tag_types = groups.value
+        .filter((tag_type) => tag_type.isRequired)
+        .map((tag_type) => tag_type.label)
+      error.value = `Please select at least one tag from each required category (${required_tag_types.join(
+        ", "
+      )})`
+    }
+  } else {
+    error.value = "Only tags in selected project are allowed"
+  }
+  dummyText.value += " "
+}
 
 const selectedItems = computed({
   get: () => cloneDeep(props.modelValue),
@@ -270,6 +322,8 @@ const selectedItems = computed({
       return true
     })
     emit("update:modelValue", tags)
+    // check to make sure all tags in project
+    validateTags(value)
   },
 })
 
@@ -292,7 +346,9 @@ const showDropdown = (state) => {
 }
 
 const removeItem = (index) => {
-  selectedItems.value = selectedItems.value.filter((item) => item.id !== index)
+  const value = selectedItems.value.filter((item) => item.id !== index)
+  selectedItems.value = value
+  validateTags(value)
 }
 
 const performSearch = () => {
@@ -333,7 +389,7 @@ const convertData = (data) => {
         label: a.tag_type.name,
         desc: a.tag_type.description,
         color: a.tag_type.color,
-        // isRequired: a.tag_type.required,
+        isRequired: a.tag_type.required,
         isExclusive: a.tag_type.exclusive,
         menuItems: [],
       }

@@ -7,6 +7,9 @@
     label="Priority"
     return-object
     :loading="loading"
+    :error-messages="show_error"
+    :rules="[is_priority_in_project]"
+    clearable
   >
     <template #item="data">
       <v-list-item v-bind="data.props" :title="null">
@@ -44,6 +47,11 @@ export default {
     return {
       loading: false,
       items: [],
+      error: null,
+      is_priority_in_project: () => {
+        this.validatePriority()
+        return this.error
+      },
     }
   },
 
@@ -54,11 +62,36 @@ export default {
       },
       set(value) {
         this.$emit("update:modelValue", value)
+        this.validatePriority()
       },
+    },
+    show_error() {
+      let items_names = this.items.map((item) => item.name)
+      let selected_item = this.case_priority?.name || ""
+      if (items_names.includes(selected_item) || selected_item == "") {
+        return null
+      }
+      return "Not a valid case priority"
     },
   },
 
   methods: {
+    validatePriority() {
+      let in_project
+      if (this.project?.name) {
+        let project_name = this.project?.name || ""
+        in_project = this.case_priority?.project?.name == project_name
+      } else {
+        let project_id = this.project?.id || 0
+        in_project = this.case_priority?.project?.id == project_id
+      }
+
+      if (in_project) {
+        this.error = true
+      } else {
+        this.error = "Only priorities in selected project are allowed"
+      }
+    },
     fetchData() {
       this.error = null
       this.loading = "error"
@@ -104,6 +137,8 @@ export default {
       (vm) => [vm.project],
       () => {
         this.fetchData()
+        this.validatePriority()
+        this.$emit("update:modelValue", this.case_priority)
       }
     )
   },

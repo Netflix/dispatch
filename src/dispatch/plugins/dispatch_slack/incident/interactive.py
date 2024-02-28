@@ -113,7 +113,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     shortcut_context_middleware,
 )
 from dispatch.plugins.dispatch_slack.modals.common import send_success_modal
-from dispatch.plugins.dispatch_slack.models import MonitorMetadata, TaskMetadata
+from dispatch.plugins.dispatch_slack.models import MonitorMetadata, TaskMetadata, IncidentSubjects, CaseSubjects
 from dispatch.plugins.dispatch_slack.service import (
     get_user_email,
     get_user_profile_by_email,
@@ -365,7 +365,7 @@ def handle_list_incidents_command(
 
     projects = []
 
-    if context["subject"].type == "incident":
+    if context["subject"].type == IncidentSubjects.incident:
         # command was run in an incident conversation
         incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
         projects.append(incident.project)
@@ -623,7 +623,7 @@ def draw_task_modal(
             assignees = [f"<{a.individual.weblink}|{a.individual.name}>" for a in task.assignees]
 
             button_metadata = TaskMetadata(
-                type="incident",
+                type=IncidentSubjects.incident,
                 action_type=action_type,
                 organization_slug=task.project.organization.slug,
                 id=task.incident.id,
@@ -695,7 +695,7 @@ def handle_timeline_added_event(
     message_sender_id = response["messages"][0]["user"]
 
     # TODO: (wshel) handle case reactions
-    if context["subject"].type == "incident":
+    if context["subject"].type == IncidentSubjects.incident:
         # we fetch the incident
         incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
@@ -709,10 +709,23 @@ def handle_timeline_added_event(
         except Exception:
             individual = None
 
+        source = "Slack message"
+        # if the individual is not found, see if it is a bot
+        if individual is None:
+            if bot_user_id := context["bot_user_id"]:
+                try:
+                    bot = dispatch_slack_service.get_user_info_by_id(client, bot_user_id)
+                    bot_name = bot["profile"]["real_name"]
+                    source = f"Slack message from {bot_name}"
+                except Exception:
+                    pass
+        else:
+            source = f"Slack message from {individual.name}"
+
         # we log the event
         event_service.log_incident_event(
             db_session=db_session,
-            source=f"Slack message from {individual.name}",
+            source=source,
             description=message_text,
             incident_id=context["subject"].id,
             individual_id=individual.id if individual else None,
@@ -723,7 +736,7 @@ def handle_timeline_added_event(
 
 
 @message_dispatcher.add(
-    subject="incident", exclude={"subtype": ["channel_join", "channel_leave"]}
+    subject=IncidentSubjects.incident, exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
 def handle_participant_role_activity(
     ack: Ack, db_session: Session, context: BoltContext, user: DispatchUser
@@ -770,7 +783,7 @@ def handle_participant_role_activity(
 
 
 @message_dispatcher.add(
-    subject="incident", exclude={"subtype": ["channel_join", "group_join"]}
+    subject=IncidentSubjects.incident, exclude={"subtype": ["channel_join", "group_join"]}
 )  # we ignore user channel and group join messages
 def handle_after_hours_message(
     ack: Ack,
@@ -819,7 +832,7 @@ def handle_after_hours_message(
             )
 
 
-@message_dispatcher.add(subject="incident")
+@message_dispatcher.add(subject=IncidentSubjects.incident)
 def handle_thread_creation(
     ack: Ack, client: WebClient, payload: dict, context: BoltContext, request: BoltRequest
 ) -> None:
@@ -839,7 +852,7 @@ def handle_thread_creation(
         )
 
 
-@message_dispatcher.add(subject="incident")
+@message_dispatcher.add(subject=IncidentSubjects.incident)
 def handle_message_monitor(
     ack: Ack,
     payload: dict,
@@ -876,7 +889,7 @@ def handle_message_monitor(
                         status_text += f"*{k.title()}*:\n{v.title()}\n"
 
                     button_metadata = MonitorMetadata(
-                        type="incident",
+                        type=IncidentSubjects.incident,
                         organization_slug=incident.project.organization.slug,
                         id=incident.id,
                         plugin_instance_id=p.id,
@@ -942,6 +955,10 @@ def handle_member_joined_channel(
             "Unable to handle member_joined_channel Slack event. Dispatch user unknown."
         )
 
+    if context["subject"].type != IncidentSubjects.incident:
+        # only run this workflow for incidents
+        return
+
     participant = incident_flows.incident_add_or_reactivate_participant_flow(
         user_email=user.email, incident_id=context["subject"].id, db_session=db_session
     )
@@ -987,6 +1004,10 @@ def handle_member_left_channel(
     ack: Ack, context: BoltContext, db_session: Session, user: DispatchUser
 ) -> None:
     ack()
+
+    if context["subject"].type != IncidentSubjects.incident:
+        # only run this workflow for incidents
+        return
 
     incident_flows.incident_remove_participant_flow(
         user.email, context["subject"].id, db_session=db_session
@@ -1121,7 +1142,7 @@ def handle_update_participant_command(
     """Handles the update participant command."""
     ack()
 
-    if context["subject"].type == "case":
+    if context["subject"].type == CaseSubjects.case:
         raise CommandError("Command is not currently available for cases.")
 
     incident = incident_service.get(
@@ -1207,7 +1228,7 @@ def handle_update_notifications_group_command(
     ack()
 
     # TODO handle cases
-    if context["subject"].type == "case":
+    if context["subject"].type == CaseSubjects.case:
         raise CommandError("Command is not currently available for cases.")
 
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
@@ -1413,7 +1434,7 @@ def handle_engage_oncall_command(
     ack()
 
     # TODO: handle cases
-    if context["subject"].type == "case":
+    if context["subject"].type == CaseSubjects.case:
         raise CommandError("Command is not currently available for cases.")
 
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
@@ -1538,7 +1559,7 @@ def handle_report_tactical_command(
     """Handles the report tactical command."""
     ack()
 
-    if context["subject"].type == "case":
+    if context["subject"].type == CaseSubjects.case:
         raise CommandError("Command is not available outside of incident channels.")
 
     # we load the most recent tactical report
@@ -1555,8 +1576,8 @@ def handle_report_tactical_command(
         needs = tactical_report.details.get("needs")
 
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    outstanding_actions = "" if actions is None else actions
     if incident.tasks:
-        outstanding_actions = "" if actions is None else actions
         outstanding_actions += "\n\nOutstanding Incident Tasks:\n".join(
             [
                 "-" + task.description
@@ -1657,7 +1678,7 @@ def handle_report_executive_command(
     """Handles executive report command."""
     ack()
 
-    if context["subject"].type == "case":
+    if context["subject"].type == CaseSubjects.case:
         raise CommandError("Command is not available outside of incident channels.")
 
     executive_report = report_service.get_most_recent_by_incident_id_and_type(

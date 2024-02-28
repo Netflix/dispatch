@@ -18,6 +18,9 @@ export default {
   getUserInfo() {
     return API.get(`/auth/me`)
   },
+  getUserRole() {
+    return API.get(`/auth/myrole`)
+  },
   login(email, password) {
     return API.post(`/auth/login`, { email: email, password: password })
   },

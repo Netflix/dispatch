@@ -1021,6 +1021,10 @@ def ack_handle_escalation_submission_event(ack: Ack) -> None:
     ack(response_action="update", view=modal)
 
 
+@app.view(
+    CaseEscalateActions.submit,
+    middleware=[action_context_middleware, user_middleware, db_middleware],
+)
 def handle_escalation_submission_event(
     ack: Ack,
     body: dict,
@@ -1046,9 +1050,10 @@ def handle_escalation_submission_event(
         thread_ts=case.conversation.thread_id,
     )
 
-    incident = case_flows.case_escalated_status_flow(
+    case_flows.case_escalated_status_flow(
         case=case, organization_slug=context["subject"].organization_slug, db_session=db_session
     )
+    incident = case.incidents[0]
 
     conversation_flows.add_incident_participants(
         incident=incident, participant_emails=[user.email], db_session=db_session
@@ -1082,11 +1087,6 @@ def handle_escalation_submission_event(
         view_id=body["view"]["id"],
         view=modal,
     )
-
-
-app.view(CaseEscalateActions.submit, middleware=[action_context_middleware, db_middleware])(
-    ack=ack_handle_escalation_submission_event, lazy=[handle_escalation_submission_event]
-)
 
 
 @app.action(
@@ -1243,6 +1243,14 @@ def triage_button_click(
 ):
     ack()
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    # we run the case status transition flow
+    case_flows.case_status_transition_flow_dispatcher(
+        case=case,
+        current_status=CaseStatus.triage,
+        db_session=db_session,
+        previous_status=case.status,
+        organization_slug=context["subject"].organization_slug,
+    )
     case.status = CaseStatus.triage
     db_session.commit()
     case_flows.update_conversation(case, db_session)
@@ -1764,6 +1772,13 @@ def resolve_case(
     context_from_user: str,
     user: DispatchUser,
 ) -> None:
+    case_flows.case_status_transition_flow_dispatcher(
+        case=case,
+        current_status=CaseStatus.closed,
+        db_session=db_session,
+        previous_status=case.status,
+        organization_slug=case.project.organization.slug,
+    )
     case_in = CaseUpdate(
         title=case.title,
         resolution_reason=CaseResolutionReason.user_acknowledge,
@@ -1773,6 +1788,7 @@ def resolve_case(
         closed_at=datetime.utcnow(),
     )
     case = case_service.update(db_session=db_session, case=case, case_in=case_in, current_user=user)
+
     blocks = create_case_message(case=case, channel_id=channel_id)
     client.chat_update(
         blocks=blocks, ts=case.conversation.thread_id, channel=case.conversation.channel_id
