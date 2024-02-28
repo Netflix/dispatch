@@ -18,7 +18,7 @@ from dispatch.plugin import service as plugin_service
 from dispatch.project import service as project_service
 
 from .exceptions import ContextError, RoleError
-from .models import EngagementMetadata, SubjectMetadata, FormMetadata
+from .models import EngagementMetadata, SubjectMetadata, FormMetadata, IncidentSubjects, CaseSubjects
 
 log = logging.getLogger(__file__)
 
@@ -43,14 +43,14 @@ def resolve_context_from_conversation(channel_id: str, thread_id: str = None) ->
         if conversation:
             if conversation.incident:
                 subject = SubjectMetadata(
-                    type="incident",
+                    type=IncidentSubjects.incident,
                     id=conversation.incident_id,
                     organization_slug=slug,
                     project_id=conversation.incident.project_id,
                 )
             else:
                 subject = SubjectMetadata(
-                    type="case",
+                    type=CaseSubjects.case,
                     id=conversation.case_id,
                     organization_slug=slug,
                     project_id=conversation.case.project_id,
