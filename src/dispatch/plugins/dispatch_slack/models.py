@@ -53,6 +53,10 @@ class CaseSubjects(DispatchEnum):
     case = "case"
 
 
+class IncidentSubjects(DispatchEnum):
+    incident = "incident"
+
+
 class SignalSubjects(DispatchEnum):
     signal = "signal"
     signal_instance = "signal_instance"
