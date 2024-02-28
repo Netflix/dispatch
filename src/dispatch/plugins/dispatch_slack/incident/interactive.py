@@ -955,6 +955,10 @@ def handle_member_joined_channel(
             "Unable to handle member_joined_channel Slack event. Dispatch user unknown."
         )
 
+    if context["subject"].type != "incident":
+        # only run this workflow for incidents
+        return
+
     participant = incident_flows.incident_add_or_reactivate_participant_flow(
         user_email=user.email, incident_id=context["subject"].id, db_session=db_session
     )
@@ -1000,6 +1004,10 @@ def handle_member_left_channel(
     ack: Ack, context: BoltContext, db_session: Session, user: DispatchUser
 ) -> None:
     ack()
+
+    if context["subject"].type != "incident":
+        # only run this workflow for incidents
+        return
 
     incident_flows.incident_remove_participant_flow(
         user.email, context["subject"].id, db_session=db_session
