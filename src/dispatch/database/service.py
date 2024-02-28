@@ -114,6 +114,8 @@ class Filter(object):
             model = self.filter_spec["model"]
             if model in ["Participant", "Commander"]:
                 return {"IndividualContact"}
+            if model == "TagAll":
+                return {"Tag"}
             else:
                 return {self.filter_spec["model"]}
         return set()
@@ -122,6 +124,8 @@ class Filter(object):
         filter_spec = self.filter_spec
         if filter_spec.get("model") in ["Participant", "Commander"]:
             filter_spec["model"] = "IndividualContact"
+        elif filter_spec.get("model") == "TagAll":
+            filter_spec["model"] = "Tag"
 
         operator = self.operator
         value = self.value
@@ -484,6 +488,37 @@ CommonParameters = Annotated[
 ]
 
 
+def has_tag_all(filter_spec: List[dict]):
+    """Checks if the filter spec has a TagAll filter."""
+
+    if isinstance(filter_spec, list):
+        return False
+
+    for key, value in filter_spec.items():
+        if key == "and":
+            for condition in value:
+                or_condition = condition.get("or", [])
+                if or_condition and or_condition[0].get("model") == "TagAll":
+                    return True
+    return False
+
+
+def rebuild_filter_spec_without_tag_all(filter_spec: List[dict]):
+    """Rebuilds the filter spec without the TagAll filter."""
+    new_filter_spec = []
+    tag_all_spec = []
+    for key, value in filter_spec.items():
+        if key == "and":
+            for condition in value:
+                or_condition = condition.get("or", [])
+                if or_condition and or_condition[0].get("model") == "TagAll":
+                    for cond in or_condition:
+                        tag_all_spec.append({"and": [{"or": [cond]}]})
+                else:
+                    new_filter_spec.append(condition)
+    return ({"and": new_filter_spec} if len(new_filter_spec) else None, tag_all_spec)
+
+
 def search_filter_sort_paginate(
     db_session,
     model,
@@ -502,23 +537,30 @@ def search_filter_sort_paginate(
     try:
         query = db_session.query(model_cls)
 
-        print(f"**** the filter spec is {filter_spec}")
-        print(f"**** the query_str is {query_str}")
-
         if query_str:
             sort = False if sort_by else True
             query = search(query_str=query_str, query=query, model=model, sort=sort)
 
         query_restricted = apply_model_specific_filters(model_cls, query, current_user, role)
 
+        tag_all_filters = []
         if filter_spec:
-            # to do - remove the TagAll from the filter_spec, then add back in
-            # one at a time
             query = apply_filter_specific_joins(model_cls, filter_spec, query)
-            query = apply_filters(query, filter_spec, model_cls)
+            # if the filter_spec has the TagAll filter, we need to split the query up
+            # and intersect all of the results
+            if has_tag_all(filter_spec):
+                new_filter_spec, tag_all_spec = rebuild_filter_spec_without_tag_all(filter_spec)
+                if new_filter_spec:
+                    query = apply_filters(query, new_filter_spec, model_cls)
+                for tag_filter in tag_all_spec:
+                    tag_all_filters.append(apply_filters(query, tag_filter, model_cls))
+            else:
+                query = apply_filters(query, filter_spec, model_cls)
 
         if model == "Incident":
             query = query.intersect(query_restricted)
+            for filter in tag_all_filters:
+                query = query.intersect(filter)
 
         if sort_by:
             sort_spec = create_sort_spec(model, sort_by, descending)
