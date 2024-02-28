@@ -139,7 +139,6 @@ const actions = {
       { ...state.table.options },
       "Incident"
     )
-    console.log(`**** JSON of params is ${JSON.stringify(params)} and the table options is ${JSON.stringify(state.table.options)}`)
     return IncidentApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)
