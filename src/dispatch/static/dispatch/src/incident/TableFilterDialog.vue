@@ -34,14 +34,28 @@
         <v-list-item>
           <tag-type-filter-combobox v-model="local_tag_type" label="Tag Types" />
         </v-list-item>
-        <v-list-item>
-          <tag-filter-auto-complete
-            v-model="local_tag"
-            label="Tags"
-            model="incident"
-            :project="local_project"
-          />
-        </v-list-item>
+        <v-card variant="outlined" class="ml-4 mr-4 mb-4">
+          <v-card-subtitle class="mt-2 mb-2">Has <b>all</b> of these tags</v-card-subtitle>
+          <v-list-item>
+            <tag-filter-auto-complete
+              v-model="local_tag_all"
+              label="Tags"
+              model="incident"
+              :project="local_project"
+            />
+          </v-list-item>
+        </v-card>
+        <v-card variant="outlined" class="ml-4 mr-4">
+          <v-card-subtitle class="mt-2 mb-2">Has <b>any</b> of these tags</v-card-subtitle>
+          <v-list-item>
+            <tag-filter-auto-complete
+              v-model="local_tag"
+              label="Tags"
+              model="incident"
+              :project="local_project"
+            />
+          </v-list-item>
+        </v-card>
         <v-list-item>
           <v-card class="mx-auto">
             <v-card-title>Incident Participant</v-card-title>
@@ -120,6 +134,7 @@ export default {
       local_reported_at: {},
       local_status: [],
       local_tag: [],
+      local_tag_all: [],
       local_tag_type: [],
       local_participant_is_commander: false,
       local_participant: null,
@@ -136,6 +151,7 @@ export default {
       "table.options.filters.reported_at",
       "table.options.filters.status",
       "table.options.filters.tag",
+      "table.options.filters.tag_all",
       "table.options.filters.tag_type",
       "table.options.filters.commander",
       "table.options.filters.participant",
@@ -165,6 +181,7 @@ export default {
       this.reported_at = this.local_reported_at
       this.status = this.local_status
       this.tag = this.local_tag
+      this.tag_all = this.local_tag_all
       this.tag_type = this.local_tag_type
       if (Array.isArray(this.local_participant)) {
         this.local_participant = this.local_participant[0]

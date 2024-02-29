@@ -95,6 +95,7 @@ const state = {
         incident_severity: [],
         status: [],
         tag: [],
+        tag_all: [],
         project: [],
         tag_type: [],
         reported_at: {
