@@ -164,6 +164,7 @@ export default {
         this.project.length,
         this.status.length,
         this.tag.length,
+        this.tag_all.length,
         this.tag_type.length,
         this.local_participant == null ? 0 : 1,
       ])
