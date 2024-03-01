@@ -320,7 +320,7 @@ pytest==7.4.4
     #   schemathesis
 pytest-subtests==0.7.0
     # via schemathesis
-python-dateutil==2.8.2
+python-dateutil==2.9.0
     # via
     #   -r requirements-base.in
     #   botocore

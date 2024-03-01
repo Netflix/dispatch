@@ -82,7 +82,7 @@ pygments==2.17.2
     #   ipython
 pytest==7.4.4
     # via -r requirements-dev.in
-python-dateutil==2.8.2
+python-dateutil==2.9.0
     # via faker
 pyyaml==6.0.1
     # via pre-commit
