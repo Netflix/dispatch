@@ -124,7 +124,7 @@ frozenlist==1.4.1
     #   aiosignal
 google-api-core==2.15.0
     # via google-api-python-client
-google-api-python-client==2.119.0
+google-api-python-client==2.120.0
     # via -r requirements-base.in
 google-auth==2.26.1
     # via
@@ -320,7 +320,7 @@ pytest==7.4.4
     #   schemathesis
 pytest-subtests==0.7.0
     # via schemathesis
-python-dateutil==2.8.2
+python-dateutil==2.9.0.post0
     # via
     #   -r requirements-base.in
     #   botocore

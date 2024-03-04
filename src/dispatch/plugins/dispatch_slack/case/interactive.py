@@ -1478,35 +1478,6 @@ def handle_report_submission_event(
     )
 
 
-@app.action(SignalNotificationActions.view, middleware=[button_context_middleware, db_middleware])
-def signal_button_click(
-    ack: Ack, body: dict, db_session: Session, context: BoltContext, client: WebClient
-):
-    ack()
-    signal = signal_service.get_signal_instance(
-        db_session=db_session, signal_instance_id=UUID(context["subject"].id)
-    )
-
-    # truncate text and redirect to ui
-    raw_text = json.dumps(signal.raw, indent=2)
-    if len(raw_text) > 2900:
-        blocks = [
-            Section(
-                text="The alert data exceeds Slack's viewing limit. Please go to the Dispatch Web UI for full details.\n"
-            ),
-            Section(text=f"```{raw_text[:2750]}...```"),
-        ]
-    else:
-        blocks = [Section(text=f"```{raw_text}```")]
-
-    modal = Modal(
-        title="Raw Signal",
-        blocks=blocks,
-        close="Close",
-    ).build()
-    client.views_open(trigger_id=body["trigger_id"], view=modal)
-
-
 @app.action(
     SignalEngagementActions.approve,
     middleware=[

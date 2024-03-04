@@ -42,7 +42,7 @@ identify==2.5.33
     # via pre-commit
 iniconfig==2.0.0
     # via pytest
-ipython==8.22.1
+ipython==8.22.2
     # via -r requirements-dev.in
 jedi==0.19.1
     # via ipython
@@ -82,11 +82,11 @@ pygments==2.17.2
     #   ipython
 pytest==7.4.4
     # via -r requirements-dev.in
-python-dateutil==2.8.2
+python-dateutil==2.9.0.post0
     # via faker
 pyyaml==6.0.1
     # via pre-commit
-ruff==0.2.2
+ruff==0.3.0
     # via -r requirements-dev.in
 six==1.16.0
     # via
