@@ -5,7 +5,10 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from blockkit import Message
+import io
+import json
 import logging
 from typing import List, Optional, Any
 from slack_sdk.errors import SlackApiError
@@ -13,6 +16,7 @@ from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
 from dispatch.case.models import Case
+from dispatch.config import DISPATCH_UI_URL
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugin import service as plugin_service
@@ -97,6 +101,23 @@ class SlackConversationPlugin(ConversationPlugin):
                 blocks=message,
             )
             case.signal_thread_ts = signal_response.get("timestamp")
+            try:
+                client.files_upload(
+                    channels=conversation_id,
+                    thread_ts=case.signal_thread_ts,
+                    initial_comment=f"First alert in `{case.name}` (see all in <{DISPATCH_UI_URL}/{case.project.organization.slug}/cases/{case.name}|Dispatch UI>):",
+                    filetype="json",
+                    file=io.BytesIO(json.dumps(case.signal_instances[0].raw, indent=4).encode()),
+                )
+            except SlackApiError as e:
+                if e.response["error"] == SlackAPIErrorCode.MISSING_SCOPE:
+                    logger.exception(
+                        f"Error uploading alert JSON to the Case thread due to missing scope: {e}"
+                    )
+                else:
+                    logger.exception(f"Error uploading alert JSON to the Case thread: {e}")
+            except Exception as e:
+                logger.exception(f"Error uploading alert JSON to the Case thread: {e}")
             db_session.commit()
         return response
 
