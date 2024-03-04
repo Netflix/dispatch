@@ -39,7 +39,6 @@ class CaseShortcutCallbacks(DispatchEnum):
 
 class SignalNotificationActions(DispatchEnum):
     snooze = "signal-notification-snooze"
-    view = "signal-notification-view"
 
 
 class SignalSnoozeActions(DispatchEnum):

@@ -194,11 +194,6 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
     # Define the initial elements with "Raw Data" and "Snooze" buttons
     elements = [
         Button(
-            text="Raw Data",
-            action_id=SignalNotificationActions.view,
-            value=button_metadata,
-        ),
-        Button(
             text="Snooze",
             action_id=SignalNotificationActions.snooze,
             value=button_metadata,
