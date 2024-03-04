@@ -849,6 +849,11 @@ def handle_case_after_hours_message(
     """Notifies the user that this case is currently in after hours mode."""
     ack()
 
+    # Check if the message is in a thread
+    # We should not attempt to raise this message when a message is sent to the main channel.
+    if "thread_ts" not in payload:
+        return
+
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
     owner_email = case.assignee.individual.email
     participant = participant_service.get_by_case_id_and_email(
