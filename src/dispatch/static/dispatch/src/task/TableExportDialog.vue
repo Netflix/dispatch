@@ -133,7 +133,7 @@ import { formatDate } from "@/filters"
 import Util from "@/util"
 import SearchUtils from "@/search/utils"
 
-import IncidentCombobox from "@/incident/IncidentCombobox.vue"
+import IncidentCombobox from "@/incident/IncidentFilterCombobox.vue"
 import IncidentPriority from "@/incident/priority/IncidentPriority.vue"
 import IncidentPriorityCombobox from "@/incident/priority/IncidentPriorityCombobox.vue"
 import IncidentStatus from "@/incident/status/IncidentStatus.vue"
