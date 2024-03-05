@@ -34,6 +34,51 @@ def resolve_user(client: WebClient, user_id: str) -> dict:
     return {"id": user_id}
 
 
+def emails_to_user_ids(client: WebClient, participants: list[str]) -> list[str]:
+    """
+    Resolves a list of email addresses to Slack user IDs.
+
+    This function takes a list of email addresses and attempts to resolve them to Slack user IDs.
+    If a user cannot be found for a given email address, it logs a warning and continues with the next email.
+    If an error other than a user not found occurs, it logs the exception.
+
+    Args:
+        client (WebClient): A Slack WebClient object used to interact with the Slack API.
+        participants (list[str]): A list of participant email addresses to resolve.
+
+    Returns:
+        list[str]: A list of resolved user IDs.
+
+    Raises:
+        SlackApiError: If an error other than a user not found occurs.
+
+    Example:
+        >>> from slack_sdk import WebClient
+        >>> client = WebClient(token="your-slack-token")
+        >>> emails = ["user1@example.com", "user2@example.com"]
+        >>> user_ids = emails_to_user_ids(client, emails)
+        >>> print(user_ids)
+        ["U01ABCDE1", "U01ABCDE2"]
+    """
+    user_ids = []
+
+    for participant in set(participants):
+        try:
+            user_id = resolve_user(client, participant)["id"]
+        except SlackApiError as e:
+            msg = f"Unable to resolve Slack participant: {e}"
+
+            if e.response["error"] == SlackAPIErrorCode.USERS_NOT_FOUND:
+                log.warning(msg)
+                continue
+
+            log.exception(msg)
+        else:
+            user_ids.append(user_id)
+
+    return user_ids
+
+
 def chunks(ids, n):
     """Yield successive n-sized chunks from l."""
     for i in range(0, len(ids), n):

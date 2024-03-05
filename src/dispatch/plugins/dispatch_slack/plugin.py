@@ -49,6 +49,7 @@ from .service import (
     create_conversation,
     create_slack_client,
     does_user_exist,
+    emails_to_user_ids,
     get_user_avatar_url,
     get_user_profile_by_email,
     rename_conversation,
@@ -283,22 +284,7 @@ class SlackConversationPlugin(ConversationPlugin):
     def add_to_thread(self, conversation_id: str, thread_id: str, participants: List[str]):
         """Adds users to a thread conversation."""
         client = create_slack_client(self.configuration)
-        user_ids = []
-
-        for participant in set(participants):
-            try:
-                user_id = resolve_user(client, participant)["id"]
-            except SlackApiError as e:
-                msg = f"Unable to resolve Slack participant in Conversation ID {conversation_id} Thread ID {thread_id}: {e}"
-
-                if e.response["error"] == SlackAPIErrorCode.USERS_NOT_FOUND:
-                    logger.warning(msg)
-                    continue
-
-                logger.exception(msg)
-            else:
-                user_ids.append(user_id)
-
+        user_ids = emails_to_user_ids(client=client, participants=participants)
         add_users_to_conversation_thread(client, conversation_id, thread_id, user_ids)
 
     def archive(self, conversation_id: str):
