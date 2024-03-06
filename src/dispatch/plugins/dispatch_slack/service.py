@@ -71,9 +71,9 @@ def emails_to_user_ids(client: WebClient, participants: list[str]) -> list[str]:
             if e.response["error"] == SlackAPIErrorCode.USERS_NOT_FOUND:
                 log.warning(msg)
                 continue
-
-            log.exception(msg)
-            continue
+            else:
+                log.exception(msg)
+                continue
         else:
             user_ids.append(user_id)
 
