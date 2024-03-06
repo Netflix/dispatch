@@ -66,7 +66,7 @@ def emails_to_user_ids(client: WebClient, participants: list[str]) -> list[str]:
         try:
             user_id = resolve_user(client, participant)["id"]
         except SlackApiError as e:
-            msg = f"Unable to resolve Slack participant: {e}"
+            msg = f"Unable to resolve Slack participant {participant}: {e}"
 
             if e.response["error"] == SlackAPIErrorCode.USERS_NOT_FOUND:
                 log.warning(msg)
