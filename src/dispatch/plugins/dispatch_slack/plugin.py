@@ -49,6 +49,7 @@ from .service import (
     create_conversation,
     create_slack_client,
     does_user_exist,
+    emails_to_user_ids,
     get_user_avatar_url,
     get_user_profile_by_email,
     rename_conversation,
@@ -283,8 +284,8 @@ class SlackConversationPlugin(ConversationPlugin):
     def add_to_thread(self, conversation_id: str, thread_id: str, participants: List[str]):
         """Adds users to a thread conversation."""
         client = create_slack_client(self.configuration)
-        participants = [resolve_user(client, p)["id"] for p in set(participants)]
-        add_users_to_conversation_thread(client, conversation_id, thread_id, participants)
+        user_ids = emails_to_user_ids(client=client, participants=participants)
+        add_users_to_conversation_thread(client, conversation_id, thread_id, user_ids)
 
     def archive(self, conversation_id: str):
         """Archives a conversation."""
