@@ -4,6 +4,11 @@ on: pull_request
 
 jobs:
   test:
+    env:
+      # Minimum code coverage per file
+      COVERAGE_SINGLE: 10
+      # Minimum total code coverage
+      COVERAGE_TOTAL: 40
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -42,3 +47,21 @@ jobs:
         run: |
           pip install pytest-cov
           pytest --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
+      - name: pytester-cov
+        id: pytester-cov
+        uses: programmingwithalex/pytester-cov@main
+        with:
+          pytest-root-dir: '.'
+          cov-omit-list: 'src/dispatch/*/views.py, src/dispatch/*/scheduled.py, src/dispatch/rate_limiter.py, src/dispatch/plugins/dispatch_test/*, src/dispatch/api.py, src/dispatch/extensions.py, src/dispatch/scheduler.py'
+          cov-threshold-single: ${{ env.COVERAGE_SINGLE }}
+          cov-threshold-total: ${{ env.COVERAGE_TOTAL }}
+      - name: Coverage single fail - exit
+        if: ${{ steps.pytester-cov.outputs.cov-threshold-single-fail == 'true' }}
+        run: |
+          echo "cov single fail ${{ steps.pytester-cov.outputs.cov-threshold-single-fail }}"
+          # exit 1
+      - name: Coverage total fail - exit
+        if: ${{ steps.pytester-cov.outputs.cov-threshold-total-fail == 'true' }}
+        run: |
+          echo "cov single fail ${{ steps.pytester-cov.outputs.cov-threshold-total-fail }}"
+          # exit 1
