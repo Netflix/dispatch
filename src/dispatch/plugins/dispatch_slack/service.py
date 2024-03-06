@@ -73,6 +73,7 @@ def emails_to_user_ids(client: WebClient, participants: list[str]) -> list[str]:
                 continue
 
             log.exception(msg)
+            continue
         else:
             user_ids.append(user_id)
 
