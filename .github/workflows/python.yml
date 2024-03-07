@@ -50,9 +50,9 @@ jobs:
       - name: Coverage per file
         # TODO: Change this recommendation into a requirement.
         run: |
-          export FAILED_COVERAGE_PER_FILE=$(python -c "import json;files=json.load(open('coverage.json'))['files'];covs=map(lambda k, v: (k, v['summary']['percent_covered_display']),files.keys(),files.values()); f=filter(lambda cov:int(cov[1])<${{ env.COVERAGE_SINGLE }},covs); print('\n'.join('{:<68}{:>3}%'.format(k,v) for k,v in f))")
+          export FAILED_COVERAGE_PER_FILE=$(python -c "import json;files=json.load(open('coverage.json'))['files'];covs=map(lambda k, v: (k, v['summary']['percent_covered_display']),files.keys(),files.values()); f=filter(lambda cov:int(cov[1])<50,covs); print('\n'.join('{:<68}{:>3}%'.format(k,v) for k,v in f))")
           if [[ $FAILED_COVERAGE_PER_FILE != "" ]]; then
-            echo "FAIL Recommended file(s) test coverage of ${{ env.COVERAGE_SINGLE }}% not reached."
+            echo "FAIL Recommended file(s) test coverage of 50% not reached."
             echo "Failed file coverage(s):\n$FAILED_COVERAGE_PER_FILE"
             # exit 1
           fi
