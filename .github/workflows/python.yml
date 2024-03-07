@@ -51,7 +51,7 @@ jobs:
         # TODO: Change this recommendation into a requirement.
         run: |
           export FAILED_COVERAGE_PER_FILE=$(python -c "import json;from pprint import pprint;files=json.load(open('coverage.json'))['files'];covs=map(lambda k, v: (k, v['summary']['percent_covered_display']),files.keys(),files.values()); pprint(list(filter(lambda cov:int(cov[1])<${{ env.COVERAGE_SINGLE }},covs)))")
-          if [[ $FAILED_COVERAGE_PER_FILE < ${{ env.COVERAGE_SINGLE }} ]]; then
+          if [[ $FAILED_COVERAGE_PER_FILE != "[]" ]]; then
             echo "FAIL Recommended file(s) test coverage of ${{ env.COVERAGE_SINGLE }}% not reached."
             echo "Failed file coverage(s): $FAILED_COVERAGE_PER_FILE"
             # exit 1
