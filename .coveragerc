@@ -1,0 +1,22 @@
+[run]
+omit =
+    */__init__.py
+    */views.py
+    */scheduled.py
+    src/dispatch/rate_limiter.py
+    src/dispatch/plugins/dispatch_test/*
+    src/dispatch/api.py
+    src/dispatch/extensions.py
+    src/dispatch/scheduler.py
+
+[report]
+omit =
+    */__init__.py
+    */views.py
+    */scheduled.py
+    src/dispatch/rate_limiter.py
+    src/dispatch/plugins/dispatch_test/*
+    src/dispatch/api.py
+    src/dispatch/extensions.py
+    src/dispatch/scheduler.py
+
