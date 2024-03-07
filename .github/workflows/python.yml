@@ -47,11 +47,10 @@ jobs:
         run: |
           pip install pytest-cov
           pytest --junitxml=junit/test-results.xml --cov=dispatch --cov-report=json:coverage.json --cov-report=xml --cov-report=html
-          export COVERAGE_TOTAL=$(python -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
-          export FAILED_COVERAGE_PER_FILE=$(python -c "import json;from pprint import pprint;files=json.load(open('coverage.json'))['files'];covs=map(lambda k, v: (k, v['summary']['percent_covered_display']),files.keys(),files.values()); pprint(list(filter(lambda cov:int(cov[1])<${{ env.COVERAGE_SINGLE }},covs)))")
       - name: Coverage per file
         # TODO: Change this recommendation into a requirement.
         run: |
+          export FAILED_COVERAGE_PER_FILE=$(python -c "import json;from pprint import pprint;files=json.load(open('coverage.json'))['files'];covs=map(lambda k, v: (k, v['summary']['percent_covered_display']),files.keys(),files.values()); pprint(list(filter(lambda cov:int(cov[1])<${{ env.COVERAGE_SINGLE }},covs)))")
           if [[ $FAILED_COVERAGE_PER_FILE < ${{ env.COVERAGE_SINGLE }} ]]; then
             echo "FAIL Recommended file(s) test coverage of ${{ env.COVERAGE_SINGLE }}% not reached."
             echo "Failed file coverage(s): $FAILED_COVERAGE_PER_FILE"
@@ -60,6 +59,7 @@ jobs:
       - name: Coverage total
         # TODO: Change this recommendation into a requirement.
         run: |
+          export COVERAGE_TOTAL=$(python -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
           if [[ $COVERAGE_TOTAL < ${{ env.COVERAGE_TOTAL }} ]]; then
             echo "FAIL Recommended total test coverage of ${{ env.COVERAGE_TOTAL }}% not reached. Total coverage: $COVERAGE_TOTAL"
             # exit 1
