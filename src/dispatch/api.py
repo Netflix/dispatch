@@ -41,6 +41,7 @@ from dispatch.plugin.views import router as plugin_router
 from dispatch.project.views import router as project_router
 from dispatch.forms.views import router as forms_router
 from dispatch.forms.type.views import router as forms_type_router
+from dispatch.email_templates.views import router as email_template_router
 
 
 from dispatch.signal.views import router as signal_router
@@ -233,7 +234,7 @@ authenticated_organization_api_router.include_router(forms_router, prefix="/form
 authenticated_organization_api_router.include_router(
     forms_type_router, prefix="/forms_type", tags=["forms_type"]
 )
-
+authenticated_organization_api_router.include_router(email_template_router, prefix="/email_template", tags=["email_template"])
 
 @api_router.get("/healthcheck", include_in_schema=False)
 def healthcheck():
