@@ -616,7 +616,7 @@ def handle_snooze_submission_event(
         # Create the new filter from the form data
         if form_data.get(DefaultBlockIds.entity_select):
             entities = [
-                {"id": int(entity.value)}  # change entity.name to int(entity.value)
+                {"id": int(entity.value)}
                 for entity in form_data[DefaultBlockIds.entity_select]
             ]
         else:
