@@ -18,6 +18,17 @@ def get(*, email_template_id: int, db_session: Session) -> Optional[EmailTemplat
     )
 
 
+def get_by_type(*, email_template_type: str, project_id: int, db_session: Session) -> Optional[EmailTemplates]:
+    """Gets an email template by its type."""
+    return (
+        db_session.query(EmailTemplates)
+        .filter(EmailTemplates.project_id == project_id)
+        .filter(EmailTemplates.email_template_type == email_template_type)
+        .filter(EmailTemplates.enabled == True)  # noqa
+        .first()
+    )
+
+
 def get_all(*, db_session: Session):
     """Gets all email templates."""
     return db_session.query(EmailTemplates)

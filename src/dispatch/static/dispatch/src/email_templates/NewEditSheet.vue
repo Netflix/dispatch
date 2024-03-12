@@ -80,11 +80,11 @@
                     'Priority',
                     'Reporter',
                     'Commander',
-                    'Investigation document',
+                    'Investigation Document',
                     'Storage',
                     'Conference',
-                    'Slack commands',
-                    'FAQ document',
+                    'Slack Commands',
+                    'FAQ Document',
                   ]"
                   multiple
                   :menu-props="{ maxHeight: '400' }"

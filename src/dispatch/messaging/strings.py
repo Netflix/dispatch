@@ -7,6 +7,7 @@ from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.incident.enums import IncidentStatus
 from dispatch.case.enums import CaseStatus
 from dispatch.enums import Visibility
+from dispatch.email_templates.models import EmailTemplates
 
 from dispatch import config
 from dispatch.enums import DispatchEnum, DocumentResourceTypes, DocumentResourceReferenceTypes
@@ -915,3 +916,42 @@ def render_message_template(message_template: List[dict], **kwargs):
         data.append(d)
 
     return data
+
+
+def generate_welcome_message(welcome_message: EmailTemplates):
+    """Generates the welcome message."""
+    if welcome_message is None:
+        print("**** No welcome message found")
+        return INCIDENT_PARTICIPANT_WELCOME_MESSAGE
+
+    participant_welcome = {
+        "title": welcome_message.welcome_text,
+        "title_link": "{{ticket_weblink}}",
+        "text": welcome_message.welcome_body,
+    }
+
+    component_mapping = {
+        "Title": INCIDENT_TITLE,
+        "Description": INCIDENT_DESCRIPTION,
+        "Visibility": INCIDENT_VISIBILITY,
+        "Status": INCIDENT_STATUS,
+        "Type": INCIDENT_TYPE,
+        "Severity": INCIDENT_SEVERITY,
+        "Priority": INCIDENT_PRIORITY,
+        "Reporter": INCIDENT_REPORTER,
+        "Commander": INCIDENT_COMMANDER,
+        "Investigation Document": INCIDENT_INVESTIGATION_DOCUMENT,
+        "Storage": INCIDENT_STORAGE,
+        "Conference": INCIDENT_CONFERENCE,
+        "Slack Commands": INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
+        "FAQ Document": INCIDENT_FAQ_DOCUMENT,
+    }
+
+    message = [participant_welcome]
+
+    for component in component_mapping.keys():
+        # if the component type is in welcome_message.components, then add it
+        if component in welcome_message.components:
+            message.append(component_mapping[component])
+
+    return message
