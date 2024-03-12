@@ -5,6 +5,19 @@ def test_get(session, participant_role):
     assert t_participant_role.id == participant_role.id
 
 
+def test_preview():
+    from dispatch.participant_role.service import preview
+    from dispatch.participant_role.models import ParticipantRoleCreate, ParticipantRoleType
+
+    role = ParticipantRoleType.incident_commander
+
+    participant_role_in = ParticipantRoleCreate(role=role)
+    participant_role = preview(participant_role_in=participant_role_in)
+
+    assert participant_role.role == role
+    assert not participant_role.id
+
+
 def test_create(session, participant_role):
     from dispatch.participant_role.service import create
     from dispatch.participant_role.models import ParticipantRoleCreate, ParticipantRoleType

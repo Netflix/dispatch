@@ -55,11 +55,13 @@ log = logging.getLogger(__name__)
 
 
 def get_incident_participants(
-    incident: Incident, db_session: Session
+    incident: Incident, db_session: Session, preview: bool = False
 ) -> tuple[list[IndividualContact | None], list[TeamContact | None]]:
     """
     Get additional participants (individuals and teams) based on
     incident description, type, and priority.
+
+    The incident participants' individual contact information is updated.
     """
     individual_contacts = []
     team_contacts = []
@@ -74,23 +76,21 @@ def get_incident_participants(
                 project_id=incident.project.id,
                 db_session=db_session,
             )
-            event_service.log_incident_event(
-                db_session=db_session,
-                source=plugin.plugin.title,
-                description="Incident participants resolved",
-                incident_id=incident.id,
-                type=EventType.participant_updated,
-            )
+            event_source = plugin.plugin.title
+            event_description = "Incident participants resolved"
         else:
+            log.warning("Incident participants not resolved. No participant plugin enabled.")
+            event_source = "Dispatch Core App"
+            event_description = "Incident participants not resolved"
+
+        if not preview:
             event_service.log_incident_event(
                 db_session=db_session,
-                source="Dispatch Core App",
-                description="Incident participants not resolved",
+                source=event_source,
+                description=event_description,
                 incident_id=incident.id,
                 type=EventType.participant_updated,
             )
-            log.warning("Incident participants not resolved. No participant plugin enabled.")
-
     return individual_contacts, team_contacts
 
 
@@ -308,6 +308,25 @@ def incident_create_resources_flow(
 
     # we create the incident resources
     return incident_create_resources(incident=incident, db_session=db_session)
+
+
+def incident_preview_flow(*, incident: Incident, db_session=None) -> Incident:
+    """Previews incident response workflows without creating resources or saving to the database."""
+    # Resolve individual and team participants
+    individual_participants, _ = get_incident_participants(
+        incident=incident, db_session=db_session, preview=True
+    )
+
+    # Add the suggested participants
+    for individual, service_id in individual_participants:
+        incident_preview_participant_flow(
+            individual.email,
+            incident,
+            participant_role=ParticipantRoleType.observer,
+            service_id=service_id,
+            db_session=db_session,
+        )
+    return incident
 
 
 @background_task
@@ -891,6 +910,27 @@ def incident_subscribe_participant_flow(
         group_action=GroupAction.add_member,
         group_member=user_email,
         db_session=db_session,
+    )
+
+
+def incident_preview_participant_flow(
+    user_email: str,
+    incident: Incident,
+    participant_role: ParticipantRoleType = ParticipantRoleType.participant,
+    service_id: int = 0,
+    db_session=None,
+) -> Participant:
+    """Previews the incident add or reactivate participant flow without saving to the database."""
+    if service_id:
+        # we need to ensure that we don't add another member of a service if one
+        # already exists (e.g. overlapping oncalls, we assume they will hand-off if necessary)
+        for participant in incident.participants:
+            if participant.service_id == service_id:
+                log.info("Skipping resolved participant. Oncall service member already engaged.")
+                return
+
+    return participant_flows.add_participant(
+        user_email, incident, db_session, service_id=service_id, role=participant_role, preview=True
     )
 
 

@@ -1,8 +1,10 @@
-from typing import List, Optional
+from typing import List, Optional, TypeVar
 from dispatch.database.core import SessionLocal
 from dispatch.decorators import timer
 from dispatch.case import service as case_service
+from dispatch.case.models import Case
 from dispatch.incident import service as incident_service
+from dispatch.incident.models import Incident
 from dispatch.individual import service as individual_service
 from dispatch.individual.models import IndividualContact
 from dispatch.participant_role import service as participant_role_service
@@ -11,6 +13,8 @@ from dispatch.plugin import service as plugin_service
 from dispatch.service import service as service_service
 
 from .models import Participant, ParticipantCreate, ParticipantUpdate
+
+Subject = TypeVar("Subject", Case, Incident)
 
 
 def get(*, db_session, participant_id: int) -> Optional[Participant]:
@@ -171,15 +175,16 @@ def get_or_create(
         contact_plugin = plugin_service.get_active_instance(
             db_session=db_session, project_id=subject.project.id, plugin_type="contact"
         )
-        if contact_plugin:
+        if individual_contact and contact_plugin:
             # We get information about the individual
             individual_info = contact_plugin.instance.get(
                 individual_contact.email, db_session=db_session
             )
 
         location = individual_info.get("location", "Unknown")
-        team = individual_info.get("team", individual_contact.email.split("@")[1])
         department = individual_info.get("department", "Unknown")
+        team = individual_contact.email.split("@")[1] if individual_contact else ""
+        team = individual_info.get("team", team)
 
         participant_in = ParticipantCreate(
             participant_roles=participant_roles,
@@ -213,8 +218,68 @@ def get_or_create(
     return participant
 
 
-def create(*, db_session, participant_in: ParticipantCreate) -> Participant:
-    """Create a new participant."""
+def get_or_preview(
+    *,
+    db_session,
+    subject: Subject,
+    individual_id: int,
+    service_id: int,
+    participant_roles: List[ParticipantRoleCreate],
+) -> Participant:
+    """Retrieves the specific participant object or previews a new participant object creation without saving to the database."""
+    participant = next(
+        filter(lambda p: p.individual.id == individual_id, subject.participants), None
+    )
+
+    if not participant:
+        individual_info = {}
+        individual_contact = individual_service.get(
+            db_session=db_session, individual_contact_id=individual_id
+        )
+        contact_plugin = plugin_service.get_active_instance(
+            db_session=db_session, project_id=subject.project.id, plugin_type="contact"
+        )
+        if individual_contact and contact_plugin:
+            # We get information about the individual
+            individual_info = contact_plugin.instance.get(
+                individual_contact.email, db_session=db_session
+            )
+
+        location = individual_info.get("location", "Unknown")
+        department = individual_info.get("department", "Unknown")
+        team = individual_contact.email.split("@")[1] if individual_contact else ""
+        team = individual_info.get("team", team)
+
+        participant_in = ParticipantCreate(
+            participant_roles=participant_roles,
+            team=team,
+            department=department,
+            location=location,
+        )
+
+        if service_id:
+            participant_in.service = {"id": service_id}
+
+        participant = create(db_session=db_session, participant_in=participant_in, preview=True)
+    else:
+        # we add additional roles to the participant
+        for participant_role in participant_roles:
+            participant.participant_roles.append(
+                participant_role_service.preview(participant_role_in=participant_role)
+            )
+
+        if not participant.service:
+            # we only associate the service with the participant once to prevent overwrites
+            service = service_service.get(db_session=db_session, service_id=service_id)
+            if service:
+                participant.service_id = service_id
+                participant.service = service
+
+    return participant
+
+
+def create(*, db_session, participant_in: ParticipantCreate, preview: bool = False) -> Participant:
+    """Creates a new participant or previews participant object creation without saving to the database."""
     participant_roles = [
         participant_role_service.create(db_session=db_session, participant_role_in=participant_role)
         for participant_role in participant_in.participant_roles
@@ -230,8 +295,10 @@ def create(*, db_session, participant_in: ParticipantCreate) -> Participant:
         participant_roles=participant_roles,
     )
 
-    db_session.add(participant)
-    db_session.commit()
+    if not preview:
+        db_session.add(participant)
+        db_session.commit()
+
     return participant
 
 

@@ -34,6 +34,7 @@ from .flows import (
     incident_create_flow,
     incident_create_stable_flow,
     incident_delete_flow,
+    incident_preview_flow,
     incident_subscribe_participant_flow,
     incident_update_flow,
     incident_create_resources_flow,
@@ -107,6 +108,30 @@ def get_incident(
 ):
     """Retrieves the details of a single incident."""
     return current_incident
+
+
+@router.post(
+    "/preview",
+    response_model=IncidentRead,
+    summary="Previews a new incident object creation.",
+)
+def preview_incident(
+    *,
+    db_session: DbSession,
+    incident_in: IncidentCreate,
+) -> Incident:
+    """Previews a new incident object creation."""
+    incident = create(db_session=db_session, incident_in=incident_in, preview=True)
+
+    if incident.status == IncidentStatus.stable:
+        incident_preview_flow(incident=incident, db_session=db_session)
+        incident.stable_at = incident.reported_at
+    elif incident.status == IncidentStatus.closed:
+        incident.stable_at = incident.closed_at = incident.reported_at
+    else:
+        incident_preview_flow(incident=incident, db_session=db_session)
+
+    return incident
 
 
 @router.post("", response_model=IncidentRead, summary="Creates a new incident.")
