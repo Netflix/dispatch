@@ -1,6 +1,6 @@
 import logging
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 import json
 import pytz
@@ -616,7 +616,7 @@ def handle_snooze_submission_event(
         # Create the new filter from the form data
         if form_data.get(DefaultBlockIds.entity_select):
             entities = [
-                {"name": entity.name, "value": entity.value}
+                {"id": int(entity.value)}  # change entity.name to int(entity.value)
                 for entity in form_data[DefaultBlockIds.entity_select]
             ]
         else:
@@ -656,7 +656,7 @@ def handle_snooze_submission_event(
         )
 
         # Calculate the new date by adding the timedelta object to the current date and time
-        date = datetime.now() + delta
+        date = datetime.now(tz=timezone.utc) + delta
 
         project = project_service.get(db_session=db_session, project_id=signal.project_id)
 
