@@ -317,7 +317,9 @@ class IncidentReadMinimal(IncidentBase):
     created_at: Optional[datetime] = None
     duplicates: Optional[List[IncidentReadMinimal]] = []
     incident_costs: Optional[List[IncidentCostRead]] = []
+    incident_document: Optional[DocumentRead] = None
     incident_priority: IncidentPriorityReadMinimal
+    incident_review_document: Optional[DocumentRead] = None
     incident_severity: IncidentSeverityReadMinimal
     incident_type: IncidentTypeReadMinimal
     name: Optional[NameStr]
@@ -328,6 +330,7 @@ class IncidentReadMinimal(IncidentBase):
     reporter: Optional[ParticipantReadMinimal]
     reporters_location: Optional[str]
     stable_at: Optional[datetime] = None
+    storage: Optional[StorageRead] = None
     tags: Optional[List[TagRead]] = []
     tasks: Optional[List[TaskReadMinimal]] = []
     total_cost: Optional[float]
