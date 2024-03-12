@@ -164,6 +164,6 @@ export default {
 
   methods: {
     ...mapActions("email_templates", ["getAll", "createEditShow", "removeShow"]),
-  }
+  },
 }
 </script>

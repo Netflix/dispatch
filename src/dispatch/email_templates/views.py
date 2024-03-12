@@ -1,5 +1,5 @@
 import logging
-from fastapi import APIRouter, HTTPException, status, Depends, Response
+from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from sqlalchemy.exc import IntegrityError
