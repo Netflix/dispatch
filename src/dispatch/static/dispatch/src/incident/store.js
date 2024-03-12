@@ -385,18 +385,37 @@ const actions = {
         commit("SET_SELECTED_LOADING", false)
       })
   },
-  preview({ dispatch }) {
+  preview({ commit, dispatch }) {
     if (Array.isArray(state.selected.reporter)) {
       state.selected.reporter = state.selected.reporter[0]
     }
     if (Array.isArray(state.selected.commander)) {
       state.selected.commander = state.selected.commander[0]
     }
-    return IncidentApi.preview(state.selected).then((response) => {
-      state.selected.participants = response.data.participants
-      dispatch("showPreviewDialog")
-    })
+    commit(
+      "notification_backend/addBeNotification",
+      { text: "Generating preview of the incident participant list,", type: "info" },
+      { root: true }
+    )
+    return IncidentApi.preview(state.selected)
+      .then((response) => {
+        state.selected.participants = response.data.participants
+        commit(
+          "notification_backend/addBeNotification",
+          { text: "Participant list created successfully.", type: "success" },
+          { root: true }
+        )
+        dispatch("showPreviewDialog")
+      })
+      .catch(() => {
+        commit(
+          "notification_backend/addBeNotification",
+          { text: "Participant list could not be generated.", type: "exception" },
+          { root: true }
+        )
+      })
   },
+
   save({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
     if (Array.isArray(state.selected.reporter)) {
