@@ -29,7 +29,7 @@
 import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
 
-import IncidentCombobox from "@/incident/IncidentCombobox.vue"
+import IncidentCombobox from "@/incident/IncidentFilterCombobox.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 
 export default {
