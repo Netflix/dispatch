@@ -1,6 +1,6 @@
 import copy
 
-from typing import List
+from typing import List, Optional
 
 from dispatch.messaging.email.filters import env
 from dispatch.conversation.enums import ConversationButtonActions
@@ -918,10 +918,9 @@ def render_message_template(message_template: List[dict], **kwargs):
     return data
 
 
-def generate_welcome_message(welcome_message: EmailTemplates):
+def generate_welcome_message(welcome_message: EmailTemplates) -> Optional[List[dict]]:
     """Generates the welcome message."""
     if welcome_message is None:
-        print("**** No welcome message found")
         return INCIDENT_PARTICIPANT_WELCOME_MESSAGE
 
     participant_welcome = {

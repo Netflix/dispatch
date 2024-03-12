@@ -219,7 +219,6 @@ def send_welcome_email_to_participant(
     notification_text = "Incident Notification"
 
     # Can raise exception "tenacity.RetryError: RetryError". (Email may still go through).
-    print(f"**** Trying to send message and welcome_template is {welcome_template}")
     try:
         plugin.instance.send(
             participant_email,
@@ -294,8 +293,6 @@ def send_incident_welcome_participant_messages(
         project_id=incident.project_id,
         email_template_type=EmailTemplateTypes.welcome,
     )
-    if welcome_template is None:
-        print(f"**** No welcome_template found for {incident.project_id} with type {EmailTemplateTypes.welcome}")
 
     # we send the welcome ephemeral message
     send_welcome_ephemeral_message_to_participant(

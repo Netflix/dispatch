@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -29,7 +29,7 @@ def get_by_type(*, email_template_type: str, project_id: int, db_session: Sessio
     )
 
 
-def get_all(*, db_session: Session):
+def get_all(*, db_session: Session) -> List[Optional[EmailTemplates]]:
     """Gets all email templates."""
     return db_session.query(EmailTemplates)
 
