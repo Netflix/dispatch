@@ -32,29 +32,27 @@
       </v-tabs>
       <v-window v-model="tab">
         <incident-details-tab />
-        <v-container fluid>
-          <v-row>
-            <v-col class="text-center">
-              <v-tooltip location="bottom">
-                <template #activator="{ props }">
-                  <v-btn
-                    v-bind="props"
-                    variant="flat"
-                    color="secondary"
-                    :disabled="!isValid.value"
-                    @click="preview()"
-                  >
-                    Preview Participants
-                  </v-btn>
-                </template>
-                <span>
-                  Preview the list of designated participants for when this incident is created.
-                </span>
-              </v-tooltip>
-            </v-col>
-          </v-row>
-        </v-container>
       </v-window>
+      <template #append>
+        <v-list-item lines="two" class="text-center">
+          <v-tooltip location="bottom">
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                variant="flat"
+                color="secondary"
+                :disabled="!isValid.value"
+                @click="preview()"
+              >
+                Preview Participants
+              </v-btn>
+            </template>
+            <span>
+              Preview the list of designated participants for when this incident is created.
+            </span>
+          </v-tooltip>
+        </v-list-item>
+      </template>
     </v-navigation-drawer>
   </v-form>
 </template>
