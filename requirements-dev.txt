@@ -4,6 +4,7 @@
 #
 #    pip-compile requirements-dev.in
 #
+
 asttokens==2.4.1
     # via
     #   devtools
@@ -38,7 +39,7 @@ faker==24.2.0
     #   factory-boy
 filelock==3.13.1
     # via virtualenv
-identify==2.5.33
+identify==2.5.35
     # via pre-commit
 iniconfig==2.0.0
     # via pytest
@@ -62,11 +63,11 @@ pathspec==0.12.1
     # via black
 pexpect==4.9.0
     # via ipython
-platformdirs==4.1.0
+platformdirs==4.2.0
     # via
     #   black
     #   virtualenv
-pluggy==1.3.0
+pluggy==1.4.0
     # via pytest
 pre-commit==3.6.2
     # via -r requirements-dev.in
@@ -94,15 +95,15 @@ six==1.16.0
     #   python-dateutil
 stack-data==0.6.3
     # via ipython
-traitlets==5.14.1
+traitlets==5.14.2
     # via
     #   ipython
     #   matplotlib-inline
-virtualenv==20.25.0
+virtualenv==20.25.1
     # via pre-commit
 vulture==2.11
     # via -r requirements-dev.in
-wcwidth==0.2.12
+wcwidth==0.2.13
     # via prompt-toolkit
 
 # The following packages are considered to be unsafe in a requirements file:
