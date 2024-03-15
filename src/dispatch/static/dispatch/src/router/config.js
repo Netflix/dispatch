@@ -434,6 +434,12 @@ export const protectedRoute = [
             component: () => import("@/cost_model/Table.vue"),
           },
           {
+            path: "emailTemplates",
+            name: "emailTemplatesTable",
+            meta: { title: "Email Templates", subMenu: "project", group: "general" },
+            component: () => import("@/email_templates/Table.vue"),
+          },
+          {
             path: "incidentTypes",
             name: "IncidentTypeTable",
             meta: { title: "Types", subMenu: "project", group: "incident" },

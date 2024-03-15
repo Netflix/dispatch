@@ -9,6 +9,7 @@ import case_type from "@/case/type/store"
 import cost_model from "@/cost_model/store"
 import definition from "@/definition/store"
 import document from "@/document/store"
+import email_templates from "@/email_templates/store"
 import entity from "@/entity/store"
 import entity_type from "@/entity_type/store"
 import forms from "@/forms/store"
@@ -60,6 +61,7 @@ export default createStore({
     case_type,
     definition,
     document,
+    email_templates,
     entity,
     entity_type,
     forms,

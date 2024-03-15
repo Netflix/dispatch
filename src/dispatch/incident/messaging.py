@@ -4,13 +4,19 @@
     :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
+
 import logging
+
+from typing import Optional
 
 from dispatch.decorators import timer
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.database.core import SessionLocal, resolve_attr
 from dispatch.document import service as document_service
+from dispatch.email_templates.models import EmailTemplates
+from dispatch.email_templates import service as email_template_service
+from dispatch.email_templates.enums import EmailTemplateTypes
 from dispatch.event import service as event_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import Incident, IncidentRead
@@ -30,7 +36,6 @@ from dispatch.messaging.strings import (
     INCIDENT_NOTIFICATION_COMMON,
     INCIDENT_OPEN_TASKS,
     INCIDENT_PARTICIPANT_SUGGESTED_READING_ITEM,
-    INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
     INCIDENT_PRIORITY_CHANGE,
     INCIDENT_REVIEW_DOCUMENT,
     INCIDENT_SEVERITY_CHANGE,
@@ -38,6 +43,7 @@ from dispatch.messaging.strings import (
     INCIDENT_TYPE_CHANGE,
     INCIDENT_COMPLETED_FORM_MESSAGE,
     MessageType,
+    generate_welcome_message,
 )
 from dispatch.participant import service as participant_service
 from dispatch.participant_role import service as participant_role_service
@@ -67,7 +73,11 @@ def get_suggested_documents(db_session, incident: Incident) -> list:
 
 
 def send_welcome_ephemeral_message_to_participant(
-    participant_email: str, incident: Incident, db_session: SessionLocal
+    *,
+    participant_email: str,
+    incident: Incident,
+    db_session: SessionLocal,
+    welcome_template: Optional[EmailTemplates] = None,
 ):
     """Sends an ephemeral welcome message to the participant."""
     if not incident.conversation:
@@ -135,7 +145,7 @@ def send_welcome_ephemeral_message_to_participant(
         incident.conversation.channel_id,
         participant_email,
         "Incident Welcome Message",
-        INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
+        generate_welcome_message(welcome_template),
         MessageType.incident_participant_welcome,
         **message_kwargs,
     )
@@ -144,7 +154,11 @@ def send_welcome_ephemeral_message_to_participant(
 
 
 def send_welcome_email_to_participant(
-    participant_email: str, incident: Incident, db_session: SessionLocal
+    *,
+    participant_email: str,
+    incident: Incident,
+    db_session: SessionLocal,
+    welcome_template: Optional[EmailTemplates] = None,
 ):
     """Sends a welcome email to the participant."""
     # we load the incident instance
@@ -209,7 +223,7 @@ def send_welcome_email_to_participant(
         plugin.instance.send(
             participant_email,
             notification_text,
-            INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
+            generate_welcome_message(welcome_template),
             MessageType.incident_participant_welcome,
             **message_kwargs,
         )
@@ -219,9 +233,7 @@ def send_welcome_email_to_participant(
     log.debug(f"Welcome email sent to {participant_email}.")
 
 
-def send_completed_form_email(
-    participant_email: str, form: Forms, db_session: SessionLocal
-):
+def send_completed_form_email(participant_email: str, form: Forms, db_session: SessionLocal):
     """Sends an email to notify about a completed incident form."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=form.project.id, plugin_type="email"
@@ -270,14 +282,33 @@ def send_completed_form_email(
 
 @timer
 def send_incident_welcome_participant_messages(
-    participant_email: str, incident: Incident, db_session: SessionLocal
+    participant_email: str,
+    incident: Incident,
+    db_session: SessionLocal,
 ):
     """Sends welcome messages to the participant."""
+    # check to see if there is an override welcome message template
+    welcome_template = email_template_service.get_by_type(
+        db_session=db_session,
+        project_id=incident.project_id,
+        email_template_type=EmailTemplateTypes.welcome,
+    )
+
     # we send the welcome ephemeral message
-    send_welcome_ephemeral_message_to_participant(participant_email, incident, db_session)
+    send_welcome_ephemeral_message_to_participant(
+        participant_email=participant_email,
+        incident=incident,
+        db_session=db_session,
+        welcome_template=welcome_template,
+    )
 
     # we send the welcome email
-    send_welcome_email_to_participant(participant_email, incident, db_session)
+    send_welcome_email_to_participant(
+        participant_email=participant_email,
+        incident=incident,
+        db_session=db_session,
+        welcome_template=welcome_template,
+    )
 
     log.debug(f"Welcome participant messages sent {participant_email}.")
 
