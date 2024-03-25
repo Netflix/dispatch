@@ -192,12 +192,21 @@ function getCurrentPage(form_schema) {
           }
         } else {
           if (hasFormkitPro) {
-            obj = {
-              $formkit: "dropdown",
-              multiple: true,
-              options: item.options,
-              "selection-appearance": "tags",
-              ...obj,
+            if (item.allow_new) {
+              obj = {
+                $formkit: "taglist",
+                allowNewValues: true,
+                options: item.options,
+                ...obj,
+              }
+            } else {
+              obj = {
+                $formkit: "dropdown",
+                multiple: true,
+                options: item.options,
+                "selection-appearance": "tags",
+                ...obj,
+              }
             }
           } else {
             obj = {
