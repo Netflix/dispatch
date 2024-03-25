@@ -370,6 +370,9 @@ def case_escalated_status_flow(case: Case, organization_slug: OrganizationSlug, 
 
 def case_closed_status_flow(case: Case, db_session=None):
     """Runs the case closed transition flow."""
+    # if the case missed the triage step, set the time to now
+    if not case.triage_at:
+        case.triage_at = datetime.utcnow()
     # we set the closed_at time
     case.closed_at = datetime.utcnow()
     db_session.add(case)
