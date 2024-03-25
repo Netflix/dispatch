@@ -45,8 +45,6 @@ from .service import (
     update_signal_filter,
 )
 
-from .flows import signal_instance_update_flow
-
 router = APIRouter()
 
 log = logging.getLogger(__name__)
