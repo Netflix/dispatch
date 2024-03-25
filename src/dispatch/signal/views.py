@@ -112,11 +112,6 @@ def create_signal_instance(
         signal_instance = signal_service.update_instance(
             db_session=db_session, signal_instance_in=signal_instance_in
         )
-        # Note: we can do this because it's still relatively cheap, if we add more logic to the flow
-        # this will need to be moved to a background function (similar to case creation)
-        signal_instance = signal_instance_update_flow(
-            db_session=db_session, signal_instance_id=signal_instance.id
-        )
     return signal_instance
 
 
