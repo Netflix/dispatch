@@ -15,7 +15,6 @@ from dispatch.models import (
     PrimaryKey,
     Pagination,
 )
-from dispatch.project.models import ProjectRead
 
 
 class TagType(Base, TimeStampMixin, ProjectMixin):
@@ -33,6 +32,11 @@ class TagType(Base, TimeStampMixin, ProjectMixin):
     color = Column(String)
     icon = Column(String)
     search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
+
+
+class ProjectRead(DispatchBase):
+    id: Optional[PrimaryKey]
+    name: NameStr
 
 
 # Pydantic models
