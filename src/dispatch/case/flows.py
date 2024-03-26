@@ -477,6 +477,8 @@ def case_to_incident_escalate_flow(
 
     # we map the case to the newly created incident
     case.incidents.append(incident)
+    db_session.add(case)
+    db_session.commit()
 
     # we run the incident creation flow
     incident_flows.incident_create_flow(
