@@ -41,34 +41,24 @@ def create_case_conversation(
     conversation = None
 
     use_channel = True
-    if not use_channel:
-        if conversation_target:
-            try:
+    if conversation_target:
+        try:
+            if not use_channel:
                 conversation = plugin.instance.create_threaded(
-                    case=case, conversation_id=conversation_target, db_session=db_session
+                    case=case,
+                    conversation_id=conversation_target,
+                    db_session=db_session,
                 )
-            except Exception as e:
-                # TODO: consistency across exceptions
-                log.exception(e)
-
-        if not conversation:
-            log.error(
-                f"Conversation not created. Plugin {plugin.plugin.slug} encountered an error."
-            )
-            return
-    else:
-        if conversation_target:
-            try:
+            else:
                 conversation = plugin.instance.create(name=case.name)
-            except Exception as e:
-                # TODO: consistency across exceptions
-                log.exception(e)
 
-        if not conversation:
-            log.error(
-                f"Conversation not created. Plugin {plugin.plugin.slug} encountered an error."
-            )
-            return
+        except Exception as e:
+            # TODO: consistency across exceptions
+            log.exception(e)
+
+    if not conversation:
+        log.error(f"Conversation not created. Plugin {plugin.plugin.slug} encountered an error.")
+        return
 
     conversation.update({"resource_type": plugin.plugin.slug, "resource_id": conversation["id"]})
 
