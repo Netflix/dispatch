@@ -1111,6 +1111,10 @@ def join_incident_button_click(
     ack()
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
+    # handle case where there is no related incident
+    if len(case.incidents) == 0:
+        return
+
     # we add the user to the incident conversation
     conversation_flows.add_incident_participants(
         # TODO: handle case where there are multiple related incidents
