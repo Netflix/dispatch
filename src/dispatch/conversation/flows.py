@@ -23,7 +23,9 @@ log = logging.getLogger(__name__)
 Resource = TypeVar("Resource", Document, Conference, Storage, Ticket)
 
 
-def create_case_conversation(case: Case, conversation_target: str, db_session: SessionLocal):
+def create_case_conversation(
+    case: Case, conversation_target: str, db_session: SessionLocal, use_channel: bool = False
+):
     """Create external communication conversation."""
 
     plugin = plugin_service.get_active_instance(
@@ -38,18 +40,35 @@ def create_case_conversation(case: Case, conversation_target: str, db_session: S
 
     conversation = None
 
-    if conversation_target:
-        try:
-            conversation = plugin.instance.create_threaded(
-                case=case, conversation_id=conversation_target, db_session=db_session
-            )
-        except Exception as e:
-            # TODO: consistency across exceptions
-            log.exception(e)
+    use_channel = True
+    if not use_channel:
+        if conversation_target:
+            try:
+                conversation = plugin.instance.create_threaded(
+                    case=case, conversation_id=conversation_target, db_session=db_session
+                )
+            except Exception as e:
+                # TODO: consistency across exceptions
+                log.exception(e)
 
-    if not conversation:
-        log.error(f"Conversation not created. Plugin {plugin.plugin.slug} encountered an error.")
-        return
+        if not conversation:
+            log.error(
+                f"Conversation not created. Plugin {plugin.plugin.slug} encountered an error."
+            )
+            return
+    else:
+        if conversation_target:
+            try:
+                conversation = plugin.instance.create(name=case.name)
+            except Exception as e:
+                # TODO: consistency across exceptions
+                log.exception(e)
+
+        if not conversation:
+            log.error(
+                f"Conversation not created. Plugin {plugin.plugin.slug} encountered an error."
+            )
+            return
 
     conversation.update({"resource_type": plugin.plugin.slug, "resource_id": conversation["id"]})
 
@@ -57,7 +76,7 @@ def create_case_conversation(case: Case, conversation_target: str, db_session: S
         resource_id=conversation["resource_id"],
         resource_type=conversation["resource_type"],
         weblink=conversation["weblink"],
-        thread_id=conversation["timestamp"],
+        thread_id=conversation.get("timestamp"),
         channel_id=conversation["id"],
     )
     case.conversation = create(db_session=db_session, conversation_in=conversation_in)
