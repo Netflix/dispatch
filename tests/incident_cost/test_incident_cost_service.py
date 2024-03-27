@@ -215,7 +215,6 @@ def test_calculate_incident_response_cost_without_cost_model(
 ):
     """Tests that the incident response cost is created and calculated correctly with the classic cost model."""
     from datetime import timedelta, datetime, UTC
-    from dispatch.incident.service import get
     from dispatch.incident_cost.service import calculate_incident_response_cost_with_classic_model
     from dispatch.incident_cost_type import service as incident_cost_type_service
 
