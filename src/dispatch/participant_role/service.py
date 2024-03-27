@@ -67,6 +67,11 @@ def renounce_role(*, db_session, participant_role: ParticipantRole) -> Participa
     return participant_role
 
 
+def preview(*, participant_role_in: ParticipantRoleCreate) -> ParticipantRole:
+    """Previews a new participant role object creation without saving to the database."""
+    return ParticipantRole(**participant_role_in.dict())
+
+
 def create(*, db_session, participant_role_in: ParticipantRoleCreate) -> ParticipantRole:
     """Creates a new participant role."""
     participant_role = ParticipantRole(**participant_role_in.dict())

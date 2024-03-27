@@ -7,6 +7,7 @@
       <new-sheet />
       <delete-dialog />
       <report-dialog />
+      <preview-dialog />
       <workflow-run-modal />
       <v-col>
         <div class="text-h5">Incidents</div>
@@ -148,6 +149,7 @@ import IncidentPriority from "@/incident/priority/IncidentPriority.vue"
 import IncidentSeverity from "@/incident/severity/IncidentSeverity.vue"
 import IncidentStatus from "@/incident/status/IncidentStatus.vue"
 import NewSheet from "@/incident/NewSheet.vue"
+import PreviewDialog from "@/incident/PreviewDialog.vue"
 import ReportDialog from "@/incident/ReportDialog.vue"
 import RouterUtils from "@/router/utils"
 import TableExportDialog from "@/incident/TableExportDialog.vue"
@@ -166,6 +168,7 @@ export default {
     IncidentSeverity,
     IncidentStatus,
     NewSheet,
+    PreviewDialog,
     ReportDialog,
     TableExportDialog,
     TableFilterDialog,

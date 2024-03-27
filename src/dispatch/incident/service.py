@@ -4,6 +4,7 @@
     :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
+
 import logging
 
 from datetime import datetime, timedelta
@@ -149,7 +150,7 @@ def get_all_last_x_hours_by_status(
         )
 
 
-def create(*, db_session, incident_in: IncidentCreate) -> Incident:
+def create(*, db_session, incident_in: IncidentCreate, preview: bool = False) -> Incident:
     """Creates a new incident."""
     project = project_service.get_by_name_or_default(
         db_session=db_session, project_in=incident_in.project
@@ -199,37 +200,35 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
         cost_model=cost_model,
     )
 
-    db_session.add(incident)
-    db_session.commit()
+    if not preview:
+        db_session.add(incident)
+        db_session.commit()
 
-    reporter_name = incident_in.reporter.individual.name if incident_in.reporter else ""
+        reporter_name = incident_in.reporter.individual.name if incident_in.reporter else ""
 
-    event_service.log_incident_event(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description="Incident created",
-        details={
-            "title": incident.title,
-            "description": incident.description,
-            "type": incident.incident_type.name,
-            "severity": incident.incident_severity.name,
-            "priority": incident.incident_priority.name,
-            "status": incident.status,
-            "visibility": incident.visibility,
-        },
-        individual_id=incident_in.reporter.individual.id,
-        incident_id=incident.id,
-        owner=reporter_name,
-        pinned=True,
-    )
+        event_service.log_incident_event(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description="Incident created",
+            details={
+                "title": incident.title,
+                "description": incident.description,
+                "type": incident.incident_type.name,
+                "severity": incident.incident_severity.name,
+                "priority": incident.incident_priority.name,
+                "status": incident.status,
+                "visibility": incident.visibility,
+            },
+            individual_id=incident_in.reporter.individual.id,
+            incident_id=incident.id,
+            owner=reporter_name,
+            pinned=True,
+        )
 
     # add reporter
     reporter_email = incident_in.reporter.individual.email
     participant_flows.add_participant(
-        reporter_email,
-        incident,
-        db_session,
-        role=ParticipantRoleType.reporter,
+        reporter_email, incident, db_session, role=ParticipantRoleType.reporter, preview=preview
     )
 
     # add commander
@@ -254,6 +253,7 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
         db_session,
         service_id=commander_service_id,
         role=ParticipantRoleType.incident_commander,
+        preview=preview,
     )
 
     # add liaison
@@ -270,6 +270,7 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
             db_session,
             service_id=liaison_service_id,
             role=ParticipantRoleType.liaison,
+            preview=preview,
         )
 
     # add scribe
@@ -286,6 +287,7 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
             db_session,
             service_id=scribe_service_id,
             role=ParticipantRoleType.scribe,
+            preview=preview,
         )
 
     # add observer (if engage_next_oncall is enabled)
@@ -310,6 +312,7 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
                     db_session,
                     service_id=incident_role.service.id,
                     role=ParticipantRoleType.observer,
+                    preview=preview,
                 )
 
     return incident

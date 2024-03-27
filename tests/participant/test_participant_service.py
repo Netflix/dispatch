@@ -5,12 +5,53 @@ def test_get(session, participant):
     assert t_participant.id == participant.id
 
 
+def test_get_or_preview__get(session, participant, incident):
+    from dispatch.participant.service import get_or_preview
+
+    participant.incident = incident
+    t_participant = get_or_preview(
+        db_session=session,
+        subject=participant.incident,
+        individual_id=participant.individual_contact_id,
+        service_id=0,
+        participant_roles=[],
+    )
+
+    assert t_participant
+    assert t_participant.id == participant.id
+
+
+def test_get_or_preview__preview(session, incident, individual_contact, participant_role):
+    from dispatch.participant.service import get_or_preview
+
+    participant = get_or_preview(
+        db_session=session,
+        subject=incident,
+        individual_id=individual_contact.id,
+        service_id=0,
+        participant_roles=[participant_role],
+    )
+
+    assert participant
+    assert not participant.id
+
+
+def test_create_preview(session, participant_role):
+    from dispatch.participant.service import create
+    from dispatch.participant.models import ParticipantCreate
+
+    participant_in = ParticipantCreate(participant_role=[participant_role])
+    participant = create(db_session=session, participant_in=participant_in, preview=True)
+    assert participant
+    assert not participant.id
+
+
 def test_create(session, participant_role):
     from dispatch.participant.service import create
     from dispatch.participant.models import ParticipantCreate
 
     participant_in = ParticipantCreate(participant_role=[participant_role])
-    participant = create(db_session=session, participant_in=participant_in)
+    participant = create(db_session=session, participant_in=participant_in, preview=False)
     assert participant
 
 

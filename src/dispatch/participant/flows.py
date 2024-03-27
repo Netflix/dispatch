@@ -28,8 +28,14 @@ def add_participant(
     db_session: SessionLocal,
     service_id: int = None,
     role: ParticipantRoleType = ParticipantRoleType.participant,
+    preview: bool = False,
 ) -> Participant:
-    """Adds a participant to an incident or a case."""
+    """Adds a participant to an incident or a case.
+
+    If a person is fetched from the oncall plugin, this function performs one of two actions:
+     - Creates a new individual contact object if the person is not registered in Dispatch
+     - Updates the existing individual contact
+    """
     # we get or create a new individual
     individual = individual_service.get_or_create(
         db_session=db_session, project=subject.project, email=user_email
@@ -38,14 +44,23 @@ def add_participant(
     # we get or create a new participant
     subject_type = get_table_name_by_class_instance(subject)
     participant_role = ParticipantRoleCreate(role=role)
-    participant = participant_service.get_or_create(
-        db_session=db_session,
-        subject_id=subject.id,
-        subject_type=subject_type,
-        individual_id=individual.id,
-        service_id=service_id,
-        participant_roles=[participant_role],
-    )
+    if preview:
+        participant = participant_service.get_or_preview(
+            db_session=db_session,
+            subject=subject,
+            individual_id=individual.id,
+            service_id=service_id,
+            participant_roles=[participant_role],
+        )
+    else:
+        participant = participant_service.get_or_create(
+            db_session=db_session,
+            subject_id=subject.id,
+            subject_type=subject_type,
+            individual_id=individual.id,
+            service_id=service_id,
+            participant_roles=[participant_role],
+        )
 
     individual.participant.append(participant)
     subject.participants.append(participant)
@@ -66,6 +81,10 @@ def add_participant(
         subject.observer_id = participant.id
     elif role == ParticipantRoleType.assignee:
         subject.assignee_id = participant.id
+
+    # Do not save previews to the database
+    if preview:
+        return participant
 
     # we add and commit the changes
     db_session.add(participant)

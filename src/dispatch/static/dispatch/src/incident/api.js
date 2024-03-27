@@ -20,6 +20,10 @@ export default {
     })
   },
 
+  preview(payload) {
+    return API.post(`/${resource}/preview`, payload)
+  },
+
   create(payload) {
     return API.post(`/${resource}`, payload)
   },

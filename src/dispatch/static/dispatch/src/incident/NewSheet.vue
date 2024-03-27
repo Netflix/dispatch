@@ -33,6 +33,26 @@
       <v-window v-model="tab">
         <incident-details-tab />
       </v-window>
+      <template #append>
+        <v-list-item lines="two" class="text-center">
+          <v-tooltip location="bottom">
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                variant="flat"
+                color="secondary"
+                :disabled="!isValid.value"
+                @click="preview()"
+              >
+                Preview Participants
+              </v-btn>
+            </template>
+            <span>
+              Preview the list of designated participants for when this incident is created.
+            </span>
+          </v-tooltip>
+        </v-list-item>
+      </template>
     </v-navigation-drawer>
   </v-form>
 </template>
@@ -67,7 +87,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("incident", ["save", "closeNewSheet"]),
+    ...mapActions("incident", ["save", "closeNewSheet", "preview"]),
   },
 }
 </script>

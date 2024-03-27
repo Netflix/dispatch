@@ -27,7 +27,7 @@ const getDefaultSelectedState = () => {
     incident_severity: null,
     incident_type: null,
     name: null,
-    participant: null,
+    participants: null,
     project: null,
     reported_at: null,
     reporter: null,
@@ -68,6 +68,7 @@ const state = {
     ...getDefaultSelectedState(),
   },
   dialogs: {
+    showPreviewDialog: false,
     showDeleteDialog: false,
     showEditSheet: false,
     showExport: false,
@@ -221,6 +222,12 @@ const actions = {
     commit("SET_DIALOG_SHOW_EDIT_SHEET", false)
     commit("RESET_SELECTED")
     router.push({ name: "IncidentTable" })
+  },
+  showPreviewDialog({ commit }) {
+    commit("SET_DIALOG_PREVIEW", true)
+  },
+  closePreviewDialog({ commit }) {
+    commit("SET_DIALOG_PREVIEW", false)
   },
   showDeleteDialog({ commit }, incident) {
     commit("SET_DIALOG_DELETE", true)
@@ -378,6 +385,37 @@ const actions = {
         commit("SET_SELECTED_LOADING", false)
       })
   },
+  preview({ commit, dispatch }) {
+    if (Array.isArray(state.selected.reporter)) {
+      state.selected.reporter = state.selected.reporter[0]
+    }
+    if (Array.isArray(state.selected.commander)) {
+      state.selected.commander = state.selected.commander[0]
+    }
+    commit(
+      "notification_backend/addBeNotification",
+      { text: "Generating preview of the incident participant list,", type: "info" },
+      { root: true }
+    )
+    return IncidentApi.preview(state.selected)
+      .then((response) => {
+        state.selected.participants = response.data.participants
+        commit(
+          "notification_backend/addBeNotification",
+          { text: "Participant list created successfully.", type: "success" },
+          { root: true }
+        )
+        dispatch("showPreviewDialog")
+      })
+      .catch(() => {
+        commit(
+          "notification_backend/addBeNotification",
+          { text: "Participant list could not be generated.", type: "exception" },
+          { root: true }
+        )
+      })
+  },
+
   save({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
     if (Array.isArray(state.selected.reporter)) {
@@ -597,6 +635,9 @@ const mutations = {
   },
   SET_DIALOG_SHOW_HANDOFF(state, value) {
     state.dialogs.showHandoffDialog = value
+  },
+  SET_DIALOG_PREVIEW(state, value) {
+    state.dialogs.showPreviewDialog = value
   },
   SET_DIALOG_DELETE(state, value) {
     state.dialogs.showDeleteDialog = value
