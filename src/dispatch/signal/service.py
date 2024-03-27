@@ -1,8 +1,10 @@
 import logging
 import json
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Union
 
+from fastapi import HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from sqlalchemy import desc, asc, or_
@@ -534,6 +536,14 @@ def delete(*, db_session: Session, signal_id: int):
     return signal_id
 
 
+def is_valid_uuid(val):
+    try:
+        uuid.UUID(str(val), version=4)
+        return True
+    except ValueError:
+        return False
+
+
 def create_instance(
     *, db_session: Session, signal_instance_in: SignalInstanceCreate
 ) -> SignalInstance:
@@ -583,6 +593,14 @@ def create_instance(
             case_type_in=signal_instance_in.case_type,
         )
         signal_instance.case_type = case_type
+
+    if not is_valid_uuid(signal_instance.id, version=4):
+        msg = f"Invalid signal id format. Expecting UUID format. Received {signal_instance.id}."
+        log.warn(msg)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=[{"msg": msg}],
+        ) from None
 
     db_session.add(signal_instance)
     db_session.commit()
