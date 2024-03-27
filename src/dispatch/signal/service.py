@@ -578,6 +578,14 @@ def create_instance(
         if signal_instance_in.raw.get("id"):
             signal_instance.id = signal_instance_in.raw["id"]
 
+    if not is_valid_uuid(signal_instance.id):
+        msg = f"Invalid signal id format. Expecting UUID format. Received {signal_instance.id}."
+        log.warn(msg)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=[{"msg": msg}],
+        ) from None
+
     if signal_instance_in.case_priority:
         case_priority = case_priority_service.get_by_name_or_default(
             db_session=db_session,
@@ -594,13 +602,6 @@ def create_instance(
         )
         signal_instance.case_type = case_type
 
-    if not is_valid_uuid(signal_instance.id):
-        msg = f"Invalid signal id format. Expecting UUID format. Received {signal_instance.id}."
-        log.warn(msg)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=[{"msg": msg}],
-        ) from None
 
     db_session.add(signal_instance)
     db_session.commit()
