@@ -519,6 +519,8 @@ def case_to_incident_endpoint_escalate_flow(
     db_session=None,
 ):
     """Allows for a case to be escalated to an incident while modifying its properties."""
+    from dispatch.plugins.dispatch_slack.incident import messages
+
     # we get the case
     case = get(case_id=case_id, db_session=db_session)
 
@@ -529,10 +531,38 @@ def case_to_incident_endpoint_escalate_flow(
     case.escalated_at = datetime.utcnow()
     case.status = CaseStatus.escalated
 
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    channel_case = True if case.conversation.thread_id else False
+    # This is a channel based Case, so we reuse the case conversation for the incident
+    if not channel_case:
+        incident.conversation = case.conversation
+        db_session.add(incident)
+        db_session.commit()
+
     # we run the incident create flow
     incident = incident_flows.incident_create_flow(
         incident_id=incident_id, organization_slug=organization_slug, db_session=db_session
     )
+
+    if not channel_case:
+        plugin = plugin_service.get_active_instance(
+            db_session=db_session, project_id=case.project.id, plugin_type="conversation"
+        )
+        if plugin is None:
+            log.warning("Case close reminder message not sent. No conversation plugin enabled.")
+            return
+
+        plugin.instance.send_message(
+            conversation_id=incident.conversation.channel_id,
+            blocks=messages.create_incident_channel_escalate_message(),
+        )
+
+        plugin.instance.rename(
+            conversation_id=incident.conversation.channel_id,
+            name=incident.name,
+        )
+
     case.incidents.append(incident)
 
     db_session.add(case)

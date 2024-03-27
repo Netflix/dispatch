@@ -4,6 +4,7 @@
     :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
+
 import logging
 
 from datetime import datetime, timedelta
@@ -406,7 +407,7 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
 
     db_session.commit()
 
-    # Update total incident reponse cost.
+    # Update total incident response cost.
     incident_cost_service.update_incident_response_cost(
         incident_id=incident.id, db_session=db_session
     )
