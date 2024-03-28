@@ -578,7 +578,7 @@ def create_instance(
         if signal_instance_in.raw.get("id"):
             signal_instance.id = signal_instance_in.raw["id"]
 
-    if not is_valid_uuid(signal_instance.id):
+    if signal_instance.id and not is_valid_uuid(signal_instance.id):
         msg = f"Invalid signal id format. Expecting UUID format. Received {signal_instance.id}."
         log.warn(msg)
         raise HTTPException(
