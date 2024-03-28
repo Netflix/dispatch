@@ -108,7 +108,7 @@ distro==1.9.0
     # via openai
 dnspython==2.4.2
     # via email-validator
-duo-client==5.2.0
+duo-client==5.3.0
     # via -r requirements-base.in
 ecdsa==0.18.0
     # via python-jose
