@@ -310,7 +310,6 @@ def incident_create_resources_flow(
     return incident_create_resources(incident=incident, db_session=db_session)
 
 
-@background_task
 def incident_create_flow(*, organization_slug: str, incident_id: int, db_session=None) -> Incident:
     """Creates all resources required for new incidents and initiates incident response workflow."""
     # we get the incident
@@ -470,7 +469,7 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
                     )
 
     # we send a direct message to the incident commander asking to review
-    # the incident's information and to tag the incident if appropiate
+    # the incident's information and to tag the incident if appropriate
     send_incident_closed_information_review_reminder(incident, db_session)
 
     # we send a direct message to all participants asking them

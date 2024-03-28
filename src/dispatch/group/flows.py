@@ -32,6 +32,9 @@ def create_group(
     if group_type == GroupType.notifications:
         group_name = f"{subject.name}-{GroupType.notifications}"
 
+    # TODO(wshel): LOCAL UNBLOCKER: Avoid Duplicates on Group creation
+    group_name = f"{group_name}_test"
+
     # we create the external group
     try:
         external_group = plugin.instance.create(name=group_name, participants=group_participants)
@@ -97,7 +100,9 @@ def update_group(
 ):
     """Updates an existing group."""
     if group is None:
-        log.warning(f"Group not updated. No group provided. Cannot {group_action} for {group_member}.")
+        log.warning(
+            f"Group not updated. No group provided. Cannot {group_action} for {group_member}."
+        )
         return
 
     plugin = plugin_service.get_active_instance(

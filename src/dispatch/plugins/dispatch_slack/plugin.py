@@ -7,6 +7,7 @@
 """
 
 from blockkit import Message
+from blockkit.surfaces import Block
 import io
 import json
 import logging
@@ -177,6 +178,15 @@ class SlackConversationPlugin(ConversationPlugin):
         )
         return update_message(
             client=client, conversation_id=conversation_id, blocks=blocks, ts=thread_id
+        )
+
+    def send_message(self, conversation_id: str, blocks: list[Block]):
+        """Updates an existing threaded conversation."""
+        client = create_slack_client(self.configuration)
+        return send_message(
+            client=client,
+            conversation_id=conversation_id,
+            blocks=blocks,
         )
 
     def send(
