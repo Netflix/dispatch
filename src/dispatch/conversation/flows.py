@@ -1,6 +1,6 @@
 import logging
 
-from typing import TypeVar, List
+from sqlalchemy.orm import Session
 
 from dispatch.case.models import Case
 from dispatch.conference.models import Conference
@@ -13,6 +13,7 @@ from dispatch.storage.models import Storage
 from dispatch.ticket.models import Ticket
 from dispatch.utils import deslug_and_capitalize_resource_type
 from dispatch.config import DISPATCH_UI_URL
+from dispatch.types import Subject
 
 from .models import Conversation, ConversationCreate
 from .service import create
@@ -20,11 +21,13 @@ from .service import create
 log = logging.getLogger(__name__)
 
 
-Resource = TypeVar("Resource", Document, Conference, Storage, Ticket)
+Resource = Document | Conference | Storage | Ticket
 
 
 def create_case_conversation(
-    case: Case, conversation_target: str, db_session: SessionLocal, use_channel: bool = False
+    case: Case,
+    conversation_target: str,
+    db_session: Session,
 ):
     """Create external communication conversation."""
 
@@ -40,18 +43,26 @@ def create_case_conversation(
 
     conversation = None
 
-    use_channel = True
+    # This case is a thread version, we send a new messaged (threaded) to the conversation target
+    # for the configured case type
     if conversation_target:
         try:
-            if not use_channel:
+            if not case.dedicated_channel:
                 conversation = plugin.instance.create_threaded(
                     case=case,
                     conversation_id=conversation_target,
                     db_session=db_session,
                 )
-            else:
-                conversation = plugin.instance.create(name=case.name)
+        except Exception as e:
+            # TODO: consistency across exceptions
+            log.exception(e)
 
+    # otherwise, it must be a channel based case.
+    if case.dedicated_channel:
+        try:
+            conversation = plugin.instance.create(
+                name=f"case-{case.name}",
+            )
         except Exception as e:
             # TODO: consistency across exceptions
             log.exception(e)
@@ -219,16 +230,23 @@ def set_conversation_topic(incident: Incident, db_session: SessionLocal):
         log.exception(e)
 
 
-def add_conversation_bookmark(incident: Incident, resource: Resource, db_session: SessionLocal):
+def add_conversation_bookmark(
+    db_session: Session,
+    subject: Subject,
+    resource: Resource,
+    title: str | None = None,
+):
     """Adds a conversation bookmark."""
-    if not incident.conversation:
+    if not subject.conversation:
         log.warning(
-            f"Conversation bookmark {resource.name.lower()} not added. No conversation available for this incident."
+            f"Conversation bookmark {resource.name.lower()} not added. No conversation available."
         )
         return
 
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+        db_session=db_session,
+        project_id=subject.project.id,
+        plugin_type="conversation",
     )
     if not plugin:
         log.warning(
@@ -237,16 +255,17 @@ def add_conversation_bookmark(incident: Incident, resource: Resource, db_session
         return
 
     try:
-        title = deslug_and_capitalize_resource_type(resource.resource_type)
+        if not title:
+            title = deslug_and_capitalize_resource_type(resource.resource_type)
         (
             plugin.instance.add_bookmark(
-                incident.conversation.channel_id,
+                subject.conversation.channel_id,
                 resource.weblink,
                 title=title,
             )
             if resource
             else log.warning(
-                f"{resource.name} bookmark not added. No {resource.name.lower()} available for this incident."
+                f"{resource.name} bookmark not added. No {resource.name.lower()} available for subject.."
             )
         )
     except Exception as e:
@@ -254,12 +273,15 @@ def add_conversation_bookmark(incident: Incident, resource: Resource, db_session
             db_session=db_session,
             source="Dispatch Core App",
             description=f"Adding the {resource.name.lower()} bookmark failed. Reason: {e}",
-            incident_id=incident.id,
+            incident_id=subject.id,
         )
         log.exception(e)
 
 
-def add_conversation_bookmarks(incident: Incident, db_session: SessionLocal):
+def add_conversation_bookmarks(
+    incident: Incident,
+    db_session: Session,
+):
     """Adds the conversation bookmarks."""
     if not incident.conversation:
         log.warning(
@@ -339,7 +361,11 @@ def add_conversation_bookmarks(incident: Incident, db_session: SessionLocal):
         log.exception(e)
 
 
-def add_case_participants(case: Case, participant_emails: List[str], db_session: SessionLocal):
+def add_case_participants(
+    case: Case,
+    participant_emails: list[str],
+    db_session: Session,
+):
     """Adds one or more participants to the case conversation."""
     if not case.conversation:
         log.warning(
@@ -373,7 +399,9 @@ def add_case_participants(case: Case, participant_emails: List[str], db_session:
 
 
 def add_incident_participants(
-    incident: Incident, participant_emails: List[str], db_session: SessionLocal
+    incident: Incident,
+    participant_emails: list[str],
+    db_session: Session,
 ):
     """Adds one or more participants to the incident conversation."""
     if not incident.conversation:

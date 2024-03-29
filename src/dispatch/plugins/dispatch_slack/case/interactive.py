@@ -76,10 +76,13 @@ from dispatch.plugins.dispatch_slack.fields import (
 from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
     button_context_middleware,
+    command_context_middleware,
     db_middleware,
     engagement_button_context_middleware,
     modal_submit_middleware,
     shortcut_context_middleware,
+    subject_middleware,
+    configuration_middleware,
     user_middleware,
 )
 from dispatch.plugins.dispatch_slack.modals.common import send_success_modal
@@ -111,8 +114,152 @@ def configure(config: SlackConversationConfiguration):
         handle_list_signals_command
     )
 
+    middleware = [
+        subject_middleware,
+        configuration_middleware,
+        command_context_middleware,
+    ]
+
+    app.command(config.slack_command_escalate_case, middleware=middleware)(
+        handle_escalate_case_command
+    )
+
+    # non-sensitive commands
+    middleware = [
+        subject_middleware,
+        configuration_middleware,
+        command_context_middleware,
+        user_middleware,
+    ]
+
+    app.command(config.slack_command_update_case, middleware=middleware)(handle_update_case_command)
+
 
 # Commands
+
+
+def handle_escalate_case_command(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+) -> None:
+    """Handles list participants command."""
+    ack()
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    already_escalated = True if case.escalated_at else False
+    if already_escalated:
+        modal = Modal(
+            title="Already Escalated",
+            blocks=[Section(text="This case has already been escalated to an incident.")],
+            close="Close",
+        ).build()
+
+        return client.views_open(
+            trigger_id=body["trigger_id"],
+            view=modal,
+        )
+
+    default_title = case.name
+    default_description = case.description
+    default_project = {"text": case.project.name, "value": case.project.id}
+
+    blocks = [
+        Context(elements=[MarkdownText(text="Accept the defaults or adjust as needed.")]),
+        title_input(initial_value=default_title),
+        description_input(initial_value=default_description),
+        assignee_select(),
+        project_select(
+            db_session=db_session,
+            initial_option=default_project,
+            action_id=CaseEscalateActions.project_select,
+            dispatch_action=True,
+        ),
+        incident_type_select(
+            db_session=db_session,
+            initial_option=None,
+            project_id=case.project.id,
+            block_id=None,
+        ),
+        incident_priority_select(
+            db_session=db_session,
+            project_id=case.project.id,
+            initial_option=None,
+            optional=True,
+            block_id=None,  # ensures state is reset
+        ),
+    ]
+
+    modal = Modal(
+        title="Escalate Case",
+        submit="Escalate",
+        blocks=blocks,
+        close="Close",
+        callback_id=CaseEscalateActions.submit,
+        private_metadata=context["subject"].json(),
+    ).build()
+
+    client.views_open(
+        trigger_id=body["trigger_id"],
+        view=modal,
+    )
+
+
+def handle_update_case_command(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+) -> None:
+    ack()
+
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+
+    # assignee_initial_user = client.users_lookupByEmail(email=case.assignee.individual.email)[
+    #     "user"
+    # ]["id"]
+
+    blocks = [
+        title_input(initial_value=case.title),
+        description_input(initial_value=case.description),
+        case_resolution_reason_select(optional=True),
+        resolution_input(initial_value=case.resolution),
+        assignee_select(),
+        case_status_select(initial_option={"text": case.status, "value": case.status}),
+        case_type_select(
+            db_session=db_session,
+            initial_option={"text": case.case_type.name, "value": case.case_type.id},
+            project_id=case.project.id,
+        ),
+        case_priority_select(
+            db_session=db_session,
+            initial_option={"text": case.case_priority.name, "value": case.case_priority.id},
+            project_id=case.project.id,
+            optional=True,
+        ),
+    ]
+
+    modal = Modal(
+        title="Edit Case",
+        blocks=blocks,
+        submit="Update",
+        close="Close",
+        callback_id=CaseEditActions.submit,
+        private_metadata=context["subject"].json(),
+    ).build()
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
+
+
+def ack_engage_oncall_submission_event(ack: Ack) -> None:
+    """Handles engage oncall acknowledgment."""
+    modal = Modal(
+        title="Escalate Case",
+        close="Close",
+        blocks=[Section(text="Escalating case to an incident...")],
+    ).build()
+    ack(response_action="update", view=modal)
 
 
 def handle_list_signals_command(
@@ -616,8 +763,7 @@ def handle_snooze_submission_event(
         # Create the new filter from the form data
         if form_data.get(DefaultBlockIds.entity_select):
             entities = [
-                {"id": int(entity.value)}
-                for entity in form_data[DefaultBlockIds.entity_select]
+                {"id": int(entity.value)} for entity in form_data[DefaultBlockIds.entity_select]
             ]
         else:
             entities = []
@@ -1026,9 +1172,13 @@ def handle_project_select_action(
 def ack_handle_escalation_submission_event(ack: Ack) -> None:
     """Handles the escalation submission event."""
     modal = Modal(
-        title="Escalate Case",
+        title="Escalating Case",
         close="Close",
-        blocks=[Section(text="Escalating case as incident...")],
+        blocks=[
+            Section(
+                text="The case has been esclated to an incident. This channel will be reused for the incident."
+            )
+        ],
     ).build()
     ack(response_action="update", view=modal)
 
@@ -1053,20 +1203,28 @@ def handle_escalation_submission_event(
     db_session.commit()
 
     blocks = create_case_message(case=case, channel_id=context["subject"].channel_id)
-    client.chat_update(
-        blocks=blocks, ts=case.conversation.thread_id, channel=case.conversation.channel_id
-    )
+    if case.has_thread:
+        client.chat_update(
+            blocks=blocks,
+            ts=case.conversation.thread_id,
+            channel=case.conversation.channel_id,
+        )
+
     client.chat_postMessage(
         text="This case has been escalated to an incident. All further triage work will take place in the incident channel.",
         channel=case.conversation.channel_id,
-        thread_ts=case.conversation.thread_id,
+        thread_ts=case.conversation.thread_id if case.has_thread else None,
     )
 
     case_flows.case_escalated_status_flow(
-        case=case, organization_slug=context["subject"].organization_slug, db_session=db_session
+        case=case,
+        organization_slug=context["subject"].organization_slug,
+        db_session=db_session,
     )
     incident = case.incidents[0]
 
+    # TODO: (wshel) Note, user who escalated case is added as participant, not all users in previous case
+    # TODO: (wshel) Likely remove this and move to common_esclate_flow()
     conversation_flows.add_incident_participants(
         incident=incident, participant_emails=[user.email], db_session=db_session
     )

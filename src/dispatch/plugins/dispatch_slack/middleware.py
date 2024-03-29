@@ -18,7 +18,13 @@ from dispatch.plugin import service as plugin_service
 from dispatch.project import service as project_service
 
 from .exceptions import ContextError, RoleError
-from .models import EngagementMetadata, SubjectMetadata, FormMetadata, IncidentSubjects, CaseSubjects
+from .models import (
+    EngagementMetadata,
+    SubjectMetadata,
+    FormMetadata,
+    IncidentSubjects,
+    CaseSubjects,
+)
 
 log = logging.getLogger(__file__)
 
@@ -142,7 +148,7 @@ def action_context_middleware(body: dict, context: BoltContext, next: Callable) 
 def message_context_middleware(
     request: BoltRequest, payload: dict, context: BoltContext, next: Callable
 ) -> None:
-    """Attemps to determine the current context of the event."""
+    """Attempts to determine the current context of the event."""
     if is_bot(request):
         return context.ack()
 
@@ -158,7 +164,7 @@ def message_context_middleware(
 
 # TODO should we support reactions for cases?
 def reaction_context_middleware(context: BoltContext, next: Callable) -> None:
-    """Attemps to determine the current context of a reaction event."""
+    """Attempts to determine the current context of a reaction event."""
     if subject := resolve_context_from_conversation(channel_id=context.channel_id):
         context.update(subject._asdict())
     else:

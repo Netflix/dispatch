@@ -68,6 +68,14 @@
             <v-col cols="12">
               <case-priority-select :project="project" v-model="case_priority" />
             </v-col>
+
+            <v-col cols="12">
+              <v-checkbox
+                v-model="dedicated_channel"
+                class="ml-n2"
+                label="Create a dedicated channel for this case."
+              />
+            </v-col>
             <v-col cols="12">
               <tag-filter-auto-complete
                 :project="project"
@@ -147,6 +155,7 @@ export default {
     ...mapFields("case_management", [
       "selected.case_priority",
       "selected.case_type",
+      "selected.dedicated_channel",
       "selected.title",
       "selected.tags",
       "selected.description",

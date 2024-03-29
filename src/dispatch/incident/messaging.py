@@ -9,6 +9,8 @@ import logging
 
 from typing import Optional
 
+from sqlalchemy.orm import Session
+
 from dispatch.decorators import timer
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.conversation.enums import ConversationCommands
@@ -17,6 +19,7 @@ from dispatch.document import service as document_service
 from dispatch.email_templates.models import EmailTemplates
 from dispatch.email_templates import service as email_template_service
 from dispatch.email_templates.enums import EmailTemplateTypes
+from dispatch.enums import SubjectNames
 from dispatch.event import service as event_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import Incident, IncidentRead
@@ -48,6 +51,7 @@ from dispatch.messaging.strings import (
 from dispatch.participant import service as participant_service
 from dispatch.participant_role import service as participant_role_service
 from dispatch.plugin import service as plugin_service
+from dispatch.types import Subject
 
 
 log = logging.getLogger(__name__)
@@ -561,18 +565,22 @@ def send_incident_update_notifications(
 
 
 @timer
-def send_incident_participant_announcement_message(
-    participant_email: str, incident: Incident, db_session: SessionLocal
+def send_participant_announcement_message(
+    participant_email: str,
+    subject: Subject,
+    db_session: Session,
 ):
     """Announces a participant in the conversation."""
-    if not incident.conversation:
+    subject_type = type(subject).__name__
+
+    if not subject.conversation:
         log.warning(
-            "Incident participant announcement message not sent. No conversation available for this incident."
+            f"{subject_type} participant announcement message not sent. No conversation available for this {subject_type.lower()}."
         )
         return
 
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+        db_session=db_session, project_id=subject.project.id, plugin_type="conversation"
     )
     if not plugin:
         log.warning(
@@ -580,17 +588,31 @@ def send_incident_participant_announcement_message(
         )
         return
 
-    notification_text = "New Incident Participant"
+    notification_text = f"New {subject_type} Participant"
     notification_type = MessageType.incident_notification
     notification_template = []
 
-    participant = participant_service.get_by_incident_id_and_email(
-        db_session=db_session, incident_id=incident.id, email=participant_email
-    )
+    match subject_type:
+        case SubjectNames.CASE:
+            participant = participant_service.get_by_case_id_and_email(
+                db_session=db_session,
+                case_id=subject.id,
+                email=participant_email,
+            )
+        case SubjectNames.INCIDENT:
+            participant = participant_service.get_by_incident_id_and_email(
+                db_session=db_session,
+                incident_id=subject.id,
+                email=participant_email,
+            )
+        case _:
+            raise Exception(
+                "Unknown subject was passed to send_participant_announcement_message",
+            )
 
     participant_info = {}
     contact_plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="contact"
+        db_session=db_session, project_id=subject.project.id, plugin_type="contact"
     )
     if contact_plugin:
         participant_info = contact_plugin.instance.get(participant_email, db_session=db_session)
@@ -635,15 +657,25 @@ def send_incident_participant_announcement_message(
         },
     ]
 
-    plugin.instance.send(
-        incident.conversation.channel_id,
-        notification_text,
-        notification_template,
-        notification_type,
-        blocks=blocks,
-    )
+    if subject_type == SubjectNames.CASE and subject.has_thread:
+        plugin.instance.send(
+            subject.conversation.channel_id,
+            notification_text,
+            notification_template,
+            notification_type,
+            blocks=blocks,
+            ts=subject.thread_id,
+        )
+    else:
+        plugin.instance.send(
+            subject.conversation.channel_id,
+            notification_text,
+            notification_template,
+            notification_type,
+            blocks=blocks,
+        )
 
-    log.debug("Incident participant announcement message sent.")
+    log.debug(f"{subject_type} participant announcement message sent.")
 
 
 def send_incident_commander_readded_notification(incident: Incident, db_session: SessionLocal):

@@ -113,7 +113,12 @@ from dispatch.plugins.dispatch_slack.middleware import (
     shortcut_context_middleware,
 )
 from dispatch.plugins.dispatch_slack.modals.common import send_success_modal
-from dispatch.plugins.dispatch_slack.models import MonitorMetadata, TaskMetadata, IncidentSubjects, CaseSubjects
+from dispatch.plugins.dispatch_slack.models import (
+    MonitorMetadata,
+    TaskMetadata,
+    IncidentSubjects,
+    CaseSubjects,
+)
 from dispatch.plugins.dispatch_slack.service import (
     get_user_email,
     get_user_profile_by_email,
@@ -807,7 +812,7 @@ def handle_after_hours_message(
     except SlackApiError as e:
         if e.response["error"] == SlackAPIErrorCode.USERS_NOT_FOUND:
             e.add_note(
-                "This error usually indiciates that the incident commanders Slack account is deactivated."
+                "This error usually indicates that the incident commanders Slack account is deactivated."
             )
 
         log.warning(f"Failed to fetch timezone from Slack API: {e}")
@@ -2243,7 +2248,7 @@ def handle_incident_notification_join_button_click(
     if not incident:
         message = "Sorry, we can't invite you to this incident. The incident does not exist."
     elif incident.visibility == Visibility.restricted:
-        message = "Sorry, we can't invite you to this incident. The incident's visbility is restricted. Please, reach out to the incident commander if you have any questions."
+        message = "Sorry, we can't invite you to this incident. The incident's visibility is restricted. Please, reach out to the incident commander if you have any questions."
     elif incident.status == IncidentStatus.closed:
         message = "Sorry, you can't join this incident. The incident has already been marked as closed. Please, reach out to the incident commander if you have any questions."
     else:
@@ -2276,7 +2281,7 @@ def handle_incident_notification_subscribe_button_click(
     if not incident:
         message = "Sorry, we can't invite you to this incident. The incident does not exist."
     elif incident.visibility == Visibility.restricted:
-        message = "Sorry, we can't invite you to this incident. The incident's visbility is restricted. Please, reach out to the incident commander if you have any questions."
+        message = "Sorry, we can't invite you to this incident. The incident's visibility is restricted. Please, reach out to the incident commander if you have any questions."
     elif incident.status == IncidentStatus.closed:
         message = "Sorry, you can't subscribe to this incident. The incident has already been marked as closed. Please, reach out to the incident commander if you have any questions."
     else:
