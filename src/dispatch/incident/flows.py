@@ -1,6 +1,7 @@
 import logging
 
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy.orm import Session
 
@@ -9,6 +10,7 @@ from dispatch.conversation import flows as conversation_flows
 from dispatch.database.core import resolve_attr
 from dispatch.decorators import background_task
 from dispatch.document import flows as document_flows
+from dispatch.document.models import Document
 from dispatch.enums import DocumentResourceTypes
 from dispatch.enums import Visibility, EventType
 from dispatch.event import service as event_service
@@ -16,6 +18,7 @@ from dispatch.group import flows as group_flows
 from dispatch.group.enums import GroupType, GroupAction
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentRead
+from dispatch.incident_cost import service as incident_cost_service
 from dispatch.individual import service as individual_service
 from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
@@ -392,25 +395,7 @@ def incident_active_status_flow(incident: Incident, db_session=None):
     conversation_flows.unarchive_conversation(incident=incident, db_session=db_session)
 
 
-def incident_stable_status_flow(incident: Incident, db_session=None):
-    """Runs the incident stable flow."""
-    # we set the stable time
-    incident.stable_at = datetime.utcnow()
-    db_session.add(incident)
-    db_session.commit()
-
-    if incident.incident_document:
-        # we update the incident document
-        document_flows.update_document(
-            document=incident.incident_document,
-            project_id=incident.project.id,
-            db_session=db_session,
-        )
-
-    if incident.incident_review_document:
-        log.info("The post-incident review document has already been created. Skipping creation...")
-        return
-
+def create_incident_review_document(incident: Incident, db_session=None) -> Optional[Document]:
     # we create the post-incident review document
     document_flows.create_document(
         subject=incident,
@@ -425,9 +410,23 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
         project_id=incident.project.id,
         db_session=db_session,
     )
+    return incident.incident_review_document
+
+
+def handle_incident_review_updates(incident: Incident, db_session=None):
+    """Manages the steps following the creation of an incident review document.
+
+    This includes updating the incident costs with the incident review costss, notifying the participants, and bookmarking the document in the conversation.
+    """
+    # Add the incident review costs to the incident costs.
+    incident_cost_service.update_incident_response_cost(
+        incident_id=incident.id,
+        db_session=db_session,
+        incident_review=bool(incident.incident_review_document),
+    )
 
     if incident.incident_review_document and incident.conversation:
-        # we send a notification about the incident review document to the conversation
+        # Send a notification about the incident review document to the conversation
         send_incident_review_document_notification(
             incident.conversation.channel_id,
             incident.incident_review_document.weblink,
@@ -435,10 +434,35 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
             db_session,
         )
 
-        # we bookmark the incident review document in the conversation
+        # Bookmark the incident review document in the conversation
         conversation_flows.add_conversation_bookmark(
             incident=incident, resource=incident.incident_review_document, db_session=db_session
         )
+
+
+def incident_stable_status_flow(incident: Incident, db_session=None):
+    """Runs the incident stable flow."""
+    # Set the stable time.
+    incident.stable_at = datetime.utcnow()
+    db_session.add(incident)
+    db_session.commit()
+
+    if incident.incident_document:
+        # Update the incident document.
+        document_flows.update_document(
+            document=incident.incident_document,
+            project_id=incident.project.id,
+            db_session=db_session,
+        )
+
+    if incident.incident_review_document:
+        log.info("The post-incident review document has already been created. Skipping creation...")
+        return
+
+    # Create the post-incident review document.
+    create_incident_review_document(incident=incident, db_session=db_session)
+
+    handle_incident_review_updates(incident=incident, db_session=db_session)
 
 
 def incident_closed_status_flow(incident: Incident, db_session=None):
