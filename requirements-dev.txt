@@ -42,7 +42,7 @@ identify==2.5.33
     # via pre-commit
 iniconfig==2.0.0
     # via pytest
-ipython==8.22.2
+ipython==8.23.0
     # via -r requirements-dev.in
 jedi==0.19.1
     # via ipython
@@ -98,6 +98,8 @@ traitlets==5.14.1
     # via
     #   ipython
     #   matplotlib-inline
+typing-extensions==4.10.0
+    # via ipython
 virtualenv==20.25.0
     # via pre-commit
 vulture==2.11
