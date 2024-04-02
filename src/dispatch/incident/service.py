@@ -4,6 +4,7 @@
     :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
+
 import logging
 
 from datetime import datetime, timedelta
@@ -338,12 +339,14 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
             incident_priority_in=incident_in.incident_priority,
         )
 
-    cost_model = None
-    if incident_in.cost_model and incident_in.cost_model.id != incident.cost_model_id:
-        cost_model = cost_model_service.get_cost_model_by_id(
+    cost_model = (
+        cost_model_service.get_cost_model_by_id(
             db_session=db_session,
             cost_model_id=incident_in.cost_model.id,
         )
+        if incident_in.cost_model
+        else None
+    )
 
     cases = []
     for c in incident_in.cases:
