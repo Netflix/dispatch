@@ -45,14 +45,13 @@ def create_case_conversation(
 
     # This case is a thread version, we send a new messaged (threaded) to the conversation target
     # for the configured case type
-    if conversation_target:
+    if conversation_target and not case.dedicated_channel:
         try:
-            if not case.dedicated_channel:
-                conversation = plugin.instance.create_threaded(
-                    case=case,
-                    conversation_id=conversation_target,
-                    db_session=db_session,
-                )
+            conversation = plugin.instance.create_threaded(
+                case=case,
+                conversation_id=conversation_target,
+                db_session=db_session,
+            )
         except Exception as e:
             # TODO: consistency across exceptions
             log.exception(e)
@@ -73,6 +72,7 @@ def create_case_conversation(
 
     conversation.update({"resource_type": plugin.plugin.slug, "resource_id": conversation["id"]})
 
+    print(f"got convo: {conversation}")
     conversation_in = ConversationCreate(
         resource_id=conversation["resource_id"],
         resource_type=conversation["resource_type"],

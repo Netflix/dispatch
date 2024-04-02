@@ -2,6 +2,7 @@ import logging
 
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
+from functools import partial
 import json
 import pytz
 import re
@@ -30,7 +31,7 @@ from dispatch.case.enums import CaseStatus, CaseResolutionReason
 from dispatch.case.models import Case, CaseCreate, CaseRead, CaseUpdate
 from dispatch.conversation import flows as conversation_flows
 from dispatch.entity import service as entity_service
-from dispatch.enums import UserRoles
+from dispatch.enums import UserRoles, SubjectNames
 from dispatch.exceptions import ExistsError
 from dispatch.individual.models import IndividualContactRead
 from dispatch.participant import service as participant_service
@@ -109,6 +110,11 @@ log = logging.getLogger(__name__)
 
 def configure(config: SlackConversationConfiguration):
     """Maps commands/events to their functions."""
+    case_command_context_middleware = partial(
+        command_context_middleware,
+        expected_subject=SubjectNames.CASE,
+    )
+
     # don't need an incident context
     app.command(config.slack_command_list_signals, middleware=[db_middleware])(
         handle_list_signals_command
@@ -117,7 +123,7 @@ def configure(config: SlackConversationConfiguration):
     middleware = [
         subject_middleware,
         configuration_middleware,
-        command_context_middleware,
+        case_command_context_middleware,
     ]
 
     app.command(config.slack_command_escalate_case, middleware=middleware)(
@@ -128,7 +134,7 @@ def configure(config: SlackConversationConfiguration):
     middleware = [
         subject_middleware,
         configuration_middleware,
-        command_context_middleware,
+        case_command_context_middleware,
         user_middleware,
     ]
 

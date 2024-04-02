@@ -1,6 +1,7 @@
 import logging
 import re
 import uuid
+from functools import partial
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -30,7 +31,7 @@ from dispatch.auth.models import DispatchUser
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.cost_model import service as cost_model_service
 from dispatch.database.service import search_filter_sort_paginate
-from dispatch.enums import Visibility, EventType
+from dispatch.enums import Visibility, EventType, SubjectNames
 from dispatch.event import service as event_service
 from dispatch.exceptions import DispatchException
 from dispatch.group import flows as group_flows
@@ -151,6 +152,11 @@ def is_target_reaction(reaction: str) -> bool:
 
 def configure(config):
     """Maps commands/events to their functions."""
+    incident_command_context_middleware = partial(
+        command_context_middleware,
+        expected_subject=SubjectNames.INCIDENT,
+    )
+
     middleware = [
         subject_middleware,
         configuration_middleware,
@@ -168,7 +174,7 @@ def configure(config):
     middleware = [
         subject_middleware,
         configuration_middleware,
-        command_context_middleware,
+        incident_command_context_middleware,
     ]
 
     app.command(config.slack_command_list_tasks, middleware=middleware)(handle_list_tasks_command)
@@ -189,7 +195,7 @@ def configure(config):
     middleware = [
         subject_middleware,
         configuration_middleware,
-        command_context_middleware,
+        incident_command_context_middleware,
         user_middleware,
         restricted_command_middleware,
     ]

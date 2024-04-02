@@ -9,6 +9,7 @@ import logging
 
 from typing import Optional
 
+from slack_sdk.errors import SlackApiError
 from sqlalchemy.orm import Session
 
 from dispatch.decorators import timer
@@ -51,6 +52,7 @@ from dispatch.messaging.strings import (
 from dispatch.participant import service as participant_service
 from dispatch.participant_role import service as participant_role_service
 from dispatch.plugin import service as plugin_service
+from dispatch.plugins.dispatch_slack.enums import SlackAPIErrorCode
 from dispatch.types import Subject
 
 
@@ -630,14 +632,22 @@ def send_participant_announcement_message(
     for role in participant_active_roles:
         participant_roles.append(role.role)
 
-    participant_avatar_url = plugin.instance.get_participant_avatar_url(participant_email)
+    participant_avatar_url = None
+    try:
+        participant_avatar_url = plugin.instance.get_participant_avatar_url(participant_email)
+    except SlackApiError as e:
+        if e.response["error"] == SlackAPIErrorCode.USERS_NOT_FOUND:
+            log.warning(f"Unable to fetch participant avatar for {participant_email}: {e}")
 
     participant_name_mrkdwn = participant_name
     if participant_weblink:
         participant_name_mrkdwn = f"<{participant_weblink}|{participant_name}>"
 
     blocks = [
-        {"type": "section", "text": {"type": "mrkdwn", "text": f"*{notification_text}*"}},
+        {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": f"*{notification_text}*"},
+        },
         {
             "type": "section",
             "text": {
@@ -649,33 +659,39 @@ def send_participant_announcement_message(
                     f"*Incident Role(s)*: {(', ').join(participant_roles)}\n"
                 ),
             },
-            "accessory": {
-                "type": "image",
-                "image_url": participant_avatar_url,
-                "alt_text": participant_name,
-            },
         },
     ]
 
-    if subject_type == SubjectNames.CASE and subject.has_thread:
-        plugin.instance.send(
-            subject.conversation.channel_id,
-            notification_text,
-            notification_template,
-            notification_type,
-            blocks=blocks,
-            ts=subject.thread_id,
-        )
-    else:
-        plugin.instance.send(
-            subject.conversation.channel_id,
-            notification_text,
-            notification_template,
-            notification_type,
-            blocks=blocks,
-        )
+    if participant_avatar_url:
+        blocks[1]["accessory"] = {
+            "type": "image",
+            "image_url": participant_avatar_url,
+            "alt_text": participant_name,
+        }
 
-    log.debug(f"{subject_type} participant announcement message sent.")
+    try:
+        if subject_type == SubjectNames.CASE and subject.has_thread:
+            plugin.instance.send(
+                subject.conversation.channel_id,
+                notification_text,
+                notification_template,
+                notification_type,
+                blocks=blocks,
+                ts=subject.conversation.thread_id,
+            )
+        else:
+            plugin.instance.send(
+                subject.conversation.channel_id,
+                notification_text,
+                notification_template,
+                notification_type,
+                blocks=blocks,
+            )
+    except SlackApiError as e:
+        if e.response["error"] == SlackAPIErrorCode.USERS_NOT_FOUND:
+            log.warning(f"Failed to send announcement message to {participant_email}: {e}")
+    else:
+        log.debug(f"{subject_type} participant announcement message sent.")
 
 
 def send_incident_commander_readded_notification(incident: Incident, db_session: SessionLocal):

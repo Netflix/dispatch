@@ -392,20 +392,41 @@ def case_status_transition_flow_dispatcher(
             # Any -> New
             pass
 
-        case (CaseStatus.new, CaseStatus.triage):
-            # New -> Triage
-            case_triage_status_flow(case=case, db_session=db_session)
-
         case (_, CaseStatus.triage):
             # Any -> Triage
             pass
 
+        case (_, CaseStatus.escalated):
+            # Any -> Escalated
+            pass
+
+        case (CaseStatus.new, CaseStatus.triage):
+            # New -> Triage
+            case_triage_status_flow(
+                case=case,
+                db_session=db_session,
+            )
+
         case (CaseStatus.new, CaseStatus.escalated):
             # New -> Escalated
-            case_triage_status_flow(case=case, db_session=db_session)
+            case_triage_status_flow(
+                case=case,
+                db_session=db_session,
+            )
             case_escalated_status_flow(
                 case=case,
                 organization_slug=organization_slug,
+                db_session=db_session,
+            )
+
+        case (CaseStatus.new, CaseStatus.closed):
+            # New -> Closed
+            case_triage_status_flow(
+                case=case,
+                db_session=db_session,
+            )
+            case_closed_status_flow(
+                case=case,
                 db_session=db_session,
             )
 
@@ -417,22 +438,19 @@ def case_status_transition_flow_dispatcher(
                 db_session=db_session,
             )
 
-        case (_, CaseStatus.escalated):
-            # Any -> Escalated
-            pass
-
-        case (CaseStatus.new, CaseStatus.closed):
-            # New -> Closed
-            case_triage_status_flow(case=case, db_session=db_session)
-            case_closed_status_flow(case=case, db_session=db_session)
-
         case (CaseStatus.triage, CaseStatus.closed):
             # Triage -> Closed
-            case_closed_status_flow(case=case, db_session=db_session)
+            case_closed_status_flow(
+                case=case,
+                db_session=db_session,
+            )
 
         case (CaseStatus.escalated, CaseStatus.closed):
             # Escalated -> Closed
-            case_closed_status_flow(case=case, db_session=db_session)
+            case_closed_status_flow(
+                case=case,
+                db_session=db_session,
+            )
 
         case (_, _):
             pass

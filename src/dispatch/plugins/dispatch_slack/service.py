@@ -2,8 +2,9 @@ from datetime import datetime
 import functools
 import heapq
 import logging
-
 from requests import Timeout
+
+from blockkit import Message, Section
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
 from slack_sdk.web.slack_response import SlackResponse
@@ -289,14 +290,25 @@ def conversation_archived(client: WebClient, conversation_id: str) -> bool | Non
 
 
 def add_users_to_conversation_thread(
-    client: WebClient, conversation_id: str, thread_id, user_ids: List[str]
-) -> NoReturn:
+    client: WebClient,
+    conversation_id: str,
+    thread_id,
+    user_ids: list[str],
+) -> None:
     """Adds user to a threaded conversation."""
 
     users = [f"<@{user_id}>" for user_id in user_ids]
     if users:
         # @'ing them isn't enough if they aren't already in the channel
         add_users_to_conversation(client=client, conversation_id=conversation_id, user_ids=user_ids)
+        blocks = Message(
+            blocks=[
+                Section(
+                    text="Adding the following individuals to help resolve this case:", fields=users
+                )
+            ]
+        ).build()["blocks"]
+        send_message(client=client, conversation_id=conversation_id, blocks=blocks, ts=thread_id)
 
 
 def add_users_to_conversation(client: WebClient, conversation_id: str, user_ids: List[str]) -> None:

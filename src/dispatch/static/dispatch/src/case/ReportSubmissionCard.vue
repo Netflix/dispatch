@@ -86,6 +86,7 @@
             </v-col>
           </v-row>
         </v-container>
+        <p class="ma-4" v-if="explanationText">{{ explanationText }}</p>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
@@ -169,6 +170,23 @@ export default {
       "default_project",
     ]),
     ...mapFields("auth", ["currentUser.projects"]),
+    explanationText() {
+      const caseCreation = this.dedicated_channel
+        ? "dedicated channel case"
+        : `thread based case${
+            this.case_type && this.case_type.conversation_target
+              ? " in the channel " + this.case_type.conversation_target
+              : ""
+          }`
+
+      const addTo = this.dedicated_channel
+        ? "new channel"
+        : this.case_type && this.case_type.conversation_target
+        ? "channel " + this.case_type.conversation_target
+        : "thread"
+
+      return `You are creating a ${caseCreation}. After reporting, you will be added to the ${addTo}.`
+    },
   },
 
   watch: {
