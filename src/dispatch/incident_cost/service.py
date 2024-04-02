@@ -234,7 +234,7 @@ def calculate_incident_response_cost_with_cost_model(
     """
 
     participants_total_response_time_seconds = 0
-    oldest = "0"
+    oldest = incident.created_at.replace(tzinfo=timezone.utc).timestamp()
 
     # Used for determining whether we've previously calculated the incident cost.
     current_time = datetime.now(tz=timezone.utc).replace(tzinfo=None)
