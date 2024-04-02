@@ -53,6 +53,13 @@
                 />
               </v-col>
               <v-col cols="12">
+                <v-checkbox
+                  v-model="enabled"
+                  label="Enabled"
+                  hint="Whether this project is enabled for new cases and incidents."
+                />
+              </v-col>
+              <v-col cols="12">
                 <color-picker-input v-model="color" />
               </v-col>
               <v-col cols="12">
@@ -144,6 +151,7 @@ export default {
       "selected.organization",
       "selected.owner_conversation",
       "selected.owner_email",
+      "selected.enabled",
       "dialogs.showCreateEdit",
     ]),
   },

@@ -60,7 +60,7 @@
               />
             </v-col>
             <v-col cols="12">
-              <project-select v-model="project" />
+              <project-select v-model="project" excludeDisabled />
             </v-col>
             <v-col cols="12">
               <case-type-select :project="project" v-model="case_type" />
