@@ -10,7 +10,7 @@ from slack_sdk.web.client import WebClient
 from slack_sdk.web.slack_response import SlackResponse
 import time
 from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
-from typing import Dict, List, Optional, NoReturn
+from typing import Dict, List, Optional
 
 
 from .config import SlackConversationConfiguration
