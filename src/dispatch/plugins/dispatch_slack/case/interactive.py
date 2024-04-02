@@ -989,6 +989,8 @@ def handle_case_participant_role_activity(
             previous_status=case.status,
             organization_slug=context["subject"].organization_slug,
         )
+        case.status = CaseStatus.triage
+        db_session.commit()
 
     case_flows.update_conversation(case, db_session)
 

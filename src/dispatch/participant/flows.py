@@ -77,7 +77,7 @@ def add_participant(
         event_service.log_case_event(
             db_session=db_session,
             source="Dispatch Core App",
-            description=f"{individual.name} added to incident with {participant_role.role} role",
+            description=f"{individual.name} added to case with {participant_role.role} role",
             case_id=subject.id,
         )
     if subject_type == "incident":
