@@ -12,7 +12,7 @@ from dispatch.scheduler import scheduler
 
 from .service import (
     calculate_incident_response_cost,
-    get_or_create_incident_response_cost,
+    get_or_create_default_incident_response_cost,
 )
 
 
@@ -38,7 +38,9 @@ def calculate_incidents_response_cost(db_session: SessionLocal, project: Project
     for incident in incidents:
         try:
             # we get the response cost for the given incident
-            incident_response_cost = get_or_create_incident_response_cost(incident, db_session)
+            incident_response_cost = get_or_create_default_incident_response_cost(
+                incident, db_session
+            )
 
             # we don't need to update the cost of closed incidents
             # if they already have a response cost and this was updated
