@@ -161,9 +161,13 @@ def get_default_incident_response_cost(
     )
 
 
-def get_or_create_incident_response_cost(
+def get_or_create_default_incident_response_cost(
     incident: Incident, db_session: SessionLocal
 ) -> Optional[IncidentCost]:
+    """Gets or creates the default incident cost for an incident.
+
+    The default incident cost is the cost associated with the participant effort in an incident's response.
+    """
     response_cost_type = incident_cost_type_service.get_default(
         db_session=db_session, project_id=incident.project.id
     )
@@ -239,7 +243,7 @@ def calculate_incident_response_cost_with_cost_model(
     # Used for determining whether we've previously calculated the incident cost.
     current_time = datetime.now(tz=timezone.utc).replace(tzinfo=None)
 
-    incident_response_cost = get_or_create_incident_response_cost(
+    incident_response_cost = get_or_create_default_incident_response_cost(
         incident=incident, db_session=db_session
     )
     if not incident_response_cost:
@@ -414,7 +418,7 @@ def calculate_incident_response_cost_with_classic_model(
     # Used for determining whether we've previously calculated the incident cost.
     curent_time = datetime.now(tz=timezone.utc).replace(tzinfo=None)
 
-    incident_response_cost = get_or_create_incident_response_cost(
+    incident_response_cost = get_or_create_default_incident_response_cost(
         incident=incident, db_session=db_session
     )
     if not incident_response_cost:
