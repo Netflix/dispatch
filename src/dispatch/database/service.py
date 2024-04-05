@@ -386,7 +386,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
                     query = query.join(joined_model, isouter=is_outer)
                     joined_models.append(joined_model)
             except Exception as e:
-                log.debug(str(e))
+                log.exception(e)
 
     return query
 
@@ -439,13 +439,14 @@ def create_sort_spec(model, sort_by, descending):
         for field, direction in zip(sort_by, descending, strict=False):
             direction = "desc" if direction else "asc"
 
-            # we have a complex field, we may need to join
+            # check to see if field is json with a key parameter
             try:
                 new_field = json.loads(field)
                 field = new_field.get("key", "")
             except json.JSONDecodeError:
                 pass
 
+            # we have a complex field, we may need to join
             if "." in field:
                 complex_model, complex_field = field.split(".")[-2:]
 

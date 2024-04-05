@@ -80,7 +80,7 @@ def create(*, db_session, task_in: TaskCreate) -> Task:
         )
 
         if not participant or not participant.active_roles:
-            # send emphemeral message to user
+            # send emphemeral message to user about why they are being added to the incident
             send_task_add_ephemeral_message(
                 assignee_email=i.individual.email,
                 incident=incident,
