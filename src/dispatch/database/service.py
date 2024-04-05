@@ -377,13 +377,16 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         model_map.update({(Incident, "IndividualContact"): (Incident.commander, True)})
 
     filter_models = get_named_models(filters)
+    joined_models = []
     for filter_model in filter_models:
         if model_map.get((model, filter_model)):
             joined_model, is_outer = model_map[(model, filter_model)]
             try:
-                query = query.join(joined_model, isouter=is_outer)
+                if joined_model not in joined_models:
+                    query = query.join(joined_model, isouter=is_outer)
+                    joined_models.append(joined_model)
             except Exception as e:
-                log.debug(str(e))
+                log.exception(e)
 
     return query
 
@@ -435,6 +438,13 @@ def create_sort_spec(model, sort_by, descending):
     if sort_by and descending:
         for field, direction in zip(sort_by, descending, strict=False):
             direction = "desc" if direction else "asc"
+
+            # check to see if field is json with a key parameter
+            try:
+                new_field = json.loads(field)
+                field = new_field.get("key", "")
+            except json.JSONDecodeError:
+                pass
 
             # we have a complex field, we may need to join
             if "." in field:

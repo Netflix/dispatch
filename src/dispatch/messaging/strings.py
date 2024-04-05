@@ -39,6 +39,7 @@ class MessageType(DispatchEnum):
     incident_task_reminder = "incident-task-reminder"
     case_status_reminder = "case-status-reminder"
     service_feedback = "service-feedback"
+    task_add_to_incident = "task-add-to-incident"
 
 
 INCIDENT_STATUS_DESCRIPTIONS = {
@@ -252,6 +253,12 @@ INCIDENT_OPEN_TASKS_DESCRIPTION = """
 Please resolve or transfer ownership of all the open incident tasks assigned to you in the incident documents or using the <{{dispatch_ui_url}}|Dispatch Web UI>,
 then wait about 30 seconds for Dispatch to update the tasks before leaving the incident conversation.
 """.replace("\n", " ").strip()
+
+INCIDENT_TASK_ADD_TO_INCIDENT_DESCRIPTION = """
+You have been added to this incident because you were assigned a task related to it. View all tasks for this incident using the <{{dispatch_ui_url}}|Dispatch Web UI>
+\n\n *Task Description:* {{task_description}}
+\n\n *Link to task in document:* {{task_weblink}}
+"""
 
 INCIDENT_MONITOR_CREATED_DESCRIPTION = """
 A new monitor instance has been created.
@@ -813,6 +820,13 @@ INCIDENT_OPEN_TASKS = [
     {
         "title": "{{title}}",
         "text": INCIDENT_OPEN_TASKS_DESCRIPTION,
+    }
+]
+
+INCIDENT_TASK_ADD_TO_INCIDENT = [
+    {
+        "title": "{{title}}",
+        "text": INCIDENT_TASK_ADD_TO_INCIDENT_DESCRIPTION,
     }
 ]
 
