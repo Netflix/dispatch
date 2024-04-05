@@ -141,9 +141,33 @@ def calculate_response_cost(
     )
 
 
-def get_or_create_incident_response_cost(
+def get_default_incident_response_cost(
     incident: Incident, db_session: SessionLocal
 ) -> Optional[IncidentCost]:
+    response_cost_type = incident_cost_type_service.get_default(
+        db_session=db_session, project_id=incident.project.id
+    )
+
+    if not response_cost_type:
+        log.warning(
+            f"A default cost type for response cost doesn't exist in the {incident.project.name} project and organization {incident.project.organization.name}. Response costs for incident {incident.name} won't be calculated."
+        )
+        return None
+
+    return get_by_incident_id_and_incident_cost_type_id(
+        db_session=db_session,
+        incident_id=incident.id,
+        incident_cost_type_id=response_cost_type.id,
+    )
+
+
+def get_or_create_default_incident_response_cost(
+    incident: Incident, db_session: SessionLocal
+) -> Optional[IncidentCost]:
+    """Gets or creates the default incident cost for an incident.
+
+    The default incident cost is the cost associated with the participant effort in an incident's response.
+    """
     response_cost_type = incident_cost_type_service.get_default(
         db_session=db_session, project_id=incident.project.id
     )
@@ -214,12 +238,12 @@ def calculate_incident_response_cost_with_cost_model(
     """
 
     participants_total_response_time_seconds = 0
-    oldest = "0"
+    oldest = incident.created_at.replace(tzinfo=timezone.utc).timestamp()
 
     # Used for determining whether we've previously calculated the incident cost.
     current_time = datetime.now(tz=timezone.utc).replace(tzinfo=None)
 
-    incident_response_cost = get_or_create_incident_response_cost(
+    incident_response_cost = get_or_create_default_incident_response_cost(
         incident=incident, db_session=db_session
     )
     if not incident_response_cost:
@@ -394,7 +418,7 @@ def calculate_incident_response_cost_with_classic_model(
     # Used for determining whether we've previously calculated the incident cost.
     curent_time = datetime.now(tz=timezone.utc).replace(tzinfo=None)
 
-    incident_response_cost = get_or_create_incident_response_cost(
+    incident_response_cost = get_or_create_default_incident_response_cost(
         incident=incident, db_session=db_session
     )
     if not incident_response_cost:
@@ -460,17 +484,18 @@ def update_incident_response_cost(
         int: The incident response cost in dollars.
     """
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-    incident_response_cost = get_or_create_incident_response_cost(
+
+    amount = calculate_incident_response_cost(
+        incident_id=incident.id, db_session=db_session, incident_review=incident_review
+    )
+
+    incident_response_cost = get_default_incident_response_cost(
         incident=incident, db_session=db_session
     )
 
     if not incident_response_cost:
         log.warning(f"Cannot calculate incident response cost for incident {incident.name}.")
         return 0
-
-    amount = calculate_incident_response_cost(
-        incident_id=incident.id, db_session=db_session, incident_review=incident_review
-    )
 
     # we update the cost amount only if the incident cost has changed
     if incident_response_cost.amount != amount:
