@@ -317,11 +317,14 @@ def get_by_primary_or_external_id(
     *, db_session: Session, signal_id: Union[str, int]
 ) -> Optional[Signal]:
     """Gets a signal by id or external_id."""
-    signal = (
-        db_session.query(Signal)
-        .filter(or_(Signal.id == signal_id, Signal.external_id == signal_id))
-        .one_or_none()
-    )
+    if is_valid_uuid(signal_id):
+        signal = db_session.query(Signal).filter(Signal.external_id == signal_id).one_or_none()
+    else:
+        signal = (
+            db_session.query(Signal)
+            .filter(or_(Signal.id == signal_id, Signal.external_id == signal_id))
+            .one_or_none()
+        )
     return signal
 
 
