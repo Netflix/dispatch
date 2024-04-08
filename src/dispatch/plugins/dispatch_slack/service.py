@@ -145,7 +145,7 @@ def get_user_info_by_email(client: WebClient, email: str) -> dict:
 def does_user_exist(client: WebClient, email: str) -> bool:
     """Checks if a user exists in the Slack workspace by their email."""
     try:
-        user = get_user_info_by_email(client, email)
+        get_user_info_by_email(client, email)
         return True
     except SlackApiError as e:
         if e.response["error"] == SlackAPIErrorCode.USERS_NOT_FOUND:
