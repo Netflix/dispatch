@@ -6,7 +6,7 @@
     @update:model-value="setSeen(notification.index)"
   >
     {{ notification.text }}
-    <template #action="{ attrs }">
+    <template #actions="{ attrs }">
       <v-btn variant="text" v-bind="attrs" @click="setSeen(notification.index)"> Close </v-btn>
     </template>
   </v-snackbar>
