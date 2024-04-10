@@ -5,6 +5,8 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
+from dispatch.case.models import Case
+from dispatch.case import service as case_service
 from dispatch.conference import flows as conference_flows
 from dispatch.conversation import flows as conversation_flows
 from dispatch.database.core import resolve_attr
@@ -45,6 +47,7 @@ from .messaging import (
     send_incident_new_role_assigned_notification,
     send_incident_open_tasks_ephemeral_message,
     send_participant_announcement_message,
+    bulk_participant_announcement_message,
     send_incident_rating_feedback_message,
     send_incident_review_document_notification,
     # send_incident_suggested_reading_messages,
@@ -151,11 +154,30 @@ def inactivate_incident_participants(incident: Incident, db_session: Session):
     )
 
 
-def incident_create_resources(*, incident: Incident, db_session=None) -> Incident:
+def incident_create_resources(
+    *,
+    incident: Incident,
+    db_session: Session | None = None,
+    case: Case | None = None,  # if it was escalated, we'll pass in the escalated case
+) -> Incident:
     """Creates all resources required for incidents."""
     # we create the incident ticket
     if not incident.ticket:
         ticket_flows.create_incident_ticket(incident=incident, db_session=db_session)
+
+    # we update the channel name immediately for dedicated channel cases esclated -> incident
+    if case and case.dedicated_channel and case.escalated_at is not None:
+        plugin = plugin_service.get_active_instance(
+            db_session=db_session, project_id=case.project.id, plugin_type="conversation"
+        )
+        if not plugin:
+            log.warning("Incident channel not renamed. No conversation plugin enabled.")
+            return
+
+        plugin.instance.rename(
+            conversation_id=incident.conversation.channel_id,
+            name=incident.name,
+        )
 
     # we resolve individual and team participants
     individual_participants, team_participants = get_incident_participants(incident, db_session)
@@ -218,6 +240,7 @@ def incident_create_resources(*, incident: Incident, db_session=None) -> Inciden
 
     # we create the conversation
     if not incident.conversation:
+        # dedicate channel cases escalated to incidents do not exercise this code
         conversation_flows.create_incident_conversation(incident=incident, db_session=db_session)
 
     # we update the incident ticket
@@ -286,18 +309,6 @@ def incident_create_resources(*, incident: Incident, db_session=None) -> Inciden
             db_session=db_session,
         )
 
-        # we announce the participant in the conversation
-        try:
-            send_participant_announcement_message(
-                participant_email=user_email,
-                subject=incident,
-                db_session=db_session,
-            )
-        except Exception as e:
-            log.warning(
-                f"Could not send participant announcement message to {user_email} in incident {incident.name}: {e}"
-            )
-
         # we send the welcome messages to the participant
         send_incident_welcome_participant_messages(user_email, incident, db_session)
 
@@ -308,6 +319,12 @@ def incident_create_resources(*, incident: Incident, db_session=None) -> Inciden
         # 	  incident, suggested_document_items, user_email, db_session
         # )
 
+    bulk_participant_announcement_message(
+        participant_emails=user_emails,
+        subject=incident,
+        db_session=db_session,
+    )
+
     # wait until all resources are created before adding suggested participants
     for individual, service_id in individual_participants:
         incident_add_or_reactivate_participant_flow(
@@ -316,6 +333,7 @@ def incident_create_resources(*, incident: Incident, db_session=None) -> Inciden
             participant_role=ParticipantRoleType.observer,
             service_id=service_id,
             db_session=db_session,
+            send_announcement_message=False,
         )
 
     event_service.log_incident_event(
@@ -341,13 +359,27 @@ def incident_create_resources_flow(
     return incident_create_resources(incident=incident, db_session=db_session)
 
 
-def incident_create_flow(*, organization_slug: str, incident_id: int, db_session=None) -> Incident:
+def incident_create_flow(
+    *,
+    organization_slug: str,
+    incident_id: int,
+    case_id: int | None = None,
+    db_session: Session | None = None,
+) -> Incident:
     """Creates all resources required for new incidents and initiates incident response workflow."""
     # we get the incident
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
+    case = None
+    if case_id:
+        case = case_service.get(db_session=db_session, case_id=case_id)
+
     # we create the incident resources
-    incident_create_resources(incident=incident, db_session=db_session)
+    incident_create_resources(
+        incident=incident,
+        case=case if case else None,
+        db_session=db_session,
+    )
 
     send_incident_created_notifications(incident, db_session)
 
@@ -954,6 +986,7 @@ def incident_add_or_reactivate_participant_flow(
     event: dict = None,
     organization_slug: str = None,
     db_session=None,
+    send_announcement_message: bool = True,
 ) -> Participant:
     """Runs the incident add or reactivate participant flow."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
@@ -1004,11 +1037,12 @@ def incident_add_or_reactivate_participant_flow(
         )
 
         # we announce the participant in the conversation
-        send_participant_announcement_message(
-            participant_email=user_email,
-            subject=incident,
-            db_session=db_session,
-        )
+        if send_announcement_message:
+            send_participant_announcement_message(
+                participant_email=user_email,
+                subject=incident,
+                db_session=db_session,
+            )
 
         # we send the welcome messages to the participant
         send_incident_welcome_participant_messages(user_email, incident, db_session)

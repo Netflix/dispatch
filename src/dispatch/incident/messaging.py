@@ -694,6 +694,139 @@ def send_participant_announcement_message(
         log.debug(f"{subject_type} participant announcement message sent.")
 
 
+@timer
+def bulk_participant_announcement_message(
+    participant_emails: list[str],
+    subject: Subject,
+    db_session: Session,
+):
+    """Announces a list of participants in the conversation."""
+    subject_type = type(subject).__name__
+
+    if not subject.conversation:
+        log.warning(
+            f"{subject_type} participant announcement message not sent. No conversation available for this {subject_type.lower()}."
+        )
+        return
+
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=subject.project.id, plugin_type="conversation"
+    )
+    if not plugin:
+        log.warning(
+            "Incident participant announcement message not sent. No conversation plugin enabled."
+        )
+        return
+
+    notification_text = f"{len(participant_emails)} New {subject_type} Participants"
+    notification_type = MessageType.incident_notification
+    notification_template = []
+
+    participant_blocks = []
+    for participant_email in participant_emails:
+        match subject_type:
+            case SubjectNames.CASE:
+                participant = participant_service.get_by_case_id_and_email(
+                    db_session=db_session,
+                    case_id=subject.id,
+                    email=participant_email,
+                )
+            case SubjectNames.INCIDENT:
+                participant = participant_service.get_by_incident_id_and_email(
+                    db_session=db_session,
+                    incident_id=subject.id,
+                    email=participant_email,
+                )
+            case _:
+                raise Exception(
+                    "Unknown subject was passed to send_participant_announcement_message"
+                )
+
+        participant_info = {}
+        contact_plugin = plugin_service.get_active_instance(
+            db_session=db_session, project_id=subject.project.id, plugin_type="contact"
+        )
+
+        if contact_plugin:
+            participant_info = contact_plugin.instance.get(participant_email, db_session=db_session)
+
+        participant_name = participant_info.get("fullname", "Unknown")
+        participant_team = participant_info.get("team", "Unknown")
+        participant_department = participant_info.get("department", "Unknown")
+        participant_location = participant_info.get("location", "Unknown")
+        participant_weblink = participant_info.get("weblink", DISPATCH_UI_URL)
+
+        participant_active_roles = participant_role_service.get_all_active_roles(
+            db_session=db_session, participant_id=participant.id
+        )
+        participant_roles = [role.role for role in participant_active_roles]
+
+        participant_avatar_url = None
+        try:
+            participant_avatar_url = plugin.instance.get_participant_avatar_url(participant_email)
+        except SlackApiError as e:
+            if e.response["error"] == SlackAPIErrorCode.USERS_NOT_FOUND:
+                log.warning(f"Unable to fetch participant avatar for {participant_email}: {e}")
+
+        participant_name_mrkdwn = participant_name
+        if participant_weblink:
+            participant_name_mrkdwn = f"<{participant_weblink}|{participant_name}>"
+
+        participant_block = {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": (
+                    f"*Name:* {participant_name_mrkdwn}\n"
+                    f"*Team*: {participant_team}, {participant_department}\n"
+                    f"*Location*: {participant_location}\n"
+                    f"*Incident Role(s)*: {(', ').join(participant_roles)}\n"
+                ),
+            },
+        }
+
+        if participant_avatar_url:
+            participant_block["accessory"] = {
+                "type": "image",
+                "image_url": participant_avatar_url,
+                "alt_text": participant_name,
+            }
+
+        participant_blocks.append(participant_block)
+
+    blocks = [
+        {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": f"*{notification_text}*"},
+        },
+        *participant_blocks,
+    ]
+
+    try:
+        if subject_type == SubjectNames.CASE and subject.has_thread:
+            plugin.instance.send(
+                subject.conversation.channel_id,
+                notification_text,
+                notification_template,
+                notification_type,
+                blocks=blocks,
+                ts=subject.conversation.thread_id,
+            )
+        else:
+            plugin.instance.send(
+                subject.conversation.channel_id,
+                notification_text,
+                notification_template,
+                notification_type,
+                blocks=blocks,
+            )
+    except SlackApiError as e:
+        if e.response["error"] == SlackAPIErrorCode.USERS_NOT_FOUND:
+            log.warning(f"Failed to send announcement messages: {e}")
+    else:
+        log.debug(f"{subject_type} participant announcement messages sent.")
+
+
 def send_incident_commander_readded_notification(incident: Incident, db_session: SessionLocal):
     """Sends a notification about re-adding the incident commander to the conversation."""
     notification_text = "Incident Notification"

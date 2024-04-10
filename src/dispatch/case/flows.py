@@ -495,7 +495,10 @@ def common_escalate_flow(
 
     # we run the incident create flow
     incident = incident_flows.incident_create_flow(
-        incident_id=incident.id, organization_slug=organization_slug, db_session=db_session
+        incident_id=incident.id,
+        organization_slug=organization_slug,
+        db_session=db_session,
+        case_id=case.id,
     )
 
     # we add the case participants to the incident

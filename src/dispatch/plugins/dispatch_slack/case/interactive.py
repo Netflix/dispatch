@@ -175,7 +175,6 @@ def handle_escalate_case_command(
         Context(elements=[MarkdownText(text="Accept the defaults or adjust as needed.")]),
         title_input(initial_value=default_title),
         description_input(initial_value=default_description),
-        assignee_select(),
         project_select(
             db_session=db_session,
             initial_option=default_project,
@@ -1142,7 +1141,6 @@ def handle_project_select_action(
         Context(elements=[MarkdownText(text="Accept the defaults or adjust as needed.")]),
         title_input(),
         description_input(),
-        assignee_select(),
         project_select(
             db_session=db_session,
             initial_option={"text": project.name, "value": project.id},
@@ -1505,7 +1503,9 @@ def report_issue(
     blocks = [
         Context(
             elements=[
-                MarkdownText(text="Fill the following form out to the best of your abilities.")
+                MarkdownText(
+                    text="Cases are meant to triage events that do not raise to the level of incidents, but can be escalated to incidents if necessary. If you suspect a security issue and need help, please fill out this form to the best of your abilities.."
+                )
             ]
         ),
         title_input(),
@@ -1518,7 +1518,7 @@ def report_issue(
     ]
 
     modal = Modal(
-        title="Report Issue",
+        title="Open a Case",
         blocks=blocks,
         submit="Report",
         close="Close",
@@ -1545,7 +1545,13 @@ def handle_report_project_select_action(
     )
 
     blocks = [
-        Context(elements=[MarkdownText(text="Accept the defaults or adjust as needed.")]),
+        Context(
+            elements=[
+                MarkdownText(
+                    text="Cases are meant to triage events that do not raise to the level of incidents, but can be escalated to incidents if necessary. If you suspect a security issue and need help, please fill out this form to the best of your abilities.."
+                )
+            ]
+        ),
         title_input(),
         description_input(),
         project_select(
@@ -1565,7 +1571,7 @@ def handle_report_project_select_action(
     ]
 
     modal = Modal(
-        title="Report Issue",
+        title="Open a Case",
         blocks=blocks,
         submit="Report",
         close="Close",
@@ -1583,7 +1589,7 @@ def handle_report_project_select_action(
 def ack_report_case_submission_event(ack: Ack) -> None:
     """Handles the report case submission event acknowledgment."""
     modal = Modal(
-        title="Report Issue",
+        title="Open a Case",
         close="Close",
         blocks=[Section(text="Creating case resources...")],
     ).build()
@@ -1619,6 +1625,7 @@ def handle_report_submission_event(
         status=CaseStatus.new,
         case_priority=case_priority,
         case_type=case_type,
+        dedicated_channel=True,
         reporter=ParticipantUpdate(individual=IndividualContactRead(email=user.email)),
     )
 
