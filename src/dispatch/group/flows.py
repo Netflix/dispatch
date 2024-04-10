@@ -32,9 +32,6 @@ def create_group(
     if group_type == GroupType.notifications:
         group_name = f"{subject.name}-{GroupType.notifications}"
 
-    # TODO(wshel): LOCAL UNBLOCKER: Avoid Duplicates on Group creation
-    group_name = f"{group_name}_test"
-
     # we create the external group
     try:
         external_group = plugin.instance.create(name=group_name, participants=group_participants)
