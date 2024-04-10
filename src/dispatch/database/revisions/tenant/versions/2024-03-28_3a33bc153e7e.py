@@ -1,4 +1,5 @@
-"""Creates a column on the Case
+"""Creates a column for `dedicated_channel` on the Case model to support Cases
+in dedicated coversation channel (as opposed to only threads).
 
 Revision ID: 3a33bc153e7e
 Revises: 91bd05855ad1
