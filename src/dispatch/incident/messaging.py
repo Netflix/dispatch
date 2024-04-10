@@ -1064,14 +1064,16 @@ def send_task_add_ephemeral_message(
         "task_description": task.description,
         "task_weblink": task.weblink,
     }
+    try:
+        plugin.instance.send_ephemeral(
+            incident.conversation.channel_id,
+            assignee_email,
+            notification_text,
+            message_template,
+            message_type,
+            **message_kwargs,
+        )
 
-    plugin.instance.send_ephemeral(
-        incident.conversation.channel_id,
-        assignee_email,
-        notification_text,
-        message_template,
-        message_type,
-        **message_kwargs,
-    )
-
-    log.debug(f"Task add message sent to {assignee_email}.")
+        log.debug(f"Task add message sent to {assignee_email}.")
+    except Exception as e:
+        log.error(f"Error in sending task add message to {assignee_email}: {e}")
