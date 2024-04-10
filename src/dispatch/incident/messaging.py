@@ -46,6 +46,7 @@ from dispatch.messaging.strings import (
     INCIDENT_STATUS_CHANGE,
     INCIDENT_TYPE_CHANGE,
     INCIDENT_COMPLETED_FORM_MESSAGE,
+    INCIDENT_TASK_ADD_TO_INCIDENT,
     MessageType,
     generate_welcome_message,
 )
@@ -54,6 +55,7 @@ from dispatch.participant_role import service as participant_role_service
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack.enums import SlackAPIErrorCode
 from dispatch.types import Subject
+from dispatch.task.models import TaskCreate
 
 
 log = logging.getLogger(__name__)
@@ -1214,3 +1216,43 @@ def send_incident_open_tasks_ephemeral_message(
     )
 
     log.debug(f"Open incident tasks message sent to {participant_email}.")
+
+
+def send_task_add_ephemeral_message(
+    *,
+    assignee_email: str,
+    incident: Incident,
+    db_session: SessionLocal,
+    task: TaskCreate,
+):
+    """
+    Sends an ephemeral message to the assignee letting them know why they have been added to the incident.
+    """
+
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+    )
+    if not plugin:
+        log.warning("Task add message not sent, no conversation plugin enabled.")
+        return
+
+    notification_text = "Task Added Notification"
+    message_type = MessageType.task_add_to_incident
+    message_template = INCIDENT_TASK_ADD_TO_INCIDENT
+    message_kwargs = {
+        "title": notification_text,
+        "dispatch_ui_url": f"{DISPATCH_UI_URL}/{incident.project.organization.name}/tasks?incident={incident.name}",
+        "task_description": task.description,
+        "task_weblink": task.weblink,
+    }
+
+    plugin.instance.send_ephemeral(
+        incident.conversation.channel_id,
+        assignee_email,
+        notification_text,
+        message_template,
+        message_type,
+        **message_kwargs,
+    )
+
+    log.debug(f"Task add message sent to {assignee_email}.")

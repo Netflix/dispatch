@@ -1093,7 +1093,7 @@ def incident_remove_participant_flow(
 
                     return
 
-    if user_email == incident.commander.individual.email:
+    if incident.status != IncidentStatus.closed and user_email == incident.commander.individual.email:
         # we add the participant to the conversation
         conversation_flows.add_incident_participants(
             incident=incident, participant_emails=[user_email], db_session=db_session
