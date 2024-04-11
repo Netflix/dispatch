@@ -22,7 +22,9 @@ const getDefaultSelectedState = () => {
     attorney_analysis: null,
     form_type: null,
     project: null,
-    form_schema: [],
+    form_schema: null,
+    attorney_form_schema: null,
+    scoring_schema: null,
   }
 }
 
@@ -58,6 +60,7 @@ const state = {
   project_id: null,
   incident_data: null,
   has_formkit_pro: hasFormkitPro,
+  attorney_form_schema: null,
 }
 
 const getters = {
@@ -362,6 +365,7 @@ const actions = {
     FormsTypeApi.get(form_type_id)
       .then((response) => {
         commit("SET_PAGE_SCHEMA", getCurrentPage(response.data.form_schema))
+        commit("SET_ATTORNEY_FORM_SCHEMA", response.data.attorney_form_schema)
         commit("SET_FORM_TYPE", response.data)
         commit("SET_DIALOG_CREATE_EDIT", true)
       })
@@ -372,11 +376,20 @@ const actions = {
   editShow({ commit }, selected) {
     commit("SET_SELECTED", selected)
     commit("SET_PAGE_SCHEMA", getCurrentPage(selected.form_type.form_schema))
+    commit("SET_ATTORNEY_FORM_SCHEMA", selected.form_type.attorney_form_schema)
     commit("SET_DIALOG_CREATE_EDIT", true)
   },
   attorneyEditShow({ commit }, selected) {
     commit("SET_SELECTED", selected)
-    commit("SET_PAGE_DATA", buildFormDoc(selected.form_type.form_schema, selected.form_data))
+    commit("SET_ATTORNEY_FORM_SCHEMA", selected.form_type.attorney_form_schema)
+    commit(
+      "SET_PAGE_DATA",
+      buildFormDoc(
+        selected.form_type.form_schema,
+        selected.form_data,
+        selected.form_type.attorney_form_schema
+      )
+    )
     IncidentApi.get(selected.incident.id).then((response) => {
       commit("SET_INCIDENT_DATA", buildIncidentDoc(response.data))
       commit("SET_DIALOG_ATTORNEY_EDIT", true)
@@ -389,7 +402,14 @@ const actions = {
         let selected = response.data
         commit("SET_TABLE_LOADING", false)
         commit("SET_SELECTED", selected)
-        commit("SET_PAGE_DATA", buildFormDoc(selected.form_type.form_schema, selected.form_data))
+        commit(
+          "SET_PAGE_DATA",
+          buildFormDoc(
+            selected.form_type.form_schema,
+            selected.form_data,
+            selected.form_type.attorney_form_schema
+          )
+        )
         IncidentApi.get(selected.incident.id).then((response) => {
           commit("SET_INCIDENT_DATA", buildIncidentDoc(response.data))
           commit("SET_DIALOG_ATTORNEY_EDIT", true)
@@ -458,6 +478,9 @@ const mutations = {
   },
   SET_FORM_SCHEMA(state, value) {
     state.selected.form_schema = value
+  },
+  SET_ATTORNEY_FORM_SCHEMA(state, value) {
+    state.selected.attorney_form_schema = value
   },
   SET_PAGE_SCHEMA(state, value) {
     state.page_schema = value

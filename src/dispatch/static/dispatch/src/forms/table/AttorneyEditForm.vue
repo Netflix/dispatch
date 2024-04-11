@@ -52,6 +52,7 @@
             <v-textarea v-model="attorney_analysis" label="Attorney analysis" />
           </v-col>
         </v-row>
+        <div>The attorney form schema is {{ attorney_form_schema }}.</div>
       </v-container>
       <v-card-actions>
         <v-spacer />
@@ -100,6 +101,7 @@ export default {
       "dialogs.showAttorneyEdit",
       "selected.id",
       "selected.form_schema",
+      "selected.attorney_form_schema",
       "selected.form_type",
       "selected.form_data",
       "selected.incident_id",
