@@ -1,6 +1,7 @@
 import logging
 import re
 import uuid
+from functools import partial
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -30,7 +31,7 @@ from dispatch.auth.models import DispatchUser
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.cost_model import service as cost_model_service
 from dispatch.database.service import search_filter_sort_paginate
-from dispatch.enums import Visibility, EventType
+from dispatch.enums import Visibility, EventType, SubjectNames
 from dispatch.event import service as event_service
 from dispatch.exceptions import DispatchException
 from dispatch.group import flows as group_flows
@@ -113,7 +114,12 @@ from dispatch.plugins.dispatch_slack.middleware import (
     shortcut_context_middleware,
 )
 from dispatch.plugins.dispatch_slack.modals.common import send_success_modal
-from dispatch.plugins.dispatch_slack.models import MonitorMetadata, TaskMetadata, IncidentSubjects, CaseSubjects
+from dispatch.plugins.dispatch_slack.models import (
+    MonitorMetadata,
+    TaskMetadata,
+    IncidentSubjects,
+    CaseSubjects,
+)
 from dispatch.plugins.dispatch_slack.service import (
     get_user_email,
     get_user_profile_by_email,
@@ -146,6 +152,11 @@ def is_target_reaction(reaction: str) -> bool:
 
 def configure(config):
     """Maps commands/events to their functions."""
+    incident_command_context_middleware = partial(
+        command_context_middleware,
+        expected_subject=SubjectNames.INCIDENT,
+    )
+
     middleware = [
         subject_middleware,
         configuration_middleware,
@@ -163,7 +174,7 @@ def configure(config):
     middleware = [
         subject_middleware,
         configuration_middleware,
-        command_context_middleware,
+        incident_command_context_middleware,
     ]
 
     app.command(config.slack_command_list_tasks, middleware=middleware)(handle_list_tasks_command)
@@ -184,7 +195,7 @@ def configure(config):
     middleware = [
         subject_middleware,
         configuration_middleware,
-        command_context_middleware,
+        incident_command_context_middleware,
         user_middleware,
         restricted_command_middleware,
     ]
@@ -807,7 +818,7 @@ def handle_after_hours_message(
     except SlackApiError as e:
         if e.response["error"] == SlackAPIErrorCode.USERS_NOT_FOUND:
             e.add_note(
-                "This error usually indiciates that the incident commanders Slack account is deactivated."
+                "This error usually indicates that the incident commanders Slack account is deactivated."
             )
 
         log.warning(f"Failed to fetch timezone from Slack API: {e}")
@@ -2243,7 +2254,7 @@ def handle_incident_notification_join_button_click(
     if not incident:
         message = "Sorry, we can't invite you to this incident. The incident does not exist."
     elif incident.visibility == Visibility.restricted:
-        message = "Sorry, we can't invite you to this incident. The incident's visbility is restricted. Please, reach out to the incident commander if you have any questions."
+        message = "Sorry, we can't invite you to this incident. The incident's visibility is restricted. Please, reach out to the incident commander if you have any questions."
     elif incident.status == IncidentStatus.closed:
         message = "Sorry, you can't join this incident. The incident has already been marked as closed. Please, reach out to the incident commander if you have any questions."
     else:
@@ -2276,7 +2287,7 @@ def handle_incident_notification_subscribe_button_click(
     if not incident:
         message = "Sorry, we can't invite you to this incident. The incident does not exist."
     elif incident.visibility == Visibility.restricted:
-        message = "Sorry, we can't invite you to this incident. The incident's visbility is restricted. Please, reach out to the incident commander if you have any questions."
+        message = "Sorry, we can't invite you to this incident. The incident's visibility is restricted. Please, reach out to the incident commander if you have any questions."
     elif incident.status == IncidentStatus.closed:
         message = "Sorry, you can't subscribe to this incident. The incident has already been marked as closed. Please, reach out to the incident commander if you have any questions."
     else:

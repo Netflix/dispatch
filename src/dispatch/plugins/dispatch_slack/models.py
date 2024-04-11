@@ -1,8 +1,43 @@
-from typing import Optional, NewType
+from typing import Optional, NewType, TypedDict
 
 from pydantic import BaseModel, Field, AnyHttpUrl
 
 from dispatch.enums import DispatchEnum
+
+
+class SlackCommandPayload(TypedDict):
+    """Example payload values:
+
+    {
+        "token": "fQLoLYUrEun9aDVHEHsPEH8N",
+        "team_id": "T04FZTZLBFE",
+        "team_domain": "netflix",
+        "channel_id": "C06RQGTRSK0",
+        "channel_name": "dispatch-default-test-5405",
+        "user_id": "U04FUR31VCM",
+        "user_name": "wshel",
+        "command": "/dispatch-list-tasks",
+        "text": "",
+        "api_app_id": "A04FGTKNP2B",
+        "is_enterprise_install": "false",
+        "response_url": "https://hooks.slack.com/commands/T04FZTFLBFE/6904042509680/ZDe0xFBOrv88Rr6vUoioc6Tm",
+        "trigger_id": "6866691537272.4543933691524.06904af71159927b69bfe32f47ddd5a5",
+    }
+    """
+
+    token: str
+    team_id: str
+    team_domain: str
+    channel_id: str
+    channel_name: str
+    user_id: str
+    user_name: str
+    command: str
+    text: str
+    api_app_id: str
+    is_enterprise_install: str
+    response_url: str
+    trigger_id: str
 
 
 class SubjectMetadata(BaseModel):
