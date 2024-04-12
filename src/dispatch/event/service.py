@@ -1,5 +1,6 @@
 from typing import Optional
 from uuid import uuid4
+from fastapi import HTTPException, status
 import datetime
 import logging
 import json
@@ -290,7 +291,9 @@ def export_timeline(
                     log.debug("Existing table in the doc has been deleted")
 
             else:
+                log.debug("Table doesn't exist under header, creating new table")
                 curr_table_start += 1
+
             # Insert new table with required rows & columns
             insert_table_request = [
                 {
@@ -305,7 +308,8 @@ def export_timeline(
                 log.debug("Table skeleton inserted successfully")
 
             else:
-                return False
+                log.error("Unable to insert table skeleton in the document " + str(doc_id))
+                raise Exception(f"Unable to insert table skeleton for timeline export")
 
             # Formatting & inserting empty table
             insert_data_request = [
@@ -334,19 +338,20 @@ def export_timeline(
                 log.debug("Table Formatted successfully")
 
             else:
-                return False
+                log.error("Unable to format table for timeline export in doc " + str(doc_id))
+                raise Exception(f"Unable to format table for timeline export")
 
             # Calculating table cell indices
             _, _, _, cell_indices = plugin.instance.get_table_details(
                 document_id=doc_id, header="Timeline"
             )
-
             data_to_insert = list(column_headers) + [
                 item for row in table_data for item in row.values()
             ]
             str_len = 0
             row_idx = 0
             insert_data_request = []
+
             for index, text in zip(cell_indices, data_to_insert, strict=True):
                 # Adjusting index based on string length
                 new_idx = index + str_len
@@ -418,8 +423,11 @@ def export_timeline(
 
             data_inserted = plugin.instance.insert(document_id=doc_id, request=insert_data_request)
         if not data_inserted:
-            return False
+            raise Exception(f"Encountered error while inserting data into the document")
+
     else:
-        log.error("No timeline data to export")
-        return False
+        log.error("No data to export")
+        raise Exception("No data to export, please check filter selection")
+    # raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=[{"msg": "No timeline data to export"}]) from None
+
     return True

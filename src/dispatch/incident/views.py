@@ -389,15 +389,20 @@ def export_timeline_event(
     current_incident: CurrentIncident,
     timeline_filters: dict,
     current_user: CurrentUser,
-    background_tasks: BackgroundTasks,
 ):
-    result = background_tasks.add_task(
-        event_flows.export_timeline,
-        timeline_filters=timeline_filters,
-        incident_id=incident_id,
-        organization_slug=organization,
-    )
-    return result
+    try:
+        event_flows.export_timeline(
+            timeline_filters=timeline_filters,
+            incident_id=incident_id,
+            organization_slug=organization,
+            db_session=db_session,
+        )
+    except Exception as e:
+        log.exception(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=[{"msg": (f"{str(e)}.",)}],
+        ) from e
 
 
 @router.delete(
