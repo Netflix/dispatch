@@ -45,8 +45,6 @@ from .service import (
     update_signal_filter,
 )
 
-from .flows import signal_instance_update_flow
-
 router = APIRouter()
 
 log = logging.getLogger(__name__)
@@ -111,11 +109,6 @@ def create_signal_instance(
         db_session.rollback()
         signal_instance = signal_service.update_instance(
             db_session=db_session, signal_instance_in=signal_instance_in
-        )
-        # Note: we can do this because it's still relatively cheap, if we add more logic to the flow
-        # this will need to be moved to a background function (similar to case creation)
-        signal_instance = signal_instance_update_flow(
-            db_session=db_session, signal_instance_id=signal_instance.id
         )
     return signal_instance
 
@@ -307,4 +300,4 @@ def delete_signal(db_session: DbSession, signal_id: Union[str, PrimaryKey]):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=[{"msg": "A signal with this id does not exist."}],
         )
-    delete(db_session=db_session, signal_id=signal_id)
+    delete(db_session=db_session, signal_id=signal.id)

@@ -8,7 +8,7 @@ jobs:
       # Minimum code coverage per file
       COVERAGE_SINGLE: 50
       # Minimum total code coverage
-      COVERAGE_TOTAL: 70
+      COVERAGE_TOTAL: 54
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -57,10 +57,9 @@ jobs:
             # exit 1
           fi
       - name: Coverage total
-        # TODO: Change this recommendation into a requirement.
         run: |
           export COVERAGE_TOTAL=$(python -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
           if [[ $COVERAGE_TOTAL < ${{ env.COVERAGE_TOTAL }} ]]; then
             echo "FAIL Recommended total test coverage of ${{ env.COVERAGE_TOTAL }}% not reached. Total coverage: $COVERAGE_TOTAL%"
-            # exit 1
+            exit 1
           fi

@@ -142,6 +142,7 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
         description=case_in.description,
         project=project,
         status=case_in.status,
+        dedicated_channel=case_in.dedicated_channel,
         tags=tag_objs,
     )
 

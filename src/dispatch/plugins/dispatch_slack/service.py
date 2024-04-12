@@ -1,16 +1,16 @@
-from blockkit import Message, Section
 from datetime import datetime
 import functools
 import heapq
 import logging
-
 from requests import Timeout
+
+from blockkit import Message, Section
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
 from slack_sdk.web.slack_response import SlackResponse
 import time
 from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
-from typing import Dict, List, Optional, NoReturn
+from typing import Dict, List, Optional
 
 
 from .config import SlackConversationConfiguration
@@ -145,11 +145,7 @@ def get_user_info_by_email(client: WebClient, email: str) -> dict:
 def does_user_exist(client: WebClient, email: str) -> bool:
     """Checks if a user exists in the Slack workspace by their email."""
     try:
-        client.api_call(
-            api_method=SlackAPIGetEndpoints.users_lookup_by_email,
-            http_verb="GET",
-            params={"email": email},
-        )
+        get_user_info_by_email(client, email)
         return True
     except SlackApiError as e:
         if e.response["error"] == SlackAPIErrorCode.USERS_NOT_FOUND:
@@ -290,9 +286,13 @@ def conversation_archived(client: WebClient, conversation_id: str) -> bool | Non
 
 
 def add_users_to_conversation_thread(
-    client: WebClient, conversation_id: str, thread_id, user_ids: List[str]
-) -> NoReturn:
+    client: WebClient,
+    conversation_id: str,
+    thread_id,
+    user_ids: list[str],
+) -> None:
     """Adds user to a threaded conversation."""
+
     users = [f"<@{user_id}>" for user_id in user_ids]
     if users:
         # @'ing them isn't enough if they aren't already in the channel
@@ -307,9 +307,7 @@ def add_users_to_conversation_thread(
         send_message(client=client, conversation_id=conversation_id, blocks=blocks, ts=thread_id)
 
 
-def add_users_to_conversation(
-    client: WebClient, conversation_id: str, user_ids: List[str]
-) -> NoReturn:
+def add_users_to_conversation(client: WebClient, conversation_id: str, user_ids: List[str]) -> None:
     """Add users to conversation."""
     # NOTE this will trigger a member_joined_channel event, which we will capture and run
     # the incident.incident_add_or_reactivate_participant_flow() as a result

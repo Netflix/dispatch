@@ -15,24 +15,20 @@ def get_by_channel_id_ignoring_channel_type(
     Gets a conversation by its id ignoring the channel type, and updates the
     channel id in the database if the channel type has changed.
     """
-    channel_id_without_type = channel_id[1:]
-
     conversation = None
 
-    query = db_session.query(Conversation).filter(
-        Conversation.channel_id.contains(channel_id_without_type)
-    )
+    conversations = db_session.query(Conversation).filter(Conversation.channel_id == channel_id)
 
     # The code below disambiguates between incident threads, case threads, and incident messages
     if not thread_id:
         # assume incident message
-        conversation = query.first()
+        conversation = conversations.first()
 
     if not conversation:
-        conversation = query.filter(Conversation.thread_id == thread_id).one_or_none()
+        conversation = conversations.filter(Conversation.thread_id == thread_id).one_or_none()
 
         if not conversation:
-            conversation = query.one_or_none()
+            conversation = conversations.one_or_none()
 
     if conversation:
         if channel_id[0] != conversation.channel_id[0]:

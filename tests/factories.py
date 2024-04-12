@@ -127,19 +127,12 @@ class ProjectFactory(BaseFactory):
     description = FuzzyText()
     default = False
     color = Faker().color()
+    organization = SubFactory(OrganizationFactory)
 
     class Meta:
         """Factory Configuration."""
 
         model = Project
-
-    @post_generation
-    def organization(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            self.organization_id = extracted.id
 
 
 class CostModelFactory(BaseFactory):

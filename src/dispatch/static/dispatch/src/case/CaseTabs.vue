@@ -50,48 +50,68 @@
 
       <div>
         <!-- Ticket Button -->
-        <v-btn
-          class="text-subtitle-2 font-weight-regular"
-          icon="mdi-jira"
-          variant="text"
-          size="small"
-          :disabled="!modelValue.ticket"
-          :href="modelValue.ticket && modelValue.ticket.weblink"
-          target="_blank"
-        />
+        <DTooltip text="Open case ticket" hotkeys="">
+          <template #activator="{ tooltip }">
+            <v-btn
+              class="text-subtitle-2 font-weight-regular"
+              icon="mdi-jira"
+              variant="text"
+              size="small"
+              :disabled="!modelValue.ticket"
+              :href="modelValue.ticket && modelValue.ticket.weblink"
+              target="_blank"
+              v-bind="tooltip"
+            />
+          </template>
+        </DTooltip>
 
         <!-- Conversation Button -->
-        <v-btn
-          class="text-subtitle-2 font-weight-regular"
-          icon="mdi-slack"
-          variant="text"
-          size="small"
-          :disabled="!modelValue.conversation"
-          :href="modelValue.conversation && modelValue.conversation.weblink"
-          target="_blank"
-        />
+        <DTooltip text="Open case conversation" hotkeys="">
+          <template #activator="{ tooltip }">
+            <v-btn
+              class="text-subtitle-2 font-weight-regular"
+              icon="mdi-slack"
+              variant="text"
+              size="small"
+              :disabled="!modelValue.conversation"
+              :href="modelValue.conversation && modelValue.conversation.weblink"
+              target="_blank"
+              v-bind="tooltip"
+            />
+          </template>
+        </DTooltip>
 
         <!-- Document Button -->
-        <v-btn
-          class="text-subtitle-2 font-weight-regular"
-          icon="mdi-file-document"
-          variant="text"
-          size="small"
-          :disabled="!modelValue.documents.length"
-          :href="modelValue.documents.length && modelValue.documents[0].weblink"
-          target="_blank"
-        />
+        <DTooltip text="Open case document" hotkeys="">
+          <template #activator="{ tooltip }">
+            <v-btn
+              class="text-subtitle-2 font-weight-regular"
+              icon="mdi-file-document"
+              variant="text"
+              size="small"
+              :disabled="!modelValue.documents.length"
+              :href="modelValue.documents.length && modelValue.documents[0].weblink"
+              target="_blank"
+              v-bind="tooltip"
+            />
+          </template>
+        </DTooltip>
 
         <!-- Storage Button -->
-        <v-btn
-          class="text-subtitle-2 font-weight-regular"
-          icon="mdi-folder-google-drive"
-          variant="text"
-          size="small"
-          :disabled="!modelValue.storage"
-          :href="modelValue.storage && modelValue.storage.weblink"
-          target="_blank"
-        />
+        <DTooltip text="Open case storage" hotkeys="">
+          <template #activator="{ tooltip }">
+            <v-btn
+              class="text-subtitle-2 font-weight-regular"
+              icon="mdi-folder-google-drive"
+              variant="text"
+              size="small"
+              :disabled="!modelValue.storage"
+              :href="modelValue.storage && modelValue.storage.weblink"
+              target="_blank"
+              v-bind="tooltip"
+            />
+          </template>
+        </DTooltip>
       </div>
     </div>
 
