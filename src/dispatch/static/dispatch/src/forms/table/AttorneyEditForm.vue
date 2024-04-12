@@ -52,11 +52,20 @@
             <v-textarea v-model="attorney_analysis" label="Attorney analysis" />
           </v-col>
         </v-row>
-        <div>The attorney form schema is {{ attorney_form_schema }}.</div>
+        <div v-if="attorney_page_schema">
+          <span class="text-body-1 mt-3 text-medium-emphasis">Additional attorney questions</span>
+          <FormKit
+            style="margin-left: 20px; margin-right: 20px; margin-top: 10px"
+            type="form"
+            v-model="attorney_form_data"
+            :actions="false"
+          >
+            <FormKitSchema :schema="attorney_page_schema" :data="attorney_form_data" />
+          </FormKit>
+        </div>
       </v-container>
       <v-card-actions>
         <v-spacer />
-
         <div>
           <v-menu anchor="bottom end">
             <template #activator="{ props }">
@@ -101,7 +110,7 @@ export default {
       "dialogs.showAttorneyEdit",
       "selected.id",
       "selected.form_schema",
-      "selected.attorney_form_schema",
+      "selected.attorney_form_data",
       "selected.form_type",
       "selected.form_data",
       "selected.incident_id",
@@ -111,6 +120,7 @@ export default {
       "selected.project",
       "selected.incident",
       "page_data",
+      "attorney_page_schema",
       "incident_data",
     ]),
     ...mapFields("incident", { selected_incident: "selected" }),

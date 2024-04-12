@@ -23,7 +23,7 @@ const getDefaultSelectedState = () => {
     form_type: null,
     project: null,
     form_schema: null,
-    attorney_form_schema: null,
+    attorney_form_data: null,
     scoring_schema: null,
   }
 }
@@ -60,7 +60,7 @@ const state = {
   project_id: null,
   incident_data: null,
   has_formkit_pro: hasFormkitPro,
-  attorney_form_schema: null,
+  attorney_page_schema: null,
 }
 
 const getters = {
@@ -100,7 +100,6 @@ function formatTacticalReport(tactical_report) {
 }
 
 function buildIncidentDoc(incident) {
-  // todo - will need to use api to get incident so you can retrieve the last_tactical_report
   let output_qa = []
   if (incident) {
     output_qa.push({
@@ -245,11 +244,12 @@ function getCurrentPage(form_schema) {
   return output_schema
 }
 
-function createPayload() {
+function createPayload(selected) {
   const payload = {}
   const validKeys = [
     "id",
     "form_data",
+    "attorney_form_data",
     "status",
     "attorney_status",
     "attorney_questions",
@@ -257,11 +257,12 @@ function createPayload() {
     "incident_id",
     "form_type_id",
   ]
-  Object.keys(state.selected).forEach((key) => {
-    if (validKeys.includes(key)) payload[key] = state.selected[key]
+  Object.keys(selected).forEach((key) => {
+    if (validKeys.includes(key)) payload[key] = selected[key]
   })
   payload["form_data"] = JSON.stringify(payload["form_data"])
-  payload["project_id"] = state.selected.project.id
+  payload["attorney_form_data"] = JSON.stringify(payload["attorney_form_data"])
+  payload["project_id"] = selected.project.id
   return payload
 }
 
@@ -365,7 +366,7 @@ const actions = {
     FormsTypeApi.get(form_type_id)
       .then((response) => {
         commit("SET_PAGE_SCHEMA", getCurrentPage(response.data.form_schema))
-        commit("SET_ATTORNEY_FORM_SCHEMA", response.data.attorney_form_schema)
+        commit("SET_ATTORNEY_PAGE_SCHEMA", getCurrentPage(response.data.attorney_form_schema))
         commit("SET_FORM_TYPE", response.data)
         commit("SET_DIALOG_CREATE_EDIT", true)
       })
@@ -376,12 +377,12 @@ const actions = {
   editShow({ commit }, selected) {
     commit("SET_SELECTED", selected)
     commit("SET_PAGE_SCHEMA", getCurrentPage(selected.form_type.form_schema))
-    commit("SET_ATTORNEY_FORM_SCHEMA", selected.form_type.attorney_form_schema)
+    commit("SET_ATTORNEY_PAGE_SCHEMA", getCurrentPage(selected.form_type.attorney_form_schema))
     commit("SET_DIALOG_CREATE_EDIT", true)
   },
   attorneyEditShow({ commit }, selected) {
     commit("SET_SELECTED", selected)
-    commit("SET_ATTORNEY_FORM_SCHEMA", selected.form_type.attorney_form_schema)
+    commit("SET_ATTORNEY_PAGE_SCHEMA", getCurrentPage(selected.form_type.attorney_form_schema))
     commit(
       "SET_PAGE_DATA",
       buildFormDoc(
@@ -475,12 +476,13 @@ const mutations = {
   SET_SELECTED(state, value) {
     state.selected = Object.assign(state.selected, value)
     state.selected.form_data = JSON.parse(state.selected.form_data)
+    state.selected.attorney_form_data = JSON.parse(state.selected.attorney_form_data)
   },
   SET_FORM_SCHEMA(state, value) {
     state.selected.form_schema = value
   },
-  SET_ATTORNEY_FORM_SCHEMA(state, value) {
-    state.selected.attorney_form_schema = value
+  SET_ATTORNEY_PAGE_SCHEMA(state, value) {
+    state.attorney_page_schema = value
   },
   SET_PAGE_SCHEMA(state, value) {
     state.page_schema = value
@@ -524,6 +526,7 @@ const mutations = {
     state.incident_id = null
     state.project_id = null
     state.page_schema = null
+    state.attorney_page_schema = null
   },
 }
 
