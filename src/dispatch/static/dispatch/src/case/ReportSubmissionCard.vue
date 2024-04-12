@@ -68,6 +68,14 @@
             <v-col cols="12">
               <case-priority-select :project="project" v-model="case_priority" />
             </v-col>
+
+            <v-col cols="12">
+              <v-checkbox
+                v-model="dedicated_channel"
+                class="ml-n2"
+                label="Create a dedicated channel for this case."
+              />
+            </v-col>
             <v-col cols="12">
               <tag-filter-auto-complete
                 :project="project"
@@ -78,6 +86,7 @@
             </v-col>
           </v-row>
         </v-container>
+        <p class="ma-4" v-if="explanationText">{{ explanationText }}</p>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
@@ -147,6 +156,7 @@ export default {
     ...mapFields("case_management", [
       "selected.case_priority",
       "selected.case_type",
+      "selected.dedicated_channel",
       "selected.title",
       "selected.tags",
       "selected.description",
@@ -160,6 +170,23 @@ export default {
       "default_project",
     ]),
     ...mapFields("auth", ["currentUser.projects"]),
+    explanationText() {
+      const caseCreation = this.dedicated_channel
+        ? "dedicated channel case"
+        : `thread based case${
+            this.case_type && this.case_type.conversation_target
+              ? " in the channel " + this.case_type.conversation_target
+              : ""
+          }`
+
+      const addTo = this.dedicated_channel
+        ? "new channel"
+        : this.case_type && this.case_type.conversation_target
+        ? "channel " + this.case_type.conversation_target
+        : "thread"
+
+      return `You are creating a ${caseCreation}. After reporting, you will be added to the ${addTo}.`
+    },
   },
 
   watch: {

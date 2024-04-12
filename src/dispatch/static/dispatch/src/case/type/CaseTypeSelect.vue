@@ -17,8 +17,8 @@
     <template #item="data">
       <v-list-item v-bind="data.props" :title="null">
         <v-list-item-title>{{ data.item.raw.name }}</v-list-item-title>
-        <v-list-item-subtitle :title="data.item.raw.description">
-          {{ data.item.raw.description }}
+        <v-list-item-subtitle class="truncate-text" :title="data.item.raw.description">
+          {{ data.item.raw.conversation_target }} {{ data.item.raw.description }}
         </v-list-item-subtitle>
       </v-list-item>
     </template>
@@ -27,6 +27,9 @@
         <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
+    <v-col cols="12">
+      <p>Conversation Target: {{ conversation_target }}</p>
+    </v-col>
   </v-select>
 </template>
 
@@ -66,6 +69,7 @@ export default {
 
   data() {
     return {
+      conversation_target: null,
       loading: false,
       items: [],
       search: null,
@@ -170,6 +174,13 @@ export default {
       if (!val) return
       this.items.push(val)
     },
+    case_type(newCaseType) {
+      if (newCaseType) {
+        this.conversation_target = newCaseType.conversation_target
+      } else {
+        this.conversation_target = null
+      }
+    },
   },
 
   created() {
@@ -185,3 +196,12 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.truncate-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 500px;
+}
+</style>
