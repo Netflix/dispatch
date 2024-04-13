@@ -7,6 +7,7 @@
     label="Type"
     return-object
     :loading="loading"
+    clearable
   >
     <template #item="data">
       <v-list-item v-bind="data.props" :title="null">

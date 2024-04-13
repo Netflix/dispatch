@@ -112,6 +112,38 @@
                   name="Owner Conversation"
                 />
               </v-col>
+              <span class="text-body-1 text-medium-emphasis">Alternative folder structure</span>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="storage_folder_one"
+                  label="Storage folder 1"
+                  hint="The name of one of the storage folders."
+                  clearable
+                  required
+                  name="Storage folder 1"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="storage_folder_two"
+                  label="Storage folder 2"
+                  hint="The name of the other storage folder."
+                  clearable
+                  required
+                  name="Storage folder 2"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-checkbox
+                  v-model="storage_use_folder_one_as_primary"
+                  label="Use Storage folder 1 as the primary storage"
+                  hint="For incidents and case, use storage folder 1 as the primary storage."
+                />
+              </v-col>
+              <v-col cols="12">
+                <span class="text-body-2 text-medium-emphasis">Tag type to use as the storage folder</span>
+                <tag-type-select class="mt-4" v-model="storage_tag_type" />
+              </v-col>
             </v-row>
           </v-container>
         </v-card-text>
@@ -126,6 +158,7 @@ import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 
 import ColorPickerInput from "@/components/ColorPickerInput.vue"
+import TagTypeSelect from "@/tag_type/TagTypeSelect.vue"
 
 export default {
   setup() {
@@ -137,6 +170,7 @@ export default {
 
   components: {
     ColorPickerInput,
+    TagTypeSelect,
   },
 
   computed: {
@@ -152,6 +186,10 @@ export default {
       "selected.owner_conversation",
       "selected.owner_email",
       "selected.enabled",
+      "selected.storage_folder_one",
+      "selected.storage_folder_two",
+      "selected.storage_use_folder_one_as_primary",
+      "selected.storage_tag_type",
       "dialogs.showCreateEdit",
     ]),
   },

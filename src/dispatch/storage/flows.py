@@ -26,8 +26,19 @@ def create_storage(subject: Subject, storage_members: List[str], db_session: Ses
         log.warning("Storage not created. No storage plugin enabled.")
         return
 
-    # we create the external storage
-    external_storage_root_id = plugin.configuration.root_id
+    external_storage_root_id = None
+
+    # if project is set to use the tag uri for the root folder
+    if subject.project.storage_tag_type:
+        # find if the subject has a tag of the specified type
+        tag = next((tag for tag in subject.tags if tag.tag_type.id == subject.project.storage_tag_type.id), None)
+        if tag:
+            external_storage_root_id = tag.uri
+
+    if external_storage_root_id is None:
+        # we create the external storage based on the root in the configuration of the plugin
+        external_storage_root_id = plugin.configuration.root_id
+
     try:
         external_storage = plugin.instance.create_file(
             parent_id=external_storage_root_id, name=subject.name, participants=storage_members
@@ -40,18 +51,20 @@ def create_storage(subject: Subject, storage_members: List[str], db_session: Ses
         log.error(f"Storage not created. Plugin {plugin.plugin.slug} encountered an error.")
         return
 
-    external_storage.update(
-        {"resource_type": plugin.plugin.slug, "resource_id": external_storage["id"]}
-    )
-
     # we create folders to store logs and screengrabs
-    plugin.instance.create_file(external_storage["resource_id"], "Logs")
-    plugin.instance.create_file(external_storage["resource_id"], "Screengrabs")
+    folder_one_name = subject.project.storage_folder_one if subject.project.storage_folder_one else "Logs"
+    folder_one = plugin.instance.create_file(parent_id=external_storage["id"], name=folder_one_name)
+
+    folder_two_name = subject.project.storage_folder_two if subject.project.storage_folder_two else "Screengrabs"
+    plugin.instance.create_file(parent_id=external_storage["id"], name=folder_two_name)
+
+    if subject.project.storage_use_folder_one_as_primary:
+        external_storage = folder_one
 
     # we create the internal storage
     storage_in = StorageCreate(
-        resource_id=external_storage["resource_id"],
-        resource_type=external_storage["resource_type"],
+        resource_id=external_storage["id"],
+        resource_type=plugin.plugin.slug,
         weblink=external_storage["weblink"],
     )
 
