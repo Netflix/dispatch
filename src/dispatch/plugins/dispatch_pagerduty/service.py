@@ -86,30 +86,17 @@ def get_oncall_email(client: APISession, service_id: str) -> str:
     escalation_policy = get_escalation_policy(
         client=client, escalation_policy_id=escalation_policy_id
     )
-    filter_name = (
-        f"{escalation_policy['escalation_rules'][0]['targets'][0]['type'].split('_')[0]}_ids[]"
-    )
-    filter_value = escalation_policy["escalation_rules"][0]["targets"][0]["id"]
 
-    oncalls = list(
-        client.iter_all(
-            "oncalls",  # method
-            {
-                filter_name: [filter_value],
-                "escalation_policy_ids[]": [escalation_policy_id],
-            },  # params
-        )
-    )
+    current_oncall = escalation_policy['current_oncall']
 
-    if oncalls:
-        user_id = list(oncalls)[0]["user"]["id"]
-    else:
+    if not current_oncall:
         raise Exception(
             f"No users could be found for this pagerduty escalation policy ({escalation_policy_id}). Is there a schedule associated?"
         )
-    user = get_user(client=client, user_id=user_id)
 
-    return user["email"]
+    current_oncall_user_email = current_oncall['user']['email']
+
+    return current_oncall_user_email
 
 
 def page_oncall(
