@@ -1175,16 +1175,18 @@ def handle_project_select_action(
     )
 
 
-def ack_handle_escalation_submission_event(ack: Ack) -> None:
+def ack_handle_escalation_submission_event(ack: Ack, case: Case) -> None:
     """Handles the escalation submission event."""
+
+    msg = (
+        "The case has been esclated to an incident. This channel will be reused for the incident."
+        if case.dedicated_channel
+        else "The case has been esclated to an incident. All further triage work will take place in the incident channel."
+    )
     modal = Modal(
         title="Escalating Case",
         close="Close",
-        blocks=[
-            Section(
-                text="The case has been esclated to an incident. This channel will be reused for the incident."
-            )
-        ],
+        blocks=[Section(text=msg)],
     ).build()
     ack(response_action="update", view=modal)
 
@@ -1202,9 +1204,10 @@ def handle_escalation_submission_event(
     user: DispatchUser,
 ):
     """Handles the escalation submission event."""
-    ack_handle_escalation_submission_event(ack=ack)
 
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    ack_handle_escalation_submission_event(ack=ack, case=case)
+
     case.status = CaseStatus.escalated
     db_session.commit()
 
