@@ -208,6 +208,13 @@ def is_bot(request: BoltRequest) -> bool:
     if user == "USLACKBOT":
         return True
 
+    authorizations = body.get("authorizations")
+
+    if authorizations:
+        for auth in authorizations:
+            if auth.get("is_bot") == True:
+                return True
+
     auth_result = request.context.authorize_result
     user_id = request.context.user_id
     bot_id = body.get("event", {}).get("bot_id")
