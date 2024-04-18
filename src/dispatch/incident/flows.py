@@ -358,6 +358,7 @@ def incident_create_resources_flow(
     return incident_create_resources(incident=incident, db_session=db_session)
 
 
+@background_task
 def incident_create_flow(
     *,
     organization_slug: str,
