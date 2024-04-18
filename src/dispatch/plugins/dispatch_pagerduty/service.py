@@ -86,6 +86,11 @@ def get_oncall_email(client: APISession, service_id: str) -> str:
     escalation_policy = get_escalation_policy(
         client=client, escalation_policy_id=escalation_policy_id
     )
+
+    current_oncall = escalation_policy.get('current_oncall')
+    if current_oncall:
+        return current_oncall.get('user', {}).get('email') if current_oncall else None
+
     filter_name = (
         f"{escalation_policy['escalation_rules'][0]['targets'][0]['type'].split('_')[0]}_ids[]"
     )
