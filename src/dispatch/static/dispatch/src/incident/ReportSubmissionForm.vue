@@ -49,16 +49,6 @@
             model="incident"
           />
         </v-col>
-        <v-col cols="12">
-          <cost-model-combobox
-            :project="project"
-            v-model="cost_model"
-            persistent-hint
-            clearable
-            label="Optional: Cost Model"
-            hint="If unassigned, the incident cost calculation defaults to the classic incident cost model."
-          />
-        </v-col>
       </v-row>
     </v-container>
   </v-form>
@@ -68,7 +58,6 @@
 import { mapFields } from "vuex-map-fields"
 import { required } from "@/util/form"
 
-import CostModelCombobox from "@/cost_model/CostModelCombobox.vue"
 import IncidentPrioritySelect from "@/incident/priority/IncidentPrioritySelect.vue"
 import IncidentTypeSelect from "@/incident/type/IncidentTypeSelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
@@ -83,7 +72,6 @@ export default {
   name: "ReportSubmissionForm",
 
   components: {
-    CostModelCombobox,
     IncidentPrioritySelect,
     IncidentTypeSelect,
     ProjectSelect,
@@ -110,7 +98,6 @@ export default {
       "selected.commander",
       "selected.conference",
       "selected.conversation",
-      "selected.cost_model",
       "selected.description",
       "selected.documents",
       "selected.id",
