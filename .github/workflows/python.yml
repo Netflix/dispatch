@@ -56,7 +56,7 @@ jobs:
 
           files=($(comm -12 <(for X in "${MODIFIED_FILES}"; do echo "${X}"; done|sort) <(for X in "${FAILED_COVERAGE_FILENAMES}"; do echo "${X}"; done|sort)))
 
-          if ((${#files[@]} > 0)); then
+          if [[ ${#files[@]} > 0 ]]; then
             echo "FAIL Recommended file test coverage of ${{ env.COVERAGE_SINGLE }}% not reached. All modified files must meet the minimum code coverage requirement."
 
             for f in "${files[@]}"; do
