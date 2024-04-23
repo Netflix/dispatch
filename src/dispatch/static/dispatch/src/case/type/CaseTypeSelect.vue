@@ -129,31 +129,26 @@ export default {
       this.loading = "error"
 
       let filterOptions = {
-        q: "",
         sortBy: ["name"],
         descending: [false],
-        itemsPerPage: -1,
+        itemsPerPage: this.numItems,
       }
 
       if (this.project) {
         filterOptions = {
+          ...filterOptions,
           filters: {
             project: [this.project],
             enabled: ["true"],
           },
-          ...filterOptions,
         }
       }
 
       filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
 
-      if (this.items.length == 0) {
-        CaseTypeApi.getAll(filterOptions).then((response) => {
-          this.items = response.data.items
-        })
-      }
-      filterOptions.itemsPerPage = this.numItems
       CaseTypeApi.getAll(filterOptions).then((response) => {
+        this.items = response.data.items
+
         this.total = response.data.total
         this.loading = false
 
