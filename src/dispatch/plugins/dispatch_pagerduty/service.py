@@ -86,30 +86,32 @@ def get_oncall_email(client: APISession, service_id: str) -> str:
     escalation_policy = get_escalation_policy(
         client=client, escalation_policy_id=escalation_policy_id
     )
-    filter_name = (
-        f"{escalation_policy['escalation_rules'][0]['targets'][0]['type'].split('_')[0]}_ids[]"
+
+    # Iterate over all escalation rules and targets to find the oncall user
+    for rule in escalation_policy["escalation_rules"]:
+        for target in rule["targets"]:
+            filter_name = f"{target['type'].split('_')[0]}_ids[]"
+            filter_value = target["id"]
+
+            oncalls = list(
+                client.iter_all(
+                    "oncalls",  # method
+                    {
+                        filter_name: [filter_value],
+                        "escalation_policy_ids[]": [escalation_policy_id],
+                    },  # params
+                )
+            )
+
+            if oncalls:
+                user_id = list(oncalls)[0]["user"]["id"]
+                user = get_user(client=client, user_id=user_id)
+                return user["email"]
+
+    # If we reach this point, we couldn't find the oncall user
+    raise Exception(
+        f"No users could be found for this pagerduty escalation policy ({escalation_policy_id}). Is there a schedule associated???"
     )
-    filter_value = escalation_policy["escalation_rules"][0]["targets"][0]["id"]
-
-    oncalls = list(
-        client.iter_all(
-            "oncalls",  # method
-            {
-                filter_name: [filter_value],
-                "escalation_policy_ids[]": [escalation_policy_id],
-            },  # params
-        )
-    )
-
-    if oncalls:
-        user_id = list(oncalls)[0]["user"]["id"]
-    else:
-        raise Exception(
-            f"No users could be found for this pagerduty escalation policy ({escalation_policy_id}). Is there a schedule associated?"
-        )
-    user = get_user(client=client, user_id=user_id)
-
-    return user["email"]
 
 
 def page_oncall(
