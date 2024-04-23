@@ -153,6 +153,9 @@ function getCurrentPage(form_schema) {
   state.has_formkit_pro = hasFormkitPro
   let schema = JSON.parse(form_schema)
   let output_schema = []
+  if (schema == null) {
+    return output_schema
+  }
   for (let item of schema) {
     let obj = {
       name: item.name,
