@@ -58,11 +58,13 @@ jobs:
 
           if ((${#files[@]} > 0)); then
             echo "FAIL Recommended file test coverage of ${{ env.COVERAGE_SINGLE }}% not reached. All modified files must meet the minimum code coverage requirement."
-          fi
 
-          for f in "${files[@]}"; do
-            echo $FAILED_COVERAGE_PER_FILE | grep $f
-          done
+            for f in "${files[@]}"; do
+              echo $FAILED_COVERAGE_PER_FILE | grep $f
+            done
+
+            exit 1
+          fi
       - name: Coverage total
         run: |
           export COVERAGE_TOTAL=$(python -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
