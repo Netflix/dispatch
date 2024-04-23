@@ -129,31 +129,33 @@ export default {
       this.loading = "error"
 
       let filterOptions = {
-        q: "",
         sortBy: ["name"],
         descending: [false],
-        itemsPerPage: -1,
+        itemsPerPage: this.numItems,
       }
 
       if (this.project) {
         filterOptions = {
+          ...filterOptions,
           filters: {
             project: [this.project],
             enabled: ["true"],
           },
-          ...filterOptions,
         }
       }
 
       filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
 
-      if (this.items.length == 0) {
-        CaseTypeApi.getAll(filterOptions).then((response) => {
-          this.items = response.data.items
-        })
-      }
-      filterOptions.itemsPerPage = this.numItems
       CaseTypeApi.getAll(filterOptions).then((response) => {
+        this.items = response.data.items
+
+        if (this.case_type) {
+          // check to see if the current selection is available in the list and if not we add it
+          if (!this.items.find((match) => match.id === this.case_type.id)) {
+            this.items = [this.case_type].concat(this.items)
+          }
+        }
+
         this.total = response.data.total
         this.loading = false
 
