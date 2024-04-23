@@ -123,13 +123,6 @@ export default {
       IncidentTypeApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
 
-        if (this.incident_type) {
-          // check to see if the current selection is available in the list and if not we add it
-          if (!this.items.find((match) => match.id === this.incident_type.id)) {
-            this.items = [this.incident_type].concat(this.items)
-          }
-        }
-
         this.total = response.data.total
         this.loading = false
 
