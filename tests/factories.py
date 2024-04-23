@@ -708,7 +708,7 @@ class CaseTypeFactory(BaseFactory):
 
     name = FuzzyText()
     description = FuzzyText()
-
+    conversation_target = FuzzyText()
     project = SubFactory(ProjectFactory)
 
     class Meta:
