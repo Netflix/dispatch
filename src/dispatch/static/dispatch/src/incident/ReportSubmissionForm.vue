@@ -32,11 +32,7 @@
           <project-select v-model="project" />
         </v-col>
         <v-col cols="12">
-          <incident-type-select
-            :project="project"
-            v-model="incident_type"
-            value="this.incidentType"
-          />
+          <incident-type-select label="Incident Type" :project="project" v-model="incident_type" />
         </v-col>
         <v-col cols="12">
           <incident-priority-select :project="project" v-model="incident_priority" />
