@@ -125,7 +125,7 @@ def case_add_or_reactivate_participant_flow(
     return participant
 
 
-def update_conversation(case: Case, db_session: SessionLocal):
+def update_conversation(case: Case, db_session: Session) -> None:
     """Updates external communication conversation."""
 
     # if case has dedicated channel, there's no thread to update
