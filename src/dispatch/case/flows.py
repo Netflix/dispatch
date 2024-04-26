@@ -125,8 +125,13 @@ def case_add_or_reactivate_participant_flow(
     return participant
 
 
-def update_conversation(case: Case, db_session: SessionLocal):
+def update_conversation(case: Case, db_session: Session) -> None:
     """Updates external communication conversation."""
+
+    # if case has dedicated channel, there's no thread to update
+    if case.conversation.thread_id is None:
+        return
+
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=case.project.id, plugin_type="conversation"
     )
