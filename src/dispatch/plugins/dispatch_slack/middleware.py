@@ -212,7 +212,7 @@ def is_bot(request: BoltRequest) -> bool:
 
     if authorizations:
         for auth in authorizations:
-            if auth.get("is_bot") == True:
+            if auth.get("is_bot"):
                 return True
 
     auth_result = request.context.authorize_result
