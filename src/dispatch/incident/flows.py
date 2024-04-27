@@ -451,7 +451,7 @@ def incident_create_closed_flow(
 def incident_active_status_flow(incident: Incident, db_session=None):
     """Runs the incident active flow."""
     # we un-archive the conversation
-    conversation_flows.unarchive_conversation(incident=incident, db_session=db_session)
+    conversation_flows.unarchive_conversation(subject=incident, db_session=db_session)
 
 
 def create_incident_review_document(incident: Incident, db_session=None) -> Optional[Document]:
@@ -535,7 +535,7 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
     db_session.commit()
 
     # we archive the conversation
-    conversation_flows.archive_conversation(incident=incident, db_session=db_session)
+    conversation_flows.archive_conversation(subject=incident, db_session=db_session)
 
     if incident.visibility == Visibility.open:
         storage_plugin = plugin_service.get_active_instance(
