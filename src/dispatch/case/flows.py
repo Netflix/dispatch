@@ -424,7 +424,7 @@ def reactivate_case_participants(case: Case, db_session: Session):
     event_service.log_case_event(
         db_session=db_session,
         source="Dispatch Core App",
-        description="Incident participants reactivated",
+        description="Case participants reactivated",
         case_id=case.id,
         type=EventType.participant_updated,
     )
