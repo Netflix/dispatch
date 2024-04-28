@@ -383,24 +383,31 @@ def case_closed_status_flow(case: Case, db_session=None):
     db_session.add(case)
     db_session.commit()
 
+    # Archive the conversation if there is a dedicated channel
     if case.dedicated_channel:
-        # we archive the conversation
         conversation_flows.archive_conversation(subject=case, db_session=db_session)
 
-        if case.visibility == Visibility.open:
-            storage_plugin = plugin_service.get_active_instance(
-                db_session=db_session, project_id=case.project.id, plugin_type="storage"
-            )
-            if storage_plugin:
-                if storage_plugin.configuration.open_on_close:
-                    for document in case.documents:
-                        document_flows.open_document_access(document=document, db_session=db_session)
+    # Check if the case visibility is open
+    if case.visibility != Visibility.open:
+        return
 
-                if storage_plugin.configuration.read_only:
-                    for document in case.documents:
-                        document_flows.mark_document_as_readonly(
-                            document=document, db_session=db_session
-                        )
+    # Get the active storage plugin for the case's project
+    storage_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project.id, plugin_type="storage"
+    )
+
+    if not storage_plugin:
+        return
+
+    # Open document access if configured
+    if storage_plugin.configuration.open_on_close:
+        for document in case.documents:
+            document_flows.open_document_access(document=document, db_session=db_session)
+
+    # Mark documents as read-only if configured
+    if storage_plugin.configuration.read_only:
+        for document in case.documents:
+            document_flows.mark_document_as_readonly(document=document, db_session=db_session)
 
 
 def reactivate_case_participants(case: Case, db_session: Session):
