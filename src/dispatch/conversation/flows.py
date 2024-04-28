@@ -146,7 +146,7 @@ def create_incident_conversation(incident: Incident, db_session: SessionLocal):
     return incident.conversation
 
 
-def archive_conversation(subject: Subject, db_session: SessionLocal):
+def archive_conversation(subject: Subject, db_session: Session) -> None:
     """Archives a conversation."""
     if not subject.conversation:
         log.warning("Conversation not archived. No conversation available for this subject.")
