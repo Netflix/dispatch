@@ -162,20 +162,13 @@ def archive_conversation(subject: Subject, db_session: Session) -> None:
     try:
         plugin.instance.archive(subject.conversation.channel_id)
     except Exception as e:
-        if isinstance(subject, Incident):
-            event_service.log_incident_event(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description=f"Archiving conversation failed. Reason: {e}",
-                incident_id=subject.id,
-            )
-        else:
-            event_service.log_case_event(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description=f"Archiving conversation failed. Reason: {e}",
-                case_id=subject.id,
-            )
+        event_service.log_subject_event(
+            subject=subject,
+            id=subject.id,
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"Archiving conversation failed. Reason: {e}",
+        )
         log.exception(e)
 
 
@@ -195,20 +188,13 @@ def unarchive_conversation(subject: Subject, db_session: Session) -> None:
     try:
         plugin.instance.unarchive(subject.conversation.channel_id)
     except Exception as e:
-        if isinstance(subject, Incident):
-            event_service.log_incident_event(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description=f"Unarchiving conversation failed. Reason: {e}",
-                incident_id=subject.id,
-            )
-        else:
-            event_service.log_case_event(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description=f"Unarchiving conversation failed. Reason: {e}",
-                case_id=subject.id,
-            )
+        event_service.log_subject_event(
+            subject=subject,
+            id=subject.id,
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"Unarchiving conversation failed. Reason: {e}",
+        )
         log.exception(e)
 
 
@@ -284,20 +270,13 @@ def add_conversation_bookmark(
             )
         )
     except Exception as e:
-        if isinstance(subject, Incident):
-            event_service.log_incident_event(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description=f"Adding the {resource.name.lower()} bookmark failed. Reason: {e}",
-                incident_id=subject.id,
-            )
-        elif isinstance(subject, Case):
-            event_service.log_case_event(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description=f"Adding the {resource.name.lower()} bookmark failed. Reason: {e}",
-                case_id=subject.id,
-            )
+        event_service.log_subject_event(
+            subject=subject,
+            id=subject.id,
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"Adding the {resource.name.lower()} bookmark failed. Reason: {e}",
+        )
         log.exception(e)
 
 

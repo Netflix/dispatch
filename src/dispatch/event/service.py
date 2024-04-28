@@ -10,6 +10,8 @@ from dispatch.case import service as case_service
 from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
 from dispatch.enums import EventType
+from dispatch.incident.models import Incident
+from dispatch.types import Subject
 
 from .models import Event, EventCreate, EventUpdate
 from dispatch.document import service as document_service
@@ -77,6 +79,13 @@ def delete(*, db_session, event_id: int):
     event = db_session.query(Event).filter(Event.id == event_id).first()
     db_session.delete(event)
     db_session.commit()
+
+
+def log_subject_event(subject: Subject, id: int, **kwargs) -> Event:
+    if isinstance(subject, Incident):
+        return log_incident_event(incident_id=id, **kwargs)
+    else:
+        return log_case_event(case_id=id, **kwargs)
 
 
 def log_incident_event(

@@ -458,11 +458,46 @@ def case_status_transition_flow_dispatcher(
             # Closed -> New
             case_active_status_flow(case, db_session)
 
+        case (_, CaseStatus.new):
+            # Any -> New
+            pass
+
+        case (CaseStatus.new, CaseStatus.triage):
+            # New -> Triage
+            case_triage_status_flow(
+                case=case,
+                db_session=db_session,
+            )
+
         case (CaseStatus.closed, CaseStatus.triage):
             # Closed -> Triage
             case_active_status_flow(case, db_session)
             case_triage_status_flow(
                 case=case,
+                db_session=db_session,
+            )
+
+        case (_, CaseStatus.triage):
+            # Any -> Triage
+            pass
+
+        case (CaseStatus.new, CaseStatus.escalated):
+            # New -> Escalated
+            case_triage_status_flow(
+                case=case,
+                db_session=db_session,
+            )
+            case_escalated_status_flow(
+                case=case,
+                organization_slug=organization_slug,
+                db_session=db_session,
+            )
+
+        case (CaseStatus.triage, CaseStatus.escalated):
+            # Triage -> Escalated
+            case_escalated_status_flow(
+                case=case,
+                organization_slug=organization_slug,
                 db_session=db_session,
             )
 
@@ -479,36 +514,9 @@ def case_status_transition_flow_dispatcher(
                 db_session=db_session,
             )
 
-        case (_, CaseStatus.new):
-            # Any -> New
-            pass
-
-        case (_, CaseStatus.triage):
-            # Any -> Triage
-            pass
-
         case (_, CaseStatus.escalated):
             # Any -> Escalated
             pass
-
-        case (CaseStatus.new, CaseStatus.triage):
-            # New -> Triage
-            case_triage_status_flow(
-                case=case,
-                db_session=db_session,
-            )
-
-        case (CaseStatus.new, CaseStatus.escalated):
-            # New -> Escalated
-            case_triage_status_flow(
-                case=case,
-                db_session=db_session,
-            )
-            case_escalated_status_flow(
-                case=case,
-                organization_slug=organization_slug,
-                db_session=db_session,
-            )
 
         case (CaseStatus.new, CaseStatus.closed):
             # New -> Closed
@@ -518,14 +526,6 @@ def case_status_transition_flow_dispatcher(
             )
             case_closed_status_flow(
                 case=case,
-                db_session=db_session,
-            )
-
-        case (CaseStatus.triage, CaseStatus.escalated):
-            # Triage -> Escalated
-            case_escalated_status_flow(
-                case=case,
-                organization_slug=organization_slug,
                 db_session=db_session,
             )
 
