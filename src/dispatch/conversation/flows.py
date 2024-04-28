@@ -179,7 +179,7 @@ def archive_conversation(subject: Subject, db_session: Session) -> None:
         log.exception(e)
 
 
-def unarchive_conversation(subject: Subject, db_session: SessionLocal):
+def unarchive_conversation(subject: Subject, db_session: Session) -> None:
     """Unarchives a conversation."""
     if not subject.conversation:
         log.warning("Conversation not unarchived. No conversation available for this subject.")
