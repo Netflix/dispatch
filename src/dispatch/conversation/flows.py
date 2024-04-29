@@ -164,7 +164,6 @@ def archive_conversation(subject: Subject, db_session: Session) -> None:
     except Exception as e:
         event_service.log_subject_event(
             subject=subject,
-            id=subject.id,
             db_session=db_session,
             source="Dispatch Core App",
             description=f"Archiving conversation failed. Reason: {e}",
@@ -190,7 +189,6 @@ def unarchive_conversation(subject: Subject, db_session: Session) -> None:
     except Exception as e:
         event_service.log_subject_event(
             subject=subject,
-            id=subject.id,
             db_session=db_session,
             source="Dispatch Core App",
             description=f"Unarchiving conversation failed. Reason: {e}",
@@ -272,7 +270,6 @@ def add_conversation_bookmark(
     except Exception as e:
         event_service.log_subject_event(
             subject=subject,
-            id=subject.id,
             db_session=db_session,
             source="Dispatch Core App",
             description=f"Adding the {resource.name.lower()} bookmark failed. Reason: {e}",
