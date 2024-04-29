@@ -81,11 +81,11 @@ def delete(*, db_session, event_id: int):
     db_session.commit()
 
 
-def log_subject_event(subject: Subject, id: int, **kwargs) -> Event:
+def log_subject_event(subject: Subject, **kwargs) -> Event:
     if isinstance(subject, Incident):
-        return log_incident_event(incident_id=id, **kwargs)
+        return log_incident_event(incident_id=subject.id, **kwargs)
     else:
-        return log_case_event(case_id=id, **kwargs)
+        return log_case_event(case_id=subject.id, **kwargs)
 
 
 def log_incident_event(
