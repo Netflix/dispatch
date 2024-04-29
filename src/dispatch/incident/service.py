@@ -166,9 +166,10 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
         incident_priority_in=incident_in.incident_priority,
     )
 
-    incident_severity = incident_severity_service.get_default(
+    incident_severity = incident_severity_service.get_by_name_or_default(
         db_session=db_session,
         project_id=project.id,
+        incident_severity_in=incident_in.incident_severity,
     )
 
     cost_model = None
@@ -409,7 +410,7 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
 
     db_session.commit()
 
-    # Update total incident reponse cost.
+    # Update total incident response cost.
     incident_cost_service.update_incident_response_cost(
         incident_id=incident.id, db_session=db_session
     )

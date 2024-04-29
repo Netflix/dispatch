@@ -65,3 +65,9 @@ class EventType(DispatchEnum):
     participant_updated = "Participant updated"  # for added/removed users and role changes
     imported_message = "Imported message"  # for stopwatch-reacted messages from Slack
     custom_event = "Custom event"  # for user-added events (new feature)
+
+
+class SubjectNames(DispatchEnum):
+    CASE = "Case"
+    INCIDENT = "Incident"
+    SIGNAL = "Signal"

@@ -3,7 +3,7 @@
     <router-view />
     <v-snackbar location="bottom right" :model-value="updateExists" :timeout="-1" color="info">
       An update is available
-      <template #action="{ attrs }">
+      <template #actions="{ attrs }">
         <v-btn variant="text" v-bind="attrs" @click="refreshApp"> Update </v-btn>
       </template>
     </v-snackbar>

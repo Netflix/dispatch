@@ -126,7 +126,14 @@ def get_all_last_x_hours_by_status(
 
 
 def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None) -> Case:
-    """Creates a new case."""
+    """Creates a new case.
+
+    Returns:
+        The created case.
+
+    Raises:
+        ValidationError: If the case type does not have a conversation target, the case will not be created.
+    """
     project = project_service.get_by_name_or_default(
         db_session=db_session, project_in=case_in.project
     )
@@ -136,19 +143,23 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
         tag_objs.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
 
     # TODO(mvilanova): allow to provide related cases and incidents, and duplicated cases
+    case_type = case_type_service.get_by_name_or_default(
+        db_session=db_session, project_id=project.id, case_type_in=case_in.case_type
+    )
+    if not case_type or not case_type.conversation_target:
+        raise ValueError(
+            f"Case type with name {case_in.case_type.name} does not have a conversation target. The case will not be created."
+        )
 
     case = Case(
         title=case_in.title,
         description=case_in.description,
         project=project,
         status=case_in.status,
+        dedicated_channel=case_in.dedicated_channel,
         tags=tag_objs,
+        case_type=case_type,
     )
-
-    case_type = case_type_service.get_by_name_or_default(
-        db_session=db_session, project_id=project.id, case_type_in=case_in.case_type
-    )
-    case.case_type = case_type
 
     case.visibility = case_type.visibility
     if case_in.visibility:

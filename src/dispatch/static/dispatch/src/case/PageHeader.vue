@@ -23,12 +23,24 @@
           <ParticipantAvatarGroup :participants="caseParticipants" class="pl-3" v-bind="tooltip" />
         </template>
       </DTooltip>
-      <LockButton
-        :subject-visibility="caseVisibility"
-        subject-type="case_management"
-        class="ml-n2 mr-n2"
-      />
-      <EscalateButton class="ml-n4" />
+      <DTooltip
+        :text="caseVisibility === 'Open' ? 'Make case private' : 'Make case public'"
+        :hotkeys="[]"
+      >
+        <template #activator="{ tooltip }">
+          <LockButton
+            :subject-visibility="caseVisibility"
+            subject-type="case_management"
+            class="ml-n2 mr-n2"
+            v-bind="tooltip"
+          />
+        </template>
+      </DTooltip>
+      <DTooltip text="Escalate case to an incident" :hotkeys="[]">
+        <template #activator="{ tooltip }">
+          <EscalateButton class="ml-n4" v-bind="tooltip" />
+        </template>
+      </DTooltip>
       <v-divider vertical inset />
       <DTooltip text="Case details" :hotkeys="['⌘', '⇧', 'I']">
         <template #activator="{ tooltip }">
