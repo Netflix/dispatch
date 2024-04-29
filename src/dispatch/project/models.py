@@ -72,7 +72,7 @@ class ProjectBase(DispatchBase):
     color: Optional[str] = Field(None, nullable=True)
     send_daily_reports: Optional[bool] = Field(True, nullable=True)
     enabled: Optional[bool] = Field(True, nullable=True)
-    allow_self_join: Optional[bool] = Field(True, nullable=Tru
+    allow_self_join: Optional[bool] = Field(True, nullable=True)
 
 
 class ProjectCreate(ProjectBase):
