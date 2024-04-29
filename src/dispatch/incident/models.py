@@ -250,6 +250,7 @@ class ProjectRead(DispatchBase):
     name: NameStr
     color: Optional[str]
     stable_priority: Optional[IncidentPriorityRead] = None
+    allow_self_join: Optional[bool] = Field(True, nullable=True)
 
 
 class CaseRead(DispatchBase):
