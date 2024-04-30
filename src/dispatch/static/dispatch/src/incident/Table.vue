@@ -18,7 +18,12 @@
           <v-icon start color="white">mdi-fire</v-icon>
           <span class="text-uppercase text-body-2 font-weight-bold">Report incident</span>
         </v-btn>
-        <v-btn v-if="userAdminOrAbove(current_user_role)" color="info" class="ml-2" @click="showNewSheet()">
+        <v-btn
+          v-if="userAdminOrAbove(current_user_role)"
+          color="info"
+          class="ml-2"
+          @click="showNewSheet()"
+        >
           New
         </v-btn>
       </v-col>
@@ -27,15 +32,34 @@
       <v-col>
         <v-card variant="flat">
           <v-card-title>
-            <v-text-field v-model="q" append-inner-icon="mdi-magnify" label="Search" single-line hide-details
-              clearable />
+            <v-text-field
+              v-model="q"
+              append-inner-icon="mdi-magnify"
+              label="Search"
+              single-line
+              hide-details
+              clearable
+            />
           </v-card-title>
-          <v-data-table-server :headers="headers" :items="items" :items-length="total || 0" v-model:page="page"
-            v-model:items-per-page="itemsPerPage" :footer-props="{
+          <v-data-table-server
+            :headers="headers"
+            :items="items"
+            :items-length="total || 0"
+            v-model:page="page"
+            v-model:items-per-page="itemsPerPage"
+            :footer-props="{
               'items-per-page-options': [10, 25, 50, 100],
-            }" v-model:sort-by="sortBy" v-model:sort-desc="descending" :loading="loading"
-            data-testid="incident-data-table" v-model="selected" loading-text="Loading... Please wait" show-select
-            return-object @click:row="showIncidentEditSheet">
+            }"
+            v-model:sort-by="sortBy"
+            v-model:sort-desc="descending"
+            :loading="loading"
+            data-testid="incident-data-table"
+            v-model="selected"
+            loading-text="Loading... Please wait"
+            show-select
+            return-object
+            @click:row="showIncidentEditSheet"
+          >
             <template #item.project.name="{ item, value }">
               <v-chip size="small" :color="item.project.color">
                 {{ value }}
@@ -48,7 +72,11 @@
               <incident-priority :priority="value" />
             </template>
             <template #item.status="{ item, value }">
-              <incident-status :status="value" :id="item.id" :allowSelfJoin="item.project.allow_self_join" />
+              <incident-status
+                :status="value"
+                :id="item.id"
+                :allowSelfJoin="item.project.allow_self_join"
+              />
             </template>
             <template #item.incident_costs="{ value }">
               <incident-cost-card :incident-costs="value" />
@@ -80,16 +108,22 @@
                   </v-btn>
                 </template>
                 <v-list>
-                  <v-list-item data-testid="incident-table-edit" :to="{
-                    name: 'IncidentTableEdit',
-                    params: { name: item.name },
-                  }">
+                  <v-list-item
+                    data-testid="incident-table-edit"
+                    :to="{
+                      name: 'IncidentTableEdit',
+                      params: { name: item.name },
+                    }"
+                  >
                     <v-list-item-title>View / Edit</v-list-item-title>
                   </v-list-item>
                   <v-list-item @click="showReportDialog(item)" :disabled="item.status == 'Closed'">
                     <v-list-item-title>Create Report</v-list-item-title>
                   </v-list-item>
-                  <v-list-item @click="showRun({ type: 'incident', data: item })" :disabled="item.status == 'Closed'">
+                  <v-list-item
+                    @click="showRun({ type: 'incident', data: item })"
+                    :disabled="item.status == 'Closed'"
+                  >
                     <v-list-item-title>Run Workflow</v-list-item-title>
                   </v-list-item>
                   <v-list-item @click="showDeleteDialog(item)">
