@@ -456,7 +456,7 @@ tomli==2.0.1
     # via schemathesis
 tomli-w==1.0.0
     # via schemathesis
-tqdm==4.66.1
+tqdm==4.66.4
     # via
     #   openai
     #   spacy
