@@ -136,8 +136,8 @@ def get_hourly_rate(project) -> int:
 def update_incident_response_cost_for_incident_type(
     db_session, incident_type: IncidentType
 ) -> None:
-    """Calculate the response cost of all incidents associated with this incident type."""
-    incidents = incident_service.get_all_by_incident_type(
+    """Calculate the response cost of all non-closed incidents associated with this incident type."""
+    incidents = incident_service.get_all_open_by_incident_type(
         db_session=db_session, incident_type_id=incident_type.id
     )
     for incident in incidents:

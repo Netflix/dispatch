@@ -80,9 +80,14 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Incident]
     )
 
 
-def get_all_by_incident_type(*, db_session, incident_type_id: int) -> List[Optional[Incident]]:
-    """Returns all incidents based on the given incident type."""
-    return db_session.query(Incident).filter(Incident.incident_type_id == incident_type_id).all()
+def get_all_open_by_incident_type(*, db_session, incident_type_id: int) -> List[Optional[Incident]]:
+    """Returns all non-closed incidents based on the given incident type."""
+    return (
+        db_session.query(Incident)
+        .filter(Incident.status != IncidentStatus.closed)
+        .filter(Incident.incident_type_id == incident_type_id)
+        .all()
+    )
 
 
 def get_by_name_or_raise(*, db_session, project_id: int, incident_in: IncidentRead) -> Incident:

@@ -193,8 +193,8 @@ def update(
     should_update_incident_cost = incident_type.cost_model != cost_model
     incident_type.cost_model = cost_model
 
-    # Calculate the cost of all incidents associated with this incident type
-    incidents = incident_service.get_all_by_incident_type(
+    # Calculate the cost of all non-closed incidents associated with this incident type
+    incidents = incident_service.get_all_open_by_incident_type(
         db_session=db_session, incident_type_id=incident_type.id
     )
     for incident in incidents:
