@@ -17,7 +17,7 @@ from setuptools.command.sdist import sdist as SDistCommand
 
 ROOT_PATH = os.path.abspath(os.path.dirname(__file__))
 
-
+#yoohoo
 # modified from:
 # https://raw.githubusercontent.com/getsentry/sentry/055cfe74bb88bbb2083f37f5df21b91d0ef4f9a7/src/sentry/utils/distutils/commands/base.py
 class BaseBuildCommand(Command):
