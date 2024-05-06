@@ -70,7 +70,6 @@
             </v-col>
           </v-row>
         </v-container>
-        <p class="ma-4" v-if="explanationText">{{ explanationText }}</p>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
