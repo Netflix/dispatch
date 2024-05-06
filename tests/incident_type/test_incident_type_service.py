@@ -63,6 +63,7 @@ def test_update(session, incident_type):
 
 def test_update_cost_model(session, incident, incident_type, cost_model, incident_cost_type):
     """Updating the cost model field should immediately update the incident cost of all incidents with this incident type."""
+    from dispatch.incident.models import IncidentStatus
     from dispatch.incident.type.service import update
     from dispatch.incident_cost import service as incident_cost_service
     from dispatch.incident_cost_type import service as incident_cost_type_service
@@ -75,6 +76,7 @@ def test_update_cost_model(session, incident, incident_type, cost_model, inciden
     current_time = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
 
     # Initial setup.
+    incident.status = IncidentStatus.active
     incident.incident_type = incident_type
     incident.project = incident_type.project
 
