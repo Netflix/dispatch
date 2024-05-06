@@ -132,7 +132,7 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
         The created case.
 
     Raises:
-        ValidationError: If the case type does not have a conversation target, the case will not be created.
+        ValidationError: If the case type does not have a conversation target and the case is not being created with a dedicated channel, the case will not be created.
     """
     project = project_service.get_by_name_or_default(
         db_session=db_session, project_in=case_in.project
@@ -146,10 +146,13 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
     case_type = case_type_service.get_by_name_or_default(
         db_session=db_session, project_id=project.id, case_type_in=case_in.case_type
     )
-    if not case_type or not case_type.conversation_target:
-        raise ValueError(
-            f"Case type with name {case_in.case_type.name} does not have a conversation target. The case will not be created."
-        )
+
+    # Cases with dedicated channels do not require a conversation target.
+    if not case_in.dedicated_channel:
+        if not case_type or not case_type.conversation_target:
+            raise ValueError(
+                f"Cases without dedicated channels require a conversation target. Case type with name {case_in.case_type.name} does not have a conversation target. The case will not be created."
+            )
 
     case = Case(
         title=case_in.title,
