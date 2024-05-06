@@ -3,6 +3,9 @@ from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from sqlalchemy.sql.expression import true
 
+from dispatch.incident_cost import service as incident_cost_service
+from dispatch.incident import service as incident_service
+from dispatch.cost_model import service as cost_model_service
 from dispatch.document import service as document_service
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
@@ -133,11 +136,18 @@ def create(*, db_session, incident_type_in: IncidentTypeCreate) -> IncidentType:
                 "executive_template_document",
                 "tracking_template_document",
                 "review_template_document",
+                "cost_model",
                 "project",
             }
         ),
         project=project,
     )
+
+    if incident_type_in.cost_model:
+        cost_model = cost_model_service.get_cost_model_by_id(
+            db_session=db_session, cost_model_id=incident_type_in.cost_model.id
+        )
+        incident_type.cost_model = cost_model
 
     if incident_type_in.incident_template_document:
         incident_template_document = document_service.get(
@@ -171,7 +181,27 @@ def create(*, db_session, incident_type_in: IncidentTypeCreate) -> IncidentType:
 def update(
     *, db_session, incident_type: IncidentType, incident_type_in: IncidentTypeUpdate
 ) -> IncidentType:
-    """Updates an incident type."""
+    """Updates an incident type.
+
+    If the cost model is updated, we need to update the costs of all incidents associated with this incident type.
+    """
+    cost_model = None
+    if incident_type_in.cost_model:
+        cost_model = cost_model_service.get_cost_model_by_id(
+            db_session=db_session, cost_model_id=incident_type_in.cost_model.id
+        )
+    should_update_incident_cost = incident_type.cost_model != cost_model
+    incident_type.cost_model = cost_model
+
+    # Calculate the cost of all non-closed incidents associated with this incident type
+    incidents = incident_service.get_all_open_by_incident_type(
+        db_session=db_session, incident_type_id=incident_type.id
+    )
+    for incident in incidents:
+        incident_cost_service.calculate_incident_response_cost(
+            incident_id=incident.id, db_session=db_session, incident_review=False
+        )
+
     if incident_type_in.incident_template_document:
         incident_template_document = document_service.get(
             db_session=db_session, document_id=incident_type_in.incident_template_document.id
@@ -205,6 +235,7 @@ def update(
             "executive_template_document",
             "tracking_template_document",
             "review_template_document",
+            "cost_model",
         },
     )
 
@@ -213,6 +244,12 @@ def update(
             setattr(incident_type, field, update_data[field])
 
     db_session.commit()
+
+    if should_update_incident_cost:
+        incident_cost_service.update_incident_response_cost_for_incident_type(
+            db_session=db_session, incident_type=incident_type
+        )
+
     return incident_type
 
 

@@ -136,8 +136,8 @@ def test_calculate_incident_response_cost_with_cost_model(
     # Set up incident.
     incident = get(db_session=session, incident_id=incident.id)
     cost_model_activity.plugin_event.slug = ChannelActivityEvent.slug
-    incident.cost_model.enabled = True
-    incident.cost_model.activities = [cost_model_activity]
+    incident.incident_type.cost_model.enabled = True
+    incident.incident_type.cost_model.activities = [cost_model_activity]
     incident.conversation = conversation
 
     # Calculates and updates the incident cost.
@@ -196,8 +196,8 @@ def test_calculate_incident_response_cost_with_cost_model__no_enabled_plugins(
 
     # Set up incident.
     incident = get(db_session=session, incident_id=incident.id)
-    incident.cost_model.enabled = True
-    incident.cost_model.activities = [cost_model_activity]
+    incident.incident_type.cost_model.enabled = True
+    incident.incident_type.cost_model.activities = [cost_model_activity]
     incident.conversation = conversation
 
     # Calculates and updates the incident cost.
@@ -302,7 +302,7 @@ def test_update_incident_response_cost(incident, session, incident_cost_type):
     incident_cost_type.project = incident.project
 
     incident = incident_service.get(db_session=session, incident_id=incident.id)
-    incident.cost_model = None
+    incident.incident_type.cost_model = None
 
     # Create the inital incident response cost.
     incident_response_cost = update_incident_response_cost(
@@ -327,6 +327,7 @@ def test_update_incident_response_cost(incident, session, incident_cost_type):
 
 
 def test_update_incident_response_cost__fail(incident, session):
+    """Tests that the incident response cost is not created if the project has no default cost_type."""
     from dispatch.incident import service as incident_service
     from dispatch.incident_cost.service import (
         update_incident_response_cost,
