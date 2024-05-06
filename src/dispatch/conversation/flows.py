@@ -146,52 +146,52 @@ def create_incident_conversation(incident: Incident, db_session: SessionLocal):
     return incident.conversation
 
 
-def archive_conversation(incident: Incident, db_session: SessionLocal):
+def archive_conversation(subject: Subject, db_session: Session) -> None:
     """Archives a conversation."""
-    if not incident.conversation:
-        log.warning("Conversation not archived. No conversation available for this incident.")
+    if not subject.conversation:
+        log.warning("Conversation not archived. No conversation available for this subject.")
         return
 
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+        db_session=db_session, project_id=subject.project.id, plugin_type="conversation"
     )
     if not plugin:
         log.warning("Conversation not archived. No conversation plugin enabled.")
         return
 
     try:
-        plugin.instance.archive(incident.conversation.channel_id)
+        plugin.instance.archive(subject.conversation.channel_id)
     except Exception as e:
-        event_service.log_incident_event(
+        event_service.log_subject_event(
+            subject=subject,
             db_session=db_session,
             source="Dispatch Core App",
             description=f"Archiving conversation failed. Reason: {e}",
-            incident_id=incident.id,
         )
         log.exception(e)
 
 
-def unarchive_conversation(incident: Incident, db_session: SessionLocal):
+def unarchive_conversation(subject: Subject, db_session: Session) -> None:
     """Unarchives a conversation."""
-    if not incident.conversation:
-        log.warning("Conversation not unarchived. No conversation available for this incident.")
+    if not subject.conversation:
+        log.warning("Conversation not unarchived. No conversation available for this subject.")
         return
 
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+        db_session=db_session, project_id=subject.project.id, plugin_type="conversation"
     )
     if not plugin:
         log.warning("Conversation not unarchived. No conversation plugin enabled.")
         return
 
     try:
-        plugin.instance.unarchive(incident.conversation.channel_id)
+        plugin.instance.unarchive(subject.conversation.channel_id)
     except Exception as e:
-        event_service.log_incident_event(
+        event_service.log_subject_event(
+            subject=subject,
             db_session=db_session,
             source="Dispatch Core App",
             description=f"Unarchiving conversation failed. Reason: {e}",
-            incident_id=incident.id,
         )
         log.exception(e)
 
@@ -268,11 +268,11 @@ def add_conversation_bookmark(
             )
         )
     except Exception as e:
-        event_service.log_incident_event(
+        event_service.log_subject_event(
+            subject=subject,
             db_session=db_session,
             source="Dispatch Core App",
             description=f"Adding the {resource.name.lower()} bookmark failed. Reason: {e}",
-            incident_id=subject.id,
         )
         log.exception(e)
 
