@@ -77,13 +77,44 @@ def test_create(session, participant, case_type, case_severity, case_priority, p
     assert case_out.assignee.individual.email == user.email
 
 
+def test_create__no_conversation_target(
+    session, participant, case_type, case_severity, case_priority, project, user
+):
+    """Assert that a case with a dedicated channel can be created without a conversation_target."""
+    from dispatch.case.service import create as create_case
+    from dispatch.enums import Visibility
+
+    case_type.project = project
+    case_type.conversation_target = None
+    case_severity.project = project
+    case_priority.project = project
+    session.add(case_type)
+    session.add(case_severity)
+    session.add(case_priority)
+    session.commit()
+
+    # No assignee, No oncall_service, resolves current_user to assignee
+
+    case_in = CaseCreate(
+        title="A",
+        description="B",
+        resolution=None,
+        visibility=Visibility.open,
+        case_type=case_type,
+        case_severity=case_severity,
+        case_priority=case_priority,
+        reporter=participant,
+        project=project,
+        dedicated_channel=True,
+    )
+
+    assert create_case(db_session=session, case_in=case_in, current_user=user)
+
+
 def test_create__fails_with_no_conversation_target(
     session, participant, case_type, case_severity, case_priority, project, user
 ):
-    """Assert that a case cannot be created without a conversation_target.
-
-    Case conversations are created as threads by default and require a conversation target to be created.
-    """
+    """Assert that a case without a dedicated channel cannot be created without a conversation_target."""
     from dispatch.case.service import create as create_case
     from dispatch.enums import Visibility
 
