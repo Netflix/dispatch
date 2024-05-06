@@ -124,7 +124,7 @@ frozenlist==1.4.1
     #   aiosignal
 google-api-core==2.15.0
     # via google-api-python-client
-google-api-python-client==2.125.0
+google-api-python-client==2.127.0
     # via -r requirements-base.in
 google-auth==2.26.1
     # via
@@ -376,7 +376,7 @@ scipy==1.11.4
     # via statsmodels
 sentry-asgi==0.2.0
     # via -r requirements-base.in
-sentry-sdk==1.45.0
+sentry-sdk==2.1.1
     # via
     #   -r requirements-base.in
     #   sentry-asgi
@@ -442,7 +442,7 @@ starlette==0.32.0.post1
     #   starlette-testclient
 starlette-testclient==0.2.0
     # via schemathesis
-statsmodels==0.14.1
+statsmodels==0.14.2
     # via -r requirements-base.in
 tabulate==0.9.0
     # via -r requirements-base.in
@@ -456,7 +456,7 @@ tomli==2.0.1
     # via schemathesis
 tomli-w==1.0.0
     # via schemathesis
-tqdm==4.66.1
+tqdm==4.66.4
     # via
     #   openai
     #   spacy
