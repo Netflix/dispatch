@@ -64,7 +64,6 @@ from dispatch.plugins.dispatch_slack.fields import (
     case_resolution_reason_select,
     case_status_select,
     case_type_select,
-    cost_model_select,
     description_input,
     entity_select,
     incident_priority_select,
@@ -1101,11 +1100,6 @@ def escalate_button_click(
         ),
         incident_priority_select(db_session=db_session, project_id=case.project.id, optional=True),
     ]
-
-    if cost_model_select_block := cost_model_select(
-        db_session=db_session, project_id=case.project.id, optional=True
-    ):
-        blocks.append(cost_model_select_block)
 
     modal = Modal(
         title="Escalate Case",

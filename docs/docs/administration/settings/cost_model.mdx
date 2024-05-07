@@ -1,8 +1,8 @@
 # Cost Model
 
-Our Cost Model is a feature that enables teams to estimate response cost for each incident. Users can opt in to create and use personalized cost calculations for each incident based on participant activity.
+Our Cost Model is a feature that enables teams to estimate response cost for each incident based on the incident type. Users can opt in to create and use personalized cost calculations for each type of incident based on participant activity. The cost models are automatically applied to each incident based on the incident type.
 
-If no cost model is assigned to an incident, the default classic cost model will be used. See [Incident Cost Type](./incident/incident-cost-type.mdx###calculating-incident-cost).
+If an incident type does not have a specific cost model assigned, the default classic cost model will be used when calculating the incident costs. See [Incident Cost Type](./incident/incident-cost-type.mdx###calculating-incident-cost).
 
 <div style={{textAlign: 'center'}}>
 
@@ -13,7 +13,7 @@ If no cost model is assigned to an incident, the default classic cost model will
 ## Key Features
 
 ### Customizable Cost Models
-Users have the flexibility to define their unique cost models based on their organization's workflow and tools. This customization can be tailored to each incident, providing a versitile approach to cost calculation. The cost model for an incident can be changed at any time during its lifespan. All participant activity costs moving forward will be calculated using the new cost model.
+Users have the flexibility to define their unique cost models based on their organization's workflow and tools. This customization can be tailored to each incident type, providing a versitile approach to cost calculation. The cost model for an incident type can be changed at any time. When cost model changes are made to the incident type or an incident changes its type, all participant activity costs moving forward will be calculated using the new cost model.
 
 ### Plugin-Based Tracking
 Users can track costs from their existing tools by using our plugin-based tracking system. Users have the flexibility to select which plugins and specific plugin events they want to track, offering a targeted approach to cost calculation.
