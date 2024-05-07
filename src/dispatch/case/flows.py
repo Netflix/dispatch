@@ -566,11 +566,6 @@ def send_escalation_messages_for_channel_case(
         blocks=messages.create_incident_channel_escalate_message(),
     )
 
-    plugin.instance.rename(
-        conversation_id=incident.conversation.channel_id,
-        name=incident.name,
-    )
-
 
 def common_escalate_flow(
     case: Case,
