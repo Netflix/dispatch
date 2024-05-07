@@ -953,7 +953,7 @@ def handle_new_participant_added(
             participant.user_conversation_id = user_id
             if case.dedicated_channel:
                 welcome_message = create_welcome_ephemeral_message_to_participant(
-                    case=context["subject"]
+                    case=case
                 )
                 client.chat_postEphemeral(
                     text=welcome_message,
