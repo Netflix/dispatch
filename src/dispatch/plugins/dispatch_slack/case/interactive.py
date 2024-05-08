@@ -55,6 +55,7 @@ from dispatch.plugins.dispatch_slack.case.enums import (
 from dispatch.plugins.dispatch_slack.case.messages import (
     create_case_message,
     create_signal_engagement_message,
+    create_welcome_ephemeral_message_to_participant,
 )
 from dispatch.plugins.dispatch_slack.config import SlackConversationConfiguration
 from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
@@ -64,7 +65,6 @@ from dispatch.plugins.dispatch_slack.fields import (
     case_resolution_reason_select,
     case_status_select,
     case_type_select,
-    cost_model_select,
     description_input,
     entity_select,
     incident_priority_select,
@@ -941,15 +941,25 @@ def handle_new_participant_added(
     participants = re.findall(r"\<\@([a-zA-Z0-9]*)\>", payload["text"])
     for user_id in participants:
         try:
+            case: Case = context["subject"]
             user_email = get_user_email(client=client, user_id=user_id)
 
             participant = case_flows.case_add_or_reactivate_participant_flow(
-                case_id=context["subject"].id,
+                case_id=case.id,
                 user_email=user_email,
                 db_session=db_session,
                 add_to_conversation=False,
             )
             participant.user_conversation_id = user_id
+            if case.dedicated_channel:
+                welcome_message = create_welcome_ephemeral_message_to_participant(
+                    case=case
+                )
+                client.chat_postEphemeral(
+                    text=welcome_message,
+                    channel=payload["channel"],
+                    user=payload["user"],
+                )
         except Exception as e:
             log.warn(f"Error adding participant {user_id} to Case {context['subject'].id}: {e}")
             continue
@@ -1101,11 +1111,6 @@ def escalate_button_click(
         ),
         incident_priority_select(db_session=db_session, project_id=case.project.id, optional=True),
     ]
-
-    if cost_model_select_block := cost_model_select(
-        db_session=db_session, project_id=case.project.id, optional=True
-    ):
-        blocks.append(cost_model_select_block)
 
     modal = Modal(
         title="Escalate Case",

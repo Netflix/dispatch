@@ -362,3 +362,36 @@ def create_signal_engagement_message(
         )
 
     return Message(blocks=blocks).build()["blocks"]
+
+
+def create_welcome_ephemeral_message_to_participant(case: Case) -> Message:
+    blocks = [
+        Section(
+            text="You've been added to this case, because we think you may be able to help resolve it. Please review the case details below and reach out to the case assignee if you have any questions.",
+        ),
+        Section(
+            text=f"*Title* \n {case.title}",
+        ),
+        Section(
+            text=f"*Description* \n {case.description}",
+        ),
+        Section(
+            text=f"*Visibility - {case.visibility}*",
+        ),
+        Section(
+            text=f"*Status - {case.status}*",
+        ),
+        Section(
+            text=f"*Type - {case.case_type.name}*",
+        ),
+        Section(
+            text=f"*Severity - {case.case_severity.name}*",
+        ),
+        Section(
+            text=f"*Priority - {case.case_priority.name}*",
+        ),
+        Section(
+            text=f"*Reporter - {case.reporter.individual.name}*",
+        ),
+    ]
+    return Message(blocks=blocks).build()["blocks"]
