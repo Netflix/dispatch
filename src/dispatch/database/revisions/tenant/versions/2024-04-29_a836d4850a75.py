@@ -1,7 +1,7 @@
 """Adding in "allow_self_join" column to enable self join in dispatch UI
 
 Revision ID: a836d4850a75
-Revises: 3a33bc153e7e
+Revises: 50e99c66e72f
 Create Date: 2024-04-29 10:28:37.777618
 
 """
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'a836d4850a75'
-down_revision = '3a33bc153e7e'
+down_revision = '50e99c66e72f'
 branch_labels = None
 depends_on = None
 

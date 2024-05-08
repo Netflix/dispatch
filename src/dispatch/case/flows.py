@@ -478,7 +478,7 @@ def case_status_transition_flow_dispatcher(
             )
 
         case (_, CaseStatus.triage):
-            # Any -> Triage
+            # Any -> Triage/
             pass
 
         case (CaseStatus.new, CaseStatus.escalated):
