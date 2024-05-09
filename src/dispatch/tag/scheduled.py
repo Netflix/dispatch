@@ -53,7 +53,7 @@ def sync_tags(db_session: SessionLocal, project: Project) -> NoReturn:
 @scheduler.add(every(1).day, name="build-tag-models")
 @timer
 @scheduled_project_task
-def build_tag_models(db_session: SessionLocal, project: Project) -> NoReturn:
+def build_tag_models(db_session: SessionLocal, project: Project) -> None:
     """Builds the incident tag recommendation models."""
     incidents = incident_service.get_all(db_session=db_session, project_id=project.id)
 
