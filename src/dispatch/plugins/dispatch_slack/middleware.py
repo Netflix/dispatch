@@ -141,6 +141,7 @@ def engagement_button_context_middleware(
 def action_context_middleware(body: dict, context: BoltContext, next: Callable) -> None:
     """Attempt to determine the current context of the event."""
     private_metadata = json.loads(body["view"]["private_metadata"])
+    print(f"METADATA {private_metadata=}")
     if private_metadata.get("form_data"):
         context.update({"subject": FormMetadata(**private_metadata)})
     else:
@@ -207,13 +208,6 @@ def is_bot(request: BoltRequest) -> bool:
     user = body.get("event", {}).get("user")
     if user == "USLACKBOT":
         return True
-
-    authorizations = body.get("authorizations")
-
-    if authorizations:
-        for auth in authorizations:
-            if auth.get("is_bot"):
-                return True
 
     auth_result = request.context.authorize_result
     user_id = request.context.user_id
