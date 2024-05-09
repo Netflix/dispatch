@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Session
 
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
