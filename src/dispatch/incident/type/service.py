@@ -116,11 +116,13 @@ def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[Inci
             .filter(IncidentType.project_id == project_id)
             .filter(IncidentType.enabled == true())
             .order_by(IncidentType.name)
+            .all()
         )
     return (
         db_session.query(IncidentType)
         .filter(IncidentType.enabled == true())
         .order_by(IncidentType.name)
+        .all()
     )
 
 

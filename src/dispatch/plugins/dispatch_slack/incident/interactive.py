@@ -2414,11 +2414,6 @@ def handle_update_task_status_button_click(
         incident_id=context["subject"].id,
     )
 
-    tasks = task_service.get_all_by_incident_id(
-        db_session=db_session,
-        incident_id=context["subject"].id,
-    )
-
     draw_task_modal(
         channel_id=button.channel_id,
         client=client,

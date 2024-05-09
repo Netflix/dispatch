@@ -185,9 +185,8 @@ def build_filters(filter_spec):
 
                 if not _is_iterable_filter(fn_args):
                     raise BadFilterFormat(
-                        "`{}` value must be an iterable across the function " "arguments".format(
-                            boolean_function.key
-                        )
+                        "`{}` value must be an iterable across the function "
+                        "arguments".format(boolean_function.key)
                     )
                 if boolean_function.only_one_arg and len(fn_args) != 1:
                     raise BadFilterFormat(
@@ -463,9 +462,9 @@ def create_sort_spec(model, sort_by, descending):
     return sort_spec
 
 
-def get_all(*, db_session, model):
+def get_all(*, db_session, model) -> List:
     """Fetches a query object based on the model class name."""
-    return db_session.query(get_class_by_tablename(model))
+    return db_session.query(get_class_by_tablename(model)).all()
 
 
 def common_parameters(

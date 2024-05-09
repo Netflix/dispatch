@@ -13,7 +13,7 @@ def get(*, db_session, feedback_id: int) -> Optional[Feedback]:
     return db_session.query(Feedback).filter(Feedback.id == feedback_id).one_or_none()
 
 
-def get_all(*, db_session):
+def get_all(*, db_session) -> List[Optional[Feedback]]:
     """Gets all pieces of feedback."""
     return db_session.query(Feedback).all()
 

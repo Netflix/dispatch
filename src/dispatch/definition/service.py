@@ -18,7 +18,7 @@ def get_by_text(*, db_session, text: str) -> Optional[Definition]:
 
 def get_all(*, db_session) -> List[Optional[Definition]]:
     """Gets all definitions."""
-    return db_session.query(Definition)
+    return db_session.query(Definition).all()
 
 
 def create(*, db_session, definition_in: DefinitionCreate) -> Definition:

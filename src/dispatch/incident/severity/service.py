@@ -104,9 +104,13 @@ def get_by_name_or_default(
 def get_all(*, db_session, project_id: int = None) -> List[Optional[IncidentSeverity]]:
     """Returns all incident severities."""
     if project_id:
-        return db_session.query(IncidentSeverity).filter(IncidentSeverity.project_id == project_id)
+        return (
+            db_session.query(IncidentSeverity)
+            .filter(IncidentSeverity.project_id == project_id)
+            .all()
+        )
 
-    return db_session.query(IncidentSeverity)
+    return db_session.query(IncidentSeverity).all()
 
 
 def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[IncidentSeverity]]:
@@ -117,12 +121,14 @@ def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[Inci
             .filter(IncidentSeverity.project_id == project_id)
             .filter(IncidentSeverity.enabled == true())
             .order_by(IncidentSeverity.view_order)
+            .all()
         )
 
     return (
         db_session.query(IncidentSeverity)
         .filter(IncidentSeverity.enabled == true())
         .order_by(IncidentSeverity.view_order)
+        .all()
     )
 
 

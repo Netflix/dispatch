@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from .models import Conference, ConferenceCreate
 
@@ -18,7 +18,7 @@ def get_by_incident_id(*, db_session, incident_id: str) -> Optional[Conference]:
     return db_session.query(Conference).filter(Conference.incident_id == incident_id).one()
 
 
-def get_all(*, db_session):
+def get_all(*, db_session) -> List[Optional[Conference]]:
     """Get all conferences."""
     return db_session.query(Conference).all()
 

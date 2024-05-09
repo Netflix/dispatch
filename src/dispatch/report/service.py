@@ -24,7 +24,7 @@ def get_most_recent_by_incident_id_and_type(
 
 def get_all_by_incident_id_and_type(
     *, db_session, incident_id: int, report_type: ReportTypes
-) -> Optional[Report]:
+) -> List[Optional[Report]]:
     """Get all reports by incident id and report type."""
     return (
         db_session.query(Report)

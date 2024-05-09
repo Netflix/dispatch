@@ -98,8 +98,8 @@ def get_by_name_or_default(
 def get_all(*, db_session, project_id: int = None) -> List[Optional[CaseSeverity]]:
     """Returns all case severities."""
     if project_id:
-        return db_session.query(CaseSeverity).filter(CaseSeverity.project_id == project_id)
-    return db_session.query(CaseSeverity)
+        return db_session.query(CaseSeverity).filter(CaseSeverity.project_id == project_id).all()
+    return db_session.query(CaseSeverity).all()
 
 
 def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[CaseSeverity]]:
@@ -109,8 +109,9 @@ def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[Case
             db_session.query(CaseSeverity)
             .filter(CaseSeverity.project_id == project_id)
             .filter(CaseSeverity.enabled == true())
+            .all()
         )
-    return db_session.query(CaseSeverity).filter(CaseSeverity.enabled == true())
+    return db_session.query(CaseSeverity).filter(CaseSeverity.enabled == true()).all()
 
 
 def create(*, db_session, case_severity_in: CaseSeverityCreate) -> CaseSeverity:

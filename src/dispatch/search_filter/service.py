@@ -53,9 +53,9 @@ def get_or_create(*, db_session, search_filter_in) -> SearchFilter:
     return create(db_session=db_session, search_filter_in=search_filter_in)
 
 
-def get_all(*, db_session):
+def get_all(*, db_session) -> List[Optional[SearchFilter]]:
     """Gets all search filters."""
-    return db_session.query(SearchFilter)
+    return db_session.query(SearchFilter).all()
 
 
 def create(*, db_session, creator, search_filter_in: SearchFilterCreate) -> SearchFilter:

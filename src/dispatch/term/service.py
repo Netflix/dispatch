@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from dispatch.definition import service as definition_service
 from dispatch.project import service as project_service
@@ -14,7 +14,7 @@ def get_by_text(*, db_session, text: str) -> Optional[Term]:
     return db_session.query(Term).filter(Term.text == text).first()
 
 
-def get_all(*, db_session, project_id: int):
+def get_all(*, db_session, project_id: int) -> List[Optional[Term]]:
     return db_session.query(Term).filter(Term.project_id == project_id).all()
 
 

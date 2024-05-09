@@ -58,7 +58,7 @@ def get_by_name_or_raise(
 
 def get_all(*, db_session, project_id: int) -> List[Optional[SourceTransport]]:
     """Gets all source transports."""
-    return db_session.query(SourceTransport).filter(SourceTransport.project_id == project_id)
+    return db_session.query(SourceTransport).filter(SourceTransport.project_id == project_id).all()
 
 
 def create(*, db_session, source_transport_in: SourceTransportCreate) -> SourceTransport:

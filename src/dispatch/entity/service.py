@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 import logging
-from typing import Generator, Optional, Sequence, Union, NewType, NamedTuple
+from typing import Generator, List, Optional, Sequence, Union, NewType, NamedTuple
 import re
 
 import jsonpath_ng
@@ -68,12 +68,12 @@ def get_by_value(*, db_session: Session, project_id: int, value: str) -> Optiona
     )
 
 
-def get_all(*, db_session: Session, project_id: int):
+def get_all(*, db_session: Session, project_id: int) -> List[Optional[Entity]]:
     """Gets all entities by their project."""
     return db_session.query(Entity).filter(Entity.project_id == project_id).all()
 
 
-def get_all_by_signal(*, db_session: Session, signal_id: int) -> list[Entity]:
+def get_all_by_signal(*, db_session: Session, signal_id: int) -> List[Entity]:
     """Gets all entities for a specific signal."""
     return (
         db_session.query(Entity)
@@ -84,7 +84,7 @@ def get_all_by_signal(*, db_session: Session, signal_id: int) -> list[Entity]:
     )
 
 
-def get_all_desc_by_signal(*, db_session: Session, signal_id: int) -> list[Entity]:
+def get_all_desc_by_signal(*, db_session: Session, signal_id: int) -> List[Entity]:
     """Gets all entities for a specific signal in descending order."""
     return (
         db_session.query(Entity)

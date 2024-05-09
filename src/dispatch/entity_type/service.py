@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.orm import Query, Session
@@ -46,7 +46,7 @@ def get_by_name_or_raise(
     return entity_type
 
 
-def get_all(*, db_session: Session, scope: str = None) -> Query:
+def get_all(*, db_session: Session, scope: str = None) -> List[Optional[EntityType]]:
     """Gets all entity types."""
     if scope:
         return db_session.query(EntityType).filter(EntityType.scope == scope).all()

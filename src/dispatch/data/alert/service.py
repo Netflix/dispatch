@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.exceptions import NotFoundError
@@ -37,9 +37,9 @@ def get_by_name_or_raise(*, db_session, alert_in=AlertRead) -> AlertRead:
     return alert
 
 
-def get_all(*, db_session):
+def get_all(*, db_session) -> List[Optional[Alert]]:
     """Gets all alerts."""
-    return db_session.query(Alert)
+    return db_session.query(Alert).all()
 
 
 def create(*, db_session, alert_in: AlertCreate) -> Alert:

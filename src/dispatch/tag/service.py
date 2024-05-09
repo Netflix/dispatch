@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.exceptions import NotFoundError
@@ -44,7 +44,7 @@ def get_by_name_or_raise(*, db_session, project_id: int, tag_in=TagRead) -> TagR
     return tag
 
 
-def get_all(*, db_session, project_id: int):
+def get_all(*, db_session, project_id: int) -> List[Optional[Tag]]:
     """Gets all tags by their project."""
     return db_session.query(Tag).filter(Tag.project_id == project_id).all()
 

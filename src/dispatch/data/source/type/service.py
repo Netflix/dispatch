@@ -52,7 +52,7 @@ def get_by_name_or_raise(
 
 def get_all(*, db_session, project_id: int) -> List[Optional[SourceType]]:
     """Gets all source types."""
-    return db_session.query(SourceType).filter(SourceType.project_id == project_id)
+    return db_session.query(SourceType).filter(SourceType.project_id == project_id).all()
 
 
 def create(*, db_session, source_type_in: SourceTypeCreate) -> SourceType:

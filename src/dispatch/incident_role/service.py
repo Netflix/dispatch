@@ -28,7 +28,7 @@ def get(*, db_session, incident_role_id: int) -> Optional[IncidentRole]:
     return db_session.query(IncidentRole).filter(IncidentRole.id == incident_role_id).one_or_none()
 
 
-def get_all(*, db_session):
+def get_all(*, db_session) -> List[Optional[IncidentRole]]:
     """Gets all incident role."""
     return db_session.query(IncidentRole).all()
 

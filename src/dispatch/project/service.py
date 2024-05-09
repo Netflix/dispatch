@@ -69,7 +69,7 @@ def get_by_name_or_default(*, db_session, project_in=ProjectRead) -> Project:
 
 def get_all(*, db_session) -> List[Optional[Project]]:
     """Returns all projects."""
-    return db_session.query(Project)
+    return db_session.query(Project).all()
 
 
 def create(*, db_session, project_in: ProjectCreate) -> Project:

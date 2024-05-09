@@ -21,7 +21,7 @@ def get_by_email(*, db_session, email: str, project_id: int) -> Optional[TeamCon
 
 
 def get_all(*, db_session) -> List[Optional[TeamContact]]:
-    return db_session.query(TeamContact)
+    return db_session.query(TeamContact).all()
 
 
 def get_or_create(*, db_session, email: str, project: Project, **kwargs) -> TeamContact:
@@ -36,13 +36,13 @@ def get_or_create(*, db_session, email: str, project: Project, **kwargs) -> Team
 
 def get_overdue_evergreen_teams(*, db_session, project_id: int) -> List[Optional[TeamContact]]:
     """Returns all teams that have not had a recent evergreen notification."""
-    query = (
+    return (
         db_session.query(TeamContact)
         .filter(TeamContact.project_id == project_id)
         .filter(TeamContact.evergreen == True)  # noqa
         .filter(TeamContact.overdue == True)  # noqa
+        .all()
     )
-    return query.all()
 
 
 def create(*, db_session, team_contact_in: TeamContactCreate) -> TeamContact:

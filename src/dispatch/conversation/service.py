@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from .models import Conversation, ConversationCreate, ConversationUpdate
 
@@ -43,7 +43,7 @@ def get_by_channel_id_ignoring_channel_type(
     return conversation
 
 
-def get_all(*, db_session):
+def get_all(*, db_session) -> List[Optional[Conversation]]:
     """Fetches all conversations."""
     return db_session.query(Conversation).all()
 

@@ -74,7 +74,7 @@ def get_by_email_and_project_id_or_raise(
 
 def get_all(*, db_session) -> List[Optional[IndividualContact]]:
     """Returns all individuals."""
-    return db_session.query(IndividualContact)
+    return db_session.query(IndividualContact).all()
 
 
 @lru_cache(maxsize=1000)

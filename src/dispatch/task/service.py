@@ -28,12 +28,12 @@ def get_by_resource_id(*, db_session, resource_id: str) -> Optional[Task]:
 
 def get_all(*, db_session) -> List[Optional[Task]]:
     """Return all tasks."""
-    return db_session.query(Task)
+    return db_session.query(Task).all()
 
 
 def get_all_by_incident_id(*, db_session, incident_id: int) -> List[Optional[Task]]:
     """Get all tasks by incident id."""
-    return db_session.query(Task).filter(Task.incident_id == incident_id)
+    return db_session.query(Task).filter(Task.incident_id == incident_id).all()
 
 
 def get_all_by_incident_id_and_status(

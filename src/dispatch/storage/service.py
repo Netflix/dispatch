@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from dispatch.database.core import SessionLocal
 
@@ -15,7 +15,7 @@ def get_by_resource_id(*, db_session: SessionLocal, resource_id: str) -> Optiona
     return db_session.query(Storage).filter(Storage.resource_id == resource_id).one()
 
 
-def get_all(*, db_session: SessionLocal):
+def get_all(*, db_session: SessionLocal) -> List[Optional[Storage]]:
     """Fetch all storages."""
     return db_session.query(Storage).all()
 

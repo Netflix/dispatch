@@ -19,7 +19,7 @@ def get(*, db_session, notification_id: int) -> Optional[Notification]:
     return db_session.query(Notification).filter(Notification.id == notification_id).one_or_none()
 
 
-def get_all(*, db_session):
+def get_all(*, db_session) -> List[Optional[Notification]]:
     """Gets all notifications."""
     return db_session.query(Notification).all()
 

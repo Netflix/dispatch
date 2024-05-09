@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from uuid import uuid4
 import datetime
 import logging
@@ -30,12 +30,12 @@ def get(*, db_session, event_id: int) -> Optional[Event]:
     )
 
 
-def get_by_case_id(*, db_session, case_id: int) -> list[Event | None]:
+def get_by_case_id(*, db_session, case_id: int) -> List[Event | None]:
     """Get events by case id."""
     return db_session.query(Event).filter(Event.case_id == case_id)
 
 
-def get_by_incident_id(*, db_session, incident_id: int) -> list[Event | None]:
+def get_by_incident_id(*, db_session, incident_id: int) -> List[Event | None]:
     """Get events by incident id."""
 
     return (
@@ -46,12 +46,12 @@ def get_by_incident_id(*, db_session, incident_id: int) -> list[Event | None]:
     )
 
 
-def get_by_uuid(*, db_session, uuid: str) -> list[Event | None]:
+def get_by_uuid(*, db_session, uuid: str) -> List[Event | None]:
     """Get events by uuid."""
     return db_session.query(Event).filter(Event.uuid == uuid).one_or_none()
 
 
-def get_all(*, db_session) -> list[Event | None]:
+def get_all(*, db_session) -> List[Event | None]:
     """Get all events."""
     return db_session.query(Event).all()
 
