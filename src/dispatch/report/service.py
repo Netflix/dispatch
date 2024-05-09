@@ -30,12 +30,13 @@ def get_all_by_incident_id_and_type(
         db_session.query(Report)
         .filter(Report.incident_id == incident_id)
         .filter(Report.type == report_type)
+        .all()
     )
 
 
 def get_all(*, db_session) -> List[Optional[Report]]:
     """Get all reports."""
-    return db_session.query(Report)
+    return db_session.query(Report).all()
 
 
 def create(*, db_session, report_in: ReportCreate) -> Report:

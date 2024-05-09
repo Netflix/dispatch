@@ -17,7 +17,7 @@ def get_by_resource_id(*, db_session: SessionLocal, resource_id: str) -> Optiona
 
 def get_all(*, db_session: SessionLocal):
     """Fetch all storages."""
-    return db_session.query(Storage)
+    return db_session.query(Storage).all()
 
 
 def create(*, db_session: SessionLocal, storage_in: StorageCreate) -> Storage:

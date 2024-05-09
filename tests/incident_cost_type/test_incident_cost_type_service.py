@@ -10,6 +10,7 @@ def test_get_all(session, incident_cost_types):
 
     t_incident_cost_types = get_all(db_session=session)
     assert t_incident_cost_types
+    assert len(t_incident_cost_types) >= len(incident_cost_types)
 
 
 def test_create(session, project):

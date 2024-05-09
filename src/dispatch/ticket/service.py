@@ -34,7 +34,7 @@ def get_or_create_by_weblink(
 
 def get_all(*, db_session: SessionLocal):
     """Fetches all tickets."""
-    return db_session.query(Ticket)
+    return db_session.query(Ticket).all()
 
 
 def create(*, db_session: SessionLocal, ticket_in: TicketCreate) -> Ticket:

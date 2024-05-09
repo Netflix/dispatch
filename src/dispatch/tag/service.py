@@ -46,7 +46,7 @@ def get_by_name_or_raise(*, db_session, project_id: int, tag_in=TagRead) -> TagR
 
 def get_all(*, db_session, project_id: int):
     """Gets all tags by their project."""
-    return db_session.query(Tag).filter(Tag.project_id == project_id)
+    return db_session.query(Tag).filter(Tag.project_id == project_id).all()
 
 
 def create(*, db_session, tag_in: TagCreate) -> Tag:

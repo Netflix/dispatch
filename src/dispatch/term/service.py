@@ -15,7 +15,7 @@ def get_by_text(*, db_session, text: str) -> Optional[Term]:
 
 
 def get_all(*, db_session, project_id: int):
-    return db_session.query(Term).filter(Term.project_id == project_id)
+    return db_session.query(Term).filter(Term.project_id == project_id).all()
 
 
 def create(*, db_session, term_in: TermCreate) -> Term:

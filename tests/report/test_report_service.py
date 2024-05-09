@@ -8,8 +8,9 @@ def test_get(session, report):
 def test_get_all(session, reports):
     from dispatch.report.service import get_all
 
-    t_reports = get_all(db_session=session).all()
+    t_reports = get_all(db_session=session)
     assert t_reports
+    assert len(t_reports) >= len(reports)
 
 
 def test_create(session):

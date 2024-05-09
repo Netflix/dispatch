@@ -102,8 +102,12 @@ def get_by_name_or_default(
 def get_all(*, db_session, project_id: int = None) -> List[Optional[IncidentPriority]]:
     """Returns all incident priorities."""
     if project_id:
-        return db_session.query(IncidentPriority).filter(IncidentPriority.project_id == project_id)
-    return db_session.query(IncidentPriority)
+        return (
+            db_session.query(IncidentPriority)
+            .filter(IncidentPriority.project_id == project_id)
+            .all()
+        )
+    return db_session.query(IncidentPriority).all()
 
 
 def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[IncidentPriority]]:

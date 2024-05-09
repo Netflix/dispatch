@@ -13,15 +13,16 @@ def test_get(session, event):
 def test_get_by_incident_id(session, event):
     from dispatch.event.service import get_by_incident_id
 
-    t_events = get_by_incident_id(db_session=session, incident_id=event.incident_id).all()
+    t_events = get_by_incident_id(db_session=session, incident_id=event.incident_id)
     assert t_events
 
 
 def test_get_all(session, events):
     from dispatch.event.service import get_all
 
-    t_events = get_all(db_session=session).all()
+    t_events = get_all(db_session=session)
     assert t_events
+    assert len(t_events) >= len(events)
 
 
 def test_create(session):

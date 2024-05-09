@@ -26,8 +26,10 @@ def test_get_by_slug(session, incident_type):
 def test_get_all(session, project, incident_types):
     from dispatch.incident.type.service import get_all
 
-    t_incident_types = get_all(db_session=session, project_id=incident_types[0].project.id).all()
+    t_incident_types = get_all(db_session=session)
     assert t_incident_types
+    assert len(t_incident_types) >= len(incident_types)
+    assert len(get_all(db_session=session, project_id=incident_types[0].project.id)) >= 1
 
 
 def test_create(session, project, document):

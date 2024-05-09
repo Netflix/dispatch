@@ -20,9 +20,7 @@ def recalculate_entity_flow(
         new_entity_type (EntityType): The newly created EntityType to associate with signals.
     """
     # fetch `all` entities that should be associated with all signal definitions
-    entity_types = entity_type_service.get_all(
-        db_session=db_session, scope=EntityScopeEnum.all
-    ).all()
+    entity_types = entity_type_service.get_all(db_session=db_session, scope=EntityScopeEnum.all)
     entity_types = signal_instance.signal.entity_types.append(entity_type)
 
     if entity_types:

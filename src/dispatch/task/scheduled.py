@@ -6,6 +6,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 import logging
 
 from schedule import every
@@ -76,7 +77,7 @@ def sync_tasks(db_session, task_plugin, incidents, lookback: int = 60, notify: b
 @scheduled_project_task
 def sync_incident_tasks_daily(db_session: SessionLocal, project: Project):
     """Syncs all incident tasks daily."""
-    incidents = incident_service.get_all(db_session=db_session, project_id=project.id).all()
+    incidents = incident_service.get_all(db_session=db_session, project_id=project.id)
     task_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project.id, plugin_type="task"
     )

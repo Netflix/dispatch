@@ -51,12 +51,12 @@ def incident_auto_tagger(db_session: SessionLocal, project: Project):
         )
         return
 
-    tags = tag_service.get_all(db_session=db_session, project_id=project.id).all()
+    tags = tag_service.get_all(db_session=db_session, project_id=project.id)
     tag_strings = [t.name.lower() for t in tags if t.discoverable]
     phrases = build_term_vocab(tag_strings)
     matcher = build_phrase_matcher("dispatch-tag", phrases)
 
-    incidents = get_all(db_session=db_session, project_id=project.id).all()
+    incidents = get_all(db_session=db_session, project_id=project.id)
 
     for incident in incidents:
         log.debug(f"Processing incident {incident.name}...")

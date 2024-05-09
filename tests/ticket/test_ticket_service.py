@@ -15,8 +15,9 @@ def test_get_by_resource_id(session, ticket):
 def test_get_all(session, tickets):
     from dispatch.ticket.service import get_all
 
-    t_tickets = get_all(db_session=session).all()
+    t_tickets = get_all(db_session=session)
     assert t_tickets
+    assert len(t_tickets) >= len(tickets)
 
 
 def test_create(session, incident_type, incident_priority, individual_contact):

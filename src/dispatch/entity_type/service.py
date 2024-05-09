@@ -49,8 +49,8 @@ def get_by_name_or_raise(
 def get_all(*, db_session: Session, scope: str = None) -> Query:
     """Gets all entity types."""
     if scope:
-        return db_session.query(EntityType).filter(EntityType.scope == scope)
-    return db_session.query(EntityType)
+        return db_session.query(EntityType).filter(EntityType.scope == scope).all()
+    return db_session.query(EntityType).all()
 
 
 def create(*, db_session: Session, entity_type_in: EntityTypeCreate) -> EntityType:

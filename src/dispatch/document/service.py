@@ -61,7 +61,7 @@ def get_overdue_evergreen_documents(*, db_session, project_id: int) -> List[Opti
 
 def get_all(*, db_session) -> List[Optional[Document]]:
     """Returns all documents."""
-    return db_session.query(Document)
+    return db_session.query(Document).all()
 
 
 def create(*, db_session, document_in: DocumentCreate) -> Document:

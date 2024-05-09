@@ -45,7 +45,7 @@ def get_by_channel_id_ignoring_channel_type(
 
 def get_all(*, db_session):
     """Fetches all conversations."""
-    return db_session.query(Conversation)
+    return db_session.query(Conversation).all()
 
 
 def create(*, db_session, conversation_in: ConversationCreate) -> Conversation:

@@ -50,7 +50,7 @@ def get_by_incident_id_and_incident_cost_type_id(
 
 def get_all(*, db_session) -> List[Optional[IncidentCost]]:
     """Gets all incident costs."""
-    return db_session.query(IncidentCost)
+    return db_session.query(IncidentCost).all()
 
 
 def get_or_create(

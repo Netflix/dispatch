@@ -30,7 +30,7 @@ def get(*, db_session, incident_role_id: int) -> Optional[IncidentRole]:
 
 def get_all(*, db_session):
     """Gets all incident role."""
-    return db_session.query(IncidentRole)
+    return db_session.query(IncidentRole).all()
 
 
 def get_all_by_role(
@@ -54,7 +54,8 @@ def get_all_enabled_by_role(
         .filter(IncidentRole.enabled == True)  # noqa Flake8 E712
         .filter(IncidentRole.role == role)
         .filter(IncidentRole.project_id == project_id)
-    ).all()
+        .all()
+    )
 
 
 def create_or_update(

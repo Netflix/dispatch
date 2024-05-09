@@ -4,6 +4,7 @@
     :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
+
 import logging
 from schedule import every
 
@@ -54,7 +55,7 @@ def sync_tags(db_session: SessionLocal, project: Project) -> NoReturn:
 @scheduled_project_task
 def build_tag_models(db_session: SessionLocal, project: Project) -> NoReturn:
     """Builds the incident tag recommendation models."""
-    incidents = incident_service.get_all(db_session=db_session, project_id=project.id).all()
+    incidents = incident_service.get_all(db_session=db_session, project_id=project.id)
 
     log.debug(f"Building the incident tag recommendation models for project {project.name}...")
 

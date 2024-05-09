@@ -104,8 +104,8 @@ def get_by_slug(*, db_session, project_id: int, slug: str) -> Optional[IncidentT
 def get_all(*, db_session, project_id: int = None) -> List[Optional[IncidentType]]:
     """Returns all incident types."""
     if project_id:
-        return db_session.query(IncidentType).filter(IncidentType.project_id == project_id)
-    return db_session.query(IncidentType)
+        return db_session.query(IncidentType).filter(IncidentType.project_id == project_id).all()
+    return db_session.query(IncidentType).all()
 
 
 def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[IncidentType]]:

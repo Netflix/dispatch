@@ -39,7 +39,10 @@ def get_by_incident_id(*, db_session, incident_id: int) -> list[Event | None]:
     """Get events by incident id."""
 
     return (
-        db_session.query(Event).filter(Event.incident_id == incident_id).order_by(Event.started_at)
+        db_session.query(Event)
+        .filter(Event.incident_id == incident_id)
+        .order_by(Event.started_at)
+        .all()
     )
 
 
@@ -50,7 +53,7 @@ def get_by_uuid(*, db_session, uuid: str) -> list[Event | None]:
 
 def get_all(*, db_session) -> list[Event | None]:
     """Get all events."""
-    return db_session.query(Event)
+    return db_session.query(Event).all()
 
 
 def create(*, db_session, event_in: EventCreate) -> Event:
@@ -224,7 +227,7 @@ def export_timeline(
     data_inserted = False
 
     """Filters events based on user filter"""
-    for e in event.all():
+    for e in event:
         time_header = "Time (UTC)"
         event_timestamp = e.started_at.strftime("%Y-%m-%d %H:%M:%S")
         if not e.owner:

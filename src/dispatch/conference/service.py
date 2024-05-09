@@ -20,7 +20,7 @@ def get_by_incident_id(*, db_session, incident_id: str) -> Optional[Conference]:
 
 def get_all(*, db_session):
     """Get all conferences."""
-    return db_session.query(Conference)
+    return db_session.query(Conference).all()
 
 
 def create(*, db_session, conference_in: ConferenceCreate) -> Conference:

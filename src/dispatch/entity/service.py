@@ -70,7 +70,7 @@ def get_by_value(*, db_session: Session, project_id: int, value: str) -> Optiona
 
 def get_all(*, db_session: Session, project_id: int):
     """Gets all entities by their project."""
-    return db_session.query(Entity).filter(Entity.project_id == project_id)
+    return db_session.query(Entity).filter(Entity.project_id == project_id).all()
 
 
 def get_all_by_signal(*, db_session: Session, signal_id: int) -> list[Entity]:

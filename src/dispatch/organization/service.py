@@ -95,7 +95,7 @@ def get_by_name_or_default(*, db_session, organization_in=OrganizationRead) -> O
 
 def get_all(*, db_session) -> List[Optional[Organization]]:
     """Gets all organizations."""
-    return db_session.query(Organization)
+    return db_session.query(Organization).all()
 
 
 def create(*, db_session, organization_in: OrganizationCreate) -> Organization:
