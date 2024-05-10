@@ -122,8 +122,8 @@ def remove_case_participant(user_email: str, case: Case, db_session: SessionLoca
     inactivated = inactivate_participant(user_email, case, db_session)
 
     if inactivated:
-        participant = participant_service.get_by_incident_id_and_email(
-            db_session=db_session, incident_id=case.id, email=user_email
+        participant = participant_service.get_by_case_id_and_email(
+            db_session=db_session, case_id=case.id, email=user_email
         )
 
         log.debug(f"Removing {participant.individual.name} from {case.name} case...")
@@ -147,7 +147,7 @@ def inactivate_participant(user_email: str, subject: Subject, db_session: Sessio
     subject_type = get_table_name_by_class_instance(subject)
 
     if subject_type == "case":
-        participant_service.get_by_case_id_and_email(
+        participant = participant_service.get_by_case_id_and_email(
             db_session=db_session, case_id=subject.id, email=user_email
         )
     else:
