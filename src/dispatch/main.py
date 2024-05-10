@@ -17,6 +17,7 @@ from sqlalchemy.orm import scoped_session
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.routing import compile_path
+from starlette.middleware.gzip import GZipMiddleware
 
 from starlette.responses import Response, StreamingResponse, FileResponse
 from starlette.staticfiles import StaticFiles
@@ -54,10 +55,11 @@ exception_handlers = {404: not_found}
 app = FastAPI(exception_handlers=exception_handlers, openapi_url="")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # we create the ASGI for the frontend
 frontend = FastAPI(openapi_url="")
-
+frontend.add_middleware(GZipMiddleware, minimum_size=1000)
 
 @frontend.middleware("http")
 async def default_page(request, call_next):
@@ -77,6 +79,7 @@ api = FastAPI(
     openapi_url="/docs/openapi.json",
     redoc_url="/docs",
 )
+api.add_middleware(GZipMiddleware, minimum_size=1000)
 
 
 def get_path_params_from_request(request: Request) -> str:
