@@ -80,6 +80,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     command_context_middleware,
     db_middleware,
     engagement_button_context_middleware,
+    message_context_middleware,
     modal_submit_middleware,
     shortcut_context_middleware,
     subject_middleware,
@@ -185,17 +186,18 @@ def handle_escalate_case_command(
             db_session=db_session,
             initial_option=None,
             project_id=case.project.id,
-            block_id=None,
+            block_id=DefaultBlockIds.incident_type_select,
         ),
         incident_priority_select(
             db_session=db_session,
             project_id=case.project.id,
             initial_option=None,
             optional=True,
-            block_id=None,  # ensures state is reset
+            block_id=DefaultBlockIds.incident_priority_select,
         ),
     ]
 
+    print(context["subject"].json())
     modal = Modal(
         title="Escalate Case",
         submit="Escalate",
@@ -934,7 +936,11 @@ def handle_new_participant_message(
     subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
 def handle_new_participant_added(
-    ack: Ack, payload: dict, context: BoltContext, db_session: Session, client: WebClient
+    ack: Ack,
+    payload: dict,
+    context: BoltContext,
+    db_session: Session,
+    client: WebClient,
 ) -> None:
     """Looks for new participants being added to conversation via @<user-name>"""
     ack()
@@ -951,14 +957,14 @@ def handle_new_participant_added(
                 add_to_conversation=False,
             )
             participant.user_conversation_id = user_id
+
+            case = case_service.get(db_session=db_session, case_id=case.id)
             if case.dedicated_channel:
-                welcome_message = create_welcome_ephemeral_message_to_participant(
-                    case=case
-                )
+                welcome_message = create_welcome_ephemeral_message_to_participant(case=case)
                 client.chat_postEphemeral(
-                    text=welcome_message,
+                    blocks=welcome_message,
                     channel=payload["channel"],
-                    user=payload["user"],
+                    user=user_id,
                 )
         except Exception as e:
             log.warn(f"Error adding participant {user_id} to Case {context['subject'].id}: {e}")
@@ -1047,6 +1053,110 @@ def handle_case_after_hours_message(
                 thread_ts=payload["thread_ts"],
                 user=payload["user"],
             )
+
+
+@app.event(
+    "member_joined_channel",
+    middleware=[
+        message_context_middleware,
+        user_middleware,
+        configuration_middleware,
+    ],
+)
+def handle_member_joined_case_channel(
+    ack: Ack,
+    body: dict,
+    context: BoltContext,
+    client: WebClient,
+    db_session: Session,
+    respond: Respond,
+    payload: dict,
+    user: DispatchUser,
+) -> None:
+    """Notifies the user that this case is currently in after hours mode."""
+    ack()
+
+    if not user:
+        raise Exception(
+            "Unable to handle member_joined_channel Slack event. Dispatch user unknown."
+        )
+
+    if context["subject"].type != CaseSubjects.case:
+        # only run this workflow for cases
+        return
+
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+
+    if not case.dedicated_channel:
+        return
+
+    participant = case_flows.case_add_or_reactivate_participant_flow(
+        user_email=user.email,
+        case_id=context["subject"].id,
+        db_session=db_session,
+    )
+
+    if not participant:
+        # Participant is already in the case channel.
+        return
+
+    participant.user_conversation_id = context["user_id"]
+
+    # If the user was invited, the message will include an inviter property containing the user ID of the inviting user.
+    # The property will be absent when a user manually joins a channel, or a user is added by default (e.g. #general channel).
+    inviter = body.get("event", {}).get("inviter", None)
+    inviter_is_user = (
+        dispatch_slack_service.is_user(context["config"], inviter) if inviter else None
+    )
+
+    if inviter and inviter_is_user:
+        # Participant is added into the incident channel using an @ message or /invite command.
+        inviter_email = get_user_email(client=client, user_id=inviter)
+        added_by_participant = participant_service.get_by_case_id_and_email(
+            db_session=db_session,
+            case_id=context["subject"].id,
+            email=inviter_email,
+        )
+        participant.added_by = added_by_participant
+
+    else:
+        # User joins via the `join` button on Web Application or Slack.
+        # We default to the incident commander when we don't know who added the user or the user is the Dispatch bot.
+        participant.added_by = case.assignee
+
+    # Message text when someone @'s a user is not available in body, use generic added by reason
+    participant.added_reason = f"Participant added by {participant.added_by.individual.name}"
+
+    db_session.add(participant)
+    db_session.commit()
+
+
+@app.event(
+    "member_left_channel",
+    middleware=[
+        message_context_middleware,
+        user_middleware,
+    ],
+)
+def handle_member_left_channel(
+    ack: Ack, context: BoltContext, db_session: Session, user: DispatchUser
+) -> None:
+    ack()
+
+    if context["subject"].type != CaseSubjects.case:
+        # only run this workflow for cases
+        return
+
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+
+    if not case.dedicated_channel:
+        return
+
+    case_flows.case_remove_participant_flow(
+        user_email=user.email,
+        case_id=context["subject"].id,
+        db_session=db_session,
+    )
 
 
 @app.action("button-link")
@@ -1198,7 +1308,12 @@ def ack_handle_escalation_submission_event(ack: Ack, case: Case) -> None:
 
 @app.view(
     CaseEscalateActions.submit,
-    middleware=[action_context_middleware, user_middleware, db_middleware],
+    middleware=[
+        action_context_middleware,
+        user_middleware,
+        db_middleware,
+        modal_submit_middleware,
+    ],
 )
 def handle_escalation_submission_event(
     ack: Ack,
@@ -1206,9 +1321,12 @@ def handle_escalation_submission_event(
     client: WebClient,
     context: BoltContext,
     db_session: Session,
+    form_data: dict,
     user: DispatchUser,
 ):
     """Handles the escalation submission event."""
+
+    from dispatch.incident.type.service import get_by_name
 
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
     ack_handle_escalation_submission_event(ack=ack, case=case)
@@ -1230,17 +1348,42 @@ def handle_escalation_submission_event(
         thread_ts=case.conversation.thread_id if case.has_thread else None,
     )
 
+    incident_type = None
+    if form_data.get(DefaultBlockIds.incident_type_select):
+        incident_type = get_by_name(
+            db_session=db_session,
+            project_id=case.project.id,
+            name=form_data[DefaultBlockIds.incident_type_select]["name"],
+        )
+
+    incident_priority = None
+    if form_data.get(DefaultBlockIds.incident_priority_select):
+        incident_priority = get_by_name(
+            db_session=db_session,
+            project_id=case.project.id,
+            name=form_data[DefaultBlockIds.incident_priority_select]["name"],
+        )
+
     case_flows.case_escalated_status_flow(
         case=case,
         organization_slug=context["subject"].organization_slug,
         db_session=db_session,
+        incident_priority=incident_priority,
+        incident_type=incident_type,
     )
     incident = case.incidents[0]
 
-    # TODO: (wshel) Note, user who escalated case is added as participant, not all users in previous case
-    # TODO: (wshel) Likely remove this and move to common_esclate_flow()
+    # Retrieve all participants from the case
+    case_participants = case_service.get_participants(
+        db_session=db_session, case_id=case.id, minimal=True
+    )
+
+    # Add all case participants to the incident
+    participant_emails = [participant.individual.email for participant in case_participants]
     conversation_flows.add_incident_participants(
-        incident=incident, participant_emails=[user.email], db_session=db_session
+        incident=incident,
+        participant_emails=participant_emails,
+        db_session=db_session,
     )
 
     blocks = [
