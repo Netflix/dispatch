@@ -186,14 +186,14 @@ def handle_escalate_case_command(
             db_session=db_session,
             initial_option=None,
             project_id=case.project.id,
-            block_id=None,
+            block_id=DefaultBlockIds.incident_type_select,
         ),
         incident_priority_select(
             db_session=db_session,
             project_id=case.project.id,
             initial_option=None,
             optional=True,
-            block_id=None,  # ensures state is reset
+            block_id=DefaultBlockIds.incident_priority_select,
         ),
     ]
 
@@ -1312,6 +1312,7 @@ def ack_handle_escalation_submission_event(ack: Ack, case: Case) -> None:
         action_context_middleware,
         user_middleware,
         db_middleware,
+        modal_submit_middleware,
     ],
 )
 def handle_escalation_submission_event(
@@ -1326,7 +1327,6 @@ def handle_escalation_submission_event(
     """Handles the escalation submission event."""
 
     from dispatch.incident.type.service import get_by_name
-    from dispatch.incident.priority import service as incident_priority_service
 
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
     ack_handle_escalation_submission_event(ack=ack, case=case)
