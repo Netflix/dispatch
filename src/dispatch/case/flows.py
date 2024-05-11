@@ -409,7 +409,6 @@ def case_escalated_status_flow(
     db_session.add(case)
     db_session.commit()
 
-    print("ENTER FLOW")
     case_to_incident_escalate_flow(
         case=case,
         organization_slug=organization_slug,
@@ -417,7 +416,6 @@ def case_escalated_status_flow(
         incident_priority=incident_priority,
         incident_type=incident_type,
     )
-    print("RETURN NONE")
 
 
 def case_closed_status_flow(case: Case, db_session=None):
@@ -709,14 +707,12 @@ def case_to_incident_escalate_flow(
     )
     incident = incident_service.create(db_session=db_session, incident_in=incident_in)
 
-    print("INCIDENT CREATED")
     common_escalate_flow(
         case=case,
         incident=incident,
         organization_slug=organization_slug,
         db_session=db_session,
     )
-    print("RETURN NONE")
 
 
 @background_task
