@@ -364,7 +364,7 @@ def create_signal_engagement_message(
     return Message(blocks=blocks).build()["blocks"]
 
 
-def create_welcome_ephemeral_message_to_participant(case: Case) -> Message:
+def create_welcome_ephemeral_message_to_participant(case: Case) -> list[Block]:
     blocks = [
         Section(
             text="You've been added to this case, because we think you may be able to help resolve it. Please review the case details below and reach out to the case assignee if you have any questions.",
