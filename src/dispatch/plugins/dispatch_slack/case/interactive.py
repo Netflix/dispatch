@@ -1082,7 +1082,12 @@ def handle_member_joined_case_channel(
         )
 
     if context["subject"].type != CaseSubjects.case:
-        # only run this workflow for incidents
+        # only run this workflow for cases
+        return
+
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+
+    if not case.dedicated_channel:
         return
 
     participant = case_flows.case_add_or_reactivate_participant_flow(
@@ -1092,12 +1097,10 @@ def handle_member_joined_case_channel(
     )
 
     if not participant:
-        # Participant is already in the incident channel.
+        # Participant is already in the case channel.
         return
 
     participant.user_conversation_id = context["user_id"]
-
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
     # If the user was invited, the message will include an inviter property containing the user ID of the inviting user.
     # The property will be absent when a user manually joins a channel, or a user is added by default (e.g. #general channel).
@@ -1142,6 +1145,11 @@ def handle_member_left_channel(
 
     if context["subject"].type != CaseSubjects.case:
         # only run this workflow for cases
+        return
+
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+
+    if not case.dedicated_channel:
         return
 
     case_flows.case_remove_participant_flow(
