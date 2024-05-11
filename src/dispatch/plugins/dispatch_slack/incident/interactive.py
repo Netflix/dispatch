@@ -281,6 +281,8 @@ def handle_update_incident_project_select_action(
         "selected_option"
     ]["value"]
 
+    context["subject"].project_id = project_id
+
     project = project_service.get(
         db_session=db_session,
         project_id=project_id,
@@ -2001,6 +2003,9 @@ def handle_report_incident_command(
     """Handles the report incident command."""
     ack()
 
+    if body.get("channel_id"):
+        context["subject"].channel_id = body["channel_id"]
+
     blocks = [
         Context(
             elements=[
@@ -2148,6 +2153,8 @@ def handle_report_incident_project_select_action(
     project_id = values[DefaultBlockIds.project_select][IncidentReportActions.project_select][
         "selected_option"
     ]["value"]
+
+    context["subject"].project_id = project_id
 
     project = project_service.get(db_session=db_session, project_id=project_id)
 
