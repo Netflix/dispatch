@@ -141,7 +141,6 @@ def engagement_button_context_middleware(
 def action_context_middleware(body: dict, context: BoltContext, next: Callable) -> None:
     """Attempt to determine the current context of the event."""
     private_metadata = json.loads(body["view"]["private_metadata"])
-    print(f"METADATA {private_metadata=}")
     if private_metadata.get("form_data"):
         context.update({"subject": FormMetadata(**private_metadata)})
     else:
