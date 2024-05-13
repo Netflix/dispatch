@@ -19,7 +19,9 @@ from blockkit import (
     UsersSelect,
 )
 from slack_bolt import Ack, BoltContext, Respond
+from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
+
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -39,6 +41,7 @@ from dispatch.participant.models import ParticipantUpdate
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_duo.enums import PushResponseResult
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
+from dispatch.plugins.dispatch_slack.enums import SlackAPIErrorCode
 from dispatch.plugins.dispatch_slack.bolt import app
 from dispatch.plugins.dispatch_slack.case.enums import (
     CaseEditActions,
@@ -224,16 +227,22 @@ def handle_update_case_command(
 
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
-    # assignee_initial_user = client.users_lookupByEmail(email=case.assignee.individual.email)[
-    #     "user"
-    # ]["id"]
+    try:
+        user_lookup_response = client.users_lookupByEmail(email=case.assignee.individual.email)
+        assignee_initial_user = user_lookup_response["user"]["id"]
+    except SlackApiError as e:
+        if e.response["error"] == SlackAPIErrorCode.USERS_NOT_FOUND:
+            log.warning(
+                f"Unable to fetch default assignee for {case.assignee.individual.email}: {e}"
+            )
+        assignee_initial_user = None
 
     blocks = [
         title_input(initial_value=case.title),
         description_input(initial_value=case.description),
         case_resolution_reason_select(optional=True),
         resolution_input(initial_value=case.resolution),
-        assignee_select(),
+        assignee_select(initial_user=assignee_initial_user),
         case_status_select(initial_option={"text": case.status, "value": case.status}),
         case_type_select(
             db_session=db_session,
@@ -1479,7 +1488,12 @@ def edit_button_click(
 
 @app.view(
     CaseEditActions.submit,
-    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
+    middleware=[
+        action_context_middleware,
+        db_middleware,
+        user_middleware,
+        modal_submit_middleware,
+    ],
 )
 def handle_edit_submission_event(
     ack: Ack,

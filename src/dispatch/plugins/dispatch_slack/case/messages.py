@@ -19,6 +19,7 @@ from dispatch.case.models import Case
 from dispatch.entity.models import Entity
 from dispatch.entity_type.models import EntityType
 from dispatch.entity import service as entity_service
+from dispatch.messaging.strings import CASE_STATUS_DESCRIPTIONS, CASE_VISIBILITY_DESCRIPTIONS
 from dispatch.plugins.dispatch_slack.models import (
     CaseSubjects,
     EngagementMetadata,
@@ -376,19 +377,22 @@ def create_welcome_ephemeral_message_to_participant(case: Case) -> list[Block]:
             text=f"*Description* \n {case.description}",
         ),
         Section(
-            text=f"*Visibility - {case.visibility}*",
+            text=f"*Visibility - {case.visibility}* \n {CASE_VISIBILITY_DESCRIPTIONS[case.visibility]}",
         ),
         Section(
-            text=f"*Status - {case.status}*",
+            text=f"*Status - {case.status}* \n {CASE_STATUS_DESCRIPTIONS[case.status]}",
         ),
         Section(
-            text=f"*Type - {case.case_type.name}*",
+            text=f"*Type - {case.case_type.name}* \n {case.case_type.description}",
         ),
         Section(
-            text=f"*Severity - {case.case_severity.name}*",
+            text=f"*Severity - {case.case_severity.name}* \n {case.case_severity.description}",
         ),
         Section(
-            text=f"*Priority - {case.case_priority.name}*",
+            text=f"*Priority - {case.case_priority.name}* \n {case.case_priority.description}",
+        ),
+        Section(
+            text=f"*Assignee - {case.assignee.individual.name}*",
         ),
         Section(
             text=f"*Reporter - {case.reporter.individual.name}*",
