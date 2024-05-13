@@ -196,7 +196,7 @@ def unarchive_conversation(subject: Subject, db_session: Session) -> None:
         log.exception(e)
 
 
-def get_conversation_details(subject: Subject) -> str:
+def get_topic_text(subject: Subject) -> str:
     """Returns the topic details based on subject"""
     if isinstance(subject, Incident):
         return (
@@ -228,7 +228,7 @@ def set_conversation_topic(subject: Subject, db_session: SessionLocal):
         log.warning("Conversation topic not set. No conversation plugin enabled.")
         return
 
-    conversation_topic = get_conversation_details(subject)
+    conversation_topic = get_topic_text(subject)
 
     try:
         plugin.instance.set_topic(subject.conversation.channel_id, conversation_topic)
