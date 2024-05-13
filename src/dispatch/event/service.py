@@ -151,6 +151,7 @@ def log_case_event(
     started_at: datetime = None,
     ended_at: datetime = None,
     details: dict = None,
+    type: str = EventType.other,
 ) -> Event:
     """Logs an event in the case timeline."""
     uuid = uuid4()
@@ -168,7 +169,7 @@ def log_case_event(
         source=source,
         description=description,
         details=details,
-        type=EventType.other,
+        type=type,
     )
     event = create(db_session=db_session, event_in=event_in)
 
