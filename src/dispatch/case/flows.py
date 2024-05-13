@@ -361,6 +361,16 @@ def case_update_flow(
         # we send the case updated notification
         update_conversation(case, db_session)
 
+    if case.has_channel and case.status != CaseStatus.closed:
+        # determine if case channel topic needs to be updated
+        if (
+            case.case_type.name != previous_case.case_type.name
+            or case.case_severity.name != previous_case.case_severity.name
+            or case.case_priority.name != previous_case.case_priority.name
+            or case.status != previous_case.status
+        ):
+            conversation_flows.set_conversation_topic(case, db_session)
+
 
 def case_delete_flow(case: Case, db_session: SessionLocal):
     """Runs the case delete flow."""
@@ -743,7 +753,7 @@ def case_assign_role_flow(
     case_id: int,
     participant_email: str,
     participant_role: str,
-    db_session: SessionLocal,
+    db_session: Session,
 ):
     """Runs the case participant role assignment flow."""
     # we get the case
@@ -753,7 +763,14 @@ def case_assign_role_flow(
     case_add_or_reactivate_participant_flow(participant_email, case.id, db_session=db_session)
 
     # we run the assign role flow
-    role_flow.assign_role_flow(case, participant_email, participant_role, db_session)
+    result = role_flow.assign_role_flow(case, participant_email, participant_role, db_session)
+
+    if result in ["assignee_has_role", "role_not_assigned"]:
+        return
+
+    if case.status != CaseStatus.closed and participant_role == ParticipantRoleType.assignee:
+        # update the conversation topic
+        conversation_flows.set_conversation_topic(case, db_session)
 
 
 def case_create_resources_flow(
@@ -886,6 +903,7 @@ def case_create_resources_flow(
                 db_session=db_session,
                 title=title,
             )
+        conversation_flows.set_conversation_topic(case, db_session)
 
     # we update the ticket
     ticket_flows.update_case_ticket(case=case, db_session=db_session)
