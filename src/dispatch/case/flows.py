@@ -298,6 +298,16 @@ def case_closed_create_flow(*, case_id: int, organization_slug: OrganizationSlug
     case_closed_status_flow(case=case, db_session=db_session)
 
 
+def case_details_changed(case: Case, previous_case: CaseRead) -> bool:
+    """Checks if the case details have changed."""
+    return (
+        case.case_type.name != previous_case.case_type.name
+        or case.case_severity.name != previous_case.case_severity.name
+        or case.case_priority.name != previous_case.case_priority.name
+        or case.status != previous_case.status
+    )
+
+
 @background_task
 def case_update_flow(
     *,
@@ -363,12 +373,7 @@ def case_update_flow(
 
     if case.has_channel and case.status != CaseStatus.closed:
         # determine if case channel topic needs to be updated
-        if (
-            case.case_type.name != previous_case.case_type.name
-            or case.case_severity.name != previous_case.case_severity.name
-            or case.case_priority.name != previous_case.case_priority.name
-            or case.status != previous_case.status
-        ):
+        if case_details_changed(case, previous_case):
             conversation_flows.set_conversation_topic(case, db_session)
 
 
