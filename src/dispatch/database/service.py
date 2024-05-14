@@ -112,7 +112,7 @@ class Filter(object):
     def get_named_models(self):
         if "model" in self.filter_spec:
             model = self.filter_spec["model"]
-            if model in ["Participant", "Commander"]:
+            if model in ["Participant", "Commander", "Assignee"]:
                 return {"IndividualContact"}
             if model == "TagAll":
                 return {"Tag"}
@@ -122,7 +122,7 @@ class Filter(object):
 
     def format_for_sqlalchemy(self, query, default_model):
         filter_spec = self.filter_spec
-        if filter_spec.get("model") in ["Participant", "Commander"]:
+        if filter_spec.get("model") in ["Participant", "Commander", "Assignee"]:
             filter_spec["model"] = "IndividualContact"
         elif filter_spec.get("model") == "TagAll":
             filter_spec["model"] = "Tag"
@@ -359,6 +359,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (DispatchUser, "Organization"): (DispatchUser.organizations, True),
         (Case, "Tag"): (Case.tags, True),
         (Case, "TagType"): (Case.tags, True),
+        (Case, "IndividualContact"): (Case.participants, True),
         (Incident, "Tag"): (Incident.tags, True),
         (Incident, "TagType"): (Incident.tags, True),
         (Incident, "IndividualContact"): (Incident.participants, True),
@@ -374,6 +375,8 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
     # Replace mapping if looking for commander
     if "Commander" in str(filter_spec):
         model_map.update({(Incident, "IndividualContact"): (Incident.commander, True)})
+    if "Assignee" in str(filter_spec):
+        model_map.update({(Case, "IndividualContact"): (Case.assignee, True)})
 
     filter_models = get_named_models(filters)
     joined_models = []
