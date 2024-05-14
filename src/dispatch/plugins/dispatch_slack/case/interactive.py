@@ -200,7 +200,6 @@ def handle_escalate_case_command(
         ),
     ]
 
-    print(context["subject"].json())
     modal = Modal(
         title="Escalate Case",
         submit="Escalate",
