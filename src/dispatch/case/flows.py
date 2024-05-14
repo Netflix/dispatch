@@ -692,8 +692,8 @@ def case_to_incident_escalate_flow(
     case: Case,
     organization_slug: OrganizationSlug,
     db_session: Session,
-    incident_priority: IncidentType,
-    incident_type: IncidentPriority | None,
+    incident_priority: IncidentPriority | None,
+    incident_type: IncidentType,
 ):
     if case.incidents:
         return
