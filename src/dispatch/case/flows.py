@@ -692,7 +692,7 @@ def case_to_incident_escalate_flow(
     case: Case,
     organization_slug: OrganizationSlug,
     db_session: Session,
-    incident_priority: IncidentType | None,
+    incident_priority: IncidentType,
     incident_type: IncidentPriority | None,
 ):
     if case.incidents:
@@ -708,7 +708,6 @@ def case_to_incident_escalate_flow(
         f"in the {case.project.name} project. Check out the case in the Dispatch Web UI for additional context."
     )
 
-    incident_type = case.case_type.incident_type if case.case_type.incident_type else incident_type
     incident_priority = case.case_priority if not incident_priority else incident_priority
 
     incident_in = IncidentCreate(
