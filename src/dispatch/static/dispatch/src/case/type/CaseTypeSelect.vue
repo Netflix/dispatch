@@ -18,7 +18,7 @@
       <v-list-item v-bind="data.props" :title="null">
         <v-list-item-title>{{ data.item.raw.name }}</v-list-item-title>
         <v-list-item-subtitle class="truncate-text" :title="data.item.raw.description">
-          {{ data.item.raw.conversation_target }} {{ data.item.raw.description }}
+          {{ data.item.raw.description }}
         </v-list-item-subtitle>
       </v-list-item>
     </template>

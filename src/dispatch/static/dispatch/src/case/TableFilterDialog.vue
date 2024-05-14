@@ -42,6 +42,26 @@
             :project="local_project"
           />
         </v-list-item>
+        <v-list-item>
+          <v-card class="mx-auto">
+            <v-card-title>Case Participant</v-card-title>
+            <v-card-subtitle>Show only cases with this participant</v-card-subtitle>
+            <participant-select
+              class="ml-10 mr-5"
+              v-model="local_participant"
+              label="Participant"
+              hint="Show only cases with this participant"
+              :project="local_project"
+              clearable
+            />
+            <v-checkbox
+              class="ml-10 mr-5"
+              v-model="local_participant_is_assignee"
+              label="And this participant is the Assignee"
+              :disabled="local_participant == null"
+            />
+          </v-card>
+        </v-list-item>
       </v-list>
       <v-card-actions>
         <v-spacer />
@@ -85,6 +105,8 @@ const local_reported_at = ref({})
 const local_status = ref([])
 const local_tag = ref([])
 const local_tag_type = ref([])
+const local_participant = ref(null)
+const local_participant_is_assignee = ref(false)
 
 const case_priority = computed(
   () => store.state.case_management.table.options.filters.case_priority
@@ -107,10 +129,24 @@ const numFilters = computed(() => {
     status.value?.length || 0,
     tag.value?.length || 0,
     tag_type.value?.length || 0,
+    local_participant.value == null ? 0 : 1,
   ])
 })
 
 const applyFilters = () => {
+  let filtered_participant = null
+  let filtered_assignee = null
+  if (Array.isArray(local_participant.value)) {
+    local_participant.value = local_participant.value[0]
+  }
+  if (local_participant_is_assignee.value) {
+    filtered_assignee = local_participant.value
+    filtered_participant = null
+  } else {
+    filtered_assignee = null
+    filtered_participant = local_participant.value
+  }
+
   const filters = {
     case_priority: local_case_priority.value,
     case_severity: local_case_severity.value,
@@ -121,6 +157,8 @@ const applyFilters = () => {
     status: local_status.value,
     tag: local_tag.value,
     tag_type: local_tag_type.value,
+    participant: filtered_participant,
+    assignee: filtered_assignee,
   }
 
   // Commit the mutation to update the filters in the Vuex store
