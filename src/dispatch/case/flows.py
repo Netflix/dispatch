@@ -863,10 +863,10 @@ def case_create_resources_flow(
 
         all_participants = individual_participants
         if case.assignee:
-            all_participants = individual_participants.append(case.assignee.individual.email)
+            all_participants = individual_participants.extend(case.assignee.individual.email)
 
         if case.reporter:
-            all_participants = individual_participants.append(case.reporter.individual.email)
+            all_participants = individual_participants.extend(case.reporter.individual.email)
 
         # # we add the participant to the conversation
         conversation_flows.add_case_participants(
