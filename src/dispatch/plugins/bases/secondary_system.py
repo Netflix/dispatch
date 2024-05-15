@@ -11,11 +11,5 @@ from dispatch.plugins.base import Plugin
 class SecondarySystemPlugin(Plugin):
     type = "secondary-system"
 
-    def chat(self, items, **kwargs):
-        raise NotImplementedError
-
-    def completion(self, items, **kwargs):
-        raise NotImplementedError
-
-    def summarization(self, items, **kwargs):
+    def get(self, incident_id, **kwargs):
         raise NotImplementedError
