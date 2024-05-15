@@ -861,6 +861,7 @@ def case_create_resources_flow(
             )
         # explicitly add the assignee and reporter to the conversation
 
+        all_participants = individual_participants
         if case.assignee:
             all_participants = individual_participants.extend(case.assignee.individual.email)
 
