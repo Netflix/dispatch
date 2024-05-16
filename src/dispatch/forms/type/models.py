@@ -26,8 +26,6 @@ class FormsType(ProjectMixin, TimeStampMixin, Base):
     description = Column(String, nullable=True)
     enabled = Column(Boolean, default=True)
     form_schema = Column(String, nullable=True)
-    attorney_form_schema = Column(String, nullable=True)
-    scoring_schema = Column(String, nullable=True)
 
     # Relationships
     creator_id = Column(Integer, ForeignKey("individual_contact.id"))

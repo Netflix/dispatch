@@ -21,7 +21,6 @@ class Forms(TimeStampMixin, ProjectMixin, Base):
     attorney_status = Column(String, default=FormAttorneyStatus.not_reviewed, nullable=True)
     attorney_questions = Column(String, nullable=True)
     attorney_analysis = Column(String, nullable=True)
-    attorney_form_data = Column(String, nullable=True)
 
     # Relationships
     creator_id = Column(Integer, ForeignKey("individual_contact.id"))
