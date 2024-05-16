@@ -859,22 +859,14 @@ def case_create_resources_flow(
                 case_id=case.id,
                 add_to_conversation=False,
             )
-        # explicitly add the assignee and reporter to the conversation
-
-        all_participants = individual_participants
-        if case.assignee:
-            all_participants = individual_participants.append(case.assignee.individual.email)
-
-        if case.reporter:
-            all_participants = individual_participants.append(case.reporter.individual.email)
-
         # # we add the participant to the conversation
         conversation_flows.add_case_participants(
             case=case,
-            participant_emails=all_participants,
+            participant_emails=individual_participants,
             db_session=db_session,
         )
-        for user_email in set(all_participants):
+
+        for user_email in set(individual_participants):
             send_participant_announcement_message(
                 db_session=db_session,
                 participant_email=user_email,
