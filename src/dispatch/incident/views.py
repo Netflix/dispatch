@@ -4,7 +4,7 @@ from dateutil.relativedelta import relativedelta
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 import json
 import logging
-from typing import Annotated, List
+from typing import Annotated
 from starlette.requests import Request
 from sqlalchemy.exc import IntegrityError
 
@@ -71,7 +71,7 @@ CurrentIncident = Annotated[Incident, Depends(get_current_incident)]
 @router.get("", summary="Retrieve a list of incidents.")
 def get_incidents(
     common: CommonParameters,
-    include: List[str] = Query([], alias="include[]"),
+    include: list[str] = Query([], alias="include[]"),
     expand: bool = Query(default=False),
 ):
     """Retrieves a list of incidents."""

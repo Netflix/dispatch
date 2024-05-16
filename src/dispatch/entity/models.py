@@ -1,4 +1,3 @@
-from typing import Optional, List
 from pydantic import Field
 
 from sqlalchemy import Column, Integer, String, ForeignKey
@@ -50,40 +49,40 @@ class Entity(Base, TimeStampMixin, ProjectMixin):
 
 # Pydantic models
 class EntityBase(DispatchBase):
-    name: Optional[str] = Field(None, nullable=True)
-    source: Optional[str] = Field(None, nullable=True)
-    value: Optional[str] = Field(None, nullable=True)
-    description: Optional[str] = Field(None, nullable=True)
+    name: str | None = Field(None, nullable=True)
+    source: str | None = Field(None, nullable=True)
+    value: str | None = Field(None, nullable=True)
+    description: str | None = Field(None, nullable=True)
 
 
 class EntityCreate(EntityBase):
     def __hash__(self):
         return hash((self.id, self.value))
 
-    id: Optional[PrimaryKey]
+    id: PrimaryKey | None
     entity_type: EntityTypeCreate
     project: ProjectRead
 
 
 class EntityUpdate(EntityBase):
-    id: Optional[PrimaryKey]
-    entity_type: Optional[EntityTypeUpdate]
+    id: PrimaryKey | None
+    entity_type: EntityTypeUpdate | None
 
 
 class EntityRead(EntityBase):
     id: PrimaryKey
-    entity_type: Optional[EntityTypeRead]
+    entity_type: EntityTypeRead | None
     project: ProjectRead
 
 
 class EntityReadMinimal(DispatchBase):
     id: PrimaryKey
-    name: Optional[str] = Field(None, nullable=True)
-    source: Optional[str] = Field(None, nullable=True)
-    value: Optional[str] = Field(None, nullable=True)
-    description: Optional[str] = Field(None, nullable=True)
-    entity_type: Optional[EntityTypeReadMinimal]
+    name: str | None = Field(None, nullable=True)
+    source: str | None = Field(None, nullable=True)
+    value: str | None = Field(None, nullable=True)
+    description: str | None = Field(None, nullable=True)
+    entity_type: EntityTypeReadMinimal | None
 
 
 class EntityPagination(Pagination):
-    items: List[EntityRead]
+    items: list[EntityRead]

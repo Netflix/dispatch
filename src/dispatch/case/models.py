@@ -1,6 +1,6 @@
 from collections import Counter, defaultdict
 from datetime import datetime
-from typing import Any, ForwardRef, List, Optional
+from typing import Any, ForwardRef
 
 from pydantic import validator
 from sqlalchemy import (
@@ -185,35 +185,35 @@ class SignalRead(DispatchBase):
     id: PrimaryKey
     name: str
     owner: str
-    description: Optional[str]
-    variant: Optional[str]
+    description: str | None
+    variant: str | None
     external_id: str
-    external_url: Optional[str]
-    workflow_instances: Optional[List[WorkflowInstanceRead]] = []
+    external_url: str | None
+    workflow_instances: list[WorkflowInstanceRead] = []
 
 
 class SignalInstanceRead(DispatchBase):
     created_at: datetime
-    entities: Optional[List[EntityRead]] = []
+    entities: list[EntityRead] = []
     raw: Any
     signal: SignalRead
-    tags: Optional[List[TagRead]] = []
+    tags: list[TagRead] = []
 
 
 class ProjectRead(DispatchBase):
-    id: Optional[PrimaryKey]
+    id: PrimaryKey | None
     name: NameStr
-    color: Optional[str]
+    color: str | None
 
 
 # Pydantic models...
 class CaseBase(DispatchBase):
     title: str
-    description: Optional[str]
-    resolution: Optional[str]
-    resolution_reason: Optional[CaseResolutionReason]
-    status: Optional[CaseStatus]
-    visibility: Optional[Visibility]
+    description: str | None
+    resolution: str | None
+    resolution_reason: CaseResolutionReason | None
+    status: CaseStatus | None
+    visibility: Visibility | None
 
     @validator("title")
     def title_required(cls, v):
@@ -229,14 +229,14 @@ class CaseBase(DispatchBase):
 
 
 class CaseCreate(CaseBase):
-    assignee: Optional[ParticipantUpdate]
-    case_priority: Optional[CasePriorityCreate]
-    case_severity: Optional[CaseSeverityCreate]
-    case_type: Optional[CaseTypeCreate]
-    dedicated_channel: Optional[bool]
-    project: Optional[ProjectRead]
-    reporter: Optional[ParticipantUpdate]
-    tags: Optional[List[TagRead]] = []
+    assignee: ParticipantUpdate | None
+    case_priority: CasePriorityCreate | None
+    case_severity: CaseSeverityCreate | None
+    case_type: CaseTypeCreate | None
+    dedicated_channel: bool | None
+    project: ProjectRead | None
+    reporter: ParticipantUpdate | None
+    tags: list[TagRead] = []
 
 
 CaseReadMinimal = ForwardRef("CaseReadMinimal")
@@ -244,21 +244,21 @@ CaseReadMinimal = ForwardRef("CaseReadMinimal")
 
 class CaseReadMinimal(CaseBase):
     id: PrimaryKey
-    assignee: Optional[ParticipantReadMinimal]
+    assignee: ParticipantReadMinimal | None
     case_priority: CasePriorityRead
     case_severity: CaseSeverityRead
     case_type: CaseTypeRead
-    duplicates: Optional[List[CaseReadMinimal]] = []
-    incidents: Optional[List[IncidentReadMinimal]] = []
-    related: Optional[List[CaseReadMinimal]] = []
-    closed_at: Optional[datetime] = None
-    created_at: Optional[datetime] = None
-    escalated_at: Optional[datetime] = None
-    name: Optional[NameStr]
+    duplicates: list[CaseReadMinimal] = []
+    incidents: list[IncidentReadMinimal] = []
+    related: list[CaseReadMinimal] = []
+    closed_at: datetime | None = None
+    created_at: datetime | None = None
+    escalated_at: datetime | None = None
+    name: NameStr | None
     project: ProjectRead
-    reporter: Optional[ParticipantReadMinimal]
-    reported_at: Optional[datetime] = None
-    triage_at: Optional[datetime] = None
+    reporter: ParticipantReadMinimal | None
+    reported_at: datetime | None = None
+    triage_at: datetime | None = None
 
 
 CaseReadMinimal.update_forward_refs()
@@ -266,48 +266,48 @@ CaseReadMinimal.update_forward_refs()
 
 class CaseRead(CaseBase):
     id: PrimaryKey
-    assignee: Optional[ParticipantRead]
+    assignee: ParticipantRead | None
     case_priority: CasePriorityRead
     case_severity: CaseSeverityRead
     case_type: CaseTypeRead
-    closed_at: Optional[datetime] = None
-    created_at: Optional[datetime] = None
-    documents: Optional[List[DocumentRead]] = []
-    duplicates: Optional[List[CaseReadMinimal]] = []
-    escalated_at: Optional[datetime] = None
-    events: Optional[List[EventRead]] = []
-    groups: Optional[List[GroupRead]] = []
-    incidents: Optional[List[IncidentReadMinimal]] = []
-    conversation: Optional[ConversationRead] = None
-    name: Optional[NameStr]
+    closed_at: datetime | None = None
+    created_at: datetime | None = None
+    documents: list[DocumentRead] = []
+    duplicates: list[CaseReadMinimal] = []
+    escalated_at: datetime | None = None
+    events: list[EventRead] = []
+    groups: list[GroupRead] = []
+    incidents: list[IncidentReadMinimal] = []
+    conversation: ConversationRead | None = None
+    name: NameStr | None
     project: ProjectRead
-    related: Optional[List[CaseReadMinimal]] = []
-    reporter: Optional[ParticipantRead]
-    reported_at: Optional[datetime] = None
-    participants: Optional[List[ParticipantRead]] = []
-    signal_instances: Optional[List[SignalInstanceRead]] = []
-    storage: Optional[StorageRead] = None
-    tags: Optional[List[TagRead]] = []
-    ticket: Optional[TicketRead] = None
-    triage_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    workflow_instances: Optional[List[WorkflowInstanceRead]] = []
+    related: list[CaseReadMinimal] = []
+    reporter: ParticipantRead | None
+    reported_at: datetime | None = None
+    participants: list[ParticipantRead] = []
+    signal_instances: list[SignalInstanceRead] = []
+    storage: StorageRead | None = None
+    tags: list[TagRead] = []
+    ticket: TicketRead | None = None
+    triage_at: datetime | None = None
+    updated_at: datetime | None = None
+    workflow_instances: list[WorkflowInstanceRead] = []
 
 
 class CaseUpdate(CaseBase):
-    assignee: Optional[ParticipantUpdate]
-    case_priority: Optional[CasePriorityBase]
-    case_severity: Optional[CaseSeverityBase]
-    case_type: Optional[CaseTypeBase]
-    closed_at: Optional[datetime] = None
-    duplicates: Optional[List[CaseRead]] = []
-    related: Optional[List[CaseRead]] = []
-    reporter: Optional[ParticipantUpdate]
-    escalated_at: Optional[datetime] = None
-    incidents: Optional[List[IncidentReadMinimal]] = []
-    reported_at: Optional[datetime] = None
-    tags: Optional[List[TagRead]] = []
-    triage_at: Optional[datetime] = None
+    assignee: ParticipantUpdate | None
+    case_priority: CasePriorityBase | None
+    case_severity: CaseSeverityBase | None
+    case_type: CaseTypeBase | None
+    closed_at: datetime | None = None
+    duplicates: list[CaseRead] = []
+    related: list[CaseRead] = []
+    reporter: ParticipantUpdate | None
+    escalated_at: datetime | None = None
+    incidents: list[IncidentReadMinimal] = []
+    reported_at: datetime | None = None
+    tags: list[TagRead] = []
+    triage_at: datetime | None = None
 
     @validator("tags")
     def find_exclusive(cls, v):
@@ -327,8 +327,8 @@ class CaseUpdate(CaseBase):
 
 
 class CasePagination(Pagination):
-    items: List[CaseReadMinimal] = []
+    items: list[CaseReadMinimal] = []
 
 
 class CaseExpandedPagination(Pagination):
-    items: List[CaseRead] = []
+    items: list[CaseRead] = []

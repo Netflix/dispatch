@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from pydantic import Field
 
 from dispatch.models import DispatchBase
@@ -20,7 +18,7 @@ from dispatch.data.query.models import QueryRead
 
 # Pydantic models...
 class SearchBase(DispatchBase):
-    query: Optional[str] = Field(None, nullable=True)
+    query: str | None = Field(None, nullable=True)
 
 
 class SearchRequest(SearchBase):
@@ -28,23 +26,23 @@ class SearchRequest(SearchBase):
 
 
 class ContentResponse(DispatchBase):
-    documents: Optional[List[DocumentRead]] = Field([], alias="Document")
-    incidents: Optional[List[IncidentRead]] = Field([], alias="Incident")
-    tasks: Optional[List[TaskRead]] = Field([], alias="Task")
-    tags: Optional[List[TagRead]] = Field([], alias="Tag")
-    terms: Optional[List[TermRead]] = Field([], alias="Term")
-    definitions: Optional[List[DefinitionRead]] = Field([], alias="Definition")
-    sources: Optional[List[SourceRead]] = Field([], alias="Source")
-    queries: Optional[List[QueryRead]] = Field([], alias="Query")
-    teams: Optional[List[TeamContactRead]] = Field([], alias="TeamContact")
-    individuals: Optional[List[IndividualContactRead]] = Field([], alias="IndividualContact")
-    services: Optional[List[ServiceRead]] = Field([], alias="Service")
-    cases: Optional[List[CaseRead]] = Field([], alias="Case")
+    documents: list[DocumentRead] = Field([], alias="Document")
+    incidents: list[IncidentRead] = Field([], alias="Incident")
+    tasks: list[TaskRead] = Field([], alias="Task")
+    tags: list[TagRead] = Field([], alias="Tag")
+    terms: list[TermRead] = Field([], alias="Term")
+    definitions: list[DefinitionRead] = Field([], alias="Definition")
+    sources: list[SourceRead] = Field([], alias="Source")
+    queries: list[QueryRead] = Field([], alias="Query")
+    teams: list[TeamContactRead] = Field([], alias="TeamContact")
+    individuals: list[IndividualContactRead] = Field([], alias="IndividualContact")
+    services: list[ServiceRead] = Field([], alias="Service")
+    cases: list[CaseRead] = Field([], alias="Case")
 
     class Config:
         allow_population_by_field_name = True
 
 
 class SearchResponse(DispatchBase):
-    query: Optional[str] = Field(None, nullable=True)
+    query: str | None = Field(None, nullable=True)
     results: ContentResponse

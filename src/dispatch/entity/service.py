@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 import logging
-from typing import Generator, List, Optional, Sequence, Union, NewType, NamedTuple
+from typing import Generator, Sequence, Union, NewType, NamedTuple
 import re
 
 import jsonpath_ng
@@ -20,12 +20,12 @@ from dispatch.signal.models import Signal, SignalInstance
 log = logging.getLogger(__name__)
 
 
-def get(*, db_session: Session, entity_id: int) -> Optional[Entity]:
+def get(*, db_session: Session, entity_id: int) -> Entity | None:
     """Gets a entity by its id."""
     return db_session.query(Entity).filter(Entity.id == entity_id).one_or_none()
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Entity]:
+def get_by_name(*, db_session, project_id: int, name: str) -> Entity | None:
     """Gets a entity by its project and name."""
     return (
         db_session.query(Entity)
@@ -58,7 +58,7 @@ def get_by_name_or_raise(
     return entity
 
 
-def get_by_value(*, db_session: Session, project_id: int, value: str) -> Optional[Entity]:
+def get_by_value(*, db_session: Session, project_id: int, value: str) -> Entity | None:
     """Gets a entity by its value."""
     return (
         db_session.query(Entity)
@@ -68,12 +68,12 @@ def get_by_value(*, db_session: Session, project_id: int, value: str) -> Optiona
     )
 
 
-def get_all(*, db_session: Session, project_id: int) -> List[Optional[Entity]]:
+def get_all(*, db_session: Session, project_id: int) -> list[Entity]:
     """Gets all entities by their project."""
     return db_session.query(Entity).filter(Entity.project_id == project_id).all()
 
 
-def get_all_by_signal(*, db_session: Session, signal_id: int) -> List[Entity]:
+def get_all_by_signal(*, db_session: Session, signal_id: int) -> list[Entity]:
     """Gets all entities for a specific signal."""
     return (
         db_session.query(Entity)
@@ -84,7 +84,7 @@ def get_all_by_signal(*, db_session: Session, signal_id: int) -> List[Entity]:
     )
 
 
-def get_all_desc_by_signal(*, db_session: Session, signal_id: int) -> List[Entity]:
+def get_all_desc_by_signal(*, db_session: Session, signal_id: int) -> list[Entity]:
     """Gets all entities for a specific signal in descending order."""
     return (
         db_session.query(Entity)

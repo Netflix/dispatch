@@ -1,6 +1,5 @@
 from pydantic import Field, validator
 
-from typing import Optional
 
 from sqlalchemy import Column, String, Integer, ForeignKey
 
@@ -20,8 +19,8 @@ class Conversation(Base, ResourceMixin):
 
 # Pydantic models...
 class ConversationBase(ResourceBase):
-    channel_id: Optional[str] = Field(None, nullable=True)
-    thread_id: Optional[str] = Field(None, nullable=True)
+    channel_id: str | None = Field(None, nullable=True)
+    thread_id: str | None = Field(None, nullable=True)
 
 
 class ConversationCreate(ConversationBase):
@@ -34,7 +33,7 @@ class ConversationUpdate(ConversationBase):
 
 class ConversationRead(ConversationBase):
     id: PrimaryKey
-    description: Optional[str] = Field(None, nullable=True)
+    description: str | None = Field(None, nullable=True)
 
     @validator("description", pre=True, always=True)
     def set_description(cls, v):

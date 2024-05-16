@@ -1,4 +1,3 @@
-from typing import List
 from pydantic import Field
 
 from dispatch.decorators import apply, counter, timer
@@ -69,7 +68,7 @@ class GoogleDriveStoragePlugin(StoragePlugin):
     def add_participant(
         self,
         team_drive_or_file_id: str,
-        participants: List[str],
+        participants: list[str],
         role: str = Roles.writer,
         user_type: str = UserTypes.user,
     ):
@@ -78,7 +77,7 @@ class GoogleDriveStoragePlugin(StoragePlugin):
         for p in participants:
             add_permission(client, p, team_drive_or_file_id, role, user_type)
 
-    def remove_participant(self, team_drive_or_file_id: str, participants: List[str]):
+    def remove_participant(self, team_drive_or_file_id: str, participants: list[str]):
         """Removes participants from an existing Google Drive."""
         client = get_service(self.configuration, "drive", "v3", self.scopes)
         for p in participants:
@@ -98,7 +97,7 @@ class GoogleDriveStoragePlugin(StoragePlugin):
         self,
         parent_id: str,
         name: str,
-        participants: List[str] = None,
+        participants: list[str] = None,
         role: str = Roles.writer,
         file_type: str = "folder",
     ):

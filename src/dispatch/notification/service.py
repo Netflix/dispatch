@@ -1,6 +1,6 @@
 import logging
 
-from typing import List, Optional, Type
+from typing import Type
 
 from dispatch.database.core import Base
 from dispatch.models import PrimaryKey
@@ -14,17 +14,17 @@ from .models import Notification, NotificationCreate, NotificationUpdate
 log = logging.getLogger(__name__)
 
 
-def get(*, db_session, notification_id: int) -> Optional[Notification]:
+def get(*, db_session, notification_id: int) -> Notification | None:
     """Gets a notifcation by id."""
     return db_session.query(Notification).filter(Notification.id == notification_id).one_or_none()
 
 
-def get_all(*, db_session) -> List[Optional[Notification]]:
+def get_all(*, db_session) -> list[Notification]:
     """Gets all notifications."""
     return db_session.query(Notification).all()
 
 
-def get_all_enabled(*, db_session, project_id: int) -> Optional[List[Notification]]:
+def get_all_enabled(*, db_session, project_id: int) -> list[Notification]:
     """Gets all enabled notifications."""
     return (
         db_session.query(Notification)
@@ -34,9 +34,7 @@ def get_all_enabled(*, db_session, project_id: int) -> Optional[List[Notificatio
     )
 
 
-def get_overdue_evergreen_notifications(
-    *, db_session, project_id: int
-) -> List[Optional[Notification]]:
+def get_overdue_evergreen_notifications(*, db_session, project_id: int) -> list[Notification]:
     """Returns all notifications that have not had a recent evergreen notification."""
     query = (
         db_session.query(Notification)

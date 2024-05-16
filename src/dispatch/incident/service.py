@@ -8,7 +8,6 @@
 import logging
 
 from datetime import datetime, timedelta
-from typing import List, Optional
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.decorators import timer
@@ -65,12 +64,12 @@ def resolve_and_associate_role(
 
 
 @timer
-def get(*, db_session, incident_id: int) -> Optional[Incident]:
+def get(*, db_session, incident_id: int) -> Incident | None:
     """Returns an incident based on the given id."""
     return db_session.query(Incident).filter(Incident.id == incident_id).first()
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Incident]:
+def get_by_name(*, db_session, project_id: int, name: str) -> Incident | None:
     """Returns an incident based on the given name."""
     return (
         db_session.query(Incident)
@@ -80,7 +79,7 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Incident]
     )
 
 
-def get_all_open_by_incident_type(*, db_session, incident_type_id: int) -> List[Optional[Incident]]:
+def get_all_open_by_incident_type(*, db_session, incident_type_id: int) -> list[Incident]:
     """Returns all non-closed incidents based on the given incident type."""
     return (
         db_session.query(Incident)
@@ -110,12 +109,12 @@ def get_by_name_or_raise(*, db_session, project_id: int, incident_in: IncidentRe
     return incident
 
 
-def get_all(*, db_session, project_id: int) -> List[Optional[Incident]]:
+def get_all(*, db_session, project_id: int) -> list[Incident]:
     """Returns all incidents."""
     return db_session.query(Incident).filter(Incident.project_id == project_id).all()
 
 
-def get_all_by_status(*, db_session, status: str, project_id: int) -> List[Optional[Incident]]:
+def get_all_by_status(*, db_session, status: str, project_id: int) -> list[Incident]:
     """Returns all incidents based on the given status."""
     return (
         db_session.query(Incident)
@@ -127,7 +126,7 @@ def get_all_by_status(*, db_session, status: str, project_id: int) -> List[Optio
 
 def get_all_last_x_hours_by_status(
     *, db_session, status: str, hours: int, project_id: int
-) -> List[Optional[Incident]]:
+) -> list[Incident | None]:
     """Returns all incidents of a given status in the last x hours."""
     now = datetime.utcnow()
 

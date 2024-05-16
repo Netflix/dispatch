@@ -1,4 +1,3 @@
-from typing import List, Optional
 from pydantic import Field
 
 from sqlalchemy import Column, Integer, String
@@ -38,16 +37,16 @@ class TagType(Base, TimeStampMixin, ProjectMixin):
 # Pydantic models
 class TagTypeBase(DispatchBase):
     name: NameStr
-    exclusive: Optional[bool] = False
-    required: Optional[bool] = False
-    discoverable_case: Optional[bool] = True
-    discoverable_incident: Optional[bool] = True
-    discoverable_query: Optional[bool] = True
-    discoverable_signal: Optional[bool] = True
-    discoverable_source: Optional[bool] = True
-    description: Optional[str] = Field(None, nullable=True)
-    color: Optional[str] = Field(None, nullable=True)
-    icon: Optional[str] = Field(None, nullable=True)
+    exclusive: bool | None = False
+    required: bool | None = False
+    discoverable_case: bool | None = True
+    discoverable_incident: bool | None = True
+    discoverable_query: bool | None = True
+    discoverable_signal: bool | None = True
+    discoverable_source: bool | None = True
+    description: str | None = Field(None, nullable=True)
+    color: str | None = Field(None, nullable=True)
+    icon: str | None = Field(None, nullable=True)
 
 
 class TagTypeCreate(TagTypeBase):
@@ -64,4 +63,4 @@ class TagTypeRead(TagTypeBase):
 
 
 class TagTypePagination(Pagination):
-    items: List[TagTypeRead]
+    items: list[TagTypeRead]

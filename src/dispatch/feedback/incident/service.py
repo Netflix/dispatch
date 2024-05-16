@@ -1,4 +1,3 @@
-from typing import List, Optional
 from datetime import datetime, timedelta
 
 from dispatch.incident import service as incident_service
@@ -8,19 +7,19 @@ from dispatch.project.models import Project
 from .models import Feedback, FeedbackCreate, FeedbackUpdate
 
 
-def get(*, db_session, feedback_id: int) -> Optional[Feedback]:
+def get(*, db_session, feedback_id: int) -> Feedback | None:
     """Gets a piece of feedback by its id."""
     return db_session.query(Feedback).filter(Feedback.id == feedback_id).one_or_none()
 
 
-def get_all(*, db_session) -> List[Optional[Feedback]]:
+def get_all(*, db_session) -> list[Feedback]:
     """Gets all pieces of feedback."""
     return db_session.query(Feedback).all()
 
 
 def get_all_last_x_hours_by_project_id(
     *, db_session, hours: int = 24, project_id: int
-) -> List[Optional[Feedback]]:
+) -> list[Feedback]:
     """Returns all feedback provided in the last x hours by project id. Defaults to 24 hours."""
     return (
         db_session.query(Feedback)
@@ -60,7 +59,7 @@ def update(*, db_session, feedback: Feedback, feedback_in: FeedbackUpdate) -> Fe
     return feedback
 
 
-def delete(*, db_session, feedback_id: int):
+def delete(*, db_session, feedback_id: int) -> None:
     """Deletes a piece of feedback."""
     feedback = db_session.query(Feedback).filter(Feedback.id == feedback_id).one_or_none()
     db_session.delete(feedback)

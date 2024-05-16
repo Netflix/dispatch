@@ -1,11 +1,9 @@
 import string
 import secrets
-from typing import List
 from datetime import datetime, timedelta
 
 import bcrypt
 from jose import jwt
-from typing import Optional
 from pydantic import validator, Field
 from pydantic.networks import EmailStr
 
@@ -108,20 +106,20 @@ class DispatchUserProject(Base, TimeStampMixin):
 
 class UserProject(DispatchBase):
     project: ProjectRead
-    default: Optional[bool] = False
-    role: Optional[str] = Field(None, nullable=True)
+    default: bool | None = False
+    role: str | None = Field(None, nullable=True)
 
 
 class UserOrganization(DispatchBase):
     organization: OrganizationRead
-    default: Optional[bool] = False
-    role: Optional[str] = Field(None, nullable=True)
+    default: bool | None = False
+    role: str | None = Field(None, nullable=True)
 
 
 class UserBase(DispatchBase):
     email: EmailStr
-    projects: Optional[List[UserProject]] = []
-    organizations: Optional[List[UserOrganization]] = []
+    projects: list[UserProject] = []
+    organizations: list[UserOrganization] = []
 
     @validator("email")
     def email_required(cls, v):
@@ -141,7 +139,7 @@ class UserLogin(UserBase):
 
 
 class UserRegister(UserLogin):
-    password: Optional[str] = Field(None, nullable=True)
+    password: str | None = Field(None, nullable=True)
 
     @validator("password", pre=True, always=True)
     def password_required(cls, v):
@@ -151,23 +149,23 @@ class UserRegister(UserLogin):
 
 
 class UserLoginResponse(DispatchBase):
-    projects: Optional[List[UserProject]]
-    token: Optional[str] = Field(None, nullable=True)
+    projects: list[UserProject] = []
+    token: str | None = Field(None, nullable=True)
 
 
 class UserRead(UserBase):
     id: PrimaryKey
-    role: Optional[str] = Field(None, nullable=True)
-    experimental_features: Optional[bool]
+    role: str | None = Field(None, nullable=True)
+    experimental_features: bool | None
 
 
 class UserUpdate(DispatchBase):
     id: PrimaryKey
-    password: Optional[str] = Field(None, nullable=True)
-    projects: Optional[List[UserProject]]
-    organizations: Optional[List[UserOrganization]]
-    experimental_features: Optional[bool]
-    role: Optional[str] = Field(None, nullable=True)
+    password: str | None = Field(None, nullable=True)
+    projects: list[UserProject] = []
+    organizations: list[UserOrganization] = []
+    experimental_features: bool | None
+    role: str | None = Field(None, nullable=True)
 
     @validator("password", pre=True)
     def hash(cls, v):
@@ -176,10 +174,10 @@ class UserUpdate(DispatchBase):
 
 class UserCreate(DispatchBase):
     email: EmailStr
-    password: Optional[str] = Field(None, nullable=True)
-    projects: Optional[List[UserProject]]
-    organizations: Optional[List[UserOrganization]]
-    role: Optional[str] = Field(None, nullable=True)
+    password: str | None = Field(None, nullable=True)
+    projects: list[UserProject] = []
+    organizations: list[UserOrganization] = []
+    role: str | None = Field(None, nullable=True)
 
     @validator("password", pre=True)
     def hash(cls, v):
@@ -187,8 +185,8 @@ class UserCreate(DispatchBase):
 
 
 class UserRegisterResponse(DispatchBase):
-    token: Optional[str] = Field(None, nullable=True)
+    token: str | None = Field(None, nullable=True)
 
 
 class UserPagination(Pagination):
-    items: List[UserRead] = []
+    items: list[UserRead] = []

@@ -1,4 +1,3 @@
-from typing import Optional
 from datetime import datetime, timedelta
 
 from pydantic.fields import Field
@@ -127,24 +126,24 @@ class PrimaryKeyModel(BaseModel):
 
 
 class EvergreenBase(DispatchBase):
-    evergreen: Optional[bool] = False
-    evergreen_owner: Optional[EmailStr]
-    evergreen_reminder_interval: Optional[int] = 90
-    evergreen_last_reminder_at: Optional[datetime] = Field(None, nullable=True)
+    evergreen: bool | None = False
+    evergreen_owner: EmailStr | None
+    evergreen_reminder_interval: int | None = 90
+    evergreen_last_reminder_at: datetime | None = Field(None, nullable=True)
 
 
 class ResourceBase(DispatchBase):
-    resource_type: Optional[str] = Field(None, nullable=True)
-    resource_id: Optional[str] = Field(None, nullable=True)
-    weblink: Optional[AnyHttpUrl] = Field(None, nullable=True)
+    resource_type: str | None = Field(None, nullable=True)
+    resource_id: str | None = Field(None, nullable=True)
+    weblink: AnyHttpUrl | None = Field(None, nullable=True)
 
 
 class ContactBase(DispatchBase):
     email: EmailStr
-    name: Optional[str] = Field(None, nullable=True)
-    is_active: Optional[bool] = True
-    is_external: Optional[bool] = False
-    company: Optional[str] = Field(None, nullable=True)
-    contact_type: Optional[str] = Field(None, nullable=True)
-    notes: Optional[str] = Field(None, nullable=True)
-    owner: Optional[str] = Field(None, nullable=True)
+    name: str | None = Field(None, nullable=True)
+    is_active: bool | None = True
+    is_external: bool | None = False
+    company: str | None = Field(None, nullable=True)
+    contact_type: str | None = Field(None, nullable=True)
+    notes: str | None = Field(None, nullable=True)
+    owner: str | None = Field(None, nullable=True)

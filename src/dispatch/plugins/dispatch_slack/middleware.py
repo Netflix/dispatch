@@ -1,6 +1,6 @@
 import logging
 import json
-from typing import Callable, NamedTuple, Optional
+from typing import Callable, NamedTuple
 
 from slack_bolt import BoltContext, BoltRequest
 from slack_sdk.web import WebClient
@@ -36,7 +36,7 @@ Subject = NamedTuple("Subject", subject=SubjectMetadata, db_session=Session)
 
 
 @timer
-def resolve_context_from_conversation(channel_id: str, thread_id: str = None) -> Optional[Subject]:
+def resolve_context_from_conversation(channel_id: str, thread_id: str = None) -> Subject | None:
     """Attempts to resolve a conversation based on the channel id and thread_id."""
     db_session = SessionLocal()
     organization_slugs = [o.slug for o in organization_service.get_all(db_session=db_session)]

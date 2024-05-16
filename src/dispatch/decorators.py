@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Any, Callable, List
+from typing import Any, Callable
 import inspect
 import logging
 import time
@@ -153,7 +153,7 @@ def counter(func: Any):
     return wrapper
 
 
-def apply(decorator: Any, exclude: List[str] = None):
+def apply(decorator: Any, exclude: list[str] = None):
     """Class decorator that applies specified decorator to all class methods."""
     if not exclude:
         exclude = []

@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List, Optional
 
 from pydantic import validator, Field
 from sqlalchemy.orm import relationship, backref
@@ -104,17 +103,17 @@ class WorkflowInstance(Base, ResourceMixin):
 
 class WorkflowIncident(DispatchBase):
     id: PrimaryKey
-    name: Optional[NameStr]
+    name: NameStr | None
 
 
 class WorkflowCase(DispatchBase):
     id: PrimaryKey
-    name: Optional[NameStr]
+    name: NameStr | None
 
 
 class WorkflowSignal(DispatchBase):
     id: PrimaryKey
-    name: Optional[NameStr]
+    name: NameStr | None
 
 
 # Pydantic models...
@@ -122,11 +121,11 @@ class WorkflowBase(DispatchBase):
     name: NameStr
     resource_id: str
     plugin_instance: PluginInstanceRead
-    parameters: Optional[List[dict]] = []
-    enabled: Optional[bool]
-    description: Optional[str] = Field(None, nullable=True)
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    parameters: list | None = None
+    enabled: bool | None
+    description: str | None = Field(None, nullable=True)
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 class WorkflowCreate(WorkflowBase):
@@ -149,26 +148,26 @@ class WorkflowRead(WorkflowBase):
 
 
 class WorkflowPagination(Pagination):
-    items: List[WorkflowRead] = []
+    items: list[WorkflowRead] = []
 
 
 class WorkflowInstanceBase(ResourceBase):
-    artifacts: Optional[List[DocumentCreate]] = []
-    created_at: Optional[datetime] = None
-    parameters: Optional[List[dict]] = []
-    run_reason: Optional[str] = Field(None, nullable=True)
-    status: Optional[WorkflowInstanceStatus]
-    updated_at: Optional[datetime] = None
-    incident: Optional[WorkflowIncident]
-    case: Optional[WorkflowCase]
-    signal: Optional[WorkflowSignal]
+    artifacts: list[DocumentCreate] = []
+    created_at: datetime | None = None
+    parameters: list | None = None
+    run_reason: str | None = Field(None, nullable=True)
+    status: WorkflowInstanceStatus | None
+    updated_at: datetime | None = None
+    incident: WorkflowIncident | None
+    case: WorkflowCase | None
+    signal: WorkflowSignal | None
 
 
 class WorkflowInstanceCreate(WorkflowInstanceBase):
-    creator: Optional[ParticipantRead]
-    incident: Optional[WorkflowIncident]
-    case: Optional[WorkflowCase]
-    signal: Optional[WorkflowSignal]
+    creator: ParticipantRead | None
+    incident: WorkflowIncident | None
+    case: WorkflowCase | None
+    signal: WorkflowSignal | None
 
 
 class WorkflowInstanceUpdate(WorkflowInstanceBase):
@@ -178,8 +177,8 @@ class WorkflowInstanceUpdate(WorkflowInstanceBase):
 class WorkflowInstanceRead(WorkflowInstanceBase):
     id: PrimaryKey
     workflow: WorkflowRead
-    creator: Optional[ParticipantRead]
+    creator: ParticipantRead | None
 
 
 class WorkflowInstancePagination(Pagination):
-    items: List[WorkflowInstanceRead] = []
+    items: list[WorkflowInstanceRead] = []

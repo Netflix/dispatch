@@ -2,7 +2,6 @@ import logging
 import json
 import uuid
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Union
 
 from fastapi import HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
@@ -82,7 +81,7 @@ def create_signal_engagement(
 
 def get_signal_engagement(
     *, db_session: Session, signal_engagement_id: int
-) -> Optional[SignalEngagement]:
+) -> SignalEngagement | None:
     """Gets a signal engagement by id."""
     return (
         db_session.query(SignalEngagement)
@@ -105,7 +104,7 @@ def get_all_by_entity_type(*, db_session: Session, entity_type_id: int) -> list[
 
 def get_signal_engagement_by_name(
     *, db_session, project_id: int, name: str
-) -> Optional[SignalEngagement]:
+) -> SignalEngagement | None:
     """Gets a signal engagement by its name."""
     return (
         db_session.query(SignalEngagement)
@@ -271,7 +270,7 @@ def get_signal_filter_by_name_or_raise(
     return signal_filter
 
 
-def get_signal_filter_by_name(*, db_session, project_id: int, name: str) -> Optional[SignalFilter]:
+def get_signal_filter_by_name(*, db_session, project_id: int, name: str) -> SignalFilter | None:
     """Gets a signal filter by its name."""
     return (
         db_session.query(SignalFilter)
@@ -288,7 +287,7 @@ def get_signal_filter(*, db_session: Session, signal_filter_id: int) -> SignalFi
 
 def get_signal_instance(
     *, db_session: Session, signal_instance_id: int | str
-) -> Optional[SignalInstance]:
+) -> SignalInstance | None:
     """Gets a signal instance by its UUID."""
     return (
         db_session.query(SignalInstance)
@@ -297,12 +296,12 @@ def get_signal_instance(
     )
 
 
-def get(*, db_session: Session, signal_id: Union[str, int]) -> Optional[Signal]:
+def get(*, db_session: Session, signal_id: str | int) -> Signal | None:
     """Gets a signal by id."""
     return db_session.query(Signal).filter(Signal.id == signal_id).one_or_none()
 
 
-def get_default(*, db_session: Session, project_id: int) -> Optional[Signal]:
+def get_default(*, db_session: Session, project_id: int) -> Signal | None:
     """Gets the default signal definition."""
     return (
         db_session.query(Signal)
@@ -311,9 +310,7 @@ def get_default(*, db_session: Session, project_id: int) -> Optional[Signal]:
     )
 
 
-def get_by_primary_or_external_id(
-    *, db_session: Session, signal_id: Union[str, int]
-) -> Optional[Signal]:
+def get_by_primary_or_external_id(*, db_session: Session, signal_id: str | int) -> Signal | None:
     """Gets a signal by id or external_id."""
     if is_valid_uuid(signal_id):
         signal = db_session.query(Signal).filter(Signal.external_id == signal_id).one_or_none()
@@ -328,7 +325,7 @@ def get_by_primary_or_external_id(
 
 def get_by_variant_or_external_id(
     *, db_session: Session, project_id: int, external_id: str = None, variant: str = None
-) -> Optional[Signal]:
+) -> Signal | None:
     """Gets a signal by its variant or external id."""
     if variant:
         return (

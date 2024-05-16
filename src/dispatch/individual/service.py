@@ -1,5 +1,4 @@
 from functools import lru_cache
-from typing import List, Optional
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.orm import Session
@@ -26,7 +25,7 @@ def resolve_user_by_email(email, db_session: SessionLocal):
     return plugin.instance.get(email)
 
 
-def get(*, db_session, individual_contact_id: int) -> Optional[IndividualContact]:
+def get(*, db_session, individual_contact_id: int) -> IndividualContact | None:
     """Returns an individual given an individual id."""
     return (
         db_session.query(IndividualContact)
@@ -37,7 +36,7 @@ def get(*, db_session, individual_contact_id: int) -> Optional[IndividualContact
 
 def get_by_email_and_project(
     *, db_session, email: str, project_id: int
-) -> Optional[IndividualContact]:
+) -> IndividualContact | None:
     """Returns an individual given an email address and project id."""
     return (
         db_session.query(IndividualContact)
@@ -72,7 +71,7 @@ def get_by_email_and_project_id_or_raise(
     return individual_contact
 
 
-def get_all(*, db_session) -> List[Optional[IndividualContact]]:
+def get_all(*, db_session) -> list[IndividualContact]:
     """Returns all individuals."""
     return db_session.query(IndividualContact).all()
 

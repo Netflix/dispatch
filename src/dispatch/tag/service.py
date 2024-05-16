@@ -1,4 +1,3 @@
-from typing import List, Optional
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.exceptions import NotFoundError
@@ -8,12 +7,12 @@ from dispatch.tag_type import service as tag_type_service
 from .models import Tag, TagCreate, TagUpdate, TagRead
 
 
-def get(*, db_session, tag_id: int) -> Optional[Tag]:
+def get(*, db_session, tag_id: int) -> Tag | None:
     """Gets a tag by its id."""
     return db_session.query(Tag).filter(Tag.id == tag_id).one_or_none()
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Tag]:
+def get_by_name(*, db_session, project_id: int, name: str) -> Tag | None:
     """Gets a tag by its project and name."""
     return (
         db_session.query(Tag)
@@ -44,7 +43,7 @@ def get_by_name_or_raise(*, db_session, project_id: int, tag_in=TagRead) -> TagR
     return tag
 
 
-def get_all(*, db_session, project_id: int) -> List[Optional[Tag]]:
+def get_all(*, db_session, project_id: int) -> list[Tag]:
     """Gets all tags by their project."""
     return db_session.query(Tag).filter(Tag.project_id == project_id).all()
 

@@ -1,4 +1,3 @@
-from typing import List, Optional
 from pydantic import Field
 from pydantic.color import Color
 
@@ -39,13 +38,13 @@ listen(CaseSeverity.default, "set", ensure_unique_default_per_project)
 
 # Pydantic models
 class CaseSeverityBase(DispatchBase):
-    color: Optional[Color] = Field(None, nullable=True)
-    default: Optional[bool]
-    description: Optional[str] = Field(None, nullable=True)
-    enabled: Optional[bool]
+    color: Color | None = Field(None, nullable=True)
+    default: bool | None
+    description: str | None = Field(None, nullable=True)
+    enabled: bool | None
     name: NameStr
-    project: Optional[ProjectRead]
-    view_order: Optional[int]
+    project: ProjectRead | None
+    view_order: int | None
 
 
 class CaseSeverityCreate(CaseSeverityBase):
@@ -61,4 +60,4 @@ class CaseSeverityRead(CaseSeverityBase):
 
 
 class CaseSeverityPagination(Pagination):
-    items: List[CaseSeverityRead] = []
+    items: list[CaseSeverityRead] = []

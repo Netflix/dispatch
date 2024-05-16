@@ -1,6 +1,5 @@
 import math
 import logging
-from typing import List
 from itertools import groupby
 
 from datetime import date
@@ -35,7 +34,7 @@ def create_incident_metric_query(
     db_session,
     end_date: date,
     start_date: date = None,
-    filter_spec: List[dict] = None,
+    filter_spec: list[dict] = None,
 ):
     """Fetches eligible incidents."""
     query = db_session.query(Incident)
@@ -55,7 +54,7 @@ def create_incident_metric_query(
     return query.filter(IncidentType.exclude_from_metrics.isnot(True)).all()
 
 
-def make_forecast(incidents: List[Incident]):
+def make_forecast(incidents: list[Incident]):
     """Makes an incident forecast."""
     incidents_sorted = sorted(incidents, key=month_grouper)
 

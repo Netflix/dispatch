@@ -2,7 +2,6 @@ from slugify import slugify
 from pydantic import Field
 from pydantic.color import Color
 
-from typing import List, Optional
 
 from sqlalchemy.event import listen
 from sqlalchemy import Column, Integer, String, Boolean
@@ -40,13 +39,13 @@ listen(Organization.name, "set", generate_slug)
 
 
 class OrganizationBase(DispatchBase):
-    id: Optional[PrimaryKey]
+    id: PrimaryKey | None
     name: NameStr
-    description: Optional[str] = Field(None, nullable=True)
-    default: Optional[bool] = Field(False, nullable=True)
-    banner_enabled: Optional[bool] = Field(False, nullable=True)
-    banner_color: Optional[Color] = Field(None, nullable=True)
-    banner_text: Optional[NameStr] = Field(None, nullable=True)
+    description: str | None = Field(None, nullable=True)
+    default: bool | None = Field(False, nullable=True)
+    banner_enabled: bool | None = Field(False, nullable=True)
+    banner_color: Color | None = Field(None, nullable=True)
+    banner_text: NameStr | None = Field(None, nullable=True)
 
 
 class OrganizationCreate(OrganizationBase):
@@ -54,18 +53,18 @@ class OrganizationCreate(OrganizationBase):
 
 
 class OrganizationUpdate(DispatchBase):
-    id: Optional[PrimaryKey]
-    description: Optional[str] = Field(None, nullable=True)
-    default: Optional[bool] = Field(False, nullable=True)
-    banner_enabled: Optional[bool] = Field(False, nullable=True)
-    banner_color: Optional[Color] = Field(None, nullable=True)
-    banner_text: Optional[NameStr] = Field(None, nullable=True)
+    id: PrimaryKey | None
+    description: str | None = Field(None, nullable=True)
+    default: bool | None = Field(False, nullable=True)
+    banner_enabled: bool | None = Field(False, nullable=True)
+    banner_color: Color | None = Field(None, nullable=True)
+    banner_text: NameStr | None = Field(None, nullable=True)
 
 
 class OrganizationRead(OrganizationBase):
-    id: Optional[PrimaryKey]
-    slug: Optional[OrganizationSlug]
+    id: PrimaryKey | None
+    slug: OrganizationSlug | None
 
 
 class OrganizationPagination(Pagination):
-    items: List[OrganizationRead] = []
+    items: list[OrganizationRead] = []

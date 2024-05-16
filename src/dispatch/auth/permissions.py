@@ -66,8 +66,7 @@ class BasePermission(ABC):
     role = None
 
     @abstractmethod
-    def has_required_permissions(self, request: Request) -> bool:
-        ...
+    def has_required_permissions(self, request: Request) -> bool: ...
 
     def __init__(self, request: Request):
         organization = None

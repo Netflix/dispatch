@@ -1,7 +1,5 @@
 from pydantic import validator, Field
 
-from typing import Optional
-
 from sqlalchemy import Column, Integer, ForeignKey
 
 from dispatch.database.core import Base
@@ -29,7 +27,7 @@ class StorageUpdate(StorageBase):
 
 
 class StorageRead(StorageBase):
-    description: Optional[str] = Field(None, nullable=True)
+    description: str | None = Field(None, nullable=True)
 
     @validator("description", pre=True, always=True)
     def set_description(cls, v):

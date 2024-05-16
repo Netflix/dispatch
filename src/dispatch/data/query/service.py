@@ -1,4 +1,3 @@
-from typing import List, Optional
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.exceptions import NotFoundError
@@ -9,12 +8,12 @@ from dispatch.data.source import service as source_service
 from .models import Query, QueryCreate, QueryUpdate, QueryRead
 
 
-def get(*, db_session, query_id: int) -> Optional[Query]:
+def get(*, db_session, query_id: int) -> Query | None:
     """Gets a query by its id."""
     return db_session.query(Query).filter(Query.id == query_id).one_or_none()
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Query]:
+def get_by_name(*, db_session, project_id: int, name: str) -> Query | None:
     """Gets a query by its name."""
     return (
         db_session.query(Query)
@@ -45,7 +44,7 @@ def get_by_name_or_raise(*, db_session, query_in: QueryRead, project_id: int) ->
     return query
 
 
-def get_all(*, db_session) -> List[Optional[Query]]:
+def get_all(*, db_session) -> list[Query]:
     """Gets all querys."""
     return db_session.query(Query).all()
 

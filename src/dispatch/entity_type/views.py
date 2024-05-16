@@ -1,5 +1,3 @@
-from typing import Union
-
 from fastapi import APIRouter, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.exc import IntegrityError
@@ -56,7 +54,7 @@ def create_entity_type(db_session: DbSession, entity_type_in: EntityTypeCreate):
 
 @router.put("/recalculate/{entity_type_id}/{signal_instance_id}", response_model=SignalInstanceRead)
 def recalculate(
-    db_session: DbSession, entity_type_id: PrimaryKey, signal_instance_id: Union[str, PrimaryKey]
+    db_session: DbSession, entity_type_id: PrimaryKey, signal_instance_id: str | PrimaryKey
 ):
     """Recalculates the associated entities for a signal instance."""
     entity_type = get(

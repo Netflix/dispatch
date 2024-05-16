@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from pydantic import Field, validator, AnyHttpUrl
 from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.event import listen
@@ -56,42 +54,42 @@ listen(CaseType.default, "set", ensure_unique_default_per_project)
 # Pydantic models
 class Document(DispatchBase):
     id: PrimaryKey
-    description: Optional[str] = Field(None, nullable=True)
+    description: str | None = Field(None, nullable=True)
     name: NameStr
-    resource_id: Optional[str] = Field(None, nullable=True)
-    resource_type: Optional[str] = Field(None, nullable=True)
-    weblink: Optional[AnyHttpUrl] = Field(None, nullable=True)
+    resource_id: str | None = Field(None, nullable=True)
+    resource_type: str | None = Field(None, nullable=True)
+    weblink: AnyHttpUrl | None = Field(None, nullable=True)
 
 
 class IncidentType(DispatchBase):
     id: PrimaryKey
-    description: Optional[str] = Field(None, nullable=True)
+    description: str | None = Field(None, nullable=True)
     name: NameStr
-    visibility: Optional[str] = Field(None, nullable=True)
+    visibility: str | None = Field(None, nullable=True)
 
 
 class Service(DispatchBase):
     id: PrimaryKey
-    description: Optional[str] = Field(None, nullable=True)
+    description: str | None = Field(None, nullable=True)
     external_id: str
-    is_active: Optional[bool] = None
+    is_active: bool | None = None
     name: NameStr
-    type: Optional[str] = Field(None, nullable=True)
+    type: str | None = Field(None, nullable=True)
 
 
 class CaseTypeBase(DispatchBase):
-    case_template_document: Optional[Document]
-    conversation_target: Optional[str]
-    default: Optional[bool] = False
-    description: Optional[str] = Field(None, nullable=True)
-    enabled: Optional[bool]
-    exclude_from_metrics: Optional[bool] = False
-    incident_type: Optional[IncidentType]
+    case_template_document: Document | None
+    conversation_target: str | None
+    default: bool | None = False
+    description: str | None = Field(None, nullable=True)
+    enabled: bool | None
+    exclude_from_metrics: bool | None = False
+    incident_type: IncidentType | None
     name: NameStr
-    oncall_service: Optional[Service]
-    plugin_metadata: List[PluginMetadata] = []
-    project: Optional[ProjectRead]
-    visibility: Optional[str] = Field(None, nullable=True)
+    oncall_service: Service | None
+    plugin_metadata: list[PluginMetadata] = []
+    project: ProjectRead | None
+    visibility: str | None = Field(None, nullable=True)
 
     @validator("plugin_metadata", pre=True)
     def replace_none_with_empty_list(cls, value):
@@ -111,4 +109,4 @@ class CaseTypeRead(CaseTypeBase):
 
 
 class CaseTypePagination(Pagination):
-    items: List[CaseTypeRead] = []
+    items: list[CaseTypeRead] = []

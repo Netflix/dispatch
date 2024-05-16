@@ -1,16 +1,14 @@
-from typing import List, Optional
-
 from .models import Conversation, ConversationCreate, ConversationUpdate
 
 
-def get(*, db_session, conversation_id: int) -> Optional[Conversation]:
+def get(*, db_session, conversation_id: int) -> Conversation | None:
     """Gets a conversation by its id."""
     return db_session.query(Conversation).filter(Conversation.id == conversation_id).one_or_none()
 
 
 def get_by_channel_id_ignoring_channel_type(
     db_session, channel_id: str, thread_id: str = None
-) -> Optional[Conversation]:
+) -> Conversation | None:
     """
     Gets a conversation by its id ignoring the channel type, and updates the
     channel id in the database if the channel type has changed.
@@ -43,7 +41,7 @@ def get_by_channel_id_ignoring_channel_type(
     return conversation
 
 
-def get_all(*, db_session) -> List[Optional[Conversation]]:
+def get_all(*, db_session) -> list[Conversation]:
     """Fetches all conversations."""
     return db_session.query(Conversation).all()
 

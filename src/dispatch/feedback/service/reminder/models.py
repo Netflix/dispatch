@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import Column, Integer, ForeignKey, DateTime, String
 
@@ -24,12 +23,12 @@ class ServiceFeedbackReminder(TimeStampMixin, Base):
 
 # Pydantic models
 class ServiceFeedbackReminderBase(DispatchBase):
-    reminder_at: Optional[datetime]
-    individual: Optional[IndividualContactRead]
-    project: Optional[ProjectRead]
-    schedule_id: Optional[str]
-    schedule_name: Optional[str]
-    shift_end_at: Optional[datetime]
+    reminder_at: datetime | None
+    individual: IndividualContactRead | None
+    project: ProjectRead | None
+    schedule_id: str | None
+    schedule_name: str | None
+    shift_end_at: datetime | None
 
 
 class ServiceFeedbackReminderCreate(ServiceFeedbackReminderBase):
@@ -38,7 +37,7 @@ class ServiceFeedbackReminderCreate(ServiceFeedbackReminderBase):
 
 class ServiceFeedbackReminderUpdate(ServiceFeedbackReminderBase):
     id: PrimaryKey = None
-    reminder_at: Optional[datetime]
+    reminder_at: datetime | None
 
 
 class ServiceFeedbackReminderRead(ServiceFeedbackReminderBase):

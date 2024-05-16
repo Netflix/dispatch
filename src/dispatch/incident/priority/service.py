@@ -1,4 +1,3 @@
-from typing import List, Optional
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from sqlalchemy.sql.expression import true
@@ -14,7 +13,7 @@ from .models import (
 )
 
 
-def get(*, db_session, incident_priority_id: int) -> Optional[IncidentPriority]:
+def get(*, db_session, incident_priority_id: int) -> IncidentPriority | None:
     """Returns an incident priority based on the given priority id."""
     return (
         db_session.query(IncidentPriority)
@@ -50,7 +49,7 @@ def get_default_or_raise(*, db_session, project_id: int) -> IncidentPriority:
     return incident_priority
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[IncidentPriority]:
+def get_by_name(*, db_session, project_id: int, name: str) -> IncidentPriority | None:
     """Returns an incident priority based on the given priority name."""
     return (
         db_session.query(IncidentPriority)
@@ -99,7 +98,7 @@ def get_by_name_or_default(
     return get_default_or_raise(db_session=db_session, project_id=project_id)
 
 
-def get_all(*, db_session, project_id: int = None) -> List[Optional[IncidentPriority]]:
+def get_all(*, db_session, project_id: int = None) -> list[IncidentPriority]:
     """Returns all incident priorities."""
     if project_id:
         return (
@@ -110,7 +109,7 @@ def get_all(*, db_session, project_id: int = None) -> List[Optional[IncidentPrio
     return db_session.query(IncidentPriority).all()
 
 
-def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[IncidentPriority]]:
+def get_all_enabled(*, db_session, project_id: int = None) -> list[IncidentPriority]:
     """Returns all enabled incident priorities."""
     if project_id:
         return (

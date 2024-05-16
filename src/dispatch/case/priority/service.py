@@ -1,4 +1,3 @@
-from typing import List, Optional
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from sqlalchemy.sql.expression import true
@@ -14,7 +13,7 @@ from .models import (
 )
 
 
-def get(*, db_session, case_priority_id: int) -> Optional[CasePriority]:
+def get(*, db_session, case_priority_id: int) -> CasePriority | None:
     """Returns a case priority based on the given priority id."""
     return db_session.query(CasePriority).filter(CasePriority.id == case_priority_id).one_or_none()
 
@@ -46,7 +45,7 @@ def get_default_or_raise(*, db_session, project_id: int) -> CasePriority:
     return case_priority
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[CasePriority]:
+def get_by_name(*, db_session, project_id: int, name: str) -> CasePriority | None:
     """Returns a case priority based on the given priority name."""
     return (
         db_session.query(CasePriority)
@@ -95,14 +94,14 @@ def get_by_name_or_default(
     return get_default_or_raise(db_session=db_session, project_id=project_id)
 
 
-def get_all(*, db_session, project_id: int = None) -> List[Optional[CasePriority]]:
+def get_all(*, db_session, project_id: int = None) -> list[CasePriority]:
     """Returns all case priorities."""
     if project_id:
         return db_session.query(CasePriority).filter(CasePriority.project_id == project_id).all()
     return db_session.query(CasePriority).all()
 
 
-def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[CasePriority]]:
+def get_all_enabled(*, db_session, project_id: int = None) -> list[CasePriority]:
     """Returns all enabled case priorities."""
     if project_id:
         return (

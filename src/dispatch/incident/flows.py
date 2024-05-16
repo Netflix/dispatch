@@ -1,7 +1,6 @@
 import logging
 
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy.orm import Session
 
@@ -62,7 +61,7 @@ log = logging.getLogger(__name__)
 
 def get_incident_participants(
     incident: Incident, db_session: Session
-) -> tuple[list[IndividualContact | None], list[TeamContact | None]]:
+) -> tuple[list[IndividualContact], list[TeamContact]]:
     """
     Get additional participants (individuals and teams) based on
     incident description, type, and priority.
@@ -454,7 +453,7 @@ def incident_active_status_flow(incident: Incident, db_session=None):
     conversation_flows.unarchive_conversation(subject=incident, db_session=db_session)
 
 
-def create_incident_review_document(incident: Incident, db_session=None) -> Optional[Document]:
+def create_incident_review_document(incident: Incident, db_session=None) -> Document | None:
     # we create the post-incident review document
     document_flows.create_document(
         subject=incident,

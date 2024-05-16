@@ -11,7 +11,7 @@ We do our best to keep this documentation up-to-date. However, the code itself i
 Conversation plugins are deeply integrated within Dispatch. They server as the real-time communication channel used for incidents. By default Dispatch supports `Slack` as a conversation channel, if you wish to use another platform for conversations you will need to implement the following interface:
 
 ```python
-def create(self, name: str, participants: List[dict]):
+def create(self, name: str, participants: list[dict]):
     """Creates a new conversation."""
     return {
         "id": "abc123",
@@ -25,8 +25,8 @@ def send(
     text: str,
     message_template: dict,
     notification_type: str,
-    items: Optional[List] = None,
-    blocks: Optional[List] = None,
+    items: list = [],
+    blocks: list = [],
     persist: bool = False,
     **kwargs,
 ):
@@ -42,8 +42,8 @@ def send_direct(
     text: str,
     message_template: dict,
     notification_type: str,
-    items: Optional[List] = None,
-    blocks: Optional[List] = None,
+    items: list = [],
+    blocks: list = [],
     **kwargs,
 ):
     """Sends a message directly to a user."""
@@ -59,8 +59,8 @@ def send_ephemeral(
     text: str,
     message_template: dict = None,
     notification_type: str = None,
-    items: Optional[List] = None,
-    blocks: Optional[List] = None,
+    items: list = [],
+    blocks: list = [],
     **kwargs,
 ):
     """Sends an ephemeral message to a user in a channel."""
@@ -69,7 +69,7 @@ def send_ephemeral(
         "timestamp": "1232324384"
     }
 
-def add(self, conversation_id: str, participants: List[str]):
+def add(self, conversation_id: str, participants: list[str]):
     """Adds users to conversation."""
     return
 
@@ -177,7 +177,7 @@ Often permissions for resources are managed by external entities or "groups". By
 
 ```python
 def create(
-        self, name: str, participants: List[str], description: str = None, role: str = "MEMBER"
+        self, name: str, participants: list[str], description: str = None, role: str = "MEMBER"
     ):
     """Creates a new participant group."""
     return {
@@ -186,11 +186,11 @@ def create(
         "name": "my-incident"
     }
 
-def add(self, email: str, participants: List[str], role: str = "MEMBER"):
+def add(self, email: str, participants: list[str], role: str = "MEMBER"):
     """Adds participants to existing participant group."""
     return
 
-def remove(self, email: str, participants: List[str]):
+def remove(self, email: str, participants: list[str]):
     """Removes participants from existing participant group."""
     return
 
@@ -226,7 +226,7 @@ def get(self, file_id: str, mime_type=None):
     """Fetches document text."""
     return "Document text"
 
-def create(self, name: str, participants: List[str], role: str = Roles.file_organizer.value):
+def create(self, name: str, participants: list[str], role: str = Roles.file_organizer.value):
     """Creates a new drive."""
     return {
         "id": "abc123"
@@ -253,14 +253,14 @@ def list(self, **kwargs):
 def add_participant(
     self,
     drive_or_file_id: str,
-    participants: List[str],
+    participants: list[str],
     role: str = "owner",
     user_type: str = "user",
 ):
     """Adds participants to existing drive."""
     return
 
-def remove_participant(self, drive_id: str, participants: List[str]):
+def remove_participant(self, drive_id: str, participants: list[str]):
     """Removes participants from existing drive."""
     return
 
@@ -359,7 +359,7 @@ def update(
     conversation_weblink: str = None,
     document_weblink: str = None,
     storage_weblink: str = None,
-    labels: List[str] = None,
+    labels: list[str] = None,
     cost: str = None,
 ):
     """Updates ticket fields."""

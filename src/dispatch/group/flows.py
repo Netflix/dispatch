@@ -1,4 +1,4 @@
-from typing import List, TypeVar
+from typing import TypeVar
 import logging
 
 from dispatch.case.models import Case
@@ -18,7 +18,7 @@ Subject = TypeVar("Subject", Case, Incident)
 
 
 def create_group(
-    subject: Subject, group_type: str, group_participants: List[str], db_session: SessionLocal
+    subject: Subject, group_type: str, group_participants: list[str], db_session: SessionLocal
 ):
     """Creates a group."""
     plugin = plugin_service.get_active_instance(

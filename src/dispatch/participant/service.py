@@ -1,4 +1,3 @@
-from typing import List, Optional
 from dispatch.database.core import SessionLocal
 from dispatch.decorators import timer
 from dispatch.case import service as case_service
@@ -13,12 +12,12 @@ from dispatch.service import service as service_service
 from .models import Participant, ParticipantCreate, ParticipantUpdate
 
 
-def get(*, db_session, participant_id: int) -> Optional[Participant]:
+def get(*, db_session, participant_id: int) -> Participant | None:
     """Get a participant by its id."""
     return db_session.query(Participant).filter(Participant.id == participant_id).first()
 
 
-def get_by_individual_contact_id(db_session: SessionLocal, individual_id: int) -> List[Participant]:
+def get_by_individual_contact_id(db_session: SessionLocal, individual_id: int) -> list[Participant]:
     return (
         db_session.query(Participant)
         .filter(Participant.individual_contact_id == individual_id)
@@ -26,9 +25,7 @@ def get_by_individual_contact_id(db_session: SessionLocal, individual_id: int) -
     )
 
 
-def get_by_incident_id_and_role(
-    *, db_session, incident_id: int, role: str
-) -> Optional[Participant]:
+def get_by_incident_id_and_role(*, db_session, incident_id: int, role: str) -> Participant | None:
     """Get a participant by incident id and role name."""
     return (
         db_session.query(Participant)
@@ -40,7 +37,7 @@ def get_by_incident_id_and_role(
     )
 
 
-def get_by_case_id_and_role(*, db_session, case_id: int, role: str) -> Optional[Participant]:
+def get_by_case_id_and_role(*, db_session, case_id: int, role: str) -> Participant | None:
     """Get a participant by case id and role name."""
     return (
         db_session.query(Participant)
@@ -53,9 +50,7 @@ def get_by_case_id_and_role(*, db_session, case_id: int, role: str) -> Optional[
 
 
 @timer
-def get_by_incident_id_and_email(
-    *, db_session, incident_id: int, email: str
-) -> Optional[Participant]:
+def get_by_incident_id_and_email(*, db_session, incident_id: int, email: str) -> Participant | None:
     """Get a participant by incident id and email."""
     return (
         db_session.query(Participant)
@@ -66,7 +61,7 @@ def get_by_incident_id_and_email(
     )
 
 
-def get_by_case_id_and_email(*, db_session, case_id: int, email: str) -> Optional[Participant]:
+def get_by_case_id_and_email(*, db_session, case_id: int, email: str) -> Participant | None:
     """Get a participant by case id and email."""
     return (
         db_session.query(Participant)
@@ -80,7 +75,7 @@ def get_by_case_id_and_email(*, db_session, case_id: int, email: str) -> Optiona
 @timer
 def get_by_incident_id_and_service_id(
     *, db_session, incident_id: int, service_id: int
-) -> Optional[Participant]:
+) -> Participant | None:
     """Get participant by incident and service id."""
     return (
         db_session.query(Participant)
@@ -92,7 +87,7 @@ def get_by_incident_id_and_service_id(
 
 def get_by_case_id_and_service_id(
     *, db_session, case_id: int, service_id: int
-) -> Optional[Participant]:
+) -> Participant | None:
     """Get participant by incident and service id."""
     return (
         db_session.query(Participant)
@@ -104,7 +99,7 @@ def get_by_case_id_and_service_id(
 
 def get_by_incident_id_and_conversation_id(
     *, db_session, incident_id: int, user_conversation_id: str
-) -> Optional[Participant]:
+) -> Participant | None:
     """Get participant by incident and user_conversation id."""
     return (
         db_session.query(Participant)
@@ -116,7 +111,7 @@ def get_by_incident_id_and_conversation_id(
 
 def get_by_case_id_and_conversation_id(
     *, db_session, case_id: int, user_conversation_id: str
-) -> Optional[Participant]:
+) -> Participant | None:
     """Get participant by case and user_conversation id."""
     return (
         db_session.query(Participant)
@@ -126,12 +121,12 @@ def get_by_case_id_and_conversation_id(
     )
 
 
-def get_all(*, db_session) -> List[Optional[Participant]]:
+def get_all(*, db_session) -> list[Participant]:
     """Get all participants."""
     return db_session.query(Participant).all()
 
 
-def get_all_by_incident_id(*, db_session, incident_id: int) -> List[Optional[Participant]]:
+def get_all_by_incident_id(*, db_session, incident_id: int) -> list[Participant]:
     """Get all participants by incident id."""
     return db_session.query(Participant).filter(Participant.incident_id == incident_id).all()
 
@@ -143,7 +138,7 @@ def get_or_create(
     subject_type: str,
     individual_id: int,
     service_id: int,
-    participant_roles: List[ParticipantRoleCreate],
+    participant_roles: list[ParticipantRoleCreate],
 ) -> Participant:
     """Gets an existing participant object or creates a new one."""
     query = db_session.query(Participant)
@@ -235,7 +230,7 @@ def create(*, db_session, participant_in: ParticipantCreate) -> Participant:
     return participant
 
 
-def create_all(*, db_session, participants_in: List[ParticipantCreate]) -> List[Participant]:
+def create_all(*, db_session, participants_in: list[ParticipantCreate]) -> list[Participant]:
     """Create a list of participants."""
     participants = [Participant(**t.dict()) for t in participants_in]
     db_session.bulk_save_objects(participants)

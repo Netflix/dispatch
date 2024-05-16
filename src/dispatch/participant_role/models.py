@@ -1,7 +1,5 @@
 from datetime import datetime
 
-from typing import List, Optional
-
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 
 from dispatch.database.core import Base
@@ -25,7 +23,7 @@ class ParticipantRoleBase(DispatchBase):
 
 
 class ParticipantRoleCreate(ParticipantRoleBase):
-    role: Optional[ParticipantRoleType]
+    role: ParticipantRoleType | None
 
 
 class ParticipantRoleUpdate(ParticipantRoleBase):
@@ -34,9 +32,9 @@ class ParticipantRoleUpdate(ParticipantRoleBase):
 
 class ParticipantRoleRead(ParticipantRoleBase):
     id: PrimaryKey
-    assumed_at: Optional[datetime] = None
-    renounced_at: Optional[datetime] = None
-    activity: Optional[int]
+    assumed_at: datetime | None = None
+    renounced_at: datetime | None = None
+    activity: int | None = None
 
 
 class ParticipantRoleReadMinimal(ParticipantRoleRead):
@@ -44,4 +42,4 @@ class ParticipantRoleReadMinimal(ParticipantRoleRead):
 
 
 class ParticipantRolePagination(ParticipantRoleBase):
-    items: List[ParticipantRoleRead] = []
+    items: list[ParticipantRoleRead] = []

@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from pydantic import ValidationError
 from pydantic.error_wrappers import ErrorWrapper
 from dispatch.exceptions import NotFoundError
@@ -9,12 +7,12 @@ from sqlalchemy.sql.expression import true
 from .models import Project, ProjectCreate, ProjectUpdate, ProjectRead
 
 
-def get(*, db_session, project_id: int) -> Optional[Project]:
+def get(*, db_session, project_id: int) -> Project | None:
     """Returns a project based on the given project id."""
     return db_session.query(Project).filter(Project.id == project_id).first()
 
 
-def get_default(*, db_session) -> Optional[Project]:
+def get_default(*, db_session) -> Project | None:
     """Returns the default project."""
     return db_session.query(Project).filter(Project.default == true()).one_or_none()
 
@@ -36,7 +34,7 @@ def get_default_or_raise(*, db_session) -> Project:
     return project
 
 
-def get_by_name(*, db_session, name: str) -> Optional[Project]:
+def get_by_name(*, db_session, name: str) -> Project | None:
     """Returns a project based on the given project name."""
     return db_session.query(Project).filter(Project.name == name).one_or_none()
 
@@ -67,7 +65,7 @@ def get_by_name_or_default(*, db_session, project_in=ProjectRead) -> Project:
     return get_default_or_raise(db_session=db_session)
 
 
-def get_all(*, db_session) -> List[Optional[Project]]:
+def get_all(*, db_session) -> list[Project]:
     """Returns all projects."""
     return db_session.query(Project).all()
 

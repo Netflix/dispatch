@@ -1,4 +1,3 @@
-from typing import Optional, List
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.exceptions import NotFoundError
@@ -12,7 +11,7 @@ from .models import (
 )
 
 
-def get(*, db_session, source_data_format_id: int) -> Optional[SourceDataFormat]:
+def get(*, db_session, source_data_format_id: int) -> SourceDataFormat | None:
     """Gets a data source by its id."""
     return (
         db_session.query(SourceDataFormat)
@@ -21,7 +20,7 @@ def get(*, db_session, source_data_format_id: int) -> Optional[SourceDataFormat]
     )
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[SourceDataFormat]:
+def get_by_name(*, db_session, project_id: int, name: str) -> SourceDataFormat | None:
     """Gets a source by its name."""
     return (
         db_session.query(SourceDataFormat)
@@ -56,7 +55,7 @@ def get_by_name_or_raise(
     return data_format
 
 
-def get_all(*, db_session, project_id: int) -> List[Optional[SourceDataFormat]]:
+def get_all(*, db_session, project_id: int) -> list[SourceDataFormat]:
     """Gets all sources."""
     return (
         db_session.query(SourceDataFormat).filter(SourceDataFormat.project_id == project_id).all()

@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.sql.expression import true
 
@@ -12,12 +10,12 @@ from dispatch.exceptions import NotFoundError
 from .models import Organization, OrganizationCreate, OrganizationRead, OrganizationUpdate
 
 
-def get(*, db_session, organization_id: int) -> Optional[Organization]:
+def get(*, db_session, organization_id: int) -> Organization | None:
     """Gets an organization."""
     return db_session.query(Organization).filter(Organization.id == organization_id).first()
 
 
-def get_default(*, db_session) -> Optional[Organization]:
+def get_default(*, db_session) -> Organization | None:
     """Gets the default organization."""
     return db_session.query(Organization).filter(Organization.default == true()).one_or_none()
 
@@ -39,7 +37,7 @@ def get_default_or_raise(*, db_session) -> Organization:
     return organization
 
 
-def get_by_name(*, db_session, name: str) -> Optional[Organization]:
+def get_by_name(*, db_session, name: str) -> Organization | None:
     """Gets an organization by its name."""
     return db_session.query(Organization).filter(Organization.name == name).one_or_none()
 
@@ -62,7 +60,7 @@ def get_by_name_or_raise(*, db_session, organization_in=OrganizationRead) -> Org
     return organization
 
 
-def get_by_slug(*, db_session, slug: str) -> Optional[Organization]:
+def get_by_slug(*, db_session, slug: str) -> Organization | None:
     """Gets an organization by its slug."""
     return db_session.query(Organization).filter(Organization.slug == slug).one_or_none()
 
@@ -93,7 +91,7 @@ def get_by_name_or_default(*, db_session, organization_in=OrganizationRead) -> O
         return get_default_or_raise(db_session=db_session)
 
 
-def get_all(*, db_session) -> List[Optional[Organization]]:
+def get_all(*, db_session) -> list[Organization]:
     """Gets all organizations."""
     return db_session.query(Organization).all()
 

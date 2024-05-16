@@ -1,8 +1,6 @@
 from datetime import datetime
 from uuid import UUID
 
-from typing import Optional
-
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Boolean
 from sqlalchemy.dialects.postgresql import UUID as SQLAlchemyUUID
 from sqlalchemy_utils import TSVectorType, JSONType
@@ -48,10 +46,10 @@ class EventBase(DispatchBase):
     ended_at: datetime
     source: str
     description: str
-    details: Optional[dict]
-    type: Optional[str]
-    owner: Optional[str]
-    pinned: Optional[bool]
+    details: dict | None
+    type: str | None
+    owner: str | None
+    pinned: bool | None
 
 
 class EventCreate(EventBase):
@@ -71,5 +69,5 @@ class EventCreateMinimal(DispatchBase):
     source: str
     description: str
     details: dict
-    type: Optional[str]
-    owner: Optional[str]
+    type: str | None
+    owner: str | None

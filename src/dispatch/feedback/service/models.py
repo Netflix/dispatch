@@ -1,6 +1,5 @@
 from datetime import datetime
 from pydantic import Field
-from typing import Optional, List
 
 from sqlalchemy import Column, Integer, ForeignKey, DateTime, String, Numeric
 from sqlalchemy_utils import TSVectorType
@@ -39,15 +38,15 @@ class ServiceFeedback(TimeStampMixin, FeedbackMixin, Base):
 
 # Pydantic models
 class ServiceFeedbackBase(DispatchBase):
-    feedback: Optional[str] = Field(None, nullable=True)
-    hours: Optional[float]
-    individual: Optional[IndividualContactReadMinimal]
+    feedback: str | None = Field(None, nullable=True)
+    hours: float | None
+    individual: IndividualContactReadMinimal | None
     rating: ServiceFeedbackRating = ServiceFeedbackRating.little_effort
-    schedule: Optional[str]
-    shift_end_at: Optional[datetime]
-    shift_start_at: Optional[datetime]
-    project: Optional[ProjectRead]
-    created_at: Optional[datetime]
+    schedule: str | None
+    shift_end_at: datetime | None
+    shift_start_at: datetime | None
+    project: ProjectRead | None
+    created_at: datetime | None
 
 
 class ServiceFeedbackCreate(ServiceFeedbackBase):
@@ -60,9 +59,9 @@ class ServiceFeedbackUpdate(ServiceFeedbackBase):
 
 class ServiceFeedbackRead(ServiceFeedbackBase):
     id: PrimaryKey
-    project: Optional[ProjectRead]
+    project: ProjectRead | None
 
 
 class ServiceFeedbackPagination(Pagination):
-    items: List[ServiceFeedbackRead]
+    items: list[ServiceFeedbackRead]
     total: int

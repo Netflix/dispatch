@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Any, List
+from typing import Any
 
 from dispatch.database.core import Base
 from dispatch.route.models import Recommendation, RecommendationMatch
@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 
 def get_resource_matches(
     *, db_session, project_id: int, class_instance: Base, model: Any
-) -> List[RecommendationMatch]:
+) -> list[RecommendationMatch]:
     """Fetches all matching model entities for the given class instance."""
     # get all entities with an associated filter
     model_cls, model_state = model
@@ -44,7 +44,7 @@ def get_resource_matches(
     return matched_resources
 
 
-def get(*, db_session, project_id: int, class_instance: Base, models: List[Any]) -> Recommendation:
+def get(*, db_session, project_id: int, class_instance: Base, models: list[Any]) -> Recommendation:
     """Get routed resources."""
 
     matches = []

@@ -1,5 +1,4 @@
 import logging
-from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -9,12 +8,12 @@ from dispatch.individual import service as individual_service
 log = logging.getLogger(__name__)
 
 
-def get(*, forms_id: int, db_session: Session) -> Optional[Forms]:
+def get(*, forms_id: int, db_session: Session) -> Forms | None:
     """Gets a from by its id."""
     return db_session.query(Forms).filter(Forms.id == forms_id).one_or_none()
 
 
-def get_all(*, db_session: Session) -> List[Optional[Forms]]:
+def get_all(*, db_session: Session) -> list[Forms]:
     """Gets all forms."""
     return db_session.query(Forms).all()
 

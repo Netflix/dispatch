@@ -1,5 +1,4 @@
 from datetime import timedelta
-from typing import List
 
 from blockkit import (
     PlainTextInput,
@@ -246,7 +245,7 @@ def datetime_picker_block(
 
 
 def static_select_block(
-    options: List[str],
+    options: list[str],
     placeholder: str,
     action_id: str = None,
     block_id: str = None,
@@ -269,7 +268,7 @@ def static_select_block(
 
 
 def multi_select_block(
-    options: List[str],
+    options: list[str],
     placeholder: str,
     action_id: str = None,
     block_id: str = None,
@@ -640,7 +639,7 @@ def entity_select(
 
 
 def participant_select(
-    participants: List[Participant],
+    participants: list[Participant],
     action_id: str = DefaultActionIds.participant_select,
     block_id: str = DefaultBlockIds.participant_select,
     label: str = "Participant",

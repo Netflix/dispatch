@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from sqlalchemy_filters import apply_filters
 
 from dispatch.database.core import Base, get_class_by_tablename, get_table_name_by_class_instance
@@ -9,12 +7,12 @@ from dispatch.project import service as project_service
 from .models import SearchFilter, SearchFilterCreate, SearchFilterUpdate
 
 
-def get(*, db_session, search_filter_id: int) -> Optional[SearchFilter]:
+def get(*, db_session, search_filter_id: int) -> SearchFilter | None:
     """Gets a search filter by id."""
     return db_session.query(SearchFilter).filter(SearchFilter.id == search_filter_id).first()
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[SearchFilter]:
+def get_by_name(*, db_session, project_id: int, name: str) -> SearchFilter | None:
     """Gets a search filter by name."""
     return (
         db_session.query(SearchFilter)
@@ -24,7 +22,7 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[SearchFil
     )
 
 
-def match(*, db_session, subject: str, filter_spec: List[dict], class_instance: Base):
+def match(*, db_session, subject: str, filter_spec: list[dict], class_instance: Base):
     """Matches a class instance with a given search filter."""
     table_name = get_table_name_by_class_instance(class_instance)
 
@@ -53,7 +51,7 @@ def get_or_create(*, db_session, search_filter_in) -> SearchFilter:
     return create(db_session=db_session, search_filter_in=search_filter_in)
 
 
-def get_all(*, db_session) -> List[Optional[SearchFilter]]:
+def get_all(*, db_session) -> list[SearchFilter]:
     """Gets all search filters."""
     return db_session.query(SearchFilter).all()
 

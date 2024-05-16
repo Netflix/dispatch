@@ -4,7 +4,7 @@ from collections import namedtuple
 from collections.abc import Iterable
 from inspect import signature
 from itertools import chain
-from typing import Annotated, List
+from typing import Annotated
 
 from fastapi import Depends, Query
 from pydantic import BaseModel
@@ -394,7 +394,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
     return query
 
 
-def composite_search(*, db_session, query_str: str, models: List[Base], current_user: DispatchUser):
+def composite_search(*, db_session, query_str: str, models: list[Base], current_user: DispatchUser):
     """Perform a multi-table search based on the supplied query."""
     s = CompositeSearch(db_session, models)
     query = s.build_query(query_str, sort=True)
@@ -466,7 +466,7 @@ def create_sort_spec(model, sort_by, descending):
     return sort_spec
 
 
-def get_all(*, db_session, model) -> List:
+def get_all(*, db_session, model) -> list[Base]:
     """Fetches a query object based on the model class name."""
     return db_session.query(get_class_by_tablename(model)).all()
 
@@ -478,8 +478,8 @@ def common_parameters(
     items_per_page: int = Query(5, alias="itemsPerPage", gt=-2, lt=2147483647),
     query_str: QueryStr = Query(None, alias="q"),
     filter_spec: Json = Query([], alias="filter"),
-    sort_by: List[str] = Query([], alias="sortBy[]"),
-    descending: List[bool] = Query([], alias="descending[]"),
+    sort_by: list[str] = Query([], alias="sortBy[]"),
+    descending: list[bool] = Query([], alias="descending[]"),
     role: UserRoles = Depends(get_current_role),
 ):
     return {
@@ -496,12 +496,12 @@ def common_parameters(
 
 
 CommonParameters = Annotated[
-    dict[str, int | CurrentUser | DbSession | QueryStr | Json | List[str] | List[bool] | UserRoles],
+    dict[str, int | CurrentUser | DbSession | QueryStr | Json | list[str] | list[bool] | UserRoles],
     Depends(common_parameters),
 ]
 
 
-def has_tag_all(filter_spec: List[dict]):
+def has_tag_all(filter_spec: list[dict]):
     """Checks if the filter spec has a TagAll filter."""
 
     if isinstance(filter_spec, list):
@@ -516,7 +516,7 @@ def has_tag_all(filter_spec: List[dict]):
     return False
 
 
-def rebuild_filter_spec_without_tag_all(filter_spec: List[dict]):
+def rebuild_filter_spec_without_tag_all(filter_spec: list[dict]):
     """Rebuilds the filter spec without the TagAll filter."""
     new_filter_spec = []
     tag_all_spec = []
@@ -536,11 +536,11 @@ def search_filter_sort_paginate(
     db_session,
     model,
     query_str: str = None,
-    filter_spec: List[dict] = None,
+    filter_spec: list[dict] = None,
     page: int = 1,
     items_per_page: int = 5,
-    sort_by: List[str] = None,
-    descending: List[bool] = None,
+    sort_by: list[str] = None,
+    descending: list[bool] = None,
     current_user: DispatchUser = None,
     role: UserRoles = UserRoles.member,
 ):

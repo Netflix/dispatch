@@ -1,6 +1,5 @@
 from datetime import datetime
 from pydantic import Field
-from typing import Optional, List
 
 from sqlalchemy import Column, Integer, ForeignKey, String
 from sqlalchemy.orm import relationship
@@ -36,15 +35,15 @@ class Forms(TimeStampMixin, ProjectMixin, Base):
 
 # Pydantic models
 class FormsBase(DispatchBase):
-    form_type: Optional[FormsTypeRead]
-    creator: Optional[IndividualContactReadMinimal]
-    form_data: Optional[str] = Field(None, nullable=True)
-    status: Optional[str] = Field(None, nullable=True)
-    attorney_status: Optional[str] = Field(None, nullable=True)
-    project: Optional[ProjectRead]
-    incident: Optional[IncidentReadMinimal]
-    attorney_questions: Optional[str] = Field(None, nullable=True)
-    attorney_analysis: Optional[str] = Field(None, nullable=True)
+    form_type: FormsTypeRead | None
+    creator: IndividualContactReadMinimal | None
+    form_data: str | None = Field(None, nullable=True)
+    status: str | None = Field(None, nullable=True)
+    attorney_status: str | None = Field(None, nullable=True)
+    project: ProjectRead | None
+    incident: IncidentReadMinimal | None
+    attorney_questions: str | None = Field(None, nullable=True)
+    attorney_analysis: str | None = Field(None, nullable=True)
 
 
 class FormsCreate(FormsBase):
@@ -57,11 +56,11 @@ class FormsUpdate(FormsBase):
 
 class FormsRead(FormsBase):
     id: PrimaryKey
-    project: Optional[ProjectRead]
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    project: ProjectRead | None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 class FormsPagination(Pagination):
-    items: List[FormsRead]
+    items: list[FormsRead]
     total: int

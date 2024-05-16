@@ -1,4 +1,3 @@
-from typing import Optional
 from jinja2 import Template
 
 from pydantic import validator, Field
@@ -18,8 +17,8 @@ class Conference(Base, ResourceMixin):
 
 # Pydantic models...
 class ConferenceBase(ResourceBase):
-    conference_id: Optional[str] = Field(None, nullable=True)
-    conference_challenge: Optional[str] = Field(None, nullable=True)
+    conference_id: str | None = Field(None, nullable=True)
+    conference_challenge: str | None = Field(None, nullable=True)
 
 
 class ConferenceCreate(ConferenceBase):
@@ -31,7 +30,7 @@ class ConferenceUpdate(ConferenceBase):
 
 
 class ConferenceRead(ConferenceBase):
-    description: Optional[str] = Field(None, nullable=True)
+    description: str | None = Field(None, nullable=True)
 
     @validator("description", pre=True, always=True)
     def set_description(cls, v, values):

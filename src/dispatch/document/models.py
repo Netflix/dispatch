@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List, Optional
 
 from pydantic import validator, Field
 from dispatch.models import EvergreenBase, NameStr, PrimaryKey
@@ -45,25 +44,25 @@ class Document(ProjectMixin, ResourceMixin, EvergreenMixin, Base):
 
 # Pydantic models...
 class DocumentBase(ResourceBase, EvergreenBase):
-    description: Optional[str] = Field(None, nullable=True)
+    description: str | None = Field(None, nullable=True)
     name: NameStr
-    created_at: Optional[datetime] = Field(None, nullable=True)
-    updated_at: Optional[datetime] = Field(None, nullable=True)
+    created_at: datetime | None = Field(None, nullable=True)
+    updated_at: datetime | None = Field(None, nullable=True)
 
 
 class DocumentCreate(DocumentBase):
-    filters: Optional[List[SearchFilterRead]] = []
+    filters: list[SearchFilterRead] = []
     project: ProjectRead
 
 
 class DocumentUpdate(DocumentBase):
-    filters: Optional[List[SearchFilterRead]]
+    filters: list[SearchFilterRead] = []
 
 
 class DocumentRead(DocumentBase):
     id: PrimaryKey
-    filters: Optional[List[SearchFilterRead]] = []
-    project: Optional[ProjectRead]
+    filters: list[SearchFilterRead] = []
+    project: ProjectRead | None
 
     @validator("description", pre=True, always=True)
     def set_description(cls, v, values):
@@ -74,4 +73,4 @@ class DocumentRead(DocumentBase):
 
 
 class DocumentPagination(Pagination):
-    items: List[DocumentRead] = []
+    items: list[DocumentRead] = []

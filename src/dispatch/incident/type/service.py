@@ -1,4 +1,3 @@
-from typing import List, Optional
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from sqlalchemy.sql.expression import true
@@ -13,7 +12,7 @@ from dispatch.project import service as project_service
 from .models import IncidentType, IncidentTypeCreate, IncidentTypeRead, IncidentTypeUpdate
 
 
-def get(*, db_session, incident_type_id: int) -> Optional[IncidentType]:
+def get(*, db_session, incident_type_id: int) -> IncidentType | None:
     """Returns an incident type based on the given type id."""
     return db_session.query(IncidentType).filter(IncidentType.id == incident_type_id).one_or_none()
 
@@ -45,7 +44,7 @@ def get_default_or_raise(*, db_session, project_id: int) -> IncidentType:
     return incident_type
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[IncidentType]:
+def get_by_name(*, db_session, project_id: int, name: str) -> IncidentType | None:
     """Returns an incident type based on the given type name."""
     return (
         db_session.query(IncidentType)
@@ -91,7 +90,7 @@ def get_by_name_or_default(
     return get_default_or_raise(db_session=db_session, project_id=project_id)
 
 
-def get_by_slug(*, db_session, project_id: int, slug: str) -> Optional[IncidentType]:
+def get_by_slug(*, db_session, project_id: int, slug: str) -> IncidentType | None:
     """Returns an incident type based on the given type slug."""
     return (
         db_session.query(IncidentType)
@@ -101,14 +100,14 @@ def get_by_slug(*, db_session, project_id: int, slug: str) -> Optional[IncidentT
     )
 
 
-def get_all(*, db_session, project_id: int = None) -> List[Optional[IncidentType]]:
+def get_all(*, db_session, project_id: int = None) -> list[IncidentType]:
     """Returns all incident types."""
     if project_id:
         return db_session.query(IncidentType).filter(IncidentType.project_id == project_id).all()
     return db_session.query(IncidentType).all()
 
 
-def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[IncidentType]]:
+def get_all_enabled(*, db_session, project_id: int = None) -> list[IncidentType]:
     """Returns all enabled incident types."""
     if project_id:
         return (

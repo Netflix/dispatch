@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional, List
 from pydantic.types import PositiveInt
 
 from sqlalchemy import Boolean, Column, Integer, String, PrimaryKeyConstraint, Table, ForeignKey
@@ -65,31 +64,31 @@ class IncidentRole(Base, TimeStampMixin, ProjectMixin):
 
 # Pydantic models
 class IncidentRoleBase(DispatchBase):
-    enabled: Optional[bool]
-    tags: Optional[List[TagRead]]
-    order: Optional[PositiveInt]
-    incident_types: Optional[List[IncidentTypeRead]]
-    incident_priorities: Optional[List[IncidentPriorityRead]]
-    service: Optional[ServiceRead]
-    individual: Optional[IndividualContactRead]
-    engage_next_oncall: Optional[bool]
+    enabled: bool | None
+    tags: list[TagRead] = []
+    order: PositiveInt | None
+    incident_types: list[IncidentTypeRead] = []
+    incident_priorities: list[IncidentPriorityRead] = []
+    service: ServiceRead | None
+    individual: IndividualContactRead | None
+    engage_next_oncall: bool | None
 
 
 class IncidentRoleCreateUpdate(IncidentRoleBase):
-    id: Optional[PrimaryKey]
-    project: Optional[ProjectRead]
+    id: PrimaryKey | None
+    project: ProjectRead | None
 
 
 class IncidentRolesCreateUpdate(DispatchBase):
-    policies: List[IncidentRoleCreateUpdate]
+    policies: list[IncidentRoleCreateUpdate]
 
 
 class IncidentRoleRead(IncidentRoleBase):
     id: PrimaryKey
     role: ParticipantRoleType
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 class IncidentRoles(DispatchBase):
-    policies: List[IncidentRoleRead] = []
+    policies: list[IncidentRoleRead] = []

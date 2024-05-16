@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.orm import Session, joinedload
-from typing import List, Optional
 
 from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
@@ -32,12 +31,12 @@ from .models import (
 log = logging.getLogger(__name__)
 
 
-def get(*, db_session, case_id: int) -> Optional[Case]:
+def get(*, db_session, case_id: int) -> Case | None:
     """Returns an case based on the given id."""
     return db_session.query(Case).filter(Case.id == case_id).first()
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Case]:
+def get_by_name(*, db_session, project_id: int, name: str) -> Case | None:
     """Returns an case based on the given name."""
     return (
         db_session.query(Case)
@@ -67,12 +66,12 @@ def get_by_name_or_raise(*, db_session, project_id: int, case_in: CaseRead) -> C
     return case
 
 
-def get_all(*, db_session, project_id: int) -> List[Optional[Case]]:
+def get_all(*, db_session, project_id: int) -> list[Case]:
     """Returns all cases."""
     return db_session.query(Case).filter(Case.project_id == project_id).all()
 
 
-def get_all_by_status(*, db_session, project_id: int, status: str) -> List[Optional[Case]]:
+def get_all_by_status(*, db_session, project_id: int, status: str) -> list[Case]:
     """Returns all cases based on a given status."""
     return (
         db_session.query(Case)
@@ -84,7 +83,7 @@ def get_all_by_status(*, db_session, project_id: int, status: str) -> List[Optio
 
 def get_all_last_x_hours_by_status(
     *, db_session, project_id: int, status: str, hours: int
-) -> List[Optional[Case]]:
+) -> list[Case]:
     """Returns all cases of a given status in the last x hours."""
     now = datetime.utcnow()
 
