@@ -264,6 +264,15 @@ def workflow_plugin():
 
 
 @pytest.fixture
+def secondary_system_plugin():
+    from dispatch.plugins.base import register
+    from dispatch.plugins.dispatch_test.secondary_system import TestSecondarySystemPlugin
+
+    register(TestSecondarySystemPlugin)
+    return TestSecondarySystemPlugin
+
+
+@pytest.fixture
 def user(session):
     return DispatchUserFactory()
 

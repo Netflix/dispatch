@@ -429,6 +429,7 @@ setup(
             "slack_conversation = dispatch.plugins.dispatch_slack.plugin:SlackConversationPlugin",
             "zoom_conference = dispatch.plugins.dispatch_zoom.plugin:ZoomConferencePlugin",
             "microsoft_teams_conference = dispatch.plugins.dispatch_microsoft_teams.conference.plugin:MicrosoftTeamsConferencePlugin",
+            "incident_io_plugin = dispatch.plugins.dispatch_incidentio.plugin:IncidentIOPlugin",
         ],
     },
 )

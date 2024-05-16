@@ -33,6 +33,31 @@ class IncidentIOPlugin(SecondarySystemPlugin):
     def __init__(self):
         self.configuration_schema = IncidentIOConfiguration
 
+    def parse_response(self, response: dict) -> dict:
+        """Parses the response."""
+        incident = response["incident"]
+
+        incident_details = {}
+        incident_details["id"] = incident["reference"]
+        incident_details["title"] = incident["name"]
+        incident_details["description"] = incident.get("summary", "")
+        incident_details["status"] = incident["incident_status"]["name"]
+        incident_details["priority"] = incident["incident_status"]["rank"]
+        incident_details["severity"] = incident["severity"]["name"]
+        reporter = ""
+        incident_commander = ""
+        for participant in incident["incident_role_assignments"]:
+            if participant["role"]["name"] == "Incident Commander":
+                incident_commander = participant["assignee"]["email"]
+            if participant["role"]["name"] == "Reporter":
+                if participant.get("assignee", ""):
+                    reporter = participant["assignee"]["email"]
+
+        incident_details["reporter"] = reporter
+        incident_details["incident_commander"] = incident_commander
+
+        return incident_details
+
     def get(self, incident_id: str) -> dict:
         """Fetches incident details."""
         try:
@@ -41,29 +66,7 @@ class IncidentIOPlugin(SecondarySystemPlugin):
                 f"https://api.incident.io/v2/incidents/{incident_id}",
                 headers=api_call_headers,
             )
-            data = response.json()
-            incident = data["incident"]
-
-            incident_details = {}
-            incident_details["id"] = incident["reference"]
-            incident_details["title"] = incident["name"]
-            incident_details["description"] = incident.get("summary", "")
-            incident_details["status"] = incident["incident_status"]["name"]
-            incident_details["priority"] = incident["incident_status"]["rank"]
-            incident_details["severity"] = incident["severity"]["name"]
-            reporter = ""
-            incident_commander = ""
-            for participant in incident["incident_role_assignments"]:
-                if participant["role"]["name"] == "Incident Commander":
-                    incident_commander = participant["assignee"]["name"]
-                if participant["role"]["name"] == "Reporter":
-                    if participant.get("assignee", ""):
-                        reporter = participant["assignee"]["name"]
-
-            incident_details["reporter"] = reporter
-            incident_details["incident_commander"] = incident_commander
-
-            return incident_details
+            return self.parse_response(response.json())
         except Exception as e:
             logger.error(e)
             raise
