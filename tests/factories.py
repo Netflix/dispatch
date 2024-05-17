@@ -401,6 +401,7 @@ class IncidentTypeFactory(BaseFactory):
     description = FuzzyText()
     slug = FuzzyText()
     project = SubFactory(ProjectFactory)
+    cost_model = SubFactory(CostModelFactory)
 
     class Meta:
         """Factory Configuration."""
@@ -707,7 +708,7 @@ class CaseTypeFactory(BaseFactory):
 
     name = FuzzyText()
     description = FuzzyText()
-
+    conversation_target = FuzzyText()
     project = SubFactory(ProjectFactory)
 
     class Meta:
@@ -910,7 +911,6 @@ class IncidentFactory(BaseFactory):
     incident_priority = SubFactory(IncidentPriorityFactory)
     incident_severity = SubFactory(IncidentSeverityFactory)
     project = SubFactory(ProjectFactory)
-    cost_model = SubFactory(CostModelFactory)
     conversation = SubFactory(ConversationFactory)
 
     class Meta:

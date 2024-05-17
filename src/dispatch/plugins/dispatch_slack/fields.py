@@ -19,7 +19,6 @@ from dispatch.case.enums import CaseStatus, CaseResolutionReason
 from dispatch.case.type import service as case_type_service
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.severity import service as case_severity_service
-from dispatch.cost_model import service as cost_model_service
 from dispatch.entity import service as entity_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.type import service as incident_type_service
@@ -65,9 +64,6 @@ class DefaultBlockIds(DispatchEnum):
     # tags
     tags_multi_select = "tag-multi-select"
 
-    # cost models
-    cost_model_select = "cost-model-select"
-
 
 class DefaultActionIds(DispatchEnum):
     date_picker_input = "date-picker-input"
@@ -104,9 +100,6 @@ class DefaultActionIds(DispatchEnum):
 
     # tags
     tags_multi_select = "tag-multi-select"
-
-    # cost models
-    cost_model_select = "cost-model-select"
 
 
 class TimezoneOptions(DispatchEnum):
@@ -306,7 +299,7 @@ def project_select(
 ):
     """Creates a project select."""
     projects = [
-        {"text": p.name, "value": p.id} for p in project_service.get_all(db_session=db_session)
+        {"text": p.name, "value": p.id} for p in project_service.get_all(db_session=db_session) if p.enabled
     ]
     return static_select_block(
         placeholder="Select Project",
@@ -608,34 +601,6 @@ def case_type_select(
     return static_select_block(
         placeholder="Select Type",
         options=types,
-        initial_option=initial_option,
-        action_id=action_id,
-        block_id=block_id,
-        label=label,
-        **kwargs,
-    )
-
-
-def cost_model_select(
-    db_session: SessionLocal,
-    action_id: str = DefaultActionIds.cost_model_select,
-    block_id: str = DefaultBlockIds.cost_model_select,
-    label: str = "Cost Model",
-    initial_option: dict = None,
-    project_id: int = None,
-    **kwargs,
-):
-    cost_model_options = [
-        {"text": cost_model.name, "value": cost_model.id}
-        for cost_model in cost_model_service.get_all(db_session=db_session, project_id=project_id)
-    ]
-
-    if not cost_model_options:
-        return
-
-    return static_select_block(
-        placeholder="Select Cost Model",
-        options=cost_model_options,
         initial_option=initial_option,
         action_id=action_id,
         block_id=block_id,

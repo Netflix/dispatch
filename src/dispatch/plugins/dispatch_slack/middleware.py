@@ -11,14 +11,23 @@ from dispatch.auth.models import DispatchUser, UserRegister
 from dispatch.conversation import service as conversation_service
 from dispatch.database.core import SessionLocal, refetch_db_session
 from dispatch.decorators import timer
+from dispatch.enums import SubjectNames
 from dispatch.organization import service as organization_service
 from dispatch.participant import service as participant_service
 from dispatch.participant_role.enums import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
+from dispatch.plugins.dispatch_slack.models import SlackCommandPayload
+from dispatch.plugins.dispatch_slack.exceptions import CommandError
 from dispatch.project import service as project_service
 
 from .exceptions import ContextError, RoleError
-from .models import EngagementMetadata, SubjectMetadata, FormMetadata, IncidentSubjects, CaseSubjects
+from .models import (
+    EngagementMetadata,
+    SubjectMetadata,
+    FormMetadata,
+    IncidentSubjects,
+    CaseSubjects,
+)
 
 log = logging.getLogger(__file__)
 
@@ -142,7 +151,7 @@ def action_context_middleware(body: dict, context: BoltContext, next: Callable) 
 def message_context_middleware(
     request: BoltRequest, payload: dict, context: BoltContext, next: Callable
 ) -> None:
-    """Attemps to determine the current context of the event."""
+    """Attempts to determine the current context of the event."""
     if is_bot(request):
         return context.ack()
 
@@ -158,7 +167,7 @@ def message_context_middleware(
 
 # TODO should we support reactions for cases?
 def reaction_context_middleware(context: BoltContext, next: Callable) -> None:
-    """Attemps to determine the current context of a reaction event."""
+    """Attempts to determine the current context of a reaction event."""
     if subject := resolve_context_from_conversation(channel_id=context.channel_id):
         context.update(subject._asdict())
     else:
@@ -342,13 +351,24 @@ def modal_submit_middleware(body: dict, context: BoltContext, next: Callable) ->
 
 
 # NOTE we don't need to handle cases because commands are not available in threads.
-def command_context_middleware(context: BoltContext, payload: dict, next: Callable) -> None:
-    if subject := resolve_context_from_conversation(channel_id=context.channel_id):
-        context.update(subject._asdict())
-    else:
+def command_context_middleware(
+    context: BoltContext,
+    payload: SlackCommandPayload,
+    next: Callable,
+    expected_subject: SubjectNames = SubjectNames.INCIDENT,
+) -> None:
+    subject = resolve_context_from_conversation(channel_id=context.channel_id)
+    if not subject:
         raise ContextError(
-            f"Sorry, we were unable to determine the correct context to run the command `{payload['command']}`. Are you running this command in an incident channel?"
+            f"Sorry, we were unable to determine the correct context to run the command `{payload['command']}`. Are you running this command in a {expected_subject.lower()} channel?"
         )
+
+    if not subject.subject.type == expected_subject.lower():
+        raise CommandError(
+            f"This command is only available with {expected_subject}s. {payload.get('channel_name', 'This channel')} is a {subject.subject.type}."
+        )
+
+    context.update(subject._asdict())
     next()
 
 

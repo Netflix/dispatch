@@ -103,6 +103,15 @@
                 </v-form>
               </v-col>
               <v-col cols="12">
+                <cost-model-combobox
+                  :project="project"
+                  v-model="cost_model"
+                  persistent-hint
+                  clearable
+                  hint="If unassigned, the incident cost calculation defaults to the classic incident cost model."
+                />
+              </v-col>
+              <v-col cols="12">
                 <v-checkbox
                   v-model="exclude_from_metrics"
                   label="Exclude From Metrics"
@@ -140,6 +149,7 @@ import { required } from "@/util/form"
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 
+import CostModelCombobox from "@/cost_model/CostModelCombobox.vue"
 import PluginMetadataInput from "@/plugin/PluginMetadataInput.vue"
 import TemplateSelect from "@/document/template/TemplateSelect.vue"
 
@@ -152,6 +162,7 @@ export default {
   name: "IncidentTypeNewEditSheet",
 
   components: {
+    CostModelCombobox,
     PluginMetadataInput,
     TemplateSelect,
   },
@@ -180,6 +191,7 @@ export default {
       "selected.plugin_metadata",
       "selected.visibility",
       "selected.enabled",
+      "selected.cost_model",
       "selected.exclude_from_metrics",
       "selected.default",
     ]),
