@@ -10,6 +10,7 @@ from sqlalchemy.event import listen
 
 from sqlalchemy_utils import TSVectorType
 
+from dispatch.cost_model.models import CostModelRead
 from dispatch.database.core import Base, ensure_unique_default_per_project
 from dispatch.enums import Visibility
 from dispatch.models import DispatchBase, ProjectMixin, Pagination
@@ -57,6 +58,12 @@ class IncidentType(ProjectMixin, Base):
     # the catalog here is simple to help matching "named entities"
     search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
+    cost_model_id = Column(Integer, ForeignKey("cost_model.id"), nullable=True, default=None)
+    cost_model = relationship(
+        "CostModel",
+        foreign_keys=[cost_model_id],
+    )
+
     @hybrid_method
     def get_meta(self, slug):
         if not self.plugin_metadata:
@@ -93,6 +100,7 @@ class IncidentTypeBase(DispatchBase):
     default: Optional[bool] = False
     project: Optional[ProjectRead]
     plugin_metadata: List[PluginMetadata] = []
+    cost_model: Optional[CostModelRead] = None
 
     @validator("plugin_metadata", pre=True)
     def replace_none_with_empty_list(cls, value):

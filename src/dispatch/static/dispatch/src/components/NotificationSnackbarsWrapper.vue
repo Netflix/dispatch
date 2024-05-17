@@ -5,10 +5,7 @@
     :color="notification.type"
     @update:model-value="setSeen(notification.index)"
   >
-    {{ notification.text }}
-    <template #action="{ attrs }">
-      <v-btn variant="text" v-bind="attrs" @click="setSeen(notification.index)"> Close </v-btn>
-    </template>
+    <span class="text-center">{{ notification.text }}</span>
   </v-snackbar>
 </template>
 
@@ -93,3 +90,11 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.text-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+</style>

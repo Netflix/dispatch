@@ -98,6 +98,16 @@ class SlackConversationConfiguration(SlackConfiguration):
         title="Engage Oncall Command String",
         description="Defines the string used to engage an oncall. Must match what is defined in Slack.",
     )
+    slack_command_update_case: str = Field(
+        "/dispatch-update-case",
+        title="Update Case Command String",
+        description="Defines the string used to update a case. Must match what is defined in Slack.",
+    )
+    slack_command_escalate_case: str = Field(
+        "/dispatch-escalate-case",
+        title="Escalates a case to an incident",
+        description="Only works from within a channel based Case.",
+    )
     slack_command_report_incident: str = Field(
         "/dispatch-report-incident",
         title="Report Incident Command String",
