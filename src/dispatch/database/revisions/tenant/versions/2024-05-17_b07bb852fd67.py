@@ -1,7 +1,7 @@
 """Adds attorney form schema and scoring schema to forms type
 
 Revision ID: b07bb852fd67
-Revises: 3a33bc153e7e
+Revises: 50e99c66e72f
 Create Date: 2024-04-10 15:51:10.914748
 
 """
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "b07bb852fd67"
-down_revision = "3a33bc153e7e"
+down_revision = "50e99c66e72f"
 branch_labels = None
 depends_on = None
 
