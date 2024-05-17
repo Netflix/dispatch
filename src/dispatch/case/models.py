@@ -174,10 +174,14 @@ class Case(Base, TimeStampMixin, ProjectMixin):
 
     @property
     def has_channel(self) -> bool:
+        if not self.conversation:
+            return False
         return True if not self.conversation.thread_id else False
 
     @property
     def has_thread(self) -> bool:
+        if not self.conversation:
+            return False
         return True if self.conversation.thread_id else False
 
 
