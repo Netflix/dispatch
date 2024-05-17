@@ -138,7 +138,7 @@ def test_case_escalated_create_incident(session, case, user, incident):
         return incident_out
 
     client = TestClient(app)
-    client.get(f"/{case.id}/escalate").json()
+    client.get(f"/{case.id}/escalate")
 
     case_t = case_service.get(db_session=session, case_id=case.id)
     assert case_t.status == CaseStatus.escalated
