@@ -321,7 +321,7 @@ def case_update_flow(
     """Runs the case update flow."""
     # we get the case
     case = get(db_session=db_session, case_id=case_id)
-    print("in update flow")
+
     # we run the case assign role flow for the reporter
     case_assign_role_flow(
         case_id=case.id,
@@ -351,7 +351,6 @@ def case_update_flow(
     ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
     if case.status in [CaseStatus.escalated, CaseStatus.closed] and case.case_document:
-        print("updating the document bc either escalated or closed")
         # we update the document
         document_flows.update_document(
             document=case.case_document, project_id=case.project.id, db_session=db_session
@@ -421,7 +420,6 @@ def case_escalated_status_flow(
 ):
     """Runs the case escalated transition flow."""
     # we set the escalated_at time
-    print("we escalated")
     case.escalated_at = datetime.utcnow()
     db_session.add(case)
     db_session.commit()
