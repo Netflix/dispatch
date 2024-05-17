@@ -494,7 +494,7 @@ def reactivate_case_participants(case: Case, db_session: Session):
     )
 
 
-def case_active_status_flow(case: CaseStatus, db_session: Session) -> None:
+def case_active_status_flow(case: Case, db_session: Session) -> None:
     """Runs the case active flow."""
     # we un-archive the conversation
     if case.dedicated_channel:
