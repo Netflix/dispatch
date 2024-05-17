@@ -495,7 +495,7 @@ def handle_incident_review_updates(incident: Incident, db_session=None):
 
         # Bookmark the incident review document in the conversation
         conversation_flows.add_conversation_bookmark(
-            incident=incident, resource=incident.incident_review_document, db_session=db_session
+            subject=incident, resource=incident.incident_review_document, db_session=db_session
         )
 
 

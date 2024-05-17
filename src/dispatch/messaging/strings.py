@@ -59,6 +59,12 @@ INCIDENT_VISIBILITY_DESCRIPTIONS = {
     Visibility.open: "We ask that you use your best judgment while sharing details about this incident outside of the dedicated channels of communication. Please reach out to the Incident Commander if you have any questions.",
     Visibility.restricted: "This incident is restricted to immediate participants of this incident. We ask that you exercise extra caution and discretion while talking about this incident outside of the dedicated channels of communication. Only invite new participants that are strictly necessary. Please reach out to the Incident Commander if you have any questions.",
 }
+
+CASE_VISIBILITY_DESCRIPTIONS = {
+    Visibility.open: "We ask that you use your best judgment while sharing details about this case outside of the dedicated channels of communication. Please reach out to the case assignee if you have any questions.",
+    Visibility.restricted: "This case is restricted to immediate participants of this case. We ask that you exercise extra caution and discretion while talking about this case outside of the dedicated channels of communication. Only invite new participants that are strictly necessary. Please reach out to the case assignee if you have any questions.",
+}
+
 EVERGREEN_REMINDER_DESCRIPTION = """
 You are the owner of the following resources in Dispatch.
 This is a reminder that these resources should be kept up to date in order to effectively
@@ -184,9 +190,7 @@ submitted that requires your immediate attention. This form details
 aspects related to potential legal implications. You can review the
 detailed report by clicking on the link below. Please note, the information
 contained in this report is confidential.
-""".replace(
-    "\n", " "
-).strip()
+""".replace("\n", " ").strip()
 
 INCIDENT_PARTICIPANT_WELCOME_DESCRIPTION = """
 You\'ve been added to this incident, because we think you may
@@ -222,7 +226,7 @@ You can use `{{command}}` in the conversation to assist you in writing one.""".r
 ).strip()
 
 INCIDENT_CLOSE_REMINDER_DESCRIPTION = """The status of this incident hasn't been updated recently.
-You can use `{{command}}` in the conversation to close the incident if it has been resolved and can be closed.""".replace(
+You can use `{{command}}` in the <{{conversation_weblink}}|conversation> to close the incident if it has been resolved and can be closed.""".replace(
     "\n", " "
 ).strip()
 
@@ -624,7 +628,7 @@ INCIDENT_REPORT_REMINDER_DELAYED = [
 INCIDENT_CLOSE_REMINDER = [
     {
         "title": "{{name}} Incident - Close Reminder",
-        "title_link": "{{ticket_weblink}}",
+        "title_link": "{{dispatch_ui_incident_url}}",
         "text": INCIDENT_CLOSE_REMINDER_DESCRIPTION,
     },
     INCIDENT_TITLE,
