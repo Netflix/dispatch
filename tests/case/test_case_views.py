@@ -97,6 +97,7 @@ def test_update_case_escalated(session, case, user):
 
 
 def test_case_escalated_create_incident(session, case, user, incident):
+    """Tests the escalation of a case to an incident."""
     from fastapi import FastAPI, BackgroundTasks
     from fastapi.testclient import TestClient
     from dispatch.case.views import router, escalate_case
