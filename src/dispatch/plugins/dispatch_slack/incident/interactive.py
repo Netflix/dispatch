@@ -1954,7 +1954,7 @@ def extract_number_from_channel_name(channel_name):
         IncidentShortcutCallbacks.duplicate,
         middleware=[db_middleware, shortcut_context_middleware]
 )
-def report_issue(
+def duplicate_incident(
     ack: Ack,
     body: dict,
     client: WebClient,
