@@ -996,7 +996,7 @@ def handle_member_joined_channel(
         db_session.add(participant)
         db_session.commit()
 
-    if context["subject"].type != CaseSubjects.case:
+    if context["subject"].type == CaseSubjects.case:
         case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
         if not case.dedicated_channel:
