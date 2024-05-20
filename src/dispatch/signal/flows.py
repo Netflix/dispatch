@@ -88,11 +88,13 @@ def signal_instance_create_flow(
         case_type = signal_instance.case_type
         if signal_instance.signal.conversation_target:
             conversation_target = signal_instance.case_type.conversation_target
+            case_type.conversation_target = conversation_target
     else:
         case_type = signal_instance.signal.case_type
 
         if signal_instance.signal.conversation_target:
             conversation_target = signal_instance.signal.conversation_target
+            case_type.conversation_target = conversation_target
 
     assignee = None
     if signal_instance.signal.oncall_service:
