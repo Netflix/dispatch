@@ -1942,6 +1942,49 @@ def handle_update_incident_submission_event(
     )
 
 
+def extract_number_from_channel_name(channel_name):
+    # Assumes the format is "XXX-<number>"
+    parts = channel_name.split("-")
+    if len(parts) > 1:
+        return parts[1]  # Return the number part
+    return None
+
+
+@app.shortcut(
+        IncidentShortcutCallbacks.duplicate,
+        middleware=[db_middleware, shortcut_context_middleware]
+)
+def report_issue(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+    shortcut: dict,
+):
+    ack()
+    channel_id = context["subject"].channel_id
+    response = client.conversations_info(channel=channel_id)
+    channel_name = response["channel"]["name"]
+    incident_number = extract_number_from_channel_name(channel_name)
+
+    if incident_number:
+        project = project_service.get_default(db_session=db_session)
+        plugin = plugin_service.get_active_instance(
+            db_session=db_session,
+            project_id=project.id,
+            plugin_type="secondary-system",
+        )
+
+        if not plugin:
+            return
+
+        # get the incident
+        incident = plugin.instance.get(incident_number)
+
+        # todo: create dialog with incident details, ask user for mapping to project
+
+
 @app.shortcut(
     IncidentShortcutCallbacks.report, middleware=[db_middleware, shortcut_context_middleware]
 )

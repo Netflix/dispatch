@@ -88,6 +88,7 @@ class IncidentReportActions(DispatchEnum):
 
 class IncidentShortcutCallbacks(DispatchEnum):
     report = "incident-report"
+    duplicate = "incident-duplicate"
 
 
 class UpdateNotificationGroupActions(DispatchEnum):
