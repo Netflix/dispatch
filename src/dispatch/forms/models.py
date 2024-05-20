@@ -22,6 +22,7 @@ class Forms(TimeStampMixin, ProjectMixin, Base):
     attorney_status = Column(String, default=FormAttorneyStatus.not_reviewed, nullable=True)
     attorney_questions = Column(String, nullable=True)
     attorney_analysis = Column(String, nullable=True)
+    attorney_form_data = Column(String, nullable=True)
 
     # Relationships
     creator_id = Column(Integer, ForeignKey("individual_contact.id"))
@@ -39,6 +40,7 @@ class FormsBase(DispatchBase):
     form_type: Optional[FormsTypeRead]
     creator: Optional[IndividualContactReadMinimal]
     form_data: Optional[str] = Field(None, nullable=True)
+    attorney_form_data: Optional[str] = Field(None, nullable=True)
     status: Optional[str] = Field(None, nullable=True)
     attorney_status: Optional[str] = Field(None, nullable=True)
     project: Optional[ProjectRead]
