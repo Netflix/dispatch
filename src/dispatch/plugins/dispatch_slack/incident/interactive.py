@@ -1055,12 +1055,12 @@ def handle_member_left_channel(
 ) -> None:
     ack()
 
-    if context["subject"].type != IncidentSubjects.incident:
+    if context["subject"].type == IncidentSubjects.incident:
         incident_flows.incident_remove_participant_flow(
             user.email, context["subject"].id, db_session=db_session
         )
 
-    if context["subject"].type != CaseSubjects.case:
+    if context["subject"].type == CaseSubjects.case:
         case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
         if not case.dedicated_channel:
