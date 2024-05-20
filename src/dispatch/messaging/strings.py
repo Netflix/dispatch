@@ -226,7 +226,7 @@ You can use `{{command}}` in the conversation to assist you in writing one.""".r
 ).strip()
 
 INCIDENT_CLOSE_REMINDER_DESCRIPTION = """The status of this incident hasn't been updated recently.
-You can use `{{command}}` in the conversation to close the incident if it has been resolved and can be closed.""".replace(
+You can use `{{command}}` in the <{{conversation_weblink}}|conversation> to close the incident if it has been resolved and can be closed.""".replace(
     "\n", " "
 ).strip()
 
@@ -628,7 +628,7 @@ INCIDENT_REPORT_REMINDER_DELAYED = [
 INCIDENT_CLOSE_REMINDER = [
     {
         "title": "{{name}} Incident - Close Reminder",
-        "title_link": "{{ticket_weblink}}",
+        "title_link": "{{dispatch_ui_incident_url}}",
         "text": INCIDENT_CLOSE_REMINDER_DESCRIPTION,
     },
     INCIDENT_TITLE,
