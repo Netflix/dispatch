@@ -28,6 +28,8 @@ from slack_sdk.web.client import WebClient
 from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
+from dispatch.case import service as case_service
+from dispatch.case import flows as case_flows
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.database.service import search_filter_sort_paginate
 from dispatch.enums import Visibility, EventType, SubjectNames
@@ -994,20 +996,81 @@ def handle_member_joined_channel(
         db_session.add(participant)
         db_session.commit()
 
+    if context["subject"].type != CaseSubjects.case:
+        case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
-@app.event("member_left_channel", middleware=[message_context_middleware, user_middleware])
+        if not case.dedicated_channel:
+            return
+
+        participant = case_flows.case_add_or_reactivate_participant_flow(
+            user_email=user.email,
+            case_id=context["subject"].id,
+            db_session=db_session,
+        )
+
+        if not participant:
+            # Participant is already in the case channel.
+            return
+
+        participant.user_conversation_id = context["user_id"]
+
+        # If the user was invited, the message will include an inviter property containing the user ID of the inviting user.
+        # The property will be absent when a user manually joins a channel, or a user is added by default (e.g. #general channel).
+        inviter = body.get("event", {}).get("inviter", None)
+        inviter_is_user = (
+            dispatch_slack_service.is_user(context["config"], inviter) if inviter else None
+        )
+
+        if inviter and inviter_is_user:
+            # Participant is added into the incident channel using an @ message or /invite command.
+            inviter_email = get_user_email(client=client, user_id=inviter)
+            added_by_participant = participant_service.get_by_case_id_and_email(
+                db_session=db_session,
+                case_id=context["subject"].id,
+                email=inviter_email,
+            )
+            participant.added_by = added_by_participant
+
+        else:
+            # User joins via the `join` button on Web Application or Slack.
+            # We default to the incident commander when we don't know who added the user or the user is the Dispatch bot.
+            participant.added_by = case.assignee
+
+        # Message text when someone @'s a user is not available in body, use generic added by reason
+        participant.added_reason = f"Participant added by {participant.added_by.individual.name}"
+
+        db_session.add(participant)
+        db_session.commit()
+
+
+@app.event(
+    "member_left_channel",
+    middleware=[
+        message_context_middleware,
+        user_middleware,
+    ],
+)
 def handle_member_left_channel(
     ack: Ack, context: BoltContext, db_session: Session, user: DispatchUser
 ) -> None:
     ack()
 
     if context["subject"].type != IncidentSubjects.incident:
-        # only run this workflow for incidents
-        return
+        incident_flows.incident_remove_participant_flow(
+            user.email, context["subject"].id, db_session=db_session
+        )
 
-    incident_flows.incident_remove_participant_flow(
-        user.email, context["subject"].id, db_session=db_session
-    )
+    if context["subject"].type != CaseSubjects.case:
+        case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+
+        if not case.dedicated_channel:
+            return
+
+        case_flows.case_remove_participant_flow(
+            user_email=user.email,
+            case_id=context["subject"].id,
+            db_session=db_session,
+        )
 
 
 # MODALS
