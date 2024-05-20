@@ -83,7 +83,6 @@ from dispatch.plugins.dispatch_slack.middleware import (
     command_context_middleware,
     db_middleware,
     engagement_button_context_middleware,
-    message_context_middleware,
     modal_submit_middleware,
     shortcut_context_middleware,
     subject_middleware,
@@ -1061,110 +1060,6 @@ def handle_case_after_hours_message(
                 thread_ts=payload["thread_ts"],
                 user=payload["user"],
             )
-
-
-@app.event(
-    "member_joined_channel",
-    middleware=[
-        message_context_middleware,
-        user_middleware,
-        configuration_middleware,
-    ],
-)
-def handle_member_joined_case_channel(
-    ack: Ack,
-    body: dict,
-    context: BoltContext,
-    client: WebClient,
-    db_session: Session,
-    respond: Respond,
-    payload: dict,
-    user: DispatchUser,
-) -> None:
-    """Notifies the user that this case is currently in after hours mode."""
-    ack()
-
-    if not user:
-        raise Exception(
-            "Unable to handle member_joined_channel Slack event. Dispatch user unknown."
-        )
-
-    if context["subject"].type != CaseSubjects.case:
-        # only run this workflow for cases
-        return
-
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
-
-    if not case.dedicated_channel:
-        return
-
-    participant = case_flows.case_add_or_reactivate_participant_flow(
-        user_email=user.email,
-        case_id=context["subject"].id,
-        db_session=db_session,
-    )
-
-    if not participant:
-        # Participant is already in the case channel.
-        return
-
-    participant.user_conversation_id = context["user_id"]
-
-    # If the user was invited, the message will include an inviter property containing the user ID of the inviting user.
-    # The property will be absent when a user manually joins a channel, or a user is added by default (e.g. #general channel).
-    inviter = body.get("event", {}).get("inviter", None)
-    inviter_is_user = (
-        dispatch_slack_service.is_user(context["config"], inviter) if inviter else None
-    )
-
-    if inviter and inviter_is_user:
-        # Participant is added into the incident channel using an @ message or /invite command.
-        inviter_email = get_user_email(client=client, user_id=inviter)
-        added_by_participant = participant_service.get_by_case_id_and_email(
-            db_session=db_session,
-            case_id=context["subject"].id,
-            email=inviter_email,
-        )
-        participant.added_by = added_by_participant
-
-    else:
-        # User joins via the `join` button on Web Application or Slack.
-        # We default to the incident commander when we don't know who added the user or the user is the Dispatch bot.
-        participant.added_by = case.assignee
-
-    # Message text when someone @'s a user is not available in body, use generic added by reason
-    participant.added_reason = f"Participant added by {participant.added_by.individual.name}"
-
-    db_session.add(participant)
-    db_session.commit()
-
-
-@app.event(
-    "member_left_channel",
-    middleware=[
-        message_context_middleware,
-        user_middleware,
-    ],
-)
-def handle_member_left_channel(
-    ack: Ack, context: BoltContext, db_session: Session, user: DispatchUser
-) -> None:
-    ack()
-
-    if context["subject"].type != CaseSubjects.case:
-        # only run this workflow for cases
-        return
-
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
-
-    if not case.dedicated_channel:
-        return
-
-    case_flows.case_remove_participant_flow(
-        user_email=user.email,
-        case_id=context["subject"].id,
-        db_session=db_session,
-    )
 
 
 @app.action("button-link")
