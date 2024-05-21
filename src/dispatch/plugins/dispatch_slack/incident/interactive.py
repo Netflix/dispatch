@@ -1992,7 +1992,6 @@ def duplicate_incident(
                 dispatch_action=True,
                 initial_option={"text": project.name, "value": project.id},
             ),
-            Section(text=f"Previous incident type: {incident['type']}"),
             incident_type_select(db_session=db_session, project_id=project.id, optional=True),
             Section(text=f"Previous incident severity: {incident['severity']}"),
             incident_severity_select(db_session=db_session, project_id=project.id, optional=True),
