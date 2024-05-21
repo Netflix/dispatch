@@ -239,7 +239,7 @@ def open_document_access(document: Document, db_session: Session):
         )
         log.exception(e)
     else:
-        event_service.log_event(
+        event_service.log_subject_event(
             db_session=db_session,
             source="Dispatch Core App",
             description=f"{deslug(document.resource_type).lower().capitalize()} opened to anyone in the domain",
