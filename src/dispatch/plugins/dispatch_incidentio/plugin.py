@@ -43,6 +43,7 @@ class IncidentIOPlugin(SecondarySystemPlugin):
         incident_details["description"] = incident.get("summary", "")
         incident_details["status"] = incident["incident_status"]["name"]
         incident_details["priority"] = incident["incident_status"]["rank"]
+        incident_details["type"] = incident["incident_status"]["category"]
         incident_details["severity"] = incident["severity"]["name"]
         reporter = ""
         incident_commander = ""

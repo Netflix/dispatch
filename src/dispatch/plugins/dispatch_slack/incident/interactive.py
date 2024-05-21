@@ -1982,7 +1982,35 @@ def duplicate_incident(
         # get the incident
         incident = plugin.instance.get(incident_number)
 
-        # todo: create dialog with incident details, ask user for mapping to project
+        blocks = [
+            Context(elements=[MarkdownText(text="Use this form to update the incident's details.")]),
+            title_input(initial_value=incident["title"]),
+            description_input(initial_value=incident["description"]),
+            project_select(
+                db_session=db_session,
+                action_id=IncidentReportActions.project_select,
+                dispatch_action=True,
+                initial_option={"text": project.name, "value": project.id},
+            ),
+            Section(text=f"Previous incident type: {incident['type']}"),
+            incident_type_select(db_session=db_session, project_id=project.id, optional=True),
+            Section(text=f"Previous incident severity: {incident['severity']}"),
+            incident_severity_select(db_session=db_session, project_id=project.id, optional=True),
+            Section(text=f"Previous incident priority: {incident['priority']}"),
+            incident_priority_select(db_session=db_session, project_id=project.id, optional=True),
+            tag_multi_select(optional=True),
+        ]
+
+        modal = Modal(
+            title="Duplicate Incident",
+            blocks=blocks,
+            submit="Report",
+            close="Cancel",
+            callback_id=IncidentReportActions.submit,
+            private_metadata=context["subject"].json(),
+        ).build()
+
+        client.views_open(trigger_id=shortcut["trigger_id"], view=modal)
 
 
 @app.shortcut(
