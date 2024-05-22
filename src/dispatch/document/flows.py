@@ -1,7 +1,9 @@
 from typing import Any
 import logging
 
-from dispatch.database.core import SessionLocal, resolve_attr
+from sqlalchemy.orm import Session
+
+from dispatch.database.core import resolve_attr
 from dispatch.database.core import get_table_name_by_class_instance
 from dispatch.enums import DocumentResourceTypes
 from dispatch.event import service as event_service
@@ -16,7 +18,10 @@ log = logging.getLogger(__name__)
 
 
 def create_document(
-    subject: Any, document_type: str, document_template: Document, db_session: SessionLocal
+    subject: Any,
+    document_type: str,
+    document_template: Document,
+    db_session: Session,
 ):
     """Creates a document."""
     plugin = plugin_service.get_active_instance(
@@ -111,7 +116,7 @@ def create_document(
     return document
 
 
-def update_document(document: Document, project_id: int, db_session: SessionLocal):
+def update_document(document: Document, project_id: int, db_session: Session):
     """Updates an existing document."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project_id, plugin_type="document"
@@ -180,7 +185,7 @@ def update_document(document: Document, project_id: int, db_session: SessionLoca
         )
 
 
-def delete_document(document: Document, project_id: int, db_session: SessionLocal):
+def delete_document(document: Document, project_id: int, db_session: Session):
     """Deletes an existing document."""
     # we delete the external document
     plugin = plugin_service.get_active_instance(
@@ -197,10 +202,27 @@ def delete_document(document: Document, project_id: int, db_session: SessionLoca
     delete(db_session=db_session, document_id=document.id)
 
 
-def open_document_access(document: Document, db_session: SessionLocal):
-    """Opens access to document by adding domain wide permission."""
+def open_document_access(document: Document, db_session: Session):
+    """Opens access to document by adding domain wide permission, handling both incidents and cases."""
+    subject_type = None
+    project_id = None
+    subject = None
+
+    if document.incident:
+        subject_type = "incident"
+        subject = document.incident
+        project_id = document.incident.project.id
+    elif document.case:
+        subject_type = "case"
+        subject = document.case
+        project_id = document.case.project.id
+
+    if not subject_type:
+        log.warning(f"Document {document.id} is neither linked to an incident nor a case.")
+        return
+
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=document.incident.project.id, plugin_type="storage"
+        db_session=db_session, project_id=project_id, plugin_type="storage"
     )
     if not plugin:
         log.warning("Access to document not opened. No storage plugin enabled.")
@@ -209,26 +231,43 @@ def open_document_access(document: Document, db_session: SessionLocal):
     try:
         plugin.instance.open(document.resource_id)
     except Exception as e:
-        event_service.log_incident_event(
+        event_service.log_subject_event(
             db_session=db_session,
             source="Dispatch Core App",
             description=f"Opening {deslug(document.resource_type).lower()} to anyone in the domain failed. Reason: {e}",
-            incident_id=document.incident.id,
+            subject=subject,
         )
         log.exception(e)
     else:
-        event_service.log_incident_event(
+        event_service.log_subject_event(
             db_session=db_session,
             source="Dispatch Core App",
             description=f"{deslug(document.resource_type).lower().capitalize()} opened to anyone in the domain",
-            incident_id=document.incident.id,
+            subject=subject,
         )
 
 
-def mark_document_as_readonly(document: Document, db_session: SessionLocal):
-    """Marks document as readonly."""
+def mark_document_as_readonly(document: Document, db_session: Session):
+    """Marks document as readonly, handling both incidents and cases."""
+    subject_type = None
+    project_id = None
+    subject = None
+
+    if document.incident:
+        subject_type = "incident"
+        subject = document.incident
+        project_id = document.incident.project.id
+    elif document.case:
+        subject_type = "case"
+        subject = document.case
+        project_id = document.case.project.id
+
+    if not subject_type:
+        log.warning(f"Document {document.id} is neither linked to an incident nor a case.")
+        return
+
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=document.incident.project.id, plugin_type="storage"
+        db_session=db_session, project_id=project_id, plugin_type="storage"
     )
     if not plugin:
         log.warning("Document not marked as readonly. No storage plugin enabled.")
@@ -237,17 +276,17 @@ def mark_document_as_readonly(document: Document, db_session: SessionLocal):
     try:
         plugin.instance.mark_readonly(document.resource_id)
     except Exception as e:
-        event_service.log_incident_event(
+        event_service.log_subject_event(
             db_session=db_session,
             source="Dispatch Core App",
             description=f"Marking {deslug(document.resource_type).lower()} as readonly failed. Reason: {e}",
-            incident_id=document.incident.id,
+            subject=subject,
         )
         log.exception(e)
     else:
-        event_service.log_incident_event(
+        event_service.log_subject_event(
             db_session=db_session,
             source="Dispatch Core App",
             description=f"{deslug(document.resource_type).lower().capitalize()} marked as readonly",
-            incident_id=document.incident.id,
+            subject=subject,
         )
