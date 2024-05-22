@@ -43,6 +43,8 @@ class Project(Base):
 
     send_daily_reports = Column(Boolean)
 
+    commander_selection_visibility = Column(Boolean)
+
     stable_priority_id = Column(Integer, nullable=True)
     stable_priority = relationship(
         IncidentPriority,
