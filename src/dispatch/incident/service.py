@@ -112,7 +112,7 @@ def get_by_name_or_raise(*, db_session, project_id: int, incident_in: IncidentRe
 
 def get_all(*, db_session, project_id: int) -> List[Optional[Incident]]:
     """Returns all incidents."""
-    return db_session.query(Incident).filter(Incident.project_id == project_id)
+    return db_session.query(Incident).filter(Incident.project_id == project_id).all()
 
 
 def get_all_by_status(*, db_session, status: str, project_id: int) -> List[Optional[Incident]]:

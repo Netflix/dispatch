@@ -162,6 +162,103 @@ def dispatch_user():
     pass
 
 
+@plugins_group.command("calculate_incident_cost")
+@click.option(
+    "--organization",
+    "-o",
+    required=False,
+    help="Organization of incident.",
+)
+@click.option(
+    "--project_id",
+    "-p",
+    required=False,
+    help="Project of incident.",
+)
+@click.option(
+    "--incident_id",
+    "-i",
+    required=True,
+    help="Incident number.",
+)
+def calculate_incident_cost(organization="default", project_id=1, incident_id=1):
+    from collections import defaultdict
+    from datetime import timedelta, timezone
+    from dispatch.cost_model import service as cost_model_service
+    from dispatch.participant.models import ParticipantRead
+    from dispatch.participant_activity import service as participant_activity_service
+    from dispatch.participant_activity.models import ParticipantActivityCreate
+    from dispatch.incident import service as incident_service
+    from dispatch.incident_cost import (
+        service as incident_cost_service,
+    )
+    from dispatch.database.core import refetch_db_session
+    from dispatch.common.utils.cli import install_plugins
+
+    install_plugins()
+
+    db_session = refetch_db_session(organization_slug=organization)
+
+    t_incident = incident_service.get(db_session=db_session, incident_id=int(incident_id))
+    oldest = t_incident.created_at.replace(tzinfo=timezone.utc).timestamp()
+
+    participant_activities = defaultdict(list)
+    cost_model = cost_model_service.get_cost_model_by_id(db_session=db_session, cost_model_id=1)
+    participants_total_response_time_seconds = 0
+
+    # Get the cost model. Iterate through all the listed activities we want to record.
+    for activity in cost_model.activities:
+
+        # Array of sorted (timestamp, user_id) tuples.
+        incident_events = incident_cost_service.fetch_incident_events(
+            incident=t_incident, activity=activity, oldest=oldest, db_session=db_session
+        )
+
+        for ts, user_id in incident_events:
+            participant = (
+                incident_cost_service.participant_service.get_by_incident_id_and_conversation_id(
+                    db_session=db_session,
+                    incident_id=t_incident.id,
+                    user_conversation_id=user_id,
+                )
+            )
+            if not participant:
+                log.warning("Cannot resolve participant.")
+                continue
+
+            activity_in = ParticipantActivityCreate(
+                plugin_event=activity.plugin_event,
+                started_at=ts,
+                ended_at=ts + timedelta(seconds=activity.response_time_seconds),
+                participant=ParticipantRead(id=participant.id),
+                incident=t_incident,
+            )
+            if participant_response_time := participant_activity_service.preview(
+                db_session=db_session,
+                activity_in=activity_in,
+                participant_activities=participant_activities,
+            ):
+                participants_total_response_time_seconds += (
+                    participant_response_time.total_seconds()
+                )
+    print("participants_total_response_time_seconds", participants_total_response_time_seconds)
+    hourly_rate = incident_cost_service.get_hourly_rate(project=t_incident.project)
+    print("hourly rate: ", hourly_rate)
+    amount = incident_cost_service.calculate_response_cost(
+        hourly_rate=hourly_rate,
+        total_response_time_seconds=participants_total_response_time_seconds,
+    )
+
+    incident_costs = t_incident.incident_costs
+    other_costs = 0
+    for incident_cost in incident_costs:
+        if not incident_cost.incident_cost_type.default:
+            other_costs += incident_cost.amount
+
+    print("The classic cost is: ", t_incident.total_cost)
+    print("The new cost is: ", amount + other_costs)
+
+
 @dispatch_user.command("register")
 @click.argument("email")
 @click.option(
