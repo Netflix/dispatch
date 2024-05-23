@@ -678,8 +678,12 @@ def handle_not_configured_reaction_event(
 
 def get_user_name_from_id(client: Any, user_id: str) -> str:
     """Returns the user's name given their user ID."""
-    user = client.users_info(user=user_id)
-    return user["user"]["profile"]["real_name"]
+    try:
+        user = client.users_info(user=user_id)
+        return user["user"]["profile"]["real_name"]
+    except SlackApiError:
+        # if can't find user, just return the original text
+        return user_id
 
 
 def replace_slack_users_in_message(client: Any, message: str) -> str:
