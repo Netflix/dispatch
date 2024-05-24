@@ -12,7 +12,7 @@ from .monitor import MonitorPlugin  # noqa
 from .oncall import OncallPlugin  # noqa
 from .participant import ParticipantPlugin  # noqa
 from .participant_group import ParticipantGroupPlugin  # noqa
-from .secondary_system import SecondarySystemPlugin  # noqa
+from .incident_management import IncidentManagementPlugin  # noqa
 from .signal_consumer import SignalConsumerPlugin  # noqa
 from .signal_enrichment import SignalEnrichmentPlugin  # noqa
 from .source import SourcePlugin  # noqa

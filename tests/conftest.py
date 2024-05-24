@@ -264,12 +264,12 @@ def workflow_plugin():
 
 
 @pytest.fixture
-def secondary_system_plugin():
+def incident_management_plugin():
     from dispatch.plugins.base import register
-    from dispatch.plugins.dispatch_test.secondary_system import TestSecondarySystemPlugin
+    from dispatch.plugins.dispatch_test.incident_management import TestIncidentManagementPlugin
 
-    register(TestSecondarySystemPlugin)
-    return TestSecondarySystemPlugin
+    register(TestIncidentManagementPlugin)
+    return TestIncidentManagementPlugin
 
 
 @pytest.fixture

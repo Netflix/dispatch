@@ -1973,7 +1973,7 @@ def duplicate_incident(
         plugin = plugin_service.get_active_instance(
             db_session=db_session,
             project_id=project.id,
-            plugin_type="secondary-system",
+            plugin_type="incident-management",
         )
 
         if not plugin:

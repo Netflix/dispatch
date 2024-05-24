@@ -7,11 +7,10 @@
 """
 import logging
 import requests
-from requests.auth import HTTPBasicAuth
 
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_incidentio as incidentio_plugin
-from dispatch.plugins.bases import SecondarySystemPlugin
+from dispatch.plugins.bases import IncidentManagementPlugin
 from dispatch.plugins.dispatch_incidentio.config import (
     IncidentIOConfiguration,
 )
@@ -21,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 @apply(counter, exclude=["__init__"])
 @apply(timer, exclude=["__init__"])
-class IncidentIOPlugin(SecondarySystemPlugin):
+class IncidentIOPlugin(IncidentManagementPlugin):
     title = "IncidentIO Plugin - Secondary Incident Management System"
     slug = "incident-io-plugin"
     description = "Provides a connector to incident.io to import incidents."
