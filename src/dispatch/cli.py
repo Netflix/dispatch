@@ -234,7 +234,6 @@ def calculate_incident_cost(organization="default", project_id=1, incident_id=1)
                 incident=t_incident,
             )
             if participant_response_time := participant_activity_service.preview(
-                db_session=db_session,
                 activity_in=activity_in,
                 participant_activities=participant_activities,
             ):
