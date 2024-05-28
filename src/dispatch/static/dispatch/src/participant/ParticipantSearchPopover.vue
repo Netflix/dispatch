@@ -45,7 +45,7 @@ const fetchParticipants = async (query = "") => {
   try {
     const options = {
       filter: JSON.stringify([
-        { and: [{ model: "IndividualContact", field: "name", op: "like", value: `%${query}%` }] },
+        { and: [{ model: "IndividualContact", field: "name", op: "ilike", value: `%${query}%` }] },
       ]),
       itemsPerPage: 10,
     }
