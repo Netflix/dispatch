@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from typing import List
 
 from sqlalchemy.orm import Session
 
@@ -780,8 +779,8 @@ def case_assign_role_flow(
 def case_create_resources_flow(
     db_session: Session,
     case_id: int,
-    individual_participants: List[str],
-    team_participants: List[str],
+    individual_participants: list[str],
+    team_participants: list[str],
     conversation_target: str = None,
     create_all_resources: bool = True,
 ) -> None:

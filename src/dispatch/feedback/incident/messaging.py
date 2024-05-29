@@ -1,5 +1,4 @@
 import logging
-from typing import List
 
 from dispatch.database.core import SessionLocal
 from dispatch.messaging.strings import (
@@ -15,7 +14,7 @@ log = logging.getLogger(__name__)
 
 
 def send_incident_feedback_daily_report(
-    commander_email: str, feedback: List[Feedback], project_id: int, db_session: SessionLocal
+    commander_email: str, feedback: list[Feedback], project_id: int, db_session: SessionLocal
 ):
     """Sends an incident feedback daily report to all incident commanders who received feedback."""
     plugin = plugin_service.get_active_instance(

@@ -1,5 +1,4 @@
 import logging
-from typing import List
 
 import spacy
 from spacy.matcher import PhraseMatcher
@@ -10,7 +9,7 @@ nlp = spacy.blank("en")
 nlp.vocab.lex_attr_getters = {}
 
 
-def build_term_vocab(terms: List[str]):
+def build_term_vocab(terms: list[str]):
     """Builds nlp vocabulary."""
     for v in terms:
         texts = [v, v.lower(), v.upper(), v.title()]
@@ -22,14 +21,14 @@ def build_term_vocab(terms: List[str]):
                     yield phrase
 
 
-def build_phrase_matcher(name: str, phrases: List[str]) -> PhraseMatcher:
+def build_phrase_matcher(name: str, phrases: list[str]) -> PhraseMatcher:
     """Builds a PhraseMatcher object."""
     matcher = PhraseMatcher(nlp.tokenizer.vocab)
     matcher.add(name, phrases)
     return matcher
 
 
-def extract_terms_from_text(text: str, matcher: PhraseMatcher) -> List[str]:
+def extract_terms_from_text(text: str, matcher: PhraseMatcher) -> list[str]:
     """Extracts key terms out of test."""
     terms = []
     doc = nlp.tokenizer(text)

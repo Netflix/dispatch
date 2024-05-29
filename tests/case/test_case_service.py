@@ -22,8 +22,9 @@ def test_get_by_name(session, case: Case):
 def test_get_all(session, case: Case):
     from dispatch.case.service import get_all
 
-    t_cases = get_all(db_session=session, project_id=case.project.id).all()
+    t_cases = get_all(db_session=session, project_id=case.project.id)
     assert t_cases
+    assert len(t_cases) >= 1
 
 
 def test_get_all_by_status(session, new_case: Case):
@@ -37,6 +38,7 @@ def test_get_all_by_status(session, new_case: Case):
         status=CaseStatus.new,
     )
     assert t_cases
+    assert len(t_cases) >= 1
 
     # None case
     t_cases = get_all_by_status(

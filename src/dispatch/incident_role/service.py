@@ -1,6 +1,5 @@
 import logging
 
-from typing import List, Optional
 from operator import attrgetter
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
@@ -23,19 +22,19 @@ from .models import (
 log = logging.getLogger(__name__)
 
 
-def get(*, db_session, incident_role_id: int) -> Optional[IncidentRole]:
+def get(*, db_session, incident_role_id: int) -> IncidentRole | None:
     """Gets an incident role by id."""
     return db_session.query(IncidentRole).filter(IncidentRole.id == incident_role_id).one_or_none()
 
 
-def get_all(*, db_session):
+def get_all(*, db_session) -> list[IncidentRole]:
     """Gets all incident role."""
-    return db_session.query(IncidentRole)
+    return db_session.query(IncidentRole).all()
 
 
 def get_all_by_role(
     *, db_session, role: ParticipantRoleType, project_id: int
-) -> Optional[List[IncidentRole]]:
+) -> list[IncidentRole]:
     """Gets all policies for a given role."""
     return (
         db_session.query(IncidentRole)
@@ -47,14 +46,15 @@ def get_all_by_role(
 
 def get_all_enabled_by_role(
     *, db_session, role: ParticipantRoleType, project_id: int
-) -> Optional[List[IncidentRole]]:
+) -> list[IncidentRole]:
     """Gets all enabled incident roles."""
     return (
         db_session.query(IncidentRole)
         .filter(IncidentRole.enabled == True)  # noqa Flake8 E712
         .filter(IncidentRole.role == role)
         .filter(IncidentRole.project_id == project_id)
-    ).all()
+        .all()
+    )
 
 
 def create_or_update(
@@ -62,8 +62,8 @@ def create_or_update(
     db_session,
     project_in: ProjectRead,
     role: ParticipantRoleType,
-    incident_roles_in: List[IncidentRoleCreateUpdate],
-) -> List[IncidentRole]:
+    incident_roles_in: list[IncidentRoleCreateUpdate],
+) -> list[IncidentRole]:
     """Updates a list of incident role policies."""
     role_policies = []
 
@@ -175,7 +175,7 @@ def resolve_role(
     db_session,
     role: ParticipantRoleType,
     incident: Incident,
-) -> Optional[IncidentRole]:
+) -> IncidentRole | None:
     """Based on parameters currently associated to an incident determine who should be assigned which incident role."""
     incident_roles = get_all_enabled_by_role(
         db_session=db_session, role=role, project_id=incident.project.id

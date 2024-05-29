@@ -469,7 +469,7 @@ def handle_list_participants_command(
 
     participants = participant_service.get_all_by_incident_id(
         db_session=db_session, incident_id=context["subject"].id
-    ).all()
+    )
 
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
@@ -2492,11 +2492,6 @@ def handle_update_task_status_button_click(
     else:
         status = TaskStatus.resolved if resolve is True else TaskStatus.open
         task_service.resolve_or_reopen(db_session=db_session, task_id=task.id, status=status)
-
-    tasks = task_service.get_all_by_incident_id(
-        db_session=db_session,
-        incident_id=context["subject"].id,
-    )
 
     tasks = task_service.get_all_by_incident_id(
         db_session=db_session,

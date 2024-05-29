@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import validator, Field
 from pydantic.networks import EmailStr
 
@@ -35,7 +33,7 @@ class GroupUpdate(GroupBase):
 
 class GroupRead(GroupBase):
     id: PrimaryKey
-    description: Optional[str] = Field(None, nullable=True)
+    description: str | None = Field(None, nullable=True)
 
     @validator("description", pre=True, always=True)
     def set_description(cls, v):

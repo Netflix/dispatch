@@ -1,4 +1,3 @@
-from typing import Optional
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, ForeignKey, Integer, JSON, Boolean
 
@@ -29,8 +28,8 @@ class Monitor(Base, ResourceMixin, TimeStampMixin):
 
 
 class MonitorBase(ResourceBase):
-    enabled: Optional[bool]
-    status: Optional[dict]
+    enabled: bool | None
+    status: dict | None
 
 
 class MonitorCreate(MonitorBase):

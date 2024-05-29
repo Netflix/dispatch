@@ -1,17 +1,15 @@
-from typing import List, Optional
-
 from .enums import ReportTypes
 from .models import Report, ReportCreate, ReportUpdate
 
 
-def get(*, db_session, report_id: int) -> Optional[Report]:
+def get(*, db_session, report_id: int) -> Report | None:
     """Get a report by id."""
     return db_session.query(Report).filter(Report.id == report_id).one_or_none()
 
 
 def get_most_recent_by_incident_id_and_type(
     *, db_session, incident_id: int, report_type: ReportTypes
-) -> Optional[Report]:
+) -> Report | None:
     """Get most recent report by incident id and report type."""
     return (
         db_session.query(Report)
@@ -24,18 +22,19 @@ def get_most_recent_by_incident_id_and_type(
 
 def get_all_by_incident_id_and_type(
     *, db_session, incident_id: int, report_type: ReportTypes
-) -> Optional[Report]:
+) -> list[Report]:
     """Get all reports by incident id and report type."""
     return (
         db_session.query(Report)
         .filter(Report.incident_id == incident_id)
         .filter(Report.type == report_type)
+        .all()
     )
 
 
-def get_all(*, db_session) -> List[Optional[Report]]:
+def get_all(*, db_session) -> list[Report]:
     """Get all reports."""
-    return db_session.query(Report)
+    return db_session.query(Report).all()
 
 
 def create(*, db_session, report_in: ReportCreate) -> Report:

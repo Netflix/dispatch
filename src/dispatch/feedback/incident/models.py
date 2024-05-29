@@ -1,6 +1,5 @@
 from datetime import datetime
 from pydantic import Field
-from typing import Optional, List
 
 from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -38,11 +37,11 @@ class Feedback(TimeStampMixin, FeedbackMixin, Base):
 
 # Pydantic models
 class FeedbackBase(DispatchBase):
-    created_at: Optional[datetime]
+    created_at: datetime | None
     rating: FeedbackRating = FeedbackRating.very_satisfied
-    feedback: Optional[str] = Field(None, nullable=True)
-    incident: Optional[IncidentReadMinimal]
-    participant: Optional[ParticipantRead]
+    feedback: str | None = Field(None, nullable=True)
+    incident: IncidentReadMinimal | None
+    participant: ParticipantRead | None
 
 
 class FeedbackCreate(FeedbackBase):
@@ -55,8 +54,8 @@ class FeedbackUpdate(FeedbackBase):
 
 class FeedbackRead(FeedbackBase):
     id: PrimaryKey
-    project: Optional[ProjectRead]
+    project: ProjectRead | None
 
 
 class FeedbackPagination(Pagination):
-    items: List[FeedbackRead]
+    items: list[FeedbackRead]

@@ -1,7 +1,5 @@
-from typing import Optional
-
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Session
 
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
@@ -9,12 +7,12 @@ from dispatch.signal import service as signal_service
 from .models import EntityType, EntityTypeCreate, EntityTypeRead, EntityTypeUpdate
 
 
-def get(*, db_session, entity_type_id: int) -> Optional[EntityType]:
+def get(*, db_session, entity_type_id: int) -> EntityType | None:
     """Gets a entity type by its id."""
     return db_session.query(EntityType).filter(EntityType.id == entity_type_id).one_or_none()
 
 
-def get_by_name(*, db_session: Session, project_id: int, name: str) -> Optional[EntityType]:
+def get_by_name(*, db_session: Session, project_id: int, name: str) -> EntityType | None:
     """Gets a entity type by its name."""
     return (
         db_session.query(EntityType)
@@ -46,11 +44,11 @@ def get_by_name_or_raise(
     return entity_type
 
 
-def get_all(*, db_session: Session, scope: str = None) -> Query:
+def get_all(*, db_session: Session, scope: str = None) -> list[EntityType]:
     """Gets all entity types."""
     if scope:
-        return db_session.query(EntityType).filter(EntityType.scope == scope)
-    return db_session.query(EntityType)
+        return db_session.query(EntityType).filter(EntityType.scope == scope).all()
+    return db_session.query(EntityType).all()
 
 
 def create(*, db_session: Session, entity_type_in: EntityTypeCreate) -> EntityType:

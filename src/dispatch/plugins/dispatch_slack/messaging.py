@@ -4,8 +4,9 @@
     :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
+
 import logging
-from typing import Any, List, Optional
+from typing import Any
 
 from blockkit import (
     Actions,
@@ -56,7 +57,7 @@ def get_template(message_type: MessageType):
 
 
 def get_incident_conversation_command_message(
-    command_string: str, config: Optional[SlackConfiguration] = None
+    command_string: str, config: SlackConfiguration | None = None
 ) -> dict[str, str]:
     """Fetches a custom message and response type for each respective slash command."""
 
@@ -254,9 +255,9 @@ def default_notification(items: list):
 
 
 def create_message_blocks(
-    message_template: List[dict],
+    message_template: list[dict],
     message_type: MessageType,
-    items: Optional[List] = None,
+    items: list | None = None,
     **kwargs,
 ):
     """Creates all required blocks for a given message type and template."""

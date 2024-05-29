@@ -3,8 +3,9 @@ https://github.com/slackapi/bolt-python/blob/c99c23fd056d26f8b1e39436bd1fcd2c83a
 
 Fork of the built-in Bolt Starlette adapater. Removes async to allow instant acknowledgment of interactivity payloads from Slack.
 """
+
 from http import HTTPStatus
-from typing import Dict, Any, Optional
+from typing import Any
 
 from starlette.requests import Request
 from starlette.responses import Response
@@ -16,7 +17,7 @@ from slack_bolt.oauth import OAuthFlow
 def to_bolt_request(
     req: Request,
     body: bytes,
-    addition_context_properties: Optional[Dict[str, Any]] = None,
+    addition_context_properties: dict[str, Any] | None = None,
 ) -> BoltRequest:
     request = BoltRequest(
         body=body.decode("utf-8"),
@@ -58,7 +59,7 @@ class SlackRequestHandler:
         self,
         req: Request,
         body: bytes,
-        addition_context_properties: Optional[Dict[str, Any]] = None,
+        addition_context_properties: dict[str, Any] | None = None,
     ) -> Response:
         if req.method == "GET":
             if self.app.oauth_flow is not None:

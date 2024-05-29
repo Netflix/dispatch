@@ -1,6 +1,6 @@
 from collections import Counter, defaultdict
 from datetime import datetime
-from typing import ForwardRef, List, Optional
+from typing import ForwardRef
 
 from pydantic import validator, Field, AnyHttpUrl
 
@@ -239,29 +239,29 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
 
 
 class ProjectRead(DispatchBase):
-    id: Optional[PrimaryKey]
+    id: PrimaryKey | None
     name: NameStr
-    color: Optional[str]
-    stable_priority: Optional[IncidentPriorityRead] = None
+    color: str | None
+    stable_priority: IncidentPriorityRead | None = None
 
 
 class CaseRead(DispatchBase):
     id: PrimaryKey
-    name: Optional[NameStr]
+    name: NameStr | None
 
 
 class TaskRead(DispatchBase):
     id: PrimaryKey
-    assignees: List[Optional[ParticipantRead]] = []
-    created_at: Optional[datetime]
-    description: Optional[str] = Field(None, nullable=True)
+    assignees: list[ParticipantRead] = []
+    created_at: datetime | None
+    description: str | None = Field(None, nullable=True)
     status: TaskStatus = TaskStatus.open
-    weblink: Optional[AnyHttpUrl] = Field(None, nullable=True)
+    weblink: AnyHttpUrl | None = Field(None, nullable=True)
 
 
 class TaskReadMinimal(DispatchBase):
     id: PrimaryKey
-    description: Optional[str] = Field(None, nullable=True)
+    description: str | None = Field(None, nullable=True)
     status: TaskStatus = TaskStatus.open
 
 
@@ -269,9 +269,9 @@ class TaskReadMinimal(DispatchBase):
 class IncidentBase(DispatchBase):
     title: str
     description: str
-    resolution: Optional[str]
-    status: Optional[IncidentStatus]
-    visibility: Optional[Visibility]
+    resolution: str | None
+    status: IncidentStatus | None
+    visibility: Visibility | None
 
     @validator("title")
     def title_required(cls, v):
@@ -287,14 +287,14 @@ class IncidentBase(DispatchBase):
 
 
 class IncidentCreate(IncidentBase):
-    commander: Optional[ParticipantUpdate]
-    commander_email: Optional[str]
-    incident_priority: Optional[IncidentPriorityCreate]
-    incident_severity: Optional[IncidentSeverityCreate]
-    incident_type: Optional[IncidentTypeCreate]
-    project: Optional[ProjectRead]
-    reporter: Optional[ParticipantUpdate]
-    tags: Optional[List[TagRead]] = []
+    commander: ParticipantUpdate | None
+    commander_email: str | None
+    incident_priority: IncidentPriorityCreate | None
+    incident_severity: IncidentSeverityCreate | None
+    incident_type: IncidentTypeCreate | None
+    project: ProjectRead | None
+    reporter: ParticipantUpdate | None
+    tags: list[TagRead] = []
 
 
 IncidentReadMinimal = ForwardRef("IncidentReadMinimal")
@@ -302,49 +302,49 @@ IncidentReadMinimal = ForwardRef("IncidentReadMinimal")
 
 class IncidentReadMinimal(IncidentBase):
     id: PrimaryKey
-    closed_at: Optional[datetime] = None
-    commander: Optional[ParticipantReadMinimal]
-    commanders_location: Optional[str]
-    created_at: Optional[datetime] = None
-    duplicates: Optional[List[IncidentReadMinimal]] = []
-    incident_costs: Optional[List[IncidentCostRead]] = []
-    incident_document: Optional[DocumentRead] = None
+    closed_at: datetime | None = None
+    commander: ParticipantReadMinimal | None
+    commanders_location: str | None
+    created_at: datetime | None = None
+    duplicates: list[IncidentReadMinimal] = []
+    incident_costs: list[IncidentCostRead] = []
+    incident_document: DocumentRead | None = None
     incident_priority: IncidentPriorityReadMinimal
-    incident_review_document: Optional[DocumentRead] = None
+    incident_review_document: DocumentRead | None = None
     incident_severity: IncidentSeverityReadMinimal
     incident_type: IncidentTypeReadMinimal
-    name: Optional[NameStr]
-    participants_location: Optional[str]
-    participants_team: Optional[str]
+    name: NameStr | None
+    participants_location: str | None
+    participants_team: str | None
     project: ProjectRead
-    reported_at: Optional[datetime] = None
-    reporter: Optional[ParticipantReadMinimal]
-    reporters_location: Optional[str]
-    stable_at: Optional[datetime] = None
-    storage: Optional[StorageRead] = None
-    tags: Optional[List[TagRead]] = []
-    tasks: Optional[List[TaskReadMinimal]] = []
-    total_cost: Optional[float]
+    reported_at: datetime | None = None
+    reporter: ParticipantReadMinimal | None
+    reporters_location: str | None
+    stable_at: datetime | None = None
+    storage: StorageRead | None = None
+    tags: list[TagRead] = []
+    tasks: list[TaskReadMinimal] = []
+    total_cost: float | None
 
 
 IncidentReadMinimal.update_forward_refs()
 
 
 class IncidentUpdate(IncidentBase):
-    cases: Optional[List[CaseRead]] = []
-    commander: Optional[ParticipantUpdate]
-    delay_executive_report_reminder: Optional[datetime] = None
-    delay_tactical_report_reminder: Optional[datetime] = None
-    duplicates: Optional[List[IncidentReadMinimal]] = []
-    incident_costs: Optional[List[IncidentCostUpdate]] = []
+    cases: list[CaseRead] = []
+    commander: ParticipantUpdate | None
+    delay_executive_report_reminder: datetime | None = None
+    delay_tactical_report_reminder: datetime | None = None
+    duplicates: list[IncidentReadMinimal] = []
+    incident_costs: list[IncidentCostUpdate] = []
     incident_priority: IncidentPriorityBase
     incident_severity: IncidentSeverityBase
     incident_type: IncidentTypeBase
-    reported_at: Optional[datetime] = None
-    reporter: Optional[ParticipantUpdate]
-    stable_at: Optional[datetime] = None
-    tags: Optional[List[TagRead]] = []
-    terms: Optional[List[TermRead]] = []
+    reported_at: datetime | None = None
+    reporter: ParticipantUpdate | None
+    stable_at: datetime | None = None
+    tags: list[TagRead] = []
+    terms: list[TermRead] = []
 
     @validator("tags")
     def find_exclusive(cls, v):
@@ -364,47 +364,47 @@ class IncidentUpdate(IncidentBase):
 
 class IncidentRead(IncidentBase):
     id: PrimaryKey
-    cases: Optional[List[CaseRead]] = []
-    closed_at: Optional[datetime] = None
-    commander: Optional[ParticipantRead]
-    commanders_location: Optional[str]
-    conference: Optional[ConferenceRead] = None
-    conversation: Optional[ConversationRead] = None
-    created_at: Optional[datetime] = None
-    delay_executive_report_reminder: Optional[datetime] = None
-    delay_tactical_report_reminder: Optional[datetime] = None
-    documents: Optional[List[DocumentRead]] = []
-    duplicates: Optional[List[IncidentReadMinimal]] = []
-    events: Optional[List[EventRead]] = []
-    incident_costs: Optional[List[IncidentCostRead]] = []
+    cases: list[CaseRead] = []
+    closed_at: datetime | None = None
+    commander: ParticipantRead | None
+    commanders_location: str | None
+    conference: ConferenceRead | None = None
+    conversation: ConversationRead | None = None
+    created_at: datetime | None = None
+    delay_executive_report_reminder: datetime | None = None
+    delay_tactical_report_reminder: datetime | None = None
+    documents: list[DocumentRead] = []
+    duplicates: list[IncidentReadMinimal] = []
+    events: list[EventRead] = []
+    incident_costs: list[IncidentCostRead] = []
     incident_priority: IncidentPriorityRead
     incident_severity: IncidentSeverityRead
     incident_type: IncidentTypeRead
-    last_executive_report: Optional[ReportRead]
-    last_tactical_report: Optional[ReportRead]
-    name: Optional[NameStr]
-    participants: Optional[List[ParticipantRead]] = []
-    participants_location: Optional[str]
-    participants_team: Optional[str]
+    last_executive_report: ReportRead | None
+    last_tactical_report: ReportRead | None
+    name: NameStr | None
+    participants: list[ParticipantRead] = []
+    participants_location: str | None
+    participants_team: str | None
     project: ProjectRead
-    reported_at: Optional[datetime] = None
-    reporter: Optional[ParticipantRead]
-    reporters_location: Optional[str]
-    stable_at: Optional[datetime] = None
-    storage: Optional[StorageRead] = None
-    tags: Optional[List[TagRead]] = []
-    tasks: Optional[List[TaskRead]] = []
-    terms: Optional[List[TermRead]] = []
-    ticket: Optional[TicketRead] = None
-    total_cost: Optional[float]
-    workflow_instances: Optional[List[WorkflowInstanceRead]] = []
+    reported_at: datetime | None = None
+    reporter: ParticipantRead | None
+    reporters_location: str | None
+    stable_at: datetime | None = None
+    storage: StorageRead | None = None
+    tags: list[TagRead] = []
+    tasks: list[TaskRead] = []
+    terms: list[TermRead] = []
+    ticket: TicketRead | None = None
+    total_cost: float | None
+    workflow_instances: list[WorkflowInstanceRead] = []
 
 
 class IncidentExpandedPagination(Pagination):
     itemsPerPage: int
     page: int
-    items: List[IncidentRead] = []
+    items: list[IncidentRead] = []
 
 
 class IncidentPagination(Pagination):
-    items: List[IncidentReadMinimal] = []
+    items: list[IncidentReadMinimal] = []

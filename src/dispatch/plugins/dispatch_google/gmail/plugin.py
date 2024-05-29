@@ -5,9 +5,9 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 import time
 from email.mime.text import MIMEText
-from typing import Dict, List, Optional
 import base64
 import logging
 
@@ -51,7 +51,7 @@ def send_message(service, message: dict) -> bool:
     return True
 
 
-def create_html_message(sender: str, recipient: str, cc: str, subject: str, body: str) -> Dict:
+def create_html_message(sender: str, recipient: str, cc: str, subject: str, body: str) -> dict:
     """Creates a message for an email."""
     message = MIMEText(body, "html")
 
@@ -83,7 +83,7 @@ class GoogleGmailEmailPlugin(EmailPlugin):
         notification_text: str,
         notification_template: dict,
         notification_type: MessageType,
-        items: Optional[List] = None,
+        items: list | None = None,
         **kwargs,
     ):
         """Sends an html email based on the type."""

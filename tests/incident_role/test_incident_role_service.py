@@ -8,7 +8,7 @@ def test_get(session, incident_role):
 def test_get_all(session, project, incident_role):
     from dispatch.incident_role.service import get_all
 
-    t_incident_roles = get_all(db_session=session).all()
+    t_incident_roles = get_all(db_session=session)
     assert len(t_incident_roles) >= 1
 
 

@@ -1,6 +1,5 @@
 from datetime import datetime
 from pydantic import Field
-from typing import Optional, List
 
 from sqlalchemy import Column, Integer, String, Boolean, UniqueConstraint
 
@@ -22,15 +21,15 @@ class EmailTemplates(TimeStampMixin, ProjectMixin, Base):
 
 # Pydantic models
 class EmailTemplatesBase(DispatchBase):
-    email_template_type: Optional[str] = Field(None, nullable=True)
-    welcome_text: Optional[str] = Field(None, nullable=True)
-    welcome_body: Optional[str] = Field(None, nullable=True)
-    components: Optional[str] = Field(None, nullable=True)
-    enabled: Optional[bool]
+    email_template_type: str | None = Field(None, nullable=True)
+    welcome_text: str | None = Field(None, nullable=True)
+    welcome_body: str | None = Field(None, nullable=True)
+    components: str | None = Field(None, nullable=True)
+    enabled: bool | None
 
 
 class EmailTemplatesCreate(EmailTemplatesBase):
-    project: Optional[ProjectRead]
+    project: ProjectRead | None
 
 
 class EmailTemplatesUpdate(EmailTemplatesBase):
@@ -39,11 +38,11 @@ class EmailTemplatesUpdate(EmailTemplatesBase):
 
 class EmailTemplatesRead(EmailTemplatesBase):
     id: PrimaryKey
-    project: Optional[ProjectRead]
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    project: ProjectRead | None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 class EmailTemplatesPagination(Pagination):
-    items: List[EmailTemplatesRead]
+    items: list[EmailTemplatesRead]
     total: int

@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from fastapi import APIRouter, Depends
 
 from pydantic import BaseModel
@@ -63,7 +61,7 @@ class ErrorMessage(BaseModel):
 
 
 class ErrorResponse(BaseModel):
-    detail: Optional[List[ErrorMessage]]
+    detail: list[ErrorMessage]
 
 
 api_router = APIRouter(
@@ -234,7 +232,10 @@ authenticated_organization_api_router.include_router(forms_router, prefix="/form
 authenticated_organization_api_router.include_router(
     forms_type_router, prefix="/forms_type", tags=["forms_type"]
 )
-authenticated_organization_api_router.include_router(email_template_router, prefix="/email_template", tags=["email_template"])
+authenticated_organization_api_router.include_router(
+    email_template_router, prefix="/email_template", tags=["email_template"]
+)
+
 
 @api_router.get("/healthcheck", include_in_schema=False)
 def healthcheck():

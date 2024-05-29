@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 from sqlalchemy.orm import Session
 
@@ -9,18 +8,14 @@ from dispatch.individual import service as individual_service
 log = logging.getLogger(__name__)
 
 
-def get(*, forms_id: int, db_session: Session) -> Optional[Forms]:
+def get(*, forms_id: int, db_session: Session) -> Forms | None:
     """Gets a from by its id."""
-    return (
-        db_session.query(Forms)
-        .filter(Forms.id == forms_id)
-        .one_or_none()
-    )
+    return db_session.query(Forms).filter(Forms.id == forms_id).one_or_none()
 
 
-def get_all(*, db_session: Session):
+def get_all(*, db_session: Session) -> list[Forms]:
     """Gets all forms."""
-    return db_session.query(Forms)
+    return db_session.query(Forms).all()
 
 
 def create(*, forms_in: dict, db_session: Session, creator) -> Forms:
@@ -60,10 +55,6 @@ def update(
 
 def delete(*, db_session, forms_id: int):
     """Deletes a form."""
-    form = (
-        db_session.query(Forms)
-        .filter(Forms.id == forms_id)
-        .one_or_none()
-    )
+    form = db_session.query(Forms).filter(Forms.id == forms_id).one_or_none()
     db_session.delete(form)
     db_session.commit()

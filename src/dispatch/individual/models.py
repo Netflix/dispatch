@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List, Optional, Union
 from pydantic import Field, AnyHttpUrl, validator
 
 from sqlalchemy import Column, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
@@ -63,11 +62,11 @@ class IndividualContact(Base, ContactMixin, ProjectMixin):
 
 
 class IndividualContactBase(ContactBase):
-    weblink: Union[AnyHttpUrl, None, str] = Field(None, nullable=True)
-    mobile_phone: Optional[str] = Field(None, nullable=True)
-    office_phone: Optional[str] = Field(None, nullable=True)
-    title: Optional[str] = Field(None, nullable=True)
-    external_id: Optional[str] = Field(None, nullable=True)
+    weblink: AnyHttpUrl | str | None = Field(None, nullable=True)
+    mobile_phone: str | None = Field(None, nullable=True)
+    office_phone: str | None = Field(None, nullable=True)
+    title: str | None = Field(None, nullable=True)
+    external_id: str | None = Field(None, nullable=True)
 
     @validator("weblink")
     def weblink_validator(cls, v):
@@ -77,26 +76,26 @@ class IndividualContactBase(ContactBase):
 
 
 class IndividualContactCreate(IndividualContactBase):
-    filters: Optional[List[SearchFilterRead]]
+    filters: list[SearchFilterRead] = []
     project: ProjectRead
 
 
 class IndividualContactUpdate(IndividualContactBase):
-    filters: Optional[List[SearchFilterRead]]
+    filters: list[SearchFilterRead] = []
 
 
 class IndividualContactRead(IndividualContactBase):
-    id: Optional[PrimaryKey]
-    filters: Optional[List[SearchFilterRead]] = []
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    id: PrimaryKey | None
+    filters: list[SearchFilterRead] = []
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 class IndividualContactReadMinimal(IndividualContactBase):
-    id: Optional[PrimaryKey]
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    id: PrimaryKey | None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 class IndividualContactPagination(Pagination):
-    items: List[IndividualContactRead] = []
+    items: list[IndividualContactRead] = []

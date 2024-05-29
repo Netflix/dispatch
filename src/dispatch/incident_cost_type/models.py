@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List, Optional
 from pydantic import Field
 
 from sqlalchemy import Column, Integer, String, Boolean
@@ -42,12 +41,12 @@ listen(IncidentCostType.default, "set", ensure_unique_default_per_project)
 # Pydantic Models
 class IncidentCostTypeBase(DispatchBase):
     name: NameStr
-    description: Optional[str] = Field(None, nullable=True)
-    category: Optional[str] = Field(None, nullable=True)
-    details: Optional[dict] = {}
-    created_at: Optional[datetime]
-    default: Optional[bool]
-    editable: Optional[bool]
+    description: str | None = Field(None, nullable=True)
+    category: str | None = Field(None, nullable=True)
+    details: dict | None = {}
+    created_at: datetime | None
+    default: bool | None
+    editable: bool | None
 
 
 class IncidentCostTypeCreate(IncidentCostTypeBase):
@@ -63,4 +62,4 @@ class IncidentCostTypeRead(IncidentCostTypeBase):
 
 
 class IncidentCostTypePagination(Pagination):
-    items: List[IncidentCostTypeRead] = []
+    items: list[IncidentCostTypeRead] = []

@@ -5,9 +5,9 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Will Bengtson <wbengtson@hashicorp.com>
 """
+
 import logging
 import random
-from typing import List
 
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_zoom as zoom_plugin
@@ -66,7 +66,7 @@ class ZoomConferencePlugin(ConferencePlugin):
         self.configuration_schema = ZoomConfiguration
 
     def create(
-        self, name: str, description: str = None, title: str = None, participants: List[str] = None
+        self, name: str, description: str = None, title: str = None, participants: list[str] = None
     ):
         """Create a new event."""
         client = ZoomClient(

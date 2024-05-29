@@ -1,4 +1,3 @@
-from typing import List, Optional
 from pydantic import StrictBool, Field
 from pydantic.color import Color
 
@@ -36,22 +35,22 @@ listen(IncidentPriority.default, "set", ensure_unique_default_per_project)
 
 
 class ProjectRead(DispatchBase):
-    id: Optional[PrimaryKey]
+    id: PrimaryKey | None
     name: NameStr
 
 
 # Pydantic models...
 class IncidentPriorityBase(DispatchBase):
     name: NameStr
-    description: Optional[str] = Field(None, nullable=True)
-    page_commander: Optional[StrictBool]
-    tactical_report_reminder: Optional[int]
-    executive_report_reminder: Optional[int]
-    project: Optional[ProjectRead]
-    default: Optional[bool]
-    enabled: Optional[bool]
-    view_order: Optional[int]
-    color: Optional[Color] = Field(None, nullable=True)
+    description: str | None = Field(None, nullable=True)
+    page_commander: StrictBool | None
+    tactical_report_reminder: int | None
+    executive_report_reminder: int | None
+    project: ProjectRead | None
+    default: bool | None
+    enabled: bool | None
+    view_order: int | None
+    color: Color | None = Field(None, nullable=True)
 
 
 class IncidentPriorityCreate(IncidentPriorityBase):
@@ -69,15 +68,15 @@ class IncidentPriorityRead(IncidentPriorityBase):
 class IncidentPriorityReadMinimal(DispatchBase):
     id: PrimaryKey
     name: NameStr
-    description: Optional[str] = Field(None, nullable=True)
-    page_commander: Optional[StrictBool]
-    tactical_report_reminder: Optional[int]
-    executive_report_reminder: Optional[int]
-    default: Optional[bool]
-    enabled: Optional[bool]
-    view_order: Optional[int]
-    color: Optional[Color] = Field(None, nullable=True)
+    description: str | None = Field(None, nullable=True)
+    page_commander: StrictBool | None
+    tactical_report_reminder: int | None
+    executive_report_reminder: int | None
+    default: bool | None
+    enabled: bool | None
+    view_order: int | None
+    color: Color | None = Field(None, nullable=True)
 
 
 class IncidentPriorityPagination(Pagination):
-    items: List[IncidentPriorityRead] = []
+    items: list[IncidentPriorityRead] = []

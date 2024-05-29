@@ -1,4 +1,3 @@
-from typing import List, Optional
 from pydantic import StrictBool, Field
 from pydantic.color import Color
 
@@ -34,14 +33,14 @@ listen(CasePriority.default, "set", ensure_unique_default_per_project)
 
 # Pydantic models
 class CasePriorityBase(DispatchBase):
-    color: Optional[Color] = Field(None, nullable=True)
-    default: Optional[bool]
-    page_assignee: Optional[StrictBool]
-    description: Optional[str] = Field(None, nullable=True)
-    enabled: Optional[bool]
+    color: Color | None = Field(None, nullable=True)
+    default: bool | None
+    page_assignee: StrictBool | None
+    description: str | None = Field(None, nullable=True)
+    enabled: bool | None
     name: NameStr
-    project: Optional[ProjectRead]
-    view_order: Optional[int]
+    project: ProjectRead | None
+    view_order: int | None
 
 
 class CasePriorityCreate(CasePriorityBase):
@@ -53,8 +52,8 @@ class CasePriorityUpdate(CasePriorityBase):
 
 
 class CasePriorityRead(CasePriorityBase):
-    id: Optional[PrimaryKey]
+    id: PrimaryKey | None
 
 
 class CasePriorityPagination(Pagination):
-    items: List[CasePriorityRead] = []
+    items: list[CasePriorityRead] = []

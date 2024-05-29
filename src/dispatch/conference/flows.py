@@ -1,5 +1,4 @@
 import logging
-from typing import List
 
 from dispatch.database.core import SessionLocal
 from dispatch.event import service as event_service
@@ -12,7 +11,7 @@ from .service import create
 log = logging.getLogger(__name__)
 
 
-def create_conference(incident: Incident, participants: List[str], db_session: SessionLocal):
+def create_conference(incident: Incident, participants: list[str], db_session: SessionLocal):
     """Creates a conference room."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conference"

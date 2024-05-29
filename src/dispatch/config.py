@@ -2,7 +2,6 @@ import logging
 import os
 import base64
 from urllib import parse
-from typing import List
 from pydantic import BaseModel
 
 from starlette.config import Config
@@ -17,7 +16,7 @@ class BaseConfigurationModel(BaseModel):
     pass
 
 
-def get_env_tags(tag_list: List[str]) -> dict:
+def get_env_tags(tag_list: list[str]) -> dict:
     """Create dictionary of available env tags."""
     tags = {}
     for t in tag_list:

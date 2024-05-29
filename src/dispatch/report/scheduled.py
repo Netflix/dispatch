@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime, timedelta
 from schedule import every
-from typing import Optional
 
 from dispatch.database.core import SessionLocal
 from dispatch.decorators import scheduled_project_task, timer
@@ -17,7 +16,7 @@ from .models import ReportTypes
 log = logging.getLogger(__name__)
 
 
-def reminder_set_in_future(reminder: Optional[datetime]) -> bool:
+def reminder_set_in_future(reminder: datetime | None) -> bool:
     """if this reminder has been manually delayed, do not send regularly scheduled one"""
     if reminder and reminder - datetime.utcnow() > timedelta(minutes=1):
         return True

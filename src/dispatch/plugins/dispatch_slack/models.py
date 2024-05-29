@@ -1,4 +1,4 @@
-from typing import Optional, NewType, TypedDict
+from typing import NewType, TypedDict
 
 from pydantic import BaseModel, Field, AnyHttpUrl
 
@@ -41,28 +41,28 @@ class SlackCommandPayload(TypedDict):
 
 
 class SubjectMetadata(BaseModel):
-    id: Optional[str]
-    type: Optional[str]
+    id: str | None
+    type: str | None
     organization_slug: str = "default"
 
-    project_id: Optional[str]
-    channel_id: Optional[str]
+    project_id: str | None
+    channel_id: str | None
 
 
 class EngagementMetadata(SubjectMetadata):
     signal_instance_id: str
     engagement_id: int
-    user: Optional[str]
+    user: str | None
 
 
 class TaskMetadata(SubjectMetadata):
-    task_id: Optional[str]
-    resource_id: Optional[str]
+    task_id: str | None
+    resource_id: str | None
     action_type: str
 
 
 class MonitorMetadata(SubjectMetadata):
-    weblink: Optional[AnyHttpUrl] = Field(None, nullable=True)
+    weblink: AnyHttpUrl | None = Field(None, nullable=True)
     plugin_instance_id: int
 
 

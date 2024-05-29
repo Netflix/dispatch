@@ -8,8 +8,9 @@ def test_get(session, group):
 def test_get_all(session, groups):
     from dispatch.group.service import get_all
 
-    t_groups = get_all(db_session=session).all()
+    t_groups = get_all(db_session=session)
     assert t_groups
+    assert len(t_groups) >= len(groups)
 
 
 def test_create(session):

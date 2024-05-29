@@ -1,21 +1,19 @@
-from typing import Optional
-
 from dispatch.database.core import SessionLocal
 
 from .models import Ticket, TicketCreate
 
 
-def get(*, db_session: SessionLocal, ticket_id: int) -> Optional[Ticket]:
+def get(*, db_session: SessionLocal, ticket_id: int) -> Ticket | None:
     """Fetch a ticket by its ticket id."""
     return db_session.query(Ticket).filter(Ticket.id == ticket_id).one()
 
 
-def get_by_resource_id(*, db_session: SessionLocal, resource_id: str) -> Optional[Ticket]:
+def get_by_resource_id(*, db_session: SessionLocal, resource_id: str) -> Ticket | None:
     """Fetch a ticket by its resource id."""
     return db_session.query(Ticket).filter(Ticket.resource_id == resource_id).one()
 
 
-def get_by_weblink(*, db_session: SessionLocal, weblink: str) -> Optional[Ticket]:
+def get_by_weblink(*, db_session: SessionLocal, weblink: str) -> Ticket | None:
     """Fetch a ticket by its weblink."""
     return db_session.query(Ticket).filter(Ticket.weblink == weblink).one_or_none()
 
@@ -32,9 +30,9 @@ def get_or_create_by_weblink(
     return ticket
 
 
-def get_all(*, db_session: SessionLocal):
+def get_all(*, db_session: SessionLocal) -> list[Ticket]:
     """Fetches all tickets."""
-    return db_session.query(Ticket)
+    return db_session.query(Ticket).all()
 
 
 def create(*, db_session: SessionLocal, ticket_in: TicketCreate) -> Ticket:

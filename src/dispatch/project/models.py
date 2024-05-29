@@ -1,6 +1,5 @@
 from pydantic.networks import EmailStr
 from slugify import slugify
-from typing import List, Optional
 from pydantic import Field
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -60,17 +59,17 @@ class Project(Base):
 
 
 class ProjectBase(DispatchBase):
-    id: Optional[PrimaryKey]
+    id: PrimaryKey | None
     name: NameStr
-    owner_email: Optional[EmailStr] = Field(None, nullable=True)
-    owner_conversation: Optional[str] = Field(None, nullable=True)
-    annual_employee_cost: Optional[int]
-    business_year_hours: Optional[int]
-    description: Optional[str] = Field(None, nullable=True)
+    owner_email: EmailStr | None = Field(None, nullable=True)
+    owner_conversation: str | None = Field(None, nullable=True)
+    annual_employee_cost: int | None
+    business_year_hours: int | None
+    description: str | None = Field(None, nullable=True)
     default: bool = False
-    color: Optional[str] = Field(None, nullable=True)
-    send_daily_reports: Optional[bool] = Field(True, nullable=True)
-    enabled: Optional[bool] = Field(True, nullable=True)
+    color: str | None = Field(None, nullable=True)
+    send_daily_reports: bool | None = Field(True, nullable=True)
+    enabled: bool | None = Field(True, nullable=True)
 
 
 class ProjectCreate(ProjectBase):
@@ -78,14 +77,14 @@ class ProjectCreate(ProjectBase):
 
 
 class ProjectUpdate(ProjectBase):
-    send_daily_reports: Optional[bool] = Field(True, nullable=True)
-    stable_priority_id: Optional[int]
+    send_daily_reports: bool | None = Field(True, nullable=True)
+    stable_priority_id: int | None
 
 
 class ProjectRead(ProjectBase):
-    id: Optional[PrimaryKey]
-    stable_priority: Optional[IncidentPriorityRead] = None
+    id: PrimaryKey | None
+    stable_priority: IncidentPriorityRead | None = None
 
 
 class ProjectPagination(Pagination):
-    items: List[ProjectRead] = []
+    items: list[ProjectRead] = []

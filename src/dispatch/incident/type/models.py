@@ -1,4 +1,3 @@
-from typing import List, Optional
 from pydantic import validator, Field, AnyHttpUrl
 from dispatch.models import NameStr, PrimaryKey
 
@@ -80,27 +79,27 @@ listen(IncidentType.default, "set", ensure_unique_default_per_project)
 class Document(DispatchBase):
     id: PrimaryKey
     name: NameStr
-    resource_type: Optional[str] = Field(None, nullable=True)
-    resource_id: Optional[str] = Field(None, nullable=True)
-    description: Optional[str] = Field(None, nullable=True)
-    weblink: Optional[AnyHttpUrl] = Field(None, nullable=True)
+    resource_type: str | None = Field(None, nullable=True)
+    resource_id: str | None = Field(None, nullable=True)
+    description: str | None = Field(None, nullable=True)
+    weblink: AnyHttpUrl | None = Field(None, nullable=True)
 
 
 # Pydantic models...
 class IncidentTypeBase(DispatchBase):
     name: NameStr
-    visibility: Optional[str] = Field(None, nullable=True)
-    description: Optional[str] = Field(None, nullable=True)
-    enabled: Optional[bool]
-    incident_template_document: Optional[Document]
-    executive_template_document: Optional[Document]
-    review_template_document: Optional[Document]
-    tracking_template_document: Optional[Document]
-    exclude_from_metrics: Optional[bool] = False
-    default: Optional[bool] = False
-    project: Optional[ProjectRead]
-    plugin_metadata: List[PluginMetadata] = []
-    cost_model: Optional[CostModelRead] = None
+    visibility: str | None = Field(None, nullable=True)
+    description: str | None = Field(None, nullable=True)
+    enabled: bool | None
+    incident_template_document: Document | None
+    executive_template_document: Document | None
+    review_template_document: Document | None
+    tracking_template_document: Document | None
+    exclude_from_metrics: bool | None = False
+    default: bool | None = False
+    project: ProjectRead | None
+    plugin_metadata: list[PluginMetadata] = []
+    cost_model: CostModelRead | None = None
 
     @validator("plugin_metadata", pre=True)
     def replace_none_with_empty_list(cls, value):
@@ -122,12 +121,12 @@ class IncidentTypeRead(IncidentTypeBase):
 class IncidentTypeReadMinimal(DispatchBase):
     id: PrimaryKey
     name: NameStr
-    visibility: Optional[str] = Field(None, nullable=True)
-    description: Optional[str] = Field(None, nullable=True)
-    enabled: Optional[bool]
-    exclude_from_metrics: Optional[bool] = False
-    default: Optional[bool] = False
+    visibility: str | None = Field(None, nullable=True)
+    description: str | None = Field(None, nullable=True)
+    enabled: bool | None
+    exclude_from_metrics: bool | None = False
+    default: bool | None = False
 
 
 class IncidentTypePagination(Pagination):
-    items: List[IncidentTypeRead] = []
+    items: list[IncidentTypeRead] = []

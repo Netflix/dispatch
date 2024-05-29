@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime, timedelta
-from typing import Optional
 
 from sqlalchemy.orm import Session
 
@@ -25,7 +24,7 @@ def send_oncall_shift_feedback_message(
     schedule_id: str,
     shift_end_at: str,
     schedule_name: str,
-    reminder: Optional[ServiceFeedbackReminder] = None,
+    reminder: ServiceFeedbackReminder | None = None,
     db_session: Session,
 ):
     """

@@ -1,11 +1,9 @@
-from typing import Optional
-
 from sqlalchemy.orm import Session
 
 from .models import ServiceFeedback, ServiceFeedbackCreate, ServiceFeedbackUpdate
 
 
-def get(*, service_feedback_id: int, db_session: Session) -> Optional[ServiceFeedback]:
+def get(*, service_feedback_id: int, db_session: Session) -> ServiceFeedback | None:
     """Gets a piece of service feedback by its id."""
     return (
         db_session.query(ServiceFeedback)
@@ -14,9 +12,9 @@ def get(*, service_feedback_id: int, db_session: Session) -> Optional[ServiceFee
     )
 
 
-def get_all(*, db_session: Session):
+def get_all(*, db_session: Session) -> list[ServiceFeedback]:
     """Gets all pieces of service feedback."""
-    return db_session.query(ServiceFeedback)
+    return db_session.query(ServiceFeedback).all()
 
 
 def create(*, service_feedback_in: ServiceFeedbackCreate, db_session: Session) -> ServiceFeedback:
