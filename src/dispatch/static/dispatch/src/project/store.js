@@ -16,6 +16,7 @@ const getDefaultSelectedState = () => {
     owner_email: null,
     owner_conversation: null,
     enabled: null,
+    allow_self_join: null,
   }
 }
 

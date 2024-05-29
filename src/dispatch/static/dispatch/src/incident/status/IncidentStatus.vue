@@ -4,7 +4,7 @@
       {{ status }}
     </v-badge>
     <template v-if="status === 'Active' || status === 'Stable'">
-      <v-tooltip location="bottom" text="Join">
+      <v-tooltip location="bottom" text="Join" v-if="allowSelfJoin">
         <template #activator="{ props }">
           <v-btn
             v-bind="props"
@@ -44,6 +44,10 @@ export default {
     },
     id: {
       type: Number,
+      required: true,
+    },
+    allowSelfJoin: {
+      type: Boolean,
       required: true,
     },
   },
