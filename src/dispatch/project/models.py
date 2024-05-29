@@ -40,6 +40,7 @@ class Project(Base):
     )
 
     enabled = Column(Boolean, default=True, server_default="t")
+    allow_self_join = Column(Boolean, default=True, server_default="t")
 
     send_daily_reports = Column(Boolean)
 
@@ -71,6 +72,7 @@ class ProjectBase(DispatchBase):
     color: Optional[str] = Field(None, nullable=True)
     send_daily_reports: Optional[bool] = Field(True, nullable=True)
     enabled: Optional[bool] = Field(True, nullable=True)
+    allow_self_join: Optional[bool] = Field(True, nullable=True)
 
 
 class ProjectCreate(ProjectBase):
