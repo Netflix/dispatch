@@ -676,6 +676,21 @@ def handle_not_configured_reaction_event(
     ack()
 
 
+def get_user_name_from_id(client: Any, user_id: str) -> str:
+    """Returns the user's name given their user ID."""
+    try:
+        user = client.users_info(user=user_id)
+        return user["user"]["profile"]["real_name"]
+    except SlackApiError:
+        # if can't find user, just return the original text
+        return user_id
+
+
+def replace_slack_users_in_message(client: Any, message: str) -> str:
+    """Replaces slack user ids in a message with their names."""
+    return re.sub(r"<@([^>]+)>", lambda x: f"@{get_user_name_from_id(client, x.group(1))}", message)
+
+
 def handle_timeline_added_event(
     ack: Ack, client: Any, context: BoltContext, payload: Any, db_session: Session
 ) -> None:
@@ -690,7 +705,7 @@ def handle_timeline_added_event(
     response = dispatch_slack_service.list_conversation_messages(
         client, conversation_id, latest=message_ts, limit=1, inclusive=1
     )
-    message_text = response["messages"][0]["text"]
+    message_text = replace_slack_users_in_message(client, response["messages"][0]["text"])
     message_sender_id = response["messages"][0]["user"]
 
     # TODO: (wshel) handle case reactions
