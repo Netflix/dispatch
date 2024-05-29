@@ -167,6 +167,9 @@ def configure(config):
     app.command(config.slack_command_list_incidents, middleware=middleware)(
         handle_list_incidents_command
     )
+    app.command(config.slack_command_duplicate_incident, middleware=middleware)(
+        handle_duplicate_incident_command
+    )
 
     # non-sensitive-commands
     middleware = [
@@ -1875,6 +1878,21 @@ def ack_incident_update_submission_event(ack: Ack) -> None:
     ack(response_action="update", view=modal)
 
 
+def handle_duplicate_incident_command(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+    form_data: dict,
+    user: DispatchUser,
+) -> None:
+    """Handles the duplicate incident submission"""
+    shortcut = {"trigger_id": body["trigger_id"]}
+    context["subject"].channel_id = body["channel_id"]
+    duplicate_incident(ack, body, client, context, db_session, shortcut)
+
+
 @app.view(
     IncidentUpdateActions.submit,
     middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
@@ -1977,38 +1995,62 @@ def duplicate_incident(
         )
 
         if not plugin:
+            modal = Modal(
+                title="Duplicate Incident",
+                close="OK",
+                blocks=[Section(text="No incident management plugin enabled. Unable to duplicate incident.")],
+            ).build()
+            client.views_open(trigger_id=shortcut["trigger_id"], view=modal)
             return
 
         # get the incident
-        incident = plugin.instance.get(incident_number)
+        try:
+            incident = plugin.instance.get(incident_number)
 
-        blocks = [
-            Context(elements=[MarkdownText(text="Use this form to update the incident's details.")]),
-            title_input(initial_value=incident["title"]),
-            description_input(initial_value=incident["description"]),
-            project_select(
-                db_session=db_session,
-                action_id=IncidentReportActions.project_select,
-                dispatch_action=True,
-                initial_option={"text": project.name, "value": project.id},
-            ),
-            incident_type_select(db_session=db_session, project_id=project.id, optional=True),
-            Section(text=f"Previous incident severity: {incident['severity']}"),
-            incident_severity_select(db_session=db_session, project_id=project.id, optional=True),
-            Section(text=f"Previous incident priority: {incident['priority']}"),
-            incident_priority_select(db_session=db_session, project_id=project.id, optional=True),
-            tag_multi_select(optional=True),
-        ]
+            blocks = [
+                Context(elements=[MarkdownText(text="Use this form to update the incident's details.")]),
+                title_input(initial_value=incident["title"]),
+                description_input(initial_value=incident["description"]),
+                project_select(
+                    db_session=db_session,
+                    action_id=IncidentReportActions.project_select,
+                    dispatch_action=True,
+                    initial_option={"text": project.name, "value": project.id},
+                ),
+                incident_type_select(db_session=db_session, project_id=project.id, optional=True),
+                Section(text=f"Previous incident severity: {incident['severity']}"),
+                incident_severity_select(db_session=db_session, project_id=project.id, optional=True),
+                Section(text=f"Previous incident priority: {incident['priority']}"),
+                incident_priority_select(db_session=db_session, project_id=project.id, optional=True),
+                tag_multi_select(optional=True),
+            ]
 
+            modal = Modal(
+                title="Duplicate Incident",
+                blocks=blocks,
+                submit="Report",
+                close="Cancel",
+                callback_id=IncidentReportActions.submit,
+                private_metadata=context["subject"].json(),
+            ).build()
+
+            client.views_open(trigger_id=shortcut["trigger_id"], view=modal)
+
+        except Exception as err:
+            print(f'Other error occurred: {err}')
+            modal = Modal(
+                title="Duplicate Incident",
+                close="OK",
+                blocks=[Section(text=f"An error occurred trying to fetch the incident: {err}.")],
+            ).build()
+            client.views_open(trigger_id=shortcut["trigger_id"], view=modal)
+            return
+    else:
         modal = Modal(
             title="Duplicate Incident",
-            blocks=blocks,
-            submit="Report",
-            close="Cancel",
-            callback_id=IncidentReportActions.submit,
-            private_metadata=context["subject"].json(),
+            close="OK",
+            blocks=[Section(text="Unable to parse incident id from channel name. Is this an incident channel?")],
         ).build()
-
         client.views_open(trigger_id=shortcut["trigger_id"], view=modal)
 
 

@@ -148,3 +148,8 @@ class SlackConversationConfiguration(SlackConfiguration):
         title="List Workflows Command String",
         description="Defines the string used to list all available workflows. Must match what is defined in Slack",
     )
+    slack_command_duplicate_incident: str = Field(
+        "/dispatch-duplicate-incident",
+        title="Duplicate Incident Command String",
+        description="Uses the incident management plugin to duplicate an incident.",
+    )

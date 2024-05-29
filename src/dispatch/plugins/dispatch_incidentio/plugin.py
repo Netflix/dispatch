@@ -65,6 +65,7 @@ class IncidentIOPlugin(IncidentManagementPlugin):
                 f"https://api.incident.io/v2/incidents/{incident_id}",
                 headers=api_call_headers,
             )
+            response.raise_for_status()
             return self.parse_response(response.json())
         except Exception as e:
             logger.error(e)

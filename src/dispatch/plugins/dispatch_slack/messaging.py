@@ -129,6 +129,10 @@ def get_incident_conversation_command_message(
             "response_type": "ephemeral",
             "text": "Fetching the list of workflows...",
         },
+        config.slack_command_duplicate_incident: {
+            "response_type": "ephemeral",
+            "text": "Opening a dialog to duplicate this incident...",
+        }
     }
 
     return command_messages.get(command_string, default)
