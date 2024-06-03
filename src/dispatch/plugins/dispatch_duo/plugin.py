@@ -77,9 +77,10 @@ class DuoMfaPlugin(MultiFactorAuthenticationPlugin):
         """
         duo_client = duo_service.create_duo_auth_client(self.configuration)
         userstatus = duo_client.preauth(username=username)
+        response = {}
 
-        if userstatus["result"] == "enroll":
-            username, _ = username.split("@")
+        if userstatus["result"] == "enroll" and "@" in username:
+            username, domain = username.split("@")
             userstatus = duo_client.preauth(username=username)
 
         if userstatus["result"] == "enroll":
@@ -89,15 +90,14 @@ class DuoMfaPlugin(MultiFactorAuthenticationPlugin):
             return PushResponseResult.deny
         elif userstatus["result"] == "allow":
             return PushResponseResult.allow
-        else:
-            if userstatus["result"] != "auth":
-                log.error("ERROR: Unexpected user status from Duo during push: {userstatus}")
+        elif userstatus["result"] == "auth":
+            try:
+                response = duo_client.auth(factor="push", username=username, device=device, type=type)
+            except RuntimeError as e:
+                log.error(f"ERROR: Runtime Error during Duo Push: {e}")
                 return PushResponseResult.deny
-        
-        try:
-            response = duo_client.auth(factor="push", username=username, device=device, type=type)
-        except RuntimeError as e:
-            log.error("ERROR: Runtime Error during Duo Push: {e})")
+        else:
+            log.error(f"ERROR: Unexpected user status from Duo during push: {userstatus}")
             return PushResponseResult.deny
 
         if response.get("result") == PushResponseResult.allow:
