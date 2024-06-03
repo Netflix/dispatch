@@ -1,0 +1,334 @@
+<template>
+  <v-card>
+    <v-card-text>
+      <div class="mt-3">Edit date/time:</div>
+      <v-container fluid class="pa-1">
+        <v-row no-gutters class="custom-underline">
+          <v-col cols="1" class="pa-0">
+            <v-text-field
+              v-model="month"
+              variant="plain"
+              class="m-0"
+              density="compact"
+              hide-details="true"
+              maxlength="2"
+              @update:model-value="filterNumeric('month', $event)"
+              @blur="validateMonth"
+              @focus="highlightText"
+              @click="highlightText"
+            />
+          </v-col>
+          <span class="slash-space">/</span>
+          <v-col cols="1" class="pa-0">
+            <v-text-field
+              v-model="day"
+              class="m-0"
+              variant="plain"
+              density="compact"
+              hide-details="true"
+              maxlength="2"
+              @update:model-value="filterNumeric('day', $event)"
+              @blur="validateDay"
+              @focus="highlightText"
+              @click="highlightText"
+            />
+          </v-col>
+          <span class="slash-space">/</span>
+          <v-col cols="2" class="pa-0">
+            <v-text-field
+              v-model="year"
+              class="m-0"
+              variant="plain"
+              density="compact"
+              hide-details="true"
+              maxlength="4"
+              @update:model-value="filterNumeric('year', $event, true)"
+              @blur="validateYear"
+              @focus="highlightText"
+              @click="highlightText"
+            />
+          </v-col>
+          <span class="slash-space">,&nbsp;</span>
+          <v-col cols="1" class="pa-0">
+            <v-text-field
+              v-model="hour"
+              class="m-0"
+              variant="plain"
+              density="compact"
+              hide-details="true"
+              maxlength="2"
+              @update:model-value="filterNumeric('year', $event)"
+              @blur="validateHour"
+              @focus="highlightText"
+              @click="highlightText"
+            />
+          </v-col>
+          <span class="colon-space">:</span>
+          <v-col cols="1" class="pa-0">
+            <v-text-field
+              v-model="minutes"
+              class="m-0"
+              variant="plain"
+              density="compact"
+              hide-details="true"
+              maxlength="2"
+              @update:model-value="filterNumeric('year', $event)"
+              @blur="validateMinutes"
+              @focus="highlightText"
+              @click="highlightText"
+            />
+          </v-col>
+          <span class="colon-space">:</span>
+          <v-col cols="3" class="pa-0">
+            <v-text-field
+              v-model="seconds"
+              class="m-0"
+              variant="plain"
+              density="compact"
+              hide-details="true"
+              maxlength="6"
+              @update:model-value="filterNumeric('year', $event)"
+              @blur="validateSeconds"
+              @focus="highlightText"
+              @click="highlightText"
+            />
+          </v-col>
+        </v-row>
+        <div class="text-caption font-weight-light">{{ timezone || "UTC" }}</div>
+      </v-container>
+      <div class="mt-3 mb-3">Or paste a Unix timestamp:</div>
+      <v-text-field
+        class="paste-only"
+        v-model="unixTimestamp"
+        label="Unix Timestamp (UTC)"
+        readonly
+        @paste="handlePaste($event)"
+        @focus="highlightText"
+        @click="highlightText"
+      />
+    </v-card-text>
+    <v-card-actions>
+      <v-spacer />
+      <v-btn variant="text" @click="okHandler">Ok</v-btn>
+    </v-card-actions>
+  </v-card>
+</template>
+
+<script>
+import { parseISO } from "date-fns"
+import { formatInTimeZone } from "date-fns-tz"
+import moment from "moment-timezone"
+
+function isIsoDate(str) {
+  if (!/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/.test(str)) return false
+  const d = new Date(str)
+  return d instanceof Date && !isNaN(d.getTime()) && d.toISOString() === str
+}
+
+function removeEndingZ(str) {
+  if (str.endsWith("Z")) {
+    str = str.slice(0, -1)
+  }
+  return str
+}
+
+export default {
+  props: {
+    modelValue: {
+      type: [Date, String],
+      default: null,
+    },
+    timezone: {
+      type: String,
+      default: null,
+    },
+  },
+
+  mounted() {
+    this.init()
+  },
+
+  data() {
+    return {
+      day: "00",
+      month: "00",
+      year: "0000",
+      hour: "00",
+      minutes: "00",
+      seconds: "00",
+      unixTimestamp: null,
+    }
+  },
+  computed: {
+    displayDateTime() {
+      if (this.date && this.time !== null && this.seconds !== null) {
+        return `${this.date} ${this.time}:${this.seconds}`
+      }
+      return ""
+    },
+    dateTimeWithDecimalSeconds() {
+      if (this.date && this.time !== null && this.seconds !== null) {
+        const [hours, minutes] = this.time.split(":")
+        return `${this.date}T${hours}:${minutes}:${this.seconds}`
+      }
+      return ""
+    },
+  },
+  methods: {
+    init() {
+      // given a timestamp in format yyyy-MM-dd'T'HH:mm:ss.SSS, parse into separate fields
+      if (this.modelValue) {
+        this.onTimestampChange(this.modelValue)
+        this.updateUnixTimestamp()
+      }
+    },
+    okHandler() {
+      let newValue = moment.tz(this.unixTimestamp, this.timezone).toISOString()
+      this.$emit("update:modelValue", newValue)
+      this.$emit("ok")
+    },
+    updateUnixTimestamp() {
+      // build Date object from fields
+      const date = `${this.year}-${this.month}-${this.day}T${this.hour}:${this.minutes}:${this.seconds}`
+      this.unixTimestamp = formatInTimeZone(date, "UTC", "yyyy-MM-dd'T'HH:mm:ss.SSS") + "Z"
+    },
+    handlePaste(event) {
+      event.preventDefault()
+      const clipboardData = event.clipboardData || window.clipboardData
+      let pastedData = clipboardData.getData("Text")
+      if (!pastedData.endsWith("Z")) {
+        pastedData += "Z"
+      }
+      // check to see if pastedData is a valid Unix timestamp
+      if (isIsoDate(pastedData)) {
+        this.unixTimestamp = pastedData
+        let timeZoneFormat = formatInTimeZone(
+          parseISO(pastedData),
+          this.timezone,
+          "yyyy-MM-dd'T'HH:mm:ss.SSS"
+        )
+        this.onTimestampChange(timeZoneFormat)
+      }
+    },
+    onTimestampChange(dateTime) {
+      if (dateTime) {
+        let timeString = dateTime.split("T")
+        const [year, month, day] = timeString[0].split("-")
+        const [hours, minutes, seconds] = timeString[1].split(":")
+        this.year = year
+        this.month = month
+        this.day = day
+        this.hour = hours
+        this.minutes = minutes
+        this.seconds = removeEndingZ(seconds)
+      }
+    },
+    highlightText(event) {
+      setTimeout(() => {
+        event.target.select()
+      }, 0)
+    },
+    validateMonth() {
+      if (!this.month || isNaN(this.month)) {
+        this.month = "01"
+      } else if (this.month.length === 1) {
+        this.month = `0${this.month}`
+      } else if (this.month > 12) {
+        this.month = "12"
+      }
+      this.updateUnixTimestamp()
+    },
+    validateDay() {
+      if (!this.day || isNaN(this.day)) {
+        this.day = "01"
+      } else if (this.day.length === 1) {
+        this.day = `0${this.day}`
+      } else if (this.day > 31) {
+        this.day = "31"
+      }
+      this.updateUnixTimestamp()
+    },
+    validateYear() {
+      if (!this.year || isNaN(this.year)) {
+        this.year = "2024"
+      } else if (this.year < 1000) {
+        this.year = "1000"
+      }
+      this.updateUnixTimestamp()
+    },
+    validateHour() {
+      if (!this.hour || isNaN(this.hour)) {
+        this.hour = "00"
+      } else if (this.hour.length === 1) {
+        this.hour = `0${this.hour}`
+      } else if (this.hour > 23) {
+        this.hour = "23"
+      }
+      this.updateUnixTimestamp()
+    },
+    validateMinutes() {
+      if (!this.minutes || isNaN(this.minutes)) {
+        this.minutes = "00"
+      } else if (this.minutes.length === 1) {
+        this.minutes = `0${this.minutes}`
+      } else if (this.minutes > 59) {
+        this.minutes = "59"
+      }
+      this.updateUnixTimestamp()
+    },
+    validateSeconds() {
+      if (!this.seconds || isNaN(this.seconds)) {
+        this.seconds = "0"
+      } else if (this.seconds >= 60) {
+        this.seconds = "59"
+      }
+      this.seconds = parseFloat(this.seconds).toFixed(3)
+      if (this.seconds < 10) {
+        this.seconds = `0${this.seconds}`
+      }
+      this.updateUnixTimestamp()
+    },
+    filterNumeric(field, event, isYear = false) {
+      const value = event.target.value
+      // Remove non-numeric characters
+      const numericValue = value.replace(/[^0-9]/g, "")
+      if (!numericValue || isNaN(numericValue)) {
+        this[field] = isYear ? "2024" : "01"
+      } else {
+        this[field] = numericValue
+      }
+    },
+  },
+}
+</script>
+
+<style scoped>
+.slash-space {
+  margin-top: 10px;
+  margin-left: 1px;
+  margin-right: 1px;
+}
+.colon-space {
+  margin-top: 10px;
+  margin-left: 0px;
+  margin-right: 1px;
+}
+.custom-underline {
+  position: relative;
+  padding-bottom: 2px;
+}
+
+.custom-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background-color: rgba(0, 0, 0, 0.38);
+}
+
+.paste-only input {
+  pointer-events: none; /* Make the input non-editable */
+}
+</style>
