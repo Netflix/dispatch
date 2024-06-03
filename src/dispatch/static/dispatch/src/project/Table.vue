@@ -39,6 +39,9 @@
                 {{ item.name }}
               </router-link>
             </template>
+            <template #item.enabled="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
+            </template>
             <template #item.data-table-actions="{ item }">
               <v-menu location="right" origin="overlap">
                 <template #activator="{ props }">
@@ -85,6 +88,7 @@ export default {
         { title: "Description", value: "description", sortable: false },
         { title: "Annual Employee Cost", value: "annual_employee_cost", sortable: false },
         { title: "Business Year Hours", value: "business_year_hours", sortable: false },
+        { title: "Enabled", value: "enabled", sortable: false },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }

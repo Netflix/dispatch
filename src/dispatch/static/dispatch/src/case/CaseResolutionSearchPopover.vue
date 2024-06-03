@@ -33,7 +33,7 @@ const selectCaseResolution = async (caseResolutionName: string) => {
   <SearchPopover
     :items="caseResolutions"
     class="dispatch-button"
-    :initialValue="caseResolution || 'Outcome'"
+    :initialValue="caseResolution || 'Set resolution reason'"
     @item-selected="selectCaseResolution"
     label="Set resolution..."
     :hotkeys="[]"

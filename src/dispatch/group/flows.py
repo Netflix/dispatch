@@ -97,7 +97,9 @@ def update_group(
 ):
     """Updates an existing group."""
     if group is None:
-        log.warning(f"Group not updated. No group provided. Cannot {group_action} for {group_member}.")
+        log.warning(
+            f"Group not updated. No group provided. Cannot {group_action} for {group_member}."
+        )
         return
 
     plugin = plugin_service.get_active_instance(

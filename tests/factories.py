@@ -127,19 +127,12 @@ class ProjectFactory(BaseFactory):
     description = FuzzyText()
     default = False
     color = Faker().color()
+    organization = SubFactory(OrganizationFactory)
 
     class Meta:
         """Factory Configuration."""
 
         model = Project
-
-    @post_generation
-    def organization(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            self.organization_id = extracted.id
 
 
 class CostModelFactory(BaseFactory):
@@ -408,6 +401,7 @@ class IncidentTypeFactory(BaseFactory):
     description = FuzzyText()
     slug = FuzzyText()
     project = SubFactory(ProjectFactory)
+    cost_model = SubFactory(CostModelFactory)
 
     class Meta:
         """Factory Configuration."""
@@ -714,7 +708,7 @@ class CaseTypeFactory(BaseFactory):
 
     name = FuzzyText()
     description = FuzzyText()
-
+    conversation_target = FuzzyText()
     project = SubFactory(ProjectFactory)
 
     class Meta:
@@ -917,7 +911,6 @@ class IncidentFactory(BaseFactory):
     incident_priority = SubFactory(IncidentPriorityFactory)
     incident_severity = SubFactory(IncidentSeverityFactory)
     project = SubFactory(ProjectFactory)
-    cost_model = SubFactory(CostModelFactory)
     conversation = SubFactory(ConversationFactory)
 
     class Meta:

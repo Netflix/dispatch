@@ -300,4 +300,4 @@ def delete_signal(db_session: DbSession, signal_id: Union[str, PrimaryKey]):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=[{"msg": "A signal with this id does not exist."}],
         )
-    delete(db_session=db_session, signal_id=signal_id)
+    delete(db_session=db_session, signal_id=signal.id)

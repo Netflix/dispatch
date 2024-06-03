@@ -39,6 +39,7 @@ class MessageType(DispatchEnum):
     incident_task_reminder = "incident-task-reminder"
     case_status_reminder = "case-status-reminder"
     service_feedback = "service-feedback"
+    task_add_to_incident = "task-add-to-incident"
 
 
 INCIDENT_STATUS_DESCRIPTIONS = {
@@ -58,6 +59,12 @@ INCIDENT_VISIBILITY_DESCRIPTIONS = {
     Visibility.open: "We ask that you use your best judgment while sharing details about this incident outside of the dedicated channels of communication. Please reach out to the Incident Commander if you have any questions.",
     Visibility.restricted: "This incident is restricted to immediate participants of this incident. We ask that you exercise extra caution and discretion while talking about this incident outside of the dedicated channels of communication. Only invite new participants that are strictly necessary. Please reach out to the Incident Commander if you have any questions.",
 }
+
+CASE_VISIBILITY_DESCRIPTIONS = {
+    Visibility.open: "We ask that you use your best judgment while sharing details about this case outside of the dedicated channels of communication. Please reach out to the case assignee if you have any questions.",
+    Visibility.restricted: "This case is restricted to immediate participants of this case. We ask that you exercise extra caution and discretion while talking about this case outside of the dedicated channels of communication. Only invite new participants that are strictly necessary. Please reach out to the case assignee if you have any questions.",
+}
+
 EVERGREEN_REMINDER_DESCRIPTION = """
 You are the owner of the following resources in Dispatch.
 This is a reminder that these resources should be kept up to date in order to effectively
@@ -183,9 +190,7 @@ submitted that requires your immediate attention. This form details
 aspects related to potential legal implications. You can review the
 detailed report by clicking on the link below. Please note, the information
 contained in this report is confidential.
-""".replace(
-    "\n", " "
-).strip()
+""".replace("\n", " ").strip()
 
 INCIDENT_PARTICIPANT_WELCOME_DESCRIPTION = """
 You\'ve been added to this incident, because we think you may
@@ -221,7 +226,7 @@ You can use `{{command}}` in the conversation to assist you in writing one.""".r
 ).strip()
 
 INCIDENT_CLOSE_REMINDER_DESCRIPTION = """The status of this incident hasn't been updated recently.
-You can use `{{command}}` in the conversation to close the incident if it has been resolved and can be closed.""".replace(
+You can use `{{command}}` in the <{{conversation_weblink}}|conversation> to close the incident if it has been resolved and can be closed.""".replace(
     "\n", " "
 ).strip()
 
@@ -252,6 +257,12 @@ INCIDENT_OPEN_TASKS_DESCRIPTION = """
 Please resolve or transfer ownership of all the open incident tasks assigned to you in the incident documents or using the <{{dispatch_ui_url}}|Dispatch Web UI>,
 then wait about 30 seconds for Dispatch to update the tasks before leaving the incident conversation.
 """.replace("\n", " ").strip()
+
+INCIDENT_TASK_ADD_TO_INCIDENT_DESCRIPTION = """
+You have been added to this incident because you were assigned a task related to it. View all tasks for this incident using the <{{dispatch_ui_url}}|Dispatch Web UI>
+\n\n *Task Description:* {{task_description}}
+\n\n *Link to task in document:* {{task_weblink}}
+"""
 
 INCIDENT_MONITOR_CREATED_DESCRIPTION = """
 A new monitor instance has been created.
@@ -617,7 +628,7 @@ INCIDENT_REPORT_REMINDER_DELAYED = [
 INCIDENT_CLOSE_REMINDER = [
     {
         "title": "{{name}} Incident - Close Reminder",
-        "title_link": "{{ticket_weblink}}",
+        "title_link": "{{dispatch_ui_incident_url}}",
         "text": INCIDENT_CLOSE_REMINDER_DESCRIPTION,
     },
     INCIDENT_TITLE,
@@ -813,6 +824,13 @@ INCIDENT_OPEN_TASKS = [
     {
         "title": "{{title}}",
         "text": INCIDENT_OPEN_TASKS_DESCRIPTION,
+    }
+]
+
+INCIDENT_TASK_ADD_TO_INCIDENT = [
+    {
+        "title": "{{title}}",
+        "text": INCIDENT_TASK_ADD_TO_INCIDENT_DESCRIPTION,
     }
 ]
 

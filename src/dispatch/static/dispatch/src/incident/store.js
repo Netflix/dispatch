@@ -15,7 +15,6 @@ const getDefaultSelectedState = () => {
     commander: null,
     conference: null,
     conversation: null,
-    cost_model: null,
     created_at: null,
     description: null,
     documents: null,

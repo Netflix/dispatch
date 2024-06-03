@@ -1,7 +1,7 @@
 import logging
 import uuid
 from http import HTTPStatus
-from typing import Any, Union
+from typing import Any
 
 from blockkit import Context, MarkdownText, Modal
 from slack_bolt.app import App
@@ -146,7 +146,7 @@ def build_and_log_error(
 def handle_message_events(
     ack: Ack,
     body: dict,
-    client: Union[WebClient, WebClient],
+    client: WebClient,
     context: BoltContext,
     db_session: Session,
     payload: dict,

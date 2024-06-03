@@ -1,8 +1,10 @@
 import logging
 import json
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Union
 
+from fastapi import HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from sqlalchemy import desc, asc, or_
@@ -315,11 +317,14 @@ def get_by_primary_or_external_id(
     *, db_session: Session, signal_id: Union[str, int]
 ) -> Optional[Signal]:
     """Gets a signal by id or external_id."""
-    signal = (
-        db_session.query(Signal)
-        .filter(or_(Signal.id == signal_id, Signal.external_id == signal_id))
-        .one_or_none()
-    )
+    if is_valid_uuid(signal_id):
+        signal = db_session.query(Signal).filter(Signal.external_id == signal_id).one_or_none()
+    else:
+        signal = (
+            db_session.query(Signal)
+            .filter(or_(Signal.id == signal_id, Signal.external_id == signal_id))
+            .one_or_none()
+        )
     return signal
 
 
@@ -534,6 +539,14 @@ def delete(*, db_session: Session, signal_id: int):
     return signal_id
 
 
+def is_valid_uuid(val):
+    try:
+        uuid.UUID(str(val), version=4)
+        return True
+    except ValueError:
+        return False
+
+
 def create_instance(
     *, db_session: Session, signal_instance_in: SignalInstanceCreate
 ) -> SignalInstance:
@@ -568,6 +581,14 @@ def create_instance(
         if signal_instance_in.raw.get("id"):
             signal_instance.id = signal_instance_in.raw["id"]
 
+    if signal_instance.id and not is_valid_uuid(signal_instance.id):
+        msg = f"Invalid signal id format. Expecting UUID format. Received {signal_instance.id}."
+        log.warn(msg)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=[{"msg": msg}],
+        ) from None
+
     if signal_instance_in.case_priority:
         case_priority = case_priority_service.get_by_name_or_default(
             db_session=db_session,
@@ -583,6 +604,7 @@ def create_instance(
             case_type_in=signal_instance_in.case_type,
         )
         signal_instance.case_type = case_type
+
 
     db_session.add(signal_instance)
     db_session.commit()

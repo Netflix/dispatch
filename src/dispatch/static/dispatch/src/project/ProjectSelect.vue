@@ -36,6 +36,7 @@
 <script>
 import { cloneDeep, debounce } from "lodash"
 import ProjectApi from "@/project/api"
+import SearchUtils from "@/search/utils"
 
 export default {
   name: "ProjectSelect",
@@ -46,6 +47,10 @@ export default {
       default: function () {
         return {}
       },
+    },
+    excludeDisabled: {
+      type: Boolean,
+      default: false,
     },
     label: {
       type: String,
@@ -66,7 +71,13 @@ export default {
   computed: {
     project: {
       get() {
-        return cloneDeep(this.modelValue)
+        let projects = cloneDeep(this.modelValue)
+        if (this.excludeDisabled && projects && Array.isArray(projects) && projects.length > 0) {
+          projects = projects.filter((project) => {
+            return project.enabled
+          })
+        }
+        return projects
       },
       set(value) {
         this.$emit("update:modelValue", value)
@@ -88,6 +99,17 @@ export default {
         sortBy: ["name"],
         descending: [false],
       }
+
+      if (this.excludeDisabled) {
+        filterOptions = {
+          filters: {
+            enabled: [true],
+          },
+          ...filterOptions,
+        }
+      }
+
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
 
       ProjectApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items

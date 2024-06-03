@@ -9,6 +9,8 @@ from dispatch.incident import flows as incident_flows
 from dispatch.incident.flows import incident_service
 from dispatch.incident.models import Incident
 from dispatch.plugin import service as plugin_service
+from dispatch.participant import service as participant_service
+from dispatch.incident.messaging import send_task_add_ephemeral_message
 
 from .enums import TaskStatus
 from .models import Task, TaskCreate, TaskUpdate
@@ -73,6 +75,19 @@ def create(*, db_session, task_in: TaskCreate) -> Task:
 
     assignees = []
     for i in task_in.assignees:
+        participant = participant_service.get_by_incident_id_and_email(
+            db_session=db_session, incident_id=incident.id, email=i.individual.email
+        )
+
+        if not participant or not participant.active_roles:
+            # send emphemeral message to user about why they are being added to the incident
+            send_task_add_ephemeral_message(
+                assignee_email=i.individual.email,
+                incident=incident,
+                db_session=db_session,
+                task=task_in,
+            )
+
         assignee = incident_flows.incident_add_or_reactivate_participant_flow(
             db_session=db_session,
             incident_id=incident.id,

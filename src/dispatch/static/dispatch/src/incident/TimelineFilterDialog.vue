@@ -1,7 +1,13 @@
 <template>
   <v-dialog v-model="display" max-width="350px">
     <template #activator="{ props }">
-      <v-badge :value="numFilters" bordered color="info" :content="numFilters" class="mt-3 mr-3">
+      <v-badge
+        :model-value="numFilters"
+        bordered
+        color="info"
+        :content="numFilters"
+        class="mt-3 mr-3"
+      >
         <v-btn color="secondary" v-bind="props">
           <v-icon start class="mr-1">mdi-filter</v-icon> Filter
         </v-btn>

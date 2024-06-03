@@ -1,6 +1,7 @@
 import logging
 import re
 import uuid
+from functools import partial
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -27,10 +28,11 @@ from slack_sdk.web.client import WebClient
 from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
+from dispatch.case import service as case_service
+from dispatch.case import flows as case_flows
 from dispatch.config import DISPATCH_UI_URL
-from dispatch.cost_model import service as cost_model_service
 from dispatch.database.service import search_filter_sort_paginate
-from dispatch.enums import Visibility, EventType
+from dispatch.enums import Visibility, EventType, SubjectNames
 from dispatch.event import service as event_service
 from dispatch.exceptions import DispatchException
 from dispatch.group import flows as group_flows
@@ -57,7 +59,6 @@ from dispatch.plugins.dispatch_slack.fields import (
     DefaultActionIds,
     DefaultBlockIds,
     TimezoneOptions,
-    cost_model_select,
     datetime_picker_block,
     description_input,
     incident_priority_select,
@@ -113,7 +114,12 @@ from dispatch.plugins.dispatch_slack.middleware import (
     shortcut_context_middleware,
 )
 from dispatch.plugins.dispatch_slack.modals.common import send_success_modal
-from dispatch.plugins.dispatch_slack.models import MonitorMetadata, TaskMetadata, IncidentSubjects, CaseSubjects
+from dispatch.plugins.dispatch_slack.models import (
+    MonitorMetadata,
+    TaskMetadata,
+    IncidentSubjects,
+    CaseSubjects,
+)
 from dispatch.plugins.dispatch_slack.service import (
     get_user_email,
     get_user_profile_by_email,
@@ -146,6 +152,11 @@ def is_target_reaction(reaction: str) -> bool:
 
 def configure(config):
     """Maps commands/events to their functions."""
+    incident_command_context_middleware = partial(
+        command_context_middleware,
+        expected_subject=SubjectNames.INCIDENT,
+    )
+
     middleware = [
         subject_middleware,
         configuration_middleware,
@@ -163,7 +174,7 @@ def configure(config):
     middleware = [
         subject_middleware,
         configuration_middleware,
-        command_context_middleware,
+        incident_command_context_middleware,
     ]
 
     app.command(config.slack_command_list_tasks, middleware=middleware)(handle_list_tasks_command)
@@ -184,7 +195,7 @@ def configure(config):
     middleware = [
         subject_middleware,
         configuration_middleware,
-        command_context_middleware,
+        incident_command_context_middleware,
         user_middleware,
         restricted_command_middleware,
     ]
@@ -272,6 +283,8 @@ def handle_update_incident_project_select_action(
         "selected_option"
     ]["value"]
 
+    context["subject"].project_id = project_id
+
     project = project_service.get(
         db_session=db_session,
         project_id=project_id,
@@ -320,20 +333,6 @@ def handle_update_incident_project_select_action(
             initial_options=[t.name for t in incident.tags],
         ),
     ]
-    cost_model_block = cost_model_select(
-        db_session=db_session,
-        initial_option=(
-            {"text": incident.cost_model.name, "value": incident.cost_model.id}
-            if incident.cost_model
-            else None
-        ),
-        project_id=incident.project.id,
-        optional=True,
-    )
-
-    if cost_model_block:
-        blocks.append(cost_model_block)
-
     modal = Modal(
         title="Update Incident",
         blocks=blocks,
@@ -677,6 +676,21 @@ def handle_not_configured_reaction_event(
     ack()
 
 
+def get_user_name_from_id(client: Any, user_id: str) -> str:
+    """Returns the user's name given their user ID."""
+    try:
+        user = client.users_info(user=user_id)
+        return user["user"]["profile"]["real_name"]
+    except SlackApiError:
+        # if can't find user, just return the original text
+        return user_id
+
+
+def replace_slack_users_in_message(client: Any, message: str) -> str:
+    """Replaces slack user ids in a message with their names."""
+    return re.sub(r"<@([^>]+)>", lambda x: f"@{get_user_name_from_id(client, x.group(1))}", message)
+
+
 def handle_timeline_added_event(
     ack: Ack, client: Any, context: BoltContext, payload: Any, db_session: Session
 ) -> None:
@@ -691,7 +705,7 @@ def handle_timeline_added_event(
     response = dispatch_slack_service.list_conversation_messages(
         client, conversation_id, latest=message_ts, limit=1, inclusive=1
     )
-    message_text = response["messages"][0]["text"]
+    message_text = replace_slack_users_in_message(client, response["messages"][0]["text"])
     message_sender_id = response["messages"][0]["user"]
 
     # TODO: (wshel) handle case reactions
@@ -807,7 +821,7 @@ def handle_after_hours_message(
     except SlackApiError as e:
         if e.response["error"] == SlackAPIErrorCode.USERS_NOT_FOUND:
             e.add_note(
-                "This error usually indiciates that the incident commanders Slack account is deactivated."
+                "This error usually indicates that the incident commanders Slack account is deactivated."
             )
 
         log.warning(f"Failed to fetch timezone from Slack API: {e}")
@@ -955,63 +969,123 @@ def handle_member_joined_channel(
             "Unable to handle member_joined_channel Slack event. Dispatch user unknown."
         )
 
-    if context["subject"].type != IncidentSubjects.incident:
-        # only run this workflow for incidents
-        return
-
-    participant = incident_flows.incident_add_or_reactivate_participant_flow(
-        user_email=user.email, incident_id=context["subject"].id, db_session=db_session
-    )
-
-    if not participant:
-        # Participant is already in the incident channel.
-        return
-
-    participant.user_conversation_id = context["user_id"]
-
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
-
-    # If the user was invited, the message will include an inviter property containing the user ID of the inviting user.
-    # The property will be absent when a user manually joins a channel, or a user is added by default (e.g. #general channel).
-    inviter = body.get("event", {}).get("inviter", None)
-    inviter_is_user = (
-        dispatch_slack_service.is_user(context["config"], inviter) if inviter else None
-    )
-
-    if inviter and inviter_is_user:
-        # Participant is added into the incident channel using an @ message or /invite command.
-        inviter_email = get_user_email(client=client, user_id=inviter)
-        added_by_participant = participant_service.get_by_incident_id_and_email(
-            db_session=db_session, incident_id=context["subject"].id, email=inviter_email
+    if context["subject"].type == IncidentSubjects.incident:
+        participant = incident_flows.incident_add_or_reactivate_participant_flow(
+            user_email=user.email, incident_id=context["subject"].id, db_session=db_session
         )
-        participant.added_by = added_by_participant
 
-    else:
-        # User joins via the `join` button on Web Application or Slack.
-        # We default to the incident commander when we don't know who added the user or the user is the Dispatch bot.
+        if not participant:
+            # Participant is already in the incident channel.
+            return
+
+        participant.user_conversation_id = context["user_id"]
+
         incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
-        participant.added_by = incident.commander
 
-    # Message text when someone @'s a user is not available in body, use generic added by reason
-    participant.added_reason = f"Participant added by {participant.added_by.individual.name}"
+        # If the user was invited, the message will include an inviter property containing the user ID of the inviting user.
+        # The property will be absent when a user manually joins a channel, or a user is added by default (e.g. #general channel).
+        inviter = body.get("event", {}).get("inviter", None)
+        inviter_is_user = (
+            dispatch_slack_service.is_user(context["config"], inviter) if inviter else None
+        )
 
-    db_session.add(participant)
-    db_session.commit()
+        if inviter and inviter_is_user:
+            # Participant is added into the incident channel using an @ message or /invite command.
+            inviter_email = get_user_email(client=client, user_id=inviter)
+            added_by_participant = participant_service.get_by_incident_id_and_email(
+                db_session=db_session, incident_id=context["subject"].id, email=inviter_email
+            )
+            participant.added_by = added_by_participant
+
+        else:
+            # User joins via the `join` button on Web Application or Slack.
+            # We default to the incident commander when we don't know who added the user or the user is the Dispatch bot.
+            incident = incident_service.get(
+                db_session=db_session, incident_id=context["subject"].id
+            )
+            participant.added_by = incident.commander
+
+        # Message text when someone @'s a user is not available in body, use generic added by reason
+        participant.added_reason = f"Participant added by {participant.added_by.individual.name}"
+
+        db_session.add(participant)
+        db_session.commit()
+
+    if context["subject"].type == CaseSubjects.case:
+        case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+
+        if not case.dedicated_channel:
+            return
+
+        participant = case_flows.case_add_or_reactivate_participant_flow(
+            user_email=user.email,
+            case_id=context["subject"].id,
+            db_session=db_session,
+        )
+
+        if not participant:
+            # Participant is already in the case channel.
+            return
+
+        participant.user_conversation_id = context["user_id"]
+
+        # If the user was invited, the message will include an inviter property containing the user ID of the inviting user.
+        # The property will be absent when a user manually joins a channel, or a user is added by default (e.g. #general channel).
+        inviter = body.get("event", {}).get("inviter", None)
+        inviter_is_user = (
+            dispatch_slack_service.is_user(context["config"], inviter) if inviter else None
+        )
+
+        if inviter and inviter_is_user:
+            # Participant is added into the incident channel using an @ message or /invite command.
+            inviter_email = get_user_email(client=client, user_id=inviter)
+            added_by_participant = participant_service.get_by_case_id_and_email(
+                db_session=db_session,
+                case_id=context["subject"].id,
+                email=inviter_email,
+            )
+            participant.added_by = added_by_participant
+
+        else:
+            # User joins via the `join` button on Web Application or Slack.
+            # We default to the incident commander when we don't know who added the user or the user is the Dispatch bot.
+            participant.added_by = case.assignee
+
+        # Message text when someone @'s a user is not available in body, use generic added by reason
+        participant.added_reason = f"Participant added by {participant.added_by.individual.name}"
+
+        db_session.add(participant)
+        db_session.commit()
 
 
-@app.event("member_left_channel", middleware=[message_context_middleware, user_middleware])
+@app.event(
+    "member_left_channel",
+    middleware=[
+        message_context_middleware,
+        user_middleware,
+    ],
+)
 def handle_member_left_channel(
     ack: Ack, context: BoltContext, db_session: Session, user: DispatchUser
 ) -> None:
     ack()
 
-    if context["subject"].type != IncidentSubjects.incident:
-        # only run this workflow for incidents
-        return
+    if context["subject"].type == IncidentSubjects.incident:
+        incident_flows.incident_remove_participant_flow(
+            user.email, context["subject"].id, db_session=db_session
+        )
 
-    incident_flows.incident_remove_participant_flow(
-        user.email, context["subject"].id, db_session=db_session
-    )
+    if context["subject"].type == CaseSubjects.case:
+        case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+
+        if not case.dedicated_channel:
+            return
+
+        case_flows.case_remove_participant_flow(
+            user_email=user.email,
+            case_id=context["subject"].id,
+            db_session=db_session,
+        )
 
 
 # MODALS
@@ -1858,20 +1932,6 @@ def handle_update_incident_command(
         ),
     ]
 
-    cost_model_block = cost_model_select(
-        db_session=db_session,
-        initial_option=(
-            {"text": incident.cost_model.name, "value": incident.cost_model.id}
-            if incident.cost_model
-            else None
-        ),
-        project_id=incident.project.id,
-        optional=True,
-    )
-
-    if cost_model_block:
-        blocks.append(cost_model_block)
-
     modal = Modal(
         title="Update Incident",
         blocks=blocks,
@@ -1917,12 +1977,6 @@ def handle_update_incident_submission_event(
         tag = tag_service.get(db_session=db_session, tag_id=int(t["value"]))
         tags.append(tag)
 
-    cost_model = None
-    if form_data.get(DefaultBlockIds.cost_model_select):
-        cost_model = cost_model_service.get_cost_model_by_id(
-            db_session=db_session,
-            cost_model_id=int(form_data[DefaultBlockIds.cost_model_select]["value"]),
-        )
     incident_in = IncidentUpdate(
         title=form_data[DefaultBlockIds.title_input],
         description=form_data[DefaultBlockIds.description_input],
@@ -1932,7 +1986,6 @@ def handle_update_incident_submission_event(
         incident_priority={"name": form_data[DefaultBlockIds.incident_priority_select]["name"]},
         status=form_data[DefaultBlockIds.incident_status_select]["name"],
         tags=tags,
-        cost_model=cost_model,
     )
 
     previous_incident = IncidentRead.from_orm(incident)
@@ -2028,6 +2081,9 @@ def handle_report_incident_command(
     """Handles the report incident command."""
     ack()
 
+    if body.get("channel_id"):
+        context["subject"].channel_id = body["channel_id"]
+
     blocks = [
         Context(
             elements=[
@@ -2101,13 +2157,6 @@ def handle_report_incident_submission_event(
     if form_data.get(DefaultBlockIds.incident_severity_select):
         incident_severity = {"name": form_data[DefaultBlockIds.incident_severity_select]["name"]}
 
-    cost_model = None
-    if form_data.get(DefaultBlockIds.cost_model_select):
-        cost_model = cost_model_service.get_cost_model_by_id(
-            db_session=db_session,
-            cost_model_id=int(form_data[DefaultBlockIds.cost_model_select]["value"]),
-        )
-
     incident_in = IncidentCreate(
         title=form_data[DefaultBlockIds.title_input],
         description=form_data[DefaultBlockIds.description_input],
@@ -2117,7 +2166,6 @@ def handle_report_incident_submission_event(
         project=project,
         reporter=ParticipantUpdate(individual=IndividualContactRead(email=user.email)),
         tags=tags,
-        cost_model=cost_model,
     )
 
     blocks = [
@@ -2184,6 +2232,8 @@ def handle_report_incident_project_select_action(
         "selected_option"
     ]["value"]
 
+    context["subject"].project_id = project_id
+
     project = project_service.get(db_session=db_session, project_id=project_id)
 
     blocks = [
@@ -2200,13 +2250,6 @@ def handle_report_incident_project_select_action(
         incident_priority_select(db_session=db_session, project_id=project.id, optional=True),
         tag_multi_select(optional=True),
     ]
-
-    cost_model_block = cost_model_select(
-        db_session=db_session, project_id=project.id, optional=True
-    )
-
-    if cost_model_block:
-        blocks.append(cost_model_block)
 
     modal = Modal(
         title="Report Incident",
@@ -2243,7 +2286,7 @@ def handle_incident_notification_join_button_click(
     if not incident:
         message = "Sorry, we can't invite you to this incident. The incident does not exist."
     elif incident.visibility == Visibility.restricted:
-        message = "Sorry, we can't invite you to this incident. The incident's visbility is restricted. Please, reach out to the incident commander if you have any questions."
+        message = "Sorry, we can't invite you to this incident. The incident's visibility is restricted. Please, reach out to the incident commander if you have any questions."
     elif incident.status == IncidentStatus.closed:
         message = "Sorry, you can't join this incident. The incident has already been marked as closed. Please, reach out to the incident commander if you have any questions."
     else:
@@ -2276,7 +2319,7 @@ def handle_incident_notification_subscribe_button_click(
     if not incident:
         message = "Sorry, we can't invite you to this incident. The incident does not exist."
     elif incident.visibility == Visibility.restricted:
-        message = "Sorry, we can't invite you to this incident. The incident's visbility is restricted. Please, reach out to the incident commander if you have any questions."
+        message = "Sorry, we can't invite you to this incident. The incident's visibility is restricted. Please, reach out to the incident commander if you have any questions."
     elif incident.status == IncidentStatus.closed:
         message = "Sorry, you can't subscribe to this incident. The incident has already been marked as closed. Please, reach out to the incident commander if you have any questions."
     else:

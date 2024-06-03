@@ -60,21 +60,13 @@
               />
             </v-col>
             <v-col cols="12">
-              <project-select v-model="project" />
+              <project-select v-model="project" excludeDisabled />
             </v-col>
             <v-col cols="12">
               <case-type-select :project="project" v-model="case_type" />
             </v-col>
             <v-col cols="12">
               <case-priority-select :project="project" v-model="case_priority" />
-            </v-col>
-            <v-col cols="12">
-              <tag-filter-auto-complete
-                :project="project"
-                v-model="tags"
-                label="Tags"
-                model="case"
-              />
             </v-col>
           </v-row>
         </v-container>
@@ -111,7 +103,6 @@ import ProjectSelect from "@/project/ProjectSelect.vue"
 import DocumentApi from "@/document/api"
 import ProjectApi from "@/project/api"
 import AuthApi from "@/auth/api"
-import TagFilterAutoComplete from "@/tag/TagPicker.vue"
 import SearchUtils from "@/search/utils"
 import CaseTypeApi from "@/case/type/api"
 
@@ -127,7 +118,6 @@ export default {
     CaseTypeSelect,
     CasePrioritySelect,
     ProjectSelect,
-    TagFilterAutoComplete,
   },
 
   data() {
@@ -147,6 +137,7 @@ export default {
     ...mapFields("case_management", [
       "selected.case_priority",
       "selected.case_type",
+      "selected.dedicated_channel",
       "selected.title",
       "selected.tags",
       "selected.description",
@@ -323,16 +314,6 @@ export default {
         })
       }
     )
-
-    if (this.$route.query.tag) {
-      if (Array.isArray(this.$route.query.tag)) {
-        this.tags = this.$route.query.tag.map(function (t) {
-          return { name: t }
-        })
-      } else {
-        this.tags = [{ name: this.$route.query.tag }]
-      }
-    }
   },
 }
 </script>

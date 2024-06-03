@@ -72,7 +72,11 @@
               <incident-priority :priority="value" />
             </template>
             <template #item.status="{ item, value }">
-              <incident-status :status="value" :id="item.id" />
+              <incident-status
+                :status="value"
+                :id="item.id"
+                :allowSelfJoin="item.project.allow_self_join"
+              />
             </template>
             <template #item.incident_costs="{ value }">
               <incident-cost-card :incident-costs="value" />

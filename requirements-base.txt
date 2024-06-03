@@ -8,7 +8,7 @@ aiocache==0.12.2
     # via -r requirements-base.in
 aiofiles==23.2.1
     # via -r requirements-base.in
-aiohttp==3.9.3
+aiohttp==3.9.5
     # via -r requirements-base.in
 aiosignal==1.3.1
     # via aiohttp
@@ -29,7 +29,7 @@ attrs==22.1.0
     #   jsonschema
 backoff==2.2.1
     # via schemathesis
-bcrypt==4.1.2
+bcrypt==4.1.3
     # via -r requirements-base.in
 blis==0.7.11
     # via thinc
@@ -106,7 +106,7 @@ deprecated==1.2.14
     #   limits
 distro==1.9.0
     # via openai
-dnspython==2.4.2
+dnspython==2.6.1
     # via email-validator
 duo-client==5.3.0
     # via -r requirements-base.in
@@ -124,7 +124,7 @@ frozenlist==1.4.1
     #   aiosignal
 google-api-core==2.15.0
     # via google-api-python-client
-google-api-python-client==2.124.0
+google-api-python-client==2.131.0
     # via -r requirements-base.in
 google-auth==2.26.1
     # via
@@ -166,7 +166,7 @@ hypothesis-graphql==0.11.0
     # via schemathesis
 hypothesis-jsonschema==0.22.1
     # via schemathesis
-idna==3.6
+idna==3.7
     # via
     #   anyio
     #   email-validator
@@ -177,7 +177,7 @@ importlib-resources==6.1.1
     # via limits
 iniconfig==2.0.0
     # via pytest
-jinja2==3.1.3
+jinja2==3.1.4
     # via
     #   -r requirements-base.in
     #   spacy
@@ -187,7 +187,7 @@ jmespath==1.0.1
     # via
     #   boto3
     #   botocore
-joblib==1.3.2
+joblib==1.4.2
     # via -r requirements-base.in
 jsonpath-ng==1.6.1
     # via -r requirements-base.in
@@ -242,7 +242,7 @@ oauthlib[signedtoken]==3.2.2
     #   atlassian-python-api
     #   jira
     #   requests-oauthlib
-openai==1.14.3
+openai==1.30.5
     # via -r requirements-base.in
 packaging==23.2
     # via
@@ -252,7 +252,7 @@ packaging==23.2
     #   statsmodels
     #   thinc
     #   weasel
-pandas==2.2.1
+pandas==2.2.2
     # via
     #   -r requirements-base.in
     #   statsmodels
@@ -291,7 +291,7 @@ pyasn1-modules==0.3.0
     #   oauth2client
 pycparser==2.21
     # via cffi
-pydantic==1.10.14
+pydantic==1.10.15
     # via
     #   -r requirements-base.in
     #   blockkit
@@ -338,7 +338,7 @@ pytz==2024.1
     #   pandas
 pyyaml==6.0.1
     # via schemathesis
-requests==2.31.0
+requests==2.32.3
     # via
     #   -r requirements-base.in
     #   atlassian-python-api
@@ -368,7 +368,7 @@ rsa==4.9
     #   python-jose
 s3transfer==0.10.0
     # via boto3
-schedule==1.2.1
+schedule==1.2.2
     # via -r requirements-base.in
 schemathesis==3.21.2
     # via -r requirements-base.in
@@ -376,11 +376,11 @@ scipy==1.11.4
     # via statsmodels
 sentry-asgi==0.2.0
     # via -r requirements-base.in
-sentry-sdk==1.44.0
+sentry-sdk==1.45.0
     # via
     #   -r requirements-base.in
     #   sentry-asgi
-sh==2.0.6
+sh==2.0.7
     # via -r requirements-base.in
 six==1.16.0
     # via
@@ -396,7 +396,7 @@ six==1.16.0
     #   validators
 slack-bolt==1.18.1
     # via -r requirements-base.in
-slack-sdk==3.27.1
+slack-sdk==3.27.2
     # via
     #   -r requirements-base.in
     #   slack-bolt
@@ -442,11 +442,11 @@ starlette==0.32.0.post1
     #   starlette-testclient
 starlette-testclient==0.2.0
     # via schemathesis
-statsmodels==0.14.1
+statsmodels==0.14.2
     # via -r requirements-base.in
 tabulate==0.9.0
     # via -r requirements-base.in
-tenacity==8.2.3
+tenacity==8.3.0
     # via -r requirements-base.in
 text-unidecode==1.3
     # via python-slugify
@@ -456,7 +456,7 @@ tomli==2.0.1
     # via schemathesis
 tomli-w==1.0.0
     # via schemathesis
-tqdm==4.66.1
+tqdm==4.66.4
     # via
     #   openai
     #   spacy
@@ -464,7 +464,7 @@ typer==0.9.0
     # via
     #   spacy
     #   weasel
-typing-extensions==4.9.0
+typing-extensions==4.10.0
     # via
     #   alembic
     #   fastapi
@@ -483,7 +483,7 @@ urllib3==2.0.7
     #   pdpyras
     #   requests
     #   sentry-sdk
-uvicorn==0.29.0
+uvicorn==0.30.1
     # via -r requirements-base.in
 uvloop==0.19.0
     # via -r requirements-base.in
@@ -496,7 +496,7 @@ wasabi==1.1.2
     #   weasel
 weasel==0.3.4
     # via spacy
-werkzeug==3.0.1
+werkzeug==3.0.3
     # via schemathesis
 wrapt==1.16.0
     # via deprecated

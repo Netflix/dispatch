@@ -149,7 +149,14 @@ def create_case(
         case_in.reporter = ParticipantUpdate(
             individual=IndividualContactRead(email=current_user.email)
         )
-    case = create(db_session=db_session, case_in=case_in, current_user=current_user)
+
+    try:
+        case = create(db_session=db_session, case_in=case_in, current_user=current_user)
+    except ValueError as e:
+        log.exception(e)
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY, detail=[{"msg": e.args[0]}]
+        ) from e
 
     if case.status == CaseStatus.triage:
         background_tasks.add_task(

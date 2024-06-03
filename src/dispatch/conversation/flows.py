@@ -1,10 +1,10 @@
 import logging
 
-from typing import TypeVar, List
+from sqlalchemy.orm import Session
 
 from dispatch.case.models import Case
 from dispatch.conference.models import Conference
-from dispatch.database.core import SessionLocal, resolve_attr
+from dispatch.database.core import SessionLocal
 from dispatch.document.models import Document
 from dispatch.event import service as event_service
 from dispatch.incident.models import Incident
@@ -12,7 +12,7 @@ from dispatch.plugin import service as plugin_service
 from dispatch.storage.models import Storage
 from dispatch.ticket.models import Ticket
 from dispatch.utils import deslug_and_capitalize_resource_type
-from dispatch.config import DISPATCH_UI_URL
+from dispatch.types import Subject
 
 from .models import Conversation, ConversationCreate
 from .service import create
@@ -20,10 +20,14 @@ from .service import create
 log = logging.getLogger(__name__)
 
 
-Resource = TypeVar("Resource", Document, Conference, Storage, Ticket)
+Resource = Document | Conference | Storage | Ticket
 
 
-def create_case_conversation(case: Case, conversation_target: str, db_session: SessionLocal):
+def create_case_conversation(
+    case: Case,
+    conversation_target: str,
+    db_session: Session,
+):
     """Create external communication conversation."""
 
     plugin = plugin_service.get_active_instance(
@@ -38,10 +42,24 @@ def create_case_conversation(case: Case, conversation_target: str, db_session: S
 
     conversation = None
 
-    if conversation_target:
+    # This case is a thread version, we send a new messaged (threaded) to the conversation target
+    # for the configured case type
+    if conversation_target and not case.dedicated_channel:
         try:
             conversation = plugin.instance.create_threaded(
-                case=case, conversation_id=conversation_target, db_session=db_session
+                case=case,
+                conversation_id=conversation_target,
+                db_session=db_session,
+            )
+        except Exception as e:
+            # TODO: consistency across exceptions
+            log.exception(e)
+
+    # otherwise, it must be a channel based case.
+    if case.dedicated_channel:
+        try:
+            conversation = plugin.instance.create(
+                name=f"case-{case.name}",
             )
         except Exception as e:
             # TODO: consistency across exceptions
@@ -53,11 +71,12 @@ def create_case_conversation(case: Case, conversation_target: str, db_session: S
 
     conversation.update({"resource_type": plugin.plugin.slug, "resource_id": conversation["id"]})
 
+    print(f"got convo: {conversation}")
     conversation_in = ConversationCreate(
         resource_id=conversation["resource_id"],
         resource_type=conversation["resource_type"],
         weblink=conversation["weblink"],
-        thread_id=conversation["timestamp"],
+        thread_id=conversation.get("timestamp"),
         channel_id=conversation["id"],
     )
     case.conversation = create(db_session=db_session, conversation_in=conversation_in)
@@ -127,99 +146,119 @@ def create_incident_conversation(incident: Incident, db_session: SessionLocal):
     return incident.conversation
 
 
-def archive_conversation(incident: Incident, db_session: SessionLocal):
+def archive_conversation(subject: Subject, db_session: Session) -> None:
     """Archives a conversation."""
-    if not incident.conversation:
-        log.warning("Conversation not archived. No conversation available for this incident.")
+    if not subject.conversation:
+        log.warning("Conversation not archived. No conversation available for this subject.")
         return
 
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+        db_session=db_session, project_id=subject.project.id, plugin_type="conversation"
     )
     if not plugin:
         log.warning("Conversation not archived. No conversation plugin enabled.")
         return
 
     try:
-        plugin.instance.archive(incident.conversation.channel_id)
+        plugin.instance.archive(subject.conversation.channel_id)
     except Exception as e:
-        event_service.log_incident_event(
+        event_service.log_subject_event(
+            subject=subject,
             db_session=db_session,
             source="Dispatch Core App",
             description=f"Archiving conversation failed. Reason: {e}",
-            incident_id=incident.id,
         )
         log.exception(e)
 
 
-def unarchive_conversation(incident: Incident, db_session: SessionLocal):
+def unarchive_conversation(subject: Subject, db_session: Session) -> None:
     """Unarchives a conversation."""
-    if not incident.conversation:
-        log.warning("Conversation not unarchived. No conversation available for this incident.")
+    if not subject.conversation:
+        log.warning("Conversation not unarchived. No conversation available for this subject.")
         return
 
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+        db_session=db_session, project_id=subject.project.id, plugin_type="conversation"
     )
     if not plugin:
         log.warning("Conversation not unarchived. No conversation plugin enabled.")
         return
 
     try:
-        plugin.instance.unarchive(incident.conversation.channel_id)
+        plugin.instance.unarchive(subject.conversation.channel_id)
     except Exception as e:
-        event_service.log_incident_event(
+        event_service.log_subject_event(
+            subject=subject,
             db_session=db_session,
             source="Dispatch Core App",
             description=f"Unarchiving conversation failed. Reason: {e}",
-            incident_id=incident.id,
         )
         log.exception(e)
 
 
-def set_conversation_topic(incident: Incident, db_session: SessionLocal):
+def get_topic_text(subject: Subject) -> str:
+    """Returns the topic details based on subject"""
+    if isinstance(subject, Incident):
+        return (
+            f":helmet_with_white_cross: {subject.commander.individual.name}, {subject.commander.team} | "
+            f"Status: {subject.status} | "
+            f"Type: {subject.incident_type.name} | "
+            f"Severity: {subject.incident_severity.name} | "
+            f"Priority: {subject.incident_priority.name}"
+        )
+    return (
+        f":helmet_with_white_cross: {subject.assignee.individual.name}, {subject.assignee.team} | "
+        f"Status: {subject.status} | "
+        f"Type: {subject.case_type.name} | "
+        f"Severity: {subject.case_severity.name} | "
+        f"Priority: {subject.case_priority.name}"
+    )
+
+
+def set_conversation_topic(subject: Subject, db_session: SessionLocal):
     """Sets the conversation topic."""
-    if not incident.conversation:
-        log.warning("Conversation topic not set. No conversation available for this incident.")
+    if not subject.conversation:
+        log.warning("Conversation topic not set. No conversation available for this incident/case.")
         return
 
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+        db_session=db_session, project_id=subject.project.id, plugin_type="conversation"
     )
     if not plugin:
         log.warning("Conversation topic not set. No conversation plugin enabled.")
         return
 
-    conversation_topic = (
-        f":helmet_with_white_cross: {incident.commander.individual.name}, {incident.commander.team} | "
-        f"Status: {incident.status} | "
-        f"Type: {incident.incident_type.name} | "
-        f"Severity: {incident.incident_severity.name} | "
-        f"Priority: {incident.incident_priority.name}"
-    )
+    conversation_topic = get_topic_text(subject)
 
     try:
-        plugin.instance.set_topic(incident.conversation.channel_id, conversation_topic)
+        plugin.instance.set_topic(subject.conversation.channel_id, conversation_topic)
     except Exception as e:
-        event_service.log_incident_event(
+        event_service.log_subject_event(
+            subject=subject,
             db_session=db_session,
             source="Dispatch Core App",
-            description=f"Setting the incident conversation topic failed. Reason: {e}",
-            incident_id=incident.id,
+            description=f"Setting the incident/case conversation topic failed. Reason: {e}",
         )
         log.exception(e)
 
 
-def add_conversation_bookmark(incident: Incident, resource: Resource, db_session: SessionLocal):
+def add_conversation_bookmark(
+    db_session: Session,
+    subject: Subject,
+    resource: Resource,
+    title: str | None = None,
+):
     """Adds a conversation bookmark."""
-    if not incident.conversation:
+    if not subject.conversation:
         log.warning(
-            f"Conversation bookmark {resource.name.lower()} not added. No conversation available for this incident."
+            f"Conversation bookmark {resource.name.lower()} not added. No conversation available."
         )
         return
 
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+        db_session=db_session,
+        project_id=subject.project.id,
+        plugin_type="conversation",
     )
     if not plugin:
         log.warning(
@@ -228,109 +267,34 @@ def add_conversation_bookmark(incident: Incident, resource: Resource, db_session
         return
 
     try:
-        title = deslug_and_capitalize_resource_type(resource.resource_type)
+        if not title:
+            title = deslug_and_capitalize_resource_type(resource.resource_type)
         (
             plugin.instance.add_bookmark(
-                incident.conversation.channel_id,
+                subject.conversation.channel_id,
                 resource.weblink,
                 title=title,
             )
             if resource
             else log.warning(
-                f"{resource.name} bookmark not added. No {resource.name.lower()} available for this incident."
+                f"{resource.name} bookmark not added. No {resource.name.lower()} available for subject.."
             )
         )
     except Exception as e:
-        event_service.log_incident_event(
+        event_service.log_subject_event(
+            subject=subject,
             db_session=db_session,
             source="Dispatch Core App",
             description=f"Adding the {resource.name.lower()} bookmark failed. Reason: {e}",
-            incident_id=incident.id,
         )
         log.exception(e)
 
 
-def add_conversation_bookmarks(incident: Incident, db_session: SessionLocal):
-    """Adds the conversation bookmarks."""
-    if not incident.conversation:
-        log.warning(
-            "Conversation bookmarks not added. No conversation available for this incident."
-        )
-        return
-
-    plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
-    )
-    if not plugin:
-        log.warning("Conversation bookmarks not added. No conversation plugin enabled.")
-        return
-
-    try:
-        (
-            plugin.instance.add_bookmark(
-                incident.conversation.channel_id,
-                resolve_attr(incident, "incident_document.weblink"),
-                title="Incident Document",
-            )
-            if incident.incident_document
-            else log.warning(
-                "Incident document bookmark not added. No document available for this incident."
-            )
-        )
-
-        (
-            plugin.instance.add_bookmark(
-                incident.conversation.channel_id,
-                resolve_attr(incident, "conference.weblink"),
-                title="Video Conference",
-            )
-            if incident.conference
-            else log.warning(
-                "Conference bookmark not added. No conference available for this incident."
-            )
-        )
-
-        (
-            plugin.instance.add_bookmark(
-                incident.conversation.channel_id,
-                resolve_attr(incident, "storage.weblink"),
-                title="Storage Folder",
-            )
-            if incident.storage
-            else log.warning("Storage bookmark not added. No storage available for this incident.")
-        )
-
-        ticket_weblink = resolve_attr(incident, "ticket.weblink")
-        (
-            plugin.instance.add_bookmark(
-                incident.conversation.channel_id,
-                ticket_weblink,
-                title="Ticket",
-            )
-            if incident.ticket
-            else log.warning("Ticket bookmark not added. No ticket available for this incident.")
-        )
-
-        dispatch_weblink = f"{DISPATCH_UI_URL}/{incident.project.organization.name}/incidents/{incident.name}?project={incident.project.name}"
-
-        # only add Dispatch UI ticket if not using Dispatch ticket plugin
-        if ticket_weblink != dispatch_weblink:
-            plugin.instance.add_bookmark(
-                incident.conversation.channel_id,
-                dispatch_weblink,
-                title="Dispatch UI",
-            )
-    except Exception as e:
-        event_service.log_incident_event(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description=f"Adding the incident conversation bookmarks failed. Reason: {e}",
-            incident_id=incident.id,
-        )
-        log.exception(e)
-
-
-def add_case_participants(case: Case, participant_emails: List[str], db_session: SessionLocal):
+def add_case_participants(
+    case: Case,
+    participant_emails: list[str],
+    db_session: Session,
+):
     """Adds one or more participants to the case conversation."""
     if not case.conversation:
         log.warning(
@@ -364,7 +328,9 @@ def add_case_participants(case: Case, participant_emails: List[str], db_session:
 
 
 def add_incident_participants(
-    incident: Incident, participant_emails: List[str], db_session: SessionLocal
+    incident: Incident,
+    participant_emails: list[str],
+    db_session: Session,
 ):
     """Adds one or more participants to the incident conversation."""
     if not incident.conversation:

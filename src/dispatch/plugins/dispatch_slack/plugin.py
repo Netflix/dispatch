@@ -7,6 +7,7 @@
 """
 
 from blockkit import Message
+from blockkit.surfaces import Block
 import io
 import json
 import logging
@@ -179,6 +180,15 @@ class SlackConversationPlugin(ConversationPlugin):
             client=client, conversation_id=conversation_id, blocks=blocks, ts=thread_id
         )
 
+    def send_message(self, conversation_id: str, blocks: list[Block]):
+        """Updates an existing threaded conversation."""
+        client = create_slack_client(self.configuration)
+        return send_message(
+            client=client,
+            conversation_id=conversation_id,
+            blocks=blocks,
+        )
+
     def send(
         self,
         conversation_id: str,
@@ -217,7 +227,7 @@ class SlackConversationPlugin(ConversationPlugin):
             error = exception.response["error"]
             if error == SlackAPIErrorCode.IS_ARCHIVED:
                 # swallow send errors if the channel is archived
-                message = f"SlackAPIError trying to send: {exception.response}. Message: {text}. Type: {notification_type}"
+                message = f"SlackAPIError trying to send: {exception.response}. Message: {text}. Type: {notification_type}. Template: {message_template}"
                 logger.error(message)
             else:
                 raise exception
@@ -273,12 +283,11 @@ class SlackConversationPlugin(ConversationPlugin):
             send_ephemeral_message(client, conversation_id, user_id, text, blocks)
 
     def add(self, conversation_id: str, participants: List[str]):
-        """Adds users to conversation."""
+        """Adds users to conversation if it is not archived."""
         client = create_slack_client(self.configuration)
-        participants = [resolve_user(client, p)["id"] for p in set(participants)]
-
         archived = conversation_archived(client, conversation_id)
         if not archived:
+            participants = [resolve_user(client, p)["id"] for p in set(participants)]
             add_users_to_conversation(client, conversation_id, participants)
 
     def add_to_thread(self, conversation_id: str, thread_id: str, participants: List[str]):

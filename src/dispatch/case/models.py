@@ -4,6 +4,7 @@ from typing import Any, ForwardRef, List, Optional
 
 from pydantic import validator
 from sqlalchemy import (
+    Boolean,
     Column,
     DateTime,
     ForeignKey,
@@ -88,6 +89,8 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     escalated_at = Column(DateTime)
     closed_at = Column(DateTime)
 
+    dedicated_channel = Column(Boolean, default=False)
+
     search_vector = Column(
         TSVectorType(
             "name", "title", "description", weights={"name": "A", "title": "B", "description": "C"}
@@ -169,6 +172,18 @@ class Case(Base, TimeStampMixin, ProjectMixin):
         self.participants_team = Counter(p.team for p in participants).most_common(1)[0][0]
         self.participants_location = Counter(p.location for p in participants).most_common(1)[0][0]
 
+    @property
+    def has_channel(self) -> bool:
+        if not self.conversation:
+            return False
+        return True if not self.conversation.thread_id else False
+
+    @property
+    def has_thread(self) -> bool:
+        if not self.conversation:
+            return False
+        return True if self.conversation.thread_id else False
+
 
 class SignalRead(DispatchBase):
     id: PrimaryKey
@@ -222,6 +237,7 @@ class CaseCreate(CaseBase):
     case_priority: Optional[CasePriorityCreate]
     case_severity: Optional[CaseSeverityCreate]
     case_type: Optional[CaseTypeCreate]
+    dedicated_channel: Optional[bool]
     project: Optional[ProjectRead]
     reporter: Optional[ParticipantUpdate]
     tags: Optional[List[TagRead]] = []

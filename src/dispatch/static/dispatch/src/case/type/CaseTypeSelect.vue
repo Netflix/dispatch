@@ -17,7 +17,7 @@
     <template #item="data">
       <v-list-item v-bind="data.props" :title="null">
         <v-list-item-title>{{ data.item.raw.name }}</v-list-item-title>
-        <v-list-item-subtitle :title="data.item.raw.description">
+        <v-list-item-subtitle class="truncate-text" :title="data.item.raw.description">
           {{ data.item.raw.description }}
         </v-list-item-subtitle>
       </v-list-item>
@@ -27,6 +27,9 @@
         <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
+    <v-col cols="12">
+      <p>Conversation Target: {{ conversation_target }}</p>
+    </v-col>
   </v-select>
 </template>
 
@@ -66,6 +69,7 @@ export default {
 
   data() {
     return {
+      conversation_target: null,
       loading: false,
       items: [],
       search: null,
@@ -125,31 +129,26 @@ export default {
       this.loading = "error"
 
       let filterOptions = {
-        q: "",
         sortBy: ["name"],
         descending: [false],
-        itemsPerPage: -1,
+        itemsPerPage: this.numItems,
       }
 
       if (this.project) {
         filterOptions = {
+          ...filterOptions,
           filters: {
             project: [this.project],
             enabled: ["true"],
           },
-          ...filterOptions,
         }
       }
 
       filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
 
-      if (this.items.length == 0) {
-        CaseTypeApi.getAll(filterOptions).then((response) => {
-          this.items = response.data.items
-        })
-      }
-      filterOptions.itemsPerPage = this.numItems
       CaseTypeApi.getAll(filterOptions).then((response) => {
+        this.items = response.data.items
+
         this.total = response.data.total
         this.loading = false
 
@@ -170,6 +169,13 @@ export default {
       if (!val) return
       this.items.push(val)
     },
+    case_type(newCaseType) {
+      if (newCaseType) {
+        this.conversation_target = newCaseType.conversation_target
+      } else {
+        this.conversation_target = null
+      }
+    },
   },
 
   created() {
@@ -185,3 +191,12 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.truncate-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 500px;
+}
+</style>

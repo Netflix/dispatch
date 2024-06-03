@@ -112,7 +112,7 @@ class Filter(object):
     def get_named_models(self):
         if "model" in self.filter_spec:
             model = self.filter_spec["model"]
-            if model in ["Participant", "Commander"]:
+            if model in ["Participant", "Commander", "Assignee"]:
                 return {"IndividualContact"}
             if model == "TagAll":
                 return {"Tag"}
@@ -122,7 +122,7 @@ class Filter(object):
 
     def format_for_sqlalchemy(self, query, default_model):
         filter_spec = self.filter_spec
-        if filter_spec.get("model") in ["Participant", "Commander"]:
+        if filter_spec.get("model") in ["Participant", "Commander", "Assignee"]:
             filter_spec["model"] = "IndividualContact"
         elif filter_spec.get("model") == "TagAll":
             filter_spec["model"] = "Tag"
@@ -277,6 +277,7 @@ def apply_model_specific_filters(
     """Applies any model specific filter as it pertains to the given user."""
     model_map = {
         Incident: [restricted_incident_filter],
+        Case: [restricted_case_filter],
         # IncidentType: [restricted_incident_type_filter],
     }
 
@@ -360,6 +361,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (DispatchUser, "Organization"): (DispatchUser.organizations, True),
         (Case, "Tag"): (Case.tags, True),
         (Case, "TagType"): (Case.tags, True),
+        (Case, "IndividualContact"): (Case.participants, True),
         (Incident, "Tag"): (Incident.tags, True),
         (Incident, "TagType"): (Incident.tags, True),
         (Incident, "IndividualContact"): (Incident.participants, True),
@@ -375,15 +377,20 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
     # Replace mapping if looking for commander
     if "Commander" in str(filter_spec):
         model_map.update({(Incident, "IndividualContact"): (Incident.commander, True)})
+    if "Assignee" in str(filter_spec):
+        model_map.update({(Case, "IndividualContact"): (Case.assignee, True)})
 
     filter_models = get_named_models(filters)
+    joined_models = []
     for filter_model in filter_models:
         if model_map.get((model, filter_model)):
             joined_model, is_outer = model_map[(model, filter_model)]
             try:
-                query = query.join(joined_model, isouter=is_outer)
+                if joined_model not in joined_models:
+                    query = query.join(joined_model, isouter=is_outer)
+                    joined_models.append(joined_model)
             except Exception as e:
-                log.debug(str(e))
+                log.exception(e)
 
     return query
 
@@ -435,6 +442,13 @@ def create_sort_spec(model, sort_by, descending):
     if sort_by and descending:
         for field, direction in zip(sort_by, descending, strict=False):
             direction = "desc" if direction else "asc"
+
+            # check to see if field is json with a key parameter
+            try:
+                new_field = json.loads(field)
+                field = new_field.get("key", "")
+            except json.JSONDecodeError:
+                pass
 
             # we have a complex field, we may need to join
             if "." in field:
@@ -562,6 +576,11 @@ def search_filter_sort_paginate(
             for filter in tag_all_filters:
                 query = query.intersect(filter)
 
+        if model == "Case":
+            query = query.intersect(query_restricted)
+            for filter in tag_all_filters:
+                query = query.intersect(filter)
+
         if sort_by:
             sort_spec = create_sort_spec(model, sort_by, descending)
             query = apply_sort(query, sort_spec)
@@ -620,6 +639,22 @@ def restricted_incident_filter(query: orm.Query, current_user: DispatchUser, rol
         )
     return query.distinct()
 
+
+def restricted_case_filter(query: orm.Query, current_user: DispatchUser, role: UserRoles):
+    """Adds additional case filters to query (usually for permissions)."""
+    if role == UserRoles.member:
+        # We filter out restricted cases for users with a member role if the user is not an case participant
+        query = (
+            query.join(Participant, Case.id == Participant.case_id)
+            .join(IndividualContact)
+            .filter(
+                or_(
+                    Case.visibility == Visibility.open,
+                    IndividualContact.email == current_user.email,
+                )
+            )
+        )
+    return query.distinct()
 
 def restricted_incident_type_filter(query: orm.Query, current_user: DispatchUser):
     """Adds additional incident type filters to query (usually for permissions)."""

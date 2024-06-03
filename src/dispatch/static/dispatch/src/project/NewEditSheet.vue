@@ -53,6 +53,20 @@
                 />
               </v-col>
               <v-col cols="12">
+                <v-checkbox
+                  v-model="enabled"
+                  label="Enabled"
+                  hint="Whether this project is enabled for new cases and incidents."
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-checkbox
+                  v-model="allow_self_join"
+                  label="Allow Self Join"
+                  hint="Allow users to self-join an incident from the UI"
+                />
+              </v-col>
+              <v-col cols="12">
                 <color-picker-input v-model="color" />
               </v-col>
               <v-col cols="12">
@@ -144,6 +158,8 @@ export default {
       "selected.organization",
       "selected.owner_conversation",
       "selected.owner_email",
+      "selected.enabled",
+      "selected.allow_self_join",
       "dialogs.showCreateEdit",
     ]),
   },

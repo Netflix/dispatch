@@ -15,6 +15,8 @@ const getDefaultSelectedState = () => {
     business_year_hours: 2080,
     owner_email: null,
     owner_conversation: null,
+    enabled: null,
+    allow_self_join: null,
   }
 }
 

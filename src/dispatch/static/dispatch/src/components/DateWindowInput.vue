@@ -52,6 +52,15 @@ let today = function () {
 
 const DATE_FORMAT = "yyyy-MM-dd"
 
+function convertStringToDate(value) {
+  let parts = value.split("-")
+  let year = parseInt(parts[0], 10)
+  let month = parseInt(parts[1], 10) - 1
+  let day = parseInt(parts[2], 10)
+
+  return new Date(year, month, day)
+}
+
 export default {
   name: "DateWindowInput",
   inheritAttrs: false,
@@ -115,10 +124,10 @@ export default {
 
   created() {
     if (this.modelValue.start) {
-      this.start = new Date(this.modelValue.start)
+      this.start = convertStringToDate(this.modelValue.start)
     }
     if (this.modelValue.end) {
-      this.end = new Date(this.modelValue.end)
+      this.end = convertStringToDate(this.modelValue.end)
     }
   },
 
