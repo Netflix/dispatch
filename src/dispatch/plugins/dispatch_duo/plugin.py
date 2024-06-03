@@ -76,22 +76,29 @@ class DuoMfaPlugin(MultiFactorAuthenticationPlugin):
             For more information, see https://duo.com/docs/authapi#/auth
         """
         duo_client = duo_service.create_duo_auth_client(self.configuration)
+        userstatus = duo_client.preauth(username=username)
+
+        if userstatus["result"] == "enroll":
+            username, _ = username.split("@")
+            userstatus = duo_client.preauth(username=username)
+
+        if userstatus["result"] == "enroll":
+            log.warning(f"Sending push notification failed. Unable to find {username} in Duo")
+            return PushResponseResult.user_not_found
+        elif userstatus["result"] == "deny":
+            return PushResponseResult.deny
+        elif userstatus["result"] == "allow":
+            return PushResponseResult.allow
+        else:
+            if userstatus["result"] != "auth":
+                log.error("ERROR: Unexpected user status from Duo during push: {userstatus}")
+                return PushResponseResult.deny
+        
         try:
             response = duo_client.auth(factor="push", username=username, device=device, type=type)
         except RuntimeError as e:
-            if "Invalid request parameters (username)" in str(e):
-                username, _ = username.split("@")
-
-                try:
-                    response = duo_client.auth(
-                        factor="push", username=username, device=device, type=type
-                    )
-                except RuntimeError as e:
-                    if "Invalid request parameters (username)" in str(e):
-                        log.warning(
-                            f"Sending push notification failed. Unable to find {username} in Duo"
-                        )
-                        return PushResponseResult.user_not_found
+            log.error("ERROR: Runtime Error during Duo Push: {e})")
+            return PushResponseResult.deny
 
         if response.get("result") == PushResponseResult.allow:
             return PushResponseResult.allow
