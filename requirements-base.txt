@@ -124,7 +124,7 @@ frozenlist==1.4.1
     #   aiosignal
 google-api-core==2.15.0
     # via google-api-python-client
-google-api-python-client==2.130.0
+google-api-python-client==2.131.0
     # via -r requirements-base.in
 google-auth==2.26.1
     # via
@@ -242,7 +242,7 @@ oauthlib[signedtoken]==3.2.2
     #   atlassian-python-api
     #   jira
     #   requests-oauthlib
-openai==1.30.3
+openai==1.30.5
     # via -r requirements-base.in
 packaging==23.2
     # via
@@ -338,7 +338,7 @@ pytz==2024.1
     #   pandas
 pyyaml==6.0.1
     # via schemathesis
-requests==2.32.2
+requests==2.32.3
     # via
     #   -r requirements-base.in
     #   atlassian-python-api
@@ -380,7 +380,7 @@ sentry-sdk==1.45.0
     # via
     #   -r requirements-base.in
     #   sentry-asgi
-sh==2.0.6
+sh==2.0.7
     # via -r requirements-base.in
 six==1.16.0
     # via
@@ -483,7 +483,7 @@ urllib3==2.0.7
     #   pdpyras
     #   requests
     #   sentry-sdk
-uvicorn==0.30.0
+uvicorn==0.30.1
     # via -r requirements-base.in
 uvloop==0.19.0
     # via -r requirements-base.in
