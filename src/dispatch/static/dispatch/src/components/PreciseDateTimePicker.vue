@@ -57,7 +57,7 @@
               density="compact"
               hide-details="true"
               maxlength="2"
-              @update:model-value="filterNumeric('year', $event)"
+              @update:model-value="filterNumeric('hour', $event)"
               @blur="validateHour"
               @focus="highlightText"
               @click="highlightText"
@@ -72,7 +72,7 @@
               density="compact"
               hide-details="true"
               maxlength="2"
-              @update:model-value="filterNumeric('year', $event)"
+              @update:model-value="filterNumeric('minutes', $event)"
               @blur="validateMinutes"
               @focus="highlightText"
               @click="highlightText"
@@ -87,7 +87,7 @@
               density="compact"
               hide-details="true"
               maxlength="6"
-              @update:model-value="filterNumeric('year', $event)"
+              @update:model-value="filterNumeric('seconds', $event)"
               @blur="validateSeconds"
               @focus="highlightText"
               @click="highlightText"
@@ -115,15 +115,8 @@
 </template>
 
 <script>
-import { parseISO } from "date-fns"
-import { formatInTimeZone } from "date-fns-tz"
-import moment from "moment-timezone"
-
-function isIsoDate(str) {
-  if (!/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/.test(str)) return false
-  const d = new Date(str)
-  return d instanceof Date && !isNaN(d.getTime()) && d.toISOString() === str
-}
+import { zonedTimeToUtc, utcToZonedTime, format } from "date-fns-tz"
+import { fromUnixTime } from "date-fns"
 
 function removeEndingZ(str) {
   if (str.endsWith("Z")) {
@@ -150,9 +143,9 @@ export default {
 
   data() {
     return {
-      day: "00",
-      month: "00",
-      year: "0000",
+      day: "01",
+      month: "01",
+      year: "1000",
       hour: "00",
       minutes: "00",
       seconds: "00",
@@ -183,31 +176,34 @@ export default {
       }
     },
     okHandler() {
-      let newValue = moment.tz(this.unixTimestamp, this.timezone).toISOString()
-      this.$emit("update:modelValue", newValue)
+      let date = `${this.year}-${this.month}-${this.day}T${this.hour}:${this.minutes}:${this.seconds}`
+      if (this.timezone !== "UTC") {
+        let dateInTimeZone = zonedTimeToUtc(date, this.timezone)
+        date = format(dateInTimeZone, "yyyy-MM-dd'T'HH:mm:ss.SSS")
+      }
+      this.$emit("update:modelValue", date)
       this.$emit("ok")
     },
     updateUnixTimestamp() {
       // build Date object from fields
       const date = `${this.year}-${this.month}-${this.day}T${this.hour}:${this.minutes}:${this.seconds}`
-      this.unixTimestamp = formatInTimeZone(date, "UTC", "yyyy-MM-dd'T'HH:mm:ss.SSS") + "Z"
+      const dateObject = zonedTimeToUtc(date, this.timezone)
+      const timestampInMilliseconds = dateObject.getTime()
+      this.unixTimestamp = Math.floor(timestampInMilliseconds / 1000)
     },
     handlePaste(event) {
       event.preventDefault()
       const clipboardData = event.clipboardData || window.clipboardData
       let pastedData = clipboardData.getData("Text")
-      if (!pastedData.endsWith("Z")) {
-        pastedData += "Z"
-      }
       // check to see if pastedData is a valid Unix timestamp
-      if (isIsoDate(pastedData)) {
+      try {
+        const dateInUtc = fromUnixTime(parseInt(pastedData))
+        const dateInTimeZone = utcToZonedTime(dateInUtc, this.timezone)
+        const isoFormatString = format(dateInTimeZone, "yyyy-MM-dd'T'HH:mm:ss.SSS")
         this.unixTimestamp = pastedData
-        let timeZoneFormat = formatInTimeZone(
-          parseISO(pastedData),
-          this.timezone,
-          "yyyy-MM-dd'T'HH:mm:ss.SSS"
-        )
-        this.onTimestampChange(timeZoneFormat)
+        this.onTimestampChange(isoFormatString)
+      } catch {
+        return
       }
     },
     onTimestampChange(dateTime) {
@@ -229,7 +225,7 @@ export default {
       }, 0)
     },
     validateMonth() {
-      if (!this.month || isNaN(this.month)) {
+      if (!this.month || isNaN(this.month) || this.month < 1) {
         this.month = "01"
       } else if (this.month.length === 1) {
         this.month = `0${this.month}`
@@ -239,7 +235,7 @@ export default {
       this.updateUnixTimestamp()
     },
     validateDay() {
-      if (!this.day || isNaN(this.day)) {
+      if (!this.day || isNaN(this.day) || this.day < 1) {
         this.day = "01"
       } else if (this.day.length === 1) {
         this.day = `0${this.day}`
@@ -288,8 +284,7 @@ export default {
       }
       this.updateUnixTimestamp()
     },
-    filterNumeric(field, event, isYear = false) {
-      const value = event.target.value
+    filterNumeric(field, value, isYear = false) {
       // Remove non-numeric characters
       const numericValue = value.replace(/[^0-9]/g, "")
       if (!numericValue || isNaN(numericValue)) {
