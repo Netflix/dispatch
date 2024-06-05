@@ -87,7 +87,7 @@
               density="compact"
               hide-details="true"
               maxlength="6"
-              @update:model-value="filterNumeric('seconds', $event)"
+              @update:model-value="filterNumericSeconds('seconds', $event)"
               @blur="validateSeconds"
               @focus="highlightText"
               @click="highlightText"
@@ -189,17 +189,26 @@ export default {
       const date = `${this.year}-${this.month}-${this.day}T${this.hour}:${this.minutes}:${this.seconds}`
       const dateObject = zonedTimeToUtc(date, this.timezone)
       const timestampInMilliseconds = dateObject.getTime()
-      this.unixTimestamp = Math.floor(timestampInMilliseconds / 1000)
+      this.unixTimestamp = Math.floor(timestampInMilliseconds)
     },
     handlePaste(event) {
       event.preventDefault()
       const clipboardData = event.clipboardData || window.clipboardData
       let pastedData = clipboardData.getData("Text")
       // check to see if pastedData is a valid Unix timestamp
+      let milliseconds = 0
+      let convertedData = pastedData
       try {
-        const dateInUtc = fromUnixTime(parseInt(pastedData))
+        if (pastedData.length == 13) {
+          milliseconds = pastedData.slice(10, 13)
+          convertedData = pastedData.slice(0, 10)
+        }
+        const dateInUtc = fromUnixTime(parseInt(convertedData))
         const dateInTimeZone = utcToZonedTime(dateInUtc, this.timezone)
-        const isoFormatString = format(dateInTimeZone, "yyyy-MM-dd'T'HH:mm:ss.SSS")
+        let isoFormatString = format(dateInTimeZone, "yyyy-MM-dd'T'HH:mm:ss")
+        if (milliseconds) {
+          isoFormatString += `.${milliseconds}`
+        }
         this.unixTimestamp = pastedData
         this.onTimestampChange(isoFormatString)
       } catch {
@@ -289,6 +298,15 @@ export default {
       const numericValue = value.replace(/[^0-9]/g, "")
       if (!numericValue || isNaN(numericValue)) {
         this[field] = isYear ? "2024" : "01"
+      } else {
+        this[field] = numericValue
+      }
+    },
+    filterNumericDecmial(field, value) {
+      // Remove non-numeric characters but allow decimal point
+      const numericValue = value.replace(/[^0-9.]/g, "")
+      if (!numericValue || isNaN(numericValue)) {
+        this[field] = "00"
       } else {
         this[field] = numericValue
       }
