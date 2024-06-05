@@ -203,6 +203,10 @@ export default {
           milliseconds = pastedData.slice(10, 13)
           convertedData = pastedData.slice(0, 10)
         }
+        if (pastedData.length == 14 && pastedData[10] === ".") {
+          milliseconds = pastedData.slice(11, 14)
+          convertedData = pastedData.slice(0, 10)
+        }
         const dateInUtc = fromUnixTime(parseInt(convertedData))
         const dateInTimeZone = utcToZonedTime(dateInUtc, this.timezone)
         let isoFormatString = format(dateInTimeZone, "yyyy-MM-dd'T'HH:mm:ss")
