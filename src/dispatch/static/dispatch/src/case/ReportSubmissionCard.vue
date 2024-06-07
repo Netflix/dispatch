@@ -68,25 +68,8 @@
             <v-col cols="12">
               <case-priority-select :project="project" v-model="case_priority" />
             </v-col>
-
-            <v-col cols="12">
-              <v-checkbox
-                v-model="dedicated_channel"
-                class="ml-n2"
-                label="Create a dedicated channel for this case."
-              />
-            </v-col>
-            <v-col cols="12">
-              <tag-filter-auto-complete
-                :project="project"
-                v-model="tags"
-                label="Tags"
-                model="case"
-              />
-            </v-col>
           </v-row>
         </v-container>
-        <p class="ma-4" v-if="explanationText">{{ explanationText }}</p>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
@@ -120,7 +103,6 @@ import ProjectSelect from "@/project/ProjectSelect.vue"
 import DocumentApi from "@/document/api"
 import ProjectApi from "@/project/api"
 import AuthApi from "@/auth/api"
-import TagFilterAutoComplete from "@/tag/TagPicker.vue"
 import SearchUtils from "@/search/utils"
 import CaseTypeApi from "@/case/type/api"
 
@@ -136,7 +118,6 @@ export default {
     CaseTypeSelect,
     CasePrioritySelect,
     ProjectSelect,
-    TagFilterAutoComplete,
   },
 
   data() {
@@ -170,23 +151,6 @@ export default {
       "default_project",
     ]),
     ...mapFields("auth", ["currentUser.projects"]),
-    explanationText() {
-      const caseCreation = this.dedicated_channel
-        ? "dedicated channel case"
-        : `thread based case${
-            this.case_type && this.case_type.conversation_target
-              ? " in the channel " + this.case_type.conversation_target
-              : ""
-          }`
-
-      const addTo = this.dedicated_channel
-        ? "new channel"
-        : this.case_type && this.case_type.conversation_target
-        ? "channel " + this.case_type.conversation_target
-        : "thread"
-
-      return `You are creating a ${caseCreation}. After reporting, you will be added to the ${addTo}.`
-    },
   },
 
   watch: {
@@ -350,16 +314,6 @@ export default {
         })
       }
     )
-
-    if (this.$route.query.tag) {
-      if (Array.isArray(this.$route.query.tag)) {
-        this.tags = this.$route.query.tag.map(function (t) {
-          return { name: t }
-        })
-      } else {
-        this.tags = [{ name: this.$route.query.tag }]
-      }
-    }
   },
 }
 </script>

@@ -88,7 +88,7 @@ def release_notes(pull_request_number: int) -> NoReturn:
     dispatch_pr_url = "https://github.com/Netflix/dispatch/pull/"
     exclude_bot_authors = True
     exclude_labels = ["skip-changelog", "UI/UX", "javascript"]
-    gh_pr_list_merged_command = 'gh pr list -s merged --json "title,author,number,labels" -L 250'
+    gh_pr_list_merged_command = 'gh pr list -s merged --json "title,author,number,labels" -L 2000'
     sections = {
         "bug": "",
         "dependencies": "",
@@ -97,6 +97,7 @@ def release_notes(pull_request_number: int) -> NoReturn:
         "feature": "",
         "techdebt": "",
         "tests": "",
+        "improvement": "",
     }
 
     click.echo(f"Fetching list of merged PRs since #{pull_request_number}...")

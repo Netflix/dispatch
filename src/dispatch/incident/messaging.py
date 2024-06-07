@@ -1020,7 +1020,8 @@ def send_incident_close_reminder(incident: Incident, db_session: SessionLocal):
         {
             "command": update_command,
             "name": incident.name,
-            "ticket_weblink": incident.ticket.weblink,
+            "dispatch_ui_incident_url": f"{DISPATCH_UI_URL}/{incident.project.organization.name}/incidents/{incident.name}",  # noqa
+            "conversation_weblink": resolve_attr(incident, "conversation.weblink"),
             "title": incident.title,
             "status": incident.status,
         }

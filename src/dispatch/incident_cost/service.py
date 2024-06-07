@@ -8,6 +8,7 @@ from dispatch.cost_model.models import CostModelActivity
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import Incident
+from dispatch.incident.type.models import IncidentType
 from dispatch.incident_cost_type import service as incident_cost_type_service
 from dispatch.incident_cost_type.models import IncidentCostTypeRead
 from dispatch.participant import service as participant_service
@@ -130,6 +131,17 @@ def get_incident_review_hours(incident: Incident) -> int:
 def get_hourly_rate(project) -> int:
     """Calculates and rounds up the employee hourly rate within a project."""
     return math.ceil(project.annual_employee_cost / project.business_year_hours)
+
+
+def update_incident_response_cost_for_incident_type(
+    db_session, incident_type: IncidentType
+) -> None:
+    """Calculate the response cost of all non-closed incidents associated with this incident type."""
+    incidents = incident_service.get_all_open_by_incident_type(
+        db_session=db_session, incident_type_id=incident_type.id
+    )
+    for incident in incidents:
+        update_incident_response_cost(incident_id=incident.id, db_session=db_session)
 
 
 def calculate_response_cost(
@@ -255,7 +267,7 @@ def calculate_incident_response_cost_with_cost_model(
         oldest = incident_response_cost.updated_at.replace(tzinfo=timezone.utc).timestamp()
 
     # Get the cost model. Iterate through all the listed activities we want to record.
-    for activity in incident.cost_model.activities:
+    for activity in incident.incident_type.cost_model.activities:
 
         # Array of sorted (timestamp, user_id) tuples.
         incident_events = fetch_incident_events(
@@ -457,8 +469,15 @@ def calculate_incident_response_cost(
         log.warning(f"Incident with id {incident_id} not found.")
         return 0
 
-    if incident.cost_model and incident.cost_model.enabled:
-        log.debug(f"Calculating {incident.name} incident cost with model {incident.cost_model}.")
+    incident_type = incident.incident_type
+    if not incident_type:
+        log.warning(f"Incident type for incident {incident.name} not found.")
+        return 0
+
+    if incident_type.cost_model and incident_type.cost_model.enabled:
+        log.debug(
+            f"Calculating {incident.name} incident cost with model {incident_type.cost_model}."
+        )
         return calculate_incident_response_cost_with_cost_model(
             incident=incident, db_session=db_session
         )

@@ -104,15 +104,6 @@
         />
       </v-col>
       <v-col cols="12">
-        <cost-model-combobox
-          :project="project"
-          v-model="cost_model"
-          persistent-hint
-          clearable
-          hint="If unassigned, the incident cost calculation defaults to the classic incident cost model."
-        />
-      </v-col>
-      <v-col cols="12">
         <incident-filter-combobox label="Duplicates" v-model="duplicates" :project="project" />
       </v-col>
       <v-col cols="12">
@@ -130,7 +121,6 @@ import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
 
 import CaseFilterCombobox from "@/case/CaseFilterCombobox.vue"
-import CostModelCombobox from "@/cost_model/CostModelCombobox.vue"
 import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
 import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
 import IncidentPrioritySelect from "@/incident/priority/IncidentPrioritySelect.vue"
@@ -151,7 +141,6 @@ export default {
   components: {
     CaseFilterCombobox,
     DateTimePickerMenu,
-    CostModelCombobox,
     IncidentFilterCombobox,
     IncidentPrioritySelect,
     IncidentSeveritySelect,
@@ -181,7 +170,6 @@ export default {
     ...mapFields("incident", [
       "selected.cases",
       "selected.commander",
-      "selected.cost_model",
       "selected.created_at",
       "selected.description",
       "selected.duplicates",

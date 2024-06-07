@@ -60,6 +60,13 @@
                 />
               </v-col>
               <v-col cols="12">
+                <v-checkbox
+                  v-model="allow_self_join"
+                  label="Allow Self Join"
+                  hint="Allow users to self-join an incident from the UI"
+                />
+              </v-col>
+              <v-col cols="12">
                 <color-picker-input v-model="color" />
               </v-col>
               <v-col cols="12">
@@ -190,6 +197,7 @@ export default {
       "selected.storage_folder_two",
       "selected.storage_use_folder_one_as_primary",
       "selected.storage_tag_type",
+      "selected.allow_self_join",
       "dialogs.showCreateEdit",
     ]),
   },

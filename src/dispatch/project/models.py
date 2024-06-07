@@ -44,6 +44,7 @@ class Project(Base):
     )
 
     enabled = Column(Boolean, default=True, server_default="t")
+    allow_self_join = Column(Boolean, default=True, server_default="t")
 
     send_daily_reports = Column(Boolean)
 
@@ -93,6 +94,7 @@ class ProjectBase(DispatchBase):
     storage_folder_one: Optional[str] = Field(None, nullable=True)
     storage_folder_two: Optional[str] = Field(None, nullable=True)
     storage_use_folder_one_as_primary: Optional[bool] = Field(True, nullable=True)
+    allow_self_join: Optional[bool] = Field(True, nullable=True)
 
 
 class ProjectCreate(ProjectBase):

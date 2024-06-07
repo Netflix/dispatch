@@ -19,7 +19,8 @@ const getDefaultSelectedState = () => {
     attorney_analysis: null,
     form_type: null,
     project: null,
-    form_schema: [],
+    form_schema: null,
+    attorney_form_schema: null,
   }
 }
 
@@ -58,51 +59,6 @@ const state = {
 
 const getters = {
   getField,
-}
-
-function getCurrentPage() {
-  return [
-    {
-      $formkit: "text",
-      name: "email",
-      prefixIcon: "email",
-      label: "Email",
-      value: "hello@formkit.com",
-      help: "This email will be used for account notifications.",
-      validation: "required|email",
-    },
-    {
-      $formkit: "number",
-      name: "users",
-      prefixIcon: "avatarMan",
-      id: "users",
-      min: "1",
-      max: "100",
-      value: "3",
-      label: "Users",
-      help: "How many users do you need on your plan?",
-    },
-    {
-      $formkit: "checkbox",
-      name: "eu_company",
-      id: "eu",
-      label: "Are you located in the European Union?",
-    },
-    {
-      $formkit: "select",
-      // 👀  Oooo, conditionals!
-      if: "$get(eu).value",
-      name: "cookie_notice",
-      label: "Cookie notice frequency",
-      prefixIcon: "warning",
-      options: {
-        refresh: "Every page load",
-        hourly: "Ever hour",
-        daily: "Every day",
-      },
-      help: "How often should we display a cookie notice?",
-    },
-  ]
 }
 
 function createPayload() {
@@ -189,7 +145,6 @@ const actions = {
     state.selected.form_type_id = form_type_id
     FormsTypeApi.get(form_type_id)
       .then((response) => {
-        commit("SET_PAGE_SCHEMA", getCurrentPage())
         commit("SET_FORM_TYPE", response.data)
         commit("SET_DIALOG_CREATE_EDIT", true)
       })
@@ -199,7 +154,6 @@ const actions = {
   },
   editShow({ commit }, selected) {
     commit("SET_SELECTED", selected)
-    commit("SET_PAGE_SCHEMA", getCurrentPage())
     commit("SET_DIALOG_CREATE_EDIT", true)
   },
   showDeleteDialog({ commit }, form) {

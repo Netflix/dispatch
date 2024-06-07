@@ -197,6 +197,11 @@ const changeStatus = async (newStatus) => {
 }
 
 const openDialog = (newStatus) => {
+  if (newStatus == "Escalated") {
+    const caseDetails = store.state.case_management.selected
+    store.dispatch("case_management/showEscalateDialog", caseDetails)
+    return
+  }
   const statusObj = statuses.value.find((status) => status.name === newStatus) // find the status object
   selectedStatus.value = newStatus
   selectedStatusTooltip.value = statusObj.tooltip // store the tooltip

@@ -20,6 +20,7 @@ const getDefaultSelectedState = () => {
     storage_folder_two: null,
     storage_use_folder_one_as_primary: false,
     storage_tag_type: null,
+    allow_self_join: null,
   }
 }
 

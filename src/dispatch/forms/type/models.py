@@ -27,6 +27,8 @@ class FormsType(ProjectMixin, TimeStampMixin, Base):
     description = Column(String, nullable=True)
     enabled = Column(Boolean, default=True)
     form_schema = Column(String, nullable=True)
+    attorney_form_schema = Column(String, nullable=True)
+    scoring_schema = Column(String, nullable=True)
 
     # Relationships
     creator_id = Column(Integer, ForeignKey("individual_contact.id"))
@@ -42,6 +44,8 @@ class FormsTypeBase(DispatchBase):
     description: Optional[str] = Field(None, nullable=True)
     enabled: Optional[bool]
     form_schema: Optional[str] = Field(None, nullable=True)
+    attorney_form_schema: Optional[str] = Field(None, nullable=True)
+    scoring_schema: Optional[str] = Field(None, nullable=True)
     creator: Optional[IndividualContactReadMinimal]
     project: Optional[ProjectRead]
     service: Optional[ServiceRead]

@@ -14,7 +14,7 @@ export default {
         return
       }
       each(value, function (item) {
-        if (["commander", "participant"].includes(key)) {
+        if (["commander", "participant", "assignee"].includes(key)) {
           if (has(flatFilters, key)) {
             if (typeof item === "string" || item instanceof String) {
               flatFilters[key].push(item)
@@ -85,7 +85,7 @@ export default {
         }
         return
       }
-      if (["commander", "participant"].includes(key)) {
+      if (["commander", "participant", "assignee"].includes(key)) {
         if (typeof value === "string" || value instanceof String) {
           if (has(filters, key)) {
             filters[key].push({ email: value })

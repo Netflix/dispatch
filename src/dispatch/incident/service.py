@@ -13,7 +13,6 @@ from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.decorators import timer
 from dispatch.case import service as case_service
-from dispatch.cost_model import service as cost_model_service
 from dispatch.database.core import SessionLocal
 from dispatch.event import service as event_service
 from dispatch.exceptions import NotFoundError
@@ -78,6 +77,16 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Incident]
         .filter(Incident.name == name)
         .filter(Incident.project_id == project_id)
         .first()
+    )
+
+
+def get_all_open_by_incident_type(*, db_session, incident_type_id: int) -> List[Optional[Incident]]:
+    """Returns all non-closed incidents based on the given incident type."""
+    return (
+        db_session.query(Incident)
+        .filter(Incident.status != IncidentStatus.closed)
+        .filter(Incident.incident_type_id == incident_type_id)
+        .all()
     )
 
 
@@ -166,17 +175,11 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
         incident_priority_in=incident_in.incident_priority,
     )
 
-    incident_severity = incident_severity_service.get_default(
+    incident_severity = incident_severity_service.get_by_name_or_default(
         db_session=db_session,
         project_id=project.id,
+        incident_severity_in=incident_in.incident_severity,
     )
-
-    cost_model = None
-    if incident_in.cost_model:
-        cost_model = cost_model_service.get_cost_model_by_id(
-            db_session=db_session,
-            cost_model_id=incident_in.cost_model.id,
-        )
 
     visibility = incident_type.visibility
     if incident_in.visibility:
@@ -197,7 +200,6 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
         tags=tag_objs,
         title=incident_in.title,
         visibility=visibility,
-        cost_model=cost_model,
     )
 
     db_session.add(incident)
@@ -339,15 +341,6 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
             incident_priority_in=incident_in.incident_priority,
         )
 
-    cost_model = (
-        cost_model_service.get_cost_model_by_id(
-            db_session=db_session,
-            cost_model_id=incident_in.cost_model.id,
-        )
-        if incident_in.cost_model
-        else None
-    )
-
     cases = []
     for c in incident_in.cases:
         cases.append(case_service.get(db_session=db_session, case_id=c.id))
@@ -372,13 +365,18 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
             )
         )
 
+    # Update total incident reponse cost if incident type has changed.
+    if incident_type.id != incident.incident_type.id:
+        incident_cost_service.update_incident_response_cost(
+            incident_id=incident.id, db_session=db_session
+        )
+
     update_data = incident_in.dict(
         skip_defaults=True,
         exclude={
             "cases",
             "commander",
             "duplicates",
-            "cost_model",
             "incident_costs",
             "incident_priority",
             "incident_severity",
@@ -396,7 +394,6 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
         setattr(incident, field, update_data[field])
 
     incident.cases = cases
-    incident.cost_model = cost_model
     incident.duplicates = duplicates
     incident.incident_costs = incident_costs
     incident.incident_priority = incident_priority
@@ -409,10 +406,6 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
 
     db_session.commit()
 
-    # Update total incident response cost.
-    incident_cost_service.update_incident_response_cost(
-        incident_id=incident.id, db_session=db_session
-    )
     return incident
 
 

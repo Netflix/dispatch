@@ -10,7 +10,7 @@ from dispatch.conversation import flows as conversation_flows
 from dispatch.database.core import SessionLocal
 from dispatch.decorators import background_task
 from dispatch.document import flows as document_flows
-from dispatch.enums import DocumentResourceTypes, Visibility
+from dispatch.enums import DocumentResourceTypes, Visibility, EventType
 from dispatch.event import service as event_service
 from dispatch.group import flows as group_flows
 from dispatch.group.enums import GroupAction, GroupType
@@ -19,6 +19,8 @@ from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.messaging import send_participant_announcement_message
 from dispatch.incident.models import IncidentCreate, Incident
+from dispatch.incident.type.models import IncidentType
+from dispatch.incident.priority.models import IncidentPriority
 from dispatch.individual.models import IndividualContactRead
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.participant import flows as participant_flows
@@ -125,8 +127,45 @@ def case_add_or_reactivate_participant_flow(
     return participant
 
 
-def update_conversation(case: Case, db_session: SessionLocal):
+@background_task
+def case_remove_participant_flow(
+    user_email: str,
+    case_id: int,
+    db_session: Session,
+):
+    """Runs the remove participant flow."""
+    case = case_service.get(db_session=db_session, case_id=case_id)
+
+    if not case:
+        log.warn(
+            f"Unable to remove participant from case with id {case_id}. An case with this id does not exist."
+        )
+        return
+
+    # we remove the participant from the incident
+    participant_flows.remove_case_participant(
+        user_email=user_email,
+        case=case,
+        db_session=db_session,
+    )
+
+    # we remove the participant from the tactical group
+    group_flows.update_group(
+        subject=case,
+        group=case.tactical_group,
+        group_action=GroupAction.remove_member,
+        group_member=user_email,
+        db_session=db_session,
+    )
+
+
+def update_conversation(case: Case, db_session: Session) -> None:
     """Updates external communication conversation."""
+
+    # if case has dedicated channel, there's no thread to update
+    if case.conversation.thread_id is None:
+        return
+
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=case.project.id, plugin_type="conversation"
     )
@@ -259,6 +298,16 @@ def case_closed_create_flow(*, case_id: int, organization_slug: OrganizationSlug
     case_closed_status_flow(case=case, db_session=db_session)
 
 
+def case_details_changed(case: Case, previous_case: CaseRead) -> bool:
+    """Checks if the case details have changed."""
+    return (
+        case.case_type.name != previous_case.case_type.name
+        or case.case_severity.name != previous_case.case_severity.name
+        or case.case_priority.name != previous_case.case_priority.name
+        or case.status != previous_case.status
+    )
+
+
 @background_task
 def case_update_flow(
     *,
@@ -322,6 +371,11 @@ def case_update_flow(
         # we send the case updated notification
         update_conversation(case, db_session)
 
+    if case.has_channel and case.status != CaseStatus.closed:
+        # determine if case channel topic needs to be updated
+        if case_details_changed(case, previous_case):
+            conversation_flows.set_conversation_topic(case, db_session)
+
 
 def case_delete_flow(case: Case, db_session: SessionLocal):
     """Runs the case delete flow."""
@@ -357,7 +411,13 @@ def case_triage_status_flow(case: Case, db_session=None):
         db_session.commit()
 
 
-def case_escalated_status_flow(case: Case, organization_slug: OrganizationSlug, db_session=None):
+def case_escalated_status_flow(
+    case: Case,
+    organization_slug: OrganizationSlug,
+    db_session: Session,
+    incident_priority: IncidentType | None,
+    incident_type: IncidentPriority | None,
+):
     """Runs the case escalated transition flow."""
     # we set the escalated_at time
     case.escalated_at = datetime.utcnow()
@@ -368,6 +428,8 @@ def case_escalated_status_flow(case: Case, organization_slug: OrganizationSlug, 
         case=case,
         organization_slug=organization_slug,
         db_session=db_session,
+        incident_priority=incident_priority,
+        incident_type=incident_type,
     )
 
 
@@ -377,6 +439,67 @@ def case_closed_status_flow(case: Case, db_session=None):
     case.closed_at = datetime.utcnow()
     db_session.add(case)
     db_session.commit()
+
+    # Archive the conversation if there is a dedicated channel
+    if case.dedicated_channel:
+        conversation_flows.archive_conversation(subject=case, db_session=db_session)
+
+    # Check if the case visibility is open
+    if case.visibility != Visibility.open:
+        return
+
+    # Get the active storage plugin for the case's project
+    storage_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project.id, plugin_type="storage"
+    )
+
+    if not storage_plugin:
+        return
+
+    # Open document access if configured
+    if storage_plugin.configuration.open_on_close:
+        for document in case.documents:
+            document_flows.open_document_access(document=document, db_session=db_session)
+
+    # Mark documents as read-only if configured
+    if storage_plugin.configuration.read_only:
+        for document in case.documents:
+            document_flows.mark_document_as_readonly(document=document, db_session=db_session)
+
+
+def reactivate_case_participants(case: Case, db_session: Session):
+    """Reactivates all case participants."""
+    for participant in case.participants:
+        try:
+            case_add_or_reactivate_participant_flow(
+                participant.individual.email, case.id, db_session=db_session
+            )
+        except Exception as e:
+            # don't fail to reactivate all participants if one fails
+            event_service.log_case_event(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description=f"Unable to reactivate participant with email {participant.individual.email}",
+                case_id=case.id,
+                type=EventType.participant_updated,
+            )
+            log.exception(e)
+
+    event_service.log_case_event(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description="Case participants reactivated",
+        case_id=case.id,
+        type=EventType.participant_updated,
+    )
+
+
+def case_active_status_flow(case: Case, db_session: Session) -> None:
+    """Runs the case active flow."""
+    # we un-archive the conversation
+    if case.dedicated_channel:
+        conversation_flows.unarchive_conversation(subject=case, db_session=db_session)
+        reactivate_case_participants(case, db_session)
 
 
 def case_status_transition_flow_dispatcher(
@@ -388,16 +511,12 @@ def case_status_transition_flow_dispatcher(
 ):
     """Runs the correct flows based on the current and previous status of the case."""
     match (previous_status, current_status):
+        case (CaseStatus.closed, CaseStatus.new):
+            # Closed -> New
+            case_active_status_flow(case, db_session)
+
         case (_, CaseStatus.new):
             # Any -> New
-            pass
-
-        case (_, CaseStatus.triage):
-            # Any -> Triage
-            pass
-
-        case (_, CaseStatus.escalated):
-            # Any -> Escalated
             pass
 
         case (CaseStatus.new, CaseStatus.triage):
@@ -406,6 +525,18 @@ def case_status_transition_flow_dispatcher(
                 case=case,
                 db_session=db_session,
             )
+
+        case (CaseStatus.closed, CaseStatus.triage):
+            # Closed -> Triage
+            case_active_status_flow(case, db_session)
+            case_triage_status_flow(
+                case=case,
+                db_session=db_session,
+            )
+
+        case (_, CaseStatus.triage):
+            # Any -> Triage/
+            pass
 
         case (CaseStatus.new, CaseStatus.escalated):
             # New -> Escalated
@@ -419,6 +550,31 @@ def case_status_transition_flow_dispatcher(
                 db_session=db_session,
             )
 
+        case (CaseStatus.triage, CaseStatus.escalated):
+            # Triage -> Escalated
+            case_escalated_status_flow(
+                case=case,
+                organization_slug=organization_slug,
+                db_session=db_session,
+            )
+
+        case (CaseStatus.closed, CaseStatus.escalated):
+            # Closed -> Escalated
+            case_active_status_flow(case, db_session)
+            case_triage_status_flow(
+                case=case,
+                db_session=db_session,
+            )
+            case_escalated_status_flow(
+                case=case,
+                organization_slug=organization_slug,
+                db_session=db_session,
+            )
+
+        case (_, CaseStatus.escalated):
+            # Any -> Escalated
+            pass
+
         case (CaseStatus.new, CaseStatus.closed):
             # New -> Closed
             case_triage_status_flow(
@@ -427,14 +583,6 @@ def case_status_transition_flow_dispatcher(
             )
             case_closed_status_flow(
                 case=case,
-                db_session=db_session,
-            )
-
-        case (CaseStatus.triage, CaseStatus.escalated):
-            # Triage -> Escalated
-            case_escalated_status_flow(
-                case=case,
-                organization_slug=organization_slug,
                 db_session=db_session,
             )
 
@@ -473,11 +621,6 @@ def send_escalation_messages_for_channel_case(
     plugin.instance.send_message(
         conversation_id=incident.conversation.channel_id,
         blocks=messages.create_incident_channel_escalate_message(),
-    )
-
-    plugin.instance.rename(
-        conversation_id=incident.conversation.channel_id,
-        name=incident.name,
     )
 
 
@@ -548,9 +691,11 @@ def common_escalate_flow(
 def case_to_incident_escalate_flow(
     case: Case,
     organization_slug: OrganizationSlug,
-    db_session: Session = None,
+    db_session: Session,
+    incident_priority: IncidentPriority | None,
+    incident_type: IncidentType,
 ):
-    if case.incidents or not case.case_type.incident_type:
+    if case.incidents:
         return
 
     reporter = ParticipantUpdate(
@@ -563,13 +708,15 @@ def case_to_incident_escalate_flow(
         f"in the {case.project.name} project. Check out the case in the Dispatch Web UI for additional context."
     )
 
+    incident_priority = case.case_priority if not incident_priority else incident_priority
+
     incident_in = IncidentCreate(
         title=case.title,
         description=description,
         status=IncidentStatus.active,
-        incident_type=case.case_type.incident_type,
-        incident_priority=case.case_priority,
-        project=case.case_type.incident_type.project,
+        incident_type=incident_type,
+        incident_priority=incident_priority,
+        project=case.project,
         reporter=reporter,
     )
     incident = incident_service.create(db_session=db_session, incident_in=incident_in)
@@ -610,7 +757,7 @@ def case_assign_role_flow(
     case_id: int,
     participant_email: str,
     participant_role: str,
-    db_session: SessionLocal,
+    db_session: Session,
 ):
     """Runs the case participant role assignment flow."""
     # we get the case
@@ -620,7 +767,14 @@ def case_assign_role_flow(
     case_add_or_reactivate_participant_flow(participant_email, case.id, db_session=db_session)
 
     # we run the assign role flow
-    role_flow.assign_role_flow(case, participant_email, participant_role, db_session)
+    result = role_flow.assign_role_flow(case, participant_email, participant_role, db_session)
+
+    if result in ["assignee_has_role", "role_not_assigned"]:
+        return
+
+    if case.status != CaseStatus.closed and participant_role == ParticipantRoleType.assignee:
+        # update the conversation topic
+        conversation_flows.set_conversation_topic(case, db_session)
 
 
 def case_create_resources_flow(
@@ -705,19 +859,14 @@ def case_create_resources_flow(
                 case_id=case.id,
                 add_to_conversation=False,
             )
-        # explicitly add the assignee and reporter to the conversation
-        all_participants = individual_participants + [
-            case.assignee.individual.email,
-            case.reporter.individual.email,
-        ]
-
         # # we add the participant to the conversation
         conversation_flows.add_case_participants(
             case=case,
-            participant_emails=all_participants,
+            participant_emails=individual_participants,
             db_session=db_session,
         )
-        for user_email in set(all_participants):
+
+        for user_email in set(individual_participants):
             send_participant_announcement_message(
                 db_session=db_session,
                 participant_email=user_email,
@@ -753,6 +902,7 @@ def case_create_resources_flow(
                 db_session=db_session,
                 title=title,
             )
+        conversation_flows.set_conversation_topic(case, db_session)
 
     # we update the ticket
     ticket_flows.update_case_ticket(case=case, db_session=db_session)
