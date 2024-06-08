@@ -269,12 +269,12 @@ const actions = {
   },
   showNewPreEventDialog({ commit }, started_at) {
     started_at = moment(started_at).subtract(1, "seconds").toISOString()
-    state.selected.currentEvent = { started_at, description: "" }
+    state.selected.currentEvent = { started_at, description: "", uuid: "" }
     commit("SET_DIALOG_EDIT_EVENT", true)
   },
   showNewEventDialog({ commit }, started_at) {
     started_at = moment(started_at).add(1, "seconds").toISOString()
-    state.selected.currentEvent = { started_at, description: "" }
+    state.selected.currentEvent = { started_at, description: "", uuid: "" }
     commit("SET_DIALOG_EDIT_EVENT", true)
   },
   showDeleteEventDialog({ commit }, event) {
