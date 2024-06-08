@@ -100,7 +100,7 @@
       <v-text-field
         class="paste-only"
         v-model="unixTimestamp"
-        label="Unix Timestamp (UTC)"
+        label="Unix Timestamp"
         readonly
         @paste="handlePaste($event)"
         @focus="highlightText"
