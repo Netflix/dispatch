@@ -1,7 +1,7 @@
 """Creates alternative storage attributes in project
 
 Revision ID: a812a4cf61e1
-Revises: 3a33bc153e7e
+Revises: a836d4850a75
 Create Date: 2024-04-12 14:48:05.481102
 
 """
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "a812a4cf61e1"
-down_revision = "3a33bc153e7e"
+down_revision = "a836d4850a75"
 branch_labels = None
 depends_on = None
 
@@ -21,6 +21,7 @@ def upgrade():
     op.add_column("project", sa.Column("storage_folder_one", sa.String(), nullable=True))
     op.add_column("project", sa.Column("storage_folder_two", sa.String(), nullable=True))
     op.add_column("project", sa.Column("storage_use_folder_one_as_primary", sa.Boolean(), nullable=True))
+    op.add_column('project', sa.Column('storage_use_title', sa.Boolean(), server_default=sa.text('false'), nullable=True))
     op.create_foreign_key("project_storage_tag_type_id_fkey", "project", "tag_type", ["storage_tag_type_id"], ["id"])
     # ### end Alembic commands ###
 
@@ -32,4 +33,5 @@ def downgrade():
     op.drop_column("project", "storage_folder_two")
     op.drop_column("project", "storage_folder_one")
     op.drop_column("project", "storage_tag_type_id")
+    op.drop_column('project', 'storage_use_title')
     # ### end Alembic commands ###
