@@ -2,8 +2,8 @@
   <v-dialog v-model="showEditEventDialog" persistent max-width="750px">
     <v-card>
       <v-card-title>
-        <span v-if="uuid" class="text-h5">Create new event</span>
-        <span v-else class="text-h5">Edit event</span>
+        <span v-if="uuid" class="text-h5">Edit event</span>
+        <span v-else class="text-h5">Create new event</span>
       </v-card-title>
       <v-card-text>
         <v-container class="mt-3">
