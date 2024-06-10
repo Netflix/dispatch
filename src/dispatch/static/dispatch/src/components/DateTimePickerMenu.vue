@@ -3,8 +3,8 @@
     ref="menu"
     v-model="display"
     :close-on-content-click="false"
-    max-width="290px"
-    min-width="290px"
+    max-width="280px"
+    min-width="280px"
   >
     <template #activator="{ props }">
       <v-text-field
@@ -15,23 +15,14 @@
         v-bind="props"
       />
     </template>
-    <v-card>
-      <!-- TODO: use vuetify picker components -->
-      <v-card-text>
-        <v-text-field v-model="selectedDatetime" type="datetime-local" />
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer />
-        <v-btn color="grey-lighten-1" variant="text" @click="clearHandler">Clear</v-btn>
-        <v-btn variant="text" @click="okHandler">Ok</v-btn>
-      </v-card-actions>
-    </v-card>
+    <precise-date-time-picker v-model="selectedDatetime" :timezone="timezone" @ok="okHandler" />
   </v-menu>
 </template>
 <script>
 import { parseISO } from "date-fns"
 import { formatInTimeZone, format } from "date-fns-tz"
 import moment from "moment-timezone"
+import PreciseDateTimePicker from "@/components/PreciseDateTimePicker.vue"
 
 export default {
   name: "DateTimePickerMenu",
@@ -53,6 +44,10 @@ export default {
     },
   },
 
+  components: {
+    PreciseDateTimePicker,
+  },
+
   data() {
     return {
       display: false,
@@ -67,7 +62,7 @@ export default {
   computed: {
     formattedDatetime() {
       return this.selectedDatetime
-        ? format(parseISO(this.selectedDatetime), "yyyy-MM-dd HH:mm")
+        ? format(parseISO(this.selectedDatetime), "yyyy-MM-dd HH:mm:ss.SSS")
         : ""
     },
   },
@@ -85,11 +80,15 @@ export default {
         initDateTime = parseISO(this.modelValue)
       }
 
-      this.selectedDatetime = formatInTimeZone(initDateTime, this.timezone, "yyyy-MM-dd'T'HH:mm")
+      this.selectedDatetime = formatInTimeZone(
+        initDateTime,
+        this.timezone,
+        "yyyy-MM-dd'T'HH:mm:ss.SSS"
+      )
     },
     okHandler() {
       this.resetPicker()
-      let newValue = moment.tz(this.selectedDatetime, this.timezone).utc().format()
+      let newValue = moment.tz(this.selectedDatetime, this.timezone).toISOString()
       this.$emit("update:modelValue", newValue)
     },
     clearHandler() {
@@ -111,7 +110,7 @@ export default {
       this.selectedDatetime = formatInTimeZone(
         parseISO(this.modelValue),
         this.timezone,
-        "yyyy-MM-dd'T'HH:mm"
+        "yyyy-MM-dd'T'HH:mm:ss.SSS"
       )
     },
   },
