@@ -12,7 +12,8 @@
               density="compact"
               hide-details="true"
               maxlength="2"
-              @update:model-value="filterNumeric('month', $event)"
+              @update:model-value="filterNumeric('month', $event, 'day')"
+              @keydown="handleKeyPress('day', $event)"
               @blur="validateMonth"
               @focus="highlightText"
               @click="highlightText"
@@ -27,7 +28,9 @@
               density="compact"
               hide-details="true"
               maxlength="2"
-              @update:model-value="filterNumeric('day', $event)"
+              ref="day"
+              @update:model-value="filterNumeric('day', $event, 'year')"
+              @keydown="handleKeyPress('year', $event)"
               @blur="validateDay"
               @focus="highlightText"
               @click="highlightText"
@@ -42,7 +45,9 @@
               density="compact"
               hide-details="true"
               maxlength="4"
-              @update:model-value="filterNumeric('year', $event, true)"
+              ref="year"
+              @update:model-value="filterNumericYear('year', $event, 'hour')"
+              @keydown="handleKeyPress('hour', $event)"
               @blur="validateYear"
               @focus="highlightText"
               @click="highlightText"
@@ -57,7 +62,9 @@
               density="compact"
               hide-details="true"
               maxlength="2"
-              @update:model-value="filterNumeric('hour', $event)"
+              ref="hour"
+              @update:model-value="filterNumeric('hour', $event, 'minutes')"
+              @keydown="handleKeyPress('minutes', $event)"
               @blur="validateHour"
               @focus="highlightText"
               @click="highlightText"
@@ -72,7 +79,9 @@
               density="compact"
               hide-details="true"
               maxlength="2"
-              @update:model-value="filterNumeric('minutes', $event)"
+              ref="minutes"
+              @update:model-value="filterNumeric('minutes', $event, 'seconds')"
+              @keydown="handleKeyPress('seconds', $event)"
               @blur="validateMinutes"
               @focus="highlightText"
               @click="highlightText"
@@ -87,7 +96,9 @@
               density="compact"
               hide-details="true"
               maxlength="6"
+              ref="seconds"
               @update:model-value="filterNumericSeconds('seconds', $event)"
+              @keydown="handleKeyPress(null, $event, true)"
               @blur="validateSeconds"
               @focus="highlightText"
               @click="highlightText"
@@ -117,6 +128,7 @@
 <script>
 import { zonedTimeToUtc, utcToZonedTime, format } from "date-fns-tz"
 import { fromUnixTime } from "date-fns"
+import { filter } from "lodash"
 
 function removeEndingZ(str) {
   if (str.endsWith("Z")) {
@@ -173,6 +185,40 @@ export default {
       if (this.modelValue) {
         this.onTimestampChange(this.modelValue)
         this.updateUnixTimestamp()
+      }
+    },
+    handleKeyPress(nextField, event, allowDecimal = false) {
+      const allowedKeys = [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "Backspace",
+        "ArrowLeft",
+        "ArrowRight",
+        "Delete",
+        "Tab",
+        "Enter",
+      ]
+      if (allowDecimal) {
+        allowedKeys.push(".")
+      }
+      if (!allowedKeys.includes(event.key)) {
+        // Prevent default action for non-numeric and edit keys
+        event.preventDefault()
+      }
+      if (nextField && event.key === "Enter") {
+        // if Enter, move to the next field
+        event.preventDefault()
+        if (nextField && this.$refs[nextField]) {
+          this.$refs[nextField].focus()
+        }
       }
     },
     okHandler() {
@@ -297,7 +343,7 @@ export default {
       }
       this.updateUnixTimestamp()
     },
-    filterNumeric(field, value, isYear = false) {
+    filterNumericInt(field, value, isYear = false) {
       // Remove non-numeric characters
       const numericValue = value.replace(/[^0-9]/g, "")
       if (!numericValue || isNaN(numericValue)) {
@@ -306,7 +352,27 @@ export default {
         this[field] = numericValue
       }
     },
-    filterNumericDecmial(field, value) {
+    filterNumeric(field, value, nextField) {
+      if (value.length >= 2) {
+        // Move focus to the next field if max length is reached
+        if (nextField && this.$refs[nextField]) {
+          this.$refs[nextField].focus()
+        }
+      } else {
+        this.filterNumericInt(field, value, false)
+      }
+    },
+    filterNumericYear(field, value, nextField) {
+      if (value.length >= 4) {
+        // Move focus to the next field if max length is reached
+        if (nextField && this.$refs[nextField]) {
+          this.$refs[nextField].focus()
+        }
+      } else {
+        this.filterNumericInt(field, value, true)
+      }
+    },
+    filterNumericSeconds(field, value) {
       // Remove non-numeric characters but allow decimal point
       const numericValue = value.replace(/[^0-9.]/g, "")
       if (!numericValue || isNaN(numericValue)) {
