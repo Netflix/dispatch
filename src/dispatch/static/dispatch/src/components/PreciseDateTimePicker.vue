@@ -128,7 +128,6 @@
 <script>
 import { zonedTimeToUtc, utcToZonedTime, format } from "date-fns-tz"
 import { fromUnixTime } from "date-fns"
-import { filter } from "lodash"
 
 function removeEndingZ(str) {
   if (str.endsWith("Z")) {
