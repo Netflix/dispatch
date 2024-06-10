@@ -144,7 +144,14 @@
                 <v-checkbox
                   v-model="storage_use_folder_one_as_primary"
                   label="Use Storage folder 1 as the primary storage"
-                  hint="For incidents and case, use storage folder 1 as the primary storage."
+                  hint="For incidents and cases, use storage folder 1 as the primary storage."
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-checkbox
+                  v-model="storage_use_title"
+                  label="Use the incident title as the storage folder name"
+                  hint="Use the title of the incident as the name of the storage folder."
                 />
               </v-col>
               <v-col cols="12">
@@ -196,6 +203,7 @@ export default {
       "selected.storage_folder_one",
       "selected.storage_folder_two",
       "selected.storage_use_folder_one_as_primary",
+      "selected.storage_use_title",
       "selected.storage_tag_type",
       "selected.allow_self_join",
       "dialogs.showCreateEdit",
