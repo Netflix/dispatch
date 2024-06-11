@@ -396,7 +396,7 @@ six==1.16.0
     #   validators
 slack-bolt==1.18.1
     # via -r requirements-base.in
-slack-sdk==3.27.2
+slack-sdk==3.28.0
     # via
     #   -r requirements-base.in
     #   slack-bolt
