@@ -133,6 +133,25 @@
                 />
               </v-col>
               <v-col cols="12">
+                <v-textarea
+                  v-model="channel_description"
+                  label="Channel description"
+                  hint="Set this as the description for new incident channels."
+                  clearable
+                />
+              </v-col>
+              <v-col cols="12">
+                <span class="text-body-1 text-medium-emphasis mt-2">
+                  Use {oncall_email} in the description to replace with this oncall email
+                  (optional).
+                </span>
+                <service-select
+                  label="Oncall Service"
+                  :project="project"
+                  v-model="description_service"
+                />
+              </v-col>
+              <v-col cols="12">
                 <plugin-metadata-input v-model="plugin_metadata" :project="project" />
               </v-col>
             </v-row>
@@ -152,6 +171,7 @@ import { mapFields } from "vuex-map-fields"
 import CostModelCombobox from "@/cost_model/CostModelCombobox.vue"
 import PluginMetadataInput from "@/plugin/PluginMetadataInput.vue"
 import TemplateSelect from "@/document/template/TemplateSelect.vue"
+import ServiceSelect from "@/service/ServiceSelect.vue"
 
 export default {
   setup() {
@@ -165,6 +185,7 @@ export default {
     CostModelCombobox,
     PluginMetadataInput,
     TemplateSelect,
+    ServiceSelect,
   },
 
   data() {
@@ -194,6 +215,8 @@ export default {
       "selected.cost_model",
       "selected.exclude_from_metrics",
       "selected.default",
+      "selected.channel_description",
+      "selected.description_service",
     ]),
     ...mapFields("incident_type", {
       default_incident_type: "selected.default",
