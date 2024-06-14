@@ -244,7 +244,7 @@ def set_conversation_topic(subject: Subject, db_session: Session):
         log.exception(e)
 
 
-def get_current_oncall_email(project: Project, service: Service, db_session: Session):
+def get_current_oncall_email(project: Project, service: Service, db_session: Session) -> str | None:
     """Notifies oncall about completed form"""
     oncall_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project.id, plugin_type="oncall"
