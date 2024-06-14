@@ -217,7 +217,7 @@ def get_topic_text(subject: Subject) -> str:
     )
 
 
-def set_conversation_topic(subject: Subject, db_session: Session):
+def set_conversation_topic(subject: Subject, db_session: Session) -> None:
     """Sets the conversation topic."""
     if not subject.conversation:
         log.warning("Conversation topic not set. No conversation available for this incident/case.")
