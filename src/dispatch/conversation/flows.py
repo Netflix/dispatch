@@ -258,12 +258,12 @@ def get_current_oncall_email(project: Project, service: Service, db_session: Ses
 def get_description_text(subject: Subject, db_session: Session) -> str:
     """Returns the description details based on the subject"""
     if not isinstance(subject, Incident):
-        return ""
-    
+        return
+
     incident_type = subject.incident_type
     if not incident_type.channel_description:
-        return ""
-    
+        return
+
     description_service = incident_type.description_service
     if description_service:
         oncall_email = get_current_oncall_email(
@@ -273,7 +273,7 @@ def get_description_text(subject: Subject, db_session: Session) -> str:
         )
         if oncall_email:
             return incident_type.channel_description.replace("{oncall_email}", oncall_email)
-    
+
     return incident_type.channel_description
 
 
