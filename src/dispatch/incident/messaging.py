@@ -658,7 +658,7 @@ def send_participant_announcement_message(
                     f"*Name:* {participant_name_mrkdwn}\n"
                     f"*Team*: {participant_team}, {participant_department}\n"
                     f"*Location*: {participant_location}\n"
-                    f"*Incident Role(s)*: {(', ').join(participant_roles)}\n"
+                    f"*{subject_type} Role(s)*: {(', ').join(participant_roles)}\n"
                 ),
             },
         },
