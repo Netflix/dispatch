@@ -256,19 +256,25 @@ def get_current_oncall_email(project: Project, service: Service, db_session: Ses
 
 
 def get_description_text(subject: Subject, db_session: Session) -> str:
-    """Returns the descripion details based on subject"""
-    if isinstance(subject, Incident):
-        if subject.incident_type.channel_description is None:
-            return ""
-        if subject.incident_type.description_service is not None:
-            # add oncall email to description text, if applicable
-            oncall_email = get_current_oncall_email(
-                project=subject.project, service=subject.incident_type.description_service, db_session=db_session
-            )
-            if oncall_email:
-                return f"{subject.incident_type.channel_description.replace('{oncall_email}', oncall_email)}"
-        return f"{subject.incident_type.channel_description}"
-    return ""
+    """Returns the description details based on the subject"""
+    if not isinstance(subject, Incident):
+        return ""
+    
+    incident_type = subject.incident_type
+    if not incident_type.channel_description:
+        return ""
+    
+    description_service = incident_type.description_service
+    if description_service:
+        oncall_email = get_current_oncall_email(
+            project=subject.project,
+            service=description_service,
+            db_session=db_session
+        )
+        if oncall_email:
+            return incident_type.channel_description.replace("{oncall_email}", oncall_email)
+    
+    return incident_type.channel_description
 
 
 def set_conversation_description(subject: Subject, db_session: Session) -> None:
