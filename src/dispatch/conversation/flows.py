@@ -255,7 +255,7 @@ def get_current_oncall_email(project: Project, service: Service, db_session: Ses
         return oncall_plugin.instance.get(service.external_id)
 
 
-def get_description_text(subject: Subject, db_session: Session) -> str:
+def get_description_text(subject: Subject, db_session: Session) -> str | None:
     """Returns the description details based on the subject"""
     if not isinstance(subject, Incident):
         return
