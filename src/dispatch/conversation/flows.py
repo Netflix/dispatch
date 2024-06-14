@@ -271,7 +271,7 @@ def get_description_text(subject: Subject, db_session: Session) -> str:
     return ""
 
 
-def set_conversation_description(subject: Subject, db_session: Session):
+def set_conversation_description(subject: Subject, db_session: Session) -> None:
     """Sets the conversation description."""
     if not subject.conversation:
         log.warning("Conversation topic not set. No conversation available for this incident/case.")
