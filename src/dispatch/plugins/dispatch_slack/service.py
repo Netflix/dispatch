@@ -268,7 +268,7 @@ def unarchive_conversation(client: WebClient, conversation_id: str) -> SlackResp
 def rename_conversation(client: WebClient, conversation_id: str, name: str) -> SlackResponse:
     """Renames an existing conversation."""
     return make_call(
-        client, SlackAPIPostEndpoints.conversations_rename, channel=conversation_id, name=name
+        client, SlackAPIPostEndpoints.conversations_rename, channel=conversation_id, name=name.lower()
     )
 
 
