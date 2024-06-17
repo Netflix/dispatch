@@ -182,7 +182,7 @@ const headers = [
   { title: "Severity", value: "case_severity.name", sortable: true },
   { title: "Priority", value: "case_priority.name", sortable: true },
   { title: "Project", value: "project.name", sortable: true },
-  { title: "Assignee", value: "assignee.email", sortable: false },
+  { title: "Assignee", value: "assignee", sortable: false },
   { title: "Reported At", value: "reported_at", sortable: true },
   { title: "Closed At", value: "closed_at", sortable: true },
   { title: "", key: "data-table-actions", sortable: false, align: "end" },
