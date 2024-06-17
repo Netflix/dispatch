@@ -112,7 +112,7 @@ duo-client==5.3.0
     # via -r requirements-base.in
 ecdsa==0.18.0
     # via python-jose
-email-validator==2.1.1
+email-validator==2.1.2
     # via -r requirements-base.in
 emails==0.6
     # via -r requirements-base.in
@@ -291,7 +291,7 @@ pyasn1-modules==0.3.0
     #   oauth2client
 pycparser==2.21
     # via cffi
-pydantic==1.10.15
+pydantic==1.10.16
     # via
     #   -r requirements-base.in
     #   blockkit
@@ -394,7 +394,7 @@ six==1.16.0
     #   python-dateutil
     #   sqlalchemy-filters
     #   validators
-slack-bolt==1.18.1
+slack-bolt==1.19.0
     # via -r requirements-base.in
 slack-sdk==3.29.0
     # via
