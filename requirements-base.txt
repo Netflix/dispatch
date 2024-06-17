@@ -394,7 +394,7 @@ six==1.16.0
     #   python-dateutil
     #   sqlalchemy-filters
     #   validators
-slack-bolt==1.18.1
+slack-bolt==1.19.0
     # via -r requirements-base.in
 slack-sdk==3.29.0
     # via
