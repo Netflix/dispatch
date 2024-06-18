@@ -16,6 +16,7 @@ from dispatch.enums import Visibility
 from dispatch.models import DispatchBase, ProjectMixin, Pagination
 from dispatch.plugin.models import PluginMetadata
 from dispatch.project.models import ProjectRead
+from dispatch.service.models import ServiceRead
 
 
 class IncidentType(ProjectMixin, Base):
@@ -64,6 +65,12 @@ class IncidentType(ProjectMixin, Base):
         foreign_keys=[cost_model_id],
     )
 
+    # Sets the channel description for the incidents of this type
+    channel_description = Column(String, nullable=True)
+    # Optionally add on-call name to the channel description
+    description_service_id = Column(Integer, ForeignKey("service.id"))
+    description_service = relationship("Service", foreign_keys=[description_service_id])
+
     @hybrid_method
     def get_meta(self, slug):
         if not self.plugin_metadata:
@@ -101,6 +108,8 @@ class IncidentTypeBase(DispatchBase):
     project: Optional[ProjectRead]
     plugin_metadata: List[PluginMetadata] = []
     cost_model: Optional[CostModelRead] = None
+    channel_description: Optional[str] = Field(None, nullable=True)
+    description_service: Optional[ServiceRead]
 
     @validator("plugin_metadata", pre=True)
     def replace_none_with_empty_list(cls, value):

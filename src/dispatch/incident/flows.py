@@ -254,6 +254,10 @@ def incident_create_resources(
     # we set the conversation topic
     conversation_flows.set_conversation_topic(incident, db_session)
 
+    # and set the conversation description
+    if incident.incident_type.channel_description is not None:
+        conversation_flows.set_conversation_description(incident, db_session)
+
     # we set the conversation bookmarks
     bookmarks = [
         # resource, title
