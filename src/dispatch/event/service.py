@@ -409,7 +409,7 @@ def export_timeline(
                                     "tableCellLocation": {
                                         "tableStartLocation": {"index": curr_table_start},
                                         "columnIndex": 0,
-                                        "rowIndex": row_idx // 3,
+                                        "rowIndex": row_idx // len(column_headers),
                                     },
                                 },
                             }
