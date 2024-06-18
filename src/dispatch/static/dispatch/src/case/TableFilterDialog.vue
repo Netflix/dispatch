@@ -5,69 +5,74 @@
         <v-btn color="secondary" v-bind="filterProps"> Filter </v-btn>
       </v-badge>
     </template>
-    <v-card>
-      <v-card-title>
-        <span class="text-h5">Case Filters</span>
-      </v-card-title>
-      <v-list density="compact">
-        <v-list-item>
-          <date-window-input v-model="local_reported_at" label="Reported At" />
-        </v-list-item>
-        <v-list-item>
-          <date-window-input v-model="local_closed_at" label="Closed At" />
-        </v-list-item>
-        <v-list-item>
-          <project-combobox v-model="local_project" label="Projects" />
-        </v-list-item>
-        <v-list-item>
-          <case-type-combobox v-model="local_case_type" />
-        </v-list-item>
-        <v-list-item>
-          <case-severity-combobox v-model="local_case_severity" />
-        </v-list-item>
-        <v-list-item>
-          <case-priority-combobox v-model="local_case_priority" />
-        </v-list-item>
-        <v-list-item>
-          <case-status-multi-select v-model="local_status" />
-        </v-list-item>
-        <v-list-item>
-          <tag-type-filter-combobox v-model="local_tag_type" label="Tag Types" />
-        </v-list-item>
-        <v-list-item>
-          <tag-filter-auto-complete
-            v-model="local_tag"
-            label="Tags"
-            model="case"
-            :project="local_project"
-          />
-        </v-list-item>
-        <v-list-item>
-          <v-card class="mx-auto">
-            <v-card-title>Case Participant</v-card-title>
-            <v-card-subtitle>Show only cases with this participant</v-card-subtitle>
-            <participant-select
-              class="ml-10 mr-5"
-              v-model="local_participant"
-              label="Participant"
-              hint="Show only cases with this participant"
+    <v-form @submit.prevent v-slot="{ isValid }">
+      <v-card>
+        <v-card-title>
+          <span class="text-h5">Case Filters</span>
+        </v-card-title>
+        <v-list density="compact">
+          <v-list-item>
+            <date-window-input v-model="local_reported_at" label="Reported At" />
+          </v-list-item>
+          <v-list-item>
+            <date-window-input v-model="local_closed_at" label="Closed At" />
+          </v-list-item>
+          <v-list-item>
+            <project-combobox v-model="local_project" label="Projects" />
+          </v-list-item>
+          <v-list-item>
+            <case-type-combobox v-model="local_case_type" />
+          </v-list-item>
+          <v-list-item>
+            <case-severity-combobox v-model="local_case_severity" />
+          </v-list-item>
+          <v-list-item>
+            <case-priority-combobox v-model="local_case_priority" />
+          </v-list-item>
+          <v-list-item>
+            <case-status-multi-select v-model="local_status" />
+          </v-list-item>
+          <v-list-item>
+            <tag-type-filter-combobox v-model="local_tag_type" label="Tag Types" />
+          </v-list-item>
+          <v-list-item>
+            <tag-filter-auto-complete
+              v-model="local_tag"
+              label="Tags"
+              model="case"
               :project="local_project"
-              clearable
             />
-            <v-checkbox
-              class="ml-10 mr-5"
-              v-model="local_participant_is_assignee"
-              label="And this participant is the Assignee"
-              :disabled="local_participant == null"
-            />
-          </v-card>
-        </v-list-item>
-      </v-list>
-      <v-card-actions>
-        <v-spacer />
-        <v-btn color="info" variant="text" @click="applyFilters()"> Apply Filters </v-btn>
-      </v-card-actions>
-    </v-card>
+          </v-list-item>
+          <v-list-item>
+            <v-card class="mx-auto">
+              <v-card-title>Case Participant</v-card-title>
+              <v-card-subtitle>Show only cases with this participant</v-card-subtitle>
+              <participant-select
+                class="ml-10 mr-5"
+                v-model="local_participant"
+                label="Participant"
+                hint="Show only cases with this participant"
+                :project="local_project"
+                clearable
+                :rules="[only_one]"
+              />
+              <v-checkbox
+                class="ml-10 mr-5"
+                v-model="local_participant_is_assignee"
+                label="And this participant is the Assignee"
+                :disabled="local_participant == null"
+              />
+            </v-card>
+          </v-list-item>
+        </v-list>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn color="info" :disabled="!isValid.value" variant="text" @click="applyFilters()">
+            Apply Filters
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-form>
   </v-dialog>
 </template>
 
@@ -132,6 +137,13 @@ const numFilters = computed(() => {
     local_participant.value == null ? 0 : 1,
   ])
 })
+
+const only_one = (value) => {
+  if (value && value.length > 1) {
+    return "Only one is allowed"
+  }
+  return true
+}
 
 const applyFilters = () => {
   let filtered_participant = null
