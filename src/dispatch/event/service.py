@@ -241,15 +241,22 @@ def export_timeline(
         date, time = str(event_timestamp).split(" ")
         if e.pinned or timeline_filters.get(e.type):
             if date in dates:
-                table_data.append(
-                    {time_header: time, "Description": e.description, "Owner": e.owner}
-                )
+                if timeline_filters.get("exportOwner"):
+                    table_data.append(
+                        {time_header: time, "Description": e.description, "Owner": e.owner}
+                    )
+                else:
+                    table_data.append({time_header: time, "Description": e.description})
             else:
                 dates.add(date)
-                table_data.append({time_header: date, "Description": "\t", "Owner": "\t"})
-                table_data.append(
-                    {time_header: time, "Description": e.description, "Owner": e.owner}
-                )
+                if timeline_filters.get("exportOwner"):
+                    table_data.append({time_header: date, "Description": "\t", "Owner": "\t"})
+                    table_data.append(
+                        {time_header: time, "Description": e.description, "Owner": e.owner}
+                    )
+                else:
+                    table_data.append({time_header: date, "Description": "\t"})
+                    table_data.append({time_header: time, "Description": e.description})
 
     if table_data:
         table_data = json.loads(json.dumps(table_data))
@@ -328,7 +335,7 @@ def export_timeline(
                         },
                         "fields": "backgroundColor",
                         "tableRange": {
-                            "columnSpan": 3,
+                            "columnSpan": num_columns,
                             "rowSpan": 1,
                             "tableCellLocation": {
                                 "columnIndex": 0,
@@ -397,7 +404,7 @@ def export_timeline(
                                 },
                                 "fields": "backgroundColor",
                                 "tableRange": {
-                                    "columnSpan": 3,
+                                    "columnSpan": num_columns,
                                     "rowSpan": 1,
                                     "tableCellLocation": {
                                         "tableStartLocation": {"index": curr_table_start},
