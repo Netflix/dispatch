@@ -344,8 +344,38 @@ def export_timeline(
                             },
                         },
                     }
+                },
+                {
+                    "updateTableColumnProperties": {
+                        "tableStartLocation": {
+                            "index": curr_table_start,
+                        },
+                        "columnIndices": [0],
+                        "tableColumnProperties": {
+                            "width": {"magnitude": 90, "unit": "PT"},
+                            "widthType": "FIXED_WIDTH",
+                        },
+                        "fields": "width,widthType",
+                    }
                 }
             ]
+
+            if timeline_filters.get("exportOwner"):
+                insert_data_request.append(
+                    {
+                        "updateTableColumnProperties": {
+                            "tableStartLocation": {
+                                "index": curr_table_start,
+                            },
+                            "columnIndices": [2],
+                            "tableColumnProperties": {
+                                "width": {"magnitude": 105, "unit": "PT"},
+                                "widthType": "FIXED_WIDTH",
+                            },
+                            "fields": "width,widthType",
+                        }
+                    }
+                )
 
             if plugin.instance.insert(document_id=doc_id, request=insert_data_request):
                 log.debug("Table Formatted successfully")
