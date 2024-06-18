@@ -23,6 +23,7 @@ class SlackAPIPostEndpoints(DispatchEnum):
     conversations_invite = "conversations.invite"
     conversations_rename = "conversations.rename"
     conversations_set_topic = "conversations.setTopic"
+    conversations_set_purpose = "conversations.setPurpose"
     conversations_unarchive = "conversations.unarchive"
     pins_add = "pins.add"
 
@@ -34,6 +35,7 @@ class SlackAPIErrorCode(DispatchEnum):
     FATAL_ERROR = "fatal_error"
     USER_IN_CHANNEL = "user_in_channel"
     USER_NOT_IN_CHANNEL = "user_not_in_channel"
+    USER_NOT_FOUND = "user_not_found"
     USERS_NOT_FOUND = "users_not_found"
     VIEW_NOT_FOUND = "not_found"  # Could not find corresponding view for the provided view_id
     VIEW_EXPIRED = "expired_trigger_id"  # The provided trigger_id is no longer valid

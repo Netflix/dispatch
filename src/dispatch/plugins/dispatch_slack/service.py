@@ -217,6 +217,13 @@ def set_conversation_topic(client: WebClient, conversation_id: str, topic: str) 
     )
 
 
+def set_conversation_description(client: WebClient, conversation_id: str, description: str) -> SlackResponse:
+    """Sets the topic of the specified conversation."""
+    return make_call(
+        client, SlackAPIPostEndpoints.conversations_set_purpose, channel=conversation_id, purpose=description
+    )
+
+
 def add_conversation_bookmark(
     client: WebClient, conversation_id: str, weblink: str, title: str
 ) -> SlackResponse:
@@ -268,7 +275,7 @@ def unarchive_conversation(client: WebClient, conversation_id: str) -> SlackResp
 def rename_conversation(client: WebClient, conversation_id: str, name: str) -> SlackResponse:
     """Renames an existing conversation."""
     return make_call(
-        client, SlackAPIPostEndpoints.conversations_rename, channel=conversation_id, name=name
+        client, SlackAPIPostEndpoints.conversations_rename, channel=conversation_id, name=name.lower()
     )
 
 

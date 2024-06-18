@@ -73,6 +73,24 @@
                 </span>
                 <service-select label="Oncall Service" :project="project" v-model="service" />
               </v-col>
+              <v-col cols="12">
+                <v-textarea
+                  v-model="attorney_form_schema"
+                  label="Attorney Form Schema (optional)"
+                  hint="The schema used to define the attorney questions."
+                  clearable
+                  name="Attorney Form Schema (optional)"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-textarea
+                  v-model="scoring_schema"
+                  label="Scoring Schema (optional)"
+                  hint="The scoring schema used with this form."
+                  clearable
+                  name="Scoring Schema (optional)"
+                />
+              </v-col>
               <div v-if="!has_formkit_pro" class="ml-11 text-caption text-grey">
                 For more advanced form components, upgrade to
                 <a href="https://formkit.com/pro" target="_blank" rel="noopener noreferrer"
@@ -115,6 +133,8 @@ export default {
       "selected.project",
       "selected.service",
       "selected.form_schema",
+      "selected.attorney_form_schema",
+      "selected.scoring_schema",
       "dialogs.showCreateEdit",
       "has_formkit_pro",
     ]),

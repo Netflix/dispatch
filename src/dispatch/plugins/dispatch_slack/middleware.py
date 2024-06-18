@@ -9,7 +9,7 @@ from sqlalchemy.orm.session import Session
 from dispatch.auth import service as user_service
 from dispatch.auth.models import DispatchUser, UserRegister
 from dispatch.conversation import service as conversation_service
-from dispatch.database.core import SessionLocal, refetch_db_session
+from dispatch.database.core import get_session, get_organization_session, refetch_db_session
 from dispatch.decorators import timer
 from dispatch.enums import SubjectNames
 from dispatch.organization import service as organization_service
@@ -38,35 +38,32 @@ Subject = NamedTuple("Subject", subject=SubjectMetadata, db_session=Session)
 @timer
 def resolve_context_from_conversation(channel_id: str, thread_id: str = None) -> Optional[Subject]:
     """Attempts to resolve a conversation based on the channel id and thread_id."""
-    db_session = SessionLocal()
-    organization_slugs = [o.slug for o in organization_service.get_all(db_session=db_session)]
-    db_session.close()
+    organization_slugs = []
+    with get_session() as db_session:
+        organization_slugs = [o.slug for o in organization_service.get_all(db_session=db_session)]
 
     for slug in organization_slugs:
-        scoped_db_session = refetch_db_session(slug)
+        with get_organization_session(slug) as scoped_db_session:
+            conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
+                db_session=scoped_db_session, channel_id=channel_id, thread_id=thread_id
+            )
 
-        conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
-            db_session=scoped_db_session, channel_id=channel_id, thread_id=thread_id
-        )
-
-        if conversation:
-            if conversation.incident:
-                subject = SubjectMetadata(
-                    type=IncidentSubjects.incident,
-                    id=conversation.incident_id,
-                    organization_slug=slug,
-                    project_id=conversation.incident.project_id,
-                )
-            else:
-                subject = SubjectMetadata(
-                    type=CaseSubjects.case,
-                    id=conversation.case_id,
-                    organization_slug=slug,
-                    project_id=conversation.case.project_id,
-                )
-            return Subject(subject, db_session=scoped_db_session)
-
-        scoped_db_session.close()
+            if conversation:
+                if conversation.incident:
+                    subject = SubjectMetadata(
+                        type=IncidentSubjects.incident,
+                        id=conversation.incident_id,
+                        organization_slug=slug,
+                        project_id=conversation.incident.project_id,
+                    )
+                else:
+                    subject = SubjectMetadata(
+                        type=CaseSubjects.case,
+                        id=conversation.case_id,
+                        organization_slug=slug,
+                        project_id=conversation.case.project_id,
+                    )
+                return Subject(subject, db_session=scoped_db_session)
 
 
 def select_context_middleware(payload: dict, context: BoltContext, next: Callable) -> None:
@@ -416,7 +413,6 @@ def configuration_middleware(context: BoltContext, next: Callable):
 
 
 def get_default_org_slug() -> str:
-    db_session = SessionLocal()
-    slug = organization_service.get_default(db_session=db_session).slug
-    db_session.close()
+    with get_session() as db_session:
+        slug = organization_service.get_default(db_session=db_session).slug
     return slug

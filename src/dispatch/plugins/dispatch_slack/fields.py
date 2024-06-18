@@ -299,7 +299,7 @@ def project_select(
 ):
     """Creates a project select."""
     projects = [
-        {"text": p.name, "value": p.id} for p in project_service.get_all(db_session=db_session)
+        {"text": p.name, "value": p.id} for p in project_service.get_all(db_session=db_session) if p.enabled
     ]
     return static_select_block(
         placeholder="Select Project",

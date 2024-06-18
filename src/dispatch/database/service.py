@@ -277,6 +277,7 @@ def apply_model_specific_filters(
     """Applies any model specific filter as it pertains to the given user."""
     model_map = {
         Incident: [restricted_incident_filter],
+        Case: [restricted_case_filter],
         # IncidentType: [restricted_incident_type_filter],
     }
 
@@ -575,6 +576,11 @@ def search_filter_sort_paginate(
             for filter in tag_all_filters:
                 query = query.intersect(filter)
 
+        if model == "Case":
+            query = query.intersect(query_restricted)
+            for filter in tag_all_filters:
+                query = query.intersect(filter)
+
         if sort_by:
             sort_spec = create_sort_spec(model, sort_by, descending)
             query = apply_sort(query, sort_spec)
@@ -633,6 +639,22 @@ def restricted_incident_filter(query: orm.Query, current_user: DispatchUser, rol
         )
     return query.distinct()
 
+
+def restricted_case_filter(query: orm.Query, current_user: DispatchUser, role: UserRoles):
+    """Adds additional case filters to query (usually for permissions)."""
+    if role == UserRoles.member:
+        # We filter out restricted cases for users with a member role if the user is not an case participant
+        query = (
+            query.join(Participant, Case.id == Participant.case_id)
+            .join(IndividualContact)
+            .filter(
+                or_(
+                    Case.visibility == Visibility.open,
+                    IndividualContact.email == current_user.email,
+                )
+            )
+        )
+    return query.distinct()
 
 def restricted_incident_type_filter(query: orm.Query, current_user: DispatchUser):
     """Adds additional incident type filters to query (usually for permissions)."""
