@@ -38,11 +38,13 @@
               At least one must be selected
             </div>
           </v-card>
+          <v-checkbox class="mt-3" label="Also export Owner field" v-model="exportOwner" />
           <v-select
             v-model="timezone"
             label="Time zone"
+            style="margin-top: -20px"
             :items="timezones"
-            class="mt-3 ml-2 time-zone-select"
+            class="ml-2 time-zone-select"
           />
         </v-card-text>
 
@@ -99,6 +101,7 @@ export default {
       timezones: ["UTC", "America/Los_Angeles"],
       timezone: "UTC",
       user_timeline_filters: {},
+      exportOwner: false,
     }
   },
   computed: {
@@ -158,6 +161,7 @@ export default {
       user_timeline_filters["incidentDocument"] = this.incidentDocument
       user_timeline_filters["reviewDocument"] = this.reviewDocument
       user_timeline_filters["timezone"] = this.timezone
+      user_timeline_filters["exportOwner"] = this.exportOwner
       this.$store.dispatch("incident/exportDoc", user_timeline_filters)
       this.showExportDialog = false
     },

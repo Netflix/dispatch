@@ -371,7 +371,7 @@ def case_update_flow(
         # we send the case updated notification
         update_conversation(case, db_session)
 
-    if case.has_channel and case.status != CaseStatus.closed:
+    if case.has_channel and not case.has_thread and case.status != CaseStatus.closed:
         # determine if case channel topic needs to be updated
         if case_details_changed(case, previous_case):
             conversation_flows.set_conversation_topic(case, db_session)
