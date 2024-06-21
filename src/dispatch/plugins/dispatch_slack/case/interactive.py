@@ -1237,6 +1237,18 @@ def handle_escalation_submission_event(
     case.status = CaseStatus.escalated
     db_session.commit()
 
+    modal = Modal(
+        title="Case Escalated",
+        close="Close",
+        blocks=[Section(text="Running case escalation flows...")],
+    ).build()
+
+    result = client.views_update(
+        view_id=body["view"]["id"],
+        trigger_id=body["trigger_id"],
+        view=modal,
+    )
+
     blocks = create_case_message(case=case, channel_id=context["subject"].channel_id)
     if case.has_thread:
         client.chat_update(
@@ -1307,15 +1319,12 @@ def handle_escalation_submission_event(
         ),
     ]
 
-    modal = Modal(
-        title="Escalate Case",
-        close="Close",
-        blocks=blocks,
-    ).build()
-
-    client.views_update(
+    send_success_modal(
+        client=client,
         view_id=body["view"]["id"],
-        view=modal,
+        trigger_id=result["trigger_id"],
+        title="Case Escalated",
+        message="Case escalated successfully.",
     )
 
 
