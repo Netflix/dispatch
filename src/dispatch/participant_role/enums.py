@@ -9,3 +9,18 @@ class ParticipantRoleType(DispatchEnum):
     participant = "Participant"
     observer = "Observer"
     reporter = "Reporter"
+
+    @classmethod
+    def map_case_role_to_incident_role(
+        cls, case_roles: "ParticipantRoleType"
+    ) -> "ParticipantRoleType":
+        role_mapping = {
+            cls.reporter: cls.reporter,
+            cls.assignee: cls.incident_commander,
+        }
+
+        for role in case_roles:
+            if role.role in role_mapping:
+                return role_mapping[role.role]
+
+        return cls.observer

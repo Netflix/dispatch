@@ -646,7 +646,24 @@ def common_escalate_flow(
 
     # we add the case participants to the incident
     for participant in case.participants:
-        conversation_flows.add_incident_participants(
+        log.info(
+            f"Adding participant {participant.individual.email} from Case {case.id} to Incident {incident.id}"
+        )
+        # Get the roles for this participant
+        case_roles = participant.participant_roles
+
+        # Map the case role to an incident role
+        incident_role = ParticipantRoleType.map_case_role_to_incident_role(case_roles)
+
+        participant_flows.add_participant(
+            participant.individual.email,
+            incident,
+            db_session,
+            role=incident_role,
+        )
+
+        # We add the participants to the conversation
+        conversation_flows.add_incident_participants_to_conversation(
             db_session=db_session,
             incident=incident,
             participant_emails=[participant.individual.email],

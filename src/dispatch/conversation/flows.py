@@ -267,9 +267,7 @@ def get_description_text(subject: Subject, db_session: Session) -> str | None:
     description_service = incident_type.description_service
     if description_service:
         oncall_email = get_current_oncall_email(
-            project=subject.project,
-            service=description_service,
-            db_session=db_session
+            project=subject.project, service=description_service, db_session=db_session
         )
         if oncall_email:
             return incident_type.channel_description.replace("{oncall_email}", oncall_email)
@@ -391,7 +389,7 @@ def add_case_participants(
         log.exception(e)
 
 
-def add_incident_participants(
+def add_incident_participants_to_conversation(
     incident: Incident,
     participant_emails: list[str],
     db_session: Session,
@@ -422,6 +420,10 @@ def add_incident_participants(
             incident_id=incident.id,
         )
         log.exception(e)
+    else:
+        log.info(
+            f"Add participants {str(participant_emails)} to Incident {incident.id} successfully"
+        )
 
 
 def delete_conversation(conversation: Conversation, project_id: int, db_session: SessionLocal):
