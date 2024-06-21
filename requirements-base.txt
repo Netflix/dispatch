@@ -112,7 +112,7 @@ duo-client==5.3.0
     # via -r requirements-base.in
 ecdsa==0.18.0
     # via python-jose
-email-validator==2.1.2
+email-validator==2.2.0
     # via -r requirements-base.in
 emails==0.6
     # via -r requirements-base.in
