@@ -1,3 +1,5 @@
+from collections.abc import Iterable
+
 from dispatch.enums import DispatchEnum
 
 
@@ -12,7 +14,7 @@ class ParticipantRoleType(DispatchEnum):
 
     @classmethod
     def map_case_role_to_incident_role(
-        cls, case_roles: "ParticipantRoleType"
+        cls, case_roles: Iterable["ParticipantRoleType"]
     ) -> "ParticipantRoleType":
         role_mapping = {
             cls.reporter: cls.reporter,
