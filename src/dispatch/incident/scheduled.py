@@ -168,7 +168,7 @@ def incident_report_daily(db_session: SessionLocal, project: Project):
                                 "button_action": f"{ConversationButtonActions.subscribe_user}-{incident.status}-{idx}",
                             }
                         )
-                        if incident.project.allow_self_join == True:
+                        if incident.project.allow_self_join:
                             item["buttons"].append(
                                 {
                                     "button_text": "Join",
