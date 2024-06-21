@@ -530,7 +530,7 @@ def send_incident_update_notifications(
     # we send a notification to the notification conversations and emails
     fyi_notification_template = notification_template.copy()
     if incident.status != IncidentStatus.closed:
-        if incident.project.allow_self_join == True:
+        if incident.project.allow_self_join:
             fyi_notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT)
         else:
             fyi_notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT_NO_SELF_JOIN)
