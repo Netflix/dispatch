@@ -360,12 +360,20 @@ def case_update_flow(
 
     if case.tactical_group:
         # we update the tactical group
-        for group_member in [reporter_email, assignee_email]:
+        if reporter_email:
             group_flows.update_group(
                 subject=case,
                 group=case.tactical_group,
                 group_action=GroupAction.add_member,
-                group_member=group_member,
+                group_member=reporter_email,
+                db_session=db_session,
+            )
+        if assignee_email:
+            group_flows.update_group(
+                subject=case,
+                group=case.tactical_group,
+                group_action=GroupAction.add_member,
+                group_member=assignee_email,
                 db_session=db_session,
             )
 
