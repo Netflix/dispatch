@@ -1,4 +1,4 @@
-from alembic import context
+from alembic import context, script
 from sqlalchemy import engine_from_config, pool
 
 from dispatch.logging import logging
@@ -85,6 +85,10 @@ def run_migrations_offline():
     # Get the URL from the config
     url = config.get_main_option("sqlalchemy.url")
 
+    alembic_script = script.ScriptDirectory.from_config(config)
+
+    _, previous = list(alembic_script.walk_revisions(base='base', head='heads'))[:2]
+
     # Set the migration options
     context.configure(
         url=url,
@@ -92,11 +96,13 @@ def run_migrations_offline():
         include_schemas=True,
         include_object=include_object,
         literal_binds=True,  # Binds parameters with their string values
+        starting_rev=previous.revision,
     )
 
     # Start a transaction and run migrations
     with context.begin_transaction():
         context.run_migrations()
+
 
 
 if context.is_offline_mode():
