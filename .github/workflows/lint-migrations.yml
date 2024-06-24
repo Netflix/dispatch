@@ -37,6 +37,7 @@ jobs:
           chmod +x eugene
       - name: Generate sql files
         run: |
+          export DISPATCH_ENCRYPTION_KEY=supersecret
           dispatch database upgrade --revision-type tenant  --sql
       - name: Lint files
         run: ./eugene lint alembic_output.sql -f md --accept-failures > lint.md
