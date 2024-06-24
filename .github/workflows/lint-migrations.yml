@@ -1,5 +1,7 @@
 name: Eugene CI check
 
+on: pull_request
+
 env:
   EUGENE_VERSION: "0.6.1"
 
