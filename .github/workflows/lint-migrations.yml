@@ -37,8 +37,13 @@ jobs:
           chmod +x eugene
       - name: Generate sql files
         run: |
-          export DISPATCH_ENCRYPTION_KEY=supersecret
-          dispatch database upgrade --revision-type tenant  --sql
+          export LOG_LEVEL="ERROR"
+          export STATIC_DIR=""
+          export DATABASE_HOSTNAME="localhost"
+          export DATABASE_CREDENTIALS="dispatch:dispatch"
+          export DISPATCH_ENCRYPTION_KEY="NJHDWDJ3PbHT8h"
+          export DISPATCH_JWT_SECRET="foo"
+          dispatch database upgrade --revision-type tenant --sql
       - name: Lint files
         run: ./eugene lint alembic_output.sql -f md --accept-failures > lint.md
       - name: Post Comment
