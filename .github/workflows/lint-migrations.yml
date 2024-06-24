@@ -1,0 +1,73 @@
+name: Eugene CI check
+
+env:
+  EUGENE_VERSION: "0.6.1"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  lint-migration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11.2
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install python dependencies
+        run: |
+          export DISPATCH_LIGHT_BUILD=1
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Download eugene
+        run: |
+          curl -L  https://github.com/kaaveland/eugene/releases/download/$EUGENE_VERSION/eugene-x86_64-unknown-linux-musl -o eugene
+          chmod +x eugene
+      - name: Generate sql files
+        run: |
+          # Navigate to the git repository root, if not already there
+          cd "$(git rev-parse --show-toplevel)" || exit
+
+          # Perform git diff to check for changes in the specified directory
+          changed_files=$(git diff --name-only -- src/dispatch/database/revisions/tenant/versions)
+
+          # Filter for newly added files (*.py)
+          new_files=$(echo "$changed_files" | grep -E "^src/dispatch/database/revisions/tenant/versions/2024-06-12_.*\.py$")
+
+          # Check if there is exactly one new file and handle errors for multiple or no files
+          if [[ $(echo "$new_files" | wc -l) -ne 1 ]]; then
+            echo "Error: There should be exactly one new revision file. Found: $(echo "$new_files" | wc -l)"
+            exit 1
+          fi
+
+          new_file_path=$(echo "$new_files" | head -n 1)
+          new_revision_id=$(basename "$new_file_path" .py | cut -d'_' -f2)
+
+          # Get the most recent revision ID excluding the newly added one
+          old_file=$(git ls-files src/dispatch/database/revisions/tenant/versions | grep -oP '2024-06-12_\K[^.]+(?=\.py)' | grep -v "$new_revision_id" | sort -rV | head -n 1)
+
+          if [[ -z "$old_file" ]]; then
+            echo "Error: No old revision ID found"
+            exit 1
+          fi
+
+          old_revision_id=$(echo "$old_file")
+          dispatch database upgrade --revision-type tenant --revision="${old_revision_id}:${new_revision_id}" --sql
+      - name: Lint files
+        run: ./eugene lint --git-diff origin/main migration-scripts -f md --accept-failures > lint.md
+      - name: Post Comment
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          COMMENT=$(cat lint.md)
+          gh pr comment ${{ github.event.pull_request.number }} --body "$COMMENT"

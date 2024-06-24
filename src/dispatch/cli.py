@@ -396,6 +396,8 @@ def drop_database(yes):
 def upgrade_database(tag, sql, revision, revision_type):
     """Upgrades database schema to newest version."""
     import sqlalchemy
+    from contextlib import redirect_stdout
+
     from alembic import command as alembic_command
     from alembic.config import Config as AlembicConfig
     from sqlalchemy import inspect
@@ -426,7 +428,12 @@ def upgrade_database(tag, sql, revision, revision_type):
                 path = config.ALEMBIC_TENANT_REVISION_PATH
 
             alembic_cfg.set_main_option("script_location", path)
-            alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
+            if sql:
+                with open("alembic_output.sql", "w") as sql_file:
+                    with redirect_stdout(sql_file):
+                        alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
+            else:
+                alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
         else:
             for path in [config.ALEMBIC_CORE_REVISION_PATH, config.ALEMBIC_TENANT_REVISION_PATH]:
                 alembic_cfg.set_main_option("script_location", path)

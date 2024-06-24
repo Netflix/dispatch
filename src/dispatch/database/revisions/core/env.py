@@ -45,7 +45,10 @@ def run_migrations_online():
             log.info("No changes found skipping revision creation.")
 
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section), prefix="sqlalchemy.", poolclass=pool.NullPool
+        config.get_section(config.config_ini_section),
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+        connect_args={'options': '-c lock_timeout=4000 -c statement_timeout=5000'}
     )
 
     log.info("Migrating dispatch core schema...")
@@ -58,6 +61,7 @@ def run_migrations_online():
             target_metadata=target_metadata,
             include_schemas=True,
             include_object=include_object,
+            transaction_per_migration=True,
             process_revision_directives=process_revision_directives,
         )
 
@@ -65,7 +69,37 @@ def run_migrations_online():
             context.run_migrations()
 
 
+def run_migrations_offline():
+    """Run migrations in 'offline' mode.
+
+    This configures the context with just a URL
+    and not an Engine, though an Engine is acceptable
+    here as well. By skipping the Engine creation
+    we don't even need a DBAPI to be available.
+
+    Calls to context.execute() here emit the given string to the
+    script output.
+
+    """
+
+    # Get the URL from the config
+    url = config.get_main_option("sqlalchemy.url")
+
+    # Set the migration options
+    context.configure(
+        url=url,
+        target_metadata=target_metadata,
+        include_schemas=True,
+        include_object=include_object,
+        literal_binds=True,  # Binds parameters with their string values
+    )
+
+    # Start a transaction and run migrations
+    with context.begin_transaction():
+        context.run_migrations()
+
+
 if context.is_offline_mode():
-    log.info("Can't run migrations offline")
+    run_migrations_offline()
 else:
     run_migrations_online()
