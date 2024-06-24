@@ -6,7 +6,7 @@
 #
 aiocache==0.12.2
     # via -r requirements-base.in
-aiofiles==23.2.1
+aiofiles==24.1.0
     # via -r requirements-base.in
 aiohttp==3.9.5
     # via -r requirements-base.in
