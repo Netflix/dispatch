@@ -1445,7 +1445,7 @@ def handle_edit_submission_event(
         case_id=case.id,
         previous_case=previous_case,
         db_session=db_session,
-        reporter_email=case.reporter.individual.email,
+        reporter_email=case.reporter.individual.email if case.reporter else None,
         assignee_email=assignee_email,
         organization_slug=context["subject"].organization_slug,
     )
