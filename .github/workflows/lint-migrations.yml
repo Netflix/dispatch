@@ -43,6 +43,12 @@ jobs:
           export DATABASE_CREDENTIALS="dispatch:dispatch"
           export DISPATCH_ENCRYPTION_KEY="NJHDWDJ3PbHT8h"
           export DISPATCH_JWT_SECRET="foo"
+
+          changed_files=$(git diff --name-only -- src/dispatch/database/revisions/tenant/versions)
+          if [ -z "$changed_files" ]; then
+            echo "No migration files changed, skipping linting"
+            exit 0
+          fi
           dispatch database upgrade --revision-type tenant --sql
       - name: Lint files
         run: ./eugene lint --ignore E9 alembic_output.sql -f md --accept-failures > lint.md
