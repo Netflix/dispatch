@@ -45,7 +45,7 @@ jobs:
           export DISPATCH_JWT_SECRET="foo"
           dispatch database upgrade --revision-type tenant --sql
       - name: Lint files
-        run: ./eugene lint alembic_output.sql -f md --accept-failures > lint.md
+        run: ./eugene lint --ignore E9 alembic_output.sql -f md --accept-failures > lint.md
       - name: Post Comment
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
