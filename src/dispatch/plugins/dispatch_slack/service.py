@@ -59,7 +59,7 @@ def emails_to_user_ids(client: WebClient, participants: list[str]) -> list[str]:
     If a user cannot be found for a given email address, it logs a warning and continues with the next email.
     If an error other than a user not found occurs, it logs the exception.
 
-    Args:s
+    Args:
         client (WebClient): A Slack WebClient object used to interact with the Slack API.
         participants (list[str]): A list of participant email addresses to resolve.
 
