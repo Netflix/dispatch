@@ -6,7 +6,7 @@
 #
 aiocache==0.12.2
     # via -r requirements-base.in
-aiofiles==23.2.1
+aiofiles==24.1.0
     # via -r requirements-base.in
 aiohttp==3.9.5
     # via -r requirements-base.in
@@ -214,7 +214,7 @@ markupsafe==2.1.3
     #   jinja2
     #   mako
     #   werkzeug
-msal==1.28.1
+msal==1.29.0
     # via -r requirements-base.in
 multidict==6.0.4
     # via
@@ -396,7 +396,7 @@ six==1.16.0
     #   validators
 slack-bolt==1.19.0
     # via -r requirements-base.in
-slack-sdk==3.29.0
+slack-sdk==3.30.0
     # via
     #   -r requirements-base.in
     #   slack-bolt
