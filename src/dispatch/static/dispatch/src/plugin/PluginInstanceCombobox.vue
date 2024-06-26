@@ -80,10 +80,8 @@ export default {
   },
 
   created() {
-    if (this.modelValue) {
-      if (this.modelValue.slug) {
-        this.plugin = cloneDeep(this.modelValue)
-      }
+    if (this.modelValue && this.modelValue.slug) {
+      this.plugin = cloneDeep(this.modelValue)
     }
     this.fetchData()
   },

@@ -122,10 +122,7 @@ export default {
   computed: {
     plugins: {
       get() {
-        console.log(`**** Getting plugins: ${JSON.stringify(this.modelValue)}`)
-        var x = cloneDeep(this.modelValue).map((x) => ({ ...x, ...{ plugin: { slug: x.slug } } }))
-        console.log(`**** Returning plugins: ${JSON.stringify(x)}`)
-        return x
+        return cloneDeep(this.modelValue).map((x) => ({ ...x, ...{ plugin: { slug: x.slug } } }))
       },
     },
   },
