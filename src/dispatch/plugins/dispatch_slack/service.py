@@ -114,6 +114,10 @@ def make_call(client: WebClient, endpoint: str, **kwargs) -> SlackResponse:
         log.warn(f"Timeout error {exception} for slack. Endpoint: {endpoint}. Kwargs: {kwargs}")
         time.sleep(300)
         raise TryAgain from None
+    except TimeoutError as exception:
+        log.warn(f"TimeoutError {exception} for slack. Endpoint: {endpoint}. Kwargs: {kwargs}")
+        time.sleep(300)
+        raise TryAgain from None
 
 
 def list_conversation_messages(client: WebClient, conversation_id: str, **kwargs) -> SlackResponse:
@@ -214,6 +218,13 @@ def set_conversation_topic(client: WebClient, conversation_id: str, topic: str) 
     """Sets the topic of the specified conversation."""
     return make_call(
         client, SlackAPIPostEndpoints.conversations_set_topic, channel=conversation_id, topic=topic
+    )
+
+
+def set_conversation_description(client: WebClient, conversation_id: str, description: str) -> SlackResponse:
+    """Sets the topic of the specified conversation."""
+    return make_call(
+        client, SlackAPIPostEndpoints.conversations_set_purpose, channel=conversation_id, purpose=description
     )
 
 
