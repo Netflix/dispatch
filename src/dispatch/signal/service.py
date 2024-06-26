@@ -489,7 +489,11 @@ def update(*, db_session: Session, signal: Signal, signal_in: SignalUpdate) -> S
 
         signal.engagements = engagements
 
-    if signal_in.filters:
+    is_filters_updated = set(filter.id for filter in signal.filters) != set(
+        filter.id for filter in signal_in.filters
+    )
+
+    if signal_in.filters or is_filters_updated:
         filters = []
         for f in signal_in.filters:
             signal_filter = get_signal_filter_by_name_or_raise(
@@ -604,7 +608,6 @@ def create_instance(
             case_type_in=signal_instance_in.case_type,
         )
         signal_instance.case_type = case_type
-
 
     db_session.add(signal_instance)
     db_session.commit()
