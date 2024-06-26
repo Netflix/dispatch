@@ -232,7 +232,7 @@ def user_middleware(
     payload: dict,
 ) -> None:
     """Attempts to determine the user making the request."""
-    if is_bot(request):
+    if is_bot(request) or client.users_info(user=user_id)["user"]["is_bot"]:
         return context.ack()
 
     user_id = None
