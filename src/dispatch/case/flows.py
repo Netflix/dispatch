@@ -33,6 +33,7 @@ from dispatch.storage import flows as storage_flows
 from dispatch.storage.enums import StorageAction
 from dispatch.ticket import flows as ticket_flows
 
+from .messaging import send_case_welcome_ephemeral_message_to_participant
 from .models import Case, CaseStatus
 from .service import get
 
@@ -107,6 +108,7 @@ def case_add_or_reactivate_participant_flow(
         participant = participant_flows.add_participant(
             user_email, case, db_session, service_id=service_id, role=participant_role
         )
+
     if case.tactical_group:
         # we add the participant to the tactical group
         group_flows.update_group(
@@ -124,6 +126,8 @@ def case_add_or_reactivate_participant_flow(
                 case, [participant.individual.email], db_session
             )
 
+            # we send the welcome messages to the participant
+            send_case_welcome_ephemeral_message_to_participant(user_email, case, db_session)
     return participant
 
 

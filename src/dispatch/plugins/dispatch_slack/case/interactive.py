@@ -965,14 +965,6 @@ def handle_new_participant_added(
             )
             participant.user_conversation_id = user_id
 
-            case = case_service.get(db_session=db_session, case_id=case.id)
-            if case.dedicated_channel:
-                welcome_message = create_welcome_ephemeral_message_to_participant(case=case)
-                client.chat_postEphemeral(
-                    blocks=welcome_message,
-                    channel=payload["channel"],
-                    user=user_id,
-                )
         except Exception as e:
             log.warn(f"Error adding participant {user_id} to Case {context['subject'].id}: {e}")
             continue

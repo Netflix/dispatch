@@ -73,10 +73,14 @@ respond to incidents. Please review and update them, or mark them as deprecated.
 ).strip()
 
 INCIDENT_FEEDBACK_DAILY_REPORT_DESCRIPTION = """
-This is a daily report of feedback about incidents handled by you.""".replace("\n", " ").strip()
+This is a daily report of feedback about incidents handled by you.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_DAILY_REPORT_TITLE = """
-Incidents Daily Report""".replace("\n", " ").strip()
+Incidents Daily Report""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_DAILY_REPORT_DESCRIPTION = """
 This is a daily report of incidents that are currently active and incidents that have been marked as stable or closed in the last 24 hours.""".replace(
@@ -88,15 +92,29 @@ For questions about an incident, please reach out to the incident's commander.""
     "\n", " "
 ).strip()
 
+CASE_REPORTER_DESCRIPTION = """
+The person who reported the case. Contact them if the report details need clarification.""".replace(
+    "\n", " "
+).strip()
+
 INCIDENT_REPORTER_DESCRIPTION = """
 The person who reported the incident. Contact them if the report details need clarification.""".replace(
+    "\n", " "
+).strip()
+
+CASE_ASSIGNEE_DESCRIPTION = """
+The Case Assignee is responsible for
+knowing the full context of the case.
+Contact them about any questions or concerns.""".replace(
     "\n", " "
 ).strip()
 
 INCIDENT_COMMANDER_DESCRIPTION = """
 The Incident Commander (IC) is responsible for
 knowing the full context of the incident.
-Contact them about any questions or concerns.""".replace("\n", " ").strip()
+Contact them about any questions or concerns.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_COMMANDER_READDED_DESCRIPTION = """
 {{ commander_fullname }} (Incident Commander) has been re-added to the conversation.
@@ -121,40 +139,56 @@ Group for email notification purposes. All participants get added to it.""".repl
 
 INCIDENT_CONVERSATION_DESCRIPTION = """
 Private conversation for real-time discussion. All incident participants get added to it.
-""".replace("\n", " ").strip()
+""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_CONVERSATION_REFERENCE_DOCUMENT_DESCRIPTION = """
 Document containing the list of slash commands available to the Incident Commander (IC)
-and participants in the incident conversation.""".replace("\n", " ").strip()
+and participants in the incident conversation.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_CONFERENCE_DESCRIPTION = """
 Video conference and phone bridge to be used throughout the incident.  Password: {{conference_challenge if conference_challenge else 'N/A'}}
-""".replace("\n", "").strip()
+""".replace(
+    "\n", ""
+).strip()
 
 STORAGE_DESCRIPTION = """
 Common storage for all artifacts and
 documents. Add logs, screen captures, or any other data collected during the
-investigation to this folder. It is shared with all participants.""".replace("\n", " ").strip()
+investigation to this folder. It is shared with all participants.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION = """
 This is a document for all incident facts and context. All
 incident participants are expected to contribute to this document.
-It is shared with all incident participants.""".replace("\n", " ").strip()
+It is shared with all incident participants.""".replace(
+    "\n", " "
+).strip()
 
 CASE_INVESTIGATION_DOCUMENT_DESCRIPTION = """
 This is a document for all investigation facts and context. All
 case participants are expected to contribute to this document.
-It is shared with all participants.""".replace("\n", " ").strip()
+It is shared with all participants.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_INVESTIGATION_SHEET_DESCRIPTION = """
 This is a sheet for tracking impacted assets. All
 incident participants are expected to contribute to this sheet.
-It is shared with all incident participants.""".replace("\n", " ").strip()
+It is shared with all incident participants.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_FAQ_DOCUMENT_DESCRIPTION = """
 First time responding to an incident? This
 document answers common questions encountered when
-helping us respond to an incident.""".replace("\n", " ").strip()
+helping us respond to an incident.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_REVIEW_DOCUMENT_DESCRIPTION = """
 This document will capture all lessons learned, questions, and action items raised during the incident.""".replace(
@@ -178,11 +212,15 @@ DOCUMENT_DESCRIPTIONS = {
 
 INCIDENT_RESOLUTION_DEFAULT = """
 Description of the actions taken to resolve the incident.
-""".replace("\n", " ").strip()
+""".replace(
+    "\n", " "
+).strip()
 
 CASE_RESOLUTION_DEFAULT = """
 Description of the actions taken to resolve the case.
-""".replace("\n", " ").strip()
+""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_COMPLETED_FORM_DESCRIPTION = """
 A new {{form_type}} form related to incident {{name}} has been
@@ -190,19 +228,35 @@ submitted that requires your immediate attention. This form details
 aspects related to potential legal implications. You can review the
 detailed report by clicking on the link below. Please note, the information
 contained in this report is confidential.
-""".replace("\n", " ").strip()
+""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_PARTICIPANT_WELCOME_DESCRIPTION = """
 You\'ve been added to this incident, because we think you may
 be able to help resolve it. Please review the incident details below and
-reach out to the incident commander if you have any questions.""".replace("\n", " ").strip()
+reach out to the incident commander if you have any questions.""".replace(
+    "\n", " "
+).strip()
+
+CASE_PARTICIPANT_WELCOME_DESCRIPTION = """
+You\'ve been added to this case, because we think you may
+be able to help resolve it. Please review the case details below and
+reach out to the case assignee if you have any questions.""".replace(
+    "\n", " "
+).strip()
+
 
 INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION = """
 Dispatch thinks the following documents might be
-relevant to this incident.""".replace("\n", " ").strip()
+relevant to this incident.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_NOTIFICATION_PURPOSES_FYI = """
-This message is for notification purposes only.""".replace("\n", " ").strip()
+This message is for notification purposes only.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_TACTICAL_REPORT_DESCRIPTION = """
 The following conditions, actions, and needs summarize the current status of the incident.""".replace(
@@ -231,7 +285,9 @@ You can use `{{command}}` in the <{{conversation_weblink}}|conversation> to clos
 ).strip()
 
 CASE_TRIAGE_REMINDER_DESCRIPTION = """The status of this case hasn't been updated recently.
-Please ensure you triage the case based on its priority.""".replace("\n", " ").strip()
+Please ensure you triage the case based on its priority.""".replace(
+    "\n", " "
+).strip()
 
 CASE_CLOSE_REMINDER_DESCRIPTION = """The status of this case hasn't been updated recently.
 You can use the case 'Resolve' button if it has been resolved and can be closed.""".replace(
@@ -256,7 +312,9 @@ INCIDENT_TASK_LIST_DESCRIPTION = """The following are open incident tasks."""
 INCIDENT_OPEN_TASKS_DESCRIPTION = """
 Please resolve or transfer ownership of all the open incident tasks assigned to you in the incident documents or using the <{{dispatch_ui_url}}|Dispatch Web UI>,
 then wait about 30 seconds for Dispatch to update the tasks before leaving the incident conversation.
-""".replace("\n", " ").strip()
+""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_TASK_ADD_TO_INCIDENT_DESCRIPTION = """
 You have been added to this incident because you were assigned a task related to it. View all tasks for this incident using the <{{dispatch_ui_url}}|Dispatch Web UI>
@@ -411,10 +469,60 @@ INCIDENT_TITLE = {"title": "Title", "text": "{{title}}"}
 
 CASE_TITLE = {"title": "Title", "text": "{{title}}"}
 
+CASE_DESCRIPTION = {"title": "Description", "text": "{{description}}"}
+
+CASE_VISIBILITY = {
+    "title": "Visibility - {{visibility}}",
+    "visibility_mapping": CASE_VISIBILITY_DESCRIPTIONS,
+}
+
 CASE_STATUS = {
     "title": "Status - {{status}}",
     "status_mapping": CASE_STATUS_DESCRIPTIONS,
 }
+
+CASE_TYPE = {"title": "Type - {{type}}", "text": "{{type_description}}"}
+
+CASE_SEVERITY = {
+    "title": "Severity - {{severity}}",
+    "text": "{{severity_description}}",
+}
+
+CASE_PRIORITY = {
+    "title": "Priority - {{priority}}",
+    "text": "{{priority_description}}",
+}
+
+CASE_REPORTER = {
+    "title": "Reporter - {{reporter_fullname}}, {{reporter_team}}",
+    "title_link": "{{reporter_weblink}}",
+    "text": CASE_REPORTER_DESCRIPTION,
+}
+
+CASE_ASSIGNEE = {
+    "title": "Assignee - {{assignee_fullname}}, {{assignee_team}}",
+    "title_link": "{{assignee_weblink}}",
+    "text": CASE_ASSIGNEE_DESCRIPTION,
+}
+
+CASE_PARTICIPANT_WELCOME = {
+    "title": "Welcome to {{name}}",
+    "title_link": "{{ticket_weblink}}",
+    "text": CASE_PARTICIPANT_WELCOME_DESCRIPTION,
+}
+
+CASE_PARTICIPANT_WELCOME_MESSAGE = [
+    CASE_PARTICIPANT_WELCOME,
+    CASE_TITLE,
+    CASE_DESCRIPTION,
+    CASE_VISIBILITY,
+    CASE_STATUS,
+    CASE_TYPE,
+    CASE_SEVERITY,
+    CASE_PRIORITY,
+    CASE_REPORTER,
+    CASE_ASSIGNEE,
+]
 
 FORM_TYPE_DESCRIPTION = {
     "title": "{{form_type}} form for incident {{name}}",
@@ -947,6 +1055,39 @@ def render_message_template(message_template: List[dict], **kwargs):
         data.append(d)
 
     return data
+
+
+def generate_case_welcome_message(welcome_message: EmailTemplates) -> Optional[List[dict]]:
+    """Generates the case channel welcome message."""
+    if welcome_message is None:
+        return INCIDENT_PARTICIPANT_WELCOME_MESSAGE
+
+    participant_welcome = {
+        "title": welcome_message.welcome_text,
+        "title_link": "{{ticket_weblink}}",
+        "text": welcome_message.welcome_body,
+    }
+
+    component_mapping = {
+        "Title": CASE_TITLE,
+        "Description": CASE_DESCRIPTION,
+        "Visibility": CASE_VISIBILITY,
+        "Status": CASE_STATUS,
+        "Type": CASE_TYPE,
+        "Severity": CASE_SEVERITY,
+        "Priority": CASE_PRIORITY,
+        "Reporter": CASE_REPORTER,
+        "Assignee": CASE_ASSIGNEE,
+    }
+
+    message = [participant_welcome]
+
+    for component in component_mapping.keys():
+        # if the component type is in welcome_message.components, then add it
+        if component in welcome_message.components:
+            message.append(component_mapping[component])
+
+    return message
 
 
 def generate_welcome_message(welcome_message: EmailTemplates) -> Optional[List[dict]]:
