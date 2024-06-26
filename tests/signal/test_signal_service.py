@@ -43,6 +43,54 @@ def test_update(session, project, signal):
     assert signal.name == name
 
 
+def test_update__add_filter(session, signal, signal_filter):
+    from dispatch.signal.models import SignalUpdate, SignalFilterRead
+    from dispatch.signal.service import update
+
+    signal_filter.project = signal.project
+
+    signal_in = SignalUpdate(
+        id=signal.id,
+        name=signal.name,
+        project=signal.project,
+        owner="example.com",
+        external_id="foo",
+        filters=[SignalFilterRead.from_orm(signal_filter)],
+    )
+    signal = update(
+        db_session=session,
+        signal=signal,
+        signal_in=signal_in,
+    )
+    assert len(signal.filters) == 1
+
+
+def test_update__delete_filter(session, signal, signal_filter):
+    from dispatch.signal.models import SignalUpdate
+    from dispatch.signal.service import update
+
+    # Set up conditions to delete a signal filter.
+    signal_filter.project = signal.project
+    signal.filters.append(signal_filter)
+
+    assert len(signal.filters) == 1
+
+    signal_in = SignalUpdate(
+        id=signal.id,
+        name=signal.name,
+        project=signal.project,
+        owner="example.com",
+        external_id="foo",
+        filters=[],
+    )
+    signal = update(
+        db_session=session,
+        signal=signal,
+        signal_in=signal_in,
+    )
+    assert len(signal.filters) == 0
+
+
 def test_delete(session, signal):
     from dispatch.signal.service import delete, get
 
