@@ -138,7 +138,7 @@ export default {
     },
     addItem(plugin_idx) {
       if (!this.plugins[plugin_idx].metadata) {
-        this.$set(this.plugins[plugin_idx], "metadata", [])
+        this.plugins[plugin_idx].metadata = []
       }
       this.plugins[plugin_idx].metadata.push({ key: "", value: "" })
       this.$emit("update:modelValue", this.plugins)
@@ -148,7 +148,7 @@ export default {
       this.$emit("update:modelValue", this.plugins)
     },
     setPlugin(event) {
-      this.$set(this.plugins, event.idx, event.plugin)
+      this.plugins[event.idx] = event.plugin
       this.plugins[event.idx].slug = event.plugin.plugin.slug
       this.$emit("update:modelValue", this.plugins)
     },
