@@ -254,6 +254,10 @@ def incident_create_resources(
     # we set the conversation topic
     conversation_flows.set_conversation_topic(incident, db_session)
 
+    # and set the conversation description
+    if incident.incident_type.channel_description is not None:
+        conversation_flows.set_conversation_description(incident, db_session)
+
     # we set the conversation bookmarks
     bookmarks = [
         # resource, title
@@ -302,7 +306,7 @@ def incident_create_resources(
         )
 
         # we add the participant to the conversation
-        conversation_flows.add_incident_participants(
+        conversation_flows.add_incident_participants_to_conversation(
             incident=incident,
             participant_emails=[user_email],
             db_session=db_session,
@@ -1032,7 +1036,7 @@ def incident_add_or_reactivate_participant_flow(
 
     if incident.status != IncidentStatus.closed:
         # we add the participant to the conversation
-        conversation_flows.add_incident_participants(
+        conversation_flows.add_incident_participants_to_conversation(
             incident=incident, participant_emails=[user_email], db_session=db_session
         )
 
@@ -1083,7 +1087,7 @@ def incident_remove_participant_flow(
             for assignee in task.assignees:
                 if assignee == participant:
                     # we add the participant to the conversation
-                    conversation_flows.add_incident_participants(
+                    conversation_flows.add_incident_participants_to_conversation(
                         incident=incident, participant_emails=[user_email], db_session=db_session
                     )
 
@@ -1098,7 +1102,7 @@ def incident_remove_participant_flow(
         and user_email == incident.commander.individual.email
     ):
         # we add the participant to the conversation
-        conversation_flows.add_incident_participants(
+        conversation_flows.add_incident_participants_to_conversation(
             incident=incident, participant_emails=[user_email], db_session=db_session
         )
 

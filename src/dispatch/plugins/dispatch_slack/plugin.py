@@ -58,6 +58,7 @@ from .service import (
     send_ephemeral_message,
     send_message,
     set_conversation_topic,
+    set_conversation_description,
     unarchive_conversation,
     update_message,
 )
@@ -323,6 +324,11 @@ class SlackConversationPlugin(ConversationPlugin):
         """Sets the conversation topic."""
         client = create_slack_client(self.configuration)
         return set_conversation_topic(client, conversation_id, topic)
+
+    def set_description(self, conversation_id: str, description: str):
+        """Sets the conversation description."""
+        client = create_slack_client(self.configuration)
+        return set_conversation_description(client, conversation_id, description)
 
     def add_bookmark(self, conversation_id: str, weblink: str, title: str):
         """Adds a bookmark to the conversation."""
