@@ -284,7 +284,12 @@ def user_middleware(
             user_in=UserRegister(email=participant.individual.email),
         )
     else:
-        email = client.users_info(user=user_id)["user"]["profile"]["email"]
+        user_info = client.users_info(user=user_id).get("user", {})
+
+        if user_info.get("is_bot", False):
+            return context.ack()
+
+        email = user_info.get("profile", {}).get("email")
 
         if not email:
             raise ContextError("Unable to get user email address.")
