@@ -22,17 +22,21 @@ log = logging.getLogger(__name__)
 
 
 class SlackRetryException(Exception):
-    def __init__(self, wait_time):
+    def __init__(self, wait_time: int = None):
         self.wait_time = wait_time
-        super().__init__(f"Retrying slack call in {wait_time} seconds.")
+        if wait_time is None:
+            super().__init__(f"Retrying slack call in {wait_time} seconds.")
+        else:
+            super().__init__("Retrying slack call.")
 
-    def get_wait_time(self) -> float:
+    def get_wait_time(self) -> int:
         return self.wait_time
 
 def slack_wait_strategy(retry_state: RetryCallState) -> float:
     """Determines the wait time for the Slack retry strategy"""
     exc = retry_state.outcome.exception()
-    if isinstance(exc, SlackRetryException):
+
+    if exc.get_wait_time():
         return exc.get_wait_time()
 
     # Fallback to exponential backoff if no custom wait time is specified
