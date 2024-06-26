@@ -25,4 +25,4 @@ class ParticipantRoleType(DispatchEnum):
             if role.role in role_mapping:
                 return role_mapping[role.role]
 
-        return cls.observer
+        return cls.participant
