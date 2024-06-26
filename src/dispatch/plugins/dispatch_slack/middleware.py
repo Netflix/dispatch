@@ -232,7 +232,7 @@ def user_middleware(
     payload: dict,
 ) -> None:
     """Attempts to determine the user making the request."""
-    if is_bot(request) or client.users_info(user=user_id)["user"]["is_bot"]:
+    if is_bot(request):
         return context.ack()
 
     user_id = None
@@ -284,7 +284,12 @@ def user_middleware(
             user_in=UserRegister(email=participant.individual.email),
         )
     else:
-        email = client.users_info(user=user_id)["user"]["profile"]["email"]
+        user_info = client.users_info(user=user_id)["user"]
+
+        if user_info["is_bot"]:
+            return context.ack()
+
+        email = user_info["profile"]["email"]
 
         if not email:
             raise ContextError("Unable to get user email address.")
