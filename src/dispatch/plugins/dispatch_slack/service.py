@@ -142,7 +142,7 @@ def make_call(client: WebClient, endpoint: str, **kwargs) -> SlackResponse:
         # fatal error, don't retry
         raise exception
     except (TimeoutError, Timeout) as exception:
-        log.warn(f"Timeout error {exception} for slack. Endpoint: {endpoint}. Kwargs: {kwargs}")
+        log.warn(f"{type(exception).__name__} error {exception} for slack. Endpoint: {endpoint}. Kwargs: {kwargs}")
         raise SlackRetryException(5) from None
 
 
