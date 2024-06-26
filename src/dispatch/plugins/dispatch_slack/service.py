@@ -143,7 +143,7 @@ def make_call(client: WebClient, endpoint: str, **kwargs) -> SlackResponse:
         raise exception
     except (TimeoutError, Timeout) as exception:
         log.warn(f"{type(exception).__name__} error {exception} for slack. Endpoint: {endpoint}. Kwargs: {kwargs}")
-        raise SlackRetryException(5) from None
+        raise SlackRetryException from None
 
 
 def list_conversation_messages(client: WebClient, conversation_id: str, **kwargs) -> SlackResponse:
