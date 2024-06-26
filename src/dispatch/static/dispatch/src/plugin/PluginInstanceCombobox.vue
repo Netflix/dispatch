@@ -4,6 +4,8 @@
     :loading="loading"
     :items="items"
     item-title="plugin.slug"
+    item-value="plugin.slug"
+    @update:search="getFilteredData()"
     v-model:search="search"
     hide-selected
     :label="label"
@@ -39,14 +41,14 @@
 
 <script>
 import { cloneDeep, debounce } from "lodash"
-
+import SearchUtils from "@/search/utils"
 import PluginApi from "@/plugin/api"
 
 export default {
   name: "PluginCombobox",
   props: {
     modelValue: {
-      type: [Object],
+      type: Object,
       default: null,
     },
     type: {
@@ -78,7 +80,11 @@ export default {
   },
 
   created() {
-    this.plugin = cloneDeep(this.modelValue)
+    if (this.modelValue) {
+      if (this.modelValue.slug) {
+        this.plugin = cloneDeep(this.modelValue)
+      }
+    }
     this.fetchData()
   },
 
@@ -132,9 +138,19 @@ export default {
 
       let filterOptions = {
         q: this.search,
-        sortBy: ["slug"],
+        sortBy: ["Plugin.slug"],
         itemsPerPage: this.numItems,
         filter: JSON.stringify(filter),
+      }
+
+      if (this.project) {
+        filterOptions = {
+          ...filterOptions,
+          filters: {
+            project: [this.project],
+          },
+        }
+        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
       }
 
       PluginApi.getAllInstances(filterOptions).then((response) => {
@@ -150,8 +166,8 @@ export default {
         this.loading = false
       })
     },
-    getFilteredData: debounce(function (options) {
-      this.fetchData(options)
+    getFilteredData: debounce(function () {
+      this.fetchData()
     }, 500),
   },
 
