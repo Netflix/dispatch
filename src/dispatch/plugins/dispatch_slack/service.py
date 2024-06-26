@@ -132,7 +132,7 @@ def make_call(client: WebClient, endpoint: str, **kwargs) -> SlackResponse:
         error = exception.response["error"]
         if error == SlackAPIErrorCode.FATAL_ERROR:
             log.warn(message)
-            raise SlackRetryException(5) from None
+            raise SlackRetryException from None
 
         elif exception.response.headers.get("Retry-After"):
             wait = int(exception.response.headers["Retry-After"])
