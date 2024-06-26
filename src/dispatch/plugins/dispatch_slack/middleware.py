@@ -289,7 +289,7 @@ def user_middleware(
         if user_info["is_bot"]:
             return context.ack()
 
-        email = user_info["profile"]["email"]
+        email = user_info.get("profile", {}).get("email")
 
         if not email:
             raise ContextError("Unable to get user email address.")
