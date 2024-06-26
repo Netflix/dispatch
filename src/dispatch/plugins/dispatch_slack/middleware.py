@@ -284,7 +284,7 @@ def user_middleware(
             user_in=UserRegister(email=participant.individual.email),
         )
     else:
-        user_info = client.users_info(user=user_id)["user"]
+        user_info = client.users_info(user=user_id).get("user", {})
 
         if user_info["is_bot"]:
             return context.ack()
