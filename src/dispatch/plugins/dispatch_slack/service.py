@@ -29,7 +29,7 @@ class SlackRetryException(Exception):
     def get_wait_time(self) -> float:
         return self.wait_time
 
-def slack_wait_strategy(retry_state: RetryCallState):
+def slack_wait_strategy(retry_state: RetryCallState) -> float:
     """Determines the wait time for the Slack retry strategy"""
     exc = retry_state.outcome.exception()
     if isinstance(exc, SlackRetryException):
