@@ -26,7 +26,7 @@ class SlackRetryException(Exception):
         self.wait_time = wait_time
         super().__init__(f"Retrying slack call in {wait_time} seconds.")
 
-    def get_wait_time(self):
+    def get_wait_time(self) -> float:
         return self.wait_time
 
 def slack_wait_strategy(retry_state: RetryCallState):
