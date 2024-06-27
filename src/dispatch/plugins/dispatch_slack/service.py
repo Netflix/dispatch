@@ -22,7 +22,7 @@ log = logging.getLogger(__name__)
 
 
 class SlackRetryException(Exception):
-    def __init__(self, wait_time: int = None):
+    def __init__(self, wait_time: int | None = None):
         self.wait_time = wait_time
         if wait_time:
             super().__init__(f"Retrying slack call in {wait_time} seconds.")
