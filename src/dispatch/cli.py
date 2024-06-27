@@ -396,6 +396,8 @@ def drop_database(yes):
 def upgrade_database(tag, sql, revision, revision_type):
     """Upgrades database schema to newest version."""
     import sqlalchemy
+    from contextlib import redirect_stdout
+
     from alembic import command as alembic_command
     from alembic.config import Config as AlembicConfig
     from sqlalchemy import inspect
@@ -405,32 +407,41 @@ def upgrade_database(tag, sql, revision, revision_type):
     from .database.manage import init_database
 
     alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
+    path = None
+    if revision_type:
+        if revision_type == "core":
+            path = config.ALEMBIC_CORE_REVISION_PATH
 
-    if not database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
-        click.secho("Found no database to upgrade, initializing new database...")
-        init_database(engine)
-    else:
-        conn = engine.connect()
+        elif revision_type == "tenant":
+            path = config.ALEMBIC_TENANT_REVISION_PATH
 
-        # detect if we need to convert to a multi-tenant schema structure
-        schema_names = inspect(engine).get_schema_names()
-        if "dispatch_core" not in schema_names:
-            click.secho("Detected single tenant database, converting to multi-tenant...")
-            conn.execute(sqlalchemy.text(open(config.ALEMBIC_MULTI_TENANT_MIGRATION_PATH).read()))
+    alembic_cfg.set_main_option("script_location", path)
 
-        if revision_type:
-            if revision_type == "core":
-                path = config.ALEMBIC_CORE_REVISION_PATH
-
-            elif revision_type == "tenant":
-                path = config.ALEMBIC_TENANT_REVISION_PATH
-
-            alembic_cfg.set_main_option("script_location", path)
-            alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
-        else:
-            for path in [config.ALEMBIC_CORE_REVISION_PATH, config.ALEMBIC_TENANT_REVISION_PATH]:
-                alembic_cfg.set_main_option("script_location", path)
+    # doesn't support core and tenant at the same time
+    if sql:
+        with open("alembic_output.sql", "w") as sql_file:
+            with redirect_stdout(sql_file):
                 alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
+
+    else:
+        if not database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
+            click.secho("Found no database to upgrade, initializing new database...")
+            init_database(engine)
+        else:
+            conn = engine.connect()
+
+            # detect if we need to convert to a multi-tenant schema structure
+            schema_names = inspect(engine).get_schema_names()
+            if "dispatch_core" not in schema_names:
+                click.secho("Detected single tenant database, converting to multi-tenant...")
+                conn.execute(sqlalchemy.text(open(config.ALEMBIC_MULTI_TENANT_MIGRATION_PATH).read()))
+
+            if path:
+                alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
+            else:
+                for path in [config.ALEMBIC_CORE_REVISION_PATH, config.ALEMBIC_TENANT_REVISION_PATH]:
+                    alembic_cfg.set_main_option("script_location", path)
+                    alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
 
     click.secho("Success.", fg="green")
 
