@@ -685,8 +685,8 @@ def common_escalate_flow(
                 participant_emails=[participant.individual.email],
             )
 
-            # Add the participant to the incident tactical group if not Observer
-            if any(role != ParticipantRoleType.observer for role in participant.active_roles):
+            # Add the participant to the incident tactical group if active
+            if participant.active_roles:
                 group_flows.update_group(
                     subject=incident,
                     group=incident.tactical_group,
