@@ -685,6 +685,16 @@ def common_escalate_flow(
                 participant_emails=[participant.individual.email],
             )
 
+            # Add the participant to the incident tactical group if active
+            if participant.active_roles:
+                group_flows.update_group(
+                    subject=incident,
+                    group=incident.tactical_group,
+                    group_action=GroupAction.add_member,
+                    group_member=participant.individual.email,
+                    db_session=db_session,
+                )
+
     if case.has_channel:
         # depends on `incident_create_flow()` (we need incident.name), so we invoke after we call it
         send_escalation_messages_for_channel_case(
