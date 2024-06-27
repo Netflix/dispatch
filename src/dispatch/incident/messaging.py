@@ -47,6 +47,7 @@ from dispatch.messaging.strings import (
     INCIDENT_TYPE_CHANGE,
     INCIDENT_COMPLETED_FORM_MESSAGE,
     INCIDENT_TASK_ADD_TO_INCIDENT,
+    INCIDENT_NAME_WITH_ENGAGEMENT_NO_SELF_JOIN,
     MessageType,
     generate_welcome_message,
 )
@@ -379,7 +380,10 @@ def send_incident_created_notifications(incident: Incident, db_session: SessionL
     notification_template = INCIDENT_NOTIFICATION.copy()
 
     if incident.status != IncidentStatus.closed:
-        notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT)
+        if incident.project.allow_self_join:
+            notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT)
+        else:
+           notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT_NO_SELF_JOIN)
     else:
         notification_template.insert(0, INCIDENT_NAME)
 
@@ -526,7 +530,10 @@ def send_incident_update_notifications(
     # we send a notification to the notification conversations and emails
     fyi_notification_template = notification_template.copy()
     if incident.status != IncidentStatus.closed:
-        fyi_notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT)
+        if incident.project.allow_self_join:
+            fyi_notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT)
+        else:
+            fyi_notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT_NO_SELF_JOIN)
     else:
         fyi_notification_template.insert(0, INCIDENT_NAME)
 

@@ -313,8 +313,8 @@ def case_update_flow(
     *,
     case_id: int,
     previous_case: CaseRead,
-    reporter_email: str,
-    assignee_email: str,
+    reporter_email: str | None,
+    assignee_email: str | None,
     organization_slug: OrganizationSlug,
     db_session=None,
 ):
@@ -322,21 +322,23 @@ def case_update_flow(
     # we get the case
     case = get(db_session=db_session, case_id=case_id)
 
-    # we run the case assign role flow for the reporter
-    case_assign_role_flow(
-        case_id=case.id,
-        participant_email=reporter_email,
-        participant_role=ParticipantRoleType.reporter,
-        db_session=db_session,
-    )
+    if reporter_email:
+        # we run the case assign role flow for the reporter
+        case_assign_role_flow(
+            case_id=case.id,
+            participant_email=reporter_email,
+            participant_role=ParticipantRoleType.reporter,
+            db_session=db_session,
+        )
 
-    # we run the case assign role flow for the assignee
-    case_assign_role_flow(
-        case_id=case.id,
-        participant_email=assignee_email,
-        participant_role=ParticipantRoleType.assignee,
-        db_session=db_session,
-    )
+    if assignee_email:
+        # we run the case assign role flow for the assignee
+        case_assign_role_flow(
+            case_id=case.id,
+            participant_email=assignee_email,
+            participant_role=ParticipantRoleType.assignee,
+            db_session=db_session,
+        )
 
     # we run the transition flow based on the current and previous status of the case
     case_status_transition_flow_dispatcher(
@@ -358,12 +360,20 @@ def case_update_flow(
 
     if case.tactical_group:
         # we update the tactical group
-        for group_member in [reporter_email, assignee_email]:
+        if reporter_email:
             group_flows.update_group(
                 subject=case,
                 group=case.tactical_group,
                 group_action=GroupAction.add_member,
-                group_member=group_member,
+                group_member=reporter_email,
+                db_session=db_session,
+            )
+        if assignee_email:
+            group_flows.update_group(
+                subject=case,
+                group=case.tactical_group,
+                group_action=GroupAction.add_member,
+                group_member=assignee_email,
                 db_session=db_session,
             )
 
