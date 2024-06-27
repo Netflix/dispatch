@@ -1,5 +1,6 @@
 import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
+import { toUSD } from "@/filters"
 
 import SearchUtils from "@/search/utils"
 import FormsTypeApi from "@/forms/types/api"
@@ -129,6 +130,10 @@ function buildIncidentDoc(incident) {
     output_qa.push({
       question: "Severity",
       answer: incident.incident_severity.name,
+    })
+    output_qa.push({
+      question: "Incident cost",
+      answer: toUSD(incident.total_cost),
     })
     output_qa.push({
       question: "Last tactical report",

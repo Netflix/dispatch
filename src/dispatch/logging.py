@@ -28,3 +28,6 @@ def configure_logging():
         return
 
     logging.basicConfig(level=log_level)
+
+    # sometimes the slack client can be too verbose
+    logging.getLogger("slack_sdk.web.base_client").setLevel(logging.CRITICAL)

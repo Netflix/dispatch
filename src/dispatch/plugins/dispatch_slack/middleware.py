@@ -284,7 +284,12 @@ def user_middleware(
             user_in=UserRegister(email=participant.individual.email),
         )
     else:
-        email = client.users_info(user=user_id)["user"]["profile"]["email"]
+        user_info = client.users_info(user=user_id).get("user", {})
+
+        if user_info.get("is_bot", False):
+            return context.ack()
+
+        email = user_info.get("profile", {}).get("email")
 
         if not email:
             raise ContextError("Unable to get user email address.")
@@ -376,8 +381,9 @@ def db_middleware(context: BoltContext, next: Callable):
     else:
         slug = context["subject"].organization_slug
 
-    context["db_session"] = refetch_db_session(slug)
-    next()
+    with get_organization_session(slug) as db_session:
+        context["db_session"] = db_session
+        next()
 
 
 def subject_middleware(context: BoltContext, next: Callable):
