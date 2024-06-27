@@ -827,8 +827,8 @@ def consume_signals():
     from dispatch.database.core import get_session, get_organization_session
 
     install_plugins()
-    db_session = get_session()
-    organizations = get_all_organizations(db_session=db_session)
+    with get_session() as session:
+        organizations = get_all_organizations(db_session=session)
 
     log = logging.getLogger(__name__)
 
