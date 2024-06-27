@@ -381,8 +381,9 @@ def db_middleware(context: BoltContext, next: Callable):
     else:
         slug = context["subject"].organization_slug
 
-    context["db_session"] = refetch_db_session(slug)
-    next()
+    with get_organization_session(slug) as db_session:
+        context["db_session"] = db_session
+        next()
 
 
 def subject_middleware(context: BoltContext, next: Callable):
