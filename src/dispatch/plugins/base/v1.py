@@ -6,6 +6,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 import logging
 from threading import local
 from typing import Any, List, Optional
@@ -118,7 +119,7 @@ class IPlugin(local):
             if plugin_event.slug == event.slug:
                 return plugin_event
 
-    def fetch_incident_events(self, **kwargs):
+    def fetch_events(self, **kwargs):
         raise NotImplementedError
 
 
