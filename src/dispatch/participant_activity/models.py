@@ -1,7 +1,6 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
-from typing import Optional
 
 from dispatch.case.models import CaseRead
 from dispatch.database.core import Base

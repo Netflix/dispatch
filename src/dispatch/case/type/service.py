@@ -133,7 +133,7 @@ def create(*, db_session, case_type_in: CaseTypeCreate) -> CaseType:
         cost_model = cost_model_service.get_cost_model_by_id(
             db_session=db_session, cost_model_id=case_type_in.cost_model.id
         )
-        incident_type.cost_model = cost_model
+        case_type.cost_model = cost_model
 
     if case_type_in.case_template_document:
         case_template_document = document_service.get(
