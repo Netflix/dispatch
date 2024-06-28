@@ -3,6 +3,7 @@ from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from sqlalchemy.sql.expression import true
 
+from dispatch.cost_model import service as cost_model_service
 from dispatch.document import service as document_service
 from dispatch.exceptions import NotFoundError
 from dispatch.incident.type import service as incident_type_service
@@ -118,10 +119,21 @@ def create(*, db_session, case_type_in: CaseTypeCreate) -> CaseType:
 
     case_type = CaseType(
         **case_type_in.dict(
-            exclude={"case_template_document", "oncall_service", "incident_type", "project"}
+            exclude={
+                "case_template_document",
+                "oncall_service",
+                "incident_type",
+                "project",
+                "cost_model",
+            }
         ),
         project=project,
     )
+    if case_type_in.cost_model:
+        cost_model = cost_model_service.get_cost_model_by_id(
+            db_session=db_session, cost_model_id=case_type_in.cost_model.id
+        )
+        incident_type.cost_model = cost_model
 
     if case_type_in.case_template_document:
         case_template_document = document_service.get(
@@ -148,6 +160,13 @@ def create(*, db_session, case_type_in: CaseTypeCreate) -> CaseType:
 
 def update(*, db_session, case_type: CaseType, case_type_in: CaseTypeUpdate) -> CaseType:
     """Updates a case type."""
+    cost_model = None
+    if case_type_in.cost_model:
+        cost_model = cost_model_service.get_cost_model_by_id(
+            db_session=db_session, cost_model_id=case_type_in.cost_model.id
+        )
+    case_type.cost_model = cost_model
+
     if case_type_in.case_template_document:
         case_template_document = document_service.get(
             db_session=db_session, document_id=case_type_in.case_template_document.id
@@ -169,7 +188,13 @@ def update(*, db_session, case_type: CaseType, case_type_in: CaseTypeUpdate) -> 
     case_type_data = case_type.dict()
 
     update_data = case_type_in.dict(
-        skip_defaults=True, exclude={"case_template_document", "oncall_service", "incident_type"}
+        skip_defaults=True,
+        exclude={
+            "case_template_document",
+            "oncall_service",
+            "incident_type",
+            "cost_model",
+        },
     )
 
     for field in case_type_data:
