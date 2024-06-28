@@ -567,6 +567,11 @@ def case_cost_type(session):
 
 
 @pytest.fixture
+def case_cost_types(session):
+    return [CaseCostTypeFactory(), CaseCostTypeFactory()]
+
+
+@pytest.fixture
 def incident_cost(session):
     return IncidentCostFactory()
 
