@@ -72,6 +72,16 @@ def get_all(*, db_session, project_id: int) -> List[Optional[Case]]:
     return db_session.query(Case).filter(Case.project_id == project_id)
 
 
+def get_all_open_by_case_type(*, db_session, case_type_id: int) -> List[Optional[Case]]:
+    """Returns all non-closed cases based on the given case type."""
+    return (
+        db_session.query(Case)
+        .filter(Case.status != CaseStatus.closed)
+        .filter(Case.case_type_id == case_type_id)
+        .all()
+    )
+
+
 def get_all_by_status(*, db_session, project_id: int, status: str) -> List[Optional[Case]]:
     """Returns all cases based on a given status."""
     return (
