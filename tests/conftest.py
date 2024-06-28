@@ -522,6 +522,11 @@ def case_type(session):
 
 
 @pytest.fixture
+def case_types(session):
+    return [CaseTypeFactory(), CaseTypeFactory()]
+
+
+@pytest.fixture
 def incident(session):
     return IncidentFactory()
 

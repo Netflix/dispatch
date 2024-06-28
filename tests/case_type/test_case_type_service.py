@@ -52,7 +52,7 @@ def test_update(session, case_type):
     assert case_type.name == name
 
 
-def test_update_cost_model(session, case, case_type, cost_model, case_cost_type):
+def test_update_cost_model(session, case, case_type, cost_model, case_cost, case_cost_type):
     """Updating the cost model field should immediately update the case cost of all cases with this case type."""
     from dispatch.case.models import CaseStatus
     from dispatch.case.type.service import update
@@ -76,6 +76,10 @@ def test_update_cost_model(session, case, case_type, cost_model, case_cost_type)
 
     case_cost_type.project = case_type.project
     case_cost_type.default = True
+
+    case_cost.project = case_type.project
+    case_cost.case_id = case.id
+    case_cost.case_cost_type = case_cost_type
 
     cost_model.project = case_type.project
     case_type_in.cost_model = cost_model

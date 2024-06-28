@@ -3,6 +3,8 @@ from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from sqlalchemy.sql.expression import true
 
+from dispatch.case import service as case_service
+from dispatch.case_cost import service as case_cost_service
 from dispatch.cost_model import service as cost_model_service
 from dispatch.document import service as document_service
 from dispatch.exceptions import NotFoundError
@@ -165,7 +167,13 @@ def update(*, db_session, case_type: CaseType, case_type_in: CaseTypeUpdate) -> 
         cost_model = cost_model_service.get_cost_model_by_id(
             db_session=db_session, cost_model_id=case_type_in.cost_model.id
         )
+    should_update_case_cost = case_type.cost_model != cost_model
     case_type.cost_model = cost_model
+
+    # Calculate the cost of all non-closed cases associated with this case type
+    cases = case_service.get_all_open_by_case_type(db_session=db_session, case_type_id=case_type.id)
+    for case in cases:
+        case_cost_service.calculate_case_response_cost(case_id=case.id, db_session=db_session)
 
     if case_type_in.case_template_document:
         case_template_document = document_service.get(
@@ -202,6 +210,12 @@ def update(*, db_session, case_type: CaseType, case_type_in: CaseTypeUpdate) -> 
             setattr(case_type, field, update_data[field])
 
     db_session.commit()
+
+    if should_update_case_cost:
+        case_cost_service.update_case_response_cost_for_case_type(
+            db_session=db_session, case_type=case_type
+        )
+
     return case_type
 
 
