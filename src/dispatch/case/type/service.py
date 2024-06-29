@@ -121,21 +121,10 @@ def create(*, db_session, case_type_in: CaseTypeCreate) -> CaseType:
 
     case_type = CaseType(
         **case_type_in.dict(
-            exclude={
-                "case_template_document",
-                "oncall_service",
-                "incident_type",
-                "project",
-                "cost_model",
-            }
+            exclude={"case_template_document", "oncall_service", "incident_type", "project"}
         ),
         project=project,
     )
-    if case_type_in.cost_model:
-        cost_model = cost_model_service.get_cost_model_by_id(
-            db_session=db_session, cost_model_id=case_type_in.cost_model.id
-        )
-        case_type.cost_model = cost_model
 
     if case_type_in.case_template_document:
         case_template_document = document_service.get(
@@ -196,13 +185,7 @@ def update(*, db_session, case_type: CaseType, case_type_in: CaseTypeUpdate) -> 
     case_type_data = case_type.dict()
 
     update_data = case_type_in.dict(
-        skip_defaults=True,
-        exclude={
-            "case_template_document",
-            "oncall_service",
-            "incident_type",
-            "cost_model",
-        },
+        skip_defaults=True, exclude={"case_template_document", "oncall_service", "incident_type"}
     )
 
     for field in case_type_data:
