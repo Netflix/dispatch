@@ -506,7 +506,7 @@ class ParticipantRoleFactory(BaseFactory):
 class ParticipantFactory(BaseFactory):
     """Participant Factory."""
 
-    team = Sequence(lambda n: f"team{n}")
+    # team = Sequence(lambda n: f"team{n}")
     department = Sequence(lambda n: f"department{n}")
     location = Sequence(lambda n: f"location{n}")
     added_reason = Sequence(lambda n: f"added_reason{n}")
@@ -962,13 +962,13 @@ class TaskFactory(ResourceBaseFactory):
         if extracted:
             self.owner_id = extracted.id
 
-    @post_generation
-    def incident(self, create, extracted, **kwargs):
-        if not create:
-            return
+    # @post_generation
+    # def incident(self, create, extracted, **kwargs):
+    #     if not create:
+    #         return
 
-        if extracted:
-            self.incident_id = extracted.id
+    #     if extracted:
+    #         self.incident_id = extracted.id
 
     @post_generation
     def assignees(self, create, extracted, **kwargs):
