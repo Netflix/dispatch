@@ -32,11 +32,12 @@ class SlackRetryException(Exception):
     def get_wait_time(self) -> int:
         return self.wait_time
 
+
 def slack_wait_strategy(retry_state: RetryCallState) -> float | int:
     """Determines the wait time for the Slack retry strategy"""
     exc = retry_state.outcome.exception()
 
-    if exc.get_wait_time():
+    if hasattr(exc, 'get_wait_time') and callable(exc.get_wait_time):
         return exc.get_wait_time()
 
     # Fallback to exponential backoff if no custom wait time is specified
