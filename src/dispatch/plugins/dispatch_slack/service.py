@@ -8,10 +8,9 @@ from blockkit import Message, Section
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
 from slack_sdk.web.slack_response import SlackResponse
-import time
-from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
-from typing import Dict, List, Optional
+from tenacity import retry, retry_if_exception, wait_exponential, stop_after_attempt, RetryCallState
 
+from typing import Dict, List, Optional
 
 from .config import SlackConversationConfiguration
 from .enums import SlackAPIErrorCode, SlackAPIGetEndpoints, SlackAPIPostEndpoints
@@ -20,6 +19,28 @@ from .enums import SlackAPIErrorCode, SlackAPIGetEndpoints, SlackAPIPostEndpoint
 Conversation = dict[str, str]
 
 log = logging.getLogger(__name__)
+
+
+class SlackRetryException(Exception):
+    def __init__(self, wait_time: int | None = None):
+        self.wait_time = wait_time
+        if wait_time:
+            super().__init__(f"Retrying slack call in {wait_time} seconds.")
+        else:
+            super().__init__("Retrying slack call.")
+
+    def get_wait_time(self) -> int:
+        return self.wait_time
+
+def slack_wait_strategy(retry_state: RetryCallState) -> float | int:
+    """Determines the wait time for the Slack retry strategy"""
+    exc = retry_state.outcome.exception()
+
+    if exc.get_wait_time():
+        return exc.get_wait_time()
+
+    # Fallback to exponential backoff if no custom wait time is specified
+    return wait_exponential(multiplier=1, min=1, max=60)(retry_state)
 
 
 def create_slack_client(config: SlackConversationConfiguration) -> WebClient:
@@ -86,9 +107,23 @@ def chunks(ids, n):
         yield ids[i : i + n]
 
 
-@retry(stop=stop_after_attempt(5), retry=retry_if_exception_type(TryAgain))
+@retry(stop=stop_after_attempt(5), retry=retry_if_exception(SlackRetryException), wait=slack_wait_strategy)
 def make_call(client: WebClient, endpoint: str, **kwargs) -> SlackResponse:
-    """Makes a Slack client API call."""
+    """Makes a call to the Slack API.
+
+    This function attempts to be resilient to common Slack API errors, such as rate limiting and fatal errors.
+    Rate limiting will be retried after the specified wait time (as returned by slack), and fatal errors will be raised as exceptions.
+
+    Args:
+        client (WebClient): Slack web client.
+        endpoint (str): The Slack API endpoint to call.
+
+    Raises:
+        SlackRetryException: If the call fails and should be retried.
+
+    Returns:
+        SlackResponse: The response from the Slack API.
+    """
     try:
         if endpoint in set(SlackAPIGetEndpoints):
             return client.api_call(endpoint, http_verb="GET", params=kwargs)
@@ -100,24 +135,19 @@ def make_call(client: WebClient, endpoint: str, **kwargs) -> SlackResponse:
 
         error = exception.response["error"]
         if error == SlackAPIErrorCode.FATAL_ERROR:
-            # NOTE we've experienced a wide range of issues when Slack's performance is degraded
-            log.error(message)
-            time.sleep(300)
-            raise TryAgain from None
+            log.warn(message)
+            raise SlackRetryException from None
+
         elif exception.response.headers.get("Retry-After"):
             wait = int(exception.response.headers["Retry-After"])
-            log.info(f"SlackError: Rate limit hit. Waiting {wait} seconds.")
-            time.sleep(wait)
-            raise TryAgain from None
+            log.warn(f"SlackError: Rate limit hit. Waiting {wait} seconds.")
+            raise SlackRetryException(wait) from None
+
+        # fatal error, don't retry
         raise exception
-    except Timeout as exception:
-        log.warn(f"Timeout error {exception} for slack. Endpoint: {endpoint}. Kwargs: {kwargs}")
-        time.sleep(300)
-        raise TryAgain from None
-    except TimeoutError as exception:
-        log.warn(f"TimeoutError {exception} for slack. Endpoint: {endpoint}. Kwargs: {kwargs}")
-        time.sleep(300)
-        raise TryAgain from None
+    except (TimeoutError, Timeout) as exception:
+        log.warn(f"{type(exception).__name__} error {exception} for slack. Endpoint: {endpoint}. Kwargs: {kwargs}")
+        raise SlackRetryException from None
 
 
 def list_conversation_messages(client: WebClient, conversation_id: str, **kwargs) -> SlackResponse:
