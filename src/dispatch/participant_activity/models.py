@@ -1,8 +1,8 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
-from typing import Optional
 
+from dispatch.case.models import CaseRead
 from dispatch.database.core import Base
 from dispatch.incident.models import IncidentRead
 from dispatch.models import DispatchBase, PrimaryKey
@@ -26,14 +26,18 @@ class ParticipantActivity(Base):
     incident_id = Column(Integer, ForeignKey("incident.id"))
     incident = relationship("Incident", foreign_keys=[incident_id])
 
+    case_id = Column(Integer, ForeignKey("case.id"))
+    case = relationship("Case", foreign_keys=[case_id])
+
 
 # Pydantic Models
 class ParticipantActivityBase(DispatchBase):
     plugin_event: PluginEventRead
-    started_at: Optional[datetime] = None
-    ended_at: Optional[datetime] = None
+    started_at: datetime | None
+    ended_at: datetime | None
     participant: ParticipantRead
-    incident: IncidentRead
+    incident: IncidentRead | None
+    case: CaseRead | None
 
 
 class ParticipantActivityRead(ParticipantActivityBase):
