@@ -168,13 +168,14 @@ def incident_report_daily(db_session: SessionLocal, project: Project):
                                 "button_action": f"{ConversationButtonActions.subscribe_user}-{incident.status}-{idx}",
                             }
                         )
-                        item["buttons"].append(
-                            {
-                                "button_text": "Join",
-                                "button_value": f"{incident.project.organization.slug}-{incident.id}",
-                                "button_action": f"{ConversationButtonActions.invite_user}-{incident.status}-{idx}",
-                            }
-                        )
+                        if incident.project.allow_self_join:
+                            item["buttons"].append(
+                                {
+                                    "button_text": "Join",
+                                    "button_value": f"{incident.project.organization.slug}-{incident.id}",
+                                    "button_action": f"{ConversationButtonActions.invite_user}-{incident.status}-{idx}",
+                                }
+                            )
 
                     items_grouped.append(item)
                 except Exception as e:

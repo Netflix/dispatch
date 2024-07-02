@@ -1012,9 +1012,8 @@ def handle_case_participant_role_activity(
             organization_slug=context["subject"].organization_slug,
         )
         case.status = CaseStatus.triage
-        db_session.commit()
-
     case_flows.update_conversation(case, db_session)
+    db_session.commit()
 
 
 @message_dispatcher.add(
@@ -1237,6 +1236,18 @@ def handle_escalation_submission_event(
     case.status = CaseStatus.escalated
     db_session.commit()
 
+    modal = Modal(
+        title="Case Escalated",
+        close="Close",
+        blocks=[Section(text="Running case escalation flows...")],
+    ).build()
+
+    result = client.views_update(
+        view_id=body["view"]["id"],
+        trigger_id=body["trigger_id"],
+        view=modal,
+    )
+
     blocks = create_case_message(case=case, channel_id=context["subject"].channel_id)
     if case.has_thread:
         client.chat_update(
@@ -1283,7 +1294,7 @@ def handle_escalation_submission_event(
 
     # Add all case participants to the incident
     participant_emails = [participant.individual.email for participant in case_participants]
-    conversation_flows.add_incident_participants(
+    conversation_flows.add_incident_participants_to_conversation(
         incident=incident,
         participant_emails=participant_emails,
         db_session=db_session,
@@ -1307,15 +1318,12 @@ def handle_escalation_submission_event(
         ),
     ]
 
-    modal = Modal(
-        title="Escalate Case",
-        close="Close",
-        blocks=blocks,
-    ).build()
-
-    client.views_update(
+    send_success_modal(
+        client=client,
         view_id=body["view"]["id"],
-        view=modal,
+        trigger_id=result["trigger_id"],
+        title="Case Escalated",
+        message="Case escalated successfully.",
     )
 
 
@@ -1330,7 +1338,7 @@ def join_incident_button_click(
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
     # we add the user to the incident conversation
-    conversation_flows.add_incident_participants(
+    conversation_flows.add_incident_participants_to_conversation(
         # TODO: handle case where there are multiple related incidents
         incident=case.incidents[0],
         participant_emails=[user.email],
@@ -1436,7 +1444,7 @@ def handle_edit_submission_event(
         case_id=case.id,
         previous_case=previous_case,
         db_session=db_session,
-        reporter_email=case.reporter.individual.email,
+        reporter_email=case.reporter.individual.email if case.reporter else None,
         assignee_email=assignee_email,
         organization_slug=context["subject"].organization_slug,
     )

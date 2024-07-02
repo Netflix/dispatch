@@ -313,8 +313,8 @@ def case_update_flow(
     *,
     case_id: int,
     previous_case: CaseRead,
-    reporter_email: str,
-    assignee_email: str,
+    reporter_email: str | None,
+    assignee_email: str | None,
     organization_slug: OrganizationSlug,
     db_session=None,
 ):
@@ -322,21 +322,23 @@ def case_update_flow(
     # we get the case
     case = get(db_session=db_session, case_id=case_id)
 
-    # we run the case assign role flow for the reporter
-    case_assign_role_flow(
-        case_id=case.id,
-        participant_email=reporter_email,
-        participant_role=ParticipantRoleType.reporter,
-        db_session=db_session,
-    )
+    if reporter_email:
+        # we run the case assign role flow for the reporter
+        case_assign_role_flow(
+            case_id=case.id,
+            participant_email=reporter_email,
+            participant_role=ParticipantRoleType.reporter,
+            db_session=db_session,
+        )
 
-    # we run the case assign role flow for the assignee
-    case_assign_role_flow(
-        case_id=case.id,
-        participant_email=assignee_email,
-        participant_role=ParticipantRoleType.assignee,
-        db_session=db_session,
-    )
+    if assignee_email:
+        # we run the case assign role flow for the assignee
+        case_assign_role_flow(
+            case_id=case.id,
+            participant_email=assignee_email,
+            participant_role=ParticipantRoleType.assignee,
+            db_session=db_session,
+        )
 
     # we run the transition flow based on the current and previous status of the case
     case_status_transition_flow_dispatcher(
@@ -358,12 +360,20 @@ def case_update_flow(
 
     if case.tactical_group:
         # we update the tactical group
-        for group_member in [reporter_email, assignee_email]:
+        if reporter_email:
             group_flows.update_group(
                 subject=case,
                 group=case.tactical_group,
                 group_action=GroupAction.add_member,
-                group_member=group_member,
+                group_member=reporter_email,
+                db_session=db_session,
+            )
+        if assignee_email:
+            group_flows.update_group(
+                subject=case,
+                group=case.tactical_group,
+                group_action=GroupAction.add_member,
+                group_member=assignee_email,
                 db_session=db_session,
             )
 
@@ -371,7 +381,7 @@ def case_update_flow(
         # we send the case updated notification
         update_conversation(case, db_session)
 
-    if case.has_channel and case.status != CaseStatus.closed:
+    if case.has_channel and not case.has_thread and case.status != CaseStatus.closed:
         # determine if case channel topic needs to be updated
         if case_details_changed(case, previous_case):
             conversation_flows.set_conversation_topic(case, db_session)
@@ -646,11 +656,44 @@ def common_escalate_flow(
 
     # we add the case participants to the incident
     for participant in case.participants:
-        conversation_flows.add_incident_participants(
-            db_session=db_session,
-            incident=incident,
-            participant_emails=[participant.individual.email],
+        # check to see if already a participant in the incident
+        incident_participant = participant_service.get_by_incident_id_and_email(
+            db_session=db_session, incident_id=incident.id, email=participant.individual.email
         )
+
+        if not incident_participant:
+            log.info(
+                f"Adding participant {participant.individual.email} from Case {case.id} to Incident {incident.id}"
+            )
+            # Get the roles for this participant
+            case_roles = participant.participant_roles
+
+            # Map the case role to an incident role
+            incident_role = ParticipantRoleType.map_case_role_to_incident_role(case_roles)
+
+            participant_flows.add_participant(
+                participant.individual.email,
+                incident,
+                db_session,
+                role=incident_role,
+            )
+
+            # We add the participants to the conversation
+            conversation_flows.add_incident_participants_to_conversation(
+                db_session=db_session,
+                incident=incident,
+                participant_emails=[participant.individual.email],
+            )
+
+            # Add the participant to the incident tactical group if active
+            if participant.active_roles:
+                group_flows.update_group(
+                    subject=incident,
+                    group=incident.tactical_group,
+                    group_action=GroupAction.add_member,
+                    group_member=participant.individual.email,
+                    db_session=db_session,
+                )
 
     if case.has_channel:
         # depends on `incident_create_flow()` (we need incident.name), so we invoke after we call it
