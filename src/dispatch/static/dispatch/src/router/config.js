@@ -476,12 +476,6 @@ export const protectedRoute = [
             component: () => import("@/forms/types/Table.vue"),
           },
           {
-            path: "incidentFormTypes",
-            name: "IncidentFormTypesTable",
-            meta: { title: "Storage Structure", subMenu: "project", group: "incident" },
-            component: () => import("@/forms/types/Table.vue"),
-          },
-          {
             path: "caseTypes",
             name: "CaseTypeTable",
             meta: { title: "Types", subMenu: "project", group: "case" },
