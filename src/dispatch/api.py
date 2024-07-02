@@ -11,6 +11,7 @@ from dispatch.case.priority.views import router as case_priority_router
 from dispatch.case.severity.views import router as case_severity_router
 from dispatch.case.type.views import router as case_type_router
 from dispatch.case.views import router as case_router
+from dispatch.case_cost_type.views import router as case_cost_type_router
 from dispatch.data.alert.views import router as alert_router
 from dispatch.data.query.views import router as query_router
 from dispatch.data.source.data_format.views import router as source_data_format_router
@@ -200,6 +201,11 @@ authenticated_organization_api_router.include_router(
     tags=["case_severities"],
 )
 authenticated_organization_api_router.include_router(
+    case_cost_type_router,
+    prefix="/case_cost_types",
+    tags=["case_cost_types"],
+)
+authenticated_organization_api_router.include_router(
     cost_model_router,
     prefix="/cost_models",
     tags=["cost_models"],
@@ -234,7 +240,10 @@ authenticated_organization_api_router.include_router(forms_router, prefix="/form
 authenticated_organization_api_router.include_router(
     forms_type_router, prefix="/forms_type", tags=["forms_type"]
 )
-authenticated_organization_api_router.include_router(email_template_router, prefix="/email_template", tags=["email_template"])
+authenticated_organization_api_router.include_router(
+    email_template_router, prefix="/email_template", tags=["email_template"]
+)
+
 
 @api_router.get("/healthcheck", include_in_schema=False)
 def healthcheck():
