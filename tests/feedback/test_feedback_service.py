@@ -11,8 +11,9 @@ def test_get(session, feedback):
 def test_get_all(session, feedbacks):
     from dispatch.feedback.incident.service import get_all
 
-    t_feedbacks = get_all(db_session=session).all()
+    t_feedbacks = get_all(db_session=session)
     assert t_feedbacks
+    assert len(t_feedbacks) >= len(feedbacks)
 
 
 @pytest.mark.skip

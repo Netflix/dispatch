@@ -60,7 +60,9 @@ def get_by_name_or_raise(
 
 def get_all(*, db_session, project_id: int) -> List[Optional[SourceEnvironment]]:
     """Gets all sources."""
-    return db_session.query(SourceEnvironment).filter(SourceEnvironment.project_id == project_id)
+    return (
+        db_session.query(SourceEnvironment).filter(SourceEnvironment.project_id == project_id).all()
+    )
 
 
 def create(*, db_session, source_environment_in: SourceEnvironmentCreate) -> SourceEnvironment:

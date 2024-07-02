@@ -24,18 +24,19 @@ def get_most_recent_by_incident_id_and_type(
 
 def get_all_by_incident_id_and_type(
     *, db_session, incident_id: int, report_type: ReportTypes
-) -> Optional[Report]:
+) -> List[Optional[Report]]:
     """Get all reports by incident id and report type."""
     return (
         db_session.query(Report)
         .filter(Report.incident_id == incident_id)
         .filter(Report.type == report_type)
+        .all()
     )
 
 
 def get_all(*, db_session) -> List[Optional[Report]]:
     """Get all reports."""
-    return db_session.query(Report)
+    return db_session.query(Report).all()
 
 
 def create(*, db_session, report_in: ReportCreate) -> Report:

@@ -22,7 +22,7 @@ def get_by_incident_id_and_resource_type(
 
 def get_all(*, db_session):
     """Returns all groups."""
-    return db_session.query(Group)
+    return db_session.query(Group).all()
 
 
 def create(*, db_session, group_in: GroupCreate) -> Group:

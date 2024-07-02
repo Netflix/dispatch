@@ -19,7 +19,7 @@ def get(*, db_session, monitor_id: int) -> Optional[Monitor]:
 
 def get_all(*, db_session) -> List[Optional[Monitor]]:
     """Returns all monitors."""
-    return db_session.query(Monitor)
+    return db_session.query(Monitor).all()
 
 
 def get_enabled(*, db_session) -> List[Optional[Monitor]]:

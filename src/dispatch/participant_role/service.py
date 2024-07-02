@@ -38,12 +38,13 @@ def get_all_active_roles(*, db_session, participant_id: int) -> List[Optional[Pa
         db_session.query(ParticipantRole)
         .filter(ParticipantRole.participant_id == participant_id)
         .filter(ParticipantRole.renounced_at.is_(None))
+        .all()
     )
 
 
-def get_all(*, db_session):
+def get_all(*, db_session) -> List[Optional[ParticipantRole]]:
     """Returns all participant roles."""
-    return db_session.query(ParticipantRole)
+    return db_session.query(ParticipantRole).all()
 
 
 def add_role(

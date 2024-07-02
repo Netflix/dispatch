@@ -98,8 +98,8 @@ def get_by_name_or_default(
 def get_all(*, db_session, project_id: int = None) -> List[Optional[CasePriority]]:
     """Returns all case priorities."""
     if project_id:
-        return db_session.query(CasePriority).filter(CasePriority.project_id == project_id)
-    return db_session.query(CasePriority)
+        return db_session.query(CasePriority).filter(CasePriority.project_id == project_id).all()
+    return db_session.query(CasePriority).all()
 
 
 def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[CasePriority]]:
@@ -109,8 +109,9 @@ def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[Case
             db_session.query(CasePriority)
             .filter(CasePriority.project_id == project_id)
             .filter(CasePriority.enabled == true())
+            .all()
         )
-    return db_session.query(CasePriority).filter(CasePriority.enabled == true())
+    return db_session.query(CasePriority).filter(CasePriority.enabled == true()).all()
 
 
 def create(*, db_session, case_priority_in: CasePriorityCreate) -> CasePriority:

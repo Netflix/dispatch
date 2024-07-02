@@ -52,8 +52,7 @@ def create_incident_metric_query(
         query = query.filter(Incident.reported_at <= end_date)
 
     # exclude incident types
-    query = query.filter(IncidentType.exclude_from_metrics.isnot(True))
-    return query.all()
+    return query.filter(IncidentType.exclude_from_metrics.isnot(True)).all()
 
 
 def make_forecast(incidents: List[Incident]):

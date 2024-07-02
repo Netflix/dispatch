@@ -19,9 +19,9 @@ def get(*, db_session, notification_id: int) -> Optional[Notification]:
     return db_session.query(Notification).filter(Notification.id == notification_id).one_or_none()
 
 
-def get_all(*, db_session):
+def get_all(*, db_session) -> List[Optional[Notification]]:
     """Gets all notifications."""
-    return db_session.query(Notification)
+    return db_session.query(Notification).all()
 
 
 def get_all_enabled(*, db_session, project_id: int) -> Optional[List[Notification]]:
@@ -30,7 +30,8 @@ def get_all_enabled(*, db_session, project_id: int) -> Optional[List[Notificatio
         db_session.query(Notification)
         .filter(Notification.enabled == True)  # noqa Flake8 E712
         .filter(Notification.project_id == project_id)
-    ).all()
+        .all()
+    )
 
 
 def get_overdue_evergreen_notifications(

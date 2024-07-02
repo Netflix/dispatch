@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from dispatch.database.core import SessionLocal
 
@@ -32,9 +32,9 @@ def get_or_create_by_weblink(
     return ticket
 
 
-def get_all(*, db_session: SessionLocal):
+def get_all(*, db_session: SessionLocal) -> List[Optional[Ticket]]:
     """Fetches all tickets."""
-    return db_session.query(Ticket)
+    return db_session.query(Ticket).all()
 
 
 def create(*, db_session: SessionLocal, ticket_in: TicketCreate) -> Ticket:

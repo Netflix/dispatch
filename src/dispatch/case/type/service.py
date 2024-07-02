@@ -95,8 +95,8 @@ def get_by_slug(*, db_session, project_id: int, slug: str) -> Optional[CaseType]
 def get_all(*, db_session, project_id: int = None) -> List[Optional[CaseType]]:
     """Returns all case types."""
     if project_id:
-        return db_session.query(CaseType).filter(CaseType.project_id == project_id)
-    return db_session.query(CaseType)
+        return db_session.query(CaseType).filter(CaseType.project_id == project_id).all()
+    return db_session.query(CaseType).all()
 
 
 def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[CaseType]]:
@@ -106,8 +106,9 @@ def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[Case
             db_session.query(CaseType)
             .filter(CaseType.project_id == project_id)
             .filter(CaseType.enabled == true())
+            .all()
         )
-    return db_session.query(CaseType).filter(CaseType.enabled == true())
+    return db_session.query(CaseType).filter(CaseType.enabled == true()).all()
 
 
 def create(*, db_session, case_type_in: CaseTypeCreate) -> CaseType:

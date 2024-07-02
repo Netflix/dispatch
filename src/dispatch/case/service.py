@@ -69,7 +69,7 @@ def get_by_name_or_raise(*, db_session, project_id: int, case_in: CaseRead) -> C
 
 def get_all(*, db_session, project_id: int) -> List[Optional[Case]]:
     """Returns all cases."""
-    return db_session.query(Case).filter(Case.project_id == project_id)
+    return db_session.query(Case).filter(Case.project_id == project_id).all()
 
 
 def get_all_by_status(*, db_session, project_id: int, status: str) -> List[Optional[Case]]:

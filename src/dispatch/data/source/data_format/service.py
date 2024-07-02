@@ -58,7 +58,9 @@ def get_by_name_or_raise(
 
 def get_all(*, db_session, project_id: int) -> List[Optional[SourceDataFormat]]:
     """Gets all sources."""
-    return db_session.query(SourceDataFormat).filter(SourceDataFormat.project_id == project_id)
+    return (
+        db_session.query(SourceDataFormat).filter(SourceDataFormat.project_id == project_id).all()
+    )
 
 
 def create(*, db_session, source_data_format_in: SourceDataFormatCreate) -> SourceDataFormat:

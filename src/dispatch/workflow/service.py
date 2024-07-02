@@ -55,7 +55,7 @@ def get_by_name_or_raise(*, db_session: Session, workflow_in=WorkflowRead) -> Wo
 
 def get_all(*, db_session) -> List[Optional[Workflow]]:
     """Returns all workflows."""
-    return db_session.query(Workflow)
+    return db_session.query(Workflow).all()
 
 
 def get_enabled(*, db_session, project_id: int = None) -> List[Optional[Workflow]]:

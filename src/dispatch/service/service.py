@@ -113,14 +113,14 @@ def get_by_external_id_and_project_name(
     return service
 
 
-def get_all(*, db_session):
+def get_all(*, db_session) -> List[Optional[Service]]:
     """Gets all services."""
-    return db_session.query(Service)
+    return db_session.query(Service).all()
 
 
-def get_all_by_status(*, db_session, is_active: bool):
+def get_all_by_status(*, db_session, is_active: bool) -> List[Optional[Service]]:
     """Gets services by status."""
-    return db_session.query(Service).filter(Service.is_active.is_(is_active))
+    return db_session.query(Service).filter(Service.is_active.is_(is_active)).all()
 
 
 def get_all_by_type_and_status(
@@ -144,6 +144,7 @@ def get_all_by_project_id_and_status(
         .filter(Service.project_id == project_id)
         .filter(Service.is_active.is_(is_active))
         .order_by(Service.name)
+        .all()
     )
 
 

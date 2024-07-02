@@ -33,8 +33,8 @@ def has_unique_plugin_event(cost_model_in: CostModelRead) -> bool:
 def get_all(*, db_session, project_id: int) -> List[CostModel]:
     """Returns all cost models."""
     if project_id:
-        return db_session.query(CostModel).filter(CostModel.project_id == project_id)
-    return db_session.query(CostModel)
+        return db_session.query(CostModel).filter(CostModel.project_id == project_id).all()
+    return db_session.query(CostModel).all()
 
 
 def get_cost_model_activity_by_id(*, db_session, cost_model_activity_id: int) -> CostModelActivity:

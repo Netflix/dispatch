@@ -185,9 +185,7 @@ def create_signal_instance(*, db_session: Session, signal_instance_in: SignalIns
         # Note: we can do this because it's still relatively cheap, if we add more logic here
         # this will need to be moved to a background function (similar to case creation)
         # fetch `all` entities that should be associated with all signal definitions
-        entity_types = entity_type_service.get_all(
-            db_session=db_session, scope=EntityScopeEnum.all
-        ).all()
+        entity_types = entity_type_service.get_all(db_session=db_session, scope=EntityScopeEnum.all)
         entity_types = signal_instance.signal.entity_types + entity_types
 
         if entity_types:
