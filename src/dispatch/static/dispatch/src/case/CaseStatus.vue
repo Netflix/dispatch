@@ -1,7 +1,23 @@
 <template>
-  <v-badge bordered :color="color" dot location="left" offset-x="-16">
-    {{ status }}
-  </v-badge>
+  <div class="text-no-wrap">
+    <v-badge bordered :color="color" dot location="left" offset-x="-16">
+      {{ status }}
+    </v-badge>
+    <template v-if="status !== 'Closed'">
+      <v-tooltip location="bottom" text="Join" v-if="allowSelfJoin">
+        <template #activator="{ props }">
+          <v-btn
+            v-bind="props"
+            icon="mdi-account-plus"
+            variant="text"
+            density="comfortable"
+            class="ml-1"
+            @click.stop="joinCase(id)"
+          />
+        </template>
+      </v-tooltip>
+    </template>
+  </div>
 </template>
 
 <script>
@@ -15,6 +31,10 @@ export default {
     },
     id: {
       type: Number,
+      required: true,
+    },
+    allowSelfJoin: {
+      type: Boolean,
       required: true,
     },
   },

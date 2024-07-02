@@ -11,7 +11,7 @@ from sqlalchemy.exc import IntegrityError
 # NOTE: define permissions before enabling the code block below
 from dispatch.auth.permissions import (
     CaseEditPermission,
-    # CaseJoinPermission,
+    CaseJoinPermission,
     PermissionsDependency,
     CaseViewPermission,
 )
@@ -27,6 +27,7 @@ from dispatch.participant.models import ParticipantUpdate, ParticipantRead, Part
 from dispatch.individual.models import IndividualContactRead
 
 from .flows import (
+    case_add_or_reactivate_participant_flow,
     case_closed_create_flow,
     case_delete_flow,
     case_escalated_create_flow,
@@ -338,3 +339,25 @@ def delete_case(
                 }
             ],
         ) from None
+
+
+@router.post(
+    "/{case_id}/join",
+    summary="Adds an individual to an case.",
+    dependencies=[Depends(PermissionsDependency([CaseJoinPermission]))],
+)
+def join_case(
+    db_session: DbSession,
+    organization: OrganizationSlug,
+    incident_id: PrimaryKey,
+    current_case: CurrentCase,
+    current_user: CurrentUser,
+    background_tasks: BackgroundTasks,
+):
+    """Adds an individual to an incident."""
+    background_tasks.add_task(
+        case_add_or_reactivate_participant_flow,
+        current_user.email,
+        incident_id=current_case.id,
+        organization_slug=organization,
+    )
