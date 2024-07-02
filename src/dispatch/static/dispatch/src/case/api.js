@@ -51,6 +51,10 @@ export default {
     return API.delete(`/${resource}/${caseId}`)
   },
 
+  join(caseId, payload) {
+    return API.post(`/${resource}/${caseId}/join`, payload)
+  },
+
   createAllResources(caseId, payload) {
     return API.post(`/${resource}/${caseId}/resources`, payload)
   },
