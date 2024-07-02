@@ -3,7 +3,7 @@
     <v-badge bordered :color="color" dot location="left" offset-x="-16">
       {{ status }}
     </v-badge>
-    <template v-if="status !== 'Closed'">
+    <template v-if="status !== 'Closed' && dedicatedChannel">
       <v-tooltip location="bottom" text="Join" v-if="allowSelfJoin">
         <template #activator="{ props }">
           <v-btn
@@ -34,6 +34,10 @@ export default {
       required: true,
     },
     allowSelfJoin: {
+      type: Boolean,
+      required: true,
+    },
+    dedicatedChannel: {
       type: Boolean,
       required: true,
     },
