@@ -444,9 +444,9 @@ class CaseJoinPermission(BasePermission):
         request: Request,
     ) -> bool:
         pk = PrimaryKeyModel(id=request.path_params["case_id"])
-        current_incident = incident_service.get(db_session=request.state.db, incident_id=pk.id)
+        current_case = case_service.get(db_session=request.state.db, incident_id=pk.id)
 
-        if current_incident.visibility == Visibility.restricted:
+        if current_case.visibility == Visibility.restricted:
             return OrganizationAdminPermission(request=request)
 
         return True

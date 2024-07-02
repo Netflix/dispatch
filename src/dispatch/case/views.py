@@ -343,21 +343,21 @@ def delete_case(
 
 @router.post(
     "/{case_id}/join",
-    summary="Adds an individual to an case.",
+    summary="Adds an individual to a case.",
     dependencies=[Depends(PermissionsDependency([CaseJoinPermission]))],
 )
 def join_case(
     db_session: DbSession,
     organization: OrganizationSlug,
-    incident_id: PrimaryKey,
+    case_id: PrimaryKey,
     current_case: CurrentCase,
     current_user: CurrentUser,
     background_tasks: BackgroundTasks,
 ):
-    """Adds an individual to an incident."""
+    """Adds an individual to a case."""
     background_tasks.add_task(
         case_add_or_reactivate_participant_flow,
         current_user.email,
-        incident_id=current_case.id,
+        case_id=current_case.id,
         organization_slug=organization,
     )
