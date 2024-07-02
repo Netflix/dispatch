@@ -110,13 +110,11 @@ def test_calculate_incident_response_cost_with_cost_model(
     """Tests that the incident cost is calculated correctly when a cost model is enabled."""
     from datetime import timedelta
     import math
-    from dispatch.incident.service import get
     from dispatch.incident_cost.service import update_incident_response_cost, get_hourly_rate
     from dispatch.incident_cost_type import service as incident_cost_type_service
     from dispatch.participant_activity.service import (
         get_all_incident_participant_activities_for_incident,
     )
-    from dispatch.plugins.dispatch_slack.events import ChannelActivityEvent
 
     SECONDS_IN_HOUR = 3600
     orig_total_incident_cost = incident.total_cost
@@ -134,10 +132,9 @@ def test_calculate_incident_response_cost_with_cost_model(
     incident_cost_type.project = incident.project
 
     # Set up incident.
-    incident = get(db_session=session, incident_id=incident.id)
-    cost_model_activity.plugin_event.slug = ChannelActivityEvent.slug
     incident.incident_type.cost_model.enabled = True
     incident.incident_type.cost_model.activities = [cost_model_activity]
+
     incident.conversation = conversation
 
     # Calculates and updates the incident cost.
