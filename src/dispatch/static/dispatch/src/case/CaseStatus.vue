@@ -21,6 +21,8 @@
 </template>
 
 <script>
+import { mapActions } from "vuex"
+
 export default {
   name: "CaseStatus",
 
@@ -54,6 +56,10 @@ export default {
         }[this.status] || "error"
       )
     },
+  },
+
+  methods: {
+    ...mapActions("case_management", ["joinCase"]),
   },
 }
 </script>

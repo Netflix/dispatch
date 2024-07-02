@@ -71,7 +71,7 @@
             <template #item.case_priority.name="{ value }">
               <case-priority :priority="value" />
             </template>
-            <template #item.status="{ item, value }">
+            <template #item.status="{ item }">
               <case-status
                 :status="item.status"
                 :id="item.id"
