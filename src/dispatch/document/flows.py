@@ -173,11 +173,14 @@ def update_document(document: Document, project_id: int, db_session: Session):
         # create document template placeholders for tags
         for tag in document.incident.tags:
             if f"tag_{tag.tag_type.name}" in document_kwargs:
-                document_kwargs[f"tag_{tag.tag_type.name}"] += f", {tag.value}"
+                document_kwargs[f"tag_{tag.tag_type.name}"] += f", {tag.name}"
             else:
-                document_kwargs[f"tag_{tag.tag_type.name}"] = tag.value
-            if tag.tag_type.external_id:
-                document_kwargs[f"tag_{tag.tag_type.name}.external_id"] = tag.tag_type.external_id
+                document_kwargs[f"tag_{tag.tag_type.name}"] = tag.name
+            if tag.external_id:
+                if f"tag_{tag.tag_type.name}.external_id" in document_kwargs:
+                    document_kwargs[f"tag_{tag.tag_type.name}.external_id"] += f", {tag.external_id}"
+                else:
+                    document_kwargs[f"tag_{tag.tag_type.name}.external_id"] = tag.external_id
 
     if document.resource_type == DocumentResourceTypes.review:
         document_kwargs["stable_at"] = document.incident.stable_at.strftime("%m/%d/%Y %H:%M:%S")
