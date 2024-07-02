@@ -1,8 +1,9 @@
 from typing import TypeVar, List
 import logging
 
+from sqlalchemy.orm import Session
+
 from dispatch.case.models import Case
-from dispatch.database.core import SessionLocal
 from dispatch.database.core import get_table_name_by_class_instance
 from dispatch.event import service as event_service
 from dispatch.incident.models import Incident
@@ -17,7 +18,7 @@ log = logging.getLogger(__name__)
 Subject = TypeVar("Subject", Case, Incident)
 
 
-def create_storage(subject: Subject, storage_members: List[str], db_session: SessionLocal):
+def create_storage(subject: Subject, storage_members: List[str], db_session: Session):
     """Creates a storage."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=subject.project.id, plugin_type="storage"
@@ -94,76 +95,11 @@ def create_storage(subject: Subject, storage_members: List[str], db_session: Ses
     return storage
 
 
-def create_alt_storage(
-        *,
-        subject: Subject,
-        storage_members: List[str],
-        db_session: SessionLocal,
-        main_folder_name: str,
-        second_folder_name: str,
-        root_folder_id: str):
-    """Creates a storage based on alternative structure. Note that the main_folder_name inside the
-    root_folder_id will be created and that will be the main storage folder that is saved as the storage folder."""
-    plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=subject.project.id, plugin_type="storage"
-    )
-    if not plugin:
-        log.warning("Storage not created. No storage plugin enabled.")
-        return
-
-    # we create the external storage
-    try:
-        external_storage = plugin.instance.create_file(
-            parent_id=root_folder_id, name=subject.name, participants=storage_members
-        )
-    except Exception as e:
-        log.exception(e)
-        return
-
-    if not external_storage:
-        log.error(f"Storage not created. Plugin {plugin.plugin.slug} encountered an error.")
-        return
-
-    # we create subfolders based on the passed data
-    main_storage = plugin.instance.create_file(external_storage["id"], main_folder_name)
-    plugin.instance.create_file(external_storage["id"], second_folder_name)
-
-    # we create the internal storage
-    storage_in = StorageCreate(
-        resource_id=main_storage["id"],
-        resource_type=plugin.plugin.slug,
-        weblink=main_storage["weblink"],
-    )
-
-    storage = create(db_session=db_session, storage_in=storage_in)
-    subject.storage = storage
-    db_session.add(subject)
-    db_session.commit()
-
-    subject_type = get_table_name_by_class_instance(subject)
-    if subject_type == "case":
-        event_service.log_case_event(
-            db_session=db_session,
-            source=plugin.plugin.title,
-            description="Case storage created",
-            case_id=subject.id,
-        )
-    if subject_type == "incident":
-        event_service.log_incident_event(
-            db_session=db_session,
-            source=plugin.plugin.title,
-            description="Incident storage created",
-            incident_id=subject.id,
-        )
-
-    return storage
-
-
 def update_storage(
     subject: Subject,
     storage_action: StorageAction,
     storage_members: List[str],
-    db_session: SessionLocal,
+    db_session: Session,
 ):
     """Updates an exisiting storage."""
     plugin = plugin_service.get_active_instance(
@@ -210,7 +146,7 @@ def update_storage(
         )
 
 
-def delete_storage(storage: Storage, project_id: int, db_session: SessionLocal):
+def delete_storage(storage: Storage, project_id: int, db_session: Session):
     """Deletes an existing storage."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project_id, plugin_type="storage"

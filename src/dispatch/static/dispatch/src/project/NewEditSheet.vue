@@ -123,21 +123,21 @@
               <v-col cols="12">
                 <v-text-field
                   v-model="storage_folder_one"
-                  label="Storage folder 1"
+                  label="Storage folder 1 name"
                   hint="The name of one of the storage folders."
                   clearable
                   required
-                  name="Storage folder 1"
+                  name="Storage folder 1 name"
                 />
               </v-col>
               <v-col cols="12">
                 <v-text-field
                   v-model="storage_folder_two"
-                  label="Storage folder 2"
+                  label="Storage folder 2 name"
                   hint="The name of the other storage folder."
                   clearable
                   required
-                  name="Storage folder 2"
+                  name="Storage folder 2 name"
                 />
               </v-col>
               <v-col cols="12">
@@ -155,8 +155,14 @@
                 />
               </v-col>
               <v-col cols="12">
-                <span class="text-body-2 text-medium-emphasis">Tag type to use as the storage folder</span>
-                <tag-type-select class="mt-4" v-model="storage_tag_type" />
+                <span class="text-body-2 text-medium-emphasis">
+                  Tag type to use as the storage folder
+                </span>
+                <tag-type-select
+                  class="mt-4"
+                  v-model="storage_tag_type"
+                  hint="The URI field of the chosen tag will be used as the id of the main storage folder for this incident."
+                />
               </v-col>
             </v-row>
           </v-container>

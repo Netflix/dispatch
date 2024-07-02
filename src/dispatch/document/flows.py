@@ -172,7 +172,7 @@ def update_document(document: Document, project_id: int, db_session: Session):
         """
         # create document template placeholders for tags
         for tag in document.incident.tags:
-            if tag.tag_type.name in document_kwargs:
+            if f"tag_{tag.tag_type.name}" in document_kwargs:
                 document_kwargs[f"tag_{tag.tag_type.name}"] += f", {tag.value}"
             else:
                 document_kwargs[f"tag_{tag.tag_type.name}"] = tag.value
