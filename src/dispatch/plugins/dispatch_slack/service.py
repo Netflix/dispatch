@@ -104,10 +104,7 @@ def should_retry(exception: Exception) -> bool:
     match exception:
         case SlackApiError():
             # Don't retry for exceptions we have defined.
-            if exception.response["error"] in [str(getattr(SlackAPIErrorCode, i)) for i in SlackAPIErrorCode.__members__]:
-                return False
-            # retry all others
-            return True
+            return exception.response["error"] not in SlackAPIErrorCode
         case TimeoutError() | Timeout():
             # Always retry on timeout errors
             return True
