@@ -2,8 +2,63 @@ from enum import Enum
 
 
 class DispatchEnum(str, Enum):
+    """
+    A custom Enum class that extends str and Enum.
+
+    This class provides additional functionality to standard Enums,
+    including string representation and containment checking.
+
+    Attributes:
+        Inherits all attributes from str and Enum.
+
+    Example:
+        class MyEnum(DispatchEnum):
+            VALUE1 = "value1"
+            VALUE2 = "value2"
+
+        assert str(MyEnum.VALUE1) == "value1"
+        assert "value1" in MyEnum
+    """
+
     def __str__(self) -> str:
+        """
+        Returns the string representation of the enum value.
+
+        This method allows the enum values to be used as strings directly.
+
+        Returns:
+            str: The string value of the enum member.
+
+        Example:
+            >>> class MyEnum(DispatchEnum):
+            ...     VALUE = "some_value"
+            >>> str(MyEnum.VALUE)
+            'some_value'
+        """
         return str.__str__(self)
+
+    @classmethod
+    def __contains__(cls, item: str) -> bool:
+        """
+        Checks if a string value is present in the enum.
+
+        This method allows for easy checking if a string is a valid enum value.
+
+        Args:
+            item (str): The string to check for presence in the enum.
+
+        Returns:
+            bool: True if the string is a value in the enum, False otherwise.
+
+        Example:
+            >>> class MyEnum(DispatchEnum):
+            ...     VALUE = "some_value"
+            >>> "some_value" in MyEnum
+            True
+            >>> "other_value" in MyEnum
+            False
+        """
+        return item in cls.__members__.values()
 
 
 class Visibility(DispatchEnum):
