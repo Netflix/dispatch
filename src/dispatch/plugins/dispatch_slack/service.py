@@ -104,7 +104,7 @@ def should_retry(exception: Exception) -> bool:
     match exception:
         case SlackApiError():
             # Don't retry for re-adding users in channel.
-            if exception.response["error"] == SlackAPIErrorCode.USER_IN_CHANNEL:
+            if exception.response["error"] in [SlackAPIErrorCode.USER_IN_CHANNEL, SlackAPIErrorCode.ALREADY_IN_CHANNEL]:
                 return False
             # Retry if it's not a fatal error
             return exception.response["error"] != SlackAPIErrorCode.FATAL_ERROR

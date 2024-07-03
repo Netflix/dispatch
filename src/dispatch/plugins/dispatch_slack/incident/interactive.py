@@ -815,6 +815,10 @@ def handle_after_hours_message(
     participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=context["subject"].id, email=user.email
     )
+    # handle no participant found
+    if not participant:
+        return
+
     # get their timezone from slack
     try:
         owner_tz = (dispatch_slack_service.get_user_info_by_email(client, email=owner_email))["tz"]
