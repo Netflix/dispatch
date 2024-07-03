@@ -1,64 +1,23 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class DispatchEnum(str, Enum):
+class DispatchEnum(StrEnum):
     """
-    A custom Enum class that extends str and Enum.
+    A custom Enum class that extends StrEnum.
 
-    This class provides additional functionality to standard Enums,
-    including string representation and containment checking.
-
-    Attributes:
-        Inherits all attributes from str and Enum.
+    This class inherits all functionality from StrEnum, including
+    string representation and automatic value conversion to strings.
 
     Example:
-        class MyEnum(DispatchEnum):
-            VALUE1 = "value1"
-            VALUE2 = "value2"
+        class Visibility(DispatchEnum):
+            OPEN = "Open"
+            RESTRICTED = "Restricted"
 
-        assert str(MyEnum.VALUE1) == "value1"
-        assert "value1" in MyEnum
+        assert str(Visibility.OPEN) == "Open"
+        assert "Open" in Visibility
     """
 
-    def __str__(self) -> str:
-        """
-        Returns the string representation of the enum value.
-
-        This method allows the enum values to be used as strings directly.
-
-        Returns:
-            str: The string value of the enum member.
-
-        Example:
-            >>> class MyEnum(DispatchEnum):
-            ...     VALUE = "some_value"
-            >>> str(MyEnum.VALUE)
-            'some_value'
-        """
-        return str.__str__(self)
-
-    @classmethod
-    def __contains__(cls, item: str) -> bool:
-        """
-        Checks if a string value is present in the enum.
-
-        This method allows for easy checking if a string is a valid enum value.
-
-        Args:
-            item (str): The string to check for presence in the enum.
-
-        Returns:
-            bool: True if the string is a value in the enum, False otherwise.
-
-        Example:
-            >>> class MyEnum(DispatchEnum):
-            ...     VALUE = "some_value"
-            >>> "some_value" in MyEnum
-            True
-            >>> "other_value" in MyEnum
-            False
-        """
-        return item in cls.__members__.values()
+    pass  # No additional implementation needed
 
 
 class Visibility(DispatchEnum):
