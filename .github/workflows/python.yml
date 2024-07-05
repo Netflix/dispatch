@@ -50,11 +50,11 @@ jobs:
       - name: Coverage per file
         # All modified files should meet the minimum code coverage requirement.
         run: |
-          export MODIFIED_FILES=$(git diff origin/master...HEAD --name-only | grep -E '\.py$')
-          export FAILED_COVERAGE_PER_FILE=$(python -c "import json;files=json.load(open('coverage.json'))['files'];covs=map(lambda k, v: (k, v['summary']['percent_covered_display']),files.keys(),files.values()); f=filter(lambda cov:int(cov[1])< ${{ env.COVERAGE_SINGLE }}% ,covs); print('\n'.join('{:<68}{:>3}%'.format(k,v) for k,v in f))")
+          export ALL_FILES=$(find . -name "*.py" -not -path "./.venv/*" | sed 's|^\./||')          
+          export FAILED_COVERAGE_PER_FILE=$(python -c "import json;files=json.load(open('coverage.json'))['files'];covs=map(lambda k, v: (k, v['summary']['percent_covered_display']),files.keys(),files.values()); f=filter(lambda cov:int(cov[1])< ${{ env.COVERAGE_SINGLE }} ,covs); print('\n'.join('{:<68}{:>3}%'.format(k,v) for k,v in f))")
           export FAILED_COVERAGE_FILES=(); while IFS= read -r line; do FAILED_COVERAGE_FILES+=("${line%%[[:space:]]*}");done <<< "$FAILED_COVERAGE_PER_FILE"
 
-          files=($(comm -12 <(for X in "${MODIFIED_FILES}"; do echo "${X}"; done|sort) <(for X in "${FAILED_COVERAGE_FILES}"; do echo "${X}"; done|sort)))
+          files=($(comm -12 <(for X in "${ALL_FILES}"; do echo "${X}"; done|sort) <(for X in "${FAILED_COVERAGE_FILES}"; do echo "${X}"; done|sort)))
 
           if [[ ${#files[@]} > 0 ]]; then
             echo "FAIL Recommended file test coverage of ${{ env.COVERAGE_SINGLE }}% not reached. All modified files must meet the minimum code coverage requirement."
