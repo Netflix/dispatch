@@ -271,7 +271,7 @@ CaseReadMinimal = ForwardRef("CaseReadMinimal")
 class CaseReadMinimal(CaseBase):
     id: PrimaryKey
     assignee: Optional[ParticipantReadMinimal]
-    case_costs: Optional[List[CaseCostRead]] = []
+    case_costs: List[CaseCostRead] = []
     case_priority: CasePriorityRead
     case_severity: CaseSeverityRead
     case_type: CaseTypeRead
@@ -285,6 +285,7 @@ class CaseReadMinimal(CaseBase):
     project: ProjectRead
     reporter: Optional[ParticipantReadMinimal]
     reported_at: Optional[datetime] = None
+    total_cost: float | None
     triage_at: Optional[datetime] = None
 
 
@@ -294,7 +295,7 @@ CaseReadMinimal.update_forward_refs()
 class CaseRead(CaseBase):
     id: PrimaryKey
     assignee: Optional[ParticipantRead]
-    case_costs: Optional[List[CaseCostRead]] = []
+    case_costs: List[CaseCostRead] = []
     case_priority: CasePriorityRead
     case_severity: CaseSeverityRead
     case_type: CaseTypeRead
@@ -317,6 +318,7 @@ class CaseRead(CaseBase):
     storage: Optional[StorageRead] = None
     tags: Optional[List[TagRead]] = []
     ticket: Optional[TicketRead] = None
+    total_cost: float | None
     triage_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     workflow_instances: Optional[List[WorkflowInstanceRead]] = []
@@ -324,7 +326,7 @@ class CaseRead(CaseBase):
 
 class CaseUpdate(CaseBase):
     assignee: Optional[ParticipantUpdate]
-    case_costs: Optional[List[CaseCostUpdate]] = []
+    case_costs: List[CaseCostUpdate] = []
     case_priority: Optional[CasePriorityBase]
     case_severity: Optional[CaseSeverityBase]
     case_type: Optional[CaseTypeBase]

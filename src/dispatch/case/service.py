@@ -10,6 +10,7 @@ from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.severity import service as case_severity_service
 from dispatch.case.type import service as case_type_service
+from dispatch.case_cost import service as case_cost_service
 from dispatch.event import service as event_service
 from dispatch.exceptions import NotFoundError
 from dispatch.incident import service as incident_service
@@ -247,6 +248,7 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
         skip_defaults=True,
         exclude={
             "assignee",
+            "case_costs",
             "case_priority",
             "case_severity",
             "case_type",
@@ -363,6 +365,13 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
             dispatch_user_id=current_user.id,
             case_id=case.id,
         )
+
+    case_costs = []
+    for case_cost in case_in.case_costs:
+        case_costs.append(
+            case_cost_service.get_or_create(db_session=db_session, case_cost_in=case_cost)
+        )
+    case.case_costs = case_costs
 
     tags = []
     for t in case_in.tags:
