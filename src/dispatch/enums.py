@@ -14,7 +14,12 @@ class DispatchEnum(StrEnum):
             RESTRICTED = "Restricted"
 
         assert str(Visibility.OPEN) == "Open"
-        assert "Open" in Visibility
+
+    Note:
+        In `3.12` we will get `__contains__` functionality:
+
+        DeprecationWarning: in 3.12 __contains__ will no longer raise TypeError, but will return True or
+        False depending on whether the value is a member or the value of a member
     """
 
     pass  # No additional implementation needed
