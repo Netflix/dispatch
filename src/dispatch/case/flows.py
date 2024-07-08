@@ -33,6 +33,11 @@ from dispatch.storage import flows as storage_flows
 from dispatch.storage.enums import StorageAction
 from dispatch.ticket import flows as ticket_flows
 
+from .messaging import (
+    send_case_created_notifications,
+    send_case_update_notifications,
+)
+
 from .models import Case, CaseStatus
 from .service import get
 
@@ -216,6 +221,9 @@ def case_new_create_flow(
     db_session.add(case)
     db_session.commit()
 
+    if case.dedicated_channel:
+        send_case_created_notifications(case, db_session)
+
     if case.case_priority.page_assignee:
         if not service_id:
             if case.case_type.oncall_service:
@@ -385,6 +393,10 @@ def case_update_flow(
         # determine if case channel topic needs to be updated
         if case_details_changed(case, previous_case):
             conversation_flows.set_conversation_topic(case, db_session)
+
+    # we send the case update notifications
+    if case.dedicated_channel:
+        send_case_update_notifications(case, previous_case, db_session)
 
 
 def case_delete_flow(case: Case, db_session: SessionLocal):
