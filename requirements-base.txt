@@ -51,7 +51,7 @@ catalogue==2.0.10
     #   spacy
     #   srsly
     #   thinc
-certifi==2023.11.17
+certifi==2024.7.4
     # via
     #   httpcore
     #   httpx
