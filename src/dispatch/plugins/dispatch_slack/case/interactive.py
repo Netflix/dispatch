@@ -1942,7 +1942,7 @@ def send_engagement_response(
         engagement_status = SignalEngagementStatus.denied
 
         if response == PushResponseResult.timeout:
-            text = "Confirmation failed, the MFA request timed out."
+            text = "Confirmation failed, the MFA request timed out. Please have your MFA device ready to accept the push notification and try again."
         elif response == PushResponseResult.user_not_found:
             text = "User not found in MFA provider. To validate your identity, please register in Duo and try again."
         else:
