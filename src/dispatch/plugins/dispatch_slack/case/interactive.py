@@ -1939,15 +1939,16 @@ def send_engagement_response(
         engagement_status = SignalEngagementStatus.approved
     else:
         title = "MFA Failed"
-        message_text = f":warning: {engaged_user} attempted to confirm the behavior *as expected*, but the MFA validation failed. Reason: `{response}`\n\n *Context Provided* \n```{context_from_user}```"
         engagement_status = SignalEngagementStatus.denied
 
         if response == PushResponseResult.timeout:
-            text = "Confirmation failed, the MFA request timed out."
+            text = "Confirmation failed, the MFA request timed out. Please have your MFA device ready to accept the push notification and try again."
         elif response == PushResponseResult.user_not_found:
-            text = "User not found in MFA provider."
+            text = "User not found in MFA provider. To validate your identity, please register in Duo and try again."
         else:
             text = "Confirmation failed. You must accept the MFA prompt."
+
+        message_text = f":warning: {engaged_user} attempted to confirm the behavior *as expected*, but the MFA validation failed.\n\n *Error Reason**: `{response}`\n\n{text}\n\n *Context Provided* \n```{context_from_user}```\n\n"
 
     send_success_modal(
         client=client,
