@@ -815,6 +815,10 @@ def case_assign_role_flow(
     if result in ["assignee_has_role", "role_not_assigned"]:
         return
 
+    # we stop here if this is not a dedicated channel case
+    if not case.dedicated_channel:
+        return
+
     if case.status != CaseStatus.closed and participant_role == ParticipantRoleType.assignee:
         # update the conversation topic
         conversation_flows.set_conversation_topic(case, db_session)
