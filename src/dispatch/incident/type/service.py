@@ -9,6 +9,7 @@ from dispatch.cost_model import service as cost_model_service
 from dispatch.document import service as document_service
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
+from dispatch.service import service as service_service
 
 from .models import IncidentType, IncidentTypeCreate, IncidentTypeRead, IncidentTypeUpdate
 
@@ -140,6 +141,7 @@ def create(*, db_session, incident_type_in: IncidentTypeCreate) -> IncidentType:
                 "review_template_document",
                 "cost_model",
                 "project",
+                "description_service",
             }
         ),
         project=project,
@@ -174,6 +176,13 @@ def create(*, db_session, incident_type_in: IncidentTypeCreate) -> IncidentType:
             db_session=db_session, document_id=incident_type_in.tracking_template_document.id
         )
         incident_type.tracking_template_document = tracking_template_document
+
+    if incident_type_in.description_service:
+        service = service_service.get(
+            db_session=db_session, service_id=incident_type_in.description_service.id
+        )
+        if service:
+            incident_type.description_service_id = service.id
 
     db_session.add(incident_type)
     db_session.commit()
@@ -228,6 +237,13 @@ def update(
         )
         incident_type.tracking_template_document = tracking_template_document
 
+    if incident_type_in.description_service:
+        service = service_service.get(
+            db_session=db_session, service_id=incident_type_in.description_service.id
+        )
+        if service:
+            incident_type.description_service_id = service.id
+
     incident_type_data = incident_type.dict()
 
     update_data = incident_type_in.dict(
@@ -238,6 +254,7 @@ def update(
             "tracking_template_document",
             "review_template_document",
             "cost_model",
+            "description_service",
         },
     )
 

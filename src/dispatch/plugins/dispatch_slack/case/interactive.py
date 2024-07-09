@@ -83,7 +83,6 @@ from dispatch.plugins.dispatch_slack.middleware import (
     command_context_middleware,
     db_middleware,
     engagement_button_context_middleware,
-    message_context_middleware,
     modal_submit_middleware,
     shortcut_context_middleware,
     subject_middleware,
@@ -1013,9 +1012,8 @@ def handle_case_participant_role_activity(
             organization_slug=context["subject"].organization_slug,
         )
         case.status = CaseStatus.triage
-        db_session.commit()
-
     case_flows.update_conversation(case, db_session)
+    db_session.commit()
 
 
 @message_dispatcher.add(
@@ -1061,110 +1059,6 @@ def handle_case_after_hours_message(
                 thread_ts=payload["thread_ts"],
                 user=payload["user"],
             )
-
-
-@app.event(
-    "member_joined_channel",
-    middleware=[
-        message_context_middleware,
-        user_middleware,
-        configuration_middleware,
-    ],
-)
-def handle_member_joined_case_channel(
-    ack: Ack,
-    body: dict,
-    context: BoltContext,
-    client: WebClient,
-    db_session: Session,
-    respond: Respond,
-    payload: dict,
-    user: DispatchUser,
-) -> None:
-    """Notifies the user that this case is currently in after hours mode."""
-    ack()
-
-    if not user:
-        raise Exception(
-            "Unable to handle member_joined_channel Slack event. Dispatch user unknown."
-        )
-
-    if context["subject"].type != CaseSubjects.case:
-        # only run this workflow for cases
-        return
-
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
-
-    if not case.dedicated_channel:
-        return
-
-    participant = case_flows.case_add_or_reactivate_participant_flow(
-        user_email=user.email,
-        case_id=context["subject"].id,
-        db_session=db_session,
-    )
-
-    if not participant:
-        # Participant is already in the case channel.
-        return
-
-    participant.user_conversation_id = context["user_id"]
-
-    # If the user was invited, the message will include an inviter property containing the user ID of the inviting user.
-    # The property will be absent when a user manually joins a channel, or a user is added by default (e.g. #general channel).
-    inviter = body.get("event", {}).get("inviter", None)
-    inviter_is_user = (
-        dispatch_slack_service.is_user(context["config"], inviter) if inviter else None
-    )
-
-    if inviter and inviter_is_user:
-        # Participant is added into the incident channel using an @ message or /invite command.
-        inviter_email = get_user_email(client=client, user_id=inviter)
-        added_by_participant = participant_service.get_by_case_id_and_email(
-            db_session=db_session,
-            case_id=context["subject"].id,
-            email=inviter_email,
-        )
-        participant.added_by = added_by_participant
-
-    else:
-        # User joins via the `join` button on Web Application or Slack.
-        # We default to the incident commander when we don't know who added the user or the user is the Dispatch bot.
-        participant.added_by = case.assignee
-
-    # Message text when someone @'s a user is not available in body, use generic added by reason
-    participant.added_reason = f"Participant added by {participant.added_by.individual.name}"
-
-    db_session.add(participant)
-    db_session.commit()
-
-
-@app.event(
-    "member_left_channel",
-    middleware=[
-        message_context_middleware,
-        user_middleware,
-    ],
-)
-def handle_member_left_channel(
-    ack: Ack, context: BoltContext, db_session: Session, user: DispatchUser
-) -> None:
-    ack()
-
-    if context["subject"].type != CaseSubjects.case:
-        # only run this workflow for cases
-        return
-
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
-
-    if not case.dedicated_channel:
-        return
-
-    case_flows.case_remove_participant_flow(
-        user_email=user.email,
-        case_id=context["subject"].id,
-        db_session=db_session,
-    )
 
 
 @app.action("button-link")
@@ -1342,6 +1236,18 @@ def handle_escalation_submission_event(
     case.status = CaseStatus.escalated
     db_session.commit()
 
+    modal = Modal(
+        title="Case Escalated",
+        close="Close",
+        blocks=[Section(text="Running case escalation flows...")],
+    ).build()
+
+    result = client.views_update(
+        view_id=body["view"]["id"],
+        trigger_id=body["trigger_id"],
+        view=modal,
+    )
+
     blocks = create_case_message(case=case, channel_id=context["subject"].channel_id)
     if case.has_thread:
         client.chat_update(
@@ -1388,7 +1294,7 @@ def handle_escalation_submission_event(
 
     # Add all case participants to the incident
     participant_emails = [participant.individual.email for participant in case_participants]
-    conversation_flows.add_incident_participants(
+    conversation_flows.add_incident_participants_to_conversation(
         incident=incident,
         participant_emails=participant_emails,
         db_session=db_session,
@@ -1412,15 +1318,12 @@ def handle_escalation_submission_event(
         ),
     ]
 
-    modal = Modal(
-        title="Escalate Case",
-        close="Close",
-        blocks=blocks,
-    ).build()
-
-    client.views_update(
+    send_success_modal(
+        client=client,
         view_id=body["view"]["id"],
-        view=modal,
+        trigger_id=result["trigger_id"],
+        title="Case Escalated",
+        message="Case escalated successfully.",
     )
 
 
@@ -1435,7 +1338,7 @@ def join_incident_button_click(
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
     # we add the user to the incident conversation
-    conversation_flows.add_incident_participants(
+    conversation_flows.add_incident_participants_to_conversation(
         # TODO: handle case where there are multiple related incidents
         incident=case.incidents[0],
         participant_emails=[user.email],
@@ -1541,7 +1444,7 @@ def handle_edit_submission_event(
         case_id=case.id,
         previous_case=previous_case,
         db_session=db_session,
-        reporter_email=case.reporter.individual.email,
+        reporter_email=case.reporter.individual.email if case.reporter else None,
         assignee_email=assignee_email,
         organization_slug=context["subject"].organization_slug,
     )
@@ -1611,6 +1514,7 @@ def handle_resolve_submission_event(
     ack()
     # we get the current or previous case
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    previous_case = CaseRead.from_orm(case)
 
     # we run the case status transition flow
     case_flows.case_status_transition_flow_dispatcher(
@@ -1634,6 +1538,15 @@ def handle_resolve_submission_event(
         case=case,
         case_in=case_in,
         current_user=user,
+    )
+
+    case_flows.case_update_flow(
+        case_id=case.id,
+        previous_case=previous_case,
+        db_session=db_session,
+        reporter_email=case.reporter.individual.email if case.reporter else None,
+        assignee_email=case.assignee.individual.email if case.assignee else None,
+        organization_slug=context["subject"].organization_slug,
     )
 
     # We update the case message with the new resolution and status
@@ -2036,15 +1949,16 @@ def send_engagement_response(
         engagement_status = SignalEngagementStatus.approved
     else:
         title = "MFA Failed"
-        message_text = f":warning: {engaged_user} attempted to confirm the behavior *as expected*, but the MFA validation failed. Reason: `{response}`\n\n *Context Provided* \n```{context_from_user}```"
         engagement_status = SignalEngagementStatus.denied
 
         if response == PushResponseResult.timeout:
-            text = "Confirmation failed, the MFA request timed out."
+            text = "Confirmation failed, the MFA request timed out. Please have your MFA device ready to accept the push notification and try again."
         elif response == PushResponseResult.user_not_found:
-            text = "User not found in MFA provider."
+            text = "User not found in MFA provider. To validate your identity, please register in Duo and try again."
         else:
             text = "Confirmation failed. You must accept the MFA prompt."
+
+        message_text = f":warning: {engaged_user} attempted to confirm the behavior *as expected*, but the MFA validation failed.\n\n *Error Reason**: `{response}`\n\n{text}\n\n *Context Provided* \n```{context_from_user}```\n\n"
 
     send_success_modal(
         client=client,
@@ -2092,6 +2006,7 @@ def resolve_case(
     context_from_user: str,
     user: DispatchUser,
 ) -> None:
+    previous_case = CaseRead.from_orm(case)
     case_flows.case_status_transition_flow_dispatcher(
         case=case,
         current_status=CaseStatus.closed,
@@ -2108,6 +2023,15 @@ def resolve_case(
         closed_at=datetime.utcnow(),
     )
     case = case_service.update(db_session=db_session, case=case, case_in=case_in, current_user=user)
+
+    case_flows.case_update_flow(
+        case_id=case.id,
+        previous_case=previous_case,
+        db_session=db_session,
+        reporter_email=case.reporter.individual.email if case.reporter else None,
+        assignee_email=case.assignee.individual.email if case.assignee else None,
+        organization_slug=case.project.organization.slug,
+    )
 
     blocks = create_case_message(case=case, channel_id=channel_id)
     client.chat_update(

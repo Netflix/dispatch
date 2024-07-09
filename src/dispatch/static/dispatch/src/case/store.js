@@ -390,6 +390,15 @@ const actions = {
       )
     })
   },
+  joinCase({ commit }, caseId) {
+    CaseApi.join(caseId, {}).then(() => {
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "You have successfully joined the case.", type: "success" },
+        { root: true }
+      )
+    })
+  },
   getEnabledPlugins() {
     if (!state.selected.project) {
       return false

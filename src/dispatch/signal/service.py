@@ -487,7 +487,11 @@ def update(*, db_session: Session, signal: Signal, signal_in: SignalUpdate) -> S
 
         signal.engagements = engagements
 
-    if signal_in.filters:
+    is_filters_updated = {filter.id for filter in signal.filters} != {
+        filter.id for filter in signal_in.filters
+    }
+
+    if is_filters_updated:
         filters = []
         for f in signal_in.filters:
             signal_filter = get_signal_filter_by_name_or_raise(

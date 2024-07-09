@@ -2,7 +2,7 @@ from collections import Counter, defaultdict
 from datetime import datetime
 from typing import Any, ForwardRef, List, Optional
 
-from pydantic import validator
+from pydantic import Field, validator
 from sqlalchemy import (
     Boolean,
     Column,
@@ -14,9 +14,14 @@ from sqlalchemy import (
     Table,
     UniqueConstraint,
 )
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType, observes
 
+from dispatch.case_cost.models import (
+    CaseCostRead,
+    CaseCostUpdate,
+)
 from dispatch.case.priority.models import CasePriorityBase, CasePriorityCreate, CasePriorityRead
 from dispatch.case.severity.models import CaseSeverityBase, CaseSeverityCreate, CaseSeverityRead
 from dispatch.case.type.models import CaseTypeBase, CaseTypeCreate, CaseTypeRead
@@ -167,6 +172,15 @@ class Case(Base, TimeStampMixin, ProjectMixin):
 
     ticket = relationship("Ticket", uselist=False, backref="case", cascade="all, delete-orphan")
 
+    # resources
+    case_costs = relationship(
+        "CaseCost",
+        backref="case",
+        cascade="all, delete-orphan",
+        lazy="subquery",
+        order_by="CaseCost.created_at",
+    )
+
     @observes("participants")
     def participant_observer(self, participants):
         self.participants_team = Counter(p.team for p in participants).most_common(1)[0][0]
@@ -183,6 +197,14 @@ class Case(Base, TimeStampMixin, ProjectMixin):
         if not self.conversation:
             return False
         return True if self.conversation.thread_id else False
+
+    @hybrid_property
+    def total_cost(self):
+        total_cost = 0
+        if self.case_costs:
+            for cost in self.case_costs:
+                total_cost += cost.amount
+        return total_cost
 
 
 class SignalRead(DispatchBase):
@@ -208,6 +230,7 @@ class ProjectRead(DispatchBase):
     id: Optional[PrimaryKey]
     name: NameStr
     color: Optional[str]
+    allow_self_join: Optional[bool] = Field(True, nullable=True)
 
 
 # Pydantic models...
@@ -249,6 +272,7 @@ CaseReadMinimal = ForwardRef("CaseReadMinimal")
 class CaseReadMinimal(CaseBase):
     id: PrimaryKey
     assignee: Optional[ParticipantReadMinimal]
+    case_costs: Optional[List[CaseCostRead]] = []
     case_priority: CasePriorityRead
     case_severity: CaseSeverityRead
     case_type: CaseTypeRead
@@ -258,6 +282,7 @@ class CaseReadMinimal(CaseBase):
     closed_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
     escalated_at: Optional[datetime] = None
+    dedicated_channel: Optional[bool]
     name: Optional[NameStr]
     project: ProjectRead
     reporter: Optional[ParticipantReadMinimal]
@@ -271,6 +296,7 @@ CaseReadMinimal.update_forward_refs()
 class CaseRead(CaseBase):
     id: PrimaryKey
     assignee: Optional[ParticipantRead]
+    case_costs: Optional[List[CaseCostRead]] = []
     case_priority: CasePriorityRead
     case_severity: CaseSeverityRead
     case_type: CaseTypeRead
@@ -300,6 +326,7 @@ class CaseRead(CaseBase):
 
 class CaseUpdate(CaseBase):
     assignee: Optional[ParticipantUpdate]
+    case_costs: Optional[List[CaseCostUpdate]] = []
     case_priority: Optional[CasePriorityBase]
     case_severity: Optional[CaseSeverityBase]
     case_type: Optional[CaseTypeBase]

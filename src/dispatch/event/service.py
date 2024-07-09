@@ -244,15 +244,22 @@ def export_timeline(
         date, time = str(event_timestamp).split(" ")
         if e.pinned or timeline_filters.get(e.type):
             if date in dates:
-                table_data.append(
-                    {time_header: time, "Description": e.description, "Owner": e.owner}
-                )
+                if timeline_filters.get("exportOwner"):
+                    table_data.append(
+                        {time_header: time, "Description": e.description, "Owner": e.owner}
+                    )
+                else:
+                    table_data.append({time_header: time, "Description": e.description})
             else:
                 dates.add(date)
-                table_data.append({time_header: date, "Description": "\t", "Owner": "\t"})
-                table_data.append(
-                    {time_header: time, "Description": e.description, "Owner": e.owner}
-                )
+                if timeline_filters.get("exportOwner"):
+                    table_data.append({time_header: date, "Description": "\t", "Owner": "\t"})
+                    table_data.append(
+                        {time_header: time, "Description": e.description, "Owner": e.owner}
+                    )
+                else:
+                    table_data.append({time_header: date, "Description": "\t"})
+                    table_data.append({time_header: time, "Description": e.description})
 
     if table_data:
         table_data = json.loads(json.dumps(table_data))
@@ -331,7 +338,7 @@ def export_timeline(
                         },
                         "fields": "backgroundColor",
                         "tableRange": {
-                            "columnSpan": 3,
+                            "columnSpan": num_columns,
                             "rowSpan": 1,
                             "tableCellLocation": {
                                 "columnIndex": 0,
@@ -340,8 +347,38 @@ def export_timeline(
                             },
                         },
                     }
+                },
+                {
+                    "updateTableColumnProperties": {
+                        "tableStartLocation": {
+                            "index": curr_table_start,
+                        },
+                        "columnIndices": [0],
+                        "tableColumnProperties": {
+                            "width": {"magnitude": 90, "unit": "PT"},
+                            "widthType": "FIXED_WIDTH",
+                        },
+                        "fields": "width,widthType",
+                    }
                 }
             ]
+
+            if timeline_filters.get("exportOwner"):
+                insert_data_request.append(
+                    {
+                        "updateTableColumnProperties": {
+                            "tableStartLocation": {
+                                "index": curr_table_start,
+                            },
+                            "columnIndices": [2],
+                            "tableColumnProperties": {
+                                "width": {"magnitude": 105, "unit": "PT"},
+                                "widthType": "FIXED_WIDTH",
+                            },
+                            "fields": "width,widthType",
+                        }
+                    }
+                )
 
             if plugin.instance.insert(document_id=doc_id, request=insert_data_request):
                 log.debug("Table Formatted successfully")
@@ -400,12 +437,12 @@ def export_timeline(
                                 },
                                 "fields": "backgroundColor",
                                 "tableRange": {
-                                    "columnSpan": 3,
+                                    "columnSpan": num_columns,
                                     "rowSpan": 1,
                                     "tableCellLocation": {
                                         "tableStartLocation": {"index": curr_table_start},
                                         "columnIndex": 0,
-                                        "rowIndex": row_idx // 3,
+                                        "rowIndex": row_idx // len(column_headers),
                                     },
                                 },
                             }

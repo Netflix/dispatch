@@ -72,7 +72,12 @@
               <case-priority :priority="value" />
             </template>
             <template #item.status="{ item }">
-              <case-status :status="item.status" :id="item.id" />
+              <case-status
+                :status="item.status"
+                :id="item.id"
+                :allowSelfJoin="item.project.allow_self_join"
+                :dedicatedChannel="item.dedicated_channel"
+              />
             </template>
             <template #item.project.name="{ item }">
               <v-chip size="small" :color="item.project.color">
@@ -182,7 +187,7 @@ const headers = [
   { title: "Severity", value: "case_severity.name", sortable: true },
   { title: "Priority", value: "case_priority.name", sortable: true },
   { title: "Project", value: "project.name", sortable: true },
-  { title: "Assignee", value: "assignee", sortable: true },
+  { title: "Assignee", value: "assignee", sortable: false },
   { title: "Reported At", value: "reported_at", sortable: true },
   { title: "Closed At", value: "closed_at", sortable: true },
   { title: "", key: "data-table-actions", sortable: false, align: "end" },
