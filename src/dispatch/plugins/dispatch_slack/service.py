@@ -420,6 +420,7 @@ def send_message(
         text=text,
         thread_ts=ts,
         blocks=blocks,
+        unfurl_links=False,
     )
 
     if persist:
