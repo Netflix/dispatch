@@ -11,6 +11,7 @@ from dispatch.case.priority.views import router as case_priority_router
 from dispatch.case.severity.views import router as case_severity_router
 from dispatch.case.type.views import router as case_type_router
 from dispatch.case.views import router as case_router
+from dispatch.case_cost.views import router as case_cost_router
 from dispatch.case_cost_type.views import router as case_cost_type_router
 from dispatch.data.alert.views import router as alert_router
 from dispatch.data.query.views import router as query_router
@@ -199,6 +200,11 @@ authenticated_organization_api_router.include_router(
     case_severity_router,
     prefix="/case_severities",
     tags=["case_severities"],
+)
+authenticated_organization_api_router.include_router(
+    case_cost_router,
+    prefix="/case_costs",
+    tags=["case_costs"],
 )
 authenticated_organization_api_router.include_router(
     case_cost_type_router,

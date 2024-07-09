@@ -11,6 +11,7 @@ import router from "@/router"
 const getDefaultSelectedState = () => {
   return {
     assignee: null,
+    case_costs: [],
     case_priority: null,
     case_severity: null,
     case_type: null,
@@ -146,6 +147,7 @@ const actions = {
   getDetails({ commit, state }, payload) {
     commit("SET_SELECTED_LOADING", true)
     if ("id" in payload) {
+
       return CaseApi.get(state.selected.id).then((response) => {
         commit("SET_SELECTED", response.data)
         commit("SET_SELECTED_LOADING", false)
@@ -435,6 +437,16 @@ const actions = {
 
 const mutations = {
   updateField,
+  getCostInfo(state, value) {
+    console.log("getting details")
+    console.log(state.selected)
+  },
+  addCaseCost(state, value) {
+    state.selected.case_costs.push(value)
+  },
+  removeCaseCost(state, idx) {
+    state.selected.case_costs.splice(idx, 1)
+  },
   SET_SELECTED(state, value) {
     state.selected = Object.assign(state.selected, value)
   },

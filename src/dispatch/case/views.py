@@ -72,6 +72,8 @@ def get_case(
     db_session: DbSession,
     current_case: CurrentCase,
 ):
+    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+    print(current_case.case_costs)
     """Retrieves the details of a single case."""
     return current_case
 
