@@ -72,7 +72,12 @@
               <case-priority :priority="value" />
             </template>
             <template #item.status="{ item }">
-              <case-status :status="item.status" :id="item.id" />
+              <case-status
+                :status="item.status"
+                :id="item.id"
+                :allowSelfJoin="item.project.allow_self_join"
+                :dedicatedChannel="item.dedicated_channel"
+              />
             </template>
             <template #item.project.name="{ item }">
               <v-chip size="small" :color="item.project.color">

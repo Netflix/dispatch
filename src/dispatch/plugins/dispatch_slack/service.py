@@ -103,8 +103,8 @@ def should_retry(exception: Exception) -> bool:
     """
     match exception:
         case SlackApiError():
-            # Retry if it's not a fatal error
-            return exception.response["error"] != SlackAPIErrorCode.FATAL_ERROR
+            # Don't retry for exceptions we have defined.
+            return exception.response["error"] not in SlackAPIErrorCode.__members__.values()
         case TimeoutError() | Timeout():
             # Always retry on timeout errors
             return True

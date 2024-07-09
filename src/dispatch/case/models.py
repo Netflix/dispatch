@@ -2,7 +2,7 @@ from collections import Counter, defaultdict
 from datetime import datetime
 from typing import Any, ForwardRef, List, Optional
 
-from pydantic import validator
+from pydantic import Field, validator
 from sqlalchemy import (
     Boolean,
     Column,
@@ -230,6 +230,7 @@ class ProjectRead(DispatchBase):
     id: Optional[PrimaryKey]
     name: NameStr
     color: Optional[str]
+    allow_self_join: Optional[bool] = Field(True, nullable=True)
 
 
 # Pydantic models...
@@ -281,6 +282,7 @@ class CaseReadMinimal(CaseBase):
     closed_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
     escalated_at: Optional[datetime] = None
+    dedicated_channel: Optional[bool]
     name: Optional[NameStr]
     project: ProjectRead
     reporter: Optional[ParticipantReadMinimal]
