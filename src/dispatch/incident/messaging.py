@@ -1176,6 +1176,7 @@ def send_incident_management_help_tips_message(incident: Incident, db_session: S
             "executive_report_command": executive_report_command,
             "tactical_report_command": tactical_report_command,
             "update_command": update_command,
+            "conversation_weblink": resolve_attr(incident, "conversation.weblink"),
         }
     ]
 
