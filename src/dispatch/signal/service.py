@@ -785,8 +785,8 @@ def get_unprocessed_signal_instance_ids(session: Session) -> list[int]:
     """
     stmt = (
         select(SignalInstance.id)
-        .where(SignalInstance.filter_action.is_(None))
-        .where(SignalInstance.case_id.is_(None))
+        .where(SignalInstance.filter_action == None)  # noqa
+        .where(SignalInstance.case_id == None)  # noqa
         .order_by(asc(SignalInstance.created_at))
         .limit(MAX_SIGNAL_INSTANCES)
         .with_for_update(skip_locked=True)
