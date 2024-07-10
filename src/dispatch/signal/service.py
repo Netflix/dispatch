@@ -771,9 +771,17 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
 MAX_SIGNAL_INSTANCES = 50
 
 
-def get_unprocessed_signals(session: Session):
+def get_unprocessed_signals(session: Session) -> list[int]:
+    """Retrieves IDs of unprocessed signal instances from the database.
+
+    Args:
+        session (Session): The database session.
+
+    Returns:
+        list[int]: A list of signal instance IDs that need processing.
+    """
     stmt = (
-        select(SignalInstance)
+        select(SignalInstance.id)
         .where(SignalInstance.filter_action.is_(None))
         .where(SignalInstance.case_id.is_(None))
         .order_by(asc(SignalInstance.created_at))
@@ -783,29 +791,41 @@ def get_unprocessed_signals(session: Session):
     return session.execute(stmt).scalars().all()
 
 
-def process_signal(db_session: Session, signal_instance: SignalInstance) -> None:
+def process_signal(db_session: Session, signal_instance_id: int) -> None:
+    """Processes a single signal instance.
+
+    Args:
+        db_session (Session): The database session.
+        signal_instance_id (int): The ID of the signal instance to process.
+    """
     try:
         signal_flows.signal_instance_create_flow(
             db_session=db_session,
-            signal_instance_id=signal_instance.id,
+            signal_instance_id=signal_instance_id,
         )
     except Exception as e:
-        log.exception(f"Error processing signal instance {signal_instance.id}: {e}")
+        log.exception(f"Error processing signal instance {signal_instance_id}: {e}")
 
 
-def process_organization_signals(organization: str) -> None:
-    with get_organization_session(organization) as db_session:
-        signal_instances = get_unprocessed_signals(db_session)
-        for signal_instance in signal_instances:
-            process_signal(db_session, signal_instance)
+def process_organization_signals(organization_slug: str) -> None:
+    """Processes all unprocessed signals for a given organization.
+
+    Args:
+        organization (Organization): The organization whose signals need to be processed.
+    """
+    with get_organization_session(organization_slug) as db_session:
+        signal_instance_ids = get_unprocessed_signals(db_session)
+        for signal_instance_id in signal_instance_ids:
+            process_signal(db_session, signal_instance_id)
 
 
 def main_processing_loop() -> None:
+    """Main processing loop that iterates through all organizations and processes their signals."""
     organizations = get_all_organizations(db_session=SessionLocal())
-    for organization in organizations:
+    for organization_slug in organizations:
         try:
-            process_organization_signals(organization)
+            process_organization_signals(organization_slug)
         except Exception as e:
             log.exception(
-                f"Error processing signals for organization {organization.id}: {e}",
+                f"Error processing signals for organization {organization_slug}: {e}",
             )
