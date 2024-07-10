@@ -1514,6 +1514,7 @@ def handle_resolve_submission_event(
     ack()
     # we get the current or previous case
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    previous_case = CaseRead.from_orm(case)
 
     # we run the case status transition flow
     case_flows.case_status_transition_flow_dispatcher(
@@ -1537,6 +1538,15 @@ def handle_resolve_submission_event(
         case=case,
         case_in=case_in,
         current_user=user,
+    )
+
+    case_flows.case_update_flow(
+        case_id=case.id,
+        previous_case=previous_case,
+        db_session=db_session,
+        reporter_email=case.reporter.individual.email if case.reporter else None,
+        assignee_email=case.assignee.individual.email if case.assignee else None,
+        organization_slug=context["subject"].organization_slug,
     )
 
     # We update the case message with the new resolution and status
@@ -1996,6 +2006,7 @@ def resolve_case(
     context_from_user: str,
     user: DispatchUser,
 ) -> None:
+    previous_case = CaseRead.from_orm(case)
     case_flows.case_status_transition_flow_dispatcher(
         case=case,
         current_status=CaseStatus.closed,
@@ -2012,6 +2023,15 @@ def resolve_case(
         closed_at=datetime.utcnow(),
     )
     case = case_service.update(db_session=db_session, case=case, case_in=case_in, current_user=user)
+
+    case_flows.case_update_flow(
+        case_id=case.id,
+        previous_case=previous_case,
+        db_session=db_session,
+        reporter_email=case.reporter.individual.email if case.reporter else None,
+        assignee_email=case.assignee.individual.email if case.assignee else None,
+        organization_slug=case.project.organization.slug,
+    )
 
     blocks = create_case_message(case=case, channel_id=channel_id)
     client.chat_update(
