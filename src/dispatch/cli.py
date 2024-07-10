@@ -886,11 +886,7 @@ def process_signals():
     from dispatch.signal.service import main_processing_loop
 
     install_plugins()
-    while True:
-        try:
-            main_processing_loop()
-        except Exception as e:
-            log.exception(f"Error in main signal processing loop: {e}")
+    main_processing_loop()
 
 
 @dispatch_server.command("slack")

@@ -3,6 +3,7 @@ import json
 import uuid
 from datetime import datetime, timedelta, timezone
 from queue import Queue
+import time
 from typing import Optional, Union
 
 from fastapi import HTTPException, status
@@ -770,6 +771,7 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
 
 
 MAX_SIGNAL_INSTANCES = 500
+LOOP_DELAY = 60  # seconds
 
 
 def get_unprocessed_signal_instance_ids(session: Session) -> list[int]:
@@ -814,16 +816,13 @@ def process_organization_signals(organization_slug: str) -> None:
     Args:
         organization_slug (str): The slug of the organization whose signals need to be processed.
     """
-    signal_queue = Queue(maxsize=MAX_SIGNAL_INSTANCES)
-
     with get_organization_session(organization_slug) as db_session:
+        signal_queue = Queue(maxsize=MAX_SIGNAL_INSTANCES)
         signal_instance_ids = get_unprocessed_signal_instance_ids(db_session)
 
-        # Add all signal instance IDs to the queue
         for signal_id in signal_instance_ids:
             signal_queue.put(signal_id)
 
-        # Process signals from the queue
         while not signal_queue.empty():
             signal_instance_id = signal_queue.get()
             process_signal(db_session, signal_instance_id)
@@ -832,11 +831,17 @@ def process_organization_signals(organization_slug: str) -> None:
 
 def main_processing_loop() -> None:
     """Main processing loop that iterates through all organizations and processes their signals."""
-    organizations = get_all_organizations(db_session=SessionLocal())
-    for organization_slug in organizations:
+    while True:
         try:
-            process_organization_signals(organization_slug)
+            organizations = get_all_organizations(db_session=SessionLocal())
+            for organization_slug in organizations:
+                try:
+                    process_organization_signals(organization_slug)
+                except Exception as e:
+                    log.exception(
+                        f"Error processing signals for organization {organization_slug}: {e}"
+                    )
         except Exception as e:
-            log.exception(
-                f"Error processing signals for organization {organization_slug}: {e}",
-            )
+            log.exception(f"Error in main signal processing loop: {e}")
+        finally:
+            time.sleep(LOOP_DELAY)
