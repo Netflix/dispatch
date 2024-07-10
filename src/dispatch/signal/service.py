@@ -2,6 +2,7 @@ import logging
 import json
 import uuid
 from datetime import datetime, timedelta, timezone
+from queue import Queue
 from typing import Optional, Union
 
 from fastapi import HTTPException, status
@@ -768,10 +769,10 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
     return filtered
 
 
-MAX_SIGNAL_INSTANCES = 50
+MAX_SIGNAL_INSTANCES = 500
 
 
-def get_unprocessed_signals(session: Session) -> list[int]:
+def get_unprocessed_signal_instance_ids(session: Session) -> list[int]:
     """Retrieves IDs of unprocessed signal instances from the database.
 
     Args:
@@ -808,15 +809,25 @@ def process_signal(db_session: Session, signal_instance_id: int) -> None:
 
 
 def process_organization_signals(organization_slug: str) -> None:
-    """Processes all unprocessed signals for a given organization.
+    """Processes all unprocessed signals for a given organization using a FIFO queue.
 
     Args:
-        organization (Organization): The organization whose signals need to be processed.
+        organization_slug (str): The slug of the organization whose signals need to be processed.
     """
+    signal_queue = Queue(maxsize=MAX_SIGNAL_INSTANCES)
+
     with get_organization_session(organization_slug) as db_session:
-        signal_instance_ids = get_unprocessed_signals(db_session)
-        for signal_instance_id in signal_instance_ids:
+        signal_instance_ids = get_unprocessed_signal_instance_ids(db_session)
+
+        # Add all signal instance IDs to the queue
+        for signal_id in signal_instance_ids:
+            signal_queue.put(signal_id)
+
+        # Process signals from the queue
+        while not signal_queue.empty():
+            signal_instance_id = signal_queue.get()
             process_signal(db_session, signal_instance_id)
+            signal_queue.task_done()
 
 
 def main_processing_loop() -> None:
