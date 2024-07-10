@@ -7,7 +7,7 @@ from typing import Optional, Union
 from fastapi import HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
-from sqlalchemy import desc, asc, or_
+from sqlalchemy import desc, asc, or_, select
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import true
 
@@ -15,6 +15,7 @@ from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.type import service as case_type_service
 from dispatch.case.type.models import CaseType
+from dispatch.database.core import SessionLocal, get_organization_session
 from dispatch.database.service import apply_filter_specific_joins, apply_filters
 from dispatch.entity import service as entity_service
 from dispatch.entity.models import Entity
@@ -22,8 +23,10 @@ from dispatch.entity_type import service as entity_type_service
 from dispatch.entity_type.models import EntityScopeEnum
 from dispatch.entity_type.models import EntityType
 from dispatch.exceptions import NotFoundError
+from dispatch.organization.service import get_all as get_all_organizations
 from dispatch.project import service as project_service
 from dispatch.service import service as service_service
+from dispatch.signal.flows import signal_flows
 from dispatch.tag import service as tag_service
 from dispatch.workflow import service as workflow_service
 from sqlalchemy.exc import IntegrityError
@@ -763,3 +766,46 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
 
     db_session.commit()
     return filtered
+
+
+MAX_SIGNAL_INSTANCES = 50
+
+
+def get_unprocessed_signals(session: Session):
+    stmt = (
+        select(SignalInstance)
+        .where(SignalInstance.filter_action.is_(None))
+        .where(SignalInstance.case_id.is_(None))
+        .order_by(asc(SignalInstance.created_at))
+        .limit(MAX_SIGNAL_INSTANCES)
+        .with_for_update(skip_locked=True)
+    )
+    return session.execute(stmt).scalars().all()
+
+
+def process_signal(db_session: Session, signal_instance: SignalInstance) -> None:
+    try:
+        signal_flows.signal_instance_create_flow(
+            db_session=db_session,
+            signal_instance_id=signal_instance.id,
+        )
+    except Exception as e:
+        log.exception(f"Error processing signal instance {signal_instance.id}: {e}")
+
+
+def process_organization_signals(organization: str) -> None:
+    with get_organization_session(organization) as db_session:
+        signal_instances = get_unprocessed_signals(db_session)
+        for signal_instance in signal_instances:
+            process_signal(db_session, signal_instance)
+
+
+def main_processing_loop() -> None:
+    organizations = get_all_organizations(db_session=SessionLocal())
+    for organization in organizations:
+        try:
+            process_organization_signals(organization)
+        except Exception as e:
+            log.exception(
+                f"Error processing signals for organization {organization.id}: {e}",
+            )
