@@ -17,7 +17,7 @@ from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.type import service as case_type_service
 from dispatch.case.type.models import CaseType
-from dispatch.database.core import SessionLocal, get_organization_session, get_session
+from dispatch.database.core import get_organization_session, get_session
 from dispatch.database.service import apply_filter_specific_joins, apply_filters
 from dispatch.entity import service as entity_service
 from dispatch.entity.models import Entity
