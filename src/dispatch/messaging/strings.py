@@ -318,7 +318,7 @@ INCIDENT_CLOSED_RATING_FEEDBACK_DESCRIPTION = """
 Thanks for participating in the {{name}} ("{{title}}") incident. We would appreciate if you could rate your experience and provide feedback."""
 
 INCIDENT_MANAGEMENT_HELP_TIPS_MESSAGE_DESCRIPTION = """
-Hey, I see you're the Incident Commander for {{name}} ("{{title}}"). Here are a few things to consider when managing the incident:
+Hey, I see you're the Incident Commander for <{{conversation_weblink}}|{{name}}> ("{{title}}"). Here are a few things to consider when managing the incident:
 \n • Keep the incident and its status up to date using the Slack `{{update_command}}` command.
 \n • Invite incident participants and team oncalls by mentioning them in the incident channel or using the Slack `{{engage_oncall_command}}` command.
 \n • Keep incident participants and stakeholders informed by creating tactical and executive reports using the `{{tactical_report_command}}` and `{{executive_report_command}}` commands.
