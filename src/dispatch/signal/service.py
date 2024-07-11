@@ -17,7 +17,7 @@ from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.type import service as case_type_service
 from dispatch.case.type.models import CaseType
-from dispatch.database.core import SessionLocal, get_organization_session
+from dispatch.database.core import get_organization_session, get_session
 from dispatch.database.service import apply_filter_specific_joins, apply_filters
 from dispatch.entity import service as entity_service
 from dispatch.entity.models import Entity
@@ -789,7 +789,6 @@ def get_unprocessed_signal_instance_ids(session: Session) -> list[int]:
         .filter(SignalInstance.case_id == None)  # noqa
         .order_by(SignalInstance.created_at.asc())
         .limit(MAX_SIGNAL_INSTANCES)
-        .with_for_update(skip_locked=True)
         .all()
     )
 
@@ -833,15 +832,16 @@ def main_processing_loop() -> None:
     """Main processing loop that iterates through all organizations and processes their signals."""
     while True:
         try:
-            organizations = get_all_organizations(db_session=SessionLocal())
-            for organization in organizations:
-                log.info(f"Processing signals in {organization.slug}")
-                try:
-                    process_organization_signals(organization.slug)
-                except Exception as e:
-                    log.exception(
-                        f"Error processing signals for organization {organization.slug}: {e}"
-                    )
+            with get_session() as session:
+                organizations = get_all_organizations(db_session=session)
+                for organization in organizations:
+                    log.info(f"Processing signals in {organization.slug}")
+                    try:
+                        process_organization_signals(organization.slug)
+                    except Exception as e:
+                        log.exception(
+                            f"Error processing signals for organization {organization.slug}: {e}"
+                        )
         except Exception as e:
             log.exception(f"Error in main signal processing loop: {e}")
         finally:
