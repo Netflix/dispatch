@@ -103,11 +103,8 @@ def should_retry(exception: Exception) -> bool:
     """
     match exception:
         case SlackApiError():
-            # Don't retry for re-adding users in channel.
-            if exception.response["error"] == SlackAPIErrorCode.USER_IN_CHANNEL:
-                return False
-            # Retry if it's not a fatal error
-            return exception.response["error"] != SlackAPIErrorCode.FATAL_ERROR
+            # Don't retry for exceptions we have defined.
+            return exception.response["error"] not in SlackAPIErrorCode.__members__.values()
         case TimeoutError() | Timeout():
             # Always retry on timeout errors
             return True
@@ -423,6 +420,7 @@ def send_message(
         text=text,
         thread_ts=ts,
         blocks=blocks,
+        unfurl_links=False,
     )
 
     if persist:

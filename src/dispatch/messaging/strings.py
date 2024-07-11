@@ -37,6 +37,7 @@ class MessageType(DispatchEnum):
     incident_tactical_report = "incident-tactical-report"
     incident_task_list = "incident-task-list"
     incident_task_reminder = "incident-task-reminder"
+    case_notification = "case-notification"
     case_status_reminder = "case-status-reminder"
     service_feedback = "service-feedback"
     task_add_to_incident = "task-add-to-incident"
@@ -201,7 +202,7 @@ INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION = """
 Dispatch thinks the following documents might be
 relevant to this incident.""".replace("\n", " ").strip()
 
-INCIDENT_NOTIFICATION_PURPOSES_FYI = """
+NOTIFICATION_PURPOSES_FYI = """
 This message is for notification purposes only.""".replace("\n", " ").strip()
 
 INCIDENT_TACTICAL_REPORT_DESCRIPTION = """
@@ -317,7 +318,7 @@ INCIDENT_CLOSED_RATING_FEEDBACK_DESCRIPTION = """
 Thanks for participating in the {{name}} ("{{title}}") incident. We would appreciate if you could rate your experience and provide feedback."""
 
 INCIDENT_MANAGEMENT_HELP_TIPS_MESSAGE_DESCRIPTION = """
-Hey, I see you're the Incident Commander for {{name}} ("{{title}}"). Here are a few things to consider when managing the incident:
+Hey, I see you're the Incident Commander for <{{conversation_weblink}}|{{name}}> ("{{title}}"). Here are a few things to consider when managing the incident:
 \n • Keep the incident and its status up to date using the Slack `{{update_command}}` command.
 \n • Invite incident participants and team oncalls by mentioning them in the incident channel or using the Slack `{{engage_oncall_command}}` command.
 \n • Keep incident participants and stakeholders informed by creating tactical and executive reports using the `{{tactical_report_command}}` and `{{executive_report_command}}` commands.
@@ -355,7 +356,7 @@ The incident priority has been changed from {{ incident_priority_old }} to {{ in
 INCIDENT_NAME_WITH_ENGAGEMENT = {
     "title": "{{name}} Incident Notification",
     "title_link": "{{ticket_weblink}}",
-    "text": INCIDENT_NOTIFICATION_PURPOSES_FYI,
+    "text": NOTIFICATION_PURPOSES_FYI,
     "buttons": [
         {
             "button_text": "Subscribe",
@@ -391,7 +392,7 @@ INCIDENT_NAME_WITH_ENGAGEMENT_NO_DESCRIPTION = {
 INCIDENT_NAME_WITH_ENGAGEMENT_NO_SELF_JOIN = {
     "title": "{{name}} Incident Notification",
     "title_link": "{{ticket_weblink}}",
-    "text": INCIDENT_NOTIFICATION_PURPOSES_FYI,
+    "text": NOTIFICATION_PURPOSES_FYI,
     "buttons": [
         {
             "button_text": "Subscribe",
@@ -401,10 +402,85 @@ INCIDENT_NAME_WITH_ENGAGEMENT_NO_SELF_JOIN = {
     ],
 }
 
+CASE_NAME = {
+    "title": "{{name}} Case Notification",
+    "title_link": "{{ticket_weblink}}",
+    "text": NOTIFICATION_PURPOSES_FYI,
+}
+
+CASE_NAME_WITH_ENGAGEMENT = {
+    "title": "{{name}} Case Notification",
+    "title_link": "{{ticket_weblink}}",
+    "text": NOTIFICATION_PURPOSES_FYI,
+    "buttons": [
+        {
+            "button_text": "Join",
+            "button_value": "{{organization_slug}}-{{incident_id}}",
+            "button_action": ConversationButtonActions.invite_user,
+        },
+    ],
+}
+
+CASE_NAME_WITH_ENGAGEMENT_NO_DESCRIPTION = {
+    "title": "{{name}}",
+    "title_link": "{{ticket_weblink}}",
+    "text": "{{ignore}}",
+    "buttons": [
+        {
+            "button_text": "Join",
+            "button_value": "{{organization_slug}}-{{incident_id}}",
+            "button_action": ConversationButtonActions.invite_user,
+        },
+    ],
+}
+
+CASE_NAME_WITH_ENGAGEMENT_NO_SELF_JOIN = {
+    "title": "{{name}} Case Notification",
+    "title_link": "{{ticket_weblink}}",
+    "text": NOTIFICATION_PURPOSES_FYI,
+}
+
+CASE_STATUS_CHANGE_DESCRIPTION = """
+The case status has been changed from {{ case_status_old }} to {{ case_status_new }}.""".replace(
+    "\n", " "
+).strip()
+
+CASE_TYPE_CHANGE_DESCRIPTION = """
+The case type has been changed from {{ case_type_old }} to {{ case_type_new }}.""".replace(
+    "\n", " "
+).strip()
+
+CASE_SEVERITY_CHANGE_DESCRIPTION = """
+The case severity has been changed from {{ case_severity_old }} to {{ case_severity_new }}.""".replace(
+    "\n", " "
+).strip()
+
+CASE_PRIORITY_CHANGE_DESCRIPTION = """
+The case priority has been changed from {{ case_priority_old }} to {{ case_priority_new }}.""".replace(
+    "\n", " "
+).strip()
+
+CASE_STATUS_CHANGE = {
+    "title": "Status Change",
+    "text": CASE_STATUS_CHANGE_DESCRIPTION,
+}
+
+CASE_TYPE_CHANGE = {"title": "Case Type Change", "text": CASE_TYPE_CHANGE_DESCRIPTION}
+
+CASE_SEVERITY_CHANGE = {
+    "title": "Severity Change",
+    "text": CASE_SEVERITY_CHANGE_DESCRIPTION,
+}
+
+CASE_PRIORITY_CHANGE = {
+    "title": "Priority Change",
+    "text": CASE_PRIORITY_CHANGE_DESCRIPTION,
+}
+
 INCIDENT_NAME = {
     "title": "{{name}} Incident Notification",
     "title_link": "{{ticket_weblink}}",
-    "text": INCIDENT_NOTIFICATION_PURPOSES_FYI,
+    "text": NOTIFICATION_PURPOSES_FYI,
 }
 
 INCIDENT_TITLE = {"title": "Title", "text": "{{title}}"}
@@ -668,6 +744,43 @@ CASE_TRIAGE_REMINDER = [
     CASE_TITLE,
     CASE_STATUS,
 ]
+
+CASE_ASSIGNEE_DESCRIPTION = """
+The Case Assignee is responsible for
+knowing the full context of the case.
+Contact them about any questions or concerns.""".replace("\n", " ").strip()
+
+CASE_REPORTER_DESCRIPTION = """
+The person who reported the case. Contact them if the report details need clarification.""".replace(
+    "\n", " "
+).strip()
+
+CASE_REPORTER = {
+    "title": "Reporter - {{reporter_fullname}}, {{reporter_team}}",
+    "title_link": "{{reporter_weblink}}",
+    "text": CASE_REPORTER_DESCRIPTION,
+}
+
+CASE_ASSIGNEE = {
+    "title": "Assignee - {{assignee_fullname}}, {{assignee_team}}",
+    "title_link": "{{assignee_weblink}}",
+    "text": CASE_ASSIGNEE_DESCRIPTION,
+}
+
+CASE_NOTIFICATION_COMMON = [CASE_TITLE]
+
+CASE_NOTIFICATION = CASE_NOTIFICATION_COMMON.copy()
+CASE_NOTIFICATION.extend(
+    [
+        INCIDENT_DESCRIPTION,
+        CASE_STATUS,
+        INCIDENT_TYPE,
+        INCIDENT_SEVERITY_FYI,
+        INCIDENT_PRIORITY_FYI,
+        CASE_REPORTER,
+        CASE_ASSIGNEE,
+    ]
+)
 
 
 INCIDENT_TASK_REMINDER = [
