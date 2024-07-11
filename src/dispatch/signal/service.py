@@ -9,7 +9,7 @@ from typing import Optional, Union
 from fastapi import HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
-from sqlalchemy import desc, asc, or_, select
+from sqlalchemy import desc, asc, or_
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import true
 
@@ -783,15 +783,15 @@ def get_unprocessed_signal_instance_ids(session: Session) -> list[int]:
     Returns:
         list[int]: A list of signal instance IDs that need processing.
     """
-    stmt = (
-        select(SignalInstance.id)
-        .where(SignalInstance.filter_action == None)  # noqa
-        .where(SignalInstance.case_id == None)  # noqa
-        .order_by(asc(SignalInstance.created_at))
+    return (
+        session.query(SignalInstance.id)
+        .filter(SignalInstance.filter_action == None)  # noqa
+        .filter(SignalInstance.case_id == None)  # noqa
+        .order_by(SignalInstance.created_at.asc())
         .limit(MAX_SIGNAL_INSTANCES)
         .with_for_update(skip_locked=True)
+        .all()
     )
-    return session.execute(stmt).scalars().all()
 
 
 def process_signal(db_session: Session, signal_instance_id: int) -> None:
@@ -834,12 +834,13 @@ def main_processing_loop() -> None:
     while True:
         try:
             organizations = get_all_organizations(db_session=SessionLocal())
-            for organization_slug in organizations:
+            for organization in organizations:
+                log.info(f"Processing signals in {organization.slug}")
                 try:
-                    process_organization_signals(organization_slug)
+                    process_organization_signals(organization.slug)
                 except Exception as e:
                     log.exception(
-                        f"Error processing signals for organization {organization_slug}: {e}"
+                        f"Error processing signals for organization {organization.slug}: {e}"
                     )
         except Exception as e:
             log.exception(f"Error in main signal processing loop: {e}")
