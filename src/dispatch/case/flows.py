@@ -439,6 +439,7 @@ def case_escalated_status_flow(
     db_session: Session,
     incident_priority: IncidentType | None,
     incident_type: IncidentPriority | None,
+    incident_description: str | None,
 ):
     """Runs the case escalated transition flow."""
     # we set the escalated_at time
@@ -452,6 +453,7 @@ def case_escalated_status_flow(
         db_session=db_session,
         incident_priority=incident_priority,
         incident_type=incident_type,
+        incident_description=incident_description,
     )
 
 
@@ -749,6 +751,7 @@ def case_to_incident_escalate_flow(
     db_session: Session,
     incident_priority: IncidentPriority | None,
     incident_type: IncidentType,
+    incident_description: str | None,
 ):
     if case.incidents:
         return
@@ -758,7 +761,7 @@ def case_to_incident_escalate_flow(
     )
 
     description = (
-        f"{case.description}\n\n"
+        f"{incident_description if incident_description else case.description}\n\n"
         f"This incident was the result of escalating case {case.name} "
         f"in the {case.project.name} project. Check out the case in the Dispatch Web UI for additional context."
     )
