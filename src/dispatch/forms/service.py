@@ -4,6 +4,7 @@ from typing import Optional
 from sqlalchemy.orm import Session
 
 from .models import Forms, FormsUpdate
+from .scoring import calculate_score
 from dispatch.individual import service as individual_service
 
 log = logging.getLogger(__name__)
@@ -35,6 +36,9 @@ def create(*, forms_in: dict, db_session: Session, creator) -> Forms:
         creator_id=individual.id,
     )
 
+    if form.form_type.scoring_schema:
+        form.score = calculate_score(form.form_data, form.form_type.scoring_schema)
+
     db_session.add(form)
     db_session.commit()
     return form
@@ -53,6 +57,9 @@ def update(
     for field in form_data:
         if field in update_data:
             setattr(forms, field, update_data[field])
+
+    if forms.form_type.scoring_schema:
+        forms.score = calculate_score(forms.form_data, forms.form_type.scoring_schema)
 
     db_session.commit()
     return forms
