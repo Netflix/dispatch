@@ -942,53 +942,6 @@ def handle_new_participant_message(
 @message_dispatcher.add(
     subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
-def handle_new_participant_added(
-    ack: Ack,
-    payload: dict,
-    context: BoltContext,
-    db_session: Session,
-    client: WebClient,
-) -> None:
-    """Looks for new participants being added to conversation via @<user-name>"""
-    ack()
-    participants = re.findall(r"\<\@([a-zA-Z0-9]*)\>", payload["text"])
-    for user_id in participants:
-        try:
-            case: Case = context["subject"]
-            user_email = get_user_email(client=client, user_id=user_id)
-
-            # check if user is already a participant
-            participant = participant_service.get_by_case_id_and_email(
-                db_session=db_session, case_id=case.id, email=user_email
-            )
-
-            if participant and participant.active_roles:
-                continue
-
-            participant = case_flows.case_add_or_reactivate_participant_flow(
-                case_id=case.id,
-                user_email=user_email,
-                db_session=db_session,
-                add_to_conversation=False,
-            )
-            participant.user_conversation_id = user_id
-
-            case = case_service.get(db_session=db_session, case_id=case.id)
-            if case.dedicated_channel:
-                welcome_message = create_welcome_ephemeral_message_to_participant(case=case)
-                client.chat_postEphemeral(
-                    blocks=welcome_message,
-                    channel=payload["channel"],
-                    user=user_id,
-                )
-        except Exception as e:
-            log.warn(f"Error adding participant {user_id} to Case {context['subject'].id}: {e}")
-            continue
-
-
-@message_dispatcher.add(
-    subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "channel_leave"]}
-)  # we ignore channel join and leave messages
 def handle_case_participant_role_activity(
     ack: Ack, db_session: Session, context: BoltContext, user: DispatchUser
 ) -> None:
