@@ -957,6 +957,14 @@ def handle_new_participant_added(
             case: Case = context["subject"]
             user_email = get_user_email(client=client, user_id=user_id)
 
+            # check if user is already a participant
+            participant = participant_service.get_by_case_id_and_email(
+                db_session=db_session, case_id=case.id, email=user_email
+            )
+
+            if participant and participant.active_roles:
+                return
+
             participant = case_flows.case_add_or_reactivate_participant_flow(
                 case_id=case.id,
                 user_email=user_email,
