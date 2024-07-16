@@ -136,7 +136,7 @@ export default {
         { title: "Creator", value: "creator" },
         { title: "Created At", value: "created_at" },
         { title: "Updated At", value: "updated_at" },
-        { title: "Score", value: "score" },
+        { title: "Risk Score", value: "score" },
         { title: "Attorney Status", value: "attorney_status" },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
