@@ -1,9 +1,7 @@
 import json
 
-from typing import String
 
-
-def calculate_score(form_data: String, scoring_schema: String) -> int:
+def calculate_score(form_data: str, scoring_schema: str) -> int:
     """Calculates the score of a form.
 
     Args:
@@ -18,6 +16,9 @@ def calculate_score(form_data: String, scoring_schema: String) -> int:
         int: The total score of the form.
     """
     score = 0
+
+    if not form_data or not scoring_schema:
+        return score
 
     form_vals = json.loads(form_data)
     scoring = json.loads(scoring_schema)

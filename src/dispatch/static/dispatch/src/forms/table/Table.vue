@@ -62,6 +62,11 @@
                 {{ item.project.name }}
               </v-chip>
             </template>
+            <template #item.score="{ item }">
+              <v-chip size="small" :color="getScoreColor(item.score)">
+                {{ item.score }}
+              </v-chip>
+            </template>
             <template #item.form_type="{ item }">
               <span v-if="item.form_type">{{ item.form_type.name }}</span>
             </template>
@@ -131,6 +136,7 @@ export default {
         { title: "Creator", value: "creator" },
         { title: "Created At", value: "created_at" },
         { title: "Updated At", value: "updated_at" },
+        { title: "Score", value: "score" },
         { title: "Attorney Status", value: "attorney_status" },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
@@ -184,6 +190,12 @@ export default {
           email: individual.email,
         },
       }
+    },
+    getScoreColor(score) {
+      // TODO: make this configurable per form type
+      if (score < 3) return "#4CAF50"
+      if (score < 7) return "#FFC107"
+      return "#F44336"
     },
   },
 
