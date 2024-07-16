@@ -963,7 +963,7 @@ def handle_new_participant_added(
             )
 
             if participant and participant.active_roles:
-                return
+                continue
 
             participant = case_flows.case_add_or_reactivate_participant_flow(
                 case_id=case.id,
