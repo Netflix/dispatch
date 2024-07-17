@@ -29,12 +29,12 @@ def create_storage(subject: Subject, storage_members: List[str], db_session: Ses
 
     external_storage_root_id = None
 
-    # if project is set to use the tag uri for the root folder
+    # if project is set to use the tag external_id for the root folder
     if subject.project.storage_tag_type:
         # find if the subject has a tag of the specified type
         tag = next((tag for tag in subject.tags if tag.tag_type.id == subject.project.storage_tag_type.id), None)
         if tag:
-            external_storage_root_id = tag.uri
+            external_storage_root_id = tag.external_id
 
     if external_storage_root_id is None:
         # we create the external storage based on the root in the configuration of the plugin

@@ -58,7 +58,7 @@ class Project(Base):
 
     # used to allow for alternative incident folder structures
     # keyed by tag type (tag type must be marked as required and exclusive)
-    # root storage folder is indicated by uri of tag with tag_type
+    # root storage folder is indicated by external_id of tag with tag_type
     storage_tag_type_id = Column(Integer, nullable=True)
     storage_tag_type = relationship(
         TagType,

@@ -165,9 +165,9 @@ def update_document(document: Document, project_id: int, db_session: Session):
         }
         """
         Iterate through tags and create new replacement text. Prefix with “tag_”, i.e., for tag actor,
-        the template should have {{tag_actor}}. Also, create replacements for the external_id of each tag
-        type: {{tag_actor.external_id}}. Thus, if the external_id for actor was hacking,
-        this would be the replaced text. Only create the external_id replacements if not null.
+        the template should have {{tag_actor}}. Also, create replacements for the source of each tag
+        type: {{tag_actor.source}}. Thus, if the source for actor was hacking,
+        this would be the replaced text. Only create the source replacements if not null.
         For any tag types with multiple selected tags, replace with a comma-separated list.
         """
         # create document template placeholders for tags
@@ -176,11 +176,11 @@ def update_document(document: Document, project_id: int, db_session: Session):
                 document_kwargs[f"tag_{tag.tag_type.name}"] += f", {tag.name}"
             else:
                 document_kwargs[f"tag_{tag.tag_type.name}"] = tag.name
-            if tag.external_id:
-                if f"tag_{tag.tag_type.name}.external_id" in document_kwargs:
-                    document_kwargs[f"tag_{tag.tag_type.name}.external_id"] += f", {tag.external_id}"
+            if tag.source:
+                if f"tag_{tag.tag_type.name}.source" in document_kwargs:
+                    document_kwargs[f"tag_{tag.tag_type.name}.source"] += f", {tag.source}"
                 else:
-                    document_kwargs[f"tag_{tag.tag_type.name}.external_id"] = tag.external_id
+                    document_kwargs[f"tag_{tag.tag_type.name}.source"] = tag.source
 
     if document.resource_type == DocumentResourceTypes.review:
         document_kwargs["stable_at"] = document.incident.stable_at.strftime("%m/%d/%Y %H:%M:%S")

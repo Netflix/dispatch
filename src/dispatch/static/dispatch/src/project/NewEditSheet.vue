@@ -161,7 +161,7 @@
                 <tag-type-select
                   class="mt-4"
                   v-model="storage_tag_type"
-                  hint="The URI field of the chosen tag will be used as the id of the main storage folder for this incident."
+                  hint="The external_id field of the chosen tag will be used as the id of the main storage folder for this incident."
                 />
               </v-col>
             </v-row>
