@@ -29,6 +29,7 @@ from dispatch.config import DISPATCH_UI_URL
 from dispatch.plugin import service as plugin_service
 from dispatch.event import service as event_service
 from dispatch.notification import service as notification_service
+from dispatch.plugins.dispatch_slack.case.messages import create_welcome_ephemeral_message_to_participant
 
 from .enums import CaseStatus
 
@@ -302,3 +303,33 @@ def send_case_update_notifications(
     )
 
     log.debug("Case updated notifications sent.")
+
+
+def send_case_welcome_participant_message(
+    *,
+    participant_email: str,
+    case: Case,
+    db_session: Session,
+):
+    if not case.dedicated_channel:
+        return
+
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project.id, plugin_type="conversation"
+    )
+
+    if not plugin:
+        log.warning(
+            "Case participant welcome message not sent. No conversation plugin enabled."
+        )
+        return
+
+    welcome_message = create_welcome_ephemeral_message_to_participant(case=case)
+    plugin.instance.send_ephemeral(
+        conversation_id=case.conversation.channel_id,
+        user=participant_email,
+        text=f"Welcome to {case.name}",
+        blocks=welcome_message,
+    )
+
+    log.debug(f"Welcome ephemeral message sent to {participant_email}.")
