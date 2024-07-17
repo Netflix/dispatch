@@ -5,6 +5,7 @@ from typing import List
 from sqlalchemy.orm import Session
 
 from dispatch.case import service as case_service
+from dispatch.case.messaging import send_case_welcome_participant_message
 from dispatch.case.models import CaseRead
 from dispatch.conversation import flows as conversation_flows
 from dispatch.database.core import SessionLocal
@@ -32,6 +33,11 @@ from dispatch.plugin import service as plugin_service
 from dispatch.storage import flows as storage_flows
 from dispatch.storage.enums import StorageAction
 from dispatch.ticket import flows as ticket_flows
+
+from .messaging import (
+    send_case_created_notifications,
+    send_case_update_notifications,
+)
 
 from .models import Case, CaseStatus
 from .service import get
@@ -124,6 +130,13 @@ def case_add_or_reactivate_participant_flow(
                 case, [participant.individual.email], db_session
             )
 
+        # we send the welcome messages to the participant
+        send_case_welcome_participant_message(
+            participant_email=user_email,
+            case=case,
+            db_session=db_session
+        )
+
     return participant
 
 
@@ -215,6 +228,9 @@ def case_new_create_flow(
 
     db_session.add(case)
     db_session.commit()
+
+    if case.dedicated_channel:
+        send_case_created_notifications(case, db_session)
 
     if case.case_priority.page_assignee:
         if not service_id:
@@ -386,6 +402,10 @@ def case_update_flow(
         if case_details_changed(case, previous_case):
             conversation_flows.set_conversation_topic(case, db_session)
 
+    # we send the case update notifications
+    if case.dedicated_channel:
+        send_case_update_notifications(case, previous_case, db_session)
+
 
 def case_delete_flow(case: Case, db_session: SessionLocal):
     """Runs the case delete flow."""
@@ -427,6 +447,7 @@ def case_escalated_status_flow(
     db_session: Session,
     incident_priority: IncidentType | None,
     incident_type: IncidentPriority | None,
+    incident_description: str | None,
 ):
     """Runs the case escalated transition flow."""
     # we set the escalated_at time
@@ -440,6 +461,7 @@ def case_escalated_status_flow(
         db_session=db_session,
         incident_priority=incident_priority,
         incident_type=incident_type,
+        incident_description=incident_description,
     )
 
 
@@ -737,6 +759,7 @@ def case_to_incident_escalate_flow(
     db_session: Session,
     incident_priority: IncidentPriority | None,
     incident_type: IncidentType,
+    incident_description: str | None,
 ):
     if case.incidents:
         return
@@ -746,7 +769,7 @@ def case_to_incident_escalate_flow(
     )
 
     description = (
-        f"{case.description}\n\n"
+        f"{incident_description if incident_description else case.description}\n\n"
         f"This incident was the result of escalating case {case.name} "
         f"in the {case.project.name} project. Check out the case in the Dispatch Web UI for additional context."
     )
@@ -813,6 +836,10 @@ def case_assign_role_flow(
     result = role_flow.assign_role_flow(case, participant_email, participant_role, db_session)
 
     if result in ["assignee_has_role", "role_not_assigned"]:
+        return
+
+    # we stop here if this is not a dedicated channel case
+    if not case.dedicated_channel:
         return
 
     if case.status != CaseStatus.closed and participant_role == ParticipantRoleType.assignee:

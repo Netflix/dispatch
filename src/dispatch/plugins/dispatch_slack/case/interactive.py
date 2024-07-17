@@ -5,7 +5,6 @@ from uuid import UUID
 from functools import partial
 import json
 import pytz
-import re
 
 from blockkit import (
     Actions,
@@ -58,7 +57,6 @@ from dispatch.plugins.dispatch_slack.case.enums import (
 from dispatch.plugins.dispatch_slack.case.messages import (
     create_case_message,
     create_signal_engagement_message,
-    create_welcome_ephemeral_message_to_participant,
 )
 from dispatch.plugins.dispatch_slack.config import SlackConversationConfiguration
 from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
@@ -97,7 +95,6 @@ from dispatch.plugins.dispatch_slack.models import (
     SignalSubjects,
     SubjectMetadata,
 )
-from dispatch.plugins.dispatch_slack.service import get_user_email
 from dispatch.project import service as project_service
 from dispatch.search.utils import create_filter_expression
 from dispatch.signal import service as signal_service
@@ -942,45 +939,6 @@ def handle_new_participant_message(
 @message_dispatcher.add(
     subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
-def handle_new_participant_added(
-    ack: Ack,
-    payload: dict,
-    context: BoltContext,
-    db_session: Session,
-    client: WebClient,
-) -> None:
-    """Looks for new participants being added to conversation via @<user-name>"""
-    ack()
-    participants = re.findall(r"\<\@([a-zA-Z0-9]*)\>", payload["text"])
-    for user_id in participants:
-        try:
-            case: Case = context["subject"]
-            user_email = get_user_email(client=client, user_id=user_id)
-
-            participant = case_flows.case_add_or_reactivate_participant_flow(
-                case_id=case.id,
-                user_email=user_email,
-                db_session=db_session,
-                add_to_conversation=False,
-            )
-            participant.user_conversation_id = user_id
-
-            case = case_service.get(db_session=db_session, case_id=case.id)
-            if case.dedicated_channel:
-                welcome_message = create_welcome_ephemeral_message_to_participant(case=case)
-                client.chat_postEphemeral(
-                    blocks=welcome_message,
-                    channel=payload["channel"],
-                    user=user_id,
-                )
-        except Exception as e:
-            log.warn(f"Error adding participant {user_id} to Case {context['subject'].id}: {e}")
-            continue
-
-
-@message_dispatcher.add(
-    subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "channel_leave"]}
-)  # we ignore channel join and leave messages
 def handle_case_participant_role_activity(
     ack: Ack, db_session: Session, context: BoltContext, user: DispatchUser
 ) -> None:
@@ -1277,6 +1235,7 @@ def handle_escalation_submission_event(
             project_id=case.project.id,
             name=form_data[DefaultBlockIds.incident_priority_select]["name"],
         )
+    incident_description = form_data.get(DefaultBlockIds.description_input, case.description)
 
     case_flows.case_escalated_status_flow(
         case=case,
@@ -1284,6 +1243,7 @@ def handle_escalation_submission_event(
         db_session=db_session,
         incident_priority=incident_priority,
         incident_type=incident_type,
+        incident_description=incident_description,
     )
     incident = case.incidents[0]
 
@@ -1514,6 +1474,7 @@ def handle_resolve_submission_event(
     ack()
     # we get the current or previous case
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    previous_case = CaseRead.from_orm(case)
 
     # we run the case status transition flow
     case_flows.case_status_transition_flow_dispatcher(
@@ -1537,6 +1498,15 @@ def handle_resolve_submission_event(
         case=case,
         case_in=case_in,
         current_user=user,
+    )
+
+    case_flows.case_update_flow(
+        case_id=case.id,
+        previous_case=previous_case,
+        db_session=db_session,
+        reporter_email=case.reporter.individual.email if case.reporter else None,
+        assignee_email=case.assignee.individual.email if case.assignee else None,
+        organization_slug=context["subject"].organization_slug,
     )
 
     # We update the case message with the new resolution and status
@@ -1939,15 +1909,16 @@ def send_engagement_response(
         engagement_status = SignalEngagementStatus.approved
     else:
         title = "MFA Failed"
-        message_text = f":warning: {engaged_user} attempted to confirm the behavior *as expected*, but the MFA validation failed. Reason: `{response}`\n\n *Context Provided* \n```{context_from_user}```"
         engagement_status = SignalEngagementStatus.denied
 
         if response == PushResponseResult.timeout:
-            text = "Confirmation failed, the MFA request timed out."
+            text = "Confirmation failed, the MFA request timed out. Please have your MFA device ready to accept the push notification and try again."
         elif response == PushResponseResult.user_not_found:
-            text = "User not found in MFA provider."
+            text = "User not found in MFA provider. To validate your identity, please register in Duo and try again."
         else:
             text = "Confirmation failed. You must accept the MFA prompt."
+
+        message_text = f":warning: {engaged_user} attempted to confirm the behavior *as expected*, but the MFA validation failed.\n\n *Error Reason**: `{response}`\n\n{text}\n\n *Context Provided* \n```{context_from_user}```\n\n"
 
     send_success_modal(
         client=client,
@@ -1995,6 +1966,7 @@ def resolve_case(
     context_from_user: str,
     user: DispatchUser,
 ) -> None:
+    previous_case = CaseRead.from_orm(case)
     case_flows.case_status_transition_flow_dispatcher(
         case=case,
         current_status=CaseStatus.closed,
@@ -2011,6 +1983,15 @@ def resolve_case(
         closed_at=datetime.utcnow(),
     )
     case = case_service.update(db_session=db_session, case=case, case_in=case_in, current_user=user)
+
+    case_flows.case_update_flow(
+        case_id=case.id,
+        previous_case=previous_case,
+        db_session=db_session,
+        reporter_email=case.reporter.individual.email if case.reporter else None,
+        assignee_email=case.assignee.individual.email if case.assignee else None,
+        organization_slug=case.project.organization.slug,
+    )
 
     blocks = create_case_message(case=case, channel_id=channel_id)
     client.chat_update(
