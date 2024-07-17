@@ -5,7 +5,6 @@ from uuid import UUID
 from functools import partial
 import json
 import pytz
-import re
 
 from blockkit import (
     Actions,
@@ -58,7 +57,6 @@ from dispatch.plugins.dispatch_slack.case.enums import (
 from dispatch.plugins.dispatch_slack.case.messages import (
     create_case_message,
     create_signal_engagement_message,
-    create_welcome_ephemeral_message_to_participant,
 )
 from dispatch.plugins.dispatch_slack.config import SlackConversationConfiguration
 from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
@@ -97,7 +95,6 @@ from dispatch.plugins.dispatch_slack.models import (
     SignalSubjects,
     SubjectMetadata,
 )
-from dispatch.plugins.dispatch_slack.service import get_user_email
 from dispatch.project import service as project_service
 from dispatch.search.utils import create_filter_expression
 from dispatch.signal import service as signal_service
