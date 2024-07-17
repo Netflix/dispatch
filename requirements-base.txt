@@ -214,7 +214,7 @@ markupsafe==2.1.3
     #   jinja2
     #   mako
     #   werkzeug
-msal==1.29.0
+msal==1.30.0
     # via -r requirements-base.in
 multidict==6.0.4
     # via
