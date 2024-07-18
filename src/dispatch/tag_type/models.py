@@ -5,7 +5,6 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy.sql.sqltypes import Boolean
 from sqlalchemy_utils import TSVectorType
-from dispatch.project.models import ProjectRead
 
 from dispatch.database.core import Base
 from dispatch.models import (
@@ -16,6 +15,7 @@ from dispatch.models import (
     PrimaryKey,
     Pagination,
 )
+from dispatch.project.models import ProjectRead
 
 
 class TagType(Base, TimeStampMixin, ProjectMixin):

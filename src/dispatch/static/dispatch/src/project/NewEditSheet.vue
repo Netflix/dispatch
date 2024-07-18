@@ -168,7 +168,6 @@ import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 
 import ColorPickerInput from "@/components/ColorPickerInput.vue"
-import TagTypeSelect from "@/tag_type/TagTypeSelect.vue"
 
 export default {
   setup() {
@@ -180,7 +179,6 @@ export default {
 
   components: {
     ColorPickerInput,
-    TagTypeSelect,
   },
 
   computed: {
