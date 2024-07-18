@@ -5,7 +5,6 @@ from uuid import UUID
 from functools import partial
 import json
 import pytz
-import re
 
 from blockkit import (
     Actions,
@@ -58,7 +57,6 @@ from dispatch.plugins.dispatch_slack.case.enums import (
 from dispatch.plugins.dispatch_slack.case.messages import (
     create_case_message,
     create_signal_engagement_message,
-    create_welcome_ephemeral_message_to_participant,
 )
 from dispatch.plugins.dispatch_slack.config import SlackConversationConfiguration
 from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
@@ -97,7 +95,6 @@ from dispatch.plugins.dispatch_slack.models import (
     SignalSubjects,
     SubjectMetadata,
 )
-from dispatch.plugins.dispatch_slack.service import get_user_email
 from dispatch.project import service as project_service
 from dispatch.search.utils import create_filter_expression
 from dispatch.signal import service as signal_service
@@ -942,45 +939,6 @@ def handle_new_participant_message(
 @message_dispatcher.add(
     subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
-def handle_new_participant_added(
-    ack: Ack,
-    payload: dict,
-    context: BoltContext,
-    db_session: Session,
-    client: WebClient,
-) -> None:
-    """Looks for new participants being added to conversation via @<user-name>"""
-    ack()
-    participants = re.findall(r"\<\@([a-zA-Z0-9]*)\>", payload["text"])
-    for user_id in participants:
-        try:
-            case: Case = context["subject"]
-            user_email = get_user_email(client=client, user_id=user_id)
-
-            participant = case_flows.case_add_or_reactivate_participant_flow(
-                case_id=case.id,
-                user_email=user_email,
-                db_session=db_session,
-                add_to_conversation=False,
-            )
-            participant.user_conversation_id = user_id
-
-            case = case_service.get(db_session=db_session, case_id=case.id)
-            if case.dedicated_channel:
-                welcome_message = create_welcome_ephemeral_message_to_participant(case=case)
-                client.chat_postEphemeral(
-                    blocks=welcome_message,
-                    channel=payload["channel"],
-                    user=user_id,
-                )
-        except Exception as e:
-            log.warn(f"Error adding participant {user_id} to Case {context['subject'].id}: {e}")
-            continue
-
-
-@message_dispatcher.add(
-    subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "channel_leave"]}
-)  # we ignore channel join and leave messages
 def handle_case_participant_role_activity(
     ack: Ack, db_session: Session, context: BoltContext, user: DispatchUser
 ) -> None:
@@ -1277,6 +1235,7 @@ def handle_escalation_submission_event(
             project_id=case.project.id,
             name=form_data[DefaultBlockIds.incident_priority_select]["name"],
         )
+    incident_description = form_data.get(DefaultBlockIds.description_input, case.description)
 
     case_flows.case_escalated_status_flow(
         case=case,
@@ -1284,6 +1243,7 @@ def handle_escalation_submission_event(
         db_session=db_session,
         incident_priority=incident_priority,
         incident_type=incident_type,
+        incident_description=incident_description,
     )
     incident = case.incidents[0]
 
