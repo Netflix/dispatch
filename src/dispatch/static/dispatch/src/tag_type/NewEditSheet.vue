@@ -158,7 +158,8 @@
                     <v-icon class="mt-4" v-bind="props">mdi-information</v-icon>
                   </template>
                   <span>
-                    If activated, the external_id field of the chosen tag of this type will be used as the id of the main storage folder for incidents in this project.
+                    If activated, the external_id field of the chosen tag of this type will be used
+                    as the id of the main storage folder for incidents in this project.
                   </span>
                 </v-tooltip>
               </v-col>
