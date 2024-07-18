@@ -2,8 +2,6 @@ import logging
 import json
 import uuid
 from datetime import datetime, timedelta, timezone
-from queue import Queue
-import time
 from typing import Optional, Union
 
 from fastapi import HTTPException, status
@@ -17,7 +15,6 @@ from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.type import service as case_type_service
 from dispatch.case.type.models import CaseType
-from dispatch.database.core import get_organization_session, get_session
 from dispatch.database.service import apply_filter_specific_joins, apply_filters
 from dispatch.entity import service as entity_service
 from dispatch.entity.models import Entity
@@ -25,10 +22,8 @@ from dispatch.entity_type import service as entity_type_service
 from dispatch.entity_type.models import EntityScopeEnum
 from dispatch.entity_type.models import EntityType
 from dispatch.exceptions import NotFoundError
-from dispatch.organization.service import get_all as get_all_organizations
 from dispatch.project import service as project_service
 from dispatch.service import service as service_service
-from dispatch.signal.flows import signal_flows
 from dispatch.tag import service as tag_service
 from dispatch.workflow import service as workflow_service
 from sqlalchemy.exc import IntegrityError
@@ -770,10 +765,6 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
     return filtered
 
 
-MAX_SIGNAL_INSTANCES = 500
-LOOP_DELAY = 60  # seconds
-
-
 def get_unprocessed_signal_instance_ids(session: Session) -> list[int]:
     """Retrieves IDs of unprocessed signal instances from the database.
 
@@ -788,61 +779,6 @@ def get_unprocessed_signal_instance_ids(session: Session) -> list[int]:
         .filter(SignalInstance.filter_action == None)  # noqa
         .filter(SignalInstance.case_id == None)  # noqa
         .order_by(SignalInstance.created_at.asc())
-        .limit(MAX_SIGNAL_INSTANCES)
+        .limit(500)
         .all()
     )
-
-
-def process_signal(db_session: Session, signal_instance_id: int) -> None:
-    """Processes a single signal instance.
-
-    Args:
-        db_session (Session): The database session.
-        signal_instance_id (int): The ID of the signal instance to process.
-    """
-    try:
-        signal_flows.signal_instance_create_flow(
-            db_session=db_session,
-            signal_instance_id=signal_instance_id,
-        )
-    except Exception as e:
-        log.exception(f"Error processing signal instance {signal_instance_id}: {e}")
-
-
-def process_organization_signals(organization_slug: str) -> None:
-    """Processes all unprocessed signals for a given organization using a FIFO queue.
-
-    Args:
-        organization_slug (str): The slug of the organization whose signals need to be processed.
-    """
-    with get_organization_session(organization_slug) as db_session:
-        signal_queue = Queue(maxsize=MAX_SIGNAL_INSTANCES)
-        signal_instance_ids = get_unprocessed_signal_instance_ids(db_session)
-
-        for signal_id in signal_instance_ids:
-            signal_queue.put(signal_id)
-
-        while not signal_queue.empty():
-            signal_instance_id = signal_queue.get()
-            process_signal(db_session, signal_instance_id)
-            signal_queue.task_done()
-
-
-def main_processing_loop() -> None:
-    """Main processing loop that iterates through all organizations and processes their signals."""
-    while True:
-        try:
-            with get_session() as session:
-                organizations = get_all_organizations(db_session=session)
-                for organization in organizations:
-                    log.info(f"Processing signals in {organization.slug}")
-                    try:
-                        process_organization_signals(organization.slug)
-                    except Exception as e:
-                        log.exception(
-                            f"Error processing signals for organization {organization.slug}: {e}"
-                        )
-        except Exception as e:
-            log.exception(f"Error in main signal processing loop: {e}")
-        finally:
-            time.sleep(LOOP_DELAY)
