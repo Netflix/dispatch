@@ -8,6 +8,7 @@ from dispatch.database.core import get_table_name_by_class_instance
 from dispatch.event import service as event_service
 from dispatch.incident.models import Incident
 from dispatch.plugin import service as plugin_service
+from dispatch.tag_type import service as tag_type_service
 
 from .enums import StorageAction
 from .models import Storage, StorageCreate
@@ -30,9 +31,14 @@ def create_storage(subject: Subject, storage_members: List[str], db_session: Ses
     external_storage_root_id = None
 
     # if project is set to use the tag external_id for the root folder
-    if subject.project.storage_tag_type:
+    storage_tag_type = tag_type_service.get_storage_tag_type_for_project(
+        db_session=db_session,
+        project_id=subject.project.id,
+    )
+
+    if storage_tag_type:
         # find if the subject has a tag of the specified type
-        tag = next((tag for tag in subject.tags if tag.tag_type.id == subject.project.storage_tag_type.id), None)
+        tag = next((tag for tag in subject.tags if tag.tag_type.id == storage_tag_type.id), None)
         if tag:
             external_storage_root_id = tag.external_id
 
@@ -55,10 +61,14 @@ def create_storage(subject: Subject, storage_members: List[str], db_session: Ses
         return
 
     # we create folders to store logs and screengrabs
-    folder_one_name = subject.project.storage_folder_one if subject.project.storage_folder_one else "Logs"
+    folder_one_name = (
+        subject.project.storage_folder_one if subject.project.storage_folder_one else "Logs"
+    )
     folder_one = plugin.instance.create_file(parent_id=external_storage["id"], name=folder_one_name)
 
-    folder_two_name = subject.project.storage_folder_two if subject.project.storage_folder_two else "Screengrabs"
+    folder_two_name = (
+        subject.project.storage_folder_two if subject.project.storage_folder_two else "Screengrabs"
+    )
     plugin.instance.create_file(parent_id=external_storage["id"], name=folder_two_name)
 
     if subject.project.storage_use_folder_one_as_primary:

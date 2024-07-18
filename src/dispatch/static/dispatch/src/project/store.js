@@ -20,7 +20,6 @@ const getDefaultSelectedState = () => {
     storage_folder_two: null,
     storage_use_folder_one_as_primary: false,
     storage_use_title: false,
-    storage_tag_type: null,
     allow_self_join: null,
   }
 }
@@ -85,11 +84,6 @@ const actions = {
   },
   save({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
-    if (state.selected.storage_tag_type) {
-      state.selected.storage_tag_type_id = state.selected.storage_tag_type.id
-    } else {
-      state.selected.storage_tag_type_id = null
-    }
     if (!state.selected.id) {
       return ProjectApi.create(state.selected)
         .then(() => {

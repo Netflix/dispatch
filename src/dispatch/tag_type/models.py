@@ -5,6 +5,7 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy.sql.sqltypes import Boolean
 from sqlalchemy_utils import TSVectorType
+from dispatch.project.models import ProjectRead
 
 from dispatch.database.core import Base
 from dispatch.models import (
@@ -32,11 +33,7 @@ class TagType(Base, TimeStampMixin, ProjectMixin):
     color = Column(String)
     icon = Column(String)
     search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
-
-
-class ProjectRead(DispatchBase):
-    id: Optional[PrimaryKey]
-    name: NameStr
+    use_for_project_folder = Column(Boolean, default=False, server_default="f")
 
 
 # Pydantic models
@@ -52,6 +49,7 @@ class TagTypeBase(DispatchBase):
     description: Optional[str] = Field(None, nullable=True)
     color: Optional[str] = Field(None, nullable=True)
     icon: Optional[str] = Field(None, nullable=True)
+    use_for_project_folder: Optional[bool] = False
 
 
 class TagTypeCreate(TagTypeBase):

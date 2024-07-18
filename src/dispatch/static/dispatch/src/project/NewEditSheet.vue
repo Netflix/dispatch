@@ -154,16 +154,6 @@
                   hint="Use the title of the incident as the name of the storage folder."
                 />
               </v-col>
-              <v-col cols="12">
-                <span class="text-body-2 text-medium-emphasis">
-                  Tag type to use as the storage folder
-                </span>
-                <tag-type-select
-                  class="mt-4"
-                  v-model="storage_tag_type"
-                  hint="The external_id field of the chosen tag will be used as the id of the main storage folder for this incident."
-                />
-              </v-col>
             </v-row>
           </v-container>
         </v-card-text>
@@ -210,7 +200,6 @@ export default {
       "selected.storage_folder_two",
       "selected.storage_use_folder_one_as_primary",
       "selected.storage_use_title",
-      "selected.storage_tag_type",
       "selected.allow_self_join",
       "dialogs.showCreateEdit",
     ]),

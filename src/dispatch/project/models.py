@@ -17,10 +17,6 @@ from dispatch.incident.priority.models import (
     IncidentPriority,
     IncidentPriorityRead,
 )
-from dispatch.tag_type.models import (
-    TagType,
-    TagTypeRead,
-)
 
 
 class Project(Base):
@@ -56,15 +52,6 @@ class Project(Base):
         primaryjoin="IncidentPriority.id == Project.stable_priority_id",
     )
 
-    # used to allow for alternative incident folder structures
-    # keyed by tag type (tag type must be marked as required and exclusive)
-    # root storage folder is indicated by external_id of tag with tag_type
-    storage_tag_type_id = Column(Integer, nullable=True)
-    storage_tag_type = relationship(
-        TagType,
-        foreign_keys=[storage_tag_type_id],
-        primaryjoin="TagType.id == Project.storage_tag_type_id",
-    )
     # allows for alternative names for storage folders inside incident/case
     storage_folder_one = Column(String, nullable=True)
     storage_folder_two = Column(String, nullable=True)
@@ -103,19 +90,16 @@ class ProjectBase(DispatchBase):
 
 class ProjectCreate(ProjectBase):
     organization: OrganizationRead
-    storage_tag_type_id: Optional[int]
 
 
 class ProjectUpdate(ProjectBase):
     send_daily_reports: Optional[bool] = Field(True, nullable=True)
     stable_priority_id: Optional[int]
-    storage_tag_type_id: Optional[int]
 
 
 class ProjectRead(ProjectBase):
     id: Optional[PrimaryKey]
     stable_priority: Optional[IncidentPriorityRead] = None
-    storage_tag_type: Optional[TagTypeRead] = None
 
 
 class ProjectPagination(Pagination):
