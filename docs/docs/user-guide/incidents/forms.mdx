@@ -33,7 +33,8 @@ The `if` attribute can be a complex JavaScript boolean expression. Refer to othe
 ##### Example
 
 ```
-   [ { "type": "boolean", "title": "Is this a good form?", "name": "good_form", "hint": "Check if you like"},
+   [
+     { "type": "boolean", "title": "Is this a good form?", "name": "good_form", "hint": "Check if you like"},
      { "type": "select", "if": "$good_form", "title": "How good?", "options": [ "Very much", "A lot", "It's ok" ], "multiple": false, "name": "like_level"},
      { "type": "text", "if": "$good_form && $like_level && $like_level.includes('A lot')", "title": "Provide more feedback", "name": "feedback"}
    ]
@@ -68,7 +69,8 @@ A risk score can be calculated based on the form responses. The scoring schema i
 If the form data corresponding to `var` contains any elements in the list `includes`, then the value indicated by `score` is added to the Risk Score. Note that this is currently not cumulative, i.e., if there are two elements on the list in the form data, the score is only added once. For example, using the example form schema above and the below scoring schema, if the user selects "Very much", the risk score would be 10.
 
 ```
-   [ { "var": "like_level", "includes": [ "Very much", "A lot" ], "score": 10},
+   [
+     { "var": "like_level", "includes": [ "Very much", "A lot" ], "score": 10},
      { "var": "like_level", "includes": [ "It's ok" ], "score": 1},
    ]
 ```
