@@ -13,16 +13,16 @@ Within Dispatch, admins can create a custom form under Settings -> (choose Proje
 The form schema takes a JSON array of form objects of the following type:
 
 | Attribute | Possible values             | Notes                             |
-|-----------|-----------------------------|-----------------------------------|
-|  type     | boolean, select, text, date |                                   |
-|  title    |                             | this is the question              |
-|  if       |                             | conditional (see below)           |
-|  name     |                             | unique identifier string          |
-|  multiple | true, false                 | only for select                   |
-|  options  |                             | list of options / only for select |
-|  hint     |                             | shown as small text (optional)    |
+| --------- | --------------------------- | --------------------------------- |
+| type      | boolean, select, text, date |                                   |
+| title     |                             | this is the question              |
+| if        |                             | conditional (see below)           |
+| name      |                             | unique identifier string          |
+| multiple  | true, false                 | only for select                   |
+| options   |                             | list of options / only for select |
+| hint      |                             | shown as small text (optional)    |
 
-The following fields are required for each form object: `type`, `title`, and `name`. For `select` types, there must be a corresponding `options` attribute. 
+The following fields are required for each form object: `type`, `title`, and `name`. For `select` types, there must be a corresponding `options` attribute.
 
 Note: be sure to set the form type to "Enabled" so that it will appear in the forms tab in the incident.
 
@@ -47,3 +47,30 @@ While a form is being completed, the user can **Cancel** to discard any changes,
 ## Attorney review
 
 A new tab on the left "Forms" lists all of the _Draft_ and _Completed_ forms for leadership and attorney review. For each form, users can view/edit, delete, and a special **Attorney Review** option. This option shows relevant incident details and the values filled out in the form. It also provides an attorney status dropdown and two new fields for attorney notes and open questions.
+
+## Additional attorney questions
+
+If additional questions are required for the attorney team to assess the information on the form, each form type has the option of asking additional attorney questions. This schema follows the same format as the main form schema. The additional attorney questions will appear only on the Attorney Section when performing the Attorney Review from the Forms page.
+
+![](/img/attorney-section.png)
+
+## Scoring schema
+
+A risk score can be calculated based on the form responses. The scoring schema is a JSON array of objects of the following type:
+
+| Attribute | Type | Notes                                  |
+| --------- | ---- | -------------------------------------- |
+| var       | text | the corresponding variable on the form |
+| includes  | list | a JSON list of chosen options          |
+| score     | int  | the score to add                       |
+
+If the form data corresponding to `var` contains any elements in the list `includes`, then the value indicated by `score` is added to the Risk Score. Note that this is currently not cumulative, i.e., if there are two elements on the list in the form data, the score is only added once. For example, using the example form schema above and the below scoring schema, if the user selects "Very much", the risk score would be 10.
+
+```[ { "var": "like_level", "includes": [ "Very much", "A lot" ], "score": 10},
+     { "var": "like_level", "includes": [ "It's ok" ], "score": 1},
+   ]
+```
+
+The risk score shows up on the Forms tab in the Risk Score column as well as on the attorney summary section on the Attorney Review card.
+
+![](/img/example-risk-score.png)
