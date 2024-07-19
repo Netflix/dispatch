@@ -5,6 +5,7 @@ from typing import List
 from sqlalchemy.orm import Session
 
 from dispatch.case import service as case_service
+from dispatch.case.messaging import send_case_welcome_participant_message
 from dispatch.case.models import CaseRead
 from dispatch.conversation import flows as conversation_flows
 from dispatch.database.core import SessionLocal
@@ -128,6 +129,13 @@ def case_add_or_reactivate_participant_flow(
             conversation_flows.add_case_participants(
                 case, [participant.individual.email], db_session
             )
+
+        # we send the welcome messages to the participant
+        send_case_welcome_participant_message(
+            participant_email=user_email,
+            case=case,
+            db_session=db_session
+        )
 
     return participant
 

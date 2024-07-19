@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 def show_secrets_encoder(obj):
-    if type(obj) == SecretStr:
+    if isinstance(obj, SecretStr):
         return obj.get_secret_value()
     else:
         return pydantic_encoder(obj)
