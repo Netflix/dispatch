@@ -15,6 +15,10 @@
         <b>{{ item.question }}</b
         >: {{ item.answer }}<br />
       </span>
+      <span class="ml-10" v-if="score !== null">
+        <b>Form score</b>: {{ score }}
+        <br />
+      </span>
       <span class="ml-10" v-if="incident_data.slack_channel">
         <b>Slack channel</b>: <a :href="incident_data.slack_channel">#{{ incident_data.name }}</a>
         <br />
@@ -117,6 +121,7 @@ export default {
       "selected.attorney_status",
       "selected.attorney_analysis",
       "selected.attorney_questions",
+      "selected.score",
       "selected.project",
       "selected.incident",
       "page_data",
