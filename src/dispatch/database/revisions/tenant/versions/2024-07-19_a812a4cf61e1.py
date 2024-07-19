@@ -1,7 +1,7 @@
 """Creates alternative storage attributes in project
 
 Revision ID: a812a4cf61e1
-Revises: 15a8d3228123
+Revises: 25b8b5829158
 Create Date: 2024-04-12 14:48:05.481102
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "a812a4cf61e1"
-down_revision = "15a8d3228123"
+down_revision = "25b8b5829158"
 branch_labels = None
 depends_on = None
 
