@@ -64,4 +64,13 @@ A risk score can be calculated based on the form responses. The scoring schema i
 | includes  | list | a JSON list of chosen options          |
 | score     | int  | the score to add                       |
 
-If the form data corresponding to `var` contains any elements in the list `includes`, then the value indicated by `score` is added to the Risk Score. Note that this is currently not cumulative, i.e., if there are two elements on the list in the form data, the score is only added once.
+If the form data corresponding to `var` contains any elements in the list `includes`, then the value indicated by `score` is added to the Risk Score. Note that this is currently not cumulative, i.e., if there are two elements on the list in the form data, the score is only added once. For example, using the example form schema above and the below scoring schema, if the user selects "Very much", the risk score would be 10.
+
+```[ { "var": "like_level", "includes": [ "Very much", "A lot" ], "score": 10},
+     { "var": "like_level", "includes": [ "It's ok" ], "score": 1},
+   ]
+```
+
+The risk score shows up on the Forms tab in the Risk Score column as well as on the attorney summary section on the Attorney Review card.
+
+![](/img/example-risk-score.png)
