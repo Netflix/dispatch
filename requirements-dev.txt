@@ -86,7 +86,7 @@ python-dateutil==2.9.0.post0
     # via faker
 pyyaml==6.0.1
     # via pre-commit
-ruff==0.5.2
+ruff==0.5.3
     # via -r requirements-dev.in
 six==1.16.0
     # via
