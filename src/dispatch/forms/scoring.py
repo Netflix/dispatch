@@ -25,12 +25,9 @@ def calculate_score(form_data: str, scoring_schema: str) -> int:
 
     for s in scoring:
         # get the value of the form data based on the key
-        var = form_vals.get(s.get("var"))
-        if var:
-            includes = s.get("includes")
-            if includes:
-                # if any element in the form data is in the includes list, add the score
-                if any(v in includes for v in var):
-                    score += s.get("score", 0)
+        if (var := form_vals.get(s.get("var"))) and (includes := s.get("includes")):
+            # if any element in the form data is in the includes list, add the score
+            if any(v in includes for v in var):
+                score += s.get("score", 0)
 
     return score
