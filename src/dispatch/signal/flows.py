@@ -1,5 +1,7 @@
 import logging
 from datetime import timedelta
+from queue import Queue
+import time
 
 from cachetools import TTLCache
 from email_validator import EmailNotValidError, validate_email
@@ -10,9 +12,11 @@ from dispatch.auth.models import DispatchUser, UserRegister
 from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
 from dispatch.case.models import CaseCreate
+from dispatch.database.core import get_organization_session, get_session
 from dispatch.entity import service as entity_service
 from dispatch.entity_type import service as entity_type_service
 from dispatch.exceptions import DispatchException
+from dispatch.organization.service import get_all as get_all_organizations
 from dispatch.plugin import service as plugin_service
 from dispatch.project.models import Project
 from dispatch.service import flows as service_flows
@@ -287,3 +291,61 @@ def _should_update_signal_message(signal_instance: SignalInstance) -> bool:
         return True
     else:
         return False
+
+
+LOOP_DELAY = 60  # seconds
+
+
+def process_signal(db_session: Session, signal_instance_id: int) -> None:
+    """Processes a single signal instance.
+
+    Args:
+        db_session (Session): The database session.
+        signal_instance_id (int): The ID of the signal instance to process.
+    """
+    try:
+        signal_flows.signal_instance_create_flow(
+            db_session=db_session,
+            signal_instance_id=signal_instance_id,
+        )
+    except Exception as e:
+        log.exception(f"Error processing signal instance {signal_instance_id}: {e}")
+
+
+def process_organization_signals(organization_slug: str) -> None:
+    """Processes all unprocessed signals for a given organization using a FIFO queue.
+
+    Args:
+        organization_slug (str): The slug of the organization whose signals need to be processed.
+    """
+    with get_organization_session(organization_slug) as db_session:
+        signal_queue = Queue(maxsize=500)
+        signal_instance_ids = signal_service.get_unprocessed_signal_instance_ids(db_session)
+
+        for signal_id in signal_instance_ids:
+            signal_queue.put(signal_id)
+
+        while not signal_queue.empty():
+            signal_instance_id = signal_queue.get()
+            process_signal(db_session, signal_instance_id)
+            signal_queue.task_done()
+
+
+def main_processing_loop() -> None:
+    """Main processing loop that iterates through all organizations and processes their signals."""
+    while True:
+        try:
+            with get_session() as session:
+                organizations = get_all_organizations(db_session=session)
+                for organization in organizations:
+                    log.info(f"Processing signals in {organization.slug}")
+                    try:
+                        process_organization_signals(organization.slug)
+                    except Exception as e:
+                        log.exception(
+                            f"Error processing signals for organization {organization.slug}: {e}"
+                        )
+        except Exception as e:
+            log.exception(f"Error in main signal processing loop: {e}")
+        finally:
+            time.sleep(LOOP_DELAY)
