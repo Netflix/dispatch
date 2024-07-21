@@ -145,6 +145,24 @@
                   </span>
                 </v-tooltip>
               </v-col>
+              <v-col cols="5">
+                <v-checkbox
+                  v-model="use_for_project_folder"
+                  label="Use for project folder"
+                  hint="The external_id field of the chosen tag of this type will be used as the id of the main storage folder for incidents in this project."
+                />
+              </v-col>
+              <v-col cols="7">
+                <v-tooltip max-width="500px" open-delay="50" location="bottom">
+                  <template #activator="{ props }">
+                    <v-icon class="mt-4" v-bind="props">mdi-information</v-icon>
+                  </template>
+                  <span>
+                    If activated, the external_id field of the chosen tag of this type will be used
+                    as the id of the main storage folder for incidents in this project.
+                  </span>
+                </v-tooltip>
+              </v-col>
             </v-row>
           </v-container>
         </v-card-text>
@@ -190,6 +208,7 @@ export default {
       "selected.color",
       "selected.exclusive",
       "selected.required",
+      "selected.use_for_project_folder",
       "selected.loading",
     ]),
     ...mapFields("tag_type", {
