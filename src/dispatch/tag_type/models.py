@@ -30,6 +30,7 @@ class TagType(Base, TimeStampMixin, ProjectMixin):
     discoverable_query = Column(Boolean, default=True)
     discoverable_signal = Column(Boolean, default=True)
     discoverable_source = Column(Boolean, default=True)
+    discoverable_document = Column(Boolean, default=True)
     color = Column(String)
     icon = Column(String)
     search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
@@ -46,6 +47,7 @@ class TagTypeBase(DispatchBase):
     discoverable_query: Optional[bool] = True
     discoverable_signal: Optional[bool] = True
     discoverable_source: Optional[bool] = True
+    discoverable_document: Optional[bool] = True
     description: Optional[str] = Field(None, nullable=True)
     color: Optional[str] = Field(None, nullable=True)
     icon: Optional[str] = Field(None, nullable=True)
