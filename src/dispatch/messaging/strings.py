@@ -74,10 +74,14 @@ respond to incidents. Please review and update them, or mark them as deprecated.
 ).strip()
 
 INCIDENT_FEEDBACK_DAILY_REPORT_DESCRIPTION = """
-This is a daily report of feedback about incidents handled by you.""".replace("\n", " ").strip()
+This is a daily report of feedback about incidents handled by you.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_DAILY_REPORT_TITLE = """
-Incidents Daily Report""".replace("\n", " ").strip()
+Incidents Daily Report""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_DAILY_REPORT_DESCRIPTION = """
 This is a daily report of incidents that are currently active and incidents that have been marked as stable or closed in the last 24 hours.""".replace(
@@ -97,7 +101,9 @@ The person who reported the incident. Contact them if the report details need cl
 INCIDENT_COMMANDER_DESCRIPTION = """
 The Incident Commander (IC) is responsible for
 knowing the full context of the incident.
-Contact them about any questions or concerns.""".replace("\n", " ").strip()
+Contact them about any questions or concerns.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_COMMANDER_READDED_DESCRIPTION = """
 {{ commander_fullname }} (Incident Commander) has been re-added to the conversation.
@@ -122,40 +128,56 @@ Group for email notification purposes. All participants get added to it.""".repl
 
 INCIDENT_CONVERSATION_DESCRIPTION = """
 Private conversation for real-time discussion. All incident participants get added to it.
-""".replace("\n", " ").strip()
+""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_CONVERSATION_REFERENCE_DOCUMENT_DESCRIPTION = """
 Document containing the list of slash commands available to the Incident Commander (IC)
-and participants in the incident conversation.""".replace("\n", " ").strip()
+and participants in the incident conversation.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_CONFERENCE_DESCRIPTION = """
 Video conference and phone bridge to be used throughout the incident.  Password: {{conference_challenge if conference_challenge else 'N/A'}}
-""".replace("\n", "").strip()
+""".replace(
+    "\n", ""
+).strip()
 
 STORAGE_DESCRIPTION = """
 Common storage for all artifacts and
 documents. Add logs, screen captures, or any other data collected during the
-investigation to this folder. It is shared with all participants.""".replace("\n", " ").strip()
+investigation to this folder. It is shared with all participants.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION = """
 This is a document for all incident facts and context. All
 incident participants are expected to contribute to this document.
-It is shared with all incident participants.""".replace("\n", " ").strip()
+It is shared with all incident participants.""".replace(
+    "\n", " "
+).strip()
 
 CASE_INVESTIGATION_DOCUMENT_DESCRIPTION = """
 This is a document for all investigation facts and context. All
 case participants are expected to contribute to this document.
-It is shared with all participants.""".replace("\n", " ").strip()
+It is shared with all participants.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_INVESTIGATION_SHEET_DESCRIPTION = """
 This is a sheet for tracking impacted assets. All
 incident participants are expected to contribute to this sheet.
-It is shared with all incident participants.""".replace("\n", " ").strip()
+It is shared with all incident participants.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_FAQ_DOCUMENT_DESCRIPTION = """
 First time responding to an incident? This
 document answers common questions encountered when
-helping us respond to an incident.""".replace("\n", " ").strip()
+helping us respond to an incident.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_REVIEW_DOCUMENT_DESCRIPTION = """
 This document will capture all lessons learned, questions, and action items raised during the incident.""".replace(
@@ -179,11 +201,15 @@ DOCUMENT_DESCRIPTIONS = {
 
 INCIDENT_RESOLUTION_DEFAULT = """
 Description of the actions taken to resolve the incident.
-""".replace("\n", " ").strip()
+""".replace(
+    "\n", " "
+).strip()
 
 CASE_RESOLUTION_DEFAULT = """
 Description of the actions taken to resolve the case.
-""".replace("\n", " ").strip()
+""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_COMPLETED_FORM_DESCRIPTION = """
 A new {{form_type}} form related to incident {{name}} has been
@@ -191,19 +217,27 @@ submitted that requires your immediate attention. This form details
 aspects related to potential legal implications. You can review the
 detailed report by clicking on the link below. Please note, the information
 contained in this report is confidential.
-""".replace("\n", " ").strip()
+""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_PARTICIPANT_WELCOME_DESCRIPTION = """
 You\'ve been added to this incident, because we think you may
 be able to help resolve it. Please review the incident details below and
-reach out to the incident commander if you have any questions.""".replace("\n", " ").strip()
+reach out to the incident commander if you have any questions.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION = """
 Dispatch thinks the following documents might be
-relevant to this incident.""".replace("\n", " ").strip()
+relevant to this incident.""".replace(
+    "\n", " "
+).strip()
 
 NOTIFICATION_PURPOSES_FYI = """
-This message is for notification purposes only.""".replace("\n", " ").strip()
+This message is for notification purposes only.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_TACTICAL_REPORT_DESCRIPTION = """
 The following conditions, actions, and needs summarize the current status of the incident.""".replace(
@@ -232,7 +266,9 @@ You can use `{{command}}` in the <{{conversation_weblink}}|conversation> to clos
 ).strip()
 
 CASE_TRIAGE_REMINDER_DESCRIPTION = """The status of this case hasn't been updated recently.
-Please ensure you triage the case based on its priority.""".replace("\n", " ").strip()
+Please ensure you triage the case based on its priority.""".replace(
+    "\n", " "
+).strip()
 
 CASE_CLOSE_REMINDER_DESCRIPTION = """The status of this case hasn't been updated recently.
 You can use the case 'Resolve' button if it has been resolved and can be closed.""".replace(
@@ -257,7 +293,9 @@ INCIDENT_TASK_LIST_DESCRIPTION = """The following are open incident tasks."""
 INCIDENT_OPEN_TASKS_DESCRIPTION = """
 Please resolve or transfer ownership of all the open incident tasks assigned to you in the incident documents or using the <{{dispatch_ui_url}}|Dispatch Web UI>,
 then wait about 30 seconds for Dispatch to update the tasks before leaving the incident conversation.
-""".replace("\n", " ").strip()
+""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_TASK_ADD_TO_INCIDENT_DESCRIPTION = """
 You have been added to this incident because you were assigned a task related to it. View all tasks for this incident using the <{{dispatch_ui_url}}|Dispatch Web UI>
@@ -415,7 +453,7 @@ CASE_NAME_WITH_ENGAGEMENT = {
     "buttons": [
         {
             "button_text": "Join",
-            "button_value": "{{organization_slug}}-{{incident_id}}",
+            "button_value": "{{organization_slug}}-{{case_id}}",
             "button_action": ConversationButtonActions.invite_user,
         },
     ],
@@ -428,7 +466,7 @@ CASE_NAME_WITH_ENGAGEMENT_NO_DESCRIPTION = {
     "buttons": [
         {
             "button_text": "Join",
-            "button_value": "{{organization_slug}}-{{incident_id}}",
+            "button_value": "{{organization_slug}}-{{case_id}}",
             "button_action": ConversationButtonActions.invite_user,
         },
     ],
@@ -748,7 +786,9 @@ CASE_TRIAGE_REMINDER = [
 CASE_ASSIGNEE_DESCRIPTION = """
 The Case Assignee is responsible for
 knowing the full context of the case.
-Contact them about any questions or concerns.""".replace("\n", " ").strip()
+Contact them about any questions or concerns.""".replace(
+    "\n", " "
+).strip()
 
 CASE_REPORTER_DESCRIPTION = """
 The person who reported the case. Contact them if the report details need clarification.""".replace(
