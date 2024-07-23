@@ -29,7 +29,7 @@ attrs==22.1.0
     #   jsonschema
 backoff==2.2.1
     # via schemathesis
-bcrypt==4.1.3
+bcrypt==4.2.0
     # via -r requirements-base.in
 blis==0.7.11
     # via thinc
