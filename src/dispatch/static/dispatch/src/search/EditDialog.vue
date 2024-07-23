@@ -81,6 +81,13 @@
             <v-list-item-title>{{ notification.name }}</v-list-item-title>
           </v-list-item>
         </v-list>
+        <div class="text-body-2 ml-1 mt-2">Search Filters</div>
+        <v-divider class="mt-2" />
+        <v-list style="max-height: 500px">
+          <!-- <v-list-item v-for="notification in notifications" :key="notification.id">
+            <v-list-item-title>{{ notification.name }}</v-list-item-title>
+          </v-list-item> -->
+        </v-list>
       </v-container>
     </v-navigation-drawer>
   </v-form>
