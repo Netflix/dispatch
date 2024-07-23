@@ -109,6 +109,13 @@
                   label="Sources"
                   hint="Should this type be visible in sources?"
                 />
+                <v-checkbox
+                  class="discoverable_checkbox"
+                  v-model="discoverable_document"
+                  hide-details
+                  label="Documents"
+                  hint="Should this type be visible in documents?"
+                />
               </v-col>
               <v-divider />
               <v-col cols="5">
@@ -204,6 +211,7 @@ export default {
       "selected.discoverable_query",
       "selected.discoverable_signal",
       "selected.discoverable_source",
+      "selected.discoverable_document",
       "selected.icon",
       "selected.color",
       "selected.exclusive",
