@@ -93,6 +93,16 @@
                 />
               </v-col>
               <v-col cols="12">
+                <tag-picker
+                  label="Tags"
+                  v-model="tags"
+                  :project="project"
+                  model="document"
+                  :model-id="id"
+                  show-copy
+                />
+              </v-col>
+              <v-col cols="12">
                 <span class="text-subtitle-2"
                   >Evergreen
                   <v-tooltip max-width="250px" location="bottom">
@@ -146,6 +156,7 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
 import SearchFilterCombobox from "@/search/SearchFilterCombobox.vue"
+import TagPicker from "@/tag/TagPicker.vue"
 
 export default {
   setup() {
@@ -157,6 +168,7 @@ export default {
 
   components: {
     SearchFilterCombobox,
+    TagPicker,
   },
 
   computed: {
@@ -166,6 +178,7 @@ export default {
       "selected.resource_type",
       "selected.weblink",
       "selected.resource_id",
+      "selected.tags",
       "selected.evergreen_owner",
       "selected.evergreen",
       "selected.evergreen_reminder_interval",

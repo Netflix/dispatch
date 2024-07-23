@@ -6,6 +6,7 @@ from dispatch.enums import DocumentResourceReferenceTypes
 from dispatch.exceptions import ExistsError
 from dispatch.project import service as project_service
 from dispatch.search_filter import service as search_filter_service
+from dispatch.tag import service as tag_service
 
 from .models import Document, DocumentCreate, DocumentUpdate
 
@@ -97,14 +98,19 @@ def create(*, db_session, document_in: DocumentCreate) -> Document:
         for f in document_in.filters
     ]
 
+    tags = []
+    for t in document_in.tags:
+        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
+
     # set the last reminder to now
     if document_in.evergreen:
         document_in.evergreen_last_reminder_at = datetime.utcnow()
 
     document = Document(
-        **document_in.dict(exclude={"project", "filters"}),
+        **document_in.dict(exclude={"project", "filters", "tags"}),
         filters=filters,
         project=project,
+        tags=tags,
     )
 
     db_session.add(document)
@@ -135,7 +141,11 @@ def update(*, db_session, document: Document, document_in: DocumentUpdate) -> Do
         if not document.evergreen:
             document_in.evergreen_last_reminder_at = datetime.utcnow()
 
-    update_data = document_in.dict(skip_defaults=True, exclude={"filters"})
+    update_data = document_in.dict(skip_defaults=True, exclude={"filters", "tags"})
+
+    tags = []
+    for t in document_in.tags:
+        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
 
     for field in document_data:
         if field in update_data:
@@ -147,6 +157,8 @@ def update(*, db_session, document: Document, document_in: DocumentUpdate) -> Do
             for f in document_in.filters
         ]
         document.filters = filters
+
+    document.tags = tags
 
     db_session.commit()
     return document

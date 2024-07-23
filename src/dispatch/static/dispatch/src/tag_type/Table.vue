@@ -76,6 +76,7 @@ const attribute_to_text = {
   discoverable_query: "Queries",
   discoverable_signal: "Signals",
   discoverable_source: "Sources",
+  discoverable_document: "Documents",
 }
 
 export default {
