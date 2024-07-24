@@ -78,8 +78,36 @@
           v-model="status"
           label="Status"
           :items="statuses"
+          item-title="title"
+          item-value="value"
           hint="The status of the case."
-        />
+        >
+          <template #item="{ item, props }">
+            <div class="d-flex align-center" style="width: 100%">
+              <v-list-item
+                v-bind="props"
+                :disabled="item.raw.value === 'Escalated'"
+                style="flex-grow: 1"
+              />
+              <v-tooltip
+                v-if="item.raw.value === 'Escalated'"
+                text="Escalation is only supported on the case page or in Slack with the `/dispatch-escalate-case` command."
+              >
+                <template #activator="{ props: tooltipProps }">
+                  <v-icon
+                    v-bind="tooltipProps"
+                    color="black"
+                    size="small"
+                    class="mr-6 flex-shrink-0"
+                    style="pointer-events: auto"
+                  >
+                    mdi-information
+                  </v-icon>
+                </template>
+              </v-tooltip>
+            </div>
+          </template>
+        </v-select>
       </v-col>
       <v-col cols="6">
         <v-select
@@ -168,7 +196,12 @@ export default {
 
   data() {
     return {
-      statuses: ["New", "Triage", "Escalated", "Closed"],
+      statuses: [
+        { title: "New", value: "New" },
+        { title: "Triage", value: "Triage" },
+        { title: "Escalated", value: "Escalated" },
+        { title: "Closed", value: "Closed" },
+      ],
       visibilities: ["Open", "Restricted"],
       resolutionReasons: ["False Positive", "User Acknowledged", "Mitigated", "Escalated"],
       only_one: (value) => {
@@ -209,3 +242,10 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.v-list-item--disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+</style>
