@@ -2,10 +2,8 @@ import os
 from datetime import datetime
 
 import markdown
-from jinja2 import (
-    Environment,
-    FileSystemLoader,
-)
+from jinja2 import FileSystemLoader
+from jinja2.sandbox import SandboxedEnvironment
 from jinja2.ext import Extension
 from markupsafe import Markup
 from dispatch import config
@@ -46,7 +44,7 @@ class SkipAllBlocksExtension(Extension):
 
 
 autoescape = bool(config.DISPATCH_ESCAPE_HTML)
-env = Environment(
+env = SandboxedEnvironment(
     loader=FileSystemLoader(here), extensions=[SkipAllBlocksExtension], autoescape=autoescape
 )
 
