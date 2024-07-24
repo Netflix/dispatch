@@ -51,7 +51,7 @@ def test_render_message_template__disable_code_execution():
     message_template = [
         {
             "title": "{{ title }}",
-            "body": "{% for i in [].append(123) }...{% endfor %}",
+            "body": "{% for i in [].append(123) %}...{% endfor %}",
         }
     ]
     kwargs = {"title": "Test Title"}
