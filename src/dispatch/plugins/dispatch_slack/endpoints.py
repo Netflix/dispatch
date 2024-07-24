@@ -1,5 +1,6 @@
 from http import HTTPStatus
 import json
+import posthog 
 
 from fastapi import APIRouter, HTTPException, Depends
 from starlette.background import BackgroundTask
@@ -122,6 +123,11 @@ async def slack_commands(organization: str, request: Request, body: bytes = Depe
 async def slack_actions(request: Request, organization: str, body: bytes = Depends(get_body)):
     """Handle all incoming Slack actions."""
     handler = get_request_handler(request=request, body=body, organization=organization)
+    posthog.capture(
+                organization,
+                event="slack_action",
+                properties=body
+            )
     return handler.handle(req=request, body=body)
 
 
