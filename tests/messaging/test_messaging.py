@@ -50,11 +50,11 @@ def test_render_message_template__disable_code_execution():
 
     message_template = [
         {
-            "title": "{{title}}",
-            "body": "{% if True %} {{body}} {% endif %}",
+            "title": "{{ title }}",
+            "body": "{% for i in [].append(123) }...{% endfor %}",
         }
     ]
-    kwargs = {"title": "Test Title", "body": "Test Body"}
+    kwargs = {"title": "Test Title"}
 
     rendered = render_message_template(message_template, **kwargs)
 
