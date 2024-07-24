@@ -26,6 +26,8 @@ from dispatch.conference.models import Conference
 from dispatch.conversation.models import Conversation
 from dispatch.definition.models import Definition
 from dispatch.document.models import Document
+from dispatch.email_templates.models import EmailTemplates
+from dispatch.email_templates.enums import EmailTemplateTypes
 from dispatch.entity.models import Entity
 from dispatch.entity_type.models import EntityType
 from dispatch.event.models import Event
@@ -1214,6 +1216,22 @@ class IncidentCostTypeFactory(BaseFactory):
         """Factory Configuration."""
 
         model = IncidentCostType
+
+
+class EmailTemplateFactory(BaseFactory):
+    """Email Template Factory."""
+
+    # Columns
+    email_template_type = EmailTemplateTypes.welcome
+    welcome_text = "Welcome to Incident {{title}} "
+    welcome_body = "{{title}} Incident\n{{description}}"
+    components = ["title", "description"]
+    enabled = True
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = EmailTemplates
 
 
 class NotificationFactory(BaseFactory):
