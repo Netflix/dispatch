@@ -543,11 +543,14 @@ def case_status_select(
     action_id: str = DefaultActionIds.case_status_select,
     block_id: str = DefaultBlockIds.case_status_select,
     label: str = "Status",
-    initial_option: dict = None,
+    initial_option: dict | None = None,
+    statuses: list[dict[str, str]] | None = None,
     **kwargs,
 ):
     """Creates a case status select."""
-    statuses = [{"text": str(s), "value": str(s)} for s in CaseStatus]
+    if not statuses:
+        statuses = [{"text": str(s), "value": str(s)} for s in CaseStatus]
+
     return static_select_block(
         placeholder="Select Status",
         options=statuses,
