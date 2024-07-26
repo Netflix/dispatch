@@ -47,7 +47,9 @@ export default {
   name: "CaseEscalateDialog",
 
   data() {
-    return {}
+    return {
+      isIncidentDataLoaded: false,
+    }
   },
 
   components: {
@@ -83,6 +85,27 @@ export default {
   methods: {
     ...mapActions("case_management", ["getDetails", "closeEscalateDialog", "escalate"]),
     ...mapActions("incident", ["report", "resetSelected"]),
+
+    async handleEscalate(incident) {
+      try {
+        this.loading = true
+        const incidentData = await this.escalate(incident)
+        this.$store.commit("incident/SET_SELECTED", incidentData)
+        this.isIncidentDataLoaded = true
+      } catch (error) {
+        console.error("Error escalating case:", error)
+        this.$store.commit(
+          "notification_backend/addBeNotification",
+          {
+            text: `Failed to escalate case.`,
+            type: "exception",
+          },
+          { root: true }
+        )
+      } finally {
+        this.loading = false
+      }
+    },
   },
 
   created() {
