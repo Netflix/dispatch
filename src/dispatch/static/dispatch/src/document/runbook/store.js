@@ -14,6 +14,7 @@ const getDefaultSelectedState = () => {
     id: null,
     filters: [],
     project: null,
+    tags: [],
     evergreen: null,
     evergreen_owner: null,
     evergreen_reminder_interval: null,

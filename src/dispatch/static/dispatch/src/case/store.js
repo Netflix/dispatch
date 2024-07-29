@@ -240,16 +240,17 @@ const actions = {
     return CaseApi.escalate(state.selected.id, payload).then((response) => {
       commit("incident/SET_SELECTED", response.data, { root: true })
       commit("SET_SELECTED_LOADING", false)
-      var interval = setInterval(function () {
-        if (state.selected.id) {
-          dispatch("incident/get", response.data.id, { root: true })
-        }
 
-        // TODO this is fragile but we don't set anything as "created"
-        if (state.selected.storage) {
-          clearInterval(interval)
-        }
-      }, 5000)
+      return new Promise((resolve) => {
+        const interval = setInterval(() => {
+          dispatch("incident/get", response.data.id, { root: true }).then((incidentData) => {
+            if (incidentData.conversation && incidentData.storage && incidentData.documents) {
+              clearInterval(interval)
+              resolve(incidentData)
+            }
+          })
+        }, 5000)
+      })
     })
   },
   report({ commit, dispatch }) {

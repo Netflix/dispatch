@@ -140,6 +140,7 @@ const ALL_DISCOVERABILITY_TYPES = [
   { model: "TagType", field: "discoverable_signal", op: "==", value: "true" },
   { model: "TagType", field: "discoverable_query", op: "==", value: "true" },
   { model: "TagType", field: "discoverable_source", op: "==", value: "true" },
+  { model: "TagType", field: "discoverable_document", op: "==", value: "true" },
 ]
 
 const menu = ref(false)

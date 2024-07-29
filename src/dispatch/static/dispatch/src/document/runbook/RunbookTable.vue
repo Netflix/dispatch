@@ -58,6 +58,11 @@
                 <v-icon size="small">mdi-open-in-new</v-icon>
               </a>
             </template>
+            <template #item.tags="{ value }">
+              <v-chip v-for="item in value" :key="item" color="blue" size="small">
+                {{ item.tag_type.name }}/{{ item.name }}
+              </v-chip>
+            </template>
             <template #item.data-table-actions="{ item }">
               <v-menu location="right" origin="overlap">
                 <template #activator="{ props }">
@@ -107,6 +112,7 @@ export default {
         { title: "Description", key: "description", sortable: false },
         { title: "Type", key: "resource_type", sortable: true },
         { title: "Evergreen", key: "evergreen", sortable: true, width: "10%" },
+        { title: "Tags", key: "tags", sortable: false },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
