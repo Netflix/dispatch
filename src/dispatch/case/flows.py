@@ -542,7 +542,10 @@ def case_status_transition_flow_dispatcher(
     db_session: Session,
 ):
     """Runs the correct flows based on the current and previous status of the case."""
-    log.info(f"Transitioning Status for Case #{case.id} from {previous_status} to {current_status}")
+    log.info(
+        "Transitioning Case status",
+        extra={"case_id": case.id, "previous_status": previous_status, "current_status": current_status}
+    )
     match (previous_status, current_status):
         case (CaseStatus.closed, CaseStatus.new):
             # Closed -> New
@@ -569,7 +572,10 @@ def case_status_transition_flow_dispatcher(
 
         case (_, CaseStatus.triage):
             # Any -> Triage/
-            log.warning(f"Unexpected Status Transition for Case #{case.id} from {previous_status} to {current_status}")
+            log.warning(
+                "Unexpected previous state for Case transition to Triage state."
+                extra={"case_id": case.id, "previous_status": previous_status, "current_status": current_status}
+            )
 
         case (CaseStatus.new, CaseStatus.escalated):
             # New -> Escalated
