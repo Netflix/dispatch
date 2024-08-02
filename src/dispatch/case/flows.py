@@ -570,8 +570,6 @@ def case_status_transition_flow_dispatcher(
         case (_, CaseStatus.triage):
             # Any -> Triage/
             log.warning(f"Unexpected Status Transition for Case #{case.id} from {previous_status} to {current_status}")
-            pass
-
         case (CaseStatus.new, CaseStatus.escalated):
             # New -> Escalated
             case_triage_status_flow(
