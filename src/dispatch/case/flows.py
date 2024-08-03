@@ -573,7 +573,7 @@ def case_status_transition_flow_dispatcher(
         case (_, CaseStatus.triage):
             # Any -> Triage/
             log.warning(
-                "Unexpected previous state for Case transition to Triage state."
+                "Unexpected previous state for Case transition to Triage state.",
                 extra={"case_id": case.id, "previous_status": previous_status, "current_status": current_status}
             )
 
