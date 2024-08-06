@@ -102,6 +102,16 @@
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
+                    v-model="lifecycle"
+                    label="Lifecycle"
+                    hint="The lifecycle stage of the signal."
+                    persistent-hint
+                    name="lifecycle"
+                    :rules="[rules.required]"
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
                     v-model="external_url"
                     label="External URL"
                     hint="This is a reference to an external app or documentation for this signal."
@@ -308,6 +318,7 @@ export default {
       "selected.external_url",
       "selected.filters",
       "selected.id",
+      "selected.lifecycle",
       "selected.loading",
       "selected.name",
       "selected.oncall_service",
