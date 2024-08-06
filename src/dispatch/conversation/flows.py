@@ -73,7 +73,6 @@ def create_case_conversation(
 
     conversation.update({"resource_type": plugin.plugin.slug, "resource_id": conversation["id"]})
 
-    print(f"got convo: {conversation}")
     conversation_in = ConversationCreate(
         resource_id=conversation["resource_id"],
         resource_type=conversation["resource_type"],
