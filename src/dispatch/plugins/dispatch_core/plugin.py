@@ -106,6 +106,10 @@ class PKCEAuthProviderPlugin(AuthenticationProviderPlugin):
         # Parse out the Key information. Add padding just in case
         key_info = json.loads(base64.b64decode(token.split(".")[0] + "=========").decode("utf-8"))
 
+        # If 'kid' does not exist in key_info, then it is not a PKCE token. Use BasicAuthProviderPlugin.
+        if "kid" not in key_info:
+            return BasicAuthProviderPlugin().get_current_user(request)
+
         # Grab all possible keys to account for key rotation and find the right key
         keys = requests.get(DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS).json()["keys"]
         for potential_key in keys:
