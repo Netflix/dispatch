@@ -81,6 +81,15 @@
             <v-list-item-title>{{ notification.name }}</v-list-item-title>
           </v-list-item>
         </v-list>
+        <div class="text-body-1 ml-1 mt-2">Search Filter Expression</div>
+        <v-divider class="mt-2" />
+        <v-list style="max-height: 500px">
+          <v-list-item>
+            <div style="height: 400px">
+              <MonacoEditor v-model="expression_str" :options="editorOptions" language="json" />
+            </div>
+          </v-list-item>
+        </v-list>
       </v-container>
     </v-navigation-drawer>
   </v-form>
@@ -109,6 +118,7 @@ export default {
       "selected.id",
       "selected.name",
       "selected.description",
+      "selected.expression",
       "selected.loading",
       "selected.individuals",
       "selected.teams",
@@ -117,6 +127,23 @@ export default {
       "dialogs.showCreateEdit",
     ]),
     ...mapFields("route", ["query"]),
+    expression_str: {
+      get: function () {
+        return JSON.stringify(this.expression, null, "\t") || "[]"
+      },
+      set: function (newValue) {
+        this.expression = JSON.parse(newValue)
+      },
+    },
+  },
+
+  data() {
+    return {
+      editorOptions: {
+        automaticLayout: true,
+        renderValidationDecorations: "on",
+      },
+    }
   },
 
   methods: {
