@@ -67,6 +67,8 @@ try:
     from dispatch.case.priority.models import CasePriority  # noqa lgtm[py/unused-import]
     from dispatch.case.severity.models import CaseSeverity  # noqa lgtm[py/unused-import]
     from dispatch.case.type.models import CaseType  # noqa lgtm[py/unused-import]
+    from dispatch.case_cost.models import CaseCost  # noqa lgtm[py/unused-import]
+    from dispatch.case_cost_type.models import CaseCostType  # noqa lgtm[py/unused-import]
     from dispatch.signal.models import Signal  # noqa lgtm[py/unused-import]
     from dispatch.feedback.service.reminder.models import (
         ServiceFeedbackReminder,  # noqa lgtm[py/unused-import]

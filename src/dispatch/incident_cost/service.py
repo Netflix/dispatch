@@ -225,7 +225,7 @@ def fetch_incident_events(
         return []
 
     # Array of sorted (timestamp, user_id) tuples.
-    return plugin_instance.instance.fetch_incident_events(
+    return plugin_instance.instance.fetch_events(
         db_session=db_session,
         subject=incident,
         plugin_event_id=activity.plugin_event.id,
