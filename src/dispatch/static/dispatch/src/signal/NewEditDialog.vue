@@ -107,6 +107,7 @@
                     hint="The lifecycle stage of the signal."
                     persistent-hint
                     name="lifecycle"
+                    readonly
                     :rules="[rules.required]"
                   />
                 </v-col>
