@@ -1,0 +1,60 @@
+name: Eugene CI check
+
+on: pull_request
+
+env:
+  EUGENE_VERSION: "0.6.1"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  lint-migration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11.2
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install python dependencies
+        run: |
+          export DISPATCH_LIGHT_BUILD=1
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Download eugene
+        run: |
+          curl -L  https://github.com/kaaveland/eugene/releases/download/$EUGENE_VERSION/eugene-x86_64-unknown-linux-musl -o eugene
+          chmod +x eugene
+      - name: Generate sql files
+        run: |
+          export LOG_LEVEL="ERROR"
+          export STATIC_DIR=""
+          export DATABASE_HOSTNAME="localhost"
+          export DATABASE_CREDENTIALS="dispatch:dispatch"
+          export DISPATCH_ENCRYPTION_KEY="NJHDWDJ3PbHT8h"
+          export DISPATCH_JWT_SECRET="foo"
+
+          changed_files=$(git diff --name-only -- src/dispatch/database/revisions/tenant/versions)
+          if [ -z "$changed_files" ]; then
+            echo "No migration files changed, skipping linting"
+            exit 0
+          fi
+          dispatch database upgrade --revision-type tenant --sql
+      - name: Lint files
+        run: ./eugene lint --ignore E9 alembic_output.sql -f md --accept-failures > lint.md
+      - name: Post Comment
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          COMMENT=$(cat lint.md)
+          gh pr comment ${{ github.event.pull_request.number }} --body "$COMMENT"
