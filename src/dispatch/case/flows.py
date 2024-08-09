@@ -132,9 +132,7 @@ def case_add_or_reactivate_participant_flow(
 
         # we send the welcome messages to the participant
         send_case_welcome_participant_message(
-            participant_email=user_email,
-            case=case,
-            db_session=db_session
+            participant_email=user_email, case=case, db_session=db_session
         )
 
     return participant
@@ -544,7 +542,11 @@ def case_status_transition_flow_dispatcher(
     """Runs the correct flows based on the current and previous status of the case."""
     log.info(
         "Transitioning Case status",
-        extra={"case_id": case.id, "previous_status": previous_status, "current_status": current_status}
+        extra={
+            "case_id": case.id,
+            "previous_status": previous_status,
+            "current_status": current_status,
+        },
     )
     match (previous_status, current_status):
         case (CaseStatus.closed, CaseStatus.new):
@@ -574,7 +576,11 @@ def case_status_transition_flow_dispatcher(
             # Any -> Triage/
             log.warning(
                 "Unexpected previous state for Case transition to Triage state.",
-                extra={"case_id": case.id, "previous_status": previous_status, "current_status": current_status}
+                extra={
+                    "case_id": case.id,
+                    "previous_status": previous_status,
+                    "current_status": current_status,
+                },
             )
 
         case (CaseStatus.new, CaseStatus.escalated):
@@ -772,7 +778,7 @@ def case_to_incident_escalate_flow(
         return
 
     reporter = ParticipantUpdate(
-        individual=IndividualContactRead(email=case.assignee.individual.email)
+        individual=IndividualContactRead(email=case.reporter.individual.email)
     )
 
     description = (
