@@ -240,8 +240,16 @@ def handle_update_case_command(
         case_resolution_reason_select(optional=True),
         resolution_input(initial_value=case.resolution),
         assignee_select(initial_user=assignee_initial_user),
-        case_status_select(initial_option={"text": case.status, "value": case.status}, statuses=statuses),
-        Context(elements=["Cases cannot be escalated here. Please use the `/dispatch-escalate-case` slash command."]),
+        case_status_select(
+            initial_option={"text": case.status, "value": case.status}, statuses=statuses
+        ),
+        Context(
+            elements=[
+                MarkdownText(
+                    text=f"Note: Cases cannot be escalated here. Please use the `{context['config'].slack_command_escalate_case}` slash command."
+                )
+            ]
+        ),
         case_type_select(
             db_session=db_session,
             initial_option={"text": case.case_type.name, "value": case.case_type.id},
@@ -1209,20 +1217,6 @@ def handle_escalation_submission_event(
         view=modal,
     )
 
-    blocks = create_case_message(case=case, channel_id=context["subject"].channel_id)
-    if case.has_thread:
-        client.chat_update(
-            blocks=blocks,
-            ts=case.conversation.thread_id,
-            channel=case.conversation.channel_id,
-        )
-
-    client.chat_postMessage(
-        text="This case has been escalated to an incident. All further triage work will take place in the incident channel.",
-        channel=case.conversation.channel_id,
-        thread_ts=case.conversation.thread_id if case.has_thread else None,
-    )
-
     incident_type = None
     if form_data.get(DefaultBlockIds.incident_type_select):
         incident_type = get_by_name(
@@ -1249,6 +1243,19 @@ def handle_escalation_submission_event(
         incident_description=incident_description,
     )
     incident = case.incidents[0]
+
+    blocks = create_case_message(case=case, channel_id=context["subject"].channel_id)
+    if case.has_thread:
+        client.chat_update(
+            blocks=blocks,
+            ts=case.conversation.thread_id,
+            channel=case.conversation.channel_id,
+        )
+        client.chat_postMessage(
+            text=f"This case has been escalated to incident {incident.name}. All further triage work will take place in the incident channel.",
+            channel=case.conversation.channel_id,
+            thread_ts=case.conversation.thread_id if case.has_thread else None,
+        )
 
     # Retrieve all participants from the case
     case_participants = case_service.get_participants(
@@ -1765,7 +1772,9 @@ def engagement_button_approve_click(
         blocks.append(
             Context(
                 elements=[
-                    "After submission, you will be asked to confirm a Multi-Factor Authentication (MFA) prompt, please have your MFA device ready."
+                    MarkdownText(
+                        text="After submission, you will be asked to confirm a Multi-Factor Authentication (MFA) prompt, please have your MFA device ready."
+                    )
                 ]
             ),
         )
