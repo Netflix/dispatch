@@ -1009,8 +1009,12 @@ def handle_member_joined_channel(
             )
             participant.added_by = incident.commander
 
-        # Message text when someone @'s a user is not available in body, use generic added by reason
-        participant.added_reason = f"Participant added by {participant.added_by.individual.name}"
+        if participant.added_by:
+            # Message text when someone @'s a user is not available in body, use generic added by reason
+            participant.added_reason = f"Participant added by {participant.added_by.individual.name}"
+        else:
+            # We couldn't find a user to attribute the addition to, add generic reason
+            participant.added_reason = "Participant added by Dispatch"
 
         db_session.add(participant)
         db_session.commit()
