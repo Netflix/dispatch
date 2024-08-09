@@ -777,8 +777,12 @@ def case_to_incident_escalate_flow(
     if case.incidents:
         return
 
-    reporter = ParticipantUpdate(
-        individual=IndividualContactRead(email=case.reporter.individual.email)
+    reporter = (
+        ParticipantUpdate(individual=IndividualContactRead(email=case.reporter.individual.email))
+        if case.reporter
+        else ParticipantUpdate(
+            individual=IndividualContactRead(email=case.assignee.individual.email)
+        )
     )
 
     description = (

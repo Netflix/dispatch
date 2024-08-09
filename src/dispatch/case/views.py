@@ -284,8 +284,12 @@ def escalate_case(
     """Escalates an existing case."""
     # current user is better than assignee (although likely the same)
     if not incident_in.reporter:
-        incident_in.reporter = ParticipantUpdate(
-            individual=IndividualContactRead(email=current_user.email)
+        incident_in.reporter = (
+            ParticipantUpdate(
+                individual=IndividualContactRead(email=current_case.reporter.individual.email)
+            )
+            if current_case.reporter
+            else ParticipantUpdate(individual=IndividualContactRead(email=current_user.email))
         )
 
     # allow for default values
