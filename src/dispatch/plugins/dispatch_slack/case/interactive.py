@@ -245,7 +245,9 @@ def handle_update_case_command(
         ),
         Context(
             elements=[
-                "Cases cannot be escalated here. Please use the `/dispatch-escalate-case` slash command."
+                MarkdownText(
+                    text=f"Note: Cases cannot be escalated here. Please use the `{context['config'].slack_command_escalate_case}` slash command."
+                )
             ]
         ),
         case_type_select(
@@ -1250,8 +1252,14 @@ def handle_escalation_submission_event(
             channel=case.conversation.channel_id,
         )
 
+    message_text = (
+        "This case has been escalated to an incident."
+        if case.dedicated_channel
+        else f"This case has been escalated to incident {incident.name}. All further triage work will take place in the incident channel."
+    )
+
     client.chat_postMessage(
-        text="This case has been escalated to an incident. All further triage work will take place in the incident channel.",
+        text=message_text,
         channel=case.conversation.channel_id,
         thread_ts=case.conversation.thread_id if case.has_thread else None,
     )
@@ -1771,7 +1779,9 @@ def engagement_button_approve_click(
         blocks.append(
             Context(
                 elements=[
-                    "After submission, you will be asked to confirm a Multi-Factor Authentication (MFA) prompt, please have your MFA device ready."
+                    MarkdownText(
+                        text="After submission, you will be asked to confirm a Multi-Factor Authentication (MFA) prompt, please have your MFA device ready."
+                    )
                 ]
             ),
         )
