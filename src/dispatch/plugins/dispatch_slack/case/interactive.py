@@ -1251,18 +1251,11 @@ def handle_escalation_submission_event(
             ts=case.conversation.thread_id,
             channel=case.conversation.channel_id,
         )
-
-    message_text = (
-        "This case has been escalated to an incident."
-        if case.dedicated_channel
-        else f"This case has been escalated to incident {incident.name}. All further triage work will take place in the incident channel."
-    )
-
-    client.chat_postMessage(
-        text=message_text,
-        channel=case.conversation.channel_id,
-        thread_ts=case.conversation.thread_id if case.has_thread else None,
-    )
+        client.chat_postMessage(
+            text=f"This case has been escalated to incident {incident.name}. All further triage work will take place in the incident channel.",
+            channel=case.conversation.channel_id,
+            thread_ts=case.conversation.thread_id if case.has_thread else None,
+        )
 
     # Retrieve all participants from the case
     case_participants = case_service.get_participants(
