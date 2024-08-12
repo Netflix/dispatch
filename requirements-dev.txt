@@ -10,7 +10,7 @@ asttokens==2.4.1
     #   stack-data
 attrs==22.1.0
     # via -r requirements-dev.in
-black==24.4.2
+black==24.8.0
     # via -r requirements-dev.in
 cfgv==3.4.0
     # via pre-commit
