@@ -96,6 +96,34 @@
             </v-tooltip>
           </v-col>
         </v-row>
+        <v-row align="start" no-gutters>
+          <v-col class="d-flex justify-start">
+            <v-checkbox
+              class="ml-10 mr-5"
+              v-model="weeklyReports"
+              @update:model-value="updateWeeklyReports"
+              :disabled="weeklyReports == null"
+            >
+              <template #label>
+                <div>
+                  <div>Send Weekly Incident Summary</div>
+                  <small class="text-subtext">
+                    (requires enabled artificial-intelligence plugin)
+                  </small>
+                </div>
+              </template>
+            </v-checkbox>
+            <v-tooltip max-width="500px" open-delay="50" location="bottom">
+              <template #activator="{ props }">
+                <v-icon v-bind="props"> mdi-information </v-icon>
+              </template>
+              <span>
+                If activated, Dispatch will send a weekly summary report of incidents that were
+                active or marked as stable or closed in the last week.
+              </span>
+            </v-tooltip>
+          </v-col>
+        </v-row>
       </v-col>
     </v-row>
   </v-container>
@@ -151,6 +179,7 @@ export default {
       "table.rows.items",
       "table.rows.total",
       "dailyReports",
+      "weeklyReports",
     ]),
   },
 
@@ -177,7 +206,13 @@ export default {
   },
 
   methods: {
-    ...mapActions("notification", ["getAll", "createEditShow", "removeShow", "updateDailyReports"]),
+    ...mapActions("notification", [
+      "getAll",
+      "createEditShow",
+      "removeShow",
+      "updateDailyReports",
+      "updateWeeklyReports",
+    ]),
   },
 }
 </script>

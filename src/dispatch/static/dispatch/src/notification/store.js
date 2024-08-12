@@ -48,6 +48,7 @@ const state = {
     loading: false,
   },
   dailyReports: null,
+  weeklyReports: null,
 }
 
 const getters = {
@@ -65,6 +66,7 @@ const actions = {
       const project = response.data.items[0]
       if (project) {
         commit("SET_DAILY_REPORT_STATE", project.send_daily_reports ?? true)
+        commit("SET_WEEKLY_REPORT_STATE", project.send_weekly_reports ?? true)
       }
     })
     return NotificationApi.getAll(params)
@@ -91,6 +93,24 @@ const actions = {
       const project = response.data.items[0]
       if (project) {
         project.send_daily_reports = value
+        ProjectApi.update(project.id, project).then(() => {
+          commit(
+            "notification_backend/addBeNotification",
+            {
+              text: `Project setting updated.`,
+              type: "success",
+            },
+            { root: true }
+          )
+        })
+      }
+    })
+  },
+  updateWeeklyReports({ commit }, value) {
+    ProjectApi.getAll({ q: state.table.options.filters.project[0].name }).then((response) => {
+      const project = response.data.items[0]
+      if (project) {
+        project.send_weekly_reports = value
         ProjectApi.update(project.id, project).then(() => {
           commit(
             "notification_backend/addBeNotification",
@@ -187,6 +207,9 @@ const mutations = {
   },
   SET_DAILY_REPORT_STATE(state, value) {
     state.dailyReports = value
+  },
+  SET_WEEKLY_REPORT_STATE(state, value) {
+    state.weeklyReports = value
   },
 }
 
