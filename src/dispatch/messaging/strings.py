@@ -25,6 +25,7 @@ class MessageType(DispatchEnum):
     incident_closed_information_review_reminder = "incident-closed-information-review-reminder"
     incident_completed_form_notification = "incident-completed-form-notification"
     incident_daily_report = "incident-daily-report"
+    incident_weekly_report = "incident-weekly-report"
     incident_executive_report = "incident-executive-report"
     incident_feedback_daily_report = "incident-feedback-daily-report"
     incident_management_help_tips = "incident-management-help-tips"
@@ -75,6 +76,18 @@ respond to incidents. Please review and update them, or mark them as deprecated.
 
 INCIDENT_FEEDBACK_DAILY_REPORT_DESCRIPTION = """
 This is a daily report of feedback about incidents handled by you.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_WEEKLY_REPORT_TITLE = """
+Incidents Weekly Report""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_WEEKLY_REPORT_DESCRIPTION = """
+This is an AI-generated weekly summary of incidents that have been marked as closed in the last week.
+NOTE: These summaries may contain errors or inaccuracies.
+Please verify the information before relying on it.""".replace(
     "\n", " "
 ).strip()
 
@@ -521,6 +534,14 @@ INCIDENT_NAME = {
     "text": NOTIFICATION_PURPOSES_FYI,
 }
 
+INCIDENT_NAME_SUMMARY = {
+    "title": "{{name}} Incident Summary",
+    "title_link": "{{ticket_weblink}}",
+    "text": "{{ignore}}",
+}
+
+INCIDENT_SUMMARY = {"title": "Summary", "text": "{{summary}}"}
+
 INCIDENT_TITLE = {"title": "Title", "text": "{{title}}"}
 
 CASE_TITLE = {"title": "Title", "text": "{{title}}"}
@@ -587,6 +608,12 @@ INCIDENT_COMMANDER = {
     "title": "Commander - {{commander_fullname}}, {{commander_team}}",
     "title_link": "{{commander_weblink}}",
     "text": INCIDENT_COMMANDER_DESCRIPTION,
+}
+
+INCIDENT_COMMANDER_SUMMARY = {
+    "title": "Commander - {{commander_fullname}}, {{commander_team}}",
+    "title_link": "{{commander_weblink}}",
+    "text": "{{ignore}}",
 }
 
 INCIDENT_CONFERENCE = {
@@ -948,6 +975,15 @@ INCIDENT_FEEDBACK_DAILY_REPORT = [
     {"title": "Created At", "text": "", "datetime": "{{ created_at}}"},
 ]
 
+INCIDENT_WEEKLY_REPORT_HEADER = {
+    "type": "header",
+    "text": INCIDENT_WEEKLY_REPORT_TITLE,
+}
+
+INCIDENT_WEEKLY_REPORT_HEADER_DESCRIPTION = {
+    "text": INCIDENT_WEEKLY_REPORT_DESCRIPTION,
+}
+
 INCIDENT_DAILY_REPORT_HEADER = {
     "type": "header",
     "text": INCIDENT_DAILY_REPORT_TITLE,
@@ -968,6 +1004,12 @@ INCIDENT_DAILY_REPORT = [
     INCIDENT_DAILY_REPORT_FOOTER,
 ]
 
+INCIDENT_WEEKLY_REPORT = [
+    INCIDENT_WEEKLY_REPORT_HEADER,
+    INCIDENT_WEEKLY_REPORT_HEADER_DESCRIPTION,
+    INCIDENT_DAILY_REPORT_FOOTER,
+]
+
 INCIDENT = [
     INCIDENT_NAME_WITH_ENGAGEMENT_NO_DESCRIPTION,
     INCIDENT_TITLE,
@@ -978,6 +1020,12 @@ INCIDENT = [
     INCIDENT_COMMANDER,
 ]
 
+INCIDENT_SUMMARY_TEMPLATE = [
+    INCIDENT_NAME_SUMMARY,
+    INCIDENT_TITLE,
+    INCIDENT_COMMANDER_SUMMARY,
+    INCIDENT_SUMMARY,
+]
 
 INCIDENT_MANAGEMENT_HELP_TIPS_MESSAGE = [
     {
