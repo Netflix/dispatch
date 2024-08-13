@@ -151,7 +151,7 @@ def incident_report_daily(db_session: Session, project: Project):
             items_grouped = []
             items_grouped_template = INCIDENT
 
-            for idx, incident in enumerate(incidents):
+            for _idx, incident in enumerate(incidents):
                 try:
                     item = {
                         "buttons": [],
