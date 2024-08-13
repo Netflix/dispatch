@@ -151,7 +151,7 @@ def incident_report_daily(db_session: Session, project: Project):
             items_grouped = []
             items_grouped_template = INCIDENT
 
-            for _idx, incident in enumerate(incidents):
+            for idx, incident in enumerate(incidents):
                 try:
                     item = {
                         "buttons": [],
@@ -277,7 +277,7 @@ def incident_report_weekly(db_session: Session, project: Project):
             items_grouped = []
             items_grouped_template = INCIDENT_SUMMARY_TEMPLATE
 
-            for idx, incident in enumerate(incidents):
+            for _idx, incident in enumerate(incidents):
                 try:
                     pir_doc = storage_plugin.instance.get(
                         file_id=incident.incident_review_document.resource_id,
