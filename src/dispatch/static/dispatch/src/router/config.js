@@ -68,6 +68,12 @@ export const protectedRoute = [
   },
   ...withPrefix("/:organization/", [
     {
+      path: "mfa",
+      name: "mfa",
+      meta: { title: "Dispatch Mfa", requiresAuth: true },
+      component: () => import("@/auth/Mfa.vue"),
+    },
+    {
       path: "incidents/status",
       name: "status",
       meta: { title: "Incident Status", requiresAuth: true },

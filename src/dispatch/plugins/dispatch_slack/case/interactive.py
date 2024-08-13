@@ -25,7 +25,7 @@ from slack_sdk.web.client import WebClient
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from dispatch.auth.models import DispatchUser
+from dispatch.auth.models import DispatchUser, MfaChallengeStatus
 from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
 from dispatch.case.enums import CaseStatus, CaseResolutionReason
@@ -1772,9 +1772,7 @@ def engagement_button_approve_click(
         blocks.append(
             Context(
                 elements=[
-                    MarkdownText(
-                        text="After submission, you will be asked to confirm a Multi-Factor Authentication (MFA) prompt, please have your MFA device ready."
-                    )
+                    "After submission, you will be asked to confirm a Multi-Factor Authentication (MFA) prompt, please have your MFA device ready."
                 ]
             ),
         )
@@ -1790,12 +1788,12 @@ def engagement_button_approve_click(
     client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
-def ack_engagement_submission_event(ack: Ack, mfa_enabled: bool) -> None:
+def ack_engagement_submission_event(ack: Ack, mfa_enabled: bool, challenge_url: str | None = None) -> None:
     """Handles the add engagement submission event acknowledgement."""
     text = (
         "Confirming suspicious event..."
         if mfa_enabled is False
-        else "Sending MFA push notification, please confirm to create Engagement filter..."
+        else f"Sending MFA push notification, please confirm to create Engagement filter.. open -> {challenge_url}."
     )
     modal = Modal(
         title="Confirm",
@@ -1837,41 +1835,30 @@ def handle_engagement_submission_event(
         db_session=db_session, project_id=context["subject"].project_id, plugin_type="auth-mfa"
     )
     mfa_enabled = True if mfa_plugin and engagement.require_mfa else False
+    challenge, challenge_url = mfa_plugin.instance.create_mfa_challenge(
+        action="signal-engagement-confirmation",
+        current_user=user,
+        db_session=db_session,
+        project_id=context["subject"].project_id
+    )
 
-    ack_engagement_submission_event(ack=ack, mfa_enabled=mfa_enabled)
+    ack_engagement_submission_event(ack=ack, mfa_enabled=mfa_enabled, challenge_url=challenge_url)
 
     case = case_service.get(db_session=db_session, case_id=metadata["id"])
     signal_instance = signal_service.get_signal_instance(
         db_session=db_session, signal_instance_id=UUID(metadata["signal_instance_id"])
     )
-
     # Get context provided by the user
     context_from_user = body["view"]["state"]["values"][DefaultBlockIds.description_input][
         DefaultBlockIds.description_input
     ]["value"]
 
-    # Check if last_mfa_time was within the last hour
-    last_hour = datetime.now() - timedelta(hours=1)
-    if (user.last_mfa_time and user.last_mfa_time > last_hour) or mfa_enabled is False:
-        return send_engagement_response(
-            case=case,
-            client=client,
-            context_from_user=context_from_user,
-            db_session=db_session,
-            engagement=engagement,
-            engaged_user=engaged_user,
-            response=PushResponseResult.allow,
-            signal_instance=signal_instance,
-            user=user_who_clicked_button,
-            view_id=body["view"]["id"],
-        )
-
-    # Send the MFA push notification
-    response = mfa_plugin.instance.send_push_notification(
-        username=engaged_user,
-        type="Are you confirming the behavior as expected in Dispatch?",
+    # wait for the mfa challenge
+    response = mfa_plugin.instance.wait_for_challenge(
+        challenge_id=challenge.challenge_id,
+        db_session=db_session,
     )
-    if response == PushResponseResult.allow:
+    if response == MfaChallengeStatus.APPROVED:
         send_engagement_response(
             case=case,
             client=client,
@@ -1884,7 +1871,6 @@ def handle_engagement_submission_event(
             user=user_who_clicked_button,
             view_id=body["view"]["id"],
         )
-        user.last_mfa_time = datetime.now()
         db_session.commit()
         return
     else:
@@ -1914,7 +1900,8 @@ def send_engagement_response(
     user: DispatchUser,
     view_id: str,
 ):
-    if response == PushResponseResult.allow:
+    print(f"enter engagement with {response=} from wait for challenge")
+    if response == MfaChallengeStatus.APPROVED:
         title = "Approve"
         text = "Confirmation... Success!"
         message_text = f":white_check_mark: {engaged_user} confirmed the behavior *is expected*.\n\n *Context Provided* \n```{context_from_user}```"
@@ -1923,9 +1910,9 @@ def send_engagement_response(
         title = "MFA Failed"
         engagement_status = SignalEngagementStatus.denied
 
-        if response == PushResponseResult.timeout:
+        if response == MfaChallengeStatus.EXPIRED:
             text = "Confirmation failed, the MFA request timed out. Please have your MFA device ready to accept the push notification and try again."
-        elif response == PushResponseResult.user_not_found:
+        elif response == MfaChallengeStatus.DENIED:
             text = "User not found in MFA provider. To validate your identity, please register in Duo and try again."
         else:
             text = "Confirmation failed. You must accept the MFA prompt."

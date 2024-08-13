@@ -17,9 +17,13 @@ from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.enums import UserRoles
 from dispatch.models import OrganizationSlug, PrimaryKey
+from dispatch.plugin import service as plugin_service
 from dispatch.organization.models import OrganizationRead
 
 from .models import (
+    MfaChallengeStatus,
+    MfaPayload,
+    MfaPayloadResponse,
     UserLogin,
     UserLoginResponse,
     UserOrganization,
@@ -224,7 +228,6 @@ def login_user(
         model=UserLogin,
     )
 
-
 def register_user(
     user_in: UserRegister,
     organization: OrganizationSlug,
@@ -244,6 +247,26 @@ def register_user(
 
     user = create(db_session=db_session, organization=organization, user_in=user_in)
     return user
+
+
+
+
+@auth_router.post("/mfa", response_model=MfaPayloadResponse)
+def mfa_check(
+    payload_in: MfaPayload,
+    current_user: CurrentUser,
+    db_session: DbSession,
+):
+    try:
+        mfa_auth_plugin = plugin_service.get_active_instance(
+            db_session=db_session, project_id=payload_in.project_id, plugin_type="auth-mfa"
+        )
+        if not mfa_auth_plugin:
+            raise Exception("MFA plugin is not enabled for the project.")
+        status = mfa_auth_plugin.instance.validate_mfa_token(payload_in, current_user, db_session)
+        return MfaPayloadResponse(status=MfaChallengeStatus.APPROVED if status else MfaChallengeStatus.DENIED.value)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 if DISPATCH_AUTH_REGISTRATION_ENABLED:
