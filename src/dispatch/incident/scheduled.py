@@ -6,6 +6,7 @@ from datetime import datetime, date
 from schedule import every
 from sqlalchemy import func, Session
 
+from dispatch.enums import Visibility
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.database.core import resolve_attr
 from dispatch.decorators import scheduled_project_task, timer
@@ -278,6 +279,9 @@ def incident_report_weekly(db_session: Session, project: Project):
             items_grouped_template = INCIDENT_SUMMARY_TEMPLATE
 
             for _idx, incident in enumerate(incidents):
+                # Skip restricted incidents
+                if incident.visibility == Visibility.restricted:
+                    continue
                 try:
                     pir_doc = storage_plugin.instance.get(
                         file_id=incident.incident_review_document.resource_id,
