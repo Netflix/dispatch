@@ -1,3 +1,4 @@
+from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.enums import DispatchEnum
 
 
@@ -8,6 +9,7 @@ class CaseNotificationActions(DispatchEnum):
     reopen = "case-notification-reopen"
     resolve = "case-notification-resolve"
     triage = "case-notification-triage"
+    invite_user_case = ConversationButtonActions.invite_user_case
 
 
 class CasePaginateActions(DispatchEnum):
