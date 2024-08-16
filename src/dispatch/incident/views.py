@@ -323,7 +323,7 @@ def create_executive_report(
 @router.post(
     "/{incident_id}/event",
     summary="Creates a custom event.",
-    dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
+    dependencies=[Depends(PermissionsDependency([IncidentCommanderOrScribePermission]))],
 )
 def create_custom_event(
     db_session: DbSession,
