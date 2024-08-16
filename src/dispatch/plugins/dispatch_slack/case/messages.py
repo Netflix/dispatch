@@ -114,7 +114,7 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
         blocks.extend(
             [
                 Section(text=f"*Resolution reason* \n {case.resolution_reason}"),
-                Section(text=f"*Resolution description* \n {case.resolution}"),
+                Section(text=f"*Resolution description* \n {case.resolution}"[:3000]),
                 Actions(
                     elements=[
                         Button(
