@@ -14,6 +14,7 @@ from dispatch.auth.permissions import (
     IncidentJoinOrSubscribePermission,
     IncidentViewPermission,
     PermissionsDependency,
+    IncidentEventPermission,
 )
 from dispatch.auth.service import CurrentUser
 from dispatch.common.utils.views import create_pydantic_include
@@ -323,7 +324,7 @@ def create_executive_report(
 @router.post(
     "/{incident_id}/event",
     summary="Creates a custom event.",
-    dependencies=[Depends(PermissionsDependency([IncidentCommanderOrScribePermission]))],
+    dependencies=[Depends(PermissionsDependency([IncidentEventPermission]))],
 )
 def create_custom_event(
     db_session: DbSession,
@@ -348,7 +349,7 @@ def create_custom_event(
 @router.patch(
     "/{incident_id}/event",
     summary="Updates a custom event.",
-    dependencies=[Depends(PermissionsDependency([IncidentCommanderOrScribePermission]))],
+    dependencies=[Depends(PermissionsDependency([IncidentEventPermission]))],
 )
 def update_custom_event(
     db_session: DbSession,
@@ -380,7 +381,7 @@ def update_custom_event(
 @router.post(
     "/{incident_id}/exportTimeline",
     summary="Exports timeline events.",
-    dependencies=[Depends(PermissionsDependency([IncidentCommanderOrScribePermission]))],
+    dependencies=[Depends(PermissionsDependency([IncidentEventPermission]))],
 )
 def export_timeline_event(
     db_session: DbSession,
@@ -403,7 +404,7 @@ def export_timeline_event(
 @router.delete(
     "/{incident_id}/event/{event_uuid}",
     summary="Deletes a custom event.",
-    dependencies=[Depends(PermissionsDependency([IncidentCommanderOrScribePermission]))],
+    dependencies=[Depends(PermissionsDependency([IncidentEventPermission]))],
 )
 def delete_custom_event(
     db_session: DbSession,
