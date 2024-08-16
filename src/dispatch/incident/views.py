@@ -10,7 +10,6 @@ from sqlalchemy.exc import IntegrityError
 
 from dispatch.auth.permissions import (
     IncidentEditPermission,
-    IncidentCommanderOrScribePermission,
     IncidentJoinOrSubscribePermission,
     IncidentViewPermission,
     PermissionsDependency,
