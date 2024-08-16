@@ -119,7 +119,7 @@
               </template>
               <span>
                 If activated, Dispatch will send a weekly summary report of incidents that were
-                active or marked as stable or closed in the last week.
+                marked as closed in the last week.
               </span>
             </v-tooltip>
           </v-col>
