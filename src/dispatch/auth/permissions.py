@@ -66,8 +66,7 @@ class BasePermission(ABC):
     role = None
 
     @abstractmethod
-    def has_required_permissions(self, request: Request) -> bool:
-        ...
+    def has_required_permissions(self, request: Request) -> bool: ...
 
     def __init__(self, request: Request):
         organization = None
@@ -294,6 +293,21 @@ class IncidentEditPermission(BasePermission):
             permissions=[
                 OrganizationAdminPermission,
                 IncidentCommanderPermission,
+                IncidentReporterPermission,
+            ],
+            request=request,
+        )
+
+
+class IncidentEventPermission(BasePermission):
+    def has_required_permissions(
+        self,
+        request: Request,
+    ) -> bool:
+        return any_permission(
+            permissions=[
+                OrganizationAdminPermission,
+                IncidentCommanderOrScribePermission,
                 IncidentReporterPermission,
             ],
             request=request,

@@ -10,7 +10,7 @@ aiofiles==24.1.0
     # via -r requirements-base.in
 aiohappyeyeballs==2.3.5
     # via aiohttp
-aiohttp==3.10.3
+aiohttp==3.10.4
     # via -r requirements-base.in
 aiosignal==1.3.1
     # via aiohttp
@@ -43,7 +43,7 @@ botocore==1.34.13
     # via
     #   boto3
     #   s3transfer
-cachetools==5.4.0
+cachetools==5.5.0
     # via
     #   -r requirements-base.in
     #   google-auth
@@ -209,7 +209,7 @@ lxml==5.0.0
     #   premailer
 mako==1.3.0
     # via alembic
-markdown==3.6
+markdown==3.7
     # via -r requirements-base.in
 markupsafe==2.1.3
     # via
