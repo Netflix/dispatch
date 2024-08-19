@@ -299,7 +299,9 @@ def project_select(
 ):
     """Creates a project select."""
     projects = [
-        {"text": p.name, "value": p.id} for p in project_service.get_all(db_session=db_session) if p.enabled
+        {"text": p.name, "value": p.id}
+        for p in project_service.get_all(db_session=db_session)
+        if p.enabled
     ]
     return static_select_block(
         placeholder="Select Project",
@@ -326,6 +328,7 @@ def title_input(
             placeholder=placeholder,
             initial_value=initial_value,
             action_id=action_id,
+            max_length=3000,
         ),
         label=label,
         block_id=block_id,
@@ -348,6 +351,7 @@ def description_input(
             initial_value=initial_value,
             multiline=True,
             action_id=action_id,
+            max_length=3000,
         ),
         block_id=block_id,
         label=label,
@@ -369,6 +373,7 @@ def resolution_input(
             initial_value=initial_value,
             multiline=True,
             action_id=action_id,
+            max_length=3000,
         ),
         block_id=block_id,
         label=label,
