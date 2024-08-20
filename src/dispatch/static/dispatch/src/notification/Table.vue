@@ -97,7 +97,7 @@
           </v-col>
         </v-row>
         <v-row align="start" no-gutters>
-          <v-col class="d-flex justify-start">
+          <v-col class="d-flex justify-start" cols="4">
             <v-checkbox
               class="ml-10 mr-5"
               v-model="weeklyReports"
@@ -122,6 +122,21 @@
                 marked as closed in the last week.
               </span>
             </v-tooltip>
+          </v-col>
+          <v-col cols="5">
+            <v-select
+              :disabled="!weeklyReports"
+              v-model="weeklyReportNotificationId"
+              :items="items"
+              item-title="name"
+              item-value="id"
+              @update:model-value="updateWeeklyReportNotificationId"
+              :menu-props="{ maxHeight: '400' }"
+              label="Target notification channel"
+              clearable
+              chips
+              hint="Set the notification channel for the weekly report."
+            />
           </v-col>
         </v-row>
       </v-col>
@@ -180,6 +195,7 @@ export default {
       "table.rows.total",
       "dailyReports",
       "weeklyReports",
+      "weeklyReportNotificationId",
     ]),
   },
 
@@ -212,6 +228,7 @@ export default {
       "removeShow",
       "updateDailyReports",
       "updateWeeklyReports",
+      "updateWeeklyReportNotificationId",
     ]),
   },
 }

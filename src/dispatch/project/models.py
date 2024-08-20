@@ -46,6 +46,8 @@ class Project(Base):
     send_daily_reports = Column(Boolean)
     send_weekly_reports = Column(Boolean)
 
+    weekly_report_notification_id = Column(Integer, nullable=True)
+
     stable_priority_id = Column(Integer, nullable=True)
     stable_priority = relationship(
         IncidentPriority,
@@ -82,6 +84,7 @@ class ProjectBase(DispatchBase):
     color: Optional[str] = Field(None, nullable=True)
     send_daily_reports: Optional[bool] = Field(True, nullable=True)
     send_weekly_reports: Optional[bool] = Field(False, nullable=True)
+    weekly_report_notification_id: Optional[int] = Field(None, nullable=True)
     enabled: Optional[bool] = Field(True, nullable=True)
     storage_folder_one: Optional[str] = Field(None, nullable=True)
     storage_folder_two: Optional[str] = Field(None, nullable=True)
@@ -97,6 +100,7 @@ class ProjectCreate(ProjectBase):
 class ProjectUpdate(ProjectBase):
     send_daily_reports: Optional[bool] = Field(True, nullable=True)
     send_weekly_reports: Optional[bool] = Field(False, nullable=True)
+    weekly_report_notification_id: Optional[int] = Field(None, nullable=True)
     stable_priority_id: Optional[int]
 
 

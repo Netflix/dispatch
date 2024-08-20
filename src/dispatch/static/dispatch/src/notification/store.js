@@ -49,6 +49,7 @@ const state = {
   },
   dailyReports: null,
   weeklyReports: null,
+  weeklyReportNotificationId: null,
 }
 
 const getters = {
@@ -67,12 +68,21 @@ const actions = {
       if (project) {
         commit("SET_DAILY_REPORT_STATE", project.send_daily_reports ?? true)
         commit("SET_WEEKLY_REPORT_STATE", project.send_weekly_reports ?? true)
+        if (project.weekly_report_notification_id) {
+          NotificationApi.get(project.weekly_report_notification_id).then((response) => {
+            commit("SET_WEEKLY_REPORT_TARGET", response.data)
+          })
+        }
       }
     })
     return NotificationApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)
         commit("SET_TABLE_ROWS", response.data)
+        commit(
+          "SET_NOTIFICATION_TYPES",
+          response.data.items.map((item) => item.name)
+        )
       })
       .catch(() => {
         commit("SET_TABLE_LOADING", false)
@@ -111,6 +121,24 @@ const actions = {
       const project = response.data.items[0]
       if (project) {
         project.send_weekly_reports = value
+        ProjectApi.update(project.id, project).then(() => {
+          commit(
+            "notification_backend/addBeNotification",
+            {
+              text: `Project setting updated.`,
+              type: "success",
+            },
+            { root: true }
+          )
+        })
+      }
+    })
+  },
+  updateWeeklyReportNotificationId({ commit }, value) {
+    ProjectApi.getAll({ q: state.table.options.filters.project[0].name }).then((response) => {
+      const project = response.data.items[0]
+      if (project) {
+        project.weekly_report_notification_id = value
         ProjectApi.update(project.id, project).then(() => {
           commit(
             "notification_backend/addBeNotification",
@@ -210,6 +238,9 @@ const mutations = {
   },
   SET_WEEKLY_REPORT_STATE(state, value) {
     state.weeklyReports = value
+  },
+  SET_WEEKLY_REPORT_TARGET(state, value) {
+    state.weeklyReportNotificationId = value
   },
 }
 

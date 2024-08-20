@@ -87,32 +87,6 @@ def incident_auto_tagger(db_session: Session, project: Project):
             log.debug(f"Associating tags with incident {incident.name}. Tags: {extracted_tags}")
 
 
-def get_notifications_filters(incidents, db_session: Session, project: Project):
-    # we map incidents to notification filters
-    incidents_notification_filters_mapping = defaultdict(lambda: defaultdict(lambda: []))
-    notifications = notification_service.get_all_enabled(
-        db_session=db_session, project_id=project.id
-    )
-    for incident in incidents:
-        for notification in notifications:
-            for search_filter in notification.filters:
-                match = search_filter_service.match(
-                    db_session=db_session,
-                    subject=search_filter.subject,
-                    filter_spec=search_filter.expression,
-                    class_instance=incident,
-                )
-                if match:
-                    incidents_notification_filters_mapping[notification.id][
-                        search_filter.id
-                    ].append(incident)
-
-            if not notification.filters:
-                incidents_notification_filters_mapping[notification.id][0].append(incident)
-
-    return incidents_notification_filters_mapping
-
-
 @scheduler.add(every(1).day.at("18:00"), name="incident-report-daily")
 @timer
 @scheduled_project_task
@@ -142,9 +116,26 @@ def incident_report_daily(db_session: Session, project: Project):
     incidents = active_incidents + stable_incidents + closed_incidents
 
     # we map incidents to notification filters
-    incidents_notification_filters_mapping = get_notifications_filters(
-        incidents, db_session, project
+    incidents_notification_filters_mapping = defaultdict(lambda: defaultdict(lambda: []))
+    notifications = notification_service.get_all_enabled(
+        db_session=db_session, project_id=project.id
     )
+    for incident in incidents:
+        for notification in notifications:
+            for search_filter in notification.filters:
+                match = search_filter_service.match(
+                    db_session=db_session,
+                    subject=search_filter.subject,
+                    filter_spec=search_filter.expression,
+                    class_instance=incident,
+                )
+                if match:
+                    incidents_notification_filters_mapping[notification.id][
+                        search_filter.id
+                    ].append(incident)
+
+            if not notification.filters:
+                incidents_notification_filters_mapping[notification.id][0].append(incident)
 
     # we create and send an incidents daily report for each notification filter
     for notification_id, search_filter_dict in incidents_notification_filters_mapping.items():
@@ -243,8 +234,8 @@ def incident_close_reminder(db_session: Session, project: Project):
 def incident_report_weekly(db_session: Session, project: Project):
     """Creates and sends incident weekly reports based on notifications."""
 
-    # don't send if set to false
-    if project.send_weekly_reports is False:
+    # don't send if set to false or no notification id is set
+    if project.send_weekly_reports is False or not project.weekly_report_notification_id:
         return
 
     # don't send if no enabled ai plugin
@@ -263,80 +254,77 @@ def incident_report_weekly(db_session: Session, project: Project):
         hours=24 * 7,
     )
 
-    # we map incidents to notification filters
-    incidents_notification_filters_mapping = get_notifications_filters(
-        incidents, db_session, project
-    )
+    # no incidents closed in the last week
+    if not incidents:
+        return
 
     storage_plugin = plugin_service.get_active_instance(
         db_session=db_session, plugin_type="storage", project_id=project.id
     )
 
-    # we create and send an incidents weekly report for each notification filter
-    for notification_id, search_filter_dict in incidents_notification_filters_mapping.items():
-        for _search_filter_id, incidents in search_filter_dict.items():
-            items_grouped = []
-            items_grouped_template = INCIDENT_SUMMARY_TEMPLATE
+    # we create and send an incidents weekly report
+    for incident in incidents:
+        items_grouped = []
+        items_grouped_template = INCIDENT_SUMMARY_TEMPLATE
 
-            for _idx, incident in enumerate(incidents):
-                # Skip restricted incidents
-                if incident.visibility == Visibility.restricted:
-                    continue
-                try:
-                    pir_doc = storage_plugin.instance.get(
-                        file_id=incident.incident_review_document.resource_id,
-                        mime_type="text/plain",
-                    )
-                    messages = {
-                        "role": "user",
-                        "content": """Given the text of the security post-incident review document below,
-                        provide answers to the following questions:
-                        1. What is the summary of what happened?
-                        2. What were the overall risk(s)?
-                        3. How were the risk(s) mitigated?
-                        4. How was the incident resolved?
-                        5. What are the follow-up tasks?
-                        """
-                        + pir_doc,
-                    }
-
-                    response = ai_plugin.instance.chat(messages)
-                    summary = response["choices"][0]["message"]["content"]
-
-                    item = {
-                        "commander_fullname": incident.commander.individual.name,
-                        "commander_team": incident.commander.team,
-                        "commander_weblink": incident.commander.individual.weblink,
-                        "name": incident.name,
-                        "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
-                        "title": incident.title,
-                        "summary": summary,
-                    }
-
-                    items_grouped.append(item)
-                except Exception as e:
-                    log.exception(e)
-
-            notification_kwargs = {
-                "items_grouped": items_grouped,
-                "items_grouped_template": items_grouped_template,
+        # Skip restricted incidents
+        if incident.visibility == Visibility.restricted:
+            continue
+        try:
+            pir_doc = storage_plugin.instance.get(
+                file_id=incident.incident_review_document.resource_id,
+                mime_type="text/plain",
+            )
+            messages = {
+                "role": "user",
+                "content": """Given the text of the security post-incident review document below,
+                provide answers to the following questions:
+                1. What is the summary of what happened?
+                2. What were the overall risk(s)?
+                3. How were the risk(s) mitigated?
+                4. How was the incident resolved?
+                5. What are the follow-up tasks?
+                """
+                + pir_doc,
             }
 
-            notification_title_text = f"{project.name} {INCIDENT_WEEKLY_REPORT_TITLE}"
-            notification_params = {
-                "text": notification_title_text,
-                "type": MessageType.incident_weekly_report,
-                "template": INCIDENT_WEEKLY_REPORT,
-                "kwargs": notification_kwargs,
+            response = ai_plugin.instance.chat(messages)
+            summary = response["choices"][0]["message"]["content"]
+
+            item = {
+                "commander_fullname": incident.commander.individual.name,
+                "commander_team": incident.commander.team,
+                "commander_weblink": incident.commander.individual.weblink,
+                "name": incident.name,
+                "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
+                "title": incident.title,
+                "summary": summary,
             }
 
-            notification = notification_service.get(
-                db_session=db_session, notification_id=notification_id
-            )
+            items_grouped.append(item)
+        except Exception as e:
+            log.exception(e)
 
-            notification_service.send(
-                db_session=db_session,
-                project_id=notification.project.id,
-                notification=notification,
-                notification_params=notification_params,
-            )
+    notification_kwargs = {
+        "items_grouped": items_grouped,
+        "items_grouped_template": items_grouped_template,
+    }
+
+    notification_title_text = f"{project.name} {INCIDENT_WEEKLY_REPORT_TITLE}"
+    notification_params = {
+        "text": notification_title_text,
+        "type": MessageType.incident_weekly_report,
+        "template": INCIDENT_WEEKLY_REPORT,
+        "kwargs": notification_kwargs,
+    }
+
+    notification = notification_service.get(
+        db_session=db_session, notification_id=project.weekly_report_notification_id
+    )
+
+    notification_service.send(
+        db_session=db_session,
+        project_id=notification.project.id,
+        notification=notification,
+        notification_params=notification_params,
+    )
