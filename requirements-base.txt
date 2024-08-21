@@ -413,7 +413,7 @@ sniffio==1.3.0
     #   openai
 sortedcontainers==2.4.0
     # via hypothesis
-spacy==3.7.5
+spacy==3.7.6
     # via -r requirements-base.in
 spacy-legacy==3.0.12
     # via spacy
