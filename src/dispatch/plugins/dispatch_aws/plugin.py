@@ -8,7 +8,7 @@
 import boto3
 import json
 import logging
-
+from pydantic import ValidationError
 from dispatch.metrics import provider as metrics_provider
 from dispatch.plugins.bases import SignalConsumerPlugin
 from dispatch.signal import service as signal_service
@@ -52,12 +52,16 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                     body = json.loads(message["Body"])
                     signal_data = json.loads(body["Message"])
 
-                    signal_instance = signal_service.create_signal_instance(
-                        db_session=db_session,
-                        signal_instance_in=SignalInstanceCreate(
-                            project=project, raw=signal_data, **signal_data
-                        ),
-                    )
+                    try:
+                        signal_instance = signal_service.create_signal_instance(
+                            db_session=db_session,
+                            signal_instance_in=SignalInstanceCreate(
+                                project=project, raw=signal_data, **signal_data
+                            ),
+                        )
+                    except ValidationError as e:
+                        log.exception(e)
+                        continue
                     metrics_provider.counter(
                         "aws-sqs-signal-consumer.signal.received",
                         tags={
