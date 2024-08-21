@@ -104,14 +104,10 @@ class Case(Base, TimeStampMixin, ProjectMixin):
 
     # relationships
     assignee_id = Column(Integer, ForeignKey("participant.id", ondelete="CASCADE"))
-    assignee = relationship(
-        Participant, foreign_keys=[assignee_id], lazy="subquery", post_update=True
-    )
+    assignee = relationship(Participant, foreign_keys=[assignee_id], post_update=True)
 
     reporter_id = Column(Integer, ForeignKey("participant.id", ondelete="CASCADE"))
-    reporter = relationship(
-        Participant, foreign_keys=[reporter_id], lazy="subquery", post_update=True
-    )
+    reporter = relationship(Participant, foreign_keys=[reporter_id], post_update=True)
 
     case_type = relationship("CaseType", backref="case")
     case_type_id = Column(Integer, ForeignKey("case_type.id"))
