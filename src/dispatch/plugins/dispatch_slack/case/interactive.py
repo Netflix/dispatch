@@ -32,7 +32,7 @@ from dispatch.case.enums import CaseStatus, CaseResolutionReason
 from dispatch.case.models import Case, CaseCreate, CaseRead, CaseUpdate
 from dispatch.conversation import flows as conversation_flows
 from dispatch.entity import service as entity_service
-from dispatch.enums import UserRoles, SubjectNames
+from dispatch.enums import UserRoles, SubjectNames, Visibility
 from dispatch.exceptions import ExistsError
 from dispatch.individual.models import IndividualContactRead
 from dispatch.participant import service as participant_service
@@ -1314,6 +1314,47 @@ def join_incident_button_click(
         participant_emails=[user.email],
         db_session=db_session,
     )
+
+
+@app.action(
+    CaseNotificationActions.invite_user_case,
+    middleware=[button_context_middleware, db_middleware, user_middleware],
+)
+def handle_case_notification_join_button_click(
+    ack: Ack,
+    user: DispatchUser,
+    client: WebClient,
+    respond: Respond,
+    db_session: Session,
+    context: BoltContext,
+):
+    """Handles the case join button click event."""
+    ack()
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+
+    if not case:
+        message = "Sorry, we can't invite you to this case. The case does not exist."
+    elif case.visibility == Visibility.restricted:
+        message = "Sorry, we can't invite you to this case. The case's visibility is restricted. Please, reach out to the case assignee if you have any questions."
+    elif case.status == CaseStatus.closed:
+        message = "Sorry, you can't join this case. The case has already been marked as closed. Please, reach out to the case assignee if you have any questions."
+    elif case.status == CaseStatus.escalated:
+        conversation_flows.add_incident_participants_to_conversation(
+            incident=case.incidents[0],
+            participant_emails=[user.email],
+            db_session=db_session,
+        )
+        message = f"The case has already been escalated to incident {case.incidents[0].name}. We've added you to the incident conversation. Please, check your Slack sidebar for the new incident channel."
+    else:
+        user_id = context["user_id"]
+        try:
+            client.conversations_invite(channel=case.conversation.channel_id, users=[user_id])
+            message = f"Success! We've added you to case {case.name}. Please, check your Slack sidebar for the new case channel."
+        except SlackApiError as e:
+            if e.response.get("error") == SlackAPIErrorCode.ALREADY_IN_CHANNEL:
+                message = f"Sorry, we can't invite you to this case - you're already a member. Search for a channel called {case.name.lower()} in your Slack sidebar."
+
+    respond(text=message, response_type="ephemeral", replace_original=False, delete_original=False)
 
 
 @app.action(CaseNotificationActions.edit, middleware=[button_context_middleware, db_middleware])
