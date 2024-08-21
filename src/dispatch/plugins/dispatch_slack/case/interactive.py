@@ -32,7 +32,7 @@ from dispatch.case.enums import CaseStatus, CaseResolutionReason
 from dispatch.case.models import Case, CaseCreate, CaseRead, CaseUpdate
 from dispatch.conversation import flows as conversation_flows
 from dispatch.entity import service as entity_service
-from dispatch.enums import UserRoles, SubjectNames
+from dispatch.enums import UserRoles, SubjectNames, Visibility
 from dispatch.exceptions import ExistsError
 from dispatch.individual.models import IndividualContactRead
 from dispatch.participant import service as participant_service
@@ -240,8 +240,16 @@ def handle_update_case_command(
         case_resolution_reason_select(optional=True),
         resolution_input(initial_value=case.resolution),
         assignee_select(initial_user=assignee_initial_user),
-        case_status_select(initial_option={"text": case.status, "value": case.status}, statuses=statuses),
-        Context(elements=["Cases cannot be escalated here. Please use the `/dispatch-escalate-case` slash command."]),
+        case_status_select(
+            initial_option={"text": case.status, "value": case.status}, statuses=statuses
+        ),
+        Context(
+            elements=[
+                MarkdownText(
+                    text=f"Note: Cases cannot be escalated here. Please use the `{context['config'].slack_command_escalate_case}` slash command."
+                )
+            ]
+        ),
         case_type_select(
             db_session=db_session,
             initial_option={"text": case.case_type.name, "value": case.case_type.id},
@@ -1209,20 +1217,6 @@ def handle_escalation_submission_event(
         view=modal,
     )
 
-    blocks = create_case_message(case=case, channel_id=context["subject"].channel_id)
-    if case.has_thread:
-        client.chat_update(
-            blocks=blocks,
-            ts=case.conversation.thread_id,
-            channel=case.conversation.channel_id,
-        )
-
-    client.chat_postMessage(
-        text="This case has been escalated to an incident. All further triage work will take place in the incident channel.",
-        channel=case.conversation.channel_id,
-        thread_ts=case.conversation.thread_id if case.has_thread else None,
-    )
-
     incident_type = None
     if form_data.get(DefaultBlockIds.incident_type_select):
         incident_type = get_by_name(
@@ -1249,6 +1243,19 @@ def handle_escalation_submission_event(
         incident_description=incident_description,
     )
     incident = case.incidents[0]
+
+    blocks = create_case_message(case=case, channel_id=context["subject"].channel_id)
+    if case.has_thread:
+        client.chat_update(
+            blocks=blocks,
+            ts=case.conversation.thread_id,
+            channel=case.conversation.channel_id,
+        )
+        client.chat_postMessage(
+            text=f"This case has been escalated to incident {incident.name}. All further triage work will take place in the incident channel.",
+            channel=case.conversation.channel_id,
+            thread_ts=case.conversation.thread_id if case.has_thread else None,
+        )
 
     # Retrieve all participants from the case
     case_participants = case_service.get_participants(
@@ -1307,6 +1314,47 @@ def join_incident_button_click(
         participant_emails=[user.email],
         db_session=db_session,
     )
+
+
+@app.action(
+    CaseNotificationActions.invite_user_case,
+    middleware=[button_context_middleware, db_middleware, user_middleware],
+)
+def handle_case_notification_join_button_click(
+    ack: Ack,
+    user: DispatchUser,
+    client: WebClient,
+    respond: Respond,
+    db_session: Session,
+    context: BoltContext,
+):
+    """Handles the case join button click event."""
+    ack()
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+
+    if not case:
+        message = "Sorry, we can't invite you to this case. The case does not exist."
+    elif case.visibility == Visibility.restricted:
+        message = "Sorry, we can't invite you to this case. The case's visibility is restricted. Please, reach out to the case assignee if you have any questions."
+    elif case.status == CaseStatus.closed:
+        message = "Sorry, you can't join this case. The case has already been marked as closed. Please, reach out to the case assignee if you have any questions."
+    elif case.status == CaseStatus.escalated:
+        conversation_flows.add_incident_participants_to_conversation(
+            incident=case.incidents[0],
+            participant_emails=[user.email],
+            db_session=db_session,
+        )
+        message = f"The case has already been escalated to incident {case.incidents[0].name}. We've added you to the incident conversation. Please, check your Slack sidebar for the new incident channel."
+    else:
+        user_id = context["user_id"]
+        try:
+            client.conversations_invite(channel=case.conversation.channel_id, users=[user_id])
+            message = f"Success! We've added you to case {case.name}. Please, check your Slack sidebar for the new case channel."
+        except SlackApiError as e:
+            if e.response.get("error") == SlackAPIErrorCode.ALREADY_IN_CHANNEL:
+                message = f"Sorry, we can't invite you to this case - you're already a member. Search for a channel called {case.name.lower()} in your Slack sidebar."
+
+    respond(text=message, response_type="ephemeral", replace_original=False, delete_original=False)
 
 
 @app.action(CaseNotificationActions.edit, middleware=[button_context_middleware, db_middleware])
@@ -1765,7 +1813,9 @@ def engagement_button_approve_click(
         blocks.append(
             Context(
                 elements=[
-                    "After submission, you will be asked to confirm a Multi-Factor Authentication (MFA) prompt, please have your MFA device ready."
+                    MarkdownText(
+                        text="After submission, you will be asked to confirm a Multi-Factor Authentication (MFA) prompt, please have your MFA device ready."
+                    )
                 ]
             ),
         )

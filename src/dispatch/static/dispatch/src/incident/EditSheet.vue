@@ -32,7 +32,7 @@
           </template>
         </v-list-item>
       </template>
-      <v-tabs color="primary" fixed-tabs v-model="tab">
+      <v-tabs color="primary" fixed-tabs v-model="tab" :disabled="id == null">
         <v-tab value="details"> Details </v-tab>
         <v-tab value="resources"> Resources </v-tab>
         <v-tab value="participants"> Participants </v-tab>

@@ -10,7 +10,7 @@ asttokens==2.4.1
     #   stack-data
 attrs==22.1.0
     # via -r requirements-dev.in
-black==24.4.2
+black==24.8.0
     # via -r requirements-dev.in
 cfgv==3.4.0
     # via pre-commit
@@ -18,7 +18,7 @@ click==8.1.7
     # via
     #   -r requirements-dev.in
     #   black
-coverage==7.6.0
+coverage==7.6.1
     # via -r requirements-dev.in
 decorator==5.1.1
     # via ipython
@@ -30,9 +30,9 @@ executing==2.0.1
     # via
     #   devtools
     #   stack-data
-factory-boy==3.3.0
+factory-boy==3.3.1
     # via -r requirements-dev.in
-faker==26.0.0
+faker==27.0.0
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -86,7 +86,7 @@ python-dateutil==2.9.0.post0
     # via faker
 pyyaml==6.0.1
     # via pre-commit
-ruff==0.5.6
+ruff==0.6.1
     # via -r requirements-dev.in
 six==1.16.0
     # via
