@@ -25,6 +25,7 @@ from dispatch.incident.type import service as incident_type_service
 from dispatch.incident.priority import service as incident_priority_service
 from dispatch.incident.severity import service as incident_severity_service
 from dispatch.signal.models import Signal
+from dispatch.plugins.dispatch_slack.config import MAX_SECTION_TEXT_LENGTH
 
 
 class DefaultBlockIds(DispatchEnum):
@@ -328,7 +329,7 @@ def title_input(
             placeholder=placeholder,
             initial_value=initial_value,
             action_id=action_id,
-            max_length=3000,
+            max_length=MAX_SECTION_TEXT_LENGTH,
         ),
         label=label,
         block_id=block_id,
@@ -351,7 +352,7 @@ def description_input(
             initial_value=initial_value,
             multiline=True,
             action_id=action_id,
-            max_length=3000,
+            max_length=MAX_SECTION_TEXT_LENGTH,
         ),
         block_id=block_id,
         label=label,
@@ -373,7 +374,7 @@ def resolution_input(
             initial_value=initial_value,
             multiline=True,
             action_id=action_id,
-            max_length=3000,
+            max_length=MAX_SECTION_TEXT_LENGTH,
         ),
         block_id=block_id,
         label=label,
