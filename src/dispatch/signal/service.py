@@ -16,10 +16,8 @@ from dispatch.case.priority import service as case_priority_service
 from dispatch.case.type import service as case_type_service
 from dispatch.case.type.models import CaseType
 from dispatch.database.service import apply_filter_specific_joins, apply_filters
-from dispatch.entity import service as entity_service
 from dispatch.entity.models import Entity
 from dispatch.entity_type import service as entity_type_service
-from dispatch.entity_type.models import EntityScopeEnum
 from dispatch.entity_type.models import EntityType
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
