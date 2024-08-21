@@ -262,6 +262,12 @@ def incident_report_weekly(db_session: Session, project: Project):
         db_session=db_session, plugin_type="storage", project_id=project.id
     )
 
+    if not storage_plugin:
+        log.warning(
+            f"Incident weekly reports not sent. No storage plugin enabled. Project: {project.name}."
+        )
+        return
+
     # we create and send an incidents weekly report
     for incident in incidents:
         items_grouped = []
