@@ -26,7 +26,6 @@ from dispatch.project import service as project_service
 from dispatch.service import service as service_service
 from dispatch.tag import service as tag_service
 from dispatch.workflow import service as workflow_service
-from sqlalchemy.exc import IntegrityError
 
 from .exceptions import (
     SignalNotDefinedException,
@@ -171,9 +170,7 @@ def create_signal_instance(*, db_session: Session, signal_instance_in: SignalIns
 
     signal_instance_in.signal = signal_definition
 
-    signal_instance = create_instance(
-        db_session=db_session, signal_instance_in=signal_instance_in
-    )
+    signal_instance = create_instance(db_session=db_session, signal_instance_in=signal_instance_in)
     signal_instance.signal = signal_definition
     db_session.commit()
 
