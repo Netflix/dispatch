@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+from sqlalchemy.orm import Session
 from dispatch.database.core import SessionLocal
 from dispatch.participant import service as participant_service
 from dispatch.plugin import service as plugin_service
