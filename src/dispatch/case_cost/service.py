@@ -324,13 +324,6 @@ def get_participant_role_time_seconds(
     # we calculate the number of hours the participant has spent in the case role
     participant_role_time_hours = participant_role_time.total_seconds() / SECONDS_IN_HOUR
 
-    # we make the assumption that participants only spend 8 hours a day working on the case,
-    # if the case goes past 24hrs
-    # TODO(mvilanova): adjust based on case priority
-    if participant_role_time_hours > HOURS_IN_DAY:
-        days, hours = divmod(participant_role_time_hours, HOURS_IN_DAY)
-        participant_role_time_hours = math.ceil(((days * HOURS_IN_DAY) / 3) + hours)
-
     # we make the assumption that participants spend more or less time based on their role
     # and we adjust the time spent based on that
     return participant_role_time_hours * SECONDS_IN_HOUR
