@@ -162,6 +162,7 @@ def dispatch_user():
     pass
 
 
+# dispatch plugins calculate_incident_cost -o default -p 1  -i 4031
 @plugins_group.command("calculate_incident_cost")
 @click.option(
     "--organization",
@@ -199,63 +200,211 @@ def calculate_incident_cost(organization="default", project_id=1, incident_id=1)
 
     db_session = refetch_db_session(organization_slug=organization)
 
-    t_incident = incident_service.get(db_session=db_session, incident_id=int(incident_id))
-    oldest = t_incident.created_at.replace(tzinfo=timezone.utc).timestamp()
+    costs = [["id", "classic", "new"]]
+    incident_ids = [
+        4141,
+        4140,
+        4139,
+        4138,
+        4137,
+        4136,
+        4134,
+        4133,
+        4132,
+        4131,
+        4130,
+        4129,
+        4128,
+        4127,
+        4126,
+        4119,
+        4118,
+        4117,
+        4116,
+        4115,
+        4114,
+        4113,
+        4112,
+        4111,
+        4110,
+        4109,
+        4108,
+        4107,
+        4106,
+        4103,
+        4102,
+        4101,
+        4098,
+        4097,
+        4095,
+        4094,
+        4093,
+        4092,
+        4091,
+        4088,
+        4087,
+        4086,
+        4085,
+        4084,
+        4083,
+        4082,
+        4081,
+        4080,
+        4079,
+        4078,
+        4077,
+        4075,
+        4074,
+        4073,
+        4072,
+        4071,
+        4070,
+        4067,
+        4066,
+        4065,
+        4064,
+        4063,
+        4062,
+        4061,
+        4060,
+        4059,
+        4056,
+        4055,
+        4054,
+        4052,
+        4051,
+        4050,
+        4049,
+        4046,
+        4045,
+        4044,
+        4042,
+        4041,
+        4040,
+        4039,
+        4038,
+        4037,
+        4035,
+        4034,
+        4033,
+        4029,
+        4028,
+        4026,
+        4025,
+        4024,
+        4021,
+        4020,
+        4018,
+        4017,
+        4011,
+        4010,
+        4009,
+        4008,
+        4007,
+        4002,
+        3998,
+        3997,
+        3996,
+        3995,
+        3993,
+        3992,
+        3991,
+        3990,
+        3989,
+        3988,
+        3985,
+        3983,
+        3982,
+        3980,
+        3979,
+        3978,
+        3977,
+        3976,
+        3974,
+        3972,
+        3968,
+        3967,
+        3965,
+        3964,
+        3963,
+        3962,
+        3960,
+        3959,
+        3957,
+        3956,
+        3955,
+        3954,
+        3953,
+        3952,
+        3951,
+        3950,
+        3949,
+        3948,
+    ]
 
-    participant_activities = defaultdict(list)
-    cost_model = cost_model_service.get_cost_model_by_id(db_session=db_session, cost_model_id=1)
-    participants_total_response_time_seconds = 0
+    for incident_id in incident_ids:
+        print("\n\n")
+        print(costs)
+        print("\n\n")
+        t_incident = incident_service.get(db_session=db_session, incident_id=int(incident_id))
+        # log.debug(incident_id, t_incident)
+        oldest = t_incident.created_at.replace(tzinfo=timezone.utc).timestamp()
 
-    # Get the cost model. Iterate through all the listed activities we want to record.
-    for activity in cost_model.activities:
+        participant_activities = defaultdict(list)
+        cost_model = cost_model_service.get_cost_model_by_id(db_session=db_session, cost_model_id=1)
+        participants_total_response_time_seconds = 0
 
-        # Array of sorted (timestamp, user_id) tuples.
-        incident_events = incident_cost_service.fetch_incident_events(
-            incident=t_incident, activity=activity, oldest=oldest, db_session=db_session
-        )
+        # Get the cost model. Iterate through all the listed activities we want to record.
+        for activity in cost_model.activities:
 
-        for ts, user_id in incident_events:
-            participant = (
-                incident_cost_service.participant_service.get_by_incident_id_and_conversation_id(
+            # Array of sorted (timestamp, user_id) tuples.
+            incident_events = incident_cost_service.fetch_incident_events(
+                incident=t_incident, activity=activity, oldest=oldest, db_session=db_session
+            )
+
+            for ts, user_id in incident_events:
+                participant = incident_cost_service.participant_service.get_by_incident_id_and_conversation_id(
                     db_session=db_session,
                     incident_id=t_incident.id,
                     user_conversation_id=user_id,
                 )
-            )
-            if not participant:
-                log.warning("Cannot resolve participant.")
-                continue
+                if not participant:
+                    log.warning("Cannot resolve participant.")
+                    continue
 
-            activity_in = ParticipantActivityCreate(
-                plugin_event=activity.plugin_event,
-                started_at=ts,
-                ended_at=ts + timedelta(seconds=activity.response_time_seconds),
-                participant=ParticipantRead(id=participant.id),
-                incident=t_incident,
-            )
-            if participant_response_time := participant_activity_service.preview(
-                activity_in=activity_in,
-                participant_activities=participant_activities,
-            ):
-                participants_total_response_time_seconds += (
-                    participant_response_time.total_seconds()
+                activity_in = ParticipantActivityCreate(
+                    plugin_event=activity.plugin_event,
+                    started_at=ts,
+                    ended_at=ts + timedelta(seconds=activity.response_time_seconds),
+                    participant=ParticipantRead(id=participant.id),
+                    incident=t_incident,
                 )
-    print("participants_total_response_time_seconds", participants_total_response_time_seconds)
-    hourly_rate = incident_cost_service.get_hourly_rate(project=t_incident.project)
-    print("hourly rate: ", hourly_rate)
-    amount = incident_cost_service.calculate_response_cost(
-        hourly_rate=hourly_rate,
-        total_response_time_seconds=participants_total_response_time_seconds,
-    )
+                if participant_response_time := participant_activity_service.preview(
+                    activity_in=activity_in,
+                    participant_activities=participant_activities,
+                ):
+                    participants_total_response_time_seconds += (
+                        participant_response_time.total_seconds()
+                    )
+        # print("participants_total_response_time_seconds", participants_total_response_time_seconds)
+        hourly_rate = incident_cost_service.get_hourly_rate(project=t_incident.project)
+        # print("hourly rate: ", hourly_rate)
+        amount = incident_cost_service.calculate_response_cost(
+            hourly_rate=hourly_rate,
+            total_response_time_seconds=participants_total_response_time_seconds,
+        )
 
-    incident_costs = t_incident.incident_costs
-    other_costs = 0
-    for incident_cost in incident_costs:
-        if not incident_cost.incident_cost_type.default:
-            other_costs += incident_cost.amount
+        incident_costs = t_incident.incident_costs
+        other_costs = 0
+        for incident_cost in incident_costs:
+            if not incident_cost.incident_cost_type.default:
+                other_costs += incident_cost.amount
+        # print(t_incident.total_cost, ", ", amount + other_costs)
+        costs.append([incident_id, t_incident.total_cost, amount + other_costs])
 
-    print("The classic cost is: ", t_incident.total_cost)
-    print("The new cost is: ", amount + other_costs)
+    print(costs)
+    # print("The classic cost is: ", t_incident.total_cost)
+    # print("The new cost is: ", amount + other_costs)
 
 
 @dispatch_user.command("register")
@@ -888,22 +1037,22 @@ def signals_group():
 
 
 def _run_consume(plugin_slug: str, organization_slug: str, project_id: int, running: bool):
-    from dispatch.database.core import get_organization_session
+    from dispatch.database.core import refetch_db_session
     from dispatch.plugin import service as plugin_service
     from dispatch.project import service as project_service
     from dispatch.common.utils.cli import install_plugins
 
     install_plugins()
 
-    with get_organization_session(organization_slug) as session:
-        plugin = plugin_service.get_active_instance_by_slug(
-            db_session=session, slug=plugin_slug, project_id=project_id
-        )
-        project = project_service.get(db_session=session, project_id=project_id)
-        while True:
-            if not running:
-                break
-            plugin.instance.consume(db_session=session, project=project)
+    db_session = refetch_db_session(organization_slug=organization_slug)
+    plugin = plugin_service.get_active_instance_by_slug(
+        db_session=db_session, slug=plugin_slug, project_id=project_id
+    )
+    project = project_service.get(db_session=db_session, project_id=project_id)
+    while True:
+        if not running:
+            break
+        plugin.instance.consume(db_session=db_session, project=project)
 
 
 @signals_group.command("consume")
@@ -920,11 +1069,10 @@ def consume_signals():
     from dispatch.plugin import service as plugin_service
 
     from dispatch.organization.service import get_all as get_all_organizations
-    from dispatch.database.core import get_session, get_organization_session
+    from dispatch.database.core import SessionLocal, engine, sessionmaker
 
     install_plugins()
-    with get_session() as session:
-        organizations = get_all_organizations(db_session=session)
+    organizations = get_all_organizations(db_session=SessionLocal())
 
     log = logging.getLogger(__name__)
 
@@ -935,28 +1083,34 @@ def consume_signals():
     workers = []
 
     for organization in organizations:
-        with get_organization_session(organization.slug) as session:
-            projects = project_service.get_all(db_session=session)
-            for project in projects:
-                plugins = plugin_service.get_active_instances(
-                    db_session=session, plugin_type="signal-consumer", project_id=project.id
+        schema_engine = engine.execution_options(
+            schema_translate_map={
+                None: f"dispatch_organization_{organization.slug}",
+            }
+        )
+        session = sessionmaker(bind=schema_engine)()
+
+        projects = project_service.get_all(db_session=session)
+        for project in projects:
+            plugins = plugin_service.get_active_instances(
+                db_session=session, plugin_type="signal-consumer", project_id=project.id
+            )
+
+            if not plugins:
+                log.warning(
+                    f"No signals consumed. No signal-consumer plugins enabled. Project: {project.name}. Organization: {project.organization.name}"
                 )
 
-                if not plugins:
-                    log.warning(
-                        f"No signals consumed. No signal-consumer plugins enabled. Project: {project.name}. Organization: {project.organization.name}"
+            for plugin in plugins:
+                log.debug(f"Consuming signals for plugin: {plugin.plugin.slug}")
+                for _ in range(5):  # TODO add plugin.instance.concurrency
+                    t = Thread(
+                        target=_run_consume,
+                        args=(plugin.plugin.slug, organization.slug, project.id, running),
+                        daemon=True,  # Set thread to daemon
                     )
-
-                for plugin in plugins:
-                    log.debug(f"Consuming signals for plugin: {plugin.plugin.slug}")
-                    for _ in range(5):  # TODO add plugin.instance.concurrency
-                        t = Thread(
-                            target=_run_consume,
-                            args=(plugin.plugin.slug, organization.slug, project.id, running),
-                            daemon=True,  # Set thread to daemon
-                        )
-                        t.start()
-                        workers.append(t)
+                    t.start()
+                    workers.append(t)
 
     def terminate_processes(signum, frame):
         print("Terminating main process...")
