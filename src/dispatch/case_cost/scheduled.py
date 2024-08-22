@@ -34,7 +34,7 @@ def calculate_cases_response_cost(db_session: SessionLocal, project: Project):
         )
         return
 
-    cases = case_service.get_all(db_session=db_session, project_id=project.id)
+    cases = case_service.get_all_by_status(db_session=db_session, project_id=project.id)
 
     for case in cases:
         try:
