@@ -81,7 +81,7 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                         signal_instance_in=signal_instance_in,
                     )
                 except Exception as e:
-                    log.exception(e)
+                    log.exception(f"Unable to create signal instance: {e}")
                     continue
                 else:
                     metrics_provider.counter(
