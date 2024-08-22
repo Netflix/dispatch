@@ -97,6 +97,7 @@ def get_all_by_status(*, db_session: Session, project_id: int, status: str) -> L
                 Case.updated_at,
                 Case.triage_at,
                 Case.closed_at,
+                Case.case_costs,
             )
         )
         .filter(Case.project_id == project_id)
