@@ -71,7 +71,7 @@ def get_last_participant_activity(
 
 
 def get_all_case_participant_activities_for_case(
-    db_session: SessionLocal,
+    db_session: Session,
     case_id: int,
 ) -> list[ParticipantActivityRead]:
     """Fetches all recorded participant case activities for a given case."""
