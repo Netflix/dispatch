@@ -78,6 +78,7 @@ def get_all_open_by_case_type(*, db_session, case_type_id: int) -> List[Optional
     return (
         db_session.query(Case)
         .filter(Case.status != CaseStatus.closed)
+        .filter(Case.status != CaseStatus.escalated)
         .filter(Case.case_type_id == case_type_id)
         .all()
     )
