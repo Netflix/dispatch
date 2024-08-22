@@ -800,6 +800,18 @@ def _run_consume(
     project_id: int,
     running: Event,
 ) -> None:
+    """
+    Runs the consume method of a plugin instance.
+
+    Args:
+        plugin_slug (str): The slug of the plugin to run.
+        organization_slug (str): The slug of the organization.
+        project_id (int): The ID of the project.
+        running (Event): An event to signal when the thread should stop running.
+
+    Returns:
+        None
+    """
     from dispatch.database.core import get_organization_session
     from dispatch.plugin import service as plugin_service
     from dispatch.project import service as project_service
@@ -820,6 +832,18 @@ def _run_consume_with_exception_handling(
     project_id: int,
     running: Event,
 ) -> None:
+    """
+    Runs the consume method of a plugin instance with exception handling.
+
+    Args:
+        plugin_slug (str): The slug of the plugin to run.
+        organization_slug (str): The slug of the organization.
+        project_id (int): The ID of the project.
+        running (Event): An event to signal when the thread should stop running.
+
+    Returns:
+        None
+    """
     while running.is_set():
         try:
             _run_consume(plugin_slug, organization_slug, project_id, running)
@@ -834,6 +858,18 @@ def _create_consumer_thread(
     project_id: int,
     running: Event,
 ) -> Thread:
+    """
+    Creates a new consumer thread for a plugin.
+
+    Args:
+        plugin_slug (str): The slug of the plugin to run.
+        organization_slug (str): The slug of the organization.
+        project_id (int): The ID of the project.
+        running (Event): An event to signal when the thread should stop running.
+
+    Returns:
+        Thread: A new daemon thread that will run the plugin's consume method.
+    """
     return Thread(
         target=_run_consume_with_exception_handling,
         args=(
@@ -848,14 +884,22 @@ def _create_consumer_thread(
 
 @signals_group.command("consume")
 def consume_signals():
-    """Runs a continuous process that consumes signals from the specified plugin."""
+    """
+    Runs a continuous process that consumes signals from the specified plugins.
+
+    This function sets up consumer threads for all active signal-consumer plugins
+    across all organizations and projects. It monitors these threads and restarts
+    them if they die. The process can be terminated using SIGINT or SIGTERM.
+
+    Returns:
+        None
+    """
     import signal
     from types import FrameType
 
     from dispatch.common.utils.cli import install_plugins
     from dispatch.project import service as project_service
     from dispatch.plugin import service as plugin_service
-
     from dispatch.organization.service import get_all as get_all_organizations
     from dispatch.database.core import get_session, get_organization_session
 
@@ -897,6 +941,16 @@ def consume_signals():
                         workers.append(t)
 
     def terminate_processes(signum: int, frame: FrameType) -> None:
+        """
+        Signal handler to terminate all processes.
+
+        Args:
+            signum (int): The signal number.
+            frame (FrameType): The current stack frame.
+
+        Returns:
+            None
+        """
         log.info("Terminating main process...")
         running.clear()  # stop all threads
         for worker in workers:
@@ -905,7 +959,6 @@ def consume_signals():
     signal.signal(signal.SIGINT, terminate_processes)
     signal.signal(signal.SIGTERM, terminate_processes)
 
-    # Monitor and restart dead threads
     while running.is_set():
         for i, worker in enumerate(workers):
             if not worker.is_alive():
@@ -914,11 +967,7 @@ def consume_signals():
                 new_worker = _create_consumer_thread(**config, running=running)
                 new_worker.start()
                 workers[i] = new_worker
-        time.sleep(10)  # Check every 10 seconds
-
-    # Keep the main thread running
-    while running.is_set():
-        time.sleep(1)
+        time.sleep(1)  # Check every second
 
     log.info("Main process terminating.")
 
