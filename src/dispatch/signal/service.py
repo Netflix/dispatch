@@ -16,17 +16,14 @@ from dispatch.case.priority import service as case_priority_service
 from dispatch.case.type import service as case_type_service
 from dispatch.case.type.models import CaseType
 from dispatch.database.service import apply_filter_specific_joins, apply_filters
-from dispatch.entity import service as entity_service
 from dispatch.entity.models import Entity
 from dispatch.entity_type import service as entity_type_service
-from dispatch.entity_type.models import EntityScopeEnum
 from dispatch.entity_type.models import EntityType
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 from dispatch.service import service as service_service
 from dispatch.tag import service as tag_service
 from dispatch.workflow import service as workflow_service
-from sqlalchemy.exc import IntegrityError
 
 from .exceptions import (
     SignalNotDefinedException,
@@ -171,33 +168,10 @@ def create_signal_instance(*, db_session: Session, signal_instance_in: SignalIns
 
     signal_instance_in.signal = signal_definition
 
-    try:
-        signal_instance = create_instance(
-            db_session=db_session, signal_instance_in=signal_instance_in
-        )
-        signal_instance.signal = signal_definition
-        db_session.commit()
-    except IntegrityError:
-        db_session.rollback()
-        signal_instance = update_instance(
-            db_session=db_session, signal_instance_in=signal_instance_in
-        )
-        # Note: we can do this because it's still relatively cheap, if we add more logic here
-        # this will need to be moved to a background function (similar to case creation)
-        # fetch `all` entities that should be associated with all signal definitions
-        entity_types = entity_type_service.get_all(
-            db_session=db_session, scope=EntityScopeEnum.all
-        ).all()
-        entity_types = signal_instance.signal.entity_types + entity_types
+    signal_instance = create_instance(db_session=db_session, signal_instance_in=signal_instance_in)
+    signal_instance.signal = signal_definition
+    db_session.commit()
 
-        if entity_types:
-            entities = entity_service.find_entities(
-                db_session=db_session,
-                signal_instance=signal_instance,
-                entity_types=entity_types,
-            )
-            signal_instance.entities = entities
-            db_session.commit()
     return signal_instance
 
 
@@ -763,3 +737,22 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
 
     db_session.commit()
     return filtered
+
+
+def get_unprocessed_signal_instance_ids(session: Session) -> list[int]:
+    """Retrieves IDs of unprocessed signal instances from the database.
+
+    Args:
+        session (Session): The database session.
+
+    Returns:
+        list[int]: A list of signal instance IDs that need processing.
+    """
+    return (
+        session.query(SignalInstance.id)
+        .filter(SignalInstance.filter_action == None)  # noqa
+        .filter(SignalInstance.case_id == None)  # noqa
+        .order_by(SignalInstance.created_at.asc())
+        .limit(500)
+        .all()
+    )

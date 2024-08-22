@@ -5,7 +5,6 @@ from uuid import UUID
 from functools import partial
 import json
 import pytz
-import re
 
 from blockkit import (
     Actions,
@@ -33,7 +32,7 @@ from dispatch.case.enums import CaseStatus, CaseResolutionReason
 from dispatch.case.models import Case, CaseCreate, CaseRead, CaseUpdate
 from dispatch.conversation import flows as conversation_flows
 from dispatch.entity import service as entity_service
-from dispatch.enums import UserRoles, SubjectNames
+from dispatch.enums import UserRoles, SubjectNames, Visibility
 from dispatch.exceptions import ExistsError
 from dispatch.individual.models import IndividualContactRead
 from dispatch.participant import service as participant_service
@@ -58,7 +57,6 @@ from dispatch.plugins.dispatch_slack.case.enums import (
 from dispatch.plugins.dispatch_slack.case.messages import (
     create_case_message,
     create_signal_engagement_message,
-    create_welcome_ephemeral_message_to_participant,
 )
 from dispatch.plugins.dispatch_slack.config import SlackConversationConfiguration
 from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
@@ -97,7 +95,6 @@ from dispatch.plugins.dispatch_slack.models import (
     SignalSubjects,
     SubjectMetadata,
 )
-from dispatch.plugins.dispatch_slack.service import get_user_email
 from dispatch.project import service as project_service
 from dispatch.search.utils import create_filter_expression
 from dispatch.signal import service as signal_service
@@ -235,13 +232,24 @@ def handle_update_case_command(
             )
         assignee_initial_user = None
 
+    statuses = [{"text": str(s), "value": str(s)} for s in CaseStatus if s != CaseStatus.escalated]
+
     blocks = [
         title_input(initial_value=case.title),
         description_input(initial_value=case.description),
         case_resolution_reason_select(optional=True),
         resolution_input(initial_value=case.resolution),
         assignee_select(initial_user=assignee_initial_user),
-        case_status_select(initial_option={"text": case.status, "value": case.status}),
+        case_status_select(
+            initial_option={"text": case.status, "value": case.status}, statuses=statuses
+        ),
+        Context(
+            elements=[
+                MarkdownText(
+                    text=f"Note: Cases cannot be escalated here. Please use the `{context['config'].slack_command_escalate_case}` slash command."
+                )
+            ]
+        ),
         case_type_select(
             db_session=db_session,
             initial_option={"text": case.case_type.name, "value": case.case_type.id},
@@ -942,45 +950,6 @@ def handle_new_participant_message(
 @message_dispatcher.add(
     subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "channel_leave"]}
 )  # we ignore channel join and leave messages
-def handle_new_participant_added(
-    ack: Ack,
-    payload: dict,
-    context: BoltContext,
-    db_session: Session,
-    client: WebClient,
-) -> None:
-    """Looks for new participants being added to conversation via @<user-name>"""
-    ack()
-    participants = re.findall(r"\<\@([a-zA-Z0-9]*)\>", payload["text"])
-    for user_id in participants:
-        try:
-            case: Case = context["subject"]
-            user_email = get_user_email(client=client, user_id=user_id)
-
-            participant = case_flows.case_add_or_reactivate_participant_flow(
-                case_id=case.id,
-                user_email=user_email,
-                db_session=db_session,
-                add_to_conversation=False,
-            )
-            participant.user_conversation_id = user_id
-
-            case = case_service.get(db_session=db_session, case_id=case.id)
-            if case.dedicated_channel:
-                welcome_message = create_welcome_ephemeral_message_to_participant(case=case)
-                client.chat_postEphemeral(
-                    blocks=welcome_message,
-                    channel=payload["channel"],
-                    user=user_id,
-                )
-        except Exception as e:
-            log.warn(f"Error adding participant {user_id} to Case {context['subject'].id}: {e}")
-            continue
-
-
-@message_dispatcher.add(
-    subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "channel_leave"]}
-)  # we ignore channel join and leave messages
 def handle_case_participant_role_activity(
     ack: Ack, db_session: Session, context: BoltContext, user: DispatchUser
 ) -> None:
@@ -1248,20 +1217,6 @@ def handle_escalation_submission_event(
         view=modal,
     )
 
-    blocks = create_case_message(case=case, channel_id=context["subject"].channel_id)
-    if case.has_thread:
-        client.chat_update(
-            blocks=blocks,
-            ts=case.conversation.thread_id,
-            channel=case.conversation.channel_id,
-        )
-
-    client.chat_postMessage(
-        text="This case has been escalated to an incident. All further triage work will take place in the incident channel.",
-        channel=case.conversation.channel_id,
-        thread_ts=case.conversation.thread_id if case.has_thread else None,
-    )
-
     incident_type = None
     if form_data.get(DefaultBlockIds.incident_type_select):
         incident_type = get_by_name(
@@ -1277,6 +1232,7 @@ def handle_escalation_submission_event(
             project_id=case.project.id,
             name=form_data[DefaultBlockIds.incident_priority_select]["name"],
         )
+    incident_description = form_data.get(DefaultBlockIds.description_input, case.description)
 
     case_flows.case_escalated_status_flow(
         case=case,
@@ -1284,8 +1240,22 @@ def handle_escalation_submission_event(
         db_session=db_session,
         incident_priority=incident_priority,
         incident_type=incident_type,
+        incident_description=incident_description,
     )
     incident = case.incidents[0]
+
+    blocks = create_case_message(case=case, channel_id=context["subject"].channel_id)
+    if case.has_thread:
+        client.chat_update(
+            blocks=blocks,
+            ts=case.conversation.thread_id,
+            channel=case.conversation.channel_id,
+        )
+        client.chat_postMessage(
+            text=f"This case has been escalated to incident {incident.name}. All further triage work will take place in the incident channel.",
+            channel=case.conversation.channel_id,
+            thread_ts=case.conversation.thread_id if case.has_thread else None,
+        )
 
     # Retrieve all participants from the case
     case_participants = case_service.get_participants(
@@ -1344,6 +1314,47 @@ def join_incident_button_click(
         participant_emails=[user.email],
         db_session=db_session,
     )
+
+
+@app.action(
+    CaseNotificationActions.invite_user_case,
+    middleware=[button_context_middleware, db_middleware, user_middleware],
+)
+def handle_case_notification_join_button_click(
+    ack: Ack,
+    user: DispatchUser,
+    client: WebClient,
+    respond: Respond,
+    db_session: Session,
+    context: BoltContext,
+):
+    """Handles the case join button click event."""
+    ack()
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+
+    if not case:
+        message = "Sorry, we can't invite you to this case. The case does not exist."
+    elif case.visibility == Visibility.restricted:
+        message = "Sorry, we can't invite you to this case. The case's visibility is restricted. Please, reach out to the case assignee if you have any questions."
+    elif case.status == CaseStatus.closed:
+        message = "Sorry, you can't join this case. The case has already been marked as closed. Please, reach out to the case assignee if you have any questions."
+    elif case.status == CaseStatus.escalated:
+        conversation_flows.add_incident_participants_to_conversation(
+            incident=case.incidents[0],
+            participant_emails=[user.email],
+            db_session=db_session,
+        )
+        message = f"The case has already been escalated to incident {case.incidents[0].name}. We've added you to the incident conversation. Please, check your Slack sidebar for the new incident channel."
+    else:
+        user_id = context["user_id"]
+        try:
+            client.conversations_invite(channel=case.conversation.channel_id, users=[user_id])
+            message = f"Success! We've added you to case {case.name}. Please, check your Slack sidebar for the new case channel."
+        except SlackApiError as e:
+            if e.response.get("error") == SlackAPIErrorCode.ALREADY_IN_CHANNEL:
+                message = f"Sorry, we can't invite you to this case - you're already a member. Search for a channel called {case.name.lower()} in your Slack sidebar."
+
+    respond(text=message, response_type="ephemeral", replace_original=False, delete_original=False)
 
 
 @app.action(CaseNotificationActions.edit, middleware=[button_context_middleware, db_middleware])
@@ -1514,6 +1525,7 @@ def handle_resolve_submission_event(
     ack()
     # we get the current or previous case
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    previous_case = CaseRead.from_orm(case)
 
     # we run the case status transition flow
     case_flows.case_status_transition_flow_dispatcher(
@@ -1537,6 +1549,15 @@ def handle_resolve_submission_event(
         case=case,
         case_in=case_in,
         current_user=user,
+    )
+
+    case_flows.case_update_flow(
+        case_id=case.id,
+        previous_case=previous_case,
+        db_session=db_session,
+        reporter_email=case.reporter.individual.email if case.reporter else None,
+        assignee_email=case.assignee.individual.email if case.assignee else None,
+        organization_slug=context["subject"].organization_slug,
     )
 
     # We update the case message with the new resolution and status
@@ -1792,7 +1813,9 @@ def engagement_button_approve_click(
         blocks.append(
             Context(
                 elements=[
-                    "After submission, you will be asked to confirm a Multi-Factor Authentication (MFA) prompt, please have your MFA device ready."
+                    MarkdownText(
+                        text="After submission, you will be asked to confirm a Multi-Factor Authentication (MFA) prompt, please have your MFA device ready."
+                    )
                 ]
             ),
         )
@@ -1996,6 +2019,7 @@ def resolve_case(
     context_from_user: str,
     user: DispatchUser,
 ) -> None:
+    previous_case = CaseRead.from_orm(case)
     case_flows.case_status_transition_flow_dispatcher(
         case=case,
         current_status=CaseStatus.closed,
@@ -2012,6 +2036,15 @@ def resolve_case(
         closed_at=datetime.utcnow(),
     )
     case = case_service.update(db_session=db_session, case=case, case_in=case_in, current_user=user)
+
+    case_flows.case_update_flow(
+        case_id=case.id,
+        previous_case=previous_case,
+        db_session=db_session,
+        reporter_email=case.reporter.individual.email if case.reporter else None,
+        assignee_email=case.assignee.individual.email if case.assignee else None,
+        organization_slug=case.project.organization.slug,
+    )
 
     blocks = create_case_message(case=case, channel_id=channel_id)
     client.chat_update(

@@ -5,6 +5,7 @@ from typing import List
 from sqlalchemy.orm import Session
 
 from dispatch.case import service as case_service
+from dispatch.case.messaging import send_case_welcome_participant_message
 from dispatch.case.models import CaseRead
 from dispatch.conversation import flows as conversation_flows
 from dispatch.database.core import SessionLocal
@@ -128,6 +129,13 @@ def case_add_or_reactivate_participant_flow(
             conversation_flows.add_case_participants(
                 case, [participant.individual.email], db_session
             )
+
+        # we send the welcome messages to the participant
+        send_case_welcome_participant_message(
+            participant_email=user_email,
+            case=case,
+            db_session=db_session
+        )
 
     return participant
 
@@ -439,6 +447,7 @@ def case_escalated_status_flow(
     db_session: Session,
     incident_priority: IncidentType | None,
     incident_type: IncidentPriority | None,
+    incident_description: str | None,
 ):
     """Runs the case escalated transition flow."""
     # we set the escalated_at time
@@ -452,6 +461,7 @@ def case_escalated_status_flow(
         db_session=db_session,
         incident_priority=incident_priority,
         incident_type=incident_type,
+        incident_description=incident_description,
     )
 
 
@@ -532,6 +542,10 @@ def case_status_transition_flow_dispatcher(
     db_session: Session,
 ):
     """Runs the correct flows based on the current and previous status of the case."""
+    log.info(
+        "Transitioning Case status",
+        extra={"case_id": case.id, "previous_status": previous_status, "current_status": current_status}
+    )
     match (previous_status, current_status):
         case (CaseStatus.closed, CaseStatus.new):
             # Closed -> New
@@ -558,7 +572,10 @@ def case_status_transition_flow_dispatcher(
 
         case (_, CaseStatus.triage):
             # Any -> Triage/
-            pass
+            log.warning(
+                "Unexpected previous state for Case transition to Triage state.",
+                extra={"case_id": case.id, "previous_status": previous_status, "current_status": current_status}
+            )
 
         case (CaseStatus.new, CaseStatus.escalated):
             # New -> Escalated
@@ -749,6 +766,7 @@ def case_to_incident_escalate_flow(
     db_session: Session,
     incident_priority: IncidentPriority | None,
     incident_type: IncidentType,
+    incident_description: str | None,
 ):
     if case.incidents:
         return
@@ -758,7 +776,7 @@ def case_to_incident_escalate_flow(
     )
 
     description = (
-        f"{case.description}\n\n"
+        f"{incident_description if incident_description else case.description}\n\n"
         f"This incident was the result of escalating case {case.name} "
         f"in the {case.project.name} project. Check out the case in the Dispatch Web UI for additional context."
     )

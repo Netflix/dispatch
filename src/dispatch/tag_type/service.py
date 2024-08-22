@@ -23,6 +23,16 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[TagType]:
     )
 
 
+def get_storage_tag_type_for_project(*, db_session, project_id) -> TagType | None:
+    """Returns the storage tag type for a project."""
+    return (
+        db_session.query(TagType)
+        .filter(TagType.project_id == project_id)
+        .filter(TagType.use_for_project_folder == True)  # noqa
+        .first()
+    )
+
+
 def get_by_name_or_raise(*, db_session, project_id: int, tag_type_in=TagTypeRead) -> TagType:
     """Returns the tag_type specified or raises ValidationError."""
     tag_type = get_by_name(db_session=db_session, project_id=project_id, name=tag_type_in.name)

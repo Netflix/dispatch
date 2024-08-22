@@ -32,7 +32,8 @@ def create_document(
         return
 
     # we create the external document
-    external_document_name = f"{subject.name} - {deslug(document_type)}"
+    document_name = subject.title if subject.project.storage_use_title else subject.name
+    external_document_name = f"{document_name} - {deslug(document_type)}"
     external_document_description = ""
     try:
         if document_template:
@@ -162,6 +163,24 @@ def update_document(document: Document, project_id: int, db_session: Session):
             "title": document.incident.title,
             "type": document.incident.incident_type.name,
         }
+        """
+        Iterate through tags and create new replacement text. Prefix with “tag_”, i.e., for tag actor,
+        the template should have {{tag_actor}}. Also, create replacements for the source of each tag
+        type: {{tag_actor.source}}. Thus, if the source for actor was hacking,
+        this would be the replaced text. Only create the source replacements if not null.
+        For any tag types with multiple selected tags, replace with a comma-separated list.
+        """
+        # create document template placeholders for tags
+        for tag in document.incident.tags:
+            if f"tag_{tag.tag_type.name}" in document_kwargs:
+                document_kwargs[f"tag_{tag.tag_type.name}"] += f", {tag.name}"
+            else:
+                document_kwargs[f"tag_{tag.tag_type.name}"] = tag.name
+            if tag.source:
+                if f"tag_{tag.tag_type.name}.source" in document_kwargs:
+                    document_kwargs[f"tag_{tag.tag_type.name}.source"] += f", {tag.source}"
+                else:
+                    document_kwargs[f"tag_{tag.tag_type.name}.source"] = tag.source
 
     if document.resource_type == DocumentResourceTypes.review:
         document_kwargs["stable_at"] = document.incident.stable_at.strftime("%m/%d/%Y %H:%M:%S")
