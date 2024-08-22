@@ -3,7 +3,7 @@ import logging
 from datetime import datetime, timedelta
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, load_only
 from typing import List, Optional
 
 from dispatch.auth.models import DispatchUser
@@ -84,10 +84,21 @@ def get_all_open_by_case_type(*, db_session, case_type_id: int) -> List[Optional
     )
 
 
-def get_all_by_status(*, db_session, project_id: int, status: str) -> List[Optional[Case]]:
+def get_all_by_status(*, db_session: Session, project_id: int, status: str) -> List[Optional[Case]]:
     """Returns all cases based on a given status."""
     return (
         db_session.query(Case)
+        .options(
+            load_only(
+                Case.id,
+                Case.status,
+                Case.reported_at,
+                Case.created_at,
+                Case.updated_at,
+                Case.triage_at,
+                Case.closed_at,
+            )
+        )
         .filter(Case.project_id == project_id)
         .filter(Case.status == status)
         .all()
