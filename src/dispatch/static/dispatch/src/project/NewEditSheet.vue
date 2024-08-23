@@ -154,6 +154,16 @@
                   hint="Use the title of the incident as the name of the storage folder."
                 />
               </v-col>
+
+              </v-col> #Added ability for the user to turn on/off boolean value
+              <v-col cols="12">
+                <v-checkbox
+                  v-model="select_commander_visibility"
+                  label="Allow incident commander selection"
+                  hint="Enable the option to select a specific incident commander in the UI"
+                />
+              </v-col>
+
             </v-row>
           </v-container>
         </v-card-text>

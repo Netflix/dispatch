@@ -29,6 +29,7 @@
             <v-icon size="small">mdi-open-in-new</v-icon>
           </a>
         </p>
+
         <v-row>
           <v-col cols="12">
             <v-textarea
@@ -73,7 +74,10 @@
               model="incident"
             />
           </v-col>
-          <v-col cols="12">
+
+          # Added a vif here to make the IC button conditional
+
+          <v-col cols="12" v-if="project.select_commander_visibility">
             <participant-select
               v-model="local_commander"
               label="Optional: Incident Commander"
@@ -84,6 +88,7 @@
               :rules="[only_one]"
             />
           </v-col>
+
         </v-row>
       </v-card-text>
       <v-card-actions>
