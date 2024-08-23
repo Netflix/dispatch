@@ -15,6 +15,10 @@
         <b>{{ item.question }}</b
         >: {{ item.answer }}<br />
       </span>
+      <span class="ml-10" v-if="score !== null">
+        <b>Form score</b>: {{ score }}
+        <br />
+      </span>
       <span class="ml-10" v-if="incident_data.slack_channel">
         <b>Slack channel</b>: <a :href="incident_data.slack_channel">#{{ incident_data.name }}</a>
         <br />
@@ -52,7 +56,7 @@
             <v-textarea v-model="attorney_analysis" label="Attorney analysis" />
           </v-col>
         </v-row>
-        <div v-if="attorney_page_schema">
+        <div v-if="attorney_page_schema && attorney_page_schema.length > 0">
           <span class="text-body-1 mt-3 text-medium-emphasis">Additional attorney questions</span>
           <FormKit
             style="margin-left: 20px; margin-right: 20px; margin-top: 10px"
@@ -117,6 +121,7 @@ export default {
       "selected.attorney_status",
       "selected.attorney_analysis",
       "selected.attorney_questions",
+      "selected.score",
       "selected.project",
       "selected.incident",
       "page_data",

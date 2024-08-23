@@ -47,6 +47,7 @@ from dispatch.messaging.strings import (
     INCIDENT_TYPE_CHANGE,
     INCIDENT_COMPLETED_FORM_MESSAGE,
     INCIDENT_TASK_ADD_TO_INCIDENT,
+    INCIDENT_NAME_WITH_ENGAGEMENT_NO_SELF_JOIN,
     MessageType,
     generate_welcome_message,
 )
@@ -379,7 +380,10 @@ def send_incident_created_notifications(incident: Incident, db_session: SessionL
     notification_template = INCIDENT_NOTIFICATION.copy()
 
     if incident.status != IncidentStatus.closed:
-        notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT)
+        if incident.project.allow_self_join:
+            notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT)
+        else:
+           notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT_NO_SELF_JOIN)
     else:
         notification_template.insert(0, INCIDENT_NAME)
 
@@ -526,7 +530,10 @@ def send_incident_update_notifications(
     # we send a notification to the notification conversations and emails
     fyi_notification_template = notification_template.copy()
     if incident.status != IncidentStatus.closed:
-        fyi_notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT)
+        if incident.project.allow_self_join:
+            fyi_notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT)
+        else:
+            fyi_notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT_NO_SELF_JOIN)
     else:
         fyi_notification_template.insert(0, INCIDENT_NAME)
 
@@ -658,7 +665,7 @@ def send_participant_announcement_message(
                     f"*Name:* {participant_name_mrkdwn}\n"
                     f"*Team*: {participant_team}, {participant_department}\n"
                     f"*Location*: {participant_location}\n"
-                    f"*Incident Role(s)*: {(', ').join(participant_roles)}\n"
+                    f"*{subject_type} Role(s)*: {(', ').join(participant_roles)}\n"
                 ),
             },
         },
@@ -1169,6 +1176,7 @@ def send_incident_management_help_tips_message(incident: Incident, db_session: S
             "executive_report_command": executive_report_command,
             "tactical_report_command": tactical_report_command,
             "update_command": update_command,
+            "conversation_weblink": resolve_attr(incident, "conversation.weblink"),
         }
     ]
 

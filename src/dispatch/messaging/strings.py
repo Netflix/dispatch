@@ -37,6 +37,7 @@ class MessageType(DispatchEnum):
     incident_tactical_report = "incident-tactical-report"
     incident_task_list = "incident-task-list"
     incident_task_reminder = "incident-task-reminder"
+    case_notification = "case-notification"
     case_status_reminder = "case-status-reminder"
     service_feedback = "service-feedback"
     task_add_to_incident = "task-add-to-incident"
@@ -73,10 +74,14 @@ respond to incidents. Please review and update them, or mark them as deprecated.
 ).strip()
 
 INCIDENT_FEEDBACK_DAILY_REPORT_DESCRIPTION = """
-This is a daily report of feedback about incidents handled by you.""".replace("\n", " ").strip()
+This is a daily report of feedback about incidents handled by you.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_DAILY_REPORT_TITLE = """
-Incidents Daily Report""".replace("\n", " ").strip()
+Incidents Daily Report""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_DAILY_REPORT_DESCRIPTION = """
 This is a daily report of incidents that are currently active and incidents that have been marked as stable or closed in the last 24 hours.""".replace(
@@ -96,7 +101,9 @@ The person who reported the incident. Contact them if the report details need cl
 INCIDENT_COMMANDER_DESCRIPTION = """
 The Incident Commander (IC) is responsible for
 knowing the full context of the incident.
-Contact them about any questions or concerns.""".replace("\n", " ").strip()
+Contact them about any questions or concerns.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_COMMANDER_READDED_DESCRIPTION = """
 {{ commander_fullname }} (Incident Commander) has been re-added to the conversation.
@@ -121,40 +128,56 @@ Group for email notification purposes. All participants get added to it.""".repl
 
 INCIDENT_CONVERSATION_DESCRIPTION = """
 Private conversation for real-time discussion. All incident participants get added to it.
-""".replace("\n", " ").strip()
+""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_CONVERSATION_REFERENCE_DOCUMENT_DESCRIPTION = """
 Document containing the list of slash commands available to the Incident Commander (IC)
-and participants in the incident conversation.""".replace("\n", " ").strip()
+and participants in the incident conversation.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_CONFERENCE_DESCRIPTION = """
 Video conference and phone bridge to be used throughout the incident.  Password: {{conference_challenge if conference_challenge else 'N/A'}}
-""".replace("\n", "").strip()
+""".replace(
+    "\n", ""
+).strip()
 
 STORAGE_DESCRIPTION = """
 Common storage for all artifacts and
 documents. Add logs, screen captures, or any other data collected during the
-investigation to this folder. It is shared with all participants.""".replace("\n", " ").strip()
+investigation to this folder. It is shared with all participants.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION = """
 This is a document for all incident facts and context. All
 incident participants are expected to contribute to this document.
-It is shared with all incident participants.""".replace("\n", " ").strip()
+It is shared with all incident participants.""".replace(
+    "\n", " "
+).strip()
 
 CASE_INVESTIGATION_DOCUMENT_DESCRIPTION = """
 This is a document for all investigation facts and context. All
 case participants are expected to contribute to this document.
-It is shared with all participants.""".replace("\n", " ").strip()
+It is shared with all participants.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_INVESTIGATION_SHEET_DESCRIPTION = """
 This is a sheet for tracking impacted assets. All
 incident participants are expected to contribute to this sheet.
-It is shared with all incident participants.""".replace("\n", " ").strip()
+It is shared with all incident participants.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_FAQ_DOCUMENT_DESCRIPTION = """
 First time responding to an incident? This
 document answers common questions encountered when
-helping us respond to an incident.""".replace("\n", " ").strip()
+helping us respond to an incident.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_REVIEW_DOCUMENT_DESCRIPTION = """
 This document will capture all lessons learned, questions, and action items raised during the incident.""".replace(
@@ -178,11 +201,15 @@ DOCUMENT_DESCRIPTIONS = {
 
 INCIDENT_RESOLUTION_DEFAULT = """
 Description of the actions taken to resolve the incident.
-""".replace("\n", " ").strip()
+""".replace(
+    "\n", " "
+).strip()
 
 CASE_RESOLUTION_DEFAULT = """
 Description of the actions taken to resolve the case.
-""".replace("\n", " ").strip()
+""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_COMPLETED_FORM_DESCRIPTION = """
 A new {{form_type}} form related to incident {{name}} has been
@@ -190,19 +217,27 @@ submitted that requires your immediate attention. This form details
 aspects related to potential legal implications. You can review the
 detailed report by clicking on the link below. Please note, the information
 contained in this report is confidential.
-""".replace("\n", " ").strip()
+""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_PARTICIPANT_WELCOME_DESCRIPTION = """
 You\'ve been added to this incident, because we think you may
 be able to help resolve it. Please review the incident details below and
-reach out to the incident commander if you have any questions.""".replace("\n", " ").strip()
+reach out to the incident commander if you have any questions.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION = """
 Dispatch thinks the following documents might be
-relevant to this incident.""".replace("\n", " ").strip()
+relevant to this incident.""".replace(
+    "\n", " "
+).strip()
 
-INCIDENT_NOTIFICATION_PURPOSES_FYI = """
-This message is for notification purposes only.""".replace("\n", " ").strip()
+NOTIFICATION_PURPOSES_FYI = """
+This message is for notification purposes only.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_TACTICAL_REPORT_DESCRIPTION = """
 The following conditions, actions, and needs summarize the current status of the incident.""".replace(
@@ -231,7 +266,9 @@ You can use `{{command}}` in the <{{conversation_weblink}}|conversation> to clos
 ).strip()
 
 CASE_TRIAGE_REMINDER_DESCRIPTION = """The status of this case hasn't been updated recently.
-Please ensure you triage the case based on its priority.""".replace("\n", " ").strip()
+Please ensure you triage the case based on its priority.""".replace(
+    "\n", " "
+).strip()
 
 CASE_CLOSE_REMINDER_DESCRIPTION = """The status of this case hasn't been updated recently.
 You can use the case 'Resolve' button if it has been resolved and can be closed.""".replace(
@@ -256,7 +293,9 @@ INCIDENT_TASK_LIST_DESCRIPTION = """The following are open incident tasks."""
 INCIDENT_OPEN_TASKS_DESCRIPTION = """
 Please resolve or transfer ownership of all the open incident tasks assigned to you in the incident documents or using the <{{dispatch_ui_url}}|Dispatch Web UI>,
 then wait about 30 seconds for Dispatch to update the tasks before leaving the incident conversation.
-""".replace("\n", " ").strip()
+""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_TASK_ADD_TO_INCIDENT_DESCRIPTION = """
 You have been added to this incident because you were assigned a task related to it. View all tasks for this incident using the <{{dispatch_ui_url}}|Dispatch Web UI>
@@ -317,7 +356,7 @@ INCIDENT_CLOSED_RATING_FEEDBACK_DESCRIPTION = """
 Thanks for participating in the {{name}} ("{{title}}") incident. We would appreciate if you could rate your experience and provide feedback."""
 
 INCIDENT_MANAGEMENT_HELP_TIPS_MESSAGE_DESCRIPTION = """
-Hey, I see you're the Incident Commander for {{name}} ("{{title}}"). Here are a few things to consider when managing the incident:
+Hey, I see you're the Incident Commander for <{{conversation_weblink}}|{{name}}> ("{{title}}"). Here are a few things to consider when managing the incident:
 \n • Keep the incident and its status up to date using the Slack `{{update_command}}` command.
 \n • Invite incident participants and team oncalls by mentioning them in the incident channel or using the Slack `{{engage_oncall_command}}` command.
 \n • Keep incident participants and stakeholders informed by creating tactical and executive reports using the `{{tactical_report_command}}` and `{{executive_report_command}}` commands.
@@ -355,7 +394,7 @@ The incident priority has been changed from {{ incident_priority_old }} to {{ in
 INCIDENT_NAME_WITH_ENGAGEMENT = {
     "title": "{{name}} Incident Notification",
     "title_link": "{{ticket_weblink}}",
-    "text": INCIDENT_NOTIFICATION_PURPOSES_FYI,
+    "text": NOTIFICATION_PURPOSES_FYI,
     "buttons": [
         {
             "button_text": "Subscribe",
@@ -388,10 +427,98 @@ INCIDENT_NAME_WITH_ENGAGEMENT_NO_DESCRIPTION = {
     ],
 }
 
+INCIDENT_NAME_WITH_ENGAGEMENT_NO_SELF_JOIN = {
+    "title": "{{name}} Incident Notification",
+    "title_link": "{{ticket_weblink}}",
+    "text": NOTIFICATION_PURPOSES_FYI,
+    "buttons": [
+        {
+            "button_text": "Subscribe",
+            "button_value": "{{organization_slug}}-{{incident_id}}",
+            "button_action": ConversationButtonActions.subscribe_user,
+        },
+    ],
+}
+
+CASE_NAME = {
+    "title": "{{name}} Case Notification",
+    "title_link": "{{ticket_weblink}}",
+    "text": NOTIFICATION_PURPOSES_FYI,
+}
+
+CASE_NAME_WITH_ENGAGEMENT = {
+    "title": "{{name}} Case Notification",
+    "title_link": "{{ticket_weblink}}",
+    "text": NOTIFICATION_PURPOSES_FYI,
+    "buttons": [
+        {
+            "button_text": "Join",
+            "button_value": "{{organization_slug}}-{{case_id}}",
+            "button_action": ConversationButtonActions.invite_user_case,
+        },
+    ],
+}
+
+CASE_NAME_WITH_ENGAGEMENT_NO_DESCRIPTION = {
+    "title": "{{name}}",
+    "title_link": "{{ticket_weblink}}",
+    "text": "{{ignore}}",
+    "buttons": [
+        {
+            "button_text": "Join",
+            "button_value": "{{organization_slug}}-{{case_id}}",
+            "button_action": ConversationButtonActions.invite_user_case,
+        },
+    ],
+}
+
+CASE_NAME_WITH_ENGAGEMENT_NO_SELF_JOIN = {
+    "title": "{{name}} Case Notification",
+    "title_link": "{{ticket_weblink}}",
+    "text": NOTIFICATION_PURPOSES_FYI,
+}
+
+CASE_STATUS_CHANGE_DESCRIPTION = """
+The case status has been changed from {{ case_status_old }} to {{ case_status_new }}.""".replace(
+    "\n", " "
+).strip()
+
+CASE_TYPE_CHANGE_DESCRIPTION = """
+The case type has been changed from {{ case_type_old }} to {{ case_type_new }}.""".replace(
+    "\n", " "
+).strip()
+
+CASE_SEVERITY_CHANGE_DESCRIPTION = """
+The case severity has been changed from {{ case_severity_old }} to {{ case_severity_new }}.""".replace(
+    "\n", " "
+).strip()
+
+CASE_PRIORITY_CHANGE_DESCRIPTION = """
+The case priority has been changed from {{ case_priority_old }} to {{ case_priority_new }}.""".replace(
+    "\n", " "
+).strip()
+
+CASE_STATUS_CHANGE = {
+    "title": "Status Change",
+    "text": CASE_STATUS_CHANGE_DESCRIPTION,
+}
+
+CASE_TYPE_CHANGE = {"title": "Case Type Change", "text": CASE_TYPE_CHANGE_DESCRIPTION}
+
+CASE_SEVERITY_CHANGE = {
+    "title": "Severity Change",
+    "text": CASE_SEVERITY_CHANGE_DESCRIPTION,
+}
+
+CASE_PRIORITY_CHANGE = {
+    "title": "Priority Change",
+    "text": CASE_PRIORITY_CHANGE_DESCRIPTION,
+}
+
 INCIDENT_NAME = {
     "title": "{{name}} Incident Notification",
     "title_link": "{{ticket_weblink}}",
-    "text": INCIDENT_NOTIFICATION_PURPOSES_FYI,
+    "text": NOTIFICATION_PURPOSES_FYI,
 }
 
 INCIDENT_TITLE = {"title": "Title", "text": "{{title}}"}
@@ -655,6 +782,45 @@ CASE_TRIAGE_REMINDER = [
     CASE_TITLE,
     CASE_STATUS,
 ]
+
+CASE_ASSIGNEE_DESCRIPTION = """
+The Case Assignee is responsible for
+knowing the full context of the case.
+Contact them about any questions or concerns.""".replace(
+    "\n", " "
+).strip()
+
+CASE_REPORTER_DESCRIPTION = """
+The person who reported the case. Contact them if the report details need clarification.""".replace(
+    "\n", " "
+).strip()
+
+CASE_REPORTER = {
+    "title": "Reporter - {{reporter_fullname}}, {{reporter_team}}",
+    "title_link": "{{reporter_weblink}}",
+    "text": CASE_REPORTER_DESCRIPTION,
+}
+
+CASE_ASSIGNEE = {
+    "title": "Assignee - {{assignee_fullname}}, {{assignee_team}}",
+    "title_link": "{{assignee_weblink}}",
+    "text": CASE_ASSIGNEE_DESCRIPTION,
+}
+
+CASE_NOTIFICATION_COMMON = [CASE_TITLE]
+
+CASE_NOTIFICATION = CASE_NOTIFICATION_COMMON.copy()
+CASE_NOTIFICATION.extend(
+    [
+        INCIDENT_DESCRIPTION,
+        CASE_STATUS,
+        INCIDENT_TYPE,
+        INCIDENT_SEVERITY_FYI,
+        INCIDENT_PRIORITY_FYI,
+        CASE_REPORTER,
+        CASE_ASSIGNEE,
+    ]
+)
 
 
 INCIDENT_TASK_REMINDER = [

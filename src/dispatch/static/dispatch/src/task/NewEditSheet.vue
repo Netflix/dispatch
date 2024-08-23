@@ -50,11 +50,11 @@
                 />
               </v-col>
               <v-col cols="12">
-                <incident-select
-                  v-model="incident"
+                <v-combobox
+                  v-model="incidentName"
                   label="Incident"
-                  hint="The tasks associated incident"
-                  clearable
+                  hint="The incident associated with this task (read only)"
+                  readonly
                   required
                   name="incident"
                   :rules="[rules.required]"
@@ -106,7 +106,6 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
 import ProjectSelect from "@/project/ProjectSelect.vue"
-import IncidentSelect from "@/incident/IncidentSelect.vue"
 import ParticipantSelect from "@/components/ParticipantSelect.vue"
 import AssigneeCombobox from "@/task/AssigneeCombobox.vue"
 import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
@@ -120,7 +119,6 @@ export default {
   name: "TaskNewEditSheet",
 
   components: {
-    IncidentSelect,
     AssigneeCombobox,
     ParticipantSelect,
     ProjectSelect,
@@ -157,6 +155,17 @@ export default {
       "selected.loading",
       "dialogs.showCreateEdit",
     ]),
+    incidentName: {
+      get() {
+        if (this.incident) {
+          return this.incident.name
+        }
+        return ""
+      },
+      set(value) {
+        this.incident.name = value
+      },
+    },
   },
 
   methods: {

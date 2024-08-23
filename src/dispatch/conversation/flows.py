@@ -11,6 +11,8 @@ from dispatch.incident.models import Incident
 from dispatch.plugin import service as plugin_service
 from dispatch.storage.models import Storage
 from dispatch.ticket.models import Ticket
+from dispatch.service.models import Service
+from dispatch.project.models import Project
 from dispatch.utils import deslug_and_capitalize_resource_type
 from dispatch.types import Subject
 
@@ -71,7 +73,6 @@ def create_case_conversation(
 
     conversation.update({"resource_type": plugin.plugin.slug, "resource_id": conversation["id"]})
 
-    print(f"got convo: {conversation}")
     conversation_in = ConversationCreate(
         resource_id=conversation["resource_id"],
         resource_type=conversation["resource_type"],
@@ -215,7 +216,7 @@ def get_topic_text(subject: Subject) -> str:
     )
 
 
-def set_conversation_topic(subject: Subject, db_session: SessionLocal):
+def set_conversation_topic(subject: Subject, db_session: Session) -> None:
     """Sets the conversation topic."""
     if not subject.conversation:
         log.warning("Conversation topic not set. No conversation available for this incident/case.")
@@ -238,6 +239,66 @@ def set_conversation_topic(subject: Subject, db_session: SessionLocal):
             db_session=db_session,
             source="Dispatch Core App",
             description=f"Setting the incident/case conversation topic failed. Reason: {e}",
+        )
+        log.exception(e)
+
+
+def get_current_oncall_email(project: Project, service: Service, db_session: Session) -> str | None:
+    """Notifies oncall about completed form"""
+    oncall_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=project.id, plugin_type="oncall"
+    )
+    if not oncall_plugin:
+        log.debug("Unable to send email since oncall plugin is not active.")
+    else:
+        return oncall_plugin.instance.get(service.external_id)
+
+
+def get_description_text(subject: Subject, db_session: Session) -> str | None:
+    """Returns the description details based on the subject"""
+    if not isinstance(subject, Incident):
+        return
+
+    incident_type = subject.incident_type
+    if not incident_type.channel_description:
+        return
+
+    description_service = incident_type.description_service
+    if description_service:
+        oncall_email = get_current_oncall_email(
+            project=subject.project, service=description_service, db_session=db_session
+        )
+        if oncall_email:
+            return incident_type.channel_description.replace("{oncall_email}", oncall_email)
+
+    return incident_type.channel_description
+
+
+def set_conversation_description(subject: Subject, db_session: Session) -> None:
+    """Sets the conversation description."""
+    if not subject.conversation:
+        log.warning("Conversation topic not set. No conversation available for this incident/case.")
+        return
+
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=subject.project.id, plugin_type="conversation"
+    )
+    if not plugin:
+        log.warning("Conversation topic not set. No conversation plugin enabled.")
+        return
+
+    conversation_description = get_description_text(subject, db_session)
+    if not conversation_description:
+        return
+
+    try:
+        plugin.instance.set_description(subject.conversation.channel_id, conversation_description)
+    except Exception as e:
+        event_service.log_subject_event(
+            subject=subject,
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"Setting the incident/case conversation description failed. Reason: {e}",
         )
         log.exception(e)
 
@@ -327,7 +388,7 @@ def add_case_participants(
         log.exception(e)
 
 
-def add_incident_participants(
+def add_incident_participants_to_conversation(
     incident: Incident,
     participant_emails: list[str],
     db_session: Session,
@@ -358,6 +419,10 @@ def add_incident_participants(
             incident_id=incident.id,
         )
         log.exception(e)
+    else:
+        log.info(
+            f"Add participants {str(participant_emails)} to Incident {incident.id} successfully"
+        )
 
 
 def delete_conversation(conversation: Conversation, project_id: int, db_session: SessionLocal):

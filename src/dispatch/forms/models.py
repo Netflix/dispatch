@@ -34,6 +34,8 @@ class Forms(TimeStampMixin, ProjectMixin, Base):
     form_type_id = Column(Integer, ForeignKey("forms_type.id"))
     form_type = relationship("FormsType")
 
+    score = Column(Integer, nullable=True)
+
 
 # Pydantic models
 class FormsBase(DispatchBase):
@@ -47,6 +49,7 @@ class FormsBase(DispatchBase):
     incident: Optional[IncidentReadMinimal]
     attorney_questions: Optional[str] = Field(None, nullable=True)
     attorney_analysis: Optional[str] = Field(None, nullable=True)
+    score: Optional[int]
 
 
 class FormsCreate(FormsBase):

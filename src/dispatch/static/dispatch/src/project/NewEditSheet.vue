@@ -60,6 +60,13 @@
                 />
               </v-col>
               <v-col cols="12">
+                <v-checkbox
+                  v-model="allow_self_join"
+                  label="Allow Self Join"
+                  hint="Allow users to self-join an incident from the UI"
+                />
+              </v-col>
+              <v-col cols="12">
                 <color-picker-input v-model="color" />
               </v-col>
               <v-col cols="12">
@@ -112,6 +119,41 @@
                   name="Owner Conversation"
                 />
               </v-col>
+              <span class="text-body-1 text-medium-emphasis">Alternative folder structure</span>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="storage_folder_one"
+                  label="Storage folder 1 name"
+                  hint="The name of one of the storage folders."
+                  clearable
+                  required
+                  name="Storage folder 1 name"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="storage_folder_two"
+                  label="Storage folder 2 name"
+                  hint="The name of the other storage folder."
+                  clearable
+                  required
+                  name="Storage folder 2 name"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-checkbox
+                  v-model="storage_use_folder_one_as_primary"
+                  label="Use Storage folder 1 as the primary storage"
+                  hint="For incidents and cases, use storage folder 1 as the primary storage."
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-checkbox
+                  v-model="storage_use_title"
+                  label="Use the incident title as the storage folder name"
+                  hint="Use the title of the incident as the name of the storage folder."
+                />
+              </v-col>
             </v-row>
           </v-container>
         </v-card-text>
@@ -152,6 +194,11 @@ export default {
       "selected.owner_conversation",
       "selected.owner_email",
       "selected.enabled",
+      "selected.storage_folder_one",
+      "selected.storage_folder_two",
+      "selected.storage_use_folder_one_as_primary",
+      "selected.storage_use_title",
+      "selected.allow_self_join",
       "dialogs.showCreateEdit",
     ]),
   },

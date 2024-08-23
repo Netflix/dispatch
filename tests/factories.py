@@ -20,10 +20,14 @@ from dispatch.case.models import Case, CaseRead
 from dispatch.case.priority.models import CasePriority
 from dispatch.case.severity.models import CaseSeverity
 from dispatch.case.type.models import CaseType
+from dispatch.case_cost.models import CaseCost
+from dispatch.case_cost_type.models import CaseCostType
 from dispatch.conference.models import Conference
 from dispatch.conversation.models import Conversation
 from dispatch.definition.models import Definition
 from dispatch.document.models import Document
+from dispatch.email_templates.models import EmailTemplates
+from dispatch.email_templates.enums import EmailTemplateTypes
 from dispatch.entity.models import Entity
 from dispatch.entity_type.models import EntityType
 from dispatch.event.models import Event
@@ -506,7 +510,7 @@ class ParticipantRoleFactory(BaseFactory):
 class ParticipantFactory(BaseFactory):
     """Participant Factory."""
 
-    team = Sequence(lambda n: f"team{n}")
+    # team = Sequence(lambda n: f"team{n}")
     department = Sequence(lambda n: f"department{n}")
     location = Sequence(lambda n: f"location{n}")
     added_reason = Sequence(lambda n: f"added_reason{n}")
@@ -710,6 +714,7 @@ class CaseTypeFactory(BaseFactory):
     description = FuzzyText()
     conversation_target = FuzzyText()
     project = SubFactory(ProjectFactory)
+    cost_model = SubFactory(CostModelFactory)
 
     class Meta:
         """Factory Configuration."""
@@ -962,13 +967,13 @@ class TaskFactory(ResourceBaseFactory):
         if extracted:
             self.owner_id = extracted.id
 
-    @post_generation
-    def incident(self, create, extracted, **kwargs):
-        if not create:
-            return
+    # @post_generation
+    # def incident(self, create, extracted, **kwargs):
+    #     if not create:
+    #         return
 
-        if extracted:
-            self.incident_id = extracted.id
+    #     if extracted:
+    #         self.incident_id = extracted.id
 
     @post_generation
     def assignees(self, create, extracted, **kwargs):
@@ -1127,6 +1132,49 @@ class FeedbackFactory(BaseFactory):
             self.participant_id = extracted.id
 
 
+class CaseCostFactory(BaseFactory):
+    """Case Cost Factory."""
+
+    amount = FuzzyInteger(low=0, high=10000)
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = CaseCost
+
+    @post_generation
+    def case(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.case_id = extracted.id
+
+    @post_generation
+    def case_cost_type(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.case_cost_type_id = extracted.id
+
+
+class CaseCostTypeFactory(BaseFactory):
+    """Case Cost Type Factory."""
+
+    name = FuzzyText()
+    description = FuzzyText()
+    category = FuzzyText()
+    details = {}
+    default = Faker().pybool()
+    editable = Faker().pybool()
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = CaseCostType
+
+
 class IncidentCostFactory(BaseFactory):
     """Incident Cost Factory."""
 
@@ -1168,6 +1216,22 @@ class IncidentCostTypeFactory(BaseFactory):
         """Factory Configuration."""
 
         model = IncidentCostType
+
+
+class EmailTemplateFactory(BaseFactory):
+    """Email Template Factory."""
+
+    # Columns
+    email_template_type = EmailTemplateTypes.welcome
+    welcome_text = "Welcome to Incident {{title}} "
+    welcome_body = "{{title}} Incident\n{{description}}"
+    components = ["title", "description"]
+    enabled = True
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = EmailTemplates
 
 
 class NotificationFactory(BaseFactory):

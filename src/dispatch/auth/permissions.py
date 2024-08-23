@@ -66,8 +66,7 @@ class BasePermission(ABC):
     role = None
 
     @abstractmethod
-    def has_required_permissions(self, request: Request) -> bool:
-        ...
+    def has_required_permissions(self, request: Request) -> bool: ...
 
     def __init__(self, request: Request):
         organization = None
@@ -300,6 +299,21 @@ class IncidentEditPermission(BasePermission):
         )
 
 
+class IncidentEventPermission(BasePermission):
+    def has_required_permissions(
+        self,
+        request: Request,
+    ) -> bool:
+        return any_permission(
+            permissions=[
+                OrganizationAdminPermission,
+                IncidentCommanderOrScribePermission,
+                IncidentReporterPermission,
+            ],
+            request=request,
+        )
+
+
 class IncidentReporterPermission(BasePermission):
     def has_required_permissions(
         self,
@@ -436,6 +450,20 @@ class CaseParticipantPermission(BasePermission):
             participant.individual.email for participant in current_case.participants
         ]
         return current_user.email in participant_emails
+
+
+class CaseJoinPermission(BasePermission):
+    def has_required_permissions(
+        self,
+        request: Request,
+    ) -> bool:
+        pk = PrimaryKeyModel(id=request.path_params["case_id"])
+        current_case = case_service.get(db_session=request.state.db, case_id=pk.id)
+
+        if current_case.visibility == Visibility.restricted:
+            return OrganizationAdminPermission(request=request)
+
+        return True
 
 
 class FeedbackDeletePermission(BasePermission):

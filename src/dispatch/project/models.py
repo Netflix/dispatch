@@ -5,6 +5,7 @@ from pydantic import Field
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
+from sqlalchemy.sql import false
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
@@ -40,6 +41,7 @@ class Project(Base):
     )
 
     enabled = Column(Boolean, default=True, server_default="t")
+    allow_self_join = Column(Boolean, default=True, server_default="t")
 
     send_daily_reports = Column(Boolean)
 
@@ -51,6 +53,14 @@ class Project(Base):
         foreign_keys=[stable_priority_id],
         primaryjoin="IncidentPriority.id == Project.stable_priority_id",
     )
+
+    # allows for alternative names for storage folders inside incident/case
+    storage_folder_one = Column(String, nullable=True)
+    storage_folder_two = Column(String, nullable=True)
+    # when true, storage_folder_one is used as the primary storage folder for incidents/cases
+    storage_use_folder_one_as_primary = Column(Boolean, default=False, nullable=True)
+    # when true, folder and incident docs will be created with the title of the incident
+    storage_use_title = Column(Boolean, default=False, server_default=false())
 
     @hybrid_property
     def slug(self):
@@ -73,6 +83,11 @@ class ProjectBase(DispatchBase):
     color: Optional[str] = Field(None, nullable=True)
     send_daily_reports: Optional[bool] = Field(True, nullable=True)
     enabled: Optional[bool] = Field(True, nullable=True)
+    storage_folder_one: Optional[str] = Field(None, nullable=True)
+    storage_folder_two: Optional[str] = Field(None, nullable=True)
+    storage_use_folder_one_as_primary: Optional[bool] = Field(True, nullable=True)
+    storage_use_title: Optional[bool] = Field(False, nullable=True)
+    allow_self_join: Optional[bool] = Field(True, nullable=True)
 
 
 class ProjectCreate(ProjectBase):

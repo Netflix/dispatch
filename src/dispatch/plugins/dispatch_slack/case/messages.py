@@ -38,6 +38,7 @@ from dispatch.signal.models import (
     assoc_signal_instance_entities,
 )
 from dispatch.signal.enums import SignalEngagementStatus
+from dispatch.plugins.dispatch_slack.config import MAX_SECTION_TEXT_LENGTH
 
 
 def map_priority_color(color: str) -> str:
@@ -114,7 +115,9 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
         blocks.extend(
             [
                 Section(text=f"*Resolution reason* \n {case.resolution_reason}"),
-                Section(text=f"*Resolution description* \n {case.resolution}"),
+                Section(
+                    text=f"*Resolution description* \n {case.resolution}"[:MAX_SECTION_TEXT_LENGTH]
+                ),
                 Actions(
                     elements=[
                         Button(

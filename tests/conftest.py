@@ -23,6 +23,8 @@ from dispatch.database.manage import init_database
 from .database import Session
 from .factories import (
     CaseFactory,
+    CaseCostFactory,
+    CaseCostTypeFactory,
     CasePriorityFactory,
     CaseSeverityFactory,
     CaseTypeFactory,
@@ -31,6 +33,7 @@ from .factories import (
     DefinitionFactory,
     DispatchUserFactory,
     DocumentFactory,
+    EmailTemplateFactory,
     EntityFactory,
     EntityTypeFactory,
     EventFactory,
@@ -549,6 +552,21 @@ def feedbacks(session):
 
 
 @pytest.fixture
+def case_cost(session):
+    return CaseCostFactory()
+
+
+@pytest.fixture
+def case_costs(session):
+    return [CaseCostFactory(), CaseCostFactory()]
+
+
+@pytest.fixture
+def case_cost_type(session):
+    return CaseCostTypeFactory()
+
+
+@pytest.fixture
 def incident_cost(session):
     return IncidentCostFactory()
 
@@ -566,6 +584,11 @@ def incident_cost_type(session):
 @pytest.fixture
 def incident_cost_types(session):
     return [IncidentCostTypeFactory(), IncidentCostTypeFactory()]
+
+
+@pytest.fixture
+def email_template(session):
+    return EmailTemplateFactory()
 
 
 @pytest.fixture

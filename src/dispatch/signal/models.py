@@ -148,6 +148,7 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     create_case = Column(Boolean, default=True)
     conversation_target = Column(String)
     default = Column(Boolean, default=False)
+    lifecycle = Column(String)
 
     oncall_service_id = Column(Integer, ForeignKey("service.id"))
     oncall_service = relationship("Service", foreign_keys=[oncall_service_id])
@@ -311,6 +312,7 @@ class SignalBase(DispatchBase):
     project: ProjectRead
     source: Optional[SourceBase]
     variant: Optional[str]
+    lifecycle: Optional[str]
 
 
 class SignalCreate(SignalBase):
@@ -339,18 +341,18 @@ class SignalRead(SignalBase):
     tags: Optional[List[TagRead]] = []
 
 
-class SignalReadMinimal(DispatchBase):
-    id: PrimaryKey
-    name: str
-    owner: str
-    conversation_target: Optional[str]
-    description: Optional[str]
-    variant: Optional[str]
-    external_id: str
-    enabled: Optional[bool] = False
-    external_url: Optional[str]
-    create_case: Optional[bool] = True
-    created_at: Optional[datetime] = None
+# class SignalReadMinimal(DispatchBase):
+#     id: PrimaryKey
+#     name: str
+#     owner: str
+#     conversation_target: Optional[str]
+#     description: Optional[str]
+#     variant: Optional[str]
+#     external_id: str
+#     enabled: Optional[bool] = False
+#     external_url: Optional[str]
+#     create_case: Optional[bool] = True
+#     created_at: Optional[datetime] = None
 
 
 class SignalPagination(Pagination):

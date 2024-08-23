@@ -1,5 +1,6 @@
 import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
+import { toUSD } from "@/filters"
 
 import SearchUtils from "@/search/utils"
 import FormsTypeApi from "@/forms/types/api"
@@ -20,6 +21,7 @@ const getDefaultSelectedState = () => {
     attorney_status: "Not reviewed",
     attorney_questions: null,
     attorney_analysis: null,
+    score: null,
     form_type: null,
     project: null,
     form_schema: null,
@@ -129,6 +131,10 @@ function buildIncidentDoc(incident) {
     output_qa.push({
       question: "Severity",
       answer: incident.incident_severity.name,
+    })
+    output_qa.push({
+      question: "Incident cost",
+      answer: toUSD(incident.total_cost),
     })
     output_qa.push({
       question: "Last tactical report",
@@ -255,6 +261,7 @@ function createPayload(selected) {
     "attorney_form_data",
     "status",
     "attorney_status",
+    "score",
     "attorney_questions",
     "attorney_analysis",
     "incident_id",

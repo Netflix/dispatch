@@ -27,6 +27,7 @@ def get_template(message_type: MessageType, project_id: int):
         MessageType.incident_completed_form_notification: ("notification.mjml", None),
         MessageType.incident_executive_report: ("executive_report.mjml", None),
         MessageType.incident_notification: ("notification.mjml", None),
+        MessageType.case_notification: ("notification.mjml", None),
         MessageType.incident_participant_welcome: ("notification.mjml", None),
         MessageType.incident_tactical_report: ("tactical_report.mjml", None),
         MessageType.incident_task_reminder: (

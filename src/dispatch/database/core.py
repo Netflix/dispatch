@@ -1,5 +1,6 @@
 import functools
 import re
+from contextlib import contextmanager
 from typing import Annotated, Any
 
 from fastapi import Depends
@@ -11,6 +12,7 @@ from sqlalchemy.orm import object_session, sessionmaker, Session
 from sqlalchemy.sql.expression import true
 from sqlalchemy_utils import get_mapper
 from starlette.requests import Request
+
 
 from dispatch import config
 from dispatch.exceptions import NotFoundError
@@ -201,3 +203,31 @@ def refetch_db_session(organization_slug: str) -> Session:
     )
     db_session = sessionmaker(bind=schema_engine)()
     return db_session
+
+
+@contextmanager
+def get_session():
+    """Context manager to ensure the session is closed after use."""
+    session = SessionLocal()
+    try:
+        yield session
+        session.commit()
+    except:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+
+@contextmanager
+def get_organization_session(organization_slug: str):
+    """Context manager to ensure the session is closed after use."""
+    session = refetch_db_session(organization_slug)
+    try:
+        yield session
+        session.commit()
+    except:
+        session.rollback()
+        raise
+    finally:
+        session.close()

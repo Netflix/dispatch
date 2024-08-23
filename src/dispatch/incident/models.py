@@ -197,14 +197,10 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     )
 
     commander_id = Column(Integer, ForeignKey("participant.id"))
-    commander = relationship(
-        "Participant", foreign_keys=[commander_id], lazy="subquery", post_update=True
-    )
+    commander = relationship("Participant", foreign_keys=[commander_id], post_update=True)
 
     reporter_id = Column(Integer, ForeignKey("participant.id"))
-    reporter = relationship(
-        "Participant", foreign_keys=[reporter_id], lazy="subquery", post_update=True
-    )
+    reporter = relationship("Participant", foreign_keys=[reporter_id], post_update=True)
 
     liaison_id = Column(Integer, ForeignKey("participant.id"))
     liaison = relationship("Participant", foreign_keys=[liaison_id], post_update=True)
@@ -243,6 +239,7 @@ class ProjectRead(DispatchBase):
     name: NameStr
     color: Optional[str]
     stable_priority: Optional[IncidentPriorityRead] = None
+    allow_self_join: Optional[bool] = Field(True, nullable=True)
 
 
 class CaseRead(DispatchBase):

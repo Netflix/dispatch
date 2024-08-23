@@ -676,6 +676,21 @@ def handle_not_configured_reaction_event(
     ack()
 
 
+def get_user_name_from_id(client: Any, user_id: str) -> str:
+    """Returns the user's name given their user ID."""
+    try:
+        user = client.users_info(user=user_id)
+        return user["user"]["profile"]["real_name"]
+    except SlackApiError:
+        # if can't find user, just return the original text
+        return user_id
+
+
+def replace_slack_users_in_message(client: Any, message: str) -> str:
+    """Replaces slack user ids in a message with their names."""
+    return re.sub(r"<@([^>]+)>", lambda x: f"@{get_user_name_from_id(client, x.group(1))}", message)
+
+
 def handle_timeline_added_event(
     ack: Ack, client: Any, context: BoltContext, payload: Any, db_session: Session
 ) -> None:
@@ -690,7 +705,7 @@ def handle_timeline_added_event(
     response = dispatch_slack_service.list_conversation_messages(
         client, conversation_id, latest=message_ts, limit=1, inclusive=1
     )
-    message_text = response["messages"][0]["text"]
+    message_text = replace_slack_users_in_message(client, response["messages"][0]["text"])
     message_sender_id = response["messages"][0]["user"]
 
     # TODO: (wshel) handle case reactions
@@ -800,6 +815,10 @@ def handle_after_hours_message(
     participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=context["subject"].id, email=user.email
     )
+    # handle no participant found
+    if not participant:
+        return
+
     # get their timezone from slack
     try:
         owner_tz = (dispatch_slack_service.get_user_info_by_email(client, email=owner_email))["tz"]
@@ -990,8 +1009,12 @@ def handle_member_joined_channel(
             )
             participant.added_by = incident.commander
 
-        # Message text when someone @'s a user is not available in body, use generic added by reason
-        participant.added_reason = f"Participant added by {participant.added_by.individual.name}"
+        if participant.added_by:
+            # Message text when someone @'s a user is not available in body, use generic added by reason
+            participant.added_reason = f"Participant added by {participant.added_by.individual.name}"
+        else:
+            # We couldn't find a user to attribute the addition to, add generic reason
+            participant.added_reason = "Participant added by Dispatch"
 
         db_session.add(participant)
         db_session.commit()
@@ -1036,8 +1059,12 @@ def handle_member_joined_channel(
             # We default to the incident commander when we don't know who added the user or the user is the Dispatch bot.
             participant.added_by = case.assignee
 
-        # Message text when someone @'s a user is not available in body, use generic added by reason
-        participant.added_reason = f"Participant added by {participant.added_by.individual.name}"
+        if participant.added_by:
+            # Message text when someone @'s a user is not available in body, use generic added by reason
+            participant.added_reason = f"Participant added by {participant.added_by.individual.name}"
+        else:
+            # We couldn't find a user to attribute the addition to, add generic reason
+            participant.added_reason = "Participant added by Dispatch"
 
         db_session.add(participant)
         db_session.commit()
