@@ -70,7 +70,7 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                         project=project, raw=signal_data, **signal_data
                     )
                 except ValidationError as e:
-                    log.exception(
+                    log.warning(
                         f"Received signal instance that does not conform to `SignalInstanceCreate` structure, skipping creation: {e}"
                     )
                     # Add the message to be deleted even if it doesn't conform
