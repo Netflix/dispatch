@@ -84,8 +84,10 @@ def get_all_open_by_case_type(*, db_session, case_type_id: int) -> List[Optional
     )
 
 
-def get_all_by_status(*, db_session: Session, project_id: int, status: str) -> List[Optional[Case]]:
-    """Returns all cases based on a given status."""
+def get_all_by_status(
+    *, db_session: Session, project_id: int, statuses: list[str]
+) -> List[Optional[Case]]:
+    """Returns all cases based on a given list of statuses."""
     return (
         db_session.query(Case)
         .options(
@@ -100,7 +102,7 @@ def get_all_by_status(*, db_session: Session, project_id: int, status: str) -> L
             )
         )
         .filter(Case.project_id == project_id)
-        .filter(Case.status == status)
+        .filter(Case.status.in_(statuses))
         .all()
     )
 
