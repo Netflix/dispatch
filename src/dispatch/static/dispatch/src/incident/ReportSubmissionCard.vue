@@ -86,7 +86,6 @@
               :rules="[only_one]"
             />
           </v-col>
-
         </v-row>
       </v-card-text>
       <v-card-actions>
