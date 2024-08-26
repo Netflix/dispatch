@@ -161,7 +161,6 @@
                   hint="Enable the option to select a specific incident commander in the UI"
                 />
               </v-col>
-
             </v-row>
           </v-container>
         </v-card-text>
