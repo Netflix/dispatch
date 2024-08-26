@@ -75,8 +75,6 @@
             />
           </v-col>
 
-          # Added a vif here to make the IC button conditional
-
           <v-col cols="12" v-if="project.select_commander_visibility">
             <participant-select
               v-model="local_commander"

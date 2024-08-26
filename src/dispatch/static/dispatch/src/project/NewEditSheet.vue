@@ -154,8 +154,6 @@
                   hint="Use the title of the incident as the name of the storage folder."
                 />
               </v-col>
-
-              </v-col> #Added ability for the user to turn on/off boolean value
               <v-col cols="12">
                 <v-checkbox
                   v-model="select_commander_visibility"
@@ -209,6 +207,7 @@ export default {
       "selected.storage_use_folder_one_as_primary",
       "selected.storage_use_title",
       "selected.allow_self_join",
+      "selected.select_commander_visibility",
       "dialogs.showCreateEdit",
     ]),
   },
