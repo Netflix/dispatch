@@ -75,7 +75,7 @@
             />
           </v-col>
 
-          <v-col cols="12" v-if="project.select_commander_visibility">
+          <v-col cols="12" v-if="project?.select_commander_visibility">
             <participant-select
               v-model="local_commander"
               label="Optional: Incident Commander"
