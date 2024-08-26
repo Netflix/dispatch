@@ -73,6 +73,10 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                     log.exception(
                         f"Received signal instance that does not conform to `SignalInstanceCreate` structure, skipping creation: {e}"
                     )
+                    # Add the message to be deleted even if it doesn't conform
+                    entries.append(
+                        {"Id": message["MessageId"], "ReceiptHandle": message["ReceiptHandle"]}
+                    )
                     continue
 
                 try:
