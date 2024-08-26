@@ -21,7 +21,7 @@ const getDefaultSelectedState = () => {
     storage_use_folder_one_as_primary: false,
     storage_use_title: false,
     allow_self_join: null,
-    select_commander_visibility: null
+    select_commander_visibility: null,
   }
 }
 
