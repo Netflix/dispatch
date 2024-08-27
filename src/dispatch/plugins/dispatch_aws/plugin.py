@@ -70,18 +70,21 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                         project=project, raw=signal_data, **signal_data
                     )
                 except ValidationError as e:
-                    log.exception(
+                    log.warning(
                         f"Received signal instance that does not conform to `SignalInstanceCreate` structure, skipping creation: {e}"
                     )
                     continue
 
                 try:
-                    signal_instance = signal_service.create_signal_instance(
-                        db_session=db_session,
-                        signal_instance_in=signal_instance_in,
-                    )
+                    with db_session.begin_nested():
+                        signal_instance = signal_service.create_signal_instance(
+                            db_session=db_session,
+                            signal_instance_in=signal_instance_in,
+                        )
                 except Exception as e:
                     log.exception(f"Unable to create signal instance: {e}")
+                    # The nested transaction is automatically rolled back
+                    # We don't need to call db_session.rollback() here
                     continue
                 else:
                     metrics_provider.counter(
@@ -97,5 +100,6 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                     entries.append(
                         {"Id": message["MessageId"], "ReceiptHandle": message["ReceiptHandle"]}
                     )
+
             if entries:
                 client.delete_message_batch(QueueUrl=queue_url, Entries=entries)
