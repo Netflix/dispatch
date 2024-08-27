@@ -28,7 +28,7 @@ class TestConversationPlugin(ConversationPlugin):
     def send(self, items, **kwargs):
         return
 
-    def fetch_incident_events(self, subject: Any, **kwargs):
+    def fetch_events(self, subject: Any, **kwargs):
         client = TestWebClient()
         for plugin_event in self.plugin_events:
             plugin_event.fetch_activity(client=client, subject=subject)
