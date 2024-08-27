@@ -34,7 +34,7 @@ def test_get_all_by_status(session, new_case: Case):
     t_cases = get_all_by_status(
         db_session=session,
         project_id=new_case.project.id,
-        status=CaseStatus.new,
+        statuses=[CaseStatus.new],
     )
     assert t_cases
 
@@ -42,7 +42,7 @@ def test_get_all_by_status(session, new_case: Case):
     t_cases = get_all_by_status(
         db_session=session,
         project_id=new_case.project.id,
-        status=CaseStatus.closed,
+        statuses=[CaseStatus.closed],
     )
     assert not t_cases
 

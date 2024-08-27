@@ -154,6 +154,13 @@
                   hint="Use the title of the incident as the name of the storage folder."
                 />
               </v-col>
+              <v-col cols="12">
+                <v-checkbox
+                  v-model="select_commander_visibility"
+                  label="Allow incident commander selection"
+                  hint="Enable the option to select a specific incident commander in the UI"
+                />
+              </v-col>
             </v-row>
           </v-container>
         </v-card-text>
@@ -199,6 +206,7 @@ export default {
       "selected.storage_use_folder_one_as_primary",
       "selected.storage_use_title",
       "selected.allow_self_join",
+      "selected.select_commander_visibility",
       "dialogs.showCreateEdit",
     ]),
   },
