@@ -85,6 +85,7 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                     log.exception(f"Unable to create signal instance: {e}")
                     # The nested transaction is automatically rolled back
                     # We don't need to call db_session.rollback() here
+                    continue
                 else:
                     metrics_provider.counter(
                         "aws-sqs-signal-consumer.signal.received",
