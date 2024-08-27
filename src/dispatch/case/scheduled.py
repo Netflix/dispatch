@@ -24,7 +24,7 @@ log = logging.getLogger(__name__)
 def case_close_reminder(db_session: SessionLocal, project: Project):
     """Sends a reminder to the case assignee to close out their case."""
     cases = get_all_by_status(
-        db_session=db_session, project_id=project.id, status=CaseStatus.triage
+        db_session=db_session, project_id=project.id, statuses=[CaseStatus.triage]
     )
 
     for case in cases:
@@ -45,7 +45,9 @@ def case_close_reminder(db_session: SessionLocal, project: Project):
 @scheduled_project_task
 def case_triage_reminder(db_session: SessionLocal, project: Project):
     """Sends a reminder to the case assignee to triage their case."""
-    cases = get_all_by_status(db_session=db_session, project_id=project.id, status=CaseStatus.new)
+    cases = get_all_by_status(
+        db_session=db_session, project_id=project.id, statuses=[CaseStatus.new]
+    )
 
     # if we want more specific SLA reminders, we would need to add additional data model
     for case in cases:
