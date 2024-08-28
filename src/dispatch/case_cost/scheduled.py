@@ -2,7 +2,8 @@ import logging
 
 from schedule import every
 
-from dispatch.database.core import SessionLocal
+from sqlalchemy.orm import Session
+
 from dispatch.decorators import scheduled_project_task, timer
 from dispatch.case import service as case_service
 from dispatch.case.enums import CaseStatus
@@ -22,7 +23,7 @@ log = logging.getLogger(__name__)
 @scheduler.add(every(10).seconds, name="calculate-cases-response-cost")
 @timer
 @scheduled_project_task
-def calculate_cases_response_cost(db_session: SessionLocal, project: Project):
+def calculate_cases_response_cost(db_session: Session, project: Project):
     """Calculates and saves the response cost for all cases."""
     response_cost_type = case_cost_type_service.get_default(
         db_session=db_session, project_id=project.id
@@ -34,7 +35,10 @@ def calculate_cases_response_cost(db_session: SessionLocal, project: Project):
         )
         return
 
-    cases = case_service.get_all(db_session=db_session, project_id=project.id)
+
+    cases = case_service.get_all_by_status(
+        db_session=db_session, project_id=project.id, statuses=[CaseStatus.new, CaseStatus.triage]
+    )
 
     for case in cases:
         try:

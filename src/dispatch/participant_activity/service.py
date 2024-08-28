@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+from sqlalchemy.orm import Session
 from dispatch.database.core import SessionLocal
 from dispatch.participant import service as participant_service
 from dispatch.plugin import service as plugin_service
@@ -71,7 +72,7 @@ def get_last_participant_activity(
 
 
 def get_all_case_participant_activities_for_case(
-    db_session: SessionLocal,
+    db_session: Session,
     case_id: int,
 ) -> list[ParticipantActivityRead]:
     """Fetches all recorded participant case activities for a given case."""

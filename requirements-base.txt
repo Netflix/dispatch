@@ -293,7 +293,7 @@ pyasn1-modules==0.3.0
     #   oauth2client
 pycparser==2.21
     # via cffi
-pydantic==1.10.17
+pydantic==1.10.18
     # via
     #   -r requirements-base.in
     #   blockkit
@@ -308,7 +308,7 @@ pyjwt[crypto]==2.8.0
     #   msal
     #   oauthlib
     #   pyjwt
-pyparsing==3.1.2
+pyparsing==3.1.4
     # via
     #   -r requirements-base.in
     #   httplib2
@@ -396,7 +396,7 @@ six==1.16.0
     #   python-dateutil
     #   sqlalchemy-filters
     #   validators
-slack-bolt==1.20.0
+slack-bolt==1.20.1
     # via -r requirements-base.in
 slack-sdk==3.31.0
     # via

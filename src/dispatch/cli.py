@@ -363,24 +363,23 @@ def dump_database(dump_file):
 
 
 @dispatch_database.command("drop")
-@click.option("--yes", is_flag=True, help="Silences all confirmation prompts.")
-def drop_database(yes):
+def drop_database():
     """Drops all data in database."""
     from sqlalchemy_utils import database_exists, drop_database
 
-    if database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
-        if yes:
-            drop_database(str(config.SQLALCHEMY_DATABASE_URI))
-            click.secho("Success.", fg="green")
+    database_hostname = click.prompt(f"Please enter the database hostname (env = {config.DATABASE_HOSTNAME})")
+    database_name = click.prompt(f"Please enter the database name (env = {config.DATABASE_NAME})")
+    sqlalchemy_database_uri = f"postgresql+psycopg2://{config._DATABASE_CREDENTIAL_USER}:{config._QUOTED_DATABASE_PASSWORD}@{database_hostname}:{config.DATABASE_PORT}/{database_name}"
 
+    if database_exists(str(sqlalchemy_database_uri)):
         if click.confirm(
-            f"Are you sure you want to drop: '{config.DATABASE_HOSTNAME}:{config.DATABASE_NAME}'?"
+            f"Are you sure you want to drop database: '{database_hostname}:{database_name}'?"
         ):
-            drop_database(str(config.SQLALCHEMY_DATABASE_URI))
+            drop_database(str(sqlalchemy_database_uri))
             click.secho("Success.", fg="green")
     else:
         click.secho(
-            f"'{config.DATABASE_HOSTNAME}:{config.DATABASE_NAME}' does not exist!!!", fg="red"
+            f"Database '{database_hostname}:{database_name}' does not exist!!!", fg="red"
         )
 
 
