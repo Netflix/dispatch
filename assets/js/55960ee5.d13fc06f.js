@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[4121],{8070:t=>{t.exports=JSON.parse('[{"label":"Getting started","permalink":"/dispatch/docs/tags/getting-started","count":1}]')}}]);
