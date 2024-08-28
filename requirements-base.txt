@@ -308,7 +308,7 @@ pyjwt[crypto]==2.8.0
     #   msal
     #   oauthlib
     #   pyjwt
-pyparsing==3.1.2
+pyparsing==3.1.4
     # via
     #   -r requirements-base.in
     #   httplib2
