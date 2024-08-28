@@ -35,7 +35,6 @@ def calculate_cases_response_cost(db_session: Session, project: Project):
         )
         return
 
-
     cases = case_service.get_all_by_status(
         db_session=db_session, project_id=project.id, statuses=[CaseStatus.new, CaseStatus.triage]
     )
