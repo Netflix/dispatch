@@ -12,6 +12,8 @@ from typing import TypedDict
 
 import boto3
 from pydantic import ValidationError
+from psycopg2.errors import UniqueViolation
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from dispatch.metrics import provider as metrics_provider
@@ -81,6 +83,14 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                             db_session=db_session,
                             signal_instance_in=signal_instance_in,
                         )
+                except IntegrityError as e:
+                    if isinstance(e.orig, UniqueViolation):
+                        log.info(
+                            f"Received signal instance that already exists in the database, skipping creation: {e}"
+                        )
+                    else:
+                        log.exception(f"Integrity error when creating signal instance: {e}")
+                    continue
                 except Exception as e:
                     log.exception(f"Unable to create signal instance: {e}")
                     # The nested transaction is automatically rolled back
