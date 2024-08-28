@@ -7,6 +7,7 @@ import SearchUtils from "@/search/utils"
 const getDefaultSelectedState = () => {
   return {
     case_template_document: null,
+    cost_model: null,
     default: false,
     description: null,
     enabled: false,
