@@ -364,7 +364,7 @@ def calculate_case_response_cost(case_id: int, db_session: SessionLocal) -> int:
 
     case_type = case.case_type
     if not case_type:
-        print(f"Case type for case {case.name} not found.")
+        log.debug(f"Case type for case {case.name} not found.")
         return case.total_cost
 
     if not case_type.cost_model:
