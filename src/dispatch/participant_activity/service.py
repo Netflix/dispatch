@@ -59,18 +59,6 @@ def update(
     return activity
 
 
-def get_last_participant_activity(
-    db_session: SessionLocal, incident_id: int
-) -> ParticipantActivity:
-    """Returns the last recorded participant incident activity for a given incident."""
-    return (
-        db_session.query(ParticipantActivity)
-        .filter(ParticipantActivity.incident_id == incident_id)
-        .order_by(ParticipantActivity.ended_at.desc())
-        .first()
-    )
-
-
 def get_all_case_participant_activities_for_case(
     db_session: Session,
     case_id: int,

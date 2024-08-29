@@ -348,7 +348,7 @@ class SlackConversationPlugin(ConversationPlugin):
         }
         return command_mappings.get(command, [])
 
-    def fetch_incident_events(
+    def fetch_events(
         self, db_session: Session, subject: Any, plugin_event_id: int, oldest: str = "0", **kwargs
     ):
         """Fetches incident events from the Slack plugin.
