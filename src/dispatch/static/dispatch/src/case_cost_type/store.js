@@ -1,27 +1,20 @@
 import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
 
-import CaseTypeApi from "@/case/type/api"
 import SearchUtils from "@/search/utils"
+import CaseCostTypeApi from "@/case_cost_type/api"
 
 const getDefaultSelectedState = () => {
   return {
-    case_template_document: null,
-    cost_model: null,
-    default: false,
-    description: null,
-    enabled: false,
-    exclude_from_metrics: null,
     id: null,
-    incident_type: null,
-    loading: false,
     name: null,
-    oncall_service: null,
-    plugin_metadata: [],
+    description: null,
+    category: null,
+    details: {},
+    default: false,
     project: null,
-    slug: null,
-    conversation_target: null,
-    visibility: null,
+    editable: true,
+    loading: false,
   }
 }
 
@@ -43,7 +36,7 @@ const state = {
       page: 1,
       itemsPerPage: 25,
       sortBy: ["name"],
-      descending: [false],
+      descending: [true],
       filters: {
         project: [],
       },
@@ -61,9 +54,9 @@ const actions = {
     commit("SET_TABLE_LOADING", "primary")
     let params = SearchUtils.createParametersFromTableOptions(
       { ...state.table.options },
-      "CaseType"
+      "CaseCostType"
     )
-    return CaseTypeApi.getAll(params)
+    return CaseCostTypeApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)
         commit("SET_TABLE_ROWS", response.data)
@@ -72,15 +65,15 @@ const actions = {
         commit("SET_TABLE_LOADING", false)
       })
   }, 500),
-  createEditShow({ commit }, caseType) {
+  createEditShow({ commit }, caseCostType) {
     commit("SET_DIALOG_CREATE_EDIT", true)
-    if (caseType) {
-      commit("SET_SELECTED", caseType)
+    if (caseCostType) {
+      commit("SET_SELECTED", caseCostType)
     }
   },
-  removeShow({ commit }, caseType) {
+  removeShow({ commit }, caseCostType) {
     commit("SET_DIALOG_DELETE", true)
-    commit("SET_SELECTED", caseType)
+    commit("SET_SELECTED", caseCostType)
   },
   closeCreateEdit({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
@@ -90,17 +83,17 @@ const actions = {
     commit("SET_DIALOG_DELETE", false)
     commit("RESET_SELECTED")
   },
-  save({ commit, state, dispatch }) {
+  save({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
-      return CaseTypeApi.create(state.selected)
+      return CaseCostTypeApi.create(state.selected)
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit("SET_SELECTED_LOADING", false)
           commit(
             "notification_backend/addBeNotification",
-            { text: "Case type created successfully.", type: "success" },
+            { text: "Case cost type created successfully.", type: "success" },
             { root: true }
           )
         })
@@ -108,14 +101,14 @@ const actions = {
           commit("SET_SELECTED_LOADING", false)
         })
     } else {
-      return CaseTypeApi.update(state.selected.id, state.selected)
+      return CaseCostTypeApi.update(state.selected.id, state.selected)
         .then(() => {
-          commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
           dispatch("getAll")
+          commit("SET_SELECTED_LOADING", false)
           commit(
             "notification_backend/addBeNotification",
-            { text: "Case type updated successfully.", type: "success" },
+            { text: "Case cost type updated successfully.", type: "success" },
             { root: true }
           )
         })
@@ -125,15 +118,20 @@ const actions = {
     }
   },
   remove({ commit, dispatch }) {
-    return CaseTypeApi.delete(state.selected.id).then(function () {
-      dispatch("closeRemove")
-      dispatch("getAll")
-      commit(
-        "notification_backend/addBeNotification",
-        { text: "Case type deleted successfully.", type: "success" },
-        { root: true }
-      )
-    })
+    return CaseCostTypeApi.delete(state.selected.id)
+      .then(function () {
+        commit("SET_SELECTED_LOADING", false)
+        dispatch("closeRemove")
+        dispatch("getAll")
+        commit(
+          "notification_backend/addBeNotification",
+          { text: "Case cost type deleted successfully.", type: "success" },
+          { root: true }
+        )
+      })
+      .catch(() => {
+        commit("SET_SELECTED_LOADING", false)
+      })
   },
 }
 
@@ -166,9 +164,9 @@ const mutations = {
 }
 
 export default {
-  actions,
-  getters,
-  mutations,
   namespaced: true,
   state,
+  getters,
+  actions,
+  mutations,
 }

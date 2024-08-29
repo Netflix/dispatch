@@ -494,6 +494,12 @@ export const protectedRoute = [
             component: () => import("@/case/severity/Table.vue"),
           },
           {
+            path: "caseCostTypes",
+            name: "CaseCostTypesTable",
+            meta: { title: "Cost Types", subMenu: "project", group: "case" },
+            component: () => import("@/case_cost_type/Table.vue"),
+          },
+          {
             path: "signals",
             name: "SignalDefinitionTable",
             meta: { title: "Definitions", subMenu: "project", group: "signal" },
