@@ -379,6 +379,7 @@ def drop_database():
             f"Database '{database_hostname}:{database_name}' does not exist!!!", fg="red"
         )
 
+
 @dispatch_database.command("upgrade")
 @click.option(
     "--tag", default=None, help="Arbitrary 'tag' name - can be used by custom env.py scripts."
