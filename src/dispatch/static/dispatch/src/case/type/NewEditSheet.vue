@@ -112,15 +112,6 @@
                 </v-form>
               </v-col>
               <v-col cols="12">
-                <cost-model-combobox
-                  :project="project"
-                  v-model="cost_model"
-                  persistent-hint
-                  clearable
-                  hint="If unassigned, the incident cost calculation defaults to the classic incident cost model."
-                />
-              </v-col>
-              <v-col cols="12">
                 <v-checkbox
                   v-model="exclude_from_metrics"
                   label="Exclude From Metrics"
