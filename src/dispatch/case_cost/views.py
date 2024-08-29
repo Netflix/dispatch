@@ -30,7 +30,7 @@ def get_case_cost(db_session: DbSession, case_cost_id: PrimaryKey):
     if not case_cost:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "An case cost with this id does not exist."}],
+            detail=[{"msg": "A case cost with this id does not exist."}],
         )
     return case_cost
 
