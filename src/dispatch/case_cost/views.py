@@ -20,7 +20,6 @@ router = APIRouter()
 @router.get("", response_model=CaseCostPagination)
 def get_case_costs(common: CommonParameters):
     """Get all case costs, or only those matching a given search term."""
-    print("get case costs")
     return search_filter_sort_paginate(model="CaseCost", **common)
 
 
