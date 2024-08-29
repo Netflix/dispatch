@@ -93,8 +93,7 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                     continue
                 except Exception as e:
                     log.exception(f"Unable to create signal instance: {e}")
-                    # The nested transaction is automatically rolled back
-                    # We don't need to call db_session.rollback() here
+                    db_session.rollback()
                     continue
                 else:
                     metrics_provider.counter(

@@ -1,8 +1,5 @@
 import logging
 import os
-from threading import Thread, Event
-import time
-from typing import Any
 
 import click
 import uvicorn
@@ -367,7 +364,9 @@ def drop_database():
     """Drops all data in database."""
     from sqlalchemy_utils import database_exists, drop_database
 
-    database_hostname = click.prompt(f"Please enter the database hostname (env = {config.DATABASE_HOSTNAME})")
+    database_hostname = click.prompt(
+        f"Please enter the database hostname (env = {config.DATABASE_HOSTNAME})"
+    )
     database_name = click.prompt(f"Please enter the database name (env = {config.DATABASE_NAME})")
     sqlalchemy_database_uri = f"postgresql+psycopg2://{config._DATABASE_CREDENTIAL_USER}:{config._QUOTED_DATABASE_PASSWORD}@{database_hostname}:{config.DATABASE_PORT}/{database_name}"
 
@@ -378,9 +377,7 @@ def drop_database():
             drop_database(str(sqlalchemy_database_uri))
             click.secho("Success.", fg="green")
     else:
-        click.secho(
-            f"Database '{database_hostname}:{database_name}' does not exist!!!", fg="red"
-        )
+        click.secho(f"Database '{database_hostname}:{database_name}' does not exist!!!", fg="red")
 
 
 @dispatch_database.command("upgrade")
@@ -796,94 +793,6 @@ def signals_group():
     pass
 
 
-def _run_consume(
-    plugin_slug: str,
-    organization_slug: str,
-    project_id: int,
-    running: Event,
-) -> None:
-    """
-    Runs the consume method of a plugin instance.
-
-    Args:
-        plugin_slug (str): The slug of the plugin to run.
-        organization_slug (str): The slug of the organization.
-        project_id (int): The ID of the project.
-        running (Event): An event to signal when the thread should stop running.
-
-    Returns:
-        None
-    """
-    from dispatch.database.core import get_organization_session
-    from dispatch.plugin import service as plugin_service
-    from dispatch.project import service as project_service
-
-    with get_organization_session(organization_slug) as session:
-        plugin = plugin_service.get_active_instance_by_slug(
-            db_session=session, slug=plugin_slug, project_id=project_id
-        )
-        project = project_service.get(db_session=session, project_id=project_id)
-
-        while running.is_set():
-            plugin.instance.consume(db_session=session, project=project)
-
-
-def _run_consume_with_exception_handling(
-    plugin_slug: str,
-    organization_slug: str,
-    project_id: int,
-    running: Event,
-) -> None:
-    """
-    Runs the consume method of a plugin instance with exception handling.
-
-    Args:
-        plugin_slug (str): The slug of the plugin to run.
-        organization_slug (str): The slug of the organization.
-        project_id (int): The ID of the project.
-        running (Event): An event to signal when the thread should stop running.
-
-    Returns:
-        None
-    """
-    while running.is_set():
-        try:
-            _run_consume(plugin_slug, organization_slug, project_id, running)
-        except Exception as e:
-            log.error(f"Exception in thread for plugin {plugin_slug}: {e}", exc_info=True)
-            time.sleep(1)  # Optional: Add a small delay before retrying
-
-
-def _create_consumer_thread(
-    plugin_slug: str,
-    organization_slug: str,
-    project_id: int,
-    running: Event,
-) -> Thread:
-    """
-    Creates a new consumer thread for a plugin.
-
-    Args:
-        plugin_slug (str): The slug of the plugin to run.
-        organization_slug (str): The slug of the organization.
-        project_id (int): The ID of the project.
-        running (Event): An event to signal when the thread should stop running.
-
-    Returns:
-        Thread: A new daemon thread that will run the plugin's consume method.
-    """
-    return Thread(
-        target=_run_consume_with_exception_handling,
-        args=(
-            plugin_slug,
-            organization_slug,
-            project_id,
-            running,
-        ),
-        daemon=True,
-    )
-
-
 @signals_group.command("consume")
 def consume_signals():
     """
@@ -896,9 +805,6 @@ def consume_signals():
     Returns:
         None
     """
-    import signal
-    from types import FrameType
-
     from dispatch.common.utils.cli import install_plugins
     from dispatch.project import service as project_service
     from dispatch.plugin import service as plugin_service
@@ -906,11 +812,6 @@ def consume_signals():
     from dispatch.database.core import get_session, get_organization_session
 
     install_plugins()
-
-    worker_configs: list[dict[str, Any]] = []
-    workers: list[Thread] = []
-    running = Event()
-    running.set()
 
     with get_session() as session:
         organizations = get_all_organizations(db_session=session)
@@ -931,47 +832,12 @@ def consume_signals():
 
                 for plugin in plugins:
                     log.debug(f"Consuming signals for plugin: {plugin.plugin.slug}")
-                    for _ in range(5):  # TODO add plugin.instance.concurrency
-                        worker_config = {
-                            "plugin_slug": plugin.plugin.slug,
-                            "organization_slug": organization.slug,
-                            "project_id": project.id,
-                        }
-                        worker_configs.append(worker_config)
-                        t = _create_consumer_thread(**worker_config, running=running)
-                        t.start()
-                        workers.append(t)
-
-    def terminate_processes(signum: int, frame: FrameType) -> None:
-        """
-        Signal handler to terminate all processes.
-
-        Args:
-            signum (int): The signal number.
-            frame (FrameType): The current stack frame.
-
-        Returns:
-            None
-        """
-        log.info("Terminating main process...")
-        running.clear()  # stop all threads
-        for worker in workers:
-            worker.join()
-
-    signal.signal(signal.SIGINT, terminate_processes)
-    signal.signal(signal.SIGTERM, terminate_processes)
-
-    while running.is_set():
-        for i, worker in enumerate(workers):
-            if not worker.is_alive():
-                log.warning(f"Thread {i} died. Restarting...")
-                config = worker_configs[i]
-                new_worker = _create_consumer_thread(**config, running=running)
-                new_worker.start()
-                workers[i] = new_worker
-        time.sleep(1)  # Check every second
-
-    log.info("Main process terminating.")
+                    try:
+                        plugin.instance.consume(db_session=session, project=project)
+                    except Exception as e:
+                        log.error(
+                            f"Error consuming signals for plugin: {plugin.plugin.slug}. Error: {e}"
+                        )
 
 
 @signals_group.command("process")
