@@ -13,7 +13,8 @@
     <v-row no-gutters>
       <v-col>
         <v-alert closable icon="mdi-school" prominent text type="info">
-          Case cost types are line items for case cost. Add your own for more accurate case cost estimates.
+          Case cost types are line items for case cost. Add your own for more accurate case cost
+          estimates.
         </v-alert>
       </v-col>
     </v-row>

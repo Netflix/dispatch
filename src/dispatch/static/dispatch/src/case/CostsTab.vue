@@ -59,18 +59,15 @@ export default {
     ...mapMultiRowFields("case_management", ["selected.case_costs", "selected"]),
 
     totalCost() {
-      console.log('getting total cost')
       var cost = this.case_costs.reduce((accumulator, item) => {
         return accumulator + item.amount
       }, 0)
-      console.log('cost is')
-      console.log(cost)
       return cost
     },
   },
 
   methods: {
-    ...mapMutations("case_management", ["addCaseCost", "removeCaseCost", "getCostInfo"]),
+    ...mapMutations("case_management", ["addCaseCost", "removeCaseCost"]),
   },
 }
 </script>

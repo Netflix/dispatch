@@ -147,7 +147,6 @@ const actions = {
   getDetails({ commit, state }, payload) {
     commit("SET_SELECTED_LOADING", true)
     if ("id" in payload) {
-
       return CaseApi.get(state.selected.id).then((response) => {
         commit("SET_SELECTED", response.data)
         commit("SET_SELECTED_LOADING", false)
@@ -437,10 +436,6 @@ const actions = {
 
 const mutations = {
   updateField,
-  getCostInfo(state, value) {
-    console.log("getting details")
-    console.log(state.selected)
-  },
   addCaseCost(state, value) {
     state.selected.case_costs.push(value)
   },
