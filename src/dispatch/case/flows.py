@@ -132,9 +132,7 @@ def case_add_or_reactivate_participant_flow(
 
         # we send the welcome messages to the participant
         send_case_welcome_participant_message(
-            participant_email=user_email,
-            case=case,
-            db_session=db_session
+            participant_email=user_email, case=case, db_session=db_session
         )
 
     return participant
@@ -151,7 +149,7 @@ def case_remove_participant_flow(
 
     if not case:
         log.warn(
-            f"Unable to remove participant from case with id {case_id}. An case with this id does not exist."
+            f"Unable to remove participant from case with id {case_id}. A case with this id does not exist."
         )
         return
 
@@ -544,7 +542,11 @@ def case_status_transition_flow_dispatcher(
     """Runs the correct flows based on the current and previous status of the case."""
     log.info(
         "Transitioning Case status",
-        extra={"case_id": case.id, "previous_status": previous_status, "current_status": current_status}
+        extra={
+            "case_id": case.id,
+            "previous_status": previous_status,
+            "current_status": current_status,
+        },
     )
     match (previous_status, current_status):
         case (CaseStatus.closed, CaseStatus.new):
@@ -574,7 +576,11 @@ def case_status_transition_flow_dispatcher(
             # Any -> Triage/
             log.warning(
                 "Unexpected previous state for Case transition to Triage state.",
-                extra={"case_id": case.id, "previous_status": previous_status, "current_status": current_status}
+                extra={
+                    "case_id": case.id,
+                    "previous_status": previous_status,
+                    "current_status": current_status,
+                },
             )
 
         case (CaseStatus.new, CaseStatus.escalated):

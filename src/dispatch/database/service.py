@@ -185,9 +185,8 @@ def build_filters(filter_spec):
 
                 if not _is_iterable_filter(fn_args):
                     raise BadFilterFormat(
-                        "`{}` value must be an iterable across the function " "arguments".format(
-                            boolean_function.key
-                        )
+                        "`{}` value must be an iterable across the function "
+                        "arguments".format(boolean_function.key)
                     )
                 if boolean_function.only_one_arg and len(fn_args) != 1:
                     raise BadFilterFormat(
@@ -643,7 +642,7 @@ def restricted_incident_filter(query: orm.Query, current_user: DispatchUser, rol
 def restricted_case_filter(query: orm.Query, current_user: DispatchUser, role: UserRoles):
     """Adds additional case filters to query (usually for permissions)."""
     if role == UserRoles.member:
-        # We filter out restricted cases for users with a member role if the user is not an case participant
+        # We filter out restricted cases for users with a member role if the user is not a case participant
         query = (
             query.join(Participant, Case.id == Participant.case_id)
             .join(IndividualContact)
@@ -655,6 +654,7 @@ def restricted_case_filter(query: orm.Query, current_user: DispatchUser, role: U
             )
         )
     return query.distinct()
+
 
 def restricted_incident_type_filter(query: orm.Query, current_user: DispatchUser):
     """Adds additional incident type filters to query (usually for permissions)."""

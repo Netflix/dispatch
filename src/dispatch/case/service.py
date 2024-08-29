@@ -34,12 +34,12 @@ log = logging.getLogger(__name__)
 
 
 def get(*, db_session, case_id: int) -> Optional[Case]:
-    """Returns an case based on the given id."""
+    """Returns a case based on the given id."""
     return db_session.query(Case).filter(Case.id == case_id).first()
 
 
 def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Case]:
-    """Returns an case based on the given name."""
+    """Returns a case based on the given name."""
     return (
         db_session.query(Case)
         .filter(Case.project_id == project_id)
@@ -49,7 +49,7 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Case]:
 
 
 def get_by_name_or_raise(*, db_session, project_id: int, case_in: CaseRead) -> Case:
-    """Returns an case based on a given name or raises ValidationError"""
+    """Returns a case based on a given name or raises ValidationError"""
     case = get_by_name(db_session=db_session, project_id=project_id, name=case_in.name)
 
     if not case:

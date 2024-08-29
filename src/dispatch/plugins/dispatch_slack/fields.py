@@ -602,7 +602,7 @@ def case_type_select(
     project_id: int = None,
     **kwargs,
 ):
-    """Creates an case type select."""
+    """Creates a case type select."""
     types = [
         {"text": t.name, "value": t.id}
         for t in case_type_service.get_all_enabled(db_session=db_session, project_id=project_id)

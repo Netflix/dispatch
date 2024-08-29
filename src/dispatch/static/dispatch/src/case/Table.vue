@@ -84,6 +84,9 @@
                 {{ item.project.name }}
               </v-chip>
             </template>
+            <template #item.case_costs="{ value }">
+              <case-cost-card :case-costs="value" />
+            </template>
             <template #item.assignee="{ value }">
               <case-participant :participant="value" />
             </template>
@@ -160,6 +163,7 @@ import { useRoute, useRouter } from "vue-router"
 import { formatRelativeDate, formatDate } from "@/filters"
 
 import BulkEditSheet from "@/case/BulkEditSheet.vue"
+import CaseCostCard from "@/case_cost/CaseCostCard.vue"
 import CaseParticipant from "@/case/Participant.vue"
 import CasePriority from "@/case/priority/CasePriority.vue"
 import CaseSeverity from "@/case/severity/CaseSeverity.vue"
@@ -188,6 +192,7 @@ const headers = [
   { title: "Priority", value: "case_priority.name", sortable: true },
   { title: "Project", value: "project.name", sortable: true },
   { title: "Assignee", value: "assignee", sortable: false },
+  { title: "Cost", key: "case_costs", sortable: false },
   { title: "Reported At", value: "reported_at", sortable: true },
   { title: "Closed At", value: "closed_at", sortable: true },
   { title: "", key: "data-table-actions", sortable: false, align: "end" },

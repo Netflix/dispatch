@@ -11,7 +11,7 @@ from .models import (
 
 
 def get(*, db_session, case_cost_type_id: int) -> Optional[CaseCostType]:
-    """Gets an case cost type by its id."""
+    """Gets a case cost type by its id."""
     return db_session.query(CaseCostType).filter(CaseCostType.id == case_cost_type_id).one_or_none()
 
 
@@ -26,7 +26,7 @@ def get_default(*, db_session, project_id: int) -> Optional[CaseCostType]:
 
 
 def get_by_name(*, db_session, project_id: int, case_cost_type_name: str) -> Optional[CaseCostType]:
-    """Gets an case cost type by its name."""
+    """Gets a case cost type by its name."""
     return (
         db_session.query(CaseCostType)
         .filter(CaseCostType.name == case_cost_type_name)
@@ -57,7 +57,7 @@ def update(
     case_cost_type: CaseCostType,
     case_cost_type_in: CaseCostTypeUpdate,
 ) -> CaseCostType:
-    """Updates an case cost type."""
+    """Updates a case cost type."""
     case_cost_data = case_cost_type.dict()
     update_data = case_cost_type_in.dict(skip_defaults=True)
 

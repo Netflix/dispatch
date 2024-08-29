@@ -3,6 +3,7 @@ import { createStore } from "vuex"
 import app from "@/app/store"
 import auth from "@/auth/store"
 import case_management from "@/case/store"
+import case_cost_type from "@/case_cost_type/store"
 import case_priority from "@/case/priority/store"
 import case_severity from "@/case/severity/store"
 import case_type from "@/case/type/store"
@@ -55,6 +56,7 @@ export default createStore({
   modules: {
     app,
     auth,
+    case_cost_type,
     case_management,
     case_priority,
     case_severity,
