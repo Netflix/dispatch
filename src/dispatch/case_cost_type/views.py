@@ -25,12 +25,12 @@ def get_case_cost_types(common: CommonParameters):
 
 @router.get("/{case_cost_type_id}", response_model=CaseCostTypeRead)
 def get_case_cost_type(db_session: DbSession, case_cost_type_id: PrimaryKey):
-    """Get an case cost type by its id."""
+    """Get a case cost type by its id."""
     case_cost_type = get(db_session=db_session, case_cost_type_id=case_cost_type_id)
     if not case_cost_type:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "An case cost type with this id does not exist."}],
+            detail=[{"msg": "A case cost type with this id does not exist."}],
         )
     return case_cost_type
 
@@ -41,7 +41,7 @@ def get_case_cost_type(db_session: DbSession, case_cost_type_id: PrimaryKey):
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def create_case_cost_type(db_session: DbSession, case_cost_type_in: CaseCostTypeCreate):
-    """Create an case cost type."""
+    """Create a case cost type."""
     case_cost_type = create(db_session=db_session, case_cost_type_in=case_cost_type_in)
     return case_cost_type
 
@@ -56,12 +56,12 @@ def update_case_cost_type(
     case_cost_type_id: PrimaryKey,
     case_cost_type_in: CaseCostTypeUpdate,
 ):
-    """Update an case cost type by its id."""
+    """Update a case cost type by its id."""
     case_cost_type = get(db_session=db_session, case_cost_type_id=case_cost_type_id)
     if not case_cost_type:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "An case cost type with this id does not exist."}],
+            detail=[{"msg": "A case cost type with this id does not exist."}],
         )
 
     if not case_cost_type.editable:
@@ -87,13 +87,13 @@ def delete_case_cost_type(
     db_session: DbSession,
     case_cost_type_id: PrimaryKey,
 ):
-    """Delete an case cost type, returning only an HTTP 200 OK if successful."""
+    """Delete a case cost type, returning only an HTTP 200 OK if successful."""
     case_cost_type = get(db_session=db_session, case_cost_type_id=case_cost_type_id)
 
     if not case_cost_type:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "An case cost type with this id does not exist."}],
+            detail=[{"msg": "A case cost type with this id does not exist."}],
         )
 
     if not case_cost_type.editable:

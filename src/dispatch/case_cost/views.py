@@ -25,7 +25,7 @@ def get_case_costs(common: CommonParameters):
 
 @router.get("/{case_cost_id}", response_model=CaseCostRead)
 def get_case_cost(db_session: DbSession, case_cost_id: PrimaryKey):
-    """Get an case cost by its id."""
+    """Get a case cost by its id."""
     case_cost = get(db_session=db_session, case_cost_id=case_cost_id)
     if not case_cost:
         raise HTTPException(
@@ -41,7 +41,7 @@ def get_case_cost(db_session: DbSession, case_cost_id: PrimaryKey):
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def create_case_cost(db_session: DbSession, case_cost_in: CaseCostCreate):
-    """Create an case cost."""
+    """Create a case cost."""
     case_cost = create(db_session=db_session, case_cost_in=case_cost_in)
     return case_cost
 
@@ -56,12 +56,12 @@ def update_case_cost(
     case_cost_id: PrimaryKey,
     case_cost_in: CaseCostUpdate,
 ):
-    """Update an case cost by its id."""
+    """Update a case cost by its id."""
     case_cost = get(db_session=db_session, case_cost_id=case_cost_id)
     if not case_cost:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "An case cost with this id does not exist."}],
+            detail=[{"msg": "A case cost with this id does not exist."}],
         )
     case_cost = update(
         db_session=db_session,
@@ -77,11 +77,11 @@ def update_case_cost(
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def delete_case_cost(db_session: DbSession, case_cost_id: PrimaryKey):
-    """Delete an case cost, returning only an HTTP 200 OK if successful."""
+    """Delete a case cost, returning only an HTTP 200 OK if successful."""
     case_cost = get(db_session=db_session, case_cost_id=case_cost_id)
     if not case_cost:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "An case cost with this id does not exist."}],
+            detail=[{"msg": "A case cost with this id does not exist."}],
         )
     delete(db_session=db_session, case_cost_id=case_cost_id)
