@@ -27,7 +27,7 @@ log = logging.getLogger(__name__)
 
 
 def get(*, db_session, case_cost_id: int) -> Optional[CaseCost]:
-    """Gets an case cost by its id."""
+    """Gets a case cost by its id."""
     return db_session.query(CaseCost).filter(CaseCost.id == case_cost_id).one_or_none()
 
 
@@ -54,7 +54,7 @@ def get_all(*, db_session) -> List[Optional[CaseCost]]:
 
 
 def get_or_create(*, db_session, case_cost_in: CaseCostCreate | CaseCostUpdate) -> CaseCost:
-    """Gets or creates an case cost object."""
+    """Gets or creates a case cost object."""
     if type(case_cost_in) is CaseCostUpdate and case_cost_in.id:
         case_cost = get(db_session=db_session, case_cost_id=case_cost_in.id)
     else:
@@ -80,7 +80,7 @@ def create(*, db_session, case_cost_in: CaseCostCreate) -> CaseCost:
 
 
 def update(*, db_session, case_cost: CaseCost, case_cost_in: CaseCostUpdate) -> CaseCost:
-    """Updates an case cost."""
+    """Updates a case cost."""
     case_cost_data = case_cost.dict()
     update_data = case_cost_in.dict(skip_defaults=True)
 
@@ -136,9 +136,9 @@ def get_default_case_response_cost(case: Case, db_session: SessionLocal) -> Opti
 def get_or_create_default_case_response_cost(
     case: Case, db_session: SessionLocal
 ) -> Optional[CaseCost]:
-    """Gets or creates the default case cost for an case.
+    """Gets or creates the default case cost for a case.
 
-    The default case cost is the cost associated with the participant effort in an case's response.
+    The default case cost is the cost associated with the participant effort in a case's response.
     """
     response_cost_type = case_cost_type_service.get_default(
         db_session=db_session, project_id=case.project.id
@@ -192,7 +192,7 @@ def fetch_case_events(
 
 
 def calculate_case_response_cost_with_cost_model(case: Case, db_session: SessionLocal) -> int:
-    """Calculates the cost of an case using the case's cost model.
+    """Calculates the cost of a case using the case's cost model.
 
     This function aggregates all new case costs based on plugin activity since the last case cost update.
     If this is the first time performing cost calculation for this case, it computes the total costs from the case's creation.
@@ -266,7 +266,7 @@ def calculate_case_response_cost_with_cost_model(case: Case, db_session: Session
 def get_participant_role_time_seconds(
     case: Case, participant_role: ParticipantRole, start_at: datetime
 ) -> int:
-    """Calculates the time spent by a participant in an case role starting from a given time.
+    """Calculates the time spent by a participant in a case role starting from a given time.
 
     Args:
         case: The case the participant is part of.
