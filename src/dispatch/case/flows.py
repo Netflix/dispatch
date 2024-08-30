@@ -706,6 +706,14 @@ def common_escalate_flow(
             # Map the case role to an incident role
             incident_role = ParticipantRoleType.map_case_role_to_incident_role(case_roles)
 
+            # If role already assigned, assign as participant
+            if participant_service.get_by_incident_id_and_role(
+                db_session=db_session,
+                incident_id=incident.id,
+                role=incident_role,
+            ):
+                incident_role = ParticipantRoleType.participant
+
             participant_flows.add_participant(
                 participant.individual.email,
                 incident,
