@@ -1,5 +1,5 @@
 import logging
-from typing import TypeVar, List
+from typing import TypeVar, List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -29,7 +29,7 @@ def add_participant(
     subject: Subject,
     db_session: Session,
     service_id: int = None,
-    roles: List[ParticipantRoleType] = [ParticipantRoleType.participant],
+    roles: Optional[List[ParticipantRoleType]] = None,
 ) -> Participant:
     """Adds a participant to an incident or a case."""
     # we get or create a new individual
@@ -39,6 +39,10 @@ def add_participant(
 
     # we get or create a new participant
     subject_type = get_table_name_by_class_instance(subject)
+
+    # set up roles
+    if roles is None:
+        roles = [ParticipantRoleType.participant]
     participant_roles = [ParticipantRoleCreate(role=role) for role in roles]
     participant = participant_service.get_or_create(
         db_session=db_session,
@@ -54,20 +58,21 @@ def add_participant(
 
     # TODO: Split this assignment depending on Obj type
     # we update the commander, reporter, scribe, or liaison foreign key
-    if role == ParticipantRoleType.incident_commander:
-        subject.commander_id = participant.id
-        subject.commanders_location = participant.location
-    elif role == ParticipantRoleType.reporter:
-        subject.reporter_id = participant.id
-        subject.reporters_location = participant.location
-    elif role == ParticipantRoleType.scribe:
-        subject.scribe_id = participant.id
-    elif role == ParticipantRoleType.liaison:
-        subject.liaison_id = participant.id
-    elif role == ParticipantRoleType.observer:
-        subject.observer_id = participant.id
-    elif role == ParticipantRoleType.assignee:
-        subject.assignee_id = participant.id
+    for role in roles:
+        if role == ParticipantRoleType.incident_commander:
+            subject.commander_id = participant.id
+            subject.commanders_location = participant.location
+        elif role == ParticipantRoleType.reporter:
+            subject.reporter_id = participant.id
+            subject.reporters_location = participant.location
+        elif role == ParticipantRoleType.scribe:
+            subject.scribe_id = participant.id
+        elif role == ParticipantRoleType.liaison:
+            subject.liaison_id = participant.id
+        elif role == ParticipantRoleType.observer:
+            subject.observer_id = participant.id
+        elif role == ParticipantRoleType.assignee:
+            subject.assignee_id = participant.id
 
     # we add and commit the changes
     db_session.add(participant)
@@ -79,14 +84,14 @@ def add_participant(
         event_service.log_case_event(
             db_session=db_session,
             source="Dispatch Core App",
-            description=f"{individual.name} added to case with {participant_role.role} role",
+            description=f"{individual.name} added to case with role(s) {[role.role for role in participant_roles]}",
             case_id=subject.id,
         )
     if subject_type == "incident":
         event_service.log_incident_event(
             db_session=db_session,
             source="Dispatch Core App",
-            description=f"{individual.name} added to incident with {participant_role.role} role",
+            description=f"{individual.name} added to incident with role(s) {[role.role for role in participant_roles]}",
             incident_id=subject.id,
             type=EventType.participant_updated,
         )

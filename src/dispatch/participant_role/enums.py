@@ -1,5 +1,3 @@
-from collections.abc import Iterable
-
 from dispatch.enums import DispatchEnum
 
 
