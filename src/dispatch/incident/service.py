@@ -232,7 +232,7 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
         reporter_email,
         incident,
         db_session,
-        role=ParticipantRoleType.reporter,
+        roles=[ParticipantRoleType.reporter],
     )
 
     # add commander
@@ -256,7 +256,7 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
         incident,
         db_session,
         service_id=commander_service_id,
-        role=ParticipantRoleType.incident_commander,
+        roles=[ParticipantRoleType.incident_commander],
     )
 
     # add liaison
@@ -272,7 +272,7 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
             incident,
             db_session,
             service_id=liaison_service_id,
-            role=ParticipantRoleType.liaison,
+            roles=[ParticipantRoleType.liaison],
         )
 
     # add scribe
@@ -288,7 +288,7 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
             incident,
             db_session,
             service_id=scribe_service_id,
-            role=ParticipantRoleType.scribe,
+            roles=[ParticipantRoleType.scribe],
         )
 
     # add observer (if engage_next_oncall is enabled)
@@ -312,7 +312,7 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
                     incident,
                     db_session,
                     service_id=incident_role.service.id,
-                    role=ParticipantRoleType.observer,
+                    roles=[ParticipantRoleType.observer],
                 )
 
     return incident
