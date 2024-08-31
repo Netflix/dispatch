@@ -673,10 +673,10 @@ def map_case_roles_to_incident_roles(
     participant_roles: List[ParticipantRoleType], incident: Incident, db_session: Session
 ) -> List[ParticipantRoleType]:
     # Map the case role to an incident role
-    incident_roles = []
+    incident_roles = set()
     for role in participant_roles:
         if role == ParticipantRoleType.reporter:
-            incident_roles.append(ParticipantRoleType.reporter)
+            incident_roles.add(ParticipantRoleType.reporter)
         elif role == ParticipantRoleType.assignee:
             # If incident commader role already assigned, assign as participant
             if participant_service.get_by_incident_id_and_role(
@@ -684,12 +684,12 @@ def map_case_roles_to_incident_roles(
                 incident_id=incident.id,
                 role=ParticipantRoleType.incident_commander,
             ):
-                incident_roles.append(ParticipantRoleType.participant)
+                incident_roles.add(ParticipantRoleType.participant)
             else:
-                incident_roles.append(ParticipantRoleType.incident_commander)
+                incident_roles.add(ParticipantRoleType.incident_commander)
         else:
-            incident_roles.append(ParticipantRoleType.participant)
-    return incident_roles
+            incident_roles.add(ParticipantRoleType.participant)
+    return list(incident_roles)
 
 
 def common_escalate_flow(
