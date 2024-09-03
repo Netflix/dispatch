@@ -675,9 +675,7 @@ def map_case_roles_to_incident_roles(
     # Map the case role to an incident role
     incident_roles = set()
     for role in participant_roles:
-        if role == ParticipantRoleType.reporter:
-            incident_roles.add(ParticipantRoleType.reporter)
-        elif role == ParticipantRoleType.assignee:
+        if role == ParticipantRoleType.assignee:
             # If incident commader role already assigned, assign as participant
             if participant_service.get_by_incident_id_and_role(
                 db_session=db_session,
