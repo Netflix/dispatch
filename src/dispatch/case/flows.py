@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -28,7 +28,7 @@ from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
 from dispatch.participant_role import flows as role_flow
-from dispatch.participant_role.models import ParticipantRoleType
+from dispatch.participant_role.models import ParticipantRoleType, ParticipantRole
 from dispatch.plugin import service as plugin_service
 from dispatch.storage import flows as storage_flows
 from dispatch.storage.enums import StorageAction
@@ -670,12 +670,12 @@ def send_escalation_messages_for_channel_case(
 
 
 def map_case_roles_to_incident_roles(
-    participant_roles: List[ParticipantRoleType], incident: Incident, db_session: Session
-) -> List[ParticipantRoleType]:
+    participant_roles: List[ParticipantRole], incident: Incident, db_session: Session
+) -> Optional[List[ParticipantRoleType]]:
     # Map the case role to an incident role
     incident_roles = set()
     for role in participant_roles:
-        if role == ParticipantRoleType.assignee:
+        if role.role == ParticipantRoleType.assignee:
             # If incident commader role already assigned, assign as participant
             if participant_service.get_by_incident_id_and_role(
                 db_session=db_session,
@@ -686,8 +686,8 @@ def map_case_roles_to_incident_roles(
             else:
                 incident_roles.add(ParticipantRoleType.incident_commander)
         else:
-            incident_roles.add(role)
-    return list(incident_roles)
+            incident_roles.add(role.role)
+    return list(incident_roles) or None
 
 
 def common_escalate_flow(
