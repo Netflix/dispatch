@@ -688,7 +688,7 @@ def map_case_roles_to_incident_roles(
             else:
                 incident_roles.add(ParticipantRoleType.incident_commander)
         else:
-            incident_roles.add(ParticipantRoleType.participant)
+            incident_roles.add(role)
     return list(incident_roles)
 
 
