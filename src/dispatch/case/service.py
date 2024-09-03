@@ -241,7 +241,7 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
             assignee_email,
             case,
             db_session,
-            role=ParticipantRoleType.assignee,
+            roles=[ParticipantRoleType.assignee],
         )
 
     # add reporter
@@ -250,7 +250,7 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
             case_in.reporter.individual.email,
             case,
             db_session,
-            role=ParticipantRoleType.reporter,
+            roles=[ParticipantRoleType.reporter],
         )
 
     return case
