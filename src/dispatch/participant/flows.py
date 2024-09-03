@@ -42,7 +42,7 @@ def add_participant(
 
     # set up roles
     if roles is None:
-        roles = [ParticipantRoleType.participant]
+        roles = [ParticipantRoleType.observer]
     participant_roles = [ParticipantRoleCreate(role=role) for role in roles]
     participant = participant_service.get_or_create(
         db_session=db_session,

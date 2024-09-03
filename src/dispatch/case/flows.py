@@ -75,7 +75,7 @@ def get_case_participants_flow(case: Case, db_session: SessionLocal):
 def case_add_or_reactivate_participant_flow(
     user_email: str,
     case_id: int,
-    participant_role: ParticipantRoleType = ParticipantRoleType.participant,
+    participant_role: ParticipantRoleType = ParticipantRoleType.observer,
     service_id: int = 0,
     add_to_conversation: bool = True,
     event: dict = None,

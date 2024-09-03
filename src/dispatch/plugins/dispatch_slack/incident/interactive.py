@@ -770,7 +770,7 @@ def handle_participant_role_activity(
 
             # re-assign role once threshold is reached
             if participant_role.role == ParticipantRoleType.observer:
-                if participant_role.activity >= 10:  # ten messages sent to the incident channel
+                if participant_role.activity >= 1:  # one message sent to the incident channel
                     # we change the participant's role to the participant one
                     participant_role_service.renounce_role(
                         db_session=db_session, participant_role=participant_role
@@ -1011,7 +1011,9 @@ def handle_member_joined_channel(
 
         if participant.added_by:
             # Message text when someone @'s a user is not available in body, use generic added by reason
-            participant.added_reason = f"Participant added by {participant.added_by.individual.name}"
+            participant.added_reason = (
+                f"Participant added by {participant.added_by.individual.name}"
+            )
         else:
             # We couldn't find a user to attribute the addition to, add generic reason
             participant.added_reason = "Participant added by Dispatch"
@@ -1061,7 +1063,9 @@ def handle_member_joined_channel(
 
         if participant.added_by:
             # Message text when someone @'s a user is not available in body, use generic added by reason
-            participant.added_reason = f"Participant added by {participant.added_by.individual.name}"
+            participant.added_reason = (
+                f"Participant added by {participant.added_by.individual.name}"
+            )
         else:
             # We couldn't find a user to attribute the addition to, add generic reason
             participant.added_reason = "Participant added by Dispatch"
