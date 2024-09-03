@@ -234,7 +234,9 @@ function loadHeaders() {
     { title: "Reported At", value: "reported_at", sortable: true },
     { title: "Closed At", value: "closed_at", sortable: true },
     { title: "", key: "data-table-actions", sortable: false, align: "end" },
-  ].filter((header) => (!header.experimental_features || auth.value.currentUser.experimental_features))
+  ].filter(
+    (header) => !header.experimental_features || auth.value.currentUser.experimental_features
+  )
 }
 
 watch(auth.value.currentUser.experimental_features, () => {
