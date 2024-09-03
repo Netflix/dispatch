@@ -282,10 +282,14 @@ def escalate_case(
     background_tasks: BackgroundTasks,
 ):
     """Escalates an existing case."""
-    # current user is better than assignee (although likely the same)
+    # use existing reporter or current user if not provided
     if not incident_in.reporter:
-        incident_in.reporter = ParticipantUpdate(
-            individual=IndividualContactRead(email=current_user.email)
+        incident_in.reporter = (
+            ParticipantUpdate(
+                individual=IndividualContactRead(email=current_case.reporter.individual.email)
+            )
+            if current_case.reporter
+            else ParticipantUpdate(individual=IndividualContactRead(email=current_user.email))
         )
 
     # allow for default values

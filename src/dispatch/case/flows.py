@@ -111,7 +111,7 @@ def case_add_or_reactivate_participant_flow(
     else:
         # we add the participant to the case
         participant = participant_flows.add_participant(
-            user_email, case, db_session, service_id=service_id, role=participant_role
+            user_email, case, db_session, service_id=service_id, roles=[participant_role]
         )
     if case.tactical_group:
         # we add the participant to the tactical group
@@ -669,6 +669,27 @@ def send_escalation_messages_for_channel_case(
     )
 
 
+def map_case_roles_to_incident_roles(
+    participant_roles: List[ParticipantRoleType], incident: Incident, db_session: Session
+) -> List[ParticipantRoleType]:
+    # Map the case role to an incident role
+    incident_roles = set()
+    for role in participant_roles:
+        if role == ParticipantRoleType.assignee:
+            # If incident commader role already assigned, assign as participant
+            if participant_service.get_by_incident_id_and_role(
+                db_session=db_session,
+                incident_id=incident.id,
+                role=ParticipantRoleType.incident_commander,
+            ):
+                incident_roles.add(ParticipantRoleType.participant)
+            else:
+                incident_roles.add(ParticipantRoleType.incident_commander)
+        else:
+            incident_roles.add(role)
+    return list(incident_roles)
+
+
 def common_escalate_flow(
     case: Case,
     incident: Incident,
@@ -701,16 +722,17 @@ def common_escalate_flow(
                 f"Adding participant {participant.individual.email} from Case {case.id} to Incident {incident.id}"
             )
             # Get the roles for this participant
-            case_roles = participant.participant_roles
-
-            # Map the case role to an incident role
-            incident_role = ParticipantRoleType.map_case_role_to_incident_role(case_roles)
+            incident_roles = map_case_roles_to_incident_roles(
+                participant_roles=participant.participant_roles,
+                incident=incident,
+                db_session=db_session,
+            )
 
             participant_flows.add_participant(
-                participant.individual.email,
-                incident,
-                db_session,
-                role=incident_role,
+                user_email=participant.individual.email,
+                subject=incident,
+                db_session=db_session,
+                roles=incident_roles,
             )
 
             # We add the participants to the conversation
@@ -777,8 +799,13 @@ def case_to_incident_escalate_flow(
     if case.incidents:
         return
 
-    reporter = ParticipantUpdate(
-        individual=IndividualContactRead(email=case.assignee.individual.email)
+    # use existing reporter or assignee if none
+    reporter = (
+        ParticipantUpdate(individual=IndividualContactRead(email=case.reporter.individual.email))
+        if case.reporter
+        else ParticipantUpdate(
+            individual=IndividualContactRead(email=case.assignee.individual.email)
+        )
     )
 
     description = (
