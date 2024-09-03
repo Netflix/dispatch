@@ -84,14 +84,14 @@ def add_participant(
         event_service.log_case_event(
             db_session=db_session,
             source="Dispatch Core App",
-            description=f"{individual.name} added to case with role(s) {[role.role for role in participant_roles]}",
+            description=f"{individual.name} added to case with role(s): {', '.join([role.role.value for role in participant_roles])}",
             case_id=subject.id,
         )
     if subject_type == "incident":
         event_service.log_incident_event(
             db_session=db_session,
             source="Dispatch Core App",
-            description=f"{individual.name} added to incident with role(s) {[role.role for role in participant_roles]}",
+            description=f"{individual.name} added to incident with role(s): {', '.join([role.role.value for role in participant_roles])}",
             incident_id=subject.id,
             type=EventType.participant_updated,
         )
