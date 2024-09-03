@@ -154,7 +154,7 @@ httplib2==0.22.0
     #   google-api-python-client
     #   google-auth-httplib2
     #   oauth2client
-httpx==0.27.0
+httpx==0.27.2
     # via
     #   -r requirements-base.in
     #   openai
