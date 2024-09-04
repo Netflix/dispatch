@@ -105,6 +105,7 @@ export default {
 
       filterOptions = SearchUtils.createParametersFromTableOptions(
         { ...filterOptions },
+        "IncidentSeverity",
         enabledFilter
       )
 
