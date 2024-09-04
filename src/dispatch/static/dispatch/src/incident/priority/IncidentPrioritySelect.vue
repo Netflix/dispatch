@@ -110,6 +110,7 @@ export default {
 
       filterOptions = SearchUtils.createParametersFromTableOptions(
         { ...filterOptions },
+        "IncidentPriority",
         enabledFilter
       )
 

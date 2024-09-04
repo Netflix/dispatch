@@ -21,13 +21,19 @@
             <project-combobox v-model="local_project" label="Projects" />
           </v-list-item>
           <v-list-item>
-            <incident-type-combobox v-model="local_incident_type" />
+            <incident-type-combobox :project="local_project" v-model="local_incident_type" />
           </v-list-item>
           <v-list-item>
-            <incident-severity-combobox v-model="local_incident_severity" />
+            <incident-severity-combobox
+              :project="local_project"
+              v-model="local_incident_severity"
+            />
           </v-list-item>
           <v-list-item>
-            <incident-priority-combobox v-model="local_incident_priority" />
+            <incident-priority-combobox
+              :project="local_project"
+              v-model="local_incident_priority"
+            />
           </v-list-item>
           <v-list-item>
             <incident-status-multi-select v-model="local_status" />
