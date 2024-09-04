@@ -88,6 +88,7 @@ export default {
 
       filterOptions = SearchUtils.createParametersFromTableOptions(
         { ...filterOptions },
+        "Workflow",
         enabledFilter
       )
 
