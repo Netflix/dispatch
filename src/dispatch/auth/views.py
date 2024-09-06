@@ -24,7 +24,6 @@ from dispatch.plugins.dispatch_core.exceptions import MfaException
 from dispatch.organization.models import OrganizationRead
 
 from .models import (
-    MfaChallengeStatus,
     MfaPayload,
     MfaPayloadResponse,
     UserLogin,
@@ -279,10 +278,10 @@ def mfa_check(
         log.info(f"MFA plugin found: {mfa_auth_plugin.__class__.__name__}")
 
         log.info("Validating MFA token")
-        mfa_auth_plugin.instance.validate_mfa_token(payload_in, current_user, db_session)
+        status = mfa_auth_plugin.instance.validate_mfa_token(payload_in, current_user, db_session)
 
         log.info("MFA token validation successful")
-        return MfaPayloadResponse(status=MfaChallengeStatus.APPROVED)
+        return MfaPayloadResponse(status=status)
 
     except MfaException as e:
         log.error(f"MFA Exception occurred: {str(e)}")

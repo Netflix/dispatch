@@ -8,6 +8,8 @@
 import base64
 import json
 import logging
+import time
+from typing import Literal
 from uuid import UUID
 
 import requests
@@ -302,14 +304,14 @@ class DispatchMfaPlugin(MultiFactorAuthenticationPlugin):
         timeout: int = 300,
     ) -> MfaChallengeStatus:
         """Waits for a multi-factor authentication challenge."""
-        import time
-
         start_time = time.time()
 
         while time.time() - start_time < timeout:
+            db_session.expire_all()
             challenge = db_session.query(MfaChallenge).filter_by(challenge_id=challenge_id).first()
 
             if not challenge:
+                log.error(f"Challenge not found: {challenge_id}")
                 raise Exception("Challenge not found.")
 
             if challenge.status == MfaChallengeStatus.APPROVED:
@@ -319,11 +321,17 @@ class DispatchMfaPlugin(MultiFactorAuthenticationPlugin):
 
             time.sleep(1)
 
+        # Timeout reached
+        log.warning(f"Timeout reached for challenge: {challenge_id}")
+
         # Update the challenge status to EXPIRED if it times out
         challenge = db_session.query(MfaChallenge).filter_by(challenge_id=challenge_id).first()
         if challenge:
+            log.info(f"Updating challenge {challenge_id} status to EXPIRED")
             challenge.status = MfaChallengeStatus.EXPIRED
             db_session.commit()
+        else:
+            log.error(f"Challenge not found when trying to expire: {challenge_id}")
 
         return MfaChallengeStatus.EXPIRED
 
@@ -355,7 +363,7 @@ class DispatchMfaPlugin(MultiFactorAuthenticationPlugin):
         payload: MfaPayload,
         current_user: DispatchUser,
         db_session: Session,
-    ) -> None:
+    ) -> Literal[MfaChallengeStatus.APPROVED]:
         """Validates a multi-factor authentication token."""
         challenge: MfaChallenge | None = (
             db_session.query(MfaChallenge)
@@ -375,7 +383,10 @@ class DispatchMfaPlugin(MultiFactorAuthenticationPlugin):
             raise InvalidChallengeStateError(f"Challenge is in invalid state: {challenge.status}")
 
         challenge.status = MfaChallengeStatus.APPROVED
+        db_session.add(challenge)
         db_session.commit()
+
+        return challenge.status
 
     def send_push_notification(self, items, **kwargs):
         # Implement this method if needed

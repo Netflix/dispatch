@@ -31,6 +31,7 @@ import { ref, computed } from "vue"
 import { useRoute } from "vue-router"
 import authApi from "@/auth/api"
 
+/* eslint-disable no-unused-vars */
 enum MfaChallengeStatus {
   PENDING = "pending",
   APPROVED = "approved",
@@ -39,7 +40,6 @@ enum MfaChallengeStatus {
 }
 
 const route = useRoute()
-
 const status = ref<MfaChallengeStatus | null>(null)
 const loading = ref(false)
 

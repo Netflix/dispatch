@@ -1945,7 +1945,6 @@ def send_engagement_response(
     user: DispatchUser,
     view_id: str,
 ):
-    print(f"enter engagement with {response=} from wait for challenge")
     if response == MfaChallengeStatus.APPROVED:
         title = "Approve"
         text = "Confirmation... Success!"
@@ -1962,7 +1961,7 @@ def send_engagement_response(
         else:
             text = "Confirmation failed. You must accept the MFA prompt."
 
-        message_text = f":warning: {engaged_user} attempted to confirm the behavior *as expected*, but the MFA validation failed.\n\n *Error Reason**: `{response}`\n\n{text}\n\n *Context Provided* \n```{context_from_user}```\n\n"
+        message_text = f":warning: {engaged_user} attempted to confirm the behavior *as expected*, but the MFA validation failed.\n\n **Error Reason**: `{response}`\n\n{text}\n\n *Context Provided* \n```{context_from_user}```\n\n"
 
     send_success_modal(
         client=client,
@@ -1976,7 +1975,7 @@ def send_engagement_response(
         thread_ts=case.conversation.thread_id,
     )
 
-    if response == MfaChallengeStatus.allow:
+    if response == MfaChallengeStatus.APPROVED:
         # We only update engagement message (which removes Confirm/Deny button) for success
         # this allows the user to retry the confirmation if the MFA check failed
         blocks = create_signal_engagement_message(
