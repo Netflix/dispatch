@@ -2,7 +2,7 @@ import string
 import secrets
 from typing import List
 from datetime import datetime, timedelta
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import bcrypt
 from jose import jwt
@@ -217,8 +217,8 @@ class MfaChallenge(Base, TimeStampMixin):
 class MfaPayloadResponse(DispatchBase):
     status: str
 
+
 class MfaPayload(DispatchBase):
     action: str
     project_id: int
     challenge_id: str
-    user_id: int

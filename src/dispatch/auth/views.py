@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
@@ -18,6 +20,7 @@ from dispatch.database.service import CommonParameters, search_filter_sort_pagin
 from dispatch.enums import UserRoles
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.plugin import service as plugin_service
+from dispatch.plugins.dispatch_core.exceptions import MfaException
 from dispatch.organization.models import OrganizationRead
 
 from .models import (
@@ -36,6 +39,8 @@ from .models import (
 )
 from .service import get, get_by_email, update, create
 
+
+log = logging.getLogger(__name__)
 
 auth_router = APIRouter()
 user_router = APIRouter()
@@ -228,6 +233,7 @@ def login_user(
         model=UserLogin,
     )
 
+
 def register_user(
     user_in: UserRegister,
     organization: OrganizationSlug,
@@ -249,24 +255,47 @@ def register_user(
     return user
 
 
-
-
 @auth_router.post("/mfa", response_model=MfaPayloadResponse)
 def mfa_check(
     payload_in: MfaPayload,
     current_user: CurrentUser,
     db_session: DbSession,
 ):
+    log.info(f"MFA check initiated for user: {current_user.email}")
+    log.debug(f"Payload received: {payload_in.dict()}")
+
     try:
+        log.info(f"Attempting to get active MFA plugin for project: {payload_in.project_id}")
         mfa_auth_plugin = plugin_service.get_active_instance(
             db_session=db_session, project_id=payload_in.project_id, plugin_type="auth-mfa"
         )
+
         if not mfa_auth_plugin:
-            raise Exception("MFA plugin is not enabled for the project.")
-        status = mfa_auth_plugin.instance.validate_mfa_token(payload_in, current_user, db_session)
-        return MfaPayloadResponse(status=MfaChallengeStatus.APPROVED if status else MfaChallengeStatus.DENIED.value)
+            log.error(f"MFA plugin not enabled for project: {payload_in.project_id}")
+            raise HTTPException(
+                status_code=400, detail="MFA plugin is not enabled for the project."
+            )
+
+        log.info(f"MFA plugin found: {mfa_auth_plugin.__class__.__name__}")
+
+        log.info("Validating MFA token")
+        mfa_auth_plugin.instance.validate_mfa_token(payload_in, current_user, db_session)
+
+        log.info("MFA token validation successful")
+        return MfaPayloadResponse(status=MfaChallengeStatus.APPROVED)
+
+    except MfaException as e:
+        log.error(f"MFA Exception occurred: {str(e)}")
+        log.debug(f"MFA Exception details: {type(e).__name__}", exc_info=True)
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        log.critical(f"Unexpected error in MFA check: {str(e)}")
+        log.exception("Full traceback:")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred") from e
+
+    finally:
+        log.info("MFA check completed")
 
 
 if DISPATCH_AUTH_REGISTRATION_ENABLED:

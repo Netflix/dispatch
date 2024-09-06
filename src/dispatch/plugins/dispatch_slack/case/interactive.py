@@ -1829,7 +1829,9 @@ def engagement_button_approve_click(
     client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
-def ack_engagement_submission_event(ack: Ack, mfa_enabled: bool, challenge_url: str | None = None) -> None:
+def ack_engagement_submission_event(
+    ack: Ack, mfa_enabled: bool, challenge_url: str | None = None
+) -> None:
     """Handles the add engagement submission event acknowledgement."""
     text = (
         "Confirming suspicious event..."
@@ -1880,7 +1882,7 @@ def handle_engagement_submission_event(
         action="signal-engagement-confirmation",
         current_user=user,
         db_session=db_session,
-        project_id=context["subject"].project_id
+        project_id=context["subject"].project_id,
     )
 
     ack_engagement_submission_event(ack=ack, mfa_enabled=mfa_enabled, challenge_url=challenge_url)
@@ -1972,7 +1974,7 @@ def send_engagement_response(
         thread_ts=case.conversation.thread_id,
     )
 
-    if response == PushResponseResult.allow:
+    if response == MfaChallengeStatus.APPROVED:
         # We only update engagement message (which removes Confirm/Deny button) for success
         # this allows the user to retry the confirmation if the MFA check failed
         blocks = create_signal_engagement_message(
