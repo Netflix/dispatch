@@ -311,9 +311,7 @@ class BuildAssetsCommand(BaseBuildCommand):
         env["DISPATCH_STATIC_DIST_PATH"] = self.dispatch_static_dist_path
         env["NODE_ENV"] = "production"
         # TODO: Our JS builds should not require 4GB heap space
-        env["NODE_OPTIONS"] = (
-            (env.get("NODE_OPTIONS", "") + " --max-old-space-size=4096")
-        ).lstrip()
+        env["NODE_OPTIONS"] = (env.get("NODE_OPTIONS", "") + " --max-old-space-size=4096").lstrip()
         # self._run_npm_command(["webpack", "--bail"], env=env)
 
     def _write_version_file(self, version_info):
@@ -405,6 +403,7 @@ setup(
             "dispatch_atlassian_confluence = dispatch.plugins.dispatch_atlassian_confluence.plugin:ConfluencePagePlugin",
             "dispatch_atlassian_confluence_document = dispatch.plugins.dispatch_atlassian_confluence.docs.plugin:ConfluencePageDocPlugin",
             "dispatch_aws_sqs = dispatch.plugins.dispatch_aws.plugin:AWSSQSSignalConsumerPlugin",
+            "dispatch_auth_mfa = dispatch.plugins.dispatch_core.plugin:DispatchMfaPlugin",
             "dispatch_basic_auth = dispatch.plugins.dispatch_core.plugin:BasicAuthProviderPlugin",
             "dispatch_contact = dispatch.plugins.dispatch_core.plugin:DispatchContactPlugin",
             "dispatch_document_resolver = dispatch.plugins.dispatch_core.plugin:DispatchDocumentResolverPlugin",
