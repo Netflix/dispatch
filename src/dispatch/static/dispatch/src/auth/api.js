@@ -27,4 +27,7 @@ export default {
   register(email, password) {
     return API.post(`/auth/register`, { email: email, password: password })
   },
+  verifyMfa(payload) {
+    return API.post(`/auth/mfa`, payload)
+  },
 }
