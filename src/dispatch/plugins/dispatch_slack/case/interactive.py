@@ -1814,7 +1814,7 @@ def engagement_button_approve_click(
             Context(
                 elements=[
                     MarkdownText(
-                        text="After submission, you will be asked to confirm a Multi-Factor Authentication (MFA) prompt, please have your MFA device ready."
+                        text="💡 After submission, you will be asked to validate your identity by completing a Multi-Factor Authentication challenge."
                     )
                 ]
             ),
@@ -1835,16 +1835,33 @@ def ack_engagement_submission_event(
     ack: Ack, mfa_enabled: bool, challenge_url: str | None = None
 ) -> None:
     """Handles the add engagement submission event acknowledgement."""
-    text = (
-        "Confirming suspicious event..."
-        if mfa_enabled is False
-        else f"Sending MFA push notification, please confirm to create Engagement filter.. open -> {challenge_url}."
-    )
+
+    if mfa_enabled:
+        mfa_text = (
+            "🔐 To complete this action, you need to verify your identity through Multi-Factor Authentication (MFA).\n\n"
+            f"Please <{challenge_url}|click here> to open the MFA verification page."
+        )
+    else:
+        mfa_text = "✅ No additional verification required. You can proceed with the confirmation."
+
+    blocks = [
+        Section(text=mfa_text),
+        Divider(),
+        Context(
+            elements=[
+                MarkdownText(
+                    text="💡 This step protects against unauthorized confirmation if your account is compromised."
+                )
+            ]
+        ),
+    ]
+
     modal = Modal(
-        title="Confirm",
-        close="Close",
-        blocks=[Section(text=text)],
+        title="Confirm Your Identity",
+        close="Cancel",
+        blocks=blocks,
     ).build()
+
     ack(response_action="update", view=modal)
 
 
