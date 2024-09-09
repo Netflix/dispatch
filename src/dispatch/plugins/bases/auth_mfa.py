@@ -13,3 +13,9 @@ class MultiFactorAuthenticationPlugin(Plugin):
 
     def send_push_notification(self, items, **kwargs):
         raise NotImplementedError
+
+    def validate_mfa(self, items, **kwargs):
+        raise NotImplementedError
+
+    def create_mfa_challenge(self, items, **kwargs):
+        raise NotImplementedError
