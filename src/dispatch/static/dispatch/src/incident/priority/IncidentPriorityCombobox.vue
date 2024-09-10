@@ -111,7 +111,7 @@ export default {
       this.loading = "error"
       let filterOptions = {
         q: this.search,
-        sortBy: ["project_id", "name"],
+        sortBy: ["project_id", "view_order"],
         descending: [false, false],
         itemsPerPage: this.numItems,
       }
