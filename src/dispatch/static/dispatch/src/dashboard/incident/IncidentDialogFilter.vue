@@ -28,13 +28,19 @@
           />
         </v-list-item>
         <v-list-item>
-          <incident-type-combobox v-model="filters.incident_type" />
+          <incident-type-combobox :project="filters.project" v-model="filters.incident_type" />
         </v-list-item>
         <v-list-item>
-          <incident-severity-combobox v-model="filters.incident_severity" />
+          <incident-severity-combobox
+            :project="filters.project"
+            v-model="filters.incident_severity"
+          />
         </v-list-item>
         <v-list-item>
-          <incident-priority-combobox v-model="filters.incident_priority" />
+          <incident-priority-combobox
+            :project="filters.project"
+            v-model="filters.incident_priority"
+          />
         </v-list-item>
         <v-list-item>
           <v-card class="mx-auto">
