@@ -4,9 +4,13 @@
     :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
+
 import base64
 import json
 import logging
+import time
+from typing import Literal
+from uuid import UUID
 
 import requests
 from fastapi import HTTPException
@@ -15,7 +19,9 @@ from jose import JWTError, jwt
 from jose.exceptions import JWKError
 from starlette.requests import Request
 from starlette.status import HTTP_401_UNAUTHORIZED
+from sqlalchemy.orm import Session
 
+from dispatch.auth.models import MfaChallenge, MfaPayload, DispatchUser, MfaChallengeStatus
 from dispatch.case import service as case_service
 from dispatch.config import (
     DISPATCH_AUTHENTICATION_PROVIDER_HEADER_NAME,
@@ -38,9 +44,18 @@ from dispatch.plugins.bases import (
     AuthenticationProviderPlugin,
     ContactPlugin,
     DocumentResolverPlugin,
+    MultiFactorAuthenticationPlugin,
     ParticipantPlugin,
     TicketPlugin,
 )
+from dispatch.plugins.dispatch_core.exceptions import (
+    InvalidChallengeError,
+    UserMismatchError,
+    ActionMismatchError,
+    ExpiredChallengeError,
+    InvalidChallengeStateError,
+)
+from dispatch.project import service as project_service
 from dispatch.route import service as route_service
 from dispatch.service import service as service_service
 from dispatch.service.models import Service, ServiceRead
@@ -271,6 +286,115 @@ class DispatchDocumentResolverPlugin(DocumentResolverPlugin):
             models=[(Document, DocumentRead)],
         )
         return recommendation.matches
+
+
+class DispatchMfaPlugin(MultiFactorAuthenticationPlugin):
+    title = "Dispatch Plugin - Multi Factor Authentication"
+    slug = "dispatch-auth-mfa"
+    description = "Uses dispatch itself to validate external requests."
+    version = dispatch_plugin.__version__
+
+    author = "Netflix"
+    author_url = "https://github.com/netflix/dispatch.git"
+
+    def wait_for_challenge(
+        self,
+        challenge_id: UUID,
+        db_session: Session,
+        timeout: int = 300,
+    ) -> MfaChallengeStatus:
+        """Waits for a multi-factor authentication challenge."""
+        start_time = time.time()
+
+        while time.time() - start_time < timeout:
+            db_session.expire_all()
+            challenge = db_session.query(MfaChallenge).filter_by(challenge_id=challenge_id).first()
+
+            if not challenge:
+                log.error(f"Challenge not found: {challenge_id}")
+                raise Exception("Challenge not found.")
+
+            if challenge.status == MfaChallengeStatus.APPROVED:
+                return MfaChallengeStatus.APPROVED
+            elif challenge.status == MfaChallengeStatus.DENIED:
+                raise Exception("Challenge denied.")
+
+            time.sleep(1)
+
+        # Timeout reached
+        log.warning(f"Timeout reached for challenge: {challenge_id}")
+
+        # Update the challenge status to EXPIRED if it times out
+        challenge = db_session.query(MfaChallenge).filter_by(challenge_id=challenge_id).first()
+        if challenge:
+            log.info(f"Updating challenge {challenge_id} status to EXPIRED")
+            challenge.status = MfaChallengeStatus.EXPIRED
+            db_session.commit()
+        else:
+            log.error(f"Challenge not found when trying to expire: {challenge_id}")
+
+        return MfaChallengeStatus.EXPIRED
+
+    def create_mfa_challenge(
+        self,
+        action: str,
+        current_user: DispatchUser,
+        db_session: Session,
+        project_id: int,
+    ) -> tuple[MfaChallenge, str]:
+        """Creates a multi-factor authentication challenge."""
+        project = project_service.get(db_session=db_session, project_id=project_id)
+
+        challenge = MfaChallenge(
+            action=action,
+            dispatch_user_id=current_user.id,
+            valid=True,
+        )
+        db_session.add(challenge)
+        db_session.commit()
+
+        org_slug = project.organization.slug if project.organization else "default"
+
+        challenge_url = f"{DISPATCH_UI_URL}/{org_slug}/mfa?project_id={project_id}&challenge_id={challenge.challenge_id}&action={action}"
+        return challenge, challenge_url
+
+    def validate_mfa_token(
+        self,
+        payload: MfaPayload,
+        current_user: DispatchUser,
+        db_session: Session,
+    ) -> Literal[MfaChallengeStatus.APPROVED]:
+        """Validates a multi-factor authentication token."""
+        challenge: MfaChallenge | None = (
+            db_session.query(MfaChallenge)
+            .filter_by(challenge_id=payload.challenge_id)
+            .one_or_none()
+        )
+
+        if not challenge:
+            raise InvalidChallengeError("Invalid challenge ID")
+        if challenge.dispatch_user_id != current_user.id:
+            raise UserMismatchError(f"Challenge does not belong to the current user: {current_user.email}")
+        if challenge.action != payload.action:
+            raise ActionMismatchError("Action mismatch")
+        if not challenge.valid:
+            raise ExpiredChallengeError("Challenge is no longer valid")
+        if challenge.status != MfaChallengeStatus.PENDING:
+            raise InvalidChallengeStateError(f"Challenge is in invalid state: {challenge.status}")
+
+        challenge.status = MfaChallengeStatus.APPROVED
+        db_session.add(challenge)
+        db_session.commit()
+
+        return challenge.status
+
+    def send_push_notification(self, items, **kwargs):
+        # Implement this method if needed
+        raise NotImplementedError
+
+    def validate_mfa(self, items, **kwargs):
+        # Implement this method if needed
+        raise NotImplementedError
 
 
 class DispatchContactPlugin(ContactPlugin):
