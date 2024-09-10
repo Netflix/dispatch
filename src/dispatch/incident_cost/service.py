@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from decimal import Decimal
 import logging
 import math
 from typing import List, Optional
@@ -455,7 +456,7 @@ def calculate_incident_response_cost_with_classic_model(
         incident_review_hours=incident_review_hours,
     )
 
-    return incident_response_cost.amount + amount
+    return incident_response_cost.amount + Decimal(amount)
 
 
 def calculate_incident_response_cost(
