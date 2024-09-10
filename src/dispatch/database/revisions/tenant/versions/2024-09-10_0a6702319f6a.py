@@ -1,7 +1,7 @@
 """Adds restriction ability to incident severity
 
 Revision ID: 0a6702319f6a
-Revises: d6b3853be8e4
+Revises: 51eacaf1f62c
 Create Date: 2024-09-10 10:13:04.192475
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "0a6702319f6a"
-down_revision = "d6b3853be8e4"
+down_revision = "51eacaf1f62c"
 branch_labels = None
 depends_on = None
 
