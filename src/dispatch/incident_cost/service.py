@@ -146,8 +146,8 @@ def update_incident_response_cost_for_incident_type(
 
 def calculate_response_cost(
     hourly_rate, total_response_time_seconds, incident_review_hours=0
-) -> int:
-    """Calculates and rounds up the incident response cost."""
+) -> float:
+    """Calculates the incident response cost."""
     return ((total_response_time_seconds / SECONDS_IN_HOUR) + incident_review_hours) * hourly_rate
 
 
