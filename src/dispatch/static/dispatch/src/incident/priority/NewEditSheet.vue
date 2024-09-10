@@ -112,7 +112,7 @@
                 <v-checkbox
                   v-model="enabled"
                   label="Enabled"
-                  hint="Determines whether this incident priority is availible for new incidents."
+                  hint="Determines whether this incident priority is available for new incidents."
                 />
               </v-col>
             </v-row>

@@ -86,7 +86,7 @@
                 <v-checkbox
                   v-model="enabled"
                   label="Enabled"
-                  hint="Determines whether this case priority is availible for new cases."
+                  hint="Determines whether this case priority is available for new cases."
                 />
               </v-col>
             </v-row>
