@@ -130,7 +130,7 @@
                 <v-checkbox
                   v-model="enabled"
                   label="Enabled"
-                  hint="Determines whether this case type is availible for new cases."
+                  hint="Determines whether this case type is available for new cases."
                 />
               </v-col>
               <v-col cols="12">

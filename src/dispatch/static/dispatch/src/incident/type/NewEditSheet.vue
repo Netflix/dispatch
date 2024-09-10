@@ -129,7 +129,7 @@
                 <v-checkbox
                   v-model="enabled"
                   label="Enabled"
-                  hint="Determines whether this incident type is availible for new incidents."
+                  hint="Determines whether this incident type is available for new incidents."
                 />
               </v-col>
               <v-col cols="12">

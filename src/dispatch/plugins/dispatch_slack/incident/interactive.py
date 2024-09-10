@@ -48,6 +48,7 @@ from dispatch.monitor.models import MonitorCreate
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
 from dispatch.participant_role import service as participant_role_service
+from dispatch.incident.severity import service as incident_severity_service
 from dispatch.participant_role.enums import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
@@ -1011,7 +1012,9 @@ def handle_member_joined_channel(
 
         if participant.added_by:
             # Message text when someone @'s a user is not available in body, use generic added by reason
-            participant.added_reason = f"Participant added by {participant.added_by.individual.name}"
+            participant.added_reason = (
+                f"Participant added by {participant.added_by.individual.name}"
+            )
         else:
             # We couldn't find a user to attribute the addition to, add generic reason
             participant.added_reason = "Participant added by Dispatch"
@@ -1061,7 +1064,9 @@ def handle_member_joined_channel(
 
         if participant.added_by:
             # Message text when someone @'s a user is not available in body, use generic added by reason
-            participant.added_reason = f"Participant added by {participant.added_by.individual.name}"
+            participant.added_reason = (
+                f"Participant added by {participant.added_by.individual.name}"
+            )
         else:
             # We couldn't find a user to attribute the addition to, add generic reason
             participant.added_reason = "Participant added by Dispatch"
@@ -1980,6 +1985,20 @@ def handle_update_incident_submission_event(
     user: DispatchUser,
 ) -> None:
     """Handles the update incident submission"""
+    incident_severity_id = form_data[DefaultBlockIds.incident_severity_select]["value"]
+    incident_severity = incident_severity_service.get(
+        db_session=db_session, incident_severity_id=incident_severity_id
+    )
+    status = form_data[DefaultBlockIds.incident_status_select]["name"]
+    if not incident_severity.allowed_for_stable_incidents and (
+        status == IncidentStatus.stable or status == IncidentStatus.closed
+    ):
+        errors = {
+            DefaultBlockIds.incident_severity_select: f"Severity cannot be {incident_severity.name} for {status} incidents"
+        }
+        ack(response_action="errors", errors=errors)
+        return
+
     ack_incident_update_submission_event(ack=ack)
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 

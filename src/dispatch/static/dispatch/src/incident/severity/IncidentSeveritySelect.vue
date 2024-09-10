@@ -70,9 +70,8 @@ export default {
       },
     },
     show_error() {
-      // TODO: add new column to severities that indicate if can be used for stable & closed incidents
-      if (this.status != "Active" && this.modelValue?.name == "Undetermined") {
-        return `Severity cannot be Undetermined for ${this.status} incidents`
+      if (this.status != "Active" && this.modelValue?.allowed_for_stable_incidents === false) {
+        return `Severity cannot be ${this.modelValue?.name} for ${this.status} incidents`
       }
       return null
     },
