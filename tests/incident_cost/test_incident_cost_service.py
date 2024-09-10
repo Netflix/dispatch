@@ -150,11 +150,8 @@ def test_calculate_incident_response_cost_with_cost_model(
         participants_total_response_time_seconds += activity.ended_at - activity.started_at
     hourly_rate = get_hourly_rate(incident.project)
     expected_incident_cost = (
-        math.ceil(
-            (participants_total_response_time_seconds.seconds / SECONDS_IN_HOUR) * hourly_rate
-        )
-        + orig_total_incident_cost
-    )
+        participants_total_response_time_seconds.seconds / SECONDS_IN_HOUR
+    ) * hourly_rate + orig_total_incident_cost
 
     assert cost
     assert cost == expected_incident_cost
