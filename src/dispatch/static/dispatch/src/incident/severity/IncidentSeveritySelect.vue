@@ -7,6 +7,7 @@
     label="Severity"
     return-object
     :loading="loading"
+    :error-messages="show_error"
     :rules="[is_severity_in_project]"
   >
     <template #item="data">
@@ -40,6 +41,10 @@ export default {
       type: [Object],
       default: null,
     },
+    status: {
+      type: String,
+      default: "",
+    },
   },
 
   data() {
@@ -63,6 +68,13 @@ export default {
         this.$emit("update:modelValue", value)
         this.validateSeverity()
       },
+    },
+    show_error() {
+      // TODO: add new column to severities that indicate if can be used for stable & closed incidents
+      if (this.status != "Active" && this.modelValue?.name == "Undetermined") {
+        return `Severity cannot be Undetermined for ${this.status} incidents`
+      }
+      return null
     },
   },
 
