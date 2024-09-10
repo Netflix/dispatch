@@ -148,9 +148,7 @@ def calculate_response_cost(
     hourly_rate, total_response_time_seconds, incident_review_hours=0
 ) -> int:
     """Calculates and rounds up the incident response cost."""
-    return math.ceil(
-        ((total_response_time_seconds / SECONDS_IN_HOUR) + incident_review_hours) * hourly_rate
-    )
+    return ((total_response_time_seconds / SECONDS_IN_HOUR) + incident_review_hours) * hourly_rate
 
 
 def get_default_incident_response_cost(
@@ -373,7 +371,7 @@ def get_participant_role_time_seconds(
     # TODO(mvilanova): adjust based on incident priority
     if participant_role_time_hours > HOURS_IN_DAY:
         days, hours = divmod(participant_role_time_hours, HOURS_IN_DAY)
-        participant_role_time_hours = math.ceil(((days * HOURS_IN_DAY) / 3) + hours)
+        participant_role_time_hours = ((days * HOURS_IN_DAY) / 3) + hours
 
     # we make the assumption that participants spend more or less time based on their role
     # and we adjust the time spent based on that
