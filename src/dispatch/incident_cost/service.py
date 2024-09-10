@@ -244,7 +244,7 @@ def calculate_incident_response_cost_with_cost_model(
         db_session: The database session.
 
     Returns:
-        int: The incident response cost in dollars.
+        float: The incident response cost in dollars.
     """
 
     participants_total_response_time_seconds = 0
@@ -308,7 +308,7 @@ def calculate_incident_response_cost_with_cost_model(
 
 def get_participant_role_time_seconds(
     incident: Incident, participant_role: ParticipantRole, start_at: datetime
-) -> int:
+) -> float:
     """Calculates the time spent by a participant in an incident role starting from a given time.
 
     The participant's time spent in the incident role is adjusted based on the role's engagement multiplier.
@@ -319,7 +319,7 @@ def get_participant_role_time_seconds(
         start_at: Only time spent after this will be considered.
 
     Returns:
-        int: The time spent by the participant in the incident role in seconds.
+        float: The time spent by the participant in the incident role in seconds.
     """
     if participant_role.renounced_at and participant_role.renounced_at < start_at:
         # skip calculating already-recorded activity
@@ -409,7 +409,7 @@ def get_total_participant_roles_time_seconds(incident: Incident, start_at: datet
 
 def calculate_incident_response_cost_with_classic_model(
     incident: Incident, db_session: SessionLocal, incident_review: bool = False
-) -> int:
+) -> float:
     """Calculates the cost of an incident using the classic incident cost model.
 
     This function aggregates all new incident costs since the last incident cost update. If this is the first time performing cost calculation for this incident, it computes the total costs from the incident's creation.
@@ -420,7 +420,7 @@ def calculate_incident_response_cost_with_classic_model(
         incident_review: Whether to add the incident review costs in this calculation.
 
     Returns:
-        int: The incident response cost in dollars.
+        float: The incident response cost in dollars.
     """
     last_update = incident.created_at
     incident_review_hours = 0
