@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, timezone
-from decimal import Decimal
 import logging
 import math
 from typing import List, Optional
@@ -234,7 +233,7 @@ def fetch_incident_events(
 
 def calculate_incident_response_cost_with_cost_model(
     incident: Incident, db_session: SessionLocal
-) -> int:
+) -> float:
     """Calculates the cost of an incident using the incident's cost model.
 
     This function aggregates all new incident costs based on plugin activity since the last incident cost update.
@@ -304,7 +303,7 @@ def calculate_incident_response_cost_with_cost_model(
         total_response_time_seconds=participants_total_response_time_seconds,
     )
 
-    return incident.total_cost + amount
+    return float(incident.total_cost) + amount
 
 
 def get_participant_role_time_seconds(
@@ -456,7 +455,7 @@ def calculate_incident_response_cost_with_classic_model(
         incident_review_hours=incident_review_hours,
     )
 
-    return incident_response_cost.amount + Decimal(amount)
+    return float(incident_response_cost.amount) + amount
 
 
 def calculate_incident_response_cost(
