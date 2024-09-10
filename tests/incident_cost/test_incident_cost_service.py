@@ -109,7 +109,6 @@ def test_calculate_incident_response_cost_with_cost_model(
 ):
     """Tests that the incident cost is calculated correctly when a cost model is enabled."""
     from datetime import timedelta
-    import math
     from dispatch.incident_cost.service import update_incident_response_cost, get_hourly_rate
     from dispatch.incident_cost_type import service as incident_cost_type_service
     from dispatch.participant_activity.service import (
