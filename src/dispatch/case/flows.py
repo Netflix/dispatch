@@ -702,7 +702,18 @@ def common_escalate_flow(
         db_session.add(incident)
         db_session.commit()
 
-    # we run the incident create flow
+    case.incidents.append(incident)
+    db_session.add(case)
+    db_session.commit()
+
+    event_service.log_case_event(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description=f"The case has been linked to incident {incident.name} in the {incident.project.name} project",
+        case_id=case.id,
+    )
+
+    # we run the incident create flow in a background task
     incident = incident_flows.incident_create_flow(
         incident_id=incident.id,
         organization_slug=organization_slug,
@@ -759,17 +770,6 @@ def common_escalate_flow(
             db_session=db_session,
             incident=incident,
         )
-
-    case.incidents.append(incident)
-    db_session.add(case)
-    db_session.commit()
-
-    event_service.log_case_event(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description=f"The case has been linked to incident {incident.name} in the {incident.project.name} project",
-        case_id=case.id,
-    )
 
     if case.storage and incident.tactical_group:
         storage_members = [incident.tactical_group.email]

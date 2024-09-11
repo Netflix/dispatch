@@ -79,7 +79,7 @@
                 <v-checkbox
                   v-model="enabled"
                   label="Enabled"
-                  hint="Determines whether this case severity is availible for new cases."
+                  hint="Determines whether this case severity is available for new cases."
                 />
               </v-col>
             </v-row>

@@ -121,6 +121,7 @@ export default {
 
       filterOptions = SearchUtils.createParametersFromTableOptions(
         { ...filterOptions },
+        "CasePriority",
         enabledFilter
       )
 

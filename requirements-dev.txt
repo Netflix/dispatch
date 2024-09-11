@@ -32,7 +32,7 @@ executing==2.0.1
     #   stack-data
 factory-boy==3.3.1
     # via -r requirements-dev.in
-faker==28.1.0
+faker==28.4.1
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -86,7 +86,7 @@ python-dateutil==2.9.0.post0
     # via faker
 pyyaml==6.0.1
     # via pre-commit
-ruff==0.6.3
+ruff==0.6.4
     # via -r requirements-dev.in
 six==1.16.0
     # via

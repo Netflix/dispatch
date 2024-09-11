@@ -20,6 +20,7 @@ class IncidentSeverity(Base, ProjectMixin):
     color = Column(String)
     enabled = Column(Boolean, default=True)
     default = Column(Boolean, default=False)
+    allowed_for_stable_incidents = Column(Boolean, default=True, server_default="t")
 
     # This column is used to control how severities should be displayed
     # Lower numbers will be shown first.
@@ -46,6 +47,7 @@ class IncidentSeverityBase(DispatchBase):
     name: NameStr
     project: Optional[ProjectRead]
     view_order: Optional[int]
+    allowed_for_stable_incidents: Optional[bool]
 
 
 class IncidentSeverityCreate(IncidentSeverityBase):
@@ -67,6 +69,7 @@ class IncidentSeverityReadMinimal(DispatchBase):
     description: Optional[str] = Field(None, nullable=True)
     enabled: Optional[bool]
     name: NameStr
+    allowed_for_stable_incidents: Optional[bool]
 
 
 class IncidentSeverityPagination(Pagination):
