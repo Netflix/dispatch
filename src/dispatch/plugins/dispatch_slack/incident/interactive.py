@@ -770,7 +770,7 @@ def handle_participant_role_activity(
 
             # re-assign role once threshold is reached
             if participant_role.role == ParticipantRoleType.observer:
-                if participant_role.activity >= 1:  # one message sent to the incident channel
+                if participant_role.activity >= 3:  # three messages sent to the incident channel
                     # we change the participant's role to the participant one
                     participant_role_service.renounce_role(
                         db_session=db_session, participant_role=participant_role
