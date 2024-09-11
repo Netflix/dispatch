@@ -32,11 +32,14 @@ from dispatch.case.enums import CaseStatus, CaseResolutionReason
 from dispatch.case.models import Case, CaseCreate, CaseRead, CaseUpdate
 from dispatch.conversation import flows as conversation_flows
 from dispatch.entity import service as entity_service
-from dispatch.enums import UserRoles, SubjectNames, Visibility
+from dispatch.participant_role import service as participant_role_service
+from dispatch.event import service as event_service
+from dispatch.enums import UserRoles, SubjectNames, Visibility, EventType
 from dispatch.exceptions import ExistsError
 from dispatch.individual.models import IndividualContactRead
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
+from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_duo.enums import PushResponseResult
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
@@ -945,6 +948,36 @@ def handle_new_participant_message(
         add_to_conversation=False,
     )
     participant.user_conversation_id = context["user_id"]
+
+    for participant_role in participant.active_roles:
+        participant_role.activity += 1
+
+        # re-assign role once threshold is reached
+        if participant_role.role == ParticipantRoleType.observer:
+            if participant_role.activity >= 3:  # three messages sent to the case channel
+                # we change the participant's role to the participant one
+                participant_role_service.renounce_role(
+                    db_session=db_session, participant_role=participant_role
+                )
+                participant_role_service.add_role(
+                    db_session=db_session,
+                    participant_id=participant.id,
+                    participant_role=ParticipantRoleType.participant,
+                )
+
+                # we log the event
+                event_service.log_case_event(
+                    db_session=db_session,
+                    source="Slack Plugin - Conversation Management",
+                    description=(
+                        f"{participant.individual.name}'s role changed from {participant_role.role} to "
+                        f"{ParticipantRoleType.participant} due to activity in the case channel"
+                    ),
+                    case_id=context["subject"].id,
+                    type=EventType.participant_updated,
+                )
+
+        db_session.commit()
 
 
 @message_dispatcher.add(
