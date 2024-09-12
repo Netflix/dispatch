@@ -30,6 +30,7 @@ from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
 from dispatch.case.enums import CaseStatus, CaseResolutionReason
 from dispatch.case.models import Case, CaseCreate, CaseRead, CaseUpdate
+from dispatch.case.type import service as case_type_service
 from dispatch.conversation import flows as conversation_flows
 from dispatch.entity import service as entity_service
 from dispatch.participant_role import service as participant_role_service
@@ -100,6 +101,7 @@ from dispatch.plugins.dispatch_slack.models import (
 )
 from dispatch.project import service as project_service
 from dispatch.search.utils import create_filter_expression
+from dispatch.service import flows as service_flows
 from dispatch.signal import service as signal_service
 from dispatch.signal.enums import SignalEngagementStatus
 from dispatch.signal.models import (
@@ -1651,8 +1653,12 @@ def report_issue(
 
 @app.action(CaseReportActions.project_select, middleware=[db_middleware, action_context_middleware])
 def handle_report_project_select_action(
-    ack: Ack, body: dict, db_session: Session, context: BoltContext, client: WebClient
-):
+    ack: Ack,
+    body: dict,
+    db_session: Session,
+    context: BoltContext,
+    client: WebClient,
+) -> None:
     ack()
     values = body["view"]["state"]["values"]
 
@@ -1681,7 +1687,20 @@ def handle_report_project_select_action(
             action_id=CaseReportActions.project_select,
             dispatch_action=True,
         ),
-        case_type_select(db_session=db_session, initial_option=None, project_id=project.id),
+        case_type_select(
+            db_session=db_session,
+            initial_option=None,
+            project_id=project.id,
+            action_id=CaseReportActions.case_type_select,
+            dispatch_action=True,
+        ),
+        Context(
+            elements=[
+                MarkdownText(
+                    text="💡 Case Types determine the initial assignee based on their configured on-call schedule."
+                )
+            ]
+        ),
         case_priority_select(
             db_session=db_session,
             project_id=project.id,
@@ -1703,6 +1722,160 @@ def handle_report_project_select_action(
     client.views_update(
         view_id=body["view"]["id"],
         trigger_id=body["trigger_id"],
+        view=modal,
+    )
+
+
+@app.action(
+    CaseReportActions.case_type_select, middleware=[db_middleware, action_context_middleware]
+)
+def handle_report_case_type_select_action(
+    ack: Ack,
+    body: dict,
+    db_session: Session,
+    context: BoltContext,
+    client: WebClient,
+) -> None:
+    ack()
+    values = body["view"]["state"]["values"]
+
+    project_id = values[DefaultBlockIds.project_select][CaseReportActions.project_select][
+        "selected_option"
+    ]["value"]
+
+    case_type_id = values[DefaultBlockIds.case_type_select][CaseReportActions.case_type_select][
+        "selected_option"
+    ]["value"]
+
+    project = project_service.get(
+        db_session=db_session,
+        project_id=project_id,
+    )
+
+    case_type = case_type_service.get(
+        db_session=db_session,
+        case_type_id=case_type_id,
+    )
+
+    assignee_email = None
+    assignee_slack_id = None
+    oncall_service_name = None
+    service_url = None
+
+    # Resolve the assignee based on the case type
+    if case_type.oncall_service:
+        assignee_email = service_flows.resolve_oncall(
+            service=case_type.oncall_service, db_session=db_session
+        )
+        oncall_service_name = case_type.oncall_service.name
+
+        oncall_plugin = plugin_service.get_active_instance(
+            db_session=db_session, project_id=project.id, plugin_type="oncall"
+        )
+        if not oncall_plugin:
+            log.debug("Unable to send email since oncall plugin is not active.")
+        else:
+            service_url = oncall_plugin.instance.get_service_url(
+                case_type.oncall_service.external_id
+            )
+
+        if assignee_email:
+            # Get the Slack user ID for the assignee
+            try:
+                assignee_slack_id = client.users_lookupByEmail(email=assignee_email)["user"]["id"]
+            except SlackApiError:
+                assignee_slack_id = None
+
+    blocks = [
+        Context(
+            elements=[
+                MarkdownText(
+                    text="Cases are meant to triage events that do not raise to the level of incidents, but can be escalated to incidents if necessary. If you suspect a security issue and need help, please fill out this form to the best of your abilities."
+                )
+            ]
+        ),
+        title_input(),
+        description_input(),
+        project_select(
+            db_session=db_session,
+            initial_option={"text": project.name, "value": project.id},
+            action_id=CaseReportActions.project_select,
+            dispatch_action=True,
+        ),
+        case_type_select(
+            db_session=db_session,
+            initial_option={"text": case_type.name, "value": case_type.id},
+            project_id=project.id,
+            action_id=CaseReportActions.case_type_select,
+            dispatch_action=True,
+        ),
+        Context(
+            elements=[
+                MarkdownText(
+                    text="💡 Case Types determine the initial assignee based on their configured on-call schedule."
+                )
+            ]
+        ),
+        case_priority_select(
+            db_session=db_session,
+            project_id=project.id,
+            initial_option=None,
+            optional=True,
+            block_id=None,  # ensures state is reset
+        ),
+        assignee_select(
+            initial_user=assignee_slack_id if assignee_slack_id else None,
+            action_id=CaseReportActions.assignee_select,
+        ),
+    ]
+
+    # Conditionally add context blocks
+    if oncall_service_name and assignee_email:
+        if service_url:
+            oncall_text = (
+                f"👩‍🚒 {assignee_email} is on-call for <{service_url}|{oncall_service_name}>"
+            )
+        else:
+            oncall_text = f"👩‍🚒 {assignee_email} is on-call for {oncall_service_name}"
+
+        blocks.extend(
+            [
+                Context(elements=[MarkdownText(text=oncall_text)]),
+                Divider(),
+                Context(
+                    elements=[
+                        MarkdownText(
+                            text="Not who you're looking for? You can override the assignee for this case."
+                        )
+                    ]
+                ),
+            ]
+        )
+    else:
+        blocks.extend(
+            [
+                Context(
+                    elements=[
+                        MarkdownText(
+                            text="There is no on-call service associated with this case type."
+                        )
+                    ]
+                ),
+                Context(elements=[MarkdownText(text="Please select an assignee for this case.")]),
+            ]
+        )
+
+    modal = Modal(
+        title="Open a Case",
+        blocks=blocks,
+        submit="Report",
+        close="Close",
+        callback_id=CaseReportActions.submit,
+        private_metadata=context["subject"].json(),
+    ).build()
+
+    client.views_update(
+        view_id=body["view"]["id"],
         view=modal,
     )
 
