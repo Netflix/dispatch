@@ -850,37 +850,21 @@ def process_signals():
     from dispatch.organization.service import get_all as get_all_organizations
     from dispatch.signal import flows as signal_flows
     from dispatch.signal.models import SignalInstance
+    from dispatch.signal.service import filter_dedup
 
     install_plugins()
 
-    organizations = get_all_organizations(db_session=SessionLocal())
-    while True:
-        for organization in organizations:
-            schema_engine = engine.execution_options(
-                schema_translate_map={
-                    None: f"dispatch_organization_{organization.slug}",
-                }
-            )
-            db_session = sessionmaker(bind=schema_engine)()
-            signal_instances = (
-                (
-                    db_session.query(SignalInstance)
-                    .filter(SignalInstance.filter_action == None)  # noqa
-                    .filter(SignalInstance.case_id == None)  # noqa
-                )
-                .order_by(asc(SignalInstance.created_at))
-                .limit(500)
-            )
-            for signal_instance in signal_instances:
-                try:
-                    signal_flows.signal_instance_create_flow(
-                        db_session=db_session,
-                        signal_instance_id=signal_instance.id,
-                    )
-                except Exception as e:
-                    log.debug(signal_instance)
-                    log.exception(e)
-            db_session.close()
+
+    schema_engine = engine.execution_options(
+        schema_translate_map={
+            None: f"dispatch_organization_default",
+        }
+    )
+    db_session = sessionmaker(bind=schema_engine)()
+
+    instance = db_session.query(SignalInstance).filter(SignalInstance.id == "1625755a-9e7f-5c04-8b2e-98084de794ae").one()
+    filtered = filter_dedup(db_session=db_session, signal_instance=instance)
+
 
 
 @dispatch_server.command("slack")

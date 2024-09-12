@@ -654,6 +654,26 @@ def filter_dedup(*, db_session: Session, signal_instance: SignalInstance) -> Sig
     Returns:
         SignalInstance: The filtered signal instance.
     """
+    if not signal_instance.signal.filters:
+        default_dedup_window = datetime.now(timezone.utc) - timedelta(hours=1)
+        instance = (
+            db_session.query(SignalInstance)
+            .filter(
+                SignalInstance.signal_id == signal_instance.signal_id,
+                SignalInstance.created_at >= default_dedup_window,
+                SignalInstance.id != signal_instance.id,
+                SignalInstance.case_id.isnot(None),  # noqa
+            )
+            .with_entities(SignalInstance.case_id)
+            .order_by(desc(SignalInstance.created_at))
+            .first()
+        )
+
+        if instance:
+            signal_instance.case_id = instance.case_id
+            signal_instance.filter_action = SignalFilterAction.deduplicate
+        return signal_instance
+
     for f in signal_instance.signal.filters:
         if f.mode != SignalFilterMode.active:
             continue
@@ -683,24 +703,6 @@ def filter_dedup(*, db_session: Session, signal_instance: SignalInstance) -> Sig
             signal_instance.case_id = instances[0].case_id
             signal_instance.filter_action = SignalFilterAction.deduplicate
             break
-    # apply default deduplication rule
-    else:
-        default_dedup_window = datetime.now(timezone.utc) - timedelta(hours=1)
-        instance = (
-            db_session.query(SignalInstance)
-            .filter(
-                SignalInstance.signal_id == signal_instance.signal_id,
-                SignalInstance.created_at >= default_dedup_window,
-                SignalInstance.id != signal_instance.id,
-                SignalInstance.case_id.isnot(None),  # noqa
-            )
-            .with_entities(SignalInstance.case_id)
-            .order_by(desc(SignalInstance.created_at))
-            .first()
-        )
-        if instance:
-            signal_instance.case_id = instance.case_id
-            signal_instance.filter_action = SignalFilterAction.deduplicate
 
     return signal_instance
 
@@ -735,7 +737,7 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
     else:
         filtered = True
 
-    db_session.commit()
+    #db_session.commit()
     return filtered
 
 
