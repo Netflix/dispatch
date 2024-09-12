@@ -737,7 +737,7 @@ def filter_signal(*, db_session: Session, signal_instance: SignalInstance) -> bo
     else:
         filtered = True
 
-    #db_session.commit()
+    db_session.commit()
     return filtered
 
 
