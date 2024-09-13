@@ -102,7 +102,7 @@ def find_schedule_and_send(
 
     cases = case_service.get_all_last_x_hours(db_session=db_session, hours=HOURS_IN_SHIFT)
     for case in cases:
-        if case.assignee.individual.email == current_oncall["email"]:
+        if case.has_channel and case.assignee.individual.email == current_oncall["email"]:
             num_participants += count_active_participants(case.participants)
             num_cases += 1
     details = [
