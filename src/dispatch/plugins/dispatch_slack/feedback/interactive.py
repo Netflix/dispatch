@@ -1,4 +1,5 @@
 import logging
+import json
 from blockkit import (
     Checkboxes,
     Context,
@@ -401,6 +402,8 @@ def handle_oncall_shift_feedback_submission_event(
         reminder_id = metadata[4]
         if reminder_id.isnumeric():
             reminder_service.delete(db_session=db_session, reminder_id=reminder_id)
+    # if there are other details, store those
+    details = json.loads(metadata[5]) if len(metadata) > 5 else []
 
     individual = (
         None
@@ -421,6 +424,7 @@ def handle_oncall_shift_feedback_submission_event(
         shift_end_at=shift_end_at,
         shift_start_at=None,
         project=project,
+        details=details,
     )
 
     service_feedback = feedback_service.create(

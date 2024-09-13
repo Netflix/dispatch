@@ -107,6 +107,12 @@ def get_all_by_status(
     )
 
 
+def get_all_last_x_hours(*, db_session, hours: int) -> List[Optional[Case]]:
+    """Returns all cases in the last x hours."""
+    now = datetime.utcnow()
+    return db_session.query(Case).filter(Case.created_at >= now - timedelta(hours=hours)).all()
+
+
 def get_all_last_x_hours_by_status(
     *, db_session, project_id: int, status: str, hours: int
 ) -> List[Optional[Case]]:
