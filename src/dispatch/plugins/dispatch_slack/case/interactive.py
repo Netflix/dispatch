@@ -1913,11 +1913,9 @@ def handle_report_submission_event(
     if form_data.get(DefaultBlockIds.case_type_select):
         case_type = {"name": form_data[DefaultBlockIds.case_type_select]["name"]}
 
-    assignee_email = None
-    if form_data.get(DefaultBlockIds.case_type_select):
-        assignee_email = client.users_info(
-            user=form_data[DefaultBlockIds.case_assignee_select]["value"]
-        )["user"]["profile"]["email"]
+    assignee_email = client.users_info(
+        user=form_data[DefaultBlockIds.case_assignee_select]["value"]
+    )["user"]["profile"]["email"]
 
     case_in = CaseCreate(
         title=form_data[DefaultBlockIds.title_input],
