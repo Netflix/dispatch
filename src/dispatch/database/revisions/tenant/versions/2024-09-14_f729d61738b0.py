@@ -1,7 +1,7 @@
 """Adds project parameter to send weekly reports
 
 Revision ID: f729d61738b0
-Revises: 71cd7ed999c4
+Revises: 0a6702319f6a
 Create Date: 2024-08-12 15:22:41.977924
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "f729d61738b0"
-down_revision = "71cd7ed999c4"
+down_revision = "0a6702319f6a"
 branch_labels = None
 depends_on = None
 
