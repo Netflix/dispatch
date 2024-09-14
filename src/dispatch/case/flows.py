@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -28,7 +28,7 @@ from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
 from dispatch.participant_role import flows as role_flow
-from dispatch.participant_role.models import ParticipantRoleType
+from dispatch.participant_role.models import ParticipantRoleType, ParticipantRole
 from dispatch.plugin import service as plugin_service
 from dispatch.storage import flows as storage_flows
 from dispatch.storage.enums import StorageAction
@@ -75,7 +75,7 @@ def get_case_participants_flow(case: Case, db_session: SessionLocal):
 def case_add_or_reactivate_participant_flow(
     user_email: str,
     case_id: int,
-    participant_role: ParticipantRoleType = ParticipantRoleType.participant,
+    participant_role: ParticipantRoleType = ParticipantRoleType.observer,
     service_id: int = 0,
     add_to_conversation: bool = True,
     event: dict = None,
@@ -111,7 +111,7 @@ def case_add_or_reactivate_participant_flow(
     else:
         # we add the participant to the case
         participant = participant_flows.add_participant(
-            user_email, case, db_session, service_id=service_id, role=participant_role
+            user_email, case, db_session, service_id=service_id, roles=[participant_role]
         )
     if case.tactical_group:
         # we add the participant to the tactical group
@@ -132,9 +132,7 @@ def case_add_or_reactivate_participant_flow(
 
         # we send the welcome messages to the participant
         send_case_welcome_participant_message(
-            participant_email=user_email,
-            case=case,
-            db_session=db_session
+            participant_email=user_email, case=case, db_session=db_session
         )
 
     return participant
@@ -151,7 +149,7 @@ def case_remove_participant_flow(
 
     if not case:
         log.warn(
-            f"Unable to remove participant from case with id {case_id}. An case with this id does not exist."
+            f"Unable to remove participant from case with id {case_id}. A case with this id does not exist."
         )
         return
 
@@ -544,7 +542,11 @@ def case_status_transition_flow_dispatcher(
     """Runs the correct flows based on the current and previous status of the case."""
     log.info(
         "Transitioning Case status",
-        extra={"case_id": case.id, "previous_status": previous_status, "current_status": current_status}
+        extra={
+            "case_id": case.id,
+            "previous_status": previous_status,
+            "current_status": current_status,
+        },
     )
     match (previous_status, current_status):
         case (CaseStatus.closed, CaseStatus.new):
@@ -574,7 +576,11 @@ def case_status_transition_flow_dispatcher(
             # Any -> Triage/
             log.warning(
                 "Unexpected previous state for Case transition to Triage state.",
-                extra={"case_id": case.id, "previous_status": previous_status, "current_status": current_status}
+                extra={
+                    "case_id": case.id,
+                    "previous_status": previous_status,
+                    "current_status": current_status,
+                },
             )
 
         case (CaseStatus.new, CaseStatus.escalated):
@@ -663,6 +669,27 @@ def send_escalation_messages_for_channel_case(
     )
 
 
+def map_case_roles_to_incident_roles(
+    participant_roles: List[ParticipantRole], incident: Incident, db_session: Session
+) -> Optional[List[ParticipantRoleType]]:
+    # Map the case role to an incident role
+    incident_roles = set()
+    for role in participant_roles:
+        if role.role == ParticipantRoleType.assignee:
+            # If incident commader role already assigned, assign as participant
+            if participant_service.get_by_incident_id_and_role(
+                db_session=db_session,
+                incident_id=incident.id,
+                role=ParticipantRoleType.incident_commander,
+            ):
+                incident_roles.add(ParticipantRoleType.participant)
+            else:
+                incident_roles.add(ParticipantRoleType.incident_commander)
+        else:
+            incident_roles.add(role.role)
+    return list(incident_roles) or None
+
+
 def common_escalate_flow(
     case: Case,
     incident: Incident,
@@ -675,7 +702,18 @@ def common_escalate_flow(
         db_session.add(incident)
         db_session.commit()
 
-    # we run the incident create flow
+    case.incidents.append(incident)
+    db_session.add(case)
+    db_session.commit()
+
+    event_service.log_case_event(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description=f"The case has been linked to incident {incident.name} in the {incident.project.name} project",
+        case_id=case.id,
+    )
+
+    # we run the incident create flow in a background task
     incident = incident_flows.incident_create_flow(
         incident_id=incident.id,
         organization_slug=organization_slug,
@@ -695,16 +733,17 @@ def common_escalate_flow(
                 f"Adding participant {participant.individual.email} from Case {case.id} to Incident {incident.id}"
             )
             # Get the roles for this participant
-            case_roles = participant.participant_roles
-
-            # Map the case role to an incident role
-            incident_role = ParticipantRoleType.map_case_role_to_incident_role(case_roles)
+            incident_roles = map_case_roles_to_incident_roles(
+                participant_roles=participant.participant_roles,
+                incident=incident,
+                db_session=db_session,
+            )
 
             participant_flows.add_participant(
-                participant.individual.email,
-                incident,
-                db_session,
-                role=incident_role,
+                user_email=participant.individual.email,
+                subject=incident,
+                db_session=db_session,
+                roles=incident_roles,
             )
 
             # We add the participants to the conversation
@@ -731,17 +770,6 @@ def common_escalate_flow(
             db_session=db_session,
             incident=incident,
         )
-
-    case.incidents.append(incident)
-    db_session.add(case)
-    db_session.commit()
-
-    event_service.log_case_event(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description=f"The case has been linked to incident {incident.name} in the {incident.project.name} project",
-        case_id=case.id,
-    )
 
     if case.storage and incident.tactical_group:
         storage_members = [incident.tactical_group.email]
@@ -771,8 +799,13 @@ def case_to_incident_escalate_flow(
     if case.incidents:
         return
 
-    reporter = ParticipantUpdate(
-        individual=IndividualContactRead(email=case.assignee.individual.email)
+    # use existing reporter or assignee if none
+    reporter = (
+        ParticipantUpdate(individual=IndividualContactRead(email=case.reporter.individual.email))
+        if case.reporter
+        else ParticipantUpdate(
+            individual=IndividualContactRead(email=case.assignee.individual.email)
+        )
     )
 
     description = (

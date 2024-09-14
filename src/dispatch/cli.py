@@ -360,24 +360,23 @@ def dump_database(dump_file):
 
 
 @dispatch_database.command("drop")
-@click.option("--yes", is_flag=True, help="Silences all confirmation prompts.")
-def drop_database(yes):
+def drop_database():
     """Drops all data in database."""
     from sqlalchemy_utils import database_exists, drop_database
 
-    if database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
-        if yes:
-            drop_database(str(config.SQLALCHEMY_DATABASE_URI))
-            click.secho("Success.", fg="green")
+    database_hostname = click.prompt(f"Please enter the database hostname (env = {config.DATABASE_HOSTNAME})")
+    database_name = click.prompt(f"Please enter the database name (env = {config.DATABASE_NAME})")
+    sqlalchemy_database_uri = f"postgresql+psycopg2://{config._DATABASE_CREDENTIAL_USER}:{config._QUOTED_DATABASE_PASSWORD}@{database_hostname}:{config.DATABASE_PORT}/{database_name}"
 
+    if database_exists(str(sqlalchemy_database_uri)):
         if click.confirm(
-            f"Are you sure you want to drop: '{config.DATABASE_HOSTNAME}:{config.DATABASE_NAME}'?"
+            f"Are you sure you want to drop database: '{database_hostname}:{database_name}'?"
         ):
-            drop_database(str(config.SQLALCHEMY_DATABASE_URI))
+            drop_database(str(sqlalchemy_database_uri))
             click.secho("Success.", fg="green")
     else:
         click.secho(
-            f"'{config.DATABASE_HOSTNAME}:{config.DATABASE_NAME}' does not exist!!!", fg="red"
+            f"Database '{database_hostname}:{database_name}' does not exist!!!", fg="red"
         )
 
 
@@ -637,6 +636,9 @@ def revision_database(
 def dispatch_scheduler():
     """Container for all dispatch scheduler commands."""
     # we need scheduled tasks to be imported
+    from .case_cost.scheduled import (
+        calculate_cases_response_cost,  # noqa
+    )
     from .data.source.scheduled import sync_sources  # noqa
     from .document.scheduled import sync_document_terms  # noqa
     from .evergreen.scheduled import create_evergreen_reminders  # noqa
@@ -791,52 +793,28 @@ def signals_group():
     pass
 
 
-def _run_consume(plugin_slug: str, organization_slug: str, project_id: int, running: bool):
-    from dispatch.database.core import get_organization_session
-    from dispatch.plugin import service as plugin_service
-    from dispatch.project import service as project_service
-    from dispatch.common.utils.cli import install_plugins
-
-    install_plugins()
-
-    with get_organization_session(organization_slug) as session:
-        plugin = plugin_service.get_active_instance_by_slug(
-            db_session=session, slug=plugin_slug, project_id=project_id
-        )
-        project = project_service.get(db_session=session, project_id=project_id)
-        while True:
-            if not running:
-                break
-            plugin.instance.consume(db_session=session, project=project)
-
-
 @signals_group.command("consume")
 def consume_signals():
-    """Runs a continuous process that consumes signals from the specified plugin."""
-    import time
-    from threading import Thread, Event
-    import logging
+    """
+    Runs a continuous process that consumes signals from the specified plugins.
 
-    import signal
+    This function sets up consumer threads for all active signal-consumer plugins
+    across all organizations and projects. It monitors these threads and restarts
+    them if they die. The process can be terminated using SIGINT or SIGTERM.
 
+    Returns:
+        None
+    """
     from dispatch.common.utils.cli import install_plugins
     from dispatch.project import service as project_service
     from dispatch.plugin import service as plugin_service
-
     from dispatch.organization.service import get_all as get_all_organizations
     from dispatch.database.core import get_session, get_organization_session
 
     install_plugins()
+
     with get_session() as session:
         organizations = get_all_organizations(db_session=session)
-
-    log = logging.getLogger(__name__)
-
-    # Replace manager dictionary with an Event
-    running = Event()
-    running.set()
-
-    workers = []
 
     for organization in organizations:
         with get_organization_session(organization.slug) as session:
@@ -850,33 +828,16 @@ def consume_signals():
                     log.warning(
                         f"No signals consumed. No signal-consumer plugins enabled. Project: {project.name}. Organization: {project.organization.name}"
                     )
+                    continue
 
                 for plugin in plugins:
                     log.debug(f"Consuming signals for plugin: {plugin.plugin.slug}")
-                    for _ in range(5):  # TODO add plugin.instance.concurrency
-                        t = Thread(
-                            target=_run_consume,
-                            args=(plugin.plugin.slug, organization.slug, project.id, running),
-                            daemon=True,  # Set thread to daemon
+                    try:
+                        plugin.instance.consume(db_session=session, project=project)
+                    except Exception as e:
+                        log.error(
+                            f"Error consuming signals for plugin: {plugin.plugin.slug}. Error: {e}"
                         )
-                        t.start()
-                        workers.append(t)
-
-    def terminate_processes(signum, frame):
-        print("Terminating main process...")
-        running.clear()  # stop all threads
-        for worker in workers:
-            worker.join()
-
-    signal.signal(signal.SIGINT, terminate_processes)
-    signal.signal(signal.SIGTERM, terminate_processes)
-
-    # Keep the main thread running
-    while True:
-        if not running.is_set():
-            print("Main process terminating.")
-            break
-        time.sleep(1)
 
 
 @signals_group.command("process")

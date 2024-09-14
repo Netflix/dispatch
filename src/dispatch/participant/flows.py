@@ -1,8 +1,10 @@
 import logging
-from typing import TypeVar
+from typing import TypeVar, List, Optional
+
+from sqlalchemy.orm import Session
 
 from dispatch.case.models import Case
-from dispatch.database.core import SessionLocal, get_table_name_by_class_instance
+from dispatch.database.core import get_table_name_by_class_instance
 from dispatch.event import service as event_service
 from dispatch.incident.models import Incident
 from dispatch.individual import service as individual_service
@@ -25,9 +27,9 @@ Subject = TypeVar("Subject", Case, Incident)
 def add_participant(
     user_email: str,
     subject: Subject,
-    db_session: SessionLocal,
+    db_session: Session,
     service_id: int = None,
-    role: ParticipantRoleType = ParticipantRoleType.participant,
+    roles: Optional[List[ParticipantRoleType]] = None,
 ) -> Participant:
     """Adds a participant to an incident or a case."""
     # we get or create a new individual
@@ -37,14 +39,18 @@ def add_participant(
 
     # we get or create a new participant
     subject_type = get_table_name_by_class_instance(subject)
-    participant_role = ParticipantRoleCreate(role=role)
+
+    # set up roles
+    if roles is None:
+        roles = [ParticipantRoleType.observer]
+    participant_roles = [ParticipantRoleCreate(role=role) for role in roles]
     participant = participant_service.get_or_create(
         db_session=db_session,
         subject_id=subject.id,
         subject_type=subject_type,
         individual_id=individual.id,
         service_id=service_id,
-        participant_roles=[participant_role],
+        participant_roles=participant_roles,
     )
 
     individual.participant.append(participant)
@@ -52,20 +58,21 @@ def add_participant(
 
     # TODO: Split this assignment depending on Obj type
     # we update the commander, reporter, scribe, or liaison foreign key
-    if role == ParticipantRoleType.incident_commander:
-        subject.commander_id = participant.id
-        subject.commanders_location = participant.location
-    elif role == ParticipantRoleType.reporter:
-        subject.reporter_id = participant.id
-        subject.reporters_location = participant.location
-    elif role == ParticipantRoleType.scribe:
-        subject.scribe_id = participant.id
-    elif role == ParticipantRoleType.liaison:
-        subject.liaison_id = participant.id
-    elif role == ParticipantRoleType.observer:
-        subject.observer_id = participant.id
-    elif role == ParticipantRoleType.assignee:
-        subject.assignee_id = participant.id
+    for role in roles:
+        if role == ParticipantRoleType.incident_commander:
+            subject.commander_id = participant.id
+            subject.commanders_location = participant.location
+        elif role == ParticipantRoleType.reporter:
+            subject.reporter_id = participant.id
+            subject.reporters_location = participant.location
+        elif role == ParticipantRoleType.scribe:
+            subject.scribe_id = participant.id
+        elif role == ParticipantRoleType.liaison:
+            subject.liaison_id = participant.id
+        elif role == ParticipantRoleType.observer:
+            subject.observer_id = participant.id
+        elif role == ParticipantRoleType.assignee:
+            subject.assignee_id = participant.id
 
     # we add and commit the changes
     db_session.add(participant)
@@ -77,14 +84,14 @@ def add_participant(
         event_service.log_case_event(
             db_session=db_session,
             source="Dispatch Core App",
-            description=f"{individual.name} added to case with {participant_role.role} role",
+            description=f"{individual.name} added to case with role(s): {', '.join([role.role.value for role in participant_roles])}",
             case_id=subject.id,
         )
     if subject_type == "incident":
         event_service.log_incident_event(
             db_session=db_session,
             source="Dispatch Core App",
-            description=f"{individual.name} added to incident with {participant_role.role} role",
+            description=f"{individual.name} added to incident with role(s): {', '.join([role.role.value for role in participant_roles])}",
             incident_id=subject.id,
             type=EventType.participant_updated,
         )
@@ -92,7 +99,7 @@ def add_participant(
     return participant
 
 
-def remove_participant(user_email: str, incident: Incident, db_session: SessionLocal):
+def remove_participant(user_email: str, incident: Incident, db_session: Session):
     """Removes a participant."""
     inactivated = inactivate_participant(user_email, incident, db_session)
 
@@ -117,7 +124,7 @@ def remove_participant(user_email: str, incident: Incident, db_session: SessionL
         )
 
 
-def remove_case_participant(user_email: str, case: Case, db_session: SessionLocal):
+def remove_case_participant(user_email: str, case: Case, db_session: Session):
     """Removes a participant."""
     inactivated = inactivate_participant(user_email, case, db_session)
 
@@ -142,7 +149,7 @@ def remove_case_participant(user_email: str, case: Case, db_session: SessionLoca
         )
 
 
-def inactivate_participant(user_email: str, subject: Subject, db_session: SessionLocal):
+def inactivate_participant(user_email: str, subject: Subject, db_session: Session):
     """Inactivates a participant."""
     subject_type = get_table_name_by_class_instance(subject)
 
@@ -182,7 +189,7 @@ def inactivate_participant(user_email: str, subject: Subject, db_session: Sessio
 
 
 def reactivate_participant(
-    user_email: str, incident: Incident, db_session: SessionLocal, service_id: int = None
+    user_email: str, incident: Incident, db_session: Session, service_id: int = None
 ):
     """Reactivates a participant."""
     participant = participant_service.get_by_incident_id_and_email(

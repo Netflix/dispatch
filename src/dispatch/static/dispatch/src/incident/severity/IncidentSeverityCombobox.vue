@@ -25,13 +25,13 @@
     </template>
     <template #chip="{ item, props }">
       <v-chip v-bind="props">
-        <span v-if="!project"> {{ item.raw.project.name }}/ </span>{{ item.raw.name }}
+        <span>{{ item.raw.project.name }}/</span>{{ item.raw.name }}
       </v-chip>
     </template>
     <template #item="{ props, item }">
       <v-list-item v-bind="props" :title="null">
         <v-list-item-title>
-          <span v-if="!project">{{ item.raw.project.name }}/</span>{{ item.raw.name }}
+          <span>{{ item.raw.project.name }}/</span>{{ item.raw.name }}
         </v-list-item-title>
         <v-list-item-subtitle :title="item.raw.description">
           {{ item.raw.description }}
@@ -112,18 +112,9 @@ export default {
       this.loading = "error"
       let filterOptions = {
         q: this.search,
-        sortBy: ["name"],
-        descending: [false],
+        sortBy: ["project_id", "view_order"],
+        descending: [false, false],
         itemsPerPage: this.numItems,
-      }
-
-      if (this.project) {
-        filterOptions = {
-          ...filterOptions,
-          filters: {
-            project: [this.project],
-          },
-        }
       }
 
       let enabledFilter = [
@@ -135,8 +126,19 @@ export default {
         },
       ]
 
+      if (this.project && this.project.length > 0) {
+        const project_ids = this.project.map((p) => p.id)
+        enabledFilter.push({
+          model: "IncidentSeverity",
+          field: "project_id",
+          op: "in",
+          value: project_ids,
+        })
+      }
+
       filterOptions = SearchUtils.createParametersFromTableOptions(
         { ...filterOptions },
+        "IncidentSeverity",
         enabledFilter
       )
 
@@ -161,6 +163,12 @@ export default {
 
   created() {
     this.fetchData()
+    this.$watch(
+      (vm) => [vm.project],
+      () => {
+        this.fetchData()
+      }
+    )
   },
 }
 </script>

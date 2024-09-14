@@ -67,6 +67,7 @@ def create_signal_instance(
     response: Response,
 ):
     """Creates a new signal instance."""
+    # TODO this should be refactored to use the signal service
     project = project_service.get_by_name_or_default(
         db_session=db_session, project_in=signal_instance_in.project
     )

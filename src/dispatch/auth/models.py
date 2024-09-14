@@ -2,6 +2,7 @@ import string
 import secrets
 from typing import List
 from datetime import datetime, timedelta
+from uuid import uuid4
 
 import bcrypt
 from jose import jwt
@@ -10,6 +11,7 @@ from pydantic import validator, Field
 from pydantic.networks import EmailStr
 
 from sqlalchemy import DateTime, Column, String, LargeBinary, Integer, Boolean
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy_utils import TSVectorType
@@ -20,7 +22,7 @@ from dispatch.config import (
     DISPATCH_JWT_EXP,
 )
 from dispatch.database.core import Base
-from dispatch.enums import UserRoles
+from dispatch.enums import DispatchEnum, UserRoles
 from dispatch.models import OrganizationSlug, PrimaryKey, TimeStampMixin, DispatchBase, Pagination
 from dispatch.organization.models import Organization, OrganizationRead
 from dispatch.project.models import Project, ProjectRead
@@ -192,3 +194,31 @@ class UserRegisterResponse(DispatchBase):
 
 class UserPagination(Pagination):
     items: List[UserRead] = []
+
+
+class MfaChallengeStatus(DispatchEnum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    DENIED = "denied"
+    EXPIRED = "expired"
+
+
+class MfaChallenge(Base, TimeStampMixin):
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    valid = Column(Boolean, default=False)
+    reason = Column(String, nullable=True)
+    action = Column(String)
+    status = Column(String, default=MfaChallengeStatus.PENDING)
+    challenge_id = Column(UUID(as_uuid=True), default=uuid4, unique=True)
+    dispatch_user_id = Column(Integer, ForeignKey(DispatchUser.id), nullable=False)
+    dispatch_user = relationship(DispatchUser, backref="mfa_challenges")
+
+
+class MfaPayloadResponse(DispatchBase):
+    status: str
+
+
+class MfaPayload(DispatchBase):
+    action: str
+    project_id: int
+    challenge_id: str

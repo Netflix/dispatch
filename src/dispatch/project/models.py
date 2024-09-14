@@ -48,6 +48,8 @@ class Project(Base):
 
     weekly_report_notification_id = Column(Integer, nullable=True)
 
+    select_commander_visibility = Column(Boolean, default=True, server_default="t")
+
     stable_priority_id = Column(Integer, nullable=True)
     stable_priority = relationship(
         IncidentPriority,
@@ -91,6 +93,7 @@ class ProjectBase(DispatchBase):
     storage_use_folder_one_as_primary: Optional[bool] = Field(True, nullable=True)
     storage_use_title: Optional[bool] = Field(False, nullable=True)
     allow_self_join: Optional[bool] = Field(True, nullable=True)
+    select_commander_visibility: Optional[bool] = Field(True, nullable=True)
 
 
 class ProjectCreate(ProjectBase):

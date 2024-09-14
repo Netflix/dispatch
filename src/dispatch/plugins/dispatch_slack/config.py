@@ -3,6 +3,9 @@ from pydantic import Field, SecretStr
 from dispatch.config import BaseConfigurationModel
 
 
+MAX_SECTION_TEXT_LENGTH = 2999
+
+
 class SlackConfiguration(BaseConfigurationModel):
     """Slack configuration description."""
 

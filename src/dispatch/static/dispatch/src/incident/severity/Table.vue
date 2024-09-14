@@ -47,6 +47,9 @@
             <template #item.enabled="{ value }">
               <v-checkbox-btn :model-value="value" disabled />
             </template>
+            <template #item.allowed_for_stable_incidents="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
+            </template>
             <template #item.data-table-actions="{ item }">
               <v-menu location="right" origin="overlap">
                 <template #activator="{ props }">
@@ -90,6 +93,7 @@ export default {
         { title: "Description", value: "description", sortable: false },
         { title: "Default", value: "default", sortable: true },
         { title: "Enabled", value: "enabled", sortable: true },
+        { title: "Allowed for Stable", value: "allowed_for_stable_incidents", sortable: true },
         { title: "View Order", value: "view_order", sortable: true },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],

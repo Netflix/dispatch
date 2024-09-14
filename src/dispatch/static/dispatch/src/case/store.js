@@ -11,6 +11,7 @@ import router from "@/router"
 const getDefaultSelectedState = () => {
   return {
     assignee: null,
+    case_costs: [],
     case_priority: null,
     case_severity: null,
     case_type: null,
@@ -435,6 +436,12 @@ const actions = {
 
 const mutations = {
   updateField,
+  addCaseCost(state, value) {
+    state.selected.case_costs.push(value)
+  },
+  removeCaseCost(state, idx) {
+    state.selected.case_costs.splice(idx, 1)
+  },
   SET_SELECTED(state, value) {
     state.selected = Object.assign(state.selected, value)
   },

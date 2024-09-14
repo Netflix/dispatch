@@ -90,6 +90,16 @@
                   />
                 </v-form>
               </v-col>
+              <v-col cols="12">
+                <cost-model-combobox
+                  v-if="experimental_features"
+                  :project="project"
+                  v-model="cost_model"
+                  persistent-hint
+                  clearable
+                  hint="If unassigned, the case cost is not calculated."
+                />
+              </v-col>
               <v-col cols="6">
                 <project-select label="Incident Project" v-model="incidentProject" />
               </v-col>
@@ -120,7 +130,7 @@
                 <v-checkbox
                   v-model="enabled"
                   label="Enabled"
-                  hint="Determines whether this case type is availible for new cases."
+                  hint="Determines whether this case type is available for new cases."
                 />
               </v-col>
               <v-col cols="12">
@@ -140,6 +150,7 @@ import { required } from "@/util/form"
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 
+import CostModelCombobox from "@/cost_model/CostModelCombobox.vue"
 import IncidentTypeSelect from "@/incident/type/IncidentTypeSelect.vue"
 import PluginMetadataInput from "@/plugin/PluginMetadataInput.vue"
 import ServiceSelect from "@/service/ServiceSelect.vue"
@@ -155,6 +166,7 @@ export default {
   name: "CaseTypeNewEditSheet",
 
   components: {
+    CostModelCombobox,
     IncidentTypeSelect,
     PluginMetadataInput,
     ServiceSelect,
@@ -174,6 +186,7 @@ export default {
       "dialogs.showCreateEdit",
       "selected.case_template_document",
       "selected.conversation_target",
+      "selected.cost_model",
       "selected.default",
       "selected.description",
       "selected.enabled",
@@ -191,6 +204,7 @@ export default {
     ...mapFields("case_type", {
       default_case_type: "selected.default",
     }),
+    ...mapFields("auth", ["currentUser.experimental_features"]),
   },
 
   methods: {

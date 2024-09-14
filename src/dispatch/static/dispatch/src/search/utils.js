@@ -27,7 +27,7 @@ export default {
     return options, queryParams
   },
   createParametersFromTableOptions(options, model, rawFilters) {
-    let [sortBy, descending] = this.createSortExpression(options.sortBy, model)
+    let [sortBy, descending] = this.createSortExpression(options.sortBy, options.descending)
     let expression = this.createFilterExpression(options.filters, model)
     delete options.filters
     delete options.sortBy

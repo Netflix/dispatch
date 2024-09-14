@@ -68,6 +68,12 @@ export const protectedRoute = [
   },
   ...withPrefix("/:organization/", [
     {
+      path: "mfa",
+      name: "mfa",
+      meta: { title: "Dispatch Mfa", requiresAuth: true },
+      component: () => import("@/auth/Mfa.vue"),
+    },
+    {
       path: "incidents/status",
       name: "status",
       meta: { title: "Incident Status", requiresAuth: true },
@@ -492,6 +498,12 @@ export const protectedRoute = [
             name: "CaseSeverityTable",
             meta: { title: "Severities", subMenu: "project", group: "case" },
             component: () => import("@/case/severity/Table.vue"),
+          },
+          {
+            path: "caseCostTypes",
+            name: "CaseCostTypesTable",
+            meta: { title: "Cost Types", subMenu: "project", group: "case" },
+            component: () => import("@/case_cost_type/Table.vue"),
           },
           {
             path: "signals",

@@ -104,6 +104,7 @@ export default {
 
       filterOptions = SearchUtils.createParametersFromTableOptions(
         { ...filterOptions },
+        "CaseSeverity",
         enabledFilter
       )
 

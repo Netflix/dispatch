@@ -7,6 +7,7 @@
     label="Severity"
     return-object
     :loading="loading"
+    :error-messages="show_error"
     :rules="[is_severity_in_project]"
   >
     <template #item="data">
@@ -40,6 +41,10 @@ export default {
       type: [Object],
       default: null,
     },
+    status: {
+      type: String,
+      default: "",
+    },
   },
 
   data() {
@@ -63,6 +68,12 @@ export default {
         this.$emit("update:modelValue", value)
         this.validateSeverity()
       },
+    },
+    show_error() {
+      if (this.status != "Active" && this.modelValue?.allowed_for_stable_incidents === false) {
+        return `Severity cannot be ${this.modelValue?.name} for ${this.status} incidents`
+      }
+      return null
     },
   },
 
@@ -105,6 +116,7 @@ export default {
 
       filterOptions = SearchUtils.createParametersFromTableOptions(
         { ...filterOptions },
+        "IncidentSeverity",
         enabledFilter
       )
 

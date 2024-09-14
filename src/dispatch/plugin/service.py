@@ -2,6 +2,8 @@ import logging
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from typing import List, Optional
 
+from sqlalchemy.orm import Session
+
 from dispatch.exceptions import InvalidConfigurationError
 from dispatch.plugins.bases import OncallPlugin
 from dispatch.project import service as project_service
@@ -20,12 +22,12 @@ from .models import (
 log = logging.getLogger(__name__)
 
 
-def get(*, db_session, plugin_id: int) -> Optional[Plugin]:
+def get(*, db_session: Session, plugin_id: int) -> Optional[Plugin]:
     """Returns a plugin based on the given plugin id."""
     return db_session.query(Plugin).filter(Plugin.id == plugin_id).one_or_none()
 
 
-def get_by_slug(*, db_session, slug: str) -> Plugin:
+def get_by_slug(*, db_session: Session, slug: str) -> Plugin:
     """Fetches a plugin by slug."""
     return db_session.query(Plugin).filter(Plugin.slug == slug).one_or_none()
 
@@ -35,12 +37,12 @@ def get_all(*, db_session) -> List[Optional[Plugin]]:
     return db_session.query(Plugin).all()
 
 
-def get_by_type(*, db_session, plugin_type: str) -> List[Optional[Plugin]]:
+def get_by_type(*, db_session: Session, plugin_type: str) -> List[Optional[Plugin]]:
     """Fetches all plugins for a given type."""
     return db_session.query(Plugin).filter(Plugin.type == plugin_type).all()
 
 
-def get_instance(*, db_session, plugin_instance_id: int) -> Optional[PluginInstance]:
+def get_instance(*, db_session: Session, plugin_instance_id: int) -> Optional[PluginInstance]:
     """Returns a plugin instance based on the given instance id."""
     return (
         db_session.query(PluginInstance)
@@ -50,7 +52,7 @@ def get_instance(*, db_session, plugin_instance_id: int) -> Optional[PluginInsta
 
 
 def get_active_instance(
-    *, db_session, plugin_type: str, project_id=None
+    *, db_session: Session, plugin_type: str, project_id=None
 ) -> Optional[PluginInstance]:
     """Fetches the current active plugin for the given type."""
     return (
@@ -64,7 +66,7 @@ def get_active_instance(
 
 
 def get_active_instances(
-    *, db_session, plugin_type: str, project_id=None
+    *, db_session: Session, plugin_type: str, project_id=None
 ) -> Optional[PluginInstance]:
     """Fetches the current active plugin for the given type."""
     return (
@@ -78,7 +80,7 @@ def get_active_instances(
 
 
 def get_active_instance_by_slug(
-    *, db_session, slug: str, project_id=None
+    *, db_session: Session, slug: str, project_id: int | None = None
 ) -> Optional[PluginInstance]:
     """Fetches the current active plugin for the given type."""
     return (
@@ -92,7 +94,7 @@ def get_active_instance_by_slug(
 
 
 def get_enabled_instances_by_type(
-    *, db_session, project_id: int, plugin_type: str
+    *, db_session: Session, project_id: int, plugin_type: str
 ) -> List[Optional[PluginInstance]]:
     """Fetches all enabled plugins for a given type."""
     return (
@@ -105,7 +107,7 @@ def get_enabled_instances_by_type(
     )
 
 
-def create_instance(*, db_session, plugin_instance_in: PluginInstanceCreate) -> PluginInstance:
+def create_instance(*, db_session: Session, plugin_instance_in: PluginInstanceCreate) -> PluginInstance:
     """Creates a new plugin instance."""
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=plugin_instance_in.project
@@ -124,7 +126,7 @@ def create_instance(*, db_session, plugin_instance_in: PluginInstanceCreate) -> 
 
 
 def update_instance(
-    *, db_session, plugin_instance: PluginInstance, plugin_instance_in: PluginInstanceUpdate
+    *, db_session: Session, plugin_instance: PluginInstance, plugin_instance_in: PluginInstanceUpdate
 ) -> PluginInstance:
     """Updates a plugin instance."""
     plugin_instance_data = plugin_instance.dict()
@@ -169,28 +171,28 @@ def update_instance(
     return plugin_instance
 
 
-def delete_instance(*, db_session, plugin_instance_id: int):
+def delete_instance(*, db_session: Session, plugin_instance_id: int):
     """Deletes a plugin instance."""
     db_session.query(PluginInstance).filter(PluginInstance.id == plugin_instance_id).delete()
     db_session.commit()
 
 
-def get_plugin_event_by_id(*, db_session, plugin_event_id: int) -> Optional[PluginEvent]:
+def get_plugin_event_by_id(*, db_session: Session, plugin_event_id: int) -> Optional[PluginEvent]:
     """Returns a plugin event based on the plugin event id."""
     return db_session.query(PluginEvent).filter(PluginEvent.id == plugin_event_id).one_or_none()
 
 
-def get_plugin_event_by_slug(*, db_session, slug: str) -> Optional[PluginEvent]:
+def get_plugin_event_by_slug(*, db_session: Session, slug: str) -> Optional[PluginEvent]:
     """Returns a project based on the plugin event slug."""
     return db_session.query(PluginEvent).filter(PluginEvent.slug == slug).one_or_none()
 
 
-def get_all_events_for_plugin(*, db_session, plugin_id: int) -> List[Optional[PluginEvent]]:
+def get_all_events_for_plugin(*, db_session: Session, plugin_id: int) -> List[Optional[PluginEvent]]:
     """Returns all plugin events for a given plugin."""
     return db_session.query(PluginEvent).filter(PluginEvent.plugin_id == plugin_id).all()
 
 
-def create_plugin_event(*, db_session, plugin_event_in: PluginEventCreate) -> PluginEvent:
+def create_plugin_event(*, db_session: Session, plugin_event_in: PluginEventCreate) -> PluginEvent:
     """Creates a new plugin event."""
     plugin_event = PluginEvent(**plugin_event_in.dict(exclude={"plugin"}))
     plugin_event.plugin = get(db_session=db_session, plugin_id=plugin_event_in.plugin.id)

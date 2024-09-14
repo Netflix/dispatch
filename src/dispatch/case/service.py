@@ -3,13 +3,14 @@ import logging
 from datetime import datetime, timedelta
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, load_only
 from typing import List, Optional
 
 from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.severity import service as case_severity_service
 from dispatch.case.type import service as case_type_service
+from dispatch.case_cost import service as case_cost_service
 from dispatch.event import service as event_service
 from dispatch.exceptions import NotFoundError
 from dispatch.incident import service as incident_service
@@ -33,12 +34,12 @@ log = logging.getLogger(__name__)
 
 
 def get(*, db_session, case_id: int) -> Optional[Case]:
-    """Returns an case based on the given id."""
+    """Returns a case based on the given id."""
     return db_session.query(Case).filter(Case.id == case_id).first()
 
 
 def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Case]:
-    """Returns an case based on the given name."""
+    """Returns a case based on the given name."""
     return (
         db_session.query(Case)
         .filter(Case.project_id == project_id)
@@ -48,7 +49,7 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Case]:
 
 
 def get_by_name_or_raise(*, db_session, project_id: int, case_in: CaseRead) -> Case:
-    """Returns an case based on a given name or raises ValidationError"""
+    """Returns a case based on a given name or raises ValidationError"""
     case = get_by_name(db_session=db_session, project_id=project_id, name=case_in.name)
 
     if not case:
@@ -72,12 +73,36 @@ def get_all(*, db_session, project_id: int) -> List[Optional[Case]]:
     return db_session.query(Case).filter(Case.project_id == project_id)
 
 
-def get_all_by_status(*, db_session, project_id: int, status: str) -> List[Optional[Case]]:
-    """Returns all cases based on a given status."""
+def get_all_open_by_case_type(*, db_session, case_type_id: int) -> List[Optional[Case]]:
+    """Returns all non-closed cases based on the given case type."""
     return (
         db_session.query(Case)
+        .filter(Case.status != CaseStatus.closed)
+        .filter(Case.status != CaseStatus.escalated)
+        .filter(Case.case_type_id == case_type_id)
+        .all()
+    )
+
+
+def get_all_by_status(
+    *, db_session: Session, project_id: int, statuses: list[str]
+) -> List[Optional[Case]]:
+    """Returns all cases based on a given list of statuses."""
+    return (
+        db_session.query(Case)
+        .options(
+            load_only(
+                Case.id,
+                Case.status,
+                Case.reported_at,
+                Case.created_at,
+                Case.updated_at,
+                Case.triage_at,
+                Case.closed_at,
+            )
+        )
         .filter(Case.project_id == project_id)
-        .filter(Case.status == status)
+        .filter(Case.status.in_(statuses))
         .all()
     )
 
@@ -216,7 +241,7 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
             assignee_email,
             case,
             db_session,
-            role=ParticipantRoleType.assignee,
+            roles=[ParticipantRoleType.assignee],
         )
 
     # add reporter
@@ -225,7 +250,7 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
             case_in.reporter.individual.email,
             case,
             db_session,
-            role=ParticipantRoleType.reporter,
+            roles=[ParticipantRoleType.reporter],
         )
 
     return case
@@ -237,6 +262,7 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
         skip_defaults=True,
         exclude={
             "assignee",
+            "case_costs",
             "case_priority",
             "case_severity",
             "case_type",
@@ -353,6 +379,13 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
             dispatch_user_id=current_user.id,
             case_id=case.id,
         )
+
+    case_costs = []
+    for case_cost in case_in.case_costs:
+        case_costs.append(
+            case_cost_service.get_or_create(db_session=db_session, case_cost_in=case_cost)
+        )
+    case.case_costs = case_costs
 
     tags = []
     for t in case_in.tags:

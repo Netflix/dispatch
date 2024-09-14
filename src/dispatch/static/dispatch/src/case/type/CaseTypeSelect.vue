@@ -15,7 +15,10 @@
     clearable
   >
     <template #item="data">
-      <v-list-item v-bind="data.props" :title="null">
+      <v-list-subheader dense class="custom-subheader" v-if="data.item.raw.category">
+        {{ data.item.raw.category }}
+      </v-list-subheader>
+      <v-list-item v-bind="data.props" :title="null" v-if="!data.item.raw.category">
         <v-list-item-title>{{ data.item.raw.name }}</v-list-item-title>
         <v-list-item-subtitle class="truncate-text" :title="data.item.raw.description">
           {{ data.item.raw.description }}
@@ -74,8 +77,9 @@ export default {
       items: [],
       search: null,
       more: false,
-      numItems: 5,
+      numItems: 40,
       error: null,
+      categories: [],
       is_type_in_project: () => {
         this.validateType()
         return this.error
@@ -147,7 +151,28 @@ export default {
       filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
 
       CaseTypeApi.getAll(filterOptions).then((response) => {
-        this.items = response.data.items
+        // re-sort items by oncall service
+        this.items = []
+        this.categories = []
+        let new_items = {}
+        response.data.items.forEach((item) => {
+          let category = "Team: " + (item.oncall_service?.name || "None")
+          new_items[category] = new_items[category] || []
+          new_items[category].push(item)
+        })
+        let keys = Object.keys(new_items)
+        // ensure Team: None is always at the end
+        keys.sort((a, b) => {
+          if (a === "Team: None") return 1
+          if (b === "Team: None") return -1
+          return a.localeCompare(b)
+        })
+        keys.forEach((category) => {
+          this.items.push({ category: category })
+          for (let item of new_items[category]) {
+            this.items.push(item)
+          }
+        })
 
         this.total = response.data.total
         this.loading = false
@@ -198,5 +223,8 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 500px;
+}
+.custom-subheader {
+  padding-left: 8px !important;
 }
 </style>

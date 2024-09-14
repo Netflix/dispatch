@@ -51,7 +51,7 @@
           <v-data-table-server
             show-select
             return-object
-            :headers="headers"
+            :headers="loadHeaders()"
             :items="items"
             :items-length="total || 0"
             :loading="loading"
@@ -83,6 +83,9 @@
               <v-chip size="small" :color="item.project.color">
                 {{ item.project.name }}
               </v-chip>
+            </template>
+            <template #item.case_costs="{ value }" v-if="auth.currentUser.experimental_features">
+              <case-cost-card :case-costs="value" />
             </template>
             <template #item.assignee="{ value }">
               <case-participant :participant="value" />
@@ -160,6 +163,7 @@ import { useRoute, useRouter } from "vue-router"
 import { formatRelativeDate, formatDate } from "@/filters"
 
 import BulkEditSheet from "@/case/BulkEditSheet.vue"
+import CaseCostCard from "@/case_cost/CaseCostCard.vue"
 import CaseParticipant from "@/case/Participant.vue"
 import CasePriority from "@/case/priority/CasePriority.vue"
 import CaseSeverity from "@/case/severity/CaseSeverity.vue"
@@ -178,20 +182,6 @@ const route = useRoute()
 
 const itemsPerPage = ref(25)
 const showEditSheet = ref(false)
-
-const headers = [
-  { title: "Name", value: "name", align: "left", width: "10%" },
-  { title: "Title", value: "title", sortable: false },
-  { title: "Status", value: "status" },
-  { title: "Type", value: "case_type.name", sortable: true },
-  { title: "Severity", value: "case_severity.name", sortable: true },
-  { title: "Priority", value: "case_priority.name", sortable: true },
-  { title: "Project", value: "project.name", sortable: true },
-  { title: "Assignee", value: "assignee", sortable: false },
-  { title: "Reported At", value: "reported_at", sortable: true },
-  { title: "Closed At", value: "closed_at", sortable: true },
-  { title: "", key: "data-table-actions", sortable: false, align: "end" },
-]
 
 const caseManagement = computed(() => store.state.case_management)
 const auth = computed(() => store.state.auth)
@@ -228,6 +218,30 @@ watch(selected, (newVal) => {
 const showCasePage = (e, { item }) => {
   router.push({ name: "CasePage", params: { name: item.name } })
 }
+
+function loadHeaders() {
+  console.log(auth.value.currentUser.experimental_features)
+  return [
+    { title: "Name", value: "name", align: "left", width: "10%" },
+    { title: "Title", value: "title", sortable: false },
+    { title: "Status", value: "status" },
+    { title: "Type", value: "case_type.name", sortable: true },
+    { title: "Severity", value: "case_severity.name", sortable: true },
+    { title: "Priority", value: "case_priority.name", sortable: true },
+    { title: "Project", value: "project.name", sortable: true },
+    { title: "Assignee", value: "assignee", sortable: false },
+    { title: "Cost", key: "case_costs", sortable: false, experimental_features: true },
+    { title: "Reported At", value: "reported_at", sortable: true },
+    { title: "Closed At", value: "closed_at", sortable: true },
+    { title: "", key: "data-table-actions", sortable: false, align: "end" },
+  ].filter(
+    (header) => !header.experimental_features || auth.value.currentUser.experimental_features
+  )
+}
+
+watch(auth.value.currentUser.experimental_features, () => {
+  loadHeaders()
+})
 
 function loadItems({ page, itemsPerPage, sortBy }) {
   caseManagement.value.table.options.page = page

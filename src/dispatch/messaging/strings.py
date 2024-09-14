@@ -467,7 +467,7 @@ CASE_NAME_WITH_ENGAGEMENT = {
         {
             "button_text": "Join",
             "button_value": "{{organization_slug}}-{{case_id}}",
-            "button_action": ConversationButtonActions.invite_user,
+            "button_action": ConversationButtonActions.invite_user_case,
         },
     ],
 }
@@ -480,7 +480,7 @@ CASE_NAME_WITH_ENGAGEMENT_NO_DESCRIPTION = {
         {
             "button_text": "Join",
             "button_value": "{{organization_slug}}-{{case_id}}",
-            "button_action": ConversationButtonActions.invite_user,
+            "button_action": ConversationButtonActions.invite_user_case,
         },
     ],
 }

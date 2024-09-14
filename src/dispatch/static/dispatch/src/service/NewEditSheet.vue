@@ -226,7 +226,11 @@ export default {
       },
     ]
 
-    filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions }, typeFilter)
+    filterOptions = SearchUtils.createParametersFromTableOptions(
+      { ...filterOptions },
+      "Plugin",
+      typeFilter
+    )
 
     PluginApi.getAllInstances(filterOptions).then((response) => {
       this.loading = false
