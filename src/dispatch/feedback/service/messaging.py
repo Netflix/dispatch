@@ -26,7 +26,7 @@ def send_oncall_shift_feedback_message(
     shift_end_at: str,
     schedule_name: str,
     reminder: Optional[ServiceFeedbackReminder] = None,
-    details: Optional[List[dict]] = [],
+    details: Optional[List[dict]] = None,
     db_session: Session,
 ):
     """
@@ -67,7 +67,7 @@ def send_oncall_shift_feedback_message(
                 schedule_id=schedule_id,
                 schedule_name=schedule_name,
                 shift_end_at=shift_end_at,
-                details=details,
+                details=[] if details is None else details,
             ),
         )
 
@@ -81,7 +81,7 @@ def send_oncall_shift_feedback_message(
             "project_id": project.id,
             "shift_end_at": shift_end_clean,
             "reminder_id": reminder.id,
-            "details": reminder.details,
+            "details": [] if details is None else details,
         }
     ]
 
