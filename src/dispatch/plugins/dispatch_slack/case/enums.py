@@ -4,6 +4,7 @@ from dispatch.enums import DispatchEnum
 
 class CaseNotificationActions(DispatchEnum):
     edit = "case-notification-edit"
+    migrate = "case-notification-migrate"
     escalate = "case-notification-escalate"
     join_incident = "case-notification-join-incident"
     reopen = "case-notification-reopen"
@@ -28,6 +29,10 @@ class CaseResolveActions(DispatchEnum):
 class CaseEscalateActions(DispatchEnum):
     submit = "case-notification-escalate-submit"
     project_select = "case-notification-escalate-project-select"
+
+
+class CaseMigrateActions(DispatchEnum):
+    submit = "case-notification-migrate-submit"
 
 
 class CaseReportActions(DispatchEnum):

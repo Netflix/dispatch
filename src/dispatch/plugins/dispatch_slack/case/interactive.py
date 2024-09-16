@@ -45,6 +45,7 @@ from dispatch.plugins.dispatch_slack.bolt import app
 from dispatch.plugins.dispatch_slack.case.enums import (
     CaseEditActions,
     CaseEscalateActions,
+    CaseMigrateActions,
     CaseNotificationActions,
     CasePaginateActions,
     CaseReportActions,
@@ -1294,6 +1295,127 @@ def handle_escalation_submission_event(
         trigger_id=result["trigger_id"],
         title="Case Escalated",
         message="Case escalated successfully.",
+    )
+
+
+@app.action(
+    CaseNotificationActions.migrate,
+    middleware=[button_context_middleware, db_middleware, user_middleware],
+)
+def create_channel_button_click(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    form_data: dict,
+    db_session: Session,
+):
+    ack()
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    case.dedicated_channel = True
+    db_session.commit()
+
+    # update case message
+    blocks = [
+        Section(text="Migrate the thread conversation to a dedicated channel?"),
+        Context(elements=[MarkdownText(text=f"This will .... this thread")]),
+    ]
+
+    modal = Modal(
+        title="Create Case Channel",
+        blocks=blocks,
+        submit="Create Channel",
+        close="Close",
+        callback_id=CaseMigrateActions.submit,
+        private_metadata=context["subject"].json(),
+    ).build()
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
+
+
+def ack_handle_create_channel_event(ack: Ack, case: Case) -> None:
+    """Handles the case channel creation event."""
+    msg = (
+        "The case already has a dedicated channel. No actions will be performed."
+        if case.has_channel
+        else "Creating a dedicated case channel..."
+    )
+
+    modal = Modal(
+        title="Creating Case Channel",
+        close="Close",
+        blocks=[Section(text=msg)],
+    ).build()
+
+    ack(response_action="update", view=modal)
+
+
+@app.view(
+    CaseMigrateActions.submit,
+    middleware=[
+        action_context_middleware,
+        # user_middleware,
+        # button_context_middleware,
+        db_middleware,
+        # modal_submit_middleware,
+    ],
+)
+def handle_create_channel_event(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+    form_data: dict,
+    user: DispatchUser,
+):
+    """Handles the escalation submission event."""
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    ack_handle_create_channel_event(ack=ack, case=case)
+
+    case.dedicated_channel = True
+    db_session.commit()
+
+    msg = (
+        "Creating a dedicated case channel..."
+        if not case.has_channel
+        else "The case already has a dedicated channel. No actions will be performed."
+    )
+
+    modal = Modal(
+        title="Creating  Case  Channel",
+        close="Close",
+        blocks=[Section(text=msg)],
+    ).build()
+
+    result = client.views_update(
+        view_id=body["view"]["id"],
+        trigger_id=body["trigger_id"],
+        view=modal,
+    )
+
+    channel_id = case.conversation.channel_id
+    thread_id = case.conversation.thread_id
+
+    participant_emails = [participant.individual.email for participant in case.participants]
+
+    # Add all case participants to the case channel
+    case_flows.case_create_conversation_flow(
+        db_session=db_session,
+        case_id=case.id,
+        conversation_target=None,
+        participant_emails=participant_emails,
+    )
+
+    # This should update the original message?
+    blocks = create_case_message(case=case, channel_id=channel_id)
+    client.chat_update(blocks=blocks, ts=thread_id, channel=channel_id)
+
+    send_success_modal(
+        client=client,
+        view_id=body["view"]["id"],
+        trigger_id=result["trigger_id"],
+        title="Channel Created",
+        message="Case channel created successfully.",
     )
 
 
