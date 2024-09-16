@@ -1,7 +1,7 @@
 """Adding details column to support additional feedback information
 
 Revision ID: 47d616802f56
-Revises: 0a6702319f6a
+Revises: f729d61738b0
 Create Date: 2024-09-13 10:28:16.823990
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "47d616802f56"
-down_revision = "0a6702319f6a"
+down_revision = "f729d61738b0"
 branch_labels = None
 depends_on = None
 
