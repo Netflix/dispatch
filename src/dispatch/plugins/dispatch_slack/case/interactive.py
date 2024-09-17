@@ -1416,7 +1416,7 @@ def handle_create_channel_event(
     )
 
     modal = Modal(
-        title="Creating  Case  Channel",
+        title="Creating Case Channel",
         close="Close",
         blocks=[Section(text=msg)],
     ).build()
