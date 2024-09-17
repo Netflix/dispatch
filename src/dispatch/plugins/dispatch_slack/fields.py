@@ -598,7 +598,7 @@ def case_type_select(
     action_id: str = DefaultActionIds.case_type_select,
     block_id: str = DefaultBlockIds.case_type_select,
     label: str = "Case Type",
-    initial_option: dict = None,
+    initial_option: dict | None = None,
     project_id: int = None,
     **kwargs,
 ):

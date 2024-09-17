@@ -5,14 +5,19 @@ from collections import defaultdict
 from datetime import datetime, date
 from schedule import every
 from sqlalchemy import func
+from sqlalchemy.orm import Session
 
+from dispatch.enums import Visibility
 from dispatch.conversation.enums import ConversationButtonActions
-from dispatch.database.core import SessionLocal, resolve_attr
+from dispatch.database.core import resolve_attr
 from dispatch.decorators import scheduled_project_task, timer
 from dispatch.messaging.strings import (
     INCIDENT,
     INCIDENT_DAILY_REPORT,
     INCIDENT_DAILY_REPORT_TITLE,
+    INCIDENT_WEEKLY_REPORT,
+    INCIDENT_WEEKLY_REPORT_TITLE,
+    INCIDENT_SUMMARY_TEMPLATE,
     MessageType,
 )
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
@@ -39,7 +44,7 @@ log = logging.getLogger(__name__)
 @scheduler.add(every(1).hours, name="incident-auto-tagger")
 @timer
 @scheduled_project_task
-def incident_auto_tagger(db_session: SessionLocal, project: Project):
+def incident_auto_tagger(db_session: Session, project: Project):
     """Attempts to take existing tags and associate them with incidents."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project.id, plugin_type="storage"
@@ -86,7 +91,7 @@ def incident_auto_tagger(db_session: SessionLocal, project: Project):
 @scheduler.add(every(1).day.at("18:00"), name="incident-report-daily")
 @timer
 @scheduled_project_task
-def incident_report_daily(db_session: SessionLocal, project: Project):
+def incident_report_daily(db_session: Session, project: Project):
     """Creates and sends incident daily reports based on notifications."""
 
     # don't send if set to false
@@ -209,7 +214,7 @@ def incident_report_daily(db_session: SessionLocal, project: Project):
 @scheduler.add(every(1).day.at("18:00"), name="incident-close-reminder")
 @timer
 @scheduled_project_task
-def incident_close_reminder(db_session: SessionLocal, project: Project):
+def incident_close_reminder(db_session: Session, project: Project):
     """Sends a reminder to the incident commander to close out their incident."""
     incidents = get_all_by_status(
         db_session=db_session, project_id=project.id, status=IncidentStatus.stable
@@ -222,3 +227,111 @@ def incident_close_reminder(db_session: SessionLocal, project: Project):
             # we only send the reminder for incidents that have been stable
             # longer than a week and only on Mondays
             send_incident_close_reminder(incident, db_session)
+
+
+@scheduler.add(every().monday.at("18:00"), name="incident-report-weekly")
+@timer
+@scheduled_project_task
+def incident_report_weekly(db_session: Session, project: Project):
+    """Creates and sends incident weekly reports based on notifications."""
+
+    # don't send if set to false or no notification id is set
+    if project.send_weekly_reports is False or not project.weekly_report_notification_id:
+        return
+
+    # don't send if no enabled ai plugin
+    ai_plugin = plugin_service.get_active_instance(
+        db_session=db_session, plugin_type="artificial-intelligence", project_id=project.id
+    )
+    if not ai_plugin:
+        log.warning("Incident weekly reports not sent. No AI plugin enabled.")
+        return
+
+    # we fetch all closed incidents in the last week
+    incidents = get_all_last_x_hours_by_status(
+        db_session=db_session,
+        project_id=project.id,
+        status=IncidentStatus.closed,
+        hours=24 * 7,
+    )
+
+    # no incidents closed in the last week
+    if not incidents:
+        return
+
+    storage_plugin = plugin_service.get_active_instance(
+        db_session=db_session, plugin_type="storage", project_id=project.id
+    )
+
+    if not storage_plugin:
+        log.warning(
+            f"Incident weekly reports not sent. No storage plugin enabled. Project: {project.name}."
+        )
+        return
+
+    # we create and send an incidents weekly report
+    for incident in incidents:
+        items_grouped = []
+        items_grouped_template = INCIDENT_SUMMARY_TEMPLATE
+
+        # Skip restricted incidents
+        if incident.visibility == Visibility.restricted:
+            continue
+        try:
+            pir_doc = storage_plugin.instance.get(
+                file_id=incident.incident_review_document.resource_id,
+                mime_type="text/plain",
+            )
+            messages = {
+                "role": "user",
+                "content": """Given the text of the security post-incident review document below,
+                provide answers to the following questions:
+                1. What is the summary of what happened?
+                2. What were the overall risk(s)?
+                3. How were the risk(s) mitigated?
+                4. How was the incident resolved?
+                5. What are the follow-up tasks?
+                """
+                + pir_doc,
+            }
+
+            response = ai_plugin.instance.chat(messages)
+            summary = response["choices"][0]["message"]["content"]
+
+            item = {
+                "commander_fullname": incident.commander.individual.name,
+                "commander_team": incident.commander.team,
+                "commander_weblink": incident.commander.individual.weblink,
+                "name": incident.name,
+                "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
+                "title": incident.title,
+                "summary": summary,
+            }
+
+            items_grouped.append(item)
+        except Exception as e:
+            log.exception(e)
+
+    notification_kwargs = {
+        "items_grouped": items_grouped,
+        "items_grouped_template": items_grouped_template,
+    }
+
+    notification_title_text = f"{project.name} {INCIDENT_WEEKLY_REPORT_TITLE}"
+    notification_params = {
+        "text": notification_title_text,
+        "type": MessageType.incident_weekly_report,
+        "template": INCIDENT_WEEKLY_REPORT,
+        "kwargs": notification_kwargs,
+    }
+
+    notification = notification_service.get(
+        db_session=db_session, notification_id=project.weekly_report_notification_id
+    )
+
+    notification_service.send(
+        db_session=db_session,
+        project_id=notification.project.id,
+        notification=notification,
+        notification_params=notification_params,
+    )
