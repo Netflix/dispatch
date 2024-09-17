@@ -1350,10 +1350,9 @@ def create_channel_button_click(
     case.dedicated_channel = True
     db_session.commit()
 
-    # update case message
     blocks = [
         Section(text="Migrate the thread conversation to a dedicated channel?"),
-        Context(elements=[MarkdownText(text="This will .... this thread")]),
+        Context(elements=[MarkdownText(text="This action will remove the case from this thread.")]),
     ]
 
     modal = Modal(
