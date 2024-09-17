@@ -889,11 +889,12 @@ def case_assign_role_flow(
 
 def case_create_conversation_flow(
     db_session: Session,
-    case_id: int,
+    case: Case,
+    participant_emails: list[str],
     conversation_target: str = None,
-    participant_emails: list[str] = [],
 ):
-    case = get(db_session=db_session, case_id=case_id)
+    """Runs the case conversation creation flow."""
+
     conversation_flows.create_case_conversation(case, conversation_target, db_session)
 
     event_service.log_case_event(
@@ -988,9 +989,9 @@ def case_create_resources_flow(
         # we create the conversation and add participants to the thread
         case_create_conversation_flow(
             db_session=db_session,
-            case_id=case_id,
-            conversation_target=conversation_target,
+            case=case,
             participant_emails=individual_participants,
+            conversation_target=conversation_target,
         )
 
         for user_email in set(individual_participants):

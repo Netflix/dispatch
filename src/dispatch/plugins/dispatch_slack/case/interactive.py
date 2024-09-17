@@ -1318,7 +1318,7 @@ def create_channel_button_click(
     # update case message
     blocks = [
         Section(text="Migrate the thread conversation to a dedicated channel?"),
-        Context(elements=[MarkdownText(text=f"This will .... this thread")]),
+        Context(elements=[MarkdownText(text="This will .... this thread")]),
     ]
 
     modal = Modal(
@@ -1401,9 +1401,9 @@ def handle_create_channel_event(
     # Add all case participants to the case channel
     case_flows.case_create_conversation_flow(
         db_session=db_session,
-        case_id=case.id,
-        conversation_target=None,
+        case=case,
         participant_emails=participant_emails,
+        conversation_target=None,
     )
 
     # This should update the original message?
