@@ -95,7 +95,6 @@
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 import { deslug } from "@/filters"
-import { VueToggles } from "vue-toggles"
 
 export default {
   name: "CaseResourcesTab",
