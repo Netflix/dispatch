@@ -10,12 +10,23 @@
     </v-list-item>
     <v-divider />
     <v-list-item v-if="conversation" :href="conversation.weblink" target="_blank" class="my-3">
-      <v-list-item-title>Conversation</v-list-item-title>
+      <v-list-item-title v-if="conversation.thread_id">Conversation Thread</v-list-item-title>
+      <v-list-item-title v-else>Conversation Channel</v-list-item-title>
       <v-list-item-subtitle>{{ conversation.description }}</v-list-item-subtitle>
 
       <template #append>
         <v-icon>mdi-open-in-new</v-icon>
       </template>
+    </v-list-item>
+    <v-list-item>
+      <v-btn
+        size="small"
+        color="green"
+        v-if="conversationPluginEnabled"
+        @click="createCaseChannel(selected)"
+      >
+        Create Case Channel
+      </v-btn>
     </v-list-item>
     <v-divider />
     <span v-for="group in groups" :key="group.resource_id">
@@ -84,6 +95,7 @@
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 import { deslug } from "@/filters"
+import { VueToggles } from "vue-toggles"
 
 export default {
   name: "CaseResourcesTab",
@@ -105,6 +117,7 @@ export default {
   computed: {
     ...mapFields("case_management", [
       "selected.conversation",
+      "selected.dedicated_channel",
       "selected.documents",
       "selected.groups",
       "selected.loading",
@@ -125,7 +138,11 @@ export default {
   },
 
   methods: {
-    ...mapActions("case_management", ["createAllResources", "getEnabledPlugins"]),
+    ...mapActions("case_management", [
+      "createAllResources",
+      "getEnabledPlugins",
+      "createCaseChannel",
+    ]),
   },
 }
 </script>

@@ -15,7 +15,7 @@ const getDefaultSelectedState = () => {
     case_priority: null,
     case_severity: null,
     case_type: null,
-    dedicated_channel: true,
+    dedicated_channel: false,
     closed_at: null,
     description: null,
     documents: [],
@@ -297,6 +297,38 @@ const actions = {
                   commit(
                     "notification_backend/addBeNotification",
                     { text: "Resources(s) created successfully.", type: "success" },
+                    { root: true }
+                  )
+                })
+              }
+            }, 5000)
+          })
+        })
+      })
+      .catch(() => {
+        commit("SET_SELECTED_LOADING", false)
+      })
+  },
+  createCaseChannel({ commit, dispatch }) {
+    state.selected.dedicated_channel = true
+    return CaseApi.createCaseChannel(state.selected.id)
+      .then(() => {
+        CaseApi.get(state.selected.id).then((response) => {
+          commit("SET_SELECTED", response.data)
+          dispatch("getEnabledPlugins").then((enabledPlugins) => {
+            // Poll the server for resource creation updates.
+            var interval = setInterval(function () {
+              if (
+                state.selected.conversation ^
+                enabledPlugins.includes("conversation") ^
+                !state.selected.conversation.thread_id
+              ) {
+                dispatch("get").then(() => {
+                  clearInterval(interval)
+                  commit("SET_SELECTED_LOADING", false)
+                  commit(
+                    "notification_backend/addBeNotification",
+                    { text: "Conversation channel created successfully.", type: "success" },
                     { root: true }
                   )
                 })
