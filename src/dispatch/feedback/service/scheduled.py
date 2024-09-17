@@ -1,5 +1,6 @@
 from schedule import every
 import logging
+import datetime
 
 from dispatch.database.core import SessionLocal
 from dispatch.decorators import scheduled_project_task, timer
@@ -89,18 +90,34 @@ def find_schedule_and_send(
         db_session=db_session, email=current_oncall["email"], project_id=project.id
     )
 
-    # Assume a one-week shift
-    HOURS_IN_SHIFT = 24 * 7
+    # Calculate the number of hours in the shift
+    if current_oncall["shift_start"]:
+        shift_start_raw = current_oncall["shift_start"]
+        shift_start_at = (
+            datetime.strptime(shift_start_raw, "%Y-%m-%dT%H:%M:%SZ")
+            if "T" in shift_start_raw
+            else datetime.strptime(shift_start_raw, "%Y-%m-%d %H:%M:%S")
+        )
+        shift_end_raw = current_oncall["shift_end"]
+        shift_end_at = (
+            datetime.strptime(shift_end_raw, "%Y-%m-%dT%H:%M:%SZ")
+            if "T" in shift_end_raw
+            else datetime.strptime(shift_end_raw, "%Y-%m-%d %H:%M:%S")
+        )
+        hours_in_shift = (shift_end_at - shift_start_at).total_seconds() / 3600
+    else:
+        hours_in_shift = 7 * 24  # default to 7 days
+
     num_incidents = 0
     num_cases = 0
     num_participants = 0
-    incidents = incident_service.get_all_last_x_hours(db_session=db_session, hours=HOURS_IN_SHIFT)
+    incidents = incident_service.get_all_last_x_hours(db_session=db_session, hours=hours_in_shift)
     for incident in incidents:
         if incident.commander.individual.email == current_oncall["email"]:
             num_participants += count_active_participants(incident.participants)
             num_incidents += 1
 
-    cases = case_service.get_all_last_x_hours(db_session=db_session, hours=HOURS_IN_SHIFT)
+    cases = case_service.get_all_last_x_hours(db_session=db_session, hours=hours_in_shift)
     for case in cases:
         if case.has_channel and case.assignee.individual.email == current_oncall["email"]:
             num_participants += count_active_participants(case.participants)
