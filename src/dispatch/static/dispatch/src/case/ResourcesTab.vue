@@ -18,7 +18,7 @@
         <v-icon>mdi-open-in-new</v-icon>
       </template>
     </v-list-item>
-    <v-list-item>
+    <v-list-item v-if="conversation && conversation.thread_id">
       <v-btn
         size="small"
         color="green"
