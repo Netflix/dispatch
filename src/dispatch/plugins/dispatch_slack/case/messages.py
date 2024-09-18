@@ -420,7 +420,7 @@ def create_case_thread_migration_message(channel_weblink: str) -> list[Block]:
     blocks = [
         Context(
             elements=[
-                f"Migrating Case conversation to a dedicated Case channel. All future updates and discussions will take place <{channel_weblink}|here>."
+                f"This conversation has been migrated to a dedicated Case channel. All future updates and discussions will take place <{channel_weblink}|here>."
             ]
         ),
         Divider(),
