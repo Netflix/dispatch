@@ -196,22 +196,17 @@ def create_case(
 )
 def create_case_channel(
     db_session: DbSession,
-    case_id: PrimaryKey,
     current_case: CurrentCase,
-    background_tasks: BackgroundTasks,
 ):
     """Creates conversation channel for an existing case."""
 
-    case = get(case_id=case_id, db_session=db_session)
-    case.dedicated_channel = True
-
-    participant_emails = [participant.individual.email for participant in current_case.participants]
+    current_case.dedicated_channel = True
 
     # Add all case participants to the case channel
     case_create_conversation_flow(
         db_session=db_session,
-        case=case,
-        participant_emails=participant_emails,
+        case=current_case,
+        participant_emails=current_case.participant_emails,
         conversation_target=None,
     )
 

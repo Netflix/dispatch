@@ -1293,16 +1293,10 @@ def handle_escalation_submission_event(
             thread_ts=case.conversation.thread_id if case.has_thread else None,
         )
 
-    # Retrieve all participants from the case
-    case_participants = case_service.get_participants(
-        db_session=db_session, case_id=case.id, minimal=True
-    )
-
     # Add all case participants to the incident
-    participant_emails = [participant.individual.email for participant in case_participants]
     conversation_flows.add_incident_participants_to_conversation(
         incident=incident,
-        participant_emails=participant_emails,
+        participant_emails=case.participant_emails,
         db_session=db_session,
     )
 
@@ -1430,13 +1424,11 @@ def handle_create_channel_event(
     channel_id = case.conversation.channel_id
     thread_id = case.conversation.thread_id
 
-    participant_emails = [participant.individual.email for participant in case.participants]
-
     # Add all case participants to the case channel
     case_flows.case_create_conversation_flow(
         db_session=db_session,
         case=case,
-        participant_emails=participant_emails,
+        participant_emails=case.participant_emails,
         conversation_target=None,
     )
 
