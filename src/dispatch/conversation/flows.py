@@ -100,7 +100,7 @@ def create_case_conversation(
         )
     elif case.conversation.thread_id and case.dedicated_channel:
         thread_conversation_channel_id = case.conversation.channel_id
-        thread_converstaion_thread_id = case.conversation.thread_id
+        thread_conversation_thread_id = case.conversation.thread_id
         thread_conversation_weblink = case.conversation.weblink
 
         conversation_in = ConversationUpdate(
@@ -121,6 +121,20 @@ def create_case_conversation(
             description=f"Case conversation has migrated from thread [{thread_conversation_weblink}] to channel[{case.conversation.weblink}].",
             case_id=case.id,
         )
+    try:
+        plugin.instance.update_thread(
+            case=case,
+            conversation_id=thread_conversation_channel_id,
+            ts=thread_conversation_thread_id,
+        )
+    except Exception as e:
+        event_service.log_subject_event(
+            subject=case,
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"Updating thread message failed. Reason: {e}",
+        )
+        log.exception(e)
 
     # Inform users in the case thread that the conversation has migrated to a channel
     try:
@@ -132,14 +146,14 @@ def create_case_conversation(
             blocks=messages.create_case_thread_migration_message(
                 channel_weblink=conversation.get("weblink")
             ),
-            ts=thread_converstaion_thread_id,
+            ts=thread_conversation_thread_id,
         )
     except Exception as e:
         event_service.log_subject_event(
             subject=case,
             db_session=db_session,
             source="Dispatch Core App",
-            description=f"Setting the incident/case conversation topic failed. Reason: {e}",
+            description=f"Failed to send message to original Case thread. Reason: {e}",
         )
         log.exception(e)
 
@@ -159,7 +173,7 @@ def create_case_conversation(
             subject=case,
             db_session=db_session,
             source="Dispatch Core App",
-            description=f"Failed to send message to dedicated channel. Reason: {e}",
+            description=f"Failed to send message to dedicated Case channel. Reason: {e}",
         )
         log.exception(e)
 
