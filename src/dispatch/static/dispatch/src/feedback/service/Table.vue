@@ -3,7 +3,7 @@
     <delete-dialog />
     <v-row no-gutters>
       <v-col>
-        <div class="text-h5">Feedback</div>
+        <div class="text-h5">Oncall Feedback</div>
       </v-col>
       <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
@@ -58,6 +58,13 @@
                 <span>{{ formatDate(item.created_at) }}</span>
               </v-tooltip>
             </template>
+            <template #item.details="{ item }">
+              <span v-if="item.details">
+                Incidents: {{ item.details[0].num_incidents }}<br />
+                Cases: {{ item.details[0].num_cases }}<br />
+                Participants: {{ item.details[0].num_participants }}<br />
+              </span>
+            </template>
             <template #item.project.name="{ item }">
               <v-chip size="small" :color="item.project.color">
                 {{ item.project.name }}
@@ -111,6 +118,7 @@ export default {
         { title: "Off-Shift Hours", value: "hours", sortable: true },
         { title: "Rating", value: "rating", sortable: true },
         { title: "Feedback", value: "feedback", sortable: true },
+        { title: "Details", value: "details", sortable: true },
         { title: "Project", value: "project.name", sortable: false },
         { title: "Created At", value: "created_at", sortable: true },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
