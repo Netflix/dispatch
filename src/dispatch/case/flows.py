@@ -812,13 +812,14 @@ def case_to_incident_escalate_flow(
     )
 
     title = title if title else case.title
+
     description = (
         f"{incident_description if incident_description else case.description}\n\n"
         f"This incident was the result of escalating case {case.name} "
         f"in the {case.project.name} project. Check out the case in the Dispatch Web UI for additional context."
     )
 
-    incident_priority = case.case_priority if not incident_priority else incident_priority
+    incident_priority = incident_priority if incident_priority else case.case_priority
 
     incident_in = IncidentCreate(
         title=title,
