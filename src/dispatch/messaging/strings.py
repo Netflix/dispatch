@@ -1051,7 +1051,7 @@ INCIDENT_TASK_ADD_TO_INCIDENT = [
 ONCALL_SHIFT_FEEDBACK_BUTTONS = [
     {
         "button_text": "Provide Feedback",
-        "button_value": "{{organization_slug}}|{{project_id}}|{{oncall_schedule_id}}|{{shift_end_at}}|{{reminder_id}}",
+        "button_value": "{{organization_slug}}|{{project_id}}|{{oncall_schedule_id}}|{{shift_end_at}}|{{reminder_id}}|{{details}}",
         "button_action": ConversationButtonActions.service_feedback,
     }
 ]
