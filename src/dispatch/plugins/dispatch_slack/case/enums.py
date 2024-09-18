@@ -33,6 +33,8 @@ class CaseEscalateActions(DispatchEnum):
 class CaseReportActions(DispatchEnum):
     submit = "case-report-submit"
     project_select = "case-report-project-select"
+    case_type_select = "ccase-report-case-type-select"
+    assignee_select = "case-report-assignee-select"
 
 
 class CaseShortcutCallbacks(DispatchEnum):

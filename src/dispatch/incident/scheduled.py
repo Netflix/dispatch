@@ -4,7 +4,8 @@ from collections import defaultdict
 
 from datetime import datetime, date
 from schedule import every
-from sqlalchemy import func, Session
+from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 from dispatch.enums import Visibility
 from dispatch.conversation.enums import ConversationButtonActions
