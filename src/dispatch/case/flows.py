@@ -443,8 +443,9 @@ def case_escalated_status_flow(
     case: Case,
     organization_slug: OrganizationSlug,
     db_session: Session,
-    incident_priority: IncidentType | None,
-    incident_type: IncidentPriority | None,
+    title: str | None,
+    incident_priority: IncidentPriority | None,
+    incident_type: IncidentType | None,
     incident_description: str | None,
 ):
     """Runs the case escalated transition flow."""
@@ -457,6 +458,7 @@ def case_escalated_status_flow(
         case=case,
         organization_slug=organization_slug,
         db_session=db_session,
+        title=title,
         incident_priority=incident_priority,
         incident_type=incident_type,
         incident_description=incident_description,
@@ -792,6 +794,7 @@ def case_to_incident_escalate_flow(
     case: Case,
     organization_slug: OrganizationSlug,
     db_session: Session,
+    title: str | None,
     incident_priority: IncidentPriority | None,
     incident_type: IncidentType,
     incident_description: str | None,
@@ -808,16 +811,18 @@ def case_to_incident_escalate_flow(
         )
     )
 
+    title = title if title else case.title
+
     description = (
         f"{incident_description if incident_description else case.description}\n\n"
         f"This incident was the result of escalating case {case.name} "
         f"in the {case.project.name} project. Check out the case in the Dispatch Web UI for additional context."
     )
 
-    incident_priority = case.case_priority if not incident_priority else incident_priority
+    incident_priority = incident_priority if incident_priority else case.case_priority
 
     incident_in = IncidentCreate(
-        title=case.title,
+        title=title,
         description=description,
         status=IncidentStatus.active,
         incident_type=incident_type,

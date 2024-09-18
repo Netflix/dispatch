@@ -1268,11 +1268,12 @@ def handle_escalation_submission_event(
             name=form_data[DefaultBlockIds.incident_priority_select]["name"],
         )
     incident_description = form_data.get(DefaultBlockIds.description_input, case.description)
-
+    title = form_data.get(DefaultBlockIds.title_input, case.title)
     case_flows.case_escalated_status_flow(
         case=case,
         organization_slug=context["subject"].organization_slug,
         db_session=db_session,
+        title=title,
         incident_priority=incident_priority,
         incident_type=incident_type,
         incident_description=incident_description,
