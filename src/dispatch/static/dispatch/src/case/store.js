@@ -15,7 +15,7 @@ const getDefaultSelectedState = () => {
     case_priority: null,
     case_severity: null,
     case_type: null,
-    dedicated_channel: false,
+    dedicated_channel: true,
     closed_at: null,
     description: null,
     documents: [],
