@@ -12,10 +12,7 @@ from dispatch.plugins.base import Plugin
 class ArtificialIntelligencePlugin(Plugin):
     type = "artificial-intelligence"
 
-    def chat(self, items, **kwargs):
-        raise NotImplementedError
-
-    def completion(self, items, **kwargs):
+    def chat_completion(self, items, **kwargs):
         raise NotImplementedError
 
     def list_models(self, items, **kwargs):
