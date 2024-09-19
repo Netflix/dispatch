@@ -891,8 +891,8 @@ def case_create_conversation_flow(
     db_session: Session,
     case: Case,
     participant_emails: list[str],
-    conversation_target: str = None,
-):
+    conversation_target: str | None = None,
+) -> None:
     """Runs the case conversation creation flow."""
 
     conversation_flows.create_case_conversation(case, conversation_target, db_session)
