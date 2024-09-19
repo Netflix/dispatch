@@ -160,10 +160,12 @@ def get_oncall_at_time(client: APISession, schedule_id: str, utctime: str) -> Op
         user = get_user(client, user_id)
         user_email = user["email"]
         shift_end = oncalls[0]["end"]
+        shift_start = oncalls[0]["start"]
         schedule_name = oncalls[0]["schedule"]["summary"]
         return {
             "email": user_email,
             "shift_end": shift_end,
+            "shift_start": shift_start,
             "schedule_name": schedule_name,
         }
 
@@ -195,6 +197,16 @@ def oncall_shift_check(client: APISession, schedule_id: str, hour: int) -> Optio
     next_oncall = get_oncall_at_time(client=client, schedule_id=schedule_id, utctime=next_shift)
 
     if previous_oncall["email"] != next_oncall["email"]:
+        # find the beginning of previous_oncall's shift by going back in time in 24 hour increments
+        hours = 18
+        prior_oncall = previous_oncall
+        while prior_oncall["email"] == previous_oncall["email"]:
+            hours += 24
+            previous_shift = (now - timedelta(hours=hours)).isoformat(timespec="minutes") + "Z"
+            prior_oncall = get_oncall_at_time(
+                client=client, schedule_id=schedule_id, utctime=previous_shift
+            )
+        previous_oncall["shift_start"] = prior_oncall["shift_start"]
         return previous_oncall
 
 

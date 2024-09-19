@@ -1,5 +1,6 @@
 from schedule import every
 import logging
+import datetime
 
 from dispatch.database.core import SessionLocal
 from dispatch.decorators import scheduled_project_task, timer
@@ -10,6 +11,8 @@ from dispatch.project.models import Project
 from dispatch.scheduler import scheduler
 from dispatch.service import service as service_service
 from .reminder import service as reminder_service
+from dispatch.incident import service as incident_service
+from dispatch.case import service as case_service
 
 from .messaging import send_oncall_shift_feedback_message
 
@@ -56,6 +59,7 @@ def find_expired_reminders_and_send(*, db_session: SessionLocal, project: Projec
             schedule_name=reminder.schedule_name,
             reminder=reminder,
             db_session=db_session,
+            details=reminder.details,
         )
 
 
@@ -72,6 +76,11 @@ def find_schedule_and_send(
     send the health metrics feedback request - note that if current and previous oncall is the
     same, then did_oncall_just_go_off_shift will return None
     """
+
+    # Counts the number of participants with one or more active roles
+    def count_active_participants(participants):
+        return sum(1 for participant in participants if len(participant.active_roles) >= 1)
+
     current_oncall = oncall_plugin.instance.did_oncall_just_go_off_shift(schedule_id, hour)
 
     if current_oncall is None:
@@ -81,12 +90,53 @@ def find_schedule_and_send(
         db_session=db_session, email=current_oncall["email"], project_id=project.id
     )
 
+    # Calculate the number of hours in the shift
+    if current_oncall["shift_start"]:
+        shift_start_raw = current_oncall["shift_start"]
+        shift_start_at = (
+            datetime.strptime(shift_start_raw, "%Y-%m-%dT%H:%M:%SZ")
+            if "T" in shift_start_raw
+            else datetime.strptime(shift_start_raw, "%Y-%m-%d %H:%M:%S")
+        )
+        shift_end_raw = current_oncall["shift_end"]
+        shift_end_at = (
+            datetime.strptime(shift_end_raw, "%Y-%m-%dT%H:%M:%SZ")
+            if "T" in shift_end_raw
+            else datetime.strptime(shift_end_raw, "%Y-%m-%d %H:%M:%S")
+        )
+        hours_in_shift = (shift_end_at - shift_start_at).total_seconds() / 3600
+    else:
+        hours_in_shift = 7 * 24  # default to 7 days
+
+    num_incidents = 0
+    num_cases = 0
+    num_participants = 0
+    incidents = incident_service.get_all_last_x_hours(db_session=db_session, hours=hours_in_shift)
+    for incident in incidents:
+        if incident.commander.individual.email == current_oncall["email"]:
+            num_participants += count_active_participants(incident.participants)
+            num_incidents += 1
+
+    cases = case_service.get_all_last_x_hours(db_session=db_session, hours=hours_in_shift)
+    for case in cases:
+        if case.has_channel and case.assignee.individual.email == current_oncall["email"]:
+            num_participants += count_active_participants(case.participants)
+            num_cases += 1
+    details = [
+        {
+            "num_incidents": num_incidents,
+            "num_cases": num_cases,
+            "num_participants": num_participants,
+        }
+    ]
+
     send_oncall_shift_feedback_message(
         project=project,
         individual=individual,
         schedule_id=schedule_id,
         shift_end_at=current_oncall["shift_end"],
         schedule_name=current_oncall["schedule_name"],
+        details=details,
         db_session=db_session,
     )
 

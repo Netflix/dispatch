@@ -470,7 +470,7 @@ def handle_list_participants_command(
 
     participants = participant_service.get_all_by_incident_id(
         db_session=db_session, incident_id=context["subject"].id
-    ).all()
+    )
 
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
@@ -771,7 +771,7 @@ def handle_participant_role_activity(
 
             # re-assign role once threshold is reached
             if participant_role.role == ParticipantRoleType.observer:
-                if participant_role.activity >= 10:  # ten messages sent to the incident channel
+                if participant_role.activity >= 3:  # three messages sent to the incident channel
                     # we change the participant's role to the participant one
                     participant_role_service.renounce_role(
                         db_session=db_session, participant_role=participant_role

@@ -125,6 +125,14 @@ def get_all_by_status(*, db_session, status: str, project_id: int) -> List[Optio
     )
 
 
+def get_all_last_x_hours(*, db_session, hours: int) -> List[Optional[Incident]]:
+    """Returns all incidents in the last x hours."""
+    now = datetime.utcnow()
+    return (
+        db_session.query(Incident).filter(Incident.created_at >= now - timedelta(hours=hours)).all()
+    )
+
+
 def get_all_last_x_hours_by_status(
     *, db_session, status: str, hours: int, project_id: int
 ) -> List[Optional[Incident]]:

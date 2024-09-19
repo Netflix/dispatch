@@ -96,6 +96,49 @@
             </v-tooltip>
           </v-col>
         </v-row>
+        <v-row align="start" no-gutters>
+          <v-col class="d-flex justify-start" cols="4">
+            <v-checkbox
+              class="ml-10 mr-5"
+              v-model="weeklyReports"
+              @update:model-value="updateWeeklyReports"
+              :disabled="weeklyReports == null"
+            >
+              <template #label>
+                <div>
+                  <div>Send Weekly Incident Summary</div>
+                  <small class="text-subtext">
+                    (requires enabled artificial-intelligence plugin)
+                  </small>
+                </div>
+              </template>
+            </v-checkbox>
+            <v-tooltip max-width="500px" open-delay="50" location="bottom">
+              <template #activator="{ props }">
+                <v-icon v-bind="props"> mdi-information </v-icon>
+              </template>
+              <span>
+                If activated, Dispatch will send a weekly summary report of incidents that were
+                marked as closed in the last week.
+              </span>
+            </v-tooltip>
+          </v-col>
+          <v-col cols="5">
+            <v-select
+              :disabled="!weeklyReports"
+              v-model="weeklyReportNotificationId"
+              :items="items"
+              item-title="name"
+              item-value="id"
+              @update:model-value="updateWeeklyReportNotificationId"
+              :menu-props="{ maxHeight: '400' }"
+              label="Target notification channel"
+              clearable
+              chips
+              hint="Set the notification channel for the weekly report."
+            />
+          </v-col>
+        </v-row>
       </v-col>
     </v-row>
   </v-container>
@@ -151,6 +194,8 @@ export default {
       "table.rows.items",
       "table.rows.total",
       "dailyReports",
+      "weeklyReports",
+      "weeklyReportNotificationId",
     ]),
   },
 
@@ -177,7 +222,14 @@ export default {
   },
 
   methods: {
-    ...mapActions("notification", ["getAll", "createEditShow", "removeShow", "updateDailyReports"]),
+    ...mapActions("notification", [
+      "getAll",
+      "createEditShow",
+      "removeShow",
+      "updateDailyReports",
+      "updateWeeklyReports",
+      "updateWeeklyReportNotificationId",
+    ]),
   },
 }
 </script>
