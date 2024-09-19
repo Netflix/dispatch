@@ -56,6 +56,7 @@ def incident_auto_tagger(db_session: Session, project: Project):
         )
         return
 
+    # test
     tags = tag_service.get_all(db_session=db_session, project_id=project.id).all()
     tag_strings = [t.name.lower() for t in tags if t.discoverable]
     phrases = build_term_vocab(tag_strings)
