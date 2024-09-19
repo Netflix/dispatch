@@ -1381,10 +1381,7 @@ def ack_handle_create_channel_event(ack: Ack, case: Case) -> None:
     CaseMigrateActions.submit,
     middleware=[
         action_context_middleware,
-        # user_middleware,
-        # button_context_middleware,
         db_middleware,
-        # modal_submit_middleware,
     ],
 )
 def handle_create_channel_event(
