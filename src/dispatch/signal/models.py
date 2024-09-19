@@ -321,6 +321,10 @@ class SignalBase(DispatchBase):
     source: Optional[SourceBase]
     variant: Optional[str]
     lifecycle: Optional[str]
+    runbook: Optional[str]
+    genai_enabled: Optional[bool] = True
+    genai_model: Optional[str]
+    genai_system_message: Optional[str]
 
 
 class SignalCreate(SignalBase):
