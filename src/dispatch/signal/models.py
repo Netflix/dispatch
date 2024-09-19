@@ -130,6 +130,7 @@ class SignalFilterAction(DispatchEnum):
 
 
 class Signal(Base, TimeStampMixin, ProjectMixin):
+    """Class that represents a detection and its properties."""
     id = Column(Integer, primary_key=True)
     name = Column(String)
     owner = Column(String)
@@ -149,6 +150,12 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     conversation_target = Column(String)
     default = Column(Boolean, default=False)
     lifecycle = Column(String)
+    runbook = Column(String)
+
+    # GenAI specific fields
+    genai_enabled = Column(Boolean, default=True)
+    genai_model = Column(String)
+    genai_system_message = Column(String)
 
     oncall_service_id = Column(Integer, ForeignKey("service.id"))
     oncall_service = relationship("Service", foreign_keys=[oncall_service_id])
@@ -219,6 +226,7 @@ class SignalFilter(Base, ProjectMixin, EvergreenMixin, TimeStampMixin):
 
 
 class SignalInstance(Base, TimeStampMixin, ProjectMixin):
+    """Class that represents a detection alert and its properties."""
     id = Column(UUID(as_uuid=True), primary_key=True, default=lambda: str(uuid.uuid4()))
     case = relationship("Case", backref="signal_instances")
     case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"))
