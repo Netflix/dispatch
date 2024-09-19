@@ -8,7 +8,7 @@ class OpenAIConfiguration(BaseConfigurationModel):
 
     api_key: SecretStr = Field(title="API Key", description="Your secret OpenAI API key.")
     model: str = Field(
-        "gpt-3.5-turbo",
+        "gpt-4o",
         title="Model",
         description="Available models can be found at https://platform.openai.com/docs/models",
     )
