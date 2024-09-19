@@ -111,6 +111,18 @@
                   />
                 </v-col>
                 <v-col cols="12">
+                  <v-textarea
+                    v-model="runbook"
+                    label="Runbook"
+                    rows="1"
+                    auto-grow
+                    hint="The runbook for this detection."
+                    persistent-hint
+                    clearable
+                    name="Runbook"
+                  />
+                </v-col>
+                <v-col cols="12">
                   <v-text-field
                     v-model="external_url"
                     label="External URL"
@@ -354,6 +366,7 @@ export default {
   computed: {
     ...mapFields("signal", [
       "dialogs.showCreateEdit",
+      "select.runbook",
       "selected",
       "selected.case_priority",
       "selected.case_type",

@@ -28,6 +28,7 @@ const getDefaultSelectedState = () => {
     oncall_service: null,
     owner: null,
     project: null,
+    runbook: null,
     signal_definition: null,
     source: null,
     tags: [],
