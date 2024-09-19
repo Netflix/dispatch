@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Marc Vilanova <mvilanova@netflix.com>
 """
+
 from dispatch.plugins.base import Plugin
 
 
@@ -17,5 +18,5 @@ class ArtificialIntelligencePlugin(Plugin):
     def completion(self, items, **kwargs):
         raise NotImplementedError
 
-    def summarization(self, items, **kwargs):
+    def list_models(self, items, **kwargs):
         raise NotImplementedError
