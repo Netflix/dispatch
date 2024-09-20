@@ -265,8 +265,8 @@
                     auto-grow
                     hint="The prompt to use for the assistant."
                     persistent-hint
-                    clearable
                     name="Prompt"
+                    readonly
                   />
                 </v-col>
               </v-row>
