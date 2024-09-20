@@ -95,7 +95,13 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
         channel_id=channel_id,
     ).json()
 
-    if case.status == CaseStatus.escalated:
+    if case.has_channel:
+        action_buttons = [
+            Button(text="Case Channel", style="primary", url=case.conversation.weblink)
+        ]
+        blocks.extend([Actions(elements=action_buttons)])
+
+    elif case.status == CaseStatus.escalated:
         blocks.extend(
             [
                 Actions(
@@ -135,6 +141,12 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
             Button(
                 text="Resolve",
                 action_id=CaseNotificationActions.resolve,
+                style="primary",
+                value=button_metadata,
+            ),
+            Button(
+                text="Create Channel",
+                action_id=CaseNotificationActions.migrate,
                 style="primary",
                 value=button_metadata,
             ),
@@ -401,4 +413,30 @@ def create_welcome_ephemeral_message_to_participant(case: Case) -> list[Block]:
             text=f"*Reporter - {case.reporter.individual.name}*",
         ),
     ]
+    return Message(blocks=blocks).build()["blocks"]
+
+
+def create_case_thread_migration_message(channel_weblink: str) -> list[Block]:
+    blocks = [
+        Context(
+            elements=[
+                f"This conversation has been migrated to a dedicated Case channel. All future updates and discussions will take place <{channel_weblink}|here>."
+            ]
+        ),
+        Divider(),
+    ]
+
+    return Message(blocks=blocks).build()["blocks"]
+
+
+def create_case_channel_migration_message(thread_weblink: str) -> list[Block]:
+    blocks = [
+        Context(
+            elements=[
+                f"Migrated Case conversation from the <{thread_weblink}|original Case thread>."
+            ]
+        ),
+        Divider(),
+    ]
+
     return Message(blocks=blocks).build()["blocks"]

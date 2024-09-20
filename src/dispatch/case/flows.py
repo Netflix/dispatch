@@ -892,6 +892,41 @@ def case_assign_role_flow(
         conversation_flows.set_conversation_topic(case, db_session)
 
 
+def case_create_conversation_flow(
+    db_session: Session,
+    case: Case,
+    participant_emails: list[str],
+    conversation_target: str | None = None,
+) -> None:
+    """Runs the case conversation creation flow."""
+
+    conversation_flows.create_case_conversation(case, conversation_target, db_session)
+
+    event_service.log_case_event(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description="Conversation added to case",
+        case_id=case.id,
+    )
+
+    for email in participant_emails:
+        # we don't rely on on this flow to add folks to the conversation because in this case
+        # we want to do it in bulk
+        case_add_or_reactivate_participant_flow(
+            db_session=db_session,
+            user_email=email,
+            case_id=case.id,
+            add_to_conversation=False,
+        )
+
+    # we add the participant to the conversation
+    conversation_flows.add_case_participants(
+        case=case,
+        participant_emails=participant_emails,
+        db_session=db_session,
+    )
+
+
 def case_create_resources_flow(
     db_session: Session,
     case_id: int,
@@ -953,32 +988,15 @@ def case_create_resources_flow(
         )
 
     try:
-        # we create the conversation and add participants to the thread
-        conversation_flows.create_case_conversation(case, conversation_target, db_session)
-
-        event_service.log_case_event(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description="Conversation added to case",
-            case_id=case.id,
-        )
         # wait until all resources are created before adding suggested participants
         individual_participants = [x.email for x, _ in individual_participants]
 
-        for email in individual_participants:
-            # we don't rely on on this flow to add folks to the conversation because in this case
-            # we want to do it in bulk
-            case_add_or_reactivate_participant_flow(
-                db_session=db_session,
-                user_email=email,
-                case_id=case.id,
-                add_to_conversation=False,
-            )
-        # # we add the participant to the conversation
-        conversation_flows.add_case_participants(
+        # we create the conversation and add participants to the thread
+        case_create_conversation_flow(
+            db_session=db_session,
             case=case,
             participant_emails=individual_participants,
-            db_session=db_session,
+            conversation_target=conversation_target,
         )
 
         for user_email in set(individual_participants):
