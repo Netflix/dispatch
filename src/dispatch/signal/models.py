@@ -156,6 +156,7 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     genai_enabled = Column(Boolean, default=True)
     genai_model = Column(String)
     genai_system_message = Column(String)
+    genai_prompt = Column(String)
 
     oncall_service_id = Column(Integer, ForeignKey("service.id"))
     oncall_service = relationship("Service", foreign_keys=[oncall_service_id])
@@ -325,6 +326,7 @@ class SignalBase(DispatchBase):
     genai_enabled: Optional[bool] = True
     genai_model: Optional[str]
     genai_system_message: Optional[str]
+    genai_prompt: Optional[str]
 
 
 class SignalCreate(SignalBase):
