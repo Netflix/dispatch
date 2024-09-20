@@ -246,13 +246,27 @@
                   />
                 </v-col>
                 <v-col cols="12">
-                  <v-text-field
+                  <v-textarea
                     v-model="genai_system_message"
                     label="System Message"
+                    rows="1"
+                    auto-grow
                     hint="The system message to set the behavior of the assistant"
                     persistent-hint
                     name="systemMessage"
                     readonly
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-textarea
+                    v-model="genai_prompt"
+                    label="Prompt"
+                    rows="1"
+                    auto-grow
+                    hint="The prompt to use for the assistant."
+                    persistent-hint
+                    clearable
+                    name="Prompt"
                   />
                 </v-col>
               </v-row>
@@ -381,6 +395,7 @@ export default {
       "selected.filters",
       "selected.genai_enabled",
       "selected.genai_model",
+      "selected.genai_prompt",
       "selected.genai_system_message",
       "selected.id",
       "selected.lifecycle",

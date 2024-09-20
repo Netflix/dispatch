@@ -20,6 +20,7 @@ const getDefaultSelectedState = () => {
     filters: [],
     genai_enabled: false,
     genai_model: null,
+    genai_prompt: null,
     genai_system_message: null,
     id: null,
     lifecycle: null,
