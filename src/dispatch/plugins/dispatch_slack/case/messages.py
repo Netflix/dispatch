@@ -13,7 +13,6 @@ from blockkit import (
 from blockkit.surfaces import Block
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
-from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from dispatch.case.enums import CaseStatus
@@ -39,7 +38,6 @@ from dispatch.plugins.dispatch_slack.models import (
 from dispatch.signal import service as signal_service
 from dispatch.signal.enums import SignalEngagementStatus
 from dispatch.signal.models import (
-    Signal,
     SignalEngagement,
     SignalInstance,
     assoc_signal_instance_entities,
@@ -193,16 +191,9 @@ class EntityGroup(NamedTuple):
 def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -> list[Message]:
     """Creates the signal instance message."""
 
-    signal_instances_query = (
-        db_session.query(SignalInstance, Signal)
-        .join(Signal)
-        .with_entities(SignalInstance.id, Signal)
-        .filter(SignalInstance.case_id == case_id)
-        .order_by(SignalInstance.created_at)
-    )
-
-    (first_instance_id, first_instance_signal) = signal_instances_query.first()
-    num_of_instances = signal_instances_query.count()
+    instances = signal_service.get_instances_in_case(db_session=db_session, case_id=case_id)
+    (first_instance_id, first_instance_signal) = instances.first()
+    num_of_instances = instances.count()
 
     organization_slug = first_instance_signal.project.organization.slug
     project_id = first_instance_signal.project.id
@@ -314,26 +305,12 @@ def create_genai_signal_summary(
     """Creates enhanced signal messages with historical context."""
     signal_metadata_blocks: list[Block] = []
 
-    signal_instances_query = (
-        db_session.query(SignalInstance, Signal)
-        .join(Signal)
-        .with_entities(SignalInstance.id, Signal)
-        .filter(SignalInstance.case_id == case.id)
-        .order_by(SignalInstance.created_at)
-    )
+    instances = signal_service.get_instances_in_case(db_session=db_session, case_id=case.id)
+    (first_instance_id, first_instance_signal) = instances.first()
 
-    (first_instance_id, first_instance_signal) = signal_instances_query.first()
-
-    # Fetch up to 10 recent related cases
-    related_cases = (
-        db_session.query(Case)
-        .join(SignalInstance)
-        .filter(SignalInstance.signal_id == first_instance_signal.id)
-        .filter(Case.id != case.id)  # Exclude the current case
-        .order_by(desc(Case.created_at))
-        .limit(10)
-        .all()
-    )
+    related_cases = signal_service.get_cases_for_signal(
+        db_session=db_session, signal_id=first_instance_signal.id
+    ).filter(Case.id != case.id)
 
     # Prepare historical context
     historical_context = []
@@ -372,29 +349,7 @@ def create_genai_signal_summary(
         return signal_metadata_blocks
 
     response = genai_plugin.instance.chat_completion(
-        prompt=f"""
-        You are an expert security analyst tasked with evaluating a potential security incident. Your goal is to provide a concise summary and determine if this is a true positive or benign event. It's crucial to maintain a balanced perspective and avoid assuming every alert is a true positive. Follow these steps:
-
-        1. Carefully analyze the current event details provided.
-        2. Review the historical context of similar cases, noting both confirmations and false alarms.
-        3. Consider the information in the runbook specific to this type of alert, including known false positive scenarios.
-
-        Then, provide your analysis in the following format:
-
-        Summary:
-        [Provide a 4-5 sentence summary of the security event. Use precise, factual language. Focus on the most relevant details from the current event and how they relate to historical cases.]
-
-        Historical Summary:
-        [Provide a concise 2-3 sentence summary of the historical cases for this signal. Use the case resolution details, case resolution, and slack messages as data points in your summary.]
-
-        Remember:
-        - Maintain a skeptical and balanced perspective. Not every alert is a true positive.
-        - Stick strictly to the facts presented in the data.
-        - Do not make assumptions beyond what is explicitly stated.
-        - Consider both the similarities and differences between the current event and historical cases.
-        - Be cautious about definitive statements; acknowledge uncertainty where appropriate.
-        - Your determination should heavily weigh the technical details provided in the runbook, including known false positive scenarios.
-        - If there's significant uncertainty, it's acceptable to recommend further investigation rather than making a definitive determination.
+        prompt=f"""{first_instance_signal.prompt}
 
         Current Event:
         {str(signal_instance.raw)}
