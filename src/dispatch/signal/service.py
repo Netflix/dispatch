@@ -775,5 +775,4 @@ def get_cases_for_signal(db_session: Session, signal_id: int, limit: int = 10) -
         .filter(SignalInstance.signal_id == signal_id)
         .order_by(desc(Case.created_at))
         .limit(limit)
-        .all()
     )
