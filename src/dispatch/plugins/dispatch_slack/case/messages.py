@@ -1,5 +1,3 @@
-
-```python
 import logging
 from collections import defaultdict
 from typing import NamedTuple
