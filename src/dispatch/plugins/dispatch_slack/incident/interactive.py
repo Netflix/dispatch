@@ -77,6 +77,8 @@ from dispatch.plugins.dispatch_slack.incident.enums import (
     AddTimelineEventActions,
     AssignRoleActions,
     AssignRoleBlockIds,
+    CreateTaskActionIds,
+    CreateTaskBlockIds,
     EngageOncallActionIds,
     EngageOncallActions,
     EngageOncallBlockIds,
@@ -134,7 +136,7 @@ from dispatch.service import service as service_service
 from dispatch.tag import service as tag_service
 from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
-from dispatch.task.models import Task
+from dispatch.task.models import Task, TaskCreate
 from dispatch.ticket import flows as ticket_flows
 from dispatch.messaging.strings import reminder_select_values
 from dispatch.plugins.dispatch_slack.messaging import build_unexpected_error_message
@@ -217,6 +219,7 @@ def configure(config):
     app.command(config.slack_command_add_timeline_event, middleware=middleware)(
         handle_add_timeline_event_command
     )
+    app.command(config.slack_command_create_task, middleware=middleware)(handle_create_task_command)
 
     app.event(
         event="reaction_added",
@@ -1512,6 +1515,108 @@ def handle_assign_role_submission_event(
         title="Assign Role",
         message="Role assigned successfully.",
     )
+
+
+def handle_create_task_command(
+    ack: Ack,
+    body,
+    dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+) -> None:
+    """Displays a modal for task creation."""
+    ack()
+    if context["subject"].type == CaseSubjects.case:
+        raise CommandError("Command is not currently available for cases.")
+
+    participants = participant_service.get_all_by_incident_id(
+        db_session=db_session, incident_id=context["subject"].id
+    )
+
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+
+    contact_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="contact"
+    )
+    if not contact_plugin:
+        raise CommandError(
+            "Contact plugin is not enabled. Unable to list participants.",
+        )
+
+    active_participants = [p for p in participants if p.active_roles]
+    participant_list = []
+
+    for participant in active_participants:
+        participant_email = participant.individual.email
+        participant_info = contact_plugin.instance.get(participant_email, db_session=db_session)
+        participant_name = participant_info.get("fullname", participant.individual.email)
+        participant_list.append({"text": participant_name, "value": participant_email})
+
+    blocks = [
+        static_select_block(
+            label="Participant",
+            block_id=CreateTaskBlockIds.participant_select,
+            placeholder="Select Participant",
+            options=participant_list,
+        ),
+        Input(
+            label="Task Description",
+            element=PlainTextInput(
+                placeholder="Task description", initial_value="description", multiline=True
+            ),
+            block_id=CreateTaskBlockIds.description,
+        ),
+    ]
+
+    modal = Modal(
+        title="Create Task",
+        blocks=blocks,
+        submit="Create",
+        close="Close",
+        callback_id=CreateTaskActionIds.submit,
+        private_metadata=context["subject"].json(),
+    ).build()
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
+
+
+def ack_create_task_submission_event(ack: Ack) -> None:
+    """Handles task creation acknowledgment."""
+    modal = Modal(
+        title="Create Task", close="Close", blocks=[Section(text="Creating task...")]
+    ).build()
+    ack(response_action="update", view=modal)
+
+
+@app.view(
+    CreateTaskActionIds.submit,
+    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
+)
+def handle_create_task_submission_event(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+    form_data: dict,
+    user: DispatchUser,
+) -> None:
+    """Handles the create task submission."""
+    ack()
+
+    participant_email = form_data.get(CreateTaskBlockIds.participant_select).get("value", "")
+    owner = participant_service.get_by_incident_id_and_email(
+        db_session=db_session, incident_id=context["subject"].id, email=participant_email
+    )
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+
+    task_in = TaskCreate(
+        assignees=[ParticipantUpdate.from_orm(owner)],
+        creator={"individual": {"email": user.email}},
+        description=form_data.get(CreateTaskBlockIds.description, ""),
+        incident=IncidentRead.from_orm(incident),
+    )
+    task_service.create(db_session=db_session, task_in=task_in)
 
 
 def handle_engage_oncall_command(
