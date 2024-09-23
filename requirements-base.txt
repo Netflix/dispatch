@@ -254,7 +254,7 @@ packaging==23.2
     #   statsmodels
     #   thinc
     #   weasel
-pandas==2.2.2
+pandas==2.2.3
     # via
     #   -r requirements-base.in
     #   statsmodels
