@@ -2,12 +2,13 @@ import json
 import logging
 import uuid
 from datetime import datetime, timedelta, timezone
-from typing import Any, Optional, Union
+from typing import Optional, Union
 
 from fastapi import HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy import asc, desc, or_
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.query import Query
 from sqlalchemy.sql.expression import true
 
 from dispatch.auth.models import DispatchUser
@@ -757,7 +758,7 @@ def get_unprocessed_signal_instance_ids(session: Session) -> list[int]:
     )
 
 
-def get_instances_in_case(db_session: Session, case_id: int) -> Any:
+def get_instances_in_case(db_session: Session, case_id: int) -> Query:
     return (
         db_session.query(SignalInstance, Signal)
         .join(Signal)
@@ -767,7 +768,7 @@ def get_instances_in_case(db_session: Session, case_id: int) -> Any:
     )
 
 
-def get_cases_for_signal(db_session: Session, signal_id: int, limit: int = 10) -> Any:
+def get_cases_for_signal(db_session: Session, signal_id: int, limit: int = 10) -> Query:
     return (
         db_session.query(Case)
         .join(SignalInstance)
