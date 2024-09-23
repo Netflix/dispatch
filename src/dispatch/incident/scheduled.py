@@ -295,7 +295,7 @@ def incident_report_weekly(db_session: Session, project: Project):
                 + pir_doc,
             }
 
-            response = ai_plugin.instance.chat(messages)
+            response = ai_plugin.instance.chat_completion(messages)
             summary = response["choices"][0]["message"]["content"]
 
             item = {
