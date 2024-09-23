@@ -1,44 +1,53 @@
+
+```python
+import logging
 from collections import defaultdict
 from typing import NamedTuple
-
 
 from blockkit import (
     Actions,
     Button,
     Context,
+    Divider,
     Message,
     Section,
-    Divider,
 )
 from blockkit.surfaces import Block
+from slack_sdk.errors import SlackApiError
+from slack_sdk.web.client import WebClient
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
-from dispatch.config import DISPATCH_UI_URL
 from dispatch.case.enums import CaseStatus
 from dispatch.case.models import Case
+from dispatch.config import DISPATCH_UI_URL
+from dispatch.entity import service as entity_service
 from dispatch.entity.models import Entity
 from dispatch.entity_type.models import EntityType
-from dispatch.entity import service as entity_service
 from dispatch.messaging.strings import CASE_STATUS_DESCRIPTIONS, CASE_VISIBILITY_DESCRIPTIONS
+from dispatch.plugin import service as plugin_service
+from dispatch.plugins.dispatch_slack.case.enums import (
+    CaseNotificationActions,
+    SignalEngagementActions,
+    SignalNotificationActions,
+)
+from dispatch.plugins.dispatch_slack.config import MAX_SECTION_TEXT_LENGTH
 from dispatch.plugins.dispatch_slack.models import (
     CaseSubjects,
     EngagementMetadata,
-    SubjectMetadata,
     SignalSubjects,
+    SubjectMetadata,
 )
-from dispatch.plugins.dispatch_slack.case.enums import (
-    CaseNotificationActions,
-    SignalNotificationActions,
-    SignalEngagementActions,
-)
+from dispatch.signal import service as signal_service
+from dispatch.signal.enums import SignalEngagementStatus
 from dispatch.signal.models import (
     Signal,
     SignalEngagement,
     SignalInstance,
     assoc_signal_instance_entities,
 )
-from dispatch.signal.enums import SignalEngagementStatus
-from dispatch.plugins.dispatch_slack.config import MAX_SECTION_TEXT_LENGTH
+
+log = logging.getLogger(__name__)
 
 
 def map_priority_color(color: str) -> str:
@@ -95,13 +104,7 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
         channel_id=channel_id,
     ).json()
 
-    if case.has_channel:
-        action_buttons = [
-            Button(text="Case Channel", style="primary", url=case.conversation.weblink)
-        ]
-        blocks.extend([Actions(elements=action_buttons)])
-
-    elif case.status == CaseStatus.escalated:
+    if case.status == CaseStatus.escalated:
         blocks.extend(
             [
                 Actions(
@@ -141,12 +144,6 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
             Button(
                 text="Resolve",
                 action_id=CaseNotificationActions.resolve,
-                style="primary",
-                value=button_metadata,
-            ),
-            Button(
-                text="Create Channel",
-                action_id=CaseNotificationActions.migrate,
                 style="primary",
                 value=button_metadata,
             ),
@@ -298,6 +295,116 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
     return Message(blocks=signal_metadata_blocks).build()["blocks"]
 
 
+def create_genai_signal_summary(
+    case: Case,
+    channel_id: str,
+    db_session: Session,
+    client: WebClient,
+) -> list[Block]:
+    """Creates enhanced signal messages with historical context."""
+    signal_metadata_blocks: list[Block] = []
+
+    signal_instances_query = (
+        db_session.query(SignalInstance, Signal)
+        .join(Signal)
+        .with_entities(SignalInstance.id, Signal)
+        .filter(SignalInstance.case_id == case.id)
+        .order_by(SignalInstance.created_at)
+    )
+
+    (first_instance_id, first_instance_signal) = signal_instances_query.first()
+
+    # Fetch up to 10 recent related cases
+    related_cases = (
+        db_session.query(Case)
+        .join(SignalInstance)
+        .filter(SignalInstance.signal_id == first_instance_signal.id)
+        .filter(Case.id != case.id)  # Exclude the current case
+        .order_by(desc(Case.created_at))
+        .limit(10)
+        .all()
+    )
+
+    # Prepare historical context
+    historical_context = []
+    for related_case in related_cases:
+        historical_context.append(f"Case: {related_case.name}")
+        historical_context.append(f"Resolution: {related_case.resolution}")
+        historical_context.append(f"Resolution Reason: {related_case.resolution_reason}")
+
+        # Fetch Slack messages for the related case
+        if related_case.conversation and related_case.conversation.channel_id:
+            try:
+                # Fetch threaded messages
+                thread_messages = client.conversations_replies(
+                    channel=related_case.conversation.channel_id,
+                    ts=related_case.conversation.thread_id,
+                )
+
+                # Add relevant messages to the context (e.g., first 5 messages)
+                for message in thread_messages["messages"][:5]:
+                    historical_context.append(f"Slack Message: {message['text']}")
+            except SlackApiError as e:
+                log.error(f"Error fetching Slack messages for case {related_case.name}: {e}")
+
+        historical_context.append("---")
+
+    historical_context_str = "\n".join(historical_context)
+
+    signal_instance = signal_service.get_signal_instance(
+        db_session=db_session, signal_instance_id=first_instance_id
+    )
+
+    genai_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project.id, plugin_type="artificial-intelligence"
+    )
+    if not genai_plugin:
+        return signal_metadata_blocks
+
+    response = genai_plugin.instance.chat_completion(
+        prompt=f"""
+        You are an expert security analyst tasked with evaluating a potential security incident. Your goal is to provide a concise summary and determine if this is a true positive or benign event. It's crucial to maintain a balanced perspective and avoid assuming every alert is a true positive. Follow these steps:
+
+        1. Carefully analyze the current event details provided.
+        2. Review the historical context of similar cases, noting both confirmations and false alarms.
+        3. Consider the information in the runbook specific to this type of alert, including known false positive scenarios.
+
+        Then, provide your analysis in the following format:
+
+        Summary:
+        [Provide a 4-5 sentence summary of the security event. Use precise, factual language. Focus on the most relevant details from the current event and how they relate to historical cases.]
+
+        Historical Summary:
+        [Provide a concise 2-3 sentence summary of the historical cases for this signal. Use the case resolution details, case resolution, and slack messages as data points in your summary.]
+
+        Remember:
+        - Maintain a skeptical and balanced perspective. Not every alert is a true positive.
+        - Stick strictly to the facts presented in the data.
+        - Do not make assumptions beyond what is explicitly stated.
+        - Consider both the similarities and differences between the current event and historical cases.
+        - Be cautious about definitive statements; acknowledge uncertainty where appropriate.
+        - Your determination should heavily weigh the technical details provided in the runbook, including known false positive scenarios.
+        - If there's significant uncertainty, it's acceptable to recommend further investigation rather than making a definitive determination.
+
+        Current Event:
+        {str(signal_instance.raw)}
+
+        Historical Context:
+        {historical_context_str}
+
+        Runbook:
+        {first_instance_signal.runbook}
+        """
+    )
+    message = response["choices"][0]["message"]["content"]
+
+    signal_metadata_blocks.append(
+        Context(elements=[message]),
+    )
+
+    return Message(blocks=signal_metadata_blocks).build()["blocks"]
+
+
 def create_signal_engagement_message(
     case: Case,
     channel_id: str,
@@ -413,30 +520,4 @@ def create_welcome_ephemeral_message_to_participant(case: Case) -> list[Block]:
             text=f"*Reporter - {case.reporter.individual.name}*",
         ),
     ]
-    return Message(blocks=blocks).build()["blocks"]
-
-
-def create_case_thread_migration_message(channel_weblink: str) -> list[Block]:
-    blocks = [
-        Context(
-            elements=[
-                f"This conversation has been migrated to a dedicated Case channel. All future updates and discussions will take place <{channel_weblink}|here>."
-            ]
-        ),
-        Divider(),
-    ]
-
-    return Message(blocks=blocks).build()["blocks"]
-
-
-def create_case_channel_migration_message(thread_weblink: str) -> list[Block]:
-    blocks = [
-        Context(
-            elements=[
-                f"Migrated Case conversation from the <{thread_weblink}|original Case thread>."
-            ]
-        ),
-        Divider(),
-    ]
-
     return Message(blocks=blocks).build()["blocks"]
