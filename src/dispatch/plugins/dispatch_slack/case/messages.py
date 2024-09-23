@@ -102,7 +102,13 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
         channel_id=channel_id,
     ).json()
 
-    if case.status == CaseStatus.escalated:
+    if case.has_channel:
+        action_buttons = [
+            Button(text="Case Channel", style="primary", url=case.conversation.weblink)
+        ]
+        blocks.extend([Actions(elements=action_buttons)])
+
+    elif case.status == CaseStatus.escalated:
         blocks.extend(
             [
                 Actions(
@@ -155,6 +161,12 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
                 text="Escalate",
                 action_id=CaseNotificationActions.escalate,
                 style="danger",
+                value=button_metadata,
+            ),
+            Button(
+                text="Create Channel",
+                action_id=CaseNotificationActions.migrate,
+                style="primary",
                 value=button_metadata,
             ),
         ]
