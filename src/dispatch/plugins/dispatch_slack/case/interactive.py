@@ -39,7 +39,6 @@ from dispatch.participant.models import ParticipantUpdate
 from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
-from dispatch.plugins.dispatch_duo.enums import PushResponseResult
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.bolt import app
 from dispatch.plugins.dispatch_slack.case.enums import (
@@ -860,8 +859,7 @@ def handle_snooze_submission_event(
         db_session.commit()
 
     # Check if last_mfa_time was within the last hour
-    last_hour = datetime.now() - timedelta(hours=1)
-    if (user.last_mfa_time and user.last_mfa_time > last_hour) or mfa_enabled is False:
+    if mfa_enabled is False:
         _create_snooze_filter(
             db_session=db_session,
             user=user,
@@ -874,12 +872,23 @@ def handle_snooze_submission_event(
             message="Snooze Filter added successfully.",
         )
     else:
-        # Send the MFA push notification
-        response = mfa_plugin.instance.send_push_notification(
-            username=context["user"].email,
-            type="Are you creating a snooze filter in Dispatch?",
+        challenge, challenge_url = mfa_plugin.instance.create_mfa_challenge(
+            action="signal-snooze",
+            current_user=user,
+            db_session=db_session,
+            project_id=context["subject"].project_id,
         )
-        if response == PushResponseResult.allow:
+        ack_engagement_submission_event(
+            ack=ack, mfa_enabled=mfa_enabled, challenge_url=challenge_url
+        )
+
+        # wait for the mfa challenge
+        response = mfa_plugin.instance.wait_for_challenge(
+            challenge_id=challenge.challenge_id,
+            db_session=db_session,
+        )
+
+        if response == MfaChallengeStatus.APPROVED:
             # Get the existing filters for the signal
             _create_snooze_filter(
                 db_session=db_session,
@@ -895,10 +904,10 @@ def handle_snooze_submission_event(
             user.last_mfa_time = datetime.now()
             db_session.commit()
         else:
-            if response == PushResponseResult.timeout:
+            if response == MfaChallengeStatus.EXPIRED:
                 text = "Adding Snooze failed, the MFA request timed out."
-            elif response == PushResponseResult.user_not_found:
-                text = "Adding Snooze failed, user not found in MFA provider."
+            elif response == MfaChallengeStatus.DENIED:
+                text = "Adding Snooze failed, challenge did not complete succsfully."
             else:
                 text = "Adding Snooze failed, you must accept the MFA prompt."
 
@@ -1735,7 +1744,7 @@ def report_issue(
         Context(
             elements=[
                 MarkdownText(
-                    text="Cases are meant to triage events that do not raise to the level of incidents, but can be escalated to incidents if necessary. If you suspect a security issue and need help, please fill out this form to the best of your abilities.."
+                    text="Cases are meant to triage events that do not raise to the level of incidents, but can be escalated to incidents if necessary."
                 )
             ]
         ),
@@ -1780,13 +1789,6 @@ def handle_report_project_select_action(
     )
 
     blocks = [
-        Context(
-            elements=[
-                MarkdownText(
-                    text="Cases are meant to triage events that do not raise to the level of incidents, but can be escalated to incidents if necessary. If you suspect a security issue and need help, please fill out this form to the best of your abilities.."
-                )
-            ]
-        ),
         title_input(),
         description_input(),
         project_select(
@@ -1808,13 +1810,6 @@ def handle_report_project_select_action(
                     text="💡 Case Types determine the initial assignee based on their configured on-call schedule."
                 )
             ]
-        ),
-        case_priority_select(
-            db_session=db_session,
-            project_id=project.id,
-            initial_option=None,
-            optional=True,
-            block_id=None,  # ensures state is reset
         ),
     ]
 
@@ -1899,13 +1894,6 @@ def handle_report_case_type_select_action(
             assignee_slack_id = None
 
     blocks = [
-        Context(
-            elements=[
-                MarkdownText(
-                    text="Cases are meant to triage events that do not raise to the level of incidents, but can be escalated to incidents if necessary. If you suspect a security issue and need help, please fill out this form to the best of your abilities."
-                )
-            ]
-        ),
         title_input(),
         description_input(),
         project_select(
@@ -1928,13 +1916,6 @@ def handle_report_case_type_select_action(
                 )
             ]
         ),
-        case_priority_select(
-            db_session=db_session,
-            project_id=project.id,
-            initial_option=None,
-            optional=True,
-            block_id=None,  # ensures state is reset
-        ),
     ]
 
     # Create a new assignee_select block with a unique block_id
@@ -1944,7 +1925,7 @@ def handle_report_case_type_select_action(
             initial_user=assignee_slack_id if assignee_slack_id else None,
             action_id=CaseReportActions.assignee_select,
             block_id=new_block_id,
-        )
+        ),
     )
 
     # Conditionally add context blocks
@@ -1982,6 +1963,16 @@ def handle_report_case_type_select_action(
                 Context(elements=[MarkdownText(text="Please select an assignee for this case.")]),
             ]
         )
+
+    blocks.append(
+        case_priority_select(
+            db_session=db_session,
+            project_id=project.id,
+            initial_option=None,
+            optional=True,
+            block_id=None,  # ensures state is reset
+        ),
+    )
 
     modal = Modal(
         title="Open a Case",

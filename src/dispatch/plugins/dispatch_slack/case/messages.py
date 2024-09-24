@@ -152,19 +152,17 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
             Button(
                 text="Edit",
                 action_id=CaseNotificationActions.edit,
-                style="primary",
                 value=button_metadata,
             ),
             Button(
-                text="Escalate",
+                text=":slack: Create Channel",
+                action_id=CaseNotificationActions.migrate,
+                value=button_metadata,
+            ),
+            Button(
+                text="🔥 Escalate",
                 action_id=CaseNotificationActions.escalate,
                 style="danger",
-                value=button_metadata,
-            ),
-            Button(
-                text="Create Channel",
-                action_id=CaseNotificationActions.migrate,
-                style="primary",
                 value=button_metadata,
             ),
         ]
@@ -208,7 +206,7 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
     # Define the initial elements with "Raw Data" and "Snooze" buttons
     elements = [
         Button(
-            text="Snooze",
+            text="💤 Snooze",
             action_id=SignalNotificationActions.snooze,
             value=button_metadata,
         ),
@@ -219,7 +217,7 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
         # If `first_instance_signal.external_url` is not empty, add the "Response Plan" button
         elements.append(
             Button(
-                text="Response Plan",
+                text="🔖 Response Plan",
                 action_id="button-link",
                 url=first_instance_signal.external_url,
             )
@@ -308,9 +306,13 @@ def create_genai_signal_summary(
     instances = signal_service.get_instances_in_case(db_session=db_session, case_id=case.id)
     (first_instance_id, first_instance_signal) = instances.first()
 
-    related_cases = signal_service.get_cases_for_signal(
-        db_session=db_session, signal_id=first_instance_signal.id
-    ).filter(Case.id != case.id)
+    related_cases = (
+        signal_service.get_cases_for_signal(
+            db_session=db_session, signal_id=first_instance_signal.id
+        )
+        .from_self()
+        .filter(Case.id != case.id)
+    )
 
     # Prepare historical context
     historical_context = []
@@ -345,11 +347,13 @@ def create_genai_signal_summary(
     genai_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=case.project.id, plugin_type="artificial-intelligence"
     )
-    if not genai_plugin:
+
+    print(f"{signal_instance.signal.__dict__}")
+    if not genai_plugin or not signal_instance.signal.genai_prompt:
         return signal_metadata_blocks
 
     response = genai_plugin.instance.chat_completion(
-        prompt=f"""{first_instance_signal.prompt}
+        prompt=f"""{signal_instance.signal.genai_prompt}
 
         Current Event:
         {str(signal_instance.raw)}
