@@ -2,7 +2,7 @@ from datetime import datetime
 from pydantic import Field
 from typing import Optional, List
 
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, String, Numeric
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, String, Numeric, JSON
 from sqlalchemy_utils import TSVectorType
 from sqlalchemy.orm import relationship
 
@@ -21,6 +21,7 @@ class ServiceFeedback(TimeStampMixin, FeedbackMixin, Base):
     hours = Column(Numeric(precision=10, scale=2))
     shift_start_at = Column(DateTime)
     shift_end_at = Column(DateTime)
+    details = Column(JSON)
 
     # Relationships
     individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))
@@ -48,6 +49,7 @@ class ServiceFeedbackBase(DispatchBase):
     shift_start_at: Optional[datetime]
     project: Optional[ProjectRead]
     created_at: Optional[datetime]
+    details: Optional[List[dict]] = Field([], nullable=True)
 
 
 class ServiceFeedbackCreate(ServiceFeedbackBase):

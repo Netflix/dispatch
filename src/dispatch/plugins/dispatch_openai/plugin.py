@@ -33,7 +33,7 @@ class OpenAIPlugin(ArtificialIntelligencePlugin):
     def __init__(self):
         self.configuration_schema = OpenAIConfiguration
 
-    def completion(self, prompt: str) -> dict:
+    def chat_completion(self, prompt: str) -> dict:
         client = OpenAI(api_key=self.api_key)
 
         try:

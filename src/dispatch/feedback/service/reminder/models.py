@@ -1,7 +1,8 @@
 from datetime import datetime
-from typing import Optional
+from pydantic import Field
+from typing import Optional, List
 
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, String
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, String, JSON
 
 from dispatch.database.core import Base
 from dispatch.individual.models import IndividualContactRead
@@ -16,6 +17,7 @@ class ServiceFeedbackReminder(TimeStampMixin, Base):
     schedule_id = Column(String)
     schedule_name = Column(String)
     shift_end_at = Column(DateTime)
+    details = Column(JSON)
 
     # Relationships
     individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))
@@ -30,6 +32,7 @@ class ServiceFeedbackReminderBase(DispatchBase):
     schedule_id: Optional[str]
     schedule_name: Optional[str]
     shift_end_at: Optional[datetime]
+    details: Optional[List[dict]] = Field([], nullable=True)
 
 
 class ServiceFeedbackReminderCreate(ServiceFeedbackReminderBase):

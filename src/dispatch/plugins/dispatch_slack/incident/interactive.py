@@ -470,7 +470,7 @@ def handle_list_participants_command(
 
     participants = participant_service.get_all_by_incident_id(
         db_session=db_session, incident_id=context["subject"].id
-    ).all()
+    )
 
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 

@@ -58,4 +58,8 @@ export default {
   createAllResources(caseId, payload) {
     return API.post(`/${resource}/${caseId}/resources`, payload)
   },
+
+  createCaseChannel(caseId, payload) {
+    return API.post(`/${resource}/${caseId}/resources/conversation`, payload)
+  },
 }

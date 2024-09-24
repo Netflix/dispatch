@@ -4,6 +4,7 @@
     :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
+
 from pdpyras import APISession
 from pydantic import Field, SecretStr, EmailStr
 from typing import Optional
@@ -115,6 +116,20 @@ class PagerDutyOncallPlugin(OncallPlugin):
         except Exception as e:
             log.error("Error trying to retrieve schedule_id from service_id")
             log.exception(e)
+
+    def get_service_url(self, service_id: str) -> Optional[str]:
+        if not service_id:
+            return None
+
+        client = APISession(self.configuration.api_key.get_secret_value())
+        client.url = self.configuration.pagerduty_api_url
+        try:
+            service = get_service(client, service_id)
+            return service.get("html_url")
+        except Exception as e:
+            log.error(f"Error retrieving service URL for service_id {service_id}")
+            log.exception(e)
+            return None
 
     def get_next_oncall(self, service_id: str) -> Optional[str]:
         schedule_id = self.get_schedule_id_from_service_id(service_id)

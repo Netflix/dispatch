@@ -1,11 +1,10 @@
-import logging
-
-from datetime import datetime, timedelta, timezone
-from uuid import UUID
-from functools import partial
 import json
-import pytz
+import logging
+from datetime import datetime, timedelta, timezone
+from functools import partial
+from uuid import UUID
 
+import pytz
 from blockkit import (
     Actions,
     Button,
@@ -20,34 +19,33 @@ from blockkit import (
 from slack_bolt import Ack, BoltContext, Respond
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
-
-
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser, MfaChallengeStatus
 from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
-from dispatch.case.enums import CaseStatus, CaseResolutionReason
+from dispatch.case.enums import CaseResolutionReason, CaseStatus
 from dispatch.case.models import Case, CaseCreate, CaseRead, CaseUpdate
+from dispatch.case.type import service as case_type_service
 from dispatch.conversation import flows as conversation_flows
 from dispatch.entity import service as entity_service
-from dispatch.participant_role import service as participant_role_service
+from dispatch.enums import EventType, SubjectNames, UserRoles, Visibility
 from dispatch.event import service as event_service
-from dispatch.enums import UserRoles, SubjectNames, Visibility, EventType
 from dispatch.exceptions import ExistsError
 from dispatch.individual.models import IndividualContactRead
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
+from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_duo.enums import PushResponseResult
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
-from dispatch.plugins.dispatch_slack.enums import SlackAPIErrorCode
 from dispatch.plugins.dispatch_slack.bolt import app
 from dispatch.plugins.dispatch_slack.case.enums import (
     CaseEditActions,
     CaseEscalateActions,
+    CaseMigrateActions,
     CaseNotificationActions,
     CasePaginateActions,
     CaseReportActions,
@@ -63,6 +61,7 @@ from dispatch.plugins.dispatch_slack.case.messages import (
 )
 from dispatch.plugins.dispatch_slack.config import SlackConversationConfiguration
 from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
+from dispatch.plugins.dispatch_slack.enums import SlackAPIErrorCode
 from dispatch.plugins.dispatch_slack.fields import (
     DefaultBlockIds,
     case_priority_select,
@@ -82,12 +81,12 @@ from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
     button_context_middleware,
     command_context_middleware,
+    configuration_middleware,
     db_middleware,
     engagement_button_context_middleware,
     modal_submit_middleware,
     shortcut_context_middleware,
     subject_middleware,
-    configuration_middleware,
     user_middleware,
 )
 from dispatch.plugins.dispatch_slack.modals.common import send_success_modal
@@ -100,6 +99,7 @@ from dispatch.plugins.dispatch_slack.models import (
 )
 from dispatch.project import service as project_service
 from dispatch.search.utils import create_filter_expression
+from dispatch.service import flows as service_flows
 from dispatch.signal import service as signal_service
 from dispatch.signal.enums import SignalEngagementStatus
 from dispatch.signal.models import (
@@ -1266,11 +1266,12 @@ def handle_escalation_submission_event(
             name=form_data[DefaultBlockIds.incident_priority_select]["name"],
         )
     incident_description = form_data.get(DefaultBlockIds.description_input, case.description)
-
+    title = form_data.get(DefaultBlockIds.title_input, case.title)
     case_flows.case_escalated_status_flow(
         case=case,
         organization_slug=context["subject"].organization_slug,
         db_session=db_session,
+        title=title,
         incident_priority=incident_priority,
         incident_type=incident_type,
         incident_description=incident_description,
@@ -1290,16 +1291,10 @@ def handle_escalation_submission_event(
             thread_ts=case.conversation.thread_id if case.has_thread else None,
         )
 
-    # Retrieve all participants from the case
-    case_participants = case_service.get_participants(
-        db_session=db_session, case_id=case.id, minimal=True
-    )
-
     # Add all case participants to the incident
-    participant_emails = [participant.individual.email for participant in case_participants]
     conversation_flows.add_incident_participants_to_conversation(
         incident=incident,
-        participant_emails=participant_emails,
+        participant_emails=case.participant_emails,
         db_session=db_session,
     )
 
@@ -1327,6 +1322,121 @@ def handle_escalation_submission_event(
         trigger_id=result["trigger_id"],
         title="Case Escalated",
         message="Case escalated successfully.",
+    )
+
+
+@app.action(
+    CaseNotificationActions.migrate,
+    middleware=[button_context_middleware, db_middleware, user_middleware],
+)
+def create_channel_button_click(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    form_data: dict,
+    db_session: Session,
+):
+    ack()
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    case.dedicated_channel = True
+    db_session.commit()
+
+    blocks = [
+        Section(text="Migrate the thread conversation to a dedicated channel?"),
+        Context(elements=[MarkdownText(text="This action will remove the case from this thread.")]),
+    ]
+
+    modal = Modal(
+        title="Create Case Channel",
+        blocks=blocks,
+        submit="Create Channel",
+        close="Close",
+        callback_id=CaseMigrateActions.submit,
+        private_metadata=context["subject"].json(),
+    ).build()
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
+
+
+def ack_handle_create_channel_event(ack: Ack, case: Case) -> None:
+    """Handles the case channel creation event."""
+    msg = (
+        "The case already has a dedicated channel. No actions will be performed."
+        if case.has_channel
+        else "Creating a dedicated case channel..."
+    )
+
+    modal = Modal(
+        title="Creating Case Channel",
+        close="Close",
+        blocks=[Section(text=msg)],
+    ).build()
+
+    ack(response_action="update", view=modal)
+
+
+@app.view(
+    CaseMigrateActions.submit,
+    middleware=[
+        action_context_middleware,
+        db_middleware,
+    ],
+)
+def handle_create_channel_event(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+    form_data: dict,
+    user: DispatchUser,
+):
+    """Handles the escalation submission event."""
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    ack_handle_create_channel_event(ack=ack, case=case)
+
+    case.dedicated_channel = True
+    db_session.commit()
+
+    msg = (
+        "Creating a dedicated case channel..."
+        if not case.has_channel
+        else "The case already has a dedicated channel. No actions will be performed."
+    )
+
+    modal = Modal(
+        title="Creating Case Channel",
+        close="Close",
+        blocks=[Section(text=msg)],
+    ).build()
+
+    result = client.views_update(
+        view_id=body["view"]["id"],
+        trigger_id=body["trigger_id"],
+        view=modal,
+    )
+
+    channel_id = case.conversation.channel_id
+    thread_id = case.conversation.thread_id
+
+    # Add all case participants to the case channel
+    case_flows.case_create_conversation_flow(
+        db_session=db_session,
+        case=case,
+        participant_emails=case.participant_emails,
+        conversation_target=None,
+    )
+
+    # This should update the original message?
+    blocks = create_case_message(case=case, channel_id=channel_id)
+    client.chat_update(blocks=blocks, ts=thread_id, channel=channel_id)
+
+    send_success_modal(
+        client=client,
+        view_id=body["view"]["id"],
+        trigger_id=result["trigger_id"],
+        title="Channel Created",
+        message="Case channel created successfully.",
     )
 
 
@@ -1651,8 +1761,12 @@ def report_issue(
 
 @app.action(CaseReportActions.project_select, middleware=[db_middleware, action_context_middleware])
 def handle_report_project_select_action(
-    ack: Ack, body: dict, db_session: Session, context: BoltContext, client: WebClient
-):
+    ack: Ack,
+    body: dict,
+    db_session: Session,
+    context: BoltContext,
+    client: WebClient,
+) -> None:
     ack()
     values = body["view"]["state"]["values"]
 
@@ -1681,7 +1795,20 @@ def handle_report_project_select_action(
             action_id=CaseReportActions.project_select,
             dispatch_action=True,
         ),
-        case_type_select(db_session=db_session, initial_option=None, project_id=project.id),
+        case_type_select(
+            db_session=db_session,
+            initial_option=None,
+            project_id=project.id,
+            action_id=CaseReportActions.case_type_select,
+            dispatch_action=True,
+        ),
+        Context(
+            elements=[
+                MarkdownText(
+                    text="💡 Case Types determine the initial assignee based on their configured on-call schedule."
+                )
+            ]
+        ),
         case_priority_select(
             db_session=db_session,
             project_id=project.id,
@@ -1703,6 +1830,170 @@ def handle_report_project_select_action(
     client.views_update(
         view_id=body["view"]["id"],
         trigger_id=body["trigger_id"],
+        view=modal,
+    )
+
+
+@app.action(
+    CaseReportActions.case_type_select,
+    middleware=[
+        db_middleware,
+        action_context_middleware,
+    ],
+)
+def handle_report_case_type_select_action(
+    ack: Ack,
+    body: dict,
+    db_session: Session,
+    context: BoltContext,
+    client: WebClient,
+) -> None:
+    ack()
+    values = body["view"]["state"]["values"]
+
+    project_id = values[DefaultBlockIds.project_select][CaseReportActions.project_select][
+        "selected_option"
+    ]["value"]
+
+    case_type_id = values[DefaultBlockIds.case_type_select][CaseReportActions.case_type_select][
+        "selected_option"
+    ]["value"]
+
+    project = project_service.get(
+        db_session=db_session,
+        project_id=project_id,
+    )
+
+    case_type = case_type_service.get(
+        db_session=db_session,
+        case_type_id=case_type_id,
+    )
+
+    assignee_email = None
+    assignee_slack_id = None
+    oncall_service_name = None
+    service_url = None
+
+    if case_type.oncall_service:
+        assignee_email = service_flows.resolve_oncall(
+            service=case_type.oncall_service, db_session=db_session
+        )
+        oncall_service_name = case_type.oncall_service.name
+
+        oncall_plugin = plugin_service.get_active_instance(
+            db_session=db_session, project_id=project.id, plugin_type="oncall"
+        )
+        if not oncall_plugin:
+            log.debug("Unable to send email since oncall plugin is not active.")
+        else:
+            service_url = oncall_plugin.instance.get_service_url(
+                case_type.oncall_service.external_id
+            )
+
+    if assignee_email:
+        # Get the Slack user ID for the assignee
+        try:
+            assignee_slack_id = client.users_lookupByEmail(email=assignee_email)["user"]["id"]
+        except SlackApiError:
+            log.error(f"Failed to find Slack user for email: {assignee_email}")
+            assignee_slack_id = None
+
+    blocks = [
+        Context(
+            elements=[
+                MarkdownText(
+                    text="Cases are meant to triage events that do not raise to the level of incidents, but can be escalated to incidents if necessary. If you suspect a security issue and need help, please fill out this form to the best of your abilities."
+                )
+            ]
+        ),
+        title_input(),
+        description_input(),
+        project_select(
+            db_session=db_session,
+            initial_option={"text": project.name, "value": project.id},
+            action_id=CaseReportActions.project_select,
+            dispatch_action=True,
+        ),
+        case_type_select(
+            db_session=db_session,
+            initial_option={"text": case_type.name, "value": case_type.id},
+            project_id=project.id,
+            action_id=CaseReportActions.case_type_select,
+            dispatch_action=True,
+        ),
+        Context(
+            elements=[
+                MarkdownText(
+                    text="💡 Case Types determine the initial assignee based on their configured on-call schedule."
+                )
+            ]
+        ),
+        case_priority_select(
+            db_session=db_session,
+            project_id=project.id,
+            initial_option=None,
+            optional=True,
+            block_id=None,  # ensures state is reset
+        ),
+    ]
+
+    # Create a new assignee_select block with a unique block_id
+    new_block_id = f"{DefaultBlockIds.case_assignee_select}_{case_type_id}"
+    blocks.append(
+        assignee_select(
+            initial_user=assignee_slack_id if assignee_slack_id else None,
+            action_id=CaseReportActions.assignee_select,
+            block_id=new_block_id,
+        )
+    )
+
+    # Conditionally add context blocks
+    if oncall_service_name and assignee_email:
+        if service_url:
+            oncall_text = (
+                f"👩‍🚒 {assignee_email} is on-call for <{service_url}|{oncall_service_name}>"
+            )
+        else:
+            oncall_text = f"👩‍🚒 {assignee_email} is on-call for {oncall_service_name}"
+
+        blocks.extend(
+            [
+                Context(elements=[MarkdownText(text=oncall_text)]),
+                Divider(),
+                Context(
+                    elements=[
+                        MarkdownText(
+                            text="Not who you're looking for? You can override the assignee for this case."
+                        )
+                    ]
+                ),
+            ]
+        )
+    else:
+        blocks.extend(
+            [
+                Context(
+                    elements=[
+                        MarkdownText(
+                            text="There is no on-call service associated with this case type."
+                        )
+                    ]
+                ),
+                Context(elements=[MarkdownText(text="Please select an assignee for this case.")]),
+            ]
+        )
+
+    modal = Modal(
+        title="Open a Case",
+        blocks=blocks,
+        submit="Report",
+        close="Close",
+        callback_id=CaseReportActions.submit,
+        private_metadata=context["subject"].json(),
+    ).build()
+
+    client.views_update(
+        view_id=body["view"]["id"],
         view=modal,
     )
 
@@ -1740,6 +2031,18 @@ def handle_report_submission_event(
     if form_data.get(DefaultBlockIds.case_type_select):
         case_type = {"name": form_data[DefaultBlockIds.case_type_select]["name"]}
 
+    assignee_block_id = next(
+        (key for key in form_data.keys() if key.startswith(DefaultBlockIds.case_assignee_select)),
+        None,
+    )
+
+    if not assignee_block_id:
+        raise ValueError("Assignee block not found in form data")
+
+    assignee_email = client.users_info(user=form_data[assignee_block_id]["value"])["user"][
+        "profile"
+    ]["email"]
+
     case_in = CaseCreate(
         title=form_data[DefaultBlockIds.title_input],
         description=form_data[DefaultBlockIds.description_input],
@@ -1748,6 +2051,7 @@ def handle_report_submission_event(
         case_type=case_type,
         dedicated_channel=True,
         reporter=ParticipantUpdate(individual=IndividualContactRead(email=user.email)),
+        assignee=ParticipantUpdate(individual=IndividualContactRead(email=assignee_email)),
     )
 
     case = case_service.create(db_session=db_session, case_in=case_in, current_user=user)

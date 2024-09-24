@@ -8,7 +8,9 @@ from dispatch.database.core import SessionLocal
 from dispatch.document.models import Document
 from dispatch.event import service as event_service
 from dispatch.incident.models import Incident
+from dispatch.messaging.strings import MessageType
 from dispatch.plugin import service as plugin_service
+from dispatch.plugins.dispatch_slack.case import messages
 from dispatch.storage.models import Storage
 from dispatch.ticket.models import Ticket
 from dispatch.service.models import Service
@@ -16,8 +18,8 @@ from dispatch.project.models import Project
 from dispatch.utils import deslug_and_capitalize_resource_type
 from dispatch.types import Subject
 
-from .models import Conversation, ConversationCreate
-from .service import create
+from .models import Conversation, ConversationCreate, ConversationUpdate
+from .service import create, update
 
 log = logging.getLogger(__name__)
 
@@ -43,6 +45,13 @@ def create_case_conversation(
         conversation_target = case.case_type.conversation_target
 
     conversation = None
+
+    # Do not overwrite a case conversation with one of the same type (thread, channel)
+    if case.conversation:
+        if case.has_channel:
+            raise RuntimeError("Case already has a dedicated channel conversation.")
+        if case.has_thread and not case.dedicated_channel:
+            raise RuntimeError("Case already has a thread conversation.")
 
     # This case is a thread version, we send a new messaged (threaded) to the conversation target
     # for the configured case type
@@ -73,21 +82,100 @@ def create_case_conversation(
 
     conversation.update({"resource_type": plugin.plugin.slug, "resource_id": conversation["id"]})
 
-    conversation_in = ConversationCreate(
-        resource_id=conversation["resource_id"],
-        resource_type=conversation["resource_type"],
-        weblink=conversation["weblink"],
-        thread_id=conversation.get("timestamp"),
-        channel_id=conversation["id"],
-    )
-    case.conversation = create(db_session=db_session, conversation_in=conversation_in)
+    if not case.conversation:
+        conversation_in = ConversationCreate(
+            resource_id=conversation["resource_id"],
+            resource_type=conversation["resource_type"],
+            weblink=conversation["weblink"],
+            thread_id=conversation.get("timestamp"),
+            channel_id=conversation["id"],
+        )
+        case.conversation = create(db_session=db_session, conversation_in=conversation_in)
 
-    event_service.log_case_event(
-        db_session=db_session,
-        source=plugin.plugin.title,
-        description="Case conversation created",
-        case_id=case.id,
-    )
+        event_service.log_case_event(
+            db_session=db_session,
+            source=plugin.plugin.title,
+            description="Case conversation created",
+            case_id=case.id,
+        )
+    elif case.conversation.thread_id and case.dedicated_channel:
+        thread_conversation_channel_id = case.conversation.channel_id
+        thread_conversation_thread_id = case.conversation.thread_id
+        thread_conversation_weblink = case.conversation.weblink
+
+        conversation_in = ConversationUpdate(
+            resource_id=conversation.get("resource_id"),
+            resource_type=conversation.get("resource_type"),
+            weblink=conversation.get("weblink"),
+            thread_id=conversation.get("timestamp"),
+            channel_id=conversation.get("id"),
+        )
+
+        update(
+            db_session=db_session, conversation=case.conversation, conversation_in=conversation_in
+        )
+
+        event_service.log_case_event(
+            db_session=db_session,
+            source=plugin.plugin.title,
+            description=f"Case conversation has migrated from thread [{thread_conversation_weblink}] to channel[{case.conversation.weblink}].",
+            case_id=case.id,
+        )
+    try:
+        plugin.instance.update_thread(
+            case=case,
+            conversation_id=thread_conversation_channel_id,
+            ts=thread_conversation_thread_id,
+        )
+    except Exception as e:
+        event_service.log_subject_event(
+            subject=case,
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"Updating thread message failed. Reason: {e}",
+        )
+        log.exception(e)
+
+    # Inform users in the case thread that the conversation has migrated to a channel
+    try:
+        plugin.instance.send(
+            thread_conversation_channel_id,
+            "Notify Case conversation migration",
+            [],
+            MessageType.case_notification,
+            blocks=messages.create_case_thread_migration_message(
+                channel_weblink=conversation.get("weblink")
+            ),
+            ts=thread_conversation_thread_id,
+        )
+    except Exception as e:
+        event_service.log_subject_event(
+            subject=case,
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"Failed to send message to original Case thread. Reason: {e}",
+        )
+        log.exception(e)
+
+    # Provide users in the case channel which thread the conversation originated from.
+    try:
+        plugin.instance.send(
+            case.conversation.channel_id,
+            "Maintain Case conversation context",
+            [],
+            MessageType.case_notification,
+            blocks=messages.create_case_channel_migration_message(
+                thread_weblink=thread_conversation_weblink
+            ),
+        )
+    except Exception as e:
+        event_service.log_subject_event(
+            subject=case,
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"Failed to send message to dedicated Case channel. Reason: {e}",
+        )
+        log.exception(e)
 
     db_session.add(case)
     db_session.commit()

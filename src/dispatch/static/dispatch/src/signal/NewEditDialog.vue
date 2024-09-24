@@ -69,6 +69,18 @@
                   />
                 </v-col>
                 <v-col cols="12">
+                  <v-textarea
+                    v-model="runbook"
+                    label="Runbook"
+                    rows="1"
+                    auto-grow
+                    hint="The runbook for this detection."
+                    persistent-hint
+                    clearable
+                    name="Runbook"
+                  />
+                </v-col>
+                <v-col cols="12">
                   <v-text-field
                     v-model="variant"
                     label="Variant"
@@ -202,6 +214,69 @@
         <v-col cols="12">
           <v-card flat rounded="0">
             <v-toolbar color="transparent">
+              <v-toolbar-title class="text-subtitle-2"> GenAI Configuration </v-toolbar-title>
+              <template #append>
+                <v-tooltip max-width="250px" location="bottom">
+                  <template #activator="{ props }">
+                    <v-icon v-bind="props">mdi-help-circle-outline</v-icon>
+                  </template>
+                  The following options allow you to configure settings related to Dispatch's GenAI
+                  features.
+                </v-tooltip>
+              </template>
+            </v-toolbar>
+            <v-card-text>
+              <v-row no-gutters>
+                <v-col cols="12">
+                  <v-checkbox
+                    v-model="genai_enabled"
+                    label="Enabled"
+                    hint="Determines whether GenAI features are enabled for this detection."
+                    persistent-hint
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="genai_model"
+                    label="Model"
+                    hint="The model to use for processing."
+                    persistent-hint
+                    name="model"
+                    readonly
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-textarea
+                    v-model="genai_system_message"
+                    label="System Message"
+                    rows="1"
+                    auto-grow
+                    hint="The system message to set the behavior of the assistant"
+                    persistent-hint
+                    name="systemMessage"
+                    readonly
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-textarea
+                    v-model="genai_prompt"
+                    label="Prompt"
+                    rows="1"
+                    auto-grow
+                    hint="The prompt to use for the assistant."
+                    persistent-hint
+                    name="Prompt"
+                    readonly
+                  />
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
+        </v-col>
+
+        <v-col cols="12">
+          <v-card flat rounded="0">
+            <v-toolbar color="transparent">
               <v-toolbar-title class="text-subtitle-2"> Entity Configuration </v-toolbar-title>
               <template #append>
                 <v-tooltip max-width="250px" location="bottom">
@@ -305,6 +380,7 @@ export default {
   computed: {
     ...mapFields("signal", [
       "dialogs.showCreateEdit",
+      "selected.runbook",
       "selected",
       "selected.case_priority",
       "selected.case_type",
@@ -317,6 +393,10 @@ export default {
       "selected.external_id",
       "selected.external_url",
       "selected.filters",
+      "selected.genai_enabled",
+      "selected.genai_model",
+      "selected.genai_prompt",
+      "selected.genai_system_message",
       "selected.id",
       "selected.lifecycle",
       "selected.loading",
