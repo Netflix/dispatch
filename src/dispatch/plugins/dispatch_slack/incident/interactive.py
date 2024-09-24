@@ -1555,9 +1555,9 @@ def handle_create_task_command(
 
     blocks = [
         static_select_block(
-            label="Participant",
-            block_id=CreateTaskBlockIds.participant_select,
-            placeholder="Select Participant",
+            label="Assignee",
+            block_id=CreateTaskBlockIds.assignee_select,
+            placeholder="Select Assignee",
             options=participant_list,
         ),
         Input(
@@ -1604,7 +1604,7 @@ def handle_create_task_submission_event(
     """Handles the create task submission."""
     ack()
 
-    participant_email = form_data.get(CreateTaskBlockIds.participant_select).get("value", "")
+    participant_email = form_data.get(CreateTaskBlockIds.assignee_select).get("value", "")
     owner = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=context["subject"].id, email=participant_email
     )

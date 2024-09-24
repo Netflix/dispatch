@@ -77,7 +77,7 @@ class ReportExecutiveBlockIds(DispatchEnum):
 
 
 class CreateTaskBlockIds(DispatchEnum):
-    participant_select = "create-task-participant-select"
+    assignee_select = "create-task-assignee-select"
     description = "create-task-description"
 
 
