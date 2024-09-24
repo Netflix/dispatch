@@ -1,11 +1,10 @@
-import logging
-
-from datetime import datetime, timedelta, timezone
-from uuid import UUID
-from functools import partial
 import json
-import pytz
+import logging
+from datetime import datetime, timedelta, timezone
+from functools import partial
+from uuid import UUID
 
+import pytz
 from blockkit import (
     Actions,
     Button,
@@ -20,31 +19,28 @@ from blockkit import (
 from slack_bolt import Ack, BoltContext, Respond
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
-
-
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser, MfaChallengeStatus
 from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
-from dispatch.case.enums import CaseStatus, CaseResolutionReason
+from dispatch.case.enums import CaseResolutionReason, CaseStatus
 from dispatch.case.models import Case, CaseCreate, CaseRead, CaseUpdate
 from dispatch.case.type import service as case_type_service
 from dispatch.conversation import flows as conversation_flows
 from dispatch.entity import service as entity_service
-from dispatch.participant_role import service as participant_role_service
+from dispatch.enums import EventType, SubjectNames, UserRoles, Visibility
 from dispatch.event import service as event_service
-from dispatch.enums import UserRoles, SubjectNames, Visibility, EventType
 from dispatch.exceptions import ExistsError
 from dispatch.individual.models import IndividualContactRead
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
+from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_duo.enums import PushResponseResult
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
-from dispatch.plugins.dispatch_slack.enums import SlackAPIErrorCode
 from dispatch.plugins.dispatch_slack.bolt import app
 from dispatch.plugins.dispatch_slack.case.enums import (
     CaseEditActions,
@@ -65,6 +61,7 @@ from dispatch.plugins.dispatch_slack.case.messages import (
 )
 from dispatch.plugins.dispatch_slack.config import SlackConversationConfiguration
 from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
+from dispatch.plugins.dispatch_slack.enums import SlackAPIErrorCode
 from dispatch.plugins.dispatch_slack.fields import (
     DefaultBlockIds,
     case_priority_select,
@@ -84,12 +81,12 @@ from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
     button_context_middleware,
     command_context_middleware,
+    configuration_middleware,
     db_middleware,
     engagement_button_context_middleware,
     modal_submit_middleware,
     shortcut_context_middleware,
     subject_middleware,
-    configuration_middleware,
     user_middleware,
 )
 from dispatch.plugins.dispatch_slack.modals.common import send_success_modal
@@ -1838,7 +1835,11 @@ def handle_report_project_select_action(
 
 
 @app.action(
-    CaseReportActions.case_type_select, middleware=[db_middleware, action_context_middleware]
+    CaseReportActions.case_type_select,
+    middleware=[
+        db_middleware,
+        action_context_middleware,
+    ],
 )
 def handle_report_case_type_select_action(
     ack: Ack,
@@ -1873,7 +1874,6 @@ def handle_report_case_type_select_action(
     oncall_service_name = None
     service_url = None
 
-    # Resolve the assignee based on the case type
     if case_type.oncall_service:
         assignee_email = service_flows.resolve_oncall(
             service=case_type.oncall_service, db_session=db_session
@@ -1890,12 +1890,13 @@ def handle_report_case_type_select_action(
                 case_type.oncall_service.external_id
             )
 
-        if assignee_email:
-            # Get the Slack user ID for the assignee
-            try:
-                assignee_slack_id = client.users_lookupByEmail(email=assignee_email)["user"]["id"]
-            except SlackApiError:
-                assignee_slack_id = None
+    if assignee_email:
+        # Get the Slack user ID for the assignee
+        try:
+            assignee_slack_id = client.users_lookupByEmail(email=assignee_email)["user"]["id"]
+        except SlackApiError:
+            log.error(f"Failed to find Slack user for email: {assignee_email}")
+            assignee_slack_id = None
 
     blocks = [
         Context(
@@ -1934,11 +1935,17 @@ def handle_report_case_type_select_action(
             optional=True,
             block_id=None,  # ensures state is reset
         ),
+    ]
+
+    # Create a new assignee_select block with a unique block_id
+    new_block_id = f"{DefaultBlockIds.case_assignee_select}_{case_type_id}"
+    blocks.append(
         assignee_select(
             initial_user=assignee_slack_id if assignee_slack_id else None,
             action_id=CaseReportActions.assignee_select,
-        ),
-    ]
+            block_id=new_block_id,
+        )
+    )
 
     # Conditionally add context blocks
     if oncall_service_name and assignee_email:
@@ -2024,9 +2031,17 @@ def handle_report_submission_event(
     if form_data.get(DefaultBlockIds.case_type_select):
         case_type = {"name": form_data[DefaultBlockIds.case_type_select]["name"]}
 
-    assignee_email = client.users_info(
-        user=form_data[DefaultBlockIds.case_assignee_select]["value"]
-    )["user"]["profile"]["email"]
+    assignee_block_id = next(
+        (key for key in form_data.keys() if key.startswith(DefaultBlockIds.case_assignee_select)),
+        None,
+    )
+
+    if not assignee_block_id:
+        raise ValueError("Assignee block not found in form data")
+
+    assignee_email = client.users_info(user=form_data[assignee_block_id]["value"])["user"][
+        "profile"
+    ]["email"]
 
     case_in = CaseCreate(
         title=form_data[DefaultBlockIds.title_input],
