@@ -354,7 +354,7 @@ def create_genai_signal_summary(
 
     if not signal_instance.signal.genai_prompt:
         log.warning(
-            f"artificial-intelligence plugin enabled but no prompt defined for {signal.name}"
+            f"artificial-intelligence plugin enabled but no prompt defined for {signal_instance.signal.name}"
         )
         return signal_metadata_blocks
 
