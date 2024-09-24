@@ -1,4 +1,4 @@
-"""empty message
+"""Adds dispatch-create-task slug to slack conversation plugin config.
 
 Revision ID: 32652e0360dd
 Revises: 1f4dc687945d
