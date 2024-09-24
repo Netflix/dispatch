@@ -33,6 +33,7 @@ pdpyras
 protobuf<4.24.0,>=3.6.1
 psycopg2-binary
 pydantic==1.*
+PyGithub
 pyparsing
 python-dateutil
 python-jose

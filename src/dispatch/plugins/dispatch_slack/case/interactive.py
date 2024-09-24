@@ -2505,3 +2505,91 @@ def handle_engagement_deny_submission_event(
         channel=case.conversation.channel_id,
         ts=signal_instance.engagement_thread_ts,
     )
+
+
+def tune_detection(
+    case: Case,
+    db_session: Session,
+    client: WebClient,
+):
+    # Get associated signal
+    signal = case.signal_instances[0].signal if case.signal_instances else None
+
+    if not signal:
+        return "No associated signal found for this case."
+
+    # Get GitHub plugin
+    github_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project.id, plugin_type="github-version-control"
+    )
+
+    if not github_plugin:
+        return "GitHub plugin is not configured for this project."
+
+    # Get current detection content
+    repo_name = "det-geiger-detections"
+    # repo_name = signal.github_repo or case.project.github_repo  # Fallback to project-level config
+    file_path = f"detections/{signal.name}.yaml"  # Adjust the path as needed
+    current_content = github_plugin.get_file_content(repo_name, file_path)
+
+    # Use AI to suggest improvements
+    ai_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project.id, plugin_type="artificial-intelligence"
+    )
+
+    if not ai_plugin:
+        return "AI plugin is not configured for this project."
+
+    prompt = f"""
+    Given the following detection rule:
+
+    {current_content}
+
+    And considering the case details:
+
+    {case.description}
+
+    Suggest improvements to the detection rule to reduce false positives and increase accuracy.
+    """
+
+    ai_response = ai_plugin.chat_completion([{"role": "user", "content": prompt}])
+
+    # Create a pull request with the suggested changes
+    branch_name = f"tune-detection-{case.id}"
+    pr_title = f"Tune detection for case {case.id}"
+    pr_body = f"Suggested improvements for detection related to case {case.id}\n\n{ai_response}"
+
+    pr_number = github_plugin.create_pr(
+        repo_name, branch_name, "main", pr_title, pr_body, file_path, ai_response
+    )
+
+    return f"Created a pull request (#{pr_number}) with suggested improvements to the detection rule. Please review and merge if appropriate."
+
+
+@message_dispatcher.add(subject=CaseSubjects.case)
+def handle_case_message(
+    ack: Ack,
+    body: dict,
+    user: DispatchUser,
+    context: BoltContext,
+    db_session: Session,
+    client: WebClient,
+):
+    ack()
+
+    # Check if the message is in a thread
+    if "thread_ts" not in body:
+        return
+
+    message_text = body["text"].lower()
+
+    # Check for keywords related to tuning the detection
+    tuning_keywords = ["tune detection", "improve detection", "update signal", "refine signal"]
+    if any(keyword in message_text for keyword in tuning_keywords):
+        case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+
+        # Call the tune_detection function
+        result = tune_detection(case, db_session, client)
+
+        # Post the result in the thread
+        client.chat_postMessage(channel=body["channel"], thread_ts=body["thread_ts"], text=result)

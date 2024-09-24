@@ -414,6 +414,7 @@ setup(
             "duo_auth_mfa = dispatch.plugins.dispatch_duo.plugin:DuoMfaPlugin",
             "generic_workflow = dispatch.plugins.generic_workflow.plugin:GenericWorkflowPlugin",
             "github_monitor = dispatch.plugins.dispatch_github.plugin:GithubMonitorPlugin",
+            "github_version_control = dispatch.plugins.dispatch_github_vcs.plugin:GithubVersionControlPlugin",
             "google_calendar_conference = dispatch.plugins.dispatch_google.calendar.plugin:GoogleCalendarConferencePlugin",
             "google_docs_document = dispatch.plugins.dispatch_google.docs.plugin:GoogleDocsDocumentPlugin",
             "google_drive_storage = dispatch.plugins.dispatch_google.drive.plugin:GoogleDriveStoragePlugin",
