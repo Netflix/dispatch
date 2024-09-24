@@ -1,17 +1,18 @@
-import logging
 import json
+import logging
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Union
 
 from fastapi import HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-
-from sqlalchemy import desc, asc, or_
+from sqlalchemy import asc, desc, or_
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.query import Query
 from sqlalchemy.sql.expression import true
 
 from dispatch.auth.models import DispatchUser
+from dispatch.case.models import Case
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.type import service as case_type_service
 from dispatch.case.type.models import CaseType
@@ -29,9 +30,7 @@ from .exceptions import (
     SignalNotDefinedException,
     SignalNotIdentifiedException,
 )
-
 from .models import (
-    assoc_signal_entity_types,
     Signal,
     SignalCreate,
     SignalEngagement,
@@ -46,6 +45,7 @@ from .models import (
     SignalInstance,
     SignalInstanceCreate,
     SignalUpdate,
+    assoc_signal_entity_types,
 )
 
 log = logging.getLogger(__name__)
@@ -757,4 +757,24 @@ def get_unprocessed_signal_instance_ids(session: Session) -> list[int]:
         .order_by(SignalInstance.created_at.asc())
         .limit(500)
         .all()
+    )
+
+
+def get_instances_in_case(db_session: Session, case_id: int) -> Query:
+    return (
+        db_session.query(SignalInstance, Signal)
+        .join(Signal)
+        .with_entities(SignalInstance.id, Signal)
+        .filter(SignalInstance.case_id == case_id)
+        .order_by(SignalInstance.created_at)
+    )
+
+
+def get_cases_for_signal(db_session: Session, signal_id: int, limit: int = 10) -> Query:
+    return (
+        db_session.query(Case)
+        .join(SignalInstance)
+        .filter(SignalInstance.signal_id == signal_id)
+        .order_by(desc(Case.created_at))
+        .limit(limit)
     )

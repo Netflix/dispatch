@@ -1,44 +1,49 @@
+import logging
 from collections import defaultdict
 from typing import NamedTuple
-
 
 from blockkit import (
     Actions,
     Button,
     Context,
+    Divider,
     Message,
     Section,
-    Divider,
 )
 from blockkit.surfaces import Block
+from slack_sdk.errors import SlackApiError
+from slack_sdk.web.client import WebClient
 from sqlalchemy.orm import Session
 
-from dispatch.config import DISPATCH_UI_URL
 from dispatch.case.enums import CaseStatus
 from dispatch.case.models import Case
+from dispatch.config import DISPATCH_UI_URL
+from dispatch.entity import service as entity_service
 from dispatch.entity.models import Entity
 from dispatch.entity_type.models import EntityType
-from dispatch.entity import service as entity_service
 from dispatch.messaging.strings import CASE_STATUS_DESCRIPTIONS, CASE_VISIBILITY_DESCRIPTIONS
+from dispatch.plugin import service as plugin_service
+from dispatch.plugins.dispatch_slack.case.enums import (
+    CaseNotificationActions,
+    SignalEngagementActions,
+    SignalNotificationActions,
+)
+from dispatch.plugins.dispatch_slack.config import MAX_SECTION_TEXT_LENGTH
 from dispatch.plugins.dispatch_slack.models import (
     CaseSubjects,
     EngagementMetadata,
-    SubjectMetadata,
     SignalSubjects,
+    SubjectMetadata,
 )
-from dispatch.plugins.dispatch_slack.case.enums import (
-    CaseNotificationActions,
-    SignalNotificationActions,
-    SignalEngagementActions,
-)
+from dispatch.signal import service as signal_service
+from dispatch.signal.enums import SignalEngagementStatus
 from dispatch.signal.models import (
-    Signal,
     SignalEngagement,
     SignalInstance,
     assoc_signal_instance_entities,
 )
-from dispatch.signal.enums import SignalEngagementStatus
-from dispatch.plugins.dispatch_slack.config import MAX_SECTION_TEXT_LENGTH
+
+log = logging.getLogger(__name__)
 
 
 def map_priority_color(color: str) -> str:
@@ -145,12 +150,6 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
                 value=button_metadata,
             ),
             Button(
-                text="Create Channel",
-                action_id=CaseNotificationActions.migrate,
-                style="primary",
-                value=button_metadata,
-            ),
-            Button(
                 text="Edit",
                 action_id=CaseNotificationActions.edit,
                 style="primary",
@@ -160,6 +159,12 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
                 text="Escalate",
                 action_id=CaseNotificationActions.escalate,
                 style="danger",
+                value=button_metadata,
+            ),
+            Button(
+                text="Create Channel",
+                action_id=CaseNotificationActions.migrate,
+                style="primary",
                 value=button_metadata,
             ),
         ]
@@ -186,16 +191,9 @@ class EntityGroup(NamedTuple):
 def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -> list[Message]:
     """Creates the signal instance message."""
 
-    signal_instances_query = (
-        db_session.query(SignalInstance, Signal)
-        .join(Signal)
-        .with_entities(SignalInstance.id, Signal)
-        .filter(SignalInstance.case_id == case_id)
-        .order_by(SignalInstance.created_at)
-    )
-
-    (first_instance_id, first_instance_signal) = signal_instances_query.first()
-    num_of_instances = signal_instances_query.count()
+    instances = signal_service.get_instances_in_case(db_session=db_session, case_id=case_id)
+    (first_instance_id, first_instance_signal) = instances.first()
+    num_of_instances = instances.count()
 
     organization_slug = first_instance_signal.project.organization.slug
     project_id = first_instance_signal.project.id
@@ -295,6 +293,80 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
     signal_metadata_blocks.append(
         Context(elements=["Correlation is based on two weeks of signal data."]),
     )
+    return Message(blocks=signal_metadata_blocks).build()["blocks"]
+
+
+def create_genai_signal_summary(
+    case: Case,
+    channel_id: str,
+    db_session: Session,
+    client: WebClient,
+) -> list[Block]:
+    """Creates enhanced signal messages with historical context."""
+    signal_metadata_blocks: list[Block] = []
+
+    instances = signal_service.get_instances_in_case(db_session=db_session, case_id=case.id)
+    (first_instance_id, first_instance_signal) = instances.first()
+
+    related_cases = signal_service.get_cases_for_signal(
+        db_session=db_session, signal_id=first_instance_signal.id
+    ).filter(Case.id != case.id)
+
+    # Prepare historical context
+    historical_context = []
+    for related_case in related_cases:
+        historical_context.append(f"Case: {related_case.name}")
+        historical_context.append(f"Resolution: {related_case.resolution}")
+        historical_context.append(f"Resolution Reason: {related_case.resolution_reason}")
+
+        # Fetch Slack messages for the related case
+        if related_case.conversation and related_case.conversation.channel_id:
+            try:
+                # Fetch threaded messages
+                thread_messages = client.conversations_replies(
+                    channel=related_case.conversation.channel_id,
+                    ts=related_case.conversation.thread_id,
+                )
+
+                # Add relevant messages to the context (e.g., first 5 messages)
+                for message in thread_messages["messages"][:5]:
+                    historical_context.append(f"Slack Message: {message['text']}")
+            except SlackApiError as e:
+                log.error(f"Error fetching Slack messages for case {related_case.name}: {e}")
+
+        historical_context.append("---")
+
+    historical_context_str = "\n".join(historical_context)
+
+    signal_instance = signal_service.get_signal_instance(
+        db_session=db_session, signal_instance_id=first_instance_id
+    )
+
+    genai_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project.id, plugin_type="artificial-intelligence"
+    )
+    if not genai_plugin:
+        return signal_metadata_blocks
+
+    response = genai_plugin.instance.chat_completion(
+        prompt=f"""{first_instance_signal.prompt}
+
+        Current Event:
+        {str(signal_instance.raw)}
+
+        Historical Context:
+        {historical_context_str}
+
+        Runbook:
+        {first_instance_signal.runbook}
+        """
+    )
+    message = response["choices"][0]["message"]["content"]
+
+    signal_metadata_blocks.append(
+        Context(elements=[message]),
+    )
+
     return Message(blocks=signal_metadata_blocks).build()["blocks"]
 
 

@@ -6,12 +6,13 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 
-from blockkit import Message
-from blockkit.surfaces import Block
 import io
 import json
 import logging
-from typing import List, Optional, Any
+from typing import Any, List, Optional
+
+from blockkit import Message
+from blockkit.surfaces import Block
 from slack_sdk.errors import SlackApiError
 from sqlalchemy.orm import Session
 
@@ -30,11 +31,11 @@ from dispatch.plugins.dispatch_slack.config import (
 from dispatch.signal.enums import SignalEngagementStatus
 from dispatch.signal.models import SignalEngagement, SignalInstance
 
-
 from .case.messages import (
     create_case_message,
-    create_signal_messages,
+    create_genai_signal_summary,
     create_signal_engagement_message,
+    create_signal_messages,
 )
 from .endpoints import router as slack_event_router
 from .enums import SlackAPIErrorCode
@@ -57,12 +58,11 @@ from .service import (
     resolve_user,
     send_ephemeral_message,
     send_message,
-    set_conversation_topic,
     set_conversation_description,
+    set_conversation_topic,
     unarchive_conversation,
     update_message,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -121,6 +121,19 @@ class SlackConversationPlugin(ConversationPlugin):
                     logger.exception(f"Error uploading alert JSON to the Case thread: {e}")
             except Exception as e:
                 logger.exception(f"Error uploading alert JSON to the Case thread: {e}")
+
+            message = create_genai_signal_summary(
+                case=case,
+                channel_id=conversation_id,
+                db_session=db_session,
+                client=client,
+            )
+            send_message(
+                client=client,
+                conversation_id=conversation_id,
+                ts=case.signal_thread_ts,
+                blocks=message,
+            )
             db_session.commit()
         return response
 
@@ -156,7 +169,10 @@ class SlackConversationPlugin(ConversationPlugin):
             engagement_status=engagement_status,
         )
         return send_message(
-            client=client, conversation_id=conversation_id, blocks=blocks, ts=thread_id
+            client=client,
+            conversation_id=conversation_id,
+            blocks=blocks,
+            ts=thread_id,
         )
 
     def update_thread(self, case: Case, conversation_id: str, ts: str):
