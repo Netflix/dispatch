@@ -1528,7 +1528,12 @@ def handle_create_task_command(
     """Displays a modal for task creation."""
     ack()
     if context["subject"].type == CaseSubjects.case:
-        raise CommandError("Command is not currently available for cases.")
+        modal = Modal(
+            title="Invalid Command",
+            close="Close",
+            blocks=[Section(text=f"Create Task command is not currently available for cases.")],
+        ).build()
+        return client.views_open(trigger_id=body["trigger_id"], view=modal)
 
     participants = participant_service.get_all_by_incident_id(
         db_session=db_session, incident_id=context["subject"].id
@@ -1540,9 +1545,12 @@ def handle_create_task_command(
         db_session=db_session, project_id=incident.project.id, plugin_type="contact"
     )
     if not contact_plugin:
-        raise CommandError(
-            "Contact plugin is not enabled. Unable to list participants.",
-        )
+        modal = Modal(
+            title="Plugin Not Enabled",
+            close="Close",
+            blocks=[Section(text="Contact plugin is not enabled. Unable to list participants.")],
+        ).build()
+        return client.views_open(trigger_id=body["trigger_id"], view=modal)
 
     active_participants = [p for p in participants if p.active_roles]
     participant_list = []
