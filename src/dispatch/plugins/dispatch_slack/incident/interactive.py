@@ -1531,7 +1531,7 @@ def handle_create_task_command(
         modal = Modal(
             title="Invalid Command",
             close="Close",
-            blocks=[Section(text=f"Create Task command is not currently available for cases.")],
+            blocks=[Section(text="Create Task command is not currently available for cases.")],
         ).build()
         return client.views_open(trigger_id=body["trigger_id"], view=modal)
 
