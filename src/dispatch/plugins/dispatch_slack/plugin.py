@@ -122,18 +122,20 @@ class SlackConversationPlugin(ConversationPlugin):
             except Exception as e:
                 logger.exception(f"Error uploading alert JSON to the Case thread: {e}")
 
-            message = create_genai_signal_summary(
-                case=case,
-                channel_id=conversation_id,
-                db_session=db_session,
-                client=client,
-            )
-            send_message(
-                client=client,
-                conversation_id=conversation_id,
-                ts=case.signal_thread_ts,
-                blocks=message,
-            )
+            try:
+                send_message(
+                    client=client,
+                    conversation_id=conversation_id,
+                    ts=case.signal_thread_ts,
+                    blocks=create_genai_signal_summary(
+                        case=case,
+                        channel_id=conversation_id,
+                        db_session=db_session,
+                        client=client,
+                    ),
+                )
+            except Exception as e:
+                logger.exception(f"Error generating Gen AI response to case: {e}")
             db_session.commit()
         return response
 

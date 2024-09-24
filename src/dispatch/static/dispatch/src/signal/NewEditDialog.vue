@@ -242,7 +242,6 @@
                     hint="The model to use for processing."
                     persistent-hint
                     name="model"
-                    readonly
                   />
                 </v-col>
                 <v-col cols="12">
@@ -254,7 +253,6 @@
                     hint="The system message to set the behavior of the assistant"
                     persistent-hint
                     name="systemMessage"
-                    readonly
                   />
                 </v-col>
                 <v-col cols="12">
@@ -266,7 +264,6 @@
                     hint="The prompt to use for the assistant."
                     persistent-hint
                     name="Prompt"
-                    readonly
                   />
                 </v-col>
               </v-row>
