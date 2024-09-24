@@ -348,8 +348,14 @@ def create_genai_signal_summary(
         db_session=db_session, project_id=case.project.id, plugin_type="artificial-intelligence"
     )
 
-    print(f"{signal_instance.signal.__dict__}")
-    if not genai_plugin or not signal_instance.signal.genai_prompt:
+    if not genai_plugin:
+        log.warning("artificial-intelligence plugin not enabled, will not generate signal summary")
+        return signal_metadata_blocks
+
+    if not signal_instance.signal.genai_prompt:
+        log.warning(
+            f"artificial-intelligence plugin enabled but no prompt defined for {signal.name}"
+        )
         return signal_metadata_blocks
 
     response = genai_plugin.instance.chat_completion(

@@ -1744,7 +1744,7 @@ def report_issue(
         Context(
             elements=[
                 MarkdownText(
-                    text="Cases are meant to triage events that do not raise to the level of incidents, but can be escalated to incidents if necessary."
+                    text="Cases are meant for triaging events that do not raise to the level of incidents, but can be escalated to incidents if necessary."
                 )
             ]
         ),
