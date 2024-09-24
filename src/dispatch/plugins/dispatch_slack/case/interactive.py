@@ -859,7 +859,7 @@ def handle_snooze_submission_event(
         db_session.commit()
 
     # Check if last_mfa_time was within the last hour
-    if mfa_enabled is False:
+    if not mfa_enabled:
         _create_snooze_filter(
             db_session=db_session,
             user=user,
