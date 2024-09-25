@@ -162,7 +162,7 @@ def dispatch_user():
     pass
 
 
-# dispatch plugins calculate_incident_cost -o default -p 1
+# dispatch plugins calculate_incident_cost -o default -p 1  -i 4031
 @plugins_group.command("calculate_incident_cost")
 @click.option(
     "--organization",
@@ -175,6 +175,12 @@ def dispatch_user():
     "-p",
     required=False,
     help="Project of incident.",
+)
+@click.option(
+    "--incident_id",
+    "-i",
+    required=True,
+    help="Incident number.",
 )
 def calculate_incident_cost(organization="default", project_id=1, incident_id=1):
     from collections import defaultdict
@@ -237,7 +243,7 @@ def calculate_incident_cost(organization="default", project_id=1, incident_id=1)
                     participant=ParticipantRead(id=participant.id),
                     incident=t_incident,
                 )
-                participant_response_time, (plugin_event, start_at, end_at) = (
+                participant_response_time, (prev_start_at, prev_end_at, start_at, end_at) = (
                     participant_activity_service.preview(
                         activity_in=activity_in,
                         participant_activities=participant_activities,
@@ -247,17 +253,23 @@ def calculate_incident_cost(organization="default", project_id=1, incident_id=1)
                     participants_total_response_time_seconds += (
                         participant_response_time.total_seconds()
                     )
-                    participant_activities_accumulation[(participant.id, start_at)] = (
-                        plugin_event,
-                        end_at,
+                    participant_activities_accumulation[(participant.id, start_at)] = end_at
+
+                    if prev_start_at:
+                        participant_activities_accumulation[(participant.id, prev_start_at)] = (
+                            prev_end_at
+                        )
+
+                    print(
+                        f"comparing: [{participant_response_time.total_seconds()}] vs. [{(end_at - start_at).total_seconds()}] vs [{(prev_end_at - prev_start_at).total_seconds() if prev_start_at else 0}]"
                     )
         # print("participants_total_response_time_seconds", participants_total_response_time_seconds)
         hourly_rate = incident_cost_service.get_hourly_rate(project=t_incident.project)
         # print("hourly rate: ", hourly_rate)
-        amount = incident_cost_service.calculate_response_cost(
-            hourly_rate=hourly_rate,
-            total_response_time_seconds=participants_total_response_time_seconds,
-        )
+        # amount = incident_cost_service.calculate_response_cost(
+        #     hourly_rate=hourly_rate,
+        #     total_response_time_seconds=participants_total_response_time_seconds,
+        # )
 
         incident_costs = t_incident.incident_costs
         other_costs = 0
@@ -266,19 +278,23 @@ def calculate_incident_cost(organization="default", project_id=1, incident_id=1)
                 other_costs += incident_cost.amount
         # print(t_incident.total_cost, ", ", amount + other_costs)
 
-        plugin_events_time = defaultdict(int)
+        participant_plugin_events_time = defaultdict(int)
 
         for participant_id, start_time in participant_activities_accumulation.keys():
-            plugin_event_name, end_time = participant_activities_accumulation[
-                (participant_id, start_time)
-            ]
-            plugin_events_time[plugin_event_name] += (end_time - start_time).total_seconds()
+            p = incident_cost_service.participant_service.get(
+                db_session=db_session, participant_id=participant_id
+            )
+            end_time = participant_activities_accumulation[(participant_id, start_time)]
+            participant_plugin_events_time[p.individual.name] += (
+                end_time - start_time
+            ).total_seconds()
         costs.append(
             [
                 incident_id,
-                int(t_incident.total_cost),
-                amount + other_costs,
-                dict(plugin_events_time),
+                int(t_incident.total_cost) / hourly_rate * 3600,
+                participants_total_response_time_seconds,
+                # amount + other_costs,
+                dict(participant_plugin_events_time),
             ]
         )
     from pprint import pprint

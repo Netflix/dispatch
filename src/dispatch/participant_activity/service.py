@@ -108,8 +108,10 @@ def preview(
         if activity_in.plugin_event.id == prev_activity.plugin_event.id:
             delta = activity_in.ended_at - prev_activity.ended_at
             prev_activity.ended_at = activity_in.ended_at
+            activity_in.started_at = activity_in.ended_at  # do not double count
             return delta, (
-                activity_in.plugin_event.name,
+                prev_activity.started_at,
+                prev_activity.ended_at,
                 activity_in.started_at,
                 activity_in.ended_at,
             )
@@ -120,7 +122,12 @@ def preview(
 
     participant_activities[activity_in.participant.id].append(activity_in)
     delta += activity_in.ended_at - activity_in.started_at
-    return delta, (activity_in.plugin_event.name, activity_in.started_at, activity_in.ended_at)
+    return delta, (
+        prev_activity.started_at if prev_activity else None,
+        prev_activity.ended_at if prev_activity else None,
+        activity_in.started_at,
+        activity_in.ended_at,
+    )
 
 
 def create_or_update(db_session: SessionLocal, activity_in: ParticipantActivityCreate) -> timedelta:
