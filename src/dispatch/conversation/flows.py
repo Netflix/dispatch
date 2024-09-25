@@ -121,6 +121,48 @@ def create_case_conversation(
             description=f"Case conversation has migrated from thread [{thread_conversation_weblink}] to channel[{case.conversation.weblink}].",
             case_id=case.id,
         )
+
+        # Inform users in the case thread that the conversation has migrated to a channel
+        try:
+            plugin.instance.send(
+                thread_conversation_channel_id,
+                "Notify Case conversation migration",
+                [],
+                MessageType.case_notification,
+                blocks=messages.create_case_thread_migration_message(
+                    channel_weblink=conversation.get("weblink")
+                ),
+                ts=thread_conversation_thread_id,
+            )
+        except Exception as e:
+            event_service.log_subject_event(
+                subject=case,
+                db_session=db_session,
+                source="Dispatch Core App",
+                description=f"Failed to send message to original Case thread. Reason: {e}",
+            )
+            log.exception(e)
+
+        # Provide users in the case channel which thread the conversation originated from.
+        try:
+            plugin.instance.send(
+                case.conversation.channel_id,
+                "Maintain Case conversation context",
+                [],
+                MessageType.case_notification,
+                blocks=messages.create_case_channel_migration_message(
+                    thread_weblink=thread_conversation_weblink
+                ),
+            )
+        except Exception as e:
+            event_service.log_subject_event(
+                subject=case,
+                db_session=db_session,
+                source="Dispatch Core App",
+                description=f"Failed to send message to dedicated Case channel. Reason: {e}",
+            )
+            log.exception(e)
+
     try:
         plugin.instance.update_thread(
             case=case,
@@ -133,47 +175,6 @@ def create_case_conversation(
             db_session=db_session,
             source="Dispatch Core App",
             description=f"Updating thread message failed. Reason: {e}",
-        )
-        log.exception(e)
-
-    # Inform users in the case thread that the conversation has migrated to a channel
-    try:
-        plugin.instance.send(
-            thread_conversation_channel_id,
-            "Notify Case conversation migration",
-            [],
-            MessageType.case_notification,
-            blocks=messages.create_case_thread_migration_message(
-                channel_weblink=conversation.get("weblink")
-            ),
-            ts=thread_conversation_thread_id,
-        )
-    except Exception as e:
-        event_service.log_subject_event(
-            subject=case,
-            db_session=db_session,
-            source="Dispatch Core App",
-            description=f"Failed to send message to original Case thread. Reason: {e}",
-        )
-        log.exception(e)
-
-    # Provide users in the case channel which thread the conversation originated from.
-    try:
-        plugin.instance.send(
-            case.conversation.channel_id,
-            "Maintain Case conversation context",
-            [],
-            MessageType.case_notification,
-            blocks=messages.create_case_channel_migration_message(
-                thread_weblink=thread_conversation_weblink
-            ),
-        )
-    except Exception as e:
-        event_service.log_subject_event(
-            subject=case,
-            db_session=db_session,
-            source="Dispatch Core App",
-            description=f"Failed to send message to dedicated Case channel. Reason: {e}",
         )
         log.exception(e)
 
