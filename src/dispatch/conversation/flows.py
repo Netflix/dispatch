@@ -122,6 +122,21 @@ def create_case_conversation(
             case_id=case.id,
         )
 
+        try:
+            plugin.instance.update_thread(
+                case=case,
+                conversation_id=thread_conversation_channel_id,
+                ts=thread_conversation_thread_id,
+            )
+        except Exception as e:
+            event_service.log_subject_event(
+                subject=case,
+                db_session=db_session,
+                source="Dispatch Core App",
+                description=f"Updating thread message failed. Reason: {e}",
+            )
+            log.exception(e)
+
         # Inform users in the case thread that the conversation has migrated to a channel
         try:
             plugin.instance.send(
@@ -162,21 +177,6 @@ def create_case_conversation(
                 description=f"Failed to send message to dedicated Case channel. Reason: {e}",
             )
             log.exception(e)
-
-    try:
-        plugin.instance.update_thread(
-            case=case,
-            conversation_id=thread_conversation_channel_id,
-            ts=thread_conversation_thread_id,
-        )
-    except Exception as e:
-        event_service.log_subject_event(
-            subject=case,
-            db_session=db_session,
-            source="Dispatch Core App",
-            description=f"Updating thread message failed. Reason: {e}",
-        )
-        log.exception(e)
 
     db_session.add(case)
     db_session.commit()
