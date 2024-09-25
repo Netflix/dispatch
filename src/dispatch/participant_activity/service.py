@@ -94,7 +94,7 @@ def get_participant_activity_from_last_update(
 def preview(
     activity_in: ParticipantActivityCreate,
     participant_activities: dict[int, list],
-) -> timedelta:
+):  # -> timedelta, tuple(str, datetime, datetime):
     """Creates or updates a participant activity. Returns the change of the participant's total incident response time."""
     delta = timedelta(seconds=0)
     prev_activity = None
@@ -108,7 +108,11 @@ def preview(
         if activity_in.plugin_event.id == prev_activity.plugin_event.id:
             delta = activity_in.ended_at - prev_activity.ended_at
             prev_activity.ended_at = activity_in.ended_at
-            return delta
+            return delta, (
+                activity_in.plugin_event.name,
+                activity_in.started_at,
+                activity_in.ended_at,
+            )
 
         # New activity is associated with a different plugin event.
         delta += activity_in.started_at - prev_activity.ended_at
@@ -116,7 +120,7 @@ def preview(
 
     participant_activities[activity_in.participant.id].append(activity_in)
     delta += activity_in.ended_at - activity_in.started_at
-    return delta
+    return delta, (activity_in.plugin_event.name, activity_in.started_at, activity_in.ended_at)
 
 
 def create_or_update(db_session: SessionLocal, activity_in: ParticipantActivityCreate) -> timedelta:

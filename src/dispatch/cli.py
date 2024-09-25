@@ -162,7 +162,7 @@ def dispatch_user():
     pass
 
 
-# dispatch plugins calculate_incident_cost -o default -p 1  -i 4031
+# dispatch plugins calculate_incident_cost -o default -p 1
 @plugins_group.command("calculate_incident_cost")
 @click.option(
     "--organization",
@@ -175,12 +175,6 @@ def dispatch_user():
     "-p",
     required=False,
     help="Project of incident.",
-)
-@click.option(
-    "--incident_id",
-    "-i",
-    required=True,
-    help="Incident number.",
 )
 def calculate_incident_cost(organization="default", project_id=1, incident_id=1):
     from collections import defaultdict
@@ -200,147 +194,11 @@ def calculate_incident_cost(organization="default", project_id=1, incident_id=1)
 
     db_session = refetch_db_session(organization_slug=organization)
 
-    costs = [["id", "classic", "new"]]
+    costs = [["id", "classic", "new", "plugin_events"]]
     incident_ids = [
         4141,
-        4140,
-        4139,
-        4138,
-        4137,
-        4136,
-        4134,
-        4133,
-        4132,
-        4131,
-        4130,
-        4129,
-        4128,
-        4127,
-        4126,
-        4119,
-        4118,
-        4117,
-        4116,
-        4115,
-        4114,
-        4113,
-        4112,
-        4111,
-        4110,
-        4109,
-        4108,
-        4107,
-        4106,
-        4103,
-        4102,
-        4101,
-        4098,
-        4097,
-        4095,
-        4094,
-        4093,
-        4092,
-        4091,
-        4088,
-        4087,
-        4086,
-        4085,
-        4084,
-        4083,
-        4082,
-        4081,
-        4080,
-        4079,
-        4078,
-        4077,
-        4075,
-        4074,
-        4073,
-        4072,
-        4071,
-        4070,
-        4067,
-        4066,
-        4065,
-        4064,
-        4063,
-        4062,
-        4061,
-        4060,
-        4059,
-        4056,
-        4055,
-        4054,
-        4052,
-        4051,
-        4050,
-        4049,
-        4046,
-        4045,
-        4044,
-        4042,
-        4041,
-        4040,
-        4039,
-        4038,
-        4037,
-        4035,
-        4034,
-        4033,
-        4029,
-        4028,
-        4026,
-        4025,
-        4024,
-        4021,
-        4020,
-        4018,
-        4017,
-        4011,
-        4010,
-        4009,
-        4008,
-        4007,
-        4002,
-        3998,
-        3997,
-        3996,
-        3995,
-        3993,
-        3992,
-        3991,
-        3990,
-        3989,
-        3988,
-        3985,
-        3983,
-        3982,
-        3980,
-        3979,
-        3978,
-        3977,
-        3976,
-        3974,
-        3972,
-        3968,
-        3967,
-        3965,
-        3964,
-        3963,
-        3962,
-        3960,
-        3959,
-        3957,
-        3956,
-        3955,
-        3954,
-        3953,
-        3952,
-        3951,
-        3950,
-        3949,
-        3948,
     ]
+    participant_activities_accumulation = {}
 
     for incident_id in incident_ids:
         print("\n\n")
@@ -369,7 +227,7 @@ def calculate_incident_cost(organization="default", project_id=1, incident_id=1)
                     user_conversation_id=user_id,
                 )
                 if not participant:
-                    log.warning("Cannot resolve participant.")
+                    log.warning(f"Cannot resolve participant [{user_id}].")
                     continue
 
                 activity_in = ParticipantActivityCreate(
@@ -379,12 +237,19 @@ def calculate_incident_cost(organization="default", project_id=1, incident_id=1)
                     participant=ParticipantRead(id=participant.id),
                     incident=t_incident,
                 )
-                if participant_response_time := participant_activity_service.preview(
-                    activity_in=activity_in,
-                    participant_activities=participant_activities,
-                ):
+                participant_response_time, (plugin_event, start_at, end_at) = (
+                    participant_activity_service.preview(
+                        activity_in=activity_in,
+                        participant_activities=participant_activities,
+                    )
+                )
+                if participant_response_time:
                     participants_total_response_time_seconds += (
                         participant_response_time.total_seconds()
+                    )
+                    participant_activities_accumulation[(participant.id, start_at)] = (
+                        plugin_event,
+                        end_at,
                     )
         # print("participants_total_response_time_seconds", participants_total_response_time_seconds)
         hourly_rate = incident_cost_service.get_hourly_rate(project=t_incident.project)
@@ -400,9 +265,25 @@ def calculate_incident_cost(organization="default", project_id=1, incident_id=1)
             if not incident_cost.incident_cost_type.default:
                 other_costs += incident_cost.amount
         # print(t_incident.total_cost, ", ", amount + other_costs)
-        costs.append([incident_id, t_incident.total_cost, amount + other_costs])
 
-    print(costs)
+        plugin_events_time = defaultdict(int)
+
+        for participant_id, start_time in participant_activities_accumulation.keys():
+            plugin_event_name, end_time = participant_activities_accumulation[
+                (participant_id, start_time)
+            ]
+            plugin_events_time[plugin_event_name] += (end_time - start_time).total_seconds()
+        costs.append(
+            [
+                incident_id,
+                int(t_incident.total_cost),
+                amount + other_costs,
+                dict(plugin_events_time),
+            ]
+        )
+    from pprint import pprint
+
+    pprint(costs)
     # print("The classic cost is: ", t_incident.total_cost)
     # print("The new cost is: ", amount + other_costs)
 
