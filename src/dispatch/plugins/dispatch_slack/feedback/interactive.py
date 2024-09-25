@@ -387,7 +387,7 @@ def handle_oncall_shift_feedback_submission_event(
     feedback = form_data.get(ServiceFeedbackNotificationBlockIds.feedback_input, "")
     rating = form_data.get(ServiceFeedbackNotificationBlockIds.rating_select, {}).get("value")
 
-    # metadata is organization_slug|project_id|schedule_id|shift_end_at|reminder_id|shift_start_at|details
+    # metadata is organization_slug|project_id|schedule_id|shift_end_at|reminder_id|details
     metadata = body["view"]["private_metadata"].split("|")
     project_id = metadata[1]
     schedule_id = metadata[2]
@@ -403,16 +403,9 @@ def handle_oncall_shift_feedback_submission_event(
         if reminder_id.isnumeric():
             reminder_service.delete(db_session=db_session, reminder_id=reminder_id)
     if len(metadata) > 5:
-        shift_start_raw = metadata[5]
-        shift_start_at = (
-            datetime.strptime(shift_start_raw, "%Y-%m-%dT%H:%M:%SZ")
-            if "T" in shift_start_raw
-            else datetime.strptime(shift_start_raw, "%Y-%m-%d %H:%M:%S")
-        )
         # if there are other details, store those
         details = json.loads(metadata[5])
     else:
-        shift_start_at = None
         details = None
 
     individual = (
@@ -432,7 +425,6 @@ def handle_oncall_shift_feedback_submission_event(
         rating=ServiceFeedbackRating(rating),
         schedule=schedule_id,
         shift_end_at=shift_end_at,
-        shift_start_at=shift_start_at,
         project=project,
         details=details,
     )
