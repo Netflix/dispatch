@@ -59,7 +59,7 @@
               </v-tooltip>
             </template>
             <template #item.details="{ item }">
-              <span v-if="item.details">
+              <span v-if="item.details && item.details.length > 0">
                 Incidents: {{ item.details[0].num_incidents }}<br />
                 Cases: {{ item.details[0].num_cases }}<br />
                 Participants: {{ item.details[0].num_participants }}<br />
