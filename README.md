@@ -16,6 +16,7 @@ This means you can let Dispatch focus on creating resources, assembling particip
 This repo requires the use of a python virtual environment. To create a virtual environment, run the following command:
 
 ```bash
+python -m venv ./py_venv
 source py_venv/bin/activate
 ```
 

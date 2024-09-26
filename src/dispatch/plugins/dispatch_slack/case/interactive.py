@@ -122,6 +122,8 @@ def configure(config: SlackConversationConfiguration):
         handle_list_signals_command
     )
 
+    app.command(config.slack_command_report_issue, middleware=[db_middleware])(report_issue)
+
     middleware = [
         subject_middleware,
         configuration_middleware,
@@ -1744,7 +1746,7 @@ def report_issue(
         Context(
             elements=[
                 MarkdownText(
-                    text="Cases are meant for triaging events that do not raise to the level of incidents, but can be escalated to incidents if necessary."
+                    text="Issues are meant for triaging events that do not raise to the level of incidents, but can be escalated to incidents if necessary."
                 )
             ]
         ),
@@ -1758,7 +1760,7 @@ def report_issue(
     ]
 
     modal = Modal(
-        title="Open a Case",
+        title="Report an issue",
         blocks=blocks,
         submit="Report",
         close="Close",
@@ -1814,7 +1816,7 @@ def handle_report_project_select_action(
     ]
 
     modal = Modal(
-        title="Open a Case",
+        title="Report an Issue",
         blocks=blocks,
         submit="Report",
         close="Close",
@@ -1918,52 +1920,6 @@ def handle_report_case_type_select_action(
         ),
     ]
 
-    # Create a new assignee_select block with a unique block_id
-    new_block_id = f"{DefaultBlockIds.case_assignee_select}_{case_type_id}"
-    blocks.append(
-        assignee_select(
-            initial_user=assignee_slack_id if assignee_slack_id else None,
-            action_id=CaseReportActions.assignee_select,
-            block_id=new_block_id,
-        ),
-    )
-
-    # Conditionally add context blocks
-    if oncall_service_name and assignee_email:
-        if service_url:
-            oncall_text = (
-                f"👩‍🚒 {assignee_email} is on-call for <{service_url}|{oncall_service_name}>"
-            )
-        else:
-            oncall_text = f"👩‍🚒 {assignee_email} is on-call for {oncall_service_name}"
-
-        blocks.extend(
-            [
-                Context(elements=[MarkdownText(text=oncall_text)]),
-                Divider(),
-                Context(
-                    elements=[
-                        MarkdownText(
-                            text="Not who you're looking for? You can override the assignee for this case."
-                        )
-                    ]
-                ),
-            ]
-        )
-    else:
-        blocks.extend(
-            [
-                Context(
-                    elements=[
-                        MarkdownText(
-                            text="There is no on-call service associated with this case type."
-                        )
-                    ]
-                ),
-                Context(elements=[MarkdownText(text="Please select an assignee for this case.")]),
-            ]
-        )
-
     blocks.append(
         case_priority_select(
             db_session=db_session,
@@ -1975,7 +1931,7 @@ def handle_report_case_type_select_action(
     )
 
     modal = Modal(
-        title="Open a Case",
+        title="Report an Issue",
         blocks=blocks,
         submit="Report",
         close="Close",
@@ -1992,7 +1948,7 @@ def handle_report_case_type_select_action(
 def ack_report_case_submission_event(ack: Ack) -> None:
     """Handles the report case submission event acknowledgment."""
     modal = Modal(
-        title="Open a Case",
+        title="Report an Issue",
         close="Close",
         blocks=[Section(text="Creating case resources...")],
     ).build()

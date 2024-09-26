@@ -129,6 +129,10 @@ def get_incident_conversation_command_message(
             "response_type": "ephemeral",
             "text": "Fetching the list of workflows...",
         },
+        config.slack_command_report_issue: {
+            "response_type": "ephemeral",
+            "text": "Opening a dialog to report an issue...",
+        },
     }
 
     return command_messages.get(command_string, default)

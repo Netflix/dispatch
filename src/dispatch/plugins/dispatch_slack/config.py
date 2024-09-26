@@ -151,3 +151,9 @@ class SlackConversationConfiguration(SlackConfiguration):
         title="List Workflows Command String",
         description="Defines the string used to list all available workflows. Must match what is defined in Slack",
     )
+    # report a case, but use the "issue" name to have low-context
+    slack_command_report_issue: str = Field(
+        "/dispatch-report-issue",
+        title="Report Issue Command String",
+        description="Defines the string used to report an issue (case). Must match what is defined in Slack.",
+    )
