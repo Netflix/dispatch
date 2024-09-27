@@ -18,7 +18,10 @@
         </v-tooltip>
       </template>
       <v-card-text>
-        <p>
+        <p v-if="project?.report_incident_instructions">
+          {{ project?.report_incident_instructions }}
+        </p>
+        <p v-else>
           If you suspect an incident and need help, please fill out this form to the best of your
           abilities.
         </p>
@@ -35,7 +38,11 @@
             <v-textarea
               v-model="title"
               label="Title"
-              hint="A brief explanatory title. You can change this later."
+              :hint="
+                project?.report_incident_title_hint
+                  ? project.report_incident_title_hint
+                  : 'A brief explanatory title. You can change this later.'
+              "
               clearable
               auto-grow
               rows="2"
@@ -48,7 +55,11 @@
             <v-textarea
               v-model="description"
               label="Description"
-              hint="A summary of what you know so far. It's all right if this is incomplete."
+              :hint="
+                project?.report_incident_description_hint
+                  ? project.report_incident_description_hint
+                  : 'A summary of what you know so far. It is all right if this is incomplete.'
+              "
               clearable
               auto-grow
               rows="3"

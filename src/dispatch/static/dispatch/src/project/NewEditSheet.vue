@@ -161,6 +161,37 @@
                   hint="Enable the option to select a specific incident commander in the UI"
                 />
               </v-col>
+              <span class="text-body-1 text-medium-emphasis">Report incident card settings</span>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="report_incident_instructions"
+                  label="Instructions for report incident card"
+                  hint="Describes the instructions for the report incident card."
+                  clearable
+                  required
+                  name="Instructions for report incident card"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="report_incident_title_hint"
+                  label="Hint for the incident title on the report incident card"
+                  hint="Describes the hint for the incident title on the report incident card."
+                  clearable
+                  required
+                  name="Hint for the incident title on the report incident card"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="report_incident_description_hint"
+                  label="Hint for the incident description on the report incident card"
+                  hint="Describes the hint for the incident description on the report incident card."
+                  clearable
+                  required
+                  name="Hint for the incident description on the report incident card"
+                />
+              </v-col>
             </v-row>
           </v-container>
         </v-card-text>
@@ -207,6 +238,9 @@ export default {
       "selected.storage_use_title",
       "selected.allow_self_join",
       "selected.select_commander_visibility",
+      "selected.report_incident_instructions",
+      "selected.report_incident_title_hint",
+      "selected.report_incident_description_hint",
       "dialogs.showCreateEdit",
     ]),
   },
