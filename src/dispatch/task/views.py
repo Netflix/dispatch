@@ -8,6 +8,8 @@ from dispatch.common.utils.views import create_pydantic_include
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
+from dispatch.incident import service as incident_service
+
 from .enums import TaskStatus
 from .flows import send_task_notification
 from dispatch.messaging.strings import (
@@ -64,7 +66,14 @@ def create_task(
 
 
 @router.put("/{task_id}", response_model=TaskRead, tags=["tasks"])
-def update_task(db_session: DbSession, task_id: PrimaryKey, task_in: TaskUpdate):
+def update_task(db_session: DbSession, task_id: PrimaryKey, task_in_d: dict):
+    try:
+        print(f"*** task_in_d: {task_in_d}")
+        incident = incident_service.get(db_session=db_session, incident_id=task_in_d["incident_id"])
+        task_in = TaskUpdate(**task_in_d, incident=incident)
+    except Exception as e:
+        print(f"*** Error: {e}")
+        return None
     """Updates an existing task."""
     task = get(db_session=db_session, task_id=task_id)
     if not task:

@@ -253,7 +253,10 @@ class TaskRead(DispatchBase):
     created_at: Optional[datetime]
     description: Optional[str] = Field(None, nullable=True)
     status: TaskStatus = TaskStatus.open
+    owner: Optional[ParticipantRead]
     weblink: Optional[AnyHttpUrl] = Field(None, nullable=True)
+    resolve_by: Optional[datetime]
+    resolved_at: Optional[datetime]
 
 
 class TaskReadMinimal(DispatchBase):
