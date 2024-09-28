@@ -68,12 +68,13 @@ def create_task(
 @router.put("/{task_id}", response_model=TaskRead, tags=["tasks"])
 def update_task(db_session: DbSession, task_id: PrimaryKey, task_in_d: dict):
     try:
-        print(f"*** task_in_d: {task_in_d}")
         incident = incident_service.get(db_session=db_session, incident_id=task_in_d["incident_id"])
         task_in = TaskUpdate(**task_in_d, incident=incident)
-    except Exception as e:
-        print(f"*** Error: {e}")
-        return None
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "Badly formatted task data."}],
+        )
     """Updates an existing task."""
     task = get(db_session=db_session, task_id=task_id)
     if not task:

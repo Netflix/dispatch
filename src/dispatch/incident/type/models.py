@@ -31,6 +31,7 @@ class IncidentType(ProjectMixin, Base):
     default = Column(Boolean, default=False)
     visibility = Column(String, default=Visibility.open)
     plugin_metadata = Column(JSON, default=[])
+    task_plugin_metadata = Column(JSON, default=[])
 
     incident_template_document_id = Column(Integer, ForeignKey("document.id"))
     incident_template_document = relationship(
@@ -110,6 +111,7 @@ class IncidentTypeBase(DispatchBase):
     cost_model: Optional[CostModelRead] = None
     channel_description: Optional[str] = Field(None, nullable=True)
     description_service: Optional[ServiceRead]
+    task_plugin_metadata: List[PluginMetadata] = []
 
     @validator("plugin_metadata", pre=True)
     def replace_none_with_empty_list(cls, value):

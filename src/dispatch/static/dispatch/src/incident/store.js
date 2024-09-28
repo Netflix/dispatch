@@ -282,7 +282,6 @@ const actions = {
   },
   showNewTaskDialog({ commit }, task) {
     state.selected.currentTask = task
-    console.log(`***** task: ${JSON.stringify(task)}`)
     commit("SET_DIALOG_EDIT_TASK", true)
   },
   closeNewTaskDialog({ commit }) {
