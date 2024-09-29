@@ -563,6 +563,14 @@ def get_channel_activity(client: WebClient, conversation_id: str, oldest: str = 
             if "bot_id" in message:
                 continue
 
+            if "subtype" in message and message["subtype"] in (
+                "channel_purpose",
+                "channel_topic",
+                "channel_leave",
+                "channel_join",
+            ):
+                continue
+
             # Resolves users for messages.
             if "user" in message:
                 user_id = resolve_user(client, message["user"])["id"]

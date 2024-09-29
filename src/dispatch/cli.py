@@ -201,15 +201,9 @@ def calculate_incident_cost(organization="default", project_id=1, incident_id=1)
     db_session = refetch_db_session(organization_slug=organization)
 
     costs = [["id", "classic", "new", "plugin_events"]]
-    incident_ids = [
-        4141,
-    ]
-    participant_activities_accumulation = {}
+    incident_ids = []
 
     for incident_id in incident_ids:
-        print("\n\n")
-        print(costs)
-        print("\n\n")
         t_incident = incident_service.get(db_session=db_session, incident_id=int(incident_id))
         # log.debug(incident_id, t_incident)
         oldest = t_incident.created_at.replace(tzinfo=timezone.utc).timestamp()
@@ -227,6 +221,7 @@ def calculate_incident_cost(organization="default", project_id=1, incident_id=1)
             )
 
             for ts, user_id in incident_events:
+                participant_response_time = timedelta(seconds=0)
                 participant = incident_cost_service.participant_service.get_by_incident_id_and_conversation_id(
                     db_session=db_session,
                     incident_id=t_incident.id,
@@ -243,65 +238,57 @@ def calculate_incident_cost(organization="default", project_id=1, incident_id=1)
                     participant=ParticipantRead(id=participant.id),
                     incident=t_incident,
                 )
-                participant_response_time, (prev_start_at, prev_end_at, start_at, end_at) = (
-                    participant_activity_service.preview(
-                        activity_in=activity_in,
-                        participant_activities=participant_activities,
-                    )
-                )
-                if participant_response_time:
-                    participants_total_response_time_seconds += (
-                        participant_response_time.total_seconds()
-                    )
-                    participant_activities_accumulation[(participant.id, start_at)] = end_at
 
-                    if prev_start_at:
-                        participant_activities_accumulation[(participant.id, prev_start_at)] = (
-                            prev_end_at
+                # If the participant has already been recorded.
+                if participant.id in participant_activities:
+                    # Continuous activity
+                    if activity_in.started_at < participant_activities[participant.id][-1].ended_at:
+                        last_recorded_activity = participant_activities[participant.id][-1]
+                        previous_time = (
+                            last_recorded_activity.ended_at - last_recorded_activity.started_at
                         )
+                        current_time = activity_in.ended_at - last_recorded_activity.started_at
+                        participant_response_time = current_time - previous_time
+                        last_recorded_activity.ended_at = activity_in.ended_at
+                    # No overlap
+                    else:
+                        participant_response_time = activity_in.ended_at - activity_in.started_at
+                        participant_activities[participant.id].append(activity_in)
+                # New Participant
+                else:
+                    participant_response_time = activity_in.ended_at - activity_in.started_at
+                    participant_activities[participant.id].append(activity_in)
 
-                    print(
-                        f"comparing: [{participant_response_time.total_seconds()}] vs. [{(end_at - start_at).total_seconds()}] vs [{(prev_end_at - prev_start_at).total_seconds() if prev_start_at else 0}]"
-                    )
-        # print("participants_total_response_time_seconds", participants_total_response_time_seconds)
-        hourly_rate = incident_cost_service.get_hourly_rate(project=t_incident.project)
-        # print("hourly rate: ", hourly_rate)
-        # amount = incident_cost_service.calculate_response_cost(
-        #     hourly_rate=hourly_rate,
-        #     total_response_time_seconds=participants_total_response_time_seconds,
-        # )
+                participants_total_response_time_seconds += (
+                    participant_response_time.total_seconds()
+                )
 
-        incident_costs = t_incident.incident_costs
-        other_costs = 0
-        for incident_cost in incident_costs:
-            if not incident_cost.incident_cost_type.default:
-                other_costs += incident_cost.amount
-        # print(t_incident.total_cost, ", ", amount + other_costs)
-
+        # used to accumulate participant events time
         participant_plugin_events_time = defaultdict(int)
+        for participant_id in participant_activities:
+            for activity in participant_activities[participant_id]:
+                participant_plugin_events_time[participant_id] += (
+                    activity.ended_at - activity.started_at
+                ).total_seconds()
 
-        for participant_id, start_time in participant_activities_accumulation.keys():
-            p = incident_cost_service.participant_service.get(
-                db_session=db_session, participant_id=participant_id
-            )
-            end_time = participant_activities_accumulation[(participant_id, start_time)]
-            participant_plugin_events_time[p.individual.name] += (
-                end_time - start_time
-            ).total_seconds()
+        # for participant_id in participant_activities:
+        #     print(f"Participant({participant_id})")
+        #     for activity in participant_activities[participant_id]:
+        #         print(f"Activity({activity.started_at}, {activity.ended_at})")
+        # break
+
+        hourly_rate = incident_cost_service.get_hourly_rate(project=t_incident.project)
         costs.append(
             [
                 incident_id,
                 int(t_incident.total_cost) / hourly_rate * 3600,
                 participants_total_response_time_seconds,
-                # amount + other_costs,
                 dict(participant_plugin_events_time),
             ]
         )
     from pprint import pprint
 
     pprint(costs)
-    # print("The classic cost is: ", t_incident.total_cost)
-    # print("The new cost is: ", amount + other_costs)
 
 
 @dispatch_user.command("register")
