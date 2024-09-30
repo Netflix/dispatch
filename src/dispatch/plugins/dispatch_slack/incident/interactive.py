@@ -1602,7 +1602,6 @@ def ack_create_task_submission_event(ack: Ack) -> None:
 )
 def handle_create_task_submission_event(
     ack: Ack,
-    body: dict,
     client: WebClient,
     context: BoltContext,
     db_session: Session,
@@ -1613,18 +1612,43 @@ def handle_create_task_submission_event(
     ack()
 
     participant_email = form_data.get(CreateTaskBlockIds.assignee_select).get("value", "")
-    owner = participant_service.get_by_incident_id_and_email(
+    assignee = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=context["subject"].id, email=participant_email
+    )
+    creator = participant_service.get_by_incident_id_and_email(
+        db_session=db_session, incident_id=context["subject"].id, email=user.email
     )
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
     task_in = TaskCreate(
-        assignees=[ParticipantUpdate.from_orm(owner)],
-        creator={"individual": {"email": user.email}},
+        assignees=[ParticipantUpdate.from_orm(assignee)],
+        creator=ParticipantUpdate.from_orm(creator),
         description=form_data.get(CreateTaskBlockIds.description, ""),
         incident=IncidentRead.from_orm(incident),
     )
-    task_service.create(db_session=db_session, task_in=task_in)
+    task = task_service.create(db_session=db_session, task_in=task_in)
+
+    blocks = {
+        "type": "section",
+        "text": {
+            "type": "mrkdwn",
+            "text": f"*<{creator.individual.weblink}|{creator.individual.name}>* created a new task.",
+        },
+        "fields": [
+            {"type": "mrkdwn", "text": "*Assignee:*"},
+            {"type": "mrkdwn", "text": "*Description:*"},
+            {
+                "type": "plain_text",
+                "text": f"<{assignee.individual.weblink}|{assignee.individual.name}>",
+            },
+            {"type": "plain_text", "text": task.description},
+        ],
+    }
+
+    client.chat_postMessage(
+        blocks=[blocks],
+        channel=incident.conversation.channel_id,
+    )
 
 
 def handle_engage_oncall_command(
