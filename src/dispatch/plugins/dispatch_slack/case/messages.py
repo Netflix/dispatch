@@ -1,5 +1,4 @@
 import logging
-from collections import defaultdict
 from typing import NamedTuple
 
 from blockkit import (
@@ -18,9 +17,6 @@ from sqlalchemy.orm import Session
 from dispatch.case.enums import CaseStatus
 from dispatch.case.models import Case
 from dispatch.config import DISPATCH_UI_URL
-from dispatch.entity import service as entity_service
-from dispatch.entity.models import Entity
-from dispatch.entity_type.models import EntityType
 from dispatch.messaging.strings import CASE_STATUS_DESCRIPTIONS, CASE_VISIBILITY_DESCRIPTIONS
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack.case.enums import (
@@ -40,7 +36,6 @@ from dispatch.signal.enums import SignalEngagementStatus
 from dispatch.signal.models import (
     SignalEngagement,
     SignalInstance,
-    assoc_signal_instance_entities,
 )
 
 log = logging.getLogger(__name__)
@@ -211,7 +206,6 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
     """
     instances = signal_service.get_instances_in_case(db_session=db_session, case_id=case_id)
     (first_instance_id, first_instance_signal) = instances.first()
-    num_of_instances = instances.count()
 
     organization_slug = first_instance_signal.project.organization.slug
     project_id = first_instance_signal.project.id
