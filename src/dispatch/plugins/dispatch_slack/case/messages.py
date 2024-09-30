@@ -150,13 +150,12 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
     else:
         action_buttons = [
             Button(
-                text=":resolved: Resolve",
+                text=":white_check_mark: Resolve",
                 action_id=CaseNotificationActions.resolve,
-                style="primary",
                 value=button_metadata,
             ),
             Button(
-                text=":modified: Edit",
+                text=":pencil: Edit",
                 action_id=CaseNotificationActions.edit,
                 value=button_metadata,
             ),
@@ -168,7 +167,6 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
             Button(
                 text=":fire: Escalate",
                 action_id=CaseNotificationActions.escalate,
-                style="danger",
                 value=button_metadata,
             ),
         ]
@@ -178,7 +176,6 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
                 Button(
                     text=":mag: Triage",
                     action_id=CaseNotificationActions.triage,
-                    style="primary",
                     value=button_metadata,
                 ),
             )
@@ -353,9 +350,9 @@ def create_genai_signal_summary(
     message = response["choices"][0]["message"]["content"]
 
     signal_metadata_blocks.append(
-        Section(text=f"*GenAI Alert Summary*\n\n{message}")
+        Section(text=f":magic_wand: *GenAI Alert Summary*\n\n{message}"),
     )
-
+    signal_metadata_blocks.append(Divider())
     return Message(blocks=signal_metadata_blocks).build()["blocks"]
 
 
