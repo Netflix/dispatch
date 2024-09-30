@@ -602,6 +602,72 @@ def handle_list_tasks_command(
     )
 
 
+def draw_task_message(
+    channel_id: str, client: WebClient, first_open: bool, task: Task, thread_id: int
+):
+    """Draws a task message in a Slack channel.
+
+    Args:
+        channel_id (str): The channel id.
+        client (WebClient): The Slack client.
+        first_open (bool): Whether this is the first time the message is being drawn.
+        task (Task): The task to draw.
+        thread_id (int): The thread id of the task message.
+
+    Overwrites the existing message if it already exists.
+    """
+    button_text = "Resolve" if task.status == TaskStatus.open else "Re-open"
+    action_type = "resolve" if task.status == TaskStatus.open else "reopen"
+
+    # If this is the first time the message is being drawn, we post a new message.
+    if first_open:
+        result = client.chat_postMessage(
+            text=f"*<{task.creator.individual.weblink}|{task.creator.individual.name}>* created a new task.",
+            channel=channel_id,
+        )
+        thread_id = result.data.get("ts")
+
+    button_metadata = TaskMetadata(
+        type=IncidentSubjects.incident,
+        action_type=action_type,
+        organization_slug=task.project.organization.slug,
+        id=task.incident.id,
+        task_id=task.id,
+        project_id=task.project.id,
+        resource_id=task.resource_id,
+        channel_id=channel_id,
+        thread_id=thread_id,
+    ).json()
+
+    assignees = [f"<{a.individual.weblink}|{a.individual.name}>" for a in task.assignees]
+    blocks = {
+        "type": "section",
+        "text": {
+            "type": "mrkdwn",
+            "text": f"*<{task.creator.individual.weblink}|{task.creator.individual.name}>* created a new task.",
+        },
+        "fields": [
+            {"type": "mrkdwn", "text": "*Assignees:*"},
+            {"type": "mrkdwn", "text": "*Description:*"},
+            {
+                "type": "plain_text",
+                "text": ", ".join(assignees),
+            },
+            {"type": "plain_text", "text": task.description},
+        ],
+        "accessory": {
+            "type": "button",
+            "text": {"type": "plain_text", "text": button_text},
+            "style": "primary",
+            "value": button_metadata,
+            "action_id": TaskNotificationActionIds.update_status,
+        },
+    }
+
+    # Update the message with the task details and resolve/re-open button.
+    client.chat_update(channel=channel_id, ts=thread_id, blocks=[blocks])
+
+
 def draw_task_modal(
     channel_id: str,
     client: WebClient,
@@ -1627,27 +1693,12 @@ def handle_create_task_submission_event(
         incident=IncidentRead.from_orm(incident),
     )
     task = task_service.create(db_session=db_session, task_in=task_in)
-
-    blocks = {
-        "type": "section",
-        "text": {
-            "type": "mrkdwn",
-            "text": f"*<{creator.individual.weblink}|{creator.individual.name}>* created a new task.",
-        },
-        "fields": [
-            {"type": "mrkdwn", "text": "*Assignee:*"},
-            {"type": "mrkdwn", "text": "*Description:*"},
-            {
-                "type": "plain_text",
-                "text": f"<{assignee.individual.weblink}|{assignee.individual.name}>",
-            },
-            {"type": "plain_text", "text": task.description},
-        ],
-    }
-
-    client.chat_postMessage(
-        blocks=[blocks],
-        channel=incident.conversation.channel_id,
+    draw_task_message(
+        channel_id=incident.conversation.channel_id,
+        client=client,
+        task=task,
+        first_open=True,
+        thread_id=None,
     )
 
 
@@ -2666,18 +2717,25 @@ def handle_update_task_status_button_click(
         incident_id=context["subject"].id,
     )
 
-    tasks = task_service.get_all_by_incident_id(
-        db_session=db_session,
-        incident_id=context["subject"].id,
-    )
-
-    draw_task_modal(
-        channel_id=button.channel_id,
-        client=client,
-        first_open=False,
-        view_id=body["view"]["id"],
-        tasks=tasks,
-    )
+    if not button.thread_id:
+        # we are in a modal
+        draw_task_modal(
+            channel_id=button.channel_id,
+            client=client,
+            first_open=False,
+            view_id=body["view"]["id"],
+            tasks=tasks,
+        )
+    else:
+        # We are in a message
+        task = task_service.get(db_session=db_session, task_id=button.task_id)
+        draw_task_message(
+            channel_id=button.channel_id,
+            client=client,
+            task=task,
+            first_open=False,
+            thread_id=button.thread_id,
+        )
 
 
 @app.action(RemindAgainActions.submit, middleware=[select_context_middleware, db_middleware])
