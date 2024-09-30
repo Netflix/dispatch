@@ -229,7 +229,7 @@ def incident_close_reminder(db_session: Session, project: Project):
             send_incident_close_reminder(incident, db_session)
 
 
-@scheduler.add(every().monday.at("18:00"), name="incident-report-weekly")
+@scheduler.add(every(1).day.at("18:00"), name="incident-report-weekly")
 @timer
 @scheduled_project_task
 def incident_report_weekly(db_session: Session, project: Project):
