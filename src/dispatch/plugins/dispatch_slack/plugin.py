@@ -93,6 +93,7 @@ class SlackConversationPlugin(ConversationPlugin):
         client = create_slack_client(self.configuration)
         blocks = create_case_message(case=case, channel_id=conversation_id)
         response = send_message(client=client, conversation_id=conversation_id, blocks=blocks)
+
         if case.signal_instances:
             message = create_signal_messages(
                 case_id=case.id, channel_id=conversation_id, db_session=db_session
@@ -104,23 +105,24 @@ class SlackConversationPlugin(ConversationPlugin):
                 blocks=message,
             )
             case.signal_thread_ts = signal_response.get("timestamp")
+
             try:
                 client.files_upload(
                     channels=conversation_id,
                     thread_ts=case.signal_thread_ts,
-                    initial_comment=f"First alert in `{case.name}` (see all in <{DISPATCH_UI_URL}/{case.project.organization.slug}/cases/{case.name}|Dispatch UI>):",
+                    initial_comment=f"First alert for this case. View all alerts in <{DISPATCH_UI_URL}/{case.project.organization.slug}/cases/{case.name}|Dispatch>:",
                     filetype="json",
                     file=io.BytesIO(json.dumps(case.signal_instances[0].raw, indent=4).encode()),
                 )
             except SlackApiError as e:
                 if e.response["error"] == SlackAPIErrorCode.MISSING_SCOPE:
                     logger.exception(
-                        f"Error uploading alert JSON to the Case thread due to missing scope: {e}"
+                        f"Error uploading alert JSON to the case thread due to a missing scope: {e}"
                     )
                 else:
-                    logger.exception(f"Error uploading alert JSON to the Case thread: {e}")
+                    logger.exception(f"Error uploading alert JSON to the case thread: {e}")
             except Exception as e:
-                logger.exception(f"Error uploading alert JSON to the Case thread: {e}")
+                logger.exception(f"Error uploading alert JSON to the case thread: {e}")
 
             try:
                 send_message(
@@ -135,7 +137,7 @@ class SlackConversationPlugin(ConversationPlugin):
                     ),
                 )
             except Exception as e:
-                logger.exception(f"Error generating Gen AI response to case: {e}")
+                logger.exception(f"Error generating GenAI signal summary: {e}")
             db_session.commit()
         return response
 
@@ -153,7 +155,7 @@ class SlackConversationPlugin(ConversationPlugin):
         client = create_slack_client(self.configuration)
         if not does_user_exist(client=client, email=user.email):
             not_found_msg = (
-                f"Unable to engage user ({user.email}). Not found in current slack workspace."
+                f"Unable to engage user: {user.email}. User not found in the Slack workspace."
             )
             return send_message(
                 client=client,
