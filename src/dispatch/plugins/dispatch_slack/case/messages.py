@@ -115,7 +115,7 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
 
     if case.has_channel:
         action_buttons = [
-            Button(text=":slack: Case Channel", style="primary", url=case.conversation.weblink)
+            Button(text=":slack: Case Channel", style="primary", url=case.conversation.weblink if case.conversation else "")
         ]
         blocks.extend([Actions(elements=action_buttons)])
     elif case.status == CaseStatus.escalated:
@@ -278,14 +278,18 @@ def create_genai_signal_summary(
     """
     signal_metadata_blocks: list[Block] = []
 
-    instances = signal_service.get_instances_in_case(db_session=db_session, case_id=case.id)
-    (first_instance_id, first_instance_signal) = instances.first()
+    (first_instance_id, first_instance_signal) = signal_service.get_instances_in_case(db_session=db_session, case_id=case.id).first()
 
+    if not first_instance_id or not first_instance_signal:
+        log.warning("Unable to generate GenAI signal summary. No signal instances found.")
+        return signal_metadata_blocks
+
+    # Fetch related cases
     related_cases = (
         signal_service.get_cases_for_signal(
             db_session=db_session, signal_id=first_instance_signal.id
         )
-        .from_self()
+        .from_self() # NOTE: function deprecated in SQLAlchemy 1.4 and removed in 2.0
         .filter(Case.id != case.id)
     )
 
