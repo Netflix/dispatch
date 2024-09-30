@@ -70,11 +70,11 @@ def update_task(db_session: DbSession, task_id: PrimaryKey, task_in_d: dict):
     try:
         incident = incident_service.get(db_session=db_session, incident_id=task_in_d["incident_id"])
         task_in = TaskUpdate(**task_in_d, incident=incident)
-    except Exception:
+    except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=[{"msg": "Badly formatted task data."}],
-        )
+        ) from e
     """Updates an existing task."""
     task = get(db_session=db_session, task_id=task_id)
     if not task:

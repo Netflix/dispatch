@@ -4,6 +4,7 @@
 :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
 :license: Apache, see LICENSE for more details.
 """
+
 from typing import Any
 import json
 
@@ -368,6 +369,45 @@ class JiraTicketPlugin(TicketPlugin):
         reporter = assignee
 
         project_id, issue_type_name = process_plugin_metadata(case_type_plugin_metadata)
+
+        if not project_id:
+            project_id = self.configuration.default_project_id
+
+        project = {"id": project_id}
+        if not project_id.isdigit():
+            project = {"key": project_id}
+
+        if not issue_type_name:
+            issue_type_name = self.configuration.default_issue_type_name
+
+        issuetype = {"name": issue_type_name}
+
+        issue_fields = {
+            "project": project,
+            "issuetype": issuetype,
+            "assignee": assignee,
+            "reporter": reporter,
+            "summary": title,
+        }
+
+        return create(self.configuration, client, issue_fields)
+
+    def create_task_ticket(
+        self,
+        task_id: int,
+        title: str,
+        assignee_email: str,
+        reporter_email: str,
+        task_plugin_metadata: dict = None,
+        db_session=None,
+    ):
+        """Creates a case Jira issue."""
+        client = create_client(self.configuration)
+
+        assignee = get_user_field(client, self.configuration, assignee_email)
+        reporter = get_user_field(client, self.configuration, reporter_email)
+
+        project_id, issue_type_name = process_plugin_metadata(task_plugin_metadata)
 
         if not project_id:
             project_id = self.configuration.default_project_id

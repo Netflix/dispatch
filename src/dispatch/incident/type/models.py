@@ -81,6 +81,15 @@ class IncidentType(ProjectMixin, Base):
             if m["slug"] == slug:
                 return m
 
+    @hybrid_method
+    def get_task_meta(self, slug):
+        if not self.task_plugin_metadata:
+            return
+
+        for m in self.task_plugin_metadata:
+            if m["slug"] == slug:
+                return m
+
 
 listen(IncidentType.default, "set", ensure_unique_default_per_project)
 

@@ -50,7 +50,8 @@
           .filter((task) => task.status === 'Resolved')
           .sort((a, b) => new Date(a.resolved_at) - new Date(b.resolved_at))"
         :key="task.id"
-      >        <v-list-item @click="showNewTaskDialog(task)">
+      >
+        <v-list-item @click="showNewTaskDialog(task)">
           <v-list-item-title class="text-wrap">
             {{ task.description }}
           </v-list-item-title>
