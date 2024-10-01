@@ -303,11 +303,12 @@ def create_task_ticket(task: Task, db_session: Session):
     # we create the external task ticket
     try:
         external_ticket = plugin.instance.create_task_ticket(
-            task.id,
-            title,
-            task.assignees[0].individual.email,
-            owner.individual.email,
-            task_plugin_metadata,
+            task_id=task.id,
+            title=title,
+            assignee_email=task.assignees[0].individual.email,
+            reporter_email=owner.individual.email,
+            incident_ticket_key=incident.ticket.resource_id,
+            task_plugin_metadata=task_plugin_metadata,
             db_session=db_session,
         )
     except Exception as e:
