@@ -1593,12 +1593,12 @@ def handle_create_task_command(
     """Displays a modal for task creation."""
     ack()
 
-    intial_modal = Modal(
+    initial_modal = Modal(
         title="Create Task",
         close="Close",
         blocks=[Section(text="Opening a dialog to create a new incident task...")],
     ).build()
-    response = client.views_open(trigger_id=body["trigger_id"], view=intial_modal)
+    response = client.views_open(trigger_id=body["trigger_id"], view=initial_modal)
 
     if context["subject"].type == CaseSubjects.case:
         modal = Modal(
