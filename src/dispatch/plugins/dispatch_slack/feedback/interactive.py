@@ -1,5 +1,6 @@
 import logging
-import json
+import ast
+
 from blockkit import (
     Checkboxes,
     Context,
@@ -404,7 +405,7 @@ def handle_oncall_shift_feedback_submission_event(
             reminder_service.delete(db_session=db_session, reminder_id=reminder_id)
     if len(metadata) > 5:
         # if there are other details, store those
-        details = json.loads(metadata[5])
+        details = ast.literal_eval(metadata[5])
     else:
         details = None
 
