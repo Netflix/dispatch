@@ -88,7 +88,7 @@
       </span>
     </div>
     <div v-else>
-      <p class="text-center">No tasks have been created for this incident. {{ tasks }}</p>
+      <p class="text-center">No tasks have been created for this incident.</p>
     </div>
   </div>
 </template>
