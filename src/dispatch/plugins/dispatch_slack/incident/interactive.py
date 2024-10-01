@@ -1637,7 +1637,7 @@ def handle_create_task_command(
         Input(
             label="Task Description",
             element=PlainTextInput(
-                placeholder="Task description", initial_value="description", multiline=True
+                placeholder="Task description", multiline=True
             ),
             block_id=CreateTaskBlockIds.description,
         ),
