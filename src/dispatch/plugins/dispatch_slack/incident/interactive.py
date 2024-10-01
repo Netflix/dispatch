@@ -650,7 +650,7 @@ def draw_task_message(
             {"type": "mrkdwn", "text": "*Assignees:*"},
             {"type": "mrkdwn", "text": "*Description:*"},
             {
-                "type": "plain_text",
+                "type": "mrkdown",
                 "text": ", ".join(assignees),
             },
             {"type": "plain_text", "text": task.description},
