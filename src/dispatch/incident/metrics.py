@@ -1,22 +1,18 @@
-import math
 import logging
-from typing import List
-from itertools import groupby
-
-from datetime import date
-
+import math
 from calendar import monthrange
+from datetime import date
+from itertools import groupby
+from typing import List
 
 import pandas as pd
+from sqlalchemy import and_
 from statsmodels.tsa.api import ExponentialSmoothing
 
-from sqlalchemy import and_
-
-from dispatch.database.service import apply_filters, apply_filter_specific_joins
+from dispatch.database.service import apply_filter_specific_joins, apply_filters
 from dispatch.incident.type.models import IncidentType
 
 from .models import Incident
-
 
 log = logging.getLogger(__name__)
 
