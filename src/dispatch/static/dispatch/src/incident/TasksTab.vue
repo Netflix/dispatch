@@ -114,7 +114,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("incident", ["showNewTaskDialog"]),
+    ...mapActions("incident", ["showNewTaskDialog", "createTicket"]),
   },
 }
 </script>

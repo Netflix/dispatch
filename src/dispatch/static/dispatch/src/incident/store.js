@@ -284,6 +284,16 @@ const actions = {
     state.selected.currentTask = task
     commit("SET_DIALOG_EDIT_TASK", true)
   },
+  createTicket({ commit }, task) {
+    console.log(`**** Creating ticket for task ${task.id}`)
+    TaskApi.createTicket(task.id).then(() => {
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "Ticket created successfully.", type: "success" },
+        { root: true }
+      )
+    })
+  },
   closeNewTaskDialog({ commit }) {
     commit("SET_DIALOG_EDIT_TASK", false)
   },
