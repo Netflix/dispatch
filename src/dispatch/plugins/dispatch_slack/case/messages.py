@@ -201,6 +201,7 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
     Returns:
         list[Message]: A list of Message objects representing the structure of the Slack messages.
     """
+    # we fetch the first instance to get the organization slug and project id
     instances = signal_service.get_instances_in_case(db_session=db_session, case_id=case_id)
     (first_instance_id, first_instance_signal) = instances.first()
 
@@ -214,11 +215,11 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
         channel_id=channel_id,
     ).json()
 
+
+    # we create the response plan and the snooze buttons
     elements = []
 
-    # Check if `first_instance_signal.external_url` is not empty
     if first_instance_signal.external_url:
-        # If `first_instance_signal.external_url` is not empty, add the "Response Plan" button
         elements.append(
             Button(
                 text="🔖 Response Plan",
@@ -227,7 +228,6 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
             )
         )
 
-    # Define the initial elements with "Raw Data" and "Snooze" buttons
     elements.append(
         Button(
             text="💤 Snooze Alerts",
@@ -236,31 +236,34 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
         )
     )
 
-    # Create the Actions block with the elements
+    # we create the signal metadata blocks
     signal_metadata_blocks = [
         Section(text="*Actions*"),
-        Actions(elements=elements)
+        Actions(elements=elements),
+        Divider(),
+        Section(text="*Alerts*"),
+        Section(text=f"We observed {instances.count()} alerts in this case."),
     ]
 
     return Message(blocks=signal_metadata_blocks).build()["blocks"]
 
 
-def create_genai_signal_summary(
+def create_genai_signal_analysis_message(
     case: Case,
     channel_id: str,
     db_session: Session,
     client: WebClient,
 ) -> list[Block]:
     """
-    Creates a signal summary using a generative AI plugin.
+    Creates a signal analysis using a generative AI plugin.
 
-    This function generates a summary for a given case by leveraging historical context and
+    This function generates a analysis for a given case by leveraging historical context and
     a generative AI plugin. It fetches related cases, their resolutions, and relevant Slack
-    messages to provide a comprehensive summary.
+    messages to provide a comprehensive analysis.
 
     Args:
-        case (Case): The case object containing details to be included in the summary.
-        channel_id (str): The ID of the Slack channel where the summary will be sent.
+        case (Case): The case object containing details to be included in the analysis.
+        channel_id (str): The ID of the Slack channel where the analysis will be sent.
         db_session (Session): The database session to use for querying signal instances and related cases.
         client (WebClient): The Slack WebClient to fetch threaded messages.
 
@@ -272,7 +275,7 @@ def create_genai_signal_summary(
     (first_instance_id, first_instance_signal) = signal_service.get_instances_in_case(db_session=db_session, case_id=case.id).first()
 
     if not first_instance_id or not first_instance_signal:
-        log.warning("Unable to generate GenAI signal summary. No signal instances found.")
+        log.warning("Unable to generate GenAI signal analysis. No signal instances found.")
         return signal_metadata_blocks
 
     # Fetch related cases
@@ -320,11 +323,11 @@ def create_genai_signal_summary(
     )
 
     if not genai_plugin:
-        log.warning("Unable to generate GenAI signal summary. No artificial-intelligence plugin enabled.")
+        log.warning("Unable to generate GenAI signal analysis. No artificial-intelligence plugin enabled.")
         return signal_metadata_blocks
 
     if not signal_instance.signal.genai_prompt:
-        log.warning(f"Unable to generate GenAI signal summary. No GenAI prompt defined for {signal_instance.signal.name}")
+        log.warning(f"Unable to generate GenAI signal analysis. No GenAI prompt defined for {signal_instance.signal.name}")
         return signal_metadata_blocks
 
     response = genai_plugin.instance.chat_completion(
@@ -349,8 +352,9 @@ def create_genai_signal_summary(
     )
     message = response["choices"][0]["message"]["content"]
 
+    signal_metadata_blocks.append(Divider())
     signal_metadata_blocks.append(
-        Section(text=f":magic_wand: *GenAI Alert Summary*\n\n{message}"),
+        Section(text=f":magic_wand: *GenAI Alert Analysis*\n\n{message}"),
     )
     signal_metadata_blocks.append(Divider())
     return Message(blocks=signal_metadata_blocks).build()["blocks"]

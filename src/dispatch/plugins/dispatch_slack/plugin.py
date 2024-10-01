@@ -33,7 +33,7 @@ from dispatch.signal.models import SignalEngagement, SignalInstance
 
 from .case.messages import (
     create_case_message,
-    create_genai_signal_summary,
+    create_genai_signal_analysis_message,
     create_signal_engagement_message,
     create_signal_messages,
 )
@@ -129,7 +129,7 @@ class SlackConversationPlugin(ConversationPlugin):
                     client=client,
                     conversation_id=conversation_id,
                     ts=case.signal_thread_ts,
-                    blocks=create_genai_signal_summary(
+                    blocks=create_genai_signal_analysis_message(
                         case=case,
                         channel_id=conversation_id,
                         db_session=db_session,
