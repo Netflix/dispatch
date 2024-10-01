@@ -151,3 +151,8 @@ class SlackConversationConfiguration(SlackConfiguration):
         title="List Workflows Command String",
         description="Defines the string used to list all available workflows. Must match what is defined in Slack",
     )
+    slack_command_create_task: str = Field(
+        "/dispatch-create-task",
+        title="Create Task Command String",
+        description="Defines the string used to create a task. Must match what is defined in Slack.",
+    )

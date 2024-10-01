@@ -4,6 +4,7 @@
     :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
+
 import logging
 from typing import Any, List, Optional
 
@@ -128,6 +129,10 @@ def get_incident_conversation_command_message(
         config.slack_command_list_workflows: {
             "response_type": "ephemeral",
             "text": "Fetching the list of workflows...",
+        },
+        config.slack_command_create_task: {
+            "response_type": "ephemeral",
+            "text": "Opening a dialog to create a new incident task...",
         },
     }
 

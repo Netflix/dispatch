@@ -76,6 +76,15 @@ class ReportExecutiveBlockIds(DispatchEnum):
     next_steps = "report-executive-next-steps"
 
 
+class CreateTaskBlockIds(DispatchEnum):
+    assignee_select = "create-task-assignee-select"
+    description = "create-task-description"
+
+
+class CreateTaskActionIds(DispatchEnum):
+    submit = "create-task-submit"
+
+
 class IncidentUpdateActions(DispatchEnum):
     submit = "incident-update-submit"
     project_select = "incident-update-project-select"
