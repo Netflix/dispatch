@@ -1,7 +1,7 @@
 """Adds task plugin metadata to incident type
 
 Revision ID: d0ee41ea14f5
-Revises: f5107ce190fc
+Revises: 1f4dc687945d
 Create Date: 2024-09-27 20:00:11.028438
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "d0ee41ea14f5"
-down_revision = "f5107ce190fc"
+down_revision = "1f4dc687945d"
 branch_labels = None
 depends_on = None
 
