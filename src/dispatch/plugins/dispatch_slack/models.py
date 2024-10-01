@@ -47,6 +47,7 @@ class SubjectMetadata(BaseModel):
 
     project_id: Optional[str]
     channel_id: Optional[str]
+    thread_id: Optional[str]
 
 
 class EngagementMetadata(SubjectMetadata):
