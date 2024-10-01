@@ -1586,20 +1586,27 @@ def handle_assign_role_submission_event(
 def handle_create_task_command(
     ack: Ack,
     body,
-    dict,
     client: WebClient,
     context: BoltContext,
     db_session: Session,
 ) -> None:
     """Displays a modal for task creation."""
     ack()
+
+    initial_modal = Modal(
+        title="Create Task",
+        close="Close",
+        blocks=[Section(text="Opening a dialog to create a new incident task...")],
+    ).build()
+    response = client.views_open(trigger_id=body["trigger_id"], view=initial_modal)
+
     if context["subject"].type == CaseSubjects.case:
         modal = Modal(
             title="Invalid Command",
             close="Close",
             blocks=[Section(text="Create Task command is not currently available for cases.")],
         ).build()
-        return client.views_open(trigger_id=body["trigger_id"], view=modal)
+        return client.views_update(view_id=response.get("view").get("id"), view=modal)
 
     participants = participant_service.get_all_by_incident_id(
         db_session=db_session, incident_id=context["subject"].id
@@ -1616,7 +1623,7 @@ def handle_create_task_command(
             close="Close",
             blocks=[Section(text="Contact plugin is not enabled. Unable to list participants.")],
         ).build()
-        return client.views_open(trigger_id=body["trigger_id"], view=modal)
+        return client.views_update(view_id=response.get("view").get("id"), view=modal)
 
     active_participants = [p for p in participants if p.active_roles]
     participant_list = []
@@ -1649,7 +1656,7 @@ def handle_create_task_command(
         callback_id=CreateTaskActionIds.submit,
         private_metadata=context["subject"].json(),
     ).build()
-    client.views_open(trigger_id=body["trigger_id"], view=modal)
+    return client.views_update(view_id=response.get("view").get("id"), view=modal)
 
 
 def ack_create_task_submission_event(ack: Ack) -> None:
