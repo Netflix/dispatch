@@ -1,5 +1,4 @@
 import logging
-import json
 import ast
 
 from blockkit import (
