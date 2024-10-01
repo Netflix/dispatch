@@ -35,7 +35,7 @@
                 <v-list-item :href="task.weblink" target="_blank">
                   <v-list-item-title>Go to task</v-list-item-title>
                 </v-list-item>
-                <v-list-item @click="menu = true">
+                <v-list-item v-if="experimental_features" @click="createTicket(task)">
                   <v-list-item-title>Create ticket</v-list-item-title>
                 </v-list-item>
               </v-list>
@@ -77,7 +77,7 @@
                 <v-list-item :href="task.weblink" target="_blank">
                   <v-list-item-title>Go to task</v-list-item-title>
                 </v-list-item>
-                <v-list-item @click="createTicket(task)">
+                <v-list-item v-if="experimental_features" @click="createTicket(task)">
                   <v-list-item-title>Create ticket</v-list-item-title>
                 </v-list-item>
               </v-list>
@@ -111,6 +111,7 @@ export default {
 
   computed: {
     ...mapFields("incident", ["selected.tasks", "dialogs.showEditTaskDialog"]),
+    ...mapFields("auth", ["currentUser.experimental_features"]),
   },
 
   methods: {

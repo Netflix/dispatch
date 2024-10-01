@@ -263,6 +263,19 @@ class DispatchTicketPlugin(TicketPlugin):
         """Updates a Dispatch case ticket."""
         return
 
+    def create_task_ticket(
+        self,
+        task_id: int,
+        title: str,
+        assignee_email: str,
+        reporter_email: str,
+        incident_ticket_key: str = None,
+        task_plugin_metadata: dict = None,
+        db_session=None,
+    ):
+        """Creates a Dispatch task ticket."""
+        return
+
 
 class DispatchDocumentResolverPlugin(DocumentResolverPlugin):
     title = "Dispatch Plugin - Document Resolver"
@@ -374,7 +387,9 @@ class DispatchMfaPlugin(MultiFactorAuthenticationPlugin):
         if not challenge:
             raise InvalidChallengeError("Invalid challenge ID")
         if challenge.dispatch_user_id != current_user.id:
-            raise UserMismatchError(f"Challenge does not belong to the current user: {current_user.email}")
+            raise UserMismatchError(
+                f"Challenge does not belong to the current user: {current_user.email}"
+            )
         if challenge.action != payload.action:
             raise ActionMismatchError("Action mismatch")
         if not challenge.valid:

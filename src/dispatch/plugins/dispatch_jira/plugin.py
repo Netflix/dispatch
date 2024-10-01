@@ -413,7 +413,7 @@ class JiraTicketPlugin(TicketPlugin):
         task_plugin_metadata: dict = None,
         db_session=None,
     ):
-        """Creates a case Jira issue."""
+        """Creates a task Jira issue."""
         client = create_client(self.configuration)
 
         assignee = get_user_field(client, self.configuration, assignee_email)
