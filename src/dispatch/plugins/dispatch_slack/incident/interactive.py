@@ -650,7 +650,7 @@ def draw_task_message(
             {"type": "mrkdwn", "text": "*Assignees:*"},
             {"type": "mrkdwn", "text": "*Description:*"},
             {
-                "type": "mrkdown",
+                "type": "mrkdwn",
                 "text": ", ".join(assignees),
             },
             {"type": "plain_text", "text": task.description},
@@ -1636,9 +1636,7 @@ def handle_create_task_command(
         ),
         Input(
             label="Task Description",
-            element=PlainTextInput(
-                placeholder="Task description", multiline=True
-            ),
+            element=PlainTextInput(placeholder="Task description", multiline=True),
             block_id=CreateTaskBlockIds.description,
         ),
     ]
