@@ -60,7 +60,7 @@ def get_by_email_and_project_id_or_raise(
             [
                 ErrorWrapper(
                     NotFoundError(
-                        msg="Indivdual not found.",
+                        msg="Individual not found.",
                         individual=individual_contact_in.email,
                     ),
                     loc="individual",

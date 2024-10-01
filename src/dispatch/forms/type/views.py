@@ -47,9 +47,7 @@ def create_forms_type(
 ):
     """Create a new form type."""
     try:
-        return create(
-            db_session=db_session, creator=current_user, forms_type_in=forms_type_in
-        )
+        return create(db_session=db_session, creator=current_user, forms_type_in=forms_type_in)
     except IntegrityError:
         raise ValidationError(
             [
@@ -93,12 +91,11 @@ def update_forms_type(
         ) from None
     return forms_type
 
+
 @router.delete(
     "/{forms_type_id}/{individual_contact_id}",
     response_model=None,
-    dependencies=[
-        Depends(PermissionsDependency([FeedbackDeletePermission]))
-    ],
+    dependencies=[Depends(PermissionsDependency([FeedbackDeletePermission]))],
 )
 def delete_form(db_session: DbSession, forms_type_id: PrimaryKey):
     """Delete a form type, returning only an HTTP 200 OK if successful."""

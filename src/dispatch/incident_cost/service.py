@@ -268,7 +268,6 @@ def calculate_incident_response_cost_with_cost_model(
 
     # Get the cost model. Iterate through all the listed activities we want to record.
     for activity in incident.incident_type.cost_model.activities:
-
         # Array of sorted (timestamp, user_id) tuples.
         incident_events = fetch_incident_events(
             incident=incident, activity=activity, oldest=oldest, db_session=db_session
@@ -428,7 +427,7 @@ def calculate_incident_response_cost_with_classic_model(
     incident_review_hours = 0
 
     # Used for determining whether we've previously calculated the incident cost.
-    curent_time = datetime.now(tz=timezone.utc).replace(tzinfo=None)
+    current_time = datetime.now(tz=timezone.utc).replace(tzinfo=None)
 
     incident_response_cost = get_or_create_default_incident_response_cost(
         incident=incident, db_session=db_session
@@ -437,7 +436,7 @@ def calculate_incident_response_cost_with_classic_model(
         return 0
 
     # Ignore activities that happened before the last incident cost update.
-    if incident_response_cost.updated_at < curent_time:
+    if incident_response_cost.updated_at < current_time:
         last_update = incident_response_cost.updated_at
 
     # TODO: Implement a more robust way to ensure we are calculating the incident review hours only once.

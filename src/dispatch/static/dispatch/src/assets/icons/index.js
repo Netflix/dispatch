@@ -3426,7 +3426,7 @@ const icons = [
   { name: "glass-mug-variant", tags: ["Food / Drink"] },
   { name: "glass-mug-variant-off", tags: ["Food / Drink"] },
   { name: "glass-pint-outline", tags: ["Food / Drink"] },
-  { name: "glass-stange", tags: ["Food / Drink"] },
+  { name: "glass-strange", tags: ["Food / Drink"] },
   { name: "glass-tulip", tags: ["Food / Drink"] },
   { name: "glass-wine", tags: ["Food / Drink"] },
   { name: "glasses", tags: ["Clothing"] },

@@ -121,7 +121,6 @@ def test_case_escalated_create_incident(session, case, user, incident):
 
     @app.get("/{case_id}/escalate", response_model=IncidentRead)
     async def views_escalate_case(background_tasks: BackgroundTasks):
-
         incident_in = IncidentCreate.from_orm(incident)
         incident_in.status = IncidentStatus.active
         incident_in.title = case.title

@@ -1207,9 +1207,9 @@ def ack_handle_escalation_submission_event(ack: Ack, case: Case) -> None:
     """Handles the escalation submission event."""
 
     msg = (
-        "The case has been esclated to an incident. This channel will be reused for the incident."
+        "The case has been escalated to an incident. This channel will be reused for the incident."
         if case.dedicated_channel
-        else "The case has been esclated to an incident. All further triage work will take place in the incident channel."
+        else "The case has been escalated to an incident. All further triage work will take place in the incident channel."
     )
     modal = Modal(
         title="Escalating Case",
@@ -2385,6 +2385,7 @@ def resolve_case(
     client.chat_update(
         blocks=blocks, ts=case.conversation.thread_id, channel=case.conversation.channel_id
     )
+
 
 @app.action(
     SignalEngagementActions.deny,

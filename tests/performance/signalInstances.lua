@@ -1,7 +1,7 @@
--- install `brew install wrk`
--- usage `wrk -t12 -c400 -d30s -H 'Authorization: Bearer xxxxx' -s tests/performance/signalInstances.lua http://localhost:8000/api/v1/default/signals/instances`
+-- install `brew install work`
+-- usage `work -t12 -c400 -d30s -H 'Authorization: Bearer xxxxx' -s tests/performance/signalInstances.lua http://localhost:8000/api/v1/default/signals/instances`
 
-local wrk = require("wrk")
+local work = require("work")
 
 local requestJson = [[{"project": {"name": "Test"}, "raw": {
 	"variant": "DA:1040.A",
@@ -43,17 +43,17 @@ end
 -- function response(status, headers, body)
 --  io.write("Response status: ", status, "\n")
 --  io.write("Response body: ", body, "\n")
---  io.write("Response message: ", wrk.format(nil, nil, nil, status_text), "\n")
+--  io.write("Response message: ", work.format(nil, nil, nil, status_text), "\n")
 -- end
 
 -- Request function
 function request()
-  local req_headers = merge_headers(wrk.headers, headers)
+  local req_headers = merge_headers(work.headers, headers)
 
   local body = requestJson
 
   -- Create the request object
-  local req = wrk.format("POST", endpoint, req_headers, body)
+  local req = work.format("POST", endpoint, req_headers, body)
 
   -- Return the request object
   return req

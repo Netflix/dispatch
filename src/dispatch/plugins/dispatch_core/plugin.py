@@ -374,7 +374,9 @@ class DispatchMfaPlugin(MultiFactorAuthenticationPlugin):
         if not challenge:
             raise InvalidChallengeError("Invalid challenge ID")
         if challenge.dispatch_user_id != current_user.id:
-            raise UserMismatchError(f"Challenge does not belong to the current user: {current_user.email}")
+            raise UserMismatchError(
+                f"Challenge does not belong to the current user: {current_user.email}"
+            )
         if challenge.action != payload.action:
             raise ActionMismatchError("Action mismatch")
         if not challenge.valid:

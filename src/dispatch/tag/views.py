@@ -42,7 +42,7 @@ def create_tag(db_session: DbSession, tag_in: TagCreate):
 
 @router.put("/{tag_id}", response_model=TagRead)
 def update_tag(db_session: DbSession, tag_id: PrimaryKey, tag_in: TagUpdate):
-    """Updates an exisiting tag."""
+    """Updates an existing tag."""
     tag = get(db_session=db_session, tag_id=tag_id)
     if not tag:
         raise HTTPException(

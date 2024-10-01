@@ -14,8 +14,8 @@ default_language_version:
 
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    # Ruff version.
-    rev: v0.1.4
+    # ruff version.
+    rev: v0.6.4
     hooks:
       # Run the linter.
       #
@@ -28,9 +28,10 @@ repos:
 
   # Typos
   - repo: https://github.com/crate-ci/typos
-    rev: v1.16.23
+    rev: v1.24.5
     hooks:
       - id: typos
+        exclude: ^(data/dispatch-sample-data.dump|src/dispatch/static/dispatch/src/|src/dispatch/database/revisions/)
 
   # Pytest
   - repo: local

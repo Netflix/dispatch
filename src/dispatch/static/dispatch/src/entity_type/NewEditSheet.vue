@@ -64,7 +64,7 @@
               <span>
                 An entity type with a definition scope of 'all' will be associated with all current
                 and future definitions. This is most useful or extracting common information across
-                your defintions.
+                your definitions.
               </span>
             </v-tooltip>
           </v-radio-group>

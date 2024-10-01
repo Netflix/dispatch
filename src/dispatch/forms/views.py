@@ -64,9 +64,7 @@ def create_forms(
 ):
     """Create a new form."""
     try:
-        return create(
-            db_session=db_session, creator=current_user, forms_in=forms_in
-        )
+        return create(db_session=db_session, creator=current_user, forms_in=forms_in)
     except IntegrityError:
         raise ValidationError(
             [
@@ -96,16 +94,10 @@ def update_forms(
             detail=[{"msg": "A form with this id does not exist."}],
         )
     try:
-        forms = update(
-            db_session=db_session, forms=forms, forms_in=forms_in
-        )
+        forms = update(db_session=db_session, forms=forms, forms_in=forms_in)
     except IntegrityError:
         raise ValidationError(
-            [
-                ErrorWrapper(
-                    ExistsError(msg="A form with this name already exists."), loc="name"
-                )
-            ],
+            [ErrorWrapper(ExistsError(msg="A form with this name already exists."), loc="name")],
             model=FormsUpdate,
         ) from None
     return forms

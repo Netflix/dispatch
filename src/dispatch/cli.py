@@ -364,7 +364,9 @@ def drop_database():
     """Drops all data in database."""
     from sqlalchemy_utils import database_exists, drop_database
 
-    database_hostname = click.prompt(f"Please enter the database hostname (env = {config.DATABASE_HOSTNAME})")
+    database_hostname = click.prompt(
+        f"Please enter the database hostname (env = {config.DATABASE_HOSTNAME})"
+    )
     database_name = click.prompt(f"Please enter the database name (env = {config.DATABASE_NAME})")
     sqlalchemy_database_uri = f"postgresql+psycopg2://{config._DATABASE_CREDENTIAL_USER}:{config._QUOTED_DATABASE_PASSWORD}@{database_hostname}:{config.DATABASE_PORT}/{database_name}"
 
@@ -375,9 +377,7 @@ def drop_database():
             drop_database(str(sqlalchemy_database_uri))
             click.secho("Success.", fg="green")
     else:
-        click.secho(
-            f"Database '{database_hostname}:{database_name}' does not exist!!!", fg="red"
-        )
+        click.secho(f"Database '{database_hostname}:{database_name}' does not exist!!!", fg="red")
 
 
 @dispatch_database.command("upgrade")

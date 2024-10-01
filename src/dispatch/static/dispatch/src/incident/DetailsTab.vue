@@ -80,7 +80,7 @@
           v-model="visibility"
           label="Visibility"
           :items="visibilities"
-          hint="The visibilty of the incident."
+          hint="The visibility of the incident."
         />
       </v-col>
       <v-col cols="12">
