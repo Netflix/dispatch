@@ -301,7 +301,7 @@ def test_update_incident_response_cost(incident, session, incident_cost_type):
     incident = incident_service.get(db_session=session, incident_id=incident.id)
     incident.incident_type.cost_model = None
 
-    # Create the inital incident response cost.
+    # Create the initial incident response cost.
     incident_response_cost = update_incident_response_cost(
         incident_id=incident.id, db_session=session, incident_review=False
     )
@@ -338,7 +338,7 @@ def test_update_incident_response_cost__fail(incident, session):
     for cost_type in incident_cost_type_service.get_all(db_session=session):
         cost_type.default = False
 
-    # Fail to create the inital incident response cost.
+    # Fail to create the initial incident response cost.
     assert not update_incident_response_cost(
         incident_id=incident.id, db_session=session, incident_review=False
     )

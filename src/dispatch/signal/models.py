@@ -131,6 +131,7 @@ class SignalFilterAction(DispatchEnum):
 
 class Signal(Base, TimeStampMixin, ProjectMixin):
     """Class that represents a detection and its properties."""
+
     id = Column(Integer, primary_key=True)
     name = Column(String)
     owner = Column(String)
@@ -228,6 +229,7 @@ class SignalFilter(Base, ProjectMixin, EvergreenMixin, TimeStampMixin):
 
 class SignalInstance(Base, TimeStampMixin, ProjectMixin):
     """Class that represents a detection alert and its properties."""
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=lambda: str(uuid.uuid4()))
     case = relationship("Case", backref="signal_instances")
     case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"))

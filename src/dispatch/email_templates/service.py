@@ -18,7 +18,9 @@ def get(*, email_template_id: int, db_session: Session) -> Optional[EmailTemplat
     )
 
 
-def get_by_type(*, email_template_type: str, project_id: int, db_session: Session) -> Optional[EmailTemplates]:
+def get_by_type(
+    *, email_template_type: str, project_id: int, db_session: Session
+) -> Optional[EmailTemplates]:
     """Gets an email template by its type."""
     return (
         db_session.query(EmailTemplates)
@@ -40,9 +42,7 @@ def create(*, email_template_in: EmailTemplatesCreate, db_session: Session) -> E
         db_session=db_session, project_in=email_template_in.project
     )
 
-    email_template = EmailTemplates(
-        **email_template_in.dict(exclude={"project"}), project=project
-    )
+    email_template = EmailTemplates(**email_template_in.dict(exclude={"project"}), project=project)
 
     db_session.add(email_template)
     db_session.commit()

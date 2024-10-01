@@ -6,6 +6,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 .. moduleauthor:: Marc Vilanova <mvilanova@netflix.com>
 """
+
 import re
 import logging
 from typing import Any, List
@@ -114,7 +115,7 @@ def get_task_activity(
                     {"individual": {"email": get_user_email(people_client, assignee_person_id)}}
                 ]
 
-                # this is when the user was assigned (making it into a task, not when the inital comment was created)
+                # this is when the user was assigned (making it into a task, not when the initial comment was created)
                 task["created_at"] = a["timestamp"]
 
                 # this is the deep link to the associated comment

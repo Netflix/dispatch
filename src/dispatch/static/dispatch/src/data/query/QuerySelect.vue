@@ -14,7 +14,7 @@
     <template #no-data>
       <v-list-item>
         <v-list-item-title>
-          No querys matching
+          No queries matching
           <strong>"{{ search }}"</strong>
         </v-list-item-title>
       </v-list-item>

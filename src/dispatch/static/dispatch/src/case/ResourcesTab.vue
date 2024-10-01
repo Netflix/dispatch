@@ -73,7 +73,7 @@
       <v-list-item v-if="!loading" @click="createAllResources()" class="my-3">
         <v-list-item-title>Recreate Missing Resources</v-list-item-title>
         <v-list-item-subtitle
-          >Initiate a retry for creating any missing or unsuccesfully created
+          >Initiate a retry for creating any missing or unsuccessfully created
           resource(s).</v-list-item-subtitle
         >
         <template #append>
@@ -83,7 +83,7 @@
       <v-list-item v-else-if="loading" class="my-3">
         <v-list-item-title>Creating resources...</v-list-item-title>
         <v-list-item-subtitle
-          >Initiate a retry for creating any missing or unsuccesfully created
+          >Initiate a retry for creating any missing or unsuccessfully created
           resource(s).</v-list-item-subtitle
         >
       </v-list-item>

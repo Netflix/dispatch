@@ -151,7 +151,7 @@ def build_role_error_message(payload: dict) -> str:
 
 def build_context_error_message(payload: dict, error: Any) -> str:
     message = (
-        f"""I see you tried to run `{payload['command']}` in an non-incident conversation. Incident-specifc commands can only be run in incident conversations."""  # command_context_middleware()
+        f"""I see you tried to run `{payload['command']}` in an non-incident conversation. Incident-specific commands can only be run in incident conversations."""  # command_context_middleware()
         if payload.get("command")
         else str(error)  # everything else
     )

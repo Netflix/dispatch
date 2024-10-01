@@ -7,11 +7,11 @@ import { GRANT_TYPE_AUTHORIZATION_CODE, TokenRequest } from "@openid/appauth/bui
 import { LocalStorageBackend } from "@openid/appauth/built/storage"
 import { RedirectRequestHandler } from "@openid/appauth/built/redirect_based_handler"
 
-import { FetchRequestor } from "@openid/appauth/built/xhr"
+import { FetchRequester } from "@openid/appauth/built/xhr"
 
 import store from "@/store"
 
-const requestor = new FetchRequestor()
+const requester = new FetchRequester()
 
 function login(to, from, next) {
   const clientId = import.meta.env.VITE_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_CLIENT_ID
@@ -28,7 +28,7 @@ function login(to, from, next) {
     return qsUtils.parseQueryString(input.search)
   }
 
-  const tokenHandler = new BaseTokenRequestHandler(requestor)
+  const tokenHandler = new BaseTokenRequestHandler(requester)
 
   // Get a the openIdConnect configuration
   let cfg = null
@@ -41,7 +41,7 @@ function login(to, from, next) {
 
     const p = new Promise(resolver)
     if (cfg === null) {
-      AuthorizationServiceConfiguration.fetchFromIssuer(openIdConnectUrl, requestor)
+      AuthorizationServiceConfiguration.fetchFromIssuer(openIdConnectUrl, requester)
         .then((response) => {
           cfg = response
           rslv(cfg)

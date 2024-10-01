@@ -373,7 +373,7 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
             )
         )
 
-    # Update total incident reponse cost if incident type has changed.
+    # Update total incident response cost if incident type has changed.
     if incident_type.id != incident.incident_type.id:
         incident_cost_service.update_incident_response_cost(
             incident_id=incident.id, db_session=db_session

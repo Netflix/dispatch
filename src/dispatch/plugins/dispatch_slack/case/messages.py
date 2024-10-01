@@ -110,7 +110,11 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
 
     if case.has_channel:
         action_buttons = [
-            Button(text=":slack: Case Channel", style="primary", url=case.conversation.weblink if case.conversation else "")
+            Button(
+                text=":slack: Case Channel",
+                style="primary",
+                url=case.conversation.weblink if case.conversation else "",
+            )
         ]
         blocks.extend([Actions(elements=action_buttons)])
     elif case.status == CaseStatus.escalated:
@@ -215,7 +219,6 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
         channel_id=channel_id,
     ).json()
 
-
     # we create the response plan and the snooze buttons
     elements = []
 
@@ -272,7 +275,9 @@ def create_genai_signal_analysis_message(
     """
     signal_metadata_blocks: list[Block] = []
 
-    (first_instance_id, first_instance_signal) = signal_service.get_instances_in_case(db_session=db_session, case_id=case.id).first()
+    (first_instance_id, first_instance_signal) = signal_service.get_instances_in_case(
+        db_session=db_session, case_id=case.id
+    ).first()
 
     if not first_instance_id or not first_instance_signal:
         log.warning("Unable to generate GenAI signal analysis. No signal instances found.")
@@ -283,7 +288,7 @@ def create_genai_signal_analysis_message(
         signal_service.get_cases_for_signal(
             db_session=db_session, signal_id=first_instance_signal.id
         )
-        .from_self() # NOTE: function deprecated in SQLAlchemy 1.4 and removed in 2.0
+        .from_self()  # NOTE: function deprecated in SQLAlchemy 1.4 and removed in 2.0
         .filter(Case.id != case.id)
     )
 
@@ -293,7 +298,9 @@ def create_genai_signal_analysis_message(
         historical_context.append("<case>")
         historical_context.append(f"<case_name>{related_case.name}</case_name>")
         historical_context.append(f"<resolution>{related_case.resolution}</resolution")
-        historical_context.append(f"<resolution_reason>{related_case.resolution_reason}</resolution_reason>")
+        historical_context.append(
+            f"<resolution_reason>{related_case.resolution_reason}</resolution_reason>"
+        )
 
         # Fetch Slack messages for the related case
         if related_case.conversation and related_case.conversation.channel_id:
@@ -323,11 +330,15 @@ def create_genai_signal_analysis_message(
     )
 
     if not genai_plugin:
-        log.warning("Unable to generate GenAI signal analysis. No artificial-intelligence plugin enabled.")
+        log.warning(
+            "Unable to generate GenAI signal analysis. No artificial-intelligence plugin enabled."
+        )
         return signal_metadata_blocks
 
     if not signal_instance.signal.genai_prompt:
-        log.warning(f"Unable to generate GenAI signal analysis. No GenAI prompt defined for {signal_instance.signal.name}")
+        log.warning(
+            f"Unable to generate GenAI signal analysis. No GenAI prompt defined for {signal_instance.signal.name}"
+        )
         return signal_metadata_blocks
 
     response = genai_plugin.instance.chat_completion(
@@ -395,7 +406,9 @@ def create_signal_engagement_message(
 
     username, _ = user_email.split("@")
     blocks = [
-        Section(text=f"@{username}, we could use your help to resolve this case. Please, see additional context below:"),
+        Section(
+            text=f"@{username}, we could use your help to resolve this case. Please, see additional context below:"
+        ),
         Section(
             text=f"{engagement.message if engagement.message else 'No context provided for this alert.'}"
         ),
@@ -404,7 +417,9 @@ def create_signal_engagement_message(
     if engagement_status == SignalEngagementStatus.new:
         blocks.extend(
             [
-                Section(text="Can you please confirm this was you and whether the behavior was expected?"),
+                Section(
+                    text="Can you please confirm this was you and whether the behavior was expected?"
+                ),
                 Actions(
                     elements=[
                         Button(
@@ -433,7 +448,9 @@ def create_signal_engagement_message(
     else:
         blocks.extend(
             [
-                Section(text=":warning: @{username} denied the behavior as expected. Please investigate the case and escalate to incident if necessary."),
+                Section(
+                    text=":warning: @{username} denied the behavior as expected. Please investigate the case and escalate to incident if necessary."
+                ),
             ]
         )
 

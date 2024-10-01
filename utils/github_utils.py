@@ -4,6 +4,7 @@ Utility Python script to automate GitHub-related actions.
 
 Instructions on how to install gh can be found here: https://github.com/cli/cli#installation
 """
+
 import click
 import json
 import subprocess

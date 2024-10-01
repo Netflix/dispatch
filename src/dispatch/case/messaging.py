@@ -4,6 +4,7 @@
     :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
+
 import logging
 
 from sqlalchemy.orm import Session
@@ -29,7 +30,9 @@ from dispatch.config import DISPATCH_UI_URL
 from dispatch.plugin import service as plugin_service
 from dispatch.event import service as event_service
 from dispatch.notification import service as notification_service
-from dispatch.plugins.dispatch_slack.case.messages import create_welcome_ephemeral_message_to_participant
+from dispatch.plugins.dispatch_slack.case.messages import (
+    create_welcome_ephemeral_message_to_participant,
+)
 
 from .enums import CaseStatus
 
@@ -124,9 +127,7 @@ def send_case_created_notifications(case: Case, db_session: Session):
         notification_template.insert(0, CASE_NAME)
 
     case_description = (
-        case.description
-        if len(case.description) <= 500
-        else f"{case.description[:500]}..."
+        case.description if len(case.description) <= 500 else f"{case.description[:500]}..."
     )
 
     notification_kwargs = {
@@ -180,9 +181,7 @@ def send_case_created_notifications(case: Case, db_session: Session):
     log.debug("Case created notifications sent.")
 
 
-def send_case_update_notifications(
-    case: Case, previous_case: CaseRead, db_session: Session
-):
+def send_case_update_notifications(case: Case, previous_case: CaseRead, db_session: Session):
     """Sends notifications about case changes."""
     notification_text = "Case Notification"
     notification_type = MessageType.case_notification
@@ -319,9 +318,7 @@ def send_case_welcome_participant_message(
     )
 
     if not plugin:
-        log.warning(
-            "Case participant welcome message not sent. No conversation plugin enabled."
-        )
+        log.warning("Case participant welcome message not sent. No conversation plugin enabled.")
         return
 
     welcome_message = create_welcome_ephemeral_message_to_participant(case=case)

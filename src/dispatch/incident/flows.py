@@ -165,7 +165,7 @@ def incident_create_resources(
     if not incident.ticket:
         ticket_flows.create_incident_ticket(incident=incident, db_session=db_session)
 
-    # we update the channel name immediately for dedicated channel cases esclated -> incident
+    # we update the channel name immediately for dedicated channel cases escalated -> incident
     if case and case.dedicated_channel and case.escalated_at is not None:
         plugin = plugin_service.get_active_instance(
             db_session=db_session, project_id=case.project.id, plugin_type="conversation"

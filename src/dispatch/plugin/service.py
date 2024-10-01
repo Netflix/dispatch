@@ -107,7 +107,9 @@ def get_enabled_instances_by_type(
     )
 
 
-def create_instance(*, db_session: Session, plugin_instance_in: PluginInstanceCreate) -> PluginInstance:
+def create_instance(
+    *, db_session: Session, plugin_instance_in: PluginInstanceCreate
+) -> PluginInstance:
     """Creates a new plugin instance."""
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=plugin_instance_in.project
@@ -126,7 +128,10 @@ def create_instance(*, db_session: Session, plugin_instance_in: PluginInstanceCr
 
 
 def update_instance(
-    *, db_session: Session, plugin_instance: PluginInstance, plugin_instance_in: PluginInstanceUpdate
+    *,
+    db_session: Session,
+    plugin_instance: PluginInstance,
+    plugin_instance_in: PluginInstanceUpdate,
 ) -> PluginInstance:
     """Updates a plugin instance."""
     plugin_instance_data = plugin_instance.dict()
@@ -187,7 +192,9 @@ def get_plugin_event_by_slug(*, db_session: Session, slug: str) -> Optional[Plug
     return db_session.query(PluginEvent).filter(PluginEvent.slug == slug).one_or_none()
 
 
-def get_all_events_for_plugin(*, db_session: Session, plugin_id: int) -> List[Optional[PluginEvent]]:
+def get_all_events_for_plugin(
+    *, db_session: Session, plugin_id: int
+) -> List[Optional[PluginEvent]]:
     """Returns all plugin events for a given plugin."""
     return db_session.query(PluginEvent).filter(PluginEvent.plugin_id == plugin_id).all()
 

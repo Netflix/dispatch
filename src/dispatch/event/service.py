@@ -357,7 +357,7 @@ def export_timeline(
                         },
                         "fields": "width,widthType",
                     }
-                }
+                },
             ]
 
             if timeline_filters.get("exportOwner"):
@@ -420,7 +420,7 @@ def export_timeline(
                         }
                     )
 
-                # Formating for date rows
+                # Formatting for date rows
                 if text == "\t":
                     insert_data_request.append(
                         {
@@ -446,7 +446,7 @@ def export_timeline(
                         }
                     )
 
-                # Formating for time column
+                # Formatting for time column
                 if row_idx % num_columns == 0:
                     insert_data_request.append(
                         {

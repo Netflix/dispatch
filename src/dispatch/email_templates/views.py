@@ -14,7 +14,12 @@ from dispatch.database.service import search_filter_sort_paginate, CommonParamet
 from dispatch.models import PrimaryKey
 from dispatch.exceptions import ExistsError
 
-from .models import EmailTemplatesRead, EmailTemplatesUpdate, EmailTemplatesPagination, EmailTemplatesCreate
+from .models import (
+    EmailTemplatesRead,
+    EmailTemplatesUpdate,
+    EmailTemplatesPagination,
+    EmailTemplatesCreate,
+)
 from .service import get, create, update, delete
 
 log = logging.getLogger(__name__)
@@ -47,9 +52,7 @@ def create_email_template(
 ):
     """Create a new email template."""
     try:
-        return create(
-            db_session=db_session, email_template_in=email_template_in
-        )
+        return create(db_session=db_session, email_template_in=email_template_in)
     except IntegrityError:
         raise ValidationError(
             [
@@ -80,7 +83,9 @@ def update_email_template(
         )
     try:
         email_template = update(
-            db_session=db_session, email_template=email_template, email_template_in=email_template_in
+            db_session=db_session,
+            email_template=email_template,
+            email_template_in=email_template_in,
         )
     except IntegrityError:
         raise ValidationError(

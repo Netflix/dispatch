@@ -79,7 +79,9 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
 
                 # if the signal has an existing uuid we check if it already exists
                 if signal_instance_in.raw and signal_instance_in.raw.get("id"):
-                    if signal_service.get_signal_instance(db_session=db_session, signal_instance_id=signal_instance_in.raw["id"]):
+                    if signal_service.get_signal_instance(
+                        db_session=db_session, signal_instance_id=signal_instance_in.raw["id"]
+                    ):
                         log.info(
                             f"Received signal instance that already exists in the database, skipping creation: {signal_instance_in.raw['id']}"
                         )

@@ -13,11 +13,7 @@ log = logging.getLogger(__name__)
 
 def get(*, forms_id: int, db_session: Session) -> Optional[Forms]:
     """Gets a from by its id."""
-    return (
-        db_session.query(Forms)
-        .filter(Forms.id == forms_id)
-        .one_or_none()
-    )
+    return db_session.query(Forms).filter(Forms.id == forms_id).one_or_none()
 
 
 def get_all(*, db_session: Session):
@@ -38,7 +34,9 @@ def create(*, forms_in: dict, db_session: Session, creator) -> Forms:
     )
 
     if forms_in.get("form_type_id"):
-        form_type = form_type_service.get(db_session=db_session, forms_type_id=forms_in["form_type_id"])
+        form_type = form_type_service.get(
+            db_session=db_session, forms_type_id=forms_in["form_type_id"]
+        )
         form.score = calculate_score(forms_in.get("form_data"), form_type.scoring_schema)
 
     db_session.add(form)
@@ -68,10 +66,6 @@ def update(
 
 def delete(*, db_session, forms_id: int):
     """Deletes a form."""
-    form = (
-        db_session.query(Forms)
-        .filter(Forms.id == forms_id)
-        .one_or_none()
-    )
+    form = db_session.query(Forms).filter(Forms.id == forms_id).one_or_none()
     db_session.delete(form)
     db_session.commit()

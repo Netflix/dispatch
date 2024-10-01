@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Will Sheldon <wshel@netflix.com>
 """
+
 from dispatch.plugins.base import Plugin
 
 

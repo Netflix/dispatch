@@ -112,7 +112,7 @@ def update(*, db_session, cost_model_in: CostModelUpdate) -> CostModel:
         cost_model_in.updated_at if cost_model_in.updated_at else datetime.utcnow()
     )
 
-    # Update all recognized activities. Delete all removed activites.
+    # Update all recognized activities. Delete all removed activities.
     update_activities = []
     delete_activities = []
 

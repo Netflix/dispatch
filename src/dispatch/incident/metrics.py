@@ -92,13 +92,13 @@ def make_forecast(incidents: List[Incident]):
             log.warning(f"Issue forecasting incidents: {e}")
             return [], []
         forecast = forecaster.forecast(12)
-        forecast_df = pd.DataFrame({"ds": forecast.index.astype("str"), "yhat": forecast.values})
+        forecast_df = pd.DataFrame({"ds": forecast.index.astype("str"), "that": forecast.values})
 
         forecast_data = forecast_df.to_dict("series")
 
         # drop day data
         categories = [d[:-3] for d in forecast_data["ds"]]
-        predicted_counts = [max(math.ceil(x), 0) for x in list(forecast_data["yhat"])]
+        predicted_counts = [max(math.ceil(x), 0) for x in list(forecast_data["that"])]
         return categories, predicted_counts
     else:
         return [], []
