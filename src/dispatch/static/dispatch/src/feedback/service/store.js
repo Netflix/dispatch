@@ -57,6 +57,7 @@ const actions = {
       .then((response) => {
         commit("SET_TABLE_LOADING", false)
         commit("SET_TABLE_ROWS", response.data)
+        console.log(`The response data is JSON: ${JSON.stringify(response.data)}`)
       })
       .catch(() => {
         commit("SET_TABLE_LOADING", false)
