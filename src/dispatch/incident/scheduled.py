@@ -229,7 +229,7 @@ def incident_close_reminder(db_session: Session, project: Project):
             send_incident_close_reminder(incident, db_session)
 
 
-@scheduler.add(every().monday.at("18:00"), name="incident-report-weekly")
+@scheduler.add(every(1).day.at("18:00"), name="incident-report-weekly")
 @timer
 @scheduled_project_task
 def incident_report_weekly(db_session: Session, project: Project):
@@ -269,10 +269,17 @@ def incident_report_weekly(db_session: Session, project: Project):
         )
         return
 
+    items_grouped = []
+    items_grouped_template = INCIDENT_SUMMARY_TEMPLATE
+
     # we create and send an incidents weekly report
     for incident in incidents:
-        items_grouped = []
-        items_grouped_template = INCIDENT_SUMMARY_TEMPLATE
+        # Skip if no incident review document
+        if (
+            not incident.incident_review_document
+            or not incident.incident_review_document.resource_id
+        ):
+            continue
 
         # Skip restricted incidents
         if incident.visibility == Visibility.restricted:
@@ -282,20 +289,20 @@ def incident_report_weekly(db_session: Session, project: Project):
                 file_id=incident.incident_review_document.resource_id,
                 mime_type="text/plain",
             )
-            messages = {
-                "role": "user",
-                "content": """Given the text of the security post-incident review document below,
-                provide answers to the following questions:
+            prompt = f"""
+                Given the text of the security post-incident review document below,
+                provide answers to the following questions in a paragraph format.
+                Do not include the questions in your response.
                 1. What is the summary of what happened?
                 2. What were the overall risk(s)?
                 3. How were the risk(s) mitigated?
                 4. How was the incident resolved?
                 5. What are the follow-up tasks?
-                """
-                + pir_doc,
-            }
 
-            response = ai_plugin.instance.chat_completion(messages)
+                {pir_doc}
+            """
+
+            response = ai_plugin.instance.chat_completion(prompt=prompt)
             summary = response["choices"][0]["message"]["content"]
 
             item = {

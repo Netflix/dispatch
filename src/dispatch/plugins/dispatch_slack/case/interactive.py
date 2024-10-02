@@ -1207,9 +1207,9 @@ def ack_handle_escalation_submission_event(ack: Ack, case: Case) -> None:
     """Handles the escalation submission event."""
 
     msg = (
-        "The case has been esclated to an incident. This channel will be reused for the incident."
+        "The case has been escalated to an incident. This channel will be reused for the incident."
         if case.dedicated_channel
-        else "The case has been esclated to an incident. All further triage work will take place in the incident channel."
+        else "The case has been escalated to an incident. All further triage work will take place in the incident channel."
     )
     modal = Modal(
         title="Escalating Case",
@@ -2293,20 +2293,20 @@ def send_engagement_response(
     if response == MfaChallengeStatus.APPROVED:
         title = "Approve"
         text = "Confirmation... Success!"
-        message_text = f":white_check_mark: {engaged_user} confirmed the behavior *is expected*.\n\n *Context Provided* \n```{context_from_user}```"
+        message_text = f":white_check_mark: {engaged_user} confirmed the behavior as expected.\n\n *Context Provided* \n```{context_from_user}```"
         engagement_status = SignalEngagementStatus.approved
     else:
         title = "MFA Failed"
         engagement_status = SignalEngagementStatus.denied
 
         if response == MfaChallengeStatus.EXPIRED:
-            text = "Confirmation failed, the MFA request timed out. Please have your MFA device ready to accept the push notification and try again."
+            text = "Confirmation failed, the MFA request timed out. Please, have your MFA device ready to accept the push notification and try again."
         elif response == MfaChallengeStatus.DENIED:
-            text = "User not found in MFA provider. To validate your identity, please register in Duo and try again."
+            text = f"User {engaged_user} not found in MFA provider. To validate your identity, please register in Duo and try again."
         else:
             text = "Confirmation failed. You must accept the MFA prompt."
 
-        message_text = f":warning: {engaged_user} attempted to confirm the behavior *as expected*, but the MFA validation failed.\n\n **Error Reason**: `{response}`\n\n{text}\n\n *Context Provided* \n```{context_from_user}```\n\n"
+        message_text = f":warning: {engaged_user} attempted to confirm the behavior as expected, but we ran into an error during MFA validation (`{response}`)\n\n{text}\n\n *Context Provided* \n```{context_from_user}```\n\n"
 
     send_success_modal(
         client=client,
@@ -2365,7 +2365,7 @@ def resolve_case(
     case_in = CaseUpdate(
         title=case.title,
         resolution_reason=CaseResolutionReason.user_acknowledge,
-        resolution=f"Case resolved through user engagement. User context: {context_from_user}",
+        resolution=context_from_user,
         visibility=case.visibility,
         status=CaseStatus.closed,
         closed_at=datetime.utcnow(),
@@ -2384,11 +2384,6 @@ def resolve_case(
     blocks = create_case_message(case=case, channel_id=channel_id)
     client.chat_update(
         blocks=blocks, ts=case.conversation.thread_id, channel=case.conversation.channel_id
-    )
-    client.chat_postMessage(
-        text="Case has been resolved.",
-        channel=case.conversation.channel_id,
-        thread_ts=case.conversation.thread_id,
     )
 
 

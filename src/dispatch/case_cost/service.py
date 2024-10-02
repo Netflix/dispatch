@@ -112,7 +112,7 @@ def update_case_response_cost_for_case_type(db_session, case_type: CaseType) -> 
 
 def calculate_response_cost(hourly_rate, total_response_time_seconds) -> int:
     """Calculates and rounds up the case response cost."""
-    return math.ceil(((total_response_time_seconds / SECONDS_IN_HOUR)) * hourly_rate)
+    return math.ceil((total_response_time_seconds / SECONDS_IN_HOUR) * hourly_rate)
 
 
 def get_default_case_response_cost(case: Case, db_session: SessionLocal) -> Optional[CaseCost]:
@@ -223,7 +223,6 @@ def calculate_case_response_cost_with_cost_model(case: Case, db_session: Session
     if case.case_type.cost_model:
         # Get the cost model. Iterate through all the listed activities we want to record.
         for activity in case.case_type.cost_model.activities:
-
             # Array of sorted (timestamp, user_id) tuples.
             case_events = fetch_case_events(
                 case=case, activity=activity, oldest=oldest, db_session=db_session

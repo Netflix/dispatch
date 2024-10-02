@@ -178,7 +178,7 @@ const actions = {
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
-            { text: "Signal Defintion updated successfully.", type: "success" },
+            { text: "Signal Definition updated successfully.", type: "success" },
             { root: true }
           )
         })

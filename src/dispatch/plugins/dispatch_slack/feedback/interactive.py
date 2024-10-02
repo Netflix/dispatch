@@ -1,5 +1,6 @@
 import logging
-import json
+import ast
+
 from blockkit import (
     Checkboxes,
     Context,
@@ -223,7 +224,7 @@ def handle_incident_feedback_submission_event(
 # Oncall Shift Feedback
 
 
-def oncall_shift_feeback_rating_select(
+def oncall_shift_feedback_rating_select(
     action_id: str = ServiceFeedbackNotificationActionIds.rating_select,
     block_id: str = ServiceFeedbackNotificationBlockIds.rating_select,
     initial_option: dict = None,
@@ -284,7 +285,7 @@ def oncall_shift_feedback_input(
     )
 
 
-def oncall_shift_feeback_anonymous_checkbox(
+def oncall_shift_feedback_anonymous_checkbox(
     action_id: str = ServiceFeedbackNotificationActionIds.anonymous_checkbox,
     block_id: str = ServiceFeedbackNotificationBlockIds.anonymous_checkbox,
     initial_value: str = None,
@@ -326,10 +327,10 @@ def handle_oncall_shift_feedback_direct_message_button_click(
                 )
             ]
         ),
-        oncall_shift_feeback_rating_select(),
+        oncall_shift_feedback_rating_select(),
         oncall_shift_feedback_hours_input(),
         oncall_shift_feedback_input(),
-        oncall_shift_feeback_anonymous_checkbox(),
+        oncall_shift_feedback_anonymous_checkbox(),
     ]
 
     modal = Modal(
@@ -404,7 +405,7 @@ def handle_oncall_shift_feedback_submission_event(
             reminder_service.delete(db_session=db_session, reminder_id=reminder_id)
     if len(metadata) > 5:
         # if there are other details, store those
-        details = json.loads(metadata[5])
+        details = ast.literal_eval(metadata[5])
     else:
         details = None
 

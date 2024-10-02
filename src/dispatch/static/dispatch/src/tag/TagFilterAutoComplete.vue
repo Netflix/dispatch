@@ -165,7 +165,7 @@ export default {
         filters["project"] = [this.project]
       }
 
-      // we add a filter to only retrun discoverable tags
+      // we add a filter to only return discoverable tags
       filters["tagFilter"] = [{ model: "Tag", field: "discoverable", op: "==", value: "true" }]
 
       if (filterOptions.q) {

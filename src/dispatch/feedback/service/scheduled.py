@@ -1,6 +1,6 @@
 from schedule import every
 import logging
-import datetime
+from datetime import datetime
 
 from dispatch.database.core import SessionLocal
 from dispatch.decorators import scheduled_project_task, timer

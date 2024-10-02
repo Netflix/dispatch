@@ -34,6 +34,7 @@ Adding other objects::
     s.search(query=q)
 
 """
+
 from collections import defaultdict
 from sqlalchemy.sql.expression import literal
 

@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Marc Vilanova <mvilanova@netflix.com>
 """
+
 import logging
 
 from openai import OpenAI

@@ -1,22 +1,18 @@
-import math
 import logging
-from typing import List
-from itertools import groupby
-
-from datetime import date
-
+import math
 from calendar import monthrange
+from datetime import date
+from itertools import groupby
+from typing import List
 
 import pandas as pd
+from sqlalchemy import and_
 from statsmodels.tsa.api import ExponentialSmoothing
 
-from sqlalchemy import and_
-
-from dispatch.database.service import apply_filters, apply_filter_specific_joins
+from dispatch.database.service import apply_filter_specific_joins, apply_filters
 from dispatch.incident.type.models import IncidentType
 
 from .models import Incident
-
 
 log = logging.getLogger(__name__)
 
@@ -92,13 +88,13 @@ def make_forecast(incidents: List[Incident]):
             log.warning(f"Issue forecasting incidents: {e}")
             return [], []
         forecast = forecaster.forecast(12)
-        forecast_df = pd.DataFrame({"ds": forecast.index.astype("str"), "yhat": forecast.values})
+        forecast_df = pd.DataFrame({"ds": forecast.index.astype("str"), "that": forecast.values})
 
         forecast_data = forecast_df.to_dict("series")
 
         # drop day data
         categories = [d[:-3] for d in forecast_data["ds"]]
-        predicted_counts = [max(math.ceil(x), 0) for x in list(forecast_data["yhat"])]
+        predicted_counts = [max(math.ceil(x), 0) for x in list(forecast_data["that"])]
         return categories, predicted_counts
     else:
         return [], []

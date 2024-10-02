@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 
 def get(*, db_session, notification_id: int) -> Optional[Notification]:
-    """Gets a notifcation by id."""
+    """Gets a notification by id."""
     return db_session.query(Notification).filter(Notification.id == notification_id).one_or_none()
 
 

@@ -383,7 +383,7 @@ def send_incident_created_notifications(incident: Incident, db_session: SessionL
         if incident.project.allow_self_join:
             notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT)
         else:
-           notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT_NO_SELF_JOIN)
+            notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT_NO_SELF_JOIN)
     else:
         notification_template.insert(0, INCIDENT_NAME)
 

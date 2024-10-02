@@ -18,7 +18,7 @@ router = APIRouter()
 
 @router.get("", response_model=EntityPagination)
 def get_entities(common: CommonParameters):
-    """Get all entitys, or only those matching a given search term."""
+    """Get all entities, or only those matching a given search term."""
     return search_filter_sort_paginate(model="Entity", **common)
 
 
@@ -42,7 +42,7 @@ def create_entity(db_session: DbSession, entity_in: EntityCreate):
 
 @router.put("/{entity_id}", response_model=EntityRead)
 def update_entity(db_session: DbSession, entity_id: PrimaryKey, entity_in: EntityUpdate):
-    """Updates an exisiting entity."""
+    """Updates an existing entity."""
     entity = get(db_session=db_session, entity_id=entity_id)
     if not entity:
         raise HTTPException(

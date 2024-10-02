@@ -6,6 +6,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from __future__ import absolute_import, print_function
 
 from dispatch.plugins.base.manager import PluginManager

@@ -4,6 +4,7 @@
     :copyright: (c) 2022 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
+
 import logging
 
 from schedule import every

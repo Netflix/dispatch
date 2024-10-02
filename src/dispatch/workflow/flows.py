@@ -4,7 +4,7 @@ from dispatch.config import DISPATCH_UI_URL
 from dispatch.decorators import background_task
 from dispatch.plugin import service as plugin_service
 from dispatch.signal.models import SignalInstance
-from dispatch.workflow import service as workflow_serivce
+from dispatch.workflow import service as workflow_service
 from dispatch.workflow.models import Workflow, WorkflowInstance, WorkflowInstanceCreate
 
 
@@ -39,7 +39,7 @@ def signal_workflow_run_flow(
                     params.update({p["key"]: entity.value})
 
     named_params = [{"key": key, "value": value} for key, value in params.items()]
-    instance = workflow_serivce.create_instance(
+    instance = workflow_service.create_instance(
         db_session=db_session,
         workflow=workflow,
         instance_in=WorkflowInstanceCreate(
