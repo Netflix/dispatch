@@ -14,7 +14,7 @@ from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
 from sqlalchemy.orm import Session
 
-from dispatch.case.enums import CaseStatus
+from dispatch.case.enums import CaseResolutionReason, CaseStatus
 from dispatch.case.models import Case
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.messaging.strings import CASE_STATUS_DESCRIPTIONS, CASE_VISIBILITY_DESCRIPTIONS
@@ -284,13 +284,17 @@ def create_genai_signal_analysis_message(
         return signal_metadata_blocks
 
     # Fetch related cases
-    related_cases = (
-        signal_service.get_cases_for_signal(
-            db_session=db_session, signal_id=first_instance_signal.id
+    related_cases = []
+    for resolution_reason in CaseResolutionReason:
+        related_cases.extend(
+            signal_service.get_cases_for_signal_by_resolution_reason(
+                db_session=db_session,
+                signal_id=first_instance_signal.id,
+                resolution_reason=resolution_reason,
+            )
+            .from_self()  # NOTE: function deprecated in SQLAlchemy 1.4 and removed in 2.0
+            .filter(Case.id != case.id)
         )
-        .from_self()  # NOTE: function deprecated in SQLAlchemy 1.4 and removed in 2.0
-        .filter(Case.id != case.id)
-    )
 
     # Prepare historical context
     historical_context = []

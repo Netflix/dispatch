@@ -761,6 +761,16 @@ def get_unprocessed_signal_instance_ids(session: Session) -> list[int]:
 
 
 def get_instances_in_case(db_session: Session, case_id: int) -> Query:
+    """
+    Retrieves signal instances associated with a given case.
+
+    Args:
+        db_session (Session): The database session.
+        case_id (int): The ID of the case.
+
+    Returns:
+        Query: A SQLAlchemy query object for the signal instances associated with the case.
+    """
     return (
         db_session.query(SignalInstance, Signal)
         .join(Signal)
@@ -771,10 +781,46 @@ def get_instances_in_case(db_session: Session, case_id: int) -> Query:
 
 
 def get_cases_for_signal(db_session: Session, signal_id: int, limit: int = 10) -> Query:
+    """
+    Retrieves cases associated with a given signal.
+
+    Args:
+        db_session (Session): The database session.
+        signal_id (int): The ID of the signal.
+        limit (int, optional): The maximum number of cases to retrieve. Defaults to 10.
+
+    Returns:
+        Query: A SQLAlchemy query object for the cases associated with the signal.
+    """
     return (
         db_session.query(Case)
         .join(SignalInstance)
         .filter(SignalInstance.signal_id == signal_id)
+        .order_by(desc(Case.created_at))
+        .limit(limit)
+    )
+
+
+def get_cases_for_signal_by_resolution_reason(
+    db_session: Session, signal_id: int, resolution_reason: str, limit: int = 10
+) -> Query:
+    """
+    Retrieves cases associated with a given signal and resolution reason.
+
+    Args:
+        db_session (Session): The database session.
+        signal_id (int): The ID of the signal.
+        resolution_reason (str): The resolution reason to filter cases by.
+        limit (int, optional): The maximum number of cases to retrieve. Defaults to 10.
+
+    Returns:
+        Query: A SQLAlchemy query object for the cases associated with the signal and resolution reason.
+    """
+    return (
+        db_session.query(Case)
+        .join(SignalInstance)
+        .filter(SignalInstance.signal_id == signal_id)
+        .filter(Case.resolution_reason == resolution_reason)
         .order_by(desc(Case.created_at))
         .limit(limit)
     )
