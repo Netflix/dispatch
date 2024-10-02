@@ -1,7 +1,7 @@
 """Adds custom incident report card fields
 
 Revision ID: f5107ce190fc
-Revises: 1f4dc687945d
+Revises: 32652e0360dd
 Create Date: 2024-09-27 12:33:17.418418
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "f5107ce190fc"
-down_revision = "1f4dc687945d"
+down_revision = "32652e0360dd"
 branch_labels = None
 depends_on = None
 
