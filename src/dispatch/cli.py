@@ -902,7 +902,7 @@ def process_signals():
     "--project",
     default="Test",
     required=True,
-    help="The Dispatch project to send the instances to",
+    help="The Dispatch project to send the instances to.",
 )
 def perf_test(
     num_instances: int, num_workers: int, api_endpoint: str, api_token: str, project: str
