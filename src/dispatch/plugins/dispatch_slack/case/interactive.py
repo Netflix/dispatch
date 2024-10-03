@@ -2293,7 +2293,7 @@ def send_engagement_response(
     if response == MfaChallengeStatus.APPROVED:
         title = "Approve"
         text = "Confirmation... Success!"
-        message_text = f":white_check_mark: {engaged_user} confirmed the behavior as expected.\n\n *Context Provided* \n```{context_from_user}```"
+        message_text = f"{engaged_user} provided the following context:\n```{context_from_user}```"
         engagement_status = SignalEngagementStatus.approved
     else:
         title = "MFA Failed"
