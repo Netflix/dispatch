@@ -194,6 +194,10 @@ class Case(Base, TimeStampMixin, ProjectMixin):
             return False
         return True if self.conversation.thread_id else False
 
+    @property
+    def participant_emails(self) -> list:
+        return [participant.individual.email for participant in self.participants]
+
     @hybrid_property
     def total_cost(self):
         total_cost = 0

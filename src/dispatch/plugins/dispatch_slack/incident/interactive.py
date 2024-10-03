@@ -48,6 +48,7 @@ from dispatch.monitor.models import MonitorCreate
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
 from dispatch.participant_role import service as participant_role_service
+from dispatch.incident.severity import service as incident_severity_service
 from dispatch.participant_role.enums import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
@@ -76,6 +77,8 @@ from dispatch.plugins.dispatch_slack.incident.enums import (
     AddTimelineEventActions,
     AssignRoleActions,
     AssignRoleBlockIds,
+    CreateTaskActionIds,
+    CreateTaskBlockIds,
     EngageOncallActionIds,
     EngageOncallActions,
     EngageOncallBlockIds,
@@ -133,7 +136,7 @@ from dispatch.service import service as service_service
 from dispatch.tag import service as tag_service
 from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
-from dispatch.task.models import Task
+from dispatch.task.models import Task, TaskCreate
 from dispatch.ticket import flows as ticket_flows
 from dispatch.messaging.strings import reminder_select_values
 from dispatch.plugins.dispatch_slack.messaging import build_unexpected_error_message
@@ -216,6 +219,7 @@ def configure(config):
     app.command(config.slack_command_add_timeline_event, middleware=middleware)(
         handle_add_timeline_event_command
     )
+    app.command(config.slack_command_create_task, middleware=middleware)(handle_create_task_command)
 
     app.event(
         event="reaction_added",
@@ -469,7 +473,7 @@ def handle_list_participants_command(
 
     participants = participant_service.get_all_by_incident_id(
         db_session=db_session, incident_id=context["subject"].id
-    ).all()
+    )
 
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
@@ -596,6 +600,72 @@ def handle_list_tasks_command(
         tasks=tasks,
         view_id=body["trigger_id"],
     )
+
+
+def draw_task_message(
+    channel_id: str, client: WebClient, first_open: bool, task: Task, thread_id: int
+):
+    """Draws a task message in a Slack channel.
+
+    Args:
+        channel_id (str): The channel id.
+        client (WebClient): The Slack client.
+        first_open (bool): Whether this is the first time the message is being drawn.
+        task (Task): The task to draw.
+        thread_id (int): The thread id of the task message.
+
+    Overwrites the existing message if it already exists.
+    """
+    button_text = "Resolve" if task.status == TaskStatus.open else "Re-open"
+    action_type = "resolve" if task.status == TaskStatus.open else "reopen"
+
+    # If this is the first time the message is being drawn, we post a new message.
+    if first_open:
+        result = client.chat_postMessage(
+            text=f"*<{task.creator.individual.weblink}|{task.creator.individual.name}>* created a new task.",
+            channel=channel_id,
+        )
+        thread_id = result.data.get("ts")
+
+    button_metadata = TaskMetadata(
+        type=IncidentSubjects.incident,
+        action_type=action_type,
+        organization_slug=task.project.organization.slug,
+        id=task.incident.id,
+        task_id=task.id,
+        project_id=task.project.id,
+        resource_id=task.resource_id,
+        channel_id=channel_id,
+        thread_id=thread_id,
+    ).json()
+
+    assignees = [f"<{a.individual.weblink}|{a.individual.name}>" for a in task.assignees]
+    blocks = {
+        "type": "section",
+        "text": {
+            "type": "mrkdwn",
+            "text": f"*<{task.creator.individual.weblink}|{task.creator.individual.name}>* created a new task.",
+        },
+        "fields": [
+            {"type": "mrkdwn", "text": "*Assignees:*"},
+            {"type": "mrkdwn", "text": "*Description:*"},
+            {
+                "type": "mrkdwn",
+                "text": ", ".join(assignees),
+            },
+            {"type": "plain_text", "text": task.description},
+        ],
+        "accessory": {
+            "type": "button",
+            "text": {"type": "plain_text", "text": button_text},
+            "style": "primary",
+            "value": button_metadata,
+            "action_id": TaskNotificationActionIds.update_status,
+        },
+    }
+
+    # Update the message with the task details and resolve/re-open button.
+    client.chat_update(channel=channel_id, ts=thread_id, blocks=[blocks])
 
 
 def draw_task_modal(
@@ -770,7 +840,7 @@ def handle_participant_role_activity(
 
             # re-assign role once threshold is reached
             if participant_role.role == ParticipantRoleType.observer:
-                if participant_role.activity >= 10:  # ten messages sent to the incident channel
+                if participant_role.activity >= 3:  # three messages sent to the incident channel
                     # we change the participant's role to the participant one
                     participant_role_service.renounce_role(
                         db_session=db_session, participant_role=participant_role
@@ -1011,7 +1081,9 @@ def handle_member_joined_channel(
 
         if participant.added_by:
             # Message text when someone @'s a user is not available in body, use generic added by reason
-            participant.added_reason = f"Participant added by {participant.added_by.individual.name}"
+            participant.added_reason = (
+                f"Participant added by {participant.added_by.individual.name}"
+            )
         else:
             # We couldn't find a user to attribute the addition to, add generic reason
             participant.added_reason = "Participant added by Dispatch"
@@ -1061,7 +1133,9 @@ def handle_member_joined_channel(
 
         if participant.added_by:
             # Message text when someone @'s a user is not available in body, use generic added by reason
-            participant.added_reason = f"Participant added by {participant.added_by.individual.name}"
+            participant.added_reason = (
+                f"Participant added by {participant.added_by.individual.name}"
+            )
         else:
             # We couldn't find a user to attribute the addition to, add generic reason
             participant.added_reason = "Participant added by Dispatch"
@@ -1506,6 +1580,130 @@ def handle_assign_role_submission_event(
         view_id=body["view"]["id"],
         title="Assign Role",
         message="Role assigned successfully.",
+    )
+
+
+def handle_create_task_command(
+    ack: Ack,
+    body,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+) -> None:
+    """Displays a modal for task creation."""
+    ack()
+
+    initial_modal = Modal(
+        title="Create Task",
+        close="Close",
+        blocks=[Section(text="Opening a dialog to create a new incident task...")],
+    ).build()
+    response = client.views_open(trigger_id=body["trigger_id"], view=initial_modal)
+
+    if context["subject"].type == CaseSubjects.case:
+        modal = Modal(
+            title="Invalid Command",
+            close="Close",
+            blocks=[Section(text="Create Task command is not currently available for cases.")],
+        ).build()
+        return client.views_update(view_id=response.get("view").get("id"), view=modal)
+
+    participants = participant_service.get_all_by_incident_id(
+        db_session=db_session, incident_id=context["subject"].id
+    )
+
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+
+    contact_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="contact"
+    )
+    if not contact_plugin:
+        modal = Modal(
+            title="Plugin Not Enabled",
+            close="Close",
+            blocks=[Section(text="Contact plugin is not enabled. Unable to list participants.")],
+        ).build()
+        return client.views_update(view_id=response.get("view").get("id"), view=modal)
+
+    active_participants = [p for p in participants if p.active_roles]
+    participant_list = []
+
+    for participant in active_participants:
+        participant_email = participant.individual.email
+        participant_info = contact_plugin.instance.get(participant_email, db_session=db_session)
+        participant_name = participant_info.get("fullname", participant.individual.email)
+        participant_list.append({"text": participant_name, "value": participant_email})
+
+    blocks = [
+        static_select_block(
+            label="Assignee",
+            block_id=CreateTaskBlockIds.assignee_select,
+            placeholder="Select Assignee",
+            options=participant_list,
+        ),
+        Input(
+            label="Task Description",
+            element=PlainTextInput(placeholder="Task description", multiline=True),
+            block_id=CreateTaskBlockIds.description,
+        ),
+    ]
+
+    modal = Modal(
+        title="Create Task",
+        blocks=blocks,
+        submit="Create",
+        close="Close",
+        callback_id=CreateTaskActionIds.submit,
+        private_metadata=context["subject"].json(),
+    ).build()
+    return client.views_update(view_id=response.get("view").get("id"), view=modal)
+
+
+def ack_create_task_submission_event(ack: Ack) -> None:
+    """Handles task creation acknowledgment."""
+    modal = Modal(
+        title="Create Task", close="Close", blocks=[Section(text="Creating task...")]
+    ).build()
+    ack(response_action="update", view=modal)
+
+
+@app.view(
+    CreateTaskActionIds.submit,
+    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
+)
+def handle_create_task_submission_event(
+    ack: Ack,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+    form_data: dict,
+    user: DispatchUser,
+) -> None:
+    """Handles the create task submission."""
+    ack()
+
+    participant_email = form_data.get(CreateTaskBlockIds.assignee_select).get("value", "")
+    assignee = participant_service.get_by_incident_id_and_email(
+        db_session=db_session, incident_id=context["subject"].id, email=participant_email
+    )
+    creator = participant_service.get_by_incident_id_and_email(
+        db_session=db_session, incident_id=context["subject"].id, email=user.email
+    )
+    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+
+    task_in = TaskCreate(
+        assignees=[ParticipantUpdate.from_orm(assignee)],
+        creator=ParticipantUpdate.from_orm(creator),
+        description=form_data.get(CreateTaskBlockIds.description, ""),
+        incident=IncidentRead.from_orm(incident),
+    )
+    task = task_service.create(db_session=db_session, task_in=task_in)
+    draw_task_message(
+        channel_id=incident.conversation.channel_id,
+        client=client,
+        task=task,
+        first_open=True,
+        thread_id=None,
     )
 
 
@@ -1980,6 +2178,20 @@ def handle_update_incident_submission_event(
     user: DispatchUser,
 ) -> None:
     """Handles the update incident submission"""
+    incident_severity_id = form_data[DefaultBlockIds.incident_severity_select]["value"]
+    incident_severity = incident_severity_service.get(
+        db_session=db_session, incident_severity_id=incident_severity_id
+    )
+    status = form_data[DefaultBlockIds.incident_status_select]["name"]
+    if not incident_severity.allowed_for_stable_incidents and (
+        status == IncidentStatus.stable or status == IncidentStatus.closed
+    ):
+        errors = {
+            DefaultBlockIds.incident_severity_select: f"Severity cannot be {incident_severity.name} for {status} incidents"
+        }
+        ack(response_action="errors", errors=errors)
+        return
+
     ack_incident_update_submission_event(ack=ack)
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
@@ -2510,18 +2722,25 @@ def handle_update_task_status_button_click(
         incident_id=context["subject"].id,
     )
 
-    tasks = task_service.get_all_by_incident_id(
-        db_session=db_session,
-        incident_id=context["subject"].id,
-    )
-
-    draw_task_modal(
-        channel_id=button.channel_id,
-        client=client,
-        first_open=False,
-        view_id=body["view"]["id"],
-        tasks=tasks,
-    )
+    if not button.thread_id:
+        # we are in a modal
+        draw_task_modal(
+            channel_id=button.channel_id,
+            client=client,
+            first_open=False,
+            view_id=body["view"]["id"],
+            tasks=tasks,
+        )
+    else:
+        # We are in a message
+        task = task_service.get(db_session=db_session, task_id=button.task_id)
+        draw_task_message(
+            channel_id=button.channel_id,
+            client=client,
+            task=task,
+            first_open=False,
+            thread_id=button.thread_id,
+        )
 
 
 @app.action(RemindAgainActions.submit, middleware=[select_context_middleware, db_middleware])

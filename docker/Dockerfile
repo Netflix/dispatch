@@ -8,6 +8,8 @@ LABEL org.opencontainers.image.source="https://github.com/netflix/dispatch"
 LABEL org.opencontainers.image.vendor="Netflix, Inc."
 LABEL org.opencontainers.image.authors="oss@netflix.com"
 
+SHELL ["/bin/bash", "-o", "pipefail", "-o", "errexit", "-c"]
+
 # Get and set up Node for front-end asset building
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # Needed for fetching stuff
@@ -15,9 +17,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     && rm -rf /var/lib/apt/lists/*
 
-RUN set -x \
-    && wget --quiet -O - https://deb.nodesource.com/setup_16.x | bash - \
-    && apt-get install -y nodejs
+RUN wget --quiet -O - https://deb.nodesource.com/setup_16.x | bash - \
+    && apt-get install -y nodejs --no-install-recommends
 
 ARG SOURCE_COMMIT
 ENV DISPATCH_BUILD=${SOURCE_COMMIT:-unknown}
@@ -47,8 +48,9 @@ ARG VITE_DISPATCH_COMMIT_MESSAGE
 ENV VITE_DISPATCH_COMMIT_MESSAGE="Unknown"
 
 COPY . /usr/src/dispatch/
-RUN export YARN_CACHE_FOLDER="$(mktemp -d)" \
-    && cd /usr/src/dispatch \
+RUN YARN_CACHE_FOLDER="$(mktemp -d)" \
+    && export YARN_CACHE_FOLDER \
+    && pushd /usr/src/dispatch \
     && python setup.py bdist_wheel \
     && rm -r "$YARN_CACHE_FOLDER" \
     && mv /usr/src/dispatch/dist /dist
@@ -65,6 +67,7 @@ LABEL org.opencontainers.image.source="https://github.com/netflix/dispatch"
 LABEL org.opencontainers.image.vendor="Netflix, Inc."
 LABEL org.opencontainers.image.authors="oss@netflix.com"
 
+SHELL ["/bin/bash", "-o", "pipefail", "-o", "errexit", "-c"]
 
 # add our user and group first to make sure their IDs get assigned consistently
 RUN groupadd -r dispatch && useradd -r -m -g dispatch dispatch
@@ -81,21 +84,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget gnupg \
     && rm -rf /var/lib/apt/lists/*
 
-RUN set -x \
-    && echo "deb http://apt.postgresql.org/pub/repos/apt buster-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt buster-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
     && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 
-RUN set -x \
-    && wget --quiet -O - https://deb.nodesource.com/setup_12.x | bash -
+RUN wget --quiet -O - https://deb.nodesource.com/setup_12.x | bash -
 
 COPY --from=sdist /dist/*.whl /tmp/dist/
-RUN set -x \
-    && buildDeps="" \
+RUN buildDeps="" \
     && apt-get update \
-    && apt-get install -y --no-install-recommends $buildDeps \
-    # remove internal index when internal plugins are seperated
+    && apt-get install -y --no-install-recommends "$buildDeps" \
+    # remove internal index when internal plugins are separated
     && pip install -U /tmp/dist/*.whl \
-    && apt-get purge -y --auto-remove $buildDeps \
+    && apt-get purge -y --auto-remove "$buildDeps" \
     # We install run-time dependencies strictly after
     # build dependencies to prevent accidental collusion.
     # These are also installed last as they are needed
@@ -104,7 +104,7 @@ RUN set -x \
     pkg-config postgresql-client-14 nodejs \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
-    && npm install mjml
+    && npm install mjml --no-cache-dir
 
 EXPOSE 8000
 VOLUME /var/lib/dispatch/files

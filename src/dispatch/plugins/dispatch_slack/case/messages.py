@@ -1,44 +1,44 @@
-from collections import defaultdict
+import logging
 from typing import NamedTuple
-
 
 from blockkit import (
     Actions,
     Button,
     Context,
+    Divider,
     Message,
     Section,
-    Divider,
 )
 from blockkit.surfaces import Block
+from slack_sdk.errors import SlackApiError
+from slack_sdk.web.client import WebClient
 from sqlalchemy.orm import Session
 
-from dispatch.config import DISPATCH_UI_URL
-from dispatch.case.enums import CaseStatus
+from dispatch.case.enums import CaseResolutionReason, CaseStatus
 from dispatch.case.models import Case
-from dispatch.entity.models import Entity
-from dispatch.entity_type.models import EntityType
-from dispatch.entity import service as entity_service
+from dispatch.config import DISPATCH_UI_URL
 from dispatch.messaging.strings import CASE_STATUS_DESCRIPTIONS, CASE_VISIBILITY_DESCRIPTIONS
+from dispatch.plugin import service as plugin_service
+from dispatch.plugins.dispatch_slack.case.enums import (
+    CaseNotificationActions,
+    SignalEngagementActions,
+    SignalNotificationActions,
+)
+from dispatch.plugins.dispatch_slack.config import MAX_SECTION_TEXT_LENGTH
 from dispatch.plugins.dispatch_slack.models import (
     CaseSubjects,
     EngagementMetadata,
-    SubjectMetadata,
     SignalSubjects,
+    SubjectMetadata,
 )
-from dispatch.plugins.dispatch_slack.case.enums import (
-    CaseNotificationActions,
-    SignalNotificationActions,
-    SignalEngagementActions,
-)
+from dispatch.signal import service as signal_service
+from dispatch.signal.enums import SignalEngagementStatus
 from dispatch.signal.models import (
-    Signal,
     SignalEngagement,
     SignalInstance,
-    assoc_signal_instance_entities,
 )
-from dispatch.signal.enums import SignalEngagementStatus
-from dispatch.plugins.dispatch_slack.config import MAX_SECTION_TEXT_LENGTH
+
+log = logging.getLogger(__name__)
 
 
 def map_priority_color(color: str) -> str:
@@ -60,13 +60,26 @@ def map_priority_color(color: str) -> str:
 
 
 def create_case_message(case: Case, channel_id: str) -> list[Block]:
+    """
+    Creates a Slack message for a given case.
+
+    Args:
+        case (Case): The case object containing details to be included in the message.
+        channel_id (str): The ID of the Slack channel where the message will be sent.
+
+    Returns:
+        list[Block]: A list of Block objects representing the structure of the Slack message.
+    """
     priority_color = map_priority_color(color=case.case_priority.color)
+
+    title_prefix = "*Detection*" if case.signal_instances else "*Title*"
+    title = f"{title_prefix} \n {case.title}."
 
     fields = [
         f"*Assignee* \n {case.assignee.individual.email}",
         f"*Status* \n {case.status}",
-        f"*Type* \n {case.case_type.name}",
-        f"*Priority* \n {priority_color} {case.case_priority.name}",
+        f"*Case Type* \n {case.case_type.name}",
+        f"*Case Priority* \n {priority_color} {case.case_priority.name}",
     ]
 
     if case.signal_instances:
@@ -74,17 +87,17 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
             fields.append(f"*Variant* \n {variant}")
 
     blocks = [
-        Context(elements=[f"* {case.name} - Case Details*"]),
         Section(
-            text=f"*Title* \n {case.title}.",
+            text=title,
             accessory=Button(
-                text="Open in Dispatch",
+                text="View in Dispatch",
                 action_id="button-link",
                 url=f"{DISPATCH_UI_URL}/{case.project.organization.slug}/cases/{case.name}",
             ),
         ),
         Section(text=f"*Description* \n {case.description}"),
         Section(fields=fields),
+        Section(text="*Actions*"),
     ]
 
     button_metadata = SubjectMetadata(
@@ -95,13 +108,22 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
         channel_id=channel_id,
     ).json()
 
-    if case.status == CaseStatus.escalated:
+    if case.has_channel:
+        action_buttons = [
+            Button(
+                text=":slack: Case Channel",
+                style="primary",
+                url=case.conversation.weblink if case.conversation else "",
+            )
+        ]
+        blocks.extend([Actions(elements=action_buttons)])
+    elif case.status == CaseStatus.escalated:
         blocks.extend(
             [
                 Actions(
                     elements=[
                         Button(
-                            text="Join Incident",
+                            text=":siren: Join Incident",
                             action_id=CaseNotificationActions.join_incident,
                             style="primary",
                             value=button_metadata,
@@ -110,7 +132,6 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
                 )
             ]
         )
-
     elif case.status == CaseStatus.closed:
         blocks.extend(
             [
@@ -133,21 +154,23 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
     else:
         action_buttons = [
             Button(
-                text="Resolve",
+                text=":white_check_mark: Resolve",
                 action_id=CaseNotificationActions.resolve,
-                style="primary",
                 value=button_metadata,
             ),
             Button(
-                text="Edit",
+                text=":pencil: Edit",
                 action_id=CaseNotificationActions.edit,
-                style="primary",
                 value=button_metadata,
             ),
             Button(
-                text="Escalate",
+                text=":slack: Create Channel",
+                action_id=CaseNotificationActions.migrate,
+                value=button_metadata,
+            ),
+            Button(
+                text=":fire: Escalate",
                 action_id=CaseNotificationActions.escalate,
-                style="danger",
                 value=button_metadata,
             ),
         ]
@@ -155,9 +178,8 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
             action_buttons.insert(
                 0,
                 Button(
-                    text="Triage",
+                    text=":mag: Triage",
                     action_id=CaseNotificationActions.triage,
-                    style="primary",
                     value=button_metadata,
                 ),
             )
@@ -171,19 +193,58 @@ class EntityGroup(NamedTuple):
     related_case_count: int
 
 
-def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -> list[Message]:
-    """Creates the signal instance message."""
+def create_signal_message(case_id: int, channel_id: str, db_session: Session) -> list[Message]:
+    """
+    Creates a signal message for a given case.
 
-    signal_instances_query = (
-        db_session.query(SignalInstance, Signal)
-        .join(Signal)
-        .with_entities(SignalInstance.id, Signal)
-        .filter(SignalInstance.case_id == case_id)
-        .order_by(SignalInstance.created_at)
-    )
+    This function generates a signal message for a specific case by fetching the first signal instance
+    associated with the case and creating metadata blocks for the message.
 
-    (first_instance_id, first_instance_signal) = signal_instances_query.first()
-    num_of_instances = signal_instances_query.count()
+    Args:
+        case_id (int): The ID of the case for which to create the signal message.
+        channel_id (str): The ID of the Slack channel where the message will be sent.
+        db_session (Session): The database session to use for querying signal instances.
+
+    Returns:
+        list[Message]: A list of Message objects representing the structure of the Slack messages.
+    """
+    # we fetch the first instance to get the organization slug and project id
+    instances = signal_service.get_instances_in_case(db_session=db_session, case_id=case_id)
+    (first_instance_id, first_instance_signal) = instances.first()
+
+    organization_slug = first_instance_signal.project.organization.slug
+
+    # we create the signal metadata blocks
+    signal_metadata_blocks = [
+        Section(text="*Alerts*"),
+        Section(
+            text=f"We observed <{DISPATCH_UI_URL}/{organization_slug}/cases/{first_instance_signal.case.name}/signal/{first_instance_signal.id}|{instances.count()} alerts> in this case. The first alert for this case can be seen below."
+        ),
+    ]
+
+    return Message(blocks=signal_metadata_blocks).build()["blocks"]
+
+
+def create_action_buttons_message(
+    case_id: int, channel_id: str, db_session: Session
+) -> list[Message]:
+    """
+    Creates a message with action buttons for a given case.
+
+    This function generates a message containing action buttons for a specific case by fetching the first signal instance
+    associated with the case and creating metadata blocks for the message.
+
+    Args:
+        case_id (int): The ID of the case for which to create the action buttons message.
+        channel_id (str): The ID of the Slack channel where the message will be sent.
+        db_session (Session): The database session to use for querying signal instances.
+
+    Returns:
+        list[Message]: A list of Message objects representing the structure of the Slack messages.
+    """
+    # we fetch the first instance to get the organization slug and project id
+    instances = signal_service.get_instances_in_case(db_session=db_session, case_id=case_id)
+    (first_instance_id, first_instance_signal) = instances.first()
 
     organization_slug = first_instance_signal.project.organization.slug
     project_id = first_instance_signal.project.id
@@ -195,94 +256,157 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
         channel_id=channel_id,
     ).json()
 
-    # Define the initial elements with "Raw Data" and "Snooze" buttons
-    elements = [
-        Button(
-            text="Snooze",
-            action_id=SignalNotificationActions.snooze,
-            value=button_metadata,
-        ),
-    ]
+    # we create the response plan and the snooze buttons
+    elements = []
 
-    # Check if `first_instance_signal.external_url` is not empty
     if first_instance_signal.external_url:
-        # If `first_instance_signal.external_url` is not empty, add the "Response Plan" button
         elements.append(
             Button(
-                text="Response Plan",
+                text="🔖 View Response Plan",
                 action_id="button-link",
                 url=first_instance_signal.external_url,
             )
         )
 
-    # Create the Actions block with the elements
+    elements.append(
+        Button(
+            text="💤 Snooze Alert",
+            action_id=SignalNotificationActions.snooze,
+            value=button_metadata,
+        )
+    )
+
+    # we create the signal metadata blocks
     signal_metadata_blocks = [
-        Actions(elements=elements),
-        Section(text="*Alerts*"),
         Divider(),
-        Section(text=f"{num_of_instances} alerts observed in this case."),
-        Section(text="\n*Entities*"),
+        Section(text="*Actions*"),
+        Actions(elements=elements),
         Divider(),
     ]
 
-    entities_query = (
-        db_session.query(Entity.id, Entity.value, EntityType.name)
-        .join(EntityType, Entity.entity_type_id == EntityType.id)
-        .join(
-            assoc_signal_instance_entities, assoc_signal_instance_entities.c.entity_id == Entity.id
+    return Message(blocks=signal_metadata_blocks).build()["blocks"]
+
+
+def create_genai_signal_analysis_message(
+    case: Case,
+    channel_id: str,
+    db_session: Session,
+    client: WebClient,
+) -> list[Block]:
+    """
+    Creates a signal analysis using a generative AI plugin.
+
+    This function generates a analysis for a given case by leveraging historical context and
+    a generative AI plugin. It fetches related cases, their resolutions, and relevant Slack
+    messages to provide a comprehensive analysis.
+
+    Args:
+        case (Case): The case object containing details to be included in the analysis.
+        channel_id (str): The ID of the Slack channel where the analysis will be sent.
+        db_session (Session): The database session to use for querying signal instances and related cases.
+        client (WebClient): The Slack WebClient to fetch threaded messages.
+
+    Returns:
+        list[Block]: A list of Block objects representing the structure of the Slack message.
+    """
+    signal_metadata_blocks: list[Block] = []
+
+    (first_instance_id, first_instance_signal) = signal_service.get_instances_in_case(
+        db_session=db_session, case_id=case.id
+    ).first()
+
+    if not first_instance_id or not first_instance_signal:
+        log.warning("Unable to generate GenAI signal analysis. No signal instances found.")
+        return signal_metadata_blocks
+
+    # Fetch related cases
+    related_cases = []
+    for resolution_reason in CaseResolutionReason:
+        related_cases.extend(
+            signal_service.get_cases_for_signal_by_resolution_reason(
+                db_session=db_session,
+                signal_id=first_instance_signal.id,
+                resolution_reason=resolution_reason,
+            )
+            .from_self()  # NOTE: function deprecated in SQLAlchemy 1.4 and removed in 2.0
+            .filter(Case.id != case.id)
         )
-        .join(
-            SignalInstance, assoc_signal_instance_entities.c.signal_instance_id == SignalInstance.id
+
+    # Prepare historical context
+    historical_context = []
+    for related_case in related_cases:
+        historical_context.append("<case>")
+        historical_context.append(f"<case_name>{related_case.name}</case_name>")
+        historical_context.append(f"<resolution>{related_case.resolution}</resolution")
+        historical_context.append(
+            f"<resolution_reason>{related_case.resolution_reason}</resolution_reason>"
         )
-        .filter(SignalInstance.case_id == case_id)
+
+        # Fetch Slack messages for the related case
+        if related_case.conversation and related_case.conversation.channel_id:
+            try:
+                # Fetch threaded messages
+                thread_messages = client.conversations_replies(
+                    channel=related_case.conversation.channel_id,
+                    ts=related_case.conversation.thread_id,
+                )
+
+                # Add relevant messages to the context (e.g., first 5 messages)
+                for message in thread_messages["messages"][:5]:
+                    historical_context.append(f"<slack_message>{message['text']}</slack_message>")
+            except SlackApiError as e:
+                log.error(f"Error fetching Slack messages for case {related_case.name}: {e}")
+
+        historical_context.append("</case>")
+
+    historical_context_str = "\n".join(historical_context)
+
+    signal_instance = signal_service.get_signal_instance(
+        db_session=db_session, signal_instance_id=first_instance_id
     )
 
-    has_entities = db_session.query(entities_query.exists()).scalar()
-    if not has_entities:
-        signal_metadata_blocks.append(
-            Section(
-                text="No entities found.",
-            ),
+    genai_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project.id, plugin_type="artificial-intelligence"
+    )
+
+    if not genai_plugin:
+        log.warning(
+            "Unable to generate GenAI signal analysis. No artificial-intelligence plugin enabled."
         )
-        return Message(blocks=signal_metadata_blocks).build()["blocks"]
+        return signal_metadata_blocks
 
-    entity_groups = defaultdict(list)
-    processed_entities = set()
+    if not signal_instance.signal.genai_prompt:
+        log.warning(
+            f"Unable to generate GenAI signal analysis. No GenAI prompt defined for {signal_instance.signal.name}"
+        )
+        return signal_metadata_blocks
 
-    for entity_id, entity_value, entity_type_name in entities_query:
-        if entity_value not in processed_entities:
-            processed_entities.add(entity_value)
-            # Fetch the count of related cases with entities in the past 14 days
-            entity_case_counts = entity_service.get_case_count_with_entity(
-                db_session=db_session, entity_id=entity_id, days_back=14
-            )
-            entity_groups[entity_type_name].append(
-                EntityGroup(
-                    value=entity_value,
-                    related_case_count=entity_case_counts,
-                )
-            )
+    response = genai_plugin.instance.chat_completion(
+        prompt=f"""
 
-    for k, v in entity_groups.items():
-        if v:
-            entity_group = v[0]
-            case_message = (
-                "First time this entity has been seen in a case."
-                if entity_group.related_case_count == 1  # the current case counts as 1
-                else f"Seen in *{entity_group.related_case_count}* other case(s)."
-            )
+        <prompt>
+        {signal_instance.signal.genai_prompt}
+        </prompt>
 
-            # Threaded messages do not overflow text fields, so we hack together the same UI with spaces
-            signal_metadata_blocks.append(
-                Context(
-                    elements=[f"*{k}*\n`{', '.join(item.value for item in v)}`\n\n{case_message}"]
-                ),
-            )
-        signal_metadata_blocks.append(Divider())
+        <current_event>
+        {str(signal_instance.raw)}
+        </current_event>
+
+        <historical_context>
+        {historical_context_str}
+        </historical_context>
+
+        <runbook>
+        {first_instance_signal.runbook}
+        </runbook>
+        """
+    )
+    message = response["choices"][0]["message"]["content"]
 
     signal_metadata_blocks.append(
-        Context(elements=["Correlation is based on two weeks of signal data."]),
+        Section(text=f":magic_wand: *GenAI Alert Analysis*\n\n{message}"),
     )
+    signal_metadata_blocks.append(Divider())
     return Message(blocks=signal_metadata_blocks).build()["blocks"]
 
 
@@ -321,22 +445,21 @@ def create_signal_engagement_message(
 
     username, _ = user_email.split("@")
     blocks = [
-        Context(elements=[f"Engaged {user_email} associated with {signal_instance.signal.name}"]),
-        Section(text=f"Hi @{username}, the security team could use your help with this case."),
         Section(
-            text=f"*Additional Context*\n\n {engagement.message if engagement.message else 'None provided for this signal.'}"
+            text=f"{engagement.message if engagement.message else 'No context provided for this alert.'}"
         ),
-        Divider(),
     ]
 
     if engagement_status == SignalEngagementStatus.new:
         blocks.extend(
             [
-                Section(text="Please confirm this is you and the behavior is expected."),
+                Section(
+                    text="Can you please confirm this was you and whether the behavior was expected?"
+                ),
                 Actions(
                     elements=[
                         Button(
-                            text="Approve",
+                            text="Confirm",
                             style="primary",
                             action_id=SignalEngagementActions.approve,
                             value=button_metadata,
@@ -355,13 +478,15 @@ def create_signal_engagement_message(
     elif engagement_status == SignalEngagementStatus.approved:
         blocks.extend(
             [
-                Section(text=":white_check_mark: This engagement confirmation has been approved."),
+                Section(text=f":white_check_mark: @{username} confirmed the behavior as expected."),
             ]
         )
     else:
         blocks.extend(
             [
-                Section(text=":warning: This engagement confirmation has been denied."),
+                Section(
+                    text=f":warning: @{username} denied the behavior as expected. Please investigate the case and escalate to incident if necessary."
+                ),
             ]
         )
 
@@ -371,7 +496,7 @@ def create_signal_engagement_message(
 def create_welcome_ephemeral_message_to_participant(case: Case) -> list[Block]:
     blocks = [
         Section(
-            text="You've been added to this case, because we think you may be able to help resolve it. Please review the case details below and reach out to the case assignee if you have any questions.",
+            text="You've been added to this case, because we think you may be able to help resolve it. Please, review the case details below and reach out to the case assignee if you have any questions.",
         ),
         Section(
             text=f"*Title* \n {case.title}",
@@ -401,4 +526,30 @@ def create_welcome_ephemeral_message_to_participant(case: Case) -> list[Block]:
             text=f"*Reporter - {case.reporter.individual.name}*",
         ),
     ]
+    return Message(blocks=blocks).build()["blocks"]
+
+
+def create_case_thread_migration_message(channel_weblink: str) -> list[Block]:
+    blocks = [
+        Context(
+            elements=[
+                f"This conversation has been migrated to a dedicated Case channel. All future updates and discussions will take place <{channel_weblink}|here>."
+            ]
+        ),
+        Divider(),
+    ]
+
+    return Message(blocks=blocks).build()["blocks"]
+
+
+def create_case_channel_migration_message(thread_weblink: str) -> list[Block]:
+    blocks = [
+        Context(
+            elements=[
+                f"Migrated Case conversation from the <{thread_weblink}|original Case thread>."
+            ]
+        ),
+        Divider(),
+    ]
+
     return Message(blocks=blocks).build()["blocks"]

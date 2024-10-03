@@ -79,7 +79,14 @@
                 <v-checkbox
                   v-model="enabled"
                   label="Enabled"
-                  hint="Determines whether this incident severity is availible for new incidents."
+                  hint="Determines whether this incident severity is available for new incidents."
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-checkbox
+                  v-model="allowed_for_stable_incidents"
+                  label="Allowed for stable incidents"
+                  hint="Determines whether this incident severity is available for stable (and closed) incidents."
                 />
               </v-col>
             </v-row>
@@ -126,6 +133,7 @@ export default {
       "selected.name",
       "selected.project",
       "selected.view_order",
+      "selected.allowed_for_stable_incidents",
     ]),
     ...mapFields("incident_severity", {
       default_incident_severity: "selected.default",

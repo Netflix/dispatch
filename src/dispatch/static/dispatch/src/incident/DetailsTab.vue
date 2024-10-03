@@ -62,7 +62,7 @@
         <incident-type-select v-model="incident_type" :project="project" />
       </v-col>
       <v-col cols="6">
-        <incident-severity-select v-model="incident_severity" :project="project" />
+        <incident-severity-select v-model="incident_severity" :project="project" :status="status" />
       </v-col>
       <v-col cols="6">
         <incident-priority-select v-model="incident_priority" :project="project" :status="status" />
@@ -80,7 +80,7 @@
           v-model="visibility"
           label="Visibility"
           :items="visibilities"
-          hint="The visibilty of the incident."
+          hint="The visibility of the incident."
         />
       </v-col>
       <v-col cols="12">

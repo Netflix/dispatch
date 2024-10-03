@@ -4,7 +4,7 @@
 #
 #    pip-compile requirements-base.in
 #
-aiocache==0.12.2
+aiocache==0.12.3
     # via -r requirements-base.in
 aiofiles==24.1.0
     # via -r requirements-base.in
@@ -126,7 +126,7 @@ frozenlist==1.4.1
     #   aiosignal
 google-api-core==2.15.0
     # via google-api-python-client
-google-api-python-client==2.144.0
+google-api-python-client==2.147.0
     # via -r requirements-base.in
 google-auth==2.26.1
     # via
@@ -254,7 +254,7 @@ packaging==23.2
     #   statsmodels
     #   thinc
     #   weasel
-pandas==2.2.2
+pandas==2.2.3
     # via
     #   -r requirements-base.in
     #   statsmodels
@@ -330,11 +330,11 @@ python-dateutil==2.9.0.post0
     #   pandas
 python-jose==3.3.0
     # via -r requirements-base.in
-python-multipart==0.0.9
+python-multipart==0.0.12
     # via -r requirements-base.in
 python-slugify==8.0.4
     # via -r requirements-base.in
-pytz==2024.1
+pytz==2024.2
     # via
     #   -r requirements-base.in
     #   pandas
@@ -398,7 +398,7 @@ six==1.16.0
     #   validators
 slack-bolt==1.20.1
     # via -r requirements-base.in
-slack-sdk==3.32.0
+slack-sdk==3.33.1
     # via
     #   -r requirements-base.in
     #   slack-bolt
@@ -413,7 +413,7 @@ sniffio==1.3.0
     #   openai
 sortedcontainers==2.4.0
     # via hypothesis
-spacy==3.7.6
+spacy==3.8.0
     # via -r requirements-base.in
 spacy-legacy==3.0.12
     # via spacy
@@ -442,7 +442,7 @@ starlette==0.32.0.post1
     #   starlette-testclient
 starlette-testclient==0.2.0
     # via schemathesis
-statsmodels==0.14.2
+statsmodels==0.14.3
     # via -r requirements-base.in
 tabulate==0.9.0
     # via -r requirements-base.in
@@ -483,7 +483,7 @@ urllib3==2.0.7
     #   pdpyras
     #   requests
     #   sentry-sdk
-uvicorn==0.30.6
+uvicorn==0.31.0
     # via -r requirements-base.in
 uvloop==0.20.0
     # via -r requirements-base.in

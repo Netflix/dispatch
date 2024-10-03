@@ -75,7 +75,7 @@ def get_case_participants_flow(case: Case, db_session: SessionLocal):
 def case_add_or_reactivate_participant_flow(
     user_email: str,
     case_id: int,
-    participant_role: ParticipantRoleType = ParticipantRoleType.participant,
+    participant_role: ParticipantRoleType = ParticipantRoleType.observer,
     service_id: int = 0,
     add_to_conversation: bool = True,
     event: dict = None,
@@ -443,8 +443,9 @@ def case_escalated_status_flow(
     case: Case,
     organization_slug: OrganizationSlug,
     db_session: Session,
-    incident_priority: IncidentType | None,
-    incident_type: IncidentPriority | None,
+    title: str | None,
+    incident_priority: IncidentPriority | None,
+    incident_type: IncidentType | None,
     incident_description: str | None,
 ):
     """Runs the case escalated transition flow."""
@@ -457,6 +458,7 @@ def case_escalated_status_flow(
         case=case,
         organization_slug=organization_slug,
         db_session=db_session,
+        title=title,
         incident_priority=incident_priority,
         incident_type=incident_type,
         incident_description=incident_description,
@@ -702,7 +704,18 @@ def common_escalate_flow(
         db_session.add(incident)
         db_session.commit()
 
-    # we run the incident create flow
+    case.incidents.append(incident)
+    db_session.add(case)
+    db_session.commit()
+
+    event_service.log_case_event(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description=f"The case has been linked to incident {incident.name} in the {incident.project.name} project",
+        case_id=case.id,
+    )
+
+    # we run the incident create flow in a background task
     incident = incident_flows.incident_create_flow(
         incident_id=incident.id,
         organization_slug=organization_slug,
@@ -760,17 +773,6 @@ def common_escalate_flow(
             incident=incident,
         )
 
-    case.incidents.append(incident)
-    db_session.add(case)
-    db_session.commit()
-
-    event_service.log_case_event(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description=f"The case has been linked to incident {incident.name} in the {incident.project.name} project",
-        case_id=case.id,
-    )
-
     if case.storage and incident.tactical_group:
         storage_members = [incident.tactical_group.email]
         storage_flows.update_storage(
@@ -792,6 +794,7 @@ def case_to_incident_escalate_flow(
     case: Case,
     organization_slug: OrganizationSlug,
     db_session: Session,
+    title: str | None,
     incident_priority: IncidentPriority | None,
     incident_type: IncidentType,
     incident_description: str | None,
@@ -808,16 +811,18 @@ def case_to_incident_escalate_flow(
         )
     )
 
+    title = title if title else case.title
+
     description = (
         f"{incident_description if incident_description else case.description}\n\n"
         f"This incident was the result of escalating case {case.name} "
         f"in the {case.project.name} project. Check out the case in the Dispatch Web UI for additional context."
     )
 
-    incident_priority = case.case_priority if not incident_priority else incident_priority
+    incident_priority = incident_priority if incident_priority else case.case_priority
 
     incident_in = IncidentCreate(
-        title=case.title,
+        title=title,
         description=description,
         status=IncidentStatus.active,
         incident_type=incident_type,
@@ -887,6 +892,41 @@ def case_assign_role_flow(
         conversation_flows.set_conversation_topic(case, db_session)
 
 
+def case_create_conversation_flow(
+    db_session: Session,
+    case: Case,
+    participant_emails: list[str],
+    conversation_target: str | None = None,
+) -> None:
+    """Runs the case conversation creation flow."""
+
+    conversation_flows.create_case_conversation(case, conversation_target, db_session)
+
+    event_service.log_case_event(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description="Conversation added to case",
+        case_id=case.id,
+    )
+
+    for email in participant_emails:
+        # we don't rely on on this flow to add folks to the conversation because in this case
+        # we want to do it in bulk
+        case_add_or_reactivate_participant_flow(
+            db_session=db_session,
+            user_email=email,
+            case_id=case.id,
+            add_to_conversation=False,
+        )
+
+    # we add the participant to the conversation
+    conversation_flows.add_case_participants(
+        case=case,
+        participant_emails=participant_emails,
+        db_session=db_session,
+    )
+
+
 def case_create_resources_flow(
     db_session: Session,
     case_id: int,
@@ -948,32 +988,15 @@ def case_create_resources_flow(
         )
 
     try:
-        # we create the conversation and add participants to the thread
-        conversation_flows.create_case_conversation(case, conversation_target, db_session)
-
-        event_service.log_case_event(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description="Conversation added to case",
-            case_id=case.id,
-        )
         # wait until all resources are created before adding suggested participants
         individual_participants = [x.email for x, _ in individual_participants]
 
-        for email in individual_participants:
-            # we don't rely on on this flow to add folks to the conversation because in this case
-            # we want to do it in bulk
-            case_add_or_reactivate_participant_flow(
-                db_session=db_session,
-                user_email=email,
-                case_id=case.id,
-                add_to_conversation=False,
-            )
-        # # we add the participant to the conversation
-        conversation_flows.add_case_participants(
+        # we create the conversation and add participants to the thread
+        case_create_conversation_flow(
+            db_session=db_session,
             case=case,
             participant_emails=individual_participants,
-            db_session=db_session,
+            conversation_target=conversation_target,
         )
 
         for user_email in set(individual_participants):

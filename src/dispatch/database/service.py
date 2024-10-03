@@ -185,8 +185,9 @@ def build_filters(filter_spec):
 
                 if not _is_iterable_filter(fn_args):
                     raise BadFilterFormat(
-                        "`{}` value must be an iterable across the function "
-                        "arguments".format(boolean_function.key)
+                        "`{}` value must be an iterable across the function " "arguments".format(
+                            boolean_function.key
+                        )
                     )
                 if boolean_function.only_one_arg and len(fn_args) != 1:
                     raise BadFilterFormat(

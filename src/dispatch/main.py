@@ -61,6 +61,7 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 frontend = FastAPI(openapi_url="")
 frontend.add_middleware(GZipMiddleware, minimum_size=1000)
 
+
 @frontend.middleware("http")
 async def default_page(request, call_next):
     response = await call_next(request)

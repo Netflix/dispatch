@@ -32,7 +32,7 @@ executing==2.0.1
     #   stack-data
 factory-boy==3.3.1
     # via -r requirements-dev.in
-faker==28.4.1
+faker==30.0.0
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -86,7 +86,7 @@ python-dateutil==2.9.0.post0
     # via faker
 pyyaml==6.0.1
     # via pre-commit
-ruff==0.6.4
+ruff==0.6.8
     # via -r requirements-dev.in
 six==1.16.0
     # via
@@ -102,7 +102,7 @@ typing-extensions==4.10.0
     # via ipython
 virtualenv==20.25.0
     # via pre-commit
-vulture==2.11
+vulture==2.12
     # via -r requirements-dev.in
 wcwidth==0.2.12
     # via prompt-toolkit

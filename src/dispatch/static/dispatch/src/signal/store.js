@@ -18,6 +18,10 @@ const getDefaultSelectedState = () => {
     external_id: null,
     external_url: null,
     filters: [],
+    genai_enabled: false,
+    genai_model: null,
+    genai_prompt: null,
+    genai_system_message: null,
     id: null,
     lifecycle: null,
     loading: false,
@@ -25,6 +29,7 @@ const getDefaultSelectedState = () => {
     oncall_service: null,
     owner: null,
     project: null,
+    runbook: null,
     signal_definition: null,
     source: null,
     tags: [],
@@ -173,7 +178,7 @@ const actions = {
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
-            { text: "Signal Defintion updated successfully.", type: "success" },
+            { text: "Signal Definition updated successfully.", type: "success" },
             { root: true }
           )
         })

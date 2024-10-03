@@ -1,5 +1,5 @@
 """
-Orginially authored by:
+Originally authored by:
 https://github.com/kvesteri/sqlalchemy-searchable/blob/master/sqlalchemy_searchable/vectorizers.py
 
 Vectorizers provide means for changing the way how different column types and
@@ -98,6 +98,7 @@ can be achieved as follows::
 
     Column vectorizers always have precedence over type vectorizers.
 """
+
 from functools import wraps
 from inspect import isclass
 

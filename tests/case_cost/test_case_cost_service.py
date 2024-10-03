@@ -238,7 +238,7 @@ def test_update_case_response_cost__fail(case, session):
     for cost_type in case_cost_type_service.get_all(db_session=session):
         cost_type.default = False
 
-    # Fail to create the inital case response cost.
+    # Fail to create the initial case response cost.
     assert not update_case_response_cost(case_id=case.id, db_session=session)
 
     # Validate that the case cost was not created nor saved in the database.

@@ -44,6 +44,9 @@ class Project(Base):
     allow_self_join = Column(Boolean, default=True, server_default="t")
 
     send_daily_reports = Column(Boolean)
+    send_weekly_reports = Column(Boolean)
+
+    weekly_report_notification_id = Column(Integer, nullable=True)
 
     select_commander_visibility = Column(Boolean, default=True, server_default="t")
 
@@ -61,6 +64,11 @@ class Project(Base):
     storage_use_folder_one_as_primary = Column(Boolean, default=False, nullable=True)
     # when true, folder and incident docs will be created with the title of the incident
     storage_use_title = Column(Boolean, default=False, server_default=false())
+
+    # allows customized instructions for reporting incidents
+    report_incident_instructions = Column(String, nullable=True)
+    report_incident_title_hint = Column(String, nullable=True)
+    report_incident_description_hint = Column(String, nullable=True)
 
     @hybrid_property
     def slug(self):
@@ -82,6 +90,8 @@ class ProjectBase(DispatchBase):
     default: bool = False
     color: Optional[str] = Field(None, nullable=True)
     send_daily_reports: Optional[bool] = Field(True, nullable=True)
+    send_weekly_reports: Optional[bool] = Field(False, nullable=True)
+    weekly_report_notification_id: Optional[int] = Field(None, nullable=True)
     enabled: Optional[bool] = Field(True, nullable=True)
     storage_folder_one: Optional[str] = Field(None, nullable=True)
     storage_folder_two: Optional[str] = Field(None, nullable=True)
@@ -89,6 +99,9 @@ class ProjectBase(DispatchBase):
     storage_use_title: Optional[bool] = Field(False, nullable=True)
     allow_self_join: Optional[bool] = Field(True, nullable=True)
     select_commander_visibility: Optional[bool] = Field(True, nullable=True)
+    report_incident_instructions: Optional[str] = Field(None, nullable=True)
+    report_incident_title_hint: Optional[str] = Field(None, nullable=True)
+    report_incident_description_hint: Optional[str] = Field(None, nullable=True)
 
 
 class ProjectCreate(ProjectBase):
@@ -97,6 +110,8 @@ class ProjectCreate(ProjectBase):
 
 class ProjectUpdate(ProjectBase):
     send_daily_reports: Optional[bool] = Field(True, nullable=True)
+    send_weekly_reports: Optional[bool] = Field(False, nullable=True)
+    weekly_report_notification_id: Optional[int] = Field(None, nullable=True)
     stable_priority_id: Optional[int]
 
 

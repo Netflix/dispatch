@@ -4,6 +4,7 @@
     :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
+
 import logging
 import time
 from typing import Any, List
@@ -88,7 +89,9 @@ def remove_member(client: Any, group_key: str, email: str):
         return make_call(client.members(), "delete", groupKey=group_key, memberKey=email)
     except HttpError as e:
         if e.resp.status in [409]:
-            log.debug(f"Member does not exist in google group. GroupKey={group_key} MemberKey={email}")
+            log.debug(
+                f"Member does not exist in google group. GroupKey={group_key} MemberKey={email}"
+            )
             return
 
 

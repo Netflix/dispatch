@@ -46,7 +46,7 @@ def get_by_name_or_raise(*, db_session, query_in: QueryRead, project_id: int) ->
 
 
 def get_all(*, db_session):
-    """Gets all querys."""
+    """Gets all queries."""
     return db_session.query(Query)
 
 

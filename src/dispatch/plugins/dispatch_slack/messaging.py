@@ -4,6 +4,7 @@
     :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
+
 import logging
 from typing import Any, List, Optional
 
@@ -129,6 +130,10 @@ def get_incident_conversation_command_message(
             "response_type": "ephemeral",
             "text": "Fetching the list of workflows...",
         },
+        config.slack_command_create_task: {
+            "response_type": "ephemeral",
+            "text": "Opening a dialog to create a new incident task...",
+        },
     }
 
     return command_messages.get(command_string, default)
@@ -146,7 +151,7 @@ def build_role_error_message(payload: dict) -> str:
 
 def build_context_error_message(payload: dict, error: Any) -> str:
     message = (
-        f"""I see you tried to run `{payload['command']}` in an non-incident conversation. Incident-specifc commands can only be run in incident conversations."""  # command_context_middleware()
+        f"""I see you tried to run `{payload['command']}` in an non-incident conversation. Incident-specific commands can only be run in incident conversations."""  # command_context_middleware()
         if payload.get("command")
         else str(error)  # everything else
     )

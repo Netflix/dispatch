@@ -228,7 +228,7 @@ const fetchData = () => {
     validateTags(selectedItems.value)
   }
 
-  // add a filter to only retrun discoverable tags
+  // add a filter to only return discoverable tags
   filters["tagFilter"] = [{ model: "Tag", field: "discoverable", op: "==", value: "true" }]
 
   if (filterOptions.q && filterOptions.q.indexOf("/") != -1) {

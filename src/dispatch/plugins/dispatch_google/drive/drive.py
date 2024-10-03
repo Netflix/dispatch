@@ -126,7 +126,7 @@ def upload_chunk(request: Any):
             HTTPStatus.SERVICE_UNAVAILABLE,
             HTTPStatus.GATEWAY_TIMEOUT,
         ]:
-            # Call next_chunk() agai, but use an exponential backoff for repeated errors.
+            # Call next_chunk() again, but use an exponential backoff for repeated errors.
             raise e
 
 

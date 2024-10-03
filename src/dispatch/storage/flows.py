@@ -111,7 +111,7 @@ def update_storage(
     storage_members: List[str],
     db_session: Session,
 ):
-    """Updates an exisiting storage."""
+    """Updates an existing storage."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=subject.project.id, plugin_type="storage"
     )

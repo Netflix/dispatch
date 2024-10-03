@@ -409,7 +409,7 @@ module.exports = {
               )
             ) {
               throw new Error(
-                `validation-provider has unspported children at ${node.loc.start.line}:${node.loc.start.column}`
+                `validation-provider has unsupported children at ${node.loc.start.line}:${node.loc.start.column}`
               )
             }
             const vid = node.startTag.attributes.find((attr) => {

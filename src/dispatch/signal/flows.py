@@ -59,7 +59,7 @@ def signal_instance_create_flow(
         db_session=db_session,
         signal_instance=signal_instance,
     ):
-        # If a case and convesation exists and the signal was deduplicated,
+        # If a case and conversation exists and the signal was deduplicated,
         # we need to update the corresponding signal message
         if (
             signal_instance.case_id

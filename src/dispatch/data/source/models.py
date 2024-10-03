@@ -101,6 +101,7 @@ class QueryReadMinimal(DispatchBase):
     name: str
     description: str
 
+
 class Link(DispatchBase):
     id: Optional[int]
     name: Optional[str]

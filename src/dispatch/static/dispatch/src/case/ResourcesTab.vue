@@ -10,12 +10,23 @@
     </v-list-item>
     <v-divider />
     <v-list-item v-if="conversation" :href="conversation.weblink" target="_blank" class="my-3">
-      <v-list-item-title>Conversation</v-list-item-title>
+      <v-list-item-title v-if="conversation.thread_id">Conversation Thread</v-list-item-title>
+      <v-list-item-title v-else>Conversation Channel</v-list-item-title>
       <v-list-item-subtitle>{{ conversation.description }}</v-list-item-subtitle>
 
       <template #append>
         <v-icon>mdi-open-in-new</v-icon>
       </template>
+    </v-list-item>
+    <v-list-item v-if="conversation && conversation.thread_id">
+      <v-btn
+        size="small"
+        color="green"
+        v-if="conversationPluginEnabled"
+        @click="createCaseChannel(selected)"
+      >
+        Create Case Channel
+      </v-btn>
     </v-list-item>
     <v-divider />
     <span v-for="group in groups" :key="group.resource_id">
@@ -62,7 +73,7 @@
       <v-list-item v-if="!loading" @click="createAllResources()" class="my-3">
         <v-list-item-title>Recreate Missing Resources</v-list-item-title>
         <v-list-item-subtitle
-          >Initiate a retry for creating any missing or unsuccesfully created
+          >Initiate a retry for creating any missing or unsuccessfully created
           resource(s).</v-list-item-subtitle
         >
         <template #append>
@@ -72,7 +83,7 @@
       <v-list-item v-else-if="loading" class="my-3">
         <v-list-item-title>Creating resources...</v-list-item-title>
         <v-list-item-subtitle
-          >Initiate a retry for creating any missing or unsuccesfully created
+          >Initiate a retry for creating any missing or unsuccessfully created
           resource(s).</v-list-item-subtitle
         >
       </v-list-item>
@@ -105,6 +116,7 @@ export default {
   computed: {
     ...mapFields("case_management", [
       "selected.conversation",
+      "selected.dedicated_channel",
       "selected.documents",
       "selected.groups",
       "selected.loading",
@@ -125,7 +137,11 @@ export default {
   },
 
   methods: {
-    ...mapActions("case_management", ["createAllResources", "getEnabledPlugins"]),
+    ...mapActions("case_management", [
+      "createAllResources",
+      "getEnabledPlugins",
+      "createCaseChannel",
+    ]),
   },
 }
 </script>

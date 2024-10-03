@@ -35,6 +35,7 @@ from .flows import (
     case_new_create_flow,
     case_triage_create_flow,
     case_update_flow,
+    case_create_conversation_flow,
     case_create_resources_flow,
     get_case_participants_flow,
 )
@@ -186,6 +187,30 @@ def create_case(
         )
 
     return case
+
+
+@router.post(
+    "/{case_id}/resources/conversation",
+    response_model=CaseRead,
+    summary="Creates conversation channel for an existing case.",
+)
+def create_case_channel(
+    db_session: DbSession,
+    current_case: CurrentCase,
+):
+    """Creates conversation channel for an existing case."""
+
+    current_case.dedicated_channel = True
+
+    # Add all case participants to the case channel
+    case_create_conversation_flow(
+        db_session=db_session,
+        case=current_case,
+        participant_emails=current_case.participant_emails,
+        conversation_target=None,
+    )
+
+    return current_case
 
 
 @router.post(

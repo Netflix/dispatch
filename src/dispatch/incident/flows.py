@@ -165,7 +165,7 @@ def incident_create_resources(
     if not incident.ticket:
         ticket_flows.create_incident_ticket(incident=incident, db_session=db_session)
 
-    # we update the channel name immediately for dedicated channel cases esclated -> incident
+    # we update the channel name immediately for dedicated channel cases escalated -> incident
     if case and case.dedicated_channel and case.escalated_at is not None:
         plugin = plugin_service.get_active_instance(
             db_session=db_session, project_id=case.project.id, plugin_type="conversation"
@@ -985,7 +985,7 @@ def incident_subscribe_participant_flow(
 def incident_add_or_reactivate_participant_flow(
     user_email: str,
     incident_id: int,
-    participant_role: ParticipantRoleType = ParticipantRoleType.participant,
+    participant_role: ParticipantRoleType = ParticipantRoleType.observer,
     service_id: int = 0,
     event: dict = None,
     organization_slug: str = None,

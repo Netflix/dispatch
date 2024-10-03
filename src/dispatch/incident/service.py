@@ -125,6 +125,14 @@ def get_all_by_status(*, db_session, status: str, project_id: int) -> List[Optio
     )
 
 
+def get_all_last_x_hours(*, db_session, hours: int) -> List[Optional[Incident]]:
+    """Returns all incidents in the last x hours."""
+    now = datetime.utcnow()
+    return (
+        db_session.query(Incident).filter(Incident.created_at >= now - timedelta(hours=hours)).all()
+    )
+
+
 def get_all_last_x_hours_by_status(
     *, db_session, status: str, hours: int, project_id: int
 ) -> List[Optional[Incident]]:
@@ -365,7 +373,7 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
             )
         )
 
-    # Update total incident reponse cost if incident type has changed.
+    # Update total incident response cost if incident type has changed.
     if incident_type.id != incident.incident_type.id:
         incident_cost_service.update_incident_response_cost(
             incident_id=incident.id, db_session=db_session
