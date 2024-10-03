@@ -287,7 +287,7 @@ def create_action_buttons_message(
     return Message(blocks=signal_metadata_blocks).build()["blocks"]
 
 
-def create_signal_metadata_blocks(signal_metadata_blocks: list[Block], message: str) -> list[Block]:
+def create_genai_signal_message_metadata_blocks(signal_metadata_blocks: list[Block], message: str) -> list[Block]:
     signal_metadata_blocks.append(
         Section(text=f":magic_wand: *GenAI Alert Analysis*\n\n{message}"),
     )
