@@ -65,6 +65,11 @@ class Project(Base):
     # when true, folder and incident docs will be created with the title of the incident
     storage_use_title = Column(Boolean, default=False, server_default=false())
 
+    # allows customized instructions for reporting incidents
+    report_incident_instructions = Column(String, nullable=True)
+    report_incident_title_hint = Column(String, nullable=True)
+    report_incident_description_hint = Column(String, nullable=True)
+
     @hybrid_property
     def slug(self):
         return slugify(self.name)
@@ -94,6 +99,9 @@ class ProjectBase(DispatchBase):
     storage_use_title: Optional[bool] = Field(False, nullable=True)
     allow_self_join: Optional[bool] = Field(True, nullable=True)
     select_commander_visibility: Optional[bool] = Field(True, nullable=True)
+    report_incident_instructions: Optional[str] = Field(None, nullable=True)
+    report_incident_title_hint: Optional[str] = Field(None, nullable=True)
+    report_incident_description_hint: Optional[str] = Field(None, nullable=True)
 
 
 class ProjectCreate(ProjectBase):

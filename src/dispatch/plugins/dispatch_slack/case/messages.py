@@ -14,7 +14,7 @@ from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
 from sqlalchemy.orm import Session
 
-from dispatch.case.enums import CaseStatus
+from dispatch.case.enums import CaseResolutionReason, CaseStatus
 from dispatch.case.models import Case
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.messaging.strings import CASE_STATUS_DESCRIPTIONS, CASE_VISIBILITY_DESCRIPTIONS
@@ -193,12 +193,49 @@ class EntityGroup(NamedTuple):
     related_case_count: int
 
 
-def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -> list[Message]:
+def create_signal_message(case_id: int, channel_id: str, db_session: Session) -> list[Message]:
     """
-    Creates signal messages for a given case.
+    Creates a signal message for a given case.
+
+    This function generates a signal message for a specific case by fetching the first signal instance
+    associated with the case and creating metadata blocks for the message.
 
     Args:
-        case_id (int): The ID of the case for which to create signal messages.
+        case_id (int): The ID of the case for which to create the signal message.
+        channel_id (str): The ID of the Slack channel where the message will be sent.
+        db_session (Session): The database session to use for querying signal instances.
+
+    Returns:
+        list[Message]: A list of Message objects representing the structure of the Slack messages.
+    """
+    # we fetch the first instance to get the organization slug and project id
+    instances = signal_service.get_instances_in_case(db_session=db_session, case_id=case_id)
+    (first_instance_id, first_instance_signal) = instances.first()
+
+    organization_slug = first_instance_signal.project.organization.slug
+
+    # we create the signal metadata blocks
+    signal_metadata_blocks = [
+        Section(text="*Alerts*"),
+        Section(
+            text=f"We observed <{DISPATCH_UI_URL}/{organization_slug}/cases/{first_instance_signal.case.name}/signal/{first_instance_signal.id}|{instances.count()} alerts> in this case. The first alert for this case can be seen below."
+        ),
+    ]
+
+    return Message(blocks=signal_metadata_blocks).build()["blocks"]
+
+
+def create_action_buttons_message(
+    case_id: int, channel_id: str, db_session: Session
+) -> list[Message]:
+    """
+    Creates a message with action buttons for a given case.
+
+    This function generates a message containing action buttons for a specific case by fetching the first signal instance
+    associated with the case and creating metadata blocks for the message.
+
+    Args:
+        case_id (int): The ID of the case for which to create the action buttons message.
         channel_id (str): The ID of the Slack channel where the message will be sent.
         db_session (Session): The database session to use for querying signal instances.
 
@@ -225,7 +262,7 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
     if first_instance_signal.external_url:
         elements.append(
             Button(
-                text="🔖 Response Plan",
+                text="🔖 View Response Plan",
                 action_id="button-link",
                 url=first_instance_signal.external_url,
             )
@@ -233,7 +270,7 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
 
     elements.append(
         Button(
-            text="💤 Snooze Alerts",
+            text="💤 Snooze Alert",
             action_id=SignalNotificationActions.snooze,
             value=button_metadata,
         )
@@ -241,13 +278,10 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
 
     # we create the signal metadata blocks
     signal_metadata_blocks = [
+        Divider(),
         Section(text="*Actions*"),
         Actions(elements=elements),
         Divider(),
-        Section(text="*Alerts*"),
-        Section(
-            text=f"We observed <{DISPATCH_UI_URL}/{organization_slug}/cases/{first_instance_signal.case.name}/signal/{first_instance_signal.id}|{instances.count()} alerts> in this case. The first alert for this case can be seen below."
-        ),
     ]
 
     return Message(blocks=signal_metadata_blocks).build()["blocks"]
@@ -286,13 +320,17 @@ def create_genai_signal_analysis_message(
         return signal_metadata_blocks
 
     # Fetch related cases
-    related_cases = (
-        signal_service.get_cases_for_signal(
-            db_session=db_session, signal_id=first_instance_signal.id
+    related_cases = []
+    for resolution_reason in CaseResolutionReason:
+        related_cases.extend(
+            signal_service.get_cases_for_signal_by_resolution_reason(
+                db_session=db_session,
+                signal_id=first_instance_signal.id,
+                resolution_reason=resolution_reason,
+            )
+            .from_self()  # NOTE: function deprecated in SQLAlchemy 1.4 and removed in 2.0
+            .filter(Case.id != case.id)
         )
-        .from_self()  # NOTE: function deprecated in SQLAlchemy 1.4 and removed in 2.0
-        .filter(Case.id != case.id)
-    )
 
     # Prepare historical context
     historical_context = []
@@ -365,7 +403,6 @@ def create_genai_signal_analysis_message(
     )
     message = response["choices"][0]["message"]["content"]
 
-    signal_metadata_blocks.append(Divider())
     signal_metadata_blocks.append(
         Section(text=f":magic_wand: *GenAI Alert Analysis*\n\n{message}"),
     )
@@ -409,9 +446,6 @@ def create_signal_engagement_message(
     username, _ = user_email.split("@")
     blocks = [
         Section(
-            text=f"@{username}, we could use your help to resolve this case. Please, see additional context below:"
-        ),
-        Section(
             text=f"{engagement.message if engagement.message else 'No context provided for this alert.'}"
         ),
     ]
@@ -451,7 +485,7 @@ def create_signal_engagement_message(
         blocks.extend(
             [
                 Section(
-                    text=":warning: @{username} denied the behavior as expected. Please investigate the case and escalate to incident if necessary."
+                    text=f":warning: @{username} denied the behavior as expected. Please investigate the case and escalate to incident if necessary."
                 ),
             ]
         )
