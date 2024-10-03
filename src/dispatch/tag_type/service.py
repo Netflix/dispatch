@@ -56,6 +56,11 @@ def get_all(*, db_session):
     return db_session.query(TagType)
 
 
+def get_all_by_project(*, db_session, project_id: int):
+    """Gets all tag types by project."""
+    return db_session.query(TagType).filter(TagType.project_id == project_id)
+
+
 def create(*, db_session, tag_type_in: TagTypeCreate) -> TagType:
     """Creates a new tag type."""
     project = project_service.get_by_name_or_raise(
