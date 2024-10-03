@@ -907,19 +907,7 @@ def process_signals():
 def perf_test(
     num_instances: int, num_workers: int, api_endpoint: str, api_token: str, project: str
 ) -> None:
-    """
-    Performance testing utility for creating signal instances.
-
-    Args:
-        num_instances (int): Number of signal instances to send.
-        num_workers (int): Number of threads to use.
-        api_endpoint (str): API endpoint to send the signal instances to.
-        api_token (str): API token to use.
-        project (str): The Dispatch project to send the instances to.
-
-    Returns:
-        None
-    """
+    """Performance testing utility for creating signal instances."""
 
     import concurrent.futures
     import time
