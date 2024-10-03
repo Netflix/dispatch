@@ -325,6 +325,7 @@ def create_genai_signal_analysis_message(
 
     if not first_instance_id or not first_instance_signal:
         message = "Unable to generate GenAI signal analysis. No signal instances found."
+        log.warning(message)
         return create_signal_metadata_blocks(signal_metadata_blocks, message)
 
     # Fetch related cases
@@ -381,10 +382,12 @@ def create_genai_signal_analysis_message(
         message = (
             "Unable to generate GenAI signal analysis. No artificial-intelligence plugin enabled."
         )
+        log.warning(message)
         return create_signal_metadata_blocks(signal_metadata_blocks, message)
 
     if not signal_instance.signal.genai_prompt:
         message = f"Unable to generate GenAI signal analysis. No GenAI prompt defined for {signal_instance.signal.name}"
+        log.warning(message)
         return create_signal_metadata_blocks(signal_metadata_blocks, message)
 
     response = genai_plugin.instance.chat_completion(
@@ -411,6 +414,7 @@ def create_genai_signal_analysis_message(
 
     if not message:
         message = "Unable to generate GenAI signal analysis. We received an empty response from the artificial-intelligence plugin."
+        log.warning(message)
 
     return create_signal_metadata_blocks(signal_metadata_blocks, message)
 
