@@ -339,8 +339,6 @@ def create_genai_signal_analysis_message(
         log.warning(message)
         return create_genai_signal_message_metadata_blocks(signal_metadata_blocks, message)
 
-    print(f"Signal GenAI Enabled: {signal_instance.signal.genai_enabled}")
-
     # we check if GenAI is enabled for the detection
     if not signal_instance.signal.genai_enabled:
         message = "Unable to generate GenAI signal analysis. GenAI feature not enabled for this detection."
@@ -411,11 +409,6 @@ def create_genai_signal_analysis_message(
         message = f"Unable to generate GenAI signal analysis. No GenAI prompt defined for {signal_instance.signal.name}"
         log.warning(message)
         return create_genai_signal_message_metadata_blocks(signal_metadata_blocks, message)
-
-    print(f"Prompt: {signal_instance.signal.genai_prompt}")
-    print(f"Current Event: {str(signal_instance.raw)}")
-    print(f"Runbook: {signal_instance.signal.runbook}")
-    print(f"Historical Context: {historical_context_str}")
 
     # we generate the analysis
     response = genai_plugin.instance.chat_completion(
