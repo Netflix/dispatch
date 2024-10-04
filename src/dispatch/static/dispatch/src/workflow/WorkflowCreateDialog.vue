@@ -21,7 +21,7 @@
           <v-stepper-window-item :value="1">
             <v-card>
               <v-card-text>
-                Define the entity types that will be used to paramterize the workflow.
+                Define the entity types that will be used to parameterize the workflow.
                 <v-col cols="12">
                   <plugin-instance-combobox
                     v-model="plugin_instance"

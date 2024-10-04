@@ -1,8 +1,9 @@
 """
 https://github.com/slackapi/bolt-python/blob/c99c23fd056d26f8b1e39436bd1fcd2c83a3e1bd/slack_bolt/adapter/starlette/handler.py
 
-Fork of the built-in Bolt Starlette adapater. Removes async to allow instant acknowledgment of interactivity payloads from Slack.
+Fork of the built-in Bolt Starlette adapter. Removes async to allow instant acknowledgment of interactivity payloads from Slack.
 """
+
 from http import HTTPStatus
 from typing import Dict, Any, Optional
 

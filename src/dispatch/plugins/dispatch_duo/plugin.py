@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Will Sheldon <wshel@netflix.com>
 """
+
 import logging
 from typing import NewType
 
@@ -91,12 +92,18 @@ class DuoMfaPlugin(MultiFactorAuthenticationPlugin):
         elif userstatus["result"] == "allow":
             return PushResponseResult.allow
         elif userstatus["result"] == "auth":
-            push_devs = [row.get("device") for row in userstatus.get("devices") if "push" in row.get("capabilities", [])]
+            push_devs = [
+                row.get("device")
+                for row in userstatus.get("devices")
+                if "push" in row.get("capabilities", [])
+            ]
             if len(push_devs) < 1:
                 log.error(f"ERROR: Duo account found for {username}, but no devices support Push")
                 return PushResponseResult.deny
             try:
-                response = duo_client.auth(factor="push", username=username, device=device, type=type)
+                response = duo_client.auth(
+                    factor="push", username=username, device=device, type=type
+                )
             except RuntimeError as e:
                 log.error(f"ERROR: Runtime Error during Duo Push: {e}")
                 return PushResponseResult.deny

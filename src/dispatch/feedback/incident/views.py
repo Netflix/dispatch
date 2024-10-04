@@ -43,7 +43,7 @@ def create_feedback(db_session: DbSession, feedback_in: FeedbackCreate):
 
 @router.put("/{feedback_id}", response_model=FeedbackRead)
 def update_feedback(db_session: DbSession, feedback_id: PrimaryKey, feedback_in: FeedbackUpdate):
-    """Updates a feeback entry by its id."""
+    """Updates a feedback entry by its id."""
     feedback = get(db_session=db_session, feedback_id=feedback_id)
     if not feedback:
         raise HTTPException(

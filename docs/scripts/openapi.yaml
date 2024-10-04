@@ -13044,7 +13044,7 @@ paths:
       - documents
   /{organization}/entity:
     get:
-      description: Get all entitys, or only those matching a given search term.
+      description: Get all entities, or only those matching a given search term.
       operationId: get_entities__organization__entity_get
       parameters:
       - in: path
@@ -13350,7 +13350,7 @@ paths:
       tags:
       - entities
     put:
-      description: Updates an exisiting entity.
+      description: Updates an existing entity.
       operationId: update_entity__organization__entity__entity_id__put
       parameters:
       - in: path
@@ -14548,7 +14548,7 @@ paths:
       tags:
       - feedback
     put:
-      description: Updates a feeback entry by its id.
+      description: Updates a feedback entry by its id.
       operationId: update_feedback__organization__feedback__feedback_id__put
       parameters:
       - in: path
@@ -21315,7 +21315,7 @@ paths:
       tags:
       - tags
     put:
-      description: Updates an exisiting tag.
+      description: Updates an existing tag.
       operationId: update_tag__organization__tags__tag_id__put
       parameters:
       - in: path

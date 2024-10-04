@@ -2,6 +2,7 @@
 Originally authored by:
 https://github.com/kvesteri/sqlalchemy-searchable/blob/master/sqlalchemy_searchable
 """
+
 import os
 from functools import reduce
 

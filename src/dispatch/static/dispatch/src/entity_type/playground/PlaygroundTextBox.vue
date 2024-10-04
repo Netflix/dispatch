@@ -213,17 +213,17 @@ export default {
           // Values must be coerced to strings to get their length
           match.value = match.value.toString()
 
-          // Position of first occurence
+          // Position of first occurrence
           startPos = model.getPositionAt(match.index)
           endPos = model.getPositionAt(match.index + match.value.length)
 
-          // Push the first occurence of the pattern to ranges for decoration
+          // Push the first occurrence of the pattern to ranges for decoration
           ranges.push(this.newRange(startPos, endPos))
 
           let indexOfNext = editorText.indexOf(match.value, editorText.indexOf(match.value) + 1)
 
           /**
-           * Loop through the model until we extract all occurences.
+           * Loop through the model until we extract all occurrences.
            *
            * @see Array.prototype.indexOf(), always returns -1 when searchElement is NaN
            */

@@ -7,7 +7,7 @@ def calculate_score(form_data: str, scoring_schema: str) -> int:
     Args:
         form_data: A string containing the JSON of the form data with key-value pairs.
         scoring_scheme: A string containing the JSON of the scoring schema. The schema should
-        be formated as a list of dictionaries, where each dictionary contains the following keys:
+        be formatted as a list of dictionaries, where each dictionary contains the following keys:
             var: The key of the form data to score.
             includes: A list of values that the form data should include to be scored.
             score: The score to add if the form data meets the criteria.

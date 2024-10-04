@@ -5,6 +5,7 @@
 
 .. moduleauthor:: Kevin Glisson (kglisson@netflix.com)
 """
+
 import logging
 from dispatch.common.managers import InstanceManager
 

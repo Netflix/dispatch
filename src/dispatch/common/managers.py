@@ -6,6 +6,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 import logging
 from dispatch.exceptions import InvalidConfigurationError
 

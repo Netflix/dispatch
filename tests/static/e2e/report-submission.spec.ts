@@ -26,7 +26,7 @@ test.describe("Authenticated Dispatch App", () => {
 
       await expect.soft(pageURL).toContain(expectedURL)
 
-      // Soft validate that we recieve the report form.
+      // Soft validate that we receive the report form.
       await expect
         .soft(
           page.getByText("Incident Report"),
@@ -34,7 +34,7 @@ test.describe("Authenticated Dispatch App", () => {
         )
         .toBeVisible()
 
-      // Soft validate that we recieve the report form.
+      // Soft validate that we receive the report form.
       await expect
         .soft(
           page.getByText(

@@ -17,11 +17,7 @@ log = logging.getLogger(__name__)
 
 def get(*, forms_type_id: int, db_session: Session) -> Optional[FormsType]:
     """Gets a from type by its id."""
-    return (
-        db_session.query(FormsType)
-        .filter(FormsType.id == forms_type_id)
-        .one_or_none()
-    )
+    return db_session.query(FormsType).filter(FormsType.id == forms_type_id).one_or_none()
 
 
 def get_all(*, db_session: Session):
@@ -42,9 +38,7 @@ def create(*, db_session: Session, forms_type_in: FormsTypeCreate, creator) -> F
 
     service_id = None
     if forms_type_in.service:
-        service = service_service.get(
-            db_session=db_session, service_id=forms_type_in.service.id
-        )
+        service = service_service.get(db_session=db_session, service_id=forms_type_in.service.id)
         if service:
             service_id = service.id
 
@@ -85,11 +79,7 @@ def update(
 
 def delete(*, db_session, forms_type_id: int):
     """Deletes a form type."""
-    form = (
-        db_session.query(FormsType)
-        .filter(FormsType.id == forms_type_id)
-        .one_or_none()
-    )
+    form = db_session.query(FormsType).filter(FormsType.id == forms_type_id).one_or_none()
     db_session.delete(form)
     db_session.commit()
 

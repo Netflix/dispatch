@@ -84,7 +84,7 @@
                   <v-text-field
                     v-model="variant"
                     label="Variant"
-                    hint="The same signal can have multiple variants with different defintions."
+                    hint="The same signal can have multiple variants with different definitions."
                     persistent-hint
                     clearable
                     name="variant"
