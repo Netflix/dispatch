@@ -434,8 +434,6 @@ def create_genai_signal_analysis_message(
     )
     message = response["choices"][0]["message"]["content"]
 
-    print(f"Response: {message}")
-
     # we check if the response is empty
     if not message:
         message = "Unable to generate GenAI signal analysis. We received an empty response from the artificial-intelligence plugin."
