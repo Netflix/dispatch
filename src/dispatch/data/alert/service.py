@@ -1,9 +1,10 @@
 from typing import Optional
+
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.exceptions import NotFoundError
 
-from .models import Alert, AlertCreate, AlertUpdate, AlertRead
+from .models import Alert, AlertCreate, AlertRead, AlertUpdate
 
 
 def get(*, db_session, alert_id: int) -> Optional[Alert]:
@@ -16,7 +17,7 @@ def get_by_name(*, db_session, name: str) -> Optional[Alert]:
     return db_session.query(Alert).filter(Alert.name == name).one_or_none()
 
 
-def get_by_name_or_raise(*, db_session, alert_in=AlertRead) -> AlertRead:
+def get_by_name_or_raise(*, db_session, alert_in: AlertRead) -> AlertRead:
     """Returns the alert specified or raises ValidationError."""
     alert = get_by_name(db_session=db_session, name=alert_in.name)
 

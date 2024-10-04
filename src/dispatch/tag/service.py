@@ -1,11 +1,12 @@
 from typing import Optional
+
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 from dispatch.tag_type import service as tag_type_service
 
-from .models import Tag, TagCreate, TagUpdate, TagRead
+from .models import Tag, TagCreate, TagRead, TagUpdate
 
 
 def get(*, db_session, tag_id: int) -> Optional[Tag]:
@@ -23,7 +24,7 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Tag]:
     )
 
 
-def get_by_name_or_raise(*, db_session, project_id: int, tag_in=TagRead) -> TagRead:
+def get_by_name_or_raise(*, db_session, project_id: int, tag_in: TagRead) -> TagRead:
     """Returns the tag specified or raises ValidationError."""
     tag = get_by_name(db_session=db_session, project_id=project_id, name=tag_in.name)
 
