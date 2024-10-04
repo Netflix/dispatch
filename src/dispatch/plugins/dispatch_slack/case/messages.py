@@ -202,7 +202,7 @@ def create_signal_message(case_id: int, channel_id: str, db_session: Session) ->
     associated with the case and creating metadata blocks for the message.
 
     Args:
-        case (int): The case id for which to create the signal message.
+        case_id (int): The ID of the case for which to create the signal message.
         channel_id (str): The ID of the Slack channel where the message will be sent.
         db_session (Session): The database session to use for querying signal instances.
 
