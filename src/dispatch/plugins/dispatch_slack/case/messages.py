@@ -331,7 +331,7 @@ def create_genai_signal_analysis_message(
         db_session=db_session, signal_instance_id=first_instance_id
     )
 
-    # we check if the signal instance exists and if GenAI is enabled
+    # we check if the signal instance exists
     if not signal_instance:
         message = (
             "Unable to generate GenAI signal analysis. No signal instances found for this case."
