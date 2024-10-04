@@ -124,12 +124,14 @@ class SlackConversationPlugin(ConversationPlugin):
                 message = create_signal_message(
                     case_id=case.id, channel_id=conversation_id, db_session=db_session
                 )
-                send_message(
+                signal_response = send_message(
                     client=client,
                     conversation_id=conversation_id,
                     ts=case.signal_thread_ts,
                     blocks=message,
                 )
+                if signal_response:
+                    case.signal_thread_ts = signal_response.get("timestamp")
             except Exception as e:
                 logger.exception(f"Error generating signal message: {e}")
 
