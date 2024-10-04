@@ -2,12 +2,12 @@ from typing import List, Optional
 
 from pydantic import ValidationError
 from pydantic.error_wrappers import ErrorWrapper
-from dispatch.exceptions import NotFoundError
-
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import true
 
-from .models import Project, ProjectCreate, ProjectUpdate, ProjectRead
+from dispatch.exceptions import NotFoundError
+
+from .models import Project, ProjectCreate, ProjectRead, ProjectUpdate
 
 
 def get(*, db_session: Session, project_id: int) -> Project | None:
@@ -42,7 +42,7 @@ def get_by_name(*, db_session: Session, name: str) -> Optional[Project]:
     return db_session.query(Project).filter(Project.name == name).one_or_none()
 
 
-def get_by_name_or_raise(*, db_session: Session, project_in=ProjectRead) -> Project:
+def get_by_name_or_raise(*, db_session: Session, project_in: ProjectRead) -> Project:
     """Returns the project specified or raises ValidationError."""
     project = get_by_name(db_session=db_session, name=project_in.name)
 
@@ -60,7 +60,7 @@ def get_by_name_or_raise(*, db_session: Session, project_in=ProjectRead) -> Proj
     return project
 
 
-def get_by_name_or_default(*, db_session, project_in=ProjectRead) -> Project:
+def get_by_name_or_default(*, db_session, project_in: ProjectRead) -> Project:
     """Returns a project based on a name or the default if not specified."""
     if project_in:
         if project_in.name:
