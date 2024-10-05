@@ -257,6 +257,7 @@ class TaskRead(DispatchBase):
     weblink: Optional[AnyHttpUrl] = Field(None, nullable=True)
     resolve_by: Optional[datetime]
     resolved_at: Optional[datetime]
+    ticket: Optional[TicketRead] = None
 
 
 class TaskReadMinimal(DispatchBase):

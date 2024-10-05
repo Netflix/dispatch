@@ -318,3 +318,15 @@ def create_task_ticket(task: Task, db_session: Session):
     if not external_ticket:
         log.error(f"Task ticket not created. Plugin {plugin.plugin.slug} encountered an error.")
         return
+
+    external_ticket.update({"resource_type": plugin.plugin.slug})
+
+    # we create the internal task ticket
+    ticket_in = TicketCreate(**external_ticket)
+    ticket = create(db_session=db_session, ticket_in=ticket_in)
+    task.ticket = ticket
+
+    db_session.add(task)
+    db_session.commit()
+
+    return external_ticket

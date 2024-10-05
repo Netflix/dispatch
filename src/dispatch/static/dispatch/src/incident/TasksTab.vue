@@ -35,7 +35,10 @@
                 <v-list-item :href="task.weblink" target="_blank">
                   <v-list-item-title>Go to task</v-list-item-title>
                 </v-list-item>
-                <v-list-item v-if="experimental_features" @click="createTicket(task)">
+                <v-list-item v-if="task.ticket" :href="task.ticket.weblink" target="_blank">
+                  <v-list-item-title>Go to ticket</v-list-item-title>
+                </v-list-item>
+                <v-list-item v-else @click="createTicket(task)">
                   <v-list-item-title>Create ticket</v-list-item-title>
                 </v-list-item>
               </v-list>

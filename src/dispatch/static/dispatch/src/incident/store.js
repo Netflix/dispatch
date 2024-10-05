@@ -285,13 +285,22 @@ const actions = {
     commit("SET_DIALOG_EDIT_TASK", true)
   },
   createTicket({ commit }, task) {
-    console.log(`**** Creating ticket for task ${task.id}`)
-    TaskApi.createTicket(task.id).then(() => {
-      commit(
-        "notification_backend/addBeNotification",
-        { text: "Ticket created successfully.", type: "success" },
-        { root: true }
-      )
+    TaskApi.createTicket(task.id).then((response) => {
+      const ticket = response.data
+      if (ticket) {
+        task.ticket = ticket
+        commit(
+          "notification_backend/addBeNotification",
+          { text: "Ticket created successfully.", type: "success" },
+          { root: true }
+        )
+      } else {
+        commit(
+          "notification_backend/addBeNotification",
+          { text: "Ticket creation failed.", type: "error" },
+          { root: true }
+        )
+      }
     })
   },
   closeNewTaskDialog({ commit }) {

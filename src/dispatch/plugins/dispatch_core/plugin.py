@@ -274,7 +274,10 @@ class DispatchTicketPlugin(TicketPlugin):
         db_session=None,
     ):
         """Creates a Dispatch task ticket."""
-        return
+        return {
+            "resource_id": "",
+            "weblink": "https://dispatch.example.com",
+        }
 
 
 class DispatchDocumentResolverPlugin(DocumentResolverPlugin):

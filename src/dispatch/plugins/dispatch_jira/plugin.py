@@ -443,8 +443,10 @@ class JiraTicketPlugin(TicketPlugin):
             **other_fields,
         }
 
-        update = (
-            {
+        issue = client.create_issue(fields=issue_fields)
+
+        if incident_ticket_key:
+            update = {
                 "issuelinks": [
                     {
                         "add": {
@@ -458,11 +460,8 @@ class JiraTicketPlugin(TicketPlugin):
                     }
                 ]
             }
-            if incident_ticket_key
-            else {}
-        )
+            issue.update(update=update)
 
-        issue = client.create_issue(fields=issue_fields, update=update)
         return {
             "resource_id": issue.key,
             "weblink": f"{self.configuration.browser_url}/browse/{issue.key}",
