@@ -113,8 +113,9 @@ def get_signal_engagement_by_name(
 
 
 def get_signal_engagement_by_name_or_raise(
-    *, db_session: Session, project_id: int, signal_engagement_in=SignalEngagementRead
+    *, db_session: Session, project_id: int, signal_engagement_in: SignalEngagementRead
 ) -> SignalEngagement:
+    """Gets a signal engagement by its name or raises an error if not found."""
     signal_engagement = get_signal_engagement_by_name(
         db_session=db_session, project_id=project_id, name=signal_engagement_in.name
     )
@@ -124,7 +125,7 @@ def get_signal_engagement_by_name_or_raise(
             [
                 ErrorWrapper(
                     NotFoundError(
-                        msg="Signal Engagement not found.",
+                        msg="Signal engagement not found.",
                         signal_engagement=signal_engagement_in.name,
                     ),
                     loc="signalEngagement",
@@ -226,7 +227,7 @@ def delete_signal_filter(*, db_session: Session, signal_filter_id: int) -> int:
 
 
 def get_signal_filter_by_name_or_raise(
-    *, db_session: Session, project_id: int, signal_filter_in=SignalFilterRead
+    *, db_session: Session, project_id: int, signal_filter_in: SignalFilterRead
 ) -> SignalFilter:
     signal_filter = get_signal_filter_by_name(
         db_session=db_session, project_id=project_id, name=signal_filter_in.name
@@ -371,9 +372,9 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
     signal.entity_types = entity_types
 
     engagements = []
-    for eng in signal_in.engagements:
+    for signal_engagement_in in signal_in.engagements:
         signal_engagement = get_signal_engagement_by_name(
-            db_session=db_session, project_id=project.id, signal_engagement_in=eng
+            db_session=db_session, project_id=project.id, name=signal_engagement_in.name
         )
         engagements.append(signal_engagement)
 
@@ -455,9 +456,11 @@ def update(*, db_session: Session, signal: Signal, signal_in: SignalUpdate) -> S
 
     if signal_in.engagements:
         engagements = []
-        for eng in signal_in.engagements:
+        for signal_engagement_in in signal_in.engagements:
             signal_engagement = get_signal_engagement_by_name_or_raise(
-                db_session=db_session, project_id=signal.project.id, signal_engagement_in=eng
+                db_session=db_session,
+                project_id=signal.project.id,
+                signal_engagement_in=signal_engagement_in,
             )
             engagements.append(signal_engagement)
 

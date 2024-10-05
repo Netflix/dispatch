@@ -219,7 +219,7 @@ def create_signal_message(case_id: int, channel_id: str, db_session: Session) ->
     signal_metadata_blocks = [
         Section(text="*Alerts*"),
         Section(
-            text=f"We observed <{DISPATCH_UI_URL}/{first_instance_signal.project.organization.slug}/cases/{case.name}/signal/{first_instance_id}|{instances.count()} alerts> in this case. The first alert for this case can be seen below."
+            text=f"We observed <{DISPATCH_UI_URL}/{first_instance_signal.project.organization.slug}/cases/{case.name}/signal/{first_instance_id}|{instances.count()} alert(s)> in this case. The first alert for this case can be seen below."
         ),
     ]
 

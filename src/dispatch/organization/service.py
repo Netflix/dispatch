@@ -44,7 +44,7 @@ def get_by_name(*, db_session, name: str) -> Optional[Organization]:
     return db_session.query(Organization).filter(Organization.name == name).one_or_none()
 
 
-def get_by_name_or_raise(*, db_session, organization_in=OrganizationRead) -> Organization:
+def get_by_name_or_raise(*, db_session, organization_in: OrganizationRead) -> Organization:
     """Returns the organization specified or raises ValidationError."""
     organization = get_by_name(db_session=db_session, name=organization_in.name)
 
@@ -67,7 +67,7 @@ def get_by_slug(*, db_session, slug: str) -> Optional[Organization]:
     return db_session.query(Organization).filter(Organization.slug == slug).one_or_none()
 
 
-def get_by_slug_or_raise(*, db_session, organization_in=OrganizationRead) -> Organization:
+def get_by_slug_or_raise(*, db_session, organization_in: OrganizationRead) -> Organization:
     """Returns the organization specified or raises ValidationError."""
     organization = get_by_slug(db_session=db_session, slug=organization_in.slug)
 
@@ -85,7 +85,7 @@ def get_by_slug_or_raise(*, db_session, organization_in=OrganizationRead) -> Org
     return organization
 
 
-def get_by_name_or_default(*, db_session, organization_in=OrganizationRead) -> Organization:
+def get_by_name_or_default(*, db_session, organization_in: OrganizationRead) -> Organization:
     """Returns a organization based on a name or the default if not specified."""
     if organization_in.name:
         return get_by_name_or_raise(db_session=db_session, organization_in=organization_in)

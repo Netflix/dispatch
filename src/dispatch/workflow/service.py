@@ -1,9 +1,8 @@
 from typing import List, Optional
 
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import true
-
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.case import service as case_service
 from dispatch.config import DISPATCH_UI_URL
@@ -18,12 +17,12 @@ from dispatch.workflow.enums import WorkflowInstanceStatus
 
 from .models import (
     Workflow,
-    WorkflowInstance,
     WorkflowCreate,
-    WorkflowRead,
-    WorkflowUpdate,
+    WorkflowInstance,
     WorkflowInstanceCreate,
     WorkflowInstanceUpdate,
+    WorkflowRead,
+    WorkflowUpdate,
 )
 
 
@@ -37,7 +36,7 @@ def get_by_name(*, db_session, name: str) -> Optional[Workflow]:
     return db_session.query(Workflow).filter(Workflow.name == name).one_or_none()
 
 
-def get_by_name_or_raise(*, db_session: Session, workflow_in=WorkflowRead) -> Workflow:
+def get_by_name_or_raise(*, db_session: Session, workflow_in: WorkflowRead) -> Workflow:
     workflow = get_by_name(db_session=db_session, name=workflow_in.name)
 
     if not workflow:
