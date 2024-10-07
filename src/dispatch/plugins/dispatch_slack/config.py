@@ -101,6 +101,11 @@ class SlackConversationConfiguration(SlackConfiguration):
         title="Engage Oncall Command String",
         description="Defines the string used to engage an oncall. Must match what is defined in Slack.",
     )
+    slack_command_create_case: str = Field(
+        "/dispatch-create-case",
+        title="Create Case Command String",
+        description="Defines the string used to create a case. Must match what is defined in Slack.",
+    )
     slack_command_update_case: str = Field(
         "/dispatch-update-case",
         title="Update Case Command String",

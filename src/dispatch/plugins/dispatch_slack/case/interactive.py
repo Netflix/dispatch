@@ -122,6 +122,10 @@ def configure(config: SlackConversationConfiguration):
         handle_list_signals_command
     )
 
+    app.command(config.slack_command_create_case, middleware=[db_middleware])(
+        report_issue
+    )
+
     middleware = [
         subject_middleware,
         configuration_middleware,
