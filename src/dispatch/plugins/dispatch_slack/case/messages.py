@@ -20,12 +20,16 @@ from dispatch.case.models import Case
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.messaging.strings import CASE_STATUS_DESCRIPTIONS, CASE_VISIBILITY_DESCRIPTIONS
 from dispatch.plugin import service as plugin_service
+from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.case.enums import (
     CaseNotificationActions,
     SignalEngagementActions,
     SignalNotificationActions,
 )
-from dispatch.plugins.dispatch_slack.config import MAX_SECTION_TEXT_LENGTH
+from dispatch.plugins.dispatch_slack.config import (
+    MAX_SECTION_TEXT_LENGTH,
+    SlackConversationConfiguration,
+)
 from dispatch.plugins.dispatch_slack.models import (
     CaseSubjects,
     EngagementMetadata,
@@ -303,11 +307,12 @@ def create_genai_signal_analysis_message(
     channel_id: str,
     db_session: Session,
     client: WebClient,
+    config: SlackConversationConfiguration,
 ) -> list[Block]:
     """
     Creates a signal analysis using a generative AI plugin.
 
-    This function generates a analysis for a given case by leveraging historical context and
+    This function generates an analysis for a given case by leveraging historical context and
     a generative AI plugin. It fetches related cases, their resolutions, and relevant Slack
     messages to provide a comprehensive analysis.
 
@@ -316,6 +321,7 @@ def create_genai_signal_analysis_message(
         channel_id (str): The ID of the Slack channel where the analysis will be sent.
         db_session (Session): The database session to use for querying signal instances and related cases.
         client (WebClient): The Slack WebClient to fetch threaded messages.
+        config (SlackConversationConfiguration): The Slack conversation configuration.
 
     Returns:
         list[Block]: A list of Block objects representing the structure of the Slack message.
@@ -368,10 +374,12 @@ def create_genai_signal_analysis_message(
                     channel=related_case.conversation.channel_id,
                     ts=related_case.conversation.thread_id,
                 )
-
-                # we add relevant messages to the context (e.g., first 10 messages)
-                for message in thread_messages["messages"][:10]:
-                    historical_context.append(f"<slack_message>{message['text']}</slack_message>")
+                for message in thread_messages["messages"]:
+                    if dispatch_slack_service.is_user(config=config, user_id=message.get("user")):
+                        # we only include messages from users
+                        historical_context.append(
+                            f"<slack_message>{message['text']}</slack_message>"
+                        )
             except SlackApiError as e:
                 log.error(
                     f"Unable to generate GenAI signal analysis. Error fetching Slack messages for case {related_case.name}: {e}"
