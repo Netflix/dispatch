@@ -72,12 +72,19 @@ def create(*, db_session: Session, entity_type_in: EntityTypeCreate) -> EntityTy
         signals.append(signal)
 
     entity_type.signals = signals
+    entity_type.jpath = ""
 
     try:
         json.loads(entity_type_in.jpath)
         entity_type.jpath = entity_type_in.jpath
     except json.JSONDecodeError:
-        logger.error(f"Invalid jpath: {entity_type_in.jpath}. Skipping jpath field.")
+        logger.error(
+            f"Error in EntityType creation. Failed to parse jPath: {entity_type_in.jpath}. The jPath field will be skipped."
+        )
+    except TypeError:
+        logger.error(
+            f"Error in EntityType creation. JPath is not a string: {entity_type_in.jpath}. The jPath field will be skipped."
+        )
 
     db_session.add(entity_type)
     db_session.commit()
@@ -116,12 +123,19 @@ def update(
         signals.append(signal)
 
     entity_type.signals = signals
+    entity_type.jpath = ""
 
     try:
         json.loads(entity_type_in.jpath)
         entity_type.jpath = entity_type_in.jpath
     except json.JSONDecodeError:
-        logger.error(f"Invalid jpath: {entity_type_in.jpath}. Skipping jpath field.")
+        logger.error(
+            f"Error in EntityType update. Failed to parse jPath: {entity_type_in.jpath}. The jPath field will be skipped."
+        )
+    except TypeError:
+        logger.error(
+            f"Error in EntityType update. JPath is not a string: {entity_type_in.jpath}. The jPath field will be skipped."
+        )
 
     db_session.commit()
     return entity_type
