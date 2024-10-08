@@ -144,6 +144,7 @@ export default {
       "table.options.sortBy",
       "table.options.descending",
       "table.options.filters.project",
+      "table.options.filters.schedule",
       "table.loading",
       "table.rows.items",
       "table.rows.total",
@@ -191,7 +192,7 @@ export default {
     )
 
     this.$watch(
-      (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending, vm.project],
+      (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending, vm.project, vm.schedule],
       () => {
         this.page = 1
         RouterUtils.updateURLFilters(this.filters)

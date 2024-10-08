@@ -12,6 +12,10 @@
     :hint="hint"
     :loading="loading"
     no-filter
+    clearable
+    chips
+    multiple
+    closable-chips
   />
 </template>
 
@@ -28,7 +32,7 @@ export default {
     modelValue: {
       type: Object,
       default: function () {
-        return {}
+        return null
       },
     },
     label: {

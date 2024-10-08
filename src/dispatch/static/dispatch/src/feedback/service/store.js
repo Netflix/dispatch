@@ -37,6 +37,7 @@ const state = {
       descending: [true],
       filters: {
         project: [],
+        schedule: null,
       },
     },
     loading: false,
@@ -57,18 +58,22 @@ const actions = {
     return ServiceFeedbackApi.getAll(params)
       .then((response) => {
         // hydrate with service name
-        const uniqueExternalIds = [...new Set(response.data.items.map((f) => f.schedule))]
-        ServiceApi.getAllByIds(uniqueExternalIds).then((services) => {
-          response.data.items.forEach((f) => {
-            let service = services.data.find((s) => s.external_id === f.schedule)
-            if (service) {
-              f.service = service.name
-            }
+        if (response.data.items.length > 0) {
+          const uniqueExternalIds = [...new Set(response.data.items.map((f) => f.schedule))]
+          ServiceApi.getAllByIds(uniqueExternalIds).then((services) => {
+            response.data.items.forEach((f) => {
+              let service = services.data.find((s) => s.external_id === f.schedule)
+              if (service) {
+                f.service = service.name
+              }
+            })
+            commit("SET_TABLE_LOADING", false)
+            commit("SET_TABLE_ROWS", response.data)
           })
+        } else {
           commit("SET_TABLE_LOADING", false)
           commit("SET_TABLE_ROWS", response.data)
-          console.log(`The response data is JSON: ${JSON.stringify(response.data)}`)
-        })
+        }
       })
       .catch(() => {
         commit("SET_TABLE_LOADING", false)
