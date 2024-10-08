@@ -14,17 +14,22 @@ from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
 from sqlalchemy.orm import Session
 
-from dispatch.case.enums import CaseStatus
+from dispatch.case import service as case_service
+from dispatch.case.enums import CaseResolutionReason, CaseStatus
 from dispatch.case.models import Case
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.messaging.strings import CASE_STATUS_DESCRIPTIONS, CASE_VISIBILITY_DESCRIPTIONS
 from dispatch.plugin import service as plugin_service
+from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.case.enums import (
     CaseNotificationActions,
     SignalEngagementActions,
     SignalNotificationActions,
 )
-from dispatch.plugins.dispatch_slack.config import MAX_SECTION_TEXT_LENGTH
+from dispatch.plugins.dispatch_slack.config import (
+    MAX_SECTION_TEXT_LENGTH,
+    SlackConversationConfiguration,
+)
 from dispatch.plugins.dispatch_slack.models import (
     CaseSubjects,
     EngagementMetadata,
@@ -193,12 +198,15 @@ class EntityGroup(NamedTuple):
     related_case_count: int
 
 
-def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -> list[Message]:
+def create_signal_message(case_id: int, channel_id: str, db_session: Session) -> list[Message]:
     """
-    Creates signal messages for a given case.
+    Creates a signal message for a given case.
+
+    This function generates a signal message for a specific case by fetching the first signal instance
+    associated with the case and creating metadata blocks for the message.
 
     Args:
-        case_id (int): The ID of the case for which to create signal messages.
+        case_id (int): The ID of the case for which to create the signal message.
         channel_id (str): The ID of the Slack channel where the message will be sent.
         db_session (Session): The database session to use for querying signal instances.
 
@@ -207,6 +215,40 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
     """
     # we fetch the first instance to get the organization slug and project id
     instances = signal_service.get_instances_in_case(db_session=db_session, case_id=case_id)
+    (first_instance_id, first_instance_signal) = instances.first()
+
+    case = case_service.get(db_session=db_session, case_id=case_id)
+
+    # we create the signal metadata blocks
+    signal_metadata_blocks = [
+        Section(text="*Alerts*"),
+        Section(
+            text=f"We observed <{DISPATCH_UI_URL}/{first_instance_signal.project.organization.slug}/cases/{case.name}/signal/{first_instance_id}|{instances.count()} alert(s)> in this case. The first alert for this case can be seen below."
+        ),
+    ]
+
+    return Message(blocks=signal_metadata_blocks).build()["blocks"]
+
+
+def create_action_buttons_message(
+    case: Case, channel_id: str, db_session: Session
+) -> list[Message]:
+    """
+    Creates a message with action buttons for a given case.
+
+    This function generates a message containing action buttons for a specific case by fetching the first signal instance
+    associated with the case and creating metadata blocks for the message.
+
+    Args:
+        case_id (int): The ID of the case for which to create the action buttons message.
+        channel_id (str): The ID of the Slack channel where the message will be sent.
+        db_session (Session): The database session to use for querying signal instances.
+
+    Returns:
+        list[Message]: A list of Message objects representing the structure of the Slack messages.
+    """
+    # we fetch the first instance to get the organization slug and project id
+    instances = signal_service.get_instances_in_case(db_session=db_session, case_id=case.id)
     (first_instance_id, first_instance_signal) = instances.first()
 
     organization_slug = first_instance_signal.project.organization.slug
@@ -225,7 +267,7 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
     if first_instance_signal.external_url:
         elements.append(
             Button(
-                text="🔖 Response Plan",
+                text="🔖 View Response Plan",
                 action_id="button-link",
                 url=first_instance_signal.external_url,
             )
@@ -233,7 +275,7 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
 
     elements.append(
         Button(
-            text="💤 Snooze Alerts",
+            text="💤 Snooze Alert",
             action_id=SignalNotificationActions.snooze,
             value=button_metadata,
         )
@@ -241,13 +283,22 @@ def create_signal_messages(case_id: int, channel_id: str, db_session: Session) -
 
     # we create the signal metadata blocks
     signal_metadata_blocks = [
+        Divider(),
         Section(text="*Actions*"),
         Actions(elements=elements),
         Divider(),
-        Section(text="*Alerts*"),
-        Section(text=f"We observed {instances.count()} alerts in this case."),
     ]
 
+    return Message(blocks=signal_metadata_blocks).build()["blocks"]
+
+
+def create_genai_signal_message_metadata_blocks(
+    signal_metadata_blocks: list[Block], message: str
+) -> list[Block]:
+    signal_metadata_blocks.append(
+        Section(text=f":magic_wand: *GenAI Alert Analysis*\n\n{message}"),
+    )
+    signal_metadata_blocks.append(Divider())
     return Message(blocks=signal_metadata_blocks).build()["blocks"]
 
 
@@ -256,11 +307,12 @@ def create_genai_signal_analysis_message(
     channel_id: str,
     db_session: Session,
     client: WebClient,
+    config: SlackConversationConfiguration,
 ) -> list[Block]:
     """
     Creates a signal analysis using a generative AI plugin.
 
-    This function generates a analysis for a given case by leveraging historical context and
+    This function generates an analysis for a given case by leveraging historical context and
     a generative AI plugin. It fetches related cases, their resolutions, and relevant Slack
     messages to provide a comprehensive analysis.
 
@@ -269,78 +321,99 @@ def create_genai_signal_analysis_message(
         channel_id (str): The ID of the Slack channel where the analysis will be sent.
         db_session (Session): The database session to use for querying signal instances and related cases.
         client (WebClient): The Slack WebClient to fetch threaded messages.
+        config (SlackConversationConfiguration): The Slack conversation configuration.
 
     Returns:
         list[Block]: A list of Block objects representing the structure of the Slack message.
     """
     signal_metadata_blocks: list[Block] = []
 
+    # we fetch the first instance id and signal
     (first_instance_id, first_instance_signal) = signal_service.get_instances_in_case(
         db_session=db_session, case_id=case.id
     ).first()
-
-    if not first_instance_id or not first_instance_signal:
-        log.warning("Unable to generate GenAI signal analysis. No signal instances found.")
-        return signal_metadata_blocks
-
-    # Fetch related cases
-    related_cases = (
-        signal_service.get_cases_for_signal(
-            db_session=db_session, signal_id=first_instance_signal.id
-        )
-        .from_self()  # NOTE: function deprecated in SQLAlchemy 1.4 and removed in 2.0
-        .filter(Case.id != case.id)
-    )
-
-    # Prepare historical context
-    historical_context = []
-    for related_case in related_cases:
-        historical_context.append("<case>")
-        historical_context.append(f"<case_name>{related_case.name}</case_name>")
-        historical_context.append(f"<resolution>{related_case.resolution}</resolution")
-        historical_context.append(
-            f"<resolution_reason>{related_case.resolution_reason}</resolution_reason>"
-        )
-
-        # Fetch Slack messages for the related case
-        if related_case.conversation and related_case.conversation.channel_id:
-            try:
-                # Fetch threaded messages
-                thread_messages = client.conversations_replies(
-                    channel=related_case.conversation.channel_id,
-                    ts=related_case.conversation.thread_id,
-                )
-
-                # Add relevant messages to the context (e.g., first 5 messages)
-                for message in thread_messages["messages"][:5]:
-                    historical_context.append(f"<slack_message>{message['text']}</slack_message>")
-            except SlackApiError as e:
-                log.error(f"Error fetching Slack messages for case {related_case.name}: {e}")
-
-        historical_context.append("</case>")
-
-    historical_context_str = "\n".join(historical_context)
 
     signal_instance = signal_service.get_signal_instance(
         db_session=db_session, signal_instance_id=first_instance_id
     )
 
+    # we check if GenAI is enabled for the detection
+    if not signal_instance.signal.genai_enabled:
+        message = "Unable to generate GenAI signal analysis. GenAI feature not enabled for this detection."
+        log.warning(message)
+        return create_genai_signal_message_metadata_blocks(signal_metadata_blocks, message)
+
+    # we fetch related cases
+    related_cases = []
+    for resolution_reason in CaseResolutionReason:
+        related_cases.extend(
+            signal_service.get_cases_for_signal_by_resolution_reason(
+                db_session=db_session,
+                signal_id=first_instance_signal.id,
+                resolution_reason=resolution_reason,
+            )
+            .from_self()  # NOTE: function deprecated in SQLAlchemy 1.4 and removed in 2.0
+            .filter(Case.id != case.id)
+        )
+
+    # we prepare historical context
+    historical_context = []
+    for related_case in related_cases:
+        historical_context.append("<case>")
+        historical_context.append(f"<case_name>{related_case.name}</case_name>")
+        historical_context.append(f"<case_resolution>{related_case.resolution}</case_resolution")
+        historical_context.append(
+            f"<case_resolution_reason>{related_case.resolution_reason}</case_resolution_reason>"
+        )
+        historical_context.append(
+            f"<case_alert_data>{related_case.signal_instances[0].raw}</case_alert_data>"
+        )
+
+        # we fetch Slack messages for the related case
+        if related_case.conversation and related_case.conversation.channel_id:
+            try:
+                # we fetch threaded messages
+                thread_messages = client.conversations_replies(
+                    channel=related_case.conversation.channel_id,
+                    ts=related_case.conversation.thread_id,
+                )
+                for message in thread_messages["messages"]:
+                    if dispatch_slack_service.is_user(config=config, user_id=message.get("user")):
+                        # we only include messages from users
+                        historical_context.append(
+                            f"<case_slack_message>{message['text']}</case_slack_message>"
+                        )
+            except SlackApiError as e:
+                log.error(
+                    f"Unable to generate GenAI signal analysis. Error fetching Slack messages for case {related_case.name}: {e}"
+                )
+                message = "Unable to generate GenAI signal analysis. Error fetching Slack messages."
+                return create_genai_signal_message_metadata_blocks(signal_metadata_blocks, message)
+
+        historical_context.append("</case>")
+
+    historical_context_str = "\n".join(historical_context)
+
+    # we fetch the GenAI plugin
     genai_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=case.project.id, plugin_type="artificial-intelligence"
     )
 
+    # we check if the GenAI plugin is enabled
     if not genai_plugin:
-        log.warning(
+        message = (
             "Unable to generate GenAI signal analysis. No artificial-intelligence plugin enabled."
         )
-        return signal_metadata_blocks
+        log.warning(message)
+        return create_genai_signal_message_metadata_blocks(signal_metadata_blocks, message)
 
+    # we check if the GenAI plugin has a prompt
     if not signal_instance.signal.genai_prompt:
-        log.warning(
-            f"Unable to generate GenAI signal analysis. No GenAI prompt defined for {signal_instance.signal.name}"
-        )
-        return signal_metadata_blocks
+        message = f"Unable to generate GenAI signal analysis. No GenAI prompt defined for {signal_instance.signal.name}"
+        log.warning(message)
+        return create_genai_signal_message_metadata_blocks(signal_metadata_blocks, message)
 
+    # we generate the analysis
     response = genai_plugin.instance.chat_completion(
         prompt=f"""
 
@@ -352,23 +425,24 @@ def create_genai_signal_analysis_message(
         {str(signal_instance.raw)}
         </current_event>
 
+        <runbook>
+        {signal_instance.signal.runbook}
+        </runbook>
+
         <historical_context>
         {historical_context_str}
         </historical_context>
 
-        <runbook>
-        {first_instance_signal.runbook}
-        </runbook>
         """
     )
     message = response["choices"][0]["message"]["content"]
 
-    signal_metadata_blocks.append(Divider())
-    signal_metadata_blocks.append(
-        Section(text=f":magic_wand: *GenAI Alert Analysis*\n\n{message}"),
-    )
-    signal_metadata_blocks.append(Divider())
-    return Message(blocks=signal_metadata_blocks).build()["blocks"]
+    # we check if the response is empty
+    if not message:
+        message = "Unable to generate GenAI signal analysis. We received an empty response from the artificial-intelligence plugin."
+        log.warning(message)
+
+    return create_genai_signal_message_metadata_blocks(signal_metadata_blocks, message)
 
 
 def create_signal_engagement_message(
@@ -406,9 +480,6 @@ def create_signal_engagement_message(
 
     username, _ = user_email.split("@")
     blocks = [
-        Section(
-            text=f"@{username}, we could use your help to resolve this case. Please, see additional context below:"
-        ),
         Section(
             text=f"{engagement.message if engagement.message else 'No context provided for this alert.'}"
         ),
@@ -449,7 +520,7 @@ def create_signal_engagement_message(
         blocks.extend(
             [
                 Section(
-                    text=":warning: @{username} denied the behavior as expected. Please investigate the case and escalate to incident if necessary."
+                    text=f":warning: @{username} denied the behavior as expected. Please investigate the case and escalate to incident if necessary."
                 ),
             ]
         )

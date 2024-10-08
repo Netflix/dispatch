@@ -8,7 +8,7 @@ from dispatch.project import service as project_service
 from dispatch.project.models import ProjectRead
 from dispatch.search_filter import service as search_filter_service
 
-from .models import Service, ServiceCreate, ServiceUpdate, ServiceRead
+from .models import Service, ServiceCreate, ServiceRead, ServiceUpdate
 
 
 def get(*, db_session, service_id: int) -> Optional[Service]:
@@ -36,7 +36,7 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Service]:
     )
 
 
-def get_by_name_or_raise(*, db_session, project_id, service_in=ServiceRead) -> ServiceRead:
+def get_by_name_or_raise(*, db_session, project_id, service_in: ServiceRead) -> ServiceRead:
     """Returns the service specified or raises ValidationError."""
     source = get_by_name(db_session=db_session, project_id=project_id, name=service_in.name)
 

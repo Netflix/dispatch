@@ -36,6 +36,7 @@ from .models import (
     SignalEngagement,
     SignalEngagementCreate,
     SignalEngagementRead,
+    SignalEngagementUpdate,
     SignalFilter,
     SignalFilterAction,
     SignalFilterCreate,
@@ -51,10 +52,57 @@ from .models import (
 log = logging.getLogger(__name__)
 
 
+def get_signal_engagement(
+    *, db_session: Session, signal_engagement_id: int
+) -> Optional[SignalEngagement]:
+    """Gets a signal engagement by id."""
+    return (
+        db_session.query(SignalEngagement)
+        .filter(SignalEngagement.id == signal_engagement_id)
+        .one_or_none()
+    )
+
+
+def get_signal_engagement_by_name(
+    *, db_session, project_id: int, name: str
+) -> Optional[SignalEngagement]:
+    """Gets a signal engagement by its name."""
+    return (
+        db_session.query(SignalEngagement)
+        .filter(SignalEngagement.project_id == project_id)
+        .filter(SignalEngagement.name == name)
+        .first()
+    )
+
+
+def get_signal_engagement_by_name_or_raise(
+    *, db_session: Session, project_id: int, signal_engagement_in: SignalEngagementRead
+) -> SignalEngagement:
+    """Gets a signal engagement by its name or raises an error if not found."""
+    signal_engagement = get_signal_engagement_by_name(
+        db_session=db_session, project_id=project_id, name=signal_engagement_in.name
+    )
+
+    if not signal_engagement:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    NotFoundError(
+                        msg="Signal engagement not found.",
+                        signal_engagement=signal_engagement_in.name,
+                    ),
+                    loc="signalEngagement",
+                )
+            ],
+            model=SignalEngagementRead,
+        )
+    return signal_engagement
+
+
 def create_signal_engagement(
     *, db_session: Session, creator: DispatchUser, signal_engagement_in: SignalEngagementCreate
 ) -> SignalEngagement:
-    """Creates a new signal filter."""
+    """Creates a new signal engagement."""
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=signal_engagement_in.project
     )
@@ -77,15 +125,26 @@ def create_signal_engagement(
     return signal_engagement
 
 
-def get_signal_engagement(
-    *, db_session: Session, signal_engagement_id: int
-) -> Optional[SignalEngagement]:
-    """Gets a signal engagement by id."""
-    return (
-        db_session.query(SignalEngagement)
-        .filter(SignalEngagement.id == signal_engagement_id)
-        .one_or_none()
+def update_signal_engagement(
+    *,
+    db_session: Session,
+    signal_engagement: SignalEngagement,
+    signal_engagement_in: SignalEngagementUpdate,
+) -> SignalEngagement:
+    """Updates an existing signal engagement."""
+    signal_engagement_data = signal_engagement.dict()
+    update_data = signal_engagement_in.dict(
+        skip_defaults=True,
+        exclude={},
     )
+
+    for field in signal_engagement_data:
+        if field in update_data:
+            setattr(signal_engagement, field, update_data[field])
+
+    db_session.add(signal_engagement)
+    db_session.commit()
+    return signal_engagement
 
 
 def get_all_by_entity_type(*, db_session: Session, entity_type_id: int) -> list[SignalInstance]:
@@ -98,41 +157,6 @@ def get_all_by_entity_type(*, db_session: Session, entity_type_id: int) -> list[
         .filter(assoc_signal_entity_types.c.entity_type_id == entity_type_id)
         .all()
     )
-
-
-def get_signal_engagement_by_name(
-    *, db_session, project_id: int, name: str
-) -> Optional[SignalEngagement]:
-    """Gets a signal engagement by its name."""
-    return (
-        db_session.query(SignalEngagement)
-        .filter(SignalEngagement.project_id == project_id)
-        .filter(SignalEngagement.name == name)
-        .first()
-    )
-
-
-def get_signal_engagement_by_name_or_raise(
-    *, db_session: Session, project_id: int, signal_engagement_in=SignalEngagementRead
-) -> SignalEngagement:
-    signal_engagement = get_signal_engagement_by_name(
-        db_session=db_session, project_id=project_id, name=signal_engagement_in.name
-    )
-
-    if not signal_engagement:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Signal Engagement not found.",
-                        signal_engagement=signal_engagement_in.name,
-                    ),
-                    loc="signalEngagement",
-                )
-            ],
-            model=SignalEngagementRead,
-        )
-    return signal_engagement
 
 
 def create_signal_instance(*, db_session: Session, signal_instance_in: SignalInstanceCreate):
@@ -226,7 +250,7 @@ def delete_signal_filter(*, db_session: Session, signal_filter_id: int) -> int:
 
 
 def get_signal_filter_by_name_or_raise(
-    *, db_session: Session, project_id: int, signal_filter_in=SignalFilterRead
+    *, db_session: Session, project_id: int, signal_filter_in: SignalFilterRead
 ) -> SignalFilter:
     signal_filter = get_signal_filter_by_name(
         db_session=db_session, project_id=project_id, name=signal_filter_in.name
@@ -346,6 +370,7 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
             exclude={
                 "case_priority",
                 "case_type",
+                "engagements",
                 "entity_types",
                 "filters",
                 "oncall_service",
@@ -371,9 +396,9 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
     signal.entity_types = entity_types
 
     engagements = []
-    for eng in signal_in.engagements:
+    for signal_engagement_in in signal_in.engagements:
         signal_engagement = get_signal_engagement_by_name(
-            db_session=db_session, project_id=project.id, signal_engagement_in=eng
+            db_session=db_session, project_id=project.id, name=signal_engagement_in.name
         )
         engagements.append(signal_engagement)
 
@@ -455,9 +480,11 @@ def update(*, db_session: Session, signal: Signal, signal_in: SignalUpdate) -> S
 
     if signal_in.engagements:
         engagements = []
-        for eng in signal_in.engagements:
+        for signal_engagement_in in signal_in.engagements:
             signal_engagement = get_signal_engagement_by_name_or_raise(
-                db_session=db_session, project_id=signal.project.id, signal_engagement_in=eng
+                db_session=db_session,
+                project_id=signal.project.id,
+                signal_engagement_in=signal_engagement_in,
             )
             engagements.append(signal_engagement)
 
@@ -761,6 +788,16 @@ def get_unprocessed_signal_instance_ids(session: Session) -> list[int]:
 
 
 def get_instances_in_case(db_session: Session, case_id: int) -> Query:
+    """
+    Retrieves signal instances associated with a given case.
+
+    Args:
+        db_session (Session): The database session.
+        case_id (int): The ID of the case.
+
+    Returns:
+        Query: A SQLAlchemy query object for the signal instances associated with the case.
+    """
     return (
         db_session.query(SignalInstance, Signal)
         .join(Signal)
@@ -771,10 +808,46 @@ def get_instances_in_case(db_session: Session, case_id: int) -> Query:
 
 
 def get_cases_for_signal(db_session: Session, signal_id: int, limit: int = 10) -> Query:
+    """
+    Retrieves cases associated with a given signal.
+
+    Args:
+        db_session (Session): The database session.
+        signal_id (int): The ID of the signal.
+        limit (int, optional): The maximum number of cases to retrieve. Defaults to 10.
+
+    Returns:
+        Query: A SQLAlchemy query object for the cases associated with the signal.
+    """
     return (
         db_session.query(Case)
         .join(SignalInstance)
         .filter(SignalInstance.signal_id == signal_id)
+        .order_by(desc(Case.created_at))
+        .limit(limit)
+    )
+
+
+def get_cases_for_signal_by_resolution_reason(
+    db_session: Session, signal_id: int, resolution_reason: str, limit: int = 10
+) -> Query:
+    """
+    Retrieves cases associated with a given signal and resolution reason.
+
+    Args:
+        db_session (Session): The database session.
+        signal_id (int): The ID of the signal.
+        resolution_reason (str): The resolution reason to filter cases by.
+        limit (int, optional): The maximum number of cases to retrieve. Defaults to 10.
+
+    Returns:
+        Query: A SQLAlchemy query object for the cases associated with the signal and resolution reason.
+    """
+    return (
+        db_session.query(Case)
+        .join(SignalInstance)
+        .filter(SignalInstance.signal_id == signal_id)
+        .filter(Case.resolution_reason == resolution_reason)
         .order_by(desc(Case.created_at))
         .limit(limit)
     )

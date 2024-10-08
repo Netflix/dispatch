@@ -721,21 +721,6 @@ def handle_snooze_preview_event(
     ack(response_action="update", view=modal)
 
 
-def ack_snooze_submission_event(ack: Ack, mfa_enabled: bool) -> None:
-    """Handles the add snooze submission event acknowledgement."""
-    text = (
-        "Adding snooze submission event..."
-        if mfa_enabled is False
-        else "Sending MFA push notification, please confirm to create Snooze filter..."
-    )
-    modal = Modal(
-        title="Add Snooze",
-        close="Close",
-        blocks=[Section(text=text)],
-    ).build()
-    ack(response_action="update", view=modal)
-
-
 @app.view(
     SignalSnoozeActions.submit,
     middleware=[
@@ -773,8 +758,6 @@ def handle_snooze_submission_event(
         db_session=db_session, project_id=context["subject"].project_id, plugin_type="auth-mfa"
     )
     mfa_enabled = True if mfa_plugin else False
-
-    ack_snooze_submission_event(ack=ack, mfa_enabled=mfa_enabled)
 
     def _create_snooze_filter(
         db_session: Session,
@@ -878,7 +861,7 @@ def handle_snooze_submission_event(
             db_session=db_session,
             project_id=context["subject"].project_id,
         )
-        ack_engagement_submission_event(
+        ack_mfa_required_submission_event(
             ack=ack, mfa_enabled=mfa_enabled, challenge_url=challenge_url
         )
 
@@ -2159,7 +2142,7 @@ def engagement_button_approve_click(
     client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
-def ack_engagement_submission_event(
+def ack_mfa_required_submission_event(
     ack: Ack, mfa_enabled: bool, challenge_url: str | None = None
 ) -> None:
     """Handles the add engagement submission event acknowledgement."""
@@ -2232,7 +2215,7 @@ def handle_engagement_submission_event(
         project_id=context["subject"].project_id,
     )
 
-    ack_engagement_submission_event(ack=ack, mfa_enabled=mfa_enabled, challenge_url=challenge_url)
+    ack_mfa_required_submission_event(ack=ack, mfa_enabled=mfa_enabled, challenge_url=challenge_url)
 
     case = case_service.get(db_session=db_session, case_id=metadata["id"])
     signal_instance = signal_service.get_signal_instance(
@@ -2293,7 +2276,7 @@ def send_engagement_response(
     if response == MfaChallengeStatus.APPROVED:
         title = "Approve"
         text = "Confirmation... Success!"
-        message_text = f":white_check_mark: {engaged_user} confirmed the behavior as expected.\n\n *Context Provided* \n```{context_from_user}```"
+        message_text = f"{engaged_user} provided the following context:\n```{context_from_user}```"
         engagement_status = SignalEngagementStatus.approved
     else:
         title = "MFA Failed"

@@ -8,6 +8,7 @@ from dispatch.database.core import get_table_name_by_class_instance
 from dispatch.enums import DocumentResourceTypes
 from dispatch.event import service as event_service
 from dispatch.plugin import service as plugin_service
+from dispatch.tag_type import service as tag_type_service
 
 from .models import Document, DocumentCreate
 from .service import create, delete
@@ -170,17 +171,25 @@ def update_document(document: Document, project_id: int, db_session: Session):
         this would be the replaced text. Only create the source replacements if not null.
         For any tag types with multiple selected tags, replace with a comma-separated list.
         """
+        # first ensure all tags types have a placeholder in the document template
+        tag_types = tag_type_service.get_all_by_project(
+            db_session=db_session, project_id=project_id
+        )
+        for tag_type in tag_types:
+            document_kwargs[f"tag_{tag_type.name}"] = "N/A"
+            document_kwargs[f"tag_{tag_type.name}.source"] = "N/A"
+
         # create document template placeholders for tags
         for tag in document.incident.tags:
-            if f"tag_{tag.tag_type.name}" in document_kwargs:
-                document_kwargs[f"tag_{tag.tag_type.name}"] += f", {tag.name}"
-            else:
+            if document_kwargs[f"tag_{tag.tag_type.name}"] == "N/A":
                 document_kwargs[f"tag_{tag.tag_type.name}"] = tag.name
+            else:
+                document_kwargs[f"tag_{tag.tag_type.name}"] += f", {tag.name}"
             if tag.source:
-                if f"tag_{tag.tag_type.name}.source" in document_kwargs:
-                    document_kwargs[f"tag_{tag.tag_type.name}.source"] += f", {tag.source}"
-                else:
+                if document_kwargs[f"tag_{tag.tag_type.name}.source"] == "N/A":
                     document_kwargs[f"tag_{tag.tag_type.name}.source"] = tag.source
+                else:
+                    document_kwargs[f"tag_{tag.tag_type.name}.source"] += f", {tag.source}"
 
     if document.resource_type == DocumentResourceTypes.review:
         document_kwargs["stable_at"] = document.incident.stable_at.strftime("%m/%d/%Y %H:%M:%S")

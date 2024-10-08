@@ -18,7 +18,6 @@ from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
 from dispatch.case.models import Case
-from dispatch.config import DISPATCH_UI_URL
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugin import service as plugin_service
@@ -32,10 +31,11 @@ from dispatch.signal.enums import SignalEngagementStatus
 from dispatch.signal.models import SignalEngagement, SignalInstance
 
 from .case.messages import (
+    create_action_buttons_message,
     create_case_message,
     create_genai_signal_analysis_message,
     create_signal_engagement_message,
-    create_signal_messages,
+    create_signal_message,
 )
 from .endpoints import router as slack_event_router
 from .enums import SlackAPIErrorCode
@@ -93,51 +93,83 @@ class SlackConversationPlugin(ConversationPlugin):
         client = create_slack_client(self.configuration)
         blocks = create_case_message(case=case, channel_id=conversation_id)
         response = send_message(client=client, conversation_id=conversation_id, blocks=blocks)
+        response_timestamp = response["timestamp"]
 
         if case.signal_instances:
-            message = create_signal_messages(
-                case_id=case.id, channel_id=conversation_id, db_session=db_session
-            )
-            signal_response = send_message(
-                client=client,
-                conversation_id=conversation_id,
-                ts=response["timestamp"],
-                blocks=message,
-            )
-            case.signal_thread_ts = signal_response.get("timestamp")
+            signal_response = None
 
+            # we try to generate a GenAI signal analysis message
+            try:
+                if message := create_genai_signal_analysis_message(
+                    case=case,
+                    channel_id=conversation_id,
+                    db_session=db_session,
+                    client=client,
+                    config=self.configuration,
+                ):
+                    signal_response = send_message(
+                        client=client,
+                        conversation_id=conversation_id,
+                        ts=response_timestamp,
+                        blocks=message,
+                    )
+            except Exception as e:
+                logger.exception(f"Error generating GenAI signal analysis message: {e}")
+
+            case.signal_thread_ts = (
+                signal_response.get("timestamp") if signal_response else response_timestamp
+            )
+
+            # we try to generate a signal message
+            try:
+                message = create_signal_message(
+                    case_id=case.id, channel_id=conversation_id, db_session=db_session
+                )
+                signal_response = send_message(
+                    client=client,
+                    conversation_id=conversation_id,
+                    ts=case.signal_thread_ts,
+                    blocks=message,
+                )
+                if signal_response:
+                    case.signal_thread_ts = signal_response.get("timestamp")
+            except Exception as e:
+                logger.exception(f"Error generating signal message: {e}")
+
+            # we try to upload the alert JSON to the case thread
             try:
                 client.files_upload(
                     channels=conversation_id,
                     thread_ts=case.signal_thread_ts,
-                    initial_comment=f"First alert for this case. View all alerts in <{DISPATCH_UI_URL}/{case.project.organization.slug}/cases/{case.name}|Dispatch>:",
                     filetype="json",
                     file=io.BytesIO(json.dumps(case.signal_instances[0].raw, indent=4).encode()),
                 )
             except SlackApiError as e:
                 if e.response["error"] == SlackAPIErrorCode.MISSING_SCOPE:
-                    logger.exception(
-                        f"Error uploading alert JSON to the case thread due to a missing scope: {e}"
+                    exception_message = (
+                        "Error uploading alert JSON to the case thread due to a missing scope"
                     )
                 else:
-                    logger.exception(f"Error uploading alert JSON to the case thread: {e}")
+                    exception_message = "Error uploading alert JSON to the case thread"
+                logger.exception(f"{exception_message}: {e}")
+
             except Exception as e:
                 logger.exception(f"Error uploading alert JSON to the case thread: {e}")
 
+            # we try to generate action buttons
             try:
+                message = create_action_buttons_message(
+                    case=case, channel_id=conversation_id, db_session=db_session
+                )
                 send_message(
                     client=client,
                     conversation_id=conversation_id,
                     ts=case.signal_thread_ts,
-                    blocks=create_genai_signal_analysis_message(
-                        case=case,
-                        channel_id=conversation_id,
-                        db_session=db_session,
-                        client=client,
-                    ),
+                    blocks=message,
                 )
             except Exception as e:
-                logger.exception(f"Error generating GenAI signal summary: {e}")
+                logger.exception(f"Error generating action buttons message: {e}")
+
             db_session.commit()
         return response
 
@@ -194,7 +226,7 @@ class SlackConversationPlugin(ConversationPlugin):
     ):
         """Updates the signal message."""
         client = create_slack_client(self.configuration)
-        blocks = create_signal_messages(
+        blocks = create_signal_message(
             case_id=case_id, channel_id=conversation_id, db_session=db_session
         )
         return update_message(

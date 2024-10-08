@@ -1,26 +1,24 @@
-from datetime import datetime
 import functools
 import heapq
 import logging
-from requests import Timeout
+from datetime import datetime
+from typing import Dict, List, Optional
 
 from blockkit import Message, Section
+from requests import Timeout
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
 from slack_sdk.web.slack_response import SlackResponse
 from tenacity import (
+    RetryCallState,
     retry,
     retry_if_exception,
-    RetryCallState,
-    wait_exponential,
     stop_after_attempt,
+    wait_exponential,
 )
-
-from typing import Dict, List, Optional
 
 from .config import SlackConversationConfiguration
 from .enums import SlackAPIErrorCode, SlackAPIGetEndpoints, SlackAPIPostEndpoints
-
 
 Conversation = dict[str, str]
 
