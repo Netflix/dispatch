@@ -85,7 +85,8 @@ def create_ticket(
 def update_task(db_session: DbSession, task_id: PrimaryKey, task_in_d: dict):
     try:
         incident = incident_service.get(db_session=db_session, incident_id=task_in_d["incident_id"])
-        task_in = TaskUpdate(**task_in_d, incident=incident)
+        task_in = TaskUpdate(**task_in_d.dict(exclude={"owner"}), incident=incident)
+        task_in.owner = task_in_d["owner"][0] if task_in_d["owner"] else None
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
