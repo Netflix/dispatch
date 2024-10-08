@@ -100,18 +100,22 @@ class SlackConversationPlugin(ConversationPlugin):
 
             # we try to generate a GenAI signal analysis message
             try:
-                if message := create_genai_signal_analysis_message(
+                message, message_blocks = create_genai_signal_analysis_message(
                     case=case,
                     channel_id=conversation_id,
                     db_session=db_session,
                     client=client,
                     config=self.configuration,
-                ):
+                )
+                if message:
+                    case.genai_analysis = message
+
+                if message_blocks:
                     signal_response = send_message(
                         client=client,
                         conversation_id=conversation_id,
                         ts=response_timestamp,
-                        blocks=message,
+                        blocks=message_blocks,
                     )
             except Exception as e:
                 logger.exception(f"Error generating GenAI signal analysis message: {e}")
