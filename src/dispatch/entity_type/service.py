@@ -121,7 +121,7 @@ def update(
         json.loads(entity_type_in.jpath)
         entity_type.jpath = entity_type_in.jpath
     except json.JSONDecodeError:
-        logger.error(f"Invalid jpath: {entity_type_in.jpath}. Skipping update.")
+        logger.error(f"Invalid jpath: {entity_type_in.jpath}. Skipping jpath field.")
 
     db_session.commit()
     return entity_type
