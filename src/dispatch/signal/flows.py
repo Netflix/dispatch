@@ -1,7 +1,7 @@
 import logging
+import time
 from datetime import timedelta
 from queue import Queue
-import time
 
 from cachetools import TTLCache
 from email_validator import EmailNotValidError, validate_email
@@ -15,6 +15,7 @@ from dispatch.case.models import CaseCreate
 from dispatch.database.core import get_organization_session, get_session
 from dispatch.entity import service as entity_service
 from dispatch.entity_type import service as entity_type_service
+from dispatch.entity_type.models import EntityScopeEnum
 from dispatch.exceptions import DispatchException
 from dispatch.organization.service import get_all as get_all_organizations
 from dispatch.plugin import service as plugin_service
@@ -25,7 +26,6 @@ from dispatch.signal import service as signal_service
 from dispatch.signal.enums import SignalEngagementStatus
 from dispatch.signal.models import SignalFilterAction, SignalInstance, SignalInstanceCreate
 from dispatch.workflow import flows as workflow_flows
-from dispatch.entity_type.models import EntityScopeEnum
 
 log = logging.getLogger(__name__)
 

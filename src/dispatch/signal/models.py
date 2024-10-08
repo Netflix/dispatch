@@ -1,15 +1,15 @@
 import uuid
 from datetime import datetime
-from typing import List, Optional, Any
+from typing import Any, List, Optional
 
 from pydantic import Field
 from sqlalchemy import (
+    JSON,
     Boolean,
     Column,
     DateTime,
     ForeignKey,
     Integer,
-    JSON,
     PrimaryKeyConstraint,
     String,
     Table,
@@ -24,23 +24,21 @@ from dispatch.case.models import CaseReadMinimal
 from dispatch.case.priority.models import CasePriority, CasePriorityRead
 from dispatch.case.type.models import CaseType, CaseTypeRead
 from dispatch.data.source.models import SourceBase
-from dispatch.entity_type.models import EntityType
-from dispatch.project.models import ProjectRead
-
 from dispatch.database.core import Base
 from dispatch.entity.models import EntityRead
-from dispatch.entity_type.models import EntityTypeRead
-from dispatch.tag.models import TagRead
+from dispatch.entity_type.models import EntityType, EntityTypeRead
 from dispatch.enums import DispatchEnum
 from dispatch.models import (
     DispatchBase,
     EvergreenMixin,
     NameStr,
+    Pagination,
     PrimaryKey,
     ProjectMixin,
     TimeStampMixin,
-    Pagination,
 )
+from dispatch.project.models import ProjectRead
+from dispatch.tag.models import TagRead
 from dispatch.workflow.models import WorkflowRead
 
 
@@ -287,6 +285,10 @@ class SignalEngagementCreate(SignalEngagementBase):
 
 
 class SignalEngagementRead(SignalEngagementBase):
+    id: PrimaryKey
+
+
+class SignalEngagementUpdate(SignalEngagementBase):
     id: PrimaryKey
 
 

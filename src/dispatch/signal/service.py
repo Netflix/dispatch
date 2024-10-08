@@ -36,6 +36,7 @@ from .models import (
     SignalEngagement,
     SignalEngagementCreate,
     SignalEngagementRead,
+    SignalEngagementUpdate,
     SignalFilter,
     SignalFilterAction,
     SignalFilterCreate,
@@ -51,32 +52,6 @@ from .models import (
 log = logging.getLogger(__name__)
 
 
-def create_signal_engagement(
-    *, db_session: Session, creator: DispatchUser, signal_engagement_in: SignalEngagementCreate
-) -> SignalEngagement:
-    """Creates a new signal filter."""
-    project = project_service.get_by_name_or_raise(
-        db_session=db_session, project_in=signal_engagement_in.project
-    )
-
-    entity_type = entity_type_service.get(
-        db_session=db_session, entity_type_id=signal_engagement_in.entity_type.id
-    )
-
-    signal_engagement = SignalEngagement(
-        name=signal_engagement_in.name,
-        description=signal_engagement_in.description,
-        message=signal_engagement_in.message,
-        require_mfa=signal_engagement_in.require_mfa,
-        entity_type=entity_type,
-        creator=creator,
-        project=project,
-    )
-    db_session.add(signal_engagement)
-    db_session.commit()
-    return signal_engagement
-
-
 def get_signal_engagement(
     *, db_session: Session, signal_engagement_id: int
 ) -> Optional[SignalEngagement]:
@@ -85,18 +60,6 @@ def get_signal_engagement(
         db_session.query(SignalEngagement)
         .filter(SignalEngagement.id == signal_engagement_id)
         .one_or_none()
-    )
-
-
-def get_all_by_entity_type(*, db_session: Session, entity_type_id: int) -> list[SignalInstance]:
-    """Fetches all signal instances associated with a given entity type."""
-    return (
-        db_session.query(SignalInstance)
-        .join(SignalInstance.signal)
-        .join(assoc_signal_entity_types)
-        .join(EntityType)
-        .filter(assoc_signal_entity_types.c.entity_type_id == entity_type_id)
-        .all()
     )
 
 
@@ -134,6 +97,66 @@ def get_signal_engagement_by_name_or_raise(
             model=SignalEngagementRead,
         )
     return signal_engagement
+
+
+def create_signal_engagement(
+    *, db_session: Session, creator: DispatchUser, signal_engagement_in: SignalEngagementCreate
+) -> SignalEngagement:
+    """Creates a new signal engagement."""
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=signal_engagement_in.project
+    )
+
+    entity_type = entity_type_service.get(
+        db_session=db_session, entity_type_id=signal_engagement_in.entity_type.id
+    )
+
+    signal_engagement = SignalEngagement(
+        name=signal_engagement_in.name,
+        description=signal_engagement_in.description,
+        message=signal_engagement_in.message,
+        require_mfa=signal_engagement_in.require_mfa,
+        entity_type=entity_type,
+        creator=creator,
+        project=project,
+    )
+    db_session.add(signal_engagement)
+    db_session.commit()
+    return signal_engagement
+
+
+def update_signal_engagement(
+    *,
+    db_session: Session,
+    signal_engagement: SignalEngagement,
+    signal_engagement_in: SignalEngagementUpdate,
+) -> SignalEngagement:
+    """Updates an existing signal engagement."""
+    signal_engagement_data = signal_engagement.dict()
+    update_data = signal_engagement_in.dict(
+        skip_defaults=True,
+        exclude={},
+    )
+
+    for field in signal_engagement_data:
+        if field in update_data:
+            setattr(signal_engagement, field, update_data[field])
+
+    db_session.add(signal_engagement)
+    db_session.commit()
+    return signal_engagement
+
+
+def get_all_by_entity_type(*, db_session: Session, entity_type_id: int) -> list[SignalInstance]:
+    """Fetches all signal instances associated with a given entity type."""
+    return (
+        db_session.query(SignalInstance)
+        .join(SignalInstance.signal)
+        .join(assoc_signal_entity_types)
+        .join(EntityType)
+        .filter(assoc_signal_entity_types.c.entity_type_id == entity_type_id)
+        .all()
+    )
 
 
 def create_signal_instance(*, db_session: Session, signal_instance_in: SignalInstanceCreate):
@@ -347,6 +370,7 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
             exclude={
                 "case_priority",
                 "case_type",
+                "engagements",
                 "entity_types",
                 "filters",
                 "oncall_service",

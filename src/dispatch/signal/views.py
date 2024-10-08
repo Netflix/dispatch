@@ -1,12 +1,11 @@
 import logging
 from typing import Union
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response, status, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, Response, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-
 from sqlalchemy.exc import IntegrityError
 
-from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
+from dispatch.auth.permissions import PermissionsDependency, SensitiveProjectActionPermission
 from dispatch.auth.service import CurrentUser
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
@@ -21,6 +20,7 @@ from .models import (
     SignalEngagementCreate,
     SignalEngagementPagination,
     SignalEngagementRead,
+    SignalEngagementUpdate,
     SignalFilterCreate,
     SignalFilterPagination,
     SignalFilterRead,
@@ -40,8 +40,10 @@ from .service import (
     delete_signal_filter,
     get,
     get_by_primary_or_external_id,
+    get_signal_engagement,
     get_signal_filter,
     update,
+    update_signal_engagement,
     update_signal_filter,
 )
 
@@ -127,12 +129,14 @@ def get_signal_engagements(common: CommonParameters):
 
 
 @router.get("/engagements/{engagement_id}", response_model=SignalEngagementRead)
-def get_signal_engagement(
+def get_engagement(
     db_session: DbSession,
     signal_engagement_id: PrimaryKey,
 ):
     """Gets a signal engagement by its id."""
-    engagement = get(db_session=db_session, signal_engagement_id=signal_engagement_id)
+    engagement = get_signal_engagement(
+        db_session=db_session, signal_engagement_id=signal_engagement_id
+    )
     if not engagement:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -164,6 +168,46 @@ def create_engagement(
         ) from None
 
 
+@router.put(
+    "/engagements/{signal_engagement_id}",
+    response_model=SignalEngagementRead,
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+)
+def update_engagement(
+    db_session: DbSession,
+    signal_engagement_id: PrimaryKey,
+    signal_engagement_in: SignalEngagementUpdate,
+):
+    """Updates an existing signal engagement."""
+    signal_engagement = get_signal_engagement(
+        db_session=db_session, signal_engagement_id=signal_engagement_id
+    )
+    if not signal_engagement:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A signal engagement with this id does not exist."}],
+        )
+
+    try:
+        signal_engagement = update_signal_engagement(
+            db_session=db_session,
+            signal_engagement=signal_engagement,
+            signal_engagement_in=signal_engagement_in,
+        )
+    except IntegrityError:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    ExistsError(msg="A signal engagement with this name already exists."),
+                    loc="name",
+                )
+            ],
+            model=SignalEngagementUpdate,
+        ) from None
+
+    return signal_engagement
+
+
 @router.post("/filters", response_model=SignalFilterRead)
 def create_filter(
     db_session: DbSession,
@@ -188,7 +232,7 @@ def create_filter(
 
 @router.put(
     "/filters/{signal_filter_id}",
-    response_model=SignalRead,
+    response_model=SignalFilterRead,
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_filter(

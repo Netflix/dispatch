@@ -105,6 +105,7 @@ class SlackConversationPlugin(ConversationPlugin):
                     channel_id=conversation_id,
                     db_session=db_session,
                     client=client,
+                    config=self.configuration,
                 ):
                     signal_response = send_message(
                         client=client,
