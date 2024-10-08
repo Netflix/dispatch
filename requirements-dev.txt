@@ -32,7 +32,7 @@ executing==2.0.1
     #   stack-data
 factory-boy==3.3.1
     # via -r requirements-dev.in
-faker==30.0.0
+faker==30.3.0
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -99,7 +99,9 @@ traitlets==5.14.1
     #   ipython
     #   matplotlib-inline
 typing-extensions==4.10.0
-    # via ipython
+    # via
+    #   faker
+    #   ipython
 virtualenv==20.25.0
     # via pre-commit
 vulture==2.12
