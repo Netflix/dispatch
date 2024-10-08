@@ -361,9 +361,12 @@ def create_genai_signal_analysis_message(
     for related_case in related_cases:
         historical_context.append("<case>")
         historical_context.append(f"<case_name>{related_case.name}</case_name>")
-        historical_context.append(f"<resolution>{related_case.resolution}</resolution")
+        historical_context.append(f"<case_resolution>{related_case.resolution}</case_resolution")
         historical_context.append(
-            f"<resolution_reason>{related_case.resolution_reason}</resolution_reason>"
+            f"<case_resolution_reason>{related_case.resolution_reason}</case_resolution_reason>"
+        )
+        historical_context.append(
+            f"<case_alert_data>{related_case.signal_instances[0].raw}</case_alert_data>"
         )
 
         # we fetch Slack messages for the related case
@@ -378,7 +381,7 @@ def create_genai_signal_analysis_message(
                     if dispatch_slack_service.is_user(config=config, user_id=message.get("user")):
                         # we only include messages from users
                         historical_context.append(
-                            f"<slack_message>{message['text']}</slack_message>"
+                            f"<case_slack_message>{message['text']}</case_slack_message>"
                         )
             except SlackApiError as e:
                 log.error(
