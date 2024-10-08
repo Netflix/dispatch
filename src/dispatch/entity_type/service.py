@@ -1,11 +1,9 @@
-import json
 import logging
 from typing import Optional
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.orm import Query, Session
 from jsonpath_ng import parse
-from jsonpath_ng.exceptions import JsonPathLexerError
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 from dispatch.signal import service as signal_service
@@ -73,15 +71,7 @@ def create(*, db_session: Session, entity_type_in: EntityTypeCreate) -> EntityTy
         signals.append(signal)
 
     entity_type.signals = signals
-    entity_type.jpath = ""
-
-    try:
-        parse(entity_type_in.jpath)
-        entity_type.jpath = entity_type_in.jpath
-    except JsonPathLexerError:
-        logger.error(
-            f"Error in EntityType creation. Failed to parse jPath: {entity_type_in.jpath}. The jPath field will be skipped."
-        )
+    set_jpath(entity_type, entity_type_in)
 
     db_session.add(entity_type)
     db_session.commit()
@@ -120,15 +110,8 @@ def update(
         signals.append(signal)
 
     entity_type.signals = signals
-    entity_type.jpath = ""
 
-    try:
-        parse(entity_type_in.jpath)
-        entity_type.jpath = entity_type_in.jpath
-    except JsonPathLexerError:
-        logger.error(
-            f"Error in EntityType creation. Failed to parse jPath: {entity_type_in.jpath}. The jPath field will be skipped."
-        )
+    set_jpath(entity_type, entity_type_in)
 
     db_session.commit()
     return entity_type
@@ -139,3 +122,14 @@ def delete(*, db_session: Session, entity_type_id: int) -> None:
     entity_type = db_session.query(EntityType).filter(EntityType.id == entity_type_id).one()
     db_session.delete(entity_type)
     db_session.commit()
+
+
+def set_jpath(entity_type: EntityType, entity_type_in: EntityTypeCreate):
+    entity_type.jpath = ""
+    try:
+        parse(entity_type_in.jpath)
+        entity_type.jpath = entity_type_in.jpath
+    except Exception:
+        logger.error(
+            f"Failed to parse jPath: {entity_type_in.jpath}. The jPath field will be skipped."
+        )
