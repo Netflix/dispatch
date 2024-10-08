@@ -13,6 +13,9 @@
         <v-list-item>
           <project-combobox v-model="local_project" label="Projects" />
         </v-list-item>
+        <v-list-item>
+          <service-select v-model="local_service" label="Oncall service" />
+        </v-list-item>
       </v-list>
       <v-card-actions>
         <v-spacer />
@@ -27,12 +30,14 @@ import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
 
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
+import ServiceSelect from "@/service/ServiceSelect.vue"
 
 export default {
   name: "ServiceFeedbackTableFilterDialog",
 
   components: {
     ProjectCombobox,
+    ServiceSelect,
   },
 
   props: {
@@ -48,14 +53,18 @@ export default {
     return {
       display: false,
       local_project: this.projects,
+      local_service: null,
     }
   },
 
   computed: {
-    ...mapFields("service_feedback", ["table.options.filters.project"]),
+    ...mapFields("service_feedback", [
+      "table.options.filters.project",
+      "table.options.filters.schedule",
+    ]),
 
     numFilters: function () {
-      return sum([this.project.length])
+      return sum([this.project.length, this.schedule ? this.schedule.length : 0])
     },
   },
 
@@ -63,7 +72,11 @@ export default {
     applyFilters() {
       // we set the filter values
       this.project = this.local_project
-
+      if (this.local_service) {
+        this.schedule = this.local_service.map((s) => s.external_id)
+      } else {
+        this.schedule = null
+      }
       // we close the dialog
       this.display = false
     },
