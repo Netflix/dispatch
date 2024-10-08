@@ -21,6 +21,11 @@ def get_by_external_id(*, db_session, external_id: str) -> Optional[Service]:
     return db_session.query(Service).filter(Service.external_id == external_id).first()
 
 
+def get_all_by_external_ids(*, db_session, external_ids: List[str]) -> Optional[List[Service]]:
+    """Gets a service by external id (e.g. PagerDuty service id) and project id."""
+    return db_session.query(Service).filter(Service.external_id.in_(external_ids)).all()
+
+
 def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Service]:
     """Gets a service by its name."""
     return (

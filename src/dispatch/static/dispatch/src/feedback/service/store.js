@@ -3,6 +3,7 @@ import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import ServiceFeedbackApi from "@/feedback/service/api"
+import ServiceApi from "@/service/api"
 
 const getDefaultSelectedState = () => {
   return {
@@ -55,9 +56,19 @@ const actions = {
     )
     return ServiceFeedbackApi.getAll(params)
       .then((response) => {
-        commit("SET_TABLE_LOADING", false)
-        commit("SET_TABLE_ROWS", response.data)
-        console.log(`The response data is JSON: ${JSON.stringify(response.data)}`)
+        // hydrate with service name
+        const uniqueExternalIds = [...new Set(response.data.items.map((f) => f.schedule))]
+        ServiceApi.getAllByIds(uniqueExternalIds).then((services) => {
+          response.data.items.forEach((f) => {
+            let service = services.data.find((s) => s.external_id === f.schedule)
+            if (service) {
+              f.service = service.name
+            }
+          })
+          commit("SET_TABLE_LOADING", false)
+          commit("SET_TABLE_ROWS", response.data)
+          console.log(`The response data is JSON: ${JSON.stringify(response.data)}`)
+        })
       })
       .catch(() => {
         commit("SET_TABLE_LOADING", false)

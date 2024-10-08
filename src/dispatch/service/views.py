@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Body, HTTPException, status
+from fastapi import APIRouter, Body, HTTPException, status, Query
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from typing import List
 
 from sqlalchemy.exc import IntegrityError
 
@@ -9,7 +10,14 @@ from dispatch.exceptions import ExistsError
 from dispatch.models import PrimaryKey
 
 from .models import ServiceCreate, ServicePagination, ServiceRead, ServiceUpdate
-from .service import get, create, update, delete, get_by_external_id_and_project_name
+from .service import (
+    get,
+    create,
+    update,
+    delete,
+    get_by_external_id_and_project_name,
+    get_all_by_external_ids,
+)
 
 
 router = APIRouter()
@@ -19,6 +27,15 @@ router = APIRouter()
 def get_services(common: CommonParameters):
     """Retrieves all services."""
     return search_filter_sort_paginate(model="Service", **common)
+
+
+@router.get("/externalids", response_model=List[ServiceRead])
+def get_services_by_external_ids(
+    db_session: DbSession,
+    ids: List[str] = Query(..., alias="ids[]"),
+):
+    """Retrieves all services given list of external ids."""
+    return get_all_by_external_ids(db_session=db_session, external_ids=ids)
 
 
 @router.post("", response_model=ServiceRead)

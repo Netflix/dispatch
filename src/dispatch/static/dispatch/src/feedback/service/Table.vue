@@ -70,9 +70,9 @@
                 {{ item.project.name }}
               </v-chip>
             </template>
-            <template #item.schedule="{ item }">
+            <template #item.service="{ item }">
               <v-chip size="small" :color="item.project.color">
-                {{ item.schedule }}
+                {{ item.service }}
               </v-chip>
             </template>
             <template #item.data-table-actions="{ item }">
@@ -124,7 +124,7 @@ export default {
         { title: "Rating", value: "rating", sortable: true },
         { title: "Feedback", value: "feedback", sortable: true },
         { title: "Details", value: "details", sortable: true },
-        { title: "Service", value: "schedule", sortable: false },
+        { title: "Service", value: "service", sortable: false },
         { title: "Project", value: "project.name", sortable: false },
         { title: "Created At", value: "created_at", sortable: true },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
