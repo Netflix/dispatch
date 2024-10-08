@@ -7,6 +7,10 @@ export default {
     return API.get(`${resource}`, { params: { ...options } })
   },
 
+  getAllByIds(ids) {
+    return API.get(`${resource}/externalids`, { params: { ids } })
+  },
+
   get(serviceId) {
     return API.get(`${resource}/${serviceId}`)
   },
