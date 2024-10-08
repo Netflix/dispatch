@@ -48,3 +48,25 @@ def test_delete(session, entity_type):
 
     delete(db_session=session, entity_type_id=entity_type.id)
     assert not get(db_session=session, entity_type_id=entity_type.id)
+
+
+def test_set_jpath(entity_type):
+    from dispatch.entity_type.service import set_jpath
+    from dispatch.entity_type.models import EntityTypeCreate
+
+    entity_type_in = EntityTypeCreate.from_orm(entity_type)
+    entity_type_in.jpath = "$.foo.bar[0].foobar"
+
+    set_jpath(entity_type, entity_type_in)
+    assert entity_type.jpath == "$.foo.bar[0].foobar"
+
+
+def test_set_jpath__fail(entity_type):
+    from dispatch.entity_type.service import set_jpath
+    from dispatch.entity_type.models import EntityTypeCreate
+
+    entity_type_in = EntityTypeCreate.from_orm(entity_type)
+    entity_type_in.jpath = "?"
+
+    set_jpath(entity_type, entity_type_in)
+    assert entity_type.jpath == ""
