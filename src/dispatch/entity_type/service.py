@@ -1,3 +1,5 @@
+import json
+import logging
 from typing import Optional
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
@@ -7,6 +9,8 @@ from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 from dispatch.signal import service as signal_service
 from .models import EntityType, EntityTypeCreate, EntityTypeRead, EntityTypeUpdate
+
+logger = logging.getLogger(__name__)
 
 
 def get(*, db_session, entity_type_id: int) -> Optional[EntityType]:
@@ -58,7 +62,9 @@ def create(*, db_session: Session, entity_type_in: EntityTypeCreate) -> EntityTy
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=entity_type_in.project
     )
-    entity_type = EntityType(**entity_type_in.dict(exclude={"project", "signals"}), project=project)
+    entity_type = EntityType(
+        **entity_type_in.dict(exclude={"project", "signals", "jpath"}), project=project
+    )
 
     signals = []
     for signal in entity_type_in.signals:
@@ -66,6 +72,12 @@ def create(*, db_session: Session, entity_type_in: EntityTypeCreate) -> EntityTy
         signals.append(signal)
 
     entity_type.signals = signals
+
+    try:
+        json.loads(entity_type_in.jpath)
+        entity_type.jpath = entity_type_in.jpath
+    except json.JSONDecodeError:
+        logger.error(f"Invalid jpath: {entity_type_in.jpath}. Skipping jpath field.")
 
     db_session.add(entity_type)
     db_session.commit()
@@ -92,7 +104,7 @@ def update(
 ) -> EntityType:
     """Updates an entity type."""
     entity_type_data = entity_type.dict()
-    update_data = entity_type_in.dict(skip_defaults=True)
+    update_data = entity_type_in.dict(exclude={"jpath"}, skip_defaults=True)
 
     for field in entity_type_data:
         if field in update_data:
@@ -104,6 +116,12 @@ def update(
         signals.append(signal)
 
     entity_type.signals = signals
+
+    try:
+        json.loads(entity_type_in.jpath)
+        entity_type.jpath = entity_type_in.jpath
+    except json.JSONDecodeError:
+        logger.error(f"Invalid jpath: {entity_type_in.jpath}. Skipping update.")
 
     db_session.commit()
     return entity_type
