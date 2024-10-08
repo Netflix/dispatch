@@ -104,7 +104,7 @@ typing-extensions==4.10.0
     #   ipython
 virtualenv==20.25.0
     # via pre-commit
-vulture==2.12
+vulture==2.13
     # via -r requirements-dev.in
 wcwidth==0.2.12
     # via prompt-toolkit
