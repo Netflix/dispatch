@@ -110,6 +110,7 @@ class SlackConversationPlugin(ConversationPlugin):
                 if message:
                     case.genai_analysis = message
 
+                if message_blocks:
                     signal_response = send_message(
                         client=client,
                         conversation_id=conversation_id,
