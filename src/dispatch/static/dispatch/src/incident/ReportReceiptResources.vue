@@ -22,7 +22,10 @@
             <v-list-item>
               <v-list-item-title>Priority</v-list-item-title>
               <v-list-item-subtitle class="text-right">
-                <incident-priority :priority="incident_priority.name" />
+                <incident-priority
+                  :priority="incident_priority.name"
+                  :color="incident_priority.color"
+                />
               </v-list-item-subtitle>
             </v-list-item>
             <v-list-item>

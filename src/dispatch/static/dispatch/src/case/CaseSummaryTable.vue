@@ -1,7 +1,7 @@
 <template>
   <v-data-table :headers="headers" :items="items" :loading="loading">
-    <template #item.case_priority.name="{ value }">
-      <case-priority :priority="value" />
+    <template #item.case_priority.name="{ item, value }">
+      <case-priority :priority="value" :color="item.case_priority.color" />
     </template>
     <template #item.status="{ item, value }">
       <case-status :status="value" :id="item.id" />
