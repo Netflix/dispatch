@@ -83,7 +83,7 @@
                 <template #item.incident_priority.name="{ item }">
                   <incident-priority
                     :priority="item.incident.incident_priority.name"
-                    :color="item.incident_priority.color"
+                    :color="item.incident.incident_priority.color"
                   />
                 </template>
                 <template #item.creator.individual_contact.name="{ item }">
