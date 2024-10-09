@@ -78,10 +78,16 @@
                 :loading="previewRowsLoading"
               >
                 <template #item.case_severity.name="{ item }">
-                  <case-severity :severity="item.case_severity.name" />
+                  <case-severity
+                    :severity="item.case_severity.name"
+                    :color="item.case_severity.color"
+                  />
                 </template>
                 <template #item.case_priority.name="{ item }">
-                  <case-priority :priority="item.case_priority.name" />
+                  <case-priority
+                    :priority="item.case_priority.name"
+                    :color="item.case_priority.color"
+                  />
                 </template>
                 <template #item.status="{ item }">
                   <case-status :status="item.status" :id="item.id" />

@@ -1,7 +1,7 @@
 <template>
   <v-data-table hover :headers="headers" :items="items" :loading="loading">
-    <template #item.incident_priority.name="{ value }">
-      <incident-priority :priority="value" />
+    <template #item.incident_priority.name="{ item, value }">
+      <incident-priority :priority="value" :color="item.incident_priority.color" />
     </template>
     <template #item.status="{ item, value }">
       <incident-status :status="value" :id="item.id" />
