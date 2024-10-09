@@ -1,7 +1,7 @@
 """Adds tickets to tasks and ticket metadata to incident types
 
 Revision ID: b8c1a8a4d957
-Revises: f5107ce190fc
+Revises: b057c079c2d5
 Create Date: 2024-10-05 09:06:34.177407
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "b8c1a8a4d957"
-down_revision = "f5107ce190fc"
+down_revision = "b057c079c2d5"
 branch_labels = None
 depends_on = None
 
