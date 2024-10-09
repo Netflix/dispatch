@@ -23,6 +23,7 @@ declare module '@vue/runtime-core' {
     DefaultLayout: typeof import('./src/components/layouts/DefaultLayout.vue')['default']
     DMenu: typeof import('./src/components/DMenu.vue')['default']
     DTooltip: typeof import('./src/components/DTooltip.vue')['default']
+    GenaiAnalysisDisplay: typeof import('./src/components/GenaiAnalysisDisplay.vue')['default']
     IconPickerInput: typeof import('./src/components/IconPickerInput.vue')['default']
     InfoWidget: typeof import('./src/components/InfoWidget.vue')['default']
     Loading: typeof import('./src/components/Loading.vue')['default']
