@@ -65,11 +65,11 @@
               'items-per-page-options': [10, 25, 50, 100],
             }"
           >
-            <template #item.case_severity.name="{ value }">
-              <case-severity :severity="value" />
+            <template #item.case_severity.name="{ item, value }">
+              <case-severity :severity="value" :color="item.case_severity.color" />
             </template>
-            <template #item.case_priority.name="{ value }">
-              <case-priority :priority="value" />
+            <template #item.case_priority.name="{ item, value }">
+              <case-priority :priority="value" :color="item.case_priority.color" />
             </template>
             <template #item.status="{ item }">
               <case-status
