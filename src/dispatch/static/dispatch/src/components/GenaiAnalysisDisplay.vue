@@ -8,13 +8,13 @@
         </h3>
         <div v-if="isObject(value)">
           <!-- Render each sub-value with formatText to handle links and code formatting -->
-          <div
+          <span
             v-for="(subValue, subKey) in value"
             :key="subKey"
             v-html="formatText(subValue)"
-          ></div>
+          ></span>
         </div>
-        <div v-else v-html="formatText(value)"></div>
+        <span v-else v-html="formatText(value)"></span>
       </div>
     </div>
     <div v-else>
@@ -26,8 +26,8 @@
 <script setup lang="ts">
 import { defineProps } from "vue"
 
-// Accept the `genai_analysis` data as a prop
-const props = defineProps({
+// Define the `analysis` prop
+defineProps({
   analysis: {
     type: Object,
     required: false,
