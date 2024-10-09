@@ -319,6 +319,10 @@ def incident_report_weekly(db_session: Session, project: Project):
         except Exception as e:
             log.exception(e)
 
+    # it's possible all incidents were restricted, so exit instead of sending an empty report
+    if not items_grouped:
+        return
+
     notification_kwargs = {
         "items_grouped": items_grouped,
         "items_grouped_template": items_grouped_template,
