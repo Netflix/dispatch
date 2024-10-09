@@ -25,6 +25,7 @@
 
 <script setup lang="ts">
 import { defineProps } from "vue"
+import DOMPurify from "dompurify"
 
 // Define the `analysis` prop
 defineProps({
@@ -50,7 +51,8 @@ function formatText(text) {
   // Convert `code` format to <code>code</code> for inline code styling
   formattedText = formattedText.replace(/`([^`]+)`/g, "<code>$1</code>")
 
-  return formattedText
+  // Sanitize the formatted text to avoid XSS
+  return DOMPurify.sanitize(formattedText)
 }
 </script>
 
