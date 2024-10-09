@@ -14,17 +14,18 @@ from sqlalchemy import (
     Table,
     UniqueConstraint,
 )
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType, observes
 
+from dispatch.case.priority.models import CasePriorityBase, CasePriorityCreate, CasePriorityRead
+from dispatch.case.severity.models import CaseSeverityBase, CaseSeverityCreate, CaseSeverityRead
+from dispatch.case.type.models import CaseTypeBase, CaseTypeCreate, CaseTypeRead
 from dispatch.case_cost.models import (
     CaseCostRead,
     CaseCostUpdate,
 )
-from dispatch.case.priority.models import CasePriorityBase, CasePriorityCreate, CasePriorityRead
-from dispatch.case.severity.models import CaseSeverityBase, CaseSeverityCreate, CaseSeverityRead
-from dispatch.case.type.models import CaseTypeBase, CaseTypeCreate, CaseTypeRead
 from dispatch.conversation.models import ConversationRead
 from dispatch.database.core import Base
 from dispatch.document.models import Document, DocumentRead
@@ -37,10 +38,10 @@ from dispatch.messaging.strings import CASE_RESOLUTION_DEFAULT
 from dispatch.models import (
     DispatchBase,
     NameStr,
+    Pagination,
     PrimaryKey,
     ProjectMixin,
     TimeStampMixin,
-    Pagination,
 )
 from dispatch.participant.models import (
     Participant,
@@ -48,7 +49,6 @@ from dispatch.participant.models import (
     ParticipantReadMinimal,
     ParticipantUpdate,
 )
-
 from dispatch.storage.models import StorageRead
 from dispatch.tag.models import TagRead
 from dispatch.ticket.models import TicketRead
@@ -88,13 +88,12 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     visibility = Column(String, default=Visibility.open, nullable=False)
     participants_team = Column(String)
     participants_location = Column(String)
-
     reported_at = Column(DateTime, default=datetime.utcnow)
     triage_at = Column(DateTime)
     escalated_at = Column(DateTime)
     closed_at = Column(DateTime)
-
     dedicated_channel = Column(Boolean, default=False)
+    genai_analysis = Column(JSONB, default={}, nullable=False, server_default="{}")
 
     search_vector = Column(
         TSVectorType(
@@ -302,20 +301,21 @@ class CaseRead(CaseBase):
     case_severity: CaseSeverityRead
     case_type: CaseTypeRead
     closed_at: Optional[datetime] = None
+    conversation: Optional[ConversationRead] = None
     created_at: Optional[datetime] = None
     documents: Optional[List[DocumentRead]] = []
     duplicates: Optional[List[CaseReadMinimal]] = []
     escalated_at: Optional[datetime] = None
     events: Optional[List[EventRead]] = []
+    genai_analysis: Optional[dict[str, Any]] = {}
     groups: Optional[List[GroupRead]] = []
     incidents: Optional[List[IncidentReadMinimal]] = []
-    conversation: Optional[ConversationRead] = None
     name: Optional[NameStr]
+    participants: Optional[List[ParticipantRead]] = []
     project: ProjectRead
     related: Optional[List[CaseReadMinimal]] = []
-    reporter: Optional[ParticipantRead]
     reported_at: Optional[datetime] = None
-    participants: Optional[List[ParticipantRead]] = []
+    reporter: Optional[ParticipantRead]
     signal_instances: Optional[List[SignalInstanceRead]] = []
     storage: Optional[StorageRead] = None
     tags: Optional[List[TagRead]] = []
