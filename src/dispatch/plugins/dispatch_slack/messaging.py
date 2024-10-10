@@ -134,6 +134,10 @@ def get_incident_conversation_command_message(
             "response_type": "ephemeral",
             "text": "Opening a dialog to create a new incident task...",
         },
+        config.slack_command_create_case: {
+            "response_type": "ephemeral",
+            "text": "Opening a dialog to create a new case...",
+        },
     }
 
     return command_messages.get(command_string, default)
