@@ -37,7 +37,6 @@
 </template>
 
 <script>
-import { cloneDeep } from "lodash"
 import SearchUtils from "@/search/utils"
 import CaseTypeApi from "@/case/type/api"
 
