@@ -1,6 +1,6 @@
 <template>
   <v-select
-    v-model="incident_type"
+    v-model="selectedIncidentType"
     :items="items"
     :menu-props="{ maxHeight: '400' }"
     item-title="name"
@@ -32,7 +32,6 @@
 
 <script>
 import { cloneDeep } from "lodash"
-
 import SearchUtils from "@/search/utils"
 import IncidentTypeApi from "@/incident/type/api"
 
@@ -42,19 +41,15 @@ export default {
   props: {
     modelValue: {
       type: Object,
-      default: function () {
-        return {}
-      },
+      default: () => ({}),
     },
     project: {
-      type: [Object],
+      type: Object,
       default: null,
     },
     label: {
       type: String,
-      default: function () {
-        return "Type"
-      },
+      default: () => "Type",
     },
   },
 
@@ -65,6 +60,7 @@ export default {
       more: false,
       numItems: 5,
       error: null,
+      selectedIncidentType: null,
       is_type_in_project: () => {
         this.validateType()
         return this.error
@@ -72,13 +68,20 @@ export default {
     }
   },
 
-  computed: {
-    incident_type: {
-      get() {
-        return cloneDeep(this.modelValue)
+  watch: {
+    modelValue: {
+      immediate: true,
+      handler(newValue) {
+        this.selectedIncidentType = cloneDeep(newValue)
       },
-      set(value) {
-        this.$emit("update:modelValue", value)
+    },
+    selectedIncidentType(newValue) {
+      this.$emit("update:modelValue", newValue)
+      this.validateType()
+    },
+    project: {
+      handler() {
+        this.fetchData()
         this.validateType()
       },
     },
@@ -91,7 +94,7 @@ export default {
     },
     validateType() {
       const project_id = this.project?.id || 0
-      const in_project = this.incident_type?.project?.id == project_id
+      const in_project = this.selectedIncidentType?.project?.id == project_id
       if (in_project) {
         this.error = true
       } else {
@@ -137,14 +140,6 @@ export default {
 
   created() {
     this.fetchData()
-    this.$watch(
-      (vm) => [vm.project],
-      () => {
-        this.fetchData()
-        this.validateType()
-        this.$emit("update:modelValue", this.incident_type)
-      }
-    )
   },
 }
 </script>
