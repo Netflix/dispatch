@@ -6,6 +6,8 @@ services:
     ports:
       - "5432:5432"
     environment:
+      # These are default credentials to help get started. 
+      # They are expected to be changed to properly secure the database 
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: dispatch
       POSTGRES_DB: dispatch
