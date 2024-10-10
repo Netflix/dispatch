@@ -151,8 +151,17 @@
                   v-model="description_service"
                 />
               </v-col>
+              <span class="text-body-1 text-medium-emphasis">Incident ticket plugin</span>
               <v-col cols="12">
-                <plugin-metadata-input v-model="plugin_metadata" :project="project" />
+                <plugin-metadata-input v-model="plugin_metadata" :project="project" type="ticket" />
+              </v-col>
+              <span class="text-body-1 text-medium-emphasis">Task ticket plugin</span>
+              <v-col cols="12">
+                <plugin-metadata-input
+                  v-model="task_plugin_metadata"
+                  :project="project"
+                  type="ticket"
+                />
               </v-col>
             </v-row>
           </v-container>
@@ -217,6 +226,7 @@ export default {
       "selected.default",
       "selected.channel_description",
       "selected.description_service",
+      "selected.task_plugin_metadata",
     ]),
     ...mapFields("incident_type", {
       default_incident_type: "selected.default",
