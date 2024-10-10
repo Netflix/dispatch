@@ -146,11 +146,9 @@ def update_incident_response_cost_for_incident_type(
 
 def calculate_response_cost(
     hourly_rate, total_response_time_seconds, incident_review_hours=0
-) -> int:
-    """Calculates and rounds up the incident response cost."""
-    return math.ceil(
-        ((total_response_time_seconds / SECONDS_IN_HOUR) + incident_review_hours) * hourly_rate
-    )
+) -> float:
+    """Calculates the incident response cost."""
+    return ((total_response_time_seconds / SECONDS_IN_HOUR) + incident_review_hours) * hourly_rate
 
 
 def get_default_incident_response_cost(
@@ -235,7 +233,7 @@ def fetch_incident_events(
 
 def calculate_incident_response_cost_with_cost_model(
     incident: Incident, db_session: SessionLocal
-) -> int:
+) -> float:
     """Calculates the cost of an incident using the incident's cost model.
 
     This function aggregates all new incident costs based on plugin activity since the last incident cost update.
@@ -246,7 +244,7 @@ def calculate_incident_response_cost_with_cost_model(
         db_session: The database session.
 
     Returns:
-        int: The incident response cost in dollars.
+        float: The incident response cost in dollars.
     """
 
     participants_total_response_time_seconds = 0
@@ -304,12 +302,12 @@ def calculate_incident_response_cost_with_cost_model(
         total_response_time_seconds=participants_total_response_time_seconds,
     )
 
-    return incident.total_cost + amount
+    return float(incident.total_cost) + amount
 
 
 def get_participant_role_time_seconds(
     incident: Incident, participant_role: ParticipantRole, start_at: datetime
-) -> int:
+) -> float:
     """Calculates the time spent by a participant in an incident role starting from a given time.
 
     The participant's time spent in the incident role is adjusted based on the role's engagement multiplier.
@@ -320,7 +318,7 @@ def get_participant_role_time_seconds(
         start_at: Only time spent after this will be considered.
 
     Returns:
-        int: The time spent by the participant in the incident role in seconds.
+        float: The time spent by the participant in the incident role in seconds.
     """
     if participant_role.renounced_at and participant_role.renounced_at < start_at:
         # skip calculating already-recorded activity
@@ -372,7 +370,7 @@ def get_participant_role_time_seconds(
     # TODO(mvilanova): adjust based on incident priority
     if participant_role_time_hours > HOURS_IN_DAY:
         days, hours = divmod(participant_role_time_hours, HOURS_IN_DAY)
-        participant_role_time_hours = math.ceil(((days * HOURS_IN_DAY) / 3) + hours)
+        participant_role_time_hours = ((days * HOURS_IN_DAY) / 3) + hours
 
     # we make the assumption that participants spend more or less time based on their role
     # and we adjust the time spent based on that
@@ -410,7 +408,7 @@ def get_total_participant_roles_time_seconds(incident: Incident, start_at: datet
 
 def calculate_incident_response_cost_with_classic_model(
     incident: Incident, db_session: SessionLocal, incident_review: bool = False
-) -> int:
+) -> float:
     """Calculates the cost of an incident using the classic incident cost model.
 
     This function aggregates all new incident costs since the last incident cost update. If this is the first time performing cost calculation for this incident, it computes the total costs from the incident's creation.
@@ -421,7 +419,7 @@ def calculate_incident_response_cost_with_classic_model(
         incident_review: Whether to add the incident review costs in this calculation.
 
     Returns:
-        int: The incident response cost in dollars.
+        float: The incident response cost in dollars.
     """
     last_update = incident.created_at
     incident_review_hours = 0
@@ -456,7 +454,7 @@ def calculate_incident_response_cost_with_classic_model(
         incident_review_hours=incident_review_hours,
     )
 
-    return incident_response_cost.amount + amount
+    return float(incident_response_cost.amount) + amount
 
 
 def calculate_incident_response_cost(
