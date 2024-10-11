@@ -36,13 +36,14 @@
                 clearable
                 required
                 name="owner"
+                :rules="[required_and_only_one]"
               />
             </v-col>
             <v-col cols="12">
               <assignee-combobox
                 v-model="assignees"
                 label="Assignee"
-                hint="The tasks current assignee"
+                hint="The task's current assignee"
                 clearable
                 required
                 name="assignees"

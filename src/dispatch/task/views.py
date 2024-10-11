@@ -8,7 +8,6 @@ from dispatch.common.utils.views import create_pydantic_include
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
-from dispatch.incident import service as incident_service
 
 from .enums import TaskStatus
 from .flows import send_task_notification
@@ -82,16 +81,7 @@ def create_ticket(
 
 
 @router.put("/{task_id}", response_model=TaskRead, tags=["tasks"])
-def update_task(db_session: DbSession, task_id: PrimaryKey, task_in_d: dict):
-    try:
-        incident = incident_service.get(db_session=db_session, incident_id=task_in_d["incident_id"])
-        task_in = TaskUpdate(**task_in_d.dict(exclude={"owner"}), incident=incident)
-        task_in.owner = task_in_d["owner"][0] if task_in_d["owner"] else None
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "Badly formatted task data."}],
-        ) from e
+def update_task(db_session: DbSession, task_id: PrimaryKey, task_in: TaskUpdate):
     """Updates an existing task."""
     task = get(db_session=db_session, task_id=task_id)
     if not task:

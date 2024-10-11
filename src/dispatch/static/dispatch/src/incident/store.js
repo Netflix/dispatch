@@ -11,6 +11,8 @@ import TaskApi from "@/task/api"
 import router from "@/router"
 import moment from "moment-timezone"
 
+import { cloneDeep } from "lodash"
+
 const getDefaultSelectedState = () => {
   return {
     cases: [],
@@ -386,7 +388,10 @@ const actions = {
     commit("SET_DIALOG_DELETE_EVENT", false)
   },
   updateExistingTask({ commit }) {
-    state.selected.currentTask.incident_id = state.selected.id
+    if (Array.isArray(state.selected.currentTask.owner)) {
+      state.selected.currentTask.owner = state.selected.currentTask.owner[0]
+    }
+    state.selected.currentTask.incident = cloneDeep(state.selected)
     TaskApi.update(state.selected.currentTask.id, state.selected.currentTask).then(() => {
       commit(
         "notification_backend/addBeNotification",
