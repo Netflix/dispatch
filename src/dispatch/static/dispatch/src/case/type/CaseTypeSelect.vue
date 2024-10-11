@@ -37,8 +37,6 @@
 </template>
 
 <script>
-import { cloneDeep } from "lodash"
-
 import SearchUtils from "@/search/utils"
 import CaseTypeApi from "@/case/type/api"
 
@@ -48,25 +46,19 @@ export default {
   props: {
     modelValue: {
       type: Object,
-      default: function () {
-        return {}
-      },
+      default: () => ({}),
     },
     project: {
-      type: [Object],
+      type: Object,
       default: null,
     },
     hint: {
       type: String,
-      default: function () {
-        return "Case Type to associate"
-      },
+      default: () => "Case Type to associate",
     },
     label: {
       type: String,
-      default: function () {
-        return "Case Type"
-      },
+      default: () => "Case Type",
     },
   },
 
@@ -80,6 +72,7 @@ export default {
       numItems: 40,
       error: null,
       categories: [],
+      selectedCaseType: null,
       is_type_in_project: () => {
         this.validateType()
         return this.error
@@ -90,9 +83,10 @@ export default {
   computed: {
     case_type: {
       get() {
-        return cloneDeep(this.modelValue)
+        return this.selectedCaseType || this.modelValue
       },
       set(value) {
+        this.selectedCaseType = value
         this.$emit("update:modelValue", value)
         this.validateType()
       },
@@ -130,7 +124,7 @@ export default {
     },
     fetchData() {
       this.error = null
-      this.loading = "error"
+      this.loading = true
 
       let filterOptions = {
         sortBy: ["name"],
@@ -182,6 +176,14 @@ export default {
         } else {
           this.more = false
         }
+
+        // Set the selected case type if it exists in the fetched items
+        if (this.modelValue && this.modelValue.id) {
+          const selectedItem = this.items.find((item) => item.id === this.modelValue.id)
+          if (selectedItem) {
+            this.selectedCaseType = selectedItem
+          }
+        }
       })
     },
   },
@@ -190,9 +192,18 @@ export default {
     search(val) {
       val && val !== this.select && this.fetchData()
     },
-    value(val) {
-      if (!val) return
-      this.items.push(val)
+    modelValue: {
+      handler(newValue) {
+        if (newValue && newValue.id) {
+          const selectedItem = this.items.find((item) => item.id === newValue.id)
+          if (selectedItem) {
+            this.selectedCaseType = selectedItem
+          }
+        } else {
+          this.selectedCaseType = null
+        }
+      },
+      immediate: true,
     },
     case_type(newCaseType) {
       if (newCaseType) {
