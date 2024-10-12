@@ -1,47 +1,42 @@
 <template>
   <v-select
-    v-model="case_type"
+    v-model="selectedIncidentType"
     :items="items"
     :menu-props="{ maxHeight: '400' }"
     item-title="name"
-    item-value="id"
     :label="label"
-    :hint="hint"
     return-object
     :loading="loading"
-    no-filter
     :error-messages="show_error"
     :rules="[is_type_in_project]"
-    clearable
   >
-    <template #item="data">
-      <v-list-subheader dense class="custom-subheader" v-if="data.item.raw.category">
-        {{ data.item.raw.category }}
-      </v-list-subheader>
-      <v-list-item v-bind="data.props" :title="null" v-if="!data.item.raw.category">
-        <v-list-item-title>{{ data.item.raw.name }}</v-list-item-title>
-        <v-list-item-subtitle class="truncate-text" :title="data.item.raw.description">
-          {{ data.item.raw.description }}
+    <template #item="{ props, item }">
+      <v-list-item v-bind="props" :title="null">
+        <v-list-item-title v-if="!project">
+          {{ item.raw.project.name }}/{{ item.raw.name }}
+        </v-list-item-title>
+        <v-list-item-title v-else>
+          {{ item.raw.name }}
+        </v-list-item-title>
+        <v-list-item-subtitle :title="item.raw.description">
+          {{ item.raw.description }}
         </v-list-item-subtitle>
       </v-list-item>
     </template>
     <template #append-item>
-      <v-list-item v-if="more" @click="loadMore()">
-        <v-list-item-subtitle> Load More </v-list-item-subtitle>
+      <v-list-item v-if="more" @click="loadMore">
+        <v-list-item-subtitle>Load More</v-list-item-subtitle>
       </v-list-item>
     </template>
-    <v-col cols="12">
-      <p>Conversation Target: {{ conversation_target }}</p>
-    </v-col>
   </v-select>
 </template>
 
 <script>
 import SearchUtils from "@/search/utils"
-import CaseTypeApi from "@/case/type/api"
+import IncidentTypeApi from "@/incident/type/api"
 
 export default {
-  name: "CaseTypeSelect",
+  name: "IncidentTypeSelect",
 
   props: {
     modelValue: {
@@ -52,27 +47,20 @@ export default {
       type: Object,
       default: null,
     },
-    hint: {
-      type: String,
-      default: () => "Case Type to associate",
-    },
     label: {
       type: String,
-      default: () => "Case Type",
+      default: () => "Type",
     },
   },
 
   data() {
     return {
-      conversation_target: null,
       loading: false,
       items: [],
-      search: null,
       more: false,
-      numItems: 40,
+      numItems: 5,
       error: null,
-      categories: [],
-      selectedCaseType: null,
+      lastProjectId: null,
       is_type_in_project: () => {
         this.validateType()
         return this.error
@@ -81,41 +69,35 @@ export default {
   },
 
   computed: {
-    case_type: {
+    selectedIncidentType: {
       get() {
-        return this.selectedCaseType || this.modelValue
+        if (!this.modelValue) return null
+        if (this.modelValue.id) {
+          return this.items.find((item) => item.id === this.modelValue.id) || null
+        }
+        if (this.modelValue.name) {
+          return this.items.find((item) => item.name === this.modelValue.name) || null
+        }
+        return null
       },
       set(value) {
-        this.selectedCaseType = value
         this.$emit("update:modelValue", value)
         this.validateType()
       },
     },
     show_error() {
-      let items_names = this.items.map((item) => item.name)
-      let selected_item = this.case_type?.name || ""
-      if (items_names.includes(selected_item) || selected_item == "") {
-        return null
-      }
-      return "Not a valid case type"
+      return null // Implement any specific error logic here if needed
     },
   },
 
   methods: {
     loadMore() {
-      this.numItems = this.numItems + 5
+      this.numItems += 5
       this.fetchData()
     },
     validateType() {
-      let in_project
-      if (this.project?.name) {
-        let project_name = this.project?.name || ""
-        in_project = this.case_type?.project?.name == project_name
-      } else {
-        let project_id = this.project?.id || 0
-        in_project = this.case_type?.project?.id == project_id
-      }
-
+      const project_id = this.project?.id || 0
+      const in_project = this.selectedIncidentType?.project?.id == project_id
       if (in_project) {
         this.error = true
       } else {
@@ -144,86 +126,41 @@ export default {
 
       filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
 
-      CaseTypeApi.getAll(filterOptions).then((response) => {
-        // re-sort items by oncall service
-        this.items = []
-        this.categories = []
-        let new_items = {}
-        response.data.items.forEach((item) => {
-          let category = "Team: " + (item.oncall_service?.name || "None")
-          new_items[category] = new_items[category] || []
-          new_items[category].push(item)
+      IncidentTypeApi.getAll(filterOptions)
+        .then((response) => {
+          this.items = response.data.items
+          this.total = response.data.total
+          this.more = this.items.length < this.total
         })
-        let keys = Object.keys(new_items)
-        // ensure Team: None is always at the end
-        keys.sort((a, b) => {
-          if (a === "Team: None") return 1
-          if (b === "Team: None") return -1
-          return a.localeCompare(b)
+        .catch((error) => {
+          console.error("Error fetching incident types:", error)
+          this.error = "Failed to load incident types"
         })
-        keys.forEach((category) => {
-          this.items.push({ category: category })
-          for (let item of new_items[category]) {
-            this.items.push(item)
-          }
+        .finally(() => {
+          this.loading = false
         })
-
-        this.total = response.data.total
-        this.loading = false
-
-        if (this.items.length < this.total) {
-          this.more = true
-        } else {
-          this.more = false
-        }
-
-        // Set the selected case type if it exists in the fetched items
-        if (this.modelValue && this.modelValue.id) {
-          const selectedItem = this.items.find((item) => item.id === this.modelValue.id)
-          if (selectedItem) {
-            this.selectedCaseType = selectedItem
-          }
-        }
-      })
+    },
+    resetSelection() {
+      this.$emit("update:modelValue", null)
     },
   },
 
   watch: {
-    search(val) {
-      val && val !== this.select && this.fetchData()
-    },
-    modelValue: {
-      handler(newValue) {
-        if (newValue && newValue.id) {
-          const selectedItem = this.items.find((item) => item.id === newValue.id)
-          if (selectedItem) {
-            this.selectedCaseType = selectedItem
-          }
-        } else {
-          this.selectedCaseType = null
+    project: {
+      handler(newProject) {
+        if (newProject?.id !== this.lastProjectId) {
+          this.lastProjectId = newProject?.id
+          this.resetSelection()
+          this.fetchData()
         }
+        this.validateType()
       },
-      immediate: true,
-    },
-    case_type(newCaseType) {
-      if (newCaseType) {
-        this.conversation_target = newCaseType.conversation_target
-      } else {
-        this.conversation_target = null
-      }
+      deep: true,
     },
   },
 
   created() {
     this.fetchData()
-    this.$watch(
-      (vm) => [vm.project],
-      () => {
-        this.fetchData()
-        this.validateType()
-        this.$emit("update:modelValue", this.case_type)
-      }
-    )
   },
 }
 </script>
