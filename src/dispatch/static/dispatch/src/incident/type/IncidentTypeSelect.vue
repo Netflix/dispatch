@@ -7,7 +7,7 @@
     :label="label"
     return-object
     :loading="loading"
-    :rules="[is_type_in_project]"
+    :rules="[validationRule]"
   >
     <template #item="{ props, item }">
       <v-list-item v-bind="props" :title="null">
@@ -23,15 +23,15 @@
       </v-list-item>
     </template>
     <template #append-item>
-      <v-list-item v-if="more" @click="loadMore()">
-        <v-list-item-subtitle> Load More </v-list-item-subtitle>
+      <v-list-item v-if="more" @click="loadMore">
+        <v-list-item-subtitle>Load More</v-list-item-subtitle>
       </v-list-item>
     </template>
   </v-select>
 </template>
 
 <script>
-import { cloneDeep } from "lodash"
+import { debounce } from "lodash"
 import SearchUtils from "@/search/utils"
 import IncidentTypeApi from "@/incident/type/api"
 
@@ -59,51 +59,51 @@ export default {
       items: [],
       more: false,
       numItems: 5,
-      error: null,
-      selectedIncidentType: null,
-      is_type_in_project: () => {
-        this.validateType()
-        return this.error
-      },
+      total: 0,
+      lastProjectId: null,
     }
   },
 
-  watch: {
-    modelValue: {
-      immediate: true,
-      handler(newValue) {
-        this.selectedIncidentType = cloneDeep(newValue)
+  computed: {
+    selectedIncidentType: {
+      get() {
+        return this.modelValue || null
+      },
+      set(value) {
+        this.$emit("update:modelValue", value)
       },
     },
-    selectedIncidentType(newValue) {
-      this.$emit("update:modelValue", newValue)
-      this.validateType()
+    isTypeValid() {
+      const project_id = this.project?.id || 0
+      return this.selectedIncidentType?.project?.id == project_id
     },
+    validationRule() {
+      return this.isTypeValid || "Only types in selected project are allowed"
+    },
+  },
+
+  watch: {
     project: {
-      handler() {
-        this.fetchData()
-        this.validateType()
+      handler(newProject) {
+        if (newProject?.id !== this.lastProjectId) {
+          this.lastProjectId = newProject?.id
+          this.clearSelection()
+          this.fetchData()
+        }
       },
     },
   },
 
   methods: {
+    clearSelection() {
+      this.selectedIncidentType = null
+    },
     loadMore() {
-      this.numItems = this.numItems + 5
+      this.numItems += 5
       this.fetchData()
     },
-    validateType() {
-      const project_id = this.project?.id || 0
-      const in_project = this.selectedIncidentType?.project?.id == project_id
-      if (in_project) {
-        this.error = true
-      } else {
-        this.error = "Only types in selected project are allowed"
-      }
-    },
-    fetchData() {
-      this.error = null
-      this.loading = "error"
+    fetchData: debounce(function () {
+      this.loading = true
 
       let filterOptions = {
         sortBy: ["name"],
@@ -112,30 +112,27 @@ export default {
       }
 
       if (this.project) {
-        filterOptions = {
-          ...filterOptions,
-          filters: {
-            project: [this.project],
-            enabled: ["true"],
-          },
+        filterOptions.filters = {
+          project: [this.project],
+          enabled: ["true"],
         }
       }
 
-      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+      filterOptions = SearchUtils.createParametersFromTableOptions(filterOptions)
 
-      IncidentTypeApi.getAll(filterOptions).then((response) => {
-        this.items = response.data.items
-
-        this.total = response.data.total
-        this.loading = false
-
-        if (this.items.length < this.total) {
-          this.more = true
-        } else {
-          this.more = false
-        }
-      })
-    },
+      IncidentTypeApi.getAll(filterOptions)
+        .then((response) => {
+          this.items = response.data.items
+          this.total = response.data.total
+          this.more = this.items.length < this.total
+        })
+        .catch((error) => {
+          console.error("Error fetching incident types:", error)
+        })
+        .finally(() => {
+          this.loading = false
+        })
+    }, 300),
   },
 
   created() {

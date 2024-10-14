@@ -1,6 +1,6 @@
 <template>
   <v-select
-    v-model="case_priority"
+    v-model="selectedPriority"
     :items="items"
     item-title="name"
     :menu-props="{ maxHeight: '400' }"
@@ -14,7 +14,7 @@
     <template #item="data">
       <v-list-item v-bind="data.props" :title="null">
         <v-list-item-title>{{ data.item.raw.name }}</v-list-item-title>
-        <v-list-item-subtitle :title="data.item.raw.description">
+        <v-list-item-subtitle>
           {{ data.item.raw.description }}
         </v-list-item-subtitle>
       </v-list-item>
@@ -23,8 +23,6 @@
 </template>
 
 <script>
-import { cloneDeep } from "lodash"
-
 import SearchUtils from "@/search/utils"
 import CasePriorityApi from "@/case/priority/api"
 
@@ -33,12 +31,10 @@ export default {
   props: {
     modelValue: {
       type: Object,
-      default: function () {
-        return {}
-      },
+      default: () => ({}),
     },
     project: {
-      type: [Object],
+      type: Object,
       default: null,
     },
   },
@@ -48,6 +44,7 @@ export default {
       loading: false,
       items: [],
       error: null,
+      lastProjectId: null,
       is_priority_in_project: () => {
         this.validatePriority()
         return this.error
@@ -56,9 +53,16 @@ export default {
   },
 
   computed: {
-    case_priority: {
+    selectedPriority: {
       get() {
-        return cloneDeep(this.modelValue)
+        if (!this.modelValue) return null
+        if (this.modelValue.id) {
+          return this.items.find((item) => item.id === this.modelValue.id) || null
+        }
+        if (this.modelValue.name) {
+          return this.items.find((item) => item.name === this.modelValue.name) || null
+        }
+        return null
       },
       set(value) {
         this.$emit("update:modelValue", value)
@@ -67,7 +71,7 @@ export default {
     },
     show_error() {
       let items_names = this.items.map((item) => item.name)
-      let selected_item = this.case_priority?.name || ""
+      let selected_item = this.selectedPriority?.name || ""
       if (items_names.includes(selected_item) || selected_item == "") {
         return null
       }
@@ -77,15 +81,8 @@ export default {
 
   methods: {
     validatePriority() {
-      let in_project
-      if (this.project?.name) {
-        let project_name = this.project?.name || ""
-        in_project = this.case_priority?.project?.name == project_name
-      } else {
-        let project_id = this.project?.id || 0
-        in_project = this.case_priority?.project?.id == project_id
-      }
-
+      const project_id = this.project?.id || 0
+      const in_project = this.selectedPriority?.project?.id == project_id
       if (in_project) {
         this.error = true
       } else {
@@ -94,7 +91,7 @@ export default {
     },
     fetchData() {
       this.error = null
-      this.loading = "error"
+      this.loading = true
 
       let filterOptions = {
         sortBy: ["view_order"],
@@ -125,23 +122,39 @@ export default {
         enabledFilter
       )
 
-      CasePriorityApi.getAll(filterOptions).then((response) => {
-        this.items = response.data.items
-        this.loading = false
-      })
+      CasePriorityApi.getAll(filterOptions)
+        .then((response) => {
+          this.items = response.data.items
+        })
+        .catch((error) => {
+          console.error("Error fetching case priorities:", error)
+          this.error = "Failed to load case priorities"
+        })
+        .finally(() => {
+          this.loading = false
+        })
+    },
+    resetSelection() {
+      this.$emit("update:modelValue", null)
+    },
+  },
+
+  watch: {
+    project: {
+      handler(newProject) {
+        if (newProject?.id !== this.lastProjectId) {
+          this.lastProjectId = newProject?.id
+          this.resetSelection()
+          this.fetchData()
+        }
+        this.validatePriority()
+      },
+      deep: true,
     },
   },
 
   created() {
     this.fetchData()
-    this.$watch(
-      (vm) => [vm.project],
-      () => {
-        this.fetchData()
-        this.validatePriority()
-        this.$emit("update:modelValue", this.case_priority)
-      }
-    )
   },
 }
 </script>
