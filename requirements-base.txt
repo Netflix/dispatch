@@ -191,7 +191,7 @@ jmespath==1.0.1
     #   botocore
 joblib==1.4.2
     # via -r requirements-base.in
-jsonpath-ng==1.6.1
+jsonpath-ng==1.7.0
     # via -r requirements-base.in
 jsonschema==4.17.3
     # via
