@@ -1,6 +1,6 @@
 <template>
   <v-select
-    v-model="selectedIncidentType"
+    v-model="selectedCaseType"
     :items="items"
     :menu-props="{ maxHeight: '400' }"
     item-title="name"
@@ -69,7 +69,7 @@ export default {
   },
 
   computed: {
-    selectedIncidentType: {
+    selectedCaseType: {
       get() {
         if (!this.modelValue) return null
         if (this.modelValue.id) {
@@ -97,7 +97,7 @@ export default {
     },
     validateType() {
       const project_id = this.project?.id || 0
-      const in_project = this.selectedIncidentType?.project?.id == project_id
+      const in_project = this.selectedCaseType?.project?.id == project_id
       if (in_project) {
         this.error = true
       } else {
