@@ -4,28 +4,30 @@
     :items="items"
     :menu-props="{ maxHeight: '400' }"
     item-title="name"
+    item-value="id"
     :label="label"
+    :hint="hint"
     return-object
     :loading="loading"
+    no-filter
     :error-messages="show_error"
     :rules="[is_type_in_project]"
+    clearable
   >
-    <template #item="{ props, item }">
-      <v-list-item v-bind="props" :title="null">
-        <v-list-item-title v-if="!project">
-          {{ item.raw.project.name }}/{{ item.raw.name }}
-        </v-list-item-title>
-        <v-list-item-title v-else>
-          {{ item.raw.name }}
-        </v-list-item-title>
-        <v-list-item-subtitle :title="item.raw.description">
-          {{ item.raw.description }}
+    <template #item="data">
+      <v-list-subheader dense class="custom-subheader" v-if="data.item.raw.category">
+        {{ data.item.raw.category }}
+      </v-list-subheader>
+      <v-list-item v-bind="data.props" :title="null" v-if="!data.item.raw.category">
+        <v-list-item-title>{{ data.item.raw.name }}</v-list-item-title>
+        <v-list-item-subtitle class="truncate-text" :title="data.item.raw.description">
+          {{ data.item.raw.description }}
         </v-list-item-subtitle>
       </v-list-item>
     </template>
     <template #append-item>
-      <v-list-item v-if="more" @click="loadMore">
-        <v-list-item-subtitle>Load More</v-list-item-subtitle>
+      <v-list-item v-if="more" @click="loadMore()">
+        <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
   </v-select>
@@ -33,10 +35,10 @@
 
 <script>
 import SearchUtils from "@/search/utils"
-import IncidentTypeApi from "@/incident/type/api"
+import CaseTypeApi from "@/case/type/api"
 
 export default {
-  name: "IncidentTypeSelect",
+  name: "CaseTypeSelect",
 
   props: {
     modelValue: {
@@ -51,6 +53,10 @@ export default {
       type: String,
       default: () => "Type",
     },
+    hint: {
+      type: String,
+      default: () => "Case Type to associate",
+    },
   },
 
   data() {
@@ -58,7 +64,7 @@ export default {
       loading: false,
       items: [],
       more: false,
-      numItems: 5,
+      numItems: 40,
       error: null,
       lastProjectId: null,
       is_type_in_project: () => {
@@ -92,7 +98,7 @@ export default {
 
   methods: {
     loadMore() {
-      this.numItems += 5
+      this.numItems += 40
       this.fetchData()
     },
     validateType() {
@@ -126,15 +132,32 @@ export default {
 
       filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
 
-      IncidentTypeApi.getAll(filterOptions)
+      CaseTypeApi.getAll(filterOptions)
         .then((response) => {
-          this.items = response.data.items
-          this.total = response.data.total
-          this.more = this.items.length < this.total
+          this.items = []
+          let new_items = {}
+          response.data.items.forEach((item) => {
+            let category = "Team: " + (item.oncall_service?.name || "None")
+            new_items[category] = new_items[category] || []
+            new_items[category].push(item)
+          })
+          let keys = Object.keys(new_items)
+          keys.sort((a, b) => {
+            if (a === "Team: None") return 1
+            if (b === "Team: None") return -1
+            return a.localeCompare(b)
+          })
+          keys.forEach((category) => {
+            this.items.push({ category: category })
+            for (let item of new_items[category]) {
+              this.items.push(item)
+            }
+          })
+          this.more = response.data.total > this.items.length
         })
         .catch((error) => {
-          console.error("Error fetching incident types:", error)
-          this.error = "Failed to load incident types"
+          console.error("Error fetching case types:", error)
+          this.error = "Failed to load case types"
         })
         .finally(() => {
           this.loading = false
