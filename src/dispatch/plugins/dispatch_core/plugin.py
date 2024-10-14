@@ -263,6 +263,22 @@ class DispatchTicketPlugin(TicketPlugin):
         """Updates a Dispatch case ticket."""
         return
 
+    def create_task_ticket(
+        self,
+        task_id: int,
+        title: str,
+        assignee_email: str,
+        reporter_email: str,
+        incident_ticket_key: str = None,
+        task_plugin_metadata: dict = None,
+        db_session=None,
+    ):
+        """Creates a Dispatch task ticket."""
+        return {
+            "resource_id": "",
+            "weblink": "https://dispatch.example.com",
+        }
+
 
 class DispatchDocumentResolverPlugin(DocumentResolverPlugin):
     title = "Dispatch Plugin - Document Resolver"

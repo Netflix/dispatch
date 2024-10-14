@@ -30,4 +30,8 @@ export default {
   delete(taskId) {
     return API.delete(`${resource}/${taskId}`)
   },
+
+  createTicket(taskId) {
+    return API.post(`${resource}/ticket/${taskId}`)
+  },
 }

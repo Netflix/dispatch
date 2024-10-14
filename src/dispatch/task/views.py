@@ -8,8 +8,10 @@ from dispatch.common.utils.views import create_pydantic_include
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
+
 from .enums import TaskStatus
 from .flows import send_task_notification
+from dispatch.ticket.flows import create_task_ticket
 from dispatch.messaging.strings import (
     INCIDENT_TASK_NEW_NOTIFICATION,
     INCIDENT_TASK_RESOLVED_NOTIFICATION,
@@ -61,6 +63,21 @@ def create_task(
         db_session,
     )
     return task
+
+
+@router.post("/ticket/{task_id}", tags=["tasks"])
+def create_ticket(
+    db_session: DbSession,
+    task_id: PrimaryKey,
+):
+    """Creates a ticket for an existing task."""
+    task = get(db_session=db_session, task_id=task_id)
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A task with this id does not exist."}],
+        )
+    return create_task_ticket(task=task, db_session=db_session)
 
 
 @router.put("/{task_id}", response_model=TaskRead, tags=["tasks"])

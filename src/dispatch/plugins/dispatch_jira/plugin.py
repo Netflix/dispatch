@@ -123,6 +123,17 @@ def process_plugin_metadata(plugin_metadata: dict):
     return project_id, issue_type_name
 
 
+def create_dict_from_plugin_metadata(plugin_metadata: dict):
+    """Creates a dictionary from plugin metadata, excluding project_id and issue_type_name."""
+    metadata_dict = {}
+    if plugin_metadata:
+        for key_value in plugin_metadata["metadata"]:
+            if key_value["key"] != "project_id" and key_value["key"] != "issue_type_name":
+                metadata_dict[key_value["key"]] = key_value["value"]
+
+    return metadata_dict
+
+
 def create_client(configuration: JiraConfiguration) -> JIRA:
     """Creates a Jira client."""
     return JIRA(
@@ -391,6 +402,70 @@ class JiraTicketPlugin(TicketPlugin):
         }
 
         return create(self.configuration, client, issue_fields)
+
+    def create_task_ticket(
+        self,
+        task_id: int,
+        title: str,
+        assignee_email: str,
+        reporter_email: str,
+        incident_ticket_key: str = None,
+        task_plugin_metadata: dict = None,
+        db_session=None,
+    ):
+        """Creates a task Jira issue."""
+        client = create_client(self.configuration)
+
+        assignee = get_user_field(client, self.configuration, assignee_email)
+        reporter = get_user_field(client, self.configuration, reporter_email)
+
+        project_id, issue_type_name = process_plugin_metadata(task_plugin_metadata)
+        other_fields = create_dict_from_plugin_metadata(task_plugin_metadata)
+
+        if not project_id:
+            project_id = self.configuration.default_project_id
+
+        project = {"id": project_id}
+        if not project_id.isdigit():
+            project = {"key": project_id}
+
+        if not issue_type_name:
+            issue_type_name = self.configuration.default_issue_type_name
+
+        issuetype = {"name": issue_type_name}
+
+        issue_fields = {
+            "project": project,
+            "issuetype": issuetype,
+            "assignee": assignee,
+            "reporter": reporter,
+            "summary": title,
+            **other_fields,
+        }
+
+        issue = client.create_issue(fields=issue_fields)
+
+        if incident_ticket_key:
+            update = {
+                "issuelinks": [
+                    {
+                        "add": {
+                            "type": {
+                                "name": "Relates",
+                                "inward": "is related to",
+                                "outward": "relates to",
+                            },
+                            "outwardIssue": {"key": incident_ticket_key},
+                        }
+                    }
+                ]
+            }
+            issue.update(update=update)
+
+        return {
+            "resource_id": issue.key,
+            "weblink": f"{self.configuration.browser_url}/browse/{issue.key}",
+        }
 
     def update_case_ticket(
         self,
