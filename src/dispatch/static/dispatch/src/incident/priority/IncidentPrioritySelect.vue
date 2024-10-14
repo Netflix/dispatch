@@ -1,6 +1,6 @@
 <template>
   <v-select
-    v-model="incident_priorities"
+    v-model="selectedPriority"
     :items="items"
     item-title="name"
     :item-props="(item) => ({ subtitle: item.description })"
@@ -14,8 +14,6 @@
 </template>
 
 <script>
-import { cloneDeep } from "lodash"
-
 import SearchUtils from "@/search/utils"
 import IncidentPriorityApi from "@/incident/priority/api"
 
@@ -24,12 +22,10 @@ export default {
   props: {
     modelValue: {
       type: Object,
-      default: function () {
-        return {}
-      },
+      default: () => ({}),
     },
     project: {
-      type: [Object],
+      type: Object,
       default: null,
     },
     status: {
@@ -43,6 +39,7 @@ export default {
       loading: false,
       items: [],
       error: null,
+      lastProjectId: null,
       is_priority_in_project: () => {
         this.validatePriority()
         return this.error
@@ -51,9 +48,17 @@ export default {
   },
 
   computed: {
-    incident_priorities: {
+    selectedPriority: {
       get() {
-        return cloneDeep(this.modelValue)
+        if (!this.modelValue) return null
+        if (this.modelValue.id) {
+          return this.items.find((item) => item.id === this.modelValue.id) || null
+        }
+        // If we only have a name (e.g., from URL params), find by name
+        if (this.modelValue.name) {
+          return this.items.find((item) => item.name === this.modelValue.name) || null
+        }
+        return null
       },
       set(value) {
         this.$emit("update:modelValue", value)
@@ -64,7 +69,7 @@ export default {
       if (!this.project) return null
       const stablePriority = this.project.stable_priority
       if (!stablePriority) return null
-      if (this.status == "Stable" && this.modelValue.name != stablePriority.name) {
+      if (this.status == "Stable" && this.selectedPriority?.name != stablePriority.name) {
         return `Priority must be ${stablePriority.name} for Stable incidents`
       }
       return null
@@ -74,7 +79,7 @@ export default {
   methods: {
     validatePriority() {
       const project_id = this.project?.id || 0
-      const in_project = this.incident_priorities?.project?.id == project_id
+      const in_project = this.selectedPriority?.project?.id == project_id
       if (in_project) {
         this.error = true
       } else {
@@ -83,7 +88,7 @@ export default {
     },
     fetchData() {
       this.error = null
-      this.loading = "error"
+      this.loading = true
 
       let filterOptions = {
         sortBy: ["view_order"],
@@ -119,18 +124,30 @@ export default {
         this.loading = false
       })
     },
+    resetSelection() {
+      this.$emit("update:modelValue", null)
+    },
+  },
+
+  watch: {
+    project: {
+      handler(newProject) {
+        if (newProject?.id !== this.lastProjectId) {
+          this.lastProjectId = newProject?.id
+          this.resetSelection()
+          this.fetchData()
+        }
+        this.validatePriority()
+      },
+      deep: true,
+    },
+    status() {
+      this.validatePriority()
+    },
   },
 
   created() {
     this.fetchData()
-    this.$watch(
-      (vm) => [vm.project, vm.status],
-      () => {
-        this.fetchData()
-        this.validatePriority()
-        this.$emit("update:modelValue", this.incident_priorities)
-      }
-    )
   },
 }
 </script>

@@ -1,6 +1,6 @@
 <template>
   <v-select
-    v-model="case_type"
+    v-model="selectedCaseType"
     :items="items"
     :menu-props="{ maxHeight: '400' }"
     item-title="name"
@@ -30,15 +30,10 @@
         <v-list-item-subtitle> Load More </v-list-item-subtitle>
       </v-list-item>
     </template>
-    <v-col cols="12">
-      <p>Conversation Target: {{ conversation_target }}</p>
-    </v-col>
   </v-select>
 </template>
 
 <script>
-import { cloneDeep } from "lodash"
-
 import SearchUtils from "@/search/utils"
 import CaseTypeApi from "@/case/type/api"
 
@@ -48,38 +43,30 @@ export default {
   props: {
     modelValue: {
       type: Object,
-      default: function () {
-        return {}
-      },
+      default: () => ({}),
     },
     project: {
-      type: [Object],
+      type: Object,
       default: null,
-    },
-    hint: {
-      type: String,
-      default: function () {
-        return "Case Type to associate"
-      },
     },
     label: {
       type: String,
-      default: function () {
-        return "Case Type"
-      },
+      default: () => "Type",
+    },
+    hint: {
+      type: String,
+      default: () => "Case Type to associate",
     },
   },
 
   data() {
     return {
-      conversation_target: null,
       loading: false,
       items: [],
-      search: null,
       more: false,
       numItems: 40,
       error: null,
-      categories: [],
+      lastProjectId: null,
       is_type_in_project: () => {
         this.validateType()
         return this.error
@@ -88,9 +75,16 @@ export default {
   },
 
   computed: {
-    case_type: {
+    selectedCaseType: {
       get() {
-        return cloneDeep(this.modelValue)
+        if (!this.modelValue) return null
+        if (this.modelValue.id) {
+          return this.items.find((item) => item.id === this.modelValue.id) || null
+        }
+        if (this.modelValue.name) {
+          return this.items.find((item) => item.name === this.modelValue.name) || null
+        }
+        return null
       },
       set(value) {
         this.$emit("update:modelValue", value)
@@ -98,30 +92,18 @@ export default {
       },
     },
     show_error() {
-      let items_names = this.items.map((item) => item.name)
-      let selected_item = this.case_type?.name || ""
-      if (items_names.includes(selected_item) || selected_item == "") {
-        return null
-      }
-      return "Not a valid case type"
+      return null // Implement any specific error logic here if needed
     },
   },
 
   methods: {
     loadMore() {
-      this.numItems = this.numItems + 5
+      this.numItems += 40
       this.fetchData()
     },
     validateType() {
-      let in_project
-      if (this.project?.name) {
-        let project_name = this.project?.name || ""
-        in_project = this.case_type?.project?.name == project_name
-      } else {
-        let project_id = this.project?.id || 0
-        in_project = this.case_type?.project?.id == project_id
-      }
-
+      const project_id = this.project?.id || 0
+      const in_project = this.selectedCaseType?.project?.id == project_id
       if (in_project) {
         this.error = true
       } else {
@@ -130,7 +112,7 @@ export default {
     },
     fetchData() {
       this.error = null
-      this.loading = "error"
+      this.loading = true
 
       let filterOptions = {
         sortBy: ["name"],
@@ -150,69 +132,58 @@ export default {
 
       filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
 
-      CaseTypeApi.getAll(filterOptions).then((response) => {
-        // re-sort items by oncall service
-        this.items = []
-        this.categories = []
-        let new_items = {}
-        response.data.items.forEach((item) => {
-          let category = "Team: " + (item.oncall_service?.name || "None")
-          new_items[category] = new_items[category] || []
-          new_items[category].push(item)
+      CaseTypeApi.getAll(filterOptions)
+        .then((response) => {
+          this.items = []
+          let new_items = {}
+          response.data.items.forEach((item) => {
+            let category = "Team: " + (item.oncall_service?.name || "None")
+            new_items[category] = new_items[category] || []
+            new_items[category].push(item)
+          })
+          let keys = Object.keys(new_items)
+          keys.sort((a, b) => {
+            if (a === "Team: None") return 1
+            if (b === "Team: None") return -1
+            return a.localeCompare(b)
+          })
+          keys.forEach((category) => {
+            this.items.push({ category: category })
+            for (let item of new_items[category]) {
+              this.items.push(item)
+            }
+          })
+          this.more = response.data.total > this.items.length
         })
-        let keys = Object.keys(new_items)
-        // ensure Team: None is always at the end
-        keys.sort((a, b) => {
-          if (a === "Team: None") return 1
-          if (b === "Team: None") return -1
-          return a.localeCompare(b)
+        .catch((error) => {
+          console.error("Error fetching case types:", error)
+          this.error = "Failed to load case types"
         })
-        keys.forEach((category) => {
-          this.items.push({ category: category })
-          for (let item of new_items[category]) {
-            this.items.push(item)
-          }
+        .finally(() => {
+          this.loading = false
         })
-
-        this.total = response.data.total
-        this.loading = false
-
-        if (this.items.length < this.total) {
-          this.more = true
-        } else {
-          this.more = false
-        }
-      })
+    },
+    resetSelection() {
+      this.$emit("update:modelValue", null)
     },
   },
 
   watch: {
-    search(val) {
-      val && val !== this.select && this.fetchData()
-    },
-    value(val) {
-      if (!val) return
-      this.items.push(val)
-    },
-    case_type(newCaseType) {
-      if (newCaseType) {
-        this.conversation_target = newCaseType.conversation_target
-      } else {
-        this.conversation_target = null
-      }
+    project: {
+      handler(newProject) {
+        if (newProject?.id !== this.lastProjectId) {
+          this.lastProjectId = newProject?.id
+          this.resetSelection()
+          this.fetchData()
+        }
+        this.validateType()
+      },
+      deep: true,
     },
   },
 
   created() {
     this.fetchData()
-    this.$watch(
-      (vm) => [vm.project],
-      () => {
-        this.fetchData()
-        this.validateType()
-        this.$emit("update:modelValue", this.case_type)
-      }
-    )
   },
 }
 </script>

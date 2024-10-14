@@ -128,6 +128,8 @@ def configure(config: SlackConversationConfiguration):
         case_command_context_middleware,
     ]
 
+    app.command(config.slack_command_create_case, middleware=[db_middleware])(report_issue)
+
     app.command(config.slack_command_escalate_case, middleware=middleware)(
         handle_escalate_case_command
     )
@@ -1711,7 +1713,6 @@ def report_issue(
     client: WebClient,
     context: BoltContext,
     db_session: Session,
-    shortcut: dict,
 ):
     ack()
     initial_description = None
@@ -1748,7 +1749,8 @@ def report_issue(
         callback_id=CaseReportActions.submit,
         private_metadata=context["subject"].json(),
     ).build()
-    client.views_open(trigger_id=shortcut["trigger_id"], view=modal)
+
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
 @app.action(CaseReportActions.project_select, middleware=[db_middleware, action_context_middleware])

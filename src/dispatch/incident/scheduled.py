@@ -16,6 +16,7 @@ from dispatch.messaging.strings import (
     INCIDENT_DAILY_REPORT,
     INCIDENT_DAILY_REPORT_TITLE,
     INCIDENT_WEEKLY_REPORT,
+    INCIDENT_WEEKLY_REPORT_NO_INCIDENTS,
     INCIDENT_WEEKLY_REPORT_TITLE,
     INCIDENT_SUMMARY_TEMPLATE,
     MessageType,
@@ -229,7 +230,7 @@ def incident_close_reminder(db_session: Session, project: Project):
             send_incident_close_reminder(incident, db_session)
 
 
-@scheduler.add(every(1).day.at("18:00"), name="incident-report-weekly")
+@scheduler.add(every().monday.at("18:00"), name="incident-report-weekly")
 @timer
 @scheduled_project_task
 def incident_report_weekly(db_session: Session, project: Project):
@@ -254,10 +255,6 @@ def incident_report_weekly(db_session: Session, project: Project):
         status=IncidentStatus.closed,
         hours=24 * 7,
     )
-
-    # no incidents closed in the last week
-    if not incidents:
-        return
 
     storage_plugin = plugin_service.get_active_instance(
         db_session=db_session, plugin_type="storage", project_id=project.id
@@ -319,6 +316,11 @@ def incident_report_weekly(db_session: Session, project: Project):
         except Exception as e:
             log.exception(e)
 
+    template = INCIDENT_WEEKLY_REPORT
+    # if no closed incidents or all closed incidents are restricted, send a different template
+    if not items_grouped:
+        template = INCIDENT_WEEKLY_REPORT_NO_INCIDENTS
+
     notification_kwargs = {
         "items_grouped": items_grouped,
         "items_grouped_template": items_grouped_template,
@@ -328,7 +330,7 @@ def incident_report_weekly(db_session: Session, project: Project):
     notification_params = {
         "text": notification_title_text,
         "type": MessageType.incident_weekly_report,
-        "template": INCIDENT_WEEKLY_REPORT,
+        "template": template,
         "kwargs": notification_kwargs,
     }
 
