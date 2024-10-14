@@ -11,7 +11,7 @@
     :loading="loading"
     no-filter
     :error-messages="show_error"
-    :rules="[is_type_in_project]"
+    :rules="[isTypeInProject]"
     clearable
   >
     <template #item="data">
@@ -67,7 +67,7 @@ export default {
       numItems: 40,
       error: null,
       lastProjectId: null,
-      is_type_in_project: () => {
+      isTypeInProject: () => {
         this.validateType()
         return this.error
       },
