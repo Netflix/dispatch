@@ -13,17 +13,10 @@ export default {
       type: String,
       required: true,
     },
-  },
 
-  computed: {
-    color() {
-      return (
-        {
-          Low: "green",
-          Medium: "orange",
-          High: "red",
-        }[this.priority] || "red"
-      )
+    color: {
+      type: String,
+      default: "grey",
     },
   },
 }

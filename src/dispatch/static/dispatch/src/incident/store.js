@@ -6,8 +6,12 @@ import IncidentApi from "@/incident/api"
 import ProjectApi from "@/project/api"
 import PluginApi from "@/plugin/api"
 import AuthApi from "@/auth/api"
+import TaskApi from "@/task/api"
+
 import router from "@/router"
 import moment from "moment-timezone"
+
+import { cloneDeep } from "lodash"
 
 const getDefaultSelectedState = () => {
   return {
@@ -74,6 +78,7 @@ const state = {
     showNewSheet: false,
     showReportDialog: false,
     showEditEventDialog: false,
+    showEditTaskDialog: false,
     showDeleteEventDialog: false,
   },
   report: {
@@ -277,6 +282,32 @@ const actions = {
     state.selected.currentEvent = { started_at, description: "", uuid: "" }
     commit("SET_DIALOG_EDIT_EVENT", true)
   },
+  showNewTaskDialog({ commit }, task) {
+    state.selected.currentTask = task
+    commit("SET_DIALOG_EDIT_TASK", true)
+  },
+  createTicket({ commit }, task) {
+    TaskApi.createTicket(task.id).then((response) => {
+      const ticket = response.data
+      if (ticket) {
+        task.ticket = ticket
+        commit(
+          "notification_backend/addBeNotification",
+          { text: "Ticket created successfully.", type: "success" },
+          { root: true }
+        )
+      } else {
+        commit(
+          "notification_backend/addBeNotification",
+          { text: "Ticket creation failed.", type: "error" },
+          { root: true }
+        )
+      }
+    })
+  },
+  closeNewTaskDialog({ commit }) {
+    commit("SET_DIALOG_EDIT_TASK", false)
+  },
   showDeleteEventDialog({ commit }, event) {
     state.selected.currentEvent = event
     commit("SET_DIALOG_DELETE_EVENT", true)
@@ -355,6 +386,20 @@ const actions = {
       )
     })
     commit("SET_DIALOG_DELETE_EVENT", false)
+  },
+  updateExistingTask({ commit }) {
+    if (Array.isArray(state.selected.currentTask.owner)) {
+      state.selected.currentTask.owner = state.selected.currentTask.owner[0]
+    }
+    state.selected.currentTask.incident = cloneDeep(state.selected)
+    TaskApi.update(state.selected.currentTask.id, state.selected.currentTask).then(() => {
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "Task updated successfully.", type: "success" },
+        { root: true }
+      )
+    })
+    commit("SET_DIALOG_EDIT_TASK", false)
   },
   report({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
@@ -605,6 +650,9 @@ const mutations = {
   },
   SET_DIALOG_DELETE_EVENT(state, value) {
     state.dialogs.showDeleteEventDialog = value
+  },
+  SET_DIALOG_EDIT_TASK(state, value) {
+    state.dialogs.showEditTaskDialog = value
   },
   SET_DIALOG_REPORT(state, value) {
     state.dialogs.showReportDialog = value

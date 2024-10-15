@@ -65,11 +65,11 @@
                 {{ value }}
               </v-chip>
             </template>
-            <template #item.incident_severity.name="{ value }">
-              <incident-severity :severity="value" />
+            <template #item.incident_severity.name="{ item, value }">
+              <incident-severity :severity="value" :color="item.incident_severity.color" />
             </template>
-            <template #item.incident_priority.name="{ value }">
-              <incident-priority :priority="value" />
+            <template #item.incident_priority.name="{ item, value }">
+              <incident-priority :priority="value" :color="item.incident_priority.color" />
             </template>
             <template #item.status="{ item, value }">
               <incident-status

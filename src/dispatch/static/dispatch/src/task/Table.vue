@@ -157,7 +157,7 @@ export default {
         { title: "Status", value: "status", sortable: true },
         { title: "Creator", value: "creator.individual_contact.name", sortable: false },
         { title: "Owner", value: "owner.individual_contact.name", sortable: false },
-        { title: "Assignees", value: "assignees", sortable: false },
+        { title: "Assignee", value: "assignees", sortable: false },
         { title: "Description", value: "description", sortable: false },
         { title: "Source", value: "source", sortable: true },
         { title: "Project", value: "project.name", sortable: false },

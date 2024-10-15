@@ -93,38 +93,50 @@ class SlackConversationPlugin(ConversationPlugin):
         client = create_slack_client(self.configuration)
         blocks = create_case_message(case=case, channel_id=conversation_id)
         response = send_message(client=client, conversation_id=conversation_id, blocks=blocks)
+        response_timestamp = response["timestamp"]
 
         if case.signal_instances:
+            signal_response = None
+
             # we try to generate a GenAI signal analysis message
             try:
-                if message := create_genai_signal_analysis_message(
+                message, message_blocks = create_genai_signal_analysis_message(
                     case=case,
                     channel_id=conversation_id,
                     db_session=db_session,
                     client=client,
-                ):
+                    config=self.configuration,
+                )
+                if message:
+                    case.genai_analysis = message
+
+                if message_blocks:
                     signal_response = send_message(
                         client=client,
                         conversation_id=conversation_id,
-                        ts=response["timestamp"],
-                        blocks=message,
+                        ts=response_timestamp,
+                        blocks=message_blocks,
                     )
             except Exception as e:
                 logger.exception(f"Error generating GenAI signal analysis message: {e}")
 
-            case.signal_thread_ts = signal_response.get("timestamp")
+            case.signal_thread_ts = (
+                signal_response.get("timestamp") if signal_response else response_timestamp
+            )
 
             # we try to generate a signal message
             try:
                 message = create_signal_message(
                     case_id=case.id, channel_id=conversation_id, db_session=db_session
                 )
-                send_message(
+                signal_response = send_message(
                     client=client,
                     conversation_id=conversation_id,
                     ts=case.signal_thread_ts,
                     blocks=message,
                 )
+                if signal_response:
+                    case.signal_thread_ts = signal_response.get("timestamp")
             except Exception as e:
                 logger.exception(f"Error generating signal message: {e}")
 
@@ -151,7 +163,7 @@ class SlackConversationPlugin(ConversationPlugin):
             # we try to generate action buttons
             try:
                 message = create_action_buttons_message(
-                    case_id=case.id, channel_id=conversation_id, db_session=db_session
+                    case=case, channel_id=conversation_id, db_session=db_session
                 )
                 send_message(
                     client=client,

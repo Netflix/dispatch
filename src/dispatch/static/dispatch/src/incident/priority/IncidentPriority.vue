@@ -13,17 +13,9 @@ export default {
       type: String,
       required: true,
     },
-  },
-
-  computed: {
-    color() {
-      return (
-        {
-          Low: "info",
-          Medium: "warning",
-          High: "error",
-        }[this.priority] || "error"
-      )
+    color: {
+      type: String,
+      default: "info",
     },
   },
 }

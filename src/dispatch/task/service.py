@@ -188,6 +188,25 @@ def update(*, db_session, task: Task, task_in: TaskUpdate, sync_external: bool =
     for field in update_data.keys():
         setattr(task, field, update_data[field])
 
+    if task_in.owner:
+        task.owner = participant_service.get_by_incident_id_and_email(
+            db_session=db_session,
+            incident_id=task.incident.id,
+            email=task_in.owner.individual.email,
+        )
+
+    if task_in.assignees:
+        assignees = []
+        for i in task_in.assignees:
+            assignees.append(
+                participant_service.get_by_incident_id_and_email(
+                    db_session=db_session,
+                    incident_id=task.incident.id,
+                    email=i.individual.email,
+                )
+            )
+        task.assignees = assignees
+
     # if we have an external task plugin enabled, attempt to update the external resource as well
     # we don't currently have a good way to get the correct file_id (we don't store a task <-> relationship)
     # lets try in both the incident doc and PIR doc

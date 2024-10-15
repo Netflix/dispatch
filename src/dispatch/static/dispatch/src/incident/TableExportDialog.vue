@@ -79,10 +79,16 @@
                 :loading="previewRowsLoading"
               >
                 <template #item.incident_severity.name="{ item }">
-                  <incident-severity :severity="item.incident_severity.name" />
+                  <incident-severity
+                    :severity="item.incident_severity.name"
+                    :color="item.incident_severity.color"
+                  />
                 </template>
                 <template #item.incident_priority.name="{ item }">
-                  <incident-priority :priority="item.incident_priority.name" />
+                  <incident-priority
+                    :priority="item.incident_priority.name"
+                    :color="item.incident_priority.color"
+                  />
                 </template>
                 <template #item.status="{ item }">
                   <incident-status :status="item.status" :id="item.id" />

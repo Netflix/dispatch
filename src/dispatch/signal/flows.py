@@ -1,7 +1,7 @@
 import logging
+import time
 from datetime import timedelta
 from queue import Queue
-import time
 
 from cachetools import TTLCache
 from email_validator import EmailNotValidError, validate_email
@@ -15,6 +15,7 @@ from dispatch.case.models import CaseCreate
 from dispatch.database.core import get_organization_session, get_session
 from dispatch.entity import service as entity_service
 from dispatch.entity_type import service as entity_type_service
+from dispatch.entity_type.models import EntityScopeEnum
 from dispatch.exceptions import DispatchException
 from dispatch.organization.service import get_all as get_all_organizations
 from dispatch.plugin import service as plugin_service
@@ -25,7 +26,6 @@ from dispatch.signal import service as signal_service
 from dispatch.signal.enums import SignalEngagementStatus
 from dispatch.signal.models import SignalFilterAction, SignalInstance, SignalInstanceCreate
 from dispatch.workflow import flows as workflow_flows
-from dispatch.entity_type.models import EntityScopeEnum
 
 log = logging.getLogger(__name__)
 
@@ -193,7 +193,7 @@ def engage_signal_identity(db_session: Session, signal_instance: SignalInstance)
                     validated_email = validate_email(entity.value, check_deliverability=False)
                 except EmailNotValidError as e:
                     log.warning(
-                        f"Discovered entity value in Signal {signal_instance.signal.id} that did not appear to be a valid email: {e}"
+                        f"Discovered entity value in signal {signal_instance.signal.name} (id: {signal_instance.signal.id}) that did not appear to be a valid email: {e}"
                     )
                 else:
                     users_to_engage.append(
@@ -205,7 +205,7 @@ def engage_signal_identity(db_session: Session, signal_instance: SignalInstance)
 
     if not users_to_engage:
         log.warning(
-            f"Engagement configured for Signal {signal_instance.signal.id} but no users found in instance: {signal_instance.id}."
+            f"Engagement configured for signal {signal_instance.signal.name} (id: {signal_instance.signal.id}), but no users found in instance with id {signal_instance.id}."
         )
         return
 

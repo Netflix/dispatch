@@ -1,131 +1,133 @@
 <template>
-  <span v-click-outside="closeMenu"
-    ><v-text-field
-      readonly
-      label="Tags"
-      @click="toggleMenu"
-      variant="outlined"
-      v-model="dummyText"
-      class="main-panel"
-      :rules="[check_for_error]"
-    >
-      <template #prepend-inner>
-        <v-icon class="panel-button">
-          {{ menu ? "mdi-minus" : "mdi-plus" }}
-        </v-icon>
-      </template>
-      <template #append v-if="showCopy">
-        <v-icon class="panel-button" @click.stop="copyTags">mdi-content-copy</v-icon>
-      </template>
-      <div class="form-container mt-2">
-        <div class="chip-group" v-show="selectedItems.length">
-          <span v-for="(item, index) in selectedItems" :key="item">
-            <v-chip
-              label
-              :key="index"
-              :color="item.tag_type?.color"
-              closable
-              class="tag-chip"
-              @click:close="removeItem(item.id)"
-            >
-              <span class="mr-2">
-                <v-icon
-                  v-if="item.tag_type?.icon"
-                  :icon="'mdi-' + item.tag_type?.icon"
-                  size="18"
-                  :style="getColorAsStyle(item.color)"
-                />
-                {{ item.name }}
-              </span>
-            </v-chip>
-          </span>
-        </div>
-      </div>
-    </v-text-field>
-    <v-card v-if="menu">
-      <div>
-        <v-text-field
-          hide-details
-          type="text"
-          class="dropdown-input"
-          placeholder="🔍  Search tags..."
-          v-model="searchQuery"
-          @update:model-value="performSearch"
-          @focus="showDropdown(true)"
-        />
-        <ul class="dropdown-box">
-          <div class="empty-search" v-if="!filteredMenuItems.length && searchQuery.length">
-            <p>
-              No tags containing <span class="search-term">{{ searchQuery }}</span> found.
-            </p>
-          </div>
-          <div :key="groupIndex" v-for="(group, groupIndex) in groups">
-            <!-- Check if the group has any items in filteredMenuItems -->
-            <div
-              class="tag-group-container"
-              v-if="
-                !searchQuery.length ||
-                filteredMenuItems.some((filteredItem) => group.menuItems.includes(filteredItem))
-              "
-            >
-              <input :id="'togList' + group.id" type="checkbox" checked />
-              <label :for="'togList' + group.id">
-                <div class="tag-group-metadata">
-                  <span class="tag-group-header">
-                    <v-icon
-                      v-if="group.icon"
-                      :icon="'mdi-' + group.icon"
-                      size="18"
-                      :color="group.color"
-                      :style="getBackgroundColorAsStyle(group.color)"
-                    />
-                    <strong v-text="group.label" />
-                    <span v-show="group.isRequired" class="tag-group-rule">Required</span>
-                    <span v-show="group.isExclusive" class="tag-group-rule">Exclusive</span>
-                    <span class="tag-group-icon-down"><v-icon>mdi-chevron-down</v-icon></span>
-                    <v-icon class="tag-group-icon-up">mdi-chevron-up</v-icon>
-                  </span>
-
-                  <span class="tag-group-desc" v-text="group.desc" />
-                  <span
-                    class="tag-group-rule-desc"
-                    v-show="
-                      group.isExclusive &&
-                      selectedItems.some((item) => item.tag_type.id === group.id)
-                    "
-                  >
-                    Only 1 tag allowed for this category
-                  </span>
-                </div>
-              </label>
-              <label v-for="(item, index) in group.menuItems" :key="index" class="checkbox-label">
-                <li
-                  class="checkbox-item"
-                  v-if="!filteredMenuItems.length || filteredMenuItems.includes(item)"
-                >
-                  <input
-                    type="checkbox"
-                    v-model="selectedItems"
-                    :id="item.id"
-                    :value="item"
-                    :disabled="group.isExclusive && isItemDisabled(group, item)"
-                    class="checkbox-item-box"
+  <div>
+    <span v-click-outside="closeMenu"
+      ><v-text-field
+        readonly
+        label="Tags"
+        @click="toggleMenu"
+        variant="outlined"
+        v-model="dummyText"
+        class="main-panel"
+        :rules="[check_for_error]"
+      >
+        <template #prepend-inner>
+          <v-icon class="panel-button">
+            {{ menu ? "mdi-minus" : "mdi-plus" }}
+          </v-icon>
+        </template>
+        <template #append v-if="showCopy">
+          <v-icon class="panel-button" @click.stop="copyTags">mdi-content-copy</v-icon>
+        </template>
+        <div class="form-container mt-2">
+          <div class="chip-group" v-show="selectedItems.length">
+            <span v-for="(item, index) in selectedItems" :key="item">
+              <v-chip
+                label
+                :key="index"
+                :color="item.tag_type?.color"
+                closable
+                class="tag-chip"
+                @click:close="removeItem(item.id)"
+              >
+                <span class="mr-2">
+                  <v-icon
+                    v-if="item.tag_type?.icon"
+                    :icon="'mdi-' + item.tag_type?.icon"
+                    size="18"
+                    :style="getColorAsStyle(item.color)"
                   />
                   {{ item.name }}
-                </li>
-              </label>
-              <v-divider v-if="groupIndex < groups.length - 1" class="mt-2 mb-2" />
-            </div>
+                </span>
+              </v-chip>
+            </span>
           </div>
-        </ul>
-      </div>
-    </v-card>
-  </span>
-  <v-snackbar v-model="snackbar" :timeout="2400" color="success">
-    <v-row class="fill-height" align="center">
-      <v-col class="text-center">Tags copied to the clipboard</v-col>
-    </v-row>
-  </v-snackbar>
+        </div>
+      </v-text-field>
+      <v-card v-if="menu">
+        <div>
+          <v-text-field
+            hide-details
+            type="text"
+            class="dropdown-input"
+            placeholder="🔍  Search tags..."
+            v-model="searchQuery"
+            @update:model-value="performSearch"
+            @focus="showDropdown(true)"
+          />
+          <ul class="dropdown-box">
+            <div class="empty-search" v-if="!filteredMenuItems.length && searchQuery.length">
+              <p>
+                No tags containing <span class="search-term">{{ searchQuery }}</span> found.
+              </p>
+            </div>
+            <div :key="groupIndex" v-for="(group, groupIndex) in groups">
+              <!-- Check if the group has any items in filteredMenuItems -->
+              <div
+                class="tag-group-container"
+                v-if="
+                  !searchQuery.length ||
+                  filteredMenuItems.some((filteredItem) => group.menuItems.includes(filteredItem))
+                "
+              >
+                <input :id="'togList' + group.id" type="checkbox" checked />
+                <label :for="'togList' + group.id">
+                  <div class="tag-group-metadata">
+                    <span class="tag-group-header">
+                      <v-icon
+                        v-if="group.icon"
+                        :icon="'mdi-' + group.icon"
+                        size="18"
+                        :color="group.color"
+                        :style="getBackgroundColorAsStyle(group.color)"
+                      />
+                      <strong v-text="group.label" />
+                      <span v-show="group.isRequired" class="tag-group-rule">Required</span>
+                      <span v-show="group.isExclusive" class="tag-group-rule">Exclusive</span>
+                      <span class="tag-group-icon-down"><v-icon>mdi-chevron-down</v-icon></span>
+                      <v-icon class="tag-group-icon-up">mdi-chevron-up</v-icon>
+                    </span>
+
+                    <span class="tag-group-desc" v-text="group.desc" />
+                    <span
+                      class="tag-group-rule-desc"
+                      v-show="
+                        group.isExclusive &&
+                        selectedItems.some((item) => item.tag_type.id === group.id)
+                      "
+                    >
+                      Only 1 tag allowed for this category
+                    </span>
+                  </div>
+                </label>
+                <label v-for="(item, index) in group.menuItems" :key="index" class="checkbox-label">
+                  <li
+                    class="checkbox-item"
+                    v-if="!filteredMenuItems.length || filteredMenuItems.includes(item)"
+                  >
+                    <input
+                      type="checkbox"
+                      v-model="selectedItems"
+                      :id="item.id"
+                      :value="item"
+                      :disabled="group.isExclusive && isItemDisabled(group, item)"
+                      class="checkbox-item-box"
+                    />
+                    {{ item.name }}
+                  </li>
+                </label>
+                <v-divider v-if="groupIndex < groups.length - 1" class="mt-2 mb-2" />
+              </div>
+            </div>
+          </ul>
+        </div>
+      </v-card>
+    </span>
+    <v-snackbar v-model="snackbar" :timeout="2400" color="success">
+      <v-row class="fill-height" align="center">
+        <v-col class="text-center">Tags copied to the clipboard</v-col>
+      </v-row>
+    </v-snackbar>
+  </div>
 </template>
 
 <script setup>

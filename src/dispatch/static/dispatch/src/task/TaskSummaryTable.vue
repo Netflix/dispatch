@@ -11,8 +11,8 @@
         {{ value }}
       </v-chip>
     </template>
-    <template #item.incident_priority.name="{ value }">
-      <incident-priority :priority="value" />
+    <template #item.incident_priority.name="{ item, value }">
+      <incident-priority :priority="value" :color="item.incident_priority.color" />
     </template>
     <template #item.creator="{ value }">
       <participant :participant="value" />
