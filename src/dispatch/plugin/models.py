@@ -219,7 +219,7 @@ class PluginInstanceUpdate(PluginBase):
 
 class KeyValue(DispatchBase):
     key: str
-    value: str
+    value: str | List[str]
 
 
 class PluginMetadata(DispatchBase):
