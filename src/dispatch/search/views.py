@@ -40,7 +40,9 @@ def search(
         current_user_email = common["current_user"].email
         for incident in results["Incident"]:
             participant_emails: list[str] = [
-                participant.individual.email for participant in incident.participants
+                participant.individual.email
+                for participant in incident.participants
+                if participant.individual
             ]
             if (
                 incident.project in admin_projects
