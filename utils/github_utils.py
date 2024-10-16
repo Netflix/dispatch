@@ -99,6 +99,7 @@ def release_notes(pull_request_number: int) -> NoReturn:
         "techdebt": "",
         "tests": "",
         "improvement": "",
+        "docker": "",
     }
 
     click.echo(f"Fetching list of merged PRs since #{pull_request_number}...")
