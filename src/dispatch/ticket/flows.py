@@ -13,6 +13,7 @@ from dispatch.incident.type import service as incident_type_service
 from dispatch.participant import service as participant_service
 from dispatch.plugin import service as plugin_service
 from dispatch.task.models import Task
+from dispatch.config import DISPATCH_UI_URL
 
 from .models import Ticket, TicketCreate
 from .service import create
@@ -111,20 +112,21 @@ def update_incident_ticket(
     # we update the external incident ticket
     try:
         plugin.instance.update(
-            incident.ticket.resource_id,
-            title,
-            description,
-            incident.incident_type.name,
-            incident.incident_severity.name,
-            incident.incident_priority.name,
-            incident.status.lower(),
-            incident.commander.individual.email,
-            incident.reporter.individual.email,
-            resolve_attr(incident, "conversation.weblink"),
-            resolve_attr(incident, "incident_document.weblink"),
-            resolve_attr(incident, "storage.weblink"),
-            resolve_attr(incident, "conference.weblink"),
-            total_cost,
+            ticket_id=incident.ticket.resource_id,
+            title=title,
+            description=description,
+            incident_type=incident.incident_type.name,
+            incident_severity=incident.incident_severity.name,
+            incident_priority=incident.incident_priority.name,
+            status=incident.status.lower(),
+            commander_email=incident.commander.individual.email,
+            reporter_email=incident.reporter.individual.email,
+            conversation_weblink=resolve_attr(incident, "conversation.weblink"),
+            document_weblink=resolve_attr(incident, "incident_document.weblink"),
+            storage_weblink=resolve_attr(incident, "storage.weblink"),
+            conference_weblink=resolve_attr(incident, "conference.weblink"),
+            dispatch_weblink=f"{DISPATCH_UI_URL}/{incident.project.organization.slug}/incidents/{incident.name}",
+            cost=total_cost,
             incident_type_plugin_metadata=incident_type_plugin_metadata,
         )
     except Exception as e:
@@ -230,17 +232,18 @@ def update_case_ticket(
     # we update the external case ticket
     try:
         plugin.instance.update_case_ticket(
-            case.ticket.resource_id,
-            title,
-            description,
-            case.resolution,
-            case.case_type.name,
-            case.case_severity.name,
-            case.case_priority.name,
-            case.status.lower(),
-            case.assignee.individual.email,
-            case_document_weblink,
-            case_storage_weblink,
+            ticket_id=case.ticket.resource_id,
+            title=title,
+            description=description,
+            resolution=case.resolution,
+            case_type=case.case_type.name,
+            case_severity=case.case_severity.name,
+            case_priority=case.case_priority.name,
+            status=case.status.lower(),
+            assignee_email=case.assignee.individual.email,
+            document_weblink=case_document_weblink,
+            storage_weblink=case_storage_weblink,
+            dispatch_weblink=f"{DISPATCH_UI_URL}/{case.project.organization.slug}/cases/{case.name}",
             case_type_plugin_metadata=case_type_plugin_metadata,
         )
     except Exception as e:
