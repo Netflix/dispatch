@@ -9,6 +9,7 @@ Priority: {{incident_priority}}
 Cost: {{cost}}
 
 *Incident Resources*
+[Dispatch Link|{{dispatch_weblink}}]
 [Conversation|{{conversation_weblink}}]
 [Investigation Document|{{document_weblink}}]
 [Storage|{{storage_weblink}}]
@@ -41,6 +42,7 @@ Severity: {{case_severity}}
 Priority: {{case_priority}}
 
 *Case Resources*
+[Dispatch Link|{{dispatch_weblink}}]
 [Investigation Document|{{document_weblink}}]
 [Storage|{{storage_weblink}}]
 
