@@ -983,7 +983,7 @@ CASE_CLOSED_RATING_FEEDBACK_NOTIFICATION = [
         "buttons": [
             {
                 "button_text": "Provide Feedback",
-                "button_value": "{{organization_slug}}-{{incident_id}}",
+                "button_value": "{{organization_slug}}-{{case_id}}",
                 "button_action": ConversationButtonActions.case_feedback_notification_provide,
             }
         ],
