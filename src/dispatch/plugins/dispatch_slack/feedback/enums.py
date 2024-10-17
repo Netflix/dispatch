@@ -8,15 +8,32 @@ class IncidentFeedbackNotificationBlockIds(DispatchEnum):
     anonymous_checkbox = "incident-feedback-notification-anonymous-checkbox"
 
 
+class CaseFeedbackNotificationBlockIds(DispatchEnum):
+    feedback_input = "case-feedback-notification-feedback-input"
+    rating_select = "case-feedback-notification-rating-select"
+    anonymous_checkbox = "case-feedback-notification-anonymous-checkbox"
+
+
 class IncidentFeedbackNotificationActionIds(DispatchEnum):
     feedback_input = "incident-feedback-notification-feedback-input"
     rating_select = "incident-feedback-notification-rating-select"
     anonymous_checkbox = "incident-feedback-notification-anonymous-checkbox"
 
 
+class CaseFeedbackNotificationActionIds(DispatchEnum):
+    feedback_input = "case-feedback-notification-feedback-input"
+    rating_select = "case-feedback-notification-rating-select"
+    anonymous_checkbox = "case-feedback-notification-anonymous-checkbox"
+
+
 class IncidentFeedbackNotificationActions(DispatchEnum):
     submit = "incident-feedback-notification-submit"
     provide = ConversationButtonActions.feedback_notification_provide
+
+
+class CaseFeedbackNotificationActions(DispatchEnum):
+    submit = "case-feedback-notification-submit"
+    provide = ConversationButtonActions.case_feedback_notification_provide
 
 
 class ServiceFeedbackNotificationBlockIds(DispatchEnum):

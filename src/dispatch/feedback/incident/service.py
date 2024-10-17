@@ -15,7 +15,7 @@ def get(*, db_session, feedback_id: int) -> Optional[Feedback]:
 
 def get_all(*, db_session):
     """Gets all pieces of feedback."""
-    return db_session.query(Feedback)
+    return db_session.query(Feedback).filter(Feedback.incident_id.isnot(None)).all()
 
 
 def get_all_last_x_hours_by_project_id(

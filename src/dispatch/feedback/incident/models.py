@@ -11,6 +11,7 @@ from dispatch.incident.models import IncidentReadMinimal
 from dispatch.models import DispatchBase, TimeStampMixin, FeedbackMixin, PrimaryKey, Pagination
 from dispatch.participant.models import ParticipantRead
 from dispatch.project.models import ProjectRead
+from dispatch.case.models import CaseReadMinimal
 
 from .enums import FeedbackRating
 
@@ -21,6 +22,7 @@ class Feedback(TimeStampMixin, FeedbackMixin, Base):
 
     # Relationships
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
+    case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"))
     participant_id = Column(Integer, ForeignKey("participant.id"))
 
     search_vector = Column(
@@ -33,7 +35,7 @@ class Feedback(TimeStampMixin, FeedbackMixin, Base):
 
     @hybrid_property
     def project(self):
-        return self.incident.project
+        return self.incident.project if self.incident else self.case.project
 
 
 # Pydantic models
@@ -42,6 +44,7 @@ class FeedbackBase(DispatchBase):
     rating: FeedbackRating = FeedbackRating.very_satisfied
     feedback: Optional[str] = Field(None, nullable=True)
     incident: Optional[IncidentReadMinimal]
+    case: Optional[CaseReadMinimal]
     participant: Optional[ParticipantRead]
 
 

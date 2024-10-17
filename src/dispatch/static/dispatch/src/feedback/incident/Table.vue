@@ -3,7 +3,7 @@
     <delete-dialog />
     <v-row no-gutters>
       <v-col>
-        <div class="text-h5">Incident feedback</div>
+        <div class="text-h5">Incident and Case feedback</div>
       </v-col>
       <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
@@ -49,6 +49,18 @@
                 {{ item.project.name }}
               </v-chip>
             </template>
+            <template #item.name="{ item }">
+              <span v-if="item.incident">{{ item.incident.name }}</span>
+              <span v-else>{{ item.case.name }}</span>
+            </template>
+            <template #item.title="{ item }">
+              <span v-if="item.incident">{{ item.incident.title }}</span>
+              <span v-else>{{ item.case.title }}</span>
+            </template>
+            <template #item.type="{ item }">
+              <v-chip v-if="item.incident" size="small" color="green"> Incident </v-chip>
+              <v-chip v-else size="small" color="blue"> Case </v-chip>
+            </template>
             <template #item.data-table-actions="{ item }">
               <v-menu location="right" origin="overlap">
                 <template #activator="{ props }">
@@ -92,8 +104,9 @@ export default {
   data() {
     return {
       headers: [
-        { title: "Incident Name", value: "incident.name", sortable: false },
-        { title: "Incident Title", value: "incident.title", sortable: false },
+        { title: "Type", key: "type", sortable: false },
+        { title: "Name", key: "name", sortable: false },
+        { title: "Title", key: "title", sortable: false },
         { title: "Participant", value: "participant", sortable: true },
         { title: "Rating", value: "rating", sortable: true },
         { title: "Feedback", value: "feedback", sortable: true },

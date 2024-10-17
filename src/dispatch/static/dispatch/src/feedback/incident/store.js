@@ -36,6 +36,7 @@ const state = {
       sortBy: ["created_at"],
       descending: [true],
       filters: {
+        case: [],
         incident: [],
         rating: [],
         feedback: [],

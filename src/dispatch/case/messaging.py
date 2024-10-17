@@ -24,6 +24,7 @@ from dispatch.messaging.strings import (
     CASE_TYPE_CHANGE,
     CASE_SEVERITY_CHANGE,
     CASE_PRIORITY_CHANGE,
+    CASE_CLOSED_RATING_FEEDBACK_NOTIFICATION,
     MessageType,
 )
 from dispatch.config import DISPATCH_UI_URL
@@ -330,3 +331,44 @@ def send_case_welcome_participant_message(
     )
 
     log.debug(f"Welcome ephemeral message sent to {participant_email}.")
+
+
+def send_case_rating_feedback_message(case: Case, db_session: Session):
+    """
+    Sends a direct message to all case participants asking
+    them to rate and provide feedback about the case.
+    """
+    notification_text = "Case Rating and Feedback"
+    notification_template = CASE_CLOSED_RATING_FEEDBACK_NOTIFICATION
+
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project.id, plugin_type="conversation"
+    )
+    if not plugin:
+        log.warning("Case rating and feedback message not sent, no conversation plugin enabled.")
+        return
+
+    items = [
+        {
+            "case_id": case.id,
+            "organization_slug": case.project.organization.slug,
+            "name": case.name,
+            "title": case.title,
+            "ticket_weblink": case.ticket.weblink,
+        }
+    ]
+
+    for participant in case.participants:
+        try:
+            plugin.instance.send_direct(
+                participant.individual.email,
+                notification_text,
+                notification_template,
+                MessageType.case_rating_feedback,
+                items=items,
+            )
+        except Exception as e:
+            # if one fails we don't want all to fail
+            log.exception(e)
+
+    log.debug("Case rating and feedback message sent to all participants.")
