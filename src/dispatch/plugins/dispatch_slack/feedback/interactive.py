@@ -17,13 +17,14 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 
 from dispatch.auth.models import DispatchUser
-from dispatch.feedback.incident import service as incident_feedback_service
+from dispatch.feedback.incident import service as subject_feedback_service
 from dispatch.feedback.incident.enums import FeedbackRating
 from dispatch.feedback.incident.models import FeedbackCreate
 from dispatch.feedback.service import service as feedback_service
 from dispatch.individual import service as individual_service
 from dispatch.feedback.service.models import ServiceFeedbackRating, ServiceFeedbackCreate
 from dispatch.incident import service as incident_service
+from dispatch.case import service as case_service
 from dispatch.participant import service as participant_service
 from dispatch.feedback.service.reminder import service as reminder_service
 from dispatch.plugin import service as plugin_service
@@ -45,6 +46,9 @@ from .enums import (
     ServiceFeedbackNotificationActionIds,
     ServiceFeedbackNotificationActions,
     ServiceFeedbackNotificationBlockIds,
+    CaseFeedbackNotificationActionIds,
+    CaseFeedbackNotificationActions,
+    CaseFeedbackNotificationBlockIds,
 )
 from dispatch.messaging.strings import (
     ONCALL_SHIFT_FEEDBACK_RECEIVED,
@@ -195,7 +199,7 @@ def handle_incident_feedback_submission_event(
     feedback_in = FeedbackCreate(
         rating=rating, feedback=feedback, project=incident.project, incident=incident
     )
-    feedback = incident_feedback_service.create(db_session=db_session, feedback_in=feedback_in)
+    feedback = subject_feedback_service.create(db_session=db_session, feedback_in=feedback_in)
     incident.feedback.append(feedback)
 
     # we only really care if this exists, if it doesn't then flag is false
@@ -467,3 +471,109 @@ def handle_oncall_shift_feedback_submission_event(
             )
         except Exception as e:
             log.exception(e)
+
+
+@app.action(
+    CaseFeedbackNotificationActions.provide,
+    middleware=[button_context_middleware, db_middleware],
+)
+def handle_case_feedback_direct_message_button_click(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    respond: Respond,
+    db_session: Session,
+    context: BoltContext,
+):
+    """Handles the feedback button in the feedback direct message."""
+    ack()
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+
+    if not case:
+        message = "Sorry, you cannot submit feedback about this case. The case does not exist."
+        respond(message=message, ephemeral=True)
+        return
+
+    blocks = [
+        Context(
+            elements=[MarkdownText(text="Use this form to rate your experience about the case.")]
+        ),
+        rating_select(
+            action_id=CaseFeedbackNotificationActionIds.rating_select,
+            block_id=CaseFeedbackNotificationBlockIds.rating_select,
+        ),
+        feedback_input(
+            action_id=CaseFeedbackNotificationActionIds.feedback_input,
+            block_id=CaseFeedbackNotificationBlockIds.feedback_input,
+        ),
+        anonymous_checkbox(
+            action_id=CaseFeedbackNotificationActionIds.anonymous_checkbox,
+            block_id=CaseFeedbackNotificationBlockIds.anonymous_checkbox,
+        ),
+    ]
+
+    modal = Modal(
+        title="Case Feedback",
+        blocks=blocks,
+        submit="Submit",
+        close="Cancel",
+        callback_id=CaseFeedbackNotificationActions.submit,
+        private_metadata=context["subject"].json(),
+    ).build()
+
+    client.views_open(trigger_id=body["trigger_id"], view=modal)
+
+
+def ack_case_feedback_submission_event(ack: Ack) -> None:
+    """Handles the feedback submission event acknowledgement."""
+    modal = Modal(
+        title="Case Feedback", close="Close", blocks=[Section(text="Submitting feedback...")]
+    ).build()
+    ack(response_action="update", view=modal)
+
+
+@app.view(
+    CaseFeedbackNotificationActions.submit,
+    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
+)
+def handle_case_feedback_submission_event(
+    ack: Ack,
+    body: dict,
+    context: BoltContext,
+    user: DispatchUser,
+    client: WebClient,
+    db_session: Session,
+    form_data: dict,
+):
+    # TODO: handle multiple organizations during submission
+    ack_case_feedback_submission_event(ack=ack)
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+
+    feedback = form_data.get(CaseFeedbackNotificationBlockIds.feedback_input, "")
+    rating = form_data.get(CaseFeedbackNotificationBlockIds.rating_select, {}).get("value")
+
+    feedback_in = FeedbackCreate(rating=rating, feedback=feedback, project=case.project, case=case)
+    feedback = subject_feedback_service.create(db_session=db_session, feedback_in=feedback_in)
+    case.feedback.append(feedback)
+
+    # we only really care if this exists, if it doesn't then flag is false
+    if not form_data.get(CaseFeedbackNotificationBlockIds.anonymous_checkbox):
+        participant = participant_service.get_by_case_id_and_email(
+            db_session=db_session, case_id=context["subject"].id, email=user.email
+        )
+        participant.feedback.append(feedback)
+        db_session.add(participant)
+
+    db_session.add(case)
+    db_session.commit()
+
+    modal = Modal(
+        title="Case Feedback",
+        close="Close",
+        blocks=[Section(text="Submitting feedback... Success!")],
+    ).build()
+
+    client.views_update(
+        view_id=body["view"]["id"],
+        view=modal,
+    )

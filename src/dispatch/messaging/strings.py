@@ -42,6 +42,7 @@ class MessageType(DispatchEnum):
     case_status_reminder = "case-status-reminder"
     service_feedback = "service-feedback"
     task_add_to_incident = "task-add-to-incident"
+    case_rating_feedback = "case-rating-feedback"
 
 
 INCIDENT_STATUS_DESCRIPTIONS = {
@@ -372,6 +373,9 @@ Thanks for closing incident {{name}}. Please, take a minute to review and update
 
 INCIDENT_CLOSED_RATING_FEEDBACK_DESCRIPTION = """
 Thanks for participating in the {{name}} ("{{title}}") incident. We would appreciate if you could rate your experience and provide feedback."""
+
+CASE_CLOSED_RATING_FEEDBACK_DESCRIPTION = """
+Thanks for participating in the {{name}} ("{{title}}") case. We would appreciate if you could rate your experience and provide feedback."""
 
 INCIDENT_MANAGEMENT_HELP_TIPS_MESSAGE_DESCRIPTION = """
 Hey, I see you're the Incident Commander for <{{conversation_weblink}}|{{name}}> ("{{title}}"). Here are a few things to consider when managing the incident:
@@ -966,6 +970,21 @@ INCIDENT_CLOSED_RATING_FEEDBACK_NOTIFICATION = [
                 "button_text": "Provide Feedback",
                 "button_value": "{{organization_slug}}-{{incident_id}}",
                 "button_action": ConversationButtonActions.feedback_notification_provide,
+            }
+        ],
+    }
+]
+
+CASE_CLOSED_RATING_FEEDBACK_NOTIFICATION = [
+    {
+        "title": "{{name}} Case - Rating and Feedback",
+        "title_link": "{{ticket_weblink}}",
+        "text": CASE_CLOSED_RATING_FEEDBACK_DESCRIPTION,
+        "buttons": [
+            {
+                "button_text": "Provide Feedback",
+                "button_value": "{{organization_slug}}-{{case_id}}",
+                "button_action": ConversationButtonActions.case_feedback_notification_provide,
             }
         ],
     }
