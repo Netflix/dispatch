@@ -302,7 +302,12 @@ export default {
 
     this.$watch(
       (vm) => [vm.project, vm.case_priority, vm.case_type],
-      () => {
+      (newValues, oldValues) => {
+        if (newValues[0] !== oldValues[0]) {
+          // Reset the incident_type if the project changes
+          this.case_type = null
+          this.case_priority = null
+        }
         var queryParams = {
           project: this.project ? this.project.name : null,
           case_priority: this.case_priority ? this.case_priority.name : null,
