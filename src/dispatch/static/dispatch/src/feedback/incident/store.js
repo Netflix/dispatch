@@ -9,6 +9,7 @@ const getDefaultSelectedState = () => {
     feedback: null,
     id: null,
     incident: null,
+    case: null,
     participant: null,
     project: null,
     rating: null,

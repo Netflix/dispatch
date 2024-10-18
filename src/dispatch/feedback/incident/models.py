@@ -8,7 +8,14 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.incident.models import IncidentReadMinimal
-from dispatch.models import DispatchBase, TimeStampMixin, FeedbackMixin, PrimaryKey, Pagination
+from dispatch.models import (
+    DispatchBase,
+    TimeStampMixin,
+    FeedbackMixin,
+    PrimaryKey,
+    Pagination,
+    ProjectMixin,
+)
 from dispatch.participant.models import ParticipantRead
 from dispatch.project.models import ProjectRead
 from dispatch.case.models import CaseReadMinimal
@@ -16,7 +23,7 @@ from dispatch.case.models import CaseReadMinimal
 from .enums import FeedbackRating
 
 
-class Feedback(TimeStampMixin, FeedbackMixin, Base):
+class Feedback(TimeStampMixin, FeedbackMixin, ProjectMixin, Base):
     # Columns
     id = Column(Integer, primary_key=True)
 
@@ -32,10 +39,6 @@ class Feedback(TimeStampMixin, FeedbackMixin, Base):
             regconfig="pg_catalog.simple",
         )
     )
-
-    @hybrid_property
-    def project(self):
-        return self.incident.project if self.incident else self.case.project
 
 
 # Pydantic models
