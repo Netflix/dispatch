@@ -4,10 +4,15 @@
     :items="items"
     :menu-props="{ maxHeight: '400' }"
     item-title="name"
+    item-value="id"
     :label="label"
+    :hint="hint"
     return-object
     :loading="loading"
-    :rules="[validationRule]"
+    no-filter
+    :error-messages="show_error"
+    :rules="[isTypeInProject]"
+    clearable
   >
     <template #item="{ props, item }">
       <v-list-item v-bind="props" :title="null">
@@ -31,7 +36,6 @@
 </template>
 
 <script>
-import { debounce } from "lodash"
 import SearchUtils from "@/search/utils"
 import IncidentTypeApi from "@/incident/type/api"
 
@@ -51,6 +55,10 @@ export default {
       type: String,
       default: () => "Type",
     },
+    hint: {
+      type: String,
+      default: () => "Incident Type to associate.",
+    },
   },
 
   data() {
@@ -61,48 +69,53 @@ export default {
       numItems: 5,
       total: 0,
       lastProjectId: null,
+      isTypeInProject: () => {
+        this.validateType()
+        return this.error
+      },
     }
   },
 
   computed: {
     selectedIncidentType: {
       get() {
-        return this.modelValue || null
+        if (!this.modelValue) return null
+        if (this.modelValue.id) {
+          return this.items.find((item) => item.id === this.modelValue.id) || null
+        }
+
+        if (this.modelValue.name) {
+          return this.items.find((item) => item.name === this.modelValue.name) || null
+        }
+
+        return null
       },
       set(value) {
         this.$emit("update:modelValue", value)
+        this.validateType()
       },
     },
-    isTypeValid() {
-      const project_id = this.project?.id || 0
-      return this.selectedIncidentType?.project?.id == project_id
-    },
-    validationRule() {
-      return this.isTypeValid || "Only types in selected project are allowed"
-    },
-  },
-
-  watch: {
-    project: {
-      handler(newProject) {
-        if (newProject?.id !== this.lastProjectId) {
-          this.lastProjectId = newProject?.id
-          this.clearSelection()
-          this.fetchData()
-        }
-      },
+    show_error() {
+      return null // Implement any specific error logic here if needed
     },
   },
 
   methods: {
-    clearSelection() {
-      this.selectedIncidentType = null
-    },
     loadMore() {
       this.numItems += 5
       this.fetchData()
     },
-    fetchData: debounce(function () {
+    validateType() {
+      const project_id = this.project?.id || 0
+      const in_project = this.selectedIncidentType?.project?.id == project_id
+      if (in_project) {
+        this.error = true
+      } else {
+        this.error = "Only types in selected project are allowed"
+      }
+    },
+    fetchData() {
+      this.error = null
       this.loading = true
 
       let filterOptions = {
@@ -112,9 +125,12 @@ export default {
       }
 
       if (this.project) {
-        filterOptions.filters = {
-          project: [this.project],
-          enabled: ["true"],
+        filterOptions = {
+          ...filterOptions,
+          filters: {
+            project: [this.project],
+            enabled: ["true"],
+          },
         }
       }
 
@@ -122,6 +138,7 @@ export default {
 
       IncidentTypeApi.getAll(filterOptions)
         .then((response) => {
+          this.items = []
           this.items = response.data.items
           this.total = response.data.total
           this.more = this.items.length < this.total
@@ -132,7 +149,24 @@ export default {
         .finally(() => {
           this.loading = false
         })
-    }, 300),
+    },
+    resetSelection() {
+      this.$emit("update:modelValue", null)
+    },
+  },
+
+  watch: {
+    project: {
+      handler(newProject) {
+        if (newProject?.id !== this.lastProjectId) {
+          this.lastProjectId = newProject?.id
+          this.resetSelection()
+          this.fetchData()
+        }
+        this.validateType()
+      },
+      deep: true,
+    },
   },
 
   created() {

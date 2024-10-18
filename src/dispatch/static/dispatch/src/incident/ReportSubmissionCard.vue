@@ -327,9 +327,19 @@ export default {
         vm.local_commander,
         vm.tags,
       ],
-      () => {
-        if (Array.isArray(this.local_commander))
+      (newValues, oldValues) => {
+        // Check if the project has changed
+        if (newValues[0] !== oldValues[0]) {
+          // Reset the incident_type if the project changes
+          this.incident_type = null
+          this.incident_priority = null
+          this.tags = null
+        }
+
+        if (Array.isArray(this.local_commander)) {
           this.commander_email = this.local_commander[0].individual.email
+        }
+
         var queryParams = {
           project: this.project ? this.project.name : null,
           incident_priority: this.incident_priority ? this.incident_priority.name : null,
@@ -339,19 +349,17 @@ export default {
           tag: this.tags ? this.tags.map((tag) => tag.name) : null,
           commander_email: this.commander_email,
         }
+
         Object.keys(queryParams).forEach((key) => (queryParams[key] ? {} : delete queryParams[key]))
+
         router
           .replace({
             query: queryParams,
           })
           .catch((err) => {
-            // Updating the query fields also updates the URL.
-            // Frequent updates to these fields throws navigation cancelled failures.
             if (isNavigationFailure(err, NavigationFailureType.cancelled)) {
-              // resolve error
               return err
             }
-            // rethrow error
             return Promise.reject(err)
           })
       }
