@@ -128,6 +128,8 @@ class Case(Base, TimeStampMixin, ProjectMixin):
 
     events = relationship("Event", backref="case", cascade="all, delete-orphan")
 
+    feedback = relationship("Feedback", backref="case", cascade="all, delete-orphan")
+
     groups = relationship(
         "Group", backref="case", cascade="all, delete-orphan", foreign_keys=[Group.case_id]
     )

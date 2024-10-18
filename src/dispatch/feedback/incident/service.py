@@ -2,6 +2,7 @@ from typing import List, Optional
 from datetime import datetime, timedelta
 
 from dispatch.incident import service as incident_service
+from dispatch.case import service as case_service
 from dispatch.incident.models import Incident
 from dispatch.project.models import Project
 
@@ -34,13 +35,25 @@ def get_all_last_x_hours_by_project_id(
 
 def create(*, db_session, feedback_in: FeedbackCreate) -> Feedback:
     """Creates a new piece of feedback."""
-    incident = incident_service.get(
-        db_session=db_session,
-        incident_id=feedback_in.incident.id,
-    )
+    if feedback_in.incident:
+        incident = incident_service.get(
+            db_session=db_session,
+            incident_id=feedback_in.incident.id,
+        )
+        project = incident.project
+        case = None
+    else:
+        case = case_service.get(
+            db_session=db_session,
+            case_id=feedback_in.case.id,
+        )
+        project = case.project
+        incident = None
     feedback = Feedback(
-        **feedback_in.dict(exclude={"incident"}),
+        **feedback_in.dict(exclude={"incident", "case", "project"}),
         incident=incident,
+        case=case,
+        project=project,
     )
     db_session.add(feedback)
     db_session.commit()
