@@ -40,17 +40,20 @@ def create(*, db_session, feedback_in: FeedbackCreate) -> Feedback:
             db_session=db_session,
             incident_id=feedback_in.incident.id,
         )
+        project = incident.project
         case = None
     else:
         case = case_service.get(
             db_session=db_session,
             case_id=feedback_in.case.id,
         )
+        project = case.project
         incident = None
     feedback = Feedback(
-        **feedback_in.dict(exclude={"incident", "case"}),
+        **feedback_in.dict(exclude={"incident", "case", "project"}),
         incident=incident,
         case=case,
+        project=project,
     )
     db_session.add(feedback)
     db_session.commit()
