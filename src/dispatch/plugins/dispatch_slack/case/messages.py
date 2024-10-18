@@ -462,12 +462,18 @@ def create_genai_signal_analysis_message(
 
         """
     )
-    message = json.loads(
-        response["choices"][0]["message"]["content"]
-        .replace("```json", "")
-        .replace("```", "")
-        .strip()
-    )
+
+    try:
+        message = json.loads(
+            response["choices"][0]["message"]["content"]
+            .replace("```json", "")
+            .replace("```", "")
+            .strip()
+        )
+    except json.JSONDecodeError as e:
+        message = "Unable to generate GenAI signal analysis. Error decoding response from the artificial-intelligence plugin."
+        log.warning(f"{message} Error: {e}")
+        return message, create_genai_signal_message_metadata_blocks(signal_metadata_blocks, message)
 
     # we check if the response is empty
     if not message:
