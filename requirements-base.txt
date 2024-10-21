@@ -279,7 +279,7 @@ protobuf==4.23.4
     #   -r requirements-base.in
     #   google-api-core
     #   googleapis-common-protos
-psycopg2-binary==2.9.9
+psycopg2-binary==2.9.10
     # via -r requirements-base.in
 pyasn1==0.5.1
     # via
@@ -308,7 +308,7 @@ pyjwt[crypto]==2.8.0
     #   msal
     #   oauthlib
     #   pyjwt
-pyparsing==3.1.4
+pyparsing==3.2.0
     # via
     #   -r requirements-base.in
     #   httplib2
@@ -483,9 +483,9 @@ urllib3==2.0.7
     #   pdpyras
     #   requests
     #   sentry-sdk
-uvicorn==0.31.1
+uvicorn==0.32.0
     # via -r requirements-base.in
-uvloop==0.20.0
+uvloop==0.21.0
     # via -r requirements-base.in
 validators==0.18.2
     # via -r requirements-base.in

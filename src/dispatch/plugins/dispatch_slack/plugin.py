@@ -107,7 +107,9 @@ class SlackConversationPlugin(ConversationPlugin):
                     client=client,
                     config=self.configuration,
                 )
-                if message:
+                if message and isinstance(message, dict):
+                    # we update the genai_analysis field in the case model with the message if it's a dict
+                    # if the message is a string, it means there was an error generating the analysis
                     case.genai_analysis = message
 
                 if message_blocks:

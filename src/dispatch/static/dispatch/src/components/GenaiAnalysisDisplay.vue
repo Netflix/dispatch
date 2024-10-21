@@ -8,13 +8,9 @@
         </h3>
         <div v-if="isObject(value)">
           <!-- Render each sub-value with formatText to handle links and code formatting -->
-          <span
-            v-for="(subValue, subKey) in value"
-            :key="subKey"
-            v-html="formatText(subValue)"
-          ></span>
+          <span v-for="(subValue, subKey) in value" :key="subKey" v-html="formatText(subValue)" />
         </div>
-        <span v-else v-html="formatText(value)"></span>
+        <span v-else v-html="formatText(value)" />
       </div>
     </div>
     <div v-else>

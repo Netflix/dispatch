@@ -155,6 +155,7 @@ def create_incident_issue_fields(
     document_weblink: str,
     storage_weblink: str,
     conference_weblink: str,
+    dispatch_weblink: str,
     cost: float,
 ):
     """Creates Jira issue fields."""
@@ -192,6 +193,7 @@ def create_incident_issue_fields(
             conference_weblink=conference_weblink,
             conversation_weblink=conversation_weblink,
             storage_weblink=storage_weblink,
+            dispatch_weblink=dispatch_weblink,
         )
     issue_fields.update({"description": description})
 
@@ -210,6 +212,7 @@ def create_case_issue_fields(
     assignee_username: str,
     document_weblink: str,
     storage_weblink: str,
+    dispatch_weblink: str,
 ):
     """Creates Jira issue fields."""
     issue_fields = {}
@@ -226,6 +229,7 @@ def create_case_issue_fields(
         document_weblink=document_weblink,
         resolution=resolution,
         storage_weblink=storage_weblink,
+        dispatch_weblink=dispatch_weblink,
     )
     issue_fields.update({"description": description})
 
@@ -329,6 +333,7 @@ class JiraTicketPlugin(TicketPlugin):
         document_weblink: str,
         storage_weblink: str,
         conference_weblink: str,
+        dispatch_weblink: str,
         cost: float,
         incident_type_plugin_metadata: dict = None,
     ):
@@ -357,6 +362,7 @@ class JiraTicketPlugin(TicketPlugin):
             document_weblink=document_weblink,
             storage_weblink=storage_weblink,
             conference_weblink=conference_weblink,
+            dispatch_weblink=dispatch_weblink,
             cost=cost,
         )
 
@@ -481,6 +487,7 @@ class JiraTicketPlugin(TicketPlugin):
         # reporter_email: str,
         document_weblink: str,
         storage_weblink: str,
+        dispatch_weblink: str,
         case_type_plugin_metadata: dict = None,
     ):
         """Updates a case Jira issue."""
@@ -506,6 +513,7 @@ class JiraTicketPlugin(TicketPlugin):
             assignee_username=assignee_username,
             document_weblink=document_weblink,
             storage_weblink=storage_weblink,
+            dispatch_weblink=dispatch_weblink,
         )
 
         return update(self.configuration, client, issue, issue_fields, status)

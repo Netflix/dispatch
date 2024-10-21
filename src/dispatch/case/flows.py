@@ -37,6 +37,7 @@ from dispatch.ticket import flows as ticket_flows
 from .messaging import (
     send_case_created_notifications,
     send_case_update_notifications,
+    send_case_rating_feedback_message,
 )
 
 from .models import Case, CaseStatus
@@ -497,6 +498,11 @@ def case_closed_status_flow(case: Case, db_session=None):
     if storage_plugin.configuration.read_only:
         for document in case.documents:
             document_flows.mark_document_as_readonly(document=document, db_session=db_session)
+
+    if case.dedicated_channel:
+        # we send a direct message to all participants asking them
+        # to rate and provide feedback about the case
+        send_case_rating_feedback_message(case, db_session)
 
 
 def reactivate_case_participants(case: Case, db_session: Session):

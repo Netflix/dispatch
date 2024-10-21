@@ -258,6 +258,7 @@ class DispatchTicketPlugin(TicketPlugin):
         # reporter_email: str,
         document_weblink: str,
         storage_weblink: str,
+        dispatch_weblink: str,
         case_type_plugin_metadata: dict = None,
     ):
         """Updates a Dispatch case ticket."""

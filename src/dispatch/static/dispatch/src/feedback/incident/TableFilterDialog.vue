@@ -16,6 +16,9 @@
         <v-list-item>
           <incident-combobox v-model="local_incident" label="Incidents" />
         </v-list-item>
+        <v-list-item>
+          <case-combobox v-model="local_case" label="Cases" />
+        </v-list-item>
       </v-list>
       <v-card-actions>
         <v-spacer />
@@ -30,6 +33,7 @@ import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
 
 import IncidentCombobox from "@/incident/IncidentFilterCombobox.vue"
+import CaseCombobox from "@/case/CaseFilterCombobox.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 
 export default {
@@ -38,6 +42,7 @@ export default {
   components: {
     IncidentCombobox,
     ProjectCombobox,
+    CaseCombobox,
   },
 
   props: {
@@ -53,6 +58,7 @@ export default {
     return {
       display: false,
       local_incident: [],
+      local_case: [],
       local_project: this.projects,
     }
   },
@@ -60,11 +66,12 @@ export default {
   computed: {
     ...mapFields("incident_feedback", [
       "table.options.filters.incident",
+      "table.options.filters.case",
       "table.options.filters.project",
     ]),
 
     numFilters: function () {
-      return sum([this.incident.length, this.project.length])
+      return sum([this.incident.length, this.project.length, this.case.length])
     },
   },
 
@@ -73,6 +80,7 @@ export default {
       // we set the filter values
       this.project = this.local_project
       this.incident = this.local_incident
+      this.case = this.local_case
 
       // we close the dialog
       this.display = false
