@@ -211,6 +211,7 @@ class DispatchTicketPlugin(TicketPlugin):
         document_weblink: str,
         storage_weblink: str,
         conference_weblink: str,
+        dispatch_weblink: str,
         cost: float,
         incident_type_plugin_metadata: dict = None,
     ):
