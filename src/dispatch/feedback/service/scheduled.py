@@ -2,7 +2,8 @@ from schedule import every
 import logging
 from datetime import datetime
 
-from dispatch.database.core import SessionLocal
+from sqlalchemy.orm import Session
+
 from dispatch.decorators import scheduled_project_task, timer
 from dispatch.individual import service as individual_service
 from dispatch.plugin import service as plugin_service
@@ -30,7 +31,7 @@ log = logging.getLogger(__name__)
 @scheduler.add(every(1).day.at("16:00"), name="oncall-shift-feedback-ucan")
 @timer
 @scheduled_project_task
-def oncall_shift_feedback_ucan(db_session: SessionLocal, project: Project):
+def oncall_shift_feedback_ucan(db_session: Session, project: Project):
     oncall_shift_feedback(db_session=db_session, project=project, hour=16)
     find_expired_reminders_and_send(db_session=db_session, project=project)
 
@@ -38,12 +39,12 @@ def oncall_shift_feedback_ucan(db_session: SessionLocal, project: Project):
 @scheduler.add(every(1).day.at("06:00"), name="oncall-shift-feedback-emea")
 @timer
 @scheduled_project_task
-def oncall_shift_feedback_emea(db_session: SessionLocal, project: Project):
+def oncall_shift_feedback_emea(db_session: Session, project: Project):
     oncall_shift_feedback(db_session=db_session, project=project, hour=6)
     find_expired_reminders_and_send(db_session=db_session, project=project)
 
 
-def find_expired_reminders_and_send(*, db_session: SessionLocal, project: Project):
+def find_expired_reminders_and_send(*, db_session: Session, project: Project):
     reminders = reminder_service.get_all_expired_reminders_by_project_id(
         db_session=db_session, project_id=project.id
     )
@@ -65,10 +66,11 @@ def find_expired_reminders_and_send(*, db_session: SessionLocal, project: Projec
 
 def find_schedule_and_send(
     *,
-    db_session: SessionLocal,
+    db_session: Session,
     project: Project,
     oncall_plugin: PluginInstance,
     schedule_id: str,
+    service_id: str,
     hour: int,
 ):
     """
@@ -133,7 +135,7 @@ def find_schedule_and_send(
     send_oncall_shift_feedback_message(
         project=project,
         individual=individual,
-        schedule_id=schedule_id,
+        schedule_id=service_id,
         shift_end_at=current_oncall["shift_end"],
         schedule_name=current_oncall["schedule_name"],
         details=details,
@@ -141,7 +143,7 @@ def find_schedule_and_send(
     )
 
 
-def oncall_shift_feedback(db_session: SessionLocal, project: Project, hour: int):
+def oncall_shift_feedback(db_session: Session, project: Project, hour: int):
     """
     Experimental: collects feedback from individuals participating in an oncall service that has health metrics enabled
     when their oncall shift ends. For now, only for one project and schedule.
@@ -174,5 +176,6 @@ def oncall_shift_feedback(db_session: SessionLocal, project: Project, hour: int)
                 project=project,
                 oncall_plugin=oncall_plugin,
                 schedule_id=schedule_id,
+                service_id=external_id,
                 hour=hour,
             )
