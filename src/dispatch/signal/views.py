@@ -241,7 +241,7 @@ def update_filter(
     signal_filter_in: SignalFilterUpdate,
 ):
     """Updates an existing signal filter."""
-    signal_filter = get_signal_filter(db_session=db_session, signal_id=signal_filter_id)
+    signal_filter = get_signal_filter(db_session=db_session, signal_filter_id=signal_filter_id)
     if not signal_filter:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
