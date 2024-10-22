@@ -328,15 +328,22 @@ const actions = {
     commit("SET_DIALOG_EDIT_EVENT", false)
   },
   exportDoc({ commit }, timeline_filters) {
-    IncidentApi.exportTimeline(state.selected.id, timeline_filters).then((response) => {
-      commit("SET_SELECTED", response.data)
-    })
     commit(
       "notification_backend/addBeNotification",
       { text: "Data exported successfully. This may take a few minutes.", type: "success" },
       { root: true }
-    )
-    commit("SET_DIALOG_EDIT_EVENT", false)
+    ),
+      IncidentApi.exportTimeline(state.selected.id, timeline_filters)
+        .then(() => {
+          commit(
+            "notification_backend/addBeNotification",
+            { text: "Data exported successfully.", type: "success" },
+            { root: true }
+          )
+        })
+        .catch(() => {
+          commit("SET_DIALOG_EDIT_EVENT", false)
+        })
   },
 
   closeDeleteEventDialog({ commit }) {

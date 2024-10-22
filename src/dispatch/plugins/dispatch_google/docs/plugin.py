@@ -14,6 +14,7 @@ import unicodedata
 from googleapiclient.discovery import Resource
 from googleapiclient.errors import HttpError
 
+from fastapi import HTTPException, status
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins.bases import DocumentPlugin
 from dispatch.plugins.dispatch_google import docs as google_docs_plugin
@@ -220,9 +221,6 @@ class GoogleDocsDocumentPlugin(DocumentPlugin):
 
                             elif header_section:
                                 # Gets the end index of any text below the header
-                                if header_section and item["textRun"]["content"].strip():
-                                    header_index = item["endIndex"]
-                                # checking if we are past header in question
                                 if (
                                     any(
                                         "headingId" in style
@@ -232,9 +230,42 @@ class GoogleDocsDocumentPlugin(DocumentPlugin):
                                     and element["paragraph"].get("paragraphStyle")["headingId"]
                                     != headingId
                                 ):
+                                    if header_index == element["startIndex"]:
+                                        requests = [
+                                            {
+                                                "insertText": {
+                                                    "location": {
+                                                        "index": header_index,
+                                                    },
+                                                    "text": "\n",
+                                                }
+                                            },
+                                            {
+                                                "updateParagraphStyle": {
+                                                    "range": {
+                                                        "startIndex": header_index,
+                                                        "endIndex": header_index,
+                                                    },
+                                                    "paragraphStyle": {
+                                                        "namedStyleType": "NORMAL_TEXT",
+                                                    },
+                                                    "fields": "namedStyleType",
+                                                }
+                                            },
+                                        ]
+                                        if GoogleDocsDocumentPlugin.insert(
+                                            self, document_id=document_id, request=requests
+                                        ):
+                                            header_index = header_index
                                     past_header = True
                                     header_section = False
                                     break
+
+                                if header_section and item["textRun"]["content"].strip():
+                                    header_index = item["endIndex"]
+
+                                # checking if we are past header in question
+
                 # Checking for table under the header
                 elif header_section and "table" in element and not past_header:
                     table_exists = True
@@ -251,6 +282,9 @@ class GoogleDocsDocumentPlugin(DocumentPlugin):
         except Exception as e:
             log.exception(e)
             return table_exists, header_index, -1, table_indices
+        if header_index == 0:
+            log.error("Could not find Timeline header in document " + str(document_id))
+            raise Exception("Timeline header does not exist in doc")
         return table_exists, header_index, -1, table_indices
 
     def delete_table(self, document_id: str, request) -> bool | None:
