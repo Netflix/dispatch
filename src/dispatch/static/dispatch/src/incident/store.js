@@ -330,14 +330,14 @@ const actions = {
   exportDoc({ commit }, timeline_filters) {
     commit(
       "notification_backend/addBeNotification",
-      { text: "Data exported successfully. This may take a few minutes.", type: "success" },
+      { text: "Timeline export initiated. This may take a few minutes.", type: "success" },
       { root: true }
     ),
       IncidentApi.exportTimeline(state.selected.id, timeline_filters)
         .then(() => {
           commit(
             "notification_backend/addBeNotification",
-            { text: "Data exported successfully.", type: "success" },
+            { text: "Timeline exported successfully.", type: "success" },
             { root: true }
           )
         })

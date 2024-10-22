@@ -1,6 +1,5 @@
 from typing import Optional
 from uuid import uuid4
-from fastapi import HTTPException, status
 import datetime
 import logging
 import json
@@ -274,7 +273,7 @@ def export_timeline(
                 resource_type="dispatch-incident-document",
             )
             if documents:
-                documents_list.append(documents.resource_id)
+                documents_list.append((documents.resource_id, "Incident"))
 
         if timeline_filters.get("reviewDocument"):
             documents = document_service.get_by_incident_id_and_resource_type(
@@ -284,12 +283,12 @@ def export_timeline(
                 resource_type="dispatch-incident-review-document",
             )
             if documents:
-                documents_list.append(documents.resource_id)
+                documents_list.append((documents.resource_id, "Incident Review"))
 
-        for doc_id in documents_list:
+        for doc_id, doc_name in documents_list:
             # Checks for existing table in the document
             table_exists, curr_table_start, curr_table_end, _ = plugin.instance.get_table_details(
-                document_id=doc_id, header="Timeline"
+                document_id=doc_id, header="Timeline", doc_name=doc_name
             )
 
             # Deletes existing table
@@ -326,8 +325,12 @@ def export_timeline(
                 log.debug("Table skeleton inserted successfully")
 
             else:
-                log.error("Unable to insert table skeleton in the document " + str(doc_id))
-                raise Exception(f"Unable to insert table skeleton for timeline export")
+                log.error(
+                    f"Unable to insert table skeleton in the {doc_name} document with id {doc_id}"
+                )
+                raise Exception(
+                    f"Unable to insert table skeleton for timeline export in the {doc_name} document"
+                )
 
             # Formatting & inserting empty table
             insert_data_request = [
@@ -356,12 +359,16 @@ def export_timeline(
                 log.debug("Table Formatted successfully")
 
             else:
-                log.error("Unable to format table for timeline export in doc " + str(doc_id))
-                raise Exception(f"Unable to format table for timeline export")
+                log.error(
+                    f"Unable to format table for timeline export in {doc_name} document with id {doc_id}"
+                )
+                raise Exception(
+                    f"Unable to format table for timeline export in the {doc_name} document"
+                )
 
             # Calculating table cell indices
             _, _, _, cell_indices = plugin.instance.get_table_details(
-                document_id=doc_id, header="Timeline"
+                document_id=doc_id, header="Timeline", doc_name=doc_name
             )
             data_to_insert = list(column_headers) + [
                 item for row in table_data for item in row.values()
@@ -443,7 +450,7 @@ def export_timeline(
 
             data_inserted = plugin.instance.insert(document_id=doc_id, request=insert_data_request)
         if not data_inserted:
-            raise Exception(f"Encountered error while inserting data into the document")
+            raise Exception(f"Encountered error while inserting data into the {doc_name} document")
 
     else:
         log.error("No data to export")

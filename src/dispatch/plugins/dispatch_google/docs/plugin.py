@@ -14,7 +14,6 @@ import unicodedata
 from googleapiclient.discovery import Resource
 from googleapiclient.errors import HttpError
 
-from fastapi import HTTPException, status
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins.bases import DocumentPlugin
 from dispatch.plugins.dispatch_google import docs as google_docs_plugin
@@ -196,7 +195,9 @@ class GoogleDocsDocumentPlugin(DocumentPlugin):
             log.exception(e)
             return False
 
-    def get_table_details(self, document_id: str, header: str) -> tuple[bool, int, int, list[int]]:
+    def get_table_details(
+        self, document_id: str, header: str, doc_name: str
+    ) -> tuple[bool, int, int, list[int]]:
         client = get_service(self.configuration, "docs", "v1", self.scopes).documents()
         try:
             document_content = (
@@ -283,8 +284,10 @@ class GoogleDocsDocumentPlugin(DocumentPlugin):
             log.exception(e)
             return table_exists, header_index, -1, table_indices
         if header_index == 0:
-            log.error("Could not find Timeline header in document " + str(document_id))
-            raise Exception("Timeline header does not exist in doc")
+            log.error(
+                f"Could not find Timeline header in the {doc_name} document with id {document_id}"
+            )
+            raise Exception(f"Timeline header does not exist in the {doc_name} document")
         return table_exists, header_index, -1, table_indices
 
     def delete_table(self, document_id: str, request) -> bool | None:
