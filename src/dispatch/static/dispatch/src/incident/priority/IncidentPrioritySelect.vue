@@ -93,6 +93,7 @@ export default {
       let filterOptions = {
         sortBy: ["view_order"],
         descending: [false],
+        filters: {},
       }
 
       if (this.project) {
@@ -103,6 +104,10 @@ export default {
           },
         }
       }
+
+      // if (this.project) {
+      //   filterOptions.filters.project = [this.project]
+      // }
 
       let enabledFilter = [
         {
@@ -130,23 +135,8 @@ export default {
   },
 
   watch: {
-    project: {
-      handler(newProject) {
-        if (newProject?.id !== this.lastProjectId) {
-          // Check if we're moving to a valid project (not null)
-          if (this.lastProjectId) {
-            this.lastProjectId = newProject.id
-            this.resetSelection()
-            this.fetchData()
-          } else {
-            // If new project is null/undefined, just update lastProjectId
-            this.lastProjectId = null
-          }
-        }
-
-        this.validatePriority()
-      },
-      deep: true,
+    project() {
+      this.fetchData()
     },
     status() {
       this.validatePriority()
