@@ -81,7 +81,18 @@ def get_request_handler(request: Request, body: bytes, organization: str) -> Sla
 )
 async def slack_events(request: Request, organization: str, body: bytes = Depends(get_body)):
     """Handle all incoming Slack events."""
+
     handler = get_request_handler(request=request, body=body, organization=organization)
+    try:
+        body_json = json.loads(body)
+        # if we're getting the url verification request,
+        # handle it synchronously so that slack api verification works
+        if body_json.get("type") == "url_verification":
+            return handler.handle(req=request, body=body)
+    except json.JSONDecodeError:
+        pass
+
+    # otherwise, handle it asynchronously
     task = BackgroundTask(handler.handle, req=request, body=body)
     return JSONResponse(
         background=task,
