@@ -131,6 +131,7 @@ export default {
 
   watch: {
     project() {
+      this.validatePriority()
       this.fetchData()
     },
     status() {

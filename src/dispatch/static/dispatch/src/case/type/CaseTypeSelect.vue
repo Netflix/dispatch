@@ -130,7 +130,7 @@ export default {
         }
       }
 
-      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions }, "CaseType")
 
       CaseTypeApi.getAll(filterOptions)
         .then((response) => {
@@ -170,6 +170,7 @@ export default {
 
   watch: {
     project() {
+      this.validateType()
       this.fetchData()
     },
   },
