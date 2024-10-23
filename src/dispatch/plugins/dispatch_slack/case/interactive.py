@@ -1660,49 +1660,41 @@ def handle_resolve_submission_event(
     user: DispatchUser,
 ):
     ack()
-    # we get the current or previous case
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
-    previous_case = CaseRead.from_orm(case)
+    # we get the current case and store it as previous case
+    current_case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    previous_case = CaseRead.from_orm(current_case)
 
-    # we run the case status transition flow
-    case_flows.case_status_transition_flow_dispatcher(
-        case=case,
-        current_status=CaseStatus.closed,
-        db_session=db_session,
-        previous_status=case.status,
-        organization_slug=context["subject"].organization_slug,
-    )
-
-    # we update the case with the new resolution and status
+    # we update the case with the new resolution, resolution reason and status
     case_in = CaseUpdate(
-        title=case.title,
+        title=current_case.title,
         resolution_reason=form_data[DefaultBlockIds.case_resolution_reason_select]["value"],
         resolution=form_data[DefaultBlockIds.resolution_input],
-        visibility=case.visibility,
+        visibility=current_case.visibility,
         status=CaseStatus.closed,
     )
-    case = case_service.update(
+    updated_case = case_service.update(
         db_session=db_session,
-        case=case,
+        case=current_case,
         case_in=case_in,
         current_user=user,
     )
 
+    # we run the case update flow
     case_flows.case_update_flow(
-        case_id=case.id,
+        case_id=updated_case.id,
         previous_case=previous_case,
         db_session=db_session,
-        reporter_email=case.reporter.individual.email if case.reporter else None,
-        assignee_email=case.assignee.individual.email if case.assignee else None,
+        reporter_email=updated_case.reporter.individual.email if updated_case.reporter else None,
+        assignee_email=updated_case.assignee.individual.email if updated_case.assignee else None,
         organization_slug=context["subject"].organization_slug,
     )
 
-    # We update the case message with the new resolution and status
-    blocks = create_case_message(case=case, channel_id=context["subject"].channel_id)
+    # we update the case notification with the resolution, resolution reason and status
+    blocks = create_case_message(case=updated_case, channel_id=context["subject"].channel_id)
     client.chat_update(
         blocks=blocks,
-        ts=case.conversation.thread_id,
-        channel=case.conversation.channel_id,
+        ts=updated_case.conversation.thread_id,
+        channel=updated_case.conversation.channel_id,
     )
 
 

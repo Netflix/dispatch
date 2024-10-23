@@ -11,7 +11,7 @@ from dispatch.conversation import flows as conversation_flows
 from dispatch.database.core import SessionLocal
 from dispatch.decorators import background_task
 from dispatch.document import flows as document_flows
-from dispatch.enums import DocumentResourceTypes, Visibility, EventType
+from dispatch.enums import DocumentResourceTypes, EventType, Visibility
 from dispatch.event import service as event_service
 from dispatch.group import flows as group_flows
 from dispatch.group.enums import GroupAction, GroupType
@@ -19,16 +19,16 @@ from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.messaging import send_participant_announcement_message
-from dispatch.incident.models import IncidentCreate, Incident
-from dispatch.incident.type.models import IncidentType
+from dispatch.incident.models import Incident, IncidentCreate
 from dispatch.incident.priority.models import IncidentPriority
+from dispatch.incident.type.models import IncidentType
 from dispatch.individual.models import IndividualContactRead
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
 from dispatch.participant_role import flows as role_flow
-from dispatch.participant_role.models import ParticipantRoleType, ParticipantRole
+from dispatch.participant_role.models import ParticipantRole, ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.storage import flows as storage_flows
 from dispatch.storage.enums import StorageAction
@@ -36,10 +36,9 @@ from dispatch.ticket import flows as ticket_flows
 
 from .messaging import (
     send_case_created_notifications,
-    send_case_update_notifications,
     send_case_rating_feedback_message,
+    send_case_update_notifications,
 )
-
 from .models import Case, CaseStatus
 from .service import get
 
@@ -337,8 +336,8 @@ def case_update_flow(
     # we get the case
     case = get(db_session=db_session, case_id=case_id)
 
-    if reporter_email:
-        # we run the case assign role flow for the reporter
+    if reporter_email and case and reporter_email != case.reporter.email:
+        # we run the case assign role flow for the reporter if it changed
         case_assign_role_flow(
             case_id=case.id,
             participant_email=reporter_email,
@@ -346,8 +345,8 @@ def case_update_flow(
             db_session=db_session,
         )
 
-    if assignee_email:
-        # we run the case assign role flow for the assignee
+    if assignee_email and case and assignee_email != case.assignee.email:
+        # we run the case assign role flow for the assignee if it changed
         case_assign_role_flow(
             case_id=case.id,
             participant_email=assignee_email,
@@ -375,7 +374,7 @@ def case_update_flow(
 
     if case.tactical_group:
         # we update the tactical group
-        if reporter_email:
+        if reporter_email and reporter_email != case.reporter.email:
             group_flows.update_group(
                 subject=case,
                 group=case.tactical_group,
@@ -383,7 +382,7 @@ def case_update_flow(
                 group_member=reporter_email,
                 db_session=db_session,
             )
-        if assignee_email:
+        if assignee_email and assignee_email != case.assignee.email:
             group_flows.update_group(
                 subject=case,
                 group=case.tactical_group,
