@@ -93,7 +93,6 @@ export default {
       let filterOptions = {
         sortBy: ["view_order"],
         descending: [false],
-        filters: {},
       }
 
       if (this.project) {
@@ -104,10 +103,6 @@ export default {
           },
         }
       }
-
-      // if (this.project) {
-      //   filterOptions.filters.project = [this.project]
-      // }
 
       let enabledFilter = [
         {
