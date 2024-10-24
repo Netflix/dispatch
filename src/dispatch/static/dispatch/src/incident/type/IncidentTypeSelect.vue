@@ -7,7 +7,7 @@
     :label="label"
     return-object
     :loading="loading"
-    :rules="[validationRule]"
+    :rules="[is_type_in_project]"
   >
     <template #item="{ props, item }">
       <v-list-item v-bind="props" :title="null">
@@ -61,46 +61,51 @@ export default {
       numItems: 5,
       total: 0,
       lastProjectId: null,
+      error: null,
+      is_type_in_project: () => {
+        this.validateType()
+        return this.error
+      },
     }
   },
 
   computed: {
     selectedIncidentType: {
       get() {
-        return this.modelValue || null
+        if (!this.modelValue) return null
+        if (this.modelValue.id) {
+          return this.items.find((item) => item.id === this.modelValue.id) || null
+        }
+        // If we only have a name (e.g., from URL params), find by name
+        if (this.modelValue.name) {
+          return this.items.find((item) => item.name === this.modelValue.name) || null
+        }
+        return null
       },
       set(value) {
         this.$emit("update:modelValue", value)
+        this.validateType()
       },
-    },
-    isTypeValid() {
-      const project_id = this.project?.id || 0
-      return this.selectedIncidentType?.project?.id == project_id
-    },
-    validationRule() {
-      return this.isTypeValid || "Only types in selected project are allowed"
     },
   },
 
   watch: {
-    project: {
-      handler(newProject) {
-        if (newProject?.id !== this.lastProjectId) {
-          // Check if we're moving to a valid project (not null)
-          if (this.lastProjectId) {
-            this.lastProjectId = newProject.id
-            this.resetSelection()
-            this.fetchData()
-          } else {
-            // If new project is null/undefined, just update lastProjectId
-            this.lastProjectId = null
-          }
-        }
-      },
+    project() {
+      this.validateType()
+      this.fetchData()
     },
   },
 
   methods: {
+    validateType() {
+      const project_id = this.project?.id || 0
+      const in_project = this.selectedIncidentType?.project?.id == project_id
+      if (in_project) {
+        this.error = true
+      } else {
+        this.error = "Only types in selected project are allowed"
+      }
+    },
     clearSelection() {
       this.selectedIncidentType = null
     },
@@ -124,7 +129,10 @@ export default {
         }
       }
 
-      filterOptions = SearchUtils.createParametersFromTableOptions(filterOptions)
+      filterOptions = SearchUtils.createParametersFromTableOptions(
+        { ...filterOptions },
+        "IncidentType"
+      )
 
       IncidentTypeApi.getAll(filterOptions)
         .then((response) => {
