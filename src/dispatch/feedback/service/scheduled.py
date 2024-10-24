@@ -55,7 +55,7 @@ def find_expired_reminders_and_send(*, db_session: Session, project: Project):
         send_oncall_shift_feedback_message(
             project=project,
             individual=individual,
-            schedule_id=reminder.schedule_id,
+            service_id=reminder.schedule_id,
             shift_end_at=str(reminder.shift_end_at),
             schedule_name=reminder.schedule_name,
             reminder=reminder,
@@ -135,7 +135,7 @@ def find_schedule_and_send(
     send_oncall_shift_feedback_message(
         project=project,
         individual=individual,
-        schedule_id=service_id,
+        service_id=service_id,
         shift_end_at=current_oncall["shift_end"],
         schedule_name=current_oncall["schedule_name"],
         details=details,
