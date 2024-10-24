@@ -14,7 +14,12 @@
           <project-combobox v-model="local_project" label="Projects" />
         </v-list-item>
         <v-list-item>
-          <service-select v-model="local_service" label="Oncall service" />
+          <service-select
+            v-model="local_service"
+            :health-metrics="true"
+            :project="local_project"
+            label="Oncall service"
+          />
         </v-list-item>
       </v-list>
       <v-card-actions>

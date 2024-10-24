@@ -22,7 +22,7 @@ def send_oncall_shift_feedback_message(
     *,
     project: Project,
     individual: IndividualContact,
-    schedule_id: str,
+    service_id: str,
     shift_end_at: str,
     schedule_name: str,
     reminder: Optional[ServiceFeedbackReminder] = None,
@@ -64,7 +64,7 @@ def send_oncall_shift_feedback_message(
                 reminder_at=datetime.utcnow() + timedelta(hours=23),
                 individual_contact_id=individual.id,
                 project_id=project.id,
-                schedule_id=schedule_id,
+                schedule_id=service_id,
                 schedule_name=schedule_name,
                 shift_end_at=shift_end_at,
                 details=[] if details is None else details,
@@ -75,7 +75,7 @@ def send_oncall_shift_feedback_message(
     items = [
         {
             "individual_name": individual.name,
-            "oncall_schedule_id": schedule_id,
+            "oncall_schedule_id": service_id,
             "oncall_service_name": schedule_name,
             "organization_slug": project.organization.slug,
             "project_id": project.id,
