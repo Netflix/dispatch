@@ -173,8 +173,8 @@ def case_remove_participant_flow(
 def update_conversation(case: Case, db_session: Session) -> None:
     """Updates external communication conversation."""
 
-    # if case has dedicated channel, there's no thread to update
-    if case.conversation.thread_id is None:
+    # if no case conversation or case has dedicated channel, there's no thread to update
+    if case.conversation is None or case.conversation.thread_id is None:
         return
 
     plugin = plugin_service.get_active_instance(
