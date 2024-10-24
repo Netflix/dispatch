@@ -62,6 +62,7 @@ from .factories import (
     ReportFactory,
     SearchFilterFactory,
     ServiceFactory,
+    ServiceFeedbackFactory,
     SignalFactory,
     SignalFilterFactory,
     SignalInstanceFactory,
@@ -669,3 +670,8 @@ def cost_model(session):
 @pytest.fixture
 def cost_model_activity(session):
     return CostModelActivityFactory()
+
+
+@pytest.fixture
+def service_feedback(session):
+    return ServiceFeedbackFactory()
