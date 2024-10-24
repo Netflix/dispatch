@@ -58,7 +58,7 @@ export default {
       loading: false,
       items: [],
       more: false,
-      numItems: 5,
+      numItems: 50,
       total: 0,
       lastProjectId: null,
       error: null,
