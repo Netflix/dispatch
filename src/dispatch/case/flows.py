@@ -488,6 +488,9 @@ def case_closed_status_flow(case: Case, db_session=None):
     if not storage_plugin:
         return
 
+    # we update the ticket
+    ticket_flows.update_case_ticket(case=case, db_session=db_session)
+
     # Open document access if configured
     if storage_plugin.configuration.open_on_close:
         for document in case.documents:

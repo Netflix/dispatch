@@ -106,6 +106,7 @@ from dispatch.signal.models import (
     SignalFilterCreate,
     SignalInstance,
 )
+from dispatch.ticket import flows as ticket_flows
 
 log = logging.getLogger(__name__)
 
@@ -1008,6 +1009,10 @@ def handle_case_participant_role_activity(
             organization_slug=context["subject"].organization_slug,
         )
         case.status = CaseStatus.triage
+
+        # we update the ticket
+        ticket_flows.update_case_ticket(case=case, db_session=db_session)
+
     case_flows.update_conversation(case, db_session)
     db_session.commit()
 
@@ -1073,6 +1078,10 @@ def reopen_button_click(
     ack()
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
     case.status = CaseStatus.triage
+
+    # we update the ticket
+    ticket_flows.update_case_ticket(case=case, db_session=db_session)
+
     db_session.commit()
 
     # update case message
@@ -1644,6 +1653,10 @@ def triage_button_click(
     )
     case.status = CaseStatus.triage
     db_session.commit()
+
+    # we update the ticket
+    ticket_flows.update_case_ticket(case=case, db_session=db_session)
+
     case_flows.update_conversation(case, db_session)
 
 
