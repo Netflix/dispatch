@@ -43,6 +43,7 @@ class MessageType(DispatchEnum):
     service_feedback = "service-feedback"
     task_add_to_incident = "task-add-to-incident"
     case_rating_feedback = "case-rating-feedback"
+    case_feedback_daily_report = "case-feedback-daily-report"
 
 
 INCIDENT_STATUS_DESCRIPTIONS = {
@@ -993,6 +994,15 @@ CASE_CLOSED_RATING_FEEDBACK_NOTIFICATION = [
 INCIDENT_FEEDBACK_DAILY_REPORT = [
     {"title": "Incident", "text": "{{ name }}"},
     {"title": "Incident Title", "text": "{{ title }}"},
+    {"title": "Rating", "text": "{{ rating }}"},
+    {"title": "Feedback", "text": "{{ feedback }}"},
+    {"title": "Participant", "text": "{{ participant }}"},
+    {"title": "Created At", "text": "", "datetime": "{{ created_at}}"},
+]
+
+CASE_FEEDBACK_DAILY_REPORT = [
+    {"title": "Case", "text": "{{ name }}"},
+    {"title": "Case Title", "text": "{{ title }}"},
     {"title": "Rating", "text": "{{ rating }}"},
     {"title": "Feedback", "text": "{{ feedback }}"},
     {"title": "Participant", "text": "{{ participant }}"},
