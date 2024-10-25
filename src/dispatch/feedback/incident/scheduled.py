@@ -9,7 +9,10 @@ from dispatch.project.models import Project
 from dispatch.scheduler import scheduler
 
 from .messaging import send_incident_feedback_daily_report, send_case_feedback_daily_report
-from .service import get_all_last_x_hours_by_project_id
+from .service import (
+    get_all_incident_last_x_hours_by_project_id,
+    get_all_case_last_x_hours_by_project_id,
+)
 
 log = logging.getLogger(__name__)
 
@@ -40,15 +43,20 @@ def feedback_report_daily(db_session: Session, project: Project):
     Fetches all incident and case feedback provided in the last 24 hours
     and sends a daily report to the commanders and assignees who handled the incidents/cases.
     """
-    feedback = get_all_last_x_hours_by_project_id(db_session=db_session, project_id=project.id)
+    incident_feedback = get_all_incident_last_x_hours_by_project_id(
+        db_session=db_session, project_id=project.id
+    )
 
-    if feedback:
-        # incident feedback
-        grouped_incident_feedback = group_feedback_by_commander(feedback)
+    if incident_feedback:
+        grouped_incident_feedback = group_feedback_by_commander(incident_feedback)
         for commander_email, feedback in grouped_incident_feedback.items():
             send_incident_feedback_daily_report(commander_email, feedback, project.id, db_session)
 
-        # case feedback
-        grouped_case_feedback = group_feedback_by_assignee(feedback)
+    case_feedback = get_all_case_last_x_hours_by_project_id(
+        db_session=db_session, project_id=project.id
+    )
+
+    if case_feedback:
+        grouped_case_feedback = group_feedback_by_assignee(case_feedback)
         for assignee_email, feedback in grouped_case_feedback.items():
             send_case_feedback_daily_report(assignee_email, feedback, project.id, db_session)

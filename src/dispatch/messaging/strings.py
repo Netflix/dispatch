@@ -81,6 +81,11 @@ This is a daily report of feedback about incidents handled by you.""".replace(
     "\n", " "
 ).strip()
 
+CASE_FEEDBACK_DAILY_REPORT_DESCRIPTION = """
+This is a daily report of feedback about cases handled by you.""".replace(
+    "\n", " "
+).strip()
+
 INCIDENT_WEEKLY_REPORT_TITLE = """
 Incidents Weekly Report""".replace(
     "\n", " "
