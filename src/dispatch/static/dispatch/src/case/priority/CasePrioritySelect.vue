@@ -140,22 +140,8 @@ export default {
   },
 
   watch: {
-    project: {
-      handler(newProject) {
-        if (newProject?.id !== this.lastProjectId) {
-          // Check if we're moving to a valid project (not null)
-          if (this.lastProjectId) {
-            this.lastProjectId = newProject.id
-            this.resetSelection()
-            this.fetchData()
-          } else {
-            // If new project is null/undefined, just update lastProjectId
-            this.lastProjectId = null
-          }
-        }
-        this.validatePriority()
-      },
-      deep: true,
+    project() {
+      this.fetchData()
     },
   },
 
