@@ -336,7 +336,7 @@ def case_update_flow(
     # we get the case
     case = get(db_session=db_session, case_id=case_id)
 
-    if reporter_email and case and reporter_email != case.reporter.email:
+    if reporter_email and case and reporter_email != case.reporter.individual.email:
         # we run the case assign role flow for the reporter if it changed
         case_assign_role_flow(
             case_id=case.id,
@@ -345,7 +345,7 @@ def case_update_flow(
             db_session=db_session,
         )
 
-    if assignee_email and case and assignee_email != case.assignee.email:
+    if assignee_email and case and assignee_email != case.assignee.individual.email:
         # we run the case assign role flow for the assignee if it changed
         case_assign_role_flow(
             case_id=case.id,
@@ -374,7 +374,7 @@ def case_update_flow(
 
     if case.tactical_group:
         # we update the tactical group
-        if reporter_email and reporter_email != case.reporter.email:
+        if reporter_email and reporter_email != case.reporter.individual.email:
             group_flows.update_group(
                 subject=case,
                 group=case.tactical_group,
@@ -382,7 +382,7 @@ def case_update_flow(
                 group_member=reporter_email,
                 db_session=db_session,
             )
-        if assignee_email and assignee_email != case.assignee.email:
+        if assignee_email and assignee_email != case.assignee.individual.email:
             group_flows.update_group(
                 subject=case,
                 group=case.tactical_group,
@@ -487,6 +487,9 @@ def case_closed_status_flow(case: Case, db_session=None):
 
     if not storage_plugin:
         return
+
+    # we update the ticket
+    ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
     # Open document access if configured
     if storage_plugin.configuration.open_on_close:

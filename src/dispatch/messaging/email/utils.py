@@ -12,6 +12,7 @@ from dispatch.messaging.strings import (
     INCIDENT_DAILY_REPORT_DESCRIPTION,
     INCIDENT_FEEDBACK_DAILY_REPORT_DESCRIPTION,
     INCIDENT_TASK_REMINDER_DESCRIPTION,
+    CASE_FEEDBACK_DAILY_REPORT_DESCRIPTION,
     MessageType,
     render_message_template,
 )
@@ -41,6 +42,10 @@ def get_template(message_type: MessageType, project_id: int):
         MessageType.incident_feedback_daily_report: (
             "notification_list.mjml",
             INCIDENT_FEEDBACK_DAILY_REPORT_DESCRIPTION,
+        ),
+        MessageType.case_feedback_daily_report: (
+            "notification_list.mjml",
+            CASE_FEEDBACK_DAILY_REPORT_DESCRIPTION,
         ),
         MessageType.incident_daily_report: (
             "notification_list.mjml",

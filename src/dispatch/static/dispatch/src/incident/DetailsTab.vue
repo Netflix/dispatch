@@ -56,7 +56,7 @@
         />
       </v-col>
       <v-col cols="6">
-        <project-select v-model="project" />
+        <project-select v-model="project" disabled />
       </v-col>
       <v-col cols="6">
         <incident-type-select v-model="incident_type" :project="project" />
