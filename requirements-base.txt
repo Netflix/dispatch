@@ -496,7 +496,7 @@ wasabi==1.1.2
     #   weasel
 weasel==0.3.4
     # via spacy
-werkzeug==3.0.3
+werkzeug==3.0.6
     # via schemathesis
 wrapt==1.16.0
     # via deprecated
