@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from dispatch.incident import service as incident_service
 from dispatch.case import service as case_service
 from dispatch.incident.models import Incident
+from dispatch.case.models import Case
 from dispatch.project.models import Project
 
 from .models import Feedback, FeedbackCreate, FeedbackUpdate
@@ -19,13 +20,27 @@ def get_all(*, db_session):
     return db_session.query(Feedback)
 
 
-def get_all_last_x_hours_by_project_id(
+def get_all_incident_last_x_hours_by_project_id(
     *, db_session, hours: int = 24, project_id: int
 ) -> List[Optional[Feedback]]:
     """Returns all feedback provided in the last x hours by project id. Defaults to 24 hours."""
     return (
         db_session.query(Feedback)
         .join(Incident)
+        .join(Project)
+        .filter(Project.id == project_id)
+        .filter(Feedback.created_at >= datetime.utcnow() - timedelta(hours=hours))
+        .all()
+    )
+
+
+def get_all_case_last_x_hours_by_project_id(
+    *, db_session, hours: int = 24, project_id: int
+) -> List[Optional[Feedback]]:
+    """Returns all feedback provided in the last x hours by project id. Defaults to 24 hours."""
+    return (
+        db_session.query(Feedback)
+        .join(Case)
         .join(Project)
         .filter(Project.id == project_id)
         .filter(Feedback.created_at >= datetime.utcnow() - timedelta(hours=hours))
