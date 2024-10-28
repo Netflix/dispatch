@@ -8,7 +8,6 @@ from dispatch.case import service as case_service
 from dispatch.case.messaging import send_case_welcome_participant_message
 from dispatch.case.models import CaseRead
 from dispatch.conversation import flows as conversation_flows
-from dispatch.database.core import SessionLocal
 from dispatch.decorators import background_task
 from dispatch.document import flows as document_flows
 from dispatch.enums import DocumentResourceTypes, EventType, Visibility
@@ -45,7 +44,7 @@ from .service import get
 log = logging.getLogger(__name__)
 
 
-def get_case_participants_flow(case: Case, db_session: SessionLocal):
+def get_case_participants_flow(case: Case, db_session: Session):
     """Get additional case participants based on priority, type and description."""
     individual_contacts = []
     team_contacts = []
@@ -336,7 +335,11 @@ def case_update_flow(
     # we get the case
     case = get(db_session=db_session, case_id=case_id)
 
-    if reporter_email and case and reporter_email != case.reporter.individual.email:
+    if not case:
+        log.warning(f"Case with id {case_id} not found.")
+        return
+
+    if reporter_email and case.reporter and reporter_email != case.reporter.individual.email:
         # we run the case assign role flow for the reporter if it changed
         case_assign_role_flow(
             case_id=case.id,
@@ -345,7 +348,7 @@ def case_update_flow(
             db_session=db_session,
         )
 
-    if assignee_email and case and assignee_email != case.assignee.individual.email:
+    if assignee_email and case.assignee and assignee_email != case.assignee.individual.email:
         # we run the case assign role flow for the assignee if it changed
         case_assign_role_flow(
             case_id=case.id,
@@ -374,7 +377,7 @@ def case_update_flow(
 
     if case.tactical_group:
         # we update the tactical group
-        if reporter_email and reporter_email != case.reporter.individual.email:
+        if reporter_email and case.reporter and reporter_email != case.reporter.individual.email:
             group_flows.update_group(
                 subject=case,
                 group=case.tactical_group,
@@ -382,7 +385,7 @@ def case_update_flow(
                 group_member=reporter_email,
                 db_session=db_session,
             )
-        if assignee_email and assignee_email != case.assignee.individual.email:
+        if assignee_email and case.assignee and assignee_email != case.assignee.individual.email:
             group_flows.update_group(
                 subject=case,
                 group=case.tactical_group,
@@ -405,7 +408,7 @@ def case_update_flow(
         send_case_update_notifications(case, previous_case, db_session)
 
 
-def case_delete_flow(case: Case, db_session: SessionLocal):
+def case_delete_flow(case: Case, db_session: Session):
     """Runs the case delete flow."""
     # we delete the external ticket
     if case.ticket:
