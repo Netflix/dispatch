@@ -33,12 +33,13 @@ from dispatch.storage import flows as storage_flows
 from dispatch.storage.enums import StorageAction
 from dispatch.ticket import flows as ticket_flows
 
+from .enums import CaseResolutionReason, CaseStatus
 from .messaging import (
     send_case_created_notifications,
     send_case_rating_feedback_message,
     send_case_update_notifications,
 )
-from .models import Case, CaseStatus
+from .models import Case
 from .service import get
 
 log = logging.getLogger(__name__)
@@ -191,6 +192,26 @@ def update_conversation(case: Case, db_session: Session) -> None:
     )
 
 
+def case_auto_close_flow(case: Case, db_session: Session):
+    "Runs the case auto close flow."
+    # we mark the case as closed
+    case.resolution = "Auto closed via case type auto close configuration."
+    case.resolution_reason = CaseResolutionReason.user_acknowledge
+    case.status = CaseStatus.closed
+    db_session.add(case)
+    db_session.commit()
+
+    # we transition the case from the new to the closed state
+    case_triage_status_flow(
+        case=case,
+        db_session=db_session,
+    )
+    case_closed_status_flow(
+        case=case,
+        db_session=db_session,
+    )
+
+
 def case_new_create_flow(
     *,
     case_id: int,
@@ -252,6 +273,10 @@ def case_new_create_flow(
         else:
             log.warning("Case assignee not paged. No plugin of type oncall enabled.")
             return case
+
+    if case and case.case_type.auto_close:
+        # we transition the case to the closed state if its case type has auto close enabled
+        case_auto_close_flow(case=case, db_session=db_session)
 
     return case
 

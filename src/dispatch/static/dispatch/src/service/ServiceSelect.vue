@@ -16,7 +16,8 @@
     chips
     multiple
     closable-chips
-    ><template #append-item>
+  >
+    <template #append-item>
       <v-list-item v-if="more" @click="loadMore">
         <v-list-item-subtitle>Load More</v-list-item-subtitle>
       </v-list-item>
