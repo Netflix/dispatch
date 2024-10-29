@@ -65,7 +65,7 @@ export default {
   },
 
   computed: {
-    ...mapMultiRowFields("incident", ["selected.incident_costs", "selected.participants"]),
+    ...mapMultiRowFields("incident", ["selected.incident_costs"]),
 
     totalCost() {
       return this.incident_costs.reduce((accumulator, item) => {
