@@ -130,7 +130,7 @@ export default {
         }
       }
 
-      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions }, "CaseType")
 
       CaseTypeApi.getAll(filterOptions)
         .then((response) => {
@@ -169,16 +169,9 @@ export default {
   },
 
   watch: {
-    project: {
-      handler(newProject) {
-        if (newProject?.id !== this.lastProjectId) {
-          this.lastProjectId = newProject?.id
-          this.resetSelection()
-          this.fetchData()
-        }
-        this.validateType()
-      },
-      deep: true,
+    project() {
+      this.validateType()
+      this.fetchData()
     },
   },
 
