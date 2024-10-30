@@ -211,6 +211,10 @@ def case_auto_close_flow(case: Case, db_session: Session):
         db_session=db_session,
     )
 
+    if case.conversation and case.has_thread:
+        # we update the case conversation
+        update_conversation(case=case, db_session=db_session)
+
 
 def case_new_create_flow(
     *,
