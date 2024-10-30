@@ -330,7 +330,7 @@ python-dateutil==2.9.0.post0
     #   pandas
 python-jose==3.3.0
     # via -r requirements-base.in
-python-multipart==0.0.12
+python-multipart==0.0.16
     # via -r requirements-base.in
 python-slugify==8.0.4
     # via -r requirements-base.in
