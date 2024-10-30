@@ -56,7 +56,7 @@
         />
       </v-col>
       <v-col cols="6">
-        <project-select v-model="project" disabled />
+        <project-select v-model="project" :disabled="project_disabled" />
       </v-col>
       <v-col cols="6">
         <incident-type-select v-model="incident_type" :project="project" />
@@ -189,6 +189,9 @@ export default {
       "selected.title",
       "selected.visibility",
     ]),
+    project_disabled(item) {
+      return item.id != null
+    },
   },
 }
 </script>
