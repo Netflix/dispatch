@@ -162,7 +162,7 @@ def incident_create_resources(
 ) -> Incident:
     """Creates all resources required for incidents."""
     # we create the incident ticket
-    if not incident.ticket:
+    if not incident.ticket or incident.ticket.resource_type == "jira-error-ticket":
         ticket_flows.create_incident_ticket(incident=incident, db_session=db_session)
 
     # we update the channel name immediately for dedicated channel cases escalated -> incident
