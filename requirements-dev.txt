@@ -18,7 +18,7 @@ click==8.1.7
     # via
     #   -r requirements-dev.in
     #   black
-coverage==7.6.3
+coverage==7.6.4
     # via -r requirements-dev.in
 decorator==5.1.1
     # via ipython
@@ -32,7 +32,7 @@ executing==2.0.1
     #   stack-data
 factory-boy==3.3.1
     # via -r requirements-dev.in
-faker==30.6.0
+faker==30.8.1
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -42,7 +42,7 @@ identify==2.5.33
     # via pre-commit
 iniconfig==2.0.0
     # via pytest
-ipython==8.28.0
+ipython==8.29.0
     # via -r requirements-dev.in
 jedi==0.19.1
     # via ipython
@@ -86,7 +86,7 @@ python-dateutil==2.9.0.post0
     # via faker
 pyyaml==6.0.1
     # via pre-commit
-ruff==0.6.9
+ruff==0.7.1
     # via -r requirements-dev.in
 six==1.16.0
     # via

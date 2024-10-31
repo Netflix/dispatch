@@ -6,7 +6,9 @@ import SearchUtils from "@/search/utils"
 
 const getDefaultSelectedState = () => {
   return {
+    auto_close: null,
     case_template_document: null,
+    conversation_target: null,
     cost_model: null,
     default: false,
     description: null,
@@ -20,7 +22,6 @@ const getDefaultSelectedState = () => {
     plugin_metadata: [],
     project: null,
     slug: null,
-    conversation_target: null,
     visibility: null,
   }
 }
