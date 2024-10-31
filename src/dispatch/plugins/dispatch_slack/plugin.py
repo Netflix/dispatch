@@ -103,10 +103,7 @@ class SlackConversationPlugin(ConversationPlugin):
             try:
                 message, message_blocks = create_genai_signal_analysis_message(
                     case=case,
-                    channel_id=conversation_id,
                     db_session=db_session,
-                    client=client,
-                    config=self.configuration,
                 )
                 if message and isinstance(message, dict):
                     # we update the genai_analysis field in the case model with the message if it's a dict

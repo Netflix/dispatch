@@ -84,7 +84,7 @@ def generate_case_signal_historical_context(case: Case, db_session: Session) -> 
         if conversation_plugin:
             if related_case.conversation and related_case.conversation.channel_id:
                 # we fetch conversation replies for the related case
-                conversation_replies = conversation_plugin.get_conversation_replies(
+                conversation_replies = conversation_plugin.instance.get_conversation_replies(
                     conversation_id=related_case.conversation.channel_id,
                     thread_ts=related_case.conversation.thread_id,
                 )
