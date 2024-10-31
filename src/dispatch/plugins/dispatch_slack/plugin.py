@@ -54,6 +54,7 @@ from .service import (
     emails_to_user_ids,
     get_user_avatar_url,
     get_user_profile_by_email,
+    is_user,
     rename_conversation,
     resolve_user,
     send_ephemeral_message,
@@ -428,6 +429,30 @@ class SlackConversationPlugin(ConversationPlugin):
         except Exception as e:
             logger.exception(e)
             raise e
+
+    def get_conversation_replies(self, conversation_id: str, thread_ts: str) -> list[str]:
+        """
+        Fetches replies from a specific thread in a Slack conversation.
+
+        Args:
+            conversation_id (str): The ID of the Slack conversation.
+            thread_ts (str): The timestamp of the thread to fetch replies from.
+
+        Returns:
+            list[str]: A list of replies from users in the specified thread.
+        """
+        client = create_slack_client(self.configuration)
+        conversation_replies = client.conversations_replies(
+            channel=conversation_id,
+            ts=thread_ts,
+        )["messages"]
+
+        replies = []
+        for reply in conversation_replies:
+            if is_user(config=self.configuration, user_id=reply.get("user")):
+                # we only include messages from users
+                replies.append(f"{reply['text']}")
+        return replies
 
 
 @apply(counter, exclude=["__init__"])
