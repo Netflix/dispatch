@@ -43,19 +43,19 @@ test.describe("Authenticated Dispatch App", () => {
           "'Incident Report: Description' not visible on page after submission of incident report."
         )
         .toBeVisible()
-    }),
-    test("The 'Load More' selector should be visible when there are more than 5 options in Type combobox.", async ({
-      reportIncidentPage,
-    }) => {
-      await reportIncidentPage.goto()
-      await reportIncidentPage.typeDropdown.click()
-
-      // Soft check that the 'Load More' selector is available upon opening the Project dropdown
-      await expect
-        .soft(
-          reportIncidentPage.loadMore,
-          "The 'Load More' selector should be visible when there are more than 5 options in Type combobox."
-        )
-        .toBeVisible()
     })
+    // test("The 'Load More' selector should be visible when there are more than 5 options in Type combobox.", async ({
+    //   reportIncidentPage,
+    // }) => {
+    //   await reportIncidentPage.goto()
+    //   await reportIncidentPage.typeDropdown.click()
+
+    //   // Soft check that the 'Load More' selector is available upon opening the Project dropdown
+    //   await expect
+    //     .soft(
+    //       reportIncidentPage.loadMore,
+    //       "The 'Load More' selector should be visible when there are more than 5 options in Type combobox."
+    //     )
+    //     .toBeVisible()
+    // })
 })

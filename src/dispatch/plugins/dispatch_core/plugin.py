@@ -61,6 +61,8 @@ from dispatch.service import service as service_service
 from dispatch.service.models import Service, ServiceRead
 from dispatch.team import service as team_service
 from dispatch.team.models import TeamContact, TeamContactRead
+from dispatch.plugins.dispatch_core.config import DispatchTicketConfiguration
+from dispatch.plugins.dispatch_core.service import create_resource_id
 
 log = logging.getLogger(__name__)
 
@@ -175,6 +177,9 @@ class DispatchTicketPlugin(TicketPlugin):
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
+    def __init__(self):
+        self.configuration_schema = DispatchTicketConfiguration
+
     def create(
         self,
         incident_id: int,
@@ -187,9 +192,11 @@ class DispatchTicketPlugin(TicketPlugin):
         """Creates a Dispatch incident ticket."""
         incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-        resource_id = (
-            f"dispatch-{incident.project.organization.slug}-{incident.project.slug}-{incident.id}"
-        )
+        if self.configuration and self.configuration.use_incident_name:
+            resource_id = create_resource_id(f"{incident.project.slug}-{title}-{incident.id}")
+        else:
+            resource_id = f"dispatch-{incident.project.organization.slug}-{incident.project.slug}-{incident.id}"
+
         return {
             "resource_id": resource_id,
             "weblink": f"{DISPATCH_UI_URL}/{incident.project.organization.name}/incidents/{resource_id}?project={incident.project.name}",
@@ -211,6 +218,7 @@ class DispatchTicketPlugin(TicketPlugin):
         document_weblink: str,
         storage_weblink: str,
         conference_weblink: str,
+        dispatch_weblink: str,
         cost: float,
         incident_type_plugin_metadata: dict = None,
     ):

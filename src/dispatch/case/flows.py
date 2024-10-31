@@ -8,10 +8,9 @@ from dispatch.case import service as case_service
 from dispatch.case.messaging import send_case_welcome_participant_message
 from dispatch.case.models import CaseRead
 from dispatch.conversation import flows as conversation_flows
-from dispatch.database.core import SessionLocal
 from dispatch.decorators import background_task
 from dispatch.document import flows as document_flows
-from dispatch.enums import DocumentResourceTypes, Visibility, EventType
+from dispatch.enums import DocumentResourceTypes, EventType, Visibility
 from dispatch.event import service as event_service
 from dispatch.group import flows as group_flows
 from dispatch.group.enums import GroupAction, GroupType
@@ -19,34 +18,34 @@ from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.messaging import send_participant_announcement_message
-from dispatch.incident.models import IncidentCreate, Incident
-from dispatch.incident.type.models import IncidentType
+from dispatch.incident.models import Incident, IncidentCreate
 from dispatch.incident.priority.models import IncidentPriority
+from dispatch.incident.type.models import IncidentType
 from dispatch.individual.models import IndividualContactRead
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
 from dispatch.participant_role import flows as role_flow
-from dispatch.participant_role.models import ParticipantRoleType, ParticipantRole
+from dispatch.participant_role.models import ParticipantRole, ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.storage import flows as storage_flows
 from dispatch.storage.enums import StorageAction
 from dispatch.ticket import flows as ticket_flows
 
+from .enums import CaseResolutionReason, CaseStatus
 from .messaging import (
     send_case_created_notifications,
-    send_case_update_notifications,
     send_case_rating_feedback_message,
+    send_case_update_notifications,
 )
-
-from .models import Case, CaseStatus
+from .models import Case
 from .service import get
 
 log = logging.getLogger(__name__)
 
 
-def get_case_participants_flow(case: Case, db_session: SessionLocal):
+def get_case_participants_flow(case: Case, db_session: Session):
     """Get additional case participants based on priority, type and description."""
     individual_contacts = []
     team_contacts = []
@@ -193,6 +192,30 @@ def update_conversation(case: Case, db_session: Session) -> None:
     )
 
 
+def case_auto_close_flow(case: Case, db_session: Session):
+    "Runs the case auto close flow."
+    # we mark the case as closed
+    case.resolution = "Auto closed via case type auto close configuration."
+    case.resolution_reason = CaseResolutionReason.user_acknowledge
+    case.status = CaseStatus.closed
+    db_session.add(case)
+    db_session.commit()
+
+    # we transition the case from the new to the closed state
+    case_triage_status_flow(
+        case=case,
+        db_session=db_session,
+    )
+    case_closed_status_flow(
+        case=case,
+        db_session=db_session,
+    )
+
+    if case.conversation and case.has_thread:
+        # we update the case conversation
+        update_conversation(case=case, db_session=db_session)
+
+
 def case_new_create_flow(
     *,
     case_id: int,
@@ -254,6 +277,10 @@ def case_new_create_flow(
         else:
             log.warning("Case assignee not paged. No plugin of type oncall enabled.")
             return case
+
+    if case and case.case_type.auto_close:
+        # we transition the case to the closed state if its case type has auto close enabled
+        case_auto_close_flow(case=case, db_session=db_session)
 
     return case
 
@@ -337,8 +364,12 @@ def case_update_flow(
     # we get the case
     case = get(db_session=db_session, case_id=case_id)
 
-    if reporter_email:
-        # we run the case assign role flow for the reporter
+    if not case:
+        log.warning(f"Case with id {case_id} not found.")
+        return
+
+    if reporter_email and case.reporter and reporter_email != case.reporter.individual.email:
+        # we run the case assign role flow for the reporter if it changed
         case_assign_role_flow(
             case_id=case.id,
             participant_email=reporter_email,
@@ -346,8 +377,8 @@ def case_update_flow(
             db_session=db_session,
         )
 
-    if assignee_email:
-        # we run the case assign role flow for the assignee
+    if assignee_email and case.assignee and assignee_email != case.assignee.individual.email:
+        # we run the case assign role flow for the assignee if it changed
         case_assign_role_flow(
             case_id=case.id,
             participant_email=assignee_email,
@@ -375,7 +406,7 @@ def case_update_flow(
 
     if case.tactical_group:
         # we update the tactical group
-        if reporter_email:
+        if reporter_email and case.reporter and reporter_email != case.reporter.individual.email:
             group_flows.update_group(
                 subject=case,
                 group=case.tactical_group,
@@ -383,7 +414,7 @@ def case_update_flow(
                 group_member=reporter_email,
                 db_session=db_session,
             )
-        if assignee_email:
+        if assignee_email and case.assignee and assignee_email != case.assignee.individual.email:
             group_flows.update_group(
                 subject=case,
                 group=case.tactical_group,
@@ -406,7 +437,7 @@ def case_update_flow(
         send_case_update_notifications(case, previous_case, db_session)
 
 
-def case_delete_flow(case: Case, db_session: SessionLocal):
+def case_delete_flow(case: Case, db_session: Session):
     """Runs the case delete flow."""
     # we delete the external ticket
     if case.ticket:
@@ -488,6 +519,9 @@ def case_closed_status_flow(case: Case, db_session=None):
 
     if not storage_plugin:
         return
+
+    # we update the ticket
+    ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
     # Open document access if configured
     if storage_plugin.configuration.open_on_close:
