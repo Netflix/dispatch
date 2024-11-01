@@ -6,7 +6,6 @@ from .contact import ContactPlugin  # noqa
 from .conversation import ConversationPlugin  # noqa
 from .definition import DefinitionPlugin  # noqa
 from .document import DocumentPlugin  # noqa
-from .document_resolver import DocumentResolverPlugin  # noqa
 from .email import EmailPlugin  # noqa
 from .monitor import MonitorPlugin  # noqa
 from .oncall import OncallPlugin  # noqa
