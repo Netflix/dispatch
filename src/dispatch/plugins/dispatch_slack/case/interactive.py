@@ -1042,6 +1042,11 @@ def handle_case_after_hours_message(
     participant = participant_service.get_by_case_id_and_email(
         db_session=db_session, case_id=context["subject"].id, email=user.email
     )
+    # handle no participant found
+    if not participant:
+        log.warning(f"Participant not found for {user.email} in case {case.id}. Skipping after hours notification.")
+        return
+
     # get their timezone from slack
     owner_tz = (dispatch_slack_service.get_user_info_by_email(client, email=owner_email))["tz"]
     message = f"Responses may be delayed. The current case priority is *{case.case_priority.name}* and your message was sent outside of the Assignee's working hours (Weekdays, 9am-5pm, {owner_tz} timezone)."
@@ -2035,7 +2040,7 @@ def handle_report_submission_event(
         assignee=ParticipantUpdate(individual=IndividualContactRead(email=assignee_email)),
     )
 
-    case = case_service.create(db_session=db_session, case_in=case_in, current_user=user)
+    case = case_service.db_session=db_session, case_in=case_in, current_user=user)
 
     modal = Modal(
         title="Case Created",
