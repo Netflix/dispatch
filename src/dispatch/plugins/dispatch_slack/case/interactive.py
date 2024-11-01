@@ -858,7 +858,15 @@ def handle_snooze_submission_event(
             subject=context["subject"],
         )
         signal = signal_service.get(db_session=db_session, signal_id=context["subject"].id)
-        post_snooze_message(client, channel_id, user, signal, new_filter, thread_ts=thread_id)
+        post_snooze_message(
+            db_session=db_session,
+            client=client,
+            channel=channel_id,
+            user=user,
+            signal=signal,
+            new_filter=new_filter,
+            thread_ts=thread_id,
+        )
         send_success_modal(
             client=client,
             view_id=body["view"]["id"],
@@ -889,7 +897,15 @@ def handle_snooze_submission_event(
                 subject=context["subject"],
             )
             signal = signal_service.get(db_session=db_session, signal_id=context["subject"].id)
-            post_snooze_message(client, channel_id, user, signal, new_filter, thread_ts=thread_id)
+            post_snooze_message(
+                db_session=db_session,
+                client=client,
+                channel=channel_id,
+                user=user,
+                signal=signal,
+                new_filter=new_filter,
+                thread_ts=thread_id,
+            )
             send_success_modal(
                 client=client,
                 view_id=body["view"]["id"],
@@ -923,20 +939,30 @@ def post_snooze_message(
     channel: str,
     user: DispatchUser,
     signal: Signal,
+    db_session: Session,
     new_filter: SignalFilter,
     thread_ts: str | None = None,
 ):
-    def extract_entity_ids(expression: list[dict[str, str]]):
+    def extract_entity_ids(expression: list[dict]) -> list[int]:
         entity_ids = []
         for item in expression:
             if isinstance(item, dict) and "or" in item:
                 for condition in item["or"]:
                     if condition.get("model") == "Entity" and condition.get("field") == "id":
-                        entity_ids.append(str(condition.get("value")))
+                        entity_ids.append(int(condition.get("value")))
         return entity_ids
 
     entity_ids = extract_entity_ids(new_filter.expression)
-    entities_text = ", ".join(entity_ids) if entity_ids else "All"
+
+    if entity_ids:
+        entities = []
+        for entity_id in entity_ids:
+            entity = entity_service.get(db_session=db_session, entity_id=entity_id)
+            if entity:
+                entities.append(entity)
+        entities_text = ", ".join([f"{entity.value} ({entity.id})" for entity in entities])
+    else:
+        entities_text = "All"
 
     message = (
         f":zzz: *New Signal Snooze Added*\n"
