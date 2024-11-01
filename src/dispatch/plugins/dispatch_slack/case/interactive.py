@@ -1044,7 +1044,9 @@ def handle_case_after_hours_message(
     )
     # handle no participant found
     if not participant:
-        log.warning(f"Participant not found for {user.email} in case {case.id}. Skipping after hours notification.")
+        log.warning(
+            f"Participant not found for {user.email} in case {case.id}. Skipping after hours notification."
+        )
         return
 
     # get their timezone from slack
@@ -2040,7 +2042,7 @@ def handle_report_submission_event(
         assignee=ParticipantUpdate(individual=IndividualContactRead(email=assignee_email)),
     )
 
-    case = case_service.db_session=db_session, case_in=case_in, current_user=user)
+    case = case_service.create(db_session=db_session, case_in=case_in, current_user=user)
 
     modal = Modal(
         title="Case Created",
