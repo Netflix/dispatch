@@ -6,8 +6,6 @@ from uuid import UUID
 
 import pytz
 from blockkit import (
-    Actions,
-    Button,
     Context,
     Divider,
     Input,
@@ -28,7 +26,6 @@ from dispatch.case.enums import CaseResolutionReason, CaseStatus
 from dispatch.case.models import Case, CaseCreate, CaseRead, CaseUpdate
 from dispatch.case.type import service as case_type_service
 from dispatch.conversation import flows as conversation_flows
-from dispatch.entity import service as entity_service
 from dispatch.enums import EventType, SubjectNames, UserRoles, Visibility
 from dispatch.event import service as event_service
 from dispatch.individual.models import IndividualContactRead
@@ -44,13 +41,10 @@ from dispatch.plugins.dispatch_slack.case.enums import (
     CaseEscalateActions,
     CaseMigrateActions,
     CaseNotificationActions,
-    CasePaginateActions,
     CaseReportActions,
     CaseResolveActions,
     CaseShortcutCallbacks,
     SignalEngagementActions,
-    SignalNotificationActions,
-    SignalSnoozeActions,
 )
 from dispatch.plugins.dispatch_slack.case.messages import (
     create_case_message,
@@ -66,11 +60,9 @@ from dispatch.plugins.dispatch_slack.fields import (
     case_status_select,
     case_type_select,
     description_input,
-    entity_select,
     incident_priority_select,
     incident_type_select,
     project_select,
-    relative_date_picker_input,
     resolution_input,
     title_input,
 )
@@ -89,9 +81,6 @@ from dispatch.plugins.dispatch_slack.middleware import (
 from dispatch.plugins.dispatch_slack.modals.common import send_success_modal
 from dispatch.plugins.dispatch_slack.models import (
     CaseSubjects,
-    FormMetadata,
-    SignalSubjects,
-    SubjectMetadata,
 )
 from dispatch.project import service as project_service
 from dispatch.service import flows as service_flows
@@ -111,11 +100,6 @@ def configure(config: SlackConversationConfiguration):
     case_command_context_middleware = partial(
         command_context_middleware,
         expected_subject=SubjectNames.CASE,
-    )
-
-    # don't need an incident context
-    app.command(config.slack_command_list_signals, middleware=[db_middleware])(
-        handle_list_signals_command
     )
 
     middleware = [
@@ -280,441 +264,6 @@ def ack_engage_oncall_submission_event(ack: Ack) -> None:
         title="Escalate Case",
         close="Close",
         blocks=[Section(text="Escalating case to an incident...")],
-    ).build()
-    ack(response_action="update", view=modal)
-
-
-def handle_list_signals_command(
-    ack: Ack,
-    body: dict,
-    db_session: Session,
-    context: BoltContext,
-    client: WebClient,
-) -> None:
-    ack()
-
-    projects = project_service.get_all(db_session=db_session)
-    conversation_name = dispatch_slack_service.get_conversation_name_by_id(
-        client, context.channel_id
-    )
-
-    signals = []
-    for project in projects:
-        signals.extend(
-            signal_service.get_all_by_conversation_target(
-                db_session=db_session, project_id=project.id, conversation_target=conversation_name
-            )
-        )
-
-    if not signals:
-        modal = Modal(
-            title="Signal Definition List",
-            blocks=[
-                Context(elements=[f"There are no signals configured for {conversation_name}"]),
-            ],
-            close="Close",
-        ).build()
-
-        return client.views_open(trigger_id=body["trigger_id"], view=modal)
-
-    limit = 25
-    current_page = 0
-    total_pages = len(signals) // limit + (1 if len(signals) % limit > 0 else 0)
-
-    _draw_list_signal_modal(
-        client=client,
-        body=body,
-        db_session=db_session,
-        conversation_name=conversation_name,
-        current_page=current_page,
-        total_pages=total_pages,
-        first_render=True,
-    )
-
-
-def _draw_list_signal_modal(
-    client: WebClient,
-    body: dict,
-    db_session: Session,
-    conversation_name: str,
-    current_page: int,
-    total_pages: int,
-    first_render: bool,
-) -> None:
-    """Draw the signal definition list modal.
-
-    Args:
-        client (WebClient): A Slack WebClient object that provides a convenient interface to the Slack API.
-        body (dict): A dictionary that contains the original request payload from Slack.
-        db_session (Session): A SQLAlchemy database session.
-        conversation_name (str): The name of the Slack conversation.
-        current_page (int): The current page number.
-        total_pages (int): The total number of pages.
-        first_render (bool): A boolean indicating whether the modal is being rendered for the first time.
-
-    Returns:
-        None
-
-    Raises:
-        None
-
-    Example:
-        client = WebClient(token=<SLACK_APP_TOKEN>)
-        body = {
-            "trigger_id": "836215173894.4768581721.6f8ab1fcee0478f0e6c0c2b0dc9f0c7a",
-        }
-        db_session = Session()
-        conversation_name = "test_conversation"
-        current_page = 0
-        total_pages = 3
-        first_render = True
-        _draw_list_signal_modal(
-            client, body, db_session, conversation_name, current_page, total_pages, first_render
-        )
-    """
-    modal = Modal(
-        title="Signal Definition List",
-        blocks=_build_signal_list_modal_blocks(
-            db_session=db_session,
-            conversation_name=conversation_name,
-            current_page=current_page,
-            total_pages=total_pages,
-        ),
-        close="Close",
-        private_metadata=json.dumps(
-            {
-                "conversation_name": conversation_name,
-                "current_page": current_page,
-                "total_pages": total_pages,
-            }
-        ),
-    ).build()
-
-    (
-        client.views_open(trigger_id=body["trigger_id"], view=modal)
-        if first_render is True
-        else client.views_update(view_id=body["view"]["id"], view=modal)
-    )
-
-
-def _build_signal_list_modal_blocks(
-    db_session: Session,
-    conversation_name: str,
-    current_page: int,
-    total_pages: int,
-) -> list:
-    """Builds a list of blocks for a modal view displaying signals.
-
-    This function creates a list of blocks that represent signals that are filtered by conversation_name. The list of signals
-    is paginated and limited to 25 signals per page.
-
-    The function returns the blocks with pagination controls that display the current page and allows navigation to the previous
-    and next pages.
-
-    Args:
-        db_session (Session): The database session.
-        conversation_name (str): The name of the conversation to filter signals by.
-        current_page (int): The current page being displayed.
-        total_pages (int): The total number of pages.
-
-    Returns:
-        list: A list of blocks representing the signals and pagination controls.
-
-    Example:
-        >>> blocks = _build_signal_list_modal_blocks(db_session, "conversation_name", 1, 2)
-        >>> len(blocks)
-            26
-    """
-
-    blocks = []
-    limit = 25
-    start_index = current_page * limit
-    end_index = start_index + limit - 1
-
-    projects = project_service.get_all(db_session=db_session)
-    signals = []
-    for project in projects:
-        signals.extend(
-            signal_service.get_all_by_conversation_target(
-                db_session=db_session, project_id=project.id, conversation_target=conversation_name
-            )
-        )
-
-    limited_signals = []
-    for idx, signal in enumerate(signals[start_index : end_index + 1], start_index + 1):  # noqa
-        limited_signals.append(signal)
-
-        button_metadata = SubjectMetadata(
-            type=SignalSubjects.signal,
-            organization_slug=signal.project.organization.slug,
-            id=signal.id,
-            project_id=signal.project.id,
-        ).json()
-
-        blocks.extend(
-            [
-                Section(
-                    text=signal.name,
-                    accessory=Button(
-                        text="Snooze",
-                        value=button_metadata,
-                        action_id=SignalNotificationActions.snooze,
-                    ),
-                ),
-                Context(
-                    elements=[MarkdownText(text=f"{signal.variant}" if signal.variant else "N/A")]
-                ),
-            ]
-        )
-        # Don't add a divider if we are at the last signal
-        if idx != len(signals[start_index : end_index + 1]):  # noqa
-            blocks.extend([Divider()])
-
-    pagination_blocks = [
-        Actions(
-            block_id="pagination",
-            elements=[
-                Button(
-                    text="Previous",
-                    action_id=CasePaginateActions.list_signal_previous,
-                    style="danger" if current_page == 0 else "primary",
-                ),
-                Button(
-                    text="Next",
-                    action_id=CasePaginateActions.list_signal_next,
-                    style="danger" if current_page == total_pages - 1 else "primary",
-                ),
-            ],
-        )
-    ]
-
-    return blocks + pagination_blocks if len(signals) > limit else blocks
-
-
-@app.action(
-    CasePaginateActions.list_signal_next, middleware=[action_context_middleware, db_middleware]
-)
-def handle_next_action(ack: Ack, body: dict, client: WebClient, db_session: Session):
-    """Handle the 'next' action in the signal list modal.
-
-    This function is called when the user clicks the 'next' button in the signal list modal. It increments the current page
-    of the modal and updates the view with the new page.
-
-    Args:
-        ack (function): The function to acknowledge the action request.
-        db_session (Session): The database session to query for signal data.
-        body (dict): The request payload from the action.
-        client (WebClient): The Slack API WebClient to interact with the Slack API.
-    """
-    ack()
-
-    metadata = json.loads(body["view"]["private_metadata"])
-
-    current_page = metadata["current_page"]
-    total_pages = metadata["total_pages"]
-    conversation_name = metadata["conversation_name"]
-
-    if current_page < total_pages - 1:
-        current_page += 1
-
-    _draw_list_signal_modal(
-        client=client,
-        body=body,
-        db_session=db_session,
-        conversation_name=conversation_name,
-        current_page=current_page,
-        total_pages=total_pages,
-        first_render=False,
-    )
-
-
-@app.action(
-    CasePaginateActions.list_signal_previous, middleware=[action_context_middleware, db_middleware]
-)
-def handle_previous_action(ack: Ack, body: dict, client: WebClient, db_session: Session):
-    """Handle the 'previous' action in the signal list modal.
-
-    This function is called when the user clicks the 'previous' button in the signal list modal. It decrements the current page
-    of the modal and updates the view with the new page.
-
-    Args:
-        ack (function): The function to acknowledge the action request.
-        db_session (Session): The database session to query for signal data.
-        body (dict): The request payload from the action.
-        client (WebClient): The Slack API WebClient to interact with the Slack API.
-    """
-    ack()
-
-    metadata = json.loads(body["view"]["private_metadata"])
-
-    current_page = metadata["current_page"]
-    total_pages = metadata["total_pages"]
-    conversation_name = metadata["conversation_name"]
-
-    if current_page > 0:
-        current_page -= 1
-
-    _draw_list_signal_modal(
-        client=client,
-        body=body,
-        db_session=db_session,
-        conversation_name=conversation_name,
-        current_page=current_page,
-        total_pages=total_pages,
-        first_render=False,
-    )
-
-
-@app.action(SignalNotificationActions.snooze, middleware=[button_context_middleware, db_middleware])
-def snooze_button_click(
-    ack: Ack, body: dict, client: WebClient, context: BoltContext, db_session: Session
-) -> None:
-    """Handles the snooze button click event."""
-    ack()
-
-    subject = context["subject"]
-
-    if subject.type == SignalSubjects.signal_instance:
-        instance = signal_service.get_signal_instance(
-            db_session=db_session, signal_instance_id=subject.id
-        )
-        subject.id = instance.signal.id
-
-    signal = signal_service.get(db_session=db_session, signal_id=subject.id)
-    blocks = [
-        Context(elements=[MarkdownText(text=f"{signal.name}")]),
-        Divider(),
-        title_input(placeholder="A name for your snooze filter."),
-        description_input(placeholder="Provide a description for your snooze filter."),
-        relative_date_picker_input(label="Expiration"),
-    ]
-
-    # not all signals will have entities and slack doesn't like empty selects
-    entity_select_block = entity_select(
-        db_session=db_session,
-        signal_id=signal.id,
-        optional=True,
-    )
-
-    if entity_select_block:
-        blocks.append(entity_select_block)
-        blocks.append(
-            Context(
-                elements=[
-                    MarkdownText(
-                        text="Signals that contain all selected entities will be snoozed for the configured timeframe."
-                    )
-                ]
-            )
-        )
-
-    modal = Modal(
-        title="Snooze Signal",
-        blocks=blocks,
-        submit="Preview",
-        close="Close",
-        callback_id=SignalSnoozeActions.preview,
-        private_metadata=context["subject"].json(),
-    ).build()
-
-    if view_id := body.get("view", {}).get("id"):
-        client.views_update(view_id=view_id, view=modal)
-    else:
-        client.views_open(trigger_id=body["trigger_id"], view=modal)
-
-
-@app.view(
-    SignalSnoozeActions.preview,
-    middleware=[
-        action_context_middleware,
-        db_middleware,
-        modal_submit_middleware,
-    ],
-)
-def handle_snooze_preview_event(
-    ack: Ack,
-    context: BoltContext,
-    db_session: Session,
-    form_data: dict,
-) -> None:
-    """Handles the snooze preview event."""
-    if form_data.get(DefaultBlockIds.title_input):
-        title = form_data[DefaultBlockIds.title_input]
-
-    name_taken = signal_service.get_signal_filter_by_name(
-        db_session=db_session, project_id=context["subject"].project_id, name=title
-    )
-    if name_taken:
-        modal = Modal(
-            title="Name Taken",
-            close="Close",
-            blocks=[
-                Context(
-                    elements=[
-                        MarkdownText(
-                            text=f"A signal filter with the name '{title}' already exists."
-                        )
-                    ]
-                )
-            ],
-        ).build()
-        return ack(response_action="update", view=modal)
-
-    if form_data.get(DefaultBlockIds.entity_select):
-        entity_ids = [entity["value"] for entity in form_data[DefaultBlockIds.entity_select]]
-
-        preview_signal_instances = entity_service.get_signal_instances_with_entities(
-            db_session=db_session,
-            signal_id=context["subject"].id,
-            entity_ids=entity_ids,
-            days_back=90,
-        )
-
-        text = (
-            "Examples matching your filter:"
-            if preview_signal_instances
-            else "No signals matching your filter."
-        )
-    else:
-        preview_signal_instances = None
-        text = "No entities selected. All instances of this signal will be snoozed."
-
-    blocks = [Context(elements=[MarkdownText(text=text)])]
-
-    if preview_signal_instances:
-        # Only show 5 examples
-        for signal_instance in preview_signal_instances[:5]:
-            blocks.extend(
-                [
-                    Section(text=signal_instance.signal.name),
-                    Context(
-                        elements=[
-                            MarkdownText(
-                                text=f" Case: {signal_instance.case.name if signal_instance.case else 'N/A'}"
-                            )
-                        ]
-                    ),
-                    Context(
-                        elements=[
-                            MarkdownText(
-                                text=f" Created: {signal_instance.case.created_at if signal_instance.case else 'N/A'}"
-                            )
-                        ]
-                    ),
-                ]
-            )
-
-    private_metadata = FormMetadata(
-        form_data=form_data,
-        **context["subject"].dict(),
-    ).json()
-    modal = Modal(
-        title="Add Snooze",
-        submit="Create",
-        close="Close",
-        blocks=blocks,
-        callback_id=SignalSnoozeActions.submit,
-        private_metadata=private_metadata,
     ).build()
     ack(response_action="update", view=modal)
 

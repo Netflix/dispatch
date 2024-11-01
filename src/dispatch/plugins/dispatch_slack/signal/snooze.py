@@ -10,10 +10,6 @@ from sqlalchemy.orm import Session
 from dispatch.auth.models import DispatchUser
 from dispatch.entity import service as entity_service
 from dispatch.plugins.dispatch_slack.bolt import app
-from dispatch.plugins.dispatch_slack.case.enums import (
-    SignalNotificationActions,
-    SignalSnoozeActions,
-)
 from dispatch.plugins.dispatch_slack.fields import (
     DefaultBlockIds,
     description_input,
@@ -38,6 +34,8 @@ from dispatch.signal.models import (
     Signal,
     SignalInstance,
 )
+
+from .enums import SignalNotificationActions, SignalSnoozeActions
 
 
 class SignalSnoozeData(BaseModel):
@@ -262,16 +260,26 @@ class SnoozeService:
         self.context.ack(response_action="update", view=modal)
 
 
-# Event Handlers
-@app.action(SignalNotificationActions.snooze, middleware=[button_context_middleware, db_middleware])
+@app.action(
+    SignalNotificationActions.snooze,
+    middleware=[
+        button_context_middleware,
+        db_middleware,
+    ],
+)
 def snooze_button_click(
     ack: Ack, body: dict, client: WebClient, context: BoltContext, db_session: Session
 ) -> None:
     """Handle snooze button click."""
-    snooze_context = SnoozeContext(
-        db_session=db_session, client=client, body=body, context=context, ack=ack
-    )
-    SnoozeService(snooze_context).handle_button_click()
+    SnoozeService(
+        SnoozeContext(
+            db_session=db_session,
+            client=client,
+            body=body,
+            context=context,
+            ack=ack,
+        )
+    ).handle_button_click()
 
 
 @app.view(
@@ -291,20 +299,25 @@ def handle_snooze_preview_event(
     form_data: dict,
 ) -> None:
     """Handle snooze preview request."""
-    snooze_context = SnoozeContext(
-        db_session=db_session,
-        client=client,
-        body=body,
-        context=context,
-        ack=ack,
-        form_data=form_data,
-    )
-    SnoozeService(snooze_context).handle_preview()
+    SnoozeService(
+        SnoozeContext(
+            db_session=db_session,
+            client=client,
+            body=body,
+            context=context,
+            ack=ack,
+            form_data=form_data,
+        )
+    ).handle_preview()
 
 
 @app.view(
     SignalSnoozeActions.submit,
-    middleware=[action_context_middleware, db_middleware, user_middleware],
+    middleware=[
+        action_context_middleware,
+        db_middleware,
+        user_middleware,
+    ],
 )
 def handle_snooze_submission_event(
     ack: Ack,
@@ -315,7 +328,13 @@ def handle_snooze_submission_event(
     user: DispatchUser,
 ) -> None:
     """Handle final snooze submission."""
-    snooze_context = SnoozeContext(
-        db_session=db_session, client=client, body=body, context=context, ack=ack, user=user
-    )
-    SnoozeService(snooze_context).handle_submission()
+    SnoozeService(
+        SnoozeContext(
+            db_session=db_session,
+            client=client,
+            body=body,
+            context=context,
+            ack=ack,
+            user=user,
+        )
+    ).handle_submission()

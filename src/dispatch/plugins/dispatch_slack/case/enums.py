@@ -46,15 +46,6 @@ class CaseShortcutCallbacks(DispatchEnum):
     report = "case-report"
 
 
-class SignalNotificationActions(DispatchEnum):
-    snooze = "signal-notification-snooze"
-
-
-class SignalSnoozeActions(DispatchEnum):
-    preview = "case-notification-snooze-preview"
-    submit = "case-notification-snooze-submit"
-
-
 class SignalEngagementActions(DispatchEnum):
     approve = "signal-engagement-approve"
     deny = "signal-engagement-deny"

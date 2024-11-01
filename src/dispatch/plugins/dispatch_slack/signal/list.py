@@ -15,10 +15,6 @@ from sqlalchemy.orm import Session
 
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.bolt import app
-from dispatch.plugins.dispatch_slack.case.enums import (
-    CasePaginateActions,
-    SignalNotificationActions,
-)
 from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
     db_middleware,
@@ -29,6 +25,8 @@ from dispatch.plugins.dispatch_slack.models import (
 )
 from dispatch.project import service as project_service
 from dispatch.signal import service as signal_service
+
+from .enums import SignalNotificationActions, SignalPaginateActions
 
 
 def handle_list_signals_command(
@@ -239,7 +237,7 @@ def _build_signal_list_modal_blocks(
 
 
 @app.action(
-    CasePaginateActions.list_signal_next, middleware=[action_context_middleware, db_middleware]
+    SignalPaginateActions.list_signal_next, middleware=[action_context_middleware, db_middleware]
 )
 def handle_next_action(ack: Ack, body: dict, client: WebClient, db_session: Session):
     """Handle the 'next' action in the signal list modal.
@@ -276,7 +274,8 @@ def handle_next_action(ack: Ack, body: dict, client: WebClient, db_session: Sess
 
 
 @app.action(
-    CasePaginateActions.list_signal_previous, middleware=[action_context_middleware, db_middleware]
+    SignalPaginateActions.list_signal_previous,
+    middleware=[action_context_middleware, db_middleware],
 )
 def handle_previous_action(ack: Ack, body: dict, client: WebClient, db_session: Session):
     """Handle the 'previous' action in the signal list modal.
