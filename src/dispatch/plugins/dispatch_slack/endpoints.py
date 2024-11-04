@@ -1,23 +1,24 @@
-from http import HTTPStatus
 import json
+from http import HTTPStatus
 
-from fastapi import APIRouter, HTTPException, Depends
-from starlette.background import BackgroundTask
-from starlette.responses import JSONResponse
+from fastapi import APIRouter, Depends, HTTPException
 from slack_sdk.signature import SignatureVerifier
 from sqlalchemy import true
-from starlette.requests import Request, Headers
+from starlette.background import BackgroundTask
+from starlette.requests import Headers, Request
+from starlette.responses import JSONResponse
 
 from dispatch.database.core import refetch_db_session
 from dispatch.plugin.models import Plugin, PluginInstance
 
 from .bolt import app
 from .case.interactive import configure as case_configure
+from .feedback.interactive import configure as feedback_configure
 from .handler import SlackRequestHandler
 from .incident.interactive import configure as incident_configure
-from .feedback.interactive import configure as feedback_configure
-from .workflow import configure as workflow_configure
 from .messaging import get_incident_conversation_command_message
+from .signal.interactive import configure as signal_configure
+from .workflow import configure as workflow_configure
 
 router = APIRouter()
 
@@ -64,6 +65,7 @@ def get_request_handler(request: Request, body: bytes, organization: str) -> Sla
             feedback_configure(p.configuration)
             incident_configure(p.configuration)
             workflow_configure(p.configuration)
+            signal_configure(p.configuration)
             app._configuration = p.configuration
             app._token = p.configuration.api_bot_token.get_secret_value()
             app._signing_secret = p.configuration.signing_secret.get_secret_value()

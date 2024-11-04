@@ -22,7 +22,6 @@ from dispatch.messaging.strings import CASE_STATUS_DESCRIPTIONS, CASE_VISIBILITY
 from dispatch.plugins.dispatch_slack.case.enums import (
     CaseNotificationActions,
     SignalEngagementActions,
-    SignalNotificationActions,
 )
 from dispatch.plugins.dispatch_slack.config import (
     MAX_SECTION_TEXT_LENGTH,
@@ -33,6 +32,7 @@ from dispatch.plugins.dispatch_slack.models import (
     SignalSubjects,
     SubjectMetadata,
 )
+from dispatch.plugins.dispatch_slack.signal.enums import SignalNotificationActions
 from dispatch.signal import service as signal_service
 from dispatch.signal.enums import SignalEngagementStatus
 from dispatch.signal.models import (
