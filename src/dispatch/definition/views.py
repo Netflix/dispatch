@@ -25,7 +25,7 @@ def get_definitions(common: CommonParameters):
 
 @router.get("/{definition_id}", response_model=DefinitionRead)
 def get_definition(db_session: DbSession, definition_id: PrimaryKey):
-    """Update a definition."""
+    """Get a definition."""
     definition = get(db_session=db_session, definition_id=definition_id)
     if not definition:
         raise HTTPException(
