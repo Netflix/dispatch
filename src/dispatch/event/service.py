@@ -247,6 +247,7 @@ def export_timeline(
                     )
                 else:
                     table_data.append({time_header: time, "Description": e.description})
+
             else:
                 dates.add(date)
                 if timeline_filters.get("exportOwner"):
@@ -272,7 +273,7 @@ def export_timeline(
                 resource_type="dispatch-incident-document",
             )
             if documents:
-                documents_list.append(documents.resource_id)
+                documents_list.append((documents.resource_id, "Incident"))
 
         if timeline_filters.get("reviewDocument"):
             documents = document_service.get_by_incident_id_and_resource_type(
@@ -282,12 +283,12 @@ def export_timeline(
                 resource_type="dispatch-incident-review-document",
             )
             if documents:
-                documents_list.append(documents.resource_id)
+                documents_list.append((documents.resource_id, "Incident Review"))
 
-        for doc_id in documents_list:
+        for doc_id, doc_name in documents_list:
             # Checks for existing table in the document
             table_exists, curr_table_start, curr_table_end, _ = plugin.instance.get_table_details(
-                document_id=doc_id, header="Timeline"
+                document_id=doc_id, header="Timeline", doc_name=doc_name
             )
 
             # Deletes existing table
@@ -307,7 +308,9 @@ def export_timeline(
                     log.debug("Existing table in the doc has been deleted")
 
             else:
+                log.debug("Table doesn't exist under header, creating new table")
                 curr_table_start += 1
+
             # Insert new table with required rows & columns
             insert_table_request = [
                 {
@@ -322,7 +325,12 @@ def export_timeline(
                 log.debug("Table skeleton inserted successfully")
 
             else:
-                return False
+                log.error(
+                    f"Unable to insert table skeleton in the {doc_name} document with id {doc_id}"
+                )
+                raise Exception(
+                    f"Unable to insert table skeleton for timeline export in the {doc_name} document"
+                )
 
             # Formatting & inserting empty table
             insert_data_request = [
@@ -381,19 +389,26 @@ def export_timeline(
                 log.debug("Table Formatted successfully")
 
             else:
-                return False
+                log.error(
+                    f"Unable to format table for timeline export in {doc_name} document with id {doc_id}"
+                )
+                raise Exception(
+                    f"Unable to format table for timeline export in the {doc_name} document"
+                )
 
             # Calculating table cell indices
             _, _, _, cell_indices = plugin.instance.get_table_details(
-                document_id=doc_id, header="Timeline"
+                document_id=doc_id, header="Timeline", doc_name=doc_name
             )
-
             data_to_insert = list(column_headers) + [
                 item for row in table_data for item in row.values()
             ]
             str_len = 0
             row_idx = 0
             insert_data_request = []
+            print("cell indices")
+            print(len(cell_indices))
+            print(len(data_to_insert))
             for index, text in zip(cell_indices, data_to_insert, strict=True):
                 # Adjusting index based on string length
                 new_idx = index + str_len
@@ -420,7 +435,7 @@ def export_timeline(
                         }
                     )
 
-                # Formatting for date rows
+                # Formating for date rows
                 if text == "\t":
                     insert_data_request.append(
                         {
@@ -446,7 +461,7 @@ def export_timeline(
                         }
                     )
 
-                # Formatting for time column
+                # Formating for time column
                 if row_idx % num_columns == 0:
                     insert_data_request.append(
                         {
@@ -465,8 +480,11 @@ def export_timeline(
 
             data_inserted = plugin.instance.insert(document_id=doc_id, request=insert_data_request)
         if not data_inserted:
-            return False
+            raise Exception(f"Encountered error while inserting data into the {doc_name} document")
+
     else:
-        log.error("No timeline data to export")
-        return False
+        log.error("No data to export")
+        raise Exception("No data to export, please check filter selection")
+    # raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=[{"msg": "No timeline data to export"}]) from None
+
     return True

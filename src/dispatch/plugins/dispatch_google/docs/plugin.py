@@ -195,7 +195,9 @@ class GoogleDocsDocumentPlugin(DocumentPlugin):
             log.exception(e)
             return False
 
-    def get_table_details(self, document_id: str, header: str) -> tuple[bool, int, int, list[int]]:
+    def get_table_details(
+        self, document_id: str, header: str, doc_name: str
+    ) -> tuple[bool, int, int, list[int]]:
         client = get_service(self.configuration, "docs", "v1", self.scopes).documents()
         try:
             document_content = (
@@ -220,9 +222,6 @@ class GoogleDocsDocumentPlugin(DocumentPlugin):
 
                             elif header_section:
                                 # Gets the end index of any text below the header
-                                if header_section and item["textRun"]["content"].strip():
-                                    header_index = item["endIndex"]
-                                # checking if we are past header in question
                                 if (
                                     any(
                                         "headingId" in style
@@ -232,9 +231,42 @@ class GoogleDocsDocumentPlugin(DocumentPlugin):
                                     and element["paragraph"].get("paragraphStyle")["headingId"]
                                     != headingId
                                 ):
+                                    if header_index == element["startIndex"]:
+                                        requests = [
+                                            {
+                                                "insertText": {
+                                                    "location": {
+                                                        "index": header_index,
+                                                    },
+                                                    "text": "\n",
+                                                }
+                                            },
+                                            {
+                                                "updateParagraphStyle": {
+                                                    "range": {
+                                                        "startIndex": header_index,
+                                                        "endIndex": header_index,
+                                                    },
+                                                    "paragraphStyle": {
+                                                        "namedStyleType": "NORMAL_TEXT",
+                                                    },
+                                                    "fields": "namedStyleType",
+                                                }
+                                            },
+                                        ]
+                                        if GoogleDocsDocumentPlugin.insert(
+                                            self, document_id=document_id, request=requests
+                                        ):
+                                            header_index = header_index
                                     past_header = True
                                     header_section = False
                                     break
+
+                                if header_section and item["textRun"]["content"].strip():
+                                    header_index = item["endIndex"]
+
+                                # checking if we are past header in question
+
                 # Checking for table under the header
                 elif header_section and "table" in element and not past_header:
                     table_exists = True
@@ -251,6 +283,11 @@ class GoogleDocsDocumentPlugin(DocumentPlugin):
         except Exception as e:
             log.exception(e)
             return table_exists, header_index, -1, table_indices
+        if header_index == 0:
+            log.error(
+                f"Could not find Timeline header in the {doc_name} document with id {document_id}"
+            )
+            raise Exception(f"Timeline header does not exist in the {doc_name} document")
         return table_exists, header_index, -1, table_indices
 
     def delete_table(self, document_id: str, request) -> bool | None:
