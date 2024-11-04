@@ -126,7 +126,7 @@ frozenlist==1.4.1
     #   aiosignal
 google-api-core==2.15.0
     # via google-api-python-client
-google-api-python-client==2.149.0
+google-api-python-client==2.151.0
     # via -r requirements-base.in
 google-auth==2.26.1
     # via
@@ -330,7 +330,7 @@ python-dateutil==2.9.0.post0
     #   pandas
 python-jose==3.3.0
     # via -r requirements-base.in
-python-multipart==0.0.12
+python-multipart==0.0.17
     # via -r requirements-base.in
 python-slugify==8.0.4
     # via -r requirements-base.in
@@ -396,9 +396,9 @@ six==1.16.0
     #   python-dateutil
     #   sqlalchemy-filters
     #   validators
-slack-bolt==1.20.1
+slack-bolt==1.21.2
     # via -r requirements-base.in
-slack-sdk==3.33.1
+slack-sdk==3.33.3
     # via
     #   -r requirements-base.in
     #   slack-bolt
@@ -496,7 +496,7 @@ wasabi==1.1.2
     #   weasel
 weasel==0.3.4
     # via spacy
-werkzeug==3.0.3
+werkzeug==3.0.6
     # via schemathesis
 wrapt==1.16.0
     # via deprecated

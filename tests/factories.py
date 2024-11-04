@@ -53,6 +53,8 @@ from dispatch.report.models import Report
 from dispatch.route.models import Recommendation, RecommendationMatch
 from dispatch.search_filter.models import SearchFilter
 from dispatch.service.models import Service
+from dispatch.feedback.service.models import ServiceFeedback
+from dispatch.feedback.service.enums import ServiceFeedbackRating
 from dispatch.signal.models import Signal, SignalFilter, SignalInstance
 from dispatch.storage.models import Storage
 from dispatch.tag.models import Tag
@@ -1450,3 +1452,34 @@ class WorkflowInstanceFactory(BaseFactory):
 
         if extracted:
             self.creator_id = extracted.id
+
+
+class ServiceFeedbackFactory(BaseFactory):
+    """Service Feedback Factory."""
+
+    rating = FuzzyChoice(
+        [
+            ServiceFeedbackRating.no_effort,
+            ServiceFeedbackRating.little_effort,
+            ServiceFeedbackRating.moderate_effort,
+            ServiceFeedbackRating.lots_of_effort,
+            ServiceFeedbackRating.very_high_effort,
+            ServiceFeedbackRating.extreme_effort,
+        ]
+    )
+    feedback = FuzzyText()
+    hours = FuzzyInteger(low=0, high=100)
+    project = SubFactory(ProjectFactory)
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = ServiceFeedback
+
+    @post_generation
+    def individual(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.individual_id = extracted.id

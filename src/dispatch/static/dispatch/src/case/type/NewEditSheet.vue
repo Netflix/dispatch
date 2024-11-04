@@ -114,9 +114,9 @@
               </v-col>
               <v-col cols="12">
                 <v-checkbox
-                  v-model="exclude_from_metrics"
-                  label="Exclude From Metrics"
-                  hint="Check if this case type should be excluded from all metrics."
+                  v-model="enabled"
+                  label="Enabled"
+                  hint="Determines whether this case type is available for new cases."
                 />
               </v-col>
               <v-col cols="12">
@@ -128,9 +128,16 @@
               </v-col>
               <v-col cols="12">
                 <v-checkbox
-                  v-model="enabled"
-                  label="Enabled"
-                  hint="Determines whether this case type is available for new cases."
+                  v-model="auto_close"
+                  label="Auto Close"
+                  hint="Check this if the case should be automatically closed after being created."
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-checkbox
+                  v-model="exclude_from_metrics"
+                  label="Exclude From Metrics"
+                  hint="Check if this case type should be excluded from all metrics."
                 />
               </v-col>
               <v-col cols="12">
@@ -184,6 +191,7 @@ export default {
   computed: {
     ...mapFields("case_type", [
       "dialogs.showCreateEdit",
+      "selected.auto_close",
       "selected.case_template_document",
       "selected.conversation_target",
       "selected.cost_model",
