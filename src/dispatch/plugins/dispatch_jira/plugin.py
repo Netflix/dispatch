@@ -7,9 +7,12 @@
 
 from typing import Any
 import json
+import logging
 
 import requests
 from requests.auth import HTTPBasicAuth
+
+from sqlalchemy.orm import Session
 
 from pydantic import Field, SecretStr, AnyHttpUrl
 
@@ -20,13 +23,20 @@ from dispatch.config import BaseConfigurationModel
 from dispatch.decorators import apply, counter, timer
 from dispatch.enums import DispatchEnum
 from dispatch.plugins import dispatch_jira as jira_plugin
+from dispatch.case import service as case_service
+from dispatch.incident import service as incident_service
 from dispatch.plugins.bases import TicketPlugin
+from dispatch.project.models import Project
 
 from .templates import (
     CASE_ISSUE_SUMMARY_TEMPLATE,
     INCIDENT_ISSUE_SUMMARY_NO_RESOURCES_TEMPLATE,
     INCIDENT_ISSUE_SUMMARY_TEMPLATE,
 )
+
+from dispatch.config import DISPATCH_UI_URL
+
+log = logging.getLogger(__name__)
 
 
 class HostingType(DispatchEnum):
@@ -261,6 +271,16 @@ def update(
     return data
 
 
+def create_fallback_ticket(id: int, project: Project, db_session: Session):
+    resource_id = f"dispatch-{project.organization.slug}-{project.slug}-{id}"
+
+    return {
+        "resource_id": resource_id,
+        "weblink": f"{DISPATCH_UI_URL}/{project.organization.name}/incidents/{resource_id}?project={project.name}",
+        "resource_type": "jira-error-ticket",
+    }
+
+
 @apply(counter, exclude=["__init__"])
 @apply(timer, exclude=["__init__"])
 class JiraTicketPlugin(TicketPlugin):
@@ -285,38 +305,51 @@ class JiraTicketPlugin(TicketPlugin):
         db_session=None,
     ):
         """Creates an incident Jira issue."""
-        client = create_client(self.configuration)
+        try:
+            client = create_client(self.configuration)
 
-        assignee = get_user_field(client, self.configuration, commander_email)
+            assignee = get_user_field(client, self.configuration, commander_email)
 
-        reporter = assignee
-        if reporter_email != commander_email:
-            reporter = get_user_field(client, self.configuration, reporter_email)
+            reporter = assignee
+            if reporter_email != commander_email:
+                reporter = get_user_field(client, self.configuration, reporter_email)
 
-        project_id, issue_type_name = process_plugin_metadata(incident_type_plugin_metadata)
+            project_id, issue_type_name = process_plugin_metadata(incident_type_plugin_metadata)
 
-        if not project_id:
-            project_id = self.configuration.default_project_id
+            if not project_id:
+                project_id = self.configuration.default_project_id
 
-        # NOTE: to support issue creation by project id or key
-        project = {"id": project_id}
-        if not project_id.isdigit():
-            project = {"key": project_id}
+            # NOTE: to support issue creation by project id or key
+            project = {"id": project_id}
+            if not project_id.isdigit():
+                project = {"key": project_id}
 
-        if not issue_type_name:
-            issue_type_name = self.configuration.default_issue_type_name
+            if not issue_type_name:
+                issue_type_name = self.configuration.default_issue_type_name
 
-        issuetype = {"name": issue_type_name}
+            issuetype = {"name": issue_type_name}
 
-        issue_fields = {
-            "project": project,
-            "issuetype": issuetype,
-            "assignee": assignee,
-            "reporter": reporter,
-            "summary": title,
-        }
+            issue_fields = {
+                "project": project,
+                "issuetype": issuetype,
+                "assignee": assignee,
+                "reporter": reporter,
+                "summary": title,
+            }
 
-        return create(self.configuration, client, issue_fields)
+            ticket = create(self.configuration, client, issue_fields)
+        except Exception as e:
+            log.exception(
+                f"Failed to create Jira ticket for incident_id: {incident_id}. "
+                f"Creating incident ticket with core plugin instead. Error: {e}"
+            )
+            # fall back to creating a ticket without the plugin
+            incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+            ticket = create_fallback_ticket(
+                id=incident.id, project=incident.project, db_session=db_session
+            )
+
+        return ticket
 
     def update(
         self,
@@ -378,36 +411,49 @@ class JiraTicketPlugin(TicketPlugin):
         db_session=None,
     ):
         """Creates a case Jira issue."""
-        client = create_client(self.configuration)
+        try:
+            client = create_client(self.configuration)
 
-        assignee = get_user_field(client, self.configuration, assignee_email)
-        # TODO(mvilanova): enable reporter email and replace assignee email
-        # reporter = get_user_field(client, self.configuration, reporter_email)
-        reporter = assignee
+            assignee = get_user_field(client, self.configuration, assignee_email)
+            # TODO(mvilanova): enable reporter email and replace assignee email
+            # reporter = get_user_field(client, self.configuration, reporter_email)
+            reporter = assignee
 
-        project_id, issue_type_name = process_plugin_metadata(case_type_plugin_metadata)
+            project_id, issue_type_name = process_plugin_metadata(case_type_plugin_metadata)
 
-        if not project_id:
-            project_id = self.configuration.default_project_id
+            if not project_id:
+                project_id = self.configuration.default_project_id
 
-        project = {"id": project_id}
-        if not project_id.isdigit():
-            project = {"key": project_id}
+            project = {"id": project_id}
+            if not project_id.isdigit():
+                project = {"key": project_id}
 
-        if not issue_type_name:
-            issue_type_name = self.configuration.default_issue_type_name
+            if not issue_type_name:
+                issue_type_name = self.configuration.default_issue_type_name
 
-        issuetype = {"name": issue_type_name}
+            issuetype = {"name": issue_type_name}
 
-        issue_fields = {
-            "project": project,
-            "issuetype": issuetype,
-            "assignee": assignee,
-            "reporter": reporter,
-            "summary": title,
-        }
+            issue_fields = {
+                "project": project,
+                "issuetype": issuetype,
+                "assignee": assignee,
+                "reporter": reporter,
+                "summary": title,
+            }
 
-        return create(self.configuration, client, issue_fields)
+            ticket = create(self.configuration, client, issue_fields)
+        except Exception as e:
+            log.exception(
+                (
+                    f"Failed to create Jira ticket for case_id: {case_id}. "
+                    f"Creating case ticket with core plugin instead. Error: {e}"
+                )
+            )
+            # fall back to creating a ticket without the plugin
+            case = case_service.get(db_session=db_session, case_id=case_id)
+            ticket = create_fallback_ticket(id=case.id, project=case.project, db_session=db_session)
+
+        return ticket
 
     def create_task_ticket(
         self,

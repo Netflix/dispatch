@@ -3,7 +3,15 @@
     <v-list-item v-if="ticket" :href="ticket.weblink" target="_blank" class="my-3">
       <v-list-item-title>Ticket</v-list-item-title>
       <v-list-item-subtitle>{{ ticket.description }}</v-list-item-subtitle>
-
+      <div
+        class="text-caption"
+        v-if="(!ticket || ticket.resource_type == 'jira-error-ticket') && ticketPluginEnabled"
+      >
+        <span style="color: red">Ticket error: </span>
+        <span>
+          No Jira ticket created. Use Recreate Missing Resources to regenerate the ticket.
+        </span>
+      </div>
       <template #append>
         <v-icon>mdi-open-in-new</v-icon>
       </template>
@@ -49,7 +57,7 @@
     </span>
     <span
       v-if="
-        (!ticket && ticketPluginEnabled) ||
+        ((!ticket || ticket.resource_type == 'jira-error-ticket') && ticketPluginEnabled) ||
         (!conference && conferencePluginEnabled) ||
         (!conversation && conversationPluginEnabled) ||
         (!storage && storagePluginEnabled) ||

@@ -126,7 +126,7 @@ frozenlist==1.4.1
     #   aiosignal
 google-api-core==2.15.0
     # via google-api-python-client
-google-api-python-client==2.149.0
+google-api-python-client==2.151.0
     # via -r requirements-base.in
 google-auth==2.26.1
     # via
@@ -330,7 +330,7 @@ python-dateutil==2.9.0.post0
     #   pandas
 python-jose==3.3.0
     # via -r requirements-base.in
-python-multipart==0.0.16
+python-multipart==0.0.17
     # via -r requirements-base.in
 python-slugify==8.0.4
     # via -r requirements-base.in

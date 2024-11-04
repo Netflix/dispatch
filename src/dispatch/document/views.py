@@ -18,7 +18,7 @@ def get_documents(common: CommonParameters):
 
 @router.get("/{document_id}", response_model=DocumentRead)
 def get_document(db_session: DbSession, document_id: PrimaryKey):
-    """Update a document."""
+    """Get a document."""
     document = get(db_session=db_session, document_id=document_id)
     if not document:
         raise HTTPException(

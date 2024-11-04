@@ -6,58 +6,55 @@
 """
 
 import logging
-
 from typing import Optional
 
 from slack_sdk.errors import SlackApiError
 from sqlalchemy.orm import Session
 
-from dispatch.decorators import timer
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.database.core import SessionLocal, resolve_attr
+from dispatch.decorators import timer
 from dispatch.document import service as document_service
-from dispatch.email_templates.models import EmailTemplates
 from dispatch.email_templates import service as email_template_service
 from dispatch.email_templates.enums import EmailTemplateTypes
+from dispatch.email_templates.models import EmailTemplates
 from dispatch.enums import SubjectNames
 from dispatch.event import service as event_service
+from dispatch.forms.models import Forms
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import Incident, IncidentRead
-from dispatch.notification import service as notification_service
-from dispatch.forms.models import Forms
 from dispatch.messaging.strings import (
+    INCIDENT_CLOSE_REMINDER,
     INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_NOTIFICATION,
     INCIDENT_CLOSED_RATING_FEEDBACK_NOTIFICATION,
-    INCIDENT_CLOSE_REMINDER,
     INCIDENT_COMMANDER,
     INCIDENT_COMMANDER_READDED_NOTIFICATION,
+    INCIDENT_COMPLETED_FORM_MESSAGE,
     INCIDENT_MANAGEMENT_HELP_TIPS_MESSAGE,
     INCIDENT_NAME,
     INCIDENT_NAME_WITH_ENGAGEMENT,
+    INCIDENT_NAME_WITH_ENGAGEMENT_NO_SELF_JOIN,
     INCIDENT_NEW_ROLE_NOTIFICATION,
     INCIDENT_NOTIFICATION,
     INCIDENT_NOTIFICATION_COMMON,
     INCIDENT_OPEN_TASKS,
-    INCIDENT_PARTICIPANT_SUGGESTED_READING_ITEM,
     INCIDENT_PRIORITY_CHANGE,
     INCIDENT_REVIEW_DOCUMENT,
     INCIDENT_SEVERITY_CHANGE,
     INCIDENT_STATUS_CHANGE,
-    INCIDENT_TYPE_CHANGE,
-    INCIDENT_COMPLETED_FORM_MESSAGE,
     INCIDENT_TASK_ADD_TO_INCIDENT,
-    INCIDENT_NAME_WITH_ENGAGEMENT_NO_SELF_JOIN,
+    INCIDENT_TYPE_CHANGE,
     MessageType,
     generate_welcome_message,
 )
+from dispatch.notification import service as notification_service
 from dispatch.participant import service as participant_service
 from dispatch.participant_role import service as participant_role_service
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack.enums import SlackAPIErrorCode
-from dispatch.types import Subject
 from dispatch.task.models import TaskCreate
-
+from dispatch.types import Subject
 
 log = logging.getLogger(__name__)
 
@@ -320,59 +317,6 @@ def send_incident_welcome_participant_messages(
     )
 
     log.debug(f"Welcome participant messages sent {participant_email}.")
-
-
-@timer
-def get_suggested_document_items(incident: Incident, db_session: SessionLocal):
-    """Create the suggested document item message."""
-    suggested_documents = get_suggested_documents(db_session, incident)
-
-    items = []
-    if suggested_documents:
-        # we send the ephemeral message
-        # lets grab the first 5 documents
-        # TODO add more intelligent ranking
-        for i in suggested_documents[:5]:
-            description = i.description
-            if not description:
-                if i.incident:
-                    description = i.incident.title
-
-            items.append({"name": i.name, "weblink": i.weblink, "description": description})
-    return items
-
-
-@timer
-def send_incident_suggested_reading_messages(
-    incident: Incident, items: list, participant_email: str, db_session: SessionLocal
-):
-    """Sends a suggested reading message to a participant."""
-    if not items:
-        return
-
-    if not incident.conversation:
-        log.warning(
-            "Incident suggested reading message not sent. No conversation available for this incident."
-        )
-        return
-
-    plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
-    )
-    if not plugin:
-        log.warning("Incident suggested reading message not sent. No conversation plugin enabled.")
-        return
-
-    plugin.instance.send_ephemeral(
-        incident.conversation.channel_id,
-        participant_email,
-        "Suggested Reading",
-        [INCIDENT_PARTICIPANT_SUGGESTED_READING_ITEM],
-        MessageType.incident_participant_suggested_reading,
-        items=items,
-    )
-
-    log.debug(f"Suggested reading ephemeral message sent to {participant_email}.")
 
 
 def send_incident_created_notifications(incident: Incident, db_session: SessionLocal):
