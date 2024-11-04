@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.bolt import app
+from dispatch.plugins.dispatch_slack.case.enums import CasePaginateActions
 from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
     db_middleware,
