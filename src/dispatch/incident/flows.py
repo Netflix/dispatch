@@ -1,32 +1,29 @@
 import logging
-
 from datetime import datetime
 from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from dispatch.case.models import Case
 from dispatch.case import service as case_service
+from dispatch.case.models import Case
 from dispatch.conference import flows as conference_flows
 from dispatch.conversation import flows as conversation_flows
 from dispatch.database.core import resolve_attr
 from dispatch.decorators import background_task
 from dispatch.document import flows as document_flows
 from dispatch.document.models import Document
-from dispatch.enums import DocumentResourceTypes
-from dispatch.enums import Visibility, EventType
+from dispatch.enums import DocumentResourceTypes, EventType, Visibility
 from dispatch.event import service as event_service
 from dispatch.group import flows as group_flows
-from dispatch.group.enums import GroupType, GroupAction
+from dispatch.group.enums import GroupAction, GroupType
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentRead
 from dispatch.incident_cost import service as incident_cost_service
 from dispatch.individual import service as individual_service
+from dispatch.individual.models import IndividualContact
 from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import Participant
-from dispatch.individual.models import IndividualContact
-from dispatch.team.models import TeamContact
 from dispatch.participant_role import flows as participant_role_flows
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
@@ -34,28 +31,26 @@ from dispatch.report.enums import ReportTypes
 from dispatch.report.messaging import send_incident_report_reminder
 from dispatch.service import service as service_service
 from dispatch.storage import flows as storage_flows
-from dispatch.task.enums import TaskStatus
-from dispatch.ticket import flows as ticket_flows
 from dispatch.tag.flows import check_for_tag_change
+from dispatch.task.enums import TaskStatus
+from dispatch.team.models import TeamContact
+from dispatch.ticket import flows as ticket_flows
 
 from .messaging import (
-    # get_suggested_document_items,
+    bulk_participant_announcement_message,
     send_incident_closed_information_review_reminder,
     send_incident_commander_readded_notification,
     send_incident_created_notifications,
     send_incident_management_help_tips_message,
     send_incident_new_role_assigned_notification,
     send_incident_open_tasks_ephemeral_message,
-    send_participant_announcement_message,
-    bulk_participant_announcement_message,
     send_incident_rating_feedback_message,
     send_incident_review_document_notification,
-    # send_incident_suggested_reading_messages,
     send_incident_update_notifications,
     send_incident_welcome_participant_messages,
+    send_participant_announcement_message,
 )
 from .models import Incident, IncidentStatus
-
 
 log = logging.getLogger(__name__)
 
@@ -314,13 +309,6 @@ def incident_create_resources(
 
         # we send the welcome messages to the participant
         send_incident_welcome_participant_messages(user_email, incident, db_session)
-
-        # NOTE: Temporarily disabled until an issue with the Dispatch resolver plugin is resolved
-        # we send a suggested reading message to the participant
-        # suggested_document_items = get_suggested_document_items(incident, db_session)
-        # send_incident_suggested_reading_messages(
-        # 	  incident, suggested_document_items, user_email, db_session
-        # )
 
     bulk_participant_announcement_message(
         participant_emails=user_emails,
@@ -1050,13 +1038,6 @@ def incident_add_or_reactivate_participant_flow(
 
         # we send the welcome messages to the participant
         send_incident_welcome_participant_messages(user_email, incident, db_session)
-
-        # NOTE: Temporarily disabled until an issue with the Dispatch resolver plugin is resolved
-        # we send a suggested reading message to the participant
-        # suggested_document_items = get_suggested_document_items(incident, db_session)
-        # send_incident_suggested_reading_messages(
-        # 	  incident, suggested_document_items, user_email, db_session
-        # )
 
     return participant
 

@@ -1,11 +1,11 @@
 import logging
+
+from pydantic import Field
+from starlette.config import Config
+
 from dispatch.config import BaseConfigurationModel
 
-from starlette.config import Config
-from pydantic import Field
-
 log = logging.getLogger(__name__)
-
 
 config = Config(".env")
 
