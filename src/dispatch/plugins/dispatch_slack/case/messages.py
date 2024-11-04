@@ -491,8 +491,8 @@ def create_genai_signal_analysis_message(
 def create_signal_engagement_message(
     case: Case,
     channel_id: str,
-    engagement: SignalEngagement,
-    signal_instance: SignalInstance,
+    engagement: SignalEngagement | None,
+    signal_instance: SignalInstance | None,
     user_email: str,
     engagement_status: SignalEngagementStatus = SignalEngagementStatus.new,
 ) -> list[Block]:
