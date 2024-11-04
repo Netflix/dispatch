@@ -1,10 +1,11 @@
 from typing import List, Optional
 
-from pydantic import Field, validator, AnyHttpUrl
+from pydantic import AnyHttpUrl, Field, validator
 from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.event import listen
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import false
 from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy_utils import TSVectorType
 
@@ -27,6 +28,7 @@ class CaseType(ProjectMixin, Base):
     exclude_from_metrics = Column(Boolean, default=False)
     plugin_metadata = Column(JSON, default=[])
     conversation_target = Column(String)
+    auto_close = Column(Boolean, default=False, server_default=false())
 
     # the catalog here is simple to help matching "named entities"
     search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
@@ -100,6 +102,7 @@ class CaseTypeBase(DispatchBase):
     project: Optional[ProjectRead]
     visibility: Optional[str] = Field(None, nullable=True)
     cost_model: Optional[CostModelRead] = None
+    auto_close: Optional[bool] = False
 
     @validator("plugin_metadata", pre=True)
     def replace_none_with_empty_list(cls, value):

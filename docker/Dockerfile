@@ -1,4 +1,4 @@
-FROM python:3.11.4-slim-bullseye as sdist
+FROM python:3.13.0-slim-bullseye as sdist
 
 LABEL maintainer="oss@netflix.com"
 LABEL org.opencontainers.image.title="Dispatch PyPI Wheel"
@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     && rm -rf /var/lib/apt/lists/*
 
-RUN wget --quiet -O - https://deb.nodesource.com/setup_16.x | bash - \
+RUN wget --quiet -O - https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs --no-install-recommends
 
 ARG SOURCE_COMMIT
@@ -56,7 +56,7 @@ RUN YARN_CACHE_FOLDER="$(mktemp -d)" \
     && mv /usr/src/dispatch/dist /dist
 
 # This is the image to be run
-FROM python:3.11.4-slim-bullseye
+FROM python:3.13.0-slim-bullseye
 
 LABEL maintainer="oss@dispatch.io"
 LABEL org.opencontainers.image.title="Dispatch"
@@ -87,7 +87,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt bullseye-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
     && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 
-RUN wget --quiet -O - https://deb.nodesource.com/setup_12.x | bash -
+RUN wget --quiet -O - https://deb.nodesource.com/setup_20.x | bash -
 
 COPY --from=sdist /dist/*.whl /tmp/dist/
 RUN buildDeps="" \
@@ -104,7 +104,21 @@ RUN buildDeps="" \
     pkg-config postgresql-client-14 nodejs \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
-    && npm install mjml --no-cache-dir
+    # mjml has to be installed differently here because
+    # after node 14, docker will install npm files at the
+    # root directoy and fail, so we have to create a new
+    # directory and use it for the install then copy the
+    # files to the root directory to maintain backwards
+    # compatibility for email generation
+    && mkdir -p /mjml_install \
+    # if our workdir is /, then pushd/popd doesn't work
+    # for the npm install. It still tries to install in /,
+    # which npm can't do
+    && cd /mjml_install \
+    && npm install --no-cache-dir mjml \
+    && mv node_modules / \
+    && cd / \
+    && rm -rf /mjml_install
 
 EXPOSE 8000
 VOLUME /var/lib/dispatch/files

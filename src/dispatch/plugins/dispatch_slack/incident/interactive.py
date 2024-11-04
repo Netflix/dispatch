@@ -887,6 +887,9 @@ def handle_after_hours_message(
     )
     # handle no participant found
     if not participant:
+        log.warning(
+            f"Participant not found for {user.email} in incident {incident.id}. Skipping after hours notification."
+        )
         return
 
     # get their timezone from slack
