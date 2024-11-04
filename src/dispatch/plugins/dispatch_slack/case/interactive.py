@@ -102,7 +102,9 @@ from dispatch.service import flows as service_flows
 from dispatch.signal import service as signal_service
 from dispatch.signal.enums import SignalEngagementStatus
 from dispatch.signal.models import (
+    Signal,
     SignalEngagement,
+    SignalFilter,
     SignalFilterCreate,
     SignalInstance,
 )
@@ -843,13 +845,27 @@ def handle_snooze_submission_event(
 
         signal.filters.append(new_filter)
         db_session.commit()
+        return new_filter
+
+    channel_id = context["subject"].channel_id
+    thread_id = context["subject"].thread_id
 
     # Check if last_mfa_time was within the last hour
     if not mfa_enabled:
-        _create_snooze_filter(
+        new_filter = _create_snooze_filter(
             db_session=db_session,
             user=user,
             subject=context["subject"],
+        )
+        signal = signal_service.get(db_session=db_session, signal_id=context["subject"].id)
+        post_snooze_message(
+            db_session=db_session,
+            client=client,
+            channel=channel_id,
+            user=user,
+            signal=signal,
+            new_filter=new_filter,
+            thread_ts=thread_id,
         )
         send_success_modal(
             client=client,
@@ -875,11 +891,20 @@ def handle_snooze_submission_event(
         )
 
         if response == MfaChallengeStatus.APPROVED:
-            # Get the existing filters for the signal
-            _create_snooze_filter(
+            new_filter = _create_snooze_filter(
                 db_session=db_session,
                 user=user,
                 subject=context["subject"],
+            )
+            signal = signal_service.get(db_session=db_session, signal_id=context["subject"].id)
+            post_snooze_message(
+                db_session=db_session,
+                client=client,
+                channel=channel_id,
+                user=user,
+                signal=signal,
+                new_filter=new_filter,
+                thread_ts=thread_id,
             )
             send_success_modal(
                 client=client,
@@ -907,6 +932,48 @@ def handle_snooze_submission_event(
                 view_id=body["view"]["id"],
                 view=modal,
             )
+
+
+def post_snooze_message(
+    client: WebClient,
+    channel: str,
+    user: DispatchUser,
+    signal: Signal,
+    db_session: Session,
+    new_filter: SignalFilter,
+    thread_ts: str | None = None,
+):
+    def extract_entity_ids(expression: list[dict]) -> list[int]:
+        entity_ids = []
+        for item in expression:
+            if isinstance(item, dict) and "or" in item:
+                for condition in item["or"]:
+                    if condition.get("model") == "Entity" and condition.get("field") == "id":
+                        entity_ids.append(int(condition.get("value")))
+        return entity_ids
+
+    entity_ids = extract_entity_ids(new_filter.expression)
+
+    if entity_ids:
+        entities = []
+        for entity_id in entity_ids:
+            entity = entity_service.get(db_session=db_session, entity_id=entity_id)
+            if entity:
+                entities.append(entity)
+        entities_text = ", ".join([f"{entity.value} ({entity.id})" for entity in entities])
+    else:
+        entities_text = "All"
+
+    message = (
+        f":zzz: *New Signal Snooze Added*\n"
+        f"• User: {user.email}\n"
+        f"• Signal: {signal.name}\n"
+        f"• Snooze Name: {new_filter.name}\n"
+        f"• Description: {new_filter.description}\n"
+        f"• Expiration: {new_filter.expiration}\n"
+        f"• Entities: {entities_text}"
+    )
+    client.chat_postMessage(channel=channel, text=message, thread_ts=thread_ts)
 
 
 def assignee_select(
