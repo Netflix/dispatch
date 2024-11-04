@@ -102,10 +102,13 @@ from dispatch.service import flows as service_flows
 from dispatch.signal import service as signal_service
 from dispatch.signal.enums import SignalEngagementStatus
 from dispatch.signal.models import (
+    Signal,
     SignalEngagement,
+    SignalFilter,
     SignalFilterCreate,
     SignalInstance,
 )
+from dispatch.ticket import flows as ticket_flows
 
 log = logging.getLogger(__name__)
 
@@ -842,13 +845,27 @@ def handle_snooze_submission_event(
 
         signal.filters.append(new_filter)
         db_session.commit()
+        return new_filter
+
+    channel_id = context["subject"].channel_id
+    thread_id = context["subject"].thread_id
 
     # Check if last_mfa_time was within the last hour
     if not mfa_enabled:
-        _create_snooze_filter(
+        new_filter = _create_snooze_filter(
             db_session=db_session,
             user=user,
             subject=context["subject"],
+        )
+        signal = signal_service.get(db_session=db_session, signal_id=context["subject"].id)
+        post_snooze_message(
+            db_session=db_session,
+            client=client,
+            channel=channel_id,
+            user=user,
+            signal=signal,
+            new_filter=new_filter,
+            thread_ts=thread_id,
         )
         send_success_modal(
             client=client,
@@ -874,11 +891,20 @@ def handle_snooze_submission_event(
         )
 
         if response == MfaChallengeStatus.APPROVED:
-            # Get the existing filters for the signal
-            _create_snooze_filter(
+            new_filter = _create_snooze_filter(
                 db_session=db_session,
                 user=user,
                 subject=context["subject"],
+            )
+            signal = signal_service.get(db_session=db_session, signal_id=context["subject"].id)
+            post_snooze_message(
+                db_session=db_session,
+                client=client,
+                channel=channel_id,
+                user=user,
+                signal=signal,
+                new_filter=new_filter,
+                thread_ts=thread_id,
             )
             send_success_modal(
                 client=client,
@@ -906,6 +932,48 @@ def handle_snooze_submission_event(
                 view_id=body["view"]["id"],
                 view=modal,
             )
+
+
+def post_snooze_message(
+    client: WebClient,
+    channel: str,
+    user: DispatchUser,
+    signal: Signal,
+    db_session: Session,
+    new_filter: SignalFilter,
+    thread_ts: str | None = None,
+):
+    def extract_entity_ids(expression: list[dict]) -> list[int]:
+        entity_ids = []
+        for item in expression:
+            if isinstance(item, dict) and "or" in item:
+                for condition in item["or"]:
+                    if condition.get("model") == "Entity" and condition.get("field") == "id":
+                        entity_ids.append(int(condition.get("value")))
+        return entity_ids
+
+    entity_ids = extract_entity_ids(new_filter.expression)
+
+    if entity_ids:
+        entities = []
+        for entity_id in entity_ids:
+            entity = entity_service.get(db_session=db_session, entity_id=entity_id)
+            if entity:
+                entities.append(entity)
+        entities_text = ", ".join([f"{entity.value} ({entity.id})" for entity in entities])
+    else:
+        entities_text = "All"
+
+    message = (
+        f":zzz: *New Signal Snooze Added*\n"
+        f"• User: {user.email}\n"
+        f"• Signal: {signal.name}\n"
+        f"• Snooze Name: {new_filter.name}\n"
+        f"• Description: {new_filter.description}\n"
+        f"• Expiration: {new_filter.expiration}\n"
+        f"• Entities: {entities_text}"
+    )
+    client.chat_postMessage(channel=channel, text=message, thread_ts=thread_ts)
 
 
 def assignee_select(
@@ -1008,6 +1076,10 @@ def handle_case_participant_role_activity(
             organization_slug=context["subject"].organization_slug,
         )
         case.status = CaseStatus.triage
+
+        # we update the ticket
+        ticket_flows.update_case_ticket(case=case, db_session=db_session)
+
     case_flows.update_conversation(case, db_session)
     db_session.commit()
 
@@ -1037,6 +1109,13 @@ def handle_case_after_hours_message(
     participant = participant_service.get_by_case_id_and_email(
         db_session=db_session, case_id=context["subject"].id, email=user.email
     )
+    # handle no participant found
+    if not participant:
+        log.warning(
+            f"Participant not found for {user.email} in case {case.id}. Skipping after hours notification."
+        )
+        return
+
     # get their timezone from slack
     owner_tz = (dispatch_slack_service.get_user_info_by_email(client, email=owner_email))["tz"]
     message = f"Responses may be delayed. The current case priority is *{case.case_priority.name}* and your message was sent outside of the Assignee's working hours (Weekdays, 9am-5pm, {owner_tz} timezone)."
@@ -1073,6 +1152,10 @@ def reopen_button_click(
     ack()
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
     case.status = CaseStatus.triage
+
+    # we update the ticket
+    ticket_flows.update_case_ticket(case=case, db_session=db_session)
+
     db_session.commit()
 
     # update case message
@@ -1644,6 +1727,10 @@ def triage_button_click(
     )
     case.status = CaseStatus.triage
     db_session.commit()
+
+    # we update the ticket
+    ticket_flows.update_case_ticket(case=case, db_session=db_session)
+
     case_flows.update_conversation(case, db_session)
 
 
@@ -1660,49 +1747,41 @@ def handle_resolve_submission_event(
     user: DispatchUser,
 ):
     ack()
-    # we get the current or previous case
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
-    previous_case = CaseRead.from_orm(case)
+    # we get the current case and store it as previous case
+    current_case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    previous_case = CaseRead.from_orm(current_case)
 
-    # we run the case status transition flow
-    case_flows.case_status_transition_flow_dispatcher(
-        case=case,
-        current_status=CaseStatus.closed,
-        db_session=db_session,
-        previous_status=case.status,
-        organization_slug=context["subject"].organization_slug,
-    )
-
-    # we update the case with the new resolution and status
+    # we update the case with the new resolution, resolution reason and status
     case_in = CaseUpdate(
-        title=case.title,
+        title=current_case.title,
         resolution_reason=form_data[DefaultBlockIds.case_resolution_reason_select]["value"],
         resolution=form_data[DefaultBlockIds.resolution_input],
-        visibility=case.visibility,
+        visibility=current_case.visibility,
         status=CaseStatus.closed,
     )
-    case = case_service.update(
+    updated_case = case_service.update(
         db_session=db_session,
-        case=case,
+        case=current_case,
         case_in=case_in,
         current_user=user,
     )
 
+    # we run the case update flow
     case_flows.case_update_flow(
-        case_id=case.id,
+        case_id=updated_case.id,
         previous_case=previous_case,
         db_session=db_session,
-        reporter_email=case.reporter.individual.email if case.reporter else None,
-        assignee_email=case.assignee.individual.email if case.assignee else None,
+        reporter_email=updated_case.reporter.individual.email if updated_case.reporter else None,
+        assignee_email=updated_case.assignee.individual.email if updated_case.assignee else None,
         organization_slug=context["subject"].organization_slug,
     )
 
-    # We update the case message with the new resolution and status
-    blocks = create_case_message(case=case, channel_id=context["subject"].channel_id)
+    # we update the case notification with the resolution, resolution reason and status
+    blocks = create_case_message(case=updated_case, channel_id=context["subject"].channel_id)
     client.chat_update(
         blocks=blocks,
-        ts=case.conversation.thread_id,
-        channel=case.conversation.channel_id,
+        ts=updated_case.conversation.thread_id,
+        channel=updated_case.conversation.channel_id,
     )
 
 

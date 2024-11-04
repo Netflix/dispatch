@@ -130,16 +130,9 @@ export default {
   },
 
   watch: {
-    project: {
-      handler(newProject) {
-        if (newProject?.id !== this.lastProjectId) {
-          this.lastProjectId = newProject?.id
-          this.resetSelection()
-          this.fetchData()
-        }
-        this.validatePriority()
-      },
-      deep: true,
+    project() {
+      this.validatePriority()
+      this.fetchData()
     },
     status() {
       this.validatePriority()

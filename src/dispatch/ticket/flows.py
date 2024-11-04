@@ -59,7 +59,8 @@ def create_incident_ticket(incident: Incident, db_session: Session):
         log.error(f"Incident ticket not created. Plugin {plugin.plugin.slug} encountered an error.")
         return
 
-    external_ticket.update({"resource_type": plugin.plugin.slug})
+    if "resource_type" not in external_ticket:
+        external_ticket.update({"resource_type": plugin.plugin.slug})
 
     # we create the internal incident ticket
     ticket_in = TicketCreate(**external_ticket)

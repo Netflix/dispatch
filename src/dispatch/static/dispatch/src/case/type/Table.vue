@@ -51,10 +51,13 @@
                 {{ item.incident_type.name }}
               </v-chip>
             </template>
+            <template #item.enabled="{ value }">
+              <v-checkbox-btn :model-value="value" disabled />
+            </template>
             <template #item.default="{ value }">
               <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #item.enabled="{ value }">
+            <template #item.auto_close="{ value }">
               <v-checkbox-btn :model-value="value" disabled />
             </template>
             <template #item.data-table-actions="{ item }">
@@ -103,8 +106,9 @@ export default {
         { title: "Visibility", value: "visibility", sortable: false },
         { title: "Oncall Service", value: "oncall_service.name", sortable: false },
         { title: "Incident Type", value: "incident_type.name", sortable: false },
-        { title: "Default", value: "default", sortable: true },
         { title: "Enabled", value: "enabled", sortable: true },
+        { title: "Default", value: "default", sortable: true },
+        { title: "Auto Close", value: "auto_close", sortable: true },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }

@@ -86,7 +86,9 @@ def add_member(client: Any, group_key: str, email: str, role: str):
 def remove_member(client: Any, group_key: str, email: str):
     """Removes member from google group."""
     try:
-        return make_call(client.members(), "delete", groupKey=group_key, memberKey=email)
+        return make_call(
+            client.members(), "delete", groupKey=group_key, memberKey=email, propagate_errors=True
+        )
     except HttpError as e:
         if e.resp.status in [409]:
             log.debug(

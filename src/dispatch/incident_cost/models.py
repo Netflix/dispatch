@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import Column, ForeignKey, Integer, Numeric
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
@@ -40,6 +42,7 @@ class IncidentCostUpdate(IncidentCostBase):
 class IncidentCostRead(IncidentCostBase):
     id: PrimaryKey
     incident_cost_type: IncidentCostTypeRead
+    updated_at: Optional[datetime] = None
 
 
 class IncidentCostPagination(Pagination):
