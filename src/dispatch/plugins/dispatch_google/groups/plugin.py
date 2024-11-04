@@ -95,6 +95,11 @@ def remove_member(client: Any, group_key: str, email: str):
                 f"Member does not exist in google group. GroupKey={group_key} MemberKey={email}"
             )
             return
+        elif e.resp.status in [404]:
+            log.debug(
+                f"Group does not exist. GroupKey={group_key} Trying to remove MemberKey={email}"
+            )
+            return
 
 
 def list_members(client: Any, group_key: str, **kwargs):
