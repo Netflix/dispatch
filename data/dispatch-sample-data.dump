@@ -7890,6 +7890,7 @@ COPY dispatch_organization_default.case_priority (id, name, description, color, 
 --
 
 COPY dispatch_organization_default.case_severity (id, name, description, color, enabled, "default", view_order, search_vector, project_id) FROM stdin;
+1	Low	Low severity	\N	t	t	1	\N	1
 \.
 
 
@@ -9205,7 +9206,7 @@ COPY public.workflow_term (term_id, workflow_id) FROM stdin;
 -- Name: dispatch_user_id_seq; Type: SEQUENCE SET; Schema: dispatch_core; Owner: postgres
 --
 
-SELECT pg_catalog.setval('dispatch_core.dispatch_user_id_seq', 4270, true);
+SELECT pg_catalog.setval('dispatch_core.dispatch_user_id_seq', 4271, true);
 
 
 --
@@ -9254,7 +9255,7 @@ SELECT pg_catalog.setval('dispatch_organization_default.case_cost_type_id_seq', 
 -- Name: case_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
 --
 
-SELECT pg_catalog.setval('dispatch_organization_default.case_id_seq', 1, false);
+SELECT pg_catalog.setval('dispatch_organization_default.case_id_seq', 1, true);
 
 
 --
@@ -9268,7 +9269,7 @@ SELECT pg_catalog.setval('dispatch_organization_default.case_priority_id_seq', 3
 -- Name: case_severity_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
 --
 
-SELECT pg_catalog.setval('dispatch_organization_default.case_severity_id_seq', 1, false);
+SELECT pg_catalog.setval('dispatch_organization_default.case_severity_id_seq', 1, true);
 
 
 --
