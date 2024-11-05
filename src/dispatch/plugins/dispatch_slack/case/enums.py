@@ -10,6 +10,7 @@ class CaseNotificationActions(DispatchEnum):
     reopen = "case-notification-reopen"
     resolve = "case-notification-resolve"
     triage = "case-notification-triage"
+    user_mfa = "case-notification-user-mfa"
     invite_user_case = ConversationButtonActions.invite_user_case
 
 

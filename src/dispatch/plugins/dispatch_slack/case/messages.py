@@ -175,6 +175,11 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
                 action_id=CaseNotificationActions.escalate,
                 value=button_metadata,
             ),
+            Button(
+                text=":person: User MFA",
+                action_id=CaseNotificationActions.user_mfa,
+                value=button_metadata,
+            ),
         ]
         if case.status == CaseStatus.new:
             action_buttons.insert(
@@ -358,8 +363,8 @@ def create_genai_signal_analysis_message(
 def create_signal_engagement_message(
     case: Case,
     channel_id: str,
-    engagement: SignalEngagement,
-    signal_instance: SignalInstance,
+    engagement: SignalEngagement | None,
+    signal_instance: SignalInstance | None,
     user_email: str,
     engagement_status: SignalEngagementStatus = SignalEngagementStatus.new,
 ) -> list[Block]:
@@ -383,15 +388,15 @@ def create_signal_engagement_message(
         organization_slug=case.project.organization.slug,
         project_id=case.project.id,
         channel_id=channel_id,
-        signal_instance_id=str(signal_instance.id),
-        engagement_id=engagement.id,
+        signal_instance_id=str(signal_instance.id) if signal_instance else "",
+        engagement_id=engagement.id if engagement else 0,
         user=user_email,
     ).json()
 
     username, _ = user_email.split("@")
     blocks = [
         Section(
-            text=f"{engagement.message if engagement.message else 'No context provided for this alert.'}"
+            text=f"{engagement.message if engagement and engagement.message else 'No context provided for this alert.'}"
         ),
     ]
 
@@ -401,6 +406,87 @@ def create_signal_engagement_message(
                 Section(
                     text="Can you please confirm this was you and whether the behavior was expected?"
                 ),
+                Actions(
+                    elements=[
+                        Button(
+                            text="Confirm",
+                            style="primary",
+                            action_id=SignalEngagementActions.approve,
+                            value=button_metadata,
+                        ),
+                        Button(
+                            text="Deny",
+                            style="danger",
+                            action_id=SignalEngagementActions.deny,
+                            value=button_metadata,
+                        ),
+                    ]
+                ),
+            ]
+        )
+
+    elif engagement_status == SignalEngagementStatus.approved:
+        blocks.extend(
+            [
+                Section(text=f":white_check_mark: @{username} confirmed the behavior as expected."),
+            ]
+        )
+    else:
+        blocks.extend(
+            [
+                Section(
+                    text=f":warning: @{username} denied the behavior as expected. Please investigate the case and escalate to incident if necessary."
+                ),
+            ]
+        )
+
+    return Message(blocks=blocks).build()["blocks"]
+
+
+def create_manual_engagement_message(
+    case: Case,
+    channel_id: str,
+    engagement: str,
+    user_email: str,
+    user_id: str,
+    engagement_status: SignalEngagementStatus = SignalEngagementStatus.new,
+    thread_ts: str = None,
+) -> list[Block]:
+    """
+    Generate a list of blocks for a signal engagement message.
+
+    Args:
+        case (Case): The case object related to the signal instance.
+        channel_id (str): The ID of the Slack channel where the message will be sent.
+        message (str): Additional context information to include in the message.
+        user_email (str): The email of the user being engaged.
+        engagement (str): The engagement text.
+
+    Returns:
+        list[Block]: A list of blocks representing the message structure for the engagement message.
+    """
+    button_metadata = EngagementMetadata(
+        id=case.id,
+        type=CaseSubjects.case,
+        organization_slug=case.project.organization.slug,
+        project_id=case.project.id,
+        channel_id=channel_id,
+        signal_instance_id="",
+        engagement_id=0,
+        user=user_email,
+        thread_id=thread_ts,
+    ).json()
+
+    username, _ = user_email.split("@")
+    blocks = [
+        Section(
+            text=f"<@{user_id}>: {engagement if engagement else 'No context provided for this alert.'}"
+        ),
+    ]
+
+    if engagement_status == SignalEngagementStatus.new:
+        blocks.extend(
+            [
                 Actions(
                     elements=[
                         Button(

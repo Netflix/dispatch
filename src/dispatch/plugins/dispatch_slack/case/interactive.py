@@ -57,6 +57,7 @@ from dispatch.plugins.dispatch_slack.case.enums import (
 from dispatch.plugins.dispatch_slack.case.messages import (
     create_case_message,
     create_signal_engagement_message,
+    create_manual_engagement_message,
 )
 from dispatch.plugins.dispatch_slack.config import SlackConversationConfiguration
 from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
@@ -75,6 +76,7 @@ from dispatch.plugins.dispatch_slack.fields import (
     relative_date_picker_input,
     resolution_input,
     title_input,
+    participant_select,
 )
 from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
@@ -146,6 +148,8 @@ def configure(config: SlackConversationConfiguration):
     ]
 
     app.command(config.slack_command_update_case, middleware=middleware)(handle_update_case_command)
+
+    app.command(config.slack_command_engage_user, middleware=middleware)(handle_engage_user_command)
 
 
 # Commands
@@ -336,6 +340,108 @@ def handle_list_signals_command(
         current_page=current_page,
         total_pages=total_pages,
         first_render=True,
+    )
+
+
+def handle_engage_user_command(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+) -> None:
+    """Handles engage user command."""
+    ack()
+
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    default_engagement = "We'd like to verify your identity. Can you please confirm this is you?"
+
+    blocks = [
+        Context(
+            elements=[
+                MarkdownText(
+                    text="Accept the defaults or adjust as needed. Person to engage must already be a participant in the case."
+                )
+            ]
+        ),
+        participant_select(label="Person to engage", participants=case.participants),
+        description_input(label="Engagement text", initial_value=default_engagement),
+    ]
+
+    modal = Modal(
+        title="Engage user via MFA",
+        submit="Engage",
+        blocks=blocks,
+        close="Close",
+        callback_id="manual-engage-mfa",
+        private_metadata=context["subject"].json(),
+    ).build()
+
+    client.views_open(
+        trigger_id=body["trigger_id"],
+        view=modal,
+    )
+
+
+@app.view(
+    "manual-engage-mfa",
+    middleware=[
+        action_context_middleware,
+        db_middleware,
+        modal_submit_middleware,
+    ],
+)
+def engage(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+    form_data: dict,
+) -> None:
+    """Handles the engage user action."""
+    ack()
+
+    if form_data.get(DefaultBlockIds.participant_select):
+        participant_id = form_data[DefaultBlockIds.participant_select]["value"]
+        participant = participant_service.get(db_session=db_session, participant_id=participant_id)
+        if participant:
+            user_email = participant.individual.email
+        else:
+            log.error(f"Participant not found for id {participant_id} when trying to engage user")
+            return
+    else:
+        return
+
+    if form_data.get(DefaultBlockIds.description_input):
+        engagement = form_data[DefaultBlockIds.description_input]
+    else:
+        log.warning("Engagement text not found")
+        return
+
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+
+    user = client.users_lookupByEmail(email=user_email)
+
+    result = client.chat_postMessage(
+        text="Engaging user...",
+        channel=case.conversation.channel_id,
+        thread_ts=case.conversation.thread_id if case.has_thread else None,
+    )
+    thread_ts = result.data.get("ts")
+
+    blocks = create_manual_engagement_message(
+        case=case,
+        channel_id=case.conversation.channel_id,
+        engagement=engagement,
+        user_email=user_email,
+        user_id=user["user"]["id"],
+        thread_ts=thread_ts,
+    )
+    client.chat_update(
+        blocks=blocks,
+        channel=case.conversation.channel_id,
+        ts=thread_ts,
     )
 
 
@@ -1435,6 +1541,26 @@ def create_channel_button_click(
     client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
+@app.action(
+    CaseNotificationActions.user_mfa,
+    middleware=[button_context_middleware, db_middleware, user_middleware],
+)
+def user_mfa_button_click(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+):
+    return handle_engage_user_command(
+        ack=ack,
+        body=body,
+        client=client,
+        context=context,
+        db_session=db_session,
+    )
+
+
 def ack_handle_create_channel_event(ack: Ack, case: Case) -> None:
     """Handles the case channel creation event."""
     msg = (
@@ -2192,7 +2318,9 @@ def engagement_button_approve_click(
     mfa_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=context["subject"].project_id, plugin_type="auth-mfa"
     )
-    mfa_enabled = True if mfa_plugin and engagement.require_mfa else False
+
+    require_mfa = engagement.require_mfa if engagement else True
+    mfa_enabled = True if mfa_plugin and require_mfa else False
 
     blocks = [
         Section(text="Confirm that this is expected and that it is not suspicious behavior."),
@@ -2288,7 +2416,10 @@ def handle_engagement_submission_event(
     mfa_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=context["subject"].project_id, plugin_type="auth-mfa"
     )
-    mfa_enabled = True if mfa_plugin and engagement.require_mfa else False
+
+    require_mfa = engagement.require_mfa if engagement else True
+    mfa_enabled = True if mfa_plugin and require_mfa else False
+
     challenge, challenge_url = mfa_plugin.instance.create_mfa_challenge(
         action="signal-engagement-confirmation",
         current_user=user,
@@ -2299,8 +2430,12 @@ def handle_engagement_submission_event(
     ack_mfa_required_submission_event(ack=ack, mfa_enabled=mfa_enabled, challenge_url=challenge_url)
 
     case = case_service.get(db_session=db_session, case_id=metadata["id"])
-    signal_instance = signal_service.get_signal_instance(
-        db_session=db_session, signal_instance_id=UUID(metadata["signal_instance_id"])
+    signal_instance = (
+        signal_service.get_signal_instance(
+            db_session=db_session, signal_instance_id=UUID(metadata["signal_instance_id"])
+        )
+        if metadata["signal_instance_id"]
+        else None
     )
     # Get context provided by the user
     context_from_user = body["view"]["state"]["values"][DefaultBlockIds.description_input][
@@ -2324,6 +2459,7 @@ def handle_engagement_submission_event(
             signal_instance=signal_instance,
             user=user_who_clicked_button,
             view_id=body["view"]["id"],
+            thread_id=context["subject"].thread_id,
         )
         db_session.commit()
         return
@@ -2339,6 +2475,7 @@ def handle_engagement_submission_event(
             signal_instance=signal_instance,
             user=user_who_clicked_button,
             view_id=body["view"]["id"],
+            thread_id=context["subject"].thread_id,
         )
 
 
@@ -2347,12 +2484,13 @@ def send_engagement_response(
     client: WebClient,
     context_from_user: str,
     db_session: Session,
-    engagement: SignalEngagement,
+    engagement: SignalEngagement | None,
     engaged_user: str,
     response: str,
-    signal_instance: SignalInstance,
+    signal_instance: SignalInstance | None,
     user: DispatchUser,
     view_id: str,
+    thread_id: str,
 ):
     if response == MfaChallengeStatus.APPROVED:
         title = "Approve"
@@ -2395,19 +2533,26 @@ def send_engagement_response(
             user_email=engaged_user,
             engagement_status=engagement_status,
         )
-        client.chat_update(
-            blocks=blocks,
-            channel=case.conversation.channel_id,
-            ts=signal_instance.engagement_thread_ts,
-        )
-        resolve_case(
-            case=case,
-            channel_id=case.conversation.channel_id,
-            client=client,
-            db_session=db_session,
-            context_from_user=context_from_user,
-            user=user,
-        )
+        if signal_instance:
+            client.chat_update(
+                blocks=blocks,
+                channel=case.conversation.channel_id,
+                ts=signal_instance.engagement_thread_ts,
+            )
+            resolve_case(
+                case=case,
+                channel_id=case.conversation.channel_id,
+                client=client,
+                db_session=db_session,
+                context_from_user=context_from_user,
+                user=user,
+            )
+        else:
+            client.chat_update(
+                blocks=blocks,
+                channel=case.conversation.channel_id,
+                ts=thread_id,
+            )
 
 
 def resolve_case(
@@ -2528,9 +2673,14 @@ def handle_engagement_deny_submission_event(
     metadata = json.loads(body["view"]["private_metadata"])
     engaged_user = metadata["user"]
     case = case_service.get(db_session=db_session, case_id=metadata["id"])
-    signal_instance = signal_service.get_signal_instance(
-        db_session=db_session, signal_instance_id=UUID(metadata["signal_instance_id"])
+    signal_instance = (
+        signal_service.get_signal_instance(
+            db_session=db_session, signal_instance_id=UUID(metadata["signal_instance_id"])
+        )
+        if metadata["signal_instance_id"]
+        else None
     )
+
     engagement = signal_service.get_signal_engagement(
         db_session=db_session,
         signal_engagement_id=metadata["engagement_id"],
@@ -2551,6 +2701,10 @@ def handle_engagement_deny_submission_event(
         channel=case.conversation.channel_id,
         thread_ts=case.conversation.thread_id,
     )
+
+    thread_ts = (
+        signal_instance.engagement_thread_ts if signal_instance else context["subject"].thread_id
+    )
     blocks = create_signal_engagement_message(
         case=case,
         channel_id=case.conversation.channel_id,
@@ -2562,5 +2716,5 @@ def handle_engagement_deny_submission_event(
     client.chat_update(
         blocks=blocks,
         channel=case.conversation.channel_id,
-        ts=signal_instance.engagement_thread_ts,
+        ts=thread_ts,
     )
