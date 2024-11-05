@@ -403,17 +403,20 @@ def engage(
     ack()
 
     if form_data.get(DefaultBlockIds.participant_select):
-        user_email = client.users_info(user=form_data[DefaultBlockIds.participant_select]["value"])[
-            "user"
-        ]["profile"]["email"]
+        participant_id = form_data[DefaultBlockIds.participant_select]["value"]
+        participant = participant_service.get(db_session=db_session, participant_id=participant_id)
+        if participant:
+            user_email = participant.individual.email
+        else:
+            log.error(f"Participant not found for id {participant_id} when trying to engage user")
+            return
     else:
-        # TODO: log error
         return
 
     if form_data.get(DefaultBlockIds.description_input):
         engagement = form_data[DefaultBlockIds.description_input]
     else:
-        # TODO log error
+        log.warning("Engagement text not found")
         return
 
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
