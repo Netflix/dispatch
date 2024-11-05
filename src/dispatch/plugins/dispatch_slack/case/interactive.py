@@ -402,7 +402,7 @@ def engage(
     """Handles the engage user action."""
     ack()
 
-    if form_data.get(DefaultBlockIds.description_input):
+    if form_data.get(DefaultBlockIds.participant_select):
         participant_id = form_data[DefaultBlockIds.participant_select]["value"]
         participant = participant_service.get(db_session=db_session, participant_id=participant_id)
         if participant:
