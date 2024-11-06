@@ -24,7 +24,7 @@ export class ReportCasePage {
     this.priorityDropdown = page.getByRole("combobox").filter({ hasText: "Priority" })
     this.submitButton = page.getByRole("button", { name: "Submit" })
     this.pageBorder = this.page.locator("span").filter({
-      hasText: "Open a Case Cases are meant to triage events",
+      hasText: "Cases are meant to triage events",
     })
   }
 
