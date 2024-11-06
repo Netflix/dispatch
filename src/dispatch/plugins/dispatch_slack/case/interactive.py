@@ -56,8 +56,8 @@ from dispatch.plugins.dispatch_slack.case.enums import (
 )
 from dispatch.plugins.dispatch_slack.case.messages import (
     create_case_message,
-    create_signal_engagement_message,
     create_manual_engagement_message,
+    create_signal_engagement_message,
 )
 from dispatch.plugins.dispatch_slack.config import SlackConversationConfiguration
 from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
@@ -72,11 +72,11 @@ from dispatch.plugins.dispatch_slack.fields import (
     entity_select,
     incident_priority_select,
     incident_type_select,
+    participant_select,
     project_select,
     relative_date_picker_input,
     resolution_input,
     title_input,
-    participant_select,
 )
 from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
@@ -2502,9 +2502,9 @@ def send_engagement_response(
         engagement_status = SignalEngagementStatus.denied
 
         if response == MfaChallengeStatus.EXPIRED:
-            text = "Confirmation failed, the MFA request timed out. Please, have your MFA device ready to accept the push notification and try again."
+            text = "Confirmation failed, the MFA request timed out. Please try again and complete the MFA verification within the given time frame."
         elif response == MfaChallengeStatus.DENIED:
-            text = f"User {engaged_user} not found in MFA provider. To validate your identity, please register in Duo and try again."
+            text = f"We couldn't find {engaged_user} in our MFA system."
         else:
             text = "Confirmation failed. You must accept the MFA prompt."
 
