@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 14.6 (Debian 14.6-1.pgdg110+1)
--- Dumped by pg_dump version 14.10 (Homebrew)
+-- Dumped by pg_dump version 14.13 (Homebrew)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -2183,6 +2183,18 @@ CREATE TABLE dispatch_organization_default.assoc_document_filters (
 ALTER TABLE dispatch_organization_default.assoc_document_filters OWNER TO postgres;
 
 --
+-- Name: assoc_document_tags; Type: TABLE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE TABLE dispatch_organization_default.assoc_document_tags (
+    document_id integer NOT NULL,
+    tag_id integer NOT NULL
+);
+
+
+ALTER TABLE dispatch_organization_default.assoc_document_tags OWNER TO postgres;
+
+--
 -- Name: assoc_incident_tags; Type: TABLE; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -2406,11 +2418,95 @@ CREATE TABLE dispatch_organization_default."case" (
     assignee_id integer,
     resolution_reason character varying,
     signal_thread_ts character varying,
-    reporter_id integer
+    reporter_id integer,
+    dedicated_channel boolean,
+    genai_analysis jsonb DEFAULT '{}'::jsonb NOT NULL
 );
 
 
 ALTER TABLE dispatch_organization_default."case" OWNER TO postgres;
+
+--
+-- Name: case_cost; Type: TABLE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE TABLE dispatch_organization_default.case_cost (
+    id integer NOT NULL,
+    amount numeric(10,2),
+    case_cost_type_id integer,
+    case_id integer,
+    project_id integer,
+    updated_at timestamp without time zone,
+    created_at timestamp without time zone
+);
+
+
+ALTER TABLE dispatch_organization_default.case_cost OWNER TO postgres;
+
+--
+-- Name: case_cost_id_seq; Type: SEQUENCE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE SEQUENCE dispatch_organization_default.case_cost_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE dispatch_organization_default.case_cost_id_seq OWNER TO postgres;
+
+--
+-- Name: case_cost_id_seq; Type: SEQUENCE OWNED BY; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER SEQUENCE dispatch_organization_default.case_cost_id_seq OWNED BY dispatch_organization_default.case_cost.id;
+
+
+--
+-- Name: case_cost_type; Type: TABLE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE TABLE dispatch_organization_default.case_cost_type (
+    id integer NOT NULL,
+    name character varying,
+    description character varying,
+    category character varying,
+    details json,
+    "default" boolean,
+    editable boolean,
+    search_vector tsvector,
+    project_id integer,
+    updated_at timestamp without time zone,
+    created_at timestamp without time zone
+);
+
+
+ALTER TABLE dispatch_organization_default.case_cost_type OWNER TO postgres;
+
+--
+-- Name: case_cost_type_id_seq; Type: SEQUENCE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE SEQUENCE dispatch_organization_default.case_cost_type_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE dispatch_organization_default.case_cost_type_id_seq OWNER TO postgres;
+
+--
+-- Name: case_cost_type_id_seq; Type: SEQUENCE OWNED BY; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER SEQUENCE dispatch_organization_default.case_cost_type_id_seq OWNED BY dispatch_organization_default.case_cost_type.id;
+
 
 --
 -- Name: case_id_seq; Type: SEQUENCE; Schema: dispatch_organization_default; Owner: postgres
@@ -2535,7 +2631,9 @@ CREATE TABLE dispatch_organization_default.case_type (
     case_template_document_id integer,
     oncall_service_id integer,
     incident_type_id integer,
-    conversation_target character varying
+    conversation_target character varying,
+    cost_model_id integer,
+    auto_close boolean DEFAULT false
 );
 
 
@@ -2849,6 +2947,47 @@ ALTER SEQUENCE dispatch_organization_default.document_id_seq OWNED BY dispatch_o
 
 
 --
+-- Name: email_templates; Type: TABLE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE TABLE dispatch_organization_default.email_templates (
+    id integer NOT NULL,
+    email_template_type character varying,
+    welcome_text character varying,
+    welcome_body character varying,
+    components character varying,
+    enabled boolean,
+    project_id integer,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+ALTER TABLE dispatch_organization_default.email_templates OWNER TO postgres;
+
+--
+-- Name: email_templates_id_seq; Type: SEQUENCE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE SEQUENCE dispatch_organization_default.email_templates_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE dispatch_organization_default.email_templates_id_seq OWNER TO postgres;
+
+--
+-- Name: email_templates_id_seq; Type: SEQUENCE OWNED BY; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER SEQUENCE dispatch_organization_default.email_templates_id_seq OWNED BY dispatch_organization_default.email_templates.id;
+
+
+--
 -- Name: entity; Type: TABLE; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -2994,7 +3133,9 @@ CREATE TABLE dispatch_organization_default.feedback (
     participant_id integer,
     updated_at timestamp without time zone,
     created_at timestamp without time zone,
-    search_vector tsvector
+    search_vector tsvector,
+    case_id integer,
+    project_id integer
 );
 
 
@@ -3038,7 +3179,9 @@ CREATE TABLE dispatch_organization_default.forms (
     creator_id integer,
     incident_id integer,
     form_type_id integer,
-    project_id integer
+    project_id integer,
+    attorney_form_data character varying,
+    score integer
 );
 
 
@@ -3080,7 +3223,9 @@ CREATE TABLE dispatch_organization_default.forms_type (
     form_schema character varying,
     creator_id integer,
     project_id integer,
-    service_id integer
+    service_id integer,
+    attorney_form_schema character varying,
+    scoring_schema character varying
 );
 
 
@@ -3186,8 +3331,7 @@ CREATE TABLE dispatch_organization_default.incident (
     notifications_group_id integer,
     incident_severity_id integer,
     delay_executive_report_reminder timestamp without time zone,
-    delay_tactical_report_reminder timestamp without time zone,
-    cost_model_id integer
+    delay_tactical_report_reminder timestamp without time zone
 );
 
 
@@ -3432,7 +3576,8 @@ CREATE TABLE dispatch_organization_default.incident_severity (
     "default" boolean,
     view_order integer,
     search_vector tsvector,
-    project_id integer
+    project_id integer,
+    allowed_for_stable_incidents boolean DEFAULT true
 );
 
 
@@ -3481,7 +3626,11 @@ CREATE TABLE dispatch_organization_default.incident_type (
     commander_service_id integer,
     liaison_service_id integer,
     search_vector tsvector,
-    project_id integer
+    project_id integer,
+    cost_model_id integer,
+    channel_description character varying,
+    description_service_id integer,
+    task_plugin_metadata json DEFAULT '[]'::json
 );
 
 
@@ -3558,6 +3707,47 @@ ALTER TABLE dispatch_organization_default.individual_contact_id_seq OWNER TO pos
 --
 
 ALTER SEQUENCE dispatch_organization_default.individual_contact_id_seq OWNED BY dispatch_organization_default.individual_contact.id;
+
+
+--
+-- Name: mfa_challenge; Type: TABLE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE TABLE dispatch_organization_default.mfa_challenge (
+    id integer NOT NULL,
+    valid boolean DEFAULT true,
+    reason character varying,
+    action character varying,
+    challenge_id uuid,
+    dispatch_user_id integer NOT NULL,
+    status character varying,
+    updated_at timestamp without time zone,
+    created_at timestamp without time zone
+);
+
+
+ALTER TABLE dispatch_organization_default.mfa_challenge OWNER TO postgres;
+
+--
+-- Name: mfa_challenge_id_seq; Type: SEQUENCE; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE SEQUENCE dispatch_organization_default.mfa_challenge_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE dispatch_organization_default.mfa_challenge_id_seq OWNER TO postgres;
+
+--
+-- Name: mfa_challenge_id_seq; Type: SEQUENCE OWNED BY; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER SEQUENCE dispatch_organization_default.mfa_challenge_id_seq OWNED BY dispatch_organization_default.mfa_challenge.id;
 
 
 --
@@ -3681,7 +3871,8 @@ CREATE TABLE dispatch_organization_default.participant_activity (
     started_at timestamp without time zone,
     ended_at timestamp without time zone,
     participant_id integer,
-    incident_id integer
+    incident_id integer,
+    case_id integer
 );
 
 
@@ -3824,7 +4015,19 @@ CREATE TABLE dispatch_organization_default.project (
     owner_email character varying,
     owner_conversation character varying,
     send_daily_reports boolean,
-    stable_priority_id integer
+    stable_priority_id integer,
+    enabled boolean DEFAULT true,
+    allow_self_join boolean DEFAULT true,
+    storage_folder_one character varying,
+    storage_folder_two character varying,
+    storage_use_folder_one_as_primary boolean,
+    storage_use_title boolean DEFAULT false,
+    select_commander_visibility boolean DEFAULT true,
+    send_weekly_reports boolean DEFAULT false,
+    weekly_report_notification_id integer,
+    report_incident_instructions character varying,
+    report_incident_title_hint character varying,
+    report_incident_description_hint character varying
 );
 
 
@@ -4090,7 +4293,8 @@ CREATE TABLE dispatch_organization_default.service_feedback (
     search_vector tsvector,
     updated_at timestamp without time zone,
     created_at timestamp without time zone,
-    project_id integer
+    project_id integer,
+    details json
 );
 
 
@@ -4131,7 +4335,8 @@ CREATE TABLE dispatch_organization_default.service_feedback_reminder (
     individual_contact_id integer,
     project_id integer,
     created_at timestamp without time zone,
-    updated_at timestamp without time zone
+    updated_at timestamp without time zone,
+    details json
 );
 
 
@@ -4204,7 +4409,14 @@ CREATE TABLE dispatch_organization_default.signal (
     enabled boolean,
     create_case boolean,
     conversation_target character varying,
-    oncall_service_id integer
+    oncall_service_id integer,
+    "default" boolean,
+    lifecycle character varying,
+    runbook character varying,
+    genai_enabled boolean,
+    genai_model character varying,
+    genai_system_message character varying,
+    genai_prompt character varying
 );
 
 
@@ -4692,7 +4904,10 @@ CREATE TABLE dispatch_organization_default.tag_type (
     discoverable_signal boolean DEFAULT true,
     discoverable_source boolean DEFAULT true,
     color character varying,
-    icon character varying
+    icon character varying,
+    required boolean,
+    use_for_project_folder boolean DEFAULT false,
+    discoverable_document boolean
 );
 
 
@@ -4892,7 +5107,8 @@ CREATE TABLE dispatch_organization_default.ticket (
     incident_id integer,
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
-    case_id integer
+    case_id integer,
+    task_id integer
 );
 
 
@@ -6736,6 +6952,20 @@ ALTER TABLE ONLY dispatch_organization_default."case" ALTER COLUMN id SET DEFAUL
 
 
 --
+-- Name: case_cost id; Type: DEFAULT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.case_cost ALTER COLUMN id SET DEFAULT nextval('dispatch_organization_default.case_cost_id_seq'::regclass);
+
+
+--
+-- Name: case_cost_type id; Type: DEFAULT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.case_cost_type ALTER COLUMN id SET DEFAULT nextval('dispatch_organization_default.case_cost_type_id_seq'::regclass);
+
+
+--
 -- Name: case_priority id; Type: DEFAULT; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -6796,6 +7026,13 @@ ALTER TABLE ONLY dispatch_organization_default.definition ALTER COLUMN id SET DE
 --
 
 ALTER TABLE ONLY dispatch_organization_default.document ALTER COLUMN id SET DEFAULT nextval('dispatch_organization_default.document_id_seq'::regclass);
+
+
+--
+-- Name: email_templates id; Type: DEFAULT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.email_templates ALTER COLUMN id SET DEFAULT nextval('dispatch_organization_default.email_templates_id_seq'::regclass);
 
 
 --
@@ -6901,6 +7138,13 @@ ALTER TABLE ONLY dispatch_organization_default.incident_type ALTER COLUMN id SET
 --
 
 ALTER TABLE ONLY dispatch_organization_default.individual_contact ALTER COLUMN id SET DEFAULT nextval('dispatch_organization_default.individual_contact_id_seq'::regclass);
+
+
+--
+-- Name: mfa_challenge id; Type: DEFAULT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.mfa_challenge ALTER COLUMN id SET DEFAULT nextval('dispatch_organization_default.mfa_challenge_id_seq'::regclass);
 
 
 --
@@ -7362,9 +7606,6 @@ COPY dispatch_core.dispatch_user (id, email, password, search_vector, updated_at
 496	kglisson@example.com	\\x24326224313224475a57777a53673452745579676d37456b6b3658757547497a55414b3977566953572e526f7876554e56795848544f334b36583647	'kglisson@example.com':1A	2021-07-27 19:50:07.978675	2021-07-27 19:47:26.818131	\N	\N
 129	dispatch@example.com	\\x24326224313224652f674233756651656365474b376b6a6d7a44473175367a6e563677663030437777575055694d657156566c6c4272346c746a6832	'dispatch@example.com':1A	2021-07-27 18:45:54.472619	2021-07-27 18:44:28.472455	\N	\N
 4236	kglisson@acme.com	\\x2432622431322465334576387136706d757450674b446f6e465231337547766a4b436b5951325a48694e57754837546e4f696d74547255786d47344b	'kglisson@acme.com':1A	2022-03-04 18:11:31.450294	2021-08-04 21:14:27.722495	\N	\N
-4259	pjvxm@example.com	\\x24326224313224533765652f4343326f634d596a2e7973704257715765464943647644717059612f57545371476b44584274727146786c4c37737557	'pjvxm@example.com':1A	2024-02-04 02:51:09.621875	2024-02-04 02:51:09.572056	\N	f
-4258	oo65l@example.com	\\x243262243132244b54304547624477685137454f524e46436449656865535877464b6353654a44517458547270796a734650656e4b6e4b6541427675	'oo65l@example.com':1A	2024-02-04 02:51:09.623427	2024-02-04 02:51:09.569227	\N	f
-4260	3p1t6@example.com	\\x243262243132246f4861584a436b366d686e4f624e584930336c666a65676d47534d35497046636a585231634e43472f727a514a4a6b5a307a516e53	'3p1t6@example.com':1A	2024-02-04 02:51:09.922722	2024-02-04 02:51:09.896716	\N	f
 \.
 
 
@@ -7377,9 +7618,6 @@ COPY dispatch_core.dispatch_user_organization (dispatch_user_id, organization_id
 129	1	Owner	2021-07-27 18:45:54.477286	2021-07-27 18:44:28.473467
 496	1	Owner	2021-07-27 19:50:07.983374	2021-07-27 19:47:26.819394
 4236	1	Member	2021-08-04 21:14:27.726854	2021-08-04 21:14:27.726861
-4259	1	Member	2024-02-04 02:51:09.597753	2024-02-04 02:51:09.597759
-4258	1	Member	2024-02-04 02:51:09.598371	2024-02-04 02:51:09.598376
-4260	1	Member	2024-02-04 02:51:09.905611	2024-02-04 02:51:09.905615
 \.
 
 
@@ -7428,7 +7666,7 @@ COPY dispatch_core.plugin_event (id, name, slug, description, plugin_id, search_
 --
 
 COPY dispatch_organization_default.alembic_version (version_num) FROM stdin;
-d4bbb234d0bc
+3edb0476365a
 \.
 
 
@@ -7469,6 +7707,14 @@ COPY dispatch_organization_default.assoc_cost_model_activities (cost_model_id, c
 --
 
 COPY dispatch_organization_default.assoc_document_filters (document_id, search_filter_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: assoc_document_tags; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
+--
+
+COPY dispatch_organization_default.assoc_document_tags (document_id, tag_id) FROM stdin;
 \.
 
 
@@ -7608,7 +7854,23 @@ COPY dispatch_organization_default.assoc_team_contact_filters (team_contact_id, 
 -- Data for Name: case; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default."case" (id, name, title, description, resolution, status, visibility, reported_at, closed_at, search_vector, duplicate_id, project_id, updated_at, created_at, triage_at, escalated_at, tactical_group_id, case_document_id, related_id, case_type_id, case_severity_id, case_priority_id, participants_team, participants_location, assignee_id, resolution_reason, signal_thread_ts, reporter_id) FROM stdin;
+COPY dispatch_organization_default."case" (id, name, title, description, resolution, status, visibility, reported_at, closed_at, search_vector, duplicate_id, project_id, updated_at, created_at, triage_at, escalated_at, tactical_group_id, case_document_id, related_id, case_type_id, case_severity_id, case_priority_id, participants_team, participants_location, assignee_id, resolution_reason, signal_thread_ts, reporter_id, dedicated_channel, genai_analysis) FROM stdin;
+\.
+
+
+--
+-- Data for Name: case_cost; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
+--
+
+COPY dispatch_organization_default.case_cost (id, amount, case_cost_type_id, case_id, project_id, updated_at, created_at) FROM stdin;
+\.
+
+
+--
+-- Data for Name: case_cost_type; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
+--
+
+COPY dispatch_organization_default.case_cost_type (id, name, description, category, details, "default", editable, search_vector, project_id, updated_at, created_at) FROM stdin;
 \.
 
 
@@ -7617,6 +7879,9 @@ COPY dispatch_organization_default."case" (id, name, title, description, resolut
 --
 
 COPY dispatch_organization_default.case_priority (id, name, description, color, enabled, "default", view_order, search_vector, project_id, page_assignee) FROM stdin;
+1	Low	Low priority	#558b2f	t	t	-1	\N	1	f
+2	Medium	Medium priority	\N	t	f	2	\N	1	f
+3	High	High priority	#b71c1c	t	f	3	\N	1	f
 \.
 
 
@@ -7625,6 +7890,7 @@ COPY dispatch_organization_default.case_priority (id, name, description, color, 
 --
 
 COPY dispatch_organization_default.case_severity (id, name, description, color, enabled, "default", view_order, search_vector, project_id) FROM stdin;
+1	Low	Low severity	\N	t	t	1	\N	1
 \.
 
 
@@ -7632,7 +7898,8 @@ COPY dispatch_organization_default.case_severity (id, name, description, color, 
 -- Data for Name: case_type; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default.case_type (id, name, description, visibility, "default", enabled, exclude_from_metrics, search_vector, project_id, plugin_metadata, case_template_document_id, oncall_service_id, incident_type_id, conversation_target) FROM stdin;
+COPY dispatch_organization_default.case_type (id, name, description, visibility, "default", enabled, exclude_from_metrics, search_vector, project_id, plugin_metadata, case_template_document_id, oncall_service_id, incident_type_id, conversation_target, cost_model_id, auto_close) FROM stdin;
+1	Security Triage	Triage for security	Open	t	t	f	\N	1	[]	\N	\N	5	\N	\N	f
 \.
 
 
@@ -7711,9 +7978,6 @@ COPY dispatch_organization_default.dispatch_user_project (dispatch_user_id, proj
 129	1	Member	2021-07-27 18:44:28.479945	2021-07-27 18:44:28.47995	\N
 496	1	Member	2021-07-27 19:47:26.825534	2021-07-27 19:47:26.825539	\N
 4236	1	Member	2021-08-04 21:14:27.744061	2021-08-04 21:14:27.744069	\N
-4259	1	Member	2024-02-04 02:51:09.617693	2024-02-04 02:51:09.617687	t
-4258	1	Member	2024-02-04 02:51:09.619586	2024-02-04 02:51:09.619583	t
-4260	1	Member	2024-02-04 02:51:09.916668	2024-02-04 02:51:09.916659	t
 \.
 
 
@@ -7727,6 +7991,14 @@ dispatch-executive-report-document-template	1dab6k14p5ageo5B_d1YlB_zS9hMGHDMXy9R
 dispatch-incident-review-document-template	1-VwcEpVVdymoojdUg9e5XP8QGam0-B5Djxh-guuPpEc	https://docs.google.com/document/d/1-VwcEpVVdymoojdUg9e5XP8QGam0-B5Djxh-guuPpEc/edit	3	Generic Post Incident Review Template	This is a generic incident review template using Google Docs.	\N	\N	\N	\N	90	\N	'generic':1 'incid':3 'post':2 'review':4 'templat':5	1	2021-07-27 18:53:36.491241	2021-07-27 18:53:36.491246	\N
 dispatch-incident-runbook	ky275e8cqydFUJ2-4OXfad498e9lRfeQP9zBLd-qWJU	https://docs.google.com/document/d/1ky275e8cqydFUJ2-4OXfad498e9lRfeQP9zBLd-qWJU/edit	4	Business Data Exposure Runbook	Runbook to be used during a data exposure incident.	\N	\N	f	\N	90	\N	'busi':1 'data':2 'exposur':3 'runbook':4	1	2021-07-27 19:04:08.491801	2021-07-27 19:04:08.491806	\N
 \N	\N	\N	5	000	\N	\N	\N	t	\N	90	2021-07-27 20:52:36.204092	'000':1	\N	2021-07-27 20:52:36.207079	2021-07-27 20:52:36.207083	\N
+\.
+
+
+--
+-- Data for Name: email_templates; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
+--
+
+COPY dispatch_organization_default.email_templates (id, email_template_type, welcome_text, welcome_body, components, enabled, project_id, created_at, updated_at) FROM stdin;
 \.
 
 
@@ -7818,7 +8090,7 @@ COPY dispatch_organization_default.event (id, uuid, started_at, ended_at, source
 -- Data for Name: feedback; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default.feedback (id, rating, feedback, incident_id, participant_id, updated_at, created_at, search_vector) FROM stdin;
+COPY dispatch_organization_default.feedback (id, rating, feedback, incident_id, participant_id, updated_at, created_at, search_vector, case_id, project_id) FROM stdin;
 \.
 
 
@@ -7826,7 +8098,7 @@ COPY dispatch_organization_default.feedback (id, rating, feedback, incident_id, 
 -- Data for Name: forms; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default.forms (id, form_data, created_at, updated_at, status, attorney_status, attorney_questions, attorney_analysis, creator_id, incident_id, form_type_id, project_id) FROM stdin;
+COPY dispatch_organization_default.forms (id, form_data, created_at, updated_at, status, attorney_status, attorney_questions, attorney_analysis, creator_id, incident_id, form_type_id, project_id, attorney_form_data, score) FROM stdin;
 \.
 
 
@@ -7834,7 +8106,7 @@ COPY dispatch_organization_default.forms (id, form_data, created_at, updated_at,
 -- Data for Name: forms_type; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default.forms_type (id, name, description, enabled, created_at, updated_at, form_schema, creator_id, project_id, service_id) FROM stdin;
+COPY dispatch_organization_default.forms_type (id, name, description, enabled, created_at, updated_at, form_schema, creator_id, project_id, service_id, attorney_form_schema, scoring_schema) FROM stdin;
 \.
 
 
@@ -7858,12 +8130,12 @@ google-group-participant-notifications-group	04k668n30umn23k	https://groups.goog
 -- Data for Name: incident; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default.incident (id, name, title, description, status, visibility, reported_at, stable_at, closed_at, search_vector, incident_priority_id, incident_type_id, duplicate_id, project_id, created_at, updated_at, resolution, participants_team, participants_location, commanders_location, reporters_location, commander_id, reporter_id, liaison_id, scribe_id, incident_document_id, incident_review_document_id, tactical_group_id, notifications_group_id, incident_severity_id, delay_executive_report_reminder, delay_tactical_report_reminder, cost_model_id) FROM stdin;
-2	dispatch-default-default-2	This is just a test	A very bad situation	Active	Open	2021-07-27 19:47:56.28659	\N	\N	'2':14A 'bad':8C 'default':12A,13A 'dispatch':11A 'dispatch-default-default':10A 'situat':9C 'test':5B	3	3	\N	1	2021-07-27 19:47:56.286601	2021-07-27 19:48:23.867097	Description of the actions taken to resolve the incident.	Unknown	America/Los_Angeles	America/Los_Angeles	America/Los_Angeles	1	1	1	\N	\N	\N	1	2	1	\N	\N	\N
-4	dispatch-default-default-4	Heartbleed	Sad PKI noises	Stable	Open	2021-07-27 19:52:57.757214	2021-07-27 19:54:03.96021	\N	'4':9A 'default':7A,8A 'dispatch':6A 'dispatch-default-default':5A 'heartble':1B 'nois':4C 'pki':3C 'sad':2C	1	1	\N	1	2021-07-27 19:52:57.757221	2021-07-28 17:13:49.216785	Description of the actions taken to resolve the incident.	Unknown	America/Los_Angeles	America/Los_Angeles	America/Los_Angeles	2	2	2	\N	\N	\N	3	4	1	\N	\N	\N
-5	dispatch-default-default-5	Solarwinds	More like a solar tornado.	Active	Open	2021-07-27 20:06:15.252697	\N	\N	'5':11A 'default':9A,10A 'dispatch':8A 'dispatch-default-default':7A 'like':3C 'solar':5C 'solarwind':1B 'tornado':6C	2	1	\N	1	2021-07-27 20:06:15.252705	2021-07-27 20:06:41.627061	Description of the actions taken to resolve the incident.	Unknown	America/Los_Angeles	America/Los_Angeles	America/Los_Angeles	3	3	3	\N	\N	\N	5	6	1	\N	\N	\N
-6	dispatch-default-default-6	Kaseya	Those backups are good right?	Active	Open	2021-07-27 20:11:30.525883	\N	\N	'6':11A 'backup':3C 'default':9A,10A 'dispatch':8A 'dispatch-default-default':7A 'good':5C 'kaseya':1B 'right':6C	3	1	\N	1	2021-07-27 20:11:30.525893	2021-07-27 20:11:59.048666	Description of the actions taken to resolve the incident.	Unknown	America/Los_Angeles	America/Los_Angeles	America/Los_Angeles	4	4	4	\N	\N	\N	7	8	1	\N	\N	\N
-7	\N	Incident Test Created by Playwright	Test description created by Playwright	Active	Open	2024-02-04 02:51:26.109901	\N	\N	'creat':3B,8C 'descript':7C 'incid':1B 'playwright':5B,10C 'test':2B,6C	3	5	\N	1	2024-02-04 02:51:26.109912	2024-02-04 02:51:27.220352	Description of the actions taken to resolve the incident.	example.com	Unknown	Unknown	Unknown	5	5	\N	\N	\N	\N	\N	\N	1	\N	\N	\N
+COPY dispatch_organization_default.incident (id, name, title, description, status, visibility, reported_at, stable_at, closed_at, search_vector, incident_priority_id, incident_type_id, duplicate_id, project_id, created_at, updated_at, resolution, participants_team, participants_location, commanders_location, reporters_location, commander_id, reporter_id, liaison_id, scribe_id, incident_document_id, incident_review_document_id, tactical_group_id, notifications_group_id, incident_severity_id, delay_executive_report_reminder, delay_tactical_report_reminder) FROM stdin;
+2	dispatch-default-default-2	This is just a test	A very bad situation	Active	Open	2021-07-27 19:47:56.28659	\N	\N	'2':14A 'bad':8C 'default':12A,13A 'dispatch':11A 'dispatch-default-default':10A 'situat':9C 'test':5B	3	3	\N	1	2021-07-27 19:47:56.286601	2021-07-27 19:48:23.867097	Description of the actions taken to resolve the incident.	Unknown	America/Los_Angeles	America/Los_Angeles	America/Los_Angeles	1	1	1	\N	\N	\N	1	2	1	\N	\N
+4	dispatch-default-default-4	Heartbleed	Sad PKI noises	Stable	Open	2021-07-27 19:52:57.757214	2021-07-27 19:54:03.96021	\N	'4':9A 'default':7A,8A 'dispatch':6A 'dispatch-default-default':5A 'heartble':1B 'nois':4C 'pki':3C 'sad':2C	1	1	\N	1	2021-07-27 19:52:57.757221	2021-07-28 17:13:49.216785	Description of the actions taken to resolve the incident.	Unknown	America/Los_Angeles	America/Los_Angeles	America/Los_Angeles	2	2	2	\N	\N	\N	3	4	1	\N	\N
+5	dispatch-default-default-5	Solarwinds	More like a solar tornado.	Active	Open	2021-07-27 20:06:15.252697	\N	\N	'5':11A 'default':9A,10A 'dispatch':8A 'dispatch-default-default':7A 'like':3C 'solar':5C 'solarwind':1B 'tornado':6C	2	1	\N	1	2021-07-27 20:06:15.252705	2021-07-27 20:06:41.627061	Description of the actions taken to resolve the incident.	Unknown	America/Los_Angeles	America/Los_Angeles	America/Los_Angeles	3	3	3	\N	\N	\N	5	6	1	\N	\N
+6	dispatch-default-default-6	Kaseya	Those backups are good right?	Active	Open	2021-07-27 20:11:30.525883	\N	\N	'6':11A 'backup':3C 'default':9A,10A 'dispatch':8A 'dispatch-default-default':7A 'good':5C 'kaseya':1B 'right':6C	3	1	\N	1	2021-07-27 20:11:30.525893	2021-07-27 20:11:59.048666	Description of the actions taken to resolve the incident.	Unknown	America/Los_Angeles	America/Los_Angeles	America/Los_Angeles	4	4	4	\N	\N	\N	7	8	1	\N	\N
+7	\N	Incident Test Created by Playwright	Test description created by Playwright	Active	Open	2024-02-04 02:51:26.109901	\N	\N	'creat':3B,8C 'descript':7C 'incid':1B 'playwright':5B,10C 'test':2B,6C	3	5	\N	1	2024-02-04 02:51:26.109912	2024-02-04 02:51:27.220352	Description of the actions taken to resolve the incident.	example.com	Unknown	Unknown	Unknown	5	5	\N	\N	\N	\N	\N	\N	1	\N	\N
 \.
 
 
@@ -7936,8 +8208,8 @@ COPY dispatch_organization_default.incident_role_tag (incident_role_id, tag_id) 
 -- Data for Name: incident_severity; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default.incident_severity (id, name, description, color, enabled, "default", view_order, search_vector, project_id) FROM stdin;
-1	Undetermined	The severity of the incident has not yet been determined.	#9e9e9e	t	t	1	\N	1
+COPY dispatch_organization_default.incident_severity (id, name, description, color, enabled, "default", view_order, search_vector, project_id, allowed_for_stable_incidents) FROM stdin;
+1	Undetermined	The severity of the incident has not yet been determined.	#9e9e9e	t	t	1	\N	1	t
 \.
 
 
@@ -7945,13 +8217,13 @@ COPY dispatch_organization_default.incident_severity (id, name, description, col
 -- Data for Name: incident_type; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default.incident_type (id, name, slug, description, exclude_from_metrics, enabled, "default", visibility, plugin_metadata, incident_template_document_id, executive_template_document_id, review_template_document_id, tracking_template_document_id, commander_service_id, liaison_service_id, search_vector, project_id) FROM stdin;
-6	Other	\N	This is a miscellaneous incident.	f	t	f	Open	[]	1	2	3	\N	\N	\N	'incid':6 'involv':7 'misc':2,9 'oth':1,8	1
-5	Denial of Service	\N	This is an incident involving a Denial of Service attack on a compute resource or service.	f	t	f	Open	[]	1	2	3	\N	\N	\N	'ddos':1,8 'den':2,9 'incid':6 'involv':7	1
-4	Malware	\N	This is an incident involving malware on a host.	f	t	f	Open	[]	1	2	3	\N	\N	\N	'incid':6 'involv':7 'mal':1,8	1
-3	Customer Data	\N	This is an incident involving customer data.	f	t	f	Open	[]	1	2	3	\N	\N	\N	'custom':1,8 'data':2,9 'incid':6 'involv':7	1
-2	Employee Investigation	\N	This is an employee investigation.	f	t	f	Restricted	[]	1	2	3	\N	\N	\N	'employe':1,6 'investig':2,7	1
-1	Vulnerability	\N	This is an incident involving a misconfiguration or vulnerability.	f	t	t	Open	[]	1	2	3	\N	\N	\N	'incid':5 'involv':6 'misconfigur':8 'vulner':1,10	1
+COPY dispatch_organization_default.incident_type (id, name, slug, description, exclude_from_metrics, enabled, "default", visibility, plugin_metadata, incident_template_document_id, executive_template_document_id, review_template_document_id, tracking_template_document_id, commander_service_id, liaison_service_id, search_vector, project_id, cost_model_id, channel_description, description_service_id, task_plugin_metadata) FROM stdin;
+6	Other	\N	This is a miscellaneous incident.	f	t	f	Open	[]	1	2	3	\N	\N	\N	'incid':6 'involv':7 'misc':2,9 'oth':1,8	1	\N	\N	\N	[]
+5	Denial of Service	\N	This is an incident involving a Denial of Service attack on a compute resource or service.	f	t	f	Open	[]	1	2	3	\N	\N	\N	'ddos':1,8 'den':2,9 'incid':6 'involv':7	1	\N	\N	\N	[]
+4	Malware	\N	This is an incident involving malware on a host.	f	t	f	Open	[]	1	2	3	\N	\N	\N	'incid':6 'involv':7 'mal':1,8	1	\N	\N	\N	[]
+3	Customer Data	\N	This is an incident involving customer data.	f	t	f	Open	[]	1	2	3	\N	\N	\N	'custom':1,8 'data':2,9 'incid':6 'involv':7	1	\N	\N	\N	[]
+2	Employee Investigation	\N	This is an employee investigation.	f	t	f	Restricted	[]	1	2	3	\N	\N	\N	'employe':1,6 'investig':2,7	1	\N	\N	\N	[]
+1	Vulnerability	\N	This is an incident involving a misconfiguration or vulnerability.	f	t	t	Open	[]	1	2	3	\N	\N	\N	'incid':5 'involv':6 'misconfigur':8 'vulner':1,10	1	\N	\N	\N	[]
 \.
 
 
@@ -7963,6 +8235,14 @@ COPY dispatch_organization_default.individual_contact (is_active, is_external, c
 t	f	\N	klibby@hackers.com	NA	\N	\N	1	Kate Libby	\N	\N	\N	\N	\N	\N	'kate':1 'klibby@hackers.com':3 'libbi':2 'na':4	1	2021-07-27 19:20:56.65442	2021-07-27 19:20:56.654425
 t	f	\N	kglisson@example.com	\N	\N	\N	2	Kevin Glisson	\N	\N	\N	\N	\N	\N	'glisson':2 'kevin':1 'kglisson@example.com':3	1	2021-07-27 19:47:58.101502	2021-07-27 20:11:32.504414
 t	f	\N	3p1t6@example.com	\N	\N	\N	3	3p1t6@example.com	\N	\N	\N		\N	\N	'3p1t6@example.com':1,2	1	2024-02-04 02:51:26.417963	2024-02-04 02:51:27.068243
+\.
+
+
+--
+-- Data for Name: mfa_challenge; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
+--
+
+COPY dispatch_organization_default.mfa_challenge (id, valid, reason, action, challenge_id, dispatch_user_id, status, updated_at, created_at) FROM stdin;
 \.
 
 
@@ -8000,7 +8280,7 @@ COPY dispatch_organization_default.participant (id, team, department, location, 
 -- Data for Name: participant_activity; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default.participant_activity (id, plugin_event_id, started_at, ended_at, participant_id, incident_id) FROM stdin;
+COPY dispatch_organization_default.participant_activity (id, plugin_event_id, started_at, ended_at, participant_id, incident_id, case_id) FROM stdin;
 \.
 
 
@@ -8033,7 +8313,6 @@ COPY dispatch_organization_default.participant_role (id, assumed_at, renounced_a
 COPY dispatch_organization_default.plugin_instance (id, enabled, configuration, plugin_id, project_id, _configuration) FROM stdin;
 1	t	{}	2	1	\N
 3	t	{}	4	1	\N
-4	t	{}	7	1	\N
 9	\N	{}	16	1	\N
 11	f	{}	19	1	\N
 8	f	{}	18	1	\N
@@ -8044,6 +8323,7 @@ COPY dispatch_organization_default.plugin_instance (id, enabled, configuration, 
 12	f	{}	8	1	\N
 5	t	{}	6	1	\N
 2	t	{}	3	1	\N
+4	t	{}	7	1	UmxR/PRNXaQAmNbOM4W+YFEMlkjlo8PSDZpn+arvOEg=
 \.
 
 
@@ -8051,8 +8331,8 @@ COPY dispatch_organization_default.plugin_instance (id, enabled, configuration, 
 -- Data for Name: project; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default.project (id, name, description, "default", color, organization_id, search_vector, annual_employee_cost, business_year_hours, owner_email, owner_conversation, send_daily_reports, stable_priority_id) FROM stdin;
-1	default	Default dispatch project.	t	\N	1	'default':1A,2B 'dispatch':3B 'project':4B	650000	2080	team@acme.com	\N	\N	\N
+COPY dispatch_organization_default.project (id, name, description, "default", color, organization_id, search_vector, annual_employee_cost, business_year_hours, owner_email, owner_conversation, send_daily_reports, stable_priority_id, enabled, allow_self_join, storage_folder_one, storage_folder_two, storage_use_folder_one_as_primary, storage_use_title, select_commander_visibility, send_weekly_reports, weekly_report_notification_id, report_incident_instructions, report_incident_title_hint, report_incident_description_hint) FROM stdin;
+1	default	Default dispatch project.	t	\N	1	'default':1A,2B 'dispatch':3B 'project':4B	650000	2080	team@acme.com	\N	\N	\N	t	t	\N	\N	\N	f	t	f	\N	\N	\N	\N
 \.
 
 
@@ -8115,7 +8395,7 @@ COPY dispatch_organization_default.service (id, is_active, name, type, descripti
 -- Data for Name: service_feedback; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default.service_feedback (rating, feedback, id, hours, shift_start_at, shift_end_at, schedule, individual_contact_id, search_vector, updated_at, created_at, project_id) FROM stdin;
+COPY dispatch_organization_default.service_feedback (rating, feedback, id, hours, shift_start_at, shift_end_at, schedule, individual_contact_id, search_vector, updated_at, created_at, project_id, details) FROM stdin;
 \.
 
 
@@ -8123,7 +8403,7 @@ COPY dispatch_organization_default.service_feedback (rating, feedback, id, hours
 -- Data for Name: service_feedback_reminder; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default.service_feedback_reminder (id, reminder_at, schedule_id, schedule_name, shift_end_at, individual_contact_id, project_id, created_at, updated_at) FROM stdin;
+COPY dispatch_organization_default.service_feedback_reminder (id, reminder_at, schedule_id, schedule_name, shift_end_at, individual_contact_id, project_id, created_at, updated_at, details) FROM stdin;
 \.
 
 
@@ -8131,7 +8411,7 @@ COPY dispatch_organization_default.service_feedback_reminder (id, reminder_at, s
 -- Data for Name: signal; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default.signal (id, name, owner, description, external_url, external_id, source_id, variant, case_type_id, case_priority_id, search_vector, project_id, created_at, updated_at, loopin_signal_identity, enabled, create_case, conversation_target, oncall_service_id) FROM stdin;
+COPY dispatch_organization_default.signal (id, name, owner, description, external_url, external_id, source_id, variant, case_type_id, case_priority_id, search_vector, project_id, created_at, updated_at, loopin_signal_identity, enabled, create_case, conversation_target, oncall_service_id, "default", lifecycle, runbook, genai_enabled, genai_model, genai_system_message, genai_prompt) FROM stdin;
 \.
 
 
@@ -8242,11 +8522,11 @@ COPY dispatch_organization_default.tag (id, name, description, uri, source, disc
 -- Data for Name: tag_type; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default.tag_type (id, name, description, search_vector, project_id, created_at, updated_at, exclusive, discoverable_case, discoverable_incident, discoverable_query, discoverable_signal, discoverable_source, color, icon) FROM stdin;
-2	email	Represents an email address.	'email':1	1	2021-07-27 18:59:15.242081	2021-07-27 18:59:15.242077	\N	t	t	t	t	t	\N	\N
-3	domain-name	Represents a domain name.	'domain':2 'domain-nam':1 'name':3	1	2021-07-27 18:59:27.697621	2021-07-27 18:59:27.697617	\N	t	t	t	t	t	\N	\N
-4	handle	Represents an internet handle.	'handl':1	1	2021-07-27 18:59:49.885602	2021-07-27 18:59:49.885596	\N	t	t	t	t	t	\N	\N
-1	default	Default dispatch tag type.	'default':1	1	2021-07-27 18:59:02.975601	2021-07-27 19:00:23.284092	\N	t	t	t	t	t	\N	\N
+COPY dispatch_organization_default.tag_type (id, name, description, search_vector, project_id, created_at, updated_at, exclusive, discoverable_case, discoverable_incident, discoverable_query, discoverable_signal, discoverable_source, color, icon, required, use_for_project_folder, discoverable_document) FROM stdin;
+2	email	Represents an email address.	'email':1	1	2021-07-27 18:59:15.242081	2021-07-27 18:59:15.242077	\N	t	t	t	t	t	\N	\N	\N	f	\N
+3	domain-name	Represents a domain name.	'domain':2 'domain-nam':1 'name':3	1	2021-07-27 18:59:27.697621	2021-07-27 18:59:27.697617	\N	t	t	t	t	t	\N	\N	\N	f	\N
+4	handle	Represents an internet handle.	'handl':1	1	2021-07-27 18:59:49.885602	2021-07-27 18:59:49.885596	\N	t	t	t	t	t	\N	\N	\N	f	\N
+1	default	Default dispatch tag type.	'default':1	1	2021-07-27 18:59:02.975601	2021-07-27 19:00:23.284092	\N	t	t	t	t	t	\N	\N	\N	f	\N
 \.
 
 
@@ -8298,11 +8578,11 @@ COPY dispatch_organization_default.term (id, text, discoverable, search_vector, 
 -- Data for Name: ticket; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default.ticket (resource_type, resource_id, weblink, id, incident_id, created_at, updated_at, case_id) FROM stdin;
-dispatch-ticket	dispatch-default-default-2	http://localhost:8080/default/incidents/dispatch-default-default-2?project=default	1	2	2021-07-27 19:47:58.439443	2021-07-27 19:47:58.44679	\N
-dispatch-ticket	dispatch-default-default-4	http://localhost:8080/default/incidents/dispatch-default-default-4?project=default	2	4	2021-07-27 19:52:59.547408	2021-07-27 19:52:59.552802	\N
-dispatch-ticket	dispatch-default-default-5	http://localhost:8080/default/incidents/dispatch-default-default-5?project=default	3	5	2021-07-27 20:06:17.136792	2021-07-27 20:06:17.145622	\N
-dispatch-ticket	dispatch-default-default-6	http://localhost:8080/default/incidents/dispatch-default-default-6?project=default	4	6	2021-07-27 20:11:32.621112	2021-07-27 20:11:32.629367	\N
+COPY dispatch_organization_default.ticket (resource_type, resource_id, weblink, id, incident_id, created_at, updated_at, case_id, task_id) FROM stdin;
+dispatch-ticket	dispatch-default-default-2	http://localhost:8080/default/incidents/dispatch-default-default-2?project=default	1	2	2021-07-27 19:47:58.439443	2021-07-27 19:47:58.44679	\N	\N
+dispatch-ticket	dispatch-default-default-4	http://localhost:8080/default/incidents/dispatch-default-default-4?project=default	2	4	2021-07-27 19:52:59.547408	2021-07-27 19:52:59.552802	\N	\N
+dispatch-ticket	dispatch-default-default-5	http://localhost:8080/default/incidents/dispatch-default-default-5?project=default	3	5	2021-07-27 20:06:17.136792	2021-07-27 20:06:17.145622	\N	\N
+dispatch-ticket	dispatch-default-default-6	http://localhost:8080/default/incidents/dispatch-default-default-6?project=default	4	6	2021-07-27 20:11:32.621112	2021-07-27 20:11:32.629367	\N	\N
 \.
 
 
@@ -8926,7 +9206,7 @@ COPY public.workflow_term (term_id, workflow_id) FROM stdin;
 -- Name: dispatch_user_id_seq; Type: SEQUENCE SET; Schema: dispatch_core; Owner: postgres
 --
 
-SELECT pg_catalog.setval('dispatch_core.dispatch_user_id_seq', 4260, true);
+SELECT pg_catalog.setval('dispatch_core.dispatch_user_id_seq', 4271, true);
 
 
 --
@@ -8958,31 +9238,45 @@ SELECT pg_catalog.setval('dispatch_organization_default.alert_id_seq', 1, false)
 
 
 --
+-- Name: case_cost_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
+--
+
+SELECT pg_catalog.setval('dispatch_organization_default.case_cost_id_seq', 1, false);
+
+
+--
+-- Name: case_cost_type_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
+--
+
+SELECT pg_catalog.setval('dispatch_organization_default.case_cost_type_id_seq', 1, false);
+
+
+--
 -- Name: case_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
 --
 
-SELECT pg_catalog.setval('dispatch_organization_default.case_id_seq', 1, false);
+SELECT pg_catalog.setval('dispatch_organization_default.case_id_seq', 1, true);
 
 
 --
 -- Name: case_priority_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
 --
 
-SELECT pg_catalog.setval('dispatch_organization_default.case_priority_id_seq', 1, false);
+SELECT pg_catalog.setval('dispatch_organization_default.case_priority_id_seq', 3, true);
 
 
 --
 -- Name: case_severity_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
 --
 
-SELECT pg_catalog.setval('dispatch_organization_default.case_severity_id_seq', 1, false);
+SELECT pg_catalog.setval('dispatch_organization_default.case_severity_id_seq', 1, true);
 
 
 --
 -- Name: case_type_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
 --
 
-SELECT pg_catalog.setval('dispatch_organization_default.case_type_id_seq', 1, false);
+SELECT pg_catalog.setval('dispatch_organization_default.case_type_id_seq', 1, true);
 
 
 --
@@ -9025,6 +9319,13 @@ SELECT pg_catalog.setval('dispatch_organization_default.definition_id_seq', 1, t
 --
 
 SELECT pg_catalog.setval('dispatch_organization_default.document_id_seq', 5, true);
+
+
+--
+-- Name: email_templates_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
+--
+
+SELECT pg_catalog.setval('dispatch_organization_default.email_templates_id_seq', 1, false);
 
 
 --
@@ -9130,6 +9431,13 @@ SELECT pg_catalog.setval('dispatch_organization_default.incident_type_id_seq', 3
 --
 
 SELECT pg_catalog.setval('dispatch_organization_default.individual_contact_id_seq', 3, true);
+
+
+--
+-- Name: mfa_challenge_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
+--
+
+SELECT pg_catalog.setval('dispatch_organization_default.mfa_challenge_id_seq', 1, false);
 
 
 --
@@ -9702,6 +10010,14 @@ ALTER TABLE ONLY dispatch_organization_default.assoc_document_filters
 
 
 --
+-- Name: assoc_document_tags assoc_document_tags_pkey; Type: CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.assoc_document_tags
+    ADD CONSTRAINT assoc_document_tags_pkey PRIMARY KEY (document_id, tag_id);
+
+
+--
 -- Name: assoc_incident_tags assoc_incident_tags_pkey; Type: CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -9827,6 +10143,22 @@ ALTER TABLE ONLY dispatch_organization_default.assoc_source_tags
 
 ALTER TABLE ONLY dispatch_organization_default.assoc_team_contact_filters
     ADD CONSTRAINT assoc_team_contact_filters_pkey PRIMARY KEY (team_contact_id, search_filter_id);
+
+
+--
+-- Name: case_cost case_cost_pkey; Type: CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.case_cost
+    ADD CONSTRAINT case_cost_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: case_cost_type case_cost_type_pkey; Type: CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.case_cost_type
+    ADD CONSTRAINT case_cost_type_pkey PRIMARY KEY (id);
 
 
 --
@@ -9979,6 +10311,22 @@ ALTER TABLE ONLY dispatch_organization_default.dispatch_user_project
 
 ALTER TABLE ONLY dispatch_organization_default.document
     ADD CONSTRAINT document_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: email_templates email_templates_email_template_type_project_id_key; Type: CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.email_templates
+    ADD CONSTRAINT email_templates_email_template_type_project_id_key UNIQUE (email_template_type, project_id);
+
+
+--
+-- Name: email_templates email_templates_pkey; Type: CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.email_templates
+    ADD CONSTRAINT email_templates_pkey PRIMARY KEY (id);
 
 
 --
@@ -10179,6 +10527,22 @@ ALTER TABLE ONLY dispatch_organization_default.individual_contact
 
 ALTER TABLE ONLY dispatch_organization_default.individual_contact
     ADD CONSTRAINT individual_contact_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: mfa_challenge mfa_challenge_challenge_id_key; Type: CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.mfa_challenge
+    ADD CONSTRAINT mfa_challenge_challenge_id_key UNIQUE (challenge_id);
+
+
+--
+-- Name: mfa_challenge mfa_challenge_pkey; Type: CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.mfa_challenge
+    ADD CONSTRAINT mfa_challenge_pkey PRIMARY KEY (id);
 
 
 --
@@ -11257,6 +11621,13 @@ CREATE INDEX alert_search_vector_idx ON dispatch_organization_default.alert USIN
 
 
 --
+-- Name: case_cost_type_search_vector_idx; Type: INDEX; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE INDEX case_cost_type_search_vector_idx ON dispatch_organization_default.case_cost_type USING gin (search_vector);
+
+
+--
 -- Name: case_priority_search_vector_idx; Type: INDEX; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -12102,6 +12473,38 @@ ALTER TABLE ONLY dispatch_organization_default.assoc_document_filters
 
 
 --
+-- Name: assoc_document_tags assoc_document_tags_document_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.assoc_document_tags
+    ADD CONSTRAINT assoc_document_tags_document_id_fkey FOREIGN KEY (document_id) REFERENCES dispatch_organization_default.document(id) ON DELETE CASCADE;
+
+
+--
+-- Name: assoc_document_tags assoc_document_tags_tag_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.assoc_document_tags
+    ADD CONSTRAINT assoc_document_tags_tag_id_fkey FOREIGN KEY (tag_id) REFERENCES dispatch_organization_default.tag(id) ON DELETE CASCADE;
+
+
+--
+-- Name: feedback assoc_feedback_case_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.feedback
+    ADD CONSTRAINT assoc_feedback_case_id_fkey FOREIGN KEY (case_id) REFERENCES dispatch_organization_default."case"(id) ON DELETE CASCADE;
+
+
+--
+-- Name: feedback assoc_feedback_project_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.feedback
+    ADD CONSTRAINT assoc_feedback_project_id_fkey FOREIGN KEY (project_id) REFERENCES dispatch_organization_default.project(id) ON DELETE CASCADE;
+
+
+--
 -- Name: assoc_incident_tags assoc_incident_tags_incident_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -12398,6 +12801,38 @@ ALTER TABLE ONLY dispatch_organization_default."case"
 
 
 --
+-- Name: case_cost case_cost_case_cost_type_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.case_cost
+    ADD CONSTRAINT case_cost_case_cost_type_id_fkey FOREIGN KEY (case_cost_type_id) REFERENCES dispatch_organization_default.case_cost_type(id);
+
+
+--
+-- Name: case_cost case_cost_case_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.case_cost
+    ADD CONSTRAINT case_cost_case_id_fkey FOREIGN KEY (case_id) REFERENCES dispatch_organization_default."case"(id) ON DELETE CASCADE;
+
+
+--
+-- Name: case_cost case_cost_project_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.case_cost
+    ADD CONSTRAINT case_cost_project_id_fkey FOREIGN KEY (project_id) REFERENCES dispatch_organization_default.project(id) ON DELETE CASCADE;
+
+
+--
+-- Name: case_cost_type case_cost_type_project_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.case_cost_type
+    ADD CONSTRAINT case_cost_type_project_id_fkey FOREIGN KEY (project_id) REFERENCES dispatch_organization_default.project(id) ON DELETE CASCADE;
+
+
+--
 -- Name: case case_duplicate_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -12459,6 +12894,14 @@ ALTER TABLE ONLY dispatch_organization_default."case"
 
 ALTER TABLE ONLY dispatch_organization_default.case_type
     ADD CONSTRAINT case_type_case_template_document_id_fkey FOREIGN KEY (case_template_document_id) REFERENCES dispatch_organization_default.document(id);
+
+
+--
+-- Name: case_type case_type_cost_model_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.case_type
+    ADD CONSTRAINT case_type_cost_model_id_fkey FOREIGN KEY (cost_model_id) REFERENCES dispatch_organization_default.cost_model(id);
 
 
 --
@@ -12566,6 +13009,14 @@ ALTER TABLE ONLY dispatch_organization_default.definition_terms
 
 
 --
+-- Name: incident_type description_service_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.incident_type
+    ADD CONSTRAINT description_service_id_fkey FOREIGN KEY (description_service_id) REFERENCES dispatch_organization_default.service(id);
+
+
+--
 -- Name: dispatch_user_project dispatch_user_project_dispatch_user_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -12611,6 +13062,14 @@ ALTER TABLE ONLY dispatch_organization_default.document
 
 ALTER TABLE ONLY dispatch_organization_default.document
     ADD CONSTRAINT document_report_id_fkey FOREIGN KEY (report_id) REFERENCES dispatch_organization_default.report(id) ON DELETE CASCADE;
+
+
+--
+-- Name: email_templates email_templates_project_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.email_templates
+    ADD CONSTRAINT email_templates_project_id_fkey FOREIGN KEY (project_id) REFERENCES dispatch_organization_default.project(id) ON DELETE CASCADE;
 
 
 --
@@ -12779,14 +13238,6 @@ ALTER TABLE ONLY dispatch_organization_default.incident_cost
 
 ALTER TABLE ONLY dispatch_organization_default.incident_cost
     ADD CONSTRAINT incident_cost_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES dispatch_organization_default.incident(id) ON DELETE CASCADE;
-
-
---
--- Name: incident incident_cost_model_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
---
-
-ALTER TABLE ONLY dispatch_organization_default.incident
-    ADD CONSTRAINT incident_cost_model_id_fkey FOREIGN KEY (cost_model_id) REFERENCES dispatch_organization_default.cost_model(id);
 
 
 --
@@ -12998,6 +13449,14 @@ ALTER TABLE ONLY dispatch_organization_default.incident_type
 
 
 --
+-- Name: incident_type incident_type_cost_model_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.incident_type
+    ADD CONSTRAINT incident_type_cost_model_id_fkey FOREIGN KEY (cost_model_id) REFERENCES dispatch_organization_default.cost_model(id);
+
+
+--
 -- Name: incident_type incident_type_executive_template_document_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -13062,6 +13521,14 @@ ALTER TABLE ONLY dispatch_organization_default.individual_contact
 
 
 --
+-- Name: mfa_challenge mfa_challenge_dispatch_user_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.mfa_challenge
+    ADD CONSTRAINT mfa_challenge_dispatch_user_id_fkey FOREIGN KEY (dispatch_user_id) REFERENCES dispatch_core.dispatch_user(id);
+
+
+--
 -- Name: monitor monitor_creator_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -13091,6 +13558,14 @@ ALTER TABLE ONLY dispatch_organization_default.monitor
 
 ALTER TABLE ONLY dispatch_organization_default.notification
     ADD CONSTRAINT notification_project_id_fkey FOREIGN KEY (project_id) REFERENCES dispatch_organization_default.project(id) ON DELETE CASCADE;
+
+
+--
+-- Name: participant_activity participant_activity_case_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.participant_activity
+    ADD CONSTRAINT participant_activity_case_id_fkey FOREIGN KEY (case_id) REFERENCES dispatch_organization_default."case"(id);
 
 
 --
@@ -13643,6 +14118,14 @@ ALTER TABLE ONLY dispatch_organization_default.ticket
 
 ALTER TABLE ONLY dispatch_organization_default.ticket
     ADD CONSTRAINT ticket_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES dispatch_organization_default.incident(id) ON DELETE CASCADE;
+
+
+--
+-- Name: ticket ticket_task_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.ticket
+    ADD CONSTRAINT ticket_task_id_fkey FOREIGN KEY (task_id) REFERENCES dispatch_organization_default.task(id) ON DELETE CASCADE;
 
 
 --
