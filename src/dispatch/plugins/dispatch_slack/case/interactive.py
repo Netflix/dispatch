@@ -2359,7 +2359,7 @@ def ack_mfa_required_submission_event(
     if mfa_enabled:
         mfa_text = (
             "🔐 To complete this action, you need to verify your identity through Multi-Factor Authentication (MFA).\n\n"
-            f"Please <{challenge_url}|click here> to open the MFA verification page."
+            f"Please <{challenge_url}|*click here*> to open the MFA verification page."
         )
     else:
         mfa_text = "✅ No additional verification required. You can proceed with the confirmation."
