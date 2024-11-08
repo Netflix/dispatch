@@ -399,7 +399,7 @@ def add_conversation_bookmark(
     title: str | None = None,
 ):
     """Adds a conversation bookmark."""
-    if not resource:
+    if not resource or not hasattr(resource, "name"):
         log.warning("No conversation bookmark added since no resource available for subject.")
         return
 
