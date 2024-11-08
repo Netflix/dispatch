@@ -399,6 +399,10 @@ def add_conversation_bookmark(
     title: str | None = None,
 ):
     """Adds a conversation bookmark."""
+    if not resource:
+        log.warning("No conversation bookmark added since no resource available for subject.")
+        return
+
     if not subject.conversation:
         log.warning(
             f"Conversation bookmark {resource.name.lower()} not added. No conversation available."
