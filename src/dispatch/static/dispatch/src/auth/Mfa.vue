@@ -23,7 +23,7 @@
                 :type="alertType"
                 :icon="statusIcon"
                 class="mb-4"
-                border="left"
+                border="start"
               >
                 {{ statusMessage }}
               </v-alert>

@@ -6,7 +6,6 @@ import * as directives from "vuetify/directives"
 import MfaVerification from "@/auth/mfa.vue"
 import authApi from "@/auth/api"
 
-// Mock vue-router
 vi.mock("vue-router", () => ({
   useRoute: () => ({
     query: {
@@ -17,7 +16,6 @@ vi.mock("vue-router", () => ({
   }),
 }))
 
-// Mock auth API
 vi.mock("@/auth/api", () => ({
   default: {
     verifyMfa: vi.fn(),
@@ -31,19 +29,24 @@ const vuetify = createVuetify({
 
 global.ResizeObserver = require("resize-observer-polyfill")
 
-const originalWindow = window
 const windowCloseMock = vi.fn()
+const originalClose = window.close
 
 beforeEach(() => {
   vi.useFakeTimers()
-  // @ts-ignore
-  window.close = windowCloseMock
+  Object.defineProperty(window, "close", {
+    value: windowCloseMock,
+    writable: true,
+  })
   vi.clearAllMocks()
 })
 
 afterEach(() => {
   vi.useRealTimers()
-  window = originalWindow
+  Object.defineProperty(window, "close", {
+    value: originalClose,
+    writable: true,
+  })
 })
 
 test("mounts correctly and starts verification automatically", async () => {
