@@ -54,7 +54,6 @@
                 hint="Show only cases with this participant"
                 :project="local_project"
                 clearable
-                :rules="[only_one]"
               />
               <v-checkbox
                 class="ml-10 mr-5"
@@ -138,19 +137,9 @@ const numFilters = computed(() => {
   ])
 })
 
-const only_one = (value) => {
-  if (value && value.length > 1) {
-    return "Only one is allowed"
-  }
-  return true
-}
-
 const applyFilters = () => {
   let filtered_participant = null
   let filtered_assignee = null
-  if (Array.isArray(local_participant.value)) {
-    local_participant.value = local_participant.value[0]
-  }
   if (local_participant_is_assignee.value) {
     filtered_assignee = local_participant.value
     filtered_participant = null

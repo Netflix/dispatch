@@ -74,7 +74,6 @@
                 hint="Show only incidents with this participant"
                 :project="local_project"
                 clearable
-                :rules="[only_one]"
               />
               <v-checkbox
                 class="ml-10 mr-5"
@@ -149,12 +148,6 @@ export default {
       local_tag_type: [],
       local_participant_is_commander: false,
       local_participant: null,
-      only_one: (value) => {
-        if (value && value.length > 1) {
-          return "Only one is allowed"
-        }
-        return true
-      },
     }
   },
 
@@ -201,9 +194,6 @@ export default {
       this.tag = this.local_tag
       this.tag_all = this.local_tag_all
       this.tag_type = this.local_tag_type
-      if (Array.isArray(this.local_participant)) {
-        this.local_participant = this.local_participant[0]
-      }
       this.participant = this.local_participant
       if (this.local_participant_is_commander) {
         this.commander = this.local_participant
