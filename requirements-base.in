@@ -23,6 +23,7 @@ jinja2
 jira==2.0.0
 joblib
 jsonpath_ng
+lxml==5.3.0
 markdown
 msal
 numpy
