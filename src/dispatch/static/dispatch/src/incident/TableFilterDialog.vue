@@ -66,19 +66,19 @@
           <v-list-item>
             <v-card class="mx-auto">
               <v-card-title>Incident Participant</v-card-title>
-              <v-card-subtitle>Show only incidents with this participant</v-card-subtitle>
+              <v-card-subtitle>Show only incidents with these participant(s)</v-card-subtitle>
               <participant-select
                 class="ml-10 mr-5"
                 v-model="local_participant"
                 label="Participant"
-                hint="Show only incidents with this participant"
+                hint="Show only incidents with these participant(s)"
                 :project="local_project"
                 clearable
               />
               <v-checkbox
                 class="ml-10 mr-5"
                 v-model="local_participant_is_commander"
-                label="And this participant is the Incident Commander"
+                label="And these participant(s) are the Incident Commander"
                 :disabled="local_participant == null"
               />
             </v-card>

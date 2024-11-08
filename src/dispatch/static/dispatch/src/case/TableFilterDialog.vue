@@ -46,19 +46,19 @@
           <v-list-item>
             <v-card class="mx-auto">
               <v-card-title>Case Participant</v-card-title>
-              <v-card-subtitle>Show only cases with this participant</v-card-subtitle>
+              <v-card-subtitle>Show only cases with these participant(s)</v-card-subtitle>
               <participant-select
                 class="ml-10 mr-5"
                 v-model="local_participant"
                 label="Participant"
-                hint="Show only cases with this participant"
+                hint="Show only cases with these participant(s)"
                 :project="local_project"
                 clearable
               />
               <v-checkbox
                 class="ml-10 mr-5"
                 v-model="local_participant_is_assignee"
-                label="And this participant is the Assignee"
+                label="And these participant(s) are the Assignee"
                 :disabled="local_participant == null"
               />
             </v-card>
