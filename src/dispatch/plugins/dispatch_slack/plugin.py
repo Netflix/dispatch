@@ -451,6 +451,28 @@ class SlackConversationPlugin(ConversationPlugin):
                 replies.append(f"{reply['text']}")
         return replies
 
+    def get_all_member_emails(self, conversation_id: str) -> list[str]:
+        """
+        Fetches all members of a Slack conversation.
+
+        Args:
+            conversation_id (str): The ID of the Slack conversation.
+
+        Returns:
+            list[str]: A list of the emails for all members in the conversation.
+        """
+        client = create_slack_client(self.configuration)
+        member_ids = client.conversations_members(channel=conversation_id).get("members", [])
+
+        member_emails = []
+        for member_id in member_ids:
+            if is_user(config=self.configuration, user_id=member_id):
+                user = client.users_info(user=member_id).get("user")
+                if user:
+                    member_emails.append(user["profile"]["email"])
+
+        return member_emails
+
 
 @apply(counter, exclude=["__init__"])
 @apply(timer, exclude=["__init__"])
