@@ -11,7 +11,7 @@
             <v-col cols="5">
               <date-time-picker-menu
                 label="Reported At"
-                v-model="started_at"
+                v-model="local_started_at"
                 class="time-picker"
                 :timezone="timezone"
                 @update:model-value="update_started_at"
@@ -40,7 +40,7 @@
           <v-row>
             <v-col cols="12">
               <v-textarea
-                v-model="description"
+                v-model="local_description"
                 class="mt-3"
                 label="Description"
                 hint="Description of the event."
@@ -54,10 +54,8 @@
       <v-card-actions>
         <v-spacer />
         <v-btn variant="text" @click="closeEditEventDialog()"> Cancel </v-btn>
-        <v-btn v-if="uuid" color="green en-1" variant="text" @click="updateExistingEvent()">
-          OK
-        </v-btn>
-        <v-btn v-else color="green en-1" variant="text" @click="storeNewEvent()"> OK </v-btn>
+        <v-btn v-if="uuid" color="green en-1" variant="text" @click="updateEvent()"> OK </v-btn>
+        <v-btn v-else color="green en-1" variant="text" @click="newEvent()"> OK </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -79,6 +77,8 @@ export default {
       timezones: ["UTC", "America/Los_Angeles"],
       timezone: "UTC",
       started_at_in_utc: "",
+      local_started_at: null,
+      local_description: "",
     }
   },
 
@@ -112,13 +112,24 @@ export default {
       this.eventStart = new Date()
     },
     update_started_at(val) {
-      this.started_at = val
+      this.local_started_at = val
       this.started_at_in_utc = val
+    },
+    updateEvent() {
+      this.description = this.local_description
+      this.started_at = this.local_started_at
+      this.updateExistingEvent()
+    },
+    newEvent() {
+      this.description = this.local_description
+      this.started_at = this.local_started_at
+      this.storeNewEvent()
     },
   },
   mounted() {
     this.init()
-    this.started_at_in_utc = this.started_at
+    this.local_description = this.description
+    this.local_started_at = this.started_at
   },
 }
 </script>
