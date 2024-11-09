@@ -4,7 +4,6 @@
 #
 #    pip-compile requirements-base.in
 #
---index-url https://pypi.netflix.net/simple
 
 aiocache==0.12.3
     # via -r requirements-base.in
