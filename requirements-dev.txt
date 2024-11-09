@@ -4,8 +4,6 @@
 #
 #    pip-compile requirements-dev.in
 #
---index-url https://pypi.netflix.net/simple
-
 asttokens==2.4.1
     # via
     #   devtools
