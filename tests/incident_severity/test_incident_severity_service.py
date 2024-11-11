@@ -23,7 +23,7 @@ def test_get_default_or_raise__fail(session, incident_severity):
 
     try:
         get_default_or_raise(db_session=session, project_id=incident_severity.project.id)
-    except ValidationError as e:
+    except ValidationError:
         validation_error = True
 
     assert validation_error
@@ -53,7 +53,7 @@ def get_by_name_or_raise__fail(session, incident_severity):
             project_id=incident_severity.project.id,
             incident_severity_in=incident_severity_in,
         )
-    except ValidationError as e:
+    except ValidationError:
         validation_error = True
 
     assert validation_error
@@ -94,7 +94,7 @@ def test_get_all(session, incident_severity):
 
 
 def test_get_all_enabled(session, incident_severity):
-    from dispatch.incident.severity.service import get_all, get_all_enabled
+    from dispatch.incident.severity.service import get_all_enabled
 
     incident_severity.enabled = True
 
