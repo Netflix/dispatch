@@ -30,16 +30,28 @@ def upgrade():
         "entity", "source", existing_type=sa.BOOLEAN(), type_=sa.String(), existing_nullable=True
     )
 
-    op.drop_index("ix_entity_search_vector", table_name="entity", postgresql_using="gin")
-    op.create_index(
-        "entity_search_vector_idx",
-        "entity",
-        ["search_vector"],
-        unique=False,
-        postgresql_using="gin",
-    )
+    indexes = inspector.get_indexes("entity")
+    index_exists = any(index["name"] == "ix_entity_search_vector" for index in indexes)
+
+    if index_exists:
+        op.drop_index("ix_entity_search_vector", table_name="entity", postgresql_using="gin")
+
+    index_exists = any(index["name"] == "entity_search_vector_idx" for index in indexes)
+    if not index_exists:
+        op.create_index(
+            "entity_search_vector_idx",
+            "entity",
+            ["search_vector"],
+            unique=False,
+            postgresql_using="gin",
+        )
     op.alter_column("entity_type", "jpath", existing_type=sa.VARCHAR(), nullable=True)
-    op.drop_column("plugin_instance", "configuration")
+
+    columns = inspector.get_columns("plugin_instance")
+    column_exists = any(column["name"] == "configuration" for column in columns)
+    if column_exists:
+        op.drop_column("plugin_instance", "configuration")
+
     op.drop_constraint("project_stable_priority_id_fkey", "project", type_="foreignkey")
     # ### end Alembic commands ###
 
