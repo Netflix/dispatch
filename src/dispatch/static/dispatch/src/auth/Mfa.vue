@@ -7,18 +7,32 @@
             Multi-Factor Authentication
           </v-card-title>
           <v-card-text>
-            <v-alert v-if="status" :type="alertType" class="mb-4">
-              {{ statusMessage }}
-            </v-alert>
-            <v-btn
-              color="primary"
-              block
-              @click="verifyMfa"
-              :loading="loading"
-              :disabled="status === MfaChallengeStatus.APPROVED"
-            >
-              Verify MFA
-            </v-btn>
+            <div class="text-center">
+              <!-- Show spinner while loading -->
+              <v-progress-circular
+                v-if="loading"
+                indeterminate
+                color="primary"
+                size="64"
+                class="mb-4"
+              ></v-progress-circular>
+
+              <!-- Status message with icon -->
+              <v-alert
+                v-if="status"
+                :type="alertType"
+                :icon="statusIcon"
+                class="mb-4"
+                border="start"
+              >
+                {{ statusMessage }}
+              </v-alert>
+
+              <!-- Retry button only shown when denied or expired -->
+              <v-btn v-if="canRetry" color="primary" @click="verifyMfa" :loading="loading">
+                Retry Verification
+              </v-btn>
+            </div>
           </v-card-text>
         </v-card>
       </v-col>
@@ -27,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue"
+import { ref, computed, onMounted } from "vue"
 import { useRoute } from "vue-router"
 import authApi from "@/auth/api"
 
@@ -52,11 +66,26 @@ const statusMessage = computed(() => {
     case MfaChallengeStatus.EXPIRED:
       return "MFA challenge has expired. Please request a new one."
     case MfaChallengeStatus.PENDING:
-      return "MFA verification is pending."
+      return "Verifying your authentication..."
     case null:
-      return "Please verify your multi-factor authentication."
+      return "Initializing verification..."
     default:
       return "An unknown error occurred."
+  }
+})
+
+const statusIcon = computed(() => {
+  switch (status.value) {
+    case MfaChallengeStatus.APPROVED:
+      return "mdi-check-circle"
+    case MfaChallengeStatus.DENIED:
+      return "mdi-close-circle"
+    case MfaChallengeStatus.EXPIRED:
+      return "mdi-clock-alert"
+    case MfaChallengeStatus.PENDING:
+      return "mdi-progress-clock"
+    default:
+      return "mdi-alert"
   }
 })
 
@@ -75,8 +104,14 @@ const alertType = computed(() => {
   }
 })
 
+const canRetry = computed(() => {
+  return status.value === MfaChallengeStatus.DENIED || status.value === MfaChallengeStatus.EXPIRED
+})
+
 const verifyMfa = async () => {
   loading.value = true
+  status.value = MfaChallengeStatus.PENDING
+
   try {
     const challengeId = route.query.challenge_id as string
     const projectId = parseInt(route.query.project_id as string)
@@ -103,4 +138,8 @@ const verifyMfa = async () => {
     loading.value = false
   }
 }
+
+onMounted(() => {
+  verifyMfa()
+})
 </script>

@@ -18,12 +18,16 @@ export default {
           if (has(flatFilters, key)) {
             if (typeof item === "string" || item instanceof String) {
               flatFilters[key].push(item)
+            } else if (Array.isArray(value)) {
+              flatFilters[key].push(item.individual.email)
             } else {
               flatFilters[key].push(item.email)
             }
           } else {
             if (typeof item === "string" || item instanceof String) {
               flatFilters[key] = [item]
+            } else if (Array.isArray(value)) {
+              flatFilters[key] = [item.individual.email]
             } else {
               flatFilters[key] = [item.email]
             }
