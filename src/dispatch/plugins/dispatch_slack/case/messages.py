@@ -175,11 +175,6 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
                 action_id=CaseNotificationActions.escalate,
                 value=button_metadata,
             ),
-            Button(
-                text=":person: User MFA",
-                action_id=CaseNotificationActions.user_mfa,
-                value=button_metadata,
-            ),
         ]
         if case.status == CaseStatus.new:
             action_buttons.insert(
@@ -280,7 +275,12 @@ def create_action_buttons_message(
             text="💤 Snooze Alert",
             action_id=SignalNotificationActions.snooze,
             value=button_metadata,
-        )
+        ),
+        Button(
+            text="👤 User MFA Challenge",
+            action_id=CaseNotificationActions.user_mfa,
+            value=button_metadata,
+        ),
     )
 
     # we create the signal metadata blocks

@@ -56,8 +56,8 @@ from dispatch.plugins.dispatch_slack.case.enums import (
 )
 from dispatch.plugins.dispatch_slack.case.messages import (
     create_case_message,
-    create_signal_engagement_message,
     create_manual_engagement_message,
+    create_signal_engagement_message,
 )
 from dispatch.plugins.dispatch_slack.config import SlackConversationConfiguration
 from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
@@ -72,11 +72,11 @@ from dispatch.plugins.dispatch_slack.fields import (
     entity_select,
     incident_priority_select,
     incident_type_select,
+    participant_select,
     project_select,
     relative_date_picker_input,
     resolution_input,
     title_input,
-    participant_select,
 )
 from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
@@ -403,17 +403,20 @@ def engage(
     ack()
 
     if form_data.get(DefaultBlockIds.participant_select):
-        user_email = client.users_info(user=form_data[DefaultBlockIds.participant_select]["value"])[
-            "user"
-        ]["profile"]["email"]
+        participant_id = form_data[DefaultBlockIds.participant_select]["value"]
+        participant = participant_service.get(db_session=db_session, participant_id=participant_id)
+        if participant:
+            user_email = participant.individual.email
+        else:
+            log.error(f"Participant not found for id {participant_id} when trying to engage user")
+            return
     else:
-        # TODO: log error
         return
 
     if form_data.get(DefaultBlockIds.description_input):
         engagement = form_data[DefaultBlockIds.description_input]
     else:
-        # TODO log error
+        log.warning("Engagement text not found")
         return
 
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
@@ -2356,7 +2359,7 @@ def ack_mfa_required_submission_event(
     if mfa_enabled:
         mfa_text = (
             "🔐 To complete this action, you need to verify your identity through Multi-Factor Authentication (MFA).\n\n"
-            f"Please <{challenge_url}|click here> to open the MFA verification page."
+            f"Please <{challenge_url}|*click here*> to open the MFA verification page."
         )
     else:
         mfa_text = "✅ No additional verification required. You can proceed with the confirmation."
@@ -2499,9 +2502,9 @@ def send_engagement_response(
         engagement_status = SignalEngagementStatus.denied
 
         if response == MfaChallengeStatus.EXPIRED:
-            text = "Confirmation failed, the MFA request timed out. Please, have your MFA device ready to accept the push notification and try again."
+            text = "Confirmation failed, the MFA request timed out. Please try again and complete the MFA verification within the given time frame."
         elif response == MfaChallengeStatus.DENIED:
-            text = f"User {engaged_user} not found in MFA provider. To validate your identity, please register in Duo and try again."
+            text = f"We couldn't find {engaged_user} in our MFA system."
         else:
             text = "Confirmation failed. You must accept the MFA prompt."
 

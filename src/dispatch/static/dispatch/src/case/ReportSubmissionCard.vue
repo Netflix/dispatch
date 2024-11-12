@@ -292,6 +292,14 @@ export default {
       this.case_priority = { name: this.$route.query.case_priority }
     }
 
+    if (this.$route.query.title) {
+      this.title = this.$route.query.title
+    }
+
+    if (this.$route.query.description) {
+      this.description = this.$route.query.description
+    }
+
     this.getFAQ()
     this.$watch(
       (vm) => [vm.project],
@@ -301,12 +309,14 @@ export default {
     )
 
     this.$watch(
-      (vm) => [vm.project, vm.case_priority, vm.case_type],
+      (vm) => [vm.project, vm.case_priority, vm.case_type, vm.title, vm.description],
       () => {
         var queryParams = {
           project: this.project ? this.project.name : null,
           case_priority: this.case_priority ? this.case_priority.name : null,
           case_type: this.case_type ? this.case_type.name : null,
+          title: this.title,
+          description: this.description,
         }
         Object.keys(queryParams).forEach((key) => (queryParams[key] ? {} : delete queryParams[key]))
         router.replace({

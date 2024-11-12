@@ -477,7 +477,7 @@ def common_parameters(
     page: int = Query(1, gt=0, lt=2147483647),
     items_per_page: int = Query(5, alias="itemsPerPage", gt=-2, lt=2147483647),
     query_str: QueryStr = Query(None, alias="q"),
-    filter_spec: Json = Query([], alias="filter"),
+    filter_spec: QueryStr = Query(None, alias="filter"),
     sort_by: List[str] = Query([], alias="sortBy[]"),
     descending: List[bool] = Query([], alias="descending[]"),
     role: UserRoles = Depends(get_current_role),
@@ -536,7 +536,7 @@ def search_filter_sort_paginate(
     db_session,
     model,
     query_str: str = None,
-    filter_spec: List[dict] = None,
+    filter_spec: str = None,
     page: int = 1,
     items_per_page: int = 5,
     sort_by: List[str] = None,
@@ -558,6 +558,7 @@ def search_filter_sort_paginate(
 
         tag_all_filters = []
         if filter_spec:
+            filter_spec = json.loads(filter_spec)
             query = apply_filter_specific_joins(model_cls, filter_spec, query)
             # if the filter_spec has the TagAll filter, we need to split the query up
             # and intersect all of the results
