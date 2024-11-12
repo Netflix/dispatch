@@ -44,7 +44,7 @@ requests
 schedule
 schemathesis
 sentry-asgi
-sentry-sdk
+sentry-sdk==1.45.0
 sh
 slack_sdk
 slack-bolt
