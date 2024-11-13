@@ -1,10 +1,5 @@
 <template>
   <v-container fluid>
-    <!-- <cases-drill-down-sheet -->
-    <!--   :show="showDrillDown" -->
-    <!--   :items="detailItems" -->
-    <!--   @close="showDrillDown = false" -->
-    <!-- /> -->
     <v-row>
       <v-col class="d-flex justify-start" cols="12" sm="6">
         <v-btn color="info" @click="copyView"> Share View </v-btn>
@@ -59,13 +54,6 @@
           @details-selected="detailsSelected($event)"
         />
       </v-col>
-      <!-- <v-col cols="12" sm="6"> -->
-      <!--   <case-priority-bar-chart-card -->
-      <!--     v-model="groupedItems" -->
-      <!--     :loading="loading" -->
-      <!--     @details-selected="detailsSelected($event)" -->
-      <!--   /> -->
-      <!-- </v-col> -->
       <v-col cols="12" sm="6">
         <case-new-triage-average-time-card v-model="groupedItems" :loading="loading" />
       </v-col>
@@ -84,17 +72,14 @@
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
 import { groupBy, sumBy } from "lodash"
-
-import parseISO from "date-fns/parseISO"
-import differenceInHours from "date-fns/differenceInHours"
-
+import { mapFields } from "vuex-map-fields"
 import { toNumberString } from "@/filters"
 
+import differenceInHours from "date-fns/differenceInHours"
+import parseISO from "date-fns/parseISO"
+
 import CaseDialogFilter from "@/dashboard/case/CaseDialogFilter.vue"
-// import CasesDrillDownSheet from "@/dashboard/case/CasesDrillDownSheet.vue"
-// import CasePriorityBarChartCard from "@/dashboard/case/CasePriorityBarChartCard.vue"
 import CaseEscalatedClosedAverageTimeCard from "@/dashboard/case/CaseEscalatedClosedAverageTimeCard.vue"
 import CaseNewClosedAverageTimeCard from "@/dashboard/case/CaseNewClosedAverageTimeCard.vue"
 import CaseNewTriageAverageTimeCard from "@/dashboard/case/CaseNewTriageAverageTimeCard.vue"
@@ -108,14 +93,12 @@ export default {
 
   components: {
     CaseDialogFilter,
-    // CasePriorityBarChartCard,
-    CaseSeverityBarChartCard,
-    CaseTypeBarChartCard,
-    // CasesDrillDownSheet,
     CaseEscalatedClosedAverageTimeCard,
     CaseNewClosedAverageTimeCard,
     CaseNewTriageAverageTimeCard,
+    CaseSeverityBarChartCard,
     CaseTriageEscalatedAverageTimeCard,
+    CaseTypeBarChartCard,
     StatWidget,
   },
 
@@ -216,6 +199,7 @@ export default {
         if (item.triage_at) {
           return 1
         }
+        return 0
       })
     },
     totalCasesEscalated() {
@@ -223,6 +207,7 @@ export default {
         if (item.escalated_at && item.incidents.length > 0) {
           return 1
         }
+        return 0
       })
     },
     totalHours() {
