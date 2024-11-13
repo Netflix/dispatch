@@ -34,7 +34,7 @@
       </template>
       <v-tabs color="primary" fixed-tabs v-model="tab" :disabled="id == null">
         <v-tab value="details"> Details </v-tab>
-        <v-tab value="status"> Status </v-tab>
+        <v-tab value="reports"> Reports </v-tab>
         <v-tab value="resources"> Resources </v-tab>
         <v-tab value="participants"> Participants </v-tab>
         <v-tab value="timeline"> Timeline </v-tab>
@@ -47,7 +47,7 @@
         <v-window-item value="details">
           <incident-details-tab />
         </v-window-item>
-        <v-window-item value="status">
+        <v-window-item value="reports">
           <incident-timeline-report-tab />
         </v-window-item>
         <v-window-item value="resources">
