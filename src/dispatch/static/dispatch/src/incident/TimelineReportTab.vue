@@ -27,9 +27,6 @@
               <v-card-title class="text-subtitle-1">Needs</v-card-title>
               <v-card-text>{{ event.details.needs }}</v-card-text>
             </v-card>
-            <div class="text-caption">
-              {{ event.source }}
-            </div>
           </v-col>
           <v-col class="text-right" cols="4">
             <v-tooltip location="bottom">
