@@ -7,6 +7,6 @@ factory-boy
 faker
 ipython
 pre-commit
-pytest
+pytest==7.4.4
 ruff
 vulture

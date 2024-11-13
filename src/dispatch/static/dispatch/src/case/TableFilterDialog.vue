@@ -46,20 +46,19 @@
           <v-list-item>
             <v-card class="mx-auto">
               <v-card-title>Case Participant</v-card-title>
-              <v-card-subtitle>Show only cases with this participant</v-card-subtitle>
+              <v-card-subtitle>Show only cases with these participant(s)</v-card-subtitle>
               <participant-select
                 class="ml-10 mr-5"
                 v-model="local_participant"
                 label="Participant"
-                hint="Show only cases with this participant"
+                hint="Show only cases with these participant(s)"
                 :project="local_project"
                 clearable
-                :rules="[only_one]"
               />
               <v-checkbox
                 class="ml-10 mr-5"
                 v-model="local_participant_is_assignee"
-                label="And this participant is the Assignee"
+                label="And these participant(s) are the Assignee"
                 :disabled="local_participant == null"
               />
             </v-card>
@@ -138,19 +137,9 @@ const numFilters = computed(() => {
   ])
 })
 
-const only_one = (value) => {
-  if (value && value.length > 1) {
-    return "Only one is allowed"
-  }
-  return true
-}
-
 const applyFilters = () => {
   let filtered_participant = null
   let filtered_assignee = null
-  if (Array.isArray(local_participant.value)) {
-    local_participant.value = local_participant.value[0]
-  }
   if (local_participant_is_assignee.value) {
     filtered_assignee = local_participant.value
     filtered_participant = null
