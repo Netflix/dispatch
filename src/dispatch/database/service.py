@@ -536,7 +536,7 @@ def search_filter_sort_paginate(
     db_session,
     model,
     query_str: str = None,
-    filter_spec: str | dict = None,
+    filter_spec: str | dict | None = None,
     page: int = 1,
     items_per_page: int = 5,
     sort_by: List[str] = None,
