@@ -36,7 +36,6 @@ from .service import (
     create,
     create_signal_engagement,
     create_signal_filter,
-    delete,
     delete_signal_filter,
     get,
     get_by_primary_or_external_id,
@@ -330,19 +329,3 @@ def update_signal(
         ) from None
 
     return signal
-
-
-@router.delete(
-    "/{signal_id}",
-    response_model=None,
-    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
-)
-def delete_signal(db_session: DbSession, signal_id: Union[str, PrimaryKey]):
-    """Deletes a signal."""
-    signal = get_by_primary_or_external_id(db_session=db_session, signal_id=signal_id)
-    if not signal:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "A signal with this id does not exist."}],
-        )
-    delete(db_session=db_session, signal_id=signal.id)
