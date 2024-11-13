@@ -558,7 +558,8 @@ def search_filter_sort_paginate(
 
         tag_all_filters = []
         if filter_spec:
-            filter_spec = json.loads(filter_spec)
+            if isinstance(filter_spec, str):
+                filter_spec = json.loads(filter_spec)
             query = apply_filter_specific_joins(model_cls, filter_spec, query)
             # if the filter_spec has the TagAll filter, we need to split the query up
             # and intersect all of the results
