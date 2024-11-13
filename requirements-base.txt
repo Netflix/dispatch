@@ -4,7 +4,6 @@
 #
 #    pip-compile requirements-base.in
 #
-
 aiocache==0.12.3
     # via -r requirements-base.in
 aiofiles==24.1.0
@@ -119,7 +118,7 @@ email-validator==2.2.0
     # via -r requirements-base.in
 emails==0.6
     # via -r requirements-base.in
-fastapi==0.115.4
+fastapi==0.115.5
     # via -r requirements-base.in
 frozenlist==1.5.0
     # via
