@@ -354,7 +354,8 @@ def incident_report_weekly(db_session: Session, project: Project):
 @timer
 @scheduled_project_task
 def incident_sync_members(db_session: Session, project: Project):
-    """Checks the members of all conversations and ensures they are in the incident."""
+    """Checks the members of all conversations associated with active
+    and stable incidents and ensures they are in the incident."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session,
         project_id=project.id,

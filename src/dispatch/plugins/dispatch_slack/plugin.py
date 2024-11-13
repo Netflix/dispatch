@@ -53,6 +53,7 @@ from .service import (
     does_user_exist,
     emails_to_user_ids,
     get_user_avatar_url,
+    get_user_info_by_id,
     get_user_profile_by_email,
     is_user,
     rename_conversation,
@@ -467,7 +468,7 @@ class SlackConversationPlugin(ConversationPlugin):
         member_emails = []
         for member_id in member_ids:
             if is_user(config=self.configuration, user_id=member_id):
-                user = client.users_info(user=member_id).get("user")
+                user = get_user_info_by_id(client, member_id)
                 if user:
                     member_emails.append(user["profile"]["email"])
 
