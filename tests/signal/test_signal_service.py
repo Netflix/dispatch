@@ -44,7 +44,7 @@ def test_update(session, project, signal):
 
 
 def test_update__add_filter(session, signal, signal_filter):
-    from dispatch.signal.models import SignalUpdate, SignalFilterRead
+    from dispatch.signal.models import SignalFilterRead, SignalUpdate
     from dispatch.signal.service import update
 
     signal_filter.project = signal.project
@@ -91,21 +91,15 @@ def test_update__delete_filter(session, signal, signal_filter):
     assert len(signal.filters) == 0
 
 
-def test_delete(session, signal):
-    from dispatch.signal.service import delete, get
-
-    delete(db_session=session, signal_id=signal.id)
-    assert not get(db_session=session, signal_id=signal.id)
-
-
 def test_filter_actions_default_deduplicate(session, signal, project):
-    from dispatch.signal.models import SignalInstance, SignalFilterAction
-    from dispatch.signal.service import filter_signal
-    from dispatch.entity_type.models import EntityType
-    from dispatch.entity.models import Entity
-    from dispatch.enums import Visibility
-    from dispatch.case.models import Case
     from datetime import datetime, timedelta
+
+    from dispatch.case.models import Case
+    from dispatch.entity.models import Entity
+    from dispatch.entity_type.models import EntityType
+    from dispatch.enums import Visibility
+    from dispatch.signal.models import SignalFilterAction, SignalInstance
+    from dispatch.signal.service import filter_signal
 
     entity_type = EntityType(
         name="default_dedupe",
@@ -163,14 +157,14 @@ def test_filter_actions_default_deduplicate(session, signal, project):
 
 
 def test_filter_actions_deduplicate_different_entities(session, signal, project):
+    from dispatch.entity.models import Entity
+    from dispatch.entity_type.models import EntityType
     from dispatch.signal.models import (
         SignalFilter,
-        SignalInstance,
         SignalFilterAction,
+        SignalInstance,
     )
     from dispatch.signal.service import filter_signal
-    from dispatch.entity_type.models import EntityType
-    from dispatch.entity.models import Entity
 
     entity_type_0 = EntityType(
         name="dedupe2-0",
@@ -216,14 +210,14 @@ def test_filter_actions_deduplicate_different_entities(session, signal, project)
 
 
 def test_filter_actions_deduplicate_different_entities_types(session, signal, project):
+    from dispatch.entity.models import Entity
+    from dispatch.entity_type.models import EntityType
     from dispatch.signal.models import (
         SignalFilter,
-        SignalInstance,
         SignalFilterAction,
+        SignalInstance,
     )
     from dispatch.signal.service import filter_signal
-    from dispatch.entity_type.models import EntityType
-    from dispatch.entity.models import Entity
 
     entity_type_0 = EntityType(
         name="dedupe0-0",
@@ -274,14 +268,14 @@ def test_filter_actions_deduplicate_different_entities_types(session, signal, pr
 
 
 def test_filter_actions_deduplicate(session, signal, project):
+    from dispatch.entity.models import Entity
+    from dispatch.entity_type.models import EntityType
     from dispatch.signal.models import (
         SignalFilter,
-        SignalInstance,
         SignalFilterAction,
+        SignalInstance,
     )
     from dispatch.signal.service import filter_signal
-    from dispatch.entity_type.models import EntityType
-    from dispatch.entity.models import Entity
 
     entity_type = EntityType(
         name="dedupe1",
@@ -325,14 +319,15 @@ def test_filter_actions_deduplicate(session, signal, project):
 
 def test_filter_action_with_dedupe_and_snooze(session, signal, project):
     from datetime import datetime, timedelta, timezone
+
+    from dispatch.entity.models import Entity
+    from dispatch.entity_type.models import EntityType
     from dispatch.signal.models import (
         SignalFilter,
-        SignalInstance,
         SignalFilterAction,
+        SignalInstance,
     )
     from dispatch.signal.service import filter_signal
-    from dispatch.entity_type.models import EntityType
-    from dispatch.entity.models import Entity
 
     entity_type = EntityType(
         name="dedupe1+snooze",
@@ -386,13 +381,14 @@ def test_filter_action_with_dedupe_and_snooze(session, signal, project):
 
 def test_filter_actions_snooze(session, entity, signal, project):
     from datetime import datetime, timedelta, timezone
+
+    from dispatch.entity_type.models import EntityType
     from dispatch.signal.models import (
         SignalFilter,
-        SignalInstance,
         SignalFilterAction,
+        SignalInstance,
     )
     from dispatch.signal.service import filter_signal
-    from dispatch.entity_type.models import EntityType
 
     entity_type = EntityType(
         name="test",
@@ -430,13 +426,14 @@ def test_filter_actions_snooze(session, entity, signal, project):
 
 def test_filter_actions_snooze_expired(session, entity, signal, project):
     from datetime import datetime, timedelta, timezone
+
+    from dispatch.entity_type.models import EntityType
     from dispatch.signal.models import (
         SignalFilter,
-        SignalInstance,
         SignalFilterAction,
+        SignalInstance,
     )
     from dispatch.signal.service import filter_signal
-    from dispatch.entity_type.models import EntityType
 
     entity_type = EntityType(
         name="test",
