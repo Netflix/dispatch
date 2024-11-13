@@ -536,7 +536,7 @@ def search_filter_sort_paginate(
     db_session,
     model,
     query_str: str = None,
-    filter_spec: str = None,
+    filter_spec: str | dict = None,
     page: int = 1,
     items_per_page: int = 5,
     sort_by: List[str] = None,
@@ -558,6 +558,8 @@ def search_filter_sort_paginate(
 
         tag_all_filters = []
         if filter_spec:
+            # some functions pass filter_spec as dictionary such as auth/views.py/get_users
+            # but most come from API as seraialized JSON
             if isinstance(filter_spec, str):
                 filter_spec = json.loads(filter_spec)
             query = apply_filter_specific_joins(model_cls, filter_spec, query)
