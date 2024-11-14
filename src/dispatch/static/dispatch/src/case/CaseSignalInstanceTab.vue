@@ -7,19 +7,17 @@
           <v-virtual-scroll :items="signalInstances" height="828" class="pt-0">
             <template #default="{ item }">
               <div
-                class="d-flex align-center"
+                class="signal-list-item"
                 :class="{ 'selected-row': selectedItem.raw.id === item.raw.id }"
+                @click="selectItem(item)"
+                role="button"
               >
-                <span class="pl-8 signal-name">
-                  {{ item.signal.name }}
-                </span>
-                <span class="pl-1 dispatch-text-paragraph">
-                  · {{ formatRelativeDate(item.created_at) }}
-                </span>
-                <!-- Other data fields... -->
-                <v-btn icon dense size="x-small" variant="text" @click="selectItem(item)">
-                  <v-icon size="medium">mdi-play-circle-outline</v-icon>
-                </v-btn>
+                <div class="signal-info">
+                  <span class="signal-name">
+                    {{ item.signal.name }}
+                  </span>
+                  <span class="time-stamp"> · {{ formatRelativeDate(item.created_at) }} </span>
+                </div>
               </div>
             </template>
           </v-virtual-scroll>
@@ -105,7 +103,8 @@ watch(
 </script>
 
 <style lang="scss" scoped>
-@import "@/styles/index.scss";
+@use "@/styles/index.scss" as *;
+
 .signal-card {
   border: 0.5px solid rgb(216, 216, 216) !important;
   border-radius: 8px !important;
@@ -113,22 +112,52 @@ watch(
 
 .flex-card {
   flex: 1;
-  min-width: 0; // Allow the card to shrink below its content size
-  overflow: hidden; // Clip the content and add ... if the content is too big
+  min-width: 0;
+  overflow: hidden;
+}
+
+.signal-list-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  min-height: 48px;
+  width: 100%;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+}
+
+.signal-info {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
 }
 
 .signal-name {
   font-size: 0.8rem;
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 65%;
+}
+
+.time-stamp {
+  font-size: 0.8rem;
+  color: rgba(0, 0, 0, 0.6);
+  white-space: nowrap;
+  margin-left: 4px;
 }
 
 .grey-bg {
-  background-color: rgb(244, 245, 248); /* Use your preferred highlight color */
+  background-color: rgb(244, 245, 248);
 }
 
 .selected-row {
-  background-color: rgb(254, 255, 254); /* Use your preferred highlight color */
+  background-color: rgb(254, 255, 254);
 }
 </style>
