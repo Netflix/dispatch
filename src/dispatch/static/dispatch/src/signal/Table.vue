@@ -1,6 +1,7 @@
 <template>
   <v-container fluid>
     <new-edit-dialog />
+    <delete-dialog />
     <v-row no-gutters>
       <v-col>
         <v-alert closable icon="mdi-school" prominent text type="info">
@@ -87,6 +88,9 @@
                   <v-list-item @click="createEditShow(item)">
                     <v-list-item-title>View / Edit</v-list-item-title>
                   </v-list-item>
+                  <v-list-item @click="removeShow(item)">
+                    <v-list-item-title>Delete</v-list-item-title>
+                  </v-list-item>
                 </v-list>
               </v-menu>
             </template>
@@ -100,12 +104,12 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-
 import NewEditDialog from "@/signal/NewEditDialog.vue"
+import DeleteDialog from "@/signal/DeleteDialog.vue"
 
 export default {
   name: "SignalTable",
-  components: { NewEditDialog },
+  components: { NewEditDialog, DeleteDialog },
   props: {
     name: {
       type: String,
