@@ -214,6 +214,8 @@ const actions = {
     commit("SET_DIALOG_ESCALATE", false)
     commit("RESET_SELECTED")
     commit("incident/RESET_SELECTED", null, { root: true })
+    // force page reload to pick up the change to status
+    window.location.reload()
   },
   showHandoffDialog({ commit }, value) {
     commit("SET_DIALOG_SHOW_HANDOFF", true)

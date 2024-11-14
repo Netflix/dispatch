@@ -115,7 +115,7 @@ export default {
         this.incidentDescription = this.caseDescription
         this.incidentTitle = this.caseTitle
         this.incidentProject = this.caseProject ? this.caseProject : null
-        this.incidentType = this.caseType.incident_type ? this.caseType.incident_type : null
+        this.incidentType = this.caseType?.incident_type ? this.caseType.incident_type : null
       }
     )
   },
