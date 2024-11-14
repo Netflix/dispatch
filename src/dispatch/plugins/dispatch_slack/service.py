@@ -25,6 +25,23 @@ Conversation = dict[str, str]
 log = logging.getLogger(__name__)
 
 
+class WebClientWrapper:
+    """A wrapper for WebClient to make all instances with same token equal for caching."""
+
+    def __init__(self, client):
+        self._client = client
+
+    @property
+    def client(self):
+        return self._client
+
+    def __eq__(self, other):
+        return other._client.token == self._client.token
+
+    def __hash__(self):
+        return hash(type(self._client.token))
+
+
 def create_slack_client(config: SlackConversationConfiguration) -> WebClient:
     """Creates a Slack Web API client."""
     return WebClient(token=config.api_bot_token.get_secret_value())
@@ -179,28 +196,44 @@ def list_conversation_messages(client: WebClient, conversation_id: str, **kwargs
 
 
 @functools.lru_cache()
+def _get_domain(wrapper: WebClientWrapper) -> str:
+    """Gets the team's Slack domain."""
+    return make_call(wrapper.client, SlackAPIGetEndpoints.team_info)["team"]["domain"]
+
+
 def get_domain(client: WebClient) -> str:
     """Gets the team's Slack domain."""
-    return make_call(client, SlackAPIGetEndpoints.team_info)["team"]["domain"]
+    return _get_domain(WebClientWrapper(client))
 
 
 @functools.lru_cache()
+def _get_user_info_by_id(wrapper: WebClientWrapper, user_id: str) -> dict:
+    return make_call(wrapper.client, SlackAPIGetEndpoints.users_info, user=user_id)["user"]
+
+
 def get_user_info_by_id(client: WebClient, user_id: str) -> dict:
     """Gets profile information about a user by id."""
-    return make_call(client, SlackAPIGetEndpoints.users_info, user=user_id)["user"]
+    return _get_user_info_by_id(WebClientWrapper(client), user_id)
 
 
 @functools.lru_cache()
+def _get_user_info_by_email(wrapper: WebClientWrapper, email: str) -> dict:
+    """Gets profile information about a user by email."""
+    return make_call(wrapper.client, SlackAPIGetEndpoints.users_lookup_by_email, email=email)[
+        "user"
+    ]
+
+
 def get_user_info_by_email(client: WebClient, email: str) -> dict:
     """Gets profile information about a user by email."""
-    return make_call(client, SlackAPIGetEndpoints.users_lookup_by_email, email=email)["user"]
+    return _get_user_info_by_email(WebClientWrapper(client), email)
 
 
 @functools.lru_cache()
-def does_user_exist(client: WebClient, email: str) -> bool:
+def _does_user_exist(wrapper: WebClientWrapper, email: str) -> bool:
     """Checks if a user exists in the Slack workspace by their email."""
     try:
-        get_user_info_by_email(client, email)
+        get_user_info_by_email(wrapper.client, email)
         return True
     except SlackApiError as e:
         if e.response["error"] == SlackAPIErrorCode.USERS_NOT_FOUND:
@@ -209,19 +242,36 @@ def does_user_exist(client: WebClient, email: str) -> bool:
             raise
 
 
+def does_user_exist(client: WebClient, email: str) -> bool:
+    """Checks if a user exists in the Slack workspace by their email."""
+    return _does_user_exist(WebClientWrapper(client), email)
+
+
 @functools.lru_cache()
+def _get_user_profile_by_id(wrapper: WebClientWrapper, user_id: str) -> dict:
+    """Gets profile information about a user by id."""
+    return make_call(wrapper.client, SlackAPIGetEndpoints.users_profile_get, user_id=user_id)[
+        "profile"
+    ]
+
+
 def get_user_profile_by_id(client: WebClient, user_id: str) -> dict:
     """Gets profile information about a user by id."""
-    return make_call(client, SlackAPIGetEndpoints.users_profile_get, user_id=user_id)["profile"]
+    return _get_user_profile_by_id(WebClientWrapper(client), user_id)
 
 
 @functools.lru_cache()
-def get_user_profile_by_email(client: WebClient, email: str) -> SlackResponse:
+def _get_user_profile_by_email(wrapper: WebClientWrapper, email: str) -> SlackResponse:
     """Gets extended profile information about a user by email."""
-    user = get_user_info_by_email(client, email)
-    profile = get_user_profile_by_id(client, user["id"])
+    user = get_user_info_by_email(wrapper.client, email)
+    profile = get_user_profile_by_id(wrapper.client, user["id"])
     profile["tz"] = user["tz"]
     return profile
+
+
+def get_user_profile_by_email(client: WebClient, email: str) -> SlackResponse:
+    """Gets extended profile information about a user by email."""
+    return _get_user_profile_by_email(WebClientWrapper(client), email)
 
 
 def get_user_email(client: WebClient, user_id: str) -> str:

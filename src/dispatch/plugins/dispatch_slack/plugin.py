@@ -53,6 +53,7 @@ from .service import (
     does_user_exist,
     emails_to_user_ids,
     get_user_avatar_url,
+    get_user_info_by_id,
     get_user_profile_by_email,
     is_user,
     rename_conversation,
@@ -450,6 +451,28 @@ class SlackConversationPlugin(ConversationPlugin):
                 # we only include messages from users
                 replies.append(f"{reply['text']}")
         return replies
+
+    def get_all_member_emails(self, conversation_id: str) -> list[str]:
+        """
+        Fetches all members of a Slack conversation.
+
+        Args:
+            conversation_id (str): The ID of the Slack conversation.
+
+        Returns:
+            list[str]: A list of the emails for all members in the conversation.
+        """
+        client = create_slack_client(self.configuration)
+        member_ids = client.conversations_members(channel=conversation_id).get("members", [])
+
+        member_emails = []
+        for member_id in member_ids:
+            if is_user(config=self.configuration, user_id=member_id):
+                user = get_user_info_by_id(client, member_id)
+                if user:
+                    member_emails.append(user["profile"]["email"])
+
+        return member_emails
 
 
 @apply(counter, exclude=["__init__"])
