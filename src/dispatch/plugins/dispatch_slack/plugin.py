@@ -469,8 +469,8 @@ class SlackConversationPlugin(ConversationPlugin):
         for member_id in member_ids:
             if is_user(config=self.configuration, user_id=member_id):
                 user = get_user_info_by_id(client, member_id)
-                if user:
-                    member_emails.append(user["profile"]["email"])
+                if user and (profile := user.get("profile")) and (email := profile.get("email")):
+                    member_emails.append(email)
 
         return member_emails
 
