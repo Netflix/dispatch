@@ -536,14 +536,6 @@ def update(*, db_session: Session, signal: Signal, signal_in: SignalUpdate) -> S
     return signal
 
 
-def delete(*, db_session: Session, signal_id: int):
-    """Deletes a signal definition."""
-    signal = db_session.query(Signal).filter(Signal.id == signal_id).one()
-    db_session.delete(signal)
-    db_session.commit()
-    return signal_id
-
-
 def is_valid_uuid(val):
     try:
         uuid.UUID(str(val), version=4)

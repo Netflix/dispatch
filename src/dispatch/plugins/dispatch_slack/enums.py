@@ -11,6 +11,7 @@ class SlackAPIGetEndpoints(DispatchEnum):
     users_info = "users.info"
     users_lookup_by_email = "users.lookupByEmail"
     users_profile_get = "users.profile.get"
+    conversations_members = "conversations.members"
 
 
 class SlackAPIPostEndpoints(DispatchEnum):
