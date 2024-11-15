@@ -1892,16 +1892,6 @@ def handle_resolve_submission_event(
         current_user=user,
     )
 
-    # we run the case update flow
-    case_flows.case_update_flow(
-        case_id=updated_case.id,
-        previous_case=previous_case,
-        db_session=db_session,
-        reporter_email=updated_case.reporter.individual.email if updated_case.reporter else None,
-        assignee_email=updated_case.assignee.individual.email if updated_case.assignee else None,
-        organization_slug=context["subject"].organization_slug,
-    )
-
     # we update the case notification with the resolution, resolution reason and status
     blocks = create_case_message(case=updated_case, channel_id=context["subject"].channel_id)
     client.chat_update(
@@ -1909,6 +1899,23 @@ def handle_resolve_submission_event(
         ts=updated_case.conversation.thread_id,
         channel=updated_case.conversation.channel_id,
     )
+
+    try:
+        # we run the case update flow
+        case_flows.case_update_flow(
+            case_id=updated_case.id,
+            previous_case=previous_case,
+            db_session=db_session,
+            reporter_email=updated_case.reporter.individual.email
+            if updated_case.reporter
+            else None,
+            assignee_email=updated_case.assignee.individual.email
+            if updated_case.assignee
+            else None,
+            organization_slug=context["subject"].organization_slug,
+        )
+    except Exception as e:
+        log.error(f"Error running case update flow from Slack plugin: {e}")
 
 
 @app.shortcut(CaseShortcutCallbacks.report, middleware=[db_middleware, shortcut_context_middleware])
