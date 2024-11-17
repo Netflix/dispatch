@@ -338,7 +338,13 @@ IS_LIGHT_BUILD = os.environ.get("DISPATCH_LIGHT_BUILD") == "1"
 
 def get_requirements(env):
     with open("requirements-{}.txt".format(env)) as fp:
-        return [x.strip() for x in fp.read().split("\n") if not x.startswith("#")]
+        return [
+            x.strip()
+            for x in fp.read().split("\n")
+            if not x.strip().startswith("#")
+            and not x.strip().startswith("--")
+            and not x.strip() == ""
+        ]
 
 
 install_requires = get_requirements("base")
@@ -406,7 +412,6 @@ setup(
             "dispatch_auth_mfa = dispatch.plugins.dispatch_core.plugin:DispatchMfaPlugin",
             "dispatch_basic_auth = dispatch.plugins.dispatch_core.plugin:BasicAuthProviderPlugin",
             "dispatch_contact = dispatch.plugins.dispatch_core.plugin:DispatchContactPlugin",
-            "dispatch_document_resolver = dispatch.plugins.dispatch_core.plugin:DispatchDocumentResolverPlugin",
             "dispatch_header_auth = dispatch.plugins.dispatch_core.plugin:HeaderAuthProviderPlugin",
             "dispatch_participant_resolver = dispatch.plugins.dispatch_core.plugin:DispatchParticipantResolverPlugin",
             "dispatch_pkce_auth = dispatch.plugins.dispatch_core.plugin:PKCEAuthProviderPlugin",

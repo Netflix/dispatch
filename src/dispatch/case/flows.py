@@ -744,6 +744,15 @@ def common_escalate_flow(
         db_session.add(incident)
         db_session.commit()
 
+    # we run the incident create flow in a background task
+    incident = incident_flows.incident_create_flow(
+        incident_id=incident.id,
+        organization_slug=organization_slug,
+        db_session=db_session,
+        case_id=case.id,
+    )
+
+    # we link the case to the incident
     case.incidents.append(incident)
     db_session.add(case)
     db_session.commit()
@@ -752,14 +761,6 @@ def common_escalate_flow(
         db_session=db_session,
         source="Dispatch Core App",
         description=f"The case has been linked to incident {incident.name} in the {incident.project.name} project",
-        case_id=case.id,
-    )
-
-    # we run the incident create flow in a background task
-    incident = incident_flows.incident_create_flow(
-        incident_id=incident.id,
-        organization_slug=organization_slug,
-        db_session=db_session,
         case_id=case.id,
     )
 

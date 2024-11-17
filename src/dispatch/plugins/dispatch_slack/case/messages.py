@@ -270,12 +270,19 @@ def create_action_buttons_message(
             )
         )
 
-    elements.append(
-        Button(
-            text="💤 Snooze Alert",
-            action_id=SignalNotificationActions.snooze,
-            value=button_metadata,
-        )
+    elements.extend(
+        [
+            Button(
+                text="💤 Snooze Alert",
+                action_id=SignalNotificationActions.snooze,
+                value=button_metadata,
+            ),
+            Button(
+                text="👤 User MFA Challenge",
+                action_id=CaseNotificationActions.user_mfa,
+                value=button_metadata,
+            ),
+        ]
     )
 
     # we create the signal metadata blocks

@@ -33,6 +33,7 @@ pandas
 pdpyras
 protobuf<4.24.0,>=3.6.1
 psycopg2-binary
+pyarrow
 pydantic==1.*
 pyparsing
 python-dateutil
@@ -44,7 +45,7 @@ requests
 schedule
 schemathesis
 sentry-asgi
-sentry-sdk
+sentry-sdk==1.45.0
 sh
 slack_sdk
 slack-bolt

@@ -379,6 +379,9 @@ class DispatchMfaPlugin(MultiFactorAuthenticationPlugin):
             raise ActionMismatchError("Action mismatch")
         if not challenge.valid:
             raise ExpiredChallengeError("Challenge is no longer valid")
+        if challenge.status == MfaChallengeStatus.APPROVED:
+            # Challenge has already been approved
+            return challenge.status
         if challenge.status != MfaChallengeStatus.PENDING:
             raise InvalidChallengeStateError(f"Challenge is in invalid state: {challenge.status}")
 
