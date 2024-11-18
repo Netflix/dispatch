@@ -228,7 +228,7 @@ mdurl==0.1.2
     # via markdown-it-py
 more-itertools==10.5.0
     # via cssutils
-msal==1.31.0
+msal==1.31.1
     # via -r requirements-base.in
 multidict==6.1.0
     # via
