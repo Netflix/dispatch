@@ -34,6 +34,7 @@
       </template>
       <v-tabs color="primary" fixed-tabs v-model="tab" :disabled="id == null">
         <v-tab value="details"> Details </v-tab>
+        <v-tab value="reports"> Reports </v-tab>
         <v-tab value="resources"> Resources </v-tab>
         <v-tab value="participants"> Participants </v-tab>
         <v-tab value="timeline"> Timeline </v-tab>
@@ -45,6 +46,9 @@
       <v-window v-model="tab">
         <v-window-item value="details">
           <incident-details-tab />
+        </v-window-item>
+        <v-window-item value="reports">
+          <incident-timeline-report-tab />
         </v-window-item>
         <v-window-item value="resources">
           <incident-resources-tab />
@@ -81,6 +85,7 @@ import IncidentCostsTab from "@/incident/CostsTab.vue"
 import IncidentDetailsTab from "@/incident/DetailsTab.vue"
 import IncidentParticipantsTab from "@/incident/ParticipantsTab.vue"
 import IncidentResourcesTab from "@/incident/ResourcesTab.vue"
+import IncidentTimelineReportTab from "@/incident/TimelineReportTab.vue"
 import IncidentTasksTab from "@/incident/TasksTab.vue"
 import IncidentTimelineTab from "@/incident/TimelineTab.vue"
 import WorkflowInstanceTab from "@/workflow/WorkflowInstanceTab.vue"
@@ -94,6 +99,7 @@ export default {
     IncidentDetailsTab,
     IncidentParticipantsTab,
     IncidentResourcesTab,
+    IncidentTimelineReportTab,
     IncidentTasksTab,
     IncidentTimelineTab,
     WorkflowInstanceTab,
