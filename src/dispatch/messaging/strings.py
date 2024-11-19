@@ -119,10 +119,6 @@ For questions about an incident, please reach out to the incident's commander.""
     "\n", " "
 ).strip()
 
-CASE_REPORTER_DESCRIPTION = """
-The person who reported the case. Contact them if the report details need clarification.""".replace(
-    "\n", " "
-).strip()
 
 INCIDENT_REPORTER_DESCRIPTION = """
 The person who reported the incident. Contact them if the report details need clarification.""".replace(
@@ -923,11 +919,6 @@ CASE_INVESTIGATION_DOCUMENT = {
     "text": CASE_INVESTIGATION_DOCUMENT_DESCRIPTION,
 }
 
-INCIDENT_REVIEW_DOCUMENT = {
-    "title": "Review Document",
-    "title_link": "{{review_document_weblink}}",
-    "text": INCIDENT_REVIEW_DOCUMENT_DESCRIPTION,
-}
 
 CASE_FAQ_DOCUMENT = {
     "title": "FAQ Document",
