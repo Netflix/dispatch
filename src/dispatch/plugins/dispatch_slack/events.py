@@ -31,6 +31,10 @@ class ChannelActivityEvent(SlackPluginEvent):
             log.warning("No conversation provided. Cannot fetch channel activity.")
         elif not subject.conversation.channel_id:
             log.warning("No channel id provided. Cannot fetch channel activity.")
+        elif subject.conversation.thread_id:
+            log.warning(
+                "Subject is a thread, not a channel. Fetching channel activity is not applicable for threads."
+            )
         else:
             return get_channel_activity(
                 client, conversation_id=subject.conversation.channel_id, oldest=oldest
