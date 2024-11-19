@@ -2,6 +2,8 @@
   <v-form @submit.prevent v-slot="{ isValid }">
     <VResizeDrawer
       location="right"
+      handle-position="border"
+      handle-border-width="2"
       :width="navigation.width"
       ref="drawer"
       :permanent="$vuetify.display.mdAndDown"
