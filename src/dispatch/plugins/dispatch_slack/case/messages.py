@@ -256,6 +256,13 @@ def create_action_buttons_message(
         project_id=project_id,
         channel_id=channel_id,
     ).json()
+    mfa_button_metadata = SubjectMetadata(
+        type=CaseSubjects.case,
+        organization_slug=organization_slug,
+        id=case.id,
+        project_id=project_id,
+        channel_id=channel_id,
+    ).json()
 
     # we create the response plan and the snooze buttons
     elements = []
@@ -279,7 +286,7 @@ def create_action_buttons_message(
             Button(
                 text="👤 User MFA Challenge",
                 action_id=CaseNotificationActions.user_mfa,
-                value=button_metadata,
+                value=mfa_button_metadata,
             ),
         ]
     )

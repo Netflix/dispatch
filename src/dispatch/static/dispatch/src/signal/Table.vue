@@ -100,7 +100,6 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-
 import NewEditDialog from "@/signal/NewEditDialog.vue"
 
 export default {
