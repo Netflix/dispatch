@@ -466,11 +466,14 @@ def add_case_participants(
         return
 
     try:
-        plugin.instance.add_to_thread(
-            case.conversation.channel_id,
-            case.conversation.thread_id,
-            participant_emails,
-        )
+        if case.has_thread:
+            plugin.instance.add_to_thread(
+                case.conversation.channel_id,
+                case.conversation.thread_id,
+                participant_emails,
+            )
+        elif case.has_channel:
+            plugin.instance.add(case.conversation.channel_id, participant_emails)
     except Exception as e:
         event_service.log_case_event(
             db_session=db_session,
