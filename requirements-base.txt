@@ -256,7 +256,7 @@ oauthlib[signedtoken]==3.2.2
     #   atlassian-python-api
     #   jira
     #   requests-oauthlib
-openai==1.54.4
+openai==1.55.0
     # via -r requirements-base.in
 packaging==24.2
     # via
