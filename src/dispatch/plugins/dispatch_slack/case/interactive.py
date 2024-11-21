@@ -73,7 +73,6 @@ from dispatch.plugins.dispatch_slack.fields import (
     entity_select,
     incident_priority_select,
     incident_type_select,
-    participant_select,
     project_select,
     relative_date_picker_input,
     resolution_input,
