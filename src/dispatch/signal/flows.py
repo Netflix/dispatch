@@ -90,17 +90,18 @@ def signal_instance_create_flow(
     else:
         case_priority = signal_instance.signal.case_priority
 
-    # if the signal has provided a case type use it's values instead of the definitions
+    # if the signal has provided a case type, use its values instead of the definition's
+    # TODO: use instance conversation target, then signal conversation target, then  case type conversation target
+    # TODO: use instance assignee (oncall service), then signal assignee, then case type assignee.
     conversation_target = None
-    if signal_instance.case_type:
-        case_type = signal_instance.case_type
-        if signal_instance.signal.conversation_target:
-            conversation_target = signal_instance.case_type.conversation_target
-    else:
-        case_type = signal_instance.signal.case_type
-
-        if signal_instance.signal.conversation_target:
-            conversation_target = signal_instance.signal.conversation_target
+    # if signal_instance.case_type:
+    #     case_type = signal_instance.case_type
+    #     if signal_instance.signal.conversation_target:
+    #         conversation_target = signal_instance.case_type.conversation_target
+    # else:
+    case_type = signal_instance.signal.case_type
+    if signal_instance.signal.conversation_target:
+        conversation_target = signal_instance.signal.conversation_target
 
     assignee = None
     if signal_instance.signal.oncall_service:

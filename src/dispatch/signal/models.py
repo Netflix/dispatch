@@ -211,7 +211,7 @@ class SignalFilter(Base, ProjectMixin, EvergreenMixin, TimeStampMixin):
         TSVectorType("name", "description", weights={"name": "A", "description": "B"})
     )
 
-
+# TODO where else is this used? what else am i affecting?
 class SignalInstance(Base, TimeStampMixin, ProjectMixin):
     """Class that represents a detection alert and its properties."""
 
@@ -228,6 +228,8 @@ class SignalInstance(Base, TimeStampMixin, ProjectMixin):
     case_type = relationship("CaseType", backref="signal_instances")
     case_priority_id = Column(Integer, ForeignKey(CasePriority.id))
     case_priority = relationship("CasePriority", backref="signal_instances")
+    conversation_target = Column(String)
+    oncall_service = relationship("Service", backref="signal_instances")
     filter_action = Column(String)
     canary = Column(Boolean, default=False)
     raw = Column(JSONB)
@@ -371,6 +373,7 @@ class AdditionalMetadata(DispatchBase):
     important: Optional[bool]
 
 
+# TODO(amats): do I need to adjust this too? it doesn't look like it was adjusted when case type support was added
 class SignalInstanceBase(DispatchBase):
     project: Optional[ProjectRead]
     case: Optional[CaseReadMinimal]
