@@ -2996,7 +2996,7 @@ CREATE TABLE dispatch_organization_default.entity (
     name character varying,
     description character varying,
     value character varying,
-    source boolean,
+    source character varying,
     entity_type_id integer NOT NULL,
     search_vector tsvector,
     project_id integer,
@@ -3037,7 +3037,7 @@ CREATE TABLE dispatch_organization_default.entity_type (
     id integer NOT NULL,
     name character varying,
     description character varying,
-    jpath character varying NOT NULL,
+    jpath character varying,
     regular_expression character varying,
     enabled boolean,
     search_vector tsvector,
@@ -3967,7 +3967,6 @@ ALTER SEQUENCE dispatch_organization_default.participant_role_id_seq OWNED BY di
 CREATE TABLE dispatch_organization_default.plugin_instance (
     id integer NOT NULL,
     enabled boolean,
-    configuration json,
     plugin_id integer,
     project_id integer,
     _configuration character varying
@@ -7666,7 +7665,7 @@ COPY dispatch_core.plugin_event (id, name, slug, description, plugin_id, search_
 --
 
 COPY dispatch_organization_default.alembic_version (version_num) FROM stdin;
-3edb0476365a
+928b725d64f6
 \.
 
 
@@ -8310,20 +8309,19 @@ COPY dispatch_organization_default.participant_role (id, assumed_at, renounced_a
 -- Data for Name: plugin_instance; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default.plugin_instance (id, enabled, configuration, plugin_id, project_id, _configuration) FROM stdin;
-1	t	{}	2	1	\N
-3	t	{}	4	1	\N
-9	\N	{}	16	1	\N
-11	f	{}	19	1	\N
-8	f	{}	18	1	\N
-7	f	{}	13	1	\N
-6	f	{}	12	1	\N
-14	f	{}	10	1	\N
-13	f	{}	9	1	\N
-12	f	{}	8	1	\N
-5	t	{}	6	1	\N
-2	t	{}	3	1	\N
-4	t	{}	7	1	\N
+COPY dispatch_organization_default.plugin_instance (id, enabled, plugin_id, project_id, _configuration) FROM stdin;
+1	t	2	1	\N
+9	\N	16	1	\N
+11	f	19	1	\N
+8	f	18	1	\N
+7	f	13	1	\N
+6	f	12	1	\N
+14	f	10	1	\N
+13	f	9	1	\N
+12	f	8	1	\N
+5	t	6	1	\N
+2	t	3	1	\N
+4	t	7	1	\N
 \.
 
 
@@ -11677,6 +11675,13 @@ CREATE INDEX document_search_vector_idx ON dispatch_organization_default.documen
 
 
 --
+-- Name: entity_search_vector_idx; Type: INDEX; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE INDEX entity_search_vector_idx ON dispatch_organization_default.entity USING gin (search_vector);
+
+
+--
 -- Name: entity_type_search_vector_idx; Type: INDEX; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -11737,13 +11742,6 @@ CREATE INDEX incident_type_search_vector_idx ON dispatch_organization_default.in
 --
 
 CREATE INDEX individual_contact_search_vector_idx ON dispatch_organization_default.individual_contact USING gin (search_vector);
-
-
---
--- Name: ix_entity_search_vector; Type: INDEX; Schema: dispatch_organization_default; Owner: postgres
---
-
-CREATE INDEX ix_entity_search_vector ON dispatch_organization_default.entity USING gin (search_vector);
 
 
 --
@@ -13662,14 +13660,6 @@ ALTER TABLE ONLY dispatch_organization_default.plugin_instance
 
 ALTER TABLE ONLY dispatch_organization_default.project
     ADD CONSTRAINT project_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES dispatch_core.organization(id);
-
-
---
--- Name: project project_stable_priority_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
---
-
-ALTER TABLE ONLY dispatch_organization_default.project
-    ADD CONSTRAINT project_stable_priority_id_fkey FOREIGN KEY (stable_priority_id) REFERENCES dispatch_organization_default.incident_priority(id);
 
 
 --
