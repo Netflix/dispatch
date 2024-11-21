@@ -165,7 +165,6 @@ import ProjectSelect from "@/project/ProjectSelect.vue"
 import TemplateSelect from "@/document/template/TemplateSelect.vue"
 import ProjectApi from "@/project/api"
 
-
 export default {
   setup() {
     return {
