@@ -26,7 +26,7 @@ export class AuthPage {
     // this.registerLink = page.getByRole("link", { name: "Register" })
     this.registerLink = page.getByText("Register")
     // this.registerButton = page.getByRole("button", { name: "Register" })
-    this.registerButton = page.getByLabel("Login", { exact: true })
+    this.registerButton = page.getByText("Login")
     // Shared Components
     this.emailLabel = page.getByLabel("Email")
     this.passwordLabel = page.getByLabel("Password", { exact: true })
@@ -64,7 +64,7 @@ export class AuthPage {
     await this.passwordLabel.fill(password)
 
     await Promise.all([
-      this.registerButton.click(),
+      this.registerButton.first().click(),
       this.page.goto(orgSlug + Routes.Dashboards),
       this.page.waitForURL(orgSlug + Routes.Dashboards),
     ])
