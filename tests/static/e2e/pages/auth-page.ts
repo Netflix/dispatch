@@ -63,6 +63,7 @@ export class AuthPage {
 
     await Promise.all([
       this.registerButton.click(),
+      this.page.goto(orgSlug + Routes.Dashboards),
       this.page.waitForURL(orgSlug + Routes.Dashboards),
     ])
   }
