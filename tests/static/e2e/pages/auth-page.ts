@@ -23,7 +23,8 @@ export class AuthPage {
     // Register
     this.registerRoute = orgSlug + Routes.Register
     this.registerHeader = page.getByText("Register").first()
-    this.registerLink = page.getByRole("link", { name: "Register" })
+    // this.registerLink = page.getByRole("link", { name: "Register" })
+    this.registerLink = page.getByText("Register")
     this.registerButton = page.getByRole("button", { name: "Register" })
     // Shared Components
     this.emailLabel = page.getByLabel("Email")
