@@ -34,7 +34,7 @@ export class AuthPage {
     await Promise.all([
       this.page.goto(this.loginRoute),
       this.page.waitForURL(this.loginRoute),
-    ]);
+    ])
 
     await expect(this.loginHeader).toBeVisible();
   }
@@ -48,8 +48,9 @@ export class AuthPage {
       await this.gotoLogin(),
       await this.registerLink.first().click(),
       await this.page.waitForURL(this.registerRoute),
-      await expect(this.registerHeader).toBeVisible(),
     ])
+
+    await expect(this.registerHeader).toBeVisible()
   }
 
   async registerNewUser(email: string, password: string) {
@@ -62,7 +63,7 @@ export class AuthPage {
 
     await Promise.all([
       this.registerButton.click(),
-      this.page.waitForURL(orgSlug + Routes.Incidents),
+      this.page.waitForURL(orgSlug + Routes.Dashboards),
     ])
   }
 
