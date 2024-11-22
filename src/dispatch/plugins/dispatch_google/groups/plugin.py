@@ -170,7 +170,7 @@ class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):
         for p in participants:
             remove_member(client, email, p)
 
-    def list(self, email: str):
+    def list(self, email: str) -> list[str]:
         """Lists members from an existing Google Group."""
         client = get_service(self.configuration, "admin", "directory_v1", self.scopes)
         try:
