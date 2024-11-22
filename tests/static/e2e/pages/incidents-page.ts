@@ -34,8 +34,10 @@ export class IncidentsPage {
   }
 
   async goto() {
-    await Promise.all([this.page.goto(this.route),
+    await Promise.all([
       this.page.goto(this.route),
-      await this.page.waitForURL(this.route)])
+      this.page.waitForURL(this.route),
+    ]);
+
   }
 }
