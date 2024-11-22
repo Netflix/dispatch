@@ -63,6 +63,13 @@ export class AuthPage {
     await this.passwordLabel.first().click()
     await this.passwordLabel.fill(password)
 
+    await this.registerButton.first().click(),
+    await this.emailLabel.first().click()
+    await this.emailLabel.fill(email)
+
+    await this.passwordLabel.first().click()
+    await this.passwordLabel.fill(password)
+
     await Promise.all([
       this.registerButton.first().click(),
       this.page.goto(orgSlug + Routes.Dashboards),
