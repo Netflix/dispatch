@@ -221,7 +221,6 @@ export default {
   },
   created() {
     if (this.$route.query.project) {
-      this.project = { name: this.$route.query.project }
       ProjectApi.getAll({ q: this.$route.query.project }).then((response) => {
         this.incidentProject = response.data.items[0]
         this.project = response.data.items[0]
