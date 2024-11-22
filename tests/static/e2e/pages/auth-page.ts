@@ -33,6 +33,7 @@ export class AuthPage {
   async gotoLogin() {
     await Promise.all([
       this.page.goto(this.loginRoute),
+      this.page.goto(this.loginRoute),
       await this.page.waitForURL(this.loginRoute),
       await expect(this.loginHeader).toBeVisible(),
     ])
