@@ -76,7 +76,7 @@ def make_forecast(incidents: List[Incident]):
     dataframe.drop("ds", inplace=True, axis=1)
 
     # fill periods without incidents with 0
-    idx = pd.date_range(dataframe.index[0], dataframe.index[-1], freq="M")
+    idx = pd.date_range(dataframe.index[0], dataframe.index[-1], freq="ME")
     dataframe.index = pd.DatetimeIndex(dataframe.index)
     dataframe = dataframe.reindex(idx, fill_value=0)
 
