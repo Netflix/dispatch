@@ -15,7 +15,7 @@
                 color="primary"
                 size="64"
                 class="mb-4"
-              ></v-progress-circular>
+              />
 
               <!-- Status message with icon -->
               <v-alert

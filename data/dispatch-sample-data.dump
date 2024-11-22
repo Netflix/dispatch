@@ -2996,7 +2996,7 @@ CREATE TABLE dispatch_organization_default.entity (
     name character varying,
     description character varying,
     value character varying,
-    source boolean,
+    source character varying,
     entity_type_id integer NOT NULL,
     search_vector tsvector,
     project_id integer,
@@ -3037,7 +3037,7 @@ CREATE TABLE dispatch_organization_default.entity_type (
     id integer NOT NULL,
     name character varying,
     description character varying,
-    jpath character varying NOT NULL,
+    jpath character varying,
     regular_expression character varying,
     enabled boolean,
     search_vector tsvector,
@@ -3967,7 +3967,6 @@ ALTER SEQUENCE dispatch_organization_default.participant_role_id_seq OWNED BY di
 CREATE TABLE dispatch_organization_default.plugin_instance (
     id integer NOT NULL,
     enabled boolean,
-    configuration json,
     plugin_id integer,
     project_id integer,
     _configuration character varying
@@ -7666,7 +7665,7 @@ COPY dispatch_core.plugin_event (id, name, slug, description, plugin_id, search_
 --
 
 COPY dispatch_organization_default.alembic_version (version_num) FROM stdin;
-3edb0476365a
+928b725d64f6
 \.
 
 
@@ -7724,7 +7723,6 @@ COPY dispatch_organization_default.assoc_document_tags (document_id, tag_id) FRO
 
 COPY dispatch_organization_default.assoc_incident_tags (incident_id, tag_id) FROM stdin;
 2	1
-7	1
 \.
 
 
@@ -8080,9 +8078,6 @@ COPY dispatch_organization_default.event (id, uuid, started_at, ended_at, source
 56	6fe13da1-de96-41dd-ba9a-29a752060b46	2021-07-27 20:11:48.28756	2021-07-27 20:11:48.28756	Dispatch Core App	Conversation added to incident	null	\N	6	'ad':5B 'app':3A 'convers':4B 'core':2A 'dispatch':1A 'incid':7B	2021-07-27 20:11:48.307412	2021-07-27 20:11:48.290557	\N	\N	\N	\N	\N
 58	d66ec104-af72-46df-80a8-2b32a6fa8944	2021-07-27 20:11:59.021607	2021-07-27 20:11:59.021607	Dispatch Core App	Incident notifications sent	null	\N	6	'app':3A 'core':2A 'dispatch':1A 'incid':4B 'notif':5B 'sent':6B	2021-07-27 20:11:59.04991	2021-07-27 20:11:59.022365	\N	\N	\N	\N	\N
 59	7e011a9d-9bb9-4770-b5e3-1a21197e60c2	2021-07-28 17:13:49.192243	2021-07-28 17:13:49.192243	Dispatch Core App	New incident task created by Kevin Glisson	{"weblink": null}	\N	4	'app':3A 'core':2A 'creat':7B 'dispatch':1A 'glisson':10B 'incid':5B 'kevin':9B 'new':4B 'task':6B	2021-07-28 17:13:49.218153	2021-07-28 17:13:49.199624	\N	\N	\N	\N	\N
-60	2627886d-5466-47d8-a702-6596a17561a8	2024-02-04 02:51:26.185354	2024-02-04 02:51:26.185354	Dispatch Core App	Incident created	{"title": "Incident Test Created by Playwright", "description": "Test description created by Playwright", "type": "Denial of Service", "severity": "Undetermined", "priority": "Low", "status": "Active", "visibility": "Open"}	\N	7	'app':3A 'core':2A 'creat':5B 'dispatch':1A 'incid':4B	2024-02-04 02:51:26.366892	2024-02-04 02:51:26.190379	\N	\N	Other	\N	t
-61	5501e170-a4a6-4c29-a582-9d8e6367c35b	2024-02-04 02:51:26.752647	2024-02-04 02:51:26.752647	Dispatch Core App	3p1t6@example.com added to incident with Reporter role	null	\N	7	'3p1t6@example.com':4B 'ad':5B 'app':3A 'core':2A 'dispatch':1A 'incid':7B 'report':9B 'role':10B	2024-02-04 02:51:26.940241	2024-02-04 02:51:26.753164	\N	\N	Participant updated		f
-62	c1baff75-d46a-4cae-a793-9dab11d749e1	2024-02-04 02:51:27.112502	2024-02-04 02:51:27.112502	Dispatch Core App	3p1t6@example.com added to incident with Incident Commander role	null	\N	7	'3p1t6@example.com':4B 'ad':5B 'app':3A 'command':10B 'core':2A 'dispatch':1A 'incid':7B,9B 'role':11B	2024-02-04 02:51:27.222527	2024-02-04 02:51:27.113162	\N	\N	Participant updated		f
 \.
 
 
@@ -8135,7 +8130,6 @@ COPY dispatch_organization_default.incident (id, name, title, description, statu
 4	dispatch-default-default-4	Heartbleed	Sad PKI noises	Stable	Open	2021-07-27 19:52:57.757214	2021-07-27 19:54:03.96021	\N	'4':9A 'default':7A,8A 'dispatch':6A 'dispatch-default-default':5A 'heartble':1B 'nois':4C 'pki':3C 'sad':2C	1	1	\N	1	2021-07-27 19:52:57.757221	2021-07-28 17:13:49.216785	Description of the actions taken to resolve the incident.	Unknown	America/Los_Angeles	America/Los_Angeles	America/Los_Angeles	2	2	2	\N	\N	\N	3	4	1	\N	\N
 5	dispatch-default-default-5	Solarwinds	More like a solar tornado.	Active	Open	2021-07-27 20:06:15.252697	\N	\N	'5':11A 'default':9A,10A 'dispatch':8A 'dispatch-default-default':7A 'like':3C 'solar':5C 'solarwind':1B 'tornado':6C	2	1	\N	1	2021-07-27 20:06:15.252705	2021-07-27 20:06:41.627061	Description of the actions taken to resolve the incident.	Unknown	America/Los_Angeles	America/Los_Angeles	America/Los_Angeles	3	3	3	\N	\N	\N	5	6	1	\N	\N
 6	dispatch-default-default-6	Kaseya	Those backups are good right?	Active	Open	2021-07-27 20:11:30.525883	\N	\N	'6':11A 'backup':3C 'default':9A,10A 'dispatch':8A 'dispatch-default-default':7A 'good':5C 'kaseya':1B 'right':6C	3	1	\N	1	2021-07-27 20:11:30.525893	2021-07-27 20:11:59.048666	Description of the actions taken to resolve the incident.	Unknown	America/Los_Angeles	America/Los_Angeles	America/Los_Angeles	4	4	4	\N	\N	\N	7	8	1	\N	\N
-7	\N	Incident Test Created by Playwright	Test description created by Playwright	Active	Open	2024-02-04 02:51:26.109901	\N	\N	'creat':3B,8C 'descript':7C 'incid':1B 'playwright':5B,10C 'test':2B,6C	3	5	\N	1	2024-02-04 02:51:26.109912	2024-02-04 02:51:27.220352	Description of the actions taken to resolve the incident.	example.com	Unknown	Unknown	Unknown	5	5	\N	\N	\N	\N	\N	\N	1	\N	\N
 \.
 
 
@@ -8272,7 +8266,6 @@ COPY dispatch_organization_default.participant (id, team, department, location, 
 2	Unknown	Unknown	America/Los_Angeles	\N	\N	f	\N	4	2	\N	\N
 3	Unknown	Unknown	America/Los_Angeles	\N	\N	f	\N	5	2	\N	\N
 4	Unknown	Unknown	America/Los_Angeles	\N	\N	f	\N	6	2	\N	\N
-5	example.com	Unknown	Unknown	\N	\N	f	\N	7	3	\N	\N
 \.
 
 
@@ -8301,8 +8294,6 @@ COPY dispatch_organization_default.participant_role (id, assumed_at, renounced_a
 10	2021-07-27 20:11:32.314039	\N	Reporter	4	1
 11	2021-07-27 20:11:32.427753	\N	Incident Commander	4	1
 12	2021-07-27 20:11:32.491482	\N	Liaison	4	1
-13	2024-02-04 02:51:26.570736	\N	Reporter	5	0
-14	2024-02-04 02:51:27.008425	\N	Incident Commander	5	0
 \.
 
 
@@ -8310,20 +8301,19 @@ COPY dispatch_organization_default.participant_role (id, assumed_at, renounced_a
 -- Data for Name: plugin_instance; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: postgres
 --
 
-COPY dispatch_organization_default.plugin_instance (id, enabled, configuration, plugin_id, project_id, _configuration) FROM stdin;
-1	t	{}	2	1	\N
-3	t	{}	4	1	\N
-9	\N	{}	16	1	\N
-11	f	{}	19	1	\N
-8	f	{}	18	1	\N
-7	f	{}	13	1	\N
-6	f	{}	12	1	\N
-14	f	{}	10	1	\N
-13	f	{}	9	1	\N
-12	f	{}	8	1	\N
-5	t	{}	6	1	\N
-2	t	{}	3	1	\N
-4	t	{}	7	1	\N
+COPY dispatch_organization_default.plugin_instance (id, enabled, plugin_id, project_id, _configuration) FROM stdin;
+1	t	2	1	\N
+9	\N	16	1	\N
+11	f	19	1	\N
+8	f	18	1	\N
+7	f	13	1	\N
+6	f	12	1	\N
+14	f	10	1	\N
+13	f	9	1	\N
+12	f	8	1	\N
+5	t	6	1	\N
+2	t	3	1	\N
+4	t	7	1	\N
 \.
 
 
@@ -11677,6 +11667,13 @@ CREATE INDEX document_search_vector_idx ON dispatch_organization_default.documen
 
 
 --
+-- Name: entity_search_vector_idx; Type: INDEX; Schema: dispatch_organization_default; Owner: postgres
+--
+
+CREATE INDEX entity_search_vector_idx ON dispatch_organization_default.entity USING gin (search_vector);
+
+
+--
 -- Name: entity_type_search_vector_idx; Type: INDEX; Schema: dispatch_organization_default; Owner: postgres
 --
 
@@ -11737,13 +11734,6 @@ CREATE INDEX incident_type_search_vector_idx ON dispatch_organization_default.in
 --
 
 CREATE INDEX individual_contact_search_vector_idx ON dispatch_organization_default.individual_contact USING gin (search_vector);
-
-
---
--- Name: ix_entity_search_vector; Type: INDEX; Schema: dispatch_organization_default; Owner: postgres
---
-
-CREATE INDEX ix_entity_search_vector ON dispatch_organization_default.entity USING gin (search_vector);
 
 
 --
@@ -13662,14 +13652,6 @@ ALTER TABLE ONLY dispatch_organization_default.plugin_instance
 
 ALTER TABLE ONLY dispatch_organization_default.project
     ADD CONSTRAINT project_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES dispatch_core.organization(id);
-
-
---
--- Name: project project_stable_priority_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
---
-
-ALTER TABLE ONLY dispatch_organization_default.project
-    ADD CONSTRAINT project_stable_priority_id_fkey FOREIGN KEY (stable_priority_id) REFERENCES dispatch_organization_default.incident_priority(id);
 
 
 --
