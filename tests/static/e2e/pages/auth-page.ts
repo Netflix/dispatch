@@ -26,7 +26,7 @@ export class AuthPage {
     // this.registerLink = page.getByRole("link", { name: "Register" })
     this.registerLink = page.getByText("Register")
     // this.registerButton = page.getByRole("button", { name: "Register" })
-    this.registerButton = page.getByLabel("Register", { exact: true })
+    this.registerButton = page.getByLabel("Login", { exact: true })
     // Shared Components
     this.emailLabel = page.getByLabel("Email")
     this.passwordLabel = page.getByLabel("Password", { exact: true })
