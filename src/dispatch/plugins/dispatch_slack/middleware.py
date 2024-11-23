@@ -374,6 +374,14 @@ def command_context_middleware(
     next()
 
 
+def add_user_middleware(payload: dict, context: BoltContext, next: Callable):
+    """Attempts to determine the user to add to the incident."""
+    value = payload.get("value")
+    if value:
+        context["users"] = json.loads(value).get("users")
+    next()
+
+
 def db_middleware(context: BoltContext, next: Callable):
     if not context.get("subject"):
         slug = get_default_org_slug()
