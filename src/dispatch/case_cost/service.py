@@ -6,7 +6,6 @@ from typing import List, Optional
 from dispatch.database.core import SessionLocal
 from dispatch.cost_model.models import CostModelActivity
 from dispatch.case import service as case_service
-from dispatch.case.enums import CaseStatus
 from dispatch.case.models import Case
 from dispatch.case.type.models import CaseType
 from dispatch.case_cost_type import service as case_cost_type_service
@@ -14,8 +13,7 @@ from dispatch.case_cost_type.models import CaseCostTypeRead
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantRead
 from dispatch.participant_activity import service as participant_activity_service
-from dispatch.participant_activity.models import ParticipantActivityCreate
-from dispatch.participant_role.models import ParticipantRoleType, ParticipantRole
+from dispatch.participant_activity.models import ParticipantActivityCreate, ParticipantActivity
 from dispatch.plugin import service as plugin_service
 
 from .models import CaseCost, CaseCostCreate, CaseCostUpdate
@@ -107,7 +105,7 @@ def update_case_response_cost_for_case_type(db_session, case_type: CaseType) -> 
     """Calculate the response cost of all non-closed cases associated with this case type."""
     cases = case_service.get_all_open_by_case_type(db_session=db_session, case_type_id=case_type.id)
     for case in cases:
-        update_case_response_cost(case_id=case.id, db_session=db_session)
+        update_case_response_cost(case=case, db_session=db_session)
 
 
 def calculate_response_cost(hourly_rate, total_response_time_seconds) -> int:
@@ -171,6 +169,18 @@ def get_or_create_default_case_response_cost(
 def fetch_case_events(
     case: Case, activity: CostModelActivity, oldest: str, db_session: SessionLocal
 ) -> List[Optional[tuple[datetime.timestamp, str]]]:
+    """Fetches case events for a given case and cost model activity.
+
+    Args:
+        case: The case to fetch events for.
+        activity: The activity to fetch events for. This defines the plugin event to fetch and how much response effort each event requires.
+        oldest: The timestamp to start fetching events from.
+        db_session: The database session.
+
+    Returns:
+        List[Optional[tuple[datetime.timestamp, str]]]: A list of tuples containing the timestamp and user_id of each event.
+    """
+
     plugin_instance = plugin_service.get_active_instance_by_slug(
         db_session=db_session,
         slug=activity.plugin_event.plugin.slug,
@@ -182,7 +192,6 @@ def fetch_case_events(
         )
         return []
 
-    # Array of sorted (timestamp, user_id) tuples.
     return plugin_instance.instance.fetch_events(
         db_session=db_session,
         subject=case,
@@ -191,21 +200,38 @@ def fetch_case_events(
     )
 
 
-def calculate_case_response_cost_with_cost_model(case: Case, db_session: SessionLocal) -> int:
-    """Calculates the cost of a case using the case's cost model.
+def update_case_participant_activities(
+    case: Case, db_session: SessionLocal
+) -> ParticipantActivity | None:
+    """Records or updates case participant activities using the case's cost model.
 
-    This function aggregates all new case costs based on plugin activity since the last case cost update.
-    If this is the first time performing cost calculation for this case, it computes the total costs from the case's creation.
+    This function records and/or updates all new case participant activities since the last case cost update.
 
     Args:
         case: The case to calculate the case response cost for.
         db_session: The database session.
 
     Returns:
-        int: The case response cost in dollars.
+        ParticipantActivity | None: The most recent participant activity created or updated.
     """
+    if not case:
+        log.warning(f"Case with id {case_id} not found.")
+        return
 
-    participants_total_response_time_seconds = 0
+    case_type = case.case_type
+    if not case_type:
+        log.debug(f"Case type for case {case.name} not found.")
+        return
+
+    if not case_type.cost_model:
+        log.debug("No case cost model found. Skipping this case.")
+        return
+
+    if not case_type.cost_model.enabled:
+        log.debug("Case cost model is not enabled. Skipping this case.")
+        return
+
+    log.debug(f"Calculating {case.name} case cost with model {case_type.cost_model}.")
     oldest = case.created_at.replace(tzinfo=timezone.utc).timestamp()
 
     # Used for determining whether we've previously calculated the case cost.
@@ -213,173 +239,81 @@ def calculate_case_response_cost_with_cost_model(case: Case, db_session: Session
 
     case_response_cost = get_or_create_default_case_response_cost(case=case, db_session=db_session)
     if not case_response_cost:
-        log.warning(f"Cannot calculate case response cost for case {case.name}.")
-        return 0
+        log.warning(
+            f"Cannot calculate case response cost for case {case.name}. No default case response cost type created or found."
+        )
+        return
 
+    most_recent_activity = None
     # Ignore events that happened before the last case cost update.
     if case_response_cost.updated_at < current_time:
         oldest = case_response_cost.updated_at.replace(tzinfo=timezone.utc).timestamp()
 
+    case_events = []
+    # Get the cost model. Iterate through all the listed activities we want to record.
     if case.case_type.cost_model:
-        # Get the cost model. Iterate through all the listed activities we want to record.
         for activity in case.case_type.cost_model.activities:
             # Array of sorted (timestamp, user_id) tuples.
-            case_events = fetch_case_events(
-                case=case, activity=activity, oldest=oldest, db_session=db_session
+            case_events.extend(
+                fetch_case_events(
+                    case=case, activity=activity, oldest=oldest, db_session=db_session
+                )
             )
 
-            for ts, user_id in case_events:
-                participant = participant_service.get_by_case_id_and_conversation_id(
-                    db_session=db_session,
-                    case_id=case.id,
-                    user_conversation_id=user_id,
-                )
-                if not participant:
-                    log.warning("Cannot resolve participant.")
-                    continue
+        # Sort case_events by timestamp
+        sorted(case_events, key=lambda x: x[0])
 
-                activity_in = ParticipantActivityCreate(
-                    plugin_event=activity.plugin_event,
-                    started_at=ts,
-                    ended_at=ts + timedelta(seconds=activity.response_time_seconds),
-                    participant=ParticipantRead(id=participant.id),
-                    case=case,
-                )
+        for ts, user_id in case_events:
+            participant = participant_service.get_by_case_id_and_conversation_id(
+                db_session=db_session,
+                case_id=case.id,
+                user_conversation_id=user_id,
+            )
+            if not participant:
+                log.warning("Cannot resolve participant.")
+                continue
 
-                if participant_response_time := participant_activity_service.create_or_update(
-                    db_session=db_session, activity_in=activity_in
-                ):
-                    participants_total_response_time_seconds += (
-                        participant_response_time.total_seconds()
-                    )
+            activity_in = ParticipantActivityCreate(
+                plugin_event=activity.plugin_event,
+                started_at=ts,
+                ended_at=ts + timedelta(seconds=activity.response_time_seconds),
+                participant=ParticipantRead(id=participant.id),
+                case=case,
+            )
 
+            most_recent_activity = participant_activity_service.create_or_update(
+                db_session=db_session, activity_in=activity_in
+            )
+    return most_recent_activity
+
+
+def calculate_case_response_cost(case: Case, db_session: SessionLocal) -> int:
+    """Calculates the response cost of a given case."""
+    # Iterate through all the listed activities and aggregate the total participant response time spent on the case.
+    participants_total_response_time = timedelta(0)
+    particpant_activities = (
+        participant_activity_service.get_all_case_participant_activities_for_case(
+            db_session=db_session, case_id=case.id
+        )
+    )
+    for participant_activity in particpant_activities:
+        participants_total_response_time += (
+            participant_activity.ended_at - participant_activity.started_at
+        )
+
+    # Calculate the cost based on the total participant response time.
     hourly_rate = get_hourly_rate(case.project)
     amount = calculate_response_cost(
         hourly_rate=hourly_rate,
-        total_response_time_seconds=participants_total_response_time_seconds,
+        total_response_time_seconds=participants_total_response_time.total_seconds(),
     )
-
-    return case.total_cost + amount
-
-
-def get_participant_role_time_seconds(
-    case: Case, participant_role: ParticipantRole, start_at: datetime
-) -> int:
-    """Calculates the time spent by a participant in a case role starting from a given time.
-
-    Args:
-        case: The case the participant is part of.
-        participant_role: The role of the participant and the time they assumed and renounced the role.
-        start_at: Only time spent after this will be considered.
-
-    Returns:
-        int: The time spent by the participant in the case role in seconds.
-    """
-    if participant_role.renounced_at and participant_role.renounced_at < start_at:
-        # skip calculating already-recorded activity
-        return 0
-
-    if participant_role.role == ParticipantRoleType.observer:
-        # skip calculating cost for participants with the observer role
-        return 0
-
-    if participant_role.activity == 0:
-        # skip calculating cost for roles that have no activity
-        return 0
-
-    participant_role_assumed_at = participant_role.assumed_at
-
-    # we set the renounced_at default time to the current time
-    participant_role_renounced_at = datetime.now(tz=timezone.utc).replace(tzinfo=None)
-
-    if case.status in [CaseStatus.new, CaseStatus.triage]:
-        if participant_role.renounced_at:
-            # the participant left the conversation or got assigned another role
-            # we use the role's renounced_at time
-            participant_role_renounced_at = participant_role.renounced_at
-    else:
-        # we set the renounced_at default time to when the case was marked as escalated or closed
-        if case.escalated_at:
-            participant_role_renounced_at = case.escalated_at
-
-        if case.closed_at:
-            participant_role_renounced_at = case.closed_at
-
-        if participant_role.renounced_at:
-            # the participant left the conversation or got assigned another role
-            if participant_role.renounced_at < participant_role_renounced_at:
-                # we use the role's renounced_at time if it happened before the
-                # case was marked as stable or closed
-                participant_role_renounced_at = participant_role.renounced_at
-
-    # the time the participant has spent in the case role since the last case cost update
-    participant_role_time = participant_role_renounced_at - max(
-        participant_role_assumed_at, start_at
-    )
-    if participant_role_time.total_seconds() < 0:
-        # the participant was added after the case was marked as stable
-        return 0
-
-    # we calculate the number of hours the participant has spent in the case role
-    participant_role_time_hours = participant_role_time.total_seconds() / SECONDS_IN_HOUR
-
-    # we make the assumption that participants spend more or less time based on their role
-    # and we adjust the time spent based on that
-    return participant_role_time_hours * SECONDS_IN_HOUR
+    return amount
 
 
-def get_total_participant_roles_time_seconds(case: Case, start_at: datetime) -> int:
-    """Calculates the time spent by all participants in this case starting from a given time.
-
-    Args:
-        case: The case the participant is part of.
-        participant_role: The role of the participant and the time they assumed and renounced the role.
-        start_at: Only time spent after this will be considered.
-
-    Returns:
-        int: The total time spent by all participants in the case roles in seconds.
-
-    """
-    total_participants_roles_time_seconds = 0
-    for participant in case.participants:
-        for participant_role in participant.participant_roles:
-            total_participants_roles_time_seconds += get_participant_role_time_seconds(
-                case=case,
-                participant_role=participant_role,
-                start_at=start_at,
-            )
-    return total_participants_roles_time_seconds
-
-
-def calculate_case_response_cost(case_id: int, db_session: SessionLocal) -> int:
-    """Calculates the response cost of a given case.
-
-    If there is no cost model, the case cost will not be calculated.
-    """
-    case = case_service.get(db_session=db_session, case_id=case_id)
-    if not case:
-        log.warning(f"Case with id {case_id} not found.")
-        return 0
-
-    case_type = case.case_type
-    if not case_type:
-        log.debug(f"Case type for case {case.name} not found.")
-        return case.total_cost
-
-    if not case_type.cost_model:
-        log.debug("No case cost model found. Skipping this case.")
-        return case.total_cost
-
-    if not case_type.cost_model.enabled:
-        log.debug("Case cost model is not enabled. Skipping this case.")
-        return case.total_cost
-
-    log.debug(f"Calculating {case.name} case cost with model {case_type.cost_model}.")
-    return calculate_case_response_cost_with_cost_model(case=case, db_session=db_session)
-
-
-def update_case_response_cost(case_id: int, db_session: SessionLocal) -> int:
+def update_case_response_cost(case: Case, db_session: SessionLocal) -> int:
     """Updates the response cost of a given case.
+
+    This function logs all case participant activities since the last case cost update and recalculates the case response cost based on all logged participant activities.
 
     Args:
         case_id: The case id.
@@ -388,17 +322,16 @@ def update_case_response_cost(case_id: int, db_session: SessionLocal) -> int:
     Returns:
         int: The case response cost in dollars.
     """
-    case = case_service.get(db_session=db_session, case_id=case_id)
-
-    amount = calculate_case_response_cost(case_id=case.id, db_session=db_session)
-
-    case_response_cost = get_default_case_response_cost(case=case, db_session=db_session)
+    # We update the case participant activities before calculating the case response cost
+    update_case_participant_activities(case=case, db_session=db_session)
+    amount = calculate_case_response_cost(case=case, db_session=db_session)
+    case_response_cost = get_or_create_default_case_response_cost(case=case, db_session=db_session)
 
     if not case_response_cost:
         log.warning(f"Cannot calculate case response cost for case {case.name}.")
         return 0
 
-    # we update the cost amount only if the case cost has changed
+    # We update the cost amount only if the case cost has changed
     if case_response_cost.amount != amount:
         case_response_cost.amount = amount
         case.case_costs.append(case_response_cost)
