@@ -1,4 +1,7 @@
 import pytest
+
+from easydict import EasyDict
+from slack_sdk.web.client import WebClient
 from sqlalchemy_utils import drop_database, database_exists
 from starlette.config import environ
 from starlette.testclient import TestClient
@@ -675,3 +678,12 @@ def cost_model_activity(session):
 @pytest.fixture
 def service_feedback(session):
     return ServiceFeedbackFactory()
+
+
+@pytest.fixture()
+def mock_slack_client(mocker):
+    mocks = EasyDict()
+
+    mocks.views_open = mocker.patch.object(WebClient, "views_open")
+
+    return mocks
