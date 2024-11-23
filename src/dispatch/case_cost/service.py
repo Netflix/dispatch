@@ -215,7 +215,7 @@ def update_case_participant_activities(
         ParticipantActivity | None: The most recent participant activity created or updated.
     """
     if not case:
-        log.warning(f"Case with id {case_id} not found.")
+        log.warning(f"Case with id {case.id} not found.")
         return
 
     case_type = case.case_type
