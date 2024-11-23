@@ -42,9 +42,8 @@ def test_handle_tag_search_action(session, incident):
         handle_tag_search_action,
     )
     from slack_bolt import Ack
-    from easydict import EasyDict
 
-    bolt_context = EasyDict({"subject": incident})
+    bolt_context = {"subject": incident}
     payload = {"value": "payload"}
 
     handle_tag_search_action(ack=Ack(), payload=payload, context=bolt_context, db_session=session)
@@ -56,7 +55,6 @@ def test_handle_list_incidents_command(session, incident, mock_slack_client):
         handle_list_incidents_command,
     )
     from slack_bolt import Ack
-    from easydict import EasyDict
     from dispatch.plugins.dispatch_slack.models import SubjectMetadata, IncidentSubjects
 
     subject = SubjectMetadata(
@@ -66,8 +64,8 @@ def test_handle_list_incidents_command(session, incident, mock_slack_client):
         project_id=incident.project.id,
     )
 
-    bolt_context = EasyDict({"subject": subject, "db_session": session})
-    body = EasyDict({"trigger_id": "trigger_id"})
+    bolt_context = {"subject": subject, "db_session": session}
+    body = {"trigger_id": "trigger_id"}
     payload = {"value": "payload"}
 
     handle_list_incidents_command(
