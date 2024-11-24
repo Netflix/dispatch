@@ -34,6 +34,7 @@ from dispatch.enums import EventType, SubjectNames, UserRoles, Visibility
 from dispatch.event import service as event_service
 from dispatch.exceptions import ExistsError
 from dispatch.individual.models import IndividualContactRead
+from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
 from dispatch.participant_role import service as participant_role_service
@@ -72,7 +73,6 @@ from dispatch.plugins.dispatch_slack.fields import (
     entity_select,
     incident_priority_select,
     incident_type_select,
-    participant_select,
     project_select,
     relative_date_picker_input,
     resolution_input,
@@ -353,7 +353,6 @@ def handle_engage_user_command(
     """Handles engage user command."""
     ack()
 
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
     default_engagement = "We'd like to verify your identity. Can you please confirm this is you?"
 
     blocks = [
@@ -364,7 +363,7 @@ def handle_engage_user_command(
                 )
             ]
         ),
-        participant_select(label="Person to engage", participants=case.participants),
+        assignee_select(label="Person to engage", placeholder="Select user"),
         description_input(label="Engagement text", initial_value=default_engagement),
     ]
 
@@ -402,14 +401,26 @@ def engage(
     """Handles the engage user action."""
     ack()
 
-    if form_data.get(DefaultBlockIds.participant_select):
-        participant_id = form_data[DefaultBlockIds.participant_select]["value"]
-        participant = participant_service.get(db_session=db_session, participant_id=participant_id)
-        if participant:
-            user_email = participant.individual.email
-        else:
-            log.error(f"Participant not found for id {participant_id} when trying to engage user")
-            return
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    if not case:
+        log.error("Case not found when trying to engage user")
+        return
+
+    if form_data.get(DefaultBlockIds.case_assignee_select):
+        user_email = client.users_info(
+            user=form_data[DefaultBlockIds.case_assignee_select]["value"]
+        )["user"]["profile"]["email"]
+        conversation_flows.add_case_participants(case, [user_email], db_session)
+        participant = participant_service.get_by_case_id_and_email(
+            db_session=db_session, case_id=case.id, email=user_email
+        )
+        if not participant:
+            participant_flows.add_participant(
+                user_email,
+                case,
+                db_session,
+                roles=[ParticipantRoleType.participant],
+            )
     else:
         return
 
@@ -418,8 +429,6 @@ def engage(
     else:
         log.warning("Engagement text not found")
         return
-
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
     user = client.users_lookupByEmail(email=user_email)
 
@@ -1906,12 +1915,12 @@ def handle_resolve_submission_event(
             case_id=updated_case.id,
             previous_case=previous_case,
             db_session=db_session,
-            reporter_email=updated_case.reporter.individual.email
-            if updated_case.reporter
-            else None,
-            assignee_email=updated_case.assignee.individual.email
-            if updated_case.assignee
-            else None,
+            reporter_email=(
+                updated_case.reporter.individual.email if updated_case.reporter else None
+            ),
+            assignee_email=(
+                updated_case.assignee.individual.email if updated_case.assignee else None
+            ),
             organization_slug=context["subject"].organization_slug,
         )
     except Exception as e:
@@ -2423,6 +2432,9 @@ def handle_engagement_submission_event(
     mfa_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=context["subject"].project_id, plugin_type="auth-mfa"
     )
+    if not mfa_plugin:
+        log.error("Unable to engage user. No enabled MFA plugin found.")
+        return
 
     require_mfa = engagement.require_mfa if engagement else True
     mfa_enabled = True if mfa_plugin and require_mfa else False
@@ -2532,14 +2544,23 @@ def send_engagement_response(
     if response == MfaChallengeStatus.APPROVED:
         # We only update engagement message (which removes Confirm/Deny button) for success
         # this allows the user to retry the confirmation if the MFA check failed
-        blocks = create_signal_engagement_message(
-            case=case,
-            channel_id=case.conversation.channel_id,
-            engagement=engagement,
-            signal_instance=signal_instance,
-            user_email=engaged_user,
-            engagement_status=engagement_status,
-        )
+        if not engagement:
+            # assume the message is from a manual MFA challenge
+            blocks = create_manual_engagement_message(
+                case=case,
+                channel_id=case.conversation.channel_id,
+                user_email=engaged_user,
+                engagement_status=engagement_status,
+            )
+        else:
+            blocks = create_signal_engagement_message(
+                case=case,
+                channel_id=case.conversation.channel_id,
+                engagement=engagement,
+                signal_instance=signal_instance,
+                user_email=engaged_user,
+                engagement_status=engagement_status,
+            )
         if signal_instance:
             client.chat_update(
                 blocks=blocks,

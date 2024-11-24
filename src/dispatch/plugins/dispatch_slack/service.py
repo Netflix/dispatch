@@ -441,6 +441,8 @@ def add_users_to_conversation(client: WebClient, conversation_id: str, user_ids:
             # that result in folks already existing in the channel.
             if e.response["error"] == SlackAPIErrorCode.USER_IN_CHANNEL:
                 pass
+            elif e.response["error"] == SlackAPIErrorCode.ALREADY_IN_CHANNEL:
+                pass
 
 
 def get_message_permalink(client: WebClient, conversation_id: str, ts: str) -> str:

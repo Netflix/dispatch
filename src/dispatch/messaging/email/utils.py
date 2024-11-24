@@ -31,6 +31,7 @@ def get_template(message_type: MessageType, project_id: int):
         MessageType.case_notification: ("notification.mjml", None),
         MessageType.incident_participant_welcome: ("notification.mjml", None),
         MessageType.incident_tactical_report: ("tactical_report.mjml", None),
+        MessageType.case_participant_welcome: ("notification.mjml", None),
         MessageType.incident_task_reminder: (
             "notification_list.mjml",
             INCIDENT_TASK_REMINDER_DESCRIPTION,

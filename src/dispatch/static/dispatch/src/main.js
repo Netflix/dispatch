@@ -10,7 +10,7 @@ import "@formkit/themes/genesis"
 //   : null
 
 import { plugin, defaultConfig } from "@formkit/vue"
-import VResizeDrawer from "vuetify3-resize-drawer"
+import VResizeDrawer from "@wdns/vuetify-resize-drawer"
 
 import "roboto-fontface/css/roboto/roboto-fontface.css"
 import "font-awesome/css/font-awesome.css"

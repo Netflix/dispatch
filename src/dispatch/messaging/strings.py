@@ -44,6 +44,7 @@ class MessageType(DispatchEnum):
     task_add_to_incident = "task-add-to-incident"
     case_rating_feedback = "case-rating-feedback"
     case_feedback_daily_report = "case-feedback-daily-report"
+    case_participant_welcome = "case-participant-welcome"
 
 
 INCIDENT_STATUS_DESCRIPTIONS = {
@@ -118,6 +119,7 @@ For questions about an incident, please reach out to the incident's commander.""
     "\n", " "
 ).strip()
 
+
 INCIDENT_REPORTER_DESCRIPTION = """
 The person who reported the incident. Contact them if the report details need clarification.""".replace(
     "\n", " "
@@ -157,10 +159,22 @@ Private conversation for real-time discussion. All incident participants get add
     "\n", " "
 ).strip()
 
+CASE_CONVERSATION_REFERENCE_DOCUMENT_DESCRIPTION = """
+Document containing the list of slash commands available to the Assignee
+and participants in the case conversation.""".replace(
+    "\n", " "
+).strip()
+
 INCIDENT_CONVERSATION_REFERENCE_DOCUMENT_DESCRIPTION = """
 Document containing the list of slash commands available to the Incident Commander (IC)
 and participants in the incident conversation.""".replace(
     "\n", " "
+).strip()
+
+CASE_CONFERENCE_DESCRIPTION = """
+Video conference and phone bridge to be used throughout the case.  Password: {{conference_challenge if conference_challenge else 'N/A'}}
+""".replace(
+    "\n", ""
 ).strip()
 
 INCIDENT_CONFERENCE_DESCRIPTION = """
@@ -194,6 +208,13 @@ INCIDENT_INVESTIGATION_SHEET_DESCRIPTION = """
 This is a sheet for tracking impacted assets. All
 incident participants are expected to contribute to this sheet.
 It is shared with all incident participants.""".replace(
+    "\n", " "
+).strip()
+
+CASE_FAQ_DOCUMENT_DESCRIPTION = """
+First time responding to a case? This
+document answers common questions encountered when
+helping us respond to a case.""".replace(
     "\n", " "
 ).strip()
 
@@ -243,6 +264,13 @@ aspects related to potential legal implications. You can review the
 detailed report by clicking on the link below. Please note, the information
 contained in this report is confidential.
 """.replace(
+    "\n", " "
+).strip()
+
+CASE_PARTICIPANT_WELCOME_DESCRIPTION = """
+You\'ve been added to this case, because we think you may
+be able to help resolve it. Please review the case details below and
+reach out to the assignee if you have any questions.""".replace(
     "\n", " "
 ).strip()
 
@@ -804,6 +832,24 @@ INCIDENT_CLOSE_REMINDER = [
     INCIDENT_STATUS,
 ]
 
+CASE_DESCRIPTION = {"title": "Description", "text": "{{description}}"}
+
+CASE_VISIBILITY = {
+    "title": "Visibility - {{visibility}}",
+    "visibility_mapping": CASE_VISIBILITY_DESCRIPTIONS,
+}
+
+CASE_TYPE = {"title": "Type - {{type}}", "text": "{{type_description}}"}
+
+CASE_SEVERITY = {
+    "title": "Severity - {{severity}}",
+    "text": "{{severity_description}}",
+}
+
+CASE_PRIORITY = {
+    "title": "Priority - {{priority}}",
+    "text": "{{priority_description}}",
+}
 
 CASE_CLOSE_REMINDER = [
     {
@@ -849,6 +895,43 @@ CASE_ASSIGNEE = {
     "text": CASE_ASSIGNEE_DESCRIPTION,
 }
 
+CASE_CONFERENCE = {
+    "title": "Conference",
+    "title_link": "{{conference_weblink}}",
+    "text": CASE_CONFERENCE_DESCRIPTION,
+}
+
+CASE_STORAGE = {
+    "title": "Storage",
+    "title_link": "{{storage_weblink}}",
+    "text": STORAGE_DESCRIPTION,
+}
+
+CASE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT = {
+    "title": "Incident Conversation Commands Reference Document",
+    "title_link": "{{conversation_commands_reference_document_weblink}}",
+    "text": CASE_CONVERSATION_REFERENCE_DOCUMENT_DESCRIPTION,
+}
+
+CASE_INVESTIGATION_DOCUMENT = {
+    "title": "Investigation Document",
+    "title_link": "{{document_weblink}}",
+    "text": CASE_INVESTIGATION_DOCUMENT_DESCRIPTION,
+}
+
+
+CASE_FAQ_DOCUMENT = {
+    "title": "FAQ Document",
+    "title_link": "{{faq_weblink}}",
+    "text": CASE_FAQ_DOCUMENT_DESCRIPTION,
+}
+
+CASE_PARTICIPANT_WELCOME = {
+    "title": "Welcome to {{name}}",
+    "title_link": "{{ticket_weblink}}",
+    "text": CASE_PARTICIPANT_WELCOME_DESCRIPTION,
+}
+
 CASE_NOTIFICATION_COMMON = [CASE_TITLE]
 
 CASE_NOTIFICATION = CASE_NOTIFICATION_COMMON.copy()
@@ -863,6 +946,24 @@ CASE_NOTIFICATION.extend(
         CASE_ASSIGNEE,
     ]
 )
+
+CASE_PARTICIPANT_WELCOME_MESSAGE = [
+    CASE_PARTICIPANT_WELCOME,
+    CASE_TITLE,
+    CASE_DESCRIPTION,
+    CASE_VISIBILITY,
+    CASE_STATUS,
+    CASE_TYPE,
+    CASE_SEVERITY,
+    CASE_PRIORITY,
+    CASE_REPORTER,
+    CASE_ASSIGNEE,
+    CASE_INVESTIGATION_DOCUMENT,
+    CASE_STORAGE,
+    CASE_CONFERENCE,
+    CASE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
+    CASE_FAQ_DOCUMENT,
+]
 
 
 INCIDENT_TASK_REMINDER = [
@@ -1198,10 +1299,15 @@ def render_message_template(message_template: List[dict], **kwargs):
     return data
 
 
-def generate_welcome_message(welcome_message: EmailTemplates) -> Optional[List[dict]]:
+def generate_welcome_message(
+    welcome_message: EmailTemplates, is_incident: bool = True
+) -> Optional[List[dict]]:
     """Generates the welcome message."""
     if welcome_message is None:
-        return INCIDENT_PARTICIPANT_WELCOME_MESSAGE
+        if is_incident:
+            return INCIDENT_PARTICIPANT_WELCOME_MESSAGE
+        else:
+            return CASE_PARTICIPANT_WELCOME_MESSAGE
 
     participant_welcome = {
         "title": welcome_message.welcome_text,
@@ -1210,20 +1316,26 @@ def generate_welcome_message(welcome_message: EmailTemplates) -> Optional[List[d
     }
 
     component_mapping = {
-        "Title": INCIDENT_TITLE,
-        "Description": INCIDENT_DESCRIPTION,
-        "Visibility": INCIDENT_VISIBILITY,
-        "Status": INCIDENT_STATUS,
-        "Type": INCIDENT_TYPE,
-        "Severity": INCIDENT_SEVERITY,
-        "Priority": INCIDENT_PRIORITY,
-        "Reporter": INCIDENT_REPORTER,
-        "Commander": INCIDENT_COMMANDER,
-        "Investigation Document": INCIDENT_INVESTIGATION_DOCUMENT,
-        "Storage": INCIDENT_STORAGE,
-        "Conference": INCIDENT_CONFERENCE,
-        "Slack Commands": INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
-        "FAQ Document": INCIDENT_FAQ_DOCUMENT,
+        "Title": INCIDENT_TITLE if is_incident else CASE_TITLE,
+        "Description": INCIDENT_DESCRIPTION if is_incident else CASE_DESCRIPTION,
+        "Visibility": INCIDENT_VISIBILITY if is_incident else CASE_VISIBILITY,
+        "Status": INCIDENT_STATUS if is_incident else CASE_STATUS,
+        "Type": INCIDENT_TYPE if is_incident else CASE_TYPE,
+        "Severity": INCIDENT_SEVERITY if is_incident else CASE_SEVERITY,
+        "Priority": INCIDENT_PRIORITY if is_incident else CASE_PRIORITY,
+        "Reporter": INCIDENT_REPORTER if is_incident else CASE_REPORTER,
+        "Commander": INCIDENT_COMMANDER if is_incident else CASE_ASSIGNEE,
+        "Investigation Document": (
+            INCIDENT_INVESTIGATION_DOCUMENT if is_incident else CASE_INVESTIGATION_DOCUMENT
+        ),
+        "Storage": INCIDENT_STORAGE if is_incident else CASE_STORAGE,
+        "Conference": INCIDENT_CONFERENCE if is_incident else CASE_CONFERENCE,
+        "Slack Commands": (
+            INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT
+            if is_incident
+            else CASE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT
+        ),
+        "FAQ Document": INCIDENT_FAQ_DOCUMENT if is_incident else CASE_FAQ_DOCUMENT,
     }
 
     message = [participant_welcome]
