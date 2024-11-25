@@ -18,7 +18,7 @@ click==8.1.7
     # via
     #   -r requirements-dev.in
     #   black
-coverage==7.6.7
+coverage==7.6.8
     # via -r requirements-dev.in
 decorator==5.1.1
     # via ipython
@@ -86,7 +86,7 @@ python-dateutil==2.9.0.post0
     # via faker
 pyyaml==6.0.2
     # via pre-commit
-ruff==0.7.4
+ruff==0.8.0
     # via -r requirements-dev.in
 six==1.16.0
     # via
