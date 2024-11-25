@@ -1788,7 +1788,7 @@ def handle_do_nothing_button(
         # Delete the ephemeral message
         respond(delete_original=True)
     except SlackApiError as e:
-        print(f"Error deleting ephemeral message: {e.response['error']}")
+        log.error(f"Error deleting ephemeral message: {e.response['error']}")
 
 
 @app.action(
