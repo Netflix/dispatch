@@ -3,7 +3,6 @@ import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import PluginApi from "@/plugin/api"
-import { de } from "date-fns/locale"
 
 const getDefaultSelectedState = () => {
   return {
