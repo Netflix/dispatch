@@ -3,6 +3,7 @@ import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import PluginApi from "@/plugin/api"
+import { de } from "date-fns/locale"
 
 const getDefaultSelectedState = () => {
   return {
@@ -182,6 +183,22 @@ function convertToFormkit(json_schema) {
           label: value.title,
           help: value.description,
         },
+      }
+    } else if (value.allOf) {
+      const ref = value.allOf[0].$ref
+      // will be something like "#/definitions/HostingType"
+      const ref_name = ref.split("/").pop()
+      const ref_obj = json_schema.definitions[ref_name]["enum"]
+      obj = {
+        $formkit: "select",
+        name: key,
+        label: value.title,
+        help: value.description,
+        options: ref_obj.map((item) => {
+          return { label: item, value: item }
+        }),
+        default: value.default,
+        validation: "required",
       }
     }
     formkit_schema.push(obj)
