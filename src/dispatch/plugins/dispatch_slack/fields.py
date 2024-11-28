@@ -29,6 +29,7 @@ from dispatch.plugins.dispatch_slack.config import MAX_SECTION_TEXT_LENGTH
 
 
 class DefaultBlockIds(DispatchEnum):
+    add_user_actions = "add-user-actions"
     date_picker_input = "date-picker-input"
     description_input = "description-input"
     hour_picker_input = "hour-picker-input"

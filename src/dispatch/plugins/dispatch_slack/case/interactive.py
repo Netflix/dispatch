@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from datetime import datetime, timedelta, timezone
 from functools import partial
 from uuid import UUID
@@ -12,6 +13,7 @@ from blockkit import (
     Divider,
     Input,
     MarkdownText,
+    Message,
     Modal,
     Section,
     UsersSelect,
@@ -80,6 +82,7 @@ from dispatch.plugins.dispatch_slack.fields import (
 )
 from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
+    add_user_middleware,
     button_context_middleware,
     command_context_middleware,
     configuration_middleware,
@@ -92,6 +95,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
 )
 from dispatch.plugins.dispatch_slack.modals.common import send_success_modal
 from dispatch.plugins.dispatch_slack.models import (
+    AddUserMetadata,
     CaseSubjects,
     FormData,
     FormMetadata,
@@ -1650,6 +1654,141 @@ def handle_create_channel_event(
         title="Channel Created",
         message="Case channel created successfully.",
     )
+
+
+def extract_mentioned_users(text: str) -> list[str]:
+    """Extracts mentioned users from a message."""
+    return re.findall(r"<@(\w+)>", text)
+
+
+def format_emails(emails: list[str]) -> str:
+    """Format a list of names into a string with commas and 'and' before the last name."""
+    usernames = [email.split("@")[0] for email in emails]
+
+    if not usernames:
+        return ""
+    elif len(usernames) == 1:
+        return f"@{usernames[0]}"
+    elif len(usernames) == 2:
+        return f"@{usernames[0]} and @{usernames[1]}"
+    else:
+        return ", ".join(f"@{username}" for username in usernames[:-1]) + f", and @{usernames[-1]}"
+
+
+@message_dispatcher.add(
+    subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "group_join"]}
+)  # we ignore user channel and group join messages
+def handle_user_mention(
+    ack: Ack,
+    context: BoltContext,
+    client: WebClient,
+    db_session: Session,
+    payload: dict,
+) -> None:
+    """Handles user posted message events."""
+    ack()
+
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    if not case or case.dedicated_channel:
+        # we do not need to handle mentions for cases with dedicated channels
+        return
+
+    mentioned_users = extract_mentioned_users(payload["text"])
+    users_not_in_case = []
+    for user_id in mentioned_users:
+        user_email = dispatch_slack_service.get_user_email(client, user_id)
+        if not participant_service.get_by_case_id_and_email(
+            db_session=db_session, case_id=context["subject"].id, email=user_email
+        ):
+            users_not_in_case.append(user_email)
+
+    if users_not_in_case:
+        # send a private message to the user who posted the message to see
+        # if they want to add the mentioned user(s) to the case
+        button_metadata = AddUserMetadata(
+            **dict(context["subject"]),
+            users=users_not_in_case,
+        ).json()
+        blocks = [
+            Section(
+                text=f"You mentioned {format_emails(users_not_in_case)}, but they're not in this case."
+            ),
+            Actions(
+                block_id=DefaultBlockIds.add_user_actions,
+                elements=[
+                    Button(
+                        text="Add Them",
+                        style="primary",
+                        action_id=CaseNotificationActions.add_user,
+                        value=button_metadata,
+                    ),
+                    Button(
+                        text="Do Nothing",
+                        action_id=CaseNotificationActions.do_nothing,
+                    ),
+                ],
+            ),
+        ]
+        blocks = Message(blocks=blocks).build()["blocks"]
+        client.chat_postEphemeral(
+            channel=payload["channel"],
+            thread_ts=payload.get("thread_ts"),
+            user=payload["user"],
+            blocks=blocks,
+        )
+
+
+@app.action(
+    CaseNotificationActions.add_user,
+    middleware=[add_user_middleware, button_context_middleware, db_middleware, user_middleware],
+)
+def add_users_to_case(
+    ack: Ack,
+    db_session: Session,
+    context: BoltContext,
+    respond: Respond,
+):
+    ack()
+
+    case_id = context["subject"].id
+
+    case = case_service.get(db_session=db_session, case_id=case_id)
+    if not case:
+        log.error(f"Could not find case with id: {case_id}")
+        return
+
+    users = context["users"]
+    if users:
+        for user_email in users:
+            conversation_flows.add_case_participants(case, [user_email], db_session)
+            participant = participant_service.get_by_case_id_and_email(
+                db_session=db_session, case_id=case.id, email=user_email
+            )
+            if not participant:
+                participant_flows.add_participant(
+                    user_email,
+                    case,
+                    db_session,
+                    roles=[ParticipantRoleType.participant],
+                )
+
+    # Delete the ephemeral message
+    respond(delete_original=True)
+
+
+@app.action(CaseNotificationActions.do_nothing)
+def handle_do_nothing_button(
+    ack: Ack,
+    respond: Respond,
+):
+    # Acknowledge the action
+    ack()
+
+    try:
+        # Delete the ephemeral message
+        respond(delete_original=True)
+    except SlackApiError as e:
+        log.error(f"Error deleting ephemeral message: {e.response['error']}")
 
 
 @app.action(
