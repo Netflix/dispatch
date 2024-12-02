@@ -300,7 +300,7 @@ protobuf==4.23.4
     #   proto-plus
 psycopg2-binary==2.9.10
     # via -r requirements-base.in
-pyarrow==18.0.0
+pyarrow==18.1.0
     # via -r requirements-base.in
 pyasn1==0.6.1
     # via
