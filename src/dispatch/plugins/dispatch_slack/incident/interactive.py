@@ -249,6 +249,11 @@ def handle_tag_search_action(
     }
 
     if "/" in query_str:
+        # first check to make sure there's only one slash
+        if query_str.count("/") > 1:
+            ack()
+            return
+
         tag_type, query_str = query_str.split("/")
         filter_spec["and"].append(
             {"model": "TagType", "op": "==", "field": "name", "value": tag_type}
