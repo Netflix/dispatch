@@ -141,7 +141,8 @@ class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):
     ):
         """Creates a new Google Group."""
         client = get_service(self.configuration, "admin", "directory_v1", self.scopes)
-        group_key = f"{name.lower()}@{self.configuration.google_domain}"
+        # note: group username is limited to 60 characters
+        group_key = f"{name.lower()[:60]}@{self.configuration.google_domain}"
 
         if not description:
             description = "Group automatically created by Dispatch."
