@@ -124,7 +124,7 @@ export default {
 
       if (this.project) {
         filterOptions.filters = {
-          project: [this.project],
+          project_id: this.project_id,
           enabled: ["true"],
         }
       }

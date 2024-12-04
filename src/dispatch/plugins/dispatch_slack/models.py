@@ -50,6 +50,10 @@ class SubjectMetadata(BaseModel):
     thread_id: Optional[str]
 
 
+class AddUserMetadata(SubjectMetadata):
+    users: list[str]
+
+
 class EngagementMetadata(SubjectMetadata):
     signal_instance_id: str
     engagement_id: int

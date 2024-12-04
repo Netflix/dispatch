@@ -113,14 +113,14 @@ export default {
       }
 
       if (this.project) {
-        filterOptions.filters.project_id = this.project.map((p) => p.id)
+        filterOptions.filters.project_id = this.project.id
       }
 
       if (this.healthMetrics) {
         filterOptions.filters.health_metrics = ["true"]
       }
 
-      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions }, "Service")
 
       ServiceApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
