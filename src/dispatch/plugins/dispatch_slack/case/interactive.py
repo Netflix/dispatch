@@ -2511,28 +2511,49 @@ def ack_mfa_required_submission_event(
 ) -> None:
     """Handles the add engagement submission event acknowledgement."""
 
+    blocks = []
+
     if mfa_enabled:
-        mfa_text = (
-            "🔐 To complete this action, you need to verify your identity through Multi-Factor Authentication (MFA).\n\n"
-            f"Please <{challenge_url}|*click here*> to open the MFA verification page."
+        blocks.extend(
+            [
+                Section(
+                    text="To complete this action, you need to verify your identity through Multi-Factor Authentication (MFA).\n\n"
+                    "Please click the verify button to open the MFA verification page."
+                ),
+                Actions(
+                    elements=[
+                        Button(
+                            text="🔐   Verify",
+                            action_id="button-link",
+                            style="primary",
+                            url=challenge_url,
+                        )
+                    ]
+                ),
+            ]
         )
     else:
-        mfa_text = "✅ No additional verification required. You can proceed with the confirmation."
+        blocks.append(
+            Section(
+                text="✅ No additional verification required. You can proceed with the confirmation."
+            )
+        )
 
-    blocks = [
-        Section(text=mfa_text),
-        Divider(),
-        Context(
-            elements=[
-                MarkdownText(
-                    text="💡 This step protects against unauthorized confirmation if your account is compromised."
-                )
-            ]
-        ),
-    ]
+    blocks.extend(
+        [
+            Divider(),
+            Context(
+                elements=[
+                    MarkdownText(
+                        text="💡 This step protects against unauthorized confirmation if your account is compromised."
+                    )
+                ]
+            ),
+        ]
+    )
 
     modal = Modal(
-        title="Confirm Your Identity",
+        title="Verify Your Identity",
         close="Cancel",
         blocks=blocks,
     ).build()

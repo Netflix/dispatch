@@ -52,6 +52,8 @@ export class AuthPage {
   }
 
   async registerNewUser(email: string, password: string) {
+    // wait for 2 minutes to let server settle
+    await new Promise(resolve => setTimeout(resolve, 120000));
     await this.gotoRegisterWithLink()
     await this.emailLabel.first().click()
     await this.emailLabel.fill(email)
