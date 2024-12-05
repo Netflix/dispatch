@@ -7,9 +7,9 @@
 """
 
 import base64
-import gzip
 import json
 import logging
+import zlib
 from typing import TypedDict
 
 import boto3
@@ -31,9 +31,9 @@ log = logging.getLogger(__name__)
 
 
 def decompress_json(compressed_str: str) -> str:
-    """Decompress a base64 encoded gzipped JSON string."""
+    """Decompress a base64 encoded zlibed JSON string."""
     decoded = base64.b64decode(compressed_str)
-    decompressed = gzip.decompress(decoded)
+    decompressed = zlib.decompress(decoded)
     return decompressed.decode("utf-8")
 
 
