@@ -220,6 +220,8 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     notifications_group_id = Column(Integer, ForeignKey("group.id"))
     notifications_group = relationship("Group", foreign_keys=[notifications_group_id])
 
+    summary = Column(String, nullable=True)
+
     @hybrid_property
     def total_cost(self):
         total_cost = 0
@@ -323,6 +325,7 @@ class IncidentReadMinimal(IncidentBase):
     reporters_location: Optional[str]
     stable_at: Optional[datetime] = None
     storage: Optional[StorageRead] = None
+    summary: Optional[str] = None
     tags: Optional[List[TagRead]] = []
     tasks: Optional[List[TaskReadMinimal]] = []
     total_cost: Optional[float]
@@ -344,6 +347,7 @@ class IncidentUpdate(IncidentBase):
     reported_at: Optional[datetime] = None
     reporter: Optional[ParticipantUpdate]
     stable_at: Optional[datetime] = None
+    summary: Optional[str] = None
     tags: Optional[List[TagRead]] = []
     terms: Optional[List[TermRead]] = []
 
@@ -393,6 +397,7 @@ class IncidentRead(IncidentBase):
     reporters_location: Optional[str]
     stable_at: Optional[datetime] = None
     storage: Optional[StorageRead] = None
+    summary: Optional[str] = None
     tags: Optional[List[TagRead]] = []
     tasks: Optional[List[TaskRead]] = []
     terms: Optional[List[TermRead]] = []
