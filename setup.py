@@ -403,6 +403,7 @@ setup(
             "dispatch_atlassian_confluence = dispatch.plugins.dispatch_atlassian_confluence.plugin:ConfluencePagePlugin",
             "dispatch_atlassian_confluence_document = dispatch.plugins.dispatch_atlassian_confluence.docs.plugin:ConfluencePageDocPlugin",
             "dispatch_aws_sqs = dispatch.plugins.dispatch_aws.plugin:AWSSQSSignalConsumerPlugin",
+            "dispatch_aws_alb_auth = dispatch.plugins.dispatch_core.plugin:AwsAlbAuthProviderPlugin",
             "dispatch_auth_mfa = dispatch.plugins.dispatch_core.plugin:DispatchMfaPlugin",
             "dispatch_basic_auth = dispatch.plugins.dispatch_core.plugin:BasicAuthProviderPlugin",
             "dispatch_contact = dispatch.plugins.dispatch_core.plugin:DispatchContactPlugin",
