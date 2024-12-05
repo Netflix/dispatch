@@ -77,7 +77,7 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                 message_attributes = message.get("MessageAttributes", {})
                 message_body = message["Body"]
 
-                if message_attributes.get("compressed", {}).get("StringValue") == "gzip":
+                if message_attributes.get("compressed", {}).get("StringValue") == "zlib":
                     # Message is compressed, decompress it
                     message_body = decompress_json(message_body)
 
