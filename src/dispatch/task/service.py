@@ -79,6 +79,12 @@ def create(*, db_session, task_in: TaskCreate) -> Task:
             db_session=db_session, incident_id=incident.id, email=i.individual.email
         )
 
+        assignee = incident_flows.incident_add_or_reactivate_participant_flow(
+            db_session=db_session,
+            incident_id=incident.id,
+            user_email=i.individual.email,
+        )
+
         if not participant or not participant.active_roles:
             # send emphemeral message to user about why they are being added to the incident
             send_task_add_ephemeral_message(
@@ -87,12 +93,6 @@ def create(*, db_session, task_in: TaskCreate) -> Task:
                 db_session=db_session,
                 task=task_in,
             )
-
-        assignee = incident_flows.incident_add_or_reactivate_participant_flow(
-            db_session=db_session,
-            incident_id=incident.id,
-            user_email=i.individual.email,
-        )
 
         # due to the freeform nature of task assignment, we can sometimes pick up other emails
         # e.g. a google group that we cannot resolve to an individual assignee
