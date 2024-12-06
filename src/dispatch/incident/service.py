@@ -453,7 +453,7 @@ def generate_incident_summary(*, db_session: Session, incident: Incident) -> str
         return "Incident summary not generated. No AI plugin enabled."
 
     storage_plugin = plugin_service.get_active_instance(
-        db_session=db_session, plugin_type="storage", project_id=project.id
+        db_session=db_session, plugin_type="storage", project_id=incident.project.id
     )
 
     if not storage_plugin:
