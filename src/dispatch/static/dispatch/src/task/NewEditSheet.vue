@@ -46,7 +46,7 @@
                   v-model="status"
                   label="Status"
                   :items="statuses"
-                  hint="The incident's current status"
+                  hint="The task's current status"
                 />
               </v-col>
               <v-col cols="12">
@@ -64,7 +64,7 @@
                 <participant-select
                   v-model="owner"
                   label="Owner"
-                  hint="The tasks current owner"
+                  hint="The task's current owner"
                   clearable
                   required
                   name="owner"
@@ -74,12 +74,12 @@
               <v-col cols="12">
                 <assignee-combobox
                   v-model="assignees"
-                  label="Assignees"
-                  hint="The tasks current assignees"
+                  label="Assignee"
+                  hint="The task's current assignee"
                   clearable
                   required
                   name="assignees"
-                  :rules="[rules.required]"
+                  :rules="[required_and_only_one]"
                 />
               </v-col>
               <v-col cols="12">

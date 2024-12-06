@@ -161,3 +161,8 @@ class SlackConversationConfiguration(SlackConfiguration):
         title="Create Task Command String",
         description="Defines the string used to create a task. Must match what is defined in Slack.",
     )
+    slack_command_engage_user: str = Field(
+        "/dispatch-engage-user",
+        title="Engage User Command String",
+        description="Defines the string used to engage a user via MFA prompt. Must match what is defined in Slack.",
+    )

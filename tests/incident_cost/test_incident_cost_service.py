@@ -109,7 +109,7 @@ def test_calculate_incident_response_cost_with_cost_model(
 ):
     """Tests that the incident cost is calculated correctly when a cost model is enabled."""
     from datetime import timedelta
-    import math
+    from decimal import Decimal, ROUND_HALF_UP
     from dispatch.incident_cost.service import update_incident_response_cost, get_hourly_rate
     from dispatch.incident_cost_type import service as incident_cost_type_service
     from dispatch.participant_activity.service import (
@@ -150,15 +150,12 @@ def test_calculate_incident_response_cost_with_cost_model(
         participants_total_response_time_seconds += activity.ended_at - activity.started_at
     hourly_rate = get_hourly_rate(incident.project)
     expected_incident_cost = (
-        math.ceil(
-            (participants_total_response_time_seconds.seconds / SECONDS_IN_HOUR) * hourly_rate
-        )
-        + orig_total_incident_cost
-    )
+        participants_total_response_time_seconds.seconds / SECONDS_IN_HOUR
+    ) * hourly_rate + orig_total_incident_cost
 
     assert cost
-    assert cost == expected_incident_cost
-    assert cost == incident.total_cost
+    assert cost == Decimal(expected_incident_cost).quantize(cost, rounding=ROUND_HALF_UP)
+    assert cost == Decimal(incident.total_cost).quantize(cost, rounding=ROUND_HALF_UP)
 
 
 def test_calculate_incident_response_cost_with_cost_model__no_enabled_plugins(

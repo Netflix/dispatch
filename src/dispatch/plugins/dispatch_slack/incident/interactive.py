@@ -249,6 +249,11 @@ def handle_tag_search_action(
     }
 
     if "/" in query_str:
+        # first check to make sure there's only one slash
+        if query_str.count("/") > 1:
+            ack()
+            return
+
         tag_type, query_str = query_str.split("/")
         filter_spec["and"].append(
             {"model": "TagType", "op": "==", "field": "name", "value": tag_type}
@@ -887,6 +892,9 @@ def handle_after_hours_message(
     )
     # handle no participant found
     if not participant:
+        log.warning(
+            f"Participant not found for {user.email} in incident {incident.id}. Skipping after hours notification."
+        )
         return
 
     # get their timezone from slack

@@ -7,9 +7,12 @@
 
 import logging
 
+from typing import Optional
+
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import resolve_attr
+from dispatch.document import service as document_service
 from dispatch.case.models import Case, CaseRead
 from dispatch.messaging.strings import (
     CASE_CLOSE_REMINDER,
@@ -24,15 +27,15 @@ from dispatch.messaging.strings import (
     CASE_TYPE_CHANGE,
     CASE_SEVERITY_CHANGE,
     CASE_PRIORITY_CHANGE,
+    CASE_CLOSED_RATING_FEEDBACK_NOTIFICATION,
     MessageType,
+    generate_welcome_message,
 )
 from dispatch.config import DISPATCH_UI_URL
+from dispatch.email_templates.models import EmailTemplates
 from dispatch.plugin import service as plugin_service
 from dispatch.event import service as event_service
 from dispatch.notification import service as notification_service
-from dispatch.plugins.dispatch_slack.case.messages import (
-    create_welcome_ephemeral_message_to_participant,
-)
 
 from .enums import CaseStatus
 
@@ -309,6 +312,7 @@ def send_case_welcome_participant_message(
     participant_email: str,
     case: Case,
     db_session: Session,
+    welcome_template: Optional[EmailTemplates] = None,
 ):
     if not case.dedicated_channel:
         return
@@ -321,12 +325,93 @@ def send_case_welcome_participant_message(
         log.warning("Case participant welcome message not sent. No conversation plugin enabled.")
         return
 
-    welcome_message = create_welcome_ephemeral_message_to_participant(case=case)
+    # we send the ephemeral message
+    message_kwargs = {
+        "name": case.name,
+        "title": case.title,
+        "description": case.description,
+        "visibility": case.visibility,
+        "status": case.status,
+        "type": case.case_type.name,
+        "type_description": case.case_type.description,
+        "severity": case.case_severity.name,
+        "severity_description": case.case_severity.description,
+        "priority": case.case_priority.name,
+        "priority_description": case.case_priority.description,
+        "assignee_fullname": case.assignee.individual.name,
+        "assignee_team": case.assignee.team,
+        "assignee_weblink": case.assignee.individual.weblink,
+        "reporter_fullname": case.reporter.individual.name,
+        "reporter_team": case.reporter.team,
+        "reporter_weblink": case.reporter.individual.weblink,
+        "document_weblink": resolve_attr(case, "case_document.weblink"),
+        "storage_weblink": resolve_attr(case, "storage.weblink"),
+        "ticket_weblink": resolve_attr(case, "ticket.weblink"),
+        "conference_weblink": resolve_attr(case, "conference.weblink"),
+        "conference_challenge": resolve_attr(case, "conference.conference_challenge"),
+    }
+    faq_doc = document_service.get_incident_faq_document(
+        db_session=db_session, project_id=case.project_id
+    )
+    if faq_doc:
+        message_kwargs.update({"faq_weblink": faq_doc.weblink})
+
+    conversation_reference = document_service.get_conversation_reference_document(
+        db_session=db_session, project_id=case.project_id
+    )
+    if conversation_reference:
+        message_kwargs.update(
+            {"conversation_commands_reference_document_weblink": conversation_reference.weblink}
+        )
+
     plugin.instance.send_ephemeral(
         conversation_id=case.conversation.channel_id,
         user=participant_email,
         text=f"Welcome to {case.name}",
-        blocks=welcome_message,
+        message_template=generate_welcome_message(welcome_template, is_incident=False),
+        notification_type=MessageType.case_participant_welcome,
+        **message_kwargs,
     )
 
     log.debug(f"Welcome ephemeral message sent to {participant_email}.")
+
+
+def send_case_rating_feedback_message(case: Case, db_session: Session):
+    """
+    Sends a direct message to all case participants asking
+    them to rate and provide feedback about the case.
+    """
+    notification_text = "Case Rating and Feedback"
+    notification_template = CASE_CLOSED_RATING_FEEDBACK_NOTIFICATION
+
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project.id, plugin_type="conversation"
+    )
+    if not plugin:
+        log.warning("Case rating and feedback message not sent, no conversation plugin enabled.")
+        return
+
+    items = [
+        {
+            "case_id": case.id,
+            "organization_slug": case.project.organization.slug,
+            "name": case.name,
+            "title": case.title,
+            "ticket_weblink": case.ticket.weblink,
+        }
+    ]
+
+    for participant in case.participants:
+        try:
+            plugin.instance.send_direct(
+                participant.individual.email,
+                notification_text,
+                notification_template,
+                MessageType.case_rating_feedback,
+                items=items,
+            )
+        except Exception as e:
+            # if one fails we don't want all to fail
+            log.exception(e)
+
+    log.debug("Case rating and feedback message sent to all participants.")

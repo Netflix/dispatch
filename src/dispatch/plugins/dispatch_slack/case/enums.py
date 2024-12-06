@@ -10,7 +10,10 @@ class CaseNotificationActions(DispatchEnum):
     reopen = "case-notification-reopen"
     resolve = "case-notification-resolve"
     triage = "case-notification-triage"
+    user_mfa = "case-notification-user-mfa"
     invite_user_case = ConversationButtonActions.invite_user_case
+    do_nothing = "case-do-not-add-user"
+    add_user = "case-add-user"
 
 
 class CasePaginateActions(DispatchEnum):

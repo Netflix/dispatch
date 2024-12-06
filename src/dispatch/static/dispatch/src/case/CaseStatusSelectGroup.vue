@@ -197,7 +197,7 @@ const changeStatus = async (newStatus) => {
 }
 
 const openDialog = (newStatus) => {
-  if (newStatus == "Escalated") {
+  if (newStatus == "Escalated" && !isActiveStatus("Escalated")) {
     const caseDetails = store.state.case_management.selected
     store.dispatch("case_management/showEscalateDialog", caseDetails)
     return

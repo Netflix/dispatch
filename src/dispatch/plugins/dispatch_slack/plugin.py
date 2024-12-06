@@ -53,7 +53,9 @@ from .service import (
     does_user_exist,
     emails_to_user_ids,
     get_user_avatar_url,
+    get_user_info_by_id,
     get_user_profile_by_email,
+    is_user,
     rename_conversation,
     resolve_user,
     send_ephemeral_message,
@@ -102,12 +104,11 @@ class SlackConversationPlugin(ConversationPlugin):
             try:
                 message, message_blocks = create_genai_signal_analysis_message(
                     case=case,
-                    channel_id=conversation_id,
                     db_session=db_session,
-                    client=client,
-                    config=self.configuration,
                 )
-                if message:
+                if message and isinstance(message, dict):
+                    # we update the genai_analysis field in the case model with the message if it's a dict
+                    # if the message is a string, it means there was an error generating the analysis
                     case.genai_analysis = message
 
                 if message_blocks:
@@ -426,6 +427,52 @@ class SlackConversationPlugin(ConversationPlugin):
         except Exception as e:
             logger.exception(e)
             raise e
+
+    def get_conversation_replies(self, conversation_id: str, thread_ts: str) -> list[str]:
+        """
+        Fetches replies from a specific thread in a Slack conversation.
+
+        Args:
+            conversation_id (str): The ID of the Slack conversation.
+            thread_ts (str): The timestamp of the thread to fetch replies from.
+
+        Returns:
+            list[str]: A list of replies from users in the specified thread.
+        """
+        client = create_slack_client(self.configuration)
+        conversation_replies = client.conversations_replies(
+            channel=conversation_id,
+            ts=thread_ts,
+        )["messages"]
+
+        replies = []
+        for reply in conversation_replies:
+            if is_user(config=self.configuration, user_id=reply.get("user")):
+                # we only include messages from users
+                replies.append(f"{reply['text']}")
+        return replies
+
+    def get_all_member_emails(self, conversation_id: str) -> list[str]:
+        """
+        Fetches all members of a Slack conversation.
+
+        Args:
+            conversation_id (str): The ID of the Slack conversation.
+
+        Returns:
+            list[str]: A list of the emails for all members in the conversation.
+        """
+        client = create_slack_client(self.configuration)
+        member_ids = client.conversations_members(channel=conversation_id).get("members", [])
+
+        member_emails = []
+        for member_id in member_ids:
+            if is_user(config=self.configuration, user_id=member_id):
+                user = get_user_info_by_id(client, member_id)
+                if user and (profile := user.get("profile")) and (email := profile.get("email")):
+                    member_emails.append(email)
+
+        return member_emails
 
 
 @apply(counter, exclude=["__init__"])

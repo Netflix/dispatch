@@ -23,15 +23,15 @@
       </v-list-item>
     </template>
     <template #append-item>
-      <v-list-item v-if="more" @click="loadMore()">
-        <v-list-item-subtitle> Load More </v-list-item-subtitle>
+      <v-list-item v-if="more" @click="loadMore">
+        <v-list-item-subtitle>Load More</v-list-item-subtitle>
       </v-list-item>
     </template>
   </v-select>
 </template>
 
 <script>
-import { cloneDeep } from "lodash"
+import { debounce } from "lodash"
 import SearchUtils from "@/search/utils"
 import IncidentTypeApi from "@/incident/type/api"
 
@@ -58,9 +58,10 @@ export default {
       loading: false,
       items: [],
       more: false,
-      numItems: 5,
+      numItems: 50,
+      total: 0,
+      lastProjectId: null,
       error: null,
-      selectedIncidentType: null,
       is_type_in_project: () => {
         this.validateType()
         return this.error
@@ -68,30 +69,34 @@ export default {
     }
   },
 
-  watch: {
-    modelValue: {
-      immediate: true,
-      handler(newValue) {
-        this.selectedIncidentType = cloneDeep(newValue)
+  computed: {
+    selectedIncidentType: {
+      get() {
+        if (!this.modelValue) return null
+        if (this.modelValue.id) {
+          return this.items.find((item) => item.id === this.modelValue.id) || null
+        }
+        // If we only have a name (e.g., from URL params), find by name
+        if (this.modelValue.name) {
+          return this.items.find((item) => item.name === this.modelValue.name) || null
+        }
+        return null
       },
-    },
-    selectedIncidentType(newValue) {
-      this.$emit("update:modelValue", newValue)
-      this.validateType()
-    },
-    project: {
-      handler() {
-        this.fetchData()
+      set(value) {
+        this.$emit("update:modelValue", value)
         this.validateType()
       },
     },
   },
 
-  methods: {
-    loadMore() {
-      this.numItems = this.numItems + 5
+  watch: {
+    project() {
+      this.validateType()
       this.fetchData()
     },
+  },
+
+  methods: {
     validateType() {
       const project_id = this.project?.id || 0
       const in_project = this.selectedIncidentType?.project?.id == project_id
@@ -101,9 +106,15 @@ export default {
         this.error = "Only types in selected project are allowed"
       }
     },
-    fetchData() {
-      this.error = null
-      this.loading = "error"
+    clearSelection() {
+      this.selectedIncidentType = null
+    },
+    loadMore() {
+      this.numItems += 5
+      this.fetchData()
+    },
+    fetchData: debounce(function () {
+      this.loading = true
 
       let filterOptions = {
         sortBy: ["name"],
@@ -112,30 +123,30 @@ export default {
       }
 
       if (this.project) {
-        filterOptions = {
-          ...filterOptions,
-          filters: {
-            project: [this.project],
-            enabled: ["true"],
-          },
+        filterOptions.filters = {
+          project_id: this.project_id,
+          enabled: ["true"],
         }
       }
 
-      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+      filterOptions = SearchUtils.createParametersFromTableOptions(
+        { ...filterOptions },
+        "IncidentType"
+      )
 
-      IncidentTypeApi.getAll(filterOptions).then((response) => {
-        this.items = response.data.items
-
-        this.total = response.data.total
-        this.loading = false
-
-        if (this.items.length < this.total) {
-          this.more = true
-        } else {
-          this.more = false
-        }
-      })
-    },
+      IncidentTypeApi.getAll(filterOptions)
+        .then((response) => {
+          this.items = response.data.items
+          this.total = response.data.total
+          this.more = this.items.length < this.total
+        })
+        .catch((error) => {
+          console.error("Error fetching incident types:", error)
+        })
+        .finally(() => {
+          this.loading = false
+        })
+    }, 300),
   },
 
   created() {

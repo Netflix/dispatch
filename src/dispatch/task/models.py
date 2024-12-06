@@ -23,6 +23,7 @@ from dispatch.incident.models import IncidentReadMinimal
 from dispatch.models import ResourceBase, ResourceMixin, PrimaryKey, Pagination
 from dispatch.participant.models import ParticipantRead, ParticipantUpdate
 from dispatch.project.models import ProjectRead
+from dispatch.ticket.models import TicketRead
 
 from .enums import TaskSource, TaskStatus, TaskPriority
 
@@ -65,6 +66,7 @@ class Task(Base, ResourceMixin):
     priority = Column(String, default=TaskPriority.low)
     status = Column(String, default=TaskStatus.open)
     reminders = Column(Boolean, default=True)
+    ticket = relationship("Ticket", uselist=False, backref="task", cascade="all, delete-orphan")
 
     search_vector = Column(
         TSVectorType(
@@ -121,6 +123,7 @@ class TaskUpdate(TaskBase):
 class TaskRead(TaskBase):
     id: PrimaryKey
     project: Optional[ProjectRead]
+    ticket: Optional[TicketRead] = None
 
 
 class TaskPagination(Pagination):

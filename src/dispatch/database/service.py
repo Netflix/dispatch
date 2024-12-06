@@ -185,9 +185,8 @@ def build_filters(filter_spec):
 
                 if not _is_iterable_filter(fn_args):
                     raise BadFilterFormat(
-                        "`{}` value must be an iterable across the function " "arguments".format(
-                            boolean_function.key
-                        )
+                        "`{}` value must be an iterable across the function "
+                        "arguments".format(boolean_function.key)
                     )
                 if boolean_function.only_one_arg and len(fn_args) != 1:
                     raise BadFilterFormat(
@@ -347,8 +346,8 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
     # this is required because by default sqlalchemy-filter's auto-join
     # knows nothing about how to join many-many relationships.
     model_map = {
-        (Feedback, "Project"): (Incident, False),
         (Feedback, "Incident"): (Incident, False),
+        (Feedback, "Case"): (Case, False),
         (Task, "Project"): (Incident, False),
         (Task, "Incident"): (Incident, False),
         (Task, "IncidentPriority"): (Incident, False),
@@ -478,7 +477,7 @@ def common_parameters(
     page: int = Query(1, gt=0, lt=2147483647),
     items_per_page: int = Query(5, alias="itemsPerPage", gt=-2, lt=2147483647),
     query_str: QueryStr = Query(None, alias="q"),
-    filter_spec: Json = Query([], alias="filter"),
+    filter_spec: QueryStr = Query(None, alias="filter"),
     sort_by: List[str] = Query([], alias="sortBy[]"),
     descending: List[bool] = Query([], alias="descending[]"),
     role: UserRoles = Depends(get_current_role),
@@ -537,7 +536,7 @@ def search_filter_sort_paginate(
     db_session,
     model,
     query_str: str = None,
-    filter_spec: List[dict] = None,
+    filter_spec: str | dict | None = None,
     page: int = 1,
     items_per_page: int = 5,
     sort_by: List[str] = None,
@@ -559,6 +558,10 @@ def search_filter_sort_paginate(
 
         tag_all_filters = []
         if filter_spec:
+            # some functions pass filter_spec as dictionary such as auth/views.py/get_users
+            # but most come from API as seraialized JSON
+            if isinstance(filter_spec, str):
+                filter_spec = json.loads(filter_spec)
             query = apply_filter_specific_joins(model_cls, filter_spec, query)
             # if the filter_spec has the TagAll filter, we need to split the query up
             # and intersect all of the results

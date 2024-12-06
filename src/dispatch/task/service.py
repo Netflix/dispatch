@@ -79,6 +79,12 @@ def create(*, db_session, task_in: TaskCreate) -> Task:
             db_session=db_session, incident_id=incident.id, email=i.individual.email
         )
 
+        assignee = incident_flows.incident_add_or_reactivate_participant_flow(
+            db_session=db_session,
+            incident_id=incident.id,
+            user_email=i.individual.email,
+        )
+
         if not participant or not participant.active_roles:
             # send emphemeral message to user about why they are being added to the incident
             send_task_add_ephemeral_message(
@@ -87,12 +93,6 @@ def create(*, db_session, task_in: TaskCreate) -> Task:
                 db_session=db_session,
                 task=task_in,
             )
-
-        assignee = incident_flows.incident_add_or_reactivate_participant_flow(
-            db_session=db_session,
-            incident_id=incident.id,
-            user_email=i.individual.email,
-        )
 
         # due to the freeform nature of task assignment, we can sometimes pick up other emails
         # e.g. a google group that we cannot resolve to an individual assignee
@@ -187,6 +187,25 @@ def update(*, db_session, task: Task, task_in: TaskUpdate, sync_external: bool =
 
     for field in update_data.keys():
         setattr(task, field, update_data[field])
+
+    if task_in.owner:
+        task.owner = participant_service.get_by_incident_id_and_email(
+            db_session=db_session,
+            incident_id=task.incident.id,
+            email=task_in.owner.individual.email,
+        )
+
+    if task_in.assignees:
+        assignees = []
+        for i in task_in.assignees:
+            assignees.append(
+                participant_service.get_by_incident_id_and_email(
+                    db_session=db_session,
+                    incident_id=task.incident.id,
+                    email=i.individual.email,
+                )
+            )
+        task.assignees = assignees
 
     # if we have an external task plugin enabled, attempt to update the external resource as well
     # we don't currently have a good way to get the correct file_id (we don't store a task <-> relationship)

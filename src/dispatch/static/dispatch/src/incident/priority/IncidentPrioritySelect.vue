@@ -39,6 +39,7 @@ export default {
       loading: false,
       items: [],
       error: null,
+      lastProjectId: null,
       is_priority_in_project: () => {
         this.validatePriority()
         return this.error
@@ -123,15 +124,15 @@ export default {
         this.loading = false
       })
     },
+    resetSelection() {
+      this.$emit("update:modelValue", null)
+    },
   },
 
   watch: {
-    project: {
-      handler() {
-        this.fetchData()
-        this.validatePriority()
-      },
-      deep: true,
+    project() {
+      this.validatePriority()
+      this.fetchData()
     },
     status() {
       this.validatePriority()

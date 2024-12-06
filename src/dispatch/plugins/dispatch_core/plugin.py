@@ -18,11 +18,11 @@ from fastapi import HTTPException
 from fastapi.security.utils import get_authorization_scheme_param
 from jose import JWTError, jwt
 from jose.exceptions import JWKError
+from sqlalchemy.orm import Session
 from starlette.requests import Request
 from starlette.status import HTTP_401_UNAUTHORIZED
-from sqlalchemy.orm import Session
 
-from dispatch.auth.models import MfaChallenge, MfaPayload, DispatchUser, MfaChallengeStatus
+from dispatch.auth.models import DispatchUser, MfaChallenge, MfaChallengeStatus, MfaPayload
 from dispatch.case import service as case_service
 from dispatch.config import (
     DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_ARN,
@@ -37,9 +37,7 @@ from dispatch.config import (
     DISPATCH_UI_URL,
 )
 from dispatch.database.core import Base
-from dispatch.document.models import Document, DocumentRead
 from dispatch.incident import service as incident_service
-from dispatch.incident.models import Incident
 from dispatch.individual import service as individual_service
 from dispatch.individual.models import IndividualContact, IndividualContactRead
 from dispatch.plugin import service as plugin_service
@@ -47,18 +45,19 @@ from dispatch.plugins import dispatch_core as dispatch_plugin
 from dispatch.plugins.bases import (
     AuthenticationProviderPlugin,
     ContactPlugin,
-    DocumentResolverPlugin,
     MultiFactorAuthenticationPlugin,
     ParticipantPlugin,
     TicketPlugin,
 )
+from dispatch.plugins.dispatch_core.config import DispatchTicketConfiguration
 from dispatch.plugins.dispatch_core.exceptions import (
-    InvalidChallengeError,
-    UserMismatchError,
     ActionMismatchError,
     ExpiredChallengeError,
+    InvalidChallengeError,
     InvalidChallengeStateError,
+    UserMismatchError,
 )
+from dispatch.plugins.dispatch_core.service import create_resource_id
 from dispatch.project import service as project_service
 from dispatch.route import service as route_service
 from dispatch.service import service as service_service
@@ -238,6 +237,9 @@ class DispatchTicketPlugin(TicketPlugin):
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
+    def __init__(self):
+        self.configuration_schema = DispatchTicketConfiguration
+
     def create(
         self,
         incident_id: int,
@@ -250,9 +252,11 @@ class DispatchTicketPlugin(TicketPlugin):
         """Creates a Dispatch incident ticket."""
         incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-        resource_id = (
-            f"dispatch-{incident.project.organization.slug}-{incident.project.slug}-{incident.id}"
-        )
+        if self.configuration and self.configuration.use_incident_name:
+            resource_id = create_resource_id(f"{incident.project.slug}-{title}-{incident.id}")
+        else:
+            resource_id = f"dispatch-{incident.project.organization.slug}-{incident.project.slug}-{incident.id}"
+
         return {
             "resource_id": resource_id,
             "weblink": f"{DISPATCH_UI_URL}/{incident.project.organization.name}/incidents/{resource_id}?project={incident.project.name}",
@@ -274,6 +278,7 @@ class DispatchTicketPlugin(TicketPlugin):
         document_weblink: str,
         storage_weblink: str,
         conference_weblink: str,
+        dispatch_weblink: str,
         cost: float,
         incident_type_plugin_metadata: dict = None,
     ):
@@ -321,34 +326,27 @@ class DispatchTicketPlugin(TicketPlugin):
         # reporter_email: str,
         document_weblink: str,
         storage_weblink: str,
+        dispatch_weblink: str,
         case_type_plugin_metadata: dict = None,
     ):
         """Updates a Dispatch case ticket."""
         return
 
-
-class DispatchDocumentResolverPlugin(DocumentResolverPlugin):
-    title = "Dispatch Plugin - Document Resolver"
-    slug = "dispatch-document-resolver"
-    description = "Uses dispatch itself to resolve incident documents."
-    version = dispatch_plugin.__version__
-
-    author = "Netflix"
-    author_url = "https://github.com/netflix/dispatch.git"
-
-    def get(
+    def create_task_ticket(
         self,
-        incident: Incident,
+        task_id: int,
+        title: str,
+        assignee_email: str,
+        reporter_email: str,
+        incident_ticket_key: str = None,
+        task_plugin_metadata: dict = None,
         db_session=None,
     ):
-        """Fetches documents from Dispatch."""
-        recommendation = route_service.get(
-            db_session=db_session,
-            project_id=incident.project_id,
-            class_instance=incident,
-            models=[(Document, DocumentRead)],
-        )
-        return recommendation.matches
+        """Creates a Dispatch task ticket."""
+        return {
+            "resource_id": "",
+            "weblink": "https://dispatch.example.com",
+        }
 
 
 class DispatchMfaPlugin(MultiFactorAuthenticationPlugin):
@@ -444,6 +442,9 @@ class DispatchMfaPlugin(MultiFactorAuthenticationPlugin):
             raise ActionMismatchError("Action mismatch")
         if not challenge.valid:
             raise ExpiredChallengeError("Challenge is no longer valid")
+        if challenge.status == MfaChallengeStatus.APPROVED:
+            # Challenge has already been approved
+            return challenge.status
         if challenge.status != MfaChallengeStatus.PENDING:
             raise InvalidChallengeStateError(f"Challenge is in invalid state: {challenge.status}")
 

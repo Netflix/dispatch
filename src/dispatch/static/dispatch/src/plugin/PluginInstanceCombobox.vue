@@ -141,15 +141,7 @@ export default {
         filter: JSON.stringify(filter),
       }
 
-      if (this.project) {
-        filterOptions = {
-          ...filterOptions,
-          filters: {
-            project: [this.project],
-          },
-        }
-        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
-      }
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
 
       PluginApi.getAllInstances(filterOptions).then((response) => {
         this.items = response.data.items

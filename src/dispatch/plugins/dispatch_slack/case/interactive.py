@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from datetime import datetime, timedelta, timezone
 from functools import partial
 from uuid import UUID
@@ -12,6 +13,7 @@ from blockkit import (
     Divider,
     Input,
     MarkdownText,
+    Message,
     Modal,
     Section,
     UsersSelect,
@@ -34,6 +36,7 @@ from dispatch.enums import EventType, SubjectNames, UserRoles, Visibility
 from dispatch.event import service as event_service
 from dispatch.exceptions import ExistsError
 from dispatch.individual.models import IndividualContactRead
+from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
 from dispatch.participant_role import service as participant_role_service
@@ -56,6 +59,7 @@ from dispatch.plugins.dispatch_slack.case.enums import (
 )
 from dispatch.plugins.dispatch_slack.case.messages import (
     create_case_message,
+    create_manual_engagement_message,
     create_signal_engagement_message,
 )
 from dispatch.plugins.dispatch_slack.config import SlackConversationConfiguration
@@ -78,6 +82,7 @@ from dispatch.plugins.dispatch_slack.fields import (
 )
 from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
+    add_user_middleware,
     button_context_middleware,
     command_context_middleware,
     configuration_middleware,
@@ -90,6 +95,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
 )
 from dispatch.plugins.dispatch_slack.modals.common import send_success_modal
 from dispatch.plugins.dispatch_slack.models import (
+    AddUserMetadata,
     CaseSubjects,
     FormData,
     FormMetadata,
@@ -102,10 +108,13 @@ from dispatch.service import flows as service_flows
 from dispatch.signal import service as signal_service
 from dispatch.signal.enums import SignalEngagementStatus
 from dispatch.signal.models import (
+    Signal,
     SignalEngagement,
+    SignalFilter,
     SignalFilterCreate,
     SignalInstance,
 )
+from dispatch.ticket import flows as ticket_flows
 
 log = logging.getLogger(__name__)
 
@@ -143,6 +152,8 @@ def configure(config: SlackConversationConfiguration):
     ]
 
     app.command(config.slack_command_update_case, middleware=middleware)(handle_update_case_command)
+
+    app.command(config.slack_command_engage_user, middleware=middleware)(handle_engage_user_command)
 
 
 # Commands
@@ -333,6 +344,117 @@ def handle_list_signals_command(
         current_page=current_page,
         total_pages=total_pages,
         first_render=True,
+    )
+
+
+def handle_engage_user_command(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+) -> None:
+    """Handles engage user command."""
+    ack()
+
+    default_engagement = "We'd like to verify your identity. Can you please confirm this is you?"
+
+    blocks = [
+        Context(
+            elements=[
+                MarkdownText(
+                    text="Accept the defaults or adjust as needed. Person to engage must already be a participant in the case."
+                )
+            ]
+        ),
+        assignee_select(label="Person to engage", placeholder="Select user"),
+        description_input(label="Engagement text", initial_value=default_engagement),
+    ]
+
+    modal = Modal(
+        title="Engage user via MFA",
+        submit="Engage",
+        blocks=blocks,
+        close="Close",
+        callback_id="manual-engage-mfa",
+        private_metadata=context["subject"].json(),
+    ).build()
+
+    client.views_open(
+        trigger_id=body["trigger_id"],
+        view=modal,
+    )
+
+
+@app.view(
+    "manual-engage-mfa",
+    middleware=[
+        action_context_middleware,
+        db_middleware,
+        modal_submit_middleware,
+    ],
+)
+def engage(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+    form_data: dict,
+) -> None:
+    """Handles the engage user action."""
+    ack()
+
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    if not case:
+        log.error("Case not found when trying to engage user")
+        return
+
+    if form_data.get(DefaultBlockIds.case_assignee_select):
+        user_email = client.users_info(
+            user=form_data[DefaultBlockIds.case_assignee_select]["value"]
+        )["user"]["profile"]["email"]
+        conversation_flows.add_case_participants(case, [user_email], db_session)
+        participant = participant_service.get_by_case_id_and_email(
+            db_session=db_session, case_id=case.id, email=user_email
+        )
+        if not participant:
+            participant_flows.add_participant(
+                user_email,
+                case,
+                db_session,
+                roles=[ParticipantRoleType.participant],
+            )
+    else:
+        return
+
+    if form_data.get(DefaultBlockIds.description_input):
+        engagement = form_data[DefaultBlockIds.description_input]
+    else:
+        log.warning("Engagement text not found")
+        return
+
+    user = client.users_lookupByEmail(email=user_email)
+
+    result = client.chat_postMessage(
+        text="Engaging user...",
+        channel=case.conversation.channel_id,
+        thread_ts=case.conversation.thread_id if case.has_thread else None,
+    )
+    thread_ts = result.data.get("ts")
+
+    blocks = create_manual_engagement_message(
+        case=case,
+        channel_id=case.conversation.channel_id,
+        engagement=engagement,
+        user_email=user_email,
+        user_id=user["user"]["id"],
+        thread_ts=thread_ts,
+    )
+    client.chat_update(
+        blocks=blocks,
+        channel=case.conversation.channel_id,
+        ts=thread_ts,
     )
 
 
@@ -842,13 +964,27 @@ def handle_snooze_submission_event(
 
         signal.filters.append(new_filter)
         db_session.commit()
+        return new_filter
+
+    channel_id = context["subject"].channel_id
+    thread_id = context["subject"].thread_id
 
     # Check if last_mfa_time was within the last hour
     if not mfa_enabled:
-        _create_snooze_filter(
+        new_filter = _create_snooze_filter(
             db_session=db_session,
             user=user,
             subject=context["subject"],
+        )
+        signal = signal_service.get(db_session=db_session, signal_id=context["subject"].id)
+        post_snooze_message(
+            db_session=db_session,
+            client=client,
+            channel=channel_id,
+            user=user,
+            signal=signal,
+            new_filter=new_filter,
+            thread_ts=thread_id,
         )
         send_success_modal(
             client=client,
@@ -874,11 +1010,20 @@ def handle_snooze_submission_event(
         )
 
         if response == MfaChallengeStatus.APPROVED:
-            # Get the existing filters for the signal
-            _create_snooze_filter(
+            new_filter = _create_snooze_filter(
                 db_session=db_session,
                 user=user,
                 subject=context["subject"],
+            )
+            signal = signal_service.get(db_session=db_session, signal_id=context["subject"].id)
+            post_snooze_message(
+                db_session=db_session,
+                client=client,
+                channel=channel_id,
+                user=user,
+                signal=signal,
+                new_filter=new_filter,
+                thread_ts=thread_id,
             )
             send_success_modal(
                 client=client,
@@ -906,6 +1051,48 @@ def handle_snooze_submission_event(
                 view_id=body["view"]["id"],
                 view=modal,
             )
+
+
+def post_snooze_message(
+    client: WebClient,
+    channel: str,
+    user: DispatchUser,
+    signal: Signal,
+    db_session: Session,
+    new_filter: SignalFilter,
+    thread_ts: str | None = None,
+):
+    def extract_entity_ids(expression: list[dict]) -> list[int]:
+        entity_ids = []
+        for item in expression:
+            if isinstance(item, dict) and "or" in item:
+                for condition in item["or"]:
+                    if condition.get("model") == "Entity" and condition.get("field") == "id":
+                        entity_ids.append(int(condition.get("value")))
+        return entity_ids
+
+    entity_ids = extract_entity_ids(new_filter.expression)
+
+    if entity_ids:
+        entities = []
+        for entity_id in entity_ids:
+            entity = entity_service.get(db_session=db_session, entity_id=entity_id)
+            if entity:
+                entities.append(entity)
+        entities_text = ", ".join([f"{entity.value} ({entity.id})" for entity in entities])
+    else:
+        entities_text = "All"
+
+    message = (
+        f":zzz: *New Signal Snooze Added*\n"
+        f"• User: {user.email}\n"
+        f"• Signal: {signal.name}\n"
+        f"• Snooze Name: {new_filter.name}\n"
+        f"• Description: {new_filter.description}\n"
+        f"• Expiration: {new_filter.expiration}\n"
+        f"• Entities: {entities_text}"
+    )
+    client.chat_postMessage(channel=channel, text=message, thread_ts=thread_ts)
 
 
 def assignee_select(
@@ -1008,6 +1195,10 @@ def handle_case_participant_role_activity(
             organization_slug=context["subject"].organization_slug,
         )
         case.status = CaseStatus.triage
+
+        # we update the ticket
+        ticket_flows.update_case_ticket(case=case, db_session=db_session)
+
     case_flows.update_conversation(case, db_session)
     db_session.commit()
 
@@ -1037,6 +1228,13 @@ def handle_case_after_hours_message(
     participant = participant_service.get_by_case_id_and_email(
         db_session=db_session, case_id=context["subject"].id, email=user.email
     )
+    # handle no participant found
+    if not participant:
+        log.warning(
+            f"Participant not found for {user.email} in case {case.id}. Skipping after hours notification."
+        )
+        return
+
     # get their timezone from slack
     owner_tz = (dispatch_slack_service.get_user_info_by_email(client, email=owner_email))["tz"]
     message = f"Responses may be delayed. The current case priority is *{case.case_priority.name}* and your message was sent outside of the Assignee's working hours (Weekdays, 9am-5pm, {owner_tz} timezone)."
@@ -1073,6 +1271,10 @@ def reopen_button_click(
     ack()
     case = case_service.get(db_session=db_session, case_id=context["subject"].id)
     case.status = CaseStatus.triage
+
+    # we update the ticket
+    ticket_flows.update_case_ticket(case=case, db_session=db_session)
+
     db_session.commit()
 
     # update case message
@@ -1352,6 +1554,26 @@ def create_channel_button_click(
     client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
+@app.action(
+    CaseNotificationActions.user_mfa,
+    middleware=[button_context_middleware, db_middleware, user_middleware],
+)
+def user_mfa_button_click(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+):
+    return handle_engage_user_command(
+        ack=ack,
+        body=body,
+        client=client,
+        context=context,
+        db_session=db_session,
+    )
+
+
 def ack_handle_create_channel_event(ack: Ack, case: Case) -> None:
     """Handles the case channel creation event."""
     msg = (
@@ -1432,6 +1654,141 @@ def handle_create_channel_event(
         title="Channel Created",
         message="Case channel created successfully.",
     )
+
+
+def extract_mentioned_users(text: str) -> list[str]:
+    """Extracts mentioned users from a message."""
+    return re.findall(r"<@(\w+)>", text)
+
+
+def format_emails(emails: list[str]) -> str:
+    """Format a list of names into a string with commas and 'and' before the last name."""
+    usernames = [email.split("@")[0] for email in emails]
+
+    if not usernames:
+        return ""
+    elif len(usernames) == 1:
+        return f"@{usernames[0]}"
+    elif len(usernames) == 2:
+        return f"@{usernames[0]} and @{usernames[1]}"
+    else:
+        return ", ".join(f"@{username}" for username in usernames[:-1]) + f", and @{usernames[-1]}"
+
+
+@message_dispatcher.add(
+    subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "group_join"]}
+)  # we ignore user channel and group join messages
+def handle_user_mention(
+    ack: Ack,
+    context: BoltContext,
+    client: WebClient,
+    db_session: Session,
+    payload: dict,
+) -> None:
+    """Handles user posted message events."""
+    ack()
+
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    if not case or case.dedicated_channel:
+        # we do not need to handle mentions for cases with dedicated channels
+        return
+
+    mentioned_users = extract_mentioned_users(payload["text"])
+    users_not_in_case = []
+    for user_id in mentioned_users:
+        user_email = dispatch_slack_service.get_user_email(client, user_id)
+        if not participant_service.get_by_case_id_and_email(
+            db_session=db_session, case_id=context["subject"].id, email=user_email
+        ):
+            users_not_in_case.append(user_email)
+
+    if users_not_in_case:
+        # send a private message to the user who posted the message to see
+        # if they want to add the mentioned user(s) to the case
+        button_metadata = AddUserMetadata(
+            **dict(context["subject"]),
+            users=users_not_in_case,
+        ).json()
+        blocks = [
+            Section(
+                text=f"You mentioned {format_emails(users_not_in_case)}, but they're not in this case."
+            ),
+            Actions(
+                block_id=DefaultBlockIds.add_user_actions,
+                elements=[
+                    Button(
+                        text="Add Them",
+                        style="primary",
+                        action_id=CaseNotificationActions.add_user,
+                        value=button_metadata,
+                    ),
+                    Button(
+                        text="Do Nothing",
+                        action_id=CaseNotificationActions.do_nothing,
+                    ),
+                ],
+            ),
+        ]
+        blocks = Message(blocks=blocks).build()["blocks"]
+        client.chat_postEphemeral(
+            channel=payload["channel"],
+            thread_ts=payload.get("thread_ts"),
+            user=payload["user"],
+            blocks=blocks,
+        )
+
+
+@app.action(
+    CaseNotificationActions.add_user,
+    middleware=[add_user_middleware, button_context_middleware, db_middleware, user_middleware],
+)
+def add_users_to_case(
+    ack: Ack,
+    db_session: Session,
+    context: BoltContext,
+    respond: Respond,
+):
+    ack()
+
+    case_id = context["subject"].id
+
+    case = case_service.get(db_session=db_session, case_id=case_id)
+    if not case:
+        log.error(f"Could not find case with id: {case_id}")
+        return
+
+    users = context["users"]
+    if users:
+        for user_email in users:
+            conversation_flows.add_case_participants(case, [user_email], db_session)
+            participant = participant_service.get_by_case_id_and_email(
+                db_session=db_session, case_id=case.id, email=user_email
+            )
+            if not participant:
+                participant_flows.add_participant(
+                    user_email,
+                    case,
+                    db_session,
+                    roles=[ParticipantRoleType.participant],
+                )
+
+    # Delete the ephemeral message
+    respond(delete_original=True)
+
+
+@app.action(CaseNotificationActions.do_nothing)
+def handle_do_nothing_button(
+    ack: Ack,
+    respond: Respond,
+):
+    # Acknowledge the action
+    ack()
+
+    try:
+        # Delete the ephemeral message
+        respond(delete_original=True)
+    except SlackApiError as e:
+        log.error(f"Error deleting ephemeral message: {e.response['error']}")
 
 
 @app.action(
@@ -1644,6 +2001,10 @@ def triage_button_click(
     )
     case.status = CaseStatus.triage
     db_session.commit()
+
+    # we update the ticket
+    ticket_flows.update_case_ticket(case=case, db_session=db_session)
+
     case_flows.update_conversation(case, db_session)
 
 
@@ -1660,50 +2021,49 @@ def handle_resolve_submission_event(
     user: DispatchUser,
 ):
     ack()
-    # we get the current or previous case
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
-    previous_case = CaseRead.from_orm(case)
+    # we get the current case and store it as previous case
+    current_case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    previous_case = CaseRead.from_orm(current_case)
 
-    # we run the case status transition flow
-    case_flows.case_status_transition_flow_dispatcher(
-        case=case,
-        current_status=CaseStatus.closed,
-        db_session=db_session,
-        previous_status=case.status,
-        organization_slug=context["subject"].organization_slug,
-    )
-
-    # we update the case with the new resolution and status
+    # we update the case with the new resolution, resolution reason and status
     case_in = CaseUpdate(
-        title=case.title,
+        title=current_case.title,
         resolution_reason=form_data[DefaultBlockIds.case_resolution_reason_select]["value"],
         resolution=form_data[DefaultBlockIds.resolution_input],
-        visibility=case.visibility,
+        visibility=current_case.visibility,
         status=CaseStatus.closed,
     )
-    case = case_service.update(
+    updated_case = case_service.update(
         db_session=db_session,
-        case=case,
+        case=current_case,
         case_in=case_in,
         current_user=user,
     )
 
-    case_flows.case_update_flow(
-        case_id=case.id,
-        previous_case=previous_case,
-        db_session=db_session,
-        reporter_email=case.reporter.individual.email if case.reporter else None,
-        assignee_email=case.assignee.individual.email if case.assignee else None,
-        organization_slug=context["subject"].organization_slug,
-    )
-
-    # We update the case message with the new resolution and status
-    blocks = create_case_message(case=case, channel_id=context["subject"].channel_id)
+    # we update the case notification with the resolution, resolution reason and status
+    blocks = create_case_message(case=updated_case, channel_id=context["subject"].channel_id)
     client.chat_update(
         blocks=blocks,
-        ts=case.conversation.thread_id,
-        channel=case.conversation.channel_id,
+        ts=updated_case.conversation.thread_id,
+        channel=updated_case.conversation.channel_id,
     )
+
+    try:
+        # we run the case update flow
+        case_flows.case_update_flow(
+            case_id=updated_case.id,
+            previous_case=previous_case,
+            db_session=db_session,
+            reporter_email=(
+                updated_case.reporter.individual.email if updated_case.reporter else None
+            ),
+            assignee_email=(
+                updated_case.assignee.individual.email if updated_case.assignee else None
+            ),
+            organization_slug=context["subject"].organization_slug,
+        )
+    except Exception as e:
+        log.error(f"Error running case update flow from Slack plugin: {e}")
 
 
 @app.shortcut(CaseShortcutCallbacks.report, middleware=[db_middleware, shortcut_context_middleware])
@@ -2113,7 +2473,9 @@ def engagement_button_approve_click(
     mfa_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=context["subject"].project_id, plugin_type="auth-mfa"
     )
-    mfa_enabled = True if mfa_plugin and engagement.require_mfa else False
+
+    require_mfa = engagement.require_mfa if engagement else True
+    mfa_enabled = True if mfa_plugin and require_mfa else False
 
     blocks = [
         Section(text="Confirm that this is expected and that it is not suspicious behavior."),
@@ -2149,28 +2511,49 @@ def ack_mfa_required_submission_event(
 ) -> None:
     """Handles the add engagement submission event acknowledgement."""
 
+    blocks = []
+
     if mfa_enabled:
-        mfa_text = (
-            "🔐 To complete this action, you need to verify your identity through Multi-Factor Authentication (MFA).\n\n"
-            f"Please <{challenge_url}|click here> to open the MFA verification page."
+        blocks.extend(
+            [
+                Section(
+                    text="To complete this action, you need to verify your identity through Multi-Factor Authentication (MFA).\n\n"
+                    "Please click the verify button to open the MFA verification page."
+                ),
+                Actions(
+                    elements=[
+                        Button(
+                            text="🔐   Verify",
+                            action_id="button-link",
+                            style="primary",
+                            url=challenge_url,
+                        )
+                    ]
+                ),
+            ]
         )
     else:
-        mfa_text = "✅ No additional verification required. You can proceed with the confirmation."
+        blocks.append(
+            Section(
+                text="✅ No additional verification required. You can proceed with the confirmation."
+            )
+        )
 
-    blocks = [
-        Section(text=mfa_text),
-        Divider(),
-        Context(
-            elements=[
-                MarkdownText(
-                    text="💡 This step protects against unauthorized confirmation if your account is compromised."
-                )
-            ]
-        ),
-    ]
+    blocks.extend(
+        [
+            Divider(),
+            Context(
+                elements=[
+                    MarkdownText(
+                        text="💡 This step protects against unauthorized confirmation if your account is compromised."
+                    )
+                ]
+            ),
+        ]
+    )
 
     modal = Modal(
-        title="Confirm Your Identity",
+        title="Verify Your Identity",
         close="Cancel",
         blocks=blocks,
     ).build()
@@ -2209,7 +2592,13 @@ def handle_engagement_submission_event(
     mfa_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=context["subject"].project_id, plugin_type="auth-mfa"
     )
-    mfa_enabled = True if mfa_plugin and engagement.require_mfa else False
+    if not mfa_plugin:
+        log.error("Unable to engage user. No enabled MFA plugin found.")
+        return
+
+    require_mfa = engagement.require_mfa if engagement else True
+    mfa_enabled = True if mfa_plugin and require_mfa else False
+
     challenge, challenge_url = mfa_plugin.instance.create_mfa_challenge(
         action="signal-engagement-confirmation",
         current_user=user,
@@ -2220,8 +2609,12 @@ def handle_engagement_submission_event(
     ack_mfa_required_submission_event(ack=ack, mfa_enabled=mfa_enabled, challenge_url=challenge_url)
 
     case = case_service.get(db_session=db_session, case_id=metadata["id"])
-    signal_instance = signal_service.get_signal_instance(
-        db_session=db_session, signal_instance_id=UUID(metadata["signal_instance_id"])
+    signal_instance = (
+        signal_service.get_signal_instance(
+            db_session=db_session, signal_instance_id=UUID(metadata["signal_instance_id"])
+        )
+        if metadata["signal_instance_id"]
+        else None
     )
     # Get context provided by the user
     context_from_user = body["view"]["state"]["values"][DefaultBlockIds.description_input][
@@ -2245,6 +2638,7 @@ def handle_engagement_submission_event(
             signal_instance=signal_instance,
             user=user_who_clicked_button,
             view_id=body["view"]["id"],
+            thread_id=context["subject"].thread_id,
         )
         db_session.commit()
         return
@@ -2260,6 +2654,7 @@ def handle_engagement_submission_event(
             signal_instance=signal_instance,
             user=user_who_clicked_button,
             view_id=body["view"]["id"],
+            thread_id=context["subject"].thread_id,
         )
 
 
@@ -2268,12 +2663,13 @@ def send_engagement_response(
     client: WebClient,
     context_from_user: str,
     db_session: Session,
-    engagement: SignalEngagement,
+    engagement: SignalEngagement | None,
     engaged_user: str,
     response: str,
-    signal_instance: SignalInstance,
+    signal_instance: SignalInstance | None,
     user: DispatchUser,
     view_id: str,
+    thread_id: str,
 ):
     if response == MfaChallengeStatus.APPROVED:
         title = "Approve"
@@ -2285,9 +2681,9 @@ def send_engagement_response(
         engagement_status = SignalEngagementStatus.denied
 
         if response == MfaChallengeStatus.EXPIRED:
-            text = "Confirmation failed, the MFA request timed out. Please, have your MFA device ready to accept the push notification and try again."
+            text = "Confirmation failed, the MFA request timed out. Please try again and complete the MFA verification within the given time frame."
         elif response == MfaChallengeStatus.DENIED:
-            text = f"User {engaged_user} not found in MFA provider. To validate your identity, please register in Duo and try again."
+            text = f"We couldn't find {engaged_user} in our MFA system."
         else:
             text = "Confirmation failed. You must accept the MFA prompt."
 
@@ -2308,27 +2704,43 @@ def send_engagement_response(
     if response == MfaChallengeStatus.APPROVED:
         # We only update engagement message (which removes Confirm/Deny button) for success
         # this allows the user to retry the confirmation if the MFA check failed
-        blocks = create_signal_engagement_message(
-            case=case,
-            channel_id=case.conversation.channel_id,
-            engagement=engagement,
-            signal_instance=signal_instance,
-            user_email=engaged_user,
-            engagement_status=engagement_status,
-        )
-        client.chat_update(
-            blocks=blocks,
-            channel=case.conversation.channel_id,
-            ts=signal_instance.engagement_thread_ts,
-        )
-        resolve_case(
-            case=case,
-            channel_id=case.conversation.channel_id,
-            client=client,
-            db_session=db_session,
-            context_from_user=context_from_user,
-            user=user,
-        )
+        if not engagement:
+            # assume the message is from a manual MFA challenge
+            blocks = create_manual_engagement_message(
+                case=case,
+                channel_id=case.conversation.channel_id,
+                user_email=engaged_user,
+                engagement_status=engagement_status,
+            )
+        else:
+            blocks = create_signal_engagement_message(
+                case=case,
+                channel_id=case.conversation.channel_id,
+                engagement=engagement,
+                signal_instance=signal_instance,
+                user_email=engaged_user,
+                engagement_status=engagement_status,
+            )
+        if signal_instance:
+            client.chat_update(
+                blocks=blocks,
+                channel=case.conversation.channel_id,
+                ts=signal_instance.engagement_thread_ts,
+            )
+            resolve_case(
+                case=case,
+                channel_id=case.conversation.channel_id,
+                client=client,
+                db_session=db_session,
+                context_from_user=context_from_user,
+                user=user,
+            )
+        else:
+            client.chat_update(
+                blocks=blocks,
+                channel=case.conversation.channel_id,
+                ts=thread_id,
+            )
 
 
 def resolve_case(
@@ -2449,9 +2861,14 @@ def handle_engagement_deny_submission_event(
     metadata = json.loads(body["view"]["private_metadata"])
     engaged_user = metadata["user"]
     case = case_service.get(db_session=db_session, case_id=metadata["id"])
-    signal_instance = signal_service.get_signal_instance(
-        db_session=db_session, signal_instance_id=UUID(metadata["signal_instance_id"])
+    signal_instance = (
+        signal_service.get_signal_instance(
+            db_session=db_session, signal_instance_id=UUID(metadata["signal_instance_id"])
+        )
+        if metadata["signal_instance_id"]
+        else None
     )
+
     engagement = signal_service.get_signal_engagement(
         db_session=db_session,
         signal_engagement_id=metadata["engagement_id"],
@@ -2472,6 +2889,10 @@ def handle_engagement_deny_submission_event(
         channel=case.conversation.channel_id,
         thread_ts=case.conversation.thread_id,
     )
+
+    thread_ts = (
+        signal_instance.engagement_thread_ts if signal_instance else context["subject"].thread_id
+    )
     blocks = create_signal_engagement_message(
         case=case,
         channel_id=case.conversation.channel_id,
@@ -2483,5 +2904,5 @@ def handle_engagement_deny_submission_event(
     client.chat_update(
         blocks=blocks,
         channel=case.conversation.channel_id,
-        ts=signal_instance.engagement_thread_ts,
+        ts=thread_ts,
     )

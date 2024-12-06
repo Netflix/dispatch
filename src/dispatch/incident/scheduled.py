@@ -23,12 +23,16 @@ from dispatch.messaging.strings import (
 )
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
 from dispatch.notification import service as notification_service
+from dispatch.incident import service as incident_service
 from dispatch.plugin import service as plugin_service
 from dispatch.project.models import Project
 from dispatch.scheduler import scheduler
 from dispatch.search_filter import service as search_filter_service
 from dispatch.tag import service as tag_service
 from dispatch.tag.models import Tag
+from dispatch.participant import flows as participant_flows
+from dispatch.participant_role.models import ParticipantRoleType
+
 
 from .enums import IncidentStatus
 from .messaging import send_incident_close_reminder
@@ -344,3 +348,44 @@ def incident_report_weekly(db_session: Session, project: Project):
         notification=notification,
         notification_params=notification_params,
     )
+
+
+@scheduler.add(every(1).hour, name="incident-sync-members")
+@timer
+@scheduled_project_task
+def incident_sync_members(db_session: Session, project: Project):
+    """Checks the members of all conversations associated with active
+    and stable incidents and ensures they are in the incident."""
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session,
+        project_id=project.id,
+        plugin_type="conversation",
+    )
+    if not plugin:
+        log.warning("No conversation plugin is active.")
+        return
+
+    active_incidents = incident_service.get_all_by_status(
+        db_session=db_session, project_id=project.id, status=IncidentStatus.active
+    )
+    stable_incidents = incident_service.get_all_by_status(
+        db_session=db_session, project_id=project.id, status=IncidentStatus.stable
+    )
+    incidents = active_incidents + stable_incidents
+
+    for incident in incidents:
+        if incident.conversation:
+            conversation_members = plugin.instance.get_all_member_emails(
+                incident.conversation.channel_id
+            )
+            incident_members = [m.individual.email for m in incident.participants]
+
+            for member in conversation_members:
+                if member not in incident_members:
+                    participant_flows.add_participant(
+                        member,
+                        incident,
+                        db_session,
+                        roles=[ParticipantRoleType.observer],
+                    )
+                    log.debug(f"Added missing {member} to incident {incident.name}")

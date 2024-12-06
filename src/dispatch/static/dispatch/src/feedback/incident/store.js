@@ -9,6 +9,7 @@ const getDefaultSelectedState = () => {
     feedback: null,
     id: null,
     incident: null,
+    case: null,
     participant: null,
     project: null,
     rating: null,
@@ -36,6 +37,7 @@ const state = {
       sortBy: ["created_at"],
       descending: [true],
       filters: {
+        case: [],
         incident: [],
         rating: [],
         feedback: [],
