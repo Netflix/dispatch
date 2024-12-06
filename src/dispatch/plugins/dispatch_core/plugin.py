@@ -197,6 +197,8 @@ class AwsAlbAuthProviderPlugin(AuthenticationProviderPlugin):
             )
             raise credentials_exception
 
+        log.debug(f"Header x-amzn-oidc-data header received: {encoded_jwt}")
+
         # Validate the signer
         jwt_headers = encoded_jwt.split('.')[0]
         decoded_jwt_headers = base64.b64decode(jwt_headers)
@@ -216,9 +218,11 @@ class AwsAlbAuthProviderPlugin(AuthenticationProviderPlugin):
         region = DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_ARN.split(':')[3]
 
         # Get the public key from regional endpoint
+        log.debug(f"Getting public key for kid {kid} in region {region}.")
         pub_key = self.get_public_key(kid, region)
 
         # Get the payload
+        log.debug(f"Decoding {encoded_jwt} with public key {pub_key}.")
         payload = jwt.decode(encoded_jwt, pub_key, algorithms=['ES256'])
 
         return payload[DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_CLAIM]
