@@ -1,11 +1,16 @@
 <template>
   <v-container>
-    <v-timeline density="compact" clipped>
+    <div v-if="tacticalReports.length === 0" class="text-center">
+      <v-icon size="x-large">mdi-alert-circle-outline</v-icon>
+      <p class="text-h6">No tactical reports have been created yet.</p>
+    </div>
+    <v-timeline v-else density="compact" clipped>
       <v-timeline-item hide-dot>
         <v-row>
           <v-col class="text-right text-caption">(times in UTC)</v-col>
         </v-row>
       </v-timeline-item>
+
       <v-timeline-item
         v-for="event in tacticalReports"
         :key="event.id"
