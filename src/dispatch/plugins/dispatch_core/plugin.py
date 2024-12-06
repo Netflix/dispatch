@@ -26,7 +26,7 @@ from dispatch.auth.models import MfaChallenge, MfaPayload, DispatchUser, MfaChal
 from dispatch.case import service as case_service
 from dispatch.config import (
     DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_ARN,
-    DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_CLAIM,
+    DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_EMAIL_CLAIM,
     DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_PUBLIC_KEY_CACHE_SECONDS,
     DISPATCH_AUTHENTICATION_PROVIDER_HEADER_NAME,
     DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS,
@@ -225,7 +225,7 @@ class AwsAlbAuthProviderPlugin(AuthenticationProviderPlugin):
         log.debug(f"Decoding {encoded_jwt} with public key {pub_key}.")
         payload = jwt.decode(encoded_jwt, pub_key, algorithms=['ES256'])
 
-        return payload[DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_CLAIM]
+        return payload[DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_EMAIL_CLAIM]
 
 
 class DispatchTicketPlugin(TicketPlugin):

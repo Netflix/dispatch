@@ -153,9 +153,9 @@ Make sure the reverse proxy strips this header from incoming requests (i.e. user
 > The format is `arn:aws:elasticloadbalancing:region-code:account-id:loadbalancer/app/load-balancer-name/load-balancer-id`.
 > This is required when using the `dispatch-auth-provider-aws-alb` auth provider.
 
-#### `DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_CLAIM` \['default': email\]
+#### `DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_EMAIL_CLAIM` \['default': email\]
 
-> Override where Dispatch should find the user email in the users claims (`x-amzn-oidc-data` header).
+> Override where Dispatch should find the user email in the users claims.
 
 #### `DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_PUBLIC_KEY_CACHE_SECONDS` \['default': 300\]
 
