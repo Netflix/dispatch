@@ -429,7 +429,7 @@ def delete(*, db_session: Session, incident_id: int):
     db_session.commit()
 
 
-def generate_incident_summary(*, db_session: Session, incident: Incident):
+def generate_incident_summary(*, db_session: Session, incident: Incident) -> str:
     """Generates a summary of the incident."""
     # Skip summary for restricted incidents
     if incident.visibility == Visibility.restricted:
@@ -491,3 +491,4 @@ def generate_incident_summary(*, db_session: Session, incident: Incident):
 
     except Exception as e:
         log.exception(f"Error trying to generate summary for incident {incident.id}: {e}")
+        return "Incident summary not generated. An error occurred."
