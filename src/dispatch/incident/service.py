@@ -433,14 +433,14 @@ def generate_incident_summary(*, db_session: Session, incident: Incident):
     """Generates a summary of the incident."""
     # Skip summary for restricted incidents
     if incident.visibility == Visibility.restricted:
-        return
+        return "Incident summary not generated for restricted incident."
 
     # Skip if no incident review document
     if not incident.incident_review_document or not incident.incident_review_document.resource_id:
         log.info(
             f"Incident summary not generated for incident {incident.id}. No review document found."
         )
-        return
+        return "Incident summary not generated. No review document found."
 
     # Don't generate if no enabled ai plugin or storage plugin
     ai_plugin = plugin_service.get_active_instance(
@@ -450,7 +450,7 @@ def generate_incident_summary(*, db_session: Session, incident: Incident):
         log.info(
             f"Incident summary not generated for incident {incident.id}. No AI plugin enabled."
         )
-        return
+        return "Incident summary not generated. No AI plugin enabled."
 
     storage_plugin = plugin_service.get_active_instance(
         db_session=db_session, plugin_type="storage", project_id=project.id
@@ -460,7 +460,7 @@ def generate_incident_summary(*, db_session: Session, incident: Incident):
         log.info(
             f"Incident summary not generated for incident {incident.id}. No storage plugin enabled."
         )
-        return
+        return "Incident summary not generated. No storage plugin enabled."
 
     try:
         pir_doc = storage_plugin.instance.get(
@@ -486,6 +486,8 @@ def generate_incident_summary(*, db_session: Session, incident: Incident):
         incident.summary = summary
         db_session.add(incident)
         db_session.commit()
+
+        return summary
 
     except Exception as e:
         log.exception(f"Error trying to generate summary for incident {incident.id}: {e}")
