@@ -181,6 +181,7 @@ class AwsAlbAuthProviderPlugin(AuthenticationProviderPlugin):
 
     @cached(cache=TTLCache(maxsize=1024, ttl=DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_PUBLIC_KEY_CACHE_SECONDS))
     def get_public_key(self, kid: str, region: str):
+        log.debug(f"Cache miss. Requesting key from AWS endpoint.")
         url = f"https://public-keys.auth.elb.{region}.amazonaws.com/{kid}"
         req = requests.get(url)
         return req.text
