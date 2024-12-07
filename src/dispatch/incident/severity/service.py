@@ -106,7 +106,7 @@ def get_all(*, db_session, project_id: int = None) -> List[Optional[IncidentSeve
     if project_id:
         return db_session.query(IncidentSeverity).filter(IncidentSeverity.project_id == project_id)
 
-    return db_session.query(IncidentSeverity)
+    return db_session.query(IncidentSeverity).all()
 
 
 def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[IncidentSeverity]]:
