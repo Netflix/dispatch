@@ -167,7 +167,7 @@ def update(*, db_session, case_type: CaseType, case_type_in: CaseTypeUpdate) -> 
     # Calculate the cost of all non-closed cases associated with this case type
     cases = case_service.get_all_open_by_case_type(db_session=db_session, case_type_id=case_type.id)
     for case in cases:
-        case_cost_service.calculate_case_response_cost(case_id=case.id, db_session=db_session)
+        case_cost_service.calculate_case_response_cost(case=case, db_session=db_session)
 
     if case_type_in.case_template_document:
         case_template_document = document_service.get(
