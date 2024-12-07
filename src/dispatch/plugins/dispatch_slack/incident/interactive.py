@@ -455,6 +455,8 @@ def handle_list_incidents_command(
             # Don't add a divider if we are at the last incident
             if idx != len(open_incidents):
                 blocks.extend([Divider()])
+    else:
+        blocks.append(Section(text="No incidents found."))
 
     modal = Modal(
         title="Incident List",
