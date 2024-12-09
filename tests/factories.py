@@ -518,6 +518,7 @@ class ParticipantFactory(BaseFactory):
     added_reason = Sequence(lambda n: f"added_reason{n}")
     after_hours_notification = Faker().pybool()
     user_conversation_id = FuzzyText()
+    individual = SubFactory(IndividualContactFactory)
 
     class Meta:
         """Factory Configuration."""
@@ -531,14 +532,6 @@ class ParticipantFactory(BaseFactory):
 
         if extracted:
             self.incident_id = extracted.id
-
-    @post_generation
-    def individual_contact(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            self.individual_contact_id = extracted.id
 
     @post_generation
     def team(self, create, extracted, **kwargs):
@@ -918,6 +911,7 @@ class IncidentFactory(BaseFactory):
     incident_priority = SubFactory(IncidentPriorityFactory)
     incident_severity = SubFactory(IncidentSeverityFactory)
     project = SubFactory(ProjectFactory)
+    commander = SubFactory(ParticipantFactory)
     conversation = SubFactory(ConversationFactory)
 
     class Meta:
@@ -933,6 +927,7 @@ class IncidentFactory(BaseFactory):
         if extracted:
             for participant in extracted:
                 self.participants.append(participant)
+            self.participants.append(self.commander)
 
 
 class TaskFactory(ResourceBaseFactory):
