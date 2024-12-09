@@ -141,7 +141,8 @@ class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):
     ):
         """Creates a new Google Group."""
         client = get_service(self.configuration, "admin", "directory_v1", self.scopes)
-        group_key = f"{name.lower()}@{self.configuration.google_domain}"
+        # note: group username is limited to 60 characters
+        group_key = f"{name.lower()[:60]}@{self.configuration.google_domain}"
 
         if not description:
             description = "Group automatically created by Dispatch."
@@ -170,11 +171,16 @@ class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):
         for p in participants:
             remove_member(client, email, p)
 
-    def list(self, email: str):
+    def list(self, email: str) -> list[str]:
         """Lists members from an existing Google Group."""
         client = get_service(self.configuration, "admin", "directory_v1", self.scopes)
-        members = list_members(client, email)
-        return [m["email"] for m in members.get("members", [])]
+        try:
+            members = list_members(client, email)
+            return [m["email"] for m in members.get("members", [])]
+        except HttpError as e:
+            if e.resp.status == 404:
+                log.warning(f"Group does not exist. GroupKey={email} Trying to list members.")
+        return []
 
     def delete(self, email: str):
         """Deletes an existing Google group."""

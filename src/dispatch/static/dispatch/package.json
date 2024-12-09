@@ -51,6 +51,7 @@
     "@vue-flow/minimap": "^1.2.0",
     "@vueuse/core": "^10.5.0",
     "@vueuse/integrations": "^10.6.1",
+    "@wdns/vuetify-resize-drawer": "^3.2.0",
     "apexcharts": "^3.44.0",
     "axios": "^0.21.4",
     "d3-force": "^3.0.0",
@@ -68,6 +69,7 @@
     "monaco-editor": "0.43.0",
     "register-service-worker": "^1.7.2",
     "roboto-fontface": "^0.10.0",
+    "sass-embedded": "^1.81.0",
     "sortablejs": "^1.15.0",
     "swrv": "^1.0.4",
     "vue": "^3.4.12",
@@ -75,7 +77,6 @@
     "vue3-apexcharts": "^1.4.4",
     "vue3-markdown-it": "^1.0.10",
     "vuetify": "^3.4.3",
-    "vuetify3-resize-drawer": "^2.1.1",
     "vuex": "^4.1.0",
     "vuex-map-fields": "^1.4.1"
   },

@@ -120,12 +120,15 @@ export default {
         sortBy: ["name"],
         descending: [false],
         itemsPerPage: this.numItems,
+        enabled: ["true"],
       }
 
       if (this.project) {
-        filterOptions.filters = {
-          project: [this.project],
-          enabled: ["true"],
+        filterOptions = {
+          ...filterOptions,
+          filters: {
+            project: [this.project],
+          },
         }
       }
 

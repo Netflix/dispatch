@@ -98,3 +98,25 @@
 :deep(.v-timeline-item__body) {
   justify-self: initial !important;
 }
+
+.summary-paragraph > * {
+  margin: 10px;
+  text-align: justify;
+}
+
+.summary-paragraph > *:last-child {
+  margin-bottom: 0px;
+}
+
+.summary-paragraph > *:first-child {
+  margin-top: 0px;
+}
+
+.caveat-text {
+  font-size: 0.875rem;
+  color: #555;
+  margin-left: 20px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  font-style: italic;
+}

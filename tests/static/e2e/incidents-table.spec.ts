@@ -5,7 +5,7 @@ test.describe("Authenticated Dispatch App", () => {
   test.beforeEach(async ({ authPage }) => {
     await register(authPage)
   }),
-    test("The edit list should appear after clicking the incident edit kebab.", async ({
+    test("The edit list should appear after clicking the incident edit kebab.", async ({ page,
       incidentsPage,
     }) => {
       await incidentsPage.goto()

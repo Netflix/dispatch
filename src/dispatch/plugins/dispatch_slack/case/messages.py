@@ -18,7 +18,6 @@ from dispatch.case import service as case_service
 from dispatch.case.enums import CaseStatus
 from dispatch.case.models import Case
 from dispatch.config import DISPATCH_UI_URL
-from dispatch.messaging.strings import CASE_STATUS_DESCRIPTIONS, CASE_VISIBILITY_DESCRIPTIONS
 from dispatch.plugins.dispatch_slack.case.enums import (
     CaseNotificationActions,
     SignalEngagementActions,
@@ -257,6 +256,13 @@ def create_action_buttons_message(
         project_id=project_id,
         channel_id=channel_id,
     ).json()
+    mfa_button_metadata = SubjectMetadata(
+        type=CaseSubjects.case,
+        organization_slug=organization_slug,
+        id=case.id,
+        project_id=project_id,
+        channel_id=channel_id,
+    ).json()
 
     # we create the response plan and the snooze buttons
     elements = []
@@ -280,7 +286,7 @@ def create_action_buttons_message(
             Button(
                 text="👤 User MFA Challenge",
                 action_id=CaseNotificationActions.user_mfa,
-                value=button_metadata,
+                value=mfa_button_metadata,
             ),
         ]
     )
@@ -448,21 +454,20 @@ def create_signal_engagement_message(
 def create_manual_engagement_message(
     case: Case,
     channel_id: str,
-    engagement: str,
     user_email: str,
-    user_id: str,
     engagement_status: SignalEngagementStatus = SignalEngagementStatus.new,
+    user_id: str = "",
+    engagement: str = "",
     thread_ts: str = None,
 ) -> list[Block]:
     """
-    Generate a list of blocks for a signal engagement message.
+    Generate a list of blocks for a manual engagement message.
 
     Args:
-        case (Case): The case object related to the signal instance.
+        case (Case): The case object related to the engagement.
         channel_id (str): The ID of the Slack channel where the message will be sent.
-        message (str): Additional context information to include in the message.
+        engagement_message (str): The engagement text.
         user_email (str): The email of the user being engaged.
-        engagement (str): The engagement text.
 
     Returns:
         list[Block]: A list of blocks representing the message structure for the engagement message.
@@ -480,11 +485,12 @@ def create_manual_engagement_message(
     ).json()
 
     username, _ = user_email.split("@")
-    blocks = [
-        Section(
-            text=f"<@{user_id}>: {engagement if engagement else 'No context provided for this alert.'}"
-        ),
-    ]
+    if engagement:
+        blocks = [
+            Section(text=f"<@{user_id}>: {engagement}"),
+        ]
+    else:
+        blocks = []
 
     if engagement_status == SignalEngagementStatus.new:
         blocks.extend(
@@ -523,42 +529,6 @@ def create_manual_engagement_message(
             ]
         )
 
-    return Message(blocks=blocks).build()["blocks"]
-
-
-def create_welcome_ephemeral_message_to_participant(case: Case) -> list[Block]:
-    blocks = [
-        Section(
-            text="You've been added to this case, because we think you may be able to help resolve it. Please, review the case details below and reach out to the case assignee if you have any questions.",
-        ),
-        Section(
-            text=f"*Title* \n {case.title}",
-        ),
-        Section(
-            text=f"*Description* \n {case.description}",
-        ),
-        Section(
-            text=f"*Visibility - {case.visibility}* \n {CASE_VISIBILITY_DESCRIPTIONS[case.visibility]}",
-        ),
-        Section(
-            text=f"*Status - {case.status}* \n {CASE_STATUS_DESCRIPTIONS[case.status]}",
-        ),
-        Section(
-            text=f"*Type - {case.case_type.name}* \n {case.case_type.description}",
-        ),
-        Section(
-            text=f"*Severity - {case.case_severity.name}* \n {case.case_severity.description}",
-        ),
-        Section(
-            text=f"*Priority - {case.case_priority.name}* \n {case.case_priority.description}",
-        ),
-        Section(
-            text=f"*Assignee - {case.assignee.individual.name}*",
-        ),
-        Section(
-            text=f"*Reporter - {case.reporter.individual.name}*",
-        ),
-    ]
     return Message(blocks=blocks).build()["blocks"]
 
 
