@@ -143,6 +143,28 @@ Make sure the reverse proxy strips this header from incoming requests (i.e. user
 
 > The HTTP request header to use as the user name, this value is case-insensitive.
 
+#### Configuration for `dispatch-auth-provider-aws-alb`
+
+> Authenticate users based on [AWS Application Load Balancer authenticate](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/listener-authenticate-users.html).
+
+#### `DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_ARN`
+
+> ARN of your Load Balancer, used to validate the signer.
+> The format is `arn:aws:elasticloadbalancing:region-code:account-id:loadbalancer/app/load-balancer-name/load-balancer-id`.
+> This is required when using the `dispatch-auth-provider-aws-alb` auth provider.
+
+#### `DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_EMAIL_CLAIM` \['default': email\]
+
+> Override where Dispatch should find the user email in the users claims.
+
+#### `DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_PUBLIC_KEY_CACHE_SECONDS` \['default': 300\]
+
+> Override how long Dispatch should cache the public key, used to validate the payload.
+
+:::info
+Add a ALB listener action without authenticate for `/api/v1/{organization}/events/*` if you want plugins to be public. Plugins determine their own authentication.
+:::
+
 ### Persistence
 
 #### `DATABASE_HOSTNAME`
