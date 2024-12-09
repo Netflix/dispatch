@@ -162,7 +162,7 @@ Make sure the reverse proxy strips this header from incoming requests (i.e. user
 > Override how long Dispatch should cache the public key, used to validate the payload.
 
 :::info
-Make sure you add a listener action without authenticate for `/api/v1/{organization}/events/*`, if you want plugins to be reachable. Plugins determine their own authentication.
+Add a ALB listener action without authenticate for `/api/v1/{organization}/events/*` if you want plugins to be public. Plugins determine their own authentication.
 :::
 
 ### Persistence
