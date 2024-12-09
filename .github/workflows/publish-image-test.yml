@@ -1,11 +1,6 @@
 name: Test image build
 
-on:
-  pull_request:
-    branches:
-      - master
-    # Review gh actions docs if you want to further define triggers, paths, etc
-    # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on
+on: pull_request
 
 jobs:
   build_image:
