@@ -552,6 +552,9 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
     # to rate and provide feedback about the incident
     send_incident_rating_feedback_message(incident, db_session)
 
+    # if an AI plugin is enabled, we send the incident review doc for summary
+    incident_service.generate_incident_summary(incident, db_session)
+
 
 def conversation_topic_dispatcher(
     user_email: str,
