@@ -1,0 +1,20 @@
+name: Test image build
+
+on:
+  pull_request:
+    branches:
+      - master
+    # Review gh actions docs if you want to further define triggers, paths, etc
+    # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on
+
+jobs:
+  build_image:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - name: Build without push
+        uses: docker/build-push-action@v1
+        with:
+          push: false
