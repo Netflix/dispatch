@@ -288,6 +288,8 @@ class CaseReadMinimal(CaseBase):
     project: ProjectRead
     reporter: Optional[ParticipantReadMinimal]
     reported_at: Optional[datetime] = None
+    tags: Optional[List[TagRead]] = []
+    ticket: Optional[TicketRead] = None
     total_cost: float | None
     triage_at: Optional[datetime] = None
 
