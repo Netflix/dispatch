@@ -74,16 +74,20 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
 
             entries: list[SqsEntries] = []
             for message in response["Messages"]:
-                message_body = json.loads(message["Body"])
-                message_body_message = message_body.get("Message")
-                message_attributes = message_body.get("MessageAttributes", {})
+                try:
+                    message_body = json.loads(message["Body"])
+                    message_body_message = message_body.get("Message")
+                    message_attributes = message_body.get("MessageAttributes", {})
 
-                if message_attributes.get("compressed", {}).get("Value") == "zlib":
-                    # Message is compressed, decompress it
-                    message_body_message = decompress_json(message_body_message)
-                    signal_data = json.loads(message_body_message)
-                else:
-                    signal_data = message_body_message
+                    if message_attributes.get("compressed", {}).get("Value") == "zlib":
+                        # Message is compressed, decompress it
+                        message_body_message = decompress_json(message_body_message)
+                        signal_data = json.loads(message_body_message)
+                    else:
+                        signal_data = message_body_message
+                except Exception as e:
+                    log.exception(f"Unable to extract signal data from SQS message: {e}")
+                    continue
 
                 try:
                     signal_instance_in = SignalInstanceCreate(
