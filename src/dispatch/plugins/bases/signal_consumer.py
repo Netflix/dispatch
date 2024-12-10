@@ -14,6 +14,3 @@ class SignalConsumerPlugin(Plugin):
 
     def consume(self, **kwargs):
         raise NotImplementedError
-
-    def delete(self, **kwargs):
-        raise NotImplementedError

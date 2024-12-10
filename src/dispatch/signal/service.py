@@ -544,9 +544,18 @@ def delete(*, db_session: Session, signal_id: int):
     return signal_id
 
 
-def is_valid_uuid(val):
+def is_valid_uuid(value) -> bool:
+    """
+    Checks if the provided value is a valid UUID.
+
+    Args:
+        val: The value to be checked.
+
+    Returns:
+        bool: True if the value is a valid UUID, False otherwise.
+    """
     try:
-        uuid.UUID(str(val), version=4)
+        uuid.UUID(str(value), version=4)
         return True
     except ValueError:
         return False
@@ -587,7 +596,7 @@ def create_instance(
             signal_instance.id = signal_instance_in.raw["id"]
 
     if signal_instance.id and not is_valid_uuid(signal_instance.id):
-        msg = f"Invalid signal id format. Expecting UUID format. Received {signal_instance.id}."
+        msg = f"Invalid signal id format. Expecting UUIDv4 format. Signal id: {signal_instance.id}. Signal name/variant: {signal_instance.signal.raw.name if signal_instance.signal and signal_instance.signal.raw and signal_instance.signal.raw.name else signal_instance.signal.raw.variant}"
         log.warn(msg)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
