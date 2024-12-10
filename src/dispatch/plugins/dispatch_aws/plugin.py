@@ -74,15 +74,16 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
 
             entries: list[SqsEntries] = []
             for message in response["Messages"]:
-                message_attributes = message.get("MessageAttributes", {})
-                message_body = message["Body"]
+                message_body = json.loads(message["Body"])
+                message_body_message = message_body.get("Message")
+                message_attributes = message_body.get("MessageAttributes", {})
 
-                if message_attributes.get("compressed", {}).get("StringValue") == "zlib":
+                if message_attributes.get("compressed", {}).get("Value") == "zlib":
                     # Message is compressed, decompress it
-                    message_body = decompress_json(message_body)
-
-                message_body = json.loads(message_body)
-                signal_data = json.loads(message_body["Message"])
+                    message_body_message = decompress_json(message_body_message)
+                    signal_data = json.loads(message_body_message)
+                else:
+                    signal_data = message_body_message
 
                 try:
                     signal_instance_in = SignalInstanceCreate(
