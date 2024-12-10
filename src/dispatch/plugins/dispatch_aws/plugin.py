@@ -94,7 +94,7 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                     )
                 except ValidationError as e:
                     log.warning(
-                        f"Received a signal instance that does not conform to the `SignalInstanceCreate` structure. Skipping creation: {e}"
+                        f"Received a signal instance that does not conform to the SignalInstanceCreate pydantic model. Skipping creation: {e}"
                     )
                     continue
 
@@ -104,7 +104,7 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                         db_session=db_session, signal_instance_id=signal_instance_in.raw["id"]
                     ):
                         log.info(
-                            f"Received a signal instance that already exists in the database. Skipping creation: {signal_instance_in.raw['id']}"
+                            f"Received a signal that already exists in the database. Skipping signal instance creation: {signal_instance_in.raw['id']}"
                         )
                         continue
 
@@ -117,15 +117,17 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                 except IntegrityError as e:
                     if isinstance(e.orig, UniqueViolation):
                         log.info(
-                            f"Received a signal instance that already exists in the database. Skipping creation: {e}"
+                            f"Received a signal that already exists in the database. Skipping signal instance creation: {e}"
                         )
                     else:
                         log.exception(
-                            f"Encountered an Integrity error when trying to create a signal instance: {e}"
+                            f"Encountered an integrity error when trying to create a signal instance: {e}"
                         )
                     continue
                 except Exception as e:
-                    log.exception(f"Unable to create signal instance: {e}")
+                    log.exception(
+                        f"Unable to create signal instance. Signal name/variant: {signal_instance_in.raw['name'] if signal_instance_in.raw and signal_instance_in.raw['name'] else signal_instance_in.raw['variant']}. Error: {e}"
+                    )
                     db_session.rollback()
                     continue
                 else:
