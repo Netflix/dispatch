@@ -123,11 +123,15 @@ export default {
       }
 
       if (this.project) {
-        filterOptions.filters = {
-          project_id: this.project_id,
-          enabled: ["true"],
+        filterOptions = {
+          ...filterOptions,
+          filters: {
+            project: [this.project],
+          },
         }
       }
+
+      filterOptions.filters["enabled"] = ["true"]
 
       filterOptions = SearchUtils.createParametersFromTableOptions(
         { ...filterOptions },

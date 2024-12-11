@@ -100,7 +100,7 @@ Please verify the information before relying on it.""".replace(
 ).strip()
 
 INCIDENT_WEEKLY_REPORT_NO_INCIDENTS_DESCRIPTION = """
-No open incidents have been closed in the last week.""".replace(
+No open visibility incidents have been closed in the last week.""".replace(
     "\n", " "
 ).strip()
 
