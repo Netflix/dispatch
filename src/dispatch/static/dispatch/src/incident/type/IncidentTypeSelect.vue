@@ -120,7 +120,6 @@ export default {
         sortBy: ["name"],
         descending: [false],
         itemsPerPage: this.numItems,
-        enabled: ["true"],
       }
 
       if (this.project) {
@@ -131,6 +130,8 @@ export default {
           },
         }
       }
+
+      filterOptions.filters["enabled"] = ["true"]
 
       filterOptions = SearchUtils.createParametersFromTableOptions(
         { ...filterOptions },
