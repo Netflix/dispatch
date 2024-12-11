@@ -180,7 +180,7 @@ class AwsAlbAuthProviderPlugin(AuthenticationProviderPlugin):
 
     @cached(cache=TTLCache(maxsize=1024, ttl=DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_PUBLIC_KEY_CACHE_SECONDS))
     def get_public_key(self, kid: str, region: str):
-        log.debug(f"Cache miss. Requesting key from AWS endpoint.")
+        log.debug("Cache miss. Requesting key from AWS endpoint.")
         url = f"https://public-keys.auth.elb.{region}.amazonaws.com/{kid}"
         req = requests.get(url)
         return req.text
@@ -193,7 +193,7 @@ class AwsAlbAuthProviderPlugin(AuthenticationProviderPlugin):
         encoded_jwt: str = request.headers.get('x-amzn-oidc-data')
         if not encoded_jwt:
             log.error(
-                f"Unable to authenticate. Header x-amzn-oidc-data not found."
+                "Unable to authenticate. Header x-amzn-oidc-data not found."
             )
             raise credentials_exception
 
