@@ -9,6 +9,7 @@ from dispatch.enums import Visibility
 from dispatch.event import service as event_service
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import Incident
+from dispatch.incident.type.models import IncidentType
 from dispatch.incident.type import service as incident_type_service
 from dispatch.participant import service as participant_service
 from dispatch.plugin import service as plugin_service
@@ -334,3 +335,38 @@ def create_task_ticket(task: Task, db_session: Session):
     db_session.commit()
 
     return external_ticket
+
+
+def update_incident_ticket_metadata(
+    db_session: Session,
+    ticket_id: str,
+    project_id: int,
+    incident_id: int,
+    incident_type: IncidentType,
+):
+    """
+    Updates the metadata of an incident ticket.
+    """
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=project_id, plugin_type="ticket"
+    )
+    if not plugin:
+        log.warning("Incident ticket metadata not updated. No ticket plugin enabled.")
+        return
+
+    # we update the external incident ticket
+    try:
+        plugin.instance.update_metadata(
+            ticket_id=ticket_id,
+            metadata=incident_type.get_meta(plugin.plugin.slug),
+        )
+    except Exception as e:
+        log.exception(e)
+        return
+
+    event_service.log_incident_event(
+        db_session=db_session,
+        source=plugin.plugin.title,
+        description="Incident ticket metadata updated",
+        incident_id=incident_id,
+    )

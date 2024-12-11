@@ -312,6 +312,14 @@ class DispatchTicketPlugin(TicketPlugin):
             "resource_type": "dispatch-internal-ticket",
         }
 
+    def update_metadata(
+        self,
+        ticket_id: str,
+        metadata: dict,
+    ):
+        """Updates the metadata of a Dispatch ticket."""
+        return
+
     def update_case_ticket(
         self,
         ticket_id: str,
