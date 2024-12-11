@@ -11,9 +11,11 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
+from sqlalchemy.orm import Session
+
 from dispatch.decorators import timer
 from dispatch.case import service as case_service
-from dispatch.database.core import SessionLocal
+from dispatch.enums import Visibility
 from dispatch.event import service as event_service
 from dispatch.exceptions import NotFoundError
 from dispatch.incident.priority import service as incident_priority_service
@@ -36,9 +38,7 @@ from .models import Incident, IncidentCreate, IncidentRead, IncidentUpdate
 log = logging.getLogger(__name__)
 
 
-def resolve_and_associate_role(
-    db_session: SessionLocal, incident: Incident, role: ParticipantRoleType
-):
+def resolve_and_associate_role(db_session: Session, incident: Incident, role: ParticipantRoleType):
     """For a given role type resolve which individual email should be assigned that role."""
     email_address = None
     service_id = None
@@ -66,12 +66,12 @@ def resolve_and_associate_role(
 
 
 @timer
-def get(*, db_session, incident_id: int) -> Optional[Incident]:
+def get(*, db_session: Session, incident_id: int) -> Optional[Incident]:
     """Returns an incident based on the given id."""
     return db_session.query(Incident).filter(Incident.id == incident_id).first()
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Incident]:
+def get_by_name(*, db_session: Session, project_id: int, name: str) -> Optional[Incident]:
     """Returns an incident based on the given name."""
     return (
         db_session.query(Incident)
@@ -81,7 +81,9 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Incident]
     )
 
 
-def get_all_open_by_incident_type(*, db_session, incident_type_id: int) -> List[Optional[Incident]]:
+def get_all_open_by_incident_type(
+    *, db_session: Session, incident_type_id: int
+) -> List[Optional[Incident]]:
     """Returns all non-closed incidents based on the given incident type."""
     return (
         db_session.query(Incident)
@@ -91,7 +93,9 @@ def get_all_open_by_incident_type(*, db_session, incident_type_id: int) -> List[
     )
 
 
-def get_by_name_or_raise(*, db_session, project_id: int, incident_in: IncidentRead) -> Incident:
+def get_by_name_or_raise(
+    *, db_session: Session, project_id: int, incident_in: IncidentRead
+) -> Incident:
     """Returns an incident based on a given name or raises ValidationError"""
     incident = get_by_name(db_session=db_session, project_id=project_id, name=incident_in.name)
 
@@ -111,12 +115,14 @@ def get_by_name_or_raise(*, db_session, project_id: int, incident_in: IncidentRe
     return incident
 
 
-def get_all(*, db_session, project_id: int) -> List[Optional[Incident]]:
+def get_all(*, db_session: Session, project_id: int) -> List[Optional[Incident]]:
     """Returns all incidents."""
     return db_session.query(Incident).filter(Incident.project_id == project_id)
 
 
-def get_all_by_status(*, db_session, status: str, project_id: int) -> List[Optional[Incident]]:
+def get_all_by_status(
+    *, db_session: Session, status: str, project_id: int
+) -> List[Optional[Incident]]:
     """Returns all incidents based on the given status."""
     return (
         db_session.query(Incident)
@@ -126,7 +132,7 @@ def get_all_by_status(*, db_session, status: str, project_id: int) -> List[Optio
     )
 
 
-def get_all_last_x_hours(*, db_session, hours: int) -> List[Optional[Incident]]:
+def get_all_last_x_hours(*, db_session: Session, hours: int) -> List[Optional[Incident]]:
     """Returns all incidents in the last x hours."""
     now = datetime.utcnow()
     return (
@@ -135,7 +141,7 @@ def get_all_last_x_hours(*, db_session, hours: int) -> List[Optional[Incident]]:
 
 
 def get_all_last_x_hours_by_status(
-    *, db_session, status: str, hours: int, project_id: int
+    *, db_session: Session, status: str, hours: int, project_id: int
 ) -> List[Optional[Incident]]:
     """Returns all incidents of a given status in the last x hours."""
     now = datetime.utcnow()
@@ -168,7 +174,7 @@ def get_all_last_x_hours_by_status(
         )
 
 
-def create(*, db_session, incident_in: IncidentCreate) -> Incident:
+def create(*, db_session: Session, incident_in: IncidentCreate) -> Incident:
     """Creates a new incident."""
     project = project_service.get_by_name_or_default(
         db_session=db_session, project_in=incident_in.project
@@ -327,7 +333,7 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
     return incident
 
 
-def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> Incident:
+def update(*, db_session: Session, incident: Incident, incident_in: IncidentUpdate) -> Incident:
     """Updates an existing incident."""
     incident_type = incident_type_service.get_by_name_or_default(
         db_session=db_session,
@@ -428,7 +434,72 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
     return incident
 
 
-def delete(*, db_session, incident_id: int):
+def delete(*, db_session: Session, incident_id: int):
     """Deletes an existing incident."""
     db_session.query(Incident).filter(Incident.id == incident_id).delete()
     db_session.commit()
+
+
+def generate_incident_summary(*, db_session: Session, incident: Incident) -> str:
+    """Generates a summary of the incident."""
+    # Skip summary for restricted incidents
+    if incident.visibility == Visibility.restricted:
+        return "Incident summary not generated for restricted incident."
+
+    # Skip if no incident review document
+    if not incident.incident_review_document or not incident.incident_review_document.resource_id:
+        log.info(
+            f"Incident summary not generated for incident {incident.id}. No review document found."
+        )
+        return "Incident summary not generated. No review document found."
+
+    # Don't generate if no enabled ai plugin or storage plugin
+    ai_plugin = plugin_service.get_active_instance(
+        db_session=db_session, plugin_type="artificial-intelligence", project_id=incident.project.id
+    )
+    if not ai_plugin:
+        log.info(
+            f"Incident summary not generated for incident {incident.id}. No AI plugin enabled."
+        )
+        return "Incident summary not generated. No AI plugin enabled."
+
+    storage_plugin = plugin_service.get_active_instance(
+        db_session=db_session, plugin_type="storage", project_id=incident.project.id
+    )
+
+    if not storage_plugin:
+        log.info(
+            f"Incident summary not generated for incident {incident.id}. No storage plugin enabled."
+        )
+        return "Incident summary not generated. No storage plugin enabled."
+
+    try:
+        pir_doc = storage_plugin.instance.get(
+            file_id=incident.incident_review_document.resource_id,
+            mime_type="text/plain",
+        )
+        prompt = f"""
+            Given the text of the security post-incident review document below,
+            provide answers to the following questions in a paragraph format.
+            Do not include the questions in your response.
+            1. What is the summary of what happened?
+            2. What were the overall risk(s)?
+            3. How were the risk(s) mitigated?
+            4. How was the incident resolved?
+            5. What are the follow-up tasks?
+
+            {pir_doc}
+        """
+
+        response = ai_plugin.instance.chat_completion(prompt=prompt)
+        summary = response["choices"][0]["message"]["content"]
+
+        incident.summary = summary
+        db_session.add(incident)
+        db_session.commit()
+
+        return summary
+
+    except Exception as e:
+        log.exception(f"Error trying to generate summary for incident {incident.id}: {e}")
+        return "Incident summary not generated. An error occurred."
