@@ -29,6 +29,7 @@ from dispatch.plugin import service as plugin_service
 from dispatch.project import service as project_service
 from dispatch.tag import service as tag_service
 from dispatch.term import service as term_service
+from dispatch.ticket import flows as ticket_flows
 
 from .enums import IncidentStatus
 from .models import Incident, IncidentCreate, IncidentRead, IncidentUpdate
@@ -384,6 +385,16 @@ def update(*, db_session: Session, incident: Incident, incident_in: IncidentUpda
         incident_cost_service.update_incident_response_cost(
             incident_id=incident.id, db_session=db_session
         )
+        # if the new incident type has plugin metadata and the
+        # project key of the ticket is the same, also update the ticket with the new metadata
+        if incident_type.plugin_metadata:
+            ticket_flows.update_incident_ticket_metadata(
+                db_session=db_session,
+                ticket_id=incident.ticket.resource_id,
+                project_id=incident.project.id,
+                incident_id=incident.id,
+                incident_type=incident_type,
+            )
 
     update_data = incident_in.dict(
         skip_defaults=True,
