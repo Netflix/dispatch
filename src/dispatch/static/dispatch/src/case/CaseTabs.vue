@@ -112,6 +112,22 @@
             />
           </template>
         </DTooltip>
+
+        <!-- Go to legacy edit screen -->
+        <DTooltip text="Open legacy edit pane" hotkeys="">
+          <template #activator="{ tooltip }">
+            <v-btn
+              class="text-subtitle-2 font-weight-regular"
+              icon="mdi-square-edit-outline"
+              variant="text"
+              size="small"
+              :disabled="loading"
+              :href="editPageUrl()"
+              target="_self"
+              v-bind="tooltip"
+            />
+          </template>
+        </DTooltip>
       </div>
     </div>
 
@@ -222,6 +238,10 @@ watch(
   },
   { immediate: true, deep: true }
 )
+
+const editPageUrl = () => {
+  return `${route.path}/edit`
+}
 </script>
 
 <style scoped>
