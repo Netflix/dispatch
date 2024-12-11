@@ -15,7 +15,7 @@ from typing import TypedDict
 import boto3
 from psycopg2.errors import UniqueViolation
 from pydantic import ValidationError
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, ResourceClosedError
 from sqlalchemy.orm import Session
 
 from dispatch.metrics import provider as metrics_provider
@@ -124,9 +124,15 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                             f"Encountered an integrity error when trying to create a signal instance: {e}"
                         )
                     continue
+                except ResourceClosedError as e:
+                    log.warning(
+                        f"Encountered an error when trying to create a signal instance. The plugin will retry again as the message hasn't been deleted from the SQS queue. Signal name/variant: {signal_instance_in.raw['name'] if signal_instance_in.raw and signal_instance_in.raw['name'] else signal_instance_in.raw['variant']}. Error: {e}"
+                    )
+                    db_session.rollback()
+                    continue
                 except Exception as e:
                     log.exception(
-                        f"Unable to create signal instance. Signal name/variant: {signal_instance_in.raw['name'] if signal_instance_in.raw and signal_instance_in.raw['name'] else signal_instance_in.raw['variant']}. Error: {e}"
+                        f"Encountered an error when trying to create a signal instance. Signal name/variant: {signal_instance_in.raw['name'] if signal_instance_in.raw and signal_instance_in.raw['name'] else signal_instance_in.raw['variant']}. Error: {e}"
                     )
                     db_session.rollback()
                     continue
