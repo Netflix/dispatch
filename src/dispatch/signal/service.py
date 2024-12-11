@@ -596,7 +596,7 @@ def create_instance(
             signal_instance.id = signal_instance_in.raw["id"]
 
     if signal_instance.id and not is_valid_uuid(signal_instance.id):
-        msg = f"Invalid signal id format. Expecting UUIDv4 format. Signal id: {signal_instance.id}. Signal name/variant: {signal_instance.raw['name'] if signal_instance and signal_instance.raw and signal_instance.get('name') else signal_instance.raw['variant']}"
+        msg = f"Invalid signal id format. Expecting UUIDv4 format. Signal id: {signal_instance.id}. Signal name/variant: {signal_instance.raw['name'] if signal_instance and signal_instance.raw and signal_instance.raw.get('name') else signal_instance.raw['variant']}"
         log.warn(msg)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
