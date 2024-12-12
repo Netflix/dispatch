@@ -96,34 +96,26 @@ def test_fetch_case_event__no_enabled_plugins(
     assert not fetch_case_events(case, cost_model_activity, oldest="0", db_session=session)
 
 
-def test_calculate_case_response_cost(
-    session,
+def test_update_case_participant_activities__create(
     case,
-    case_cost_type,
-    cost_model_activity,
+    session,
     conversation_plugin_instance,
-    conversation,
+    cost_model_activity,
     participant,
+    case_cost_type,
+    conversation,
 ):
-    """Tests that the case cost is calculated correctly when a cost model is enabled."""
-    from datetime import timedelta
-    import math
-    from dispatch.case_cost.service import update_case_response_cost, get_hourly_rate
+    """Tests that case participant activity is created the first time a case updates its response cost."""
+    from dispatch.case_cost.service import update_case_participant_activities
     from dispatch.case_cost_type import service as case_cost_type_service
-    from dispatch.participant_activity.service import (
-        get_all_case_participant_activities_for_case,
-    )
 
-    SECONDS_IN_HOUR = 3600
-    orig_total_case_cost = case.total_cost
-
-    # Set incoming plugin events.
+    # Set up incoming plugin events.
     conversation_plugin_instance.project_id = case.project.id
     cost_model_activity.plugin_event.plugin = conversation_plugin_instance.plugin
     participant.user_conversation_id = "0XDECAFBAD"
     participant.case = case
 
-    # Set up a default case costs type.
+    # Set up a default case cost type.
     for cost_type in case_cost_type_service.get_all(db_session=session):
         cost_type.default = False
     case_cost_type.default = True
@@ -133,56 +125,53 @@ def test_calculate_case_response_cost(
     case.case_type.cost_model.enabled = True
     case.case_type.cost_model.activities = [cost_model_activity]
 
+    # Set up case conversation.
     case.conversation = conversation
     case.dedicated_channel = True
 
-    # Calculates and updates the case cost.
-    cost = update_case_response_cost(case_id=case.id, db_session=session)
-    activities = get_all_case_participant_activities_for_case(db_session=session, case_id=case.id)
-    assert activities
+    # Assert that the case participant activity is created.
+    assert update_case_participant_activities(case=case, db_session=session)
 
-    # Evaluate expected case cost.
-    participants_total_response_time_seconds = timedelta(seconds=0)
-    for activity in activities:
-        participants_total_response_time_seconds += activity.ended_at - activity.started_at
-    hourly_rate = get_hourly_rate(case.project)
-    expected_case_cost = (
-        math.ceil(
-            (participants_total_response_time_seconds.seconds / SECONDS_IN_HOUR) * hourly_rate
-        )
-        + orig_total_case_cost
+
+def test_update_case_participant_activities__no_cost_model(case, session):
+    """Tests that the case participant activity is not created if the cost model is not enabled."""
+    from dispatch.case_cost.service import update_case_participant_activities
+    from dispatch.participant_activity.service import (
+        get_all_case_participant_activities_for_case,
     )
 
-    assert cost
-    assert cost == expected_case_cost
-    assert cost == case.total_cost
+    case.cost_model = None
+    assert not update_case_participant_activities(case=case, db_session=session)
+
+    activities = get_all_case_participant_activities_for_case(db_session=session, case_id=case.id)
+    assert not activities
 
 
-def test_calculate_case_response_cost__no_enabled_plugins(
-    session,
+def test_update_case_participant_activities__no_enabled_plugins(
     case,
-    case_cost_type,
+    session,
     cost_model_activity,
-    plugin_instance,
-    conversation,
     participant,
+    case_cost_type,
+    conversation,
+    plugin_instance,
 ):
-    """Tests that the case cost is calculated correctly when a cost model is enabled."""
+    """Tests that the case participant activity is not created if plugins are not enabled."""
     from dispatch.case.service import get
-    from dispatch.case_cost.service import update_case_response_cost
+    from dispatch.case_cost.service import update_case_participant_activities
     from dispatch.case_cost_type import service as case_cost_type_service
     from dispatch.participant_activity.service import (
         get_all_case_participant_activities_for_case,
     )
 
-    # Disable the plugin instance for the cost model plugin event.
+    # Set up. Disable the plugin instance for the cost model plugin event.
     plugin_instance.project_id = case.project.id
     plugin_instance.enabled = False
     cost_model_activity.plugin_event.plugin = plugin_instance.plugin
     participant.user_conversation_id = "0XDECAFBAD"
     participant.case = case
 
-    # Set up a default case costs type.
+    # Set up a default case cost type.
     for cost_type in case_cost_type_service.get_all(db_session=session):
         cost_type.default = False
     case_cost_type.default = True
@@ -194,52 +183,68 @@ def test_calculate_case_response_cost__no_enabled_plugins(
     case.case_type.cost_model.activities = [cost_model_activity]
     case.conversation = conversation
 
-    # Calculates and updates the case cost.
-    cost = update_case_response_cost(case_id=case.id, db_session=session)
+    # Assert that no participant activity was created.
+    assert not update_case_participant_activities(case=case, db_session=session)
+
     activities = get_all_case_participant_activities_for_case(db_session=session, case_id=case.id)
     assert not activities
-    assert not cost
-    assert not case.total_cost
 
 
-def test_update_case_response_cost__no_cost_model(case, session, case_cost_type):
-    """Tests that the case response cost is not created if the case type has no cost model."""
-    from dispatch.case import service as case_service
-    from dispatch.case_cost.service import update_case_response_cost
+def test_calculate_case_response_cost(case, session, participant_activity):
+    """Tests that the case response cost is calculated correctly."""
+    from dispatch.case_cost.service import (
+        calculate_case_response_cost,
+        calculate_response_cost,
+        get_hourly_rate,
+    )
+
+    # Set up participant activity.
+    participant_activity.case = case
+
+    # Assert that the response cost was calculated correctly.
+    response_cost = calculate_case_response_cost(case=case, db_session=session)
+    assert response_cost == calculate_response_cost(
+        hourly_rate=get_hourly_rate(case.project),
+        total_response_time_seconds=(
+            participant_activity.ended_at - participant_activity.started_at
+        ).total_seconds(),
+    )
+
+
+def test_update_case_response_cost(case, session, participant_activity, case_cost_type):
+    """Tests that the case response cost is created correctly."""
+    from dispatch.case_cost.service import (
+        update_case_response_cost,
+    )
     from dispatch.case_cost_type import service as case_cost_type_service
 
-    # Set up a default case costs type.
+    # Set up participant activity.
+    participant_activity.case = case
+
+    # Set up default case cost type.
     for cost_type in case_cost_type_service.get_all(db_session=session):
         cost_type.default = False
-    case_cost_type.default = True
     case_cost_type.project = case.project
+    case_cost_type.default = True
 
-    case = case_service.get(db_session=session, case_id=case.id)
-    case.case_type.cost_model = None
-
-    # The case response cost should not be created without a cost model.
-    case_response_cost_amount = update_case_response_cost(case_id=case.id, db_session=session)
-
-    assert not case_response_cost_amount
+    # Assert that there exists a case response cost.
+    assert update_case_response_cost(case=case, db_session=session)
 
 
-def test_update_case_response_cost__fail(case, session):
-    """Tests that the case response cost is not created if the project has no default cost_type."""
-    from dispatch.case import service as case_service
+def test_update_case_response_cost__fail_no_default_cost_type(case, session):
+    """Tests that the case response cost is not created if the project has no default cost type."""
     from dispatch.case_cost.service import (
         update_case_response_cost,
         get_by_case_id,
     )
     from dispatch.case_cost_type import service as case_cost_type_service
 
-    case = case_service.get(db_session=session, case_id=case.id)
-
     # Ensure there is no default cost type for this project.
     for cost_type in case_cost_type_service.get_all(db_session=session):
         cost_type.default = False
 
-    # Fail to create the initial case response cost.
-    assert not update_case_response_cost(case_id=case.id, db_session=session)
+    # Assert that the initial case response cost creation failed.
+    assert not update_case_response_cost(case=case, db_session=session)
 
-    # Validate that the case cost was not created nor saved in the database.
+    # Validate that the case cost was neither created nor saved in the database.
     assert not get_by_case_id(db_session=session, case_id=case.id)
