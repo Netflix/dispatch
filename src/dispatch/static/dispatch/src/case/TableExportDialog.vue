@@ -92,6 +92,11 @@
                 <template #item.status="{ item }">
                   <case-status :status="item.status" :id="item.id" />
                 </template>
+                <template #item.tags="{ item }">
+                  <span v-for="tag in item.tags" :key="tag">
+                    <v-chip> {{ tag.tag_type.name }}/{{ tag.name }} </v-chip>
+                  </span>
+                </template>
               </v-data-table>
               <v-spacer />
               <v-btn @click="closeExport()" variant="text"> Cancel </v-btn>
