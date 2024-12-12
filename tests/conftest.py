@@ -279,7 +279,7 @@ def admin_user(session):
     # we need to create a new user with the admin role
     user = DispatchUserFactory()
     organization = OrganizationFactory()
-    user_organization = DispatchUserOrganizationFactory(
+    DispatchUserOrganizationFactory(
         dispatch_user=user, organization=organization, role=UserRoles.admin
     )
 
