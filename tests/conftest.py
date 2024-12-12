@@ -48,6 +48,7 @@ from .factories import (
     IncidentFactory,
     IncidentPriorityFactory,
     IncidentRoleFactory,
+    IncidentSeverityFactory,
     IncidentTypeFactory,
     IndividualContactFactory,
     NotificationFactory,
@@ -349,6 +350,11 @@ def incident_priority(session):
 @pytest.fixture
 def incident_priorities(session):
     return [IncidentPriorityFactory(), IncidentPriorityFactory()]
+
+
+@pytest.fixture
+def incident_severity(session):
+    return IncidentSeverityFactory()
 
 
 @pytest.fixture
