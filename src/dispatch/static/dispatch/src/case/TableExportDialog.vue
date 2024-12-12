@@ -217,6 +217,13 @@ export default {
       return CaseApi.getAll(params)
         .then((response) => {
           let items = response.data.items
+          items = items.map((item) => {
+            if ("tags" in item) {
+              const tags = item["tags"].map((tag) => `${tag.tag_type.name}/${tag.name}`)
+              item["tags"] = tags.join(", ")
+            }
+            return item
+          })
           Util.exportCSV(items, "case-details-export.csv")
           this.exportLoading = false
           this.closeExport()
