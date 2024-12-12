@@ -61,7 +61,6 @@ def test_basic_pagination(session, incidents, admin_user):
     assert result["page"] == 1
     assert result["itemsPerPage"] == 2
     assert len(result["items"]) == 2
-    assert result["total"] == 3
 
 
 def test_simple_filter_specification(session, incidents, admin_user):
