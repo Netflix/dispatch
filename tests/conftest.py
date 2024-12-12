@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy_utils import drop_database, database_exists
 from starlette.config import environ
-from starlette.testclient import TestClient
+from fastapi.testclient import TestClient
 
 # set test config
 environ["DATABASE_CREDENTIALS"] = "postgres:dispatch"
@@ -19,6 +19,7 @@ environ["STATIC_DIR"] = ""  # we don't need static files for tests
 from dispatch import config
 from dispatch.database.core import engine
 from dispatch.database.manage import init_database
+from dispatch.enums import Visibility, UserRoles
 
 from .database import Session
 from .factories import (
@@ -32,6 +33,7 @@ from .factories import (
     ConversationFactory,
     DefinitionFactory,
     DispatchUserFactory,
+    DispatchUserOrganizationFactory,
     DocumentFactory,
     EmailTemplateFactory,
     EntityFactory,
@@ -98,13 +100,13 @@ def pytest_runtest_makereport(item, call):
 @pytest.fixture(scope="session")
 def testapp():
     # we only want to use test plugins so unregister everybody else
-    from dispatch.main import app
+    from dispatch.main import api
     from dispatch.plugins.base import plugins, unregister
 
     for p in plugins.all():
-        unregister(p)
+        unregister(p.__class__)
 
-    yield app
+    yield api
 
 
 @pytest.fixture(scope="session")
@@ -137,7 +139,7 @@ def session(db):
 
 
 @pytest.fixture(scope="function")
-def client(testapp, session, client):
+def client(testapp, session):
     yield TestClient(testapp)
 
 
@@ -270,6 +272,18 @@ def workflow_plugin():
 @pytest.fixture
 def user(session):
     return DispatchUserFactory()
+
+
+@pytest.fixture
+def admin_user(session):
+    # we need to create a new user with the admin role
+    user = DispatchUserFactory()
+    organization = OrganizationFactory()
+    DispatchUserOrganizationFactory(
+        dispatch_user=user, organization=organization, role=UserRoles.admin
+    )
+
+    return user
 
 
 @pytest.fixture
@@ -530,6 +544,24 @@ def case_types(session):
 @pytest.fixture
 def incident(session):
     return IncidentFactory()
+
+
+@pytest.fixture()
+def incidents(session):
+    return [
+        IncidentFactory(
+            title="Test Incident 1",
+            description="Description 1",
+            visibility=Visibility.open,
+            tags=[TagFactory()],
+        ),
+        IncidentFactory(
+            title="Test Incident 2", description="Description 2", visibility=Visibility.restricted
+        ),
+        IncidentFactory(
+            title="Another Incident", description="Description 3", visibility=Visibility.open
+        ),
+    ]
 
 
 @pytest.fixture
