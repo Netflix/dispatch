@@ -286,6 +286,8 @@ class CaseReadMinimal(CaseBase):
     dedicated_channel: Optional[bool]
     name: Optional[NameStr]
     project: ProjectRead
+    tags: Optional[List[TagRead]] = []
+    ticket: Optional[TicketRead] = None
     reporter: Optional[ParticipantReadMinimal]
     reported_at: Optional[datetime] = None
     total_cost: float | None
