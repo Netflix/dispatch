@@ -93,6 +93,11 @@
                 <template #item.status="{ item }">
                   <incident-status :status="item.status" :id="item.id" />
                 </template>
+                <template #item.tags="{ item }">
+                  <span v-for="tag in item.tags" :key="tag">
+                    <v-chip> {{ tag.tag_type.name }}/{{ tag.name }} </v-chip>
+                  </span>
+                </template>
               </v-data-table>
               <v-spacer />
               <v-btn @click="closeExport()" variant="text"> Cancel </v-btn>
@@ -303,6 +308,13 @@ export default {
           sortable: false,
         },
         {
+          text: "Tags",
+          title: "Tags",
+          key: "tags",
+          value: "tags",
+          sortable: false,
+        },
+        {
           text: "Incident Document Weblink",
           title: "Incident Document Weblink",
           key: "incident_document.weblink",
@@ -366,6 +378,13 @@ export default {
       return IncidentApi.getAll(params)
         .then((response) => {
           let items = response.data.items
+          items = items.map((item) => {
+            if ("tags" in item) {
+              const tags = item["tags"].map((tag) => `${tag.tag_type.name}/${tag.name}`)
+              item["tags"] = tags.join(", ")
+            }
+            return item
+          })
           const fieldOrder = this.selectedFields.map((field) => field.value)
           Util.exportCSVOrdered(items, "incident-details-export.csv", fieldOrder)
           this.exportLoading = false
