@@ -155,14 +155,14 @@ def test_role_based_filtering(session, incidents, user, admin_user):
     assert len(admin_result["items"]) >= len(member_result["items"])
 
 
-def test_include_keys_functionality(session, incidents, admin_user):
+def test_include_keys_functionality(session, case, admin_user):
     """Test functionality of include_keys parameter."""
     from dispatch.common.utils.views import create_pydantic_include
-    from dispatch.incident.models import IncidentPagination
+    from dispatch.case.models import CasePagination
 
     result = search_filter_sort_paginate(
         db_session=session,
-        model="Incident",
+        model="Case",
         include_keys=["tags"],
         current_user=admin_user,
         role=UserRoles.admin,
@@ -177,7 +177,7 @@ def test_include_keys_functionality(session, incidents, admin_user):
         "page": ...,
         "total": ...,
     }
-    marshalled = json.loads(IncidentPagination(**result).json(include=include_fields))
+    marshalled = json.loads(CasePagination(**result).json(include=include_fields))
     assert "tags" in marshalled["items"][0].keys()
 
 
