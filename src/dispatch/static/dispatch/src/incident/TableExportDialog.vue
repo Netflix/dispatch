@@ -303,6 +303,13 @@ export default {
           sortable: false,
         },
         {
+          text: "Tags",
+          title: "Tags",
+          key: "tags",
+          value: "tags",
+          sortable: false,
+        },
+        {
           text: "Incident Document Weblink",
           title: "Incident Document Weblink",
           key: "incident_document.weblink",

@@ -171,6 +171,7 @@ export default {
         { text: "Severity", value: "case_severity.name", sortable: false },
         { text: "Priority", value: "case_priority.name", sortable: false },
         { text: "Assignee", value: "assignee.email", sortable: false },
+        { text: "Tags", value: "tags", sortable: false },
         { text: "Document Weblink", value: "case_document.weblink", sortable: false },
         { text: "Storage Weblink", value: "storage.weblink", sortable: false },
       ],
