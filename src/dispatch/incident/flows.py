@@ -546,14 +546,18 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
                         document=document, db_session=db_session
                     )
 
-    # if there are any associated cases, we close them as well
-    for case in incident.cases:
+for case in incident.cases:
+    try:
         case.resolution = (
             f"Closed as part of incident {incident.name}. See incident for more details."
         )
         case.resolution_reason = CaseResolutionReason.escalated
         case.status = CaseStatus.closed
         case_flows.case_closed_status_flow(case=case, db_session=db_session)
+    except Exception as e:
+        log.exception(
+            f"Failed to close case {case.name} while closing incident {incident.name}. Error: {str(e)}"
+        )
 
     # we send a direct message to the incident commander asking to review
     # the incident's information and to tag the incident if appropriate
