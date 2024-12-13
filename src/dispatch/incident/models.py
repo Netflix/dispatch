@@ -300,6 +300,11 @@ class IncidentCreate(IncidentBase):
     tags: Optional[List[TagRead]] = []
 
 
+class IncidentReadBasic(DispatchBase):
+    id: PrimaryKey
+    name: Optional[NameStr]
+
+
 IncidentReadMinimal = ForwardRef("IncidentReadMinimal")
 
 
@@ -309,7 +314,7 @@ class IncidentReadMinimal(IncidentBase):
     commander: Optional[ParticipantReadMinimal]
     commanders_location: Optional[str]
     created_at: Optional[datetime] = None
-    duplicates: Optional[List[IncidentReadMinimal]] = []
+    duplicates: Optional[List[IncidentReadBasic]] = []
     incident_costs: Optional[List[IncidentCostRead]] = []
     incident_document: Optional[DocumentRead] = None
     incident_priority: IncidentPriorityReadMinimal
@@ -339,7 +344,7 @@ class IncidentUpdate(IncidentBase):
     commander: Optional[ParticipantUpdate]
     delay_executive_report_reminder: Optional[datetime] = None
     delay_tactical_report_reminder: Optional[datetime] = None
-    duplicates: Optional[List[IncidentReadMinimal]] = []
+    duplicates: Optional[List[IncidentReadBasic]] = []
     incident_costs: Optional[List[IncidentCostUpdate]] = []
     incident_priority: IncidentPriorityBase
     incident_severity: IncidentSeverityBase
@@ -379,7 +384,7 @@ class IncidentRead(IncidentBase):
     delay_executive_report_reminder: Optional[datetime] = None
     delay_tactical_report_reminder: Optional[datetime] = None
     documents: Optional[List[DocumentRead]] = []
-    duplicates: Optional[List[IncidentReadMinimal]] = []
+    duplicates: Optional[List[IncidentReadBasic]] = []
     events: Optional[List[EventRead]] = []
     incident_costs: Optional[List[IncidentCostRead]] = []
     incident_priority: IncidentPriorityRead

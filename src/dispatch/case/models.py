@@ -267,6 +267,16 @@ class CaseCreate(CaseBase):
     tags: Optional[List[TagRead]] = []
 
 
+class CaseReadBasic(DispatchBase):
+    id: PrimaryKey
+    name: Optional[NameStr]
+
+
+class IncidentReadBasic(DispatchBase):
+    id: PrimaryKey
+    name: Optional[NameStr]
+
+
 CaseReadMinimal = ForwardRef("CaseReadMinimal")
 
 
@@ -277,8 +287,8 @@ class CaseReadMinimal(CaseBase):
     case_priority: CasePriorityRead
     case_severity: CaseSeverityRead
     case_type: CaseTypeRead
-    duplicates: Optional[List[CaseReadMinimal]] = []
-    incidents: Optional[List[IncidentReadMinimal]] = []
+    duplicates: Optional[List[CaseReadBasic]] = []
+    incidents: Optional[List[IncidentReadBasic]] = []
     related: Optional[List[CaseReadMinimal]] = []
     closed_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
@@ -308,12 +318,12 @@ class CaseRead(CaseBase):
     conversation: Optional[ConversationRead] = None
     created_at: Optional[datetime] = None
     documents: Optional[List[DocumentRead]] = []
-    duplicates: Optional[List[CaseReadMinimal]] = []
+    duplicates: Optional[List[CaseReadBasic]] = []
     escalated_at: Optional[datetime] = None
     events: Optional[List[EventRead]] = []
     genai_analysis: Optional[dict[str, Any]] = {}
     groups: Optional[List[GroupRead]] = []
-    incidents: Optional[List[IncidentReadMinimal]] = []
+    incidents: Optional[List[IncidentReadBasic]] = []
     name: Optional[NameStr]
     participants: Optional[List[ParticipantRead]] = []
     project: ProjectRead
@@ -337,11 +347,11 @@ class CaseUpdate(CaseBase):
     case_severity: Optional[CaseSeverityBase]
     case_type: Optional[CaseTypeBase]
     closed_at: Optional[datetime] = None
-    duplicates: Optional[List[CaseRead]] = []
+    duplicates: Optional[List[CaseReadBasic]] = []
     related: Optional[List[CaseRead]] = []
     reporter: Optional[ParticipantUpdate]
     escalated_at: Optional[datetime] = None
-    incidents: Optional[List[IncidentReadMinimal]] = []
+    incidents: Optional[List[IncidentReadBasic]] = []
     reported_at: Optional[datetime] = None
     tags: Optional[List[TagRead]] = []
     triage_at: Optional[datetime] = None
