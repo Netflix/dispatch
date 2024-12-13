@@ -120,6 +120,7 @@ export default {
         sortBy: ["name"],
         descending: [false],
         itemsPerPage: this.numItems,
+        filters: {},
       }
 
       if (this.project) {
