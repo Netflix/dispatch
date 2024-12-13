@@ -179,7 +179,7 @@ export default {
                 model: "Project",
                 field: "name",
                 op: "==",
-                value: this.project.name,
+                value: this.project.display_name,
               },
             ],
           }),

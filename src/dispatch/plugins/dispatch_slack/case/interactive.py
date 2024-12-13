@@ -184,7 +184,7 @@ def handle_escalate_case_command(
 
     default_title = case.name
     default_description = case.description
-    default_project = {"text": case.project.name, "value": case.project.id}
+    default_project = {"text": case.project.display_name, "value": case.project.id}
 
     blocks = [
         Context(elements=[MarkdownText(text="Accept the defaults or adjust as needed.")]),
@@ -1303,7 +1303,7 @@ def escalate_button_click(
         description_input(initial_value=case.description),
         project_select(
             db_session=db_session,
-            initial_option={"text": case.project.name, "value": case.project.id},
+            initial_option={"text": case.project.display_name, "value": case.project.id},
             action_id=CaseEscalateActions.project_select,
             dispatch_action=True,
         ),
@@ -1358,7 +1358,7 @@ def handle_project_select_action(
         description_input(),
         project_select(
             db_session=db_session,
-            initial_option={"text": project.name, "value": project.id},
+            initial_option={"text": project.display_name, "value": project.id},
             action_id=CaseEscalateActions.project_select,
             dispatch_action=True,
         ),
@@ -2138,7 +2138,7 @@ def handle_report_project_select_action(
         description_input(),
         project_select(
             db_session=db_session,
-            initial_option={"text": project.name, "value": project.id},
+            initial_option={"text": project.display_name, "value": project.id},
             action_id=CaseReportActions.project_select,
             dispatch_action=True,
         ),
@@ -2243,7 +2243,7 @@ def handle_report_case_type_select_action(
         description_input(),
         project_select(
             db_session=db_session,
-            initial_option={"text": project.name, "value": project.id},
+            initial_option={"text": project.display_name, "value": project.id},
             action_id=CaseReportActions.project_select,
             dispatch_action=True,
         ),

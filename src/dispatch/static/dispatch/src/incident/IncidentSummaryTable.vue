@@ -12,7 +12,7 @@
     <template #item.reporter="{ value }">
       <incident-participant :participant="value" />
     </template>
-    <template #item.project.name="{ item, value }">
+    <template #item.project.display_name="{ item, value }">
       <v-chip size="small" :color="item.project.color">
         {{ value }}
       </v-chip>
@@ -64,7 +64,7 @@ export default {
         { title: "Status", key: "status" },
         { title: "Type", key: "incident_type.name" },
         { title: "Priority", key: "incident_priority.name", width: "10%" },
-        { title: "Project", key: "project.name", sortable: true },
+        { title: "Project", key: "project.display_name", sortable: true },
         { title: "Commander", key: "commander", sortable: false },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],

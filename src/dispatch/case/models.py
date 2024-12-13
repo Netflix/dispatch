@@ -230,6 +230,7 @@ class SignalInstanceRead(DispatchBase):
 class ProjectRead(DispatchBase):
     id: Optional[PrimaryKey]
     name: NameStr
+    display_name: Optional[str]
     color: Optional[str]
     allow_self_join: Optional[bool] = Field(True, nullable=True)
 

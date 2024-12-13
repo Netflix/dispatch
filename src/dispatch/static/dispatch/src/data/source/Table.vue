@@ -45,9 +45,9 @@
                 <b>{{ item.name }}</b>
               </router-link>
             </template>
-            <template #item.project.name="{ item }">
+            <template #item.project.display_name="{ item }">
               <v-chip size="small" :color="item.project.color">
-                {{ item.project.name }}
+                {{ item.project.display_name }}
               </v-chip>
             </template>
             <template #item.source_status="{ item }">
@@ -120,7 +120,7 @@ export default {
     return {
       headers: [
         { title: "Name", value: "name", sortable: true },
-        { title: "Project", value: "project.name", sortable: false },
+        { title: "Project", value: "project.display_name", sortable: false },
         { title: "Environment", value: "source_environment.name", sortable: true },
         { title: "Owner", value: "owner" },
         { title: "Status", value: "source_status", sortable: true },
