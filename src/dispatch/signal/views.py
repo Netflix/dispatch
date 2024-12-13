@@ -158,7 +158,7 @@ def create_engagement(
         )
     except IntegrityError:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=status.HTTP_409_CONFLICT,
             detail=[{"msg": "A signal engagement with this name already exists."}],
         ) from None
 
@@ -191,7 +191,7 @@ def update_engagement(
         )
     except IntegrityError:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_409_CONFLICT,
             detail=[{"msg": "A signal engagement with this name already exists."}],
         ) from None
 
@@ -211,7 +211,7 @@ def create_filter(
         )
     except IntegrityError:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_409_CONFLICT,
             detail=[{"msg": "A signal filter with this name already exists."}],
         ) from None
 
@@ -240,7 +240,7 @@ def update_filter(
         )
     except IntegrityError:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=status.HTTP_409_CONFLICT,
             detail=[{"msg": "A signal filter with this name already exists."}],
         ) from None
 
