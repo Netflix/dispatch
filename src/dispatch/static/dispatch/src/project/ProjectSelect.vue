@@ -77,7 +77,6 @@ export default {
             return project.enabled
           })
         }
-        console.log(`**** the projects json is: ${JSON.stringify(projects)}`)
         return projects
       },
       set(value) {

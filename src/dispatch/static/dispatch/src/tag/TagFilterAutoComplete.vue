@@ -27,7 +27,8 @@
     <template #chip="{ item, props }">
       <v-chip v-bind="props">
         <span v-if="item.raw.tag_type">
-          <span v-if="!project">{{ item.raw.project.display_name }}/</span>{{ item.raw.tag_type.name }}/
+          <span v-if="!project">{{ item.raw.project.display_name }}/</span
+          >{{ item.raw.tag_type.name }}/
         </span>
         <a :href="item.raw.uri" target="_blank" :title="item.raw.description">
           {{ item.raw.name }}
