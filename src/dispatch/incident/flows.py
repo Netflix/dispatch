@@ -4,7 +4,9 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
+from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
+from dispatch.case.enums import CaseResolutionReason, CaseStatus
 from dispatch.case.models import Case
 from dispatch.conference import flows as conference_flows
 from dispatch.conversation import flows as conversation_flows
@@ -543,6 +545,15 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
                     document_flows.mark_document_as_readonly(
                         document=document, db_session=db_session
                     )
+
+    # if there are any associated cases, we close them as well
+    for case in incident.cases:
+        case.resolution = (
+            f"Closed as part of incident {incident.name}. See incident for more details."
+        )
+        case.resolution_reason = CaseResolutionReason.escalated
+        case.status = CaseStatus.closed
+        case_flows.case_closed_status_flow(case=case, db_session=db_session)
 
     # we send a direct message to the incident commander asking to review
     # the incident's information and to tag the incident if appropriate
