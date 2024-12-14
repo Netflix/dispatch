@@ -1,6 +1,6 @@
 from collections import Counter, defaultdict
 from datetime import datetime
-from typing import ForwardRef, List, Optional
+from typing import List, Optional
 
 from pydantic import validator, Field, AnyHttpUrl
 
