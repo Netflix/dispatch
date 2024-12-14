@@ -6,7 +6,7 @@
         <v-icon size="small">mdi-open-in-new</v-icon>
       </a>
     </template>
-    <template #item.project.name="{ item, value }">
+    <template #item.project.display_name="{ item, value }">
       <v-chip size="small" :color="item.project.color">
         {{ value }}
       </v-chip>
@@ -39,7 +39,7 @@ export default {
       headers: [
         { title: "Name", key: "name", sortable: false },
         { title: "Description", key: "description", sortable: false },
-        { title: "Project", key: "project.name", sortable: true },
+        { title: "Project", key: "project.display_name", sortable: true },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
