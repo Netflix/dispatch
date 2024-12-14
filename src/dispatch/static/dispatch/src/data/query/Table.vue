@@ -35,9 +35,9 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #item.project.name="{ item }">
+            <template #item.project.display_name="{ item }">
               <v-chip size="small" :color="item.project.color">
-                {{ item.project.name }}
+                {{ item.project.display_name }}
               </v-chip>
             </template>
             <template #item.data-table-actions="{ item }">
@@ -86,7 +86,7 @@ export default {
     return {
       headers: [
         { title: "Name", value: "name", sortable: true },
-        { title: "Project", value: "project.name", sortable: false },
+        { title: "Project", value: "project.display_name", sortable: false },
         { title: "Description", value: "description", sortable: false },
         { title: "Language", value: "language", sortable: true },
         {

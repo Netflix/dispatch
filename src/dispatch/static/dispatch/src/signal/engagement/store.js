@@ -41,8 +41,14 @@ const actions = {
           commit("RESET_SELECTED")
           return resp.data
         })
-        .catch((error) => {
-          console.log(error)
+        .catch((err) => {
+          let errorText = err.response.data.detail.map(({ msg }) => msg).join(" ")
+          commit(
+            "notification_backend/addBeNotification",
+            { text: `Error trying to save: ${errorText}`, type: "exception" },
+            { root: true }
+          )
+          commit("RESET_SELECTED")
           commit("SET_SELECTED_LOADING", false)
         })
     } else {
@@ -55,7 +61,14 @@ const actions = {
           )
           commit("SET_SELECTED_LOADING", false)
         })
-        .catch(() => {
+        .catch((err) => {
+          let errorText = err.response.data.detail.map(({ msg }) => msg).join(" ")
+          commit(
+            "notification_backend/addBeNotification",
+            { text: `Error trying to save: ${errorText}`, type: "exception" },
+            { root: true }
+          )
+          commit("RESET_SELECTED")
           commit("SET_SELECTED_LOADING", false)
         })
     }

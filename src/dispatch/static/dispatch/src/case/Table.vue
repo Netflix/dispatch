@@ -79,9 +79,9 @@
                 :dedicatedChannel="item.dedicated_channel"
               />
             </template>
-            <template #item.project.name="{ item }">
+            <template #item.project.display_name="{ item }">
               <v-chip size="small" :color="item.project.color">
-                {{ item.project.name }}
+                {{ item.project.display_name }}
               </v-chip>
             </template>
             <template #item.case_costs="{ value }" v-if="auth.currentUser.experimental_features">
@@ -228,7 +228,7 @@ function loadHeaders() {
     { title: "Type", value: "case_type.name", sortable: true },
     { title: "Severity", value: "case_severity.name", sortable: true },
     { title: "Priority", value: "case_priority.name", sortable: true },
-    { title: "Project", value: "project.name", sortable: true },
+    { title: "Project", value: "project.display_name", sortable: true },
     { title: "Assignee", value: "assignee", sortable: false },
     { title: "Cost", key: "case_costs", sortable: false, experimental_features: true },
     { title: "Reported At", value: "reported_at", sortable: true },

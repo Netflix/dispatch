@@ -13,7 +13,7 @@
       </v-card-title>
     </v-card>
     <v-data-table :headers="headers" :items="items" :loading="loading" :search="search">
-      <template #item.project.name="{ item, value }">
+      <template #item.project.display_name="{ item, value }">
         <v-chip size="small" :color="item.project.color">
           {{ value }}
         </v-chip>
@@ -45,7 +45,7 @@ export default {
       headers: [
         { title: "Name", key: "name", align: "left", width: "10%" },
         { title: "Title", key: "title", sortable: false },
-        { title: "Project", key: "project.name", sortable: true },
+        { title: "Project", key: "project.display_name", sortable: true },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
