@@ -40,7 +40,7 @@ class Project(Base):
         cascade="all, delete-orphan",
     )
 
-    display_name = Column(String, nullable=True)
+    display_name = Column(String, nullable=False, server_default="")
 
     enabled = Column(Boolean, default=True, server_default="t")
     allow_self_join = Column(Boolean, default=True, server_default="t")
@@ -84,7 +84,7 @@ class Project(Base):
 class ProjectBase(DispatchBase):
     id: Optional[PrimaryKey]
     name: NameStr
-    display_name: Optional[str] = Field(None, nullable=True)
+    display_name: Optional[str] = Field("", nullable=False)
     owner_email: Optional[EmailStr] = Field(None, nullable=True)
     owner_conversation: Optional[str] = Field(None, nullable=True)
     annual_employee_cost: Optional[int]
