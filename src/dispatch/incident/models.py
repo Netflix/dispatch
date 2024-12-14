@@ -305,9 +305,6 @@ class IncidentReadBasic(DispatchBase):
     name: Optional[NameStr]
 
 
-IncidentReadMinimal = ForwardRef("IncidentReadMinimal")
-
-
 class IncidentReadMinimal(IncidentBase):
     id: PrimaryKey
     closed_at: Optional[datetime] = None
@@ -334,9 +331,6 @@ class IncidentReadMinimal(IncidentBase):
     tags: Optional[List[TagRead]] = []
     tasks: Optional[List[TaskReadMinimal]] = []
     total_cost: Optional[float]
-
-
-IncidentReadMinimal.update_forward_refs()
 
 
 class IncidentUpdate(IncidentBase):
