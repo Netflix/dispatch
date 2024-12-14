@@ -59,7 +59,7 @@
             </template>
             <template #item.project="{ item }">
               <v-chip size="small" :color="item.project.color">
-                {{ item.project.name }}
+                {{ item.project.display_name }}
               </v-chip>
             </template>
             <template #item.score="{ item }">
