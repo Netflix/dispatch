@@ -1,6 +1,6 @@
 import traceback
 import logging
-from importlib.metadata import entry_points, EntryPoint
+from importlib.metadata import entry_points
 from sqlalchemy.exc import SQLAlchemyError
 
 from dispatch.plugins.base import plugins, register
