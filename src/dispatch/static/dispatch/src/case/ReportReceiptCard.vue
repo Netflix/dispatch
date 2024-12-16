@@ -40,7 +40,7 @@
           <v-divider />
           <v-list-item>
             <v-list-item-title>Project</v-list-item-title>
-            <v-list-item-subtitle>{{ project.name }}</v-list-item-subtitle>
+            <v-list-item-subtitle>{{ project.display_name }}</v-list-item-subtitle>
           </v-list-item>
           <v-divider />
           <v-list-item>

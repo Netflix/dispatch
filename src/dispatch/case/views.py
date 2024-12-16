@@ -117,6 +117,7 @@ def get_cases(
     expand: bool = Query(default=False),
 ):
     """Retrieves all cases."""
+    common["include_keys"] = include
     pagination = search_filter_sort_paginate(model="Case", **common)
 
     if expand:

@@ -38,6 +38,7 @@ const getDefaultSelectedState = () => {
     stable_at: null,
     status: null,
     storage: null,
+    summary: null,
     tags: [],
     tasks: [],
     terms: [],
@@ -585,6 +586,19 @@ const actions = {
       )
     })
   },
+  regenerateSummary({ commit }, incidentId) {
+    IncidentApi.regenerate(incidentId, {}).then((response) => {
+      commit("SET_SELECTED_SUMMARY", response.data)
+      commit(
+        "notification_backend/addBeNotification",
+        {
+          text: "Summary has been successfully regenerated.",
+          type: "success",
+        },
+        { root: true }
+      )
+    })
+  },
   getEnabledPlugins() {
     if (!state.selected.project) {
       return false
@@ -679,6 +693,9 @@ const mutations = {
   },
   SET_CURRENT_USER_ROLE(state, value) {
     state.current_user_role = value
+  },
+  SET_SELECTED_SUMMARY(state, value) {
+    state.selected.summary = value
   },
 }
 

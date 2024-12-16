@@ -47,7 +47,7 @@ from .models import (
     IncidentRead,
     IncidentUpdate,
 )
-from .service import create, delete, get, update
+from .service import create, delete, get, update, generate_incident_summary
 
 log = logging.getLogger(__name__)
 
@@ -144,6 +144,7 @@ def create_incident(
     "/{incident_id}/resources",
     response_model=IncidentRead,
     summary="Creates resources for an existing incident.",
+    dependencies=[Depends(PermissionsDependency([IncidentViewPermission]))],
 )
 def create_incident_resources(
     organization: OrganizationSlug,
@@ -497,3 +498,18 @@ def get_incident_forecast(
             {"name": "Actual", "data": actual[1:]},
         ],
     }
+
+
+@router.get(
+    "/{incident_id}/regenerate",
+    summary="Regenerates incident sumamary",
+    dependencies=[Depends(PermissionsDependency([IncidentEventPermission]))],
+)
+def generate_summary(
+    db_session: DbSession,
+    current_incident: CurrentIncident,
+):
+    return generate_incident_summary(
+        db_session=db_session,
+        incident=current_incident,
+    )

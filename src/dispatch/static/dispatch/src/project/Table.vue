@@ -84,7 +84,8 @@ export default {
   data() {
     return {
       headers: [
-        { title: "Name", value: "name", sortable: true },
+        { title: "Key", value: "name", sortable: true },
+        { title: "Display Name", value: "display_name", sortable: true },
         { title: "Description", value: "description", sortable: false },
         { title: "Annual Employee Cost", value: "annual_employee_cost", sortable: false },
         { title: "Business Year Hours", value: "business_year_hours", sortable: false },
