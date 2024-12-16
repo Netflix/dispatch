@@ -92,6 +92,11 @@
                 <template #item.status="{ item }">
                   <case-status :status="item.status" :id="item.id" />
                 </template>
+                <template #item.tags="{ item }">
+                  <span v-for="tag in item.tags" :key="tag">
+                    <v-chip> {{ tag.tag_type.name }}/{{ tag.name }} </v-chip>
+                  </span>
+                </template>
               </v-data-table>
               <v-spacer />
               <v-btn @click="closeExport()" variant="text"> Cancel </v-btn>
@@ -171,6 +176,7 @@ export default {
         { text: "Severity", value: "case_severity.name", sortable: false },
         { text: "Priority", value: "case_priority.name", sortable: false },
         { text: "Assignee", value: "assignee.email", sortable: false },
+        { text: "Tags", value: "tags", sortable: false },
         { text: "Document Weblink", value: "case_document.weblink", sortable: false },
         { text: "Storage Weblink", value: "storage.weblink", sortable: false },
       ],
@@ -216,6 +222,13 @@ export default {
       return CaseApi.getAll(params)
         .then((response) => {
           let items = response.data.items
+          items = items.map((item) => {
+            if ("tags" in item) {
+              const tags = item["tags"].map((tag) => `${tag.tag_type.name}/${tag.name}`)
+              item["tags"] = tags.join(", ")
+            }
+            return item
+          })
           Util.exportCSV(items, "case-details-export.csv")
           this.exportLoading = false
           this.closeExport()
