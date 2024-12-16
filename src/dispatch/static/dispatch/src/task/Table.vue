@@ -45,9 +45,9 @@
                 {{ item.description }}
               </div>
             </template>
-            <template #item.project.name="{ item }">
+            <template #item.project.display_name="{ item }">
               <v-chip size="small" :color="item.project.color">
-                {{ item.project.name }}
+                {{ item.project.display_name }}
               </v-chip>
             </template>
             <template #item.incident_priority.name="{ item }">
@@ -160,7 +160,7 @@ export default {
         { title: "Assignee", value: "assignees", sortable: false },
         { title: "Description", value: "description", sortable: false },
         { title: "Source", value: "source", sortable: true },
-        { title: "Project", value: "project.name", sortable: false },
+        { title: "Project", value: "project.display_name", sortable: false },
         { title: "Due By", value: "resolve_by", sortable: true },
         { title: "Created At", value: "created_at", sortable: true },
         { title: "Resolved At", value: "resolved_at", sortable: true },

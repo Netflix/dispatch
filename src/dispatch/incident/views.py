@@ -144,6 +144,7 @@ def create_incident(
     "/{incident_id}/resources",
     response_model=IncidentRead,
     summary="Creates resources for an existing incident.",
+    dependencies=[Depends(PermissionsDependency([IncidentViewPermission]))],
 )
 def create_incident_resources(
     organization: OrganizationSlug,

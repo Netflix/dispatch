@@ -44,9 +44,9 @@
                 <span>{{ formatDate(item.created_at) }}</span>
               </v-tooltip>
             </template>
-            <template #item.project.name="{ item }">
+            <template #item.project.display_name="{ item }">
               <v-chip size="small" :color="item.project.color">
-                {{ item.project.name }}
+                {{ item.project.display_name }}
               </v-chip>
             </template>
             <template #item.name="{ item }">
@@ -110,7 +110,7 @@ export default {
         { title: "Participant", value: "participant", sortable: true },
         { title: "Rating", value: "rating", sortable: true },
         { title: "Feedback", value: "feedback", sortable: true },
-        { title: "Project", value: "project.name", sortable: false },
+        { title: "Project", value: "project.display_name", sortable: false },
         { title: "Created At", value: "created_at", sortable: true },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
