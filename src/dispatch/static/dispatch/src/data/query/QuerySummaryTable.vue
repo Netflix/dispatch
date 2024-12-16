@@ -1,6 +1,6 @@
 <template>
   <v-data-table :headers="headers" :items="items">
-    <template #item.project.name="{ item, value }">
+    <template #item.project.display_name="{ item, value }">
       <v-chip size="small" :color="item.project.color">
         {{ value }}
       </v-chip>
@@ -29,7 +29,7 @@ export default {
     return {
       headers: [
         { title: "Name", key: "name", sortable: true },
-        { title: "Project", key: "project.name", sortable: false },
+        { title: "Project", key: "project.display_name", sortable: false },
         { title: "Description", key: "description", sortable: false },
         { title: "Language", key: "language", sortable: true },
         {

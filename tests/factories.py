@@ -15,7 +15,7 @@ from faker import Faker
 from faker.providers import misc
 from pytz import UTC
 
-from dispatch.auth.models import DispatchUser, hash_password  # noqa
+from dispatch.auth.models import DispatchUser, DispatchUserOrganization, hash_password  # noqa
 from dispatch.case.models import Case, CaseRead
 from dispatch.case.priority.models import CasePriority
 from dispatch.case.severity.models import CaseSeverity
@@ -64,6 +64,7 @@ from dispatch.team.models import TeamContact
 from dispatch.term.models import Term
 from dispatch.ticket.models import Ticket
 from dispatch.workflow.models import Workflow, WorkflowInstance
+from dispatch.enums import UserRoles, Visibility
 
 from .database import Session
 
@@ -124,6 +125,19 @@ class OrganizationFactory(BaseFactory):
         if extracted:
             for project in extracted:
                 self.projects.append(project)
+
+
+class DispatchUserOrganizationFactory(BaseFactory):
+    """Dispatch User Organization Factory."""
+
+    dispatch_user = SubFactory(DispatchUserFactory)
+    organization = SubFactory(OrganizationFactory)
+    role = UserRoles.member
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = DispatchUserOrganization
 
 
 class ProjectFactory(BaseFactory):
@@ -770,6 +784,15 @@ class CaseFactory(BaseFactory):
 
         model = Case
 
+    @post_generation
+    def tags(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for tag in extracted:
+                self.tags.append(tag)
+
     class Params:
         status = "New"
 
@@ -919,6 +942,7 @@ class IncidentFactory(BaseFactory):
     incident_severity = SubFactory(IncidentSeverityFactory)
     project = SubFactory(ProjectFactory)
     conversation = SubFactory(ConversationFactory)
+    visibility = Visibility.open
 
     class Meta:
         """Factory Configuration."""
@@ -933,6 +957,15 @@ class IncidentFactory(BaseFactory):
         if extracted:
             for participant in extracted:
                 self.participants.append(participant)
+
+    @post_generation
+    def tags(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for tag in extracted:
+                self.tags.append(tag)
 
 
 class TaskFactory(ResourceBaseFactory):

@@ -6,7 +6,7 @@ from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.incident.models import IncidentReadMinimal
+from dispatch.incident.models import IncidentReadBasic
 from dispatch.models import (
     DispatchBase,
     TimeStampMixin,
@@ -45,7 +45,7 @@ class FeedbackBase(DispatchBase):
     created_at: Optional[datetime]
     rating: FeedbackRating = FeedbackRating.very_satisfied
     feedback: Optional[str] = Field(None, nullable=True)
-    incident: Optional[IncidentReadMinimal]
+    incident: Optional[IncidentReadBasic]
     case: Optional[CaseReadMinimal]
     participant: Optional[ParticipantRead]
 
