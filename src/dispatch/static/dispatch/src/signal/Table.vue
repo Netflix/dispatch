@@ -50,9 +50,9 @@
             <template #item.status="{ item, value }">
               <case-status :status="value" :id="item.id" />
             </template>
-            <template #item.project.name="{ item }">
+            <template #item.project.display_name="{ item }">
               <v-chip size="small" :color="item.project.color">
-                {{ item.project.name }}
+                {{ item.project.display_name }}
               </v-chip>
             </template>
             <template #item.case_type="{ item }">

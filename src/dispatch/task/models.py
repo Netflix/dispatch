@@ -19,7 +19,7 @@ from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.incident.models import IncidentReadMinimal
+from dispatch.incident.models import IncidentReadBasic
 from dispatch.models import ResourceBase, ResourceMixin, PrimaryKey, Pagination
 from dispatch.participant.models import ParticipantRead, ParticipantUpdate
 from dispatch.project.models import ProjectRead
@@ -95,7 +95,7 @@ class TaskBase(ResourceBase):
     created_at: Optional[datetime]
     creator: Optional[ParticipantRead]
     description: Optional[str] = Field(None, nullable=True)
-    incident: IncidentReadMinimal
+    incident: IncidentReadBasic
     owner: Optional[ParticipantRead]
     priority: Optional[str] = Field(None, nullable=True)
     resolve_by: Optional[datetime]

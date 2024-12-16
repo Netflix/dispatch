@@ -315,6 +315,7 @@ class JiraTicketPlugin(TicketPlugin):
                 reporter = get_user_field(client, self.configuration, reporter_email)
 
             project_id, issue_type_name = process_plugin_metadata(incident_type_plugin_metadata)
+            other_fields = create_dict_from_plugin_metadata(incident_type_plugin_metadata)
 
             if not project_id:
                 project_id = self.configuration.default_project_id
@@ -335,6 +336,7 @@ class JiraTicketPlugin(TicketPlugin):
                 "assignee": assignee,
                 "reporter": reporter,
                 "summary": title,
+                **other_fields,
             }
 
             ticket = create(self.configuration, client, issue_fields)
@@ -400,6 +402,31 @@ class JiraTicketPlugin(TicketPlugin):
         )
 
         return update(self.configuration, client, issue, issue_fields, status)
+
+    def update_metadata(
+        self,
+        ticket_id: str,
+        metadata: dict,
+    ):
+        """Updates the metadata of a Jira issue."""
+        client = create_client(self.configuration)
+        issue = client.issue(ticket_id)
+
+        # check to make sure project id matches metadata
+        project_id, issue_type_name = process_plugin_metadata(metadata)
+        if project_id and issue.fields.project.key != project_id:
+            log.warning(
+                f"Project key mismatch between Jira issue {issue.fields.project.key} and metadata {project_id} for ticket {ticket_id}"
+            )
+            return
+        other_fields = create_dict_from_plugin_metadata(metadata)
+        issue_fields = {
+            **other_fields,
+        }
+        if issue_type_name:
+            issue_fields["issuetype"] = {"name": issue_type_name}
+
+        issue.update(fields=issue_fields)
 
     def create_case_ticket(
         self,

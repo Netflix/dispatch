@@ -13,6 +13,7 @@ from typing import Literal
 from uuid import UUID
 
 import requests
+from cachetools import cached, TTLCache
 from fastapi import HTTPException
 from fastapi.security.utils import get_authorization_scheme_param
 from jose import JWTError, jwt
@@ -24,6 +25,9 @@ from starlette.status import HTTP_401_UNAUTHORIZED
 from dispatch.auth.models import DispatchUser, MfaChallenge, MfaChallengeStatus, MfaPayload
 from dispatch.case import service as case_service
 from dispatch.config import (
+    DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_ARN,
+    DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_EMAIL_CLAIM,
+    DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_PUBLIC_KEY_CACHE_SECONDS,
     DISPATCH_AUTHENTICATION_PROVIDER_HEADER_NAME,
     DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS,
     DISPATCH_JWT_AUDIENCE,
@@ -165,6 +169,65 @@ class HeaderAuthProviderPlugin(AuthenticationProviderPlugin):
         return value
 
 
+class AwsAlbAuthProviderPlugin(AuthenticationProviderPlugin):
+    title = "Dispatch Plugin - AWS ALB Authentication Provider"
+    slug = "dispatch-auth-provider-aws-alb"
+    description = "AWS Application Load Balancer authentication provider."
+    version = dispatch_plugin.__version__
+
+    author = "ManyPets"
+    author_url = "https://manypets.com/"
+
+    @cached(cache=TTLCache(maxsize=1024, ttl=DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_PUBLIC_KEY_CACHE_SECONDS))
+    def get_public_key(self, kid: str, region: str):
+        log.debug("Cache miss. Requesting key from AWS endpoint.")
+        url = f"https://public-keys.auth.elb.{region}.amazonaws.com/{kid}"
+        req = requests.get(url)
+        return req.text
+
+    def get_current_user(self, request: Request, **kwargs):
+        credentials_exception = HTTPException(
+            status_code=HTTP_401_UNAUTHORIZED, detail=[{"msg": "Could not validate credentials"}]
+        )
+
+        encoded_jwt: str = request.headers.get('x-amzn-oidc-data')
+        if not encoded_jwt:
+            log.error(
+                "Unable to authenticate. Header x-amzn-oidc-data not found."
+            )
+            raise credentials_exception
+
+        log.debug(f"Header x-amzn-oidc-data header received: {encoded_jwt}")
+
+        # Validate the signer
+        jwt_headers = encoded_jwt.split('.')[0]
+        decoded_jwt_headers = base64.b64decode(jwt_headers)
+        decoded_json = json.loads(decoded_jwt_headers)
+        received_alb_arn = decoded_json['signer']
+
+        if received_alb_arn != DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_ARN:
+            log.error(
+                f"Unable to authenticate. ALB ARN {received_alb_arn} does not match expected ARN {DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_ARN}"
+            )
+            raise credentials_exception
+
+        # Get the key id from JWT headers (the kid field)
+        kid = decoded_json['kid']
+
+        # Get the region from the ARN
+        region = DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_ARN.split(':')[3]
+
+        # Get the public key from regional endpoint
+        log.debug(f"Getting public key for kid {kid} in region {region}.")
+        pub_key = self.get_public_key(kid, region)
+
+        # Get the payload
+        log.debug(f"Decoding {encoded_jwt} with public key {pub_key}.")
+        payload = jwt.decode(encoded_jwt, pub_key, algorithms=['ES256'])
+
+        return payload[DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_EMAIL_CLAIM]
+
+
 class DispatchTicketPlugin(TicketPlugin):
     title = "Dispatch Plugin - Ticket Management"
     slug = "dispatch-ticket"
@@ -248,6 +311,14 @@ class DispatchTicketPlugin(TicketPlugin):
             "weblink": f"{DISPATCH_UI_URL}/{case.project.organization.name}/cases/{resource_id}?project={case.project.name}",
             "resource_type": "dispatch-internal-ticket",
         }
+
+    def update_metadata(
+        self,
+        ticket_id: str,
+        metadata: dict,
+    ):
+        """Updates the metadata of a Dispatch ticket."""
+        return
 
     def update_case_ticket(
         self,

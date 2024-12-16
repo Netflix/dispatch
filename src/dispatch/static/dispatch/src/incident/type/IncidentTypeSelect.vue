@@ -12,7 +12,7 @@
     <template #item="{ props, item }">
       <v-list-item v-bind="props" :title="null">
         <v-list-item-title v-if="!project">
-          {{ item.raw.project.name }}/{{ item.raw.name }}
+          {{ item.raw.project.display_name }}/{{ item.raw.name }}
         </v-list-item-title>
         <v-list-item-title v-else>
           {{ item.raw.name }}
@@ -120,7 +120,7 @@ export default {
         sortBy: ["name"],
         descending: [false],
         itemsPerPage: this.numItems,
-        enabled: ["true"],
+        filters: {},
       }
 
       if (this.project) {
@@ -131,6 +131,8 @@ export default {
           },
         }
       }
+
+      filterOptions.filters["enabled"] = ["true"]
 
       filterOptions = SearchUtils.createParametersFromTableOptions(
         { ...filterOptions },
