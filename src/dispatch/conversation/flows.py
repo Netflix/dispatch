@@ -49,9 +49,15 @@ def create_case_conversation(
     # Do not overwrite a case conversation with one of the same type (thread, channel)
     if case.conversation:
         if case.has_channel:
-            raise RuntimeError("Case already has a dedicated channel conversation.")
+            log.warning(
+                f"Trying to create case conversation but case {case.id} already has a dedicated channel conversation."
+            )
+            return
         if case.has_thread and not case.dedicated_channel:
-            raise RuntimeError("Case already has a thread conversation.")
+            log.warning(
+                "Trying to create case conversation but case {case.id} already has a thread conversation."
+            )
+            return
 
     # This case is a thread version, we send a new messaged (threaded) to the conversation target
     # for the configured case type
@@ -466,11 +472,14 @@ def add_case_participants(
         return
 
     try:
-        plugin.instance.add_to_thread(
-            case.conversation.channel_id,
-            case.conversation.thread_id,
-            participant_emails,
-        )
+        if case.has_thread:
+            plugin.instance.add_to_thread(
+                case.conversation.channel_id,
+                case.conversation.thread_id,
+                participant_emails,
+            )
+        elif case.has_channel:
+            plugin.instance.add(case.conversation.channel_id, participant_emails)
     except Exception as e:
         event_service.log_case_event(
             db_session=db_session,

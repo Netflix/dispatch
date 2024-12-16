@@ -163,6 +163,7 @@ import PluginMetadataInput from "@/plugin/PluginMetadataInput.vue"
 import ServiceSelect from "@/service/ServiceSelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import TemplateSelect from "@/document/template/TemplateSelect.vue"
+import ProjectApi from "@/project/api"
 
 export default {
   setup() {
@@ -220,8 +221,12 @@ export default {
   },
   created() {
     if (this.$route.query.project) {
+      // required for plugin metadata
       this.project = { name: this.$route.query.project }
-      this.incidentProject = this.project
+      ProjectApi.getAll({ q: this.$route.query.project }).then((response) => {
+        this.incidentProject = response.data.items[0]
+        this.project = response.data.items[0]
+      })
     }
   },
 }

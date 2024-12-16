@@ -10,6 +10,8 @@ from dispatch.case.models import CaseRead
 from dispatch.conversation import flows as conversation_flows
 from dispatch.decorators import background_task
 from dispatch.document import flows as document_flows
+from dispatch.email_templates import service as email_template_service
+from dispatch.email_templates.enums import EmailTemplateTypes
 from dispatch.enums import DocumentResourceTypes, EventType, Visibility
 from dispatch.event import service as event_service
 from dispatch.group import flows as group_flows
@@ -130,10 +132,19 @@ def case_add_or_reactivate_participant_flow(
                 case, [participant.individual.email], db_session
             )
 
-        # we send the welcome messages to the participant
-        send_case_welcome_participant_message(
-            participant_email=user_email, case=case, db_session=db_session
-        )
+            # check to see if there is an override welcome message template
+            welcome_template = email_template_service.get_by_type(
+                db_session=db_session,
+                project_id=case.project_id,
+                email_template_type=EmailTemplateTypes.welcome,
+            )
+
+            send_case_welcome_participant_message(
+                participant_email=user_email,
+                case=case,
+                db_session=db_session,
+                welcome_template=welcome_template,
+            )
 
     return participant
 
@@ -1040,11 +1051,25 @@ def case_create_resources_flow(
             conversation_target=conversation_target,
         )
 
+        # check to see if there is an override welcome message template
+        welcome_template = email_template_service.get_by_type(
+            db_session=db_session,
+            project_id=case.project_id,
+            email_template_type=EmailTemplateTypes.welcome,
+        )
+
         for user_email in set(individual_participants):
             send_participant_announcement_message(
                 db_session=db_session,
                 participant_email=user_email,
                 subject=case,
+            )
+
+            send_case_welcome_participant_message(
+                participant_email=user_email,
+                case=case,
+                db_session=db_session,
+                welcome_template=welcome_template,
             )
 
         event_service.log_case_event(

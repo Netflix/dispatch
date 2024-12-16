@@ -33,7 +33,6 @@ from dispatch.entity.models import EntityRead
 from dispatch.enums import Visibility
 from dispatch.event.models import EventRead
 from dispatch.group.models import Group, GroupRead
-from dispatch.incident.models import IncidentReadMinimal
 from dispatch.messaging.strings import CASE_RESOLUTION_DEFAULT
 from dispatch.models import (
     DispatchBase,
@@ -230,6 +229,7 @@ class SignalInstanceRead(DispatchBase):
 class ProjectRead(DispatchBase):
     id: Optional[PrimaryKey]
     name: NameStr
+    display_name: Optional[str]
     color: Optional[str]
     allow_self_join: Optional[bool] = Field(True, nullable=True)
 
@@ -267,6 +267,16 @@ class CaseCreate(CaseBase):
     tags: Optional[List[TagRead]] = []
 
 
+class CaseReadBasic(DispatchBase):
+    id: PrimaryKey
+    name: Optional[NameStr]
+
+
+class IncidentReadBasic(DispatchBase):
+    id: PrimaryKey
+    name: Optional[NameStr]
+
+
 CaseReadMinimal = ForwardRef("CaseReadMinimal")
 
 
@@ -277,8 +287,8 @@ class CaseReadMinimal(CaseBase):
     case_priority: CasePriorityRead
     case_severity: CaseSeverityRead
     case_type: CaseTypeRead
-    duplicates: Optional[List[CaseReadMinimal]] = []
-    incidents: Optional[List[IncidentReadMinimal]] = []
+    duplicates: Optional[List[CaseReadBasic]] = []
+    incidents: Optional[List[IncidentReadBasic]] = []
     related: Optional[List[CaseReadMinimal]] = []
     closed_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
@@ -288,6 +298,8 @@ class CaseReadMinimal(CaseBase):
     project: ProjectRead
     reporter: Optional[ParticipantReadMinimal]
     reported_at: Optional[datetime] = None
+    tags: Optional[List[TagRead]] = []
+    ticket: Optional[TicketRead] = None
     total_cost: float | None
     triage_at: Optional[datetime] = None
 
@@ -306,12 +318,12 @@ class CaseRead(CaseBase):
     conversation: Optional[ConversationRead] = None
     created_at: Optional[datetime] = None
     documents: Optional[List[DocumentRead]] = []
-    duplicates: Optional[List[CaseReadMinimal]] = []
+    duplicates: Optional[List[CaseReadBasic]] = []
     escalated_at: Optional[datetime] = None
     events: Optional[List[EventRead]] = []
     genai_analysis: Optional[dict[str, Any]] = {}
     groups: Optional[List[GroupRead]] = []
-    incidents: Optional[List[IncidentReadMinimal]] = []
+    incidents: Optional[List[IncidentReadBasic]] = []
     name: Optional[NameStr]
     participants: Optional[List[ParticipantRead]] = []
     project: ProjectRead
@@ -335,11 +347,11 @@ class CaseUpdate(CaseBase):
     case_severity: Optional[CaseSeverityBase]
     case_type: Optional[CaseTypeBase]
     closed_at: Optional[datetime] = None
-    duplicates: Optional[List[CaseRead]] = []
+    duplicates: Optional[List[CaseReadBasic]] = []
     related: Optional[List[CaseRead]] = []
     reporter: Optional[ParticipantUpdate]
     escalated_at: Optional[datetime] = None
-    incidents: Optional[List[IncidentReadMinimal]] = []
+    incidents: Optional[List[IncidentReadBasic]] = []
     reported_at: Optional[datetime] = None
     tags: Optional[List[TagRead]] = []
     triage_at: Optional[datetime] = None

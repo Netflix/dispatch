@@ -1,6 +1,6 @@
 from collections import Counter, defaultdict
 from datetime import datetime
-from typing import ForwardRef, List, Optional
+from typing import List, Optional
 
 from pydantic import validator, Field, AnyHttpUrl
 
@@ -220,6 +220,8 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     notifications_group_id = Column(Integer, ForeignKey("group.id"))
     notifications_group = relationship("Group", foreign_keys=[notifications_group_id])
 
+    summary = Column(String, nullable=True)
+
     @hybrid_property
     def total_cost(self):
         total_cost = 0
@@ -240,6 +242,7 @@ class ProjectRead(DispatchBase):
     color: Optional[str]
     stable_priority: Optional[IncidentPriorityRead] = None
     allow_self_join: Optional[bool] = Field(True, nullable=True)
+    display_name: Optional[str] = Field(None, nullable=True)
 
 
 class CaseRead(DispatchBase):
@@ -298,7 +301,9 @@ class IncidentCreate(IncidentBase):
     tags: Optional[List[TagRead]] = []
 
 
-IncidentReadMinimal = ForwardRef("IncidentReadMinimal")
+class IncidentReadBasic(DispatchBase):
+    id: PrimaryKey
+    name: Optional[NameStr]
 
 
 class IncidentReadMinimal(IncidentBase):
@@ -307,7 +312,7 @@ class IncidentReadMinimal(IncidentBase):
     commander: Optional[ParticipantReadMinimal]
     commanders_location: Optional[str]
     created_at: Optional[datetime] = None
-    duplicates: Optional[List[IncidentReadMinimal]] = []
+    duplicates: Optional[List[IncidentReadBasic]] = []
     incident_costs: Optional[List[IncidentCostRead]] = []
     incident_document: Optional[DocumentRead] = None
     incident_priority: IncidentPriorityReadMinimal
@@ -323,12 +328,10 @@ class IncidentReadMinimal(IncidentBase):
     reporters_location: Optional[str]
     stable_at: Optional[datetime] = None
     storage: Optional[StorageRead] = None
+    summary: Optional[str] = None
     tags: Optional[List[TagRead]] = []
     tasks: Optional[List[TaskReadMinimal]] = []
     total_cost: Optional[float]
-
-
-IncidentReadMinimal.update_forward_refs()
 
 
 class IncidentUpdate(IncidentBase):
@@ -336,7 +339,7 @@ class IncidentUpdate(IncidentBase):
     commander: Optional[ParticipantUpdate]
     delay_executive_report_reminder: Optional[datetime] = None
     delay_tactical_report_reminder: Optional[datetime] = None
-    duplicates: Optional[List[IncidentReadMinimal]] = []
+    duplicates: Optional[List[IncidentReadBasic]] = []
     incident_costs: Optional[List[IncidentCostUpdate]] = []
     incident_priority: IncidentPriorityBase
     incident_severity: IncidentSeverityBase
@@ -344,6 +347,7 @@ class IncidentUpdate(IncidentBase):
     reported_at: Optional[datetime] = None
     reporter: Optional[ParticipantUpdate]
     stable_at: Optional[datetime] = None
+    summary: Optional[str] = None
     tags: Optional[List[TagRead]] = []
     terms: Optional[List[TermRead]] = []
 
@@ -375,7 +379,7 @@ class IncidentRead(IncidentBase):
     delay_executive_report_reminder: Optional[datetime] = None
     delay_tactical_report_reminder: Optional[datetime] = None
     documents: Optional[List[DocumentRead]] = []
-    duplicates: Optional[List[IncidentReadMinimal]] = []
+    duplicates: Optional[List[IncidentReadBasic]] = []
     events: Optional[List[EventRead]] = []
     incident_costs: Optional[List[IncidentCostRead]] = []
     incident_priority: IncidentPriorityRead
@@ -393,6 +397,7 @@ class IncidentRead(IncidentBase):
     reporters_location: Optional[str]
     stable_at: Optional[datetime] = None
     storage: Optional[StorageRead] = None
+    summary: Optional[str] = None
     tags: Optional[List[TagRead]] = []
     tasks: Optional[List[TaskRead]] = []
     terms: Optional[List[TermRead]] = []

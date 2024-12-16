@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from datetime import datetime, timedelta, timezone
 from functools import partial
 from uuid import UUID
@@ -12,6 +13,7 @@ from blockkit import (
     Divider,
     Input,
     MarkdownText,
+    Message,
     Modal,
     Section,
     UsersSelect,
@@ -34,6 +36,7 @@ from dispatch.enums import EventType, SubjectNames, UserRoles, Visibility
 from dispatch.event import service as event_service
 from dispatch.exceptions import ExistsError
 from dispatch.individual.models import IndividualContactRead
+from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
 from dispatch.participant_role import service as participant_role_service
@@ -72,7 +75,6 @@ from dispatch.plugins.dispatch_slack.fields import (
     entity_select,
     incident_priority_select,
     incident_type_select,
-    participant_select,
     project_select,
     relative_date_picker_input,
     resolution_input,
@@ -80,6 +82,7 @@ from dispatch.plugins.dispatch_slack.fields import (
 )
 from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
+    add_user_middleware,
     button_context_middleware,
     command_context_middleware,
     configuration_middleware,
@@ -92,6 +95,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
 )
 from dispatch.plugins.dispatch_slack.modals.common import send_success_modal
 from dispatch.plugins.dispatch_slack.models import (
+    AddUserMetadata,
     CaseSubjects,
     FormData,
     FormMetadata,
@@ -180,7 +184,7 @@ def handle_escalate_case_command(
 
     default_title = case.name
     default_description = case.description
-    default_project = {"text": case.project.name, "value": case.project.id}
+    default_project = {"text": case.project.display_name, "value": case.project.id}
 
     blocks = [
         Context(elements=[MarkdownText(text="Accept the defaults or adjust as needed.")]),
@@ -353,7 +357,6 @@ def handle_engage_user_command(
     """Handles engage user command."""
     ack()
 
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
     default_engagement = "We'd like to verify your identity. Can you please confirm this is you?"
 
     blocks = [
@@ -364,7 +367,7 @@ def handle_engage_user_command(
                 )
             ]
         ),
-        participant_select(label="Person to engage", participants=case.participants),
+        assignee_select(label="Person to engage", placeholder="Select user"),
         description_input(label="Engagement text", initial_value=default_engagement),
     ]
 
@@ -402,14 +405,26 @@ def engage(
     """Handles the engage user action."""
     ack()
 
-    if form_data.get(DefaultBlockIds.participant_select):
-        participant_id = form_data[DefaultBlockIds.participant_select]["value"]
-        participant = participant_service.get(db_session=db_session, participant_id=participant_id)
-        if participant:
-            user_email = participant.individual.email
-        else:
-            log.error(f"Participant not found for id {participant_id} when trying to engage user")
-            return
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    if not case:
+        log.error("Case not found when trying to engage user")
+        return
+
+    if form_data.get(DefaultBlockIds.case_assignee_select):
+        user_email = client.users_info(
+            user=form_data[DefaultBlockIds.case_assignee_select]["value"]
+        )["user"]["profile"]["email"]
+        conversation_flows.add_case_participants(case, [user_email], db_session)
+        participant = participant_service.get_by_case_id_and_email(
+            db_session=db_session, case_id=case.id, email=user_email
+        )
+        if not participant:
+            participant_flows.add_participant(
+                user_email,
+                case,
+                db_session,
+                roles=[ParticipantRoleType.participant],
+            )
     else:
         return
 
@@ -418,8 +433,6 @@ def engage(
     else:
         log.warning("Engagement text not found")
         return
-
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
 
     user = client.users_lookupByEmail(email=user_email)
 
@@ -1290,7 +1303,7 @@ def escalate_button_click(
         description_input(initial_value=case.description),
         project_select(
             db_session=db_session,
-            initial_option={"text": case.project.name, "value": case.project.id},
+            initial_option={"text": case.project.display_name, "value": case.project.id},
             action_id=CaseEscalateActions.project_select,
             dispatch_action=True,
         ),
@@ -1345,7 +1358,7 @@ def handle_project_select_action(
         description_input(),
         project_select(
             db_session=db_session,
-            initial_option={"text": project.name, "value": project.id},
+            initial_option={"text": project.display_name, "value": project.id},
             action_id=CaseEscalateActions.project_select,
             dispatch_action=True,
         ),
@@ -1643,6 +1656,141 @@ def handle_create_channel_event(
     )
 
 
+def extract_mentioned_users(text: str) -> list[str]:
+    """Extracts mentioned users from a message."""
+    return re.findall(r"<@(\w+)>", text)
+
+
+def format_emails(emails: list[str]) -> str:
+    """Format a list of names into a string with commas and 'and' before the last name."""
+    usernames = [email.split("@")[0] for email in emails]
+
+    if not usernames:
+        return ""
+    elif len(usernames) == 1:
+        return f"@{usernames[0]}"
+    elif len(usernames) == 2:
+        return f"@{usernames[0]} and @{usernames[1]}"
+    else:
+        return ", ".join(f"@{username}" for username in usernames[:-1]) + f", and @{usernames[-1]}"
+
+
+@message_dispatcher.add(
+    subject=CaseSubjects.case, exclude={"subtype": ["channel_join", "group_join"]}
+)  # we ignore user channel and group join messages
+def handle_user_mention(
+    ack: Ack,
+    context: BoltContext,
+    client: WebClient,
+    db_session: Session,
+    payload: dict,
+) -> None:
+    """Handles user posted message events."""
+    ack()
+
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    if not case or case.dedicated_channel:
+        # we do not need to handle mentions for cases with dedicated channels
+        return
+
+    mentioned_users = extract_mentioned_users(payload["text"])
+    users_not_in_case = []
+    for user_id in mentioned_users:
+        user_email = dispatch_slack_service.get_user_email(client, user_id)
+        if not participant_service.get_by_case_id_and_email(
+            db_session=db_session, case_id=context["subject"].id, email=user_email
+        ):
+            users_not_in_case.append(user_email)
+
+    if users_not_in_case:
+        # send a private message to the user who posted the message to see
+        # if they want to add the mentioned user(s) to the case
+        button_metadata = AddUserMetadata(
+            **dict(context["subject"]),
+            users=users_not_in_case,
+        ).json()
+        blocks = [
+            Section(
+                text=f"You mentioned {format_emails(users_not_in_case)}, but they're not in this case."
+            ),
+            Actions(
+                block_id=DefaultBlockIds.add_user_actions,
+                elements=[
+                    Button(
+                        text="Add Them",
+                        style="primary",
+                        action_id=CaseNotificationActions.add_user,
+                        value=button_metadata,
+                    ),
+                    Button(
+                        text="Do Nothing",
+                        action_id=CaseNotificationActions.do_nothing,
+                    ),
+                ],
+            ),
+        ]
+        blocks = Message(blocks=blocks).build()["blocks"]
+        client.chat_postEphemeral(
+            channel=payload["channel"],
+            thread_ts=payload.get("thread_ts"),
+            user=payload["user"],
+            blocks=blocks,
+        )
+
+
+@app.action(
+    CaseNotificationActions.add_user,
+    middleware=[add_user_middleware, button_context_middleware, db_middleware, user_middleware],
+)
+def add_users_to_case(
+    ack: Ack,
+    db_session: Session,
+    context: BoltContext,
+    respond: Respond,
+):
+    ack()
+
+    case_id = context["subject"].id
+
+    case = case_service.get(db_session=db_session, case_id=case_id)
+    if not case:
+        log.error(f"Could not find case with id: {case_id}")
+        return
+
+    users = context["users"]
+    if users:
+        for user_email in users:
+            conversation_flows.add_case_participants(case, [user_email], db_session)
+            participant = participant_service.get_by_case_id_and_email(
+                db_session=db_session, case_id=case.id, email=user_email
+            )
+            if not participant:
+                participant_flows.add_participant(
+                    user_email,
+                    case,
+                    db_session,
+                    roles=[ParticipantRoleType.participant],
+                )
+
+    # Delete the ephemeral message
+    respond(delete_original=True)
+
+
+@app.action(CaseNotificationActions.do_nothing)
+def handle_do_nothing_button(
+    ack: Ack,
+    respond: Respond,
+):
+    # Acknowledge the action
+    ack()
+
+    try:
+        # Delete the ephemeral message
+        respond(delete_original=True)
+    except SlackApiError as e:
+        log.error(f"Error deleting ephemeral message: {e.response['error']}")
+
+
 @app.action(
     CaseNotificationActions.join_incident,
     middleware=[button_context_middleware, db_middleware, user_middleware],
@@ -1906,12 +2054,12 @@ def handle_resolve_submission_event(
             case_id=updated_case.id,
             previous_case=previous_case,
             db_session=db_session,
-            reporter_email=updated_case.reporter.individual.email
-            if updated_case.reporter
-            else None,
-            assignee_email=updated_case.assignee.individual.email
-            if updated_case.assignee
-            else None,
+            reporter_email=(
+                updated_case.reporter.individual.email if updated_case.reporter else None
+            ),
+            assignee_email=(
+                updated_case.assignee.individual.email if updated_case.assignee else None
+            ),
             organization_slug=context["subject"].organization_slug,
         )
     except Exception as e:
@@ -1990,7 +2138,7 @@ def handle_report_project_select_action(
         description_input(),
         project_select(
             db_session=db_session,
-            initial_option={"text": project.name, "value": project.id},
+            initial_option={"text": project.display_name, "value": project.id},
             action_id=CaseReportActions.project_select,
             dispatch_action=True,
         ),
@@ -2095,7 +2243,7 @@ def handle_report_case_type_select_action(
         description_input(),
         project_select(
             db_session=db_session,
-            initial_option={"text": project.name, "value": project.id},
+            initial_option={"text": project.display_name, "value": project.id},
             action_id=CaseReportActions.project_select,
             dispatch_action=True,
         ),
@@ -2363,28 +2511,49 @@ def ack_mfa_required_submission_event(
 ) -> None:
     """Handles the add engagement submission event acknowledgement."""
 
+    blocks = []
+
     if mfa_enabled:
-        mfa_text = (
-            "🔐 To complete this action, you need to verify your identity through Multi-Factor Authentication (MFA).\n\n"
-            f"Please <{challenge_url}|*click here*> to open the MFA verification page."
+        blocks.extend(
+            [
+                Section(
+                    text="To complete this action, you need to verify your identity through Multi-Factor Authentication (MFA).\n\n"
+                    "Please click the verify button to open the MFA verification page."
+                ),
+                Actions(
+                    elements=[
+                        Button(
+                            text="🔐   Verify",
+                            action_id="button-link",
+                            style="primary",
+                            url=challenge_url,
+                        )
+                    ]
+                ),
+            ]
         )
     else:
-        mfa_text = "✅ No additional verification required. You can proceed with the confirmation."
+        blocks.append(
+            Section(
+                text="✅ No additional verification required. You can proceed with the confirmation."
+            )
+        )
 
-    blocks = [
-        Section(text=mfa_text),
-        Divider(),
-        Context(
-            elements=[
-                MarkdownText(
-                    text="💡 This step protects against unauthorized confirmation if your account is compromised."
-                )
-            ]
-        ),
-    ]
+    blocks.extend(
+        [
+            Divider(),
+            Context(
+                elements=[
+                    MarkdownText(
+                        text="💡 This step protects against unauthorized confirmation if your account is compromised."
+                    )
+                ]
+            ),
+        ]
+    )
 
     modal = Modal(
-        title="Confirm Your Identity",
+        title="Verify Your Identity",
         close="Cancel",
         blocks=blocks,
     ).build()
@@ -2423,6 +2592,9 @@ def handle_engagement_submission_event(
     mfa_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=context["subject"].project_id, plugin_type="auth-mfa"
     )
+    if not mfa_plugin:
+        log.error("Unable to engage user. No enabled MFA plugin found.")
+        return
 
     require_mfa = engagement.require_mfa if engagement else True
     mfa_enabled = True if mfa_plugin and require_mfa else False
@@ -2532,14 +2704,23 @@ def send_engagement_response(
     if response == MfaChallengeStatus.APPROVED:
         # We only update engagement message (which removes Confirm/Deny button) for success
         # this allows the user to retry the confirmation if the MFA check failed
-        blocks = create_signal_engagement_message(
-            case=case,
-            channel_id=case.conversation.channel_id,
-            engagement=engagement,
-            signal_instance=signal_instance,
-            user_email=engaged_user,
-            engagement_status=engagement_status,
-        )
+        if not engagement:
+            # assume the message is from a manual MFA challenge
+            blocks = create_manual_engagement_message(
+                case=case,
+                channel_id=case.conversation.channel_id,
+                user_email=engaged_user,
+                engagement_status=engagement_status,
+            )
+        else:
+            blocks = create_signal_engagement_message(
+                case=case,
+                channel_id=case.conversation.channel_id,
+                engagement=engagement,
+                signal_instance=signal_instance,
+                user_email=engaged_user,
+                engagement_status=engagement_status,
+            )
         if signal_instance:
             client.chat_update(
                 blocks=blocks,

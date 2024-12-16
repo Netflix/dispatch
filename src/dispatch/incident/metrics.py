@@ -1,3 +1,4 @@
+import json
 import logging
 import math
 from calendar import monthrange
@@ -31,12 +32,14 @@ def create_incident_metric_query(
     db_session,
     end_date: date,
     start_date: date = None,
-    filter_spec: List[dict] = None,
+    filter_spec: List[dict] | str | None = None,
 ):
     """Fetches eligible incidents."""
     query = db_session.query(Incident)
 
     if filter_spec:
+        if isinstance(filter_spec, str):
+            filter_spec = json.loads(filter_spec)
         query = apply_filter_specific_joins(Incident, filter_spec, query)
         query = apply_filters(query, filter_spec)
 
@@ -73,7 +76,7 @@ def make_forecast(incidents: List[Incident]):
     dataframe.drop("ds", inplace=True, axis=1)
 
     # fill periods without incidents with 0
-    idx = pd.date_range(dataframe.index[0], dataframe.index[-1], freq="M")
+    idx = pd.date_range(dataframe.index[0], dataframe.index[-1], freq="ME")
     dataframe.index = pd.DatetimeIndex(dataframe.index)
     dataframe = dataframe.reindex(idx, fill_value=0)
 

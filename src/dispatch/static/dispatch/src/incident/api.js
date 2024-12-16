@@ -78,4 +78,8 @@ export default {
   exportTimeline(incidentId, timeline_filters) {
     return API.post(`/${resource}/${incidentId}/exportTimeline`, timeline_filters)
   },
+
+  regenerate(incidentId) {
+    return API.get(`/${resource}/${incidentId}/regenerate`)
+  },
 }

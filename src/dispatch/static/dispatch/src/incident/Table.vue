@@ -60,7 +60,7 @@
             return-object
             @click:row="showIncidentEditSheet"
           >
-            <template #item.project.name="{ item, value }">
+            <template #item.project.display_name="{ item, value }">
               <v-chip size="small" :color="item.project.color">
                 {{ value }}
               </v-chip>
@@ -192,7 +192,7 @@ export default {
         { title: "Type", key: "incident_type.name" },
         { title: "Severity", key: "incident_severity.name", width: "10%" },
         { title: "Priority", key: "incident_priority.name", width: "10%" },
-        { title: "Project", key: "project.name", sortable: true },
+        { title: "Project", key: "project.display_name", sortable: true },
         { title: "Commander", key: "commander", sortable: false },
         { title: "Cost", key: "incident_costs", sortable: false },
         { title: "Reported At", key: "reported_at" },

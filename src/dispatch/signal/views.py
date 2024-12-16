@@ -157,14 +157,9 @@ def create_engagement(
             db_session=db_session, creator=current_user, signal_engagement_in=signal_engagement_in
         )
     except IntegrityError:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    ExistsError(msg="A signal engagement with this name already exists."),
-                    loc="name",
-                )
-            ],
-            model=SignalEngagementRead,
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=[{"msg": "A signal engagement with this name already exists."}],
         ) from None
 
 
@@ -195,14 +190,9 @@ def update_engagement(
             signal_engagement_in=signal_engagement_in,
         )
     except IntegrityError:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    ExistsError(msg="A signal engagement with this name already exists."),
-                    loc="name",
-                )
-            ],
-            model=SignalEngagementUpdate,
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=[{"msg": "A signal engagement with this name already exists."}],
         ) from None
 
     return signal_engagement
@@ -220,13 +210,9 @@ def create_filter(
             db_session=db_session, creator=current_user, signal_filter_in=signal_filter_in
         )
     except IntegrityError:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    ExistsError(msg="A signal filter with this name already exists."), loc="name"
-                )
-            ],
-            model=SignalFilterRead,
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=[{"msg": "A signal filter with this name already exists."}],
         ) from None
 
 
@@ -253,13 +239,9 @@ def update_filter(
             db_session=db_session, signal_filter=signal_filter, signal_filter_in=signal_filter_in
         )
     except IntegrityError:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    ExistsError(msg="A signal filter with this name already exists."), loc="name"
-                )
-            ],
-            model=SignalFilterUpdate,
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=[{"msg": "A signal filter with this name already exists."}],
         ) from None
 
     return signal_filter

@@ -4,7 +4,7 @@
     :label="label"
     :loading="loading"
     :menu-props="{ maxHeight: '400' }"
-    item-title="name"
+    item-title="display_name"
     item-value="id"
     v-model="project"
     return-object
@@ -19,7 +19,7 @@
     </template>
     <template #item="data">
       <v-list-item v-bind="data.props" :title="null">
-        <v-list-item-title>{{ data.item.raw.name }}</v-list-item-title>
+        <v-list-item-title>{{ data.item.raw.display_name }}</v-list-item-title>
         <v-list-item-subtitle :title="data.item.raw.description">
           {{ data.item.raw.description }}
         </v-list-item-subtitle>
@@ -96,7 +96,7 @@ export default {
       let filterOptions = {
         q: "",
         itemsPerPage: this.numItems,
-        sortBy: ["name"],
+        sortBy: ["display_name"],
         descending: [false],
       }
 

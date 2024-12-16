@@ -38,6 +38,7 @@ listen(IncidentPriority.default, "set", ensure_unique_default_per_project)
 class ProjectRead(DispatchBase):
     id: Optional[PrimaryKey]
     name: NameStr
+    display_name: Optional[str]
 
 
 # Pydantic models...

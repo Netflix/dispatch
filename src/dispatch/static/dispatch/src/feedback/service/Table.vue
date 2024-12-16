@@ -65,9 +65,9 @@
                 Participants: {{ item.details[0].num_participants }}<br />
               </span>
             </template>
-            <template #item.project.name="{ item }">
+            <template #item.project.display_name="{ item }">
               <v-chip size="small" :color="item.project.color">
-                {{ item.project.name }}
+                {{ item.project.display_name }}
               </v-chip>
             </template>
             <template #item.service="{ item }">
@@ -125,7 +125,7 @@ export default {
         { title: "Feedback", value: "feedback", sortable: true },
         { title: "Details", value: "details", sortable: true },
         { title: "Service", value: "service", sortable: false },
-        { title: "Project", value: "project.name", sortable: false },
+        { title: "Project", value: "project.display_name", sortable: false },
         { title: "Created At", value: "created_at", sortable: true },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],

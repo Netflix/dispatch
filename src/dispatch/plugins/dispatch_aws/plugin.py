@@ -6,14 +6,16 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 
+import base64
 import json
 import logging
+import zlib
 from typing import TypedDict
 
 import boto3
-from pydantic import ValidationError
 from psycopg2.errors import UniqueViolation
-from sqlalchemy.exc import IntegrityError
+from pydantic import ValidationError
+from sqlalchemy.exc import IntegrityError, ResourceClosedError
 from sqlalchemy.orm import Session
 
 from dispatch.metrics import provider as metrics_provider
@@ -28,6 +30,13 @@ from . import __version__
 log = logging.getLogger(__name__)
 
 
+def decompress_json(compressed_str: str) -> str:
+    """Decompress a base64 encoded zlibed JSON string."""
+    decoded = base64.b64decode(compressed_str)
+    decompressed = zlib.decompress(decoded)
+    return decompressed.decode("utf-8")
+
+
 class SqsEntries(TypedDict):
     Id: str
     ReceiptHandle: str
@@ -36,7 +45,7 @@ class SqsEntries(TypedDict):
 class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
     title = "AWS SQS - Signal Consumer"
     slug = "aws-sqs-signal-consumer"
-    description = "Uses sqs to consume signals"
+    description = "Uses SQS to consume signals."
     version = __version__
 
     author = "Netflix"
@@ -60,20 +69,32 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                 WaitTimeSeconds=20,
             )
             if not response.get("Messages") or len(response["Messages"]) == 0:
-                log.info("No messages received from SQS")
+                log.info("No messages received from SQS.")
                 continue
 
             entries: list[SqsEntries] = []
             for message in response["Messages"]:
-                body = json.loads(message["Body"])
-                signal_data = json.loads(body["Message"])
+                try:
+                    message_body = json.loads(message["Body"])
+                    message_body_message = message_body.get("Message")
+                    message_attributes = message_body.get("MessageAttributes", {})
+
+                    if message_attributes.get("compressed", {}).get("Value") == "zlib":
+                        # Message is compressed, decompress it
+                        message_body_message = decompress_json(message_body_message)
+
+                    signal_data = json.loads(message_body_message)
+                except Exception as e:
+                    log.exception(f"Unable to extract signal data from SQS message: {e}")
+                    continue
+
                 try:
                     signal_instance_in = SignalInstanceCreate(
                         project=project, raw=signal_data, **signal_data
                     )
                 except ValidationError as e:
                     log.warning(
-                        f"Received signal instance that does not conform to `SignalInstanceCreate` structure, skipping creation: {e}"
+                        f"Received a signal instance that does not conform to the SignalInstanceCreate pydantic model. Skipping creation: {e}"
                     )
                     continue
 
@@ -83,7 +104,7 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                         db_session=db_session, signal_instance_id=signal_instance_in.raw["id"]
                     ):
                         log.info(
-                            f"Received signal instance that already exists in the database, skipping creation: {signal_instance_in.raw['id']}"
+                            f"Received a signal that already exists in the database. Skipping signal instance creation: {signal_instance_in.raw['id']}"
                         )
                         continue
 
@@ -96,13 +117,23 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                 except IntegrityError as e:
                     if isinstance(e.orig, UniqueViolation):
                         log.info(
-                            f"Received signal instance that already exists in the database, skipping creation: {e}"
+                            f"Received a signal that already exists in the database. Skipping signal instance creation: {e}"
                         )
                     else:
-                        log.exception(f"Integrity error when creating signal instance: {e}")
+                        log.exception(
+                            f"Encountered an integrity error when trying to create a signal instance: {e}"
+                        )
+                    continue
+                except ResourceClosedError as e:
+                    log.warning(
+                        f"Encountered an error when trying to create a signal instance. The plugin will retry again as the message hasn't been deleted from the SQS queue. Signal name/variant: {signal_instance_in.raw['name'] if signal_instance_in.raw and signal_instance_in.raw['name'] else signal_instance_in.raw['variant']}. Error: {e}"
+                    )
+                    db_session.rollback()
                     continue
                 except Exception as e:
-                    log.exception(f"Unable to create signal instance: {e}")
+                    log.exception(
+                        f"Encountered an error when trying to create a signal instance. Signal name/variant: {signal_instance_in.raw['name'] if signal_instance_in.raw and signal_instance_in.raw['name'] else signal_instance_in.raw['variant']}. Error: {e}"
+                    )
                     db_session.rollback()
                     continue
                 else:
@@ -114,7 +145,7 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                         },
                     )
                     log.debug(
-                        f"Received signal: name: {signal_instance.signal.name} id: {signal_instance.signal.id}"
+                        f"Received a signal with name {signal_instance.signal.name} and id {signal_instance.signal.id}"
                     )
                     entries.append(
                         {"Id": message["MessageId"], "ReceiptHandle": message["ReceiptHandle"]}
