@@ -309,7 +309,7 @@ def handle_update_incident_project_select_action(
         incident_status_select(initial_option={"text": incident.status, "value": incident.status}),
         project_select(
             db_session=db_session,
-            initial_option={"text": project.name, "value": project.id},
+            initial_option={"text": project.display_name, "value": project.id},
             action_id=IncidentUpdateActions.project_select,
             dispatch_action=True,
         ),
@@ -455,6 +455,8 @@ def handle_list_incidents_command(
             # Don't add a divider if we are at the last incident
             if idx != len(open_incidents):
                 blocks.extend([Divider()])
+    else:
+        blocks.append(Section(text="No incidents found."))
 
     modal = Modal(
         title="Incident List",
@@ -2114,20 +2116,8 @@ def handle_update_incident_command(
         description_input(initial_value=incident.description),
         resolution_input(initial_value=incident.resolution),
         incident_status_select(initial_option={"text": incident.status, "value": incident.status}),
-        project_select(
-            db_session=db_session,
-            initial_option={"text": incident.project.name, "value": incident.project.id},
-            action_id=IncidentUpdateActions.project_select,
-            dispatch_action=True,
-        ),
-        incident_type_select(
-            db_session=db_session,
-            initial_option={
-                "text": incident.incident_type.name,
-                "value": incident.incident_type.id,
-            },
-            project_id=incident.project.id,
-        ),
+        Section(text=f"*Project*: {incident.project.display_name}"),
+        Context(elements=[MarkdownText(text="Project is read-only")]),
         incident_severity_select(
             db_session=db_session,
             initial_option={

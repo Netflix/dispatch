@@ -34,11 +34,22 @@
               <v-col cols="12">
                 <v-text-field
                   v-model="name"
-                  label="Name"
-                  hint="A name for your project."
+                  label="Key"
+                  hint="A key for your project."
                   clearable
                   required
-                  name="Name"
+                  name="Key"
+                  :rules="[rules.required]"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="display_name"
+                  label="Display Name"
+                  hint="A display name for your project (used on forms)."
+                  clearable
+                  required
+                  name="Display Name"
                   :rules="[rules.required]"
                 />
               </v-col>
@@ -225,6 +236,7 @@ export default {
       "selected.business_year_hours",
       "selected.color",
       "selected.description",
+      "selected.display_name",
       "selected.id",
       "selected.loading",
       "selected.name",

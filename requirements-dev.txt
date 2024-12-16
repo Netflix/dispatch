@@ -18,7 +18,7 @@ click==8.1.7
     # via
     #   -r requirements-dev.in
     #   black
-coverage==7.6.7
+coverage==7.6.9
     # via -r requirements-dev.in
 decorator==5.1.1
     # via ipython
@@ -26,13 +26,15 @@ devtools==0.12.2
     # via -r requirements-dev.in
 distlib==0.3.9
     # via virtualenv
+easydict==1.13
+    # via -r requirements-dev.in
 executing==2.1.0
     # via
     #   devtools
     #   stack-data
 factory-boy==3.3.1
     # via -r requirements-dev.in
-faker==33.0.0
+faker==33.1.0
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -42,7 +44,7 @@ identify==2.6.1
     # via pre-commit
 iniconfig==2.0.0
     # via pytest
-ipython==8.29.0
+ipython==8.30.0
     # via -r requirements-dev.in
 jedi==0.19.1
     # via ipython
@@ -81,12 +83,16 @@ pygments==2.18.0
     #   devtools
     #   ipython
 pytest==7.4.4
+    # via
+    #   -r requirements-dev.in
+    #   pytest-mock
+pytest-mock==3.14.0
     # via -r requirements-dev.in
 python-dateutil==2.9.0.post0
     # via faker
 pyyaml==6.0.2
     # via pre-commit
-ruff==0.7.4
+ruff==0.8.3
     # via -r requirements-dev.in
 six==1.16.0
     # via
@@ -104,7 +110,7 @@ typing-extensions==4.12.2
     #   ipython
 virtualenv==20.27.1
     # via pre-commit
-vulture==2.13
+vulture==2.14
     # via -r requirements-dev.in
 wcwidth==0.2.13
     # via prompt-toolkit

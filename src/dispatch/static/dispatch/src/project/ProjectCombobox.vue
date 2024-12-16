@@ -10,7 +10,7 @@
     closable-chips
     hide-selected
     :hide-no-data="!search"
-    item-title="name"
+    item-title="display_name"
     item-value="id"
     multiple
     no-filter
@@ -108,7 +108,7 @@ export default {
       let filterOptions = {
         q: this.search,
         itemsPerPage: this.numItems,
-        sortBy: ["name"],
+        sortBy: ["display_name"],
         descending: [false],
       }
 
