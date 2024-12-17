@@ -4,7 +4,7 @@
     <template #item.discoverable="{ value }">
       <v-checkbox-btn :model-value="value" disabled />
     </template>
-    <template #item.project.name="{ item, value }">
+    <template #item.project.display_name="{ item, value }">
       <v-chip size="small" :color="item.project.color">
         {{ value }}
       </v-chip>
@@ -45,7 +45,7 @@ export default {
         { title: "Description", value: "description", sortable: false },
         { title: "Type", value: "tag_type.name", sortable: true },
         { title: "Source", value: "source", sortable: true },
-        { title: "Project", value: "project.name", sortable: true },
+        { title: "Project", value: "project.display_name", sortable: true },
         { title: "Discoverable", value: "discoverable", sortable: true },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],

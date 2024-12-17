@@ -286,25 +286,13 @@ def incident_report_weekly(db_session: Session, project: Project):
         if incident.visibility == Visibility.restricted:
             continue
         try:
-            pir_doc = storage_plugin.instance.get(
-                file_id=incident.incident_review_document.resource_id,
-                mime_type="text/plain",
-            )
-            prompt = f"""
-                Given the text of the security post-incident review document below,
-                provide answers to the following questions in a paragraph format.
-                Do not include the questions in your response.
-                1. What is the summary of what happened?
-                2. What were the overall risk(s)?
-                3. How were the risk(s) mitigated?
-                4. How was the incident resolved?
-                5. What are the follow-up tasks?
-
-                {pir_doc}
-            """
-
-            response = ai_plugin.instance.chat_completion(prompt=prompt)
-            summary = response["choices"][0]["message"]["content"]
+            # if already summary generated, use that instead
+            if incident.summary:
+                summary = incident.summary
+            else:
+                summary = incident_service.generate_incident_summary(
+                    db_session=db_session, incident=incident
+                )
 
             item = {
                 "commander_fullname": incident.commander.individual.name,

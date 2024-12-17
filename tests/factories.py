@@ -15,7 +15,7 @@ from faker import Faker
 from faker.providers import misc
 from pytz import UTC
 
-from dispatch.auth.models import DispatchUser, hash_password  # noqa
+from dispatch.auth.models import DispatchUser, DispatchUserOrganization, hash_password  # noqa
 from dispatch.case.models import Case, CaseRead
 from dispatch.case.priority.models import CasePriority
 from dispatch.case.severity.models import CaseSeverity
@@ -64,6 +64,7 @@ from dispatch.team.models import TeamContact
 from dispatch.term.models import Term
 from dispatch.ticket.models import Ticket
 from dispatch.workflow.models import Workflow, WorkflowInstance
+from dispatch.enums import UserRoles, Visibility
 
 from .database import Session
 
@@ -124,6 +125,19 @@ class OrganizationFactory(BaseFactory):
         if extracted:
             for project in extracted:
                 self.projects.append(project)
+
+
+class DispatchUserOrganizationFactory(BaseFactory):
+    """Dispatch User Organization Factory."""
+
+    dispatch_user = SubFactory(DispatchUserFactory)
+    organization = SubFactory(OrganizationFactory)
+    role = UserRoles.member
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = DispatchUserOrganization
 
 
 class ProjectFactory(BaseFactory):
@@ -518,6 +532,7 @@ class ParticipantFactory(BaseFactory):
     added_reason = Sequence(lambda n: f"added_reason{n}")
     after_hours_notification = Faker().pybool()
     user_conversation_id = FuzzyText()
+    individual = SubFactory(IndividualContactFactory)
 
     class Meta:
         """Factory Configuration."""
@@ -531,14 +546,6 @@ class ParticipantFactory(BaseFactory):
 
         if extracted:
             self.incident_id = extracted.id
-
-    @post_generation
-    def individual_contact(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            self.individual_contact_id = extracted.id
 
     @post_generation
     def team(self, create, extracted, **kwargs):
@@ -770,6 +777,15 @@ class CaseFactory(BaseFactory):
 
         model = Case
 
+    @post_generation
+    def tags(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for tag in extracted:
+                self.tags.append(tag)
+
     class Params:
         status = "New"
 
@@ -918,7 +934,9 @@ class IncidentFactory(BaseFactory):
     incident_priority = SubFactory(IncidentPriorityFactory)
     incident_severity = SubFactory(IncidentSeverityFactory)
     project = SubFactory(ProjectFactory)
+    commander = SubFactory(ParticipantFactory)
     conversation = SubFactory(ConversationFactory)
+    visibility = Visibility.open
 
     class Meta:
         """Factory Configuration."""
@@ -933,6 +951,16 @@ class IncidentFactory(BaseFactory):
         if extracted:
             for participant in extracted:
                 self.participants.append(participant)
+            self.participants.append(self.commander)
+
+    @post_generation
+    def tags(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for tag in extracted:
+                self.tags.append(tag)
 
 
 class TaskFactory(ResourceBaseFactory):

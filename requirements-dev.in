@@ -3,10 +3,12 @@ black
 click
 coverage
 devtools
+easydict
 factory-boy
 faker
 ipython
 pre-commit
 pytest==7.4.4
+pytest-mock
 ruff
 vulture

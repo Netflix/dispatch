@@ -41,7 +41,7 @@
             <template #item.signal="{ value }">
               <signal-popover :value="value" />
             </template>
-            <template #item.signal.project.name="{ item, value }">
+            <template #item.signal.project.display_name="{ item, value }">
               <v-chip size="small" :color="item.signal.project.color">
                 {{ value }}
               </v-chip>
@@ -109,7 +109,7 @@ export default {
         { title: "Case", value: "case", sortable: false },
         { title: "Signal Definition", value: "signal", sortable: false },
         { title: "Filter Action", value: "filter_action", sortable: true },
-        { title: "Project", value: "signal.project.name", sortable: true },
+        { title: "Project", value: "signal.project.display_name", sortable: true },
         { title: "Created At", value: "created_at" },
         { title: "", value: "data-table-actions", sortable: false, align: "end" },
       ],

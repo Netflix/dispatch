@@ -454,21 +454,20 @@ def create_signal_engagement_message(
 def create_manual_engagement_message(
     case: Case,
     channel_id: str,
-    engagement: str,
     user_email: str,
-    user_id: str,
     engagement_status: SignalEngagementStatus = SignalEngagementStatus.new,
+    user_id: str = "",
+    engagement: str = "",
     thread_ts: str = None,
 ) -> list[Block]:
     """
-    Generate a list of blocks for a signal engagement message.
+    Generate a list of blocks for a manual engagement message.
 
     Args:
-        case (Case): The case object related to the signal instance.
+        case (Case): The case object related to the engagement.
         channel_id (str): The ID of the Slack channel where the message will be sent.
-        message (str): Additional context information to include in the message.
+        engagement_message (str): The engagement text.
         user_email (str): The email of the user being engaged.
-        engagement (str): The engagement text.
 
     Returns:
         list[Block]: A list of blocks representing the message structure for the engagement message.
@@ -486,11 +485,12 @@ def create_manual_engagement_message(
     ).json()
 
     username, _ = user_email.split("@")
-    blocks = [
-        Section(
-            text=f"<@{user_id}>: {engagement if engagement else 'No context provided for this alert.'}"
-        ),
-    ]
+    if engagement:
+        blocks = [
+            Section(text=f"<@{user_id}>: {engagement}"),
+        ]
+    else:
+        blocks = []
 
     if engagement_status == SignalEngagementStatus.new:
         blocks.extend(

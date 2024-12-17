@@ -69,6 +69,7 @@
     "monaco-editor": "0.43.0",
     "register-service-worker": "^1.7.2",
     "roboto-fontface": "^0.10.0",
+    "sass-embedded": "^1.81.0",
     "sortablejs": "^1.15.0",
     "swrv": "^1.0.4",
     "vue": "^3.4.12",
