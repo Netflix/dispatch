@@ -7,6 +7,7 @@ from dispatch.plugins.base import plugins, register
 
 logger = logging.getLogger(__name__)
 
+
 # Plugin endpoints should determine authentication # TODO allow them to specify (kglisson)
 def install_plugin_events(api):
     """Adds plugin endpoints to the event router."""
@@ -14,13 +15,10 @@ def install_plugin_events(api):
         if plugin.events:
             api.include_router(plugin.events, prefix="/{organization}/events", tags=["events"])
 
+
 def install_plugins():
-    """
-    Installs plugins associated with dispatch
-    :return:
-    """
-    # Retrieve entry points for 'dispatch.plugins'
-    dispatch_plugins = entry_points().get("dispatch.plugins", [])
+    """Installs plugins associated with dispatch"""
+    dispatch_plugins = entry_points().select(group="dispatch.plugins")
 
     for ep in dispatch_plugins:
         logger.info(f"Attempting to load plugin: {ep.name}")
