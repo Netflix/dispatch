@@ -375,7 +375,6 @@ class AdditionalMetadata(DispatchBase):
     important: Optional[bool]
 
 
-# TODO(amats): do I need to adjust this too? it doesn't look like it was adjusted when case type support was added
 class SignalInstanceBase(DispatchBase):
     project: Optional[ProjectRead]
     case: Optional[CaseReadMinimal]
