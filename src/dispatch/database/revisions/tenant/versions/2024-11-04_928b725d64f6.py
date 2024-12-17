@@ -52,7 +52,7 @@ def upgrade():
     if column_exists:
         op.drop_column("plugin_instance", "configuration")
 
-    op.drop_constraint("project_stable_priority_id_fkey", "project", type_="foreignkey")
+    op.execute("ALTER TABLE project DROP CONSTRAINT IF EXISTS project_stable_priority_id_fkey")
     # ### end Alembic commands ###
 
 
