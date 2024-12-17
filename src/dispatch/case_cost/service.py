@@ -42,7 +42,8 @@ def get_by_case_id_and_case_cost_type_id(
         db_session.query(CaseCost)
         .filter(CaseCost.case_id == case_id)
         .filter(CaseCost.case_cost_type_id == case_cost_type_id)
-        .one_or_none()
+        .order_by(CaseCost.id.asc())
+        .first()
     )
 
 
