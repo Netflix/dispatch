@@ -1,4 +1,7 @@
 import pytest
+
+from easydict import EasyDict
+from slack_sdk.web.client import WebClient
 from sqlalchemy_utils import drop_database, database_exists
 from starlette.config import environ
 from fastapi.testclient import TestClient
@@ -48,6 +51,7 @@ from .factories import (
     IncidentFactory,
     IncidentPriorityFactory,
     IncidentRoleFactory,
+    IncidentSeverityFactory,
     IncidentTypeFactory,
     IndividualContactFactory,
     NotificationFactory,
@@ -349,6 +353,11 @@ def incident_priority(session):
 @pytest.fixture
 def incident_priorities(session):
     return [IncidentPriorityFactory(), IncidentPriorityFactory()]
+
+
+@pytest.fixture
+def incident_severity(session):
+    return IncidentSeverityFactory()
 
 
 @pytest.fixture
@@ -707,3 +716,12 @@ def cost_model_activity(session):
 @pytest.fixture
 def service_feedback(session):
     return ServiceFeedbackFactory()
+
+
+@pytest.fixture()
+def mock_slack_client(mocker):
+    mocks = EasyDict()
+
+    mocks.views_open = mocker.patch.object(WebClient, "views_open")
+
+    return mocks
