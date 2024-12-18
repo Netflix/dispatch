@@ -44,6 +44,7 @@
 import { mapMutations } from "vuex"
 import { mapMultiRowFields } from "vuex-map-fields"
 import { toUSD } from "@/filters"
+import { formatRelativeDate } from "@/filters"
 
 import CaseCostInput from "@/case_cost/CaseCostInput.vue"
 
@@ -55,7 +56,7 @@ export default {
   },
 
   setup() {
-    return { toUSD }
+    return { formatRelativeDate, toUSD }
   },
 
   computed: {
