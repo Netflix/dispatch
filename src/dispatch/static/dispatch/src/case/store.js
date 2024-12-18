@@ -263,14 +263,14 @@ const actions = {
       .then((response) => {
         commit("SET_SELECTED", response.data)
         commit("SET_SELECTED_LOADING", false)
-        this.interval = setInterval(function () {
+        var interval = setInterval(function () {
           if (state.selected.id) {
             dispatch("get")
           }
 
           // TODO this is fragile but we don't set anything as "created"
           if (state.selected.conversation) {
-            clearInterval(this.interval)
+            clearInterval(interval)
           }
         }, 5000)
       })
