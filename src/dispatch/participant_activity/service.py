@@ -65,7 +65,10 @@ def get_all_case_participant_activities_for_case(
 ) -> list[ParticipantActivityRead]:
     """Fetches all recorded participant case activities for a given case."""
     return (
-        db_session.query(ParticipantActivity).filter(ParticipantActivity.case_id == case_id).all()
+        db_session.query(ParticipantActivity)
+        .filter(ParticipantActivity.case_id == case_id)
+        .order_by(ParticipantActivity.started_at.asc())
+        .all()
     )
 
 
@@ -77,6 +80,7 @@ def get_all_incident_participant_activities_for_incident(
     return (
         db_session.query(ParticipantActivity)
         .filter(ParticipantActivity.incident_id == incident_id)
+        .order_by(ParticipantActivity.started_at.asc())
         .all()
     )
 

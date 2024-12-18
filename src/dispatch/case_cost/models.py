@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import Column, ForeignKey, Integer, Numeric
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
@@ -40,6 +42,7 @@ class CaseCostUpdate(CaseCostBase):
 class CaseCostRead(CaseCostBase):
     id: PrimaryKey
     case_cost_type: CaseCostTypeRead
+    updated_at: Optional[datetime] = None
 
 
 class CaseCostPagination(Pagination):

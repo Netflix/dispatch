@@ -23,6 +23,9 @@
           {{ cost.case_cost_type.name }}
         </v-list-item-title>
         <v-list-item-subtitle>{{ cost.case_cost_type.description }}</v-list-item-subtitle>
+        <v-list-item-subtitle>
+          Updated At: {{ formatRelativeDate(cost.updated_at) }}
+        </v-list-item-subtitle>
 
         <template #append>
           {{ toUSD(cost.amount) }}
@@ -41,6 +44,7 @@
 import { mapMutations } from "vuex"
 import { mapMultiRowFields } from "vuex-map-fields"
 import { toUSD } from "@/filters"
+import { formatRelativeDate } from "@/filters"
 
 import CaseCostInput from "@/case_cost/CaseCostInput.vue"
 
@@ -52,7 +56,7 @@ export default {
   },
 
   setup() {
-    return { toUSD }
+    return { toUSD, formatRelativeDate }
   },
 
   computed: {
