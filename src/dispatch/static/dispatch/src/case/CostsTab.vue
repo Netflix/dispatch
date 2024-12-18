@@ -56,7 +56,7 @@ export default {
   },
 
   setup() {
-    return { formatRelativeDate, toUSD }
+    return { toUSD, formatRelativeDate }
   },
 
   computed: {
