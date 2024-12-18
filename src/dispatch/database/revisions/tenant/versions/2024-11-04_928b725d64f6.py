@@ -52,7 +52,12 @@ def upgrade():
     if column_exists:
         op.drop_column("plugin_instance", "configuration")
 
-    op.drop_constraint("project_stable_priority_id_fkey", "project", type_="foreignkey")
+    foreign_keys = inspector.get_foreign_keys("project")
+
+    constraint_name = "project_stable_priority_id_fkey"
+    constraint_exists = any(fk["name"] == constraint_name for fk in foreign_keys)
+    if constraint_exists:
+        op.drop_constraint(constraint_name, "project", type_="foreignkey")
     # ### end Alembic commands ###
 
 
