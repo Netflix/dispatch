@@ -1697,7 +1697,7 @@ def handle_user_mention(
     users_not_in_case = []
     for user_id in mentioned_users:
         user_email = dispatch_slack_service.get_user_email(client, user_id)
-        if not participant_service.get_by_case_id_and_email(
+        if user_email and not participant_service.get_by_case_id_and_email(
             db_session=db_session, case_id=context["subject"].id, email=user_email
         ):
             users_not_in_case.append(user_email)
