@@ -31,7 +31,6 @@ def get_workflows(common: CommonParameters):
 @router.get(
     "/{workflow_id}",
     response_model=WorkflowRead,
-    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def get_workflow(db_session: DbSession, workflow_id: PrimaryKey):
     """Get a workflow."""
@@ -47,7 +46,6 @@ def get_workflow(db_session: DbSession, workflow_id: PrimaryKey):
 @router.get(
     "/instances/{workflow_instance_id}",
     response_model=WorkflowInstanceRead,
-    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def get_workflow_instance(db_session: DbSession, workflow_instance_id: PrimaryKey):
     """Get a workflow instance."""
@@ -114,7 +112,6 @@ def delete_workflow(db_session: DbSession, workflow_id: PrimaryKey):
 @router.post(
     "/{workflow_id}/run",
     response_model=WorkflowInstanceRead,
-    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def run_workflow(
     db_session: DbSession,
