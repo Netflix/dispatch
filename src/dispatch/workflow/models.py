@@ -21,7 +21,7 @@ from dispatch.models import (
     Pagination,
 )
 from dispatch.participant.models import ParticipantRead
-from dispatch.plugin.models import PluginInstance, PluginInstanceRead
+from dispatch.plugin.models import PluginInstance, PluginInstanceReadMinimal
 from dispatch.project.models import ProjectRead
 
 from .enums import WorkflowInstanceStatus
@@ -121,7 +121,7 @@ class WorkflowSignal(DispatchBase):
 class WorkflowBase(DispatchBase):
     name: NameStr
     resource_id: str
-    plugin_instance: PluginInstanceRead
+    plugin_instance: PluginInstanceReadMinimal
     parameters: Optional[List[dict]] = []
     enabled: Optional[bool]
     description: Optional[str] = Field(None, nullable=True)
