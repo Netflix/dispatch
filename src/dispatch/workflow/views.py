@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
+from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 from dispatch.exceptions import NotFoundError
 from dispatch.models import PrimaryKey
 from dispatch.plugin import service as plugin_service
@@ -27,7 +28,11 @@ def get_workflows(common: CommonParameters):
     return search_filter_sort_paginate(model="Workflow", **common)
 
 
-@router.get("/{workflow_id}", response_model=WorkflowRead)
+@router.get(
+    "/{workflow_id}",
+    response_model=WorkflowRead,
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+)
 def get_workflow(db_session: DbSession, workflow_id: PrimaryKey):
     """Get a workflow."""
     workflow = get(db_session=db_session, workflow_id=workflow_id)
@@ -39,7 +44,11 @@ def get_workflow(db_session: DbSession, workflow_id: PrimaryKey):
     return workflow
 
 
-@router.get("/instances/{workflow_instance_id}", response_model=WorkflowInstanceRead)
+@router.get(
+    "/instances/{workflow_instance_id}",
+    response_model=WorkflowInstanceRead,
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+)
 def get_workflow_instance(db_session: DbSession, workflow_instance_id: PrimaryKey):
     """Get a workflow instance."""
     workflow_instance = get_instance(db_session=db_session, instance_id=workflow_instance_id)
@@ -51,7 +60,11 @@ def get_workflow_instance(db_session: DbSession, workflow_instance_id: PrimaryKe
     return workflow_instance
 
 
-@router.post("", response_model=WorkflowRead)
+@router.post(
+    "",
+    response_model=WorkflowRead,
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+)
 def create_workflow(db_session: DbSession, workflow_in: WorkflowCreate):
     """Create a new workflow."""
     plugin_instance = plugin_service.get_instance(
@@ -66,7 +79,11 @@ def create_workflow(db_session: DbSession, workflow_in: WorkflowCreate):
     return create(db_session=db_session, workflow_in=workflow_in)
 
 
-@router.put("/{workflow_id}", response_model=WorkflowRead)
+@router.put(
+    "/{workflow_id}",
+    response_model=WorkflowRead,
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+)
 def update_workflow(db_session: DbSession, workflow_id: PrimaryKey, workflow_in: WorkflowUpdate):
     """Update a workflow."""
     workflow = get(db_session=db_session, workflow_id=workflow_id)
@@ -78,7 +95,11 @@ def update_workflow(db_session: DbSession, workflow_id: PrimaryKey, workflow_in:
     return update(db_session=db_session, workflow=workflow, workflow_in=workflow_in)
 
 
-@router.delete("/{workflow_id}", response_model=None)
+@router.delete(
+    "/{workflow_id}",
+    response_model=None,
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+)
 def delete_workflow(db_session: DbSession, workflow_id: PrimaryKey):
     """Delete a workflow."""
     workflow = get(db_session=db_session, workflow_id=workflow_id)
@@ -90,7 +111,11 @@ def delete_workflow(db_session: DbSession, workflow_id: PrimaryKey):
     delete(db_session=db_session, workflow_id=workflow_id)
 
 
-@router.post("/{workflow_id}/run", response_model=WorkflowInstanceRead)
+@router.post(
+    "/{workflow_id}/run",
+    response_model=WorkflowInstanceRead,
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+)
 def run_workflow(
     db_session: DbSession,
     workflow_id: PrimaryKey,
