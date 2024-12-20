@@ -274,10 +274,10 @@ def get_user_profile_by_email(client: WebClient, email: str) -> SlackResponse:
     return _get_user_profile_by_email(WebClientWrapper(client), email)
 
 
-def get_user_email(client: WebClient, user_id: str) -> str:
+def get_user_email(client: WebClient, user_id: str) -> str | None:
     """Gets the user's email."""
     user_info = get_user_info_by_id(client, user_id)
-    return user_info["profile"]["email"]
+    return user_info["profile"].get("email")
 
 
 def get_user_avatar_url(client: WebClient, email: str) -> str:
