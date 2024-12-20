@@ -794,9 +794,12 @@ def handle_timeline_added_event(
         # if user is not found, we default to "Unknown"
         try:
             message_sender_email = get_user_email(client=client, user_id=message_sender_id)
-            individual = individual_service.get_by_email_and_project(
-                db_session=db_session, email=message_sender_email, project_id=incident.project.id
-            )
+            if message_sender_email:
+                individual = individual_service.get_by_email_and_project(
+                    db_session=db_session,
+                    email=message_sender_email,
+                    project_id=incident.project.id,
+                )
         except Exception:
             individual = None
 
@@ -1076,12 +1079,13 @@ def handle_member_joined_channel(
         if inviter and inviter_is_user:
             # Participant is added into the incident channel using an @ message or /invite command.
             inviter_email = get_user_email(client=client, user_id=inviter)
-            added_by_participant = participant_service.get_by_incident_id_and_email(
-                db_session=db_session, incident_id=context["subject"].id, email=inviter_email
-            )
-            participant.added_by = added_by_participant
+            if inviter_email:
+                added_by_participant = participant_service.get_by_incident_id_and_email(
+                    db_session=db_session, incident_id=context["subject"].id, email=inviter_email
+                )
+                participant.added_by = added_by_participant
 
-        else:
+        if not participant.added_by:
             # User joins via the `join` button on Web Application or Slack.
             # We default to the incident commander when we don't know who added the user or the user is the Dispatch bot.
             incident = incident_service.get(
@@ -1129,14 +1133,15 @@ def handle_member_joined_channel(
         if inviter and inviter_is_user:
             # Participant is added into the incident channel using an @ message or /invite command.
             inviter_email = get_user_email(client=client, user_id=inviter)
-            added_by_participant = participant_service.get_by_case_id_and_email(
-                db_session=db_session,
-                case_id=context["subject"].id,
-                email=inviter_email,
-            )
-            participant.added_by = added_by_participant
+            if inviter_email:
+                added_by_participant = participant_service.get_by_case_id_and_email(
+                    db_session=db_session,
+                    case_id=context["subject"].id,
+                    email=inviter_email,
+                )
+                participant.added_by = added_by_participant
 
-        else:
+        if not participant.added_by:
             # User joins via the `join` button on Web Application or Slack.
             # We default to the incident commander when we don't know who added the user or the user is the Dispatch bot.
             participant.added_by = case.assignee
@@ -1565,7 +1570,9 @@ def handle_assign_role_submission_event(
     ack_assign_role_submission_event(ack=ack)
     assignee_user_id = form_data[AssignRoleBlockIds.user]["value"]
     assignee_role = form_data[AssignRoleBlockIds.role]["value"]
-    assignee_email = get_user_email(client=client, user_id=assignee_user_id)
+    assignee_email = (
+        get_user_email(client=client, user_id=assignee_user_id) or "unknown@unknown.com"
+    )
 
     # we assign the role
     incident_flows.incident_assign_role_flow(
@@ -2556,15 +2563,18 @@ def handle_incident_notification_subscribe_button_click(
         user_id = context["user_id"]
         user_email = get_user_email(client=client, user_id=user_id)
 
-        if incident.tactical_group:
-            group_flows.update_group(
-                subject=incident,
-                group=incident.tactical_group,
-                group_action=GroupAction.add_member,
-                group_member=user_email,
-                db_session=db_session,
-            )
-        message = f"Success! We've subscribed you to incident {incident.name}. You will start receiving all tactical reports about this incident via email."
+        if not user_email:
+            message = "Sorry, we can't invite you to this incident. There was a problem finding your user."
+        else:
+            if incident.tactical_group:
+                group_flows.update_group(
+                    subject=incident,
+                    group=incident.tactical_group,
+                    group_action=GroupAction.add_member,
+                    group_member=user_email,
+                    db_session=db_session,
+                )
+            message = f"Success! We've subscribed you to incident {incident.name}. You will start receiving all tactical reports about this incident via email."
 
     respond(text=message, response_type="ephemeral", replace_original=False, delete_original=False)
 
