@@ -50,7 +50,7 @@ jobs:
       - name: Coverage per file
         # All modified files should meet the minimum code coverage requirement.
         run: |
-          export MODIFIED_FILES=$(git diff master...HEAD --name-only | grep -E '\.py$')
+          export MODIFIED_FILES=$(git diff main...HEAD --name-only | grep -E '\.py$')
           export FAILED_COVERAGE_PER_FILE=$(python -c "import json;files=json.load(open('coverage.json'))['files'];covs=map(lambda k, v: (k, v['summary']['percent_covered_display']),files.keys(),files.values()); f=filter(lambda cov:int(cov[1])<50,covs); print('\n'.join('{:<68}{:>3}%'.format(k,v) for k,v in f))")
           export FAILED_COVERAGE_FILES=(); echo "$FAILED_COVERAGE_PER_FILE" | while read -r line; do FAILED_COVERAGE_FILES+=${line%%[[:space:]]*};done
 
