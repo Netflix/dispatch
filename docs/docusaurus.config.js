@@ -50,7 +50,7 @@ const config = {
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
           editUrl: ({ docPath }) =>
-            `https://github.com/netflix/dispatch/edit/master/docs/docs/${docPath}`,
+            `https://github.com/netflix/dispatch/edit/main/docs/docs/${docPath}`,
         },
         theme: {
           customCss: require.resolve("./src/css/custom.css"),
