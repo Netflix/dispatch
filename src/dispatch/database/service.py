@@ -341,7 +341,8 @@ def apply_filters(query, filter_spec, model_cls=None, do_auto_join=True):
     return query
 
 
-def get_model_map(filters: dict) -> dict:
+def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query):
+    """Applies any model specific implicitly joins."""
     # this is required because by default sqlalchemy-filter's auto-join
     # knows nothing about how to join many-many relationships.
     model_map = {
@@ -370,21 +371,19 @@ def get_model_map(filters: dict) -> dict:
         (SignalInstance, "EntityType"): (SignalInstance.entities, True),
         (Tag, "TagType"): (Tag.tag_type, False),
     }
+    filters = build_filters(filter_spec)
+
     # Replace mapping if looking for commander
-    if "Commander" in filters:
+    if "Commander" in str(filter_spec):
         model_map.update({(Incident, "IndividualContact"): (Incident.commander, True)})
-    if "Assignee" in filters:
+    if "Assignee" in str(filter_spec):
         model_map.update({(Case, "IndividualContact"): (Case.assignee, True)})
-    return model_map
 
-
-def apply_model_specific_joins(model: Base, models: List[str], query: orm.query):
-    model_map = get_model_map(models)
+    filter_models = get_named_models(filters)
     joined_models = []
-
-    for include_model in models:
-        if model_map.get((model, include_model)):
-            joined_model, is_outer = model_map[(model, include_model)]
+    for filter_model in filter_models:
+        if model_map.get((model, filter_model)):
+            joined_model, is_outer = model_map[(model, filter_model)]
             try:
                 if joined_model not in joined_models:
                     query = query.join(joined_model, isouter=is_outer)
@@ -393,14 +392,6 @@ def apply_model_specific_joins(model: Base, models: List[str], query: orm.query)
                 log.exception(e)
 
     return query
-
-
-def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query):
-    """Applies any model specific implicitly joins."""
-    filters = build_filters(filter_spec)
-    filter_models = get_named_models(filters)
-
-    return apply_model_specific_joins(model, filter_models, query)
 
 
 def composite_search(*, db_session, query_str: str, models: List[Base], current_user: DispatchUser):
@@ -546,7 +537,6 @@ def search_filter_sort_paginate(
     model,
     query_str: str = None,
     filter_spec: str | dict | None = None,
-    include_keys: List[str] = None,
     page: int = 1,
     items_per_page: int = 5,
     sort_by: List[str] = None,
@@ -583,9 +573,6 @@ def search_filter_sort_paginate(
                     tag_all_filters.append(apply_filters(query, tag_filter, model_cls))
             else:
                 query = apply_filters(query, filter_spec, model_cls)
-
-        if include_keys:
-            query = apply_model_specific_joins(model_cls, include_keys, query)
 
         if model == "Incident":
             query = query.intersect(query_restricted)
