@@ -94,8 +94,8 @@ def signal_instance_create_flow(
         oncall_service = signal_instance.oncall_service
     elif signal_instance.signal.oncall_service:
         oncall_service = signal_instance.signal.oncall_service
-    elif signal_instance.case_type.oncall_service:
-        oncall_service = signal_instance.case_type.oncall_service
+    elif case_type.oncall_service:
+        oncall_service = case_type.oncall_service
     else:
         oncall_service = None
 
@@ -103,8 +103,8 @@ def signal_instance_create_flow(
         conversation_target = signal_instance.conversation_target
     elif signal_instance.signal.conversation_target:
         conversation_target = signal_instance.signal.conversation_target
-    elif signal_instance.case_type.conversation_target:
-        conversation_target = signal_instance.case_type.conversation_target
+    elif case_type.conversation_target:
+        conversation_target = case_type.conversation_target
     else:
         conversation_target = None
 
@@ -176,7 +176,10 @@ def create_signal_instance(
         raise DispatchException("Signal definition is not enabled.")
 
     signal_instance_in = SignalInstanceCreate(
-        raw=signal_instance_data, signal=signal, project=signal.project
+        **signal_instance_data,
+        raw=signal_instance_data,
+        signal=signal,
+        project=signal.project,
     )
 
     signal_instance = signal_service.create_instance(

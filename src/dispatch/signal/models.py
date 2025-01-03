@@ -38,7 +38,7 @@ from dispatch.models import (
     TimeStampMixin,
 )
 from dispatch.project.models import ProjectRead
-from dispatch.service.models import Service
+from dispatch.service.models import Service, ServiceRead
 from dispatch.tag.models import TagRead
 from dispatch.workflow.models import WorkflowRead
 
@@ -391,7 +391,7 @@ class SignalInstanceCreate(SignalInstanceBase):
     case_priority: Optional[CasePriorityRead]
     case_type: Optional[CaseTypeRead]
     conversation_target: Optional[str]
-    oncall_service: Optional[Service]
+    oncall_service: Optional[ServiceRead]
 
 
 class SignalInstanceRead(SignalInstanceBase):

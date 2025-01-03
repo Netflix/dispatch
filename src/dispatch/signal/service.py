@@ -571,6 +571,11 @@ def create_instance(
 
     signal = get(db_session=db_session, signal_id=signal_instance_in.signal.id)
 
+    # remove non-serializable entities from the raw JSON:
+    signal_instance_in_raw = signal_instance_in.raw.copy()
+    if signal_instance_in.oncall_service:
+        signal_instance_in_raw.pop('oncall_service')
+
     # we round trip the raw data to json-ify date strings
     signal_instance = SignalInstance(
         **signal_instance_in.dict(
@@ -580,12 +585,13 @@ def create_instance(
                 "case_type",
                 "entities",
                 "external_id",
+                "oncall_service",
                 "project",
                 "raw",
                 "signal",
             }
         ),
-        raw=json.loads(json.dumps(signal_instance_in.raw)),
+        raw=json.loads(json.dumps(signal_instance_in_raw)),
         project=project,
         signal=signal,
     )
@@ -618,6 +624,14 @@ def create_instance(
             case_type_in=signal_instance_in.case_type,
         )
         signal_instance.case_type = case_type
+
+    if signal_instance_in.oncall_service:
+        oncall_service = service_service.get_by_name(
+            db_session=db_session,
+            project_id=project.id,
+            name=signal_instance_in.oncall_service.name,
+        )
+        signal_instance.oncall_service = oncall_service
 
     db_session.add(signal_instance)
     db_session.commit()
