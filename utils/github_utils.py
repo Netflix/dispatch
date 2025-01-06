@@ -142,6 +142,18 @@ Tech Debt:
 Tests:
     {sections["tests"]}
 
+Dependencies:
+    {sections["dependencies"]}
+
+Docker:
+    {sections["docker"]}
+
+Security:
+    {sections["security"]}
+
+Tests:
+    {sections["tests"]}
+
 Documentation:
     {sections["documentation"]}
     """
