@@ -139,9 +139,6 @@ Bug Fixes:
 Tech Debt:
     {sections["techdebt"]}
 
-Tests:
-    {sections["tests"]}
-
 Dependencies:
     {sections["dependencies"]}
 
