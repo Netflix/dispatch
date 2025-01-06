@@ -100,6 +100,8 @@ def release_notes(pull_request_number: int) -> NoReturn:
         "tests": "",
         "improvement": "",
         "docker": "",
+        "security": "",
+        "chore": "",
     }
 
     click.echo(f"Fetching list of merged PRs since #{pull_request_number}...")
@@ -136,6 +138,15 @@ Bug Fixes:
 
 Tech Debt:
     {sections["techdebt"]}
+
+Dependencies:
+    {sections["dependencies"]}
+
+Docker:
+    {sections["docker"]}
+
+Security:
+    {sections["security"]}
 
 Tests:
     {sections["tests"]}
