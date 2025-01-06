@@ -240,7 +240,7 @@ def run(
             }
         )
 
-    if instance.siganl:
+    if instance.signal:
         params.update(
             {
                 "externalRef": f"{DISPATCH_UI_URL}/{instance.signal.project.organization.name}/signals/{instance.signal.id}?project={instance.signal.project.name}",
