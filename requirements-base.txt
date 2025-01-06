@@ -179,7 +179,7 @@ importlib-resources==6.4.5
     # via limits
 iniconfig==2.0.0
     # via pytest
-jinja2==3.1.4
+jinja2==3.1.5
     # via
     #   -r requirements-base.in
     #   spacy
