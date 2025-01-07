@@ -14,7 +14,7 @@ black==24.10.0
     # via -r requirements-dev.in
 cfgv==3.4.0
     # via pre-commit
-click==8.1.7
+click==8.1.8
     # via
     #   -r requirements-dev.in
     #   black
