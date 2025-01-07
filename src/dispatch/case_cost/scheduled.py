@@ -13,6 +13,7 @@ from dispatch.scheduler import scheduler
 
 from .service import (
     calculate_case_response_cost,
+    update_case_response_cost,
     get_or_create_default_case_response_cost,
 )
 
@@ -56,7 +57,8 @@ def calculate_cases_response_cost(db_session: Session, project: Project):
                         continue
 
             # we calculate the response cost amount
-            amount = calculate_case_response_cost(case.id, db_session)
+            update_case_response_cost(case, db_session)
+            amount = calculate_case_response_cost(case, db_session)
             # we don't need to update the cost amount if it hasn't changed
             if case_response_cost.amount == amount:
                 continue

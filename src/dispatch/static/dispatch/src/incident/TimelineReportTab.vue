@@ -75,6 +75,7 @@
 import { mapFields } from "vuex-map-fields"
 import { formatToUTC, formatToTimeZones } from "@/filters"
 import { mapActions } from "vuex"
+import DOMPurify from "dompurify"
 
 export default {
   name: "IncidentTimelineReportTab",
@@ -93,7 +94,7 @@ export default {
     },
 
     incidentSummary() {
-      return this.summary
+      return DOMPurify.sanitize(this.summary, { ALLOWED_TAGS: [] })
         .split("\n")
         .map((part) => `<p >${part}</p>`)
         .join("")

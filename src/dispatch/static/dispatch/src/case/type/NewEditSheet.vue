@@ -185,7 +185,7 @@ export default {
   data() {
     return {
       visibilities: ["Open", "Restricted"],
-      incidentProject: {},
+      incidentProject: null,
     }
   },
 
