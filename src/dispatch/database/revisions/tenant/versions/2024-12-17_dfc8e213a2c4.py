@@ -30,5 +30,5 @@ def upgrade():
 
 def downgrade():
     op.drop_constraint("oncall_service_id_fkey", "signal_instance", type_="foreignkey")
-    op.drop_column("signal_instance", "oncall_service")
+    op.drop_column("signal_instance", "oncall_service_id")
     op.drop_column("signal_instance", "conversation_target")
