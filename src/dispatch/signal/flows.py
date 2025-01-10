@@ -79,34 +79,38 @@ def signal_instance_create_flow(
     if not signal_instance.signal.create_case:
         return signal_instance
 
-    # processes overrides for case creation
-    # we want the following order of precedence:
-    # 1. signal instance overrides
-    # 2. signal definition overrides
-    # 3. case type defaults
+    # set signal instance attributes with priority given to signal instance specification, then signal, then case type.
+    if signal_instance.case_type:
+        case_type = signal_instance.case_type
+    else:
+        case_type = signal_instance.signal.case_type
 
     if signal_instance.case_priority:
         case_priority = signal_instance.case_priority
     else:
         case_priority = signal_instance.signal.case_priority
 
-    # if the signal has provided a case type use it's values instead of the definitions
-    conversation_target = None
-    if signal_instance.case_type:
-        case_type = signal_instance.case_type
-        if signal_instance.signal.conversation_target:
-            conversation_target = signal_instance.case_type.conversation_target
+    if signal_instance.oncall_service:
+        oncall_service = signal_instance.oncall_service
+    elif signal_instance.signal.oncall_service:
+        oncall_service = signal_instance.signal.oncall_service
+    elif case_type.oncall_service:
+        oncall_service = case_type.oncall_service
     else:
-        case_type = signal_instance.signal.case_type
+        oncall_service = None
 
-        if signal_instance.signal.conversation_target:
-            conversation_target = signal_instance.signal.conversation_target
+    if signal_instance.conversation_target:
+        conversation_target = signal_instance.conversation_target
+    elif signal_instance.signal.conversation_target:
+        conversation_target = signal_instance.signal.conversation_target
+    elif case_type.conversation_target:
+        conversation_target = case_type.conversation_target
+    else:
+        conversation_target = None
 
     assignee = None
-    if signal_instance.signal.oncall_service:
-        email = service_flows.resolve_oncall(
-            service=signal_instance.signal.oncall_service, db_session=db_session
-        )
+    if oncall_service:
+        email = service_flows.resolve_oncall(service=oncall_service, db_session=db_session)
         assignee = {"individual": {"email": email}}
 
     # create a case if not duplicate or snoozed and case creation is enabled
@@ -172,7 +176,10 @@ def create_signal_instance(
         raise DispatchException("Signal definition is not enabled.")
 
     signal_instance_in = SignalInstanceCreate(
-        raw=signal_instance_data, signal=signal, project=signal.project
+        **signal_instance_data,
+        raw=signal_instance_data,
+        signal=signal,
+        project=signal.project,
     )
 
     signal_instance = signal_service.create_instance(
