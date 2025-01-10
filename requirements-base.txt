@@ -315,7 +315,7 @@ pyasn1-modules==0.4.1
     #   oauth2client
 pycparser==2.22
     # via cffi
-pydantic==1.10.19
+pydantic==1.10.20
     # via
     #   -r requirements-base.in
     #   blockkit
