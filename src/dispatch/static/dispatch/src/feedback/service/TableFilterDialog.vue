@@ -19,6 +19,7 @@
             :health-metrics="true"
             :project="local_project"
             label="Oncall service"
+            :multiple="true"
           />
         </v-list-item>
       </v-list>

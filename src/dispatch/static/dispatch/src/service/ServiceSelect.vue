@@ -14,7 +14,7 @@
     no-filter
     clearable
     chips
-    multiple
+    :multiple="multiple"
     closable-chips
   >
     <template #append-item>
@@ -58,6 +58,10 @@ export default {
       default: null,
     },
     healthMetrics: {
+      type: Boolean,
+      default: false,
+    },
+    multiple: {
       type: Boolean,
       default: false,
     },
