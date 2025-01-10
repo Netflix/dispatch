@@ -38,6 +38,7 @@ from dispatch.models import (
     TimeStampMixin,
 )
 from dispatch.project.models import ProjectRead
+from dispatch.service.models import Service, ServiceRead
 from dispatch.tag.models import TagRead
 from dispatch.workflow.models import WorkflowRead
 
@@ -228,8 +229,11 @@ class SignalInstance(Base, TimeStampMixin, ProjectMixin):
     case_type = relationship("CaseType", backref="signal_instances")
     case_priority_id = Column(Integer, ForeignKey(CasePriority.id))
     case_priority = relationship("CasePriority", backref="signal_instances")
+    conversation_target = Column(String)
     filter_action = Column(String)
     canary = Column(Boolean, default=False)
+    oncall_service_id = Column(Integer, ForeignKey(Service.id))
+    oncall_service = relationship("Service", backref="signal_instances")
     raw = Column(JSONB)
     signal = relationship("Signal", backref="instances")
     signal_id = Column(Integer, ForeignKey("signal.id"))
@@ -386,6 +390,8 @@ class SignalInstanceCreate(SignalInstanceBase):
     signal: Optional[SignalRead]
     case_priority: Optional[CasePriorityRead]
     case_type: Optional[CaseTypeRead]
+    conversation_target: Optional[str]
+    oncall_service: Optional[ServiceRead]
 
 
 class SignalInstanceRead(SignalInstanceBase):
