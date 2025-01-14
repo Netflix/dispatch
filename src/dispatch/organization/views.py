@@ -51,6 +51,11 @@ def create_organization(
             status_code=status.HTTP_409_CONFLICT,
             detail=[{"msg": "An organization with this name already exists."}],
         )
+    if organization_in.id and get(db_session=db_session, organization_id=organization_in.id):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=[{"msg": "An organization with this id already exists."}],
+        )
 
     # we create the organization
     organization = create(db_session=db_session, organization_in=organization_in)
