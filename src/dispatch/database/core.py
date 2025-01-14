@@ -6,17 +6,17 @@ from typing import Annotated, Any
 from fastapi import Depends
 from pydantic import BaseModel
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from sqlalchemy import create_engine, inspect
+from sqlalchemy import create_engine, inspect, event
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import object_session, sessionmaker, Session
 from sqlalchemy.sql.expression import true
 from sqlalchemy_utils import get_mapper
 from starlette.requests import Request
 
-
 from dispatch import config
 from dispatch.exceptions import NotFoundError
 from dispatch.search.fulltext import make_searchable
+from dispatch.auth.service import CurrentUser
 
 engine = create_engine(
     config.SQLALCHEMY_DATABASE_URI,
@@ -94,9 +94,8 @@ class CustomBase:
         for key in self.__repr_attrs__:
             if not hasattr(self, key):
                 raise KeyError(
-                    "{} has incorrect attribute '{}' in " "__repr__attrs__".format(
-                        self.__class__, key
-                    )
+                    "{} has incorrect attribute '{}' in "
+                    "__repr__attrs__".format(self.__class__, key)
                 )
             value = getattr(self, key)
             wrap_in_quote = isinstance(value, str)
@@ -131,6 +130,57 @@ def get_db(request: Request):
 
 
 DbSession = Annotated[Session, Depends(get_db)]
+
+
+# def track_changes(session, flush_context, instances):
+#     print(f"**** Tracking changes for {instances}")
+#     for instance in session.dirty:
+#         key = session.identity_key(instance=instance)
+#         state = session.identity_map.get(key)
+#         if state:
+#             print(f"**** State: {state}")
+#             original = state.dict()
+#             changes = {}
+#             for key in original.keys():
+#                 print(f"**** the key is {key}")
+#                 current_value = getattr(instance, key)
+#                 original_value = original.get(key)
+#                 # if current_value != original_value:
+#                 changes[key] = {"old": original_value, "new": current_value}
+#             if changes:
+#                 print(
+#                     f"****Changes detected for {instance.__class__.__name__} {original.get('id')}: {changes}"
+#                 )
+
+
+def track_changes(session, flush_context, instances):
+    for instance in session.dirty:
+        state = inspect(instance)
+        changes = {}
+        for attr in state.attrs:
+            try:
+                hist = state.get_history(attr.key, True)
+            except Exception as e:
+                print(f"**** Error getting history for key {attr.key}")
+            if hist:
+                print(f"History for key '{attr.key}': {hist}")
+                if attr.key == "id":
+                    id = hist.unchanged[0]
+                    changes["id"] = id
+                    print(f"**** ID: {id}")
+                if hist.has_changes():
+                    changes[attr.key] = {
+                        "old": hist.deleted[0] if hist.deleted else None,
+                        "new": hist.added[0] if hist.added else None,
+                    }
+        if changes:
+            print(
+                f"*** Changes detected for {CurrentUser}: {instance.__class__.__name__}: {changes}"
+            )
+
+
+print("**** Registering event listener for DispatchUser")
+event.listen(Session, "before_flush", track_changes)
 
 
 def get_model_name_by_tablename(table_fullname: str) -> str:
