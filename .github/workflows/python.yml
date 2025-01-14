@@ -9,7 +9,7 @@ jobs:
       COVERAGE_SINGLE: 50
       # Minimum total code coverage
       COVERAGE_TOTAL: 55
-    runs-on: ubuntu-latest
+    runs-on: bp-ubuntu-latest-x64-4x
     services:
       postgres:
         image: postgres
@@ -28,7 +28,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: 3.11.2
-      - uses: actions/cache@v4
+      - uses: buildpulse/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}

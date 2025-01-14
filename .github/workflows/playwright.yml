@@ -15,7 +15,7 @@ env:
 
 jobs:
   end-to-end:
-    runs-on: ubuntu-20.04
+    runs-on: bp-ubuntu-latest-x64-4x
     services:
       postgres:
         image: postgres
@@ -37,7 +37,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 16
-      - uses: actions/cache@v4
+      - uses: buildpulse/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
