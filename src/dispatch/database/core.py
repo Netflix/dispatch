@@ -130,26 +130,6 @@ def get_db(request: Request):
 
 DbSession = Annotated[Session, Depends(get_db)]
 
-# def track_changes(session, flush_context, instances):
-#     print(f"**** Tracking changes for {instances}")
-#     for instance in session.dirty:
-#         key = session.identity_key(instance=instance)
-#         state = session.identity_map.get(key)
-#         if state:
-#             print(f"**** State: {state}")
-#             original = state.dict()
-#             changes = {}
-#             for key in original.keys():
-#                 print(f"**** the key is {key}")
-#                 current_value = getattr(instance, key)
-#                 original_value = original.get(key)
-#                 # if current_value != original_value:
-#                 changes[key] = {"old": original_value, "new": current_value}
-#             if changes:
-#                 print(
-#                     f"****Changes detected for {instance.__class__.__name__} {original.get('id')}: {changes}"
-#                 )
-
 tracked_classes = ["Signal"]
 
 
@@ -164,10 +144,9 @@ def track_changes(session, instances, flush_context):
             for attr in state.attrs:
                 try:
                     hist = state.get_history(attr.key, True)
-                except Exception as e:
-                    print(f"**** Error getting history for key {attr.key}")
+                except Exception:
+                    pass
                 if hist:
-                    # print(f"History for key '{attr.key}': {hist}")
                     if attr.key == "id":
                         id = hist.unchanged[0]
                         key = f"{instance.__class__.__name__}.id"
@@ -180,13 +159,12 @@ def track_changes(session, instances, flush_context):
                         }
             get_user = getattr(session, "user", None)
             if get_user:
-                print(f"*** User: {get_user}")
                 user = get_user
     if changes:
         print(f"*** Changes detected for: {user}: {id} {changes}")
 
 
-print("*** Registering event listener for DispatchUser")
+# register event listener for database
 event.listen(Session, "before_flush", track_changes)
 
 
