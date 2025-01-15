@@ -38,6 +38,7 @@ from .models import (
 )
 from .service import get, get_by_email, update, create
 
+
 log = logging.getLogger(__name__)
 
 auth_router = APIRouter()
