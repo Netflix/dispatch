@@ -16,7 +16,6 @@ from starlette.requests import Request
 from dispatch import config
 from dispatch.exceptions import NotFoundError
 from dispatch.search.fulltext import make_searchable
-from dispatch.auth.service import CurrentUser
 
 engine = create_engine(
     config.SQLALCHEMY_DATABASE_URI,
@@ -131,7 +130,6 @@ def get_db(request: Request):
 
 DbSession = Annotated[Session, Depends(get_db)]
 
-
 # def track_changes(session, flush_context, instances):
 #     print(f"**** Tracking changes for {instances}")
 #     for instance in session.dirty:
@@ -152,34 +150,43 @@ DbSession = Annotated[Session, Depends(get_db)]
 #                     f"****Changes detected for {instance.__class__.__name__} {original.get('id')}: {changes}"
 #                 )
 
+tracked_classes = ["Signal"]
 
-def track_changes(session, flush_context, instances):
+
+def track_changes(session, instances, flush_context):
+    changes = {}
+    id = None
+    user = None
     for instance in session.dirty:
-        state = inspect(instance)
-        changes = {}
-        for attr in state.attrs:
-            try:
-                hist = state.get_history(attr.key, True)
-            except Exception as e:
-                print(f"**** Error getting history for key {attr.key}")
-            if hist:
-                print(f"History for key '{attr.key}': {hist}")
-                if attr.key == "id":
-                    id = hist.unchanged[0]
-                    changes["id"] = id
-                    print(f"**** ID: {id}")
-                if hist.has_changes():
-                    changes[attr.key] = {
-                        "old": hist.deleted[0] if hist.deleted else None,
-                        "new": hist.added[0] if hist.added else None,
-                    }
-        if changes:
-            print(
-                f"*** Changes detected for {CurrentUser}: {instance.__class__.__name__}: {changes}"
-            )
+        if instance.__class__.__name__ in tracked_classes:
+            state = inspect(instance)
+
+            for attr in state.attrs:
+                try:
+                    hist = state.get_history(attr.key, True)
+                except Exception as e:
+                    print(f"**** Error getting history for key {attr.key}")
+                if hist:
+                    # print(f"History for key '{attr.key}': {hist}")
+                    if attr.key == "id":
+                        id = hist.unchanged[0]
+                        key = f"{instance.__class__.__name__}.id"
+                        changes[key] = id
+                    if hist.has_changes():
+                        key = f"{instance.__class__.__name__}.{attr.key}"
+                        changes[key] = {
+                            "old": hist.deleted[0] if hist.deleted else None,
+                            "new": hist.added[0] if hist.added else None,
+                        }
+            get_user = getattr(session, "user", None)
+            if get_user:
+                print(f"*** User: {get_user}")
+                user = get_user
+    if changes:
+        print(f"*** Changes detected for: {user}: {id} {changes}")
 
 
-print("**** Registering event listener for DispatchUser")
+print("*** Registering event listener for DispatchUser")
 event.listen(Session, "before_flush", track_changes)
 
 

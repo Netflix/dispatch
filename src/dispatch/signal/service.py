@@ -12,6 +12,7 @@ from sqlalchemy.orm.query import Query
 from sqlalchemy.sql.expression import true
 
 from dispatch.auth.models import DispatchUser
+from dispatch.auth.service import CurrentUser
 from dispatch.case.models import Case
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.type import service as case_type_service
@@ -443,7 +444,9 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
     return signal
 
 
-def update(*, db_session: Session, signal: Signal, signal_in: SignalUpdate) -> Signal:
+def update(
+    *, db_session: Session, signal: Signal, signal_in: SignalUpdate, user: CurrentUser
+) -> Signal:
     """Updates a signal."""
     signal_data = signal.dict()
     update_data = signal_in.dict(
