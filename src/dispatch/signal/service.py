@@ -12,7 +12,6 @@ from sqlalchemy.orm.query import Query
 from sqlalchemy.sql.expression import true
 
 from dispatch.auth.models import DispatchUser
-from dispatch.auth.service import CurrentUser
 from dispatch.case.models import Case
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.type import service as case_type_service
@@ -444,9 +443,7 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
     return signal
 
 
-def update(
-    *, db_session: Session, signal: Signal, signal_in: SignalUpdate, user: CurrentUser
-) -> Signal:
+def update(*, db_session: Session, signal: Signal, signal_in: SignalUpdate) -> Signal:
     """Updates a signal."""
     signal_data = signal.dict()
     update_data = signal_in.dict(
@@ -577,7 +574,7 @@ def create_instance(
     # remove non-serializable entities from the raw JSON:
     signal_instance_in_raw = signal_instance_in.raw.copy()
     if signal_instance_in.oncall_service:
-        signal_instance_in_raw.pop("oncall_service")
+        signal_instance_in_raw.pop('oncall_service')
 
     # we round trip the raw data to json-ify date strings
     signal_instance = SignalInstance(
@@ -606,7 +603,7 @@ def create_instance(
 
     if signal_instance.id and not is_valid_uuid(signal_instance.id):
         msg = f"Invalid signal id format. Expecting UUIDv4 format. Signal id: {signal_instance.id}. Signal name/variant: {signal_instance.raw['name'] if signal_instance and signal_instance.raw and signal_instance.raw.get('name') else signal_instance.raw['variant']}"
-        log.exception(msg)
+        log.warn(msg)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=[{"msg": msg}],
