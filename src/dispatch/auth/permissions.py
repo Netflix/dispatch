@@ -86,6 +86,13 @@ class BasePermission(ABC):
         if not organization:
             raise HTTPException(status_code=self.org_error_code, detail=self.org_error_msg)
 
+        org_check = organization_service.get_by_slug(
+            db_session=request.state.db, slug=organization.slug
+        )
+
+        if not org_check or org_check.id != organization.id:
+            raise HTTPException(status_code=self.org_error_code, detail=self.org_error_msg)
+
         user = get_current_user(request=request)
         if not user:
             raise HTTPException(status_code=self.user_error_code, detail=self.user_error_msg)
