@@ -51,6 +51,11 @@ def create_project(
             [ErrorWrapper(ExistsError(msg="A project with this name already exists."), loc="name")],
             model=ProjectCreate,
         )
+    if project_in.id and get(db_session=db_session, project_id=project_in.id):
+        raise ValidationError(
+            [ErrorWrapper(ExistsError(msg="A project with this id already exists."), loc="id")],
+            model=ProjectCreate,
+        )
 
     project = create(db_session=db_session, project_in=project_in)
     background_tasks.add_task(

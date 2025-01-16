@@ -126,7 +126,7 @@ frozenlist==1.5.0
     #   aiosignal
 google-api-core==2.22.0
     # via google-api-python-client
-google-api-python-client==2.158.0
+google-api-python-client==2.159.0
     # via -r requirements-base.in
 google-auth==2.36.0
     # via
@@ -257,7 +257,7 @@ oauthlib[signedtoken]==3.2.2
     #   atlassian-python-api
     #   jira
     #   requests-oauthlib
-openai==1.59.6
+openai==1.59.7
     # via -r requirements-base.in
 packaging==24.2
     # via
@@ -408,7 +408,7 @@ sentry-sdk==1.45.0
     # via
     #   -r requirements-base.in
     #   sentry-asgi
-sh==2.1.0
+sh==2.2.1
     # via -r requirements-base.in
 shellingham==1.5.4
     # via typer
