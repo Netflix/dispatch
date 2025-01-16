@@ -220,3 +220,6 @@ components.d.ts
 
 # Pyright
 pyrightconfig.json
+
+# Ignore Visual Studio Code settings
+.vscode/
