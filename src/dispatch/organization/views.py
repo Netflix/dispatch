@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from slugify import slugify
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from sqlalchemy.exc import IntegrityError
@@ -23,7 +24,7 @@ from .models import (
     OrganizationUpdate,
     OrganizationPagination,
 )
-from .service import create, get, get_by_name, update, add_user
+from .service import create, get, get_by_name, get_by_slug, update, add_user
 
 
 router = APIRouter()
@@ -45,6 +46,11 @@ def create_organization(
     current_user: CurrentUser,
 ):
     """Create a new organization."""
+    if not organization_in.name:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=[{"msg": "An organization name is required."}],
+        )
     organization = get_by_name(db_session=db_session, name=organization_in.name)
     if organization:
         raise HTTPException(
@@ -56,7 +62,12 @@ def create_organization(
             status_code=status.HTTP_409_CONFLICT,
             detail=[{"msg": "An organization with this id already exists."}],
         )
-
+    slug = slugify(organization_in.name, separator="_")
+    if get_by_slug(db_session=db_session, slug=slug):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=[{"msg": "An organization with this slug already exists."}],
+        )
     # we create the organization
     organization = create(db_session=db_session, organization_in=organization_in)
 
