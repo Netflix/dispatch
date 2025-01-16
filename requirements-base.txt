@@ -408,7 +408,7 @@ sentry-sdk==1.45.0
     # via
     #   -r requirements-base.in
     #   sentry-asgi
-sh==2.1.0
+sh==2.2.1
     # via -r requirements-base.in
 shellingham==1.5.4
     # via typer
