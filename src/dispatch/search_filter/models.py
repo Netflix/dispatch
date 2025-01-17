@@ -10,7 +10,7 @@ from sqlalchemy.sql.sqltypes import JSON
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.auth.models import DispatchUser, UserRead
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.enums import DispatchEnum
 from dispatch.models import (
     DispatchBase,

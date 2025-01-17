@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.exc import IntegrityError
 
+from dispatch.auth.service import CurrentUser
 from dispatch.database.core import DbSession
 from dispatch.exceptions import ExistsError
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
@@ -56,9 +57,13 @@ def create_entity_type(db_session: DbSession, entity_type_in: EntityTypeCreate):
 
 @router.put("/recalculate/{entity_type_id}/{signal_instance_id}", response_model=SignalInstanceRead)
 def recalculate(
-    db_session: DbSession, entity_type_id: PrimaryKey, signal_instance_id: Union[str, PrimaryKey]
+    db_session: DbSession,
+    entity_type_id: PrimaryKey,
+    signal_instance_id: Union[str, PrimaryKey],
+    current_user: CurrentUser,
 ):
     """Recalculates the associated entities for a signal instance."""
+    db_session.user = current_user
     entity_type = get(
         db_session=db_session,
         entity_type_id=entity_type_id,

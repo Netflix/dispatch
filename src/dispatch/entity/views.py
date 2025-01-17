@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 
+from dispatch.auth.service import CurrentUser
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.entity.service import get_cases_with_entity, get_signal_instances_with_entity
@@ -41,8 +42,11 @@ def create_entity(db_session: DbSession, entity_in: EntityCreate):
 
 
 @router.put("/{entity_id}", response_model=EntityRead)
-def update_entity(db_session: DbSession, entity_id: PrimaryKey, entity_in: EntityUpdate):
+def update_entity(
+    db_session: DbSession, entity_id: PrimaryKey, entity_in: EntityUpdate, current_user: CurrentUser
+):
     """Updates an existing entity."""
+    db_session.user = current_user
     entity = get(db_session=db_session, entity_id=entity_id)
     if not entity:
         raise HTTPException(

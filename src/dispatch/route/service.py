@@ -2,7 +2,7 @@ import json
 import logging
 from typing import Any, List
 
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.route.models import Recommendation, RecommendationMatch
 from dispatch.search_filter import service as search_filter_service
 

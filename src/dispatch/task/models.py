@@ -18,7 +18,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy_utils import TSVectorType
 
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.incident.models import IncidentReadBasic
 from dispatch.models import ResourceBase, ResourceMixin, PrimaryKey, Pagination
 from dispatch.participant.models import ParticipantRead, ParticipantUpdate

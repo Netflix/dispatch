@@ -4,7 +4,7 @@ from pydantic import Field
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy_utils import TSVectorType
 
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.models import DispatchBase, TimeStampMixin, PrimaryKey, Pagination
 
 

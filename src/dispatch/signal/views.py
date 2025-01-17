@@ -308,9 +308,7 @@ def update_signal(
         )
 
     try:
-        signal = update(
-            db_session=db_session, signal=signal, signal_in=signal_in, user=current_user
-        )
+        signal = update(db_session=db_session, signal=signal, signal_in=signal_in)
     except IntegrityError:
         raise ValidationError(
             [ErrorWrapper(ExistsError(msg="A signal with this name already exists."), loc="name")],

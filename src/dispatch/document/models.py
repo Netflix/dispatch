@@ -15,7 +15,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.messaging.strings import DOCUMENT_DESCRIPTIONS
 from dispatch.models import ResourceBase, ProjectMixin, ResourceMixin, EvergreenMixin, Pagination
 from dispatch.project.models import ProjectRead

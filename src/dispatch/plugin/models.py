@@ -12,7 +12,7 @@ from sqlalchemy_utils import TSVectorType, StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 
 from dispatch.config import DISPATCH_ENCRYPTION_KEY
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.models import DispatchBase, ProjectMixin, Pagination, PrimaryKey, NameStr
 from dispatch.plugins.base import plugins
 from dispatch.project.models import ProjectRead

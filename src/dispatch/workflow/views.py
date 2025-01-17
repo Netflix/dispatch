@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
+from dispatch.auth.service import CurrentUser
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
@@ -82,8 +83,14 @@ def create_workflow(db_session: DbSession, workflow_in: WorkflowCreate):
     response_model=WorkflowRead,
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
-def update_workflow(db_session: DbSession, workflow_id: PrimaryKey, workflow_in: WorkflowUpdate):
+def update_workflow(
+    db_session: DbSession,
+    workflow_id: PrimaryKey,
+    workflow_in: WorkflowUpdate,
+    current_user: CurrentUser,
+):
     """Update a workflow."""
+    db_session.user = current_user
     workflow = get(db_session=db_session, workflow_id=workflow_id)
     if not workflow:
         raise HTTPException(

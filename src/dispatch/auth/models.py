@@ -21,7 +21,7 @@ from dispatch.config import (
     DISPATCH_JWT_ALG,
     DISPATCH_JWT_EXP,
 )
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.enums import DispatchEnum, UserRoles
 from dispatch.models import OrganizationSlug, PrimaryKey, TimeStampMixin, DispatchBase, Pagination
 from dispatch.organization.models import Organization, OrganizationRead
@@ -60,6 +60,7 @@ class DispatchUser(Base, TimeStampMixin):
 
     # relationships
     events = relationship("Event", backref="dispatch_user")
+    audits = relationship("Audit", back_populates="dispatch_user")
 
     search_vector = Column(
         TSVectorType("email", regconfig="pg_catalog.simple", weights={"email": "A"})

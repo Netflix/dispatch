@@ -11,7 +11,7 @@ from sqlalchemy.event import listen
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.cost_model.models import CostModelRead
-from dispatch.database.core import Base, ensure_unique_default_per_project
+from dispatch.database.base import Base, ensure_unique_default_per_project
 from dispatch.enums import Visibility
 from dispatch.models import DispatchBase, ProjectMixin, Pagination
 from dispatch.plugin.models import PluginMetadata

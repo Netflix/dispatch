@@ -76,6 +76,7 @@ try:
     from dispatch.forms.type.models import FormsType  # noqa lgtm[py/unused-import]
     from dispatch.forms.models import Forms  # noqa lgtm[py/unused-import]
     from dispatch.email_templates.models import EmailTemplates  # noqa lgtm[py/unused-import]
+    from dispatch.audit.models import Audit  # noqa lgtm[py/unused-import]
 
 
 except Exception:

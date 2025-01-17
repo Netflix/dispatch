@@ -6,7 +6,7 @@ from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, event
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import JSONType, TSVectorType
 
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.models import DispatchBase, Pagination
 
 from .enums import ReportTypes

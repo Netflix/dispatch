@@ -5,7 +5,7 @@ from typing import Optional, List
 from sqlalchemy import Column, Integer, ForeignKey, String
 from sqlalchemy.orm import relationship
 
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.individual.models import IndividualContactReadMinimal
 from dispatch.models import DispatchBase, TimeStampMixin, PrimaryKey, Pagination, ProjectMixin
 from dispatch.project.models import ProjectRead

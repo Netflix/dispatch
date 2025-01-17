@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
+from dispatch.auth.service import CurrentUser
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
@@ -41,8 +42,10 @@ def update_incident_type(
     db_session: DbSession,
     incident_type_id: PrimaryKey,
     incident_type_in: IncidentTypeUpdate,
+    current_user: CurrentUser,
 ):
     """Update an existing incident type."""
+    db_session.user = current_user
     incident_type = get(db_session=db_session, incident_type_id=incident_type_id)
     if not incident_type:
         raise HTTPException(

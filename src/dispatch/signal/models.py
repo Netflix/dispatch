@@ -24,7 +24,7 @@ from dispatch.case.models import CaseReadMinimal
 from dispatch.case.priority.models import CasePriority, CasePriorityRead
 from dispatch.case.type.models import CaseType, CaseTypeRead
 from dispatch.data.source.models import SourceBase
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.entity.models import EntityRead
 from dispatch.entity_type.models import EntityType, EntityTypeRead
 from dispatch.enums import DispatchEnum

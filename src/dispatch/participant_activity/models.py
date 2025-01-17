@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 
 from dispatch.case.models import CaseRead
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.incident.models import IncidentRead
 from dispatch.models import DispatchBase, PrimaryKey
 from dispatch.participant.models import ParticipantRead

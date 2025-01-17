@@ -4,7 +4,7 @@ from jinja2 import Template
 from pydantic import validator, Field
 from sqlalchemy import Column, Integer, String, ForeignKey
 
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.messaging.strings import INCIDENT_CONFERENCE_DESCRIPTION
 from dispatch.models import ResourceBase, ResourceMixin
 

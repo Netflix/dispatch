@@ -1,21 +1,23 @@
 import functools
-import re
+import logging
+from datetime import datetime
+
 from contextlib import contextmanager
-from typing import Annotated, Any
+from typing import Annotated
 
 from fastapi import Depends
 from pydantic import BaseModel
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from sqlalchemy import create_engine, inspect, event
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import object_session, sessionmaker, Session
-from sqlalchemy.sql.expression import true
-from sqlalchemy_utils import get_mapper
+from sqlalchemy import create_engine, event
+from sqlalchemy import inspect as sqlalchemy_inspect
+from sqlalchemy.orm import sessionmaker, Session
 from starlette.requests import Request
+from dispatch.database.base import Base
 
 from dispatch import config
-from dispatch.exceptions import NotFoundError
-from dispatch.search.fulltext import make_searchable
+
+from dispatch.audit.models import Audit
+
+log = logging.getLogger(__name__)
 
 engine = create_engine(
     config.SQLALCHEMY_DATABASE_URI,
@@ -24,34 +26,7 @@ engine = create_engine(
     pool_pre_ping=config.DATABASE_ENGINE_POOL_PING,
 )
 
-
-# Useful for identifying slow or n + 1 queries. But doesn't need to be enabled in production.
-# logging.basicConfig()
-# logger = logging.getLogger(__name__)
-# logger.setLevel(logging.DEBUG)
-
-
-# @event.listens_for(Engine, "before_cursor_execute")
-# def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
-#    conn.info.setdefault("query_start_time", []).append(time.time())
-#    logger.debug("Start Query: %s", statement)
-
-
-# @event.listens_for(Engine, "after_cursor_execute")
-# def after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
-#    total = time.time() - conn.info["query_start_time"].pop(-1)
-#    logger.debug("Query Complete!")
-#    logger.debug("Total Time: %f", total)
-
-
 SessionLocal = sessionmaker(bind=engine)
-
-
-def resolve_table_name(name):
-    """Resolves table names to their mapped names."""
-    names = re.split("(?=[A-Z])", name)  # noqa
-    return "_".join([x.lower() for x in names if x])
-
 
 raise_attribute_error = object()
 
@@ -64,170 +39,137 @@ def resolve_attr(obj, attr, default=None):
         return default
 
 
-class CustomBase:
-    __repr_attrs__ = []
-    __repr_max_length__ = 15
-
-    @declared_attr
-    def __tablename__(self):
-        return resolve_table_name(self.__name__)
-
-    def dict(self):
-        """Returns a dict representation of a model."""
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
-
-    @property
-    def _id_str(self):
-        ids = inspect(self).identity
-        if ids:
-            return "-".join([str(x) for x in ids]) if len(ids) > 1 else str(ids[0])
-        else:
-            return "None"
-
-    @property
-    def _repr_attrs_str(self):
-        max_length = self.__repr_max_length__
-
-        values = []
-        single = len(self.__repr_attrs__) == 1
-        for key in self.__repr_attrs__:
-            if not hasattr(self, key):
-                raise KeyError(
-                    "{} has incorrect attribute '{}' in "
-                    "__repr__attrs__".format(self.__class__, key)
-                )
-            value = getattr(self, key)
-            wrap_in_quote = isinstance(value, str)
-
-            value = str(value)
-            if len(value) > max_length:
-                value = value[:max_length] + "..."
-
-            if wrap_in_quote:
-                value = "'{}'".format(value)
-            values.append(value if single else "{}:{}".format(key, value))
-
-        return " ".join(values)
-
-    def __repr__(self):
-        # get id like '#123'
-        id_str = ("#" + self._id_str) if self._id_str else ""
-        # join class name, id and repr_attrs
-        return "<{} {}{}>".format(
-            self.__class__.__name__,
-            id_str,
-            " " + self._repr_attrs_str if self._repr_attrs_str else "",
-        )
-
-
-Base = declarative_base(cls=CustomBase)
-make_searchable(Base.metadata)
-
-
 def get_db(request: Request):
     return request.state.db
 
 
 DbSession = Annotated[Session, Depends(get_db)]
 
-tracked_classes = ["Signal"]
+
+def serialize_value(value):
+    """Helper function to serialize values, especially datetime objects."""
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        if value.tzinfo is not None:
+            value = value.replace(tzinfo=None)
+        return value.isoformat(timespec="seconds")
+    elif isinstance(value, Base) or isinstance(value, BaseModel):
+        return {k: serialize_value(v) for k, v in value.dict().items()}
+    elif isinstance(value, dict):
+        return {k: serialize_value(v) for k, v in value.items()}
+    elif isinstance(value, list):
+        return [serialize_value(v) for v in value]
+    return value
 
 
-def track_changes(session, instances, flush_context):
+tracked_classes = [
+    "CasePriority",
+    "CaseSeverity",
+    "CaseType",
+    "Entity",
+    "EntityType",
+    "IncidentPriority",
+    "IncidentSeverity",
+    "IncidentType",
+    "Organization",
+    "Signal",
+    "Service",
+    "Workflow",
+]
+
+
+def track_changes(session, instances, flush_context, inspect=sqlalchemy_inspect):
+    """
+    Tracks changes to specified ORM instances within a SQLAlchemy session and logs them to an audit table.
+
+    This function is designed to be used as an event listener for SQLAlchemy's "before_flush" event.
+    It inspects changes to instances of specified classes within the session and records these changes
+    in an audit log.
+
+    Parameters:
+    - session (Session): The SQLAlchemy session that is being flushed. This session contains the instances
+    that are being tracked for changes.
+    - instances (list): A list of instances that are being flushed. This parameter is not used directly
+    in the function but is part of the event listener signature.
+    - flush_context (FlushContext): The flush context provided by SQLAlchemy during the flush operation.
+    This parameter is not used directly in the function but is part of the event listener signature.
+    - inspect (function): A function used to inspect ORM instances. By default, this is set to
+    `sqlalchemy.inspect`. This parameter is included to allow for easier testing by enabling the
+    injection of a mock inspect function during unit tests.
+
+    Behavior:
+    - The function iterates over all "dirty" instances in the session, which are instances that have
+    been modified.
+    - For each instance, it checks if the class name is in the list of tracked classes.
+    - It uses the `inspect` function to get the state of the instance and iterates over its attributes.
+    - For each attribute, it retrieves the history of changes and records any modifications.
+    - If changes are detected, they are serialized and added to an audit log entry, which is then
+    added to the session.
+
+    Exceptions:
+    - The function catches and logs any exceptions that occur during the change tracking process,
+    ensuring that the audit logging does not interfere with the main transaction.
+
+    Note:
+    - The `inspect` parameter is added to facilitate testing by allowing the injection of a mock
+    inspect function. This makes it easier to simulate and verify the behavior of the function
+    in a controlled test environment.
+    - The `no_autoflush` block is used to prevent the session from automatically flushing changes
+    to the database while the function is executing. This is important to avoid premature flushing
+    that could interfere with the change tracking process, ensuring that all changes are captured
+    accurately before any database operations are committed.
+    - The `serialize_value` function is used to convert complex data types, such as datetime objects
+    and Pydantic models, into JSON-serializable formats. This ensures that all changes can be
+    stored in the audit log as JSON. By serializing values, the function can handle a wide range of
+    data types and maintain the integrity of the audit log.
+    """
     changes = {}
     id = None
     user = None
-    for instance in session.dirty:
-        if instance.__class__.__name__ in tracked_classes:
-            state = inspect(instance)
-
-            for attr in state.attrs:
-                try:
-                    hist = state.get_history(attr.key, True)
-                except Exception:
-                    pass
-                if hist:
-                    if attr.key == "id":
-                        id = hist.unchanged[0]
-                        key = f"{instance.__class__.__name__}.id"
-                        changes[key] = id
-                    if hist.has_changes():
-                        key = f"{instance.__class__.__name__}.{attr.key}"
-                        changes[key] = {
-                            "old": hist.deleted[0] if hist.deleted else None,
-                            "new": hist.added[0] if hist.added else None,
-                        }
-            get_user = getattr(session, "user", None)
-            if get_user:
-                user = get_user
-    if changes:
-        print(f"*** Changes detected for: {user}: {id} {changes}")
+    tablename = ""
+    with session.no_autoflush:
+        try:
+            for instance in session.dirty:
+                if instance.__class__.__name__ in tracked_classes:
+                    state = inspect(instance)
+                    tablename = instance.__class__.__name__
+                    for attr in state.attrs:
+                        try:
+                            hist = state.get_history(attr.key, True)
+                        except Exception:
+                            pass
+                        if hist:
+                            if attr.key == "id":
+                                id = hist.unchanged[0]
+                            if hist.has_changes():
+                                key = f"{instance.__class__.__name__}.{attr.key}"
+                                old = serialize_value(hist.deleted[0]) if hist.deleted else None
+                                new = serialize_value(hist.added[0]) if hist.added else None
+                                if old != new:
+                                    changes[key] = {
+                                        "old": old,
+                                        "new": new,
+                                    }
+                    get_user = getattr(session, "user", None)
+                    if get_user:
+                        user = get_user
+            if changes and user:
+                log_entry = Audit(
+                    table_name=tablename,
+                    changed_data=changes,
+                    record_id=id,
+                    dispatch_user=user,
+                )
+                session.add(log_entry)
+        except Exception as e:
+            log.exception(
+                f"Error logging changes in audit table. Changes to {tablename} with id {id}: {changes} by user {user} | error: {e}"
+            )
 
 
 # register event listener for database
 event.listen(Session, "before_flush", track_changes)
-
-
-def get_model_name_by_tablename(table_fullname: str) -> str:
-    """Returns the model name of a given table."""
-    return get_class_by_tablename(table_fullname=table_fullname).__name__
-
-
-def get_class_by_tablename(table_fullname: str) -> Any:
-    """Return class reference mapped to table."""
-
-    def _find_class(name):
-        for c in Base._decl_class_registry.values():
-            if hasattr(c, "__table__"):
-                if c.__table__.fullname.lower() == name.lower():
-                    return c
-
-    mapped_name = resolve_table_name(table_fullname)
-    mapped_class = _find_class(mapped_name)
-
-    # try looking in the 'dispatch_core' schema
-    if not mapped_class:
-        mapped_class = _find_class(f"dispatch_core.{mapped_name}")
-
-    if not mapped_class:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(msg="Model not found. Check the name of your model."),
-                    loc="filter",
-                )
-            ],
-            model=BaseModel,
-        )
-
-    return mapped_class
-
-
-def get_table_name_by_class_instance(class_instance: Base) -> str:
-    """Returns the name of the table for a given class instance."""
-    return class_instance._sa_instance_state.mapper.mapped_table.name
-
-
-def ensure_unique_default_per_project(target, value, oldvalue, initiator):
-    """Ensures that only one row in table is specified as the default."""
-    session = object_session(target)
-    if session is None:
-        return
-
-    mapped_cls = get_mapper(target)
-
-    if value:
-        previous_default = (
-            session.query(mapped_cls)
-            .filter(mapped_cls.columns.default == true())
-            .filter(mapped_cls.columns.project_id == target.project_id)
-            .one_or_none()
-        )
-        if previous_default:
-            # we want exclude updating the current default
-            if previous_default.id != target.id:
-                previous_default.default = False
-                session.commit()
 
 
 def refetch_db_session(organization_slug: str) -> Session:

@@ -1,7 +1,8 @@
 import logging
 from typing import Any
 
-from dispatch.database.core import SessionLocal, get_table_name_by_class_instance
+from dispatch.database.base import get_table_name_by_class_instance
+from dispatch.database.core import SessionLocal
 from dispatch.event import service as event_service
 from dispatch.participant import service as participant_service
 from dispatch.participant_role.models import ParticipantRoleType

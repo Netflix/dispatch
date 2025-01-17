@@ -5,7 +5,7 @@ from sqlalchemy import Boolean, Column, ForeignKey, Integer, DateTime, String
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import JSONType
 
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.models import (
     DispatchBase,
 )
