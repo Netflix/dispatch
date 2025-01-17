@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
+from dispatch.auth.service import CurrentUser
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
@@ -46,8 +47,10 @@ def update_incident_severity(
     db_session: DbSession,
     incident_severity_id: PrimaryKey,
     incident_severity_in: IncidentSeverityUpdate,
+    current_user: CurrentUser,
 ):
     """Updates an existing incident severity."""
+    db_session.user = current_user
     incident_severity = get(db_session=db_session, incident_severity_id=incident_severity_id)
     if not incident_severity:
         raise HTTPException(

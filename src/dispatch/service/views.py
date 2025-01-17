@@ -4,6 +4,7 @@ from typing import List
 
 from sqlalchemy.exc import IntegrityError
 
+from dispatch.auth.service import CurrentUser
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.exceptions import ExistsError
@@ -72,8 +73,14 @@ def create_service(
 
 
 @router.put("/{service_id}", response_model=ServiceRead)
-def update_service(db_session: DbSession, service_id: PrimaryKey, service_in: ServiceUpdate):
+def update_service(
+    db_session: DbSession,
+    service_id: PrimaryKey,
+    service_in: ServiceUpdate,
+    current_user: CurrentUser,
+):
     """Updates an existing service."""
+    db_session.user = current_user
     service = get(db_session=db_session, service_id=service_id)
     if not service:
         raise HTTPException(

@@ -6,7 +6,7 @@ from sqlalchemy import Column, Integer, ForeignKey, DateTime, String, Numeric, J
 from sqlalchemy_utils import TSVectorType
 from sqlalchemy.orm import relationship
 
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.individual.models import IndividualContactReadMinimal
 from dispatch.models import DispatchBase, TimeStampMixin, FeedbackMixin, PrimaryKey, Pagination
 from dispatch.project.models import ProjectRead

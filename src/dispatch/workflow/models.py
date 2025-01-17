@@ -8,7 +8,7 @@ from sqlalchemy.sql.schema import PrimaryKeyConstraint
 from sqlalchemy.sql.sqltypes import Boolean
 from sqlalchemy_utils import TSVectorType
 
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.document.models import DocumentCreate
 from dispatch.models import (
     DispatchBase,

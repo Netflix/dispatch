@@ -4,7 +4,7 @@ import logging
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import resolve_attr
-from dispatch.database.core import get_table_name_by_class_instance
+from dispatch.database.base import get_table_name_by_class_instance
 from dispatch.enums import DocumentResourceTypes
 from dispatch.event import service as event_service
 from dispatch.plugin import service as plugin_service

@@ -293,9 +293,13 @@ def create_signal(db_session: DbSession, signal_in: SignalCreate):
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_signal(
-    db_session: DbSession, signal_id: Union[str, PrimaryKey], signal_in: SignalUpdate
+    db_session: DbSession,
+    signal_id: Union[str, PrimaryKey],
+    signal_in: SignalUpdate,
+    current_user: CurrentUser,
 ):
     """Updates an existing signal."""
+    db_session.user = current_user
     signal = get_by_primary_or_external_id(db_session=db_session, signal_id=signal_id)
     if not signal:
         raise HTTPException(

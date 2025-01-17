@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
+from dispatch.auth.service import CurrentUser
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
@@ -46,8 +47,10 @@ def update_incident_priority(
     db_session: DbSession,
     incident_priority_id: PrimaryKey,
     incident_priority_in: IncidentPriorityUpdate,
+    current_user: CurrentUser,
 ):
     """Update an existing incident priority."""
+    db_session.user = current_user
     incident_priority = get(db_session=db_session, incident_priority_id=incident_priority_id)
     if not incident_priority:
         raise HTTPException(

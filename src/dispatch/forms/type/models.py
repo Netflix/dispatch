@@ -6,7 +6,7 @@ from sqlalchemy import Boolean, Column, Integer, ForeignKey, String
 from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy.orm import relationship
 
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.individual.models import IndividualContactReadMinimal
 from dispatch.models import (
     DispatchBase,

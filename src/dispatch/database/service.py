@@ -38,7 +38,7 @@ from dispatch.signal.models import Signal, SignalInstance
 from dispatch.tag.models import Tag
 from dispatch.task.models import Task
 
-from .core import Base, get_class_by_tablename, get_model_name_by_tablename
+from .base import Base, get_class_by_tablename, get_model_name_by_tablename
 
 log = logging.getLogger(__file__)
 

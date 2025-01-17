@@ -7,7 +7,7 @@ from sqlalchemy.sql.schema import UniqueConstraint
 
 from sqlalchemy_utils import TSVectorType
 
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.models import PrimaryKey, DispatchBase, ProjectMixin, Pagination
 from dispatch.project.models import ProjectRead
 

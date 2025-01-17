@@ -36,7 +36,7 @@ from dispatch.config import (
     DISPATCH_PKCE_DONT_VERIFY_AT_HASH,
     DISPATCH_UI_URL,
 )
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
 from dispatch.individual.models import IndividualContact, IndividualContactRead
@@ -178,7 +178,11 @@ class AwsAlbAuthProviderPlugin(AuthenticationProviderPlugin):
     author = "ManyPets"
     author_url = "https://manypets.com/"
 
-    @cached(cache=TTLCache(maxsize=1024, ttl=DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_PUBLIC_KEY_CACHE_SECONDS))
+    @cached(
+        cache=TTLCache(
+            maxsize=1024, ttl=DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_PUBLIC_KEY_CACHE_SECONDS
+        )
+    )
     def get_public_key(self, kid: str, region: str):
         log.debug("Cache miss. Requesting key from AWS endpoint.")
         url = f"https://public-keys.auth.elb.{region}.amazonaws.com/{kid}"
@@ -190,20 +194,18 @@ class AwsAlbAuthProviderPlugin(AuthenticationProviderPlugin):
             status_code=HTTP_401_UNAUTHORIZED, detail=[{"msg": "Could not validate credentials"}]
         )
 
-        encoded_jwt: str = request.headers.get('x-amzn-oidc-data')
+        encoded_jwt: str = request.headers.get("x-amzn-oidc-data")
         if not encoded_jwt:
-            log.error(
-                "Unable to authenticate. Header x-amzn-oidc-data not found."
-            )
+            log.error("Unable to authenticate. Header x-amzn-oidc-data not found.")
             raise credentials_exception
 
         log.debug(f"Header x-amzn-oidc-data header received: {encoded_jwt}")
 
         # Validate the signer
-        jwt_headers = encoded_jwt.split('.')[0]
+        jwt_headers = encoded_jwt.split(".")[0]
         decoded_jwt_headers = base64.b64decode(jwt_headers)
         decoded_json = json.loads(decoded_jwt_headers)
-        received_alb_arn = decoded_json['signer']
+        received_alb_arn = decoded_json["signer"]
 
         if received_alb_arn != DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_ARN:
             log.error(
@@ -212,10 +214,10 @@ class AwsAlbAuthProviderPlugin(AuthenticationProviderPlugin):
             raise credentials_exception
 
         # Get the key id from JWT headers (the kid field)
-        kid = decoded_json['kid']
+        kid = decoded_json["kid"]
 
         # Get the region from the ARN
-        region = DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_ARN.split(':')[3]
+        region = DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_ARN.split(":")[3]
 
         # Get the public key from regional endpoint
         log.debug(f"Getting public key for kid {kid} in region {region}.")
@@ -223,7 +225,7 @@ class AwsAlbAuthProviderPlugin(AuthenticationProviderPlugin):
 
         # Get the payload
         log.debug(f"Decoding {encoded_jwt} with public key {pub_key}.")
-        payload = jwt.decode(encoded_jwt, pub_key, algorithms=['ES256'])
+        payload = jwt.decode(encoded_jwt, pub_key, algorithms=["ES256"])
 
         return payload[DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_EMAIL_CLAIM]
 

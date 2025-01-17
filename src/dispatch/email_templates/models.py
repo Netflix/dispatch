@@ -4,7 +4,7 @@ from typing import Optional, List
 
 from sqlalchemy import Column, Integer, String, Boolean, UniqueConstraint
 
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.models import DispatchBase, TimeStampMixin, PrimaryKey, Pagination, ProjectMixin
 from dispatch.project.models import ProjectRead
 

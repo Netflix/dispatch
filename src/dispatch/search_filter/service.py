@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from sqlalchemy_filters import apply_filters
 
-from dispatch.database.core import Base, get_class_by_tablename, get_table_name_by_class_instance
+from dispatch.database.base import Base, get_class_by_tablename, get_table_name_by_class_instance
 from dispatch.database.service import apply_filter_specific_joins
 from dispatch.project import service as project_service
 

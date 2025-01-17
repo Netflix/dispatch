@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
+from dispatch.auth.service import CurrentUser
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
@@ -42,8 +43,10 @@ def update_case_type(
     db_session: DbSession,
     case_type_id: PrimaryKey,
     case_type_in: CaseTypeUpdate,
+    current_user: CurrentUser,
 ):
     """Updates an existing case type."""
+    db_session.user = current_user
     case_type = get(db_session=db_session, case_type_id=case_type_id)
     if not case_type:
         raise HTTPException(

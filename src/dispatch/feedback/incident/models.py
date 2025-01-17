@@ -5,7 +5,7 @@ from typing import Optional, List
 from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy_utils import TSVectorType
 
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.incident.models import IncidentReadBasic
 from dispatch.models import (
     DispatchBase,

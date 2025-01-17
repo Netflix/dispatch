@@ -4,7 +4,7 @@ from typing import Optional
 
 from sqlalchemy import Column, Integer, ForeignKey
 
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.messaging.strings import TICKET_DESCRIPTION
 from dispatch.models import ResourceBase, ResourceMixin
 

@@ -11,7 +11,7 @@ from sqlalchemy_utils import TSVectorType, observes
 
 from dispatch.conference.models import ConferenceRead
 from dispatch.conversation.models import ConversationRead
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.document.models import Document, DocumentRead
 from dispatch.enums import Visibility
 from dispatch.event.models import EventRead

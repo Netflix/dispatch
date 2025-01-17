@@ -7,7 +7,7 @@ from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.project.models import ProjectRead
 from dispatch.search_filter.models import SearchFilterRead
 from dispatch.models import (

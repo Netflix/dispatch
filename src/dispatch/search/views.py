@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from fastapi.params import Query
 from starlette.responses import JSONResponse
 
-from dispatch.database.core import get_class_by_tablename
+from dispatch.database.base import get_class_by_tablename
 from dispatch.database.service import composite_search
 from dispatch.database.service import CommonParameters
 from dispatch.enums import SearchTypes, UserRoles

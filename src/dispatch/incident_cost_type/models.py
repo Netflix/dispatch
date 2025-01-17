@@ -7,7 +7,7 @@ from sqlalchemy.event import listen
 
 from sqlalchemy_utils import TSVectorType, JSONType
 
-from dispatch.database.core import Base, ensure_unique_default_per_project
+from dispatch.database.base import Base, ensure_unique_default_per_project
 from dispatch.models import (
     DispatchBase,
     NameStr,

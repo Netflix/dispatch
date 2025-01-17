@@ -5,7 +5,7 @@ from pydantic.types import PositiveInt
 from sqlalchemy import Boolean, Column, Integer, String, PrimaryKeyConstraint, Table, ForeignKey
 from sqlalchemy.orm import relationship
 
-from dispatch.database.core import Base
+from dispatch.database.base import Base
 from dispatch.incident.priority.models import IncidentPriorityRead
 from dispatch.incident.type.models import IncidentTypeRead
 from dispatch.individual.models import IndividualContactRead

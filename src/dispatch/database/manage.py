@@ -17,7 +17,8 @@ from dispatch.search.fulltext import (
     sync_trigger,
 )
 
-from .core import Base, sessionmaker
+from .base import Base
+from .core import sessionmaker
 from .enums import DISPATCH_ORGANIZATION_SCHEMA_PREFIX
 
 

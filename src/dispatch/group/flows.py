@@ -3,7 +3,7 @@ import logging
 
 from dispatch.case.models import Case
 from dispatch.database.core import SessionLocal
-from dispatch.database.core import get_table_name_by_class_instance
+from dispatch.database.base import get_table_name_by_class_instance
 from dispatch.event import service as event_service
 from dispatch.incident.models import Incident
 from dispatch.plugin import service as plugin_service

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 
-from dispatch.database.core import DbSession, get_class_by_tablename
+from dispatch.database.core import DbSession
+from dispatch.database.base import get_class_by_tablename
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 from dispatch.tag.recommender import get_recommendations

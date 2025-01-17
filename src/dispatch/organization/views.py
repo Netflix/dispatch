@@ -114,8 +114,10 @@ def update_organization(
     db_session: DbSession,
     organization_id: PrimaryKey,
     organization_in: OrganizationUpdate,
+    current_user: CurrentUser,
 ):
     """Update an organization."""
+    db_session.user = current_user
     organization = get(db_session=db_session, organization_id=organization_id)
     if not organization:
         raise HTTPException(
