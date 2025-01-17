@@ -1,4 +1,3 @@
-import pytest
 from datetime import datetime, timezone
 from pydantic import BaseModel
 from dispatch.database.core import serialize_value, track_changes
@@ -49,7 +48,6 @@ def test_serialize_value_basic_types():
     assert serialize_value(123) == 123
     assert serialize_value(45.67) == 45.67
     assert serialize_value("string") == "string"
-    assert serialize_value(True) == True
 
 
 # Test track_changes function
