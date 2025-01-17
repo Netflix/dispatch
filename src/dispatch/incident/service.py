@@ -482,7 +482,7 @@ def generate_incident_summary(*, db_session: Session, incident: Incident) -> str
             Given the text of the security post-incident review document below,
             provide answers to the following questions in a paragraph format.
             Do not include the questions in your response.
-            Do not use any of these words in your summary: breach, unauthorized, leak, violation, unlawful, illegal.
+            Do not use any of these words in your summary unless they appear in the document: breach, unauthorized, leak, violation, unlawful, illegal.
             1. What is the summary of what happened?
             2. What were the overall risk(s)?
             3. How were the risk(s) mitigated?
