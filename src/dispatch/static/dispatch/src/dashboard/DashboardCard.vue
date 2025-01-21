@@ -1,12 +1,14 @@
 <template>
   <v-card variant="outlined" :loading="loading">
     <v-card-title>{{ title }}</v-card-title>
-    <apexchart :type="type" height="250" :options="localOptions" :series="series" />
+    <apexchart :type="type" height="250" :options="localOptions" :series="sanitize(series)" />
   </v-card>
 </template>
 
 <script>
 import VueApexCharts from "vue3-apexcharts"
+import DOMPurify from "dompurify"
+
 export default {
   name: "DashboardCard",
 
@@ -40,7 +42,13 @@ export default {
       required: true,
     },
   },
-
+  methods: {
+    sanitize(series) {
+      return series.map((s) => {
+        return { name: DOMPurify.sanitize(s.name), data: s.data }
+      })
+    },
+  },
   data() {
     return {
       localOptions: JSON.parse(JSON.stringify(this.options)),
