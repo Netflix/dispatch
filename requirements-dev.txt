@@ -14,7 +14,7 @@ black==24.10.0
     # via -r requirements-dev.in
 cfgv==3.4.0
     # via pre-commit
-click==8.1.7
+click==8.1.8
     # via
     #   -r requirements-dev.in
     #   black
@@ -34,7 +34,7 @@ executing==2.1.0
     #   stack-data
 factory-boy==3.3.1
     # via -r requirements-dev.in
-faker==33.3.0
+faker==33.3.1
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -92,7 +92,7 @@ python-dateutil==2.9.0.post0
     # via faker
 pyyaml==6.0.2
     # via pre-commit
-ruff==0.8.6
+ruff==0.9.1
     # via -r requirements-dev.in
 six==1.16.0
     # via

@@ -571,6 +571,11 @@ def create_instance(
 
     signal = get(db_session=db_session, signal_id=signal_instance_in.signal.id)
 
+    # remove non-serializable entities from the raw JSON:
+    signal_instance_in_raw = signal_instance_in.raw.copy()
+    if signal_instance_in.oncall_service:
+        signal_instance_in_raw.pop("oncall_service")
+
     # we round trip the raw data to json-ify date strings
     signal_instance = SignalInstance(
         **signal_instance_in.dict(
@@ -580,12 +585,13 @@ def create_instance(
                 "case_type",
                 "entities",
                 "external_id",
+                "oncall_service",
                 "project",
                 "raw",
                 "signal",
             }
         ),
-        raw=json.loads(json.dumps(signal_instance_in.raw)),
+        raw=json.loads(json.dumps(signal_instance_in_raw)),
         project=project,
         signal=signal,
     )
@@ -597,7 +603,7 @@ def create_instance(
 
     if signal_instance.id and not is_valid_uuid(signal_instance.id):
         msg = f"Invalid signal id format. Expecting UUIDv4 format. Signal id: {signal_instance.id}. Signal name/variant: {signal_instance.raw['name'] if signal_instance and signal_instance.raw and signal_instance.raw.get('name') else signal_instance.raw['variant']}"
-        log.warn(msg)
+        log.exception(msg)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=[{"msg": msg}],
@@ -618,6 +624,14 @@ def create_instance(
             case_type_in=signal_instance_in.case_type,
         )
         signal_instance.case_type = case_type
+
+    if signal_instance_in.oncall_service:
+        oncall_service = service_service.get_by_name(
+            db_session=db_session,
+            project_id=project.id,
+            name=signal_instance_in.oncall_service.name,
+        )
+        signal_instance.oncall_service = oncall_service
 
     db_session.add(signal_instance)
     db_session.commit()
