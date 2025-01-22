@@ -242,7 +242,7 @@ def update_user(email: str, role: str, organization: str):
 def reset_user_password(email: str, password: str):
     """Resets a user's password."""
     from dispatch.auth import service as user_service
-    from dispatch.auth.models import UserUpdate
+    from dispatch.auth.models import AdminPasswordReset
     from dispatch.database.core import SessionLocal
 
     db_session = SessionLocal()
@@ -251,10 +251,14 @@ def reset_user_password(email: str, password: str):
         click.secho(f"No user found. Email: {email}", fg="red")
         return
 
-    user_service.update(
-        user=user, user_in=UserUpdate(id=user.id, password=password), db_session=db_session
-    )
-    click.secho("User successfully updated.", fg="green")
+    try:
+        # Use the new set_password method which includes validation
+        user.set_password(password)
+        db_session.commit()
+        click.secho("User password successfully updated.", fg="green")
+    except ValueError as e:
+        click.secho(f"Failed to update password: {str(e)}", fg="red")
+        return
 
 
 @dispatch_cli.group("database")
