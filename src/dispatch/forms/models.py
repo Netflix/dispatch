@@ -9,7 +9,7 @@ from dispatch.database.core import Base
 from dispatch.individual.models import IndividualContactReadMinimal
 from dispatch.models import DispatchBase, TimeStampMixin, PrimaryKey, Pagination, ProjectMixin
 from dispatch.project.models import ProjectRead
-from dispatch.incident.models import IncidentReadMinimal
+from dispatch.incident.models import IncidentReadBasic
 from dispatch.forms.type.models import FormsTypeRead
 from .enums import FormStatus, FormAttorneyStatus
 
@@ -46,7 +46,7 @@ class FormsBase(DispatchBase):
     status: Optional[str] = Field(None, nullable=True)
     attorney_status: Optional[str] = Field(None, nullable=True)
     project: Optional[ProjectRead]
-    incident: Optional[IncidentReadMinimal]
+    incident: Optional[IncidentReadBasic]
     attorney_questions: Optional[str] = Field(None, nullable=True)
     attorney_analysis: Optional[str] = Field(None, nullable=True)
     score: Optional[int]
