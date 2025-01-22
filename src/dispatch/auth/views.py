@@ -35,6 +35,8 @@ from .models import (
     UserRegisterResponse,
     UserCreate,
     UserUpdate,
+    UserPasswordUpdate,
+    AdminPasswordReset,
 )
 from .service import get, get_by_email, update, create
 
@@ -159,7 +161,6 @@ def update_user(
             # New user role provided is different than current user role
             current_user_organization_role = current_user.get_organization_role(organization)
             if current_user_organization_role != UserRoles.owner:
-                # We don't allow the role change if user requesting the change does not have owner role
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail=[
@@ -174,10 +175,86 @@ def update_user(
         UserOrganization(role=user_in.role, organization=OrganizationRead(name=organization))
     ]
 
-    # we currently only allow user password changes via CLI, not UI/API.
-    user_in.password = None
-
     return update(db_session=db_session, user=user, user_in=user_in)
+
+
+@user_router.post("/{user_id}/change-password", response_model=UserRead)
+def change_password(
+    db_session: DbSession,
+    user_id: PrimaryKey,
+    password_update: UserPasswordUpdate,
+    current_user: CurrentUser,
+    organization: OrganizationSlug,
+):
+    """Change user password with proper validation"""
+    user = get(db_session=db_session, user_id=user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A user with this id does not exist."}],
+        )
+
+    # Only allow users to change their own password or owners to reset
+    if user.id != current_user.id and not current_user.is_owner(organization):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=[{"msg": "Not authorized to change other user passwords"}],
+        )
+
+    # Validate current password if user is changing their own password
+    if user.id == current_user.id:
+        if not user.verify_password(password_update.current_password):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=[{"msg": "Invalid current password"}],
+            )
+
+    # Set new password
+    try:
+        user.set_password(password_update.new_password)
+        db_session.commit()
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=[{"msg": str(e)}],
+        ) from e
+
+    return user
+
+
+@user_router.post("/{user_id}/reset-password", response_model=UserRead)
+def admin_reset_password(
+    db_session: DbSession,
+    user_id: PrimaryKey,
+    password_reset: AdminPasswordReset,
+    current_user: CurrentUser,
+    organization: OrganizationSlug,
+):
+    """Admin endpoint to reset user password"""
+    # Verify current user is an owner
+    if not current_user.is_owner(organization):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=[{"msg": "Only owners can reset passwords"}],
+        )
+
+    user = get(db_session=db_session, user_id=user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A user with this id does not exist."}],
+        )
+
+    try:
+        user.set_password(password_reset.new_password)
+        db_session.commit()
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=[{"msg": str(e)}],
+        ) from e
+
+    return user
 
 
 @auth_router.get("/me", response_model=UserRead)
@@ -206,7 +283,7 @@ def login_user(
     db_session: DbSession,
 ):
     user = get_by_email(db_session=db_session, email=user_in.email)
-    if user and user.check_password(user_in.password):
+    if user and user.verify_password(user_in.password):
         projects = []
         for user_project in user.projects:
             projects.append(
