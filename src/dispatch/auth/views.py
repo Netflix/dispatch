@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.config import DISPATCH_AUTH_REGISTRATION_ENABLED
@@ -217,7 +217,7 @@ def change_password(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=[{"msg": str(e)}],
-        )
+        ) from e
 
     return user
 
@@ -252,7 +252,7 @@ def admin_reset_password(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=[{"msg": str(e)}],
-        )
+        ) from e
 
     return user
 
@@ -283,7 +283,7 @@ def login_user(
     db_session: DbSession,
 ):
     user = get_by_email(db_session=db_session, email=user_in.email)
-    if user and user.check_password(user_in.password):
+    if user and user.verify_password(user_in.password):
         projects = []
         for user_project in user.projects:
             projects.append(

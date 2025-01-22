@@ -242,7 +242,6 @@ def update_user(email: str, role: str, organization: str):
 def reset_user_password(email: str, password: str):
     """Resets a user's password."""
     from dispatch.auth import service as user_service
-    from dispatch.auth.models import AdminPasswordReset
     from dispatch.database.core import SessionLocal
 
     db_session = SessionLocal()
