@@ -41,7 +41,7 @@
         <v-tab key="resources"> Resources </v-tab>
         <v-tab key="participants"> Participants </v-tab>
         <v-tab key="timeline"> Timeline </v-tab>
-        <v-tab v-if="experimental_features" key="costs"> Cost </v-tab>
+        <v-tab key="costs"> Cost </v-tab>
         <v-tab key="workflows"> Workflows </v-tab>
         <v-tab key="entities"> Entities </v-tab>
         <v-tab key="signals"> Signals </v-tab>
@@ -59,7 +59,7 @@
         <v-window-item key="timeline">
           <case-timeline-tab-v1 />
         </v-window-item>
-        <v-window-item key="costs" v-if="experimental_features">
+        <v-window-item key="costs">
           <case-costs-tab />
         </v-window-item>
         <v-window-item key="workflow_instances">
@@ -131,7 +131,6 @@ export default {
       "selected.workflow_instances",
       "dialogs.showEditSheet",
     ]),
-    ...mapFields("auth", ["currentUser.experimental_features"]),
   },
 
   created() {
