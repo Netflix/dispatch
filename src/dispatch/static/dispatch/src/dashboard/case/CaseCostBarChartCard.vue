@@ -93,8 +93,6 @@ export default {
       }
     },
     series() {
-      console.log('series')
-      console.log(this.modelValue)
       let series = { name: "cost", data: [] }
       forEach(this.modelValue, function (value) {
         series.data.push(sumBy(value, "total_cost"))
