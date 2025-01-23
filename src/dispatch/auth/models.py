@@ -65,8 +65,22 @@ class DispatchUser(Base, TimeStampMixin):
         TSVectorType("email", regconfig="pg_catalog.simple", weights={"email": "A"})
     )
 
-    def check_password(self, password):
+    def verify_password(self, password: str) -> bool:
+        """Verify if provided password matches stored hash"""
+        if not password or not self.password:
+            return False
         return bcrypt.checkpw(password.encode("utf-8"), self.password)
+
+    def set_password(self, password: str) -> None:
+        """Set a new password"""
+        if not password:
+            raise ValueError("Password cannot be empty")
+        self.password = hash_password(password)
+
+    def is_owner(self, organization_slug: str) -> bool:
+        """Check if user is an owner in the given organization"""
+        role = self.get_organization_role(organization_slug)
+        return role == UserRoles.owner
 
     @property
     def token(self):
@@ -165,15 +179,51 @@ class UserRead(UserBase):
 
 class UserUpdate(DispatchBase):
     id: PrimaryKey
-    password: Optional[str] = Field(None, nullable=True)
     projects: Optional[List[UserProject]]
     organizations: Optional[List[UserOrganization]]
     experimental_features: Optional[bool]
     role: Optional[str] = Field(None, nullable=True)
 
-    @validator("password", pre=True)
-    def hash(cls, v):
-        return hash_password(str(v))
+
+class UserPasswordUpdate(DispatchBase):
+    """Model for password updates only"""
+    current_password: str
+    new_password: str
+
+    @validator("new_password")
+    def validate_password(cls, v):
+        if not v or len(v) < 8:
+            raise ValueError("Password must be at least 8 characters long")
+        # Check for at least one number
+        if not any(c.isdigit() for c in v):
+            raise ValueError("Password must contain at least one number")
+        # Check for at least one uppercase and one lowercase character
+        if not (any(c.isupper() for c in v) and any(c.islower() for c in v)):
+            raise ValueError("Password must contain both uppercase and lowercase characters")
+        return v
+
+    @validator("current_password")
+    def password_required(cls, v):
+        if not v:
+            raise ValueError("Current password is required")
+        return v
+
+
+class AdminPasswordReset(DispatchBase):
+    """Model for admin password resets"""
+    new_password: str
+
+    @validator("new_password")
+    def validate_password(cls, v):
+        if not v or len(v) < 8:
+            raise ValueError("Password must be at least 8 characters long")
+        # Check for at least one number
+        if not any(c.isdigit() for c in v):
+            raise ValueError("Password must contain at least one number")
+        # Check for at least one uppercase and one lowercase character
+        if not (any(c.isupper() for c in v) and any(c.islower() for c in v)):
+            raise ValueError("Password must contain both uppercase and lowercase characters")
+        return v
 
 
 class UserCreate(DispatchBase):
