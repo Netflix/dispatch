@@ -93,7 +93,8 @@ export default {
               if (w.config.series[seriesIndex].data[i].items.length > 0) {
                 if (w.config.series[seriesIndex].data[i].items[0].incident_severity.color) {
                   return w.config.series[seriesIndex].data[i].items[0].incident_severity.color
-                }              }
+                }
+              }
             }
             return "#008FFB"
           },
