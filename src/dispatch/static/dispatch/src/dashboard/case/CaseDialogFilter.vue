@@ -190,6 +190,7 @@ export default {
           "tags",
           "title",
           "triage_at",
+          "total_cost",
         ],
       }
 

@@ -92,7 +92,6 @@
               </v-col>
               <v-col cols="12">
                 <cost-model-combobox
-                  v-if="experimental_features"
                   :project="project"
                   v-model="cost_model"
                   persistent-hint
@@ -213,7 +212,6 @@ export default {
     ...mapFields("case_type", {
       default_case_type: "selected.default",
     }),
-    ...mapFields("auth", ["currentUser.experimental_features"]),
   },
 
   methods: {
