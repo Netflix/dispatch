@@ -36,6 +36,26 @@
         <v-list-item>
           <case-priority-combobox v-model="filters.case_priority" />
         </v-list-item>
+        <v-list-item>
+          <v-card class="mx-auto">
+            <v-card-title>Case Participant</v-card-title>
+            <v-card-subtitle>Show only cases with these participant(s)</v-card-subtitle>
+            <participant-select
+              class="ml-10 mr-5"
+              v-model="local_participant"
+              label="Participant"
+              hint="Show only cases with these participant(s)"
+              :project="filters.project"
+              clearable
+            />
+            <v-checkbox
+              class="ml-10 mr-5"
+              v-model="local_participant_is_assignee"
+              label="And these participant(s) are the Assignee"
+              :disabled="local_participant == null"
+            />
+          </v-card>
+        </v-list-item>
       </v-list>
       <v-card-actions>
         <v-spacer />
@@ -56,6 +76,7 @@ import CasePriorityCombobox from "@/case/priority/CasePriorityCombobox.vue"
 import CaseSeverityCombobox from "@/case/severity/CaseSeverityCombobox.vue"
 import CaseTypeCombobox from "@/case/type/CaseTypeCombobox.vue"
 import DateWindowInput from "@/components/DateWindowInput.vue"
+import ParticipantSelect from "@/components/ParticipantSelect.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import RouterUtils from "@/router/utils"
 import SearchUtils from "@/search/utils"
@@ -74,6 +95,7 @@ export default {
     CaseSeverityCombobox,
     CaseTypeCombobox,
     DateWindowInput,
+    ParticipantSelect,
     ProjectCombobox,
     TagFilterAutoComplete,
   },
@@ -108,6 +130,8 @@ export default {
           end: null,
         },
       },
+      local_participant_is_assignee: false,
+      local_participant: null,
     }
   },
 
@@ -120,6 +144,7 @@ export default {
         this.filters.project.length,
         this.filters.status.length,
         this.filters.tag.length,
+        this.filters.local_participant == null ? 0 : 1,
         1,
       ])
     },
@@ -127,6 +152,18 @@ export default {
 
   methods: {
     applyFilters() {
+      if (this.local_participant) {
+        if (Array.isArray(this.local_participant)) {
+          this.local_participant = this.local_participant[0]
+        }
+        if (this.local_participant_is_assignee) {
+          this.filters.assignee = this.local_participant
+          this.filters.participant = null
+        } else {
+          this.filters.assignee = null
+          this.filters.participant = this.local_participant
+        }
+      }
       RouterUtils.updateURLFilters(this.filters)
       this.fetchData()
       // we close the dialog
