@@ -903,7 +903,7 @@ def handle_after_hours_message(
     )
 
     if incident_priority_data.disable_delayed_message_warning:
-        print("delayed messaging is disabled, not sending a warning")
+        log.debug("delayed messaging is disabled, not sending a warning")
         return
 
     # handle no participant found
