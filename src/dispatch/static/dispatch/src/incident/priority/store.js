@@ -19,6 +19,7 @@ const getDefaultSelectedState = () => {
     project: null,
     tactical_report_reminder: null,
     view_order: null,
+    disable_delayed_message_warning: null,
   }
 }
 

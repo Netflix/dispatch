@@ -41,6 +41,7 @@ from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import IncidentCreate, IncidentRead, IncidentUpdate
+from dispatch.incident.priority import service as incident_priority_service
 from dispatch.individual import service as individual_service
 from dispatch.individual.models import IndividualContactRead
 from dispatch.monitor import service as monitor_service
@@ -895,6 +896,16 @@ def handle_after_hours_message(
     participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=context["subject"].id, email=user.email
     )
+
+    # get incident priority settings and if delayed message warning is disabled, log and return
+    incident_priority_data = incident_priority_service.get(
+        db_session=db_session, incident_priority_id=incident.incident_priority_id
+    )
+
+    if incident_priority_data.disable_delayed_message_warning:
+        print("delayed messaging is disabled, not sending a warning")
+        return
+
     # handle no participant found
     if not participant:
         log.warning(
