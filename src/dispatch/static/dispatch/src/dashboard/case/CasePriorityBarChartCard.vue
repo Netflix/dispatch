@@ -4,7 +4,7 @@
     type="bar"
     :options="chartOptions"
     :series="series"
-    title="Severities"
+    title="Priorities"
   />
 </template>
 
@@ -13,14 +13,10 @@ import { map, sortBy } from "lodash"
 
 import DashboardCard from "@/dashboard/DashboardCard.vue"
 import DashboardUtils from "@/dashboard/utils"
-import CaseSeverityApi from "@/case/severity/api"
+import CasePriorityApi from "@/case/priority/api"
 
 export default {
-  name: "CaseSeverityarChartCard",
-
-  components: {
-    DashboardCard,
-  },
+  name: "CasePriorityBarChartCard",
 
   props: {
     modelValue: {
@@ -37,9 +33,13 @@ export default {
     },
   },
 
+  components: {
+    DashboardCard,
+  },
+
   data() {
     return {
-      severities: [],
+      priorities: [],
     }
   },
 
@@ -47,8 +47,8 @@ export default {
     let filterOptions = {
       itemsPerPage: -1,
     }
-    CaseSeverityApi.getAll(filterOptions).then((response) => {
-      this.severities = [
+    CasePriorityApi.getAll(filterOptions).then((response) => {
+      this.priorities = [
         ...new Set(
           map(
             sortBy(response.data.items, function (value) {
@@ -78,6 +78,7 @@ export default {
             },
           },
         },
+        // colors: DashboardUtils.defaultColorTheme(),
         responsive: [
           {
             options: {
@@ -91,8 +92,8 @@ export default {
           function ({ seriesIndex, w }) {
             for (let i = 0; i < w.config.series[seriesIndex].data.length; i++) {
               if (w.config.series[seriesIndex].data[i].items.length > 0) {
-                if (w.config.series[seriesIndex].data[i].items[0].case_severity.color) {
-                  return w.config.series[seriesIndex].data[i].items[0].case_severity.color
+                if (w.config.series[seriesIndex].data[i].items[0].case_priority.color) {
+                  return w.config.series[seriesIndex].data[i].items[0].case_priority.color
                 }
               }
             }
@@ -113,13 +114,15 @@ export default {
         },
       }
     },
+    // series() {
+    //   return DashboardUtils.createCountedSeriesData(this.modelValue, "case_type.name", this.types)
+    // },
     series() {
-      let series = DashboardUtils.createCountedSeriesData(
+      return DashboardUtils.createCountedSeriesData(
         this.modelValue,
-        "case_severity.name",
-        this.severities
+        "case_priority.name",
+        this.priorities
       )
-      return series
     },
     categoryData() {
       return Object.keys(this.modelValue)

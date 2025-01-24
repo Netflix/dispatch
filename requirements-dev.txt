@@ -34,7 +34,7 @@ executing==2.1.0
     #   stack-data
 factory-boy==3.3.1
     # via -r requirements-dev.in
-faker==33.3.1
+faker==35.0.0
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -70,7 +70,7 @@ platformdirs==4.3.6
     #   virtualenv
 pluggy==1.5.0
     # via pytest
-pre-commit==4.0.1
+pre-commit==4.1.0
     # via -r requirements-dev.in
 prompt-toolkit==3.0.48
     # via ipython
@@ -92,7 +92,7 @@ python-dateutil==2.9.0.post0
     # via faker
 pyyaml==6.0.2
     # via pre-commit
-ruff==0.9.2
+ruff==0.9.3
     # via -r requirements-dev.in
 six==1.16.0
     # via
