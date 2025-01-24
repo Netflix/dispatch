@@ -40,7 +40,7 @@
       </v-col>
       <!-- Widgets Ends -->
       <!-- Statistics Start -->
-      <v-col cols="12" sm="6">
+      <v-col cols="12">
         <case-type-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
@@ -49,6 +49,13 @@
       </v-col>
       <v-col cols="12" sm="6">
         <case-severity-bar-chart-card
+          v-model="groupedItems"
+          :loading="loading"
+          @details-selected="detailsSelected($event)"
+        />
+      </v-col>
+      <v-col cols="12" sm="6">
+        <case-priority-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
           @details-selected="detailsSelected($event)"
@@ -83,6 +90,7 @@ import CaseDialogFilter from "@/dashboard/case/CaseDialogFilter.vue"
 import CaseEscalatedClosedAverageTimeCard from "@/dashboard/case/CaseEscalatedClosedAverageTimeCard.vue"
 import CaseNewClosedAverageTimeCard from "@/dashboard/case/CaseNewClosedAverageTimeCard.vue"
 import CaseNewTriageAverageTimeCard from "@/dashboard/case/CaseNewTriageAverageTimeCard.vue"
+import CasePriorityBarChartCard from "@/dashboard/case/CasePriorityBarChartCard.vue"
 import CaseSeverityBarChartCard from "@/dashboard/case/CaseSeverityBarChartCard.vue"
 import CaseTriageEscalatedAverageTimeCard from "@/dashboard/case/CaseTriageEscalatedAverageTimeCard.vue"
 import CaseTypeBarChartCard from "@/dashboard/case/CaseTypeBarChartCard.vue"
@@ -96,6 +104,7 @@ export default {
     CaseEscalatedClosedAverageTimeCard,
     CaseNewClosedAverageTimeCard,
     CaseNewTriageAverageTimeCard,
+    CasePriorityBarChartCard,
     CaseSeverityBarChartCard,
     CaseTriageEscalatedAverageTimeCard,
     CaseTypeBarChartCard,
