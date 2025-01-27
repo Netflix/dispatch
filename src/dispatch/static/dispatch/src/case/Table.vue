@@ -84,7 +84,7 @@
                 {{ item.project.display_name }}
               </v-chip>
             </template>
-            <template #item.case_costs="{ value }" v-if="auth.currentUser.experimental_features">
+            <template #item.case_costs="{ value }">
               <case-cost-card :case-costs="value" />
             </template>
             <template #item.assignee="{ value }">
@@ -220,7 +220,6 @@ const showCasePage = (e, { item }) => {
 }
 
 function loadHeaders() {
-  console.log(auth.value.currentUser.experimental_features)
   return [
     { title: "Name", value: "name", align: "left", width: "10%" },
     { title: "Title", value: "title", sortable: false },
@@ -230,18 +229,12 @@ function loadHeaders() {
     { title: "Priority", value: "case_priority.name", sortable: true },
     { title: "Project", value: "project.display_name", sortable: true },
     { title: "Assignee", value: "assignee", sortable: false },
-    { title: "Cost", key: "case_costs", sortable: false, experimental_features: true },
+    { title: "Cost", key: "case_costs", sortable: false },
     { title: "Reported At", value: "reported_at", sortable: true },
     { title: "Closed At", value: "closed_at", sortable: true },
     { title: "", key: "data-table-actions", sortable: false, align: "end" },
-  ].filter(
-    (header) => !header.experimental_features || auth.value.currentUser.experimental_features
-  )
+  ]
 }
-
-watch(auth.value.currentUser.experimental_features, () => {
-  loadHeaders()
-})
 
 function loadItems({ page, itemsPerPage, sortBy }) {
   caseManagement.value.table.options.page = page
