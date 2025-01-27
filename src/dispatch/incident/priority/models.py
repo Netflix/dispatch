@@ -20,6 +20,7 @@ class IncidentPriority(Base, ProjectMixin):
     color = Column(String)
     enabled = Column(Boolean, default=True)
     default = Column(Boolean, default=False)
+    disable_delayed_message_warning = Column(Boolean, default=False)
 
     # number of hours after which reports should be sent.
     tactical_report_reminder = Column(Integer, default=24, server_default="24")
@@ -53,6 +54,7 @@ class IncidentPriorityBase(DispatchBase):
     enabled: Optional[bool]
     view_order: Optional[int]
     color: Optional[Color] = Field(None, nullable=True)
+    disable_delayed_message_warning: Optional[bool]
 
 
 class IncidentPriorityCreate(IncidentPriorityBase):
