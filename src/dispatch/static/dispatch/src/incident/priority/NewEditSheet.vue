@@ -112,7 +112,7 @@
                 <v-checkbox
                   v-model="disable_delayed_message_warning"
                   label="Disable delayed message warning"
-                  hint="Would you like to disable Dispatch from notifying users when they send a message in Slack when it's outside of the Incident Commander's 9a-5p working schedule?"
+                  hint="Would you like to disable Dispatch from notifying users when they send a message in Slack outside of the Incident Commander's 9a-5p working schedule?"
                 />
               </v-col>
               <v-col cols="12">
