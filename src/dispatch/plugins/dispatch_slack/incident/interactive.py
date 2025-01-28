@@ -788,6 +788,7 @@ def handle_timeline_added_event(
 
     # TODO: (wshel) handle case reactions
     if context["subject"].type == IncidentSubjects.incident:
+        individual = None
         # we fetch the incident
         incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
