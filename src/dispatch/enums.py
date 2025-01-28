@@ -74,7 +74,8 @@ class DocumentResourceTemplateTypes(DispatchEnum):
     executive = "dispatch-executive-report-document-template"
     incident = "dispatch-incident-document-template"
     review = "dispatch-incident-review-document-template"
-    tracking = "dispatch-incident-sheet-template"
+    tracking = "dispatch-incident-tracking-template"
+    forms = "dispatch-forms-export-template"
 
 
 class EventType(DispatchEnum):

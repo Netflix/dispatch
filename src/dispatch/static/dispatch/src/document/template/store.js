@@ -54,6 +54,12 @@ export const templateDocumentTypes = [
     description: "Create a new tracking template",
     icon: "mdi-file-document-multiple-outline",
   },
+  {
+    resource_type: "dispatch-forms-export-template",
+    title: "Forms Export",
+    description: "Create a new forms export template",
+    icon: "mdi-file-export-outline",
+  },
 ]
 
 const state = {
