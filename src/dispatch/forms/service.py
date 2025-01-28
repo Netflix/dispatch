@@ -103,7 +103,7 @@ def export(*, db_session: Session, ids: List[int]) -> List[str]:
     # get all the forms given the ids
     forms = db_session.query(Forms).filter(Forms.id.in_(ids)).all()
     # from the forms, group all of the forms by their project id
-    project_ids = list(set([form.project_id for form in forms]))
+    project_ids = list({form.project_id for form in forms})
     # for each project id
     for project_id in project_ids:
         # ensure there is a document plugin active
