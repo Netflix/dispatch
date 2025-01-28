@@ -102,9 +102,9 @@ def export(*, db_session: Session, ids: List[int]) -> List[str]:
     folders = []
     # get all the forms given the ids
     forms = db_session.query(Forms).filter(Forms.id.in_(ids)).all()
-    # from the forms, group all of the forms by their project id
+    # from the forms, get all unique project ids
     project_ids = list({form.project_id for form in forms})
-    # for each project id
+
     for project_id in project_ids:
         # ensure there is a document plugin active
         document_plugin = plugin_service.get_active_instance(
@@ -160,7 +160,6 @@ def export(*, db_session: Session, ids: List[int]) -> List[str]:
 
         # for each form, get the incident
         for form in project_forms:
-            # meta-data yada yada
             export_document_name = f"{form.incident.name}-{form.form_type.name}-{form.id}"
             export_document = storage_plugin.instance.copy_file(
                 folder_id=folder["id"],
