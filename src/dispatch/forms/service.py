@@ -158,7 +158,7 @@ def export(*, db_session: Session, ids: List[int]) -> List[str]:
         # get the subset of forms that have this project id
         project_forms = [form for form in forms if form.project_id == project_id]
 
-        # for each form, get the incident
+        # for each form, create a document from the template and update it with the form data
         for form in project_forms:
             export_document_name = f"{form.incident.name}-{form.form_type.name}-{form.id}"
             export_document = storage_plugin.instance.copy_file(
