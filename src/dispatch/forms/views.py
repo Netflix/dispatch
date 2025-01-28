@@ -1,5 +1,5 @@
 import logging
-from fastapi import APIRouter, HTTPException, status, Depends, Response, Query
+from fastapi import APIRouter, HTTPException, status, Depends, Response
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from typing import List
 
