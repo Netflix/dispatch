@@ -1,12 +1,14 @@
 import logging
 from fastapi import APIRouter, HTTPException, status, Depends, Response
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from typing import List
 
 from sqlalchemy.exc import IntegrityError
 
 from dispatch.auth.permissions import (
     FeedbackDeletePermission,
     PermissionsDependency,
+    SensitiveProjectActionPermission,
 )
 from dispatch.database.core import DbSession
 from dispatch.auth.service import CurrentUser
@@ -16,7 +18,7 @@ from dispatch.exceptions import ExistsError
 from dispatch.forms.type.service import send_email_to_service
 
 from .models import FormsRead, FormsUpdate, FormsPagination
-from .service import get, create, update, delete
+from .service import get, create, update, delete, export
 
 log = logging.getLogger(__name__)
 router = APIRouter()
@@ -74,6 +76,19 @@ def create_forms(
             ],
             model=FormsRead,
         ) from None
+
+
+@router.post(
+    "/export",
+    summary="Exports forms",
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+)
+def export_forms(
+    db_session: DbSession,
+    ids: List[int],
+):
+    """Exports forms."""
+    return export(db_session=db_session, ids=ids)
 
 
 @router.put(

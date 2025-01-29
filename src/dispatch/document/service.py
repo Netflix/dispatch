@@ -2,7 +2,7 @@ from typing import List, Optional
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from datetime import datetime
 
-from dispatch.enums import DocumentResourceReferenceTypes
+from dispatch.enums import DocumentResourceReferenceTypes, DocumentResourceTemplateTypes
 from dispatch.exceptions import ExistsError
 from dispatch.project import service as project_service
 from dispatch.search_filter import service as search_filter_service
@@ -23,6 +23,17 @@ def get_by_incident_id_and_resource_type(
     return (
         db_session.query(Document)
         .filter(Document.incident_id == incident_id)
+        .filter(Document.project_id == project_id)
+        .filter(Document.resource_type == resource_type)
+        .one_or_none()
+    )
+
+
+def get_project_forms_export_template(*, db_session, project_id: int) -> Optional[Document]:
+    """Fetches the project forms export template."""
+    resource_type = DocumentResourceTemplateTypes.forms
+    return (
+        db_session.query(Document)
         .filter(Document.project_id == project_id)
         .filter(Document.resource_type == resource_type)
         .one_or_none()
@@ -67,7 +78,7 @@ def get_all(*, db_session) -> List[Optional[Document]]:
 
 def create(*, db_session, document_in: DocumentCreate) -> Document:
     """Creates a new document."""
-    # handle the special case of only allowing 1 FAQ document per-project
+    # handle the special case of only allowing 1 FAQ / Forms Export document per-project
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=document_in.project
     )
@@ -86,6 +97,27 @@ def create(*, db_session, document_in: DocumentCreate) -> Document:
                         ExistsError(
                             msg="FAQ document already defined for this project.",
                             document=faq_doc.name,
+                        ),
+                        loc="document",
+                    )
+                ],
+                model=DocumentCreate,
+            )
+
+    if document_in.resource_type == DocumentResourceTemplateTypes.forms:
+        forms_doc = (
+            db_session.query(Document)
+            .filter(Document.resource_type == DocumentResourceTemplateTypes.forms)
+            .filter(Document.project_id == project.id)
+            .one_or_none()
+        )
+        if forms_doc:
+            raise ValidationError(
+                [
+                    ErrorWrapper(
+                        ExistsError(
+                            msg="Forms export template document already defined for this project.",
+                            document=forms_doc.name,
                         ),
                         loc="document",
                     )

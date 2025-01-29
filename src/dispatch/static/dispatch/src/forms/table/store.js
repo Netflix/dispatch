@@ -31,6 +31,8 @@ const state = {
   dialogs: {
     showCreateEdit: false,
     showDeleteDialog: false,
+    showDeleteBulkDialog: false,
+    showExportDialog: false,
   },
   table: {
     rows: {
@@ -49,12 +51,14 @@ const state = {
       },
     },
     loading: false,
+    bulkEditLoading: false,
   },
   form_types: [],
   current_page: 1,
   page_schema: null,
   incident_id: null,
   project_id: null,
+  exported_folders: null,
 }
 
 const getters = {
@@ -160,12 +164,29 @@ const actions = {
     commit("SET_DIALOG_DELETE", true)
     commit("SET_SELECTED", form)
   },
+  showExportDialog({ commit }, form) {
+    commit("SET_DIALOG_EXPORT", true)
+    commit("SET_SELECTED", form)
+  },
+  showDeleteBulkDialog({ commit }, form) {
+    commit("SET_DIALOG_DELETE_BULK", true)
+    commit("SET_SELECTED", form)
+  },
   closeCreateEdit({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
     commit("RESET_SELECTED")
   },
   closeDeleteDialog({ commit }) {
     commit("SET_DIALOG_DELETE", false)
+    commit("RESET_SELECTED")
+  },
+  closeDeleteBulkDialog({ commit }) {
+    commit("SET_DIALOG_DELETE_BULK", false)
+    commit("RESET_SELECTED")
+  },
+  closeExportDialog({ commit }) {
+    commit("SET_EXPORTED_FOLDERS", null)
+    commit("SET_DIALOG_EXPORT", false)
     commit("RESET_SELECTED")
   },
   saveAsDraft({ commit, dispatch }) {
@@ -190,6 +211,39 @@ const actions = {
       })
       .catch(() => {
         commit("SET_SELECTED_LOADING", false)
+      })
+  },
+  deleteBulk({ commit, dispatch }) {
+    commit("SET_DIALOG_DELETE_BULK", false)
+    commit("SET_BULK_EDIT_LOADING", true)
+    return FormsApi.bulkDelete(state.table.rows.selected)
+      .then(function () {
+        commit("SET_SELECTED_LOADING", false)
+        commit("RESET_TABLE_ROWS_SELECTED")
+        dispatch("closeRemove")
+        dispatch("getAll")
+        commit(
+          "notification_backend/addBeNotification",
+          { text: "Form type deleted successfully.", type: "success" },
+          { root: true }
+        )
+        commit("SET_BULK_EDIT_LOADING", false)
+      })
+      .catch(() => {
+        commit("SET_BULK_EDIT_LOADING", false)
+      })
+  },
+  exportForms({ commit }) {
+    commit("SET_BULK_EDIT_LOADING", true)
+    const ids = state.table.rows.selected.map((row) => row.id)
+    return FormsApi.exportForms(ids)
+      .then(function (response) {
+        commit("SET_SELECTED_LOADING", false)
+        commit("SET_EXPORTED_FOLDERS", response.data)
+        commit("SET_BULK_EDIT_LOADING", false)
+      })
+      .catch(() => {
+        commit("SET_BULK_EDIT_LOADING", false)
       })
   },
 }
@@ -226,11 +280,26 @@ const mutations = {
   SET_DIALOG_DELETE(state, value) {
     state.dialogs.showDeleteDialog = value
   },
+  SET_DIALOG_DELETE_BULK(state, value) {
+    state.dialogs.showDeleteBulkDialog = value
+  },
+  SET_DIALOG_EXPORT(state, value) {
+    state.dialogs.showExportDialog = value
+  },
   RESET_SELECTED(state) {
     // do not reset project
     let project = state.selected.project
     state.selected = { ...getDefaultSelectedState() }
     state.selected.project = project
+  },
+  SET_BULK_EDIT_LOADING(state, value) {
+    state.table.bulkEditLoading = value
+  },
+  RESET_TABLE_ROWS_SELECTED(state) {
+    state.table.rows.selected = []
+  },
+  SET_EXPORTED_FOLDERS(state, value) {
+    state.exported_folders = value
   },
 }
 
