@@ -11,7 +11,6 @@
       <v-spacer />
       <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
-        <table-export-dialog />
       </v-col>
     </v-row>
     <v-row no-gutters>
@@ -98,6 +97,7 @@
         </v-card>
       </v-col>
     </v-row>
+    <bulk-edit-sheet />
   </v-container>
 </template>
 
@@ -111,7 +111,7 @@ import AttorneyEditForm from "./AttorneyEditForm.vue"
 import DeleteDialog from "@/forms/DeleteDialog.vue"
 import Participant from "@/incident/Participant.vue"
 import RouterUtils from "@/router/utils"
-import TableExportDialog from "@/task/TableExportDialog.vue"
+import BulkEditSheet from "@/forms/table/BulkEditSheet.vue"
 import TableFilterDialog from "@/forms/table/TableFilterDialog.vue"
 
 export default {
@@ -121,7 +121,7 @@ export default {
     DeleteDialog,
     NewEditDialog,
     Participant,
-    TableExportDialog,
+    BulkEditSheet,
     TableFilterDialog,
     AttorneyEditForm,
   },

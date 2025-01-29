@@ -8,7 +8,7 @@
       </v-col>
     </v-row>
     <v-row no-gutters class="justify-space-between">
-      <v-col v-for="document in templateDocumentTypes" :key="document.resource_type">
+      <v-col v-for="document in templateDocumentTypes" :key="document.resource_type" cols="4">
         <v-card
           @click.stop="createEditShow({ resource_type: document.resource_type })"
           variant="outlined"

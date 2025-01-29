@@ -26,4 +26,16 @@ export default {
   sendEmailToService(formId) {
     return API.post(`${resource}/completed/${formId}`)
   },
+
+  bulkDelete(forms) {
+    return Promise.all(
+      forms.map((form_obj) => {
+        return this.delete(form_obj.id, 0)
+      })
+    )
+  },
+
+  exportForms(ids) {
+    return API.post(`${resource}/export`, ids)
+  },
 }
