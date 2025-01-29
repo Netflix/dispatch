@@ -103,8 +103,6 @@ import ProjectSelect from "@/project/ProjectSelect.vue"
 import DocumentApi from "@/document/api"
 import ProjectApi from "@/project/api"
 import AuthApi from "@/auth/api"
-import SearchUtils from "@/search/utils"
-import CaseTypeApi from "@/case/type/api"
 
 export default {
   setup() {
