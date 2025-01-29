@@ -788,6 +788,7 @@ def handle_timeline_added_event(
 
     # TODO: (wshel) handle case reactions
     if context["subject"].type == IncidentSubjects.incident:
+        individual = None
         # we fetch the incident
         incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
@@ -806,7 +807,7 @@ def handle_timeline_added_event(
 
         source = "Slack message"
         # if the individual is not found, see if it is a bot
-        if individual is None:
+        if not individual:
             if bot_user_id := context["bot_user_id"]:
                 try:
                     bot = dispatch_slack_service.get_user_info_by_id(client, bot_user_id)
