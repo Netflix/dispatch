@@ -54,7 +54,6 @@ export default {
     ...mapFields("forms_table", [
       "dialogs.showExportDialog",
       "table.rows.selected",
-      "executive_template_document",
       "exported_folders",
     ]),
   },

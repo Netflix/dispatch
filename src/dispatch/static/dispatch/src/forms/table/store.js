@@ -58,7 +58,6 @@ const state = {
   page_schema: null,
   incident_id: null,
   project_id: null,
-  executive_template_document: null,
   exported_folders: null,
 }
 
