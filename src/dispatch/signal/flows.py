@@ -200,7 +200,7 @@ def engage_signal_identity(db_session: Session, signal_instance: SignalInstance)
                     validated_email = validate_email(entity.value, check_deliverability=False)
                 except EmailNotValidError as e:
                     log.warning(
-                        f"Discovered entity value in signal {signal_instance.signal.name} (id: {signal_instance.signal.id}) that did not appear to be a valid email: {e}"
+                        f"A user subject included in a signal for {signal_instance.signal.name} (id: {signal_instance.signal.id}) contains an invalid email address: {e}. Investigate why this detection included a user subject with an invalid email in the signal."
                     )
                 else:
                     users_to_engage.append(
