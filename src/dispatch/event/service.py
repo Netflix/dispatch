@@ -1,6 +1,6 @@
 from typing import Optional
 from uuid import uuid4
-import datetime
+from datetime import datetime
 import logging
 import json
 import pytz
@@ -94,10 +94,10 @@ def log_incident_event(
     source: str,
     description: str,
     incident_id: int,
-    individual_id: int = None,
-    started_at: datetime = None,
-    ended_at: datetime = None,
-    details: dict = None,
+    individual_id: int | None = None,
+    started_at: datetime | None = None,
+    ended_at: datetime | None = None,
+    details: dict | None = None,
     type: str = EventType.other,
     owner: str = "",
     pinned: bool = False,
@@ -106,7 +106,7 @@ def log_incident_event(
     uuid = uuid4()
 
     if not started_at:
-        started_at = datetime.datetime.utcnow()
+        started_at = datetime.utcnow()
 
     if not ended_at:
         ended_at = started_at
@@ -145,17 +145,17 @@ def log_case_event(
     source: str,
     description: str,
     case_id: int,
-    dispatch_user_id: int = None,
-    started_at: datetime = None,
-    ended_at: datetime = None,
-    details: dict = None,
+    dispatch_user_id: int | None = None,
+    started_at: datetime | None = None,
+    ended_at: datetime | None = None,
+    details: dict | None = None,
     type: str = EventType.other,
 ) -> Event:
     """Logs an event in the case timeline."""
     uuid = uuid4()
 
     if not started_at:
-        started_at = datetime.datetime.utcnow()
+        started_at = datetime.utcnow()
 
     if not ended_at:
         ended_at = started_at
@@ -190,11 +190,11 @@ def log_signal_event(
     source: str,
     description: str,
     signal_id: int,
-    individual_id: int = None,
-    started_at: datetime = None,
-    ended_at: datetime = None,
-    details: dict = None,
-    dispatch_user_id: int = None,
+    individual_id: int | None = None,
+    started_at: datetime | None = None,
+    ended_at: datetime | None = None,
+    details: dict | None = None,
+    dispatch_user_id: int | None = None,
     type: str = EventType.other,
     owner: str = "",
     pinned: bool = False,
@@ -203,7 +203,7 @@ def log_signal_event(
     uuid = uuid4()
 
     if not started_at:
-        started_at = datetime.datetime.utcnow()
+        started_at = datetime.utcnow()
 
     if not ended_at:
         ended_at = started_at
