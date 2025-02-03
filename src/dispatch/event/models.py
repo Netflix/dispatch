@@ -34,6 +34,7 @@ class Event(Base, TimeStampMixin):
         Integer, ForeignKey("dispatch_core.dispatch_user.id", ondelete="CASCADE")
     )
     case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"))
+    signal_id = Column(Integer, ForeignKey("signal.id", ondelete="CASCADE"))
 
     # full text search capabilities
     search_vector = Column(

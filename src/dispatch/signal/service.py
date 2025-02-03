@@ -3,6 +3,7 @@ import logging
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Union
+from collections import defaultdict
 
 from fastapi import HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
@@ -20,7 +21,9 @@ from dispatch.database.service import apply_filter_specific_joins, apply_filters
 from dispatch.entity.models import Entity
 from dispatch.entity_type import service as entity_type_service
 from dispatch.entity_type.models import EntityType
+from dispatch.event import service as event_service
 from dispatch.exceptions import NotFoundError
+from dispatch.individual import service as individual_service
 from dispatch.project import service as project_service
 from dispatch.service import service as service_service
 from dispatch.tag import service as tag_service
@@ -359,40 +362,50 @@ def get_all_by_conversation_target(
     )
 
 
-def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
+excluded_attributes = {
+    "case_priority",
+    "case_type",
+    "engagements",
+    "entity_types",
+    "filters",
+    "oncall_service",
+    "project",
+    "source",
+    "tags",
+    "workflows",
+}
+
+
+def create(*, db_session: Session, signal_in: SignalCreate, user: DispatchUser) -> Signal:
     """Creates a new signal."""
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=signal_in.project
     )
 
+    updates = defaultdict(list)
+
     signal = Signal(
-        **signal_in.dict(
-            exclude={
-                "case_priority",
-                "case_type",
-                "engagements",
-                "entity_types",
-                "filters",
-                "oncall_service",
-                "project",
-                "source",
-                "tags",
-                "workflows",
-            }
-        ),
+        **signal_in.dict(exclude=excluded_attributes),
         project=project,
     )
 
+    for field in signal_in.dict(exclude=excluded_attributes):
+        attr = getattr(signal, field)
+        if attr and not isinstance(attr, datetime):
+            updates[field] = attr
+
     tags = []
     for t in signal_in.tags:
-        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
+        tag = tag_service.get_or_create(db_session=db_session, tag_in=t)
+        tags.append(tag)
+        updates["tags"].append(f"{tag.tag_type.name}/{tag.name}")
     signal.tags = tags
 
     entity_types = []
     for e in signal_in.entity_types:
         entity_type = entity_type_service.get(db_session=db_session, entity_type_id=e.id)
         entity_types.append(entity_type)
-
+        updates["entity_types"].append(entity_type.name)
     signal.entity_types = entity_types
 
     engagements = []
@@ -401,23 +414,23 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
             db_session=db_session, project_id=project.id, name=signal_engagement_in.name
         )
         engagements.append(signal_engagement)
-
+        updates["engagements"].append(signal_engagement.name)
     signal.engagements = engagements
 
     filters = []
     for f in signal_in.filters:
         signal_filter = get_signal_filter_by_name(
-            db_session=db_session, project_id=project.id, signal_filter_in=f
+            db_session=db_session, project_id=project.id, name=f.name
         )
         filters.append(signal_filter)
-
+        updates["filters"].append(signal_filter.name)
     signal.filters = filters
 
     workflows = []
     for w in signal_in.workflows:
         workflow = workflow_service.get_by_name_or_raise(db_session=db_session, workflow_in=w)
         workflows.append(workflow)
-
+        updates["workflows"].append(workflow.name)
     signal.workflows = workflows
 
     if signal_in.case_priority:
@@ -425,57 +438,85 @@ def create(*, db_session: Session, signal_in: SignalCreate) -> Signal:
             db_session=db_session, project_id=project.id, case_priority_in=signal_in.case_priority
         )
         signal.case_priority = case_priority
+        updates["case_priority"] = case_priority.name
 
     if signal_in.oncall_service:
         oncall_service = service_service.get(
             db_session=db_session, service_id=signal_in.oncall_service.id
         )
         signal.oncall_service = oncall_service
+        updates["oncall_service"] = oncall_service.name
 
     if signal_in.case_type:
         case_type = case_type_service.get_by_name_or_default(
             db_session=db_session, project_id=project.id, case_type_in=signal_in.case_type
         )
         signal.case_type = case_type
+        updates["case_type"] = case_type.name
 
     db_session.add(signal)
     db_session.commit()
+
+    individual = individual_service.get_by_email_and_project(
+        db_session=db_session, email=user.email, project_id=signal.project.id
+    )
+
+    event_service.log_signal_event(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description="Signal created",
+        details=updates,
+        individual_id=individual.id if individual else None,
+        dispatch_user_id=user.id,
+        signal_id=signal.id,
+        owner=user.email,
+        pinned=True,
+    )
     return signal
 
 
-def update(*, db_session: Session, signal: Signal, signal_in: SignalUpdate) -> Signal:
+def update(
+    *, db_session: Session, signal: Signal, signal_in: SignalUpdate, user: DispatchUser
+) -> Signal:
     """Updates a signal."""
     signal_data = signal.dict()
     update_data = signal_in.dict(
         skip_defaults=True,
-        exclude={
-            "project",
-            "case_type",
-            "case_priority",
-            "source",
-            "engagements",
-            "filters",
-            "entity_types",
-            "tags",
-        },
+        exclude=excluded_attributes,
     )
+
+    updates = defaultdict(list)
 
     for field in signal_data:
         if field in update_data:
+            if signal_data[field] != update_data[field] and not isinstance(
+                signal_data[field], datetime
+            ):
+                updates[field] = f"{signal_data[field]} -> {update_data[field]}"
             setattr(signal, field, update_data[field])
 
     if signal_in.tags:
         tags = []
         for t in signal_in.tags:
-            tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
+            tag = tag_service.get_or_create(db_session=db_session, tag_in=t)
+            if tag not in signal.tags:
+                updates["tags-added"].append(f"{tag.tag_type.name}/{tag.name}")
+            tags.append(tag)
+        for t in signal.tags:
+            if t not in tags:
+                updates["tags-removed"].append(f"{t.tag_type.name}/{t.name}")
         signal.tags = tags
 
     if signal_in.entity_types:
         entity_types = []
         for e in signal_in.entity_types:
             entity_type = entity_type_service.get(db_session=db_session, entity_type_id=e.id)
+            if entity_type not in signal.entity_types:
+                updates["entity_types-added"].append(entity_type.name)
             entity_types.append(entity_type)
-
+        for et in signal.entity_types:
+            if et not in entity_types:
+                updates["entity_types-removed"].append(et.name)
         signal.entity_types = entity_types
 
     if signal_in.engagements:
@@ -486,8 +527,12 @@ def update(*, db_session: Session, signal: Signal, signal_in: SignalUpdate) -> S
                 project_id=signal.project.id,
                 signal_engagement_in=signal_engagement_in,
             )
+            if signal_engagement not in signal.engagements:
+                updates["engagements-added"].append(signal_engagement.name)
             engagements.append(signal_engagement)
-
+        for se in signal.engagements:
+            if se not in engagements:
+                updates["engagements-removed"].append(se.name)
         signal.engagements = engagements
 
     is_filters_updated = {filter.id for filter in signal.filters} != {
@@ -500,22 +545,32 @@ def update(*, db_session: Session, signal: Signal, signal_in: SignalUpdate) -> S
             signal_filter = get_signal_filter_by_name_or_raise(
                 db_session=db_session, project_id=signal.project.id, signal_filter_in=f
             )
+            if signal_filter not in signal.filters:
+                updates["filters-added"].append(signal_filter.name)
             filters.append(signal_filter)
-
+        for f in signal.filters:
+            if f not in filters:
+                updates["filters-removed"].append(f.name)
         signal.filters = filters
 
     if signal_in.workflows:
         workflows = []
         for w in signal_in.workflows:
             workflow = workflow_service.get_by_name_or_raise(db_session=db_session, workflow_in=w)
+            if workflow not in signal.workflows:
+                updates["workflows-added"].append(workflow.name)
             workflows.append(workflow)
-
+        for w in signal.workflows:
+            if w not in workflows:
+                updates["workflows-removed"].append(w.name)
         signal.workflows = workflows
 
     if signal_in.oncall_service:
         oncall_service = service_service.get(
             db_session=db_session, service_id=signal_in.oncall_service.id
         )
+        if signal.oncall_service != oncall_service:
+            updates["oncall_service"] = f"{signal.oncall_service.name} -> {oncall_service.name}"
         signal.oncall_service = oncall_service
 
     if signal_in.case_priority:
@@ -524,15 +579,35 @@ def update(*, db_session: Session, signal: Signal, signal_in: SignalUpdate) -> S
             project_id=signal.project.id,
             case_priority_in=signal_in.case_priority,
         )
+        if signal.case_priority != case_priority:
+            updates["case_priority"] = f"{signal.case_priority.name} -> {case_priority.name}"
         signal.case_priority = case_priority
 
     if signal_in.case_type:
         case_type = case_type_service.get_by_name_or_default(
             db_session=db_session, project_id=signal.project.id, case_type_in=signal_in.case_type
         )
+        if signal.case_type != case_type:
+            updates["case_type"] = f"{signal.case_type.name} -> {case_type.name}"
         signal.case_type = case_type
 
     db_session.commit()
+
+    individual = individual_service.get_by_email_and_project(
+        db_session=db_session, email=user.email, project_id=signal.project.id
+    )
+
+    event_service.log_signal_event(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description="Signal updated",
+        details=updates,
+        individual_id=individual.id if individual else None,
+        dispatch_user_id=user.id,
+        signal_id=signal.id,
+        owner=user.email,
+        pinned=True,
+    )
     return signal
 
 
