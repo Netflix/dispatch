@@ -376,7 +376,9 @@ excluded_attributes = {
 }
 
 
-def create(*, db_session: Session, signal_in: SignalCreate, user: DispatchUser) -> Signal:
+def create(
+    *, db_session: Session, signal_in: SignalCreate, user: DispatchUser | None = None
+) -> Signal:
     """Creates a new signal."""
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=signal_in.project
@@ -457,9 +459,12 @@ def create(*, db_session: Session, signal_in: SignalCreate, user: DispatchUser) 
     db_session.add(signal)
     db_session.commit()
 
-    individual = individual_service.get_by_email_and_project(
-        db_session=db_session, email=user.email, project_id=signal.project.id
-    )
+    if user:
+        individual = individual_service.get_by_email_and_project(
+            db_session=db_session, email=user.email, project_id=signal.project.id
+        )
+    else:
+        individual = None
 
     event_service.log_signal_event(
         db_session=db_session,
@@ -467,16 +472,20 @@ def create(*, db_session: Session, signal_in: SignalCreate, user: DispatchUser) 
         description="Signal created",
         details=updates,
         individual_id=individual.id if individual else None,
-        dispatch_user_id=user.id,
+        dispatch_user_id=user.id if user else None,
         signal_id=signal.id,
-        owner=user.email,
+        owner=user.email if user else None,
         pinned=True,
     )
     return signal
 
 
 def update(
-    *, db_session: Session, signal: Signal, signal_in: SignalUpdate, user: DispatchUser
+    *,
+    db_session: Session,
+    signal: Signal,
+    signal_in: SignalUpdate,
+    user: DispatchUser | None = None,
 ) -> Signal:
     """Updates a signal."""
     signal_data = signal.dict()
@@ -593,9 +602,12 @@ def update(
 
     db_session.commit()
 
-    individual = individual_service.get_by_email_and_project(
-        db_session=db_session, email=user.email, project_id=signal.project.id
-    )
+    if user:
+        individual = individual_service.get_by_email_and_project(
+            db_session=db_session, email=user.email, project_id=signal.project.id
+        )
+    else:
+        individual = None
 
     event_service.log_signal_event(
         db_session=db_session,
@@ -603,9 +615,9 @@ def update(
         description="Signal updated",
         details=updates,
         individual_id=individual.id if individual else None,
-        dispatch_user_id=user.id,
+        dispatch_user_id=user.id if user else None,
         signal_id=signal.id,
-        owner=user.email,
+        owner=user.email if user else None,
         pinned=True,
     )
     return signal
