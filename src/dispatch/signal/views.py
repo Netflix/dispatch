@@ -282,9 +282,9 @@ def get_signal(db_session: DbSession, signal_id: Union[str, PrimaryKey]):
 
 
 @router.post("", response_model=SignalRead)
-def create_signal(db_session: DbSession, signal_in: SignalCreate):
+def create_signal(db_session: DbSession, signal_in: SignalCreate, current_user: CurrentUser):
     """Creates a new signal."""
-    return create(db_session=db_session, signal_in=signal_in)
+    return create(db_session=db_session, signal_in=signal_in, user=current_user)
 
 
 @router.put(
@@ -293,7 +293,10 @@ def create_signal(db_session: DbSession, signal_in: SignalCreate):
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_signal(
-    db_session: DbSession, signal_id: Union[str, PrimaryKey], signal_in: SignalUpdate
+    db_session: DbSession,
+    signal_id: Union[str, PrimaryKey],
+    signal_in: SignalUpdate,
+    current_user: CurrentUser,
 ):
     """Updates an existing signal."""
     signal = get_by_primary_or_external_id(db_session=db_session, signal_id=signal_id)
@@ -304,7 +307,9 @@ def update_signal(
         )
 
     try:
-        signal = update(db_session=db_session, signal=signal, signal_in=signal_in)
+        signal = update(
+            db_session=db_session, signal=signal, signal_in=signal_in, user=current_user
+        )
     except IntegrityError:
         raise ValidationError(
             [ErrorWrapper(ExistsError(msg="A signal with this name already exists."), loc="name")],

@@ -1,6 +1,6 @@
 from typing import Optional
 from uuid import uuid4
-import datetime
+from datetime import datetime
 import logging
 import json
 import pytz
@@ -11,6 +11,7 @@ from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
 from dispatch.enums import EventType
 from dispatch.incident.models import Incident
+from dispatch.signal import service as signal_service
 from dispatch.types import Subject
 
 from .models import Event, EventCreate, EventUpdate
@@ -93,10 +94,10 @@ def log_incident_event(
     source: str,
     description: str,
     incident_id: int,
-    individual_id: int = None,
-    started_at: datetime = None,
-    ended_at: datetime = None,
-    details: dict = None,
+    individual_id: int | None = None,
+    started_at: datetime | None = None,
+    ended_at: datetime | None = None,
+    details: dict | None = None,
     type: str = EventType.other,
     owner: str = "",
     pinned: bool = False,
@@ -105,7 +106,7 @@ def log_incident_event(
     uuid = uuid4()
 
     if not started_at:
-        started_at = datetime.datetime.utcnow()
+        started_at = datetime.utcnow()
 
     if not ended_at:
         ended_at = started_at
@@ -144,17 +145,17 @@ def log_case_event(
     source: str,
     description: str,
     case_id: int,
-    dispatch_user_id: int = None,
-    started_at: datetime = None,
-    ended_at: datetime = None,
-    details: dict = None,
+    dispatch_user_id: int | None = None,
+    started_at: datetime | None = None,
+    ended_at: datetime | None = None,
+    details: dict | None = None,
     type: str = EventType.other,
 ) -> Event:
     """Logs an event in the case timeline."""
     uuid = uuid4()
 
     if not started_at:
-        started_at = datetime.datetime.utcnow()
+        started_at = datetime.utcnow()
 
     if not ended_at:
         ended_at = started_at
@@ -178,6 +179,59 @@ def log_case_event(
         dispatch_user = auth_service.get(db_session=db_session, user_id=dispatch_user_id)
         dispatch_user.events.append(event)
         db_session.add(dispatch_user)
+
+    db_session.commit()
+
+    return event
+
+
+def log_signal_event(
+    db_session,
+    source: str,
+    description: str,
+    signal_id: int,
+    individual_id: int | None = None,
+    started_at: datetime | None = None,
+    ended_at: datetime | None = None,
+    details: dict | None = None,
+    dispatch_user_id: int | None = None,
+    type: str = EventType.other,
+    owner: str = "",
+    pinned: bool = False,
+) -> Event:
+    """Logs an event in the signal definition timeline."""
+    uuid = uuid4()
+
+    if not started_at:
+        started_at = datetime.utcnow()
+
+    if not ended_at:
+        ended_at = started_at
+
+    event_in = EventCreate(
+        uuid=uuid,
+        started_at=started_at,
+        ended_at=ended_at,
+        source=source,
+        description=description,
+        details=details,
+        type=type,
+        owner=owner,
+        pinned=pinned,
+        dispatch_user_id=dispatch_user_id,
+    )
+    event = create(db_session=db_session, event_in=event_in)
+
+    signal = signal_service.get(db_session=db_session, signal_id=signal_id)
+    signal.events.append(event)
+    db_session.add(signal)
+
+    if individual_id:
+        individual = individual_service.get(
+            db_session=db_session, individual_contact_id=individual_id
+        )
+        individual.events.append(event)
+        db_session.add(individual)
 
     db_session.commit()
 
