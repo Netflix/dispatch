@@ -59,6 +59,7 @@ from dispatch.plugins.dispatch_slack.case.enums import (
 )
 from dispatch.plugins.dispatch_slack.case.messages import (
     create_case_message,
+    create_case_user_not_in_slack_workspace_message,
     create_manual_engagement_message,
     create_signal_engagement_message,
 )
@@ -410,30 +411,49 @@ def engage(
         log.error("Case not found when trying to engage user")
         return
 
-    if form_data.get(DefaultBlockIds.case_assignee_select):
-        user_email = client.users_info(
-            user=form_data[DefaultBlockIds.case_assignee_select]["value"]
-        )["user"]["profile"]["email"]
-        conversation_flows.add_case_participants(case, [user_email], db_session)
-        participant = participant_service.get_by_case_id_and_email(
-            db_session=db_session, case_id=case.id, email=user_email
-        )
-        if not participant:
-            participant_flows.add_participant(
-                user_email,
-                case,
-                db_session,
-                roles=[ParticipantRoleType.participant],
-            )
-    else:
+    if not form_data.get(DefaultBlockIds.case_assignee_select):
+        log.error("Case assignee not found")
         return
 
-    if form_data.get(DefaultBlockIds.description_input):
-        engagement = form_data[DefaultBlockIds.description_input]
-    else:
+    user_email = client.users_info(user=form_data[DefaultBlockIds.case_assignee_select]["value"])[
+        "user"
+    ]["profile"]["email"]
+
+    if not user_email:
+        log.error("Email for case assignee not found")
+        return
+
+    try:
+        conversation_flows.add_case_participants(case, [user_email], db_session)
+    except Exception as e:
+        if e.response["error"] == SlackAPIErrorCode.ORG_USER_NOT_IN_TEAM:
+            blocks = create_case_user_not_in_slack_workspace_message(user_email=user_email)
+            client.chat_update(
+                blocks=blocks,
+                channel=case.conversation.channel_id,
+                thread_ts=case.conversation.thread_id if case.has_thread else None,
+            )
+            log.error(
+                f"Failed to add participant to case threat. Participant is not in the Slack workspace: {e}"
+            )
+        return
+
+    participant = participant_service.get_by_case_id_and_email(
+        db_session=db_session, case_id=case.id, email=user_email
+    )
+    if not participant:
+        participant_flows.add_participant(
+            user_email,
+            case,
+            db_session,
+            roles=[ParticipantRoleType.participant],
+        )
+
+    if not form_data.get(DefaultBlockIds.description_input):
         log.warning("Engagement text not found")
         return
 
+    engagement = form_data[DefaultBlockIds.description_input]
     user = client.users_lookupByEmail(email=user_email)
 
     result = client.chat_postMessage(

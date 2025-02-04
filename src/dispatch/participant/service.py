@@ -1,7 +1,8 @@
 from typing import List, Optional
+
+from dispatch.case import service as case_service
 from dispatch.database.core import SessionLocal
 from dispatch.decorators import timer
-from dispatch.case import service as case_service
 from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
 from dispatch.individual.models import IndividualContact
