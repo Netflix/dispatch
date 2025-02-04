@@ -28,6 +28,7 @@ from dispatch.database.core import Base
 from dispatch.entity.models import EntityRead
 from dispatch.entity_type.models import EntityType, EntityTypeRead
 from dispatch.enums import DispatchEnum
+from dispatch.event.models import EventRead
 from dispatch.models import (
     DispatchBase,
     EvergreenMixin,
@@ -151,6 +152,8 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
         "SignalEngagement", secondary=assoc_signal_engagements, backref="signals"
     )
     filters = relationship("SignalFilter", secondary=assoc_signal_filters, backref="signals")
+    events = relationship("Event", backref="signal", cascade="all, delete-orphan")
+
     entity_types = relationship(
         "EntityType",
         secondary=assoc_signal_entity_types,
@@ -348,6 +351,7 @@ class SignalRead(SignalBase):
     filters: Optional[List[SignalFilterRead]] = []
     workflows: Optional[List[WorkflowRead]] = []
     tags: Optional[List[TagRead]] = []
+    events: Optional[List[EventRead]] = []
 
 
 # class SignalReadMinimal(DispatchBase):

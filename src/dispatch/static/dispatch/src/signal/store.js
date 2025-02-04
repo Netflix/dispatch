@@ -47,6 +47,7 @@ const state = {
     showCreateEdit: false,
     showRawSignalDialog: false,
     showRemove: false,
+    showHistory: false,
   },
   table: {
     rows: {
@@ -141,6 +142,12 @@ const actions = {
     }
     commit("SET_DIALOG_CREATE_EDIT", true)
   },
+  showHistory({ commit }, signal) {
+    if (signal) {
+      commit("SET_SELECTED", signal)
+    }
+    commit("SET_DIALOG_HISTORY", true)
+  },
   removeShow({ commit }, signal) {
     commit("SET_DIALOG_DELETE", true)
     commit("SET_SELECTED", signal)
@@ -151,6 +158,10 @@ const actions = {
   },
   closeRemove({ commit }) {
     commit("SET_DIALOG_DELETE", false)
+    commit("RESET_SELECTED")
+  },
+  closeHistory({ commit }) {
+    commit("SET_DIALOG_HISTORY", false)
     commit("RESET_SELECTED")
   },
   save({ commit, dispatch }) {
@@ -225,6 +236,9 @@ const mutations = {
   },
   SET_DIALOG_DELETE(state, value) {
     state.dialogs.showRemove = value
+  },
+  SET_DIALOG_HISTORY(state, value) {
+    state.dialogs.showHistory = value
   },
   RESET_SELECTED(state) {
     // do not reset project
