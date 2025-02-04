@@ -556,3 +556,24 @@ def create_case_channel_migration_message(thread_weblink: str) -> list[Block]:
     ]
 
     return Message(blocks=blocks).build()["blocks"]
+
+
+def create_case_user_not_in_slack_workspace_message(user_email: str) -> list[Block]:
+    """
+    Creates a message indicating that a user identified in an alert is not a member of the Slack workspace.
+
+    Args:
+        user_email (str): The email of the user who is not in the Slack workspace.
+
+    Returns:
+        list[Block]: A list of blocks representing the message structure.
+    """
+    blocks = [
+        Context(
+            elements=[
+                f"Individual identified in the alert ({user_email}) is not a member of the Slack workspace. Please reach out to them via email or other means to resolve the alert."
+            ]
+        ),
+    ]
+
+    return Message(blocks=blocks).build()["blocks"]
