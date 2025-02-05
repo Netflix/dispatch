@@ -1,26 +1,28 @@
 import calendar
-from datetime import date, datetime
-from dateutil.relativedelta import relativedelta
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 import json
 import logging
+from datetime import date, datetime
 from typing import Annotated, List
-from starlette.requests import Request
-from sqlalchemy.exc import IntegrityError
 
+from dateutil.relativedelta import relativedelta
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
+from sqlalchemy.exc import IntegrityError
+from starlette.requests import Request
+
+from dispatch.ai import service as ai_service
 from dispatch.auth.permissions import (
     IncidentEditPermission,
+    IncidentEventPermission,
     IncidentJoinOrSubscribePermission,
     IncidentViewPermission,
     PermissionsDependency,
-    IncidentEventPermission,
 )
 from dispatch.auth.service import CurrentUser
 from dispatch.common.utils.views import create_pydantic_include
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.event import flows as event_flows
-from dispatch.event.models import EventUpdate, EventCreateMinimal
+from dispatch.event.models import EventCreateMinimal, EventUpdate
 from dispatch.incident.enums import IncidentStatus
 from dispatch.individual.models import IndividualContactRead
 from dispatch.models import OrganizationSlug, PrimaryKey
@@ -32,11 +34,11 @@ from .flows import (
     incident_add_or_reactivate_participant_flow,
     incident_create_closed_flow,
     incident_create_flow,
+    incident_create_resources_flow,
     incident_create_stable_flow,
     incident_delete_flow,
     incident_subscribe_participant_flow,
     incident_update_flow,
-    incident_create_resources_flow,
 )
 from .metrics import create_incident_metric_query, make_forecast
 from .models import (
@@ -47,7 +49,7 @@ from .models import (
     IncidentRead,
     IncidentUpdate,
 )
-from .service import create, delete, get, update, generate_incident_summary
+from .service import create, delete, get, update
 
 log = logging.getLogger(__name__)
 
@@ -509,7 +511,7 @@ def generate_summary(
     db_session: DbSession,
     current_incident: CurrentIncident,
 ):
-    return generate_incident_summary(
+    return ai_service.generate_incident_summary(
         db_session=db_session,
         incident=current_incident,
     )
