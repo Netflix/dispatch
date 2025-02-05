@@ -4,12 +4,13 @@
 #
 #    pip-compile requirements-dev.in
 #
+--index-url https://pypi.netflix.net/simple
 
 asttokens==2.4.1
     # via
     #   devtools
     #   stack-data
-attrs==25.1.0
+attrs==22.1.0
     # via -r requirements-dev.in
 black==25.1.0
     # via -r requirements-dev.in
@@ -83,7 +84,7 @@ pygments==2.19.1
     # via
     #   devtools
     #   ipython
-pytest==8.3.4
+pytest==7.4.4
     # via
     #   -r requirements-dev.in
     #   pytest-mock
