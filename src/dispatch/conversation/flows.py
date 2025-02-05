@@ -11,12 +11,12 @@ from dispatch.incident.models import Incident
 from dispatch.messaging.strings import MessageType
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack.case import messages
+from dispatch.project.models import Project
+from dispatch.service.models import Service
 from dispatch.storage.models import Storage
 from dispatch.ticket.models import Ticket
-from dispatch.service.models import Service
-from dispatch.project.models import Project
-from dispatch.utils import deslug_and_capitalize_resource_type
 from dispatch.types import Subject
+from dispatch.utils import deslug_and_capitalize_resource_type
 
 from .models import Conversation, ConversationCreate, ConversationUpdate
 from .service import create, update
@@ -488,6 +488,7 @@ def add_case_participants(
             case_id=case.id,
         )
         log.exception(e)
+        raise e
 
 
 def add_incident_participants_to_conversation(
@@ -523,11 +524,11 @@ def add_incident_participants_to_conversation(
         log.exception(e)
     else:
         log.info(
-            f"Add participants {str(participant_emails)} to Incident {incident.id} successfully"
+            f"Add participants {str(participant_emails)} to Incident {incident.id} successfully."
         )
 
 
-def delete_conversation(conversation: Conversation, project_id: int, db_session: SessionLocal):
+def delete_conversation(conversation: Conversation, project_id: int, db_session: Session):
     """
     Renames and archives an existing conversation. Deleting a conversation
     requires admin permissions in some SaaS products.

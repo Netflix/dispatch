@@ -6,16 +6,14 @@
 """
 
 import logging
-
 from datetime import datetime, timedelta
 from typing import List, Optional
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.orm import Session
 
-from dispatch.decorators import timer
 from dispatch.case import service as case_service
-from dispatch.enums import Visibility
+from dispatch.decorators import timer
 from dispatch.event import service as event_service
 from dispatch.exceptions import NotFoundError
 from dispatch.incident.priority import service as incident_priority_service
@@ -33,7 +31,6 @@ from dispatch.ticket import flows as ticket_flows
 
 from .enums import IncidentStatus
 from .models import Incident, IncidentCreate, IncidentRead, IncidentUpdate
-
 
 log = logging.getLogger(__name__)
 
@@ -438,69 +435,3 @@ def delete(*, db_session: Session, incident_id: int):
     """Deletes an existing incident."""
     db_session.query(Incident).filter(Incident.id == incident_id).delete()
     db_session.commit()
-
-
-def generate_incident_summary(*, db_session: Session, incident: Incident) -> str:
-    """Generates a summary of the incident."""
-    # Skip summary for restricted incidents
-    if incident.visibility == Visibility.restricted:
-        return "Incident summary not generated for restricted incident."
-
-    # Skip if no incident review document
-    if not incident.incident_review_document or not incident.incident_review_document.resource_id:
-        log.info(
-            f"Incident summary not generated for incident {incident.id}. No review document found."
-        )
-        return "Incident summary not generated. No review document found."
-
-    # Don't generate if no enabled ai plugin or storage plugin
-    ai_plugin = plugin_service.get_active_instance(
-        db_session=db_session, plugin_type="artificial-intelligence", project_id=incident.project.id
-    )
-    if not ai_plugin:
-        log.info(
-            f"Incident summary not generated for incident {incident.id}. No AI plugin enabled."
-        )
-        return "Incident summary not generated. No AI plugin enabled."
-
-    storage_plugin = plugin_service.get_active_instance(
-        db_session=db_session, plugin_type="storage", project_id=incident.project.id
-    )
-
-    if not storage_plugin:
-        log.info(
-            f"Incident summary not generated for incident {incident.id}. No storage plugin enabled."
-        )
-        return "Incident summary not generated. No storage plugin enabled."
-
-    try:
-        pir_doc = storage_plugin.instance.get(
-            file_id=incident.incident_review_document.resource_id,
-            mime_type="text/plain",
-        )
-        prompt = f"""
-            Given the text of the security post-incident review document below,
-            provide answers to the following questions in a paragraph format.
-            Do not include the questions in your response.
-            Do not use any of these words in your summary unless they appear in the document: breach, unauthorized, leak, violation, unlawful, illegal.
-            1. What is the summary of what happened?
-            2. What were the overall risk(s)?
-            3. How were the risk(s) mitigated?
-            4. How was the incident resolved?
-            5. What are the follow-up tasks?
-
-            {pir_doc}
-        """
-
-        response = ai_plugin.instance.chat_completion(prompt=prompt)
-        summary = response["choices"][0]["message"]["content"]
-
-        incident.summary = summary
-        db_session.add(incident)
-        db_session.commit()
-
-        return summary
-
-    except Exception as e:
-        log.exception(f"Error trying to generate summary for incident {incident.id}: {e}")
-        return "Incident summary not generated. An error occurred."

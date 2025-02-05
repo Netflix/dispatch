@@ -1,23 +1,22 @@
 import logging
-from typing import TypeVar, List, Optional
+from typing import List, Optional, TypeVar
 
 from sqlalchemy.orm import Session
 
 from dispatch.case.models import Case
 from dispatch.database.core import get_table_name_by_class_instance
+from dispatch.enums import EventType
 from dispatch.event import service as event_service
 from dispatch.incident.models import Incident
 from dispatch.individual import service as individual_service
+from dispatch.participant import service as participant_service
 from dispatch.participant.models import Participant
 from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import (
-    ParticipantRoleType,
     ParticipantRoleCreate,
+    ParticipantRoleType,
 )
-from dispatch.participant import service as participant_service
 from dispatch.service import service as service_service
-from dispatch.enums import EventType
-
 
 log = logging.getLogger(__name__)
 
@@ -29,7 +28,7 @@ def add_participant(
     subject: Subject,
     db_session: Session,
     service_id: int = None,
-    roles: Optional[List[ParticipantRoleType]] = None,
+    roles: Optional[List[str]] = None,
 ) -> Participant:
     """Adds a participant to an incident or a case."""
     # we get or create a new individual
