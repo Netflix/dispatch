@@ -4,11 +4,12 @@
 #
 #    pip-compile requirements-dev.in
 #
+
 asttokens==2.4.1
     # via
     #   devtools
     #   stack-data
-attrs==22.1.0
+attrs==25.1.0
     # via -r requirements-dev.in
 black==25.1.0
     # via -r requirements-dev.in
@@ -28,7 +29,7 @@ distlib==0.3.9
     # via virtualenv
 easydict==1.13
     # via -r requirements-dev.in
-executing==2.1.0
+executing==2.2.0
     # via
     #   devtools
     #   stack-data
@@ -38,15 +39,15 @@ faker==35.2.0
     # via
     #   -r requirements-dev.in
     #   factory-boy
-filelock==3.16.1
+filelock==3.17.0
     # via virtualenv
-identify==2.6.1
+identify==2.6.6
     # via pre-commit
 iniconfig==2.0.0
     # via pytest
 ipython==8.32.0
     # via -r requirements-dev.in
-jedi==0.19.1
+jedi==0.19.2
     # via ipython
 matplotlib-inline==0.1.7
     # via ipython
@@ -72,17 +73,17 @@ pluggy==1.5.0
     # via pytest
 pre-commit==4.1.0
     # via -r requirements-dev.in
-prompt-toolkit==3.0.48
+prompt-toolkit==3.0.50
     # via ipython
 ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.3
     # via stack-data
-pygments==2.18.0
+pygments==2.19.1
     # via
     #   devtools
     #   ipython
-pytest==7.4.4
+pytest==8.3.4
     # via
     #   -r requirements-dev.in
     #   pytest-mock
@@ -94,7 +95,7 @@ pyyaml==6.0.2
     # via pre-commit
 ruff==0.9.4
     # via -r requirements-dev.in
-six==1.16.0
+six==1.17.0
     # via
     #   asttokens
     #   python-dateutil
@@ -108,7 +109,7 @@ typing-extensions==4.12.2
     # via
     #   faker
     #   ipython
-virtualenv==20.27.1
+virtualenv==20.29.1
     # via pre-commit
 vulture==2.14
     # via -r requirements-dev.in
