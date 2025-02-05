@@ -22,18 +22,14 @@ anyio==4.8.0
     #   httpx
     #   openai
     #   starlette
-arrow==1.3.0
-    # via isoduration
 atlassian-python-api==3.32.0
     # via -r requirements-base.in
-attrs==25.1.0
+attrs==22.1.0
     # via
     #   -r requirements-base.in
     #   aiohttp
     #   hypothesis
     #   jsonschema
-    #   pytest-subtests
-    #   referencing
 backoff==2.2.1
     # via schemathesis
 bcrypt==4.2.1
@@ -125,8 +121,6 @@ emails==0.6
     # via -r requirements-base.in
 fastapi==0.115.8
     # via -r requirements-base.in
-fqdn==1.5.1
-    # via jsonschema
 frozenlist==1.5.0
     # via
     #   aiohttp
@@ -154,8 +148,6 @@ h11==0.14.0
     #   -r requirements-base.in
     #   httpcore
     #   uvicorn
-harfile==0.3.0
-    # via schemathesis
 httpcore==1.0.7
     # via httpx
 httplib2==0.22.0
@@ -168,27 +160,24 @@ httpx==0.28.1
     #   -r requirements-base.in
     #   openai
     #   schemathesis
-hypothesis==6.125.1
+hypothesis==6.91.0
     # via
     #   hypothesis-graphql
     #   hypothesis-jsonschema
     #   schemathesis
 hypothesis-graphql==0.11.1
     # via schemathesis
-hypothesis-jsonschema==0.23.1
+hypothesis-jsonschema==0.22.1
     # via schemathesis
 idna==3.10
     # via
     #   anyio
     #   email-validator
     #   httpx
-    #   jsonschema
     #   requests
     #   yarl
 iniconfig==2.0.0
     # via pytest
-isoduration==20.11.0
-    # via jsonschema
 jinja2==3.1.5
     # via
     #   -r requirements-base.in
@@ -205,15 +194,10 @@ joblib==1.4.2
     # via -r requirements-base.in
 jsonpath-ng==1.7.0
     # via -r requirements-base.in
-jsonpointer==3.0.0
-    # via jsonschema
-jsonschema[format]==4.23.0
+jsonschema==4.17.3
     # via
     #   hypothesis-jsonschema
-    #   jsonschema
     #   schemathesis
-jsonschema-specifications==2024.10.1
-    # via jsonschema
 junit-xml==1.9
     # via schemathesis
 langcodes==3.5.0
@@ -351,18 +335,19 @@ pyparsing==3.2.1
     # via
     #   -r requirements-base.in
     #   httplib2
-pyrate-limiter==3.7.0
+pyrate-limiter==2.10.0
     # via schemathesis
-pytest==8.3.4
+pyrsistent==0.20.0
+    # via jsonschema
+pytest==7.4.4
     # via
     #   pytest-subtests
     #   schemathesis
-pytest-subtests==0.14.1
+pytest-subtests==0.7.0
     # via schemathesis
 python-dateutil==2.9.0.post0
     # via
     #   -r requirements-base.in
-    #   arrow
     #   botocore
     #   emails
     #   pandas
@@ -378,10 +363,6 @@ pytz==2025.1
     #   pandas
 pyyaml==6.0.2
     # via schemathesis
-referencing==0.36.2
-    # via
-    #   jsonschema
-    #   jsonschema-specifications
 requests==2.32.3
     # via
     #   -r requirements-base.in
@@ -405,16 +386,8 @@ requests-oauthlib==2.0.0
     #   jira
 requests-toolbelt==1.0.0
     # via jira
-rfc3339-validator==0.1.4
-    # via jsonschema
-rfc3987==1.3.8
-    # via jsonschema
 rich==13.9.4
     # via typer
-rpds-py==0.22.3
-    # via
-    #   jsonschema
-    #   referencing
 rsa==4.9
     # via
     #   google-auth
@@ -424,7 +397,7 @@ s3transfer==0.11.2
     # via boto3
 schedule==1.2.2
     # via -r requirements-base.in
-schemathesis==3.39.9
+schemathesis==3.21.2
     # via -r requirements-base.in
 scipy==1.15.1
     # via statsmodels
@@ -447,7 +420,6 @@ six==1.17.0
     #   junit-xml
     #   oauth2client
     #   python-dateutil
-    #   rfc3339-validator
     #   sqlalchemy-filters
     #   validators
 slack-bolt==1.22.0
@@ -493,7 +465,7 @@ starlette==0.45.3
     #   fastapi
     #   schemathesis
     #   starlette-testclient
-starlette-testclient==0.4.1
+starlette-testclient==0.2.0
     # via schemathesis
 statsmodels==0.14.4
     # via -r requirements-base.in
@@ -517,8 +489,6 @@ typer==0.15.1
     # via
     #   spacy
     #   weasel
-types-python-dateutil==2.9.0.20241206
-    # via arrow
 typing-extensions==4.12.2
     # via
     #   alembic
@@ -527,12 +497,10 @@ typing-extensions==4.12.2
     #   limits
     #   openai
     #   pydantic
-    #   referencing
+    #   schemathesis
     #   typer
 tzdata==2025.1
     # via pandas
-uri-template==1.3.0
-    # via jsonschema
 uritemplate==4.1.1
     # via google-api-python-client
 urllib3==2.3.0
@@ -554,8 +522,6 @@ wasabi==1.1.3
     #   weasel
 weasel==0.4.1
     # via spacy
-webcolors==24.11.1
-    # via jsonschema
 werkzeug==3.1.3
     # via schemathesis
 wrapt==1.17.2
