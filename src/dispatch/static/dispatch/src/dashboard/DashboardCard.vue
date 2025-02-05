@@ -51,19 +51,25 @@ export default {
   },
   data() {
     return {
-      localOptions: JSON.parse(JSON.stringify(this.options)),
+      localOptions: JSON.parse(
+        JSON.stringify({
+          ...this.options,
+          // on initial load, pull from localStorage which will always be string values
+          ...{ theme: { mode: localStorage.dark_theme == "true" ? "dark" : "light" } },
+        })
+      ),
     }
   },
   watch: {
     options: function (newVal) {
       this.localOptions = { ...this.localOptions, ...newVal }
     },
-    "$vuetify.theme.dark": function (newValue) {
+    "$vuetify.theme.name": function (newValue) {
       this.localOptions = {
         ...this.localOptions,
         ...{
           theme: {
-            mode: newValue ? "dark" : "light",
+            mode: newValue,
           },
         },
       }
