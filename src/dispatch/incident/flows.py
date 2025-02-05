@@ -4,6 +4,7 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
+from dispatch.ai import service as ai_service
 from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
 from dispatch.case.enums import CaseResolutionReason, CaseStatus
@@ -568,7 +569,7 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
     send_incident_rating_feedback_message(incident, db_session)
 
     # if an AI plugin is enabled, we send the incident review doc for summary
-    incident_service.generate_incident_summary(incident=incident, db_session=db_session)
+    ai_service.generate_incident_summary(incident=incident, db_session=db_session)
 
 
 def conversation_topic_dispatcher(

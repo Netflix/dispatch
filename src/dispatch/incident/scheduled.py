@@ -1,38 +1,37 @@
 import logging
-
 from collections import defaultdict
+from datetime import date, datetime
 
-from datetime import datetime, date
 from schedule import every
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from dispatch.enums import Visibility
+from dispatch.ai import service as ai_service
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.database.core import resolve_attr
 from dispatch.decorators import scheduled_project_task, timer
+from dispatch.enums import Visibility
+from dispatch.incident import service as incident_service
 from dispatch.messaging.strings import (
     INCIDENT,
     INCIDENT_DAILY_REPORT,
     INCIDENT_DAILY_REPORT_TITLE,
+    INCIDENT_SUMMARY_TEMPLATE,
     INCIDENT_WEEKLY_REPORT,
     INCIDENT_WEEKLY_REPORT_NO_INCIDENTS,
     INCIDENT_WEEKLY_REPORT_TITLE,
-    INCIDENT_SUMMARY_TEMPLATE,
     MessageType,
 )
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
 from dispatch.notification import service as notification_service
-from dispatch.incident import service as incident_service
+from dispatch.participant import flows as participant_flows
+from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.project.models import Project
 from dispatch.scheduler import scheduler
 from dispatch.search_filter import service as search_filter_service
 from dispatch.tag import service as tag_service
 from dispatch.tag.models import Tag
-from dispatch.participant import flows as participant_flows
-from dispatch.participant_role.models import ParticipantRoleType
-
 
 from .enums import IncidentStatus
 from .messaging import send_incident_close_reminder
@@ -41,7 +40,6 @@ from .service import (
     get_all_by_status,
     get_all_last_x_hours_by_status,
 )
-
 
 log = logging.getLogger(__name__)
 
@@ -290,7 +288,7 @@ def incident_report_weekly(db_session: Session, project: Project):
             if incident.summary:
                 summary = incident.summary
             else:
-                summary = incident_service.generate_incident_summary(
+                summary = ai_service.generate_incident_summary(
                     db_session=db_session, incident=incident
                 )
 

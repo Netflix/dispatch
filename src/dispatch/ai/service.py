@@ -5,6 +5,8 @@ from sqlalchemy.orm import Session
 
 from dispatch.case.enums import CaseResolutionReason
 from dispatch.case.models import Case
+from dispatch.enums import Visibility
+from dispatch.incident.models import Incident
 from dispatch.plugin import service as plugin_service
 from dispatch.signal import service as signal_service
 
@@ -191,12 +193,7 @@ def generate_case_signal_summary(case: Case, db_session: Session) -> dict[str, s
     )
 
     try:
-        summary = json.loads(
-            response["choices"][0]["message"]["content"]
-            .replace("```json", "")
-            .replace("```", "")
-            .strip()
-        )
+        summary = json.loads(response.replace("```json", "").replace("```", "").strip())
 
         # we check if the summary is empty
         if not summary:
@@ -209,3 +206,76 @@ def generate_case_signal_summary(case: Case, db_session: Session) -> dict[str, s
         message = "Unable to generate GenAI signal analysis. Error decoding response from the artificial-intelligence plugin."
         log.warning(message)
         raise GenAIException(message) from e
+
+
+def generate_incident_summary(incident: Incident, db_session: Session) -> str:
+    """
+    Generate a summary for an incident.
+
+    Args:
+        incident (Incident): The incident object for which the summary is being generated.
+        db_session (Session): The database session used for querying related data.
+
+    Returns:
+        str: A string containing the summary of the incident, or an error message if summary generation fails.
+    """
+    # Skip summary for restricted incidents
+    if incident.visibility == Visibility.restricted:
+        return "Incident summary not generated for restricted incident."
+
+    # Skip if no incident review document
+    if not incident.incident_review_document or not incident.incident_review_document.resource_id:
+        log.info(
+            f"Incident summary not generated for incident {incident.name}. No review document found."
+        )
+        return "Incident summary not generated. No review document found."
+
+    # Don't generate if no enabled ai plugin or storage plugin
+    genai_plugin = plugin_service.get_active_instance(
+        db_session=db_session, plugin_type="artificial-intelligence", project_id=incident.project.id
+    )
+    if not genai_plugin:
+        message = f"Incident summary not generated for incident {incident.name}. No artificial-intelligence plugin enabled."
+        log.warning(message)
+        return "Incident summary not generated. No artificial-intelligence plugin enabled."
+
+    storage_plugin = plugin_service.get_active_instance(
+        db_session=db_session, plugin_type="storage", project_id=incident.project.id
+    )
+
+    if not storage_plugin:
+        log.info(
+            f"Incident summary not generated for incident {incident.name}. No storage plugin enabled."
+        )
+        return "Incident summary not generated. No storage plugin enabled."
+
+    try:
+        pir_doc = storage_plugin.instance.get(
+            file_id=incident.incident_review_document.resource_id,
+            mime_type="text/plain",
+        )
+        prompt = f"""
+            Given the text of the security post-incident review document below,
+            provide answers to the following questions in a paragraph format.
+            Do not include the questions in your response.
+            Do not use any of these words in your summary unless they appear in the document: breach, unauthorized, leak, violation, unlawful, illegal.
+            1. What is the summary of what happened?
+            2. What were the overall risk(s)?
+            3. How were the risk(s) mitigated?
+            4. How was the incident resolved?
+            5. What are the follow-up tasks?
+
+            {pir_doc}
+        """
+
+        summary = genai_plugin.instance.chat_completion(prompt=prompt)
+
+        incident.summary = summary
+        db_session.add(incident)
+        db_session.commit()
+
+        return summary
+
+    except Exception as e:
+        log.exception(f"Error trying to generate summary for incident {incident.name}: {e}")
+        return "Incident summary not generated. An error occurred."
