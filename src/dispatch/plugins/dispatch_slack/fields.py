@@ -1,5 +1,6 @@
 import logging
 from datetime import timedelta
+from sqlalchemy.orm import Session
 from typing import List
 
 from blockkit import (
