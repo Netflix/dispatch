@@ -1,31 +1,34 @@
+import logging
 from datetime import timedelta
+from sqlalchemy.orm import Session
 from typing import List
 
 from blockkit import (
+    DatePicker,
+    Input,
+    MultiExternalSelect,
+    MultiStaticSelect,
+    PlainOption,
     PlainTextInput,
     StaticSelect,
-    PlainOption,
-    Input,
-    DatePicker,
-    MultiStaticSelect,
-    MultiExternalSelect,
 )
 
-from dispatch.enums import DispatchEnum
-from dispatch.database.core import SessionLocal
-from dispatch.project import service as project_service
-from dispatch.participant.models import Participant
-from dispatch.case.enums import CaseStatus, CaseResolutionReason
-from dispatch.case.type import service as case_type_service
+from dispatch.case.enums import CaseResolutionReason, CaseStatus
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.severity import service as case_severity_service
+from dispatch.case.type import service as case_type_service
 from dispatch.entity import service as entity_service
+from dispatch.enums import DispatchEnum
 from dispatch.incident.enums import IncidentStatus
-from dispatch.incident.type import service as incident_type_service
 from dispatch.incident.priority import service as incident_priority_service
 from dispatch.incident.severity import service as incident_severity_service
-from dispatch.signal.models import Signal
+from dispatch.incident.type import service as incident_type_service
+from dispatch.participant.models import Participant
 from dispatch.plugins.dispatch_slack.config import MAX_SECTION_TEXT_LENGTH
+from dispatch.project import service as project_service
+from dispatch.signal.models import Signal
+
+log = logging.getLogger(__name__)
 
 
 class DefaultBlockIds(DispatchEnum):
@@ -292,7 +295,7 @@ def multi_select_block(
 
 
 def project_select(
-    db_session: SessionLocal,
+    db_session: Session,
     action_id: str = DefaultActionIds.project_select,
     block_id: str = DefaultBlockIds.project_select,
     label: str = "Project",
@@ -305,6 +308,10 @@ def project_select(
         for p in project_service.get_all(db_session=db_session)
         if p.enabled
     ]
+    if not projects:
+        log.warning("Unable to create a select block for projects. No projects found.")
+        return
+
     return static_select_block(
         placeholder="Select Project",
         options=projects,
@@ -404,33 +411,6 @@ def case_resolution_reason_select(
     )
 
 
-def incident_priority_select(
-    db_session: SessionLocal,
-    action_id: str = DefaultActionIds.incident_priority_select,
-    block_id: str = DefaultBlockIds.incident_priority_select,
-    label: str = "Incident Priority",
-    initial_option: dict = None,
-    project_id: int = None,
-    **kwargs,
-):
-    """Creates an incident priority select."""
-    priorities = [
-        {"text": p.name, "value": p.id}
-        for p in incident_priority_service.get_all_enabled(
-            db_session=db_session, project_id=project_id
-        )
-    ]
-    return static_select_block(
-        placeholder="Select Priority",
-        options=priorities,
-        initial_option=initial_option,
-        block_id=block_id,
-        action_id=action_id,
-        label=label,
-        **kwargs,
-    )
-
-
 def incident_status_select(
     block_id: str = DefaultActionIds.incident_status_select,
     action_id: str = DefaultBlockIds.incident_status_select,
@@ -451,8 +431,41 @@ def incident_status_select(
     )
 
 
+def incident_priority_select(
+    db_session: Session,
+    action_id: str = DefaultActionIds.incident_priority_select,
+    block_id: str = DefaultBlockIds.incident_priority_select,
+    label: str = "Incident Priority",
+    initial_option: dict = None,
+    project_id: int = None,
+    **kwargs,
+):
+    """Creates an incident priority select."""
+    priorities = [
+        {"text": p.name, "value": p.id}
+        for p in incident_priority_service.get_all_enabled(
+            db_session=db_session, project_id=project_id
+        )
+    ]
+    if not priorities:
+        log.warning(
+            "Unable to create a select block for incident priorities. No incident priorities found."
+        )
+        return
+
+    return static_select_block(
+        placeholder="Select Priority",
+        options=priorities,
+        initial_option=initial_option,
+        block_id=block_id,
+        action_id=action_id,
+        label=label,
+        **kwargs,
+    )
+
+
 def incident_severity_select(
-    db_session: SessionLocal,
+    db_session: Session,
     action_id: str = DefaultActionIds.incident_severity_select,
     block_id: str = DefaultBlockIds.incident_severity_select,
     label="Incident Severity",
@@ -467,6 +480,12 @@ def incident_severity_select(
             db_session=db_session, project_id=project_id
         )
     ]
+    if not severities:
+        log.warning(
+            "Unable to create a select block for incident severities. No incident severities found."
+        )
+        return
+
     return static_select_block(
         placeholder="Select Severity",
         options=severities,
@@ -479,7 +498,7 @@ def incident_severity_select(
 
 
 def incident_type_select(
-    db_session: SessionLocal,
+    db_session: Session,
     action_id: str = DefaultActionIds.incident_type_select,
     block_id: str = DefaultBlockIds.incident_type_select,
     label="Incident Type",
@@ -492,6 +511,10 @@ def incident_type_select(
         {"text": t.name, "value": t.id}
         for t in incident_type_service.get_all_enabled(db_session=db_session, project_id=project_id)
     ]
+    if not types:
+        log.warning("Unable to create a select block for incident types. No incident types found.")
+        return
+
     return static_select_block(
         placeholder="Select Type",
         options=types,
@@ -521,31 +544,6 @@ def tag_multi_select(
     )
 
 
-def case_priority_select(
-    db_session: SessionLocal,
-    action_id: str = DefaultActionIds.case_priority_select,
-    block_id: str = DefaultBlockIds.case_priority_select,
-    label="Case Priority",
-    initial_option: dict = None,
-    project_id: int = None,
-    **kwargs,
-):
-    """Creates a case priority select."""
-    priorities = [
-        {"text": p.name, "value": p.id}
-        for p in case_priority_service.get_all_enabled(db_session=db_session, project_id=project_id)
-    ]
-    return static_select_block(
-        placeholder="Select Priority",
-        options=priorities,
-        initial_option=initial_option,
-        action_id=action_id,
-        block_id=block_id,
-        label=label,
-        **kwargs,
-    )
-
-
 def case_status_select(
     action_id: str = DefaultActionIds.case_status_select,
     block_id: str = DefaultBlockIds.case_status_select,
@@ -569,8 +567,39 @@ def case_status_select(
     )
 
 
+def case_priority_select(
+    db_session: Session,
+    action_id: str = DefaultActionIds.case_priority_select,
+    block_id: str = DefaultBlockIds.case_priority_select,
+    label="Case Priority",
+    initial_option: dict = None,
+    project_id: int = None,
+    **kwargs,
+):
+    """Creates a case priority select."""
+    priorities = [
+        {"text": p.name, "value": p.id}
+        for p in case_priority_service.get_all_enabled(db_session=db_session, project_id=project_id)
+    ]
+    if not priorities:
+        log.warning(
+            "Unable to create a select block for case priorities. No case priorities found."
+        )
+        return
+
+    return static_select_block(
+        placeholder="Select Priority",
+        options=priorities,
+        initial_option=initial_option,
+        action_id=action_id,
+        block_id=block_id,
+        label=label,
+        **kwargs,
+    )
+
+
 def case_severity_select(
-    db_session: SessionLocal,
+    db_session: Session,
     action_id: str = DefaultActionIds.case_severity_select,
     block_id: str = DefaultBlockIds.case_severity_select,
     label: str = "Case Severity",
@@ -583,6 +612,12 @@ def case_severity_select(
         {"text": s.name, "value": s.id}
         for s in case_severity_service.get_all_enabled(db_session=db_session, project_id=project_id)
     ]
+    if not severities:
+        log.warning(
+            "Unable to create a select block for case severities. No case severities found."
+        )
+        return
+
     return static_select_block(
         placeholder="Select Severity",
         options=severities,
@@ -595,7 +630,7 @@ def case_severity_select(
 
 
 def case_type_select(
-    db_session: SessionLocal,
+    db_session: Session,
     action_id: str = DefaultActionIds.case_type_select,
     block_id: str = DefaultBlockIds.case_type_select,
     label: str = "Case Type",
@@ -608,6 +643,11 @@ def case_type_select(
         {"text": t.name, "value": t.id}
         for t in case_type_service.get_all_enabled(db_session=db_session, project_id=project_id)
     ]
+
+    if not types:
+        log.warning("Unable to create a select block for case types. No case types found.")
+        return
+
     return static_select_block(
         placeholder="Select Type",
         options=types,
@@ -621,7 +661,7 @@ def case_type_select(
 
 def entity_select(
     signal_id: int,
-    db_session: SessionLocal,
+    db_session: Session,
     action_id: str = DefaultActionIds.entity_select,
     block_id: str = DefaultBlockIds.entity_select,
     label="Entities",
@@ -637,6 +677,7 @@ def entity_select(
     ]
 
     if not entity_options:
+        log.warning("Unable to create a select block for entities. No entities found.")
         return
 
     return multi_select_block(
@@ -659,6 +700,10 @@ def participant_select(
 ):
     """Creates a static select of available participants."""
     participants = [{"text": p.individual.name, "value": p.id} for p in participants]
+    if not participants:
+        log.warning("Unable to create a select block for participants. No participants found.")
+        return
+
     return static_select_block(
         placeholder="Select Participant",
         options=participants,
@@ -680,6 +725,12 @@ def signal_definition_select(
 ):
     """Creates a static select of available signal definitions."""
     signals = [{"text": s.name, "value": s.id} for s in signals]
+    if not signals:
+        log.warning(
+            "Unable to create a select block for signal definitions. No signals definitions found."
+        )
+        return
+
     return static_select_block(
         placeholder="Select Signal Definition",
         options=signals,
