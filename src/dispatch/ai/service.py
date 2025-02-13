@@ -44,29 +44,6 @@ def num_tokens_from_string(message: str, model: str) -> tuple[list[int], int, ti
     return tokenized_message, num_tokens, encoding
 
 
-# def num_tokens_from_string(message: str, model: str) -> int:
-#     """
-#     Calculate the number of tokens in a given string for a specified model.
-
-#     Args:
-#         message (str): The input string to be tokenized.
-#         model (str): The model name to use for tokenization.
-
-#     Returns:
-#         int: The number of tokens in the input string.
-#     """
-#     try:
-#         encoding = tiktoken.encoding_for_model(model)
-#     except KeyError:
-#         log.warning(
-#             f"We could not automatically map {model} to a tokeniser. Using o200k_base encoding."
-#         )
-#         # defaults to o200k_base encoding used in gpt-4o, gpt-4o-mini models
-#         encoding = tiktoken.get_encoding("o200k_base")
-
-#     return len(encoding.encode(message))
-
-
 def truncate_prompt(
     tokenized_prompt: list[int],
     num_tokens: int,
