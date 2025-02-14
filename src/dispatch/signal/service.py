@@ -602,24 +602,28 @@ def update(
 
     db_session.commit()
 
-    if user:
-        individual = individual_service.get_by_email_and_project(
-            db_session=db_session, email=user.email, project_id=signal.project.id
+    # only log if something changed
+    if updates:
+        individual = (
+            individual_service.get_by_email_and_project(
+                db_session=db_session, email=user.email, project_id=signal.project.id
+            )
+            if user
+            else None
         )
-    else:
-        individual = None
 
-    event_service.log_signal_event(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description="Signal updated",
-        details=updates,
-        individual_id=individual.id if individual else None,
-        dispatch_user_id=user.id if user else None,
-        signal_id=signal.id,
-        owner=user.email if user else None,
-        pinned=True,
-    )
+        event_service.log_signal_event(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description="Signal updated",
+            details=updates,
+            individual_id=individual.id if individual else None,
+            dispatch_user_id=user.id if user else None,
+            signal_id=signal.id,
+            owner=user.email if user else None,
+            pinned=True,
+        )
+
     return signal
 
 

@@ -1,6 +1,7 @@
 import json
 import logging
 
+import tiktoken
 from sqlalchemy.orm import Session
 
 from dispatch.case.enums import CaseResolutionReason
@@ -13,6 +14,57 @@ from dispatch.signal import service as signal_service
 from .exceptions import GenAIException
 
 log = logging.getLogger(__name__)
+
+MAX_TOKENS = 128000
+
+
+def num_tokens_from_string(message: str, model: str) -> tuple[list[int], int, tiktoken.Encoding]:
+    """
+    Calculate the number of tokens in a given string for a specified model.
+
+    Args:
+        message (str): The input string to be tokenized.
+        model (str): The model name to use for tokenization.
+
+    Returns:
+        tuple: A tuple containing a list of token integers, the number of tokens, and the encoding object.
+    """
+    try:
+        encoding = tiktoken.encoding_for_model(model)
+    except KeyError:
+        log.warning(
+            f"We could not automatically map {model} to a tokeniser. Using o200k_base encoding."
+        )
+        # defaults to o200k_base encoding used in gpt-4o, gpt-4o-mini models
+        encoding = tiktoken.get_encoding("o200k_base")
+
+    tokenized_message = encoding.encode(message)
+    num_tokens = len(tokenized_message)
+
+    return tokenized_message, num_tokens, encoding
+
+
+def truncate_prompt(
+    tokenized_prompt: list[int],
+    num_tokens: int,
+    encoding: tiktoken.Encoding,
+) -> str:
+    """
+    Truncate the tokenized prompt to ensure it does not exceed the maximum number of tokens.
+
+    Args:
+        tokenized_prompt (list[int]): The tokenized input prompt to be truncated.
+        num_tokens (int): The number of tokens in the input prompt.
+        encoding (tiktoken.Encoding): The encoding object used for tokenization.
+
+    Returns:
+        str: The truncated prompt as a string.
+    """
+    excess_tokens = num_tokens - MAX_TOKENS
+    truncated_tokenized_prompt = tokenized_prompt[:-excess_tokens]
+    truncated_prompt = encoding.decode(truncated_tokenized_prompt)
+    log.warning(f"GenAI prompt truncated to fit within {MAX_TOKENS} tokens.")
+    return truncated_prompt
 
 
 def generate_case_signal_historical_context(case: Case, db_session: Session) -> str:
@@ -169,28 +221,35 @@ def generate_case_signal_summary(case: Case, db_session: Session) -> dict[str, s
         log.warning(message)
         raise GenAIException(message)
 
-    # we generate the analysis
-    response = genai_plugin.instance.chat_completion(
-        prompt=f"""
+    # we generate the prompt
+    prompt = f"""
+    <prompt>
+    {signal_instance.signal.genai_prompt}
+    </prompt>
 
-        <prompt>
-        {signal_instance.signal.genai_prompt}
-        </prompt>
+    <current_event>
+    {str(signal_instance.raw)}
+    </current_event>
 
-        <current_event>
-        {str(signal_instance.raw)}
-        </current_event>
+    <runbook>
+    {signal_instance.signal.runbook}
+    </runbook>
 
-        <runbook>
-        {signal_instance.signal.runbook}
-        </runbook>
+    <historical_context>
+    {historical_context}
+    </historical_context>
+    """
 
-        <historical_context>
-        {historical_context}
-        </historical_context>
-
-        """
+    tokenized_prompt, num_tokens, encoding = num_tokens_from_string(
+        prompt, genai_plugin.instance.configuration.chat_completion_model
     )
+
+    # we check if the prompt exceeds the token limit
+    if num_tokens > MAX_TOKENS:
+        prompt = truncate_prompt(tokenized_prompt, num_tokens, encoding)
+
+    # we generate the analysis
+    response = genai_plugin.instance.chat_completion(prompt=prompt)
 
     try:
         summary = json.loads(response.replace("```json", "").replace("```", "").strip())
@@ -267,6 +326,14 @@ def generate_incident_summary(incident: Incident, db_session: Session) -> str:
 
             {pir_doc}
         """
+
+        tokenized_prompt, num_tokens, encoding = num_tokens_from_string(
+            prompt, genai_plugin.instance.configuration.chat_completion_model
+        )
+
+        # we check if the prompt exceeds the token limit
+        if num_tokens > MAX_TOKENS:
+            prompt = truncate_prompt(tokenized_prompt, num_tokens, encoding)
 
         summary = genai_plugin.instance.chat_completion(prompt=prompt)
 
