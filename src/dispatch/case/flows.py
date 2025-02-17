@@ -23,6 +23,7 @@ from dispatch.incident.messaging import send_participant_announcement_message
 from dispatch.incident.models import Incident, IncidentCreate
 from dispatch.incident.priority.models import IncidentPriority
 from dispatch.incident.type.models import IncidentType
+from dispatch.individual import service as individual_service
 from dispatch.individual.models import IndividualContactRead
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.participant import flows as participant_flows
@@ -31,6 +32,7 @@ from dispatch.participant.models import ParticipantUpdate
 from dispatch.participant_role import flows as role_flow
 from dispatch.participant_role.models import ParticipantRole, ParticipantRoleType
 from dispatch.plugin import service as plugin_service
+from dispatch.service import service as service_service
 from dispatch.storage import flows as storage_flows
 from dispatch.storage.enums import StorageAction
 from dispatch.ticket import flows as ticket_flows
@@ -1105,3 +1107,83 @@ def case_create_resources_flow(
 
     # we update the ticket
     ticket_flows.update_case_ticket(case=case, db_session=db_session)
+
+
+@background_task
+def case_engage_oncall_flow(
+    user_email: str,
+    case_id: int,
+    oncall_service_external_id: str,
+    page=None,
+    organization_slug: str = None,
+    db_session=None,
+):
+    """Runs the case engage oncall flow."""
+    # we load the case instance
+    case = case_service.get(db_session=db_session, case_id=case_id)
+
+    # we resolve the oncall service
+    oncall_service = service_service.get_by_external_id_and_project_id(
+        db_session=db_session,
+        external_id=oncall_service_external_id,
+        project_id=case.project.id,
+    )
+
+    # we get the active oncall plugin
+    oncall_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project.id, plugin_type="oncall"
+    )
+
+    if oncall_plugin:
+        if oncall_plugin.plugin.slug != oncall_service.type:
+            log.warning(
+                f"Unable to engage the oncall. Oncall plugin enabled not of type {oncall_plugin.plugin.slug}."  # noqa
+            )
+            return None, None
+    else:
+        log.warning("Unable to engage the oncall. No oncall plugins enabled.")
+        return None, None
+
+    oncall_email = oncall_plugin.instance.get(service_id=oncall_service_external_id)
+
+    # we attempt to add the oncall to the case
+    oncall_participant_added = case_add_or_reactivate_participant_flow(
+        user_email=oncall_email,
+        case_id=case.id,
+        service_id=oncall_service.id,
+        db_session=db_session,
+    )
+
+    if not oncall_participant_added:
+        # we already have the oncall for the service in the case
+        return None, oncall_service
+
+    individual = individual_service.get_by_email_and_project(
+        db_session=db_session, email=user_email, project_id=case.project.id
+    )
+
+    event_service.log_case_event(
+        db_session=db_session,
+        source=oncall_plugin.plugin.title,
+        description=f"{individual.name} engages oncall service {oncall_service.name}",
+        case_id=case.id,
+    )
+
+    if page == "Yes":
+        # we page the oncall
+        oncall_plugin.instance.page(
+            service_id=oncall_service_external_id,
+            incident_name=case.name,
+            incident_title=case.title,
+            incident_description=case.description,
+            event_type="case",
+        )
+
+        event_service.log_case_event(
+            db_session=db_session,
+            source=oncall_plugin.plugin.title,
+            description=f"{oncall_service.name} on-call paged",
+            case_id=case.id,
+        )
+
+    return oncall_participant_added.individual, oncall_service
