@@ -120,6 +120,13 @@
               </v-col>
               <v-col cols="12">
                 <v-checkbox
+                  v-model="exclude_from_reminders"
+                  label="Exclude from Reminders"
+                  hint="Check if this incident type should be excluded from receiving reminders."
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-checkbox
                   v-model="default_incident_type"
                   label="Default Incident Type"
                   hint="Check this if this incident type should be the default."
@@ -223,6 +230,7 @@ export default {
       "selected.enabled",
       "selected.cost_model",
       "selected.exclude_from_metrics",
+      "selected.exclude_from_reminders",
       "selected.default",
       "selected.channel_description",
       "selected.description_service",
