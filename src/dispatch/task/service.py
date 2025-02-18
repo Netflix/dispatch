@@ -8,6 +8,7 @@ from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
 from dispatch.incident.flows import incident_service
 from dispatch.incident.models import Incident
+from dispatch.incident.type.models import IncidentType
 from dispatch.plugin import service as plugin_service
 from dispatch.participant import service as participant_service
 from dispatch.incident.messaging import send_task_add_ephemeral_message
@@ -54,9 +55,11 @@ def get_overdue_tasks(*, db_session, project_id: int) -> List[Optional[Task]]:
     return (
         db_session.query(Task)
         .join(Incident)
+        .join(IncidentType)
         .filter(Task.status == TaskStatus.open)
         .filter(Task.reminders == True)  # noqa
         .filter(Incident.project_id == project_id)
+        .filter(IncidentType.exclude_from_reminders.isnot(True))
         .filter(Task.resolve_by < datetime.utcnow())
         .filter(
             or_(
