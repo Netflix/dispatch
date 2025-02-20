@@ -121,6 +121,7 @@ def page_oncall(
     incident_name: str,
     incident_title: str,
     incident_description: str,
+    event_type: str = "incident",
 ) -> dict:
     """Pages the oncall for a given service id."""
     service = get_service(client, service_id)
@@ -128,7 +129,7 @@ def page_oncall(
 
     headers = {"from": from_email}
     data = {
-        "type": "incident",
+        "type": event_type,
         "title": f"{incident_name} - {incident_title}",
         "service": {"id": service_id, "type": "service_reference"},
         "body": {"type": "incident_body", "details": incident_description},

@@ -83,6 +83,7 @@ class PagerDutyOncallPlugin(OncallPlugin):
             incident_name=incident_name,
             incident_title=incident_title,
             incident_description=incident_description,
+            event_type=kwargs.get("event_type", "incident"),
         )
 
     def did_oncall_just_go_off_shift(self, schedule_id: str, hour: int) -> Optional[dict]:
