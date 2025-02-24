@@ -283,6 +283,11 @@ def incident_report_weekly(db_session: Session, project: Project):
         # Skip restricted incidents
         if incident.visibility == Visibility.restricted:
             continue
+
+        # Skip if incident is a duplicate
+        if incident.duplicates:
+            continue
+
         try:
             # if already summary generated, use that instead
             if incident.summary:

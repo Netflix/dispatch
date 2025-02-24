@@ -282,6 +282,10 @@ def generate_incident_summary(incident: Incident, db_session: Session) -> str:
     if incident.visibility == Visibility.restricted:
         return "Incident summary not generated for restricted incident."
 
+    # Skip if incident is a duplicate
+    if incident.duplicates:
+        return "Incident summary not generated for duplicate incident."
+
     # Skip if no incident review document
     if not incident.incident_review_document or not incident.incident_review_document.resource_id:
         log.info(

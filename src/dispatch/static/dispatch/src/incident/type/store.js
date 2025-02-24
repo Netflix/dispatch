@@ -18,6 +18,7 @@ const getDefaultSelectedState = () => {
     loading: false,
     plugin_metadata: [],
     exclude_from_metrics: null,
+    exclude_from_reminders: null,
     enabled: false,
     default: false,
     project: null,
