@@ -191,9 +191,10 @@ def configure(config):
     app.command(config.slack_command_update_participant, middleware=middleware)(
         handle_update_participant_command
     )
-    app.command(config.slack_command_engage_oncall, middleware=middleware)(
-        handle_engage_oncall_command
-    )
+    app.command(
+        config.slack_command_engage_oncall,
+        middleware=[subject_middleware, configuration_middleware],
+    )(handle_engage_oncall_command)
 
     # sensitive commands
     middleware = [
