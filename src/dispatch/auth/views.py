@@ -148,7 +148,7 @@ def update_user(
 ):
     """Check if Current_user is Owner and is trying to edit another user"""
     current_user_organization_role = current_user.get_organization_role(organization)
-    if current_user_organization_role != "Owner" and current_user.id != user_id:
+    if current_user_organization_role != UserRoles.owner and current_user.id != user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=[{"msg": "A user that is not an Owner is trying to update another user."}],
