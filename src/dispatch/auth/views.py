@@ -153,7 +153,6 @@ def update_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=[{"msg": "A user that is not an Owner is trying to update another user."}],
         )
-    
     """Update a user."""
     user = get(db_session=db_session, user_id=user_id)
     if not user:
