@@ -191,9 +191,10 @@ def configure(config):
     app.command(config.slack_command_update_participant, middleware=middleware)(
         handle_update_participant_command
     )
-    app.command(config.slack_command_engage_oncall, middleware=middleware)(
-        handle_engage_oncall_command
-    )
+    app.command(
+        config.slack_command_engage_oncall,
+        middleware=[subject_middleware, configuration_middleware],
+    )(handle_engage_oncall_command)
 
     # sensitive commands
     middleware = [
@@ -1746,14 +1747,18 @@ def handle_engage_oncall_command(
     """Handles the engage oncall command."""
     ack()
 
-    # TODO: handle cases
+    project_id = None
     if context["subject"].type == CaseSubjects.case:
-        raise CommandError("Command is not currently available for cases.")
-
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+        case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+        if not case.dedicated_channel:
+            raise CommandError("Command is not currently available for threaded cases.")
+        project_id = case.project.id
+    else:
+        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+        project_id = incident.project.id
 
     oncall_services = service_service.get_all_by_project_id_and_status(
-        db_session=db_session, project_id=incident.project.id, is_active=True
+        db_session=db_session, project_id=project_id, is_active=True
     )
 
     if not oncall_services.count():
@@ -1837,12 +1842,22 @@ def handle_engage_oncall_submission_event(
     page_block = form_data.get(EngageOncallBlockIds.page)
     page = page_block[0]["value"] if page_block else None  # page_block[0]["value"] == "Yes"
 
-    oncall_individual, oncall_service = incident_flows.incident_engage_oncall_flow(
-        user.email,
-        context["subject"].id,
-        oncall_service_external_id,
-        page=page,
-        db_session=db_session,
+    oncall_individual, oncall_service = (
+        case_flows.case_engage_oncall_flow(
+            user_email=user.email,
+            case_id=context["subject"].id,
+            oncall_service_external_id=oncall_service_external_id,
+            page=page,
+            db_session=db_session,
+        )
+        if context["subject"].type == CaseSubjects.case
+        else incident_flows.incident_engage_oncall_flow(
+            user_email=user.email,
+            incident_id=context["subject"].id,
+            oncall_service_external_id=oncall_service_external_id,
+            page=page,
+            db_session=db_session,
+        )
     )
 
     if not oncall_individual and not oncall_service:
