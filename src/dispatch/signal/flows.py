@@ -373,7 +373,7 @@ def main_processing_loop() -> None:
             # Get organizations in a dedicated session that will be properly closed
             organizations = []
             with get_session() as session:
-                organizations = [org for org in get_all_organizations(db_session=session)]
+                organizations = list(get_all_organizations(db_session=session))
 
             if not organizations:
                 log.warning("No organizations found to process signals for")
