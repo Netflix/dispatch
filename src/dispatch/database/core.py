@@ -1,5 +1,4 @@
 import functools
-import logging
 import re
 from contextlib import contextmanager
 from typing import Annotated, Any
@@ -18,9 +17,6 @@ from starlette.requests import Request
 from dispatch import config
 from dispatch.exceptions import NotFoundError
 from dispatch.search.fulltext import make_searchable
-
-# Set up logging for query debugging
-logger = logging.getLogger(__name__)
 
 
 def create_db_engine(connection_string: str):
@@ -53,6 +49,10 @@ engine = create_db_engine(
 )
 
 # Enable query timing logging
+#
+# Set up logging for query debugging
+# logger = logging.getLogger(__name__)
+#
 # @event.listens_for(Engine, "before_cursor_execute")
 # def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
 #     conn.info.setdefault("query_start_time", []).append(time.time())
@@ -244,24 +244,6 @@ def get_session():
 def get_organization_session(organization_slug: str):
     """Context manager to ensure the session is closed after use."""
     session = refetch_db_session(organization_slug)
-    try:
-        yield session
-        session.commit()
-    except:
-        session.rollback()
-        raise
-    finally:
-        session.close()
-
-
-@contextmanager
-def long_running_query_session(timeout_ms: int = 60000):
-    """Context manager for sessions that need longer timeouts for complex queries.
-
-    Args:
-        timeout_ms: Statement timeout in milliseconds (default: 60 seconds)
-    """
-    session = create_session_with_timeout(timeout_ms)
     try:
         yield session
         session.commit()
