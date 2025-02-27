@@ -65,13 +65,14 @@ def test_update_case_closed(session, case, user):
 def test_update_case_escalated(session, case, user):
     """Tests the update of a case to escalated status.
 
-    There is a known bug where cases can be escalated in the UI without creating an incident."""
+    Note: When escalating a case, we need to provide required incident details."""
     from fastapi import FastAPI, BackgroundTasks
     from fastapi.testclient import TestClient
     from dispatch.case.views import update_case, router
     from dispatch.case.enums import CaseStatus
     from dispatch.case.models import CaseUpdate, CaseRead
     from dispatch.case import service as case_service
+    from dispatch.incident.models import IncidentPriority, IncidentType
 
     app = FastAPI()
     app.include_router(router, prefix=f"/{case.project.organization.slug}/cases", tags=["cases"])
@@ -81,6 +82,12 @@ def test_update_case_escalated(session, case, user):
     async def views_update_case(background_tasks: BackgroundTasks):
         case_in = CaseUpdate.from_orm(case)
         case_in.status = CaseStatus.escalated
+        # Add required incident details
+        case_in.incident_priority = IncidentPriority(name="High", project=case.project)
+        case_in.incident_type = IncidentType(name="Security", project=case.project)
+        case_in.incident_title = "Escalated: " + case.title
+        case_in.incident_description = "Case escalated to incident"
+
         return update_case(
             db_session=session,
             current_case=case,
