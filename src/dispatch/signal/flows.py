@@ -1,7 +1,6 @@
 import logging
 import time
 from datetime import timedelta
-from typing import list
 
 from cachetools import TTLCache
 from email_validator import EmailNotValidError, validate_email
