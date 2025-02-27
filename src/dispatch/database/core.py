@@ -1,4 +1,5 @@
 import functools
+import logging
 import re
 from contextlib import contextmanager
 from typing import Annotated, Any
@@ -7,42 +8,64 @@ from fastapi import Depends
 from pydantic import BaseModel
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy import create_engine, inspect
+from sqlalchemy.engine.url import make_url
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import object_session, sessionmaker, Session
+from sqlalchemy.orm import Session, object_session, sessionmaker
 from sqlalchemy.sql.expression import true
 from sqlalchemy_utils import get_mapper
 from starlette.requests import Request
-
 
 from dispatch import config
 from dispatch.exceptions import NotFoundError
 from dispatch.search.fulltext import make_searchable
 
-engine = create_engine(
+# Set up logging for query debugging
+logger = logging.getLogger(__name__)
+
+
+def create_db_engine(connection_string: str):
+    """Create a database engine with proper timeout settings.
+
+    Args:
+        connection_string: Database connection string
+    """
+    url = make_url(connection_string)
+
+    # Use existing configuration values with fallbacks
+    timeout_kwargs = {
+        # Connection timeout - how long to wait for a connection from the pool
+        "pool_timeout": config.DATABASE_ENGINE_POOL_TIMEOUT,
+        # Recycle connections after this many seconds
+        "pool_recycle": config.DATABASE_ENGINE_POOL_RECYCLE,
+        # Maximum number of connections to keep in the pool
+        "pool_size": config.DATABASE_ENGINE_POOL_SIZE,
+        # Maximum overflow connections allowed beyond pool_size
+        "max_overflow": config.DATABASE_ENGINE_MAX_OVERFLOW,
+        # Connection pre-ping to verify connection is still alive
+        "pool_pre_ping": config.DATABASE_ENGINE_POOL_PING,
+    }
+    return create_engine(url, **timeout_kwargs)
+
+
+# Create the default engine with standard timeout
+engine = create_db_engine(
     config.SQLALCHEMY_DATABASE_URI,
-    pool_size=config.DATABASE_ENGINE_POOL_SIZE,
-    max_overflow=config.DATABASE_ENGINE_MAX_OVERFLOW,
-    pool_pre_ping=config.DATABASE_ENGINE_POOL_PING,
 )
 
-
-# Useful for identifying slow or n + 1 queries. But doesn't need to be enabled in production.
-# logging.basicConfig()
-# logger = logging.getLogger(__name__)
-# logger.setLevel(logging.DEBUG)
-
-
+# Enable query timing logging
 # @event.listens_for(Engine, "before_cursor_execute")
 # def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
-#    conn.info.setdefault("query_start_time", []).append(time.time())
-#    logger.debug("Start Query: %s", statement)
-
+#     conn.info.setdefault("query_start_time", []).append(time.time())
+#     logger.debug("Start Query: %s", statement)
 
 # @event.listens_for(Engine, "after_cursor_execute")
 # def after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
-#    total = time.time() - conn.info["query_start_time"].pop(-1)
-#    logger.debug("Query Complete!")
-#    logger.debug("Total Time: %f", total)
+#     total = time.time() - conn.info["query_start_time"].pop(-1)
+#     logger.debug("Query Complete!")
+#     logger.debug("Total Time: %f", total)
+#     # Log queries that take more than 1 second as warnings
+#     if total > 1.0:
+#         logger.warning("Slow Query (%.2fs): %s", total, statement)
 
 
 SessionLocal = sessionmaker(bind=engine)
@@ -94,9 +117,7 @@ class CustomBase:
         for key in self.__repr_attrs__:
             if not hasattr(self, key):
                 raise KeyError(
-                    "{} has incorrect attribute '{}' in " "__repr__attrs__".format(
-                        self.__class__, key
-                    )
+                    "{} has incorrect attribute '{}' in __repr__attrs__".format(self.__class__, key)
                 )
             value = getattr(self, key)
             wrap_in_quote = isinstance(value, str)
@@ -223,6 +244,24 @@ def get_session():
 def get_organization_session(organization_slug: str):
     """Context manager to ensure the session is closed after use."""
     session = refetch_db_session(organization_slug)
+    try:
+        yield session
+        session.commit()
+    except:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+
+@contextmanager
+def long_running_query_session(timeout_ms: int = 60000):
+    """Context manager for sessions that need longer timeouts for complex queries.
+
+    Args:
+        timeout_ms: Statement timeout in milliseconds (default: 60 seconds)
+    """
+    session = create_session_with_timeout(timeout_ms)
     try:
         yield session
         session.commit()

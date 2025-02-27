@@ -1,10 +1,11 @@
 import logging
 import time
 from datetime import timedelta
-from queue import Queue
+from typing import list
 
 from cachetools import TTLCache
 from email_validator import EmailNotValidError, validate_email
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from dispatch.auth import service as user_service
@@ -28,6 +29,13 @@ from dispatch.signal.models import SignalFilterAction, SignalInstance, SignalIns
 from dispatch.workflow import flows as workflow_flows
 
 log = logging.getLogger(__name__)
+
+# Constants for signal processing
+BATCH_SIZE = 50  # Process signals in batches of 50
+LOOP_DELAY = 60  # seconds
+MAX_PROCESSING_TIME = (
+    300  # Maximum time to process signals before refreshing organization list (5 minutes)
+)
 
 
 def signal_instance_create_flow(
@@ -300,58 +308,91 @@ def _should_update_signal_message(signal_instance: SignalInstance) -> bool:
         return False
 
 
-LOOP_DELAY = 60  # seconds
-
-
-def process_signal(db_session: Session, signal_instance_id: int) -> None:
-    """Processes a single signal instance.
+def process_signal_batch(db_session: Session, signal_instance_ids: list[int]) -> None:
+    """Process a batch of signal instances.
 
     Args:
         db_session (Session): The database session.
-        signal_instance_id (int): The ID of the signal instance to process.
+        signal_instance_ids (list[int]): List of signal instance IDs to process.
     """
-    try:
-        signal_flows.signal_instance_create_flow(
-            db_session=db_session,
-            signal_instance_id=signal_instance_id,
-        )
-    except Exception as e:
-        log.exception(f"Error processing signal instance {signal_instance_id}: {e}")
+    for signal_instance_id in signal_instance_ids:
+        try:
+            signal_flows.signal_instance_create_flow(
+                db_session=db_session,
+                signal_instance_id=signal_instance_id,
+            )
+            # Commit after each successful processing to ensure progress is saved
+            db_session.commit()
+        except Exception as e:
+            log.exception(f"Error processing signal instance {signal_instance_id}: {e}")
+            # Ensure transaction is rolled back on error
+            db_session.rollback()
 
 
 def process_organization_signals(organization_slug: str) -> None:
-    """Processes all unprocessed signals for a given organization using a FIFO queue.
+    """Processes all unprocessed signals for a given organization using batched processing.
 
     Args:
         organization_slug (str): The slug of the organization whose signals need to be processed.
     """
-    with get_organization_session(organization_slug) as db_session:
-        signal_queue = Queue(maxsize=500)
-        signal_instance_ids = signal_service.get_unprocessed_signal_instance_ids(db_session)
+    try:
+        with get_organization_session(organization_slug) as db_session:
+            # Get unprocessed signal IDs
+            signal_instance_ids = signal_service.get_unprocessed_signal_instance_ids(db_session)
 
-        for signal_id in signal_instance_ids:
-            signal_queue.put(signal_id)
+            if not signal_instance_ids:
+                log.debug(f"No unprocessed signals found for organization {organization_slug}")
+                return
 
-        while not signal_queue.empty():
-            signal_instance_id = signal_queue.get()
-            process_signal(db_session, signal_instance_id)
-            signal_queue.task_done()
+            log.info(
+                f"Processing {len(signal_instance_ids)} signals for organization {organization_slug}"
+            )
+
+            # Process signals in batches
+            for i in range(0, len(signal_instance_ids), BATCH_SIZE):
+                batch = signal_instance_ids[i : i + BATCH_SIZE]
+                process_signal_batch(db_session, batch)
+
+                # Log progress for large batches
+                if len(signal_instance_ids) > BATCH_SIZE:
+                    log.info(
+                        f"Processed {min(i + BATCH_SIZE, len(signal_instance_ids))}/{len(signal_instance_ids)} signals for {organization_slug}"
+                    )
+    except SQLAlchemyError as e:
+        log.exception(f"Database error while processing signals for {organization_slug}: {e}")
+    except Exception as e:
+        log.exception(f"Error processing signals for organization {organization_slug}: {e}")
 
 
 def main_processing_loop() -> None:
-    """Main processing loop that iterates through all organizations and processes their signals."""
+    """Main processing loop that iterates through all organizations and processes their signals.
+
+    Uses time-based batching to ensure the organization list is refreshed periodically.
+    """
     while True:
         try:
+            # Get organizations in a dedicated session that will be properly closed
+            organizations = []
             with get_session() as session:
-                organizations = get_all_organizations(db_session=session)
-                for organization in organizations:
-                    log.info(f"Processing signals in {organization.slug}")
-                    try:
-                        process_organization_signals(organization.slug)
-                    except Exception as e:
-                        log.exception(
-                            f"Error processing signals for organization {organization.slug}: {e}"
-                        )
+                organizations = [org for org in get_all_organizations(db_session=session)]
+
+            if not organizations:
+                log.warning("No organizations found to process signals for")
+                time.sleep(LOOP_DELAY)
+                continue
+
+            start_time = time.time()
+
+            # Process each organization with its own session
+            for organization in organizations:
+                # Check if we've been processing for too long and should refresh org list
+                if time.time() - start_time > MAX_PROCESSING_TIME:
+                    log.info("Processing time limit reached, refreshing organization list")
+                    break
+
+                log.info(f"Processing signals for organization {organization.slug}")
+                process_organization_signals(organization.slug)
+
         except Exception as e:
             log.exception(f"Error in main signal processing loop: {e}")
         finally:
