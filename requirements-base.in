@@ -47,8 +47,8 @@ schemathesis
 sentry-asgi
 sentry-sdk==1.45.0
 sh
-slack_sdk
 slack-bolt
+slack_sdk
 slowapi
 spacy
 sqlalchemy-filters
@@ -57,6 +57,7 @@ sqlalchemy<1.4  # NOTE temporarily until https://github.com/kvesteri/sqlalchemy-
 statsmodels
 tabulate
 tenacity
+tiktoken
 uvicorn
 uvloop
 validators==0.18.2
