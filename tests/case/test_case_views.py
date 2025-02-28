@@ -1,11 +1,12 @@
 def test_update_case_triage(session, case, user):
     """Tests the update of a case to triage status."""
-    from fastapi import FastAPI, BackgroundTasks
+    from fastapi import BackgroundTasks, FastAPI
     from fastapi.testclient import TestClient
+
     from dispatch.case import service as case_service
     from dispatch.case.enums import CaseStatus
-    from dispatch.case.models import CaseUpdate, CaseRead
-    from dispatch.case.views import update_case, router
+    from dispatch.case.models import CaseRead, CaseUpdate
+    from dispatch.case.views import router, update_case
 
     app = FastAPI()
     app.include_router(router, prefix=f"/{case.project.organization.slug}/cases", tags=["cases"])
@@ -32,12 +33,13 @@ def test_update_case_triage(session, case, user):
 
 def test_update_case_closed(session, case, user):
     """Tests the update of a case to closed status."""
-    from fastapi import FastAPI, BackgroundTasks
+    from fastapi import BackgroundTasks, FastAPI
     from fastapi.testclient import TestClient
+
     from dispatch.case import service as case_service
     from dispatch.case.enums import CaseStatus
-    from dispatch.case.models import CaseUpdate, CaseRead
-    from dispatch.case.views import update_case, router
+    from dispatch.case.models import CaseRead, CaseUpdate
+    from dispatch.case.views import router, update_case
 
     app = FastAPI()
     app.include_router(router, prefix=f"/{case.project.organization.slug}/cases", tags=["cases"])
@@ -66,13 +68,15 @@ def test_update_case_escalated(session, case, user):
     """Tests the update of a case to escalated status.
 
     Note: When escalating a case, we need to provide required incident details."""
-    from fastapi import FastAPI, BackgroundTasks
+    from fastapi import BackgroundTasks, FastAPI
     from fastapi.testclient import TestClient
-    from dispatch.case.views import update_case, router
-    from dispatch.case.enums import CaseStatus
-    from dispatch.case.models import CaseUpdate, CaseRead
+
     from dispatch.case import service as case_service
-    from dispatch.incident.models import IncidentPriority, IncidentType
+    from dispatch.case.enums import CaseStatus
+    from dispatch.case.models import CaseRead, CaseUpdate
+    from dispatch.case.views import router, update_case
+    from dispatch.incident.priority import IncidentPriority
+    from dispatch.incident.type import IncidentType
 
     app = FastAPI()
     app.include_router(router, prefix=f"/{case.project.organization.slug}/cases", tags=["cases"])
@@ -105,11 +109,12 @@ def test_update_case_escalated(session, case, user):
 
 def test_case_escalated_create_incident(session, case, user, incident):
     """Tests the escalation of a case to an incident."""
-    from fastapi import FastAPI, BackgroundTasks
+    from fastapi import BackgroundTasks, FastAPI
     from fastapi.testclient import TestClient
-    from dispatch.case.views import router, escalate_case
-    from dispatch.case.enums import CaseStatus
+
     from dispatch.case import service as case_service
+    from dispatch.case.enums import CaseStatus
+    from dispatch.case.views import escalate_case, router
     from dispatch.incident.enums import IncidentStatus
     from dispatch.incident.models import IncidentCreate, IncidentRead
 
