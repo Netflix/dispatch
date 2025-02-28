@@ -75,8 +75,8 @@ def test_update_case_escalated(session, case, user):
     from dispatch.case.enums import CaseStatus
     from dispatch.case.models import CaseRead, CaseUpdate
     from dispatch.case.views import router, update_case
-    from dispatch.incident.priority import IncidentPriority
-    from dispatch.incident.type import IncidentType
+    from dispatch.incident.priority.models import IncidentPriority
+    from dispatch.incident.type.models import IncidentType
 
     app = FastAPI()
     app.include_router(router, prefix=f"/{case.project.organization.slug}/cases", tags=["cases"])
