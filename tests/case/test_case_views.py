@@ -86,11 +86,13 @@ def test_update_case_escalated(session, case, user):
     async def views_update_case(background_tasks: BackgroundTasks):
         case_in = CaseUpdate.from_orm(case)
         case_in.status = CaseStatus.escalated
-        # Add required incident details
-        case_in.incident_priority = IncidentPriority(name="High", project=case.project)
-        case_in.incident_type = IncidentType(name="Security", project=case.project)
-        case_in.incident_title = "Escalated: " + case.title
-        case_in.incident_description = "Case escalated to incident"
+        # Add required incident details using the metadata field
+        case_in.metadata = {
+            "incident_priority": {"name": "High", "project_id": case.project.id},
+            "incident_type": {"name": "Security", "project_id": case.project.id},
+            "incident_title": f"Escalated: {case.title}",
+            "incident_description": "Case escalated to incident"
+        }
 
         return update_case(
             db_session=session,
