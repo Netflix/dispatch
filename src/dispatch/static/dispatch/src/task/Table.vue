@@ -59,9 +59,6 @@
             <template #item.owner.individual_contact.name="{ item }">
               <participant :participant="item.owner" />
             </template>
-            <template #item.incident_type.name="{ item }">
-              {{ item.incident.incident_type.name }}
-            </template>
             <template #item.assignees="{ item }">
               <participant
                 v-for="assignee in item.assignees"
@@ -152,8 +149,7 @@ export default {
     return {
       headers: [
         { title: "Incident Name", value: "incident.name", sortable: true },
-        { title: "Incident Priority", value: "incident_priority.name", sortable: true },
-        { title: "Incident Type", value: "incident_type.name", sortable: true },
+        { title: "Incident Priority", value: "priority", sortable: true },
         { title: "Status", value: "status", sortable: true },
         { title: "Creator", value: "creator.individual_contact.name", sortable: false },
         { title: "Owner", value: "owner.individual_contact.name", sortable: false },
