@@ -143,10 +143,11 @@ class SlackConversationPlugin(ConversationPlugin):
 
             # we try to upload the alert JSON to the case thread
             try:
-                client.files_upload(
-                    channels=conversation_id,
+                client.files_upload_v2(
+                    channel=signal_response.get(
+                        "id"
+                    ),  # we need the conversation ID not the name here
                     thread_ts=case.signal_thread_ts,
-                    filetype="json",
                     file=io.BytesIO(json.dumps(case.signal_instances[0].raw, indent=4).encode()),
                 )
             except SlackApiError as e:
