@@ -55,11 +55,28 @@
                 <case-cost-type-category-select v-model="category" />
               </v-col>
               <v-col cols="12">
-                <v-checkbox
-                  v-model="default_case_cost_type"
-                  label="Default"
-                  hint="Check this if this case cost type should be the default."
-                />
+                <v-tooltip max-width="500px" open-delay="50" location="bottom">
+                  <template #activator="{ props }">
+                    <div class="text-body-1 ml-1 mt-2">
+                      Response Cost Model Type
+                      <v-icon v-bind="props"> mdi-information-outline </v-icon>
+                    </div>
+                  </template>
+                  <span>
+                    The response cost model type is used to identify if the cost type is linked to
+                    response cost calculation under either the new or classic cost model. If the
+                    value is set to none, this cost is not related to response costs and is intended
+                    for manual cost entry.
+                  </span>
+                </v-tooltip>
+                <v-radio-group v-model="response_case_cost_type" disabled>
+                  <v-radio
+                    v-for="modelType in ['New', 'Classic', 'None']"
+                    :key="modelType"
+                    :label="modelType"
+                    :value="modelType"
+                  />
+                </v-radio-group>
               </v-col>
               <v-col cols="12">
                 <v-checkbox
@@ -108,7 +125,7 @@ export default {
       "dialogs.showCreateEdit",
     ]),
     ...mapFields("case_cost_type", {
-      default_case_cost_type: "selected.default",
+      response_case_cost_type: "selected.model_type",
     }),
   },
 
