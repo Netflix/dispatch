@@ -2926,3 +2926,57 @@ def handle_engagement_deny_submission_event(
         channel=case.conversation.channel_id,
         ts=thread_ts,
     )
+
+
+@app.action(
+    CaseNotificationActions.investigate, middleware=[button_context_middleware, db_middleware]
+)
+def investigate_button_click(
+    ack: Ack, body: dict, db_session: Session, context: BoltContext, client: WebClient
+):
+    ack()
+
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+
+    if not case:
+        log.error("Unable to open an investigation. Case not found.")
+        client.chat_postMessage(
+            text=":warning: Unable to open an investigation. Case not found.",
+            channel=case.conversation.channel_id,
+            thread_ts=case.conversation.thread_id,
+        )
+        return
+
+    investigation_plugin = plugin_service.get_active_instance(
+        db_session=db_session,
+        project_id=case.project.id,
+        plugin_type="investigation-tooling",
+    )
+
+    if not investigation_plugin:
+        log.error("Unable to open an investigation. No investigation tooling plugin found.")
+        client.chat_postMessage(
+            text=f":warning: Unable to open an investigation. Investigation tooling plugin is not enabled for project {case.project.name}.",
+            channel=case.conversation.channel_id,
+            thread_ts=case.conversation.thread_id,
+        )
+        return
+
+    result = investigation_plugin.instance.create_investigation(case=case)
+
+    if not result:
+        log.error(
+            "Unable to open an investigation. Investigation tooling plugin failed to create an investigation."
+        )
+        client.chat_postMessage(
+            text=":warning: Unable to open an investigation. Investigation tooling plugin failed to create an investigation.",
+            channel=case.conversation.channel_id,
+            thread_ts=case.conversation.thread_id,
+        )
+        return
+
+    client.chat_postMessage(
+        text=f":mag: {result}",
+        channel=case.conversation.channel_id,
+        thread_ts=case.conversation.thread_id,
+    )
