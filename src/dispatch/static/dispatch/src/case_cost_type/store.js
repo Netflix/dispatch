@@ -11,7 +11,7 @@ const getDefaultSelectedState = () => {
     description: null,
     category: null,
     details: {},
-    model_type: "None",
+    model_type: null,
     project: null,
     editable: true,
     loading: false,

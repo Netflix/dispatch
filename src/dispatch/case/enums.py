@@ -18,5 +18,5 @@ class CaseResolutionReason(DispatchEnum):
 class CostModelType(DispatchEnum):
     """Type of cost model used to calculate costs."""
 
-    new = "new"
-    classic = "classic"
+    new = "New"
+    classic = "Classic"

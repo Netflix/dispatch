@@ -71,11 +71,12 @@
                 </v-tooltip>
                 <v-radio-group v-model="response_case_cost_type" disabled>
                   <v-radio
-                    v-for="modelType in ['New', 'Classic', 'None']"
+                    v-for="modelType in ['New', 'Classic']"
                     :key="modelType"
                     :label="modelType"
                     :value="modelType"
                   />
+                  <v-radio :key="null" label="None" :value="null" />
                 </v-radio-group>
               </v-col>
               <v-col cols="12">
