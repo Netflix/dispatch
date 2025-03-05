@@ -5,6 +5,7 @@
     persistent
     no-click-animation
     :retain-focus="false"
+    scroll-strategy="none"
   >
     <handoff-dialog />
     <v-card :loading="bulkEditLoading" rounded="0">
