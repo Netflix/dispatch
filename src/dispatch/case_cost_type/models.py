@@ -3,11 +3,10 @@ from typing import List, Optional
 from pydantic import Field
 
 from sqlalchemy import Column, Integer, String, Boolean
-from sqlalchemy.event import listen
 
 from sqlalchemy_utils import TSVectorType, JSONType
 
-from dispatch.database.core import Base, ensure_unique_default_per_project
+from dispatch.database.core import Base
 from dispatch.models import (
     DispatchBase,
     NameStr,
@@ -27,16 +26,13 @@ class CaseCostType(Base, TimeStampMixin, ProjectMixin):
     description = Column(String)
     category = Column(String)
     details = Column(JSONType, nullable=True)
-    default = Column(Boolean, default=False)
     editable = Column(Boolean, default=True)
+    model_type = Column(String, nullable=True)
 
     # full text search capabilities
     search_vector = Column(
         TSVectorType("name", "description", weights={"name": "A", "description": "B"})
     )
-
-
-listen(CaseCostType.default, "set", ensure_unique_default_per_project)
 
 
 # Pydantic Models
@@ -46,8 +42,8 @@ class CaseCostTypeBase(DispatchBase):
     category: Optional[str] = Field(None, nullable=True)
     details: Optional[dict] = {}
     created_at: Optional[datetime]
-    default: Optional[bool]
     editable: Optional[bool]
+    model_type: Optional[str] = Field(None, nullable=False)
 
 
 class CaseCostTypeCreate(CaseCostTypeBase):

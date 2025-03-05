@@ -213,38 +213,41 @@ def test_calculate_case_response_cost(case, session, participant_activity):
 
 def test_update_case_response_cost(case, session, participant_activity, case_cost_type):
     """Tests that the case response cost is created correctly."""
-    from dispatch.case_cost.service import (
-        update_case_response_cost,
-    )
+    from dispatch.case.enums import CostModelType
+    from dispatch.case_cost.service import update_case_response_cost
     from dispatch.case_cost_type import service as case_cost_type_service
 
-    # Set up participant activity.
+    # Set up participant activity
     participant_activity.case = case
 
-    # Set up default case cost type.
+    # Set up default case cost type
     for cost_type in case_cost_type_service.get_all(db_session=session):
-        cost_type.default = False
+        cost_type.model_type = None
     case_cost_type.project = case.project
-    case_cost_type.default = True
+    case_cost_type.model_type = CostModelType.new
 
-    # Assert that there exists a case response cost.
-    assert update_case_response_cost(case=case, db_session=session)
+    # Assert that costs were calculated
+    results = update_case_response_cost(case=case, db_session=session)
+    assert results[CostModelType.new] > 0
 
 
-def test_update_case_response_cost__fail_no_default_cost_type(case, session):
-    """Tests that the case response cost is not created if the project has no default cost type."""
+def test_update_case_response_cost__fail_no_cost_types(case, session):
+    """Tests that the case response cost calculation handles missing cost types."""
+    from dispatch.case.enums import CostModelType
     from dispatch.case_cost.service import (
         update_case_response_cost,
         get_by_case_id,
     )
     from dispatch.case_cost_type import service as case_cost_type_service
 
-    # Ensure there is no default cost type for this project.
+    # Ensure there are no default cost types for any model
     for cost_type in case_cost_type_service.get_all(db_session=session):
-        cost_type.default = False
+        cost_type.model_type = None
 
-    # Assert that the initial case response cost creation failed.
-    assert not update_case_response_cost(case=case, db_session=session)
+    # Calculate costs
+    results = update_case_response_cost(case=case, db_session=session)
 
-    # Validate that the case cost was neither created nor saved in the database.
+    # Verify no costs were calculated
+    assert isinstance(results, dict)
+    assert not results[CostModelType.new]
     assert not get_by_case_id(db_session=session, case_id=case.id)
