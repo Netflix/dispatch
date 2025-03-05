@@ -138,7 +138,7 @@ class BaseBuildCommand(Command):
         try:
             node_version = self._run_command(["node", "--version"]).decode("utf-8").rstrip()
         except OSError:
-            log.fatal("Cannot find node executable. Please install node" " and try again.")
+            log.fatal("Cannot find node executable. Please install node and try again.")
             sys.exit(1)
 
         if node_version[2] is not None:
@@ -408,9 +408,9 @@ setup(
         "dispatch.plugins": [
             "dispatch_atlassian_confluence = dispatch.plugins.dispatch_atlassian_confluence.plugin:ConfluencePagePlugin",
             "dispatch_atlassian_confluence_document = dispatch.plugins.dispatch_atlassian_confluence.docs.plugin:ConfluencePageDocPlugin",
-            "dispatch_aws_sqs = dispatch.plugins.dispatch_aws.plugin:AWSSQSSignalConsumerPlugin",
-            "dispatch_aws_alb_auth = dispatch.plugins.dispatch_core.plugin:AwsAlbAuthProviderPlugin",
             "dispatch_auth_mfa = dispatch.plugins.dispatch_core.plugin:DispatchMfaPlugin",
+            "dispatch_aws_alb_auth = dispatch.plugins.dispatch_core.plugin:AwsAlbAuthProviderPlugin",
+            "dispatch_aws_sqs = dispatch.plugins.dispatch_aws.plugin:AWSSQSSignalConsumerPlugin",
             "dispatch_basic_auth = dispatch.plugins.dispatch_core.plugin:BasicAuthProviderPlugin",
             "dispatch_contact = dispatch.plugins.dispatch_core.plugin:DispatchContactPlugin",
             "dispatch_header_auth = dispatch.plugins.dispatch_core.plugin:HeaderAuthProviderPlugin",
@@ -427,13 +427,13 @@ setup(
             "google_gmail_email = dispatch.plugins.dispatch_google.gmail.plugin:GoogleGmailEmailPlugin",
             "google_groups_participants = dispatch.plugins.dispatch_google.groups.plugin:GoogleGroupParticipantGroupPlugin",
             "jira_ticket = dispatch.plugins.dispatch_jira.plugin:JiraTicketPlugin",
+            "microsoft_teams_conference = dispatch.plugins.dispatch_microsoft_teams.conference.plugin:MicrosoftTeamsConferencePlugin",
             "openai_artificial_intelligence = dispatch.plugins.dispatch_openai.plugin:OpenAIPlugin",
             "opsgenie_oncall = dispatch.plugins.dispatch_opsgenie.plugin:OpsGenieOncallPlugin",
             "pagerduty_oncall = dispatch.plugins.dispatch_pagerduty.plugin:PagerDutyOncallPlugin",
             "slack_contact = dispatch.plugins.dispatch_slack.plugin:SlackContactPlugin",
             "slack_conversation = dispatch.plugins.dispatch_slack.plugin:SlackConversationPlugin",
             "zoom_conference = dispatch.plugins.dispatch_zoom.plugin:ZoomConferencePlugin",
-            "microsoft_teams_conference = dispatch.plugins.dispatch_microsoft_teams.conference.plugin:MicrosoftTeamsConferencePlugin",
         ],
     },
 )
