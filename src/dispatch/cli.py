@@ -904,27 +904,32 @@ def process_signals():
 
             try:
                 with session_scope(schema_engine) as db_session:
-                    signal_instances = (
-                        (
-                            db_session.query(SignalInstance)
-                            .filter(SignalInstance.filter_action == None)  # noqa
-                            .filter(SignalInstance.case_id == None)  # noqa
-                        )
+                    # Get IDs first rather than full instances
+                    signal_instance_ids = (
+                        db_session.query(SignalInstance.id)
+                        .filter(SignalInstance.filter_action == None)  # noqa
+                        .filter(SignalInstance.case_id == None)  # noqa
                         .order_by(asc(SignalInstance.created_at))
                         .limit(500)
+                        .all()
                     )
 
-                    for signal_instance in signal_instances:
+                    # Process each instance with its own transaction
+                    for (instance_id,) in signal_instance_ids:
                         try:
+                            # Process each signal instance in its own transaction
+                            # This ensures each instance is fresh and attached to the session
                             signal_flows.signal_instance_create_flow(
                                 db_session=db_session,
-                                signal_instance_id=signal_instance.id,
+                                signal_instance_id=instance_id,
                             )
+                            # Commit after each successful processing to avoid
+                            # accumulating too many objects in the session
+                            db_session.commit()
                         except Exception as e:
-                            log.debug(signal_instance)
-                            log.exception(e)
-                            # We continue processing other signal instances even if one fails
-                            # The session will still be valid for other operations
+                            log.exception(f"Error processing signal instance {instance_id}: {e}")
+                            # Rollback this specific transaction but continue with others
+                            db_session.rollback()
             except Exception as e:
                 log.exception(f"Error processing signals for organization {organization.slug}: {e}")
                 # No need to close the session here as it's handled by the context manager
