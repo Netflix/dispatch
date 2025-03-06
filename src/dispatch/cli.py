@@ -567,12 +567,12 @@ def stamp_database(revision, revision_type, tag, sql):
 )
 @click.option("--revision-type", type=click.Choice(["core", "tenant"]))
 @click.option(
-    "--sql", is_flag=True, help=("Don't emit SQL to database - dump to standard output " "instead")
+    "--sql", is_flag=True, help=("Don't emit SQL to database - dump to standard output instead")
 )
 @click.option(
     "--head",
     default="head",
-    help=("Specify head revision or <branchname>@head to base new " "revision on"),
+    help=("Specify head revision or <branchname>@head to base new revision on"),
 )
 @click.option(
     "--splice", is_flag=True, help=('Allow a non-head revision as the "head" to splice onto')
@@ -584,7 +584,7 @@ def stamp_database(revision, revision_type, tag, sql):
     "--version-path", default=None, help=("Specify specific path from config for version file")
 )
 @click.option(
-    "--rev-id", default=None, help=("Specify a hardcoded revision id instead of generating " "one")
+    "--rev-id", default=None, help=("Specify a hardcoded revision id instead of generating one")
 )
 def revision_database(
     message, autogenerate, revision_type, sql, head, splice, branch_label, version_path, rev_id
@@ -817,37 +817,60 @@ def consume_signals():
 
     install_plugins()
 
-    with get_session() as session:
-        organizations = get_all_organizations(db_session=session)
+    try:
+        with get_session() as session:
+            organizations = get_all_organizations(db_session=session)
+    except Exception as e:
+        log.exception(f"Error fetching organizations: {e}")
+        return
 
     for organization in organizations:
-        with get_organization_session(organization.slug) as session:
-            projects = project_service.get_all(db_session=session)
-            for project in projects:
-                plugins = plugin_service.get_active_instances(
-                    db_session=session, plugin_type="signal-consumer", project_id=project.id
-                )
+        try:
+            with get_organization_session(organization.slug) as session:
+                projects = project_service.get_all(db_session=session)
 
-                if not plugins:
-                    log.warning(
-                        f"No signals consumed. No signal-consumer plugins enabled. Project: {project.name}. Organization: {project.organization.name}"
-                    )
-                    continue
-
-                for plugin in plugins:
-                    log.debug(f"Consuming signals for plugin: {plugin.plugin.slug}")
+                for project in projects:
                     try:
-                        plugin.instance.consume(db_session=session, project=project)
-                    except Exception as e:
-                        log.error(
-                            f"Error consuming signals for plugin: {plugin.plugin.slug}. Error: {e}"
+                        plugins = plugin_service.get_active_instances(
+                            db_session=session, plugin_type="signal-consumer", project_id=project.id
                         )
+
+                        if not plugins:
+                            log.warning(
+                                f"No signals consumed. No signal-consumer plugins enabled. Project: {project.name}. Organization: {project.organization.name}"
+                            )
+                            continue
+
+                        for plugin in plugins:
+                            log.debug(f"Consuming signals for plugin: {plugin.plugin.slug}")
+                            try:
+                                plugin.instance.consume(db_session=session, project=project)
+                            except Exception as e:
+                                log.error(
+                                    f"Error consuming signals for plugin: {plugin.plugin.slug}. Error: {e}"
+                                )
+                    except Exception as e:
+                        log.exception(f"Error processing project {project.name}: {e}")
+        except Exception as e:
+            log.exception(f"Error processing organization {organization.slug}: {e}")
 
 
 @signals_group.command("process")
 def process_signals():
-    """Runs a continuous process that does additional processing on newly created signals."""
+    """
+    Runs a continuous process that does additional processing on newly created signals.
+
+    This function processes signal instances across all organizations by:
+    1. Creating a session for each organization using a context manager
+    2. Fetching unprocessed signal instances (with no filter_action or case_id)
+    3. Processing each instance with proper error handling
+    4. Ensuring proper session cleanup even if exceptions occur
+
+    Returns:
+        None
+    """
     from sqlalchemy import asc
+    from contextlib import contextmanager
 
     from dispatch.common.utils.cli import install_plugins
     from dispatch.database.core import SessionLocal, engine, sessionmaker
@@ -857,6 +880,19 @@ def process_signals():
 
     install_plugins()
 
+    @contextmanager
+    def session_scope(schema_engine):
+        """Provide a transactional scope around a series of operations."""
+        session = sessionmaker(bind=schema_engine)()
+        try:
+            yield session
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
     organizations = get_all_organizations(db_session=SessionLocal())
     while True:
         for organization in organizations:
@@ -865,26 +901,33 @@ def process_signals():
                     None: f"dispatch_organization_{organization.slug}",
                 }
             )
-            db_session = sessionmaker(bind=schema_engine)()
-            signal_instances = (
-                (
-                    db_session.query(SignalInstance)
-                    .filter(SignalInstance.filter_action == None)  # noqa
-                    .filter(SignalInstance.case_id == None)  # noqa
-                )
-                .order_by(asc(SignalInstance.created_at))
-                .limit(500)
-            )
-            for signal_instance in signal_instances:
-                try:
-                    signal_flows.signal_instance_create_flow(
-                        db_session=db_session,
-                        signal_instance_id=signal_instance.id,
+
+            try:
+                with session_scope(schema_engine) as db_session:
+                    signal_instances = (
+                        (
+                            db_session.query(SignalInstance)
+                            .filter(SignalInstance.filter_action == None)  # noqa
+                            .filter(SignalInstance.case_id == None)  # noqa
+                        )
+                        .order_by(asc(SignalInstance.created_at))
+                        .limit(500)
                     )
-                except Exception as e:
-                    log.debug(signal_instance)
-                    log.exception(e)
-            db_session.close()
+
+                    for signal_instance in signal_instances:
+                        try:
+                            signal_flows.signal_instance_create_flow(
+                                db_session=db_session,
+                                signal_instance_id=signal_instance.id,
+                            )
+                        except Exception as e:
+                            log.debug(signal_instance)
+                            log.exception(e)
+                            # We continue processing other signal instances even if one fails
+                            # The session will still be valid for other operations
+            except Exception as e:
+                log.exception(f"Error processing signals for organization {organization.slug}: {e}")
+                # No need to close the session here as it's handled by the context manager
 
 
 @signals_group.command("perf-test")
@@ -910,14 +953,27 @@ def process_signals():
 def perf_test(
     num_instances: int, num_workers: int, api_endpoint: str, api_token: str, project: str
 ) -> None:
-    """Performance testing utility for creating signal instances."""
+    """
+    Runs a performance test that sends a number of signal instances to the Dispatch API.
 
+    Args:
+        num_instances: Number of signal instances to send.
+        num_workers: Number of threads to use.
+        api_endpoint: API endpoint to send the signal instances to.
+        api_token: API token to use.
+        project: The Dispatch project to send the instances to.
+    """
     import concurrent.futures
-    import time
+    import random
+    import string
     import uuid
+    from datetime import datetime, timedelta
 
+    import pendulum
     import requests
-    from fastapi import status
+    from faker import Faker
+
+    fake = Faker()
 
     NUM_SIGNAL_INSTANCES = num_instances
     NUM_WORKERS = num_workers
@@ -929,7 +985,7 @@ def perf_test(
             "Authorization": f"Bearer {api_token}",
         }
     )
-    start_time = time.time()
+    start_time = datetime.now()
 
     def _send_signal_instance(
         api_endpoint: str,
@@ -947,7 +1003,7 @@ def perf_test(
                 },
             )
             log.info(f"Response: {r.json()}")
-            if r.status_code == status.HTTP_401_UNAUTHORIZED:
+            if r.status_code == 401:
                 raise PermissionError(
                     "Unauthorized. Please check your bearer token. You can find it in the Dev Tools under Request Headers -> Authorization."
                 )
@@ -993,16 +1049,17 @@ def perf_test(
                         },
                     },
                 ],
-                "created_at": "2024-09-18T19:47:15Z",
+                "created_at": datetime.now().isoformat(),
                 "quiet_mode": False,
-                "external_id": "4ebbab36-c703-495f-ae47-7051bdc8b3ef",
+                "external_id": str(uuid.uuid4()),
             },
-        },
-    ] * NUM_SIGNAL_INSTANCES
+        }
+        for _ in range(NUM_SIGNAL_INSTANCES)
+    ]
 
     send_signal_instances(api_endpoint, api_token, signal_instances)
 
-    elapsed_time = time.time() - start_time
+    elapsed_time = (datetime.now() - start_time).total_seconds()
     click.echo(f"Elapsed time: {elapsed_time:.2f} seconds")
 
 
