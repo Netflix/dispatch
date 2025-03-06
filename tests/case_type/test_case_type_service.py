@@ -58,6 +58,7 @@ def test_update_cost_model(session, case, case_type, cost_model, case_cost, case
     from dispatch.case.type.service import update
     from dispatch.case_cost import service as case_cost_service
     from dispatch.case_cost_type import service as case_cost_type_service
+    from dispatch.case.enums import CostModelType
     from dispatch.case.type.models import CaseTypeUpdate
     import datetime
 
@@ -72,10 +73,10 @@ def test_update_cost_model(session, case, case_type, cost_model, case_cost, case
     case.project = case_type.project
 
     for cost_type in case_cost_type_service.get_all(db_session=session):
-        cost_type.default = False
+        cost_type.model_type = None
 
     case_cost_type.project = case_type.project
-    case_cost_type.default = True
+    case_cost_type.model_type = CostModelType.new
 
     case_cost.project = case_type.project
     case_cost.case_id = case.id
@@ -92,7 +93,9 @@ def test_update_cost_model(session, case, case_type, cost_model, case_cost, case
     assert case_type.name == name
 
     # Assert that the case cost was updated
-    case_cost = case_cost_service.get_default_case_response_cost(db_session=session, case=case)
+    case_cost = case_cost_service.get_or_create_case_response_cost_by_model_type(
+        db_session=session, case=case, model_type=CostModelType.new
+    )
     assert case_cost
     assert case_cost.updated_at > current_time
 

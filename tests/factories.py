@@ -16,6 +16,7 @@ from faker.providers import misc
 from pytz import UTC
 
 from dispatch.auth.models import DispatchUser, DispatchUserOrganization, hash_password  # noqa
+from dispatch.case.enums import CostModelType
 from dispatch.case.models import Case, CaseRead
 from dispatch.case.priority.models import CasePriority
 from dispatch.case.severity.models import CaseSeverity
@@ -1196,8 +1197,8 @@ class CaseCostTypeFactory(BaseFactory):
     description = FuzzyText()
     category = FuzzyText()
     details = {}
-    default = Faker().pybool()
     editable = Faker().pybool()
+    model_type = CostModelType.new
 
     class Meta:
         """Factory Configuration."""
