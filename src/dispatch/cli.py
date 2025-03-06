@@ -953,39 +953,24 @@ def process_signals():
 def perf_test(
     num_instances: int, num_workers: int, api_endpoint: str, api_token: str, project: str
 ) -> None:
-    """
-    Runs a performance test that sends a number of signal instances to the Dispatch API.
+    """Performance testing utility for creating signal instances."""
 
-    Args:
-        num_instances: Number of signal instances to send.
-        num_workers: Number of threads to use.
-        api_endpoint: API endpoint to send the signal instances to.
-        api_token: API token to use.
-        project: The Dispatch project to send the instances to.
-    """
     import concurrent.futures
-    import random
-    import string
+    import time
     import uuid
-    from datetime import datetime, timedelta
 
-    import pendulum
     import requests
-    from faker import Faker
-
-    fake = Faker()
+    from fastapi import status
 
     NUM_SIGNAL_INSTANCES = num_instances
-    NUM_WORKERS = num_workers
 
-    session = requests.Session()
-    session.headers.update(
-        {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_token}",
-        }
-    )
-    start_time = datetime.now()
+    headers = {
+        "Authorization": f"Bearer {api_token}",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+
+    start_time = time.time()
 
     def _send_signal_instance(
         api_endpoint: str,
@@ -993,73 +978,66 @@ def perf_test(
         session: requests.Session,
         signal_instance: dict[str, str],
     ) -> None:
+        """Send a signal instance to the Dispatch API."""
         try:
             r = session.post(
                 api_endpoint,
+                headers=headers,
                 json=signal_instance,
-                headers={
-                    "Content-Type": "application/json",
-                    "Authorization": f"Bearer {api_token}",
-                },
             )
+            r.raise_for_status()
+
             log.info(f"Response: {r.json()}")
-            if r.status_code == 401:
+            if r.status_code == status.HTTP_401_UNAUTHORIZED:
                 raise PermissionError(
                     "Unauthorized. Please check your bearer token. You can find it in the Dev Tools under Request Headers -> Authorization."
                 )
-
-            r.raise_for_status()
-
-        except requests.exceptions.RequestException as e:
-            log.error(f"Unable to send finding. Reason: {e} Response: {r.json() if r else 'N/A'}")
-        else:
-            log.info(f"{signal_instance.get('raw', {}).get('id')} created successfully")
+        except Exception as e:
+            log.error(f"Error: {e}")
 
     def send_signal_instances(
         api_endpoint: str, api_token: str, signal_instances: list[dict[str, str]]
     ):
-        with concurrent.futures.ThreadPoolExecutor(max_workers=NUM_WORKERS) as executor:
-            futures = [
-                executor.submit(
-                    _send_signal_instance,
-                    api_endpoint=api_endpoint,
-                    api_token=api_token,
-                    session=session,
-                    signal_instance=signal_instance,
-                )
-                for signal_instance in signal_instances
-            ]
-            results = [future.result() for future in concurrent.futures.as_completed(futures)]
-
-        log.info(f"\nSent {len(results)} of {NUM_SIGNAL_INSTANCES} signal instances")
+        """Send signal instances to the Dispatch API."""
+        with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
+            with requests.Session() as session:
+                futures = [
+                    executor.submit(
+                        _send_signal_instance, api_endpoint, api_token, session, signal_instance
+                    )
+                    for signal_instance in signal_instances
+                ]
+                for future in concurrent.futures.as_completed(futures):
+                    future.result()
 
     signal_instances = [
         {
+            "resource_id": str(uuid.uuid4()),
+            "resource_type": "signal-instance",
             "project": {"name": project},
-            "raw": {
-                "id": str(uuid.uuid4()),
+            "signal": {
                 "name": "Test Signal",
-                "slug": "test-signal",
-                "canary": False,
-                "events": [
+                "owner": "Dispatch",
+                "description": "Test Signal",
+                "external_url": "https://example.com",
+                "external_id": "123456",
+                "variants": [
                     {
-                        "original": {
-                            "dateint": 20240930,
-                            "distinct_lookupkey_count": 95,
-                        },
+                        "name": "Test Variant",
+                        "external_id": str(uuid.uuid4()),
+                        "description": "Test Variant",
                     },
                 ],
-                "created_at": datetime.now().isoformat(),
+                "created_at": "2024-09-18T19:47:15Z",
                 "quiet_mode": False,
-                "external_id": str(uuid.uuid4()),
+                "external_id": "4ebbab36-c703-495f-ae47-7051bdc8b3ef",
             },
-        }
-        for _ in range(NUM_SIGNAL_INSTANCES)
-    ]
+        },
+    ] * NUM_SIGNAL_INSTANCES
 
     send_signal_instances(api_endpoint, api_token, signal_instances)
 
-    elapsed_time = (datetime.now() - start_time).total_seconds()
+    elapsed_time = time.time() - start_time
     click.echo(f"Elapsed time: {elapsed_time:.2f} seconds")
 
 
