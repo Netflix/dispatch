@@ -7,6 +7,7 @@
 
 import logging
 
+from schedule import every
 from sqlalchemy.orm import Session
 
 from dispatch.data.source import service as source_service

@@ -14,10 +14,8 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import Incident
-from dispatch.participant import service as participant_service
 from dispatch.participant.models import Participant
 from dispatch.messaging.strings import (
     INCIDENT_TASK_REMINDER,
