@@ -155,6 +155,11 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
     else:
         action_buttons = [
             Button(
+                text=":mag: Investigate",
+                action_id=CaseNotificationActions.investigate,
+                value=button_metadata,
+            ),
+            Button(
                 text=":white_check_mark: Resolve",
                 action_id=CaseNotificationActions.resolve,
                 value=button_metadata,
@@ -175,15 +180,15 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
                 value=button_metadata,
             ),
         ]
-        if case.status == CaseStatus.new:
-            action_buttons.insert(
-                0,
-                Button(
-                    text=":mag: Triage",
-                    action_id=CaseNotificationActions.triage,
-                    value=button_metadata,
-                ),
-            )
+        # if case.status == CaseStatus.new:
+        #     action_buttons.insert(
+        #         0,
+        #         Button(
+        #             text=":mag: Triage",
+        #             action_id=CaseNotificationActions.triage,
+        #             value=button_metadata,
+        #         ),
+        #     )
         blocks.extend([Actions(elements=action_buttons)])
 
     return Message(blocks=blocks).build()["blocks"]
