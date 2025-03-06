@@ -12,8 +12,6 @@ log = logging.getLogger(__name__)
 
 
 class BaseConfigurationModel(BaseModel):
-    """Base configuration model used by all config options."""
-
     pass
 
 
