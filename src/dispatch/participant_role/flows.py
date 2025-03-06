@@ -1,7 +1,16 @@
+"""
+.. module: dispatch.participant_role.flows
+    :platform: Unix
+    :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
+    :license: Apache, see LICENSE for more details.
+"""
+
 import logging
 from typing import Any
 
-from dispatch.database.core import SessionLocal, get_table_name_by_class_instance
+from sqlalchemy.orm import Session
+
+from dispatch.database.core import get_table_name_by_class_instance
 from dispatch.event import service as event_service
 from dispatch.participant import service as participant_service
 from dispatch.participant_role.models import ParticipantRoleType
@@ -13,9 +22,7 @@ from .service import get_all_active_roles, add_role, renounce_role
 log = logging.getLogger(__name__)
 
 
-def assign_role_flow(
-    subject: Any, assignee_email: str, assignee_role: str, db_session: SessionLocal
-):
+def assign_role_flow(subject: Any, assignee_email: str, assignee_role: str, db_session: Session):
     """Attempts to assign a role to a participant.
 
     Returns:

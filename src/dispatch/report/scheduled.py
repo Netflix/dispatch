@@ -1,9 +1,16 @@
+"""
+.. module: dispatch.report.scheduled
+    :platform: Unix
+    :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
+    :license: Apache, see LICENSE for more details.
+"""
+
 import logging
 from datetime import datetime, timedelta
 from schedule import every
 from typing import Optional
 
-from dispatch.database.core import SessionLocal
+from sqlalchemy.orm import Session
 from dispatch.decorators import scheduled_project_task, timer
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
@@ -27,7 +34,7 @@ def reminder_set_in_future(reminder: Optional[datetime]) -> bool:
 @scheduler.add(every(1).hours, name="incident-report-reminders")
 @timer
 @scheduled_project_task
-def incident_report_reminders(db_session: SessionLocal, project: Project):
+def incident_report_reminders(db_session: Session, project: Project):
     """Sends report reminders to incident commanders for active incidents."""
     incidents = incident_service.get_all_by_status(
         db_session=db_session, project_id=project.id, status=IncidentStatus.active
@@ -67,7 +74,7 @@ def incident_report_reminders(db_session: SessionLocal, project: Project):
 @scheduler.add(every(5).minutes, name="incident-report-delayed-reminders")
 @timer
 @scheduled_project_task
-def incident_report_delayed_reminders(db_session: SessionLocal, project: Project):
+def incident_report_delayed_reminders(db_session: Session, project: Project):
     """Sends user-delayed report reminders to incident commanders for active incidents."""
     incidents = incident_service.get_all_by_status(
         db_session=db_session, project_id=project.id, status=IncidentStatus.active

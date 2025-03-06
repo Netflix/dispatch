@@ -567,12 +567,12 @@ def stamp_database(revision, revision_type, tag, sql):
 )
 @click.option("--revision-type", type=click.Choice(["core", "tenant"]))
 @click.option(
-    "--sql", is_flag=True, help=("Don't emit SQL to database - dump to standard output " "instead")
+    "--sql", is_flag=True, help=("Don't emit SQL to database - dump to standard output instead")
 )
 @click.option(
     "--head",
     default="head",
-    help=("Specify head revision or <branchname>@head to base new " "revision on"),
+    help=("Specify head revision or <branchname>@head to base new revision on"),
 )
 @click.option(
     "--splice", is_flag=True, help=('Allow a non-head revision as the "head" to splice onto')
@@ -584,7 +584,7 @@ def stamp_database(revision, revision_type, tag, sql):
     "--version-path", default=None, help=("Specify specific path from config for version file")
 )
 @click.option(
-    "--rev-id", default=None, help=("Specify a hardcoded revision id instead of generating " "one")
+    "--rev-id", default=None, help=("Specify a hardcoded revision id instead of generating one")
 )
 def revision_database(
     message, autogenerate, revision_type, sql, head, splice, branch_label, version_path, rev_id

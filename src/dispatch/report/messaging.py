@@ -1,9 +1,10 @@
 import logging
 
 from datetime import datetime, timedelta
+from sqlalchemy.orm import Session
 
 from dispatch.conversation.enums import ConversationCommands
-from dispatch.database.core import SessionLocal, resolve_attr
+from dispatch.database.core import resolve_attr
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import Incident
 from dispatch.messaging.strings import (
@@ -37,7 +38,7 @@ def get_report_reminder_settings(report_type: ReportTypes):
 
 
 def send_tactical_report_to_conversation(
-    incident_id: int, conditions: str, actions: str, needs: str, db_session: SessionLocal
+    incident_id: int, conditions: str, actions: str, needs: str, db_session: Session
 ):
     """Sends a tactical report to the conversation."""
     # we load the incident instance
@@ -68,7 +69,7 @@ def send_tactical_report_to_conversation(
 def send_tactical_report_to_tactical_group(
     incident_id: int,
     tactical_report: Report,
-    db_session: SessionLocal,
+    db_session: Session,
 ):
     """Sends a tactical report to the tactical group."""
     # we load the incident instance
@@ -111,7 +112,7 @@ def send_tactical_report_to_tactical_group(
 def send_executive_report_to_notifications_group(
     incident_id: int,
     executive_report: Report,
-    db_session: SessionLocal,
+    db_session: Session,
 ):
     """Sends an executive report to the notifications group."""
     # we load the incident instance
@@ -146,7 +147,7 @@ def send_executive_report_to_notifications_group(
 
 
 def send_incident_report_reminder(
-    incident: Incident, report_type: ReportTypes, db_session: SessionLocal, reminder=False
+    incident: Incident, report_type: ReportTypes, db_session: Session, reminder=False
 ):
     """Sends a direct message to the incident commander indicating that they should complete a report."""
     message_text = f"Incident {report_type} Reminder"
@@ -198,5 +199,4 @@ def send_incident_report_reminder(
         message_type,
         items=items,
     )
-
     log.debug(f"Incident report reminder sent to {incident.commander.individual.email}.")

@@ -1,3 +1,10 @@
+"""
+.. module: dispatch.database.core
+    :platform: Unix
+    :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
+    :license: Apache, see LICENSE for more details.
+"""
+
 import functools
 import re
 from contextlib import contextmanager
@@ -147,7 +154,8 @@ Base = declarative_base(cls=CustomBase)
 make_searchable(Base.metadata)
 
 
-def get_db(request: Request):
+def get_db(request: Request) -> Session:
+    """Get database session from request state."""
     return request.state.db
 
 
@@ -217,6 +225,7 @@ def ensure_unique_default_per_project(target, value, oldvalue, initiator):
 
 
 def refetch_db_session(organization_slug: str) -> Session:
+    """Create a new database session for a specific organization."""
     schema_engine = engine.execution_options(
         schema_translate_map={
             None: f"dispatch_organization_{organization_slug}",
@@ -227,7 +236,7 @@ def refetch_db_session(organization_slug: str) -> Session:
 
 
 @contextmanager
-def get_session():
+def get_session() -> Session:
     """Context manager to ensure the session is closed after use."""
     session = SessionLocal()
     try:
@@ -241,7 +250,7 @@ def get_session():
 
 
 @contextmanager
-def get_organization_session(organization_slug: str):
+def get_organization_session(organization_slug: str) -> Session:
     """Context manager to ensure the session is closed after use."""
     session = refetch_db_session(organization_slug)
     try:

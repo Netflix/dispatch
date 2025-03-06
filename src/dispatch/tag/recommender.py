@@ -13,7 +13,8 @@ import tempfile
 import pandas as pd
 from pandas.core.frame import DataFrame
 
-from dispatch.database.core import SessionLocal
+from sqlalchemy.orm import Session
+
 from dispatch.tag import service as tag_service
 
 log = logging.getLogger(__name__)
@@ -137,7 +138,7 @@ def find_highest_correlations(correlated_dataframe, recommendations):
 
 
 def get_recommendations(
-    db_session: SessionLocal,
+    db_session: Session,
     tag_ids: List[str],
     organization_slug: str,
     project_slug: str,

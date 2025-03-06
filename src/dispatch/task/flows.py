@@ -10,9 +10,15 @@
 import logging
 from collections import defaultdict
 from datetime import datetime
+from typing import List
 
-from dispatch.database.core import SessionLocal
+from sqlalchemy.orm import Session
+
+from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
+from dispatch.incident.models import Incident
+from dispatch.participant import service as participant_service
+from dispatch.participant.models import Participant
 from dispatch.messaging.strings import (
     INCIDENT_TASK_REMINDER,
     INCIDENT_TASK_NEW_NOTIFICATION,
@@ -21,7 +27,7 @@ from dispatch.messaging.strings import (
 from dispatch.plugin import service as plugin_service
 from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
-from dispatch.task.models import TaskCreate, TaskUpdate
+from dispatch.task.models import Task, TaskCreate, TaskUpdate
 
 
 log = logging.getLogger(__name__)
@@ -36,7 +42,7 @@ def group_tasks_by_assignee(tasks):
     return grouped
 
 
-def create_reminder(db_session, assignee_email, tasks, project_id):
+def create_reminder(db_session: Session, assignee_email: str, tasks: List[Task], project_id: int):
     """Contains the logic for incident task reminders."""
     # send email
     plugin = plugin_service.get_active_instance(
@@ -87,13 +93,13 @@ def create_reminder(db_session, assignee_email, tasks, project_id):
 
 
 def send_task_notification(
-    incident,
-    message_template,
-    creator,
-    assignees,
-    description,
-    weblink,
-    db_session: SessionLocal,
+    incident: Incident,
+    message_template: str,
+    creator: Participant,
+    assignees: List[Participant],
+    description: str,
+    weblink: str,
+    db_session: Session,
 ):
     """Sends a task notification."""
     # we send a notification to the incident conversation
@@ -124,7 +130,11 @@ def send_task_notification(
 
 
 def create_or_update_task(
-    db_session, incident, task: dict, notify: bool = False, sync_external: bool = True
+    db_session: Session,
+    incident: Incident,
+    task: dict,
+    notify: bool = False,
+    sync_external: bool = True,
 ):
     """Creates a new task in the database or updates an existing one."""
     existing_task = task_service.get_by_resource_id(
@@ -179,3 +189,70 @@ def create_or_update_task(
             )
 
     db_session.commit()
+
+
+def create_incident_task(
+    *,
+    db_session: Session,
+    incident_id: int,
+    task_in: TaskCreate,
+    creator: Participant = None,
+) -> Task:
+    """Creates a new incident task."""
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    # We get or create a new participant for the creator
+    if creator:
+        participant = participant_service.get_by_incident_id_and_email(
+            db_session=db_session,
+            incident_id=incident.id,
+            email=creator.individual.email,
+        )
+        if not participant:
+            participant = participant_service.create(
+                db_session=db_session,
+                incident_id=incident.id,
+                individual_contact_id=creator.individual.id,
+            )
+    else:
+        participant = None
+
+    task = task_service.create(
+        db_session=db_session,
+        task_in=task_in,
+        creator=participant,
+    )
+
+    incident.tasks.append(task)
+    db_session.commit()
+
+    return task
+
+
+def update_incident_task(
+    *,
+    db_session: Session,
+    task: Task,
+    task_in: TaskUpdate,
+    assignees: List[Participant] = None,
+) -> Task:
+    """Updates an existing incident task."""
+    # We get the current assignees if none are specified
+    if not assignees and task.assignees:
+        assignees = [a for a in task.assignees]
+
+    # We update the task
+    task = task_service.update(
+        db_session=db_session,
+        task=task,
+        task_in=task_in,
+        assignees=assignees,
+    )
+
+    return task
+
+
+def delete_incident_task(*, db_session: Session, task_id: int) -> None:
+    """Deletes an existing incident task."""
+    task = task_service.get(db_session=db_session, task_id=task_id)
+    task_service.delete(db_session=db_session, task_id=task.id)
