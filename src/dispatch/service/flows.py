@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 
 
 def resolve_oncall(service: Service, db_session: Session) -> str:
-    """Resolves the oncall for a service."""
+    """Uses the active oncall plugin to resolve a given oncall service to its email address."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=service.project.id, plugin_type="oncall"
     )

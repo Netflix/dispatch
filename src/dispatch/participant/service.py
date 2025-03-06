@@ -28,7 +28,7 @@ log = logging.getLogger(__name__)
 
 def get(*, db_session: Session, participant_id: int) -> Optional[Participant]:
     """Returns a participant based on the given participant id."""
-    return db_session.query(Participant).filter(Participant.id == participant_id).one_or_none()
+    return db_session.query(Participant).filter(Participant.id == participant_id).first()
 
 
 def get_by_individual_contact_id(
