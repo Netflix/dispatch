@@ -963,13 +963,15 @@ def perf_test(
     from fastapi import status
 
     NUM_SIGNAL_INSTANCES = num_instances
+    NUM_WORKERS = num_workers
 
-    headers = {
-        "Authorization": f"Bearer {api_token}",
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-    }
-
+    session = requests.Session()
+    session.headers.update(
+        {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_token}",
+        }
+    )
     start_time = time.time()
 
     def _send_signal_instance(
@@ -978,54 +980,60 @@ def perf_test(
         session: requests.Session,
         signal_instance: dict[str, str],
     ) -> None:
-        """Send a signal instance to the Dispatch API."""
         try:
             r = session.post(
                 api_endpoint,
-                headers=headers,
                 json=signal_instance,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {api_token}",
+                },
             )
-            r.raise_for_status()
-
             log.info(f"Response: {r.json()}")
             if r.status_code == status.HTTP_401_UNAUTHORIZED:
                 raise PermissionError(
                     "Unauthorized. Please check your bearer token. You can find it in the Dev Tools under Request Headers -> Authorization."
                 )
-        except Exception as e:
-            log.error(f"Error: {e}")
+
+            r.raise_for_status()
+
+        except requests.exceptions.RequestException as e:
+            log.error(f"Unable to send finding. Reason: {e} Response: {r.json() if r else 'N/A'}")
+        else:
+            log.info(f"{signal_instance.get('raw', {}).get('id')} created successfully")
 
     def send_signal_instances(
         api_endpoint: str, api_token: str, signal_instances: list[dict[str, str]]
     ):
-        """Send signal instances to the Dispatch API."""
-        with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
-            with requests.Session() as session:
-                futures = [
-                    executor.submit(
-                        _send_signal_instance, api_endpoint, api_token, session, signal_instance
-                    )
-                    for signal_instance in signal_instances
-                ]
-                for future in concurrent.futures.as_completed(futures):
-                    future.result()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=NUM_WORKERS) as executor:
+            futures = [
+                executor.submit(
+                    _send_signal_instance,
+                    api_endpoint=api_endpoint,
+                    api_token=api_token,
+                    session=session,
+                    signal_instance=signal_instance,
+                )
+                for signal_instance in signal_instances
+            ]
+            results = [future.result() for future in concurrent.futures.as_completed(futures)]
+
+        log.info(f"\nSent {len(results)} of {NUM_SIGNAL_INSTANCES} signal instances")
 
     signal_instances = [
         {
-            "resource_id": str(uuid.uuid4()),
-            "resource_type": "signal-instance",
             "project": {"name": project},
-            "signal": {
+            "raw": {
+                "id": str(uuid.uuid4()),
                 "name": "Test Signal",
-                "owner": "Dispatch",
-                "description": "Test Signal",
-                "external_url": "https://example.com",
-                "external_id": "123456",
-                "variants": [
+                "slug": "test-signal",
+                "canary": False,
+                "events": [
                     {
-                        "name": "Test Variant",
-                        "external_id": str(uuid.uuid4()),
-                        "description": "Test Variant",
+                        "original": {
+                            "dateint": 20240930,
+                            "distinct_lookupkey_count": 95,
+                        },
                     },
                 ],
                 "created_at": "2024-09-18T19:47:15Z",
