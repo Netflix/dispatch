@@ -1,6 +1,5 @@
 import logging
 import uuid
-from collections.abc import MutableMapping
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -20,7 +19,7 @@ class SessionTracker:
         cls._sessions[session_id] = {
             "session": session,
             "context": context,
-            "created_at": uuid.uuid1().timestamp(),  # Use v1 UUID for timestamp
+            "created_at": uuid.uuid1().timestamp(),
         }
         logger.info(
             "Database session created",
