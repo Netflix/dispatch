@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 
 from dispatch.case.models import Case
 from dispatch.conference.models import Conference
-from dispatch.database.core import SessionLocal
 from dispatch.document.models import Document
 from dispatch.event import service as event_service
 from dispatch.incident.models import Incident
@@ -190,7 +189,7 @@ def create_case_conversation(
     return case.conversation
 
 
-def create_incident_conversation(incident: Incident, db_session: SessionLocal):
+def create_incident_conversation(incident: Incident, db_session: Session):
     """Creates a conversation."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
@@ -415,7 +414,9 @@ def add_conversation_bookmark(
         else (
             deslug_and_capitalize_resource_type(resource.resource_type)
             if hasattr(resource, "resource_type")
-            else title if title else "untitled resource"
+            else title
+            if title
+            else "untitled resource"
         )
     )
 

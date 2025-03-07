@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.conversation.enums import ConversationCommands
-from dispatch.database.core import SessionLocal, resolve_attr
+from dispatch.database.core import resolve_attr
 from dispatch.decorators import timer
 from dispatch.document import service as document_service
 from dispatch.email_templates import service as email_template_service
@@ -82,7 +82,7 @@ def send_welcome_ephemeral_message_to_participant(
     *,
     participant_email: str,
     incident: Incident,
-    db_session: SessionLocal,
+    db_session: Session,
     welcome_template: Optional[EmailTemplates] = None,
 ):
     """Sends an ephemeral welcome message to the participant."""
@@ -163,7 +163,7 @@ def send_welcome_email_to_participant(
     *,
     participant_email: str,
     incident: Incident,
-    db_session: SessionLocal,
+    db_session: Session,
     welcome_template: Optional[EmailTemplates] = None,
 ):
     """Sends a welcome email to the participant."""
@@ -239,7 +239,7 @@ def send_welcome_email_to_participant(
     log.debug(f"Welcome email sent to {participant_email}.")
 
 
-def send_completed_form_email(participant_email: str, form: Forms, db_session: SessionLocal):
+def send_completed_form_email(participant_email: str, form: Forms, db_session: Session):
     """Sends an email to notify about a completed incident form."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=form.project.id, plugin_type="email"
@@ -290,7 +290,7 @@ def send_completed_form_email(participant_email: str, form: Forms, db_session: S
 def send_incident_welcome_participant_messages(
     participant_email: str,
     incident: Incident,
-    db_session: SessionLocal,
+    db_session: Session,
 ):
     """Sends welcome messages to the participant."""
     # check to see if there is an override welcome message template
@@ -319,7 +319,7 @@ def send_incident_welcome_participant_messages(
     log.debug(f"Welcome participant messages sent {participant_email}.")
 
 
-def send_incident_created_notifications(incident: Incident, db_session: SessionLocal):
+def send_incident_created_notifications(incident: Incident, db_session: Session):
     """Sends incident created notifications."""
     notification_template = INCIDENT_NOTIFICATION.copy()
 
@@ -397,7 +397,7 @@ def send_incident_created_notifications(incident: Incident, db_session: SessionL
 
 
 def send_incident_update_notifications(
-    incident: Incident, previous_incident: IncidentRead, db_session: SessionLocal
+    incident: Incident, previous_incident: IncidentRead, db_session: Session
 ):
     """Sends notifications about incident changes."""
     notification_text = "Incident Notification"
@@ -780,7 +780,7 @@ def bulk_participant_announcement_message(
         log.debug(f"{subject_type} participant announcement messages sent.")
 
 
-def send_incident_commander_readded_notification(incident: Incident, db_session: SessionLocal):
+def send_incident_commander_readded_notification(incident: Incident, db_session: Session):
     """Sends a notification about re-adding the incident commander to the conversation."""
     notification_text = "Incident Notification"
     notification_type = MessageType.incident_notification
@@ -810,7 +810,7 @@ def send_incident_participant_has_role_ephemeral_message(
     assignee_contact_info: dict,
     assignee_role: str,
     incident: Incident,
-    db_session: SessionLocal,
+    db_session: Session,
 ):
     """
     Sends an ephemeral message to the assigner to let them know
@@ -850,7 +850,7 @@ def send_incident_participant_role_not_assigned_ephemeral_message(
     assignee_contact_info: dict,
     assignee_role: str,
     incident: Incident,
-    db_session: SessionLocal,
+    db_session: Session,
 ):
     """
     Sends an ephemeral message to the assigner to let them know
@@ -891,7 +891,7 @@ def send_incident_new_role_assigned_notification(
     assignee_contact_info: dict,
     assignee_role: str,
     incident: Incident,
-    db_session: SessionLocal,
+    db_session: Session,
 ):
     """Notified the conversation about the new participant role."""
     notification_text = "Incident Notification"
@@ -926,7 +926,7 @@ def send_incident_new_role_assigned_notification(
 
 
 def send_incident_review_document_notification(
-    conversation_id: str, review_document_weblink: str, incident: Incident, db_session: SessionLocal
+    conversation_id: str, review_document_weblink: str, incident: Incident, db_session: Session
 ):
     """Sends the review document notification."""
     notification_text = "Incident Notification"
@@ -950,7 +950,7 @@ def send_incident_review_document_notification(
     log.debug("Incident review document notification sent.")
 
 
-def send_incident_close_reminder(incident: Incident, db_session: SessionLocal):
+def send_incident_close_reminder(incident: Incident, db_session: Session):
     """
     Sends a direct message to the incident commander reminding
     them to close the incident if possible.
@@ -989,7 +989,7 @@ def send_incident_close_reminder(incident: Incident, db_session: SessionLocal):
     log.debug(f"Incident close reminder sent to {incident.commander.individual.email}.")
 
 
-def send_incident_closed_information_review_reminder(incident: Incident, db_session: SessionLocal):
+def send_incident_closed_information_review_reminder(incident: Incident, db_session: Session):
     """
     Sends a direct message to the incident commander
     asking them to review the incident's information
@@ -1045,7 +1045,7 @@ def send_incident_closed_information_review_reminder(incident: Incident, db_sess
     )
 
 
-def send_incident_rating_feedback_message(incident: Incident, db_session: SessionLocal):
+def send_incident_rating_feedback_message(incident: Incident, db_session: Session):
     """
     Sends a direct message to all incident participants asking
     them to rate and provide feedback about the incident.
@@ -1088,7 +1088,7 @@ def send_incident_rating_feedback_message(incident: Incident, db_session: Sessio
     log.debug("Incident rating and feedback message sent to all participants.")
 
 
-def send_incident_management_help_tips_message(incident: Incident, db_session: SessionLocal):
+def send_incident_management_help_tips_message(incident: Incident, db_session: Session):
     """
     Sends a direct message to the incident commander
     with help tips on how to manage the incident.
@@ -1138,7 +1138,7 @@ def send_incident_management_help_tips_message(incident: Incident, db_session: S
 
 
 def send_incident_open_tasks_ephemeral_message(
-    participant_email: str, incident: Incident, db_session: SessionLocal
+    participant_email: str, incident: Incident, db_session: Session
 ):
     """
     Sends an ephemeral message to the participant asking them to resolve or re-assign
@@ -1175,7 +1175,7 @@ def send_task_add_ephemeral_message(
     *,
     assignee_email: str,
     incident: Incident,
-    db_session: SessionLocal,
+    db_session: Session,
     task: TaskCreate,
 ):
     """

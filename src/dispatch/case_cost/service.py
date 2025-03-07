@@ -3,7 +3,8 @@ import logging
 import math
 from typing import List, Optional
 
-from dispatch.database.core import SessionLocal
+from sqlalchemy.orm import Session
+
 from dispatch.cost_model.models import CostModelActivity
 from dispatch.case import service as case_service
 from dispatch.case.models import Case
@@ -24,18 +25,18 @@ SECONDS_IN_HOUR = 3600
 log = logging.getLogger(__name__)
 
 
-def get(*, db_session, case_cost_id: int) -> Optional[CaseCost]:
+def get(*, db_session: Session, case_cost_id: int) -> Optional[CaseCost]:
     """Gets a case cost by its id."""
     return db_session.query(CaseCost).filter(CaseCost.id == case_cost_id).one_or_none()
 
 
-def get_by_case_id(*, db_session, case_id: int) -> List[Optional[CaseCost]]:
+def get_by_case_id(*, db_session: Session, case_id: int) -> List[Optional[CaseCost]]:
     """Gets case costs by their case id."""
     return db_session.query(CaseCost).filter(CaseCost.case_id == case_id).all()
 
 
 def get_by_case_id_and_case_cost_type_id(
-    *, db_session, case_id: int, case_cost_type_id: int
+    *, db_session: Session, case_id: int, case_cost_type_id: int
 ) -> Optional[CaseCost]:
     """Gets case costs by their case id and case cost type id."""
     return (
@@ -47,12 +48,14 @@ def get_by_case_id_and_case_cost_type_id(
     )
 
 
-def get_all(*, db_session) -> List[Optional[CaseCost]]:
+def get_all(*, db_session: Session) -> List[Optional[CaseCost]]:
     """Gets all case costs."""
     return db_session.query(CaseCost)
 
 
-def get_or_create(*, db_session, case_cost_in: CaseCostCreate | CaseCostUpdate) -> CaseCost:
+def get_or_create(
+    *, db_session: Session, case_cost_in: CaseCostCreate | CaseCostUpdate
+) -> CaseCost:
     """Gets or creates a case cost object."""
     if type(case_cost_in) is CaseCostUpdate and case_cost_in.id:
         case_cost = get(db_session=db_session, case_cost_id=case_cost_in.id)
@@ -62,7 +65,7 @@ def get_or_create(*, db_session, case_cost_in: CaseCostCreate | CaseCostUpdate) 
     return case_cost
 
 
-def create(*, db_session, case_cost_in: CaseCostCreate) -> CaseCost:
+def create(*, db_session: Session, case_cost_in: CaseCostCreate) -> CaseCost:
     """Creates a new case cost."""
     case_cost_type = case_cost_type_service.get(
         db_session=db_session, case_cost_type_id=case_cost_in.case_cost_type.id
@@ -78,7 +81,7 @@ def create(*, db_session, case_cost_in: CaseCostCreate) -> CaseCost:
     return case_cost
 
 
-def update(*, db_session, case_cost: CaseCost, case_cost_in: CaseCostUpdate) -> CaseCost:
+def update(*, db_session: Session, case_cost: CaseCost, case_cost_in: CaseCostUpdate) -> CaseCost:
     """Updates a case cost."""
     case_cost_data = case_cost.dict()
     update_data = case_cost_in.dict(skip_defaults=True)
@@ -91,7 +94,7 @@ def update(*, db_session, case_cost: CaseCost, case_cost_in: CaseCostUpdate) -> 
     return case_cost
 
 
-def delete(*, db_session, case_cost_id: int):
+def delete(*, db_session: Session, case_cost_id: int):
     """Deletes an existing case cost."""
     db_session.query(CaseCost).filter(CaseCost.id == case_cost_id).delete()
     db_session.commit()
@@ -102,7 +105,7 @@ def get_hourly_rate(project) -> int:
     return math.ceil(project.annual_employee_cost / project.business_year_hours)
 
 
-def update_case_response_cost_for_case_type(db_session, case_type: CaseType) -> None:
+def update_case_response_cost_for_case_type(db_session: Session, case_type: CaseType) -> None:
     """Calculate the response cost of all non-closed cases associated with this case type."""
     cases = case_service.get_all_open_by_case_type(db_session=db_session, case_type_id=case_type.id)
     for case in cases:
@@ -114,7 +117,7 @@ def calculate_response_cost(hourly_rate, total_response_time_seconds) -> int:
     return math.ceil((total_response_time_seconds / SECONDS_IN_HOUR) * hourly_rate)
 
 
-def get_default_case_response_cost(case: Case, db_session: SessionLocal) -> Optional[CaseCost]:
+def get_default_case_response_cost(case: Case, db_session: Session) -> Optional[CaseCost]:
     response_cost_type = case_cost_type_service.get_default(
         db_session=db_session, project_id=case.project.id
     )
@@ -132,9 +135,7 @@ def get_default_case_response_cost(case: Case, db_session: SessionLocal) -> Opti
     )
 
 
-def get_or_create_default_case_response_cost(
-    case: Case, db_session: SessionLocal
-) -> Optional[CaseCost]:
+def get_or_create_default_case_response_cost(case: Case, db_session: Session) -> Optional[CaseCost]:
     """Gets or creates the default case cost for a case.
 
     The default case cost is the cost associated with the participant effort in a case's response.
@@ -168,7 +169,7 @@ def get_or_create_default_case_response_cost(
 
 
 def fetch_case_events(
-    case: Case, activity: CostModelActivity, oldest: str, db_session: SessionLocal
+    case: Case, activity: CostModelActivity, oldest: str, db_session: Session
 ) -> List[Optional[tuple[datetime.timestamp, str]]]:
     """Fetches case events for a given case and cost model activity.
 
@@ -202,7 +203,7 @@ def fetch_case_events(
 
 
 def update_case_participant_activities(
-    case: Case, db_session: SessionLocal
+    case: Case, db_session: Session
 ) -> ParticipantActivity | None:
     """Records or updates case participant activities using the case's cost model.
 
@@ -288,7 +289,7 @@ def update_case_participant_activities(
     return most_recent_activity
 
 
-def calculate_case_response_cost(case: Case, db_session: SessionLocal) -> int:
+def calculate_case_response_cost(case: Case, db_session: Session) -> int:
     """Calculates the response cost of a given case."""
     # Iterate through all the listed activities and aggregate the total participant response time spent on the case.
     participants_total_response_time = timedelta(0)
@@ -311,7 +312,7 @@ def calculate_case_response_cost(case: Case, db_session: SessionLocal) -> int:
     return amount
 
 
-def update_case_response_cost(case: Case, db_session: SessionLocal) -> int:
+def update_case_response_cost(case: Case, db_session: Session) -> int:
     """Updates the response cost of a given case.
 
     This function logs all case participant activities since the last case cost update and recalculates the case response cost based on all logged participant activities.

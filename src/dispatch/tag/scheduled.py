@@ -7,10 +7,10 @@
 
 import logging
 from schedule import every
-
 from typing import NoReturn
 
-from dispatch.database.core import SessionLocal
+from sqlalchemy.orm import Session
+
 from dispatch.decorators import scheduled_project_task, timer
 from dispatch.incident import service as incident_service
 from dispatch.plugin import service as plugin_service
@@ -26,7 +26,7 @@ log = logging.getLogger(__name__)
 @scheduler.add(every(1).hour, name="sync-tags")
 @timer
 @scheduled_project_task
-def sync_tags(db_session: SessionLocal, project: Project) -> NoReturn:
+def sync_tags(db_session: Session, project: Project) -> NoReturn:
     """Syncs tags from external sources."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session,
@@ -53,7 +53,7 @@ def sync_tags(db_session: SessionLocal, project: Project) -> NoReturn:
 @scheduler.add(every(1).day, name="build-tag-models")
 @timer
 @scheduled_project_task
-def build_tag_models(db_session: SessionLocal, project: Project) -> NoReturn:
+def build_tag_models(db_session: Session, project: Project) -> NoReturn:
     """Builds the incident tag recommendation models."""
     incidents = incident_service.get_all(db_session=db_session, project_id=project.id).all()
 
