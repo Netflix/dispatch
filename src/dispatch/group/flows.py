@@ -1,8 +1,9 @@
 from typing import List, TypeVar
 import logging
 
+from sqlalchemy.orm import Session
+
 from dispatch.case.models import Case
-from dispatch.database.core import SessionLocal
 from dispatch.database.core import get_table_name_by_class_instance
 from dispatch.event import service as event_service
 from dispatch.incident.models import Incident
@@ -18,7 +19,7 @@ Subject = TypeVar("Subject", Case, Incident)
 
 
 def create_group(
-    subject: Subject, group_type: str, group_participants: List[str], db_session: SessionLocal
+    subject: Subject, group_type: str, group_participants: List[str], db_session: Session
 ):
     """Creates a group."""
     plugin = plugin_service.get_active_instance(
@@ -93,7 +94,7 @@ def update_group(
     group: Group,
     group_action: GroupAction,
     group_member: str,
-    db_session: SessionLocal,
+    db_session: Session,
 ):
     """Updates an existing group."""
     if group is None:
@@ -165,7 +166,7 @@ def update_group(
             )
 
 
-def delete_group(group: Group, project_id: int, db_session: SessionLocal):
+def delete_group(group: Group, project_id: int, db_session: Session):
     """Deletes an existing group."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project_id, plugin_type="participant-group"

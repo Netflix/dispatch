@@ -8,8 +8,8 @@
 import logging
 
 from schedule import every
+from sqlalchemy.orm import Session
 
-from dispatch.database.core import SessionLocal
 from dispatch.decorators import scheduled_project_task, timer
 from dispatch.plugin import service as plugin_service
 from dispatch.project.models import Project
@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 @scheduler.add(every(1).hour, name="sync-terms")
 @timer
 @scheduled_project_task
-def sync_terms(db_session: SessionLocal, project: Project):
+def sync_terms(db_session: Session, project: Project):
     """Syncs terms from external sources."""
     term_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project.id, plugin_type="term"

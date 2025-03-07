@@ -12,7 +12,8 @@ from datetime import datetime
 from schedule import every
 from typing import Any
 
-from dispatch.database.core import SessionLocal
+from sqlalchemy.orm import Session
+
 from dispatch.decorators import scheduled_project_task, timer
 from dispatch.document import service as document_service
 from dispatch.messaging.strings import EVERGREEN_REMINDER
@@ -28,7 +29,7 @@ log = logging.getLogger(__name__)
 
 
 def create_evergreen_reminder(
-    db_session: SessionLocal, project: Project, owner_email: str, resource_groups: Any
+    db_session: Session, project: Project, owner_email: str, resource_groups: Any
 ):
     """Contains the logic for evergreen reminders."""
     if not owner_email:
@@ -102,7 +103,7 @@ def group_items_by_owner_and_type(items):
 @scheduler.add(every().monday.at("18:00"), name="create-evergreen-reminders")
 @timer
 @scheduled_project_task
-def create_evergreen_reminders(db_session: SessionLocal, project: Project):
+def create_evergreen_reminders(db_session: Session, project: Project):
     """Sends reminders for items that have evergreen enabled."""
     items = []
 

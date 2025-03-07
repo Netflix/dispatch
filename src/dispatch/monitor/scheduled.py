@@ -1,15 +1,19 @@
 import logging
 
+from sqlalchemy.orm import Session
 from schedule import every
+from typing import List
 
-from dispatch.database.core import SessionLocal, resolve_attr
+from dispatch.database.core import resolve_attr
 from dispatch.decorators import scheduled_project_task, timer
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
+from dispatch.incident.models import Incident
 from dispatch.messaging.strings import (
     INCIDENT_MONITOR_UPDATE_NOTIFICATION,
 )
 from dispatch.plugin import service as plugin_service
+from dispatch.plugin.models import Plugin
 from dispatch.project.models import Project
 from dispatch.scheduler import scheduler
 from dispatch.monitor.models import MonitorUpdate
@@ -22,7 +26,13 @@ log = logging.getLogger(__name__)
 MONITOR_SYNC_INTERVAL = 30  # seconds
 
 
-def run_monitors(db_session, project, monitor_plugin, incidents, notify: bool = False):
+def run_monitors(
+    db_session: Session,
+    project: Project,
+    monitor_plugin: Plugin,
+    incidents: List[Incident],
+    notify: bool = False,
+):
     """Performs monitor run."""
     for incident in incidents:
         for monitor in incident.monitors:
@@ -71,7 +81,7 @@ def run_monitors(db_session, project, monitor_plugin, incidents, notify: bool = 
 @scheduler.add(every(MONITOR_SYNC_INTERVAL).seconds, name="sync-active-stable-monitors")
 @timer
 @scheduled_project_task
-def sync_active_stable_monitors(db_session: SessionLocal, project: Project):
+def sync_active_stable_monitors(db_session: Session, project: Project):
     """Syncs incident monitors for active and stable incidents."""
     monitor_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project.id, plugin_type="monitor"

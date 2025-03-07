@@ -230,11 +230,15 @@ def delete_document(document: Document, project_id: int, db_session: Session):
     delete(db_session=db_session, document_id=document.id)
 
 
-def open_document_access(document: Document, db_session: Session):
+def open_document_access(document: Document | None, db_session: Session):
     """Opens access to document by adding domain wide permission, handling both incidents and cases."""
     subject_type = None
     project_id = None
     subject = None
+
+    if not document:
+        log.warning("Document not opened. No document provided.")
+        return
 
     if document.incident:
         subject_type = "incident"
