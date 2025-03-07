@@ -18,6 +18,7 @@ from dispatch.case import service as case_service
 from dispatch.case.enums import CaseStatus
 from dispatch.case.models import Case
 from dispatch.config import DISPATCH_UI_URL
+from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack.case.enums import (
     CaseNotificationActions,
     SignalEngagementActions,
@@ -288,13 +289,23 @@ def create_action_buttons_message(
                 action_id=CaseNotificationActions.user_mfa,
                 value=mfa_button_metadata,
             ),
+        ]
+    )
+
+    investigation_plugin = plugin_service.get_active_instance(
+        db_session=db_session,
+        project_id=case.project.id,
+        plugin_type="investigation-tooling",
+    )
+
+    if investigation_plugin:
+        elements.extend(
             Button(
                 text=":mag: Investigate",
                 action_id=CaseNotificationActions.investigate,
                 value=button_metadata,
             ),
-        ]
-    )
+        )
 
     # we create the signal metadata blocks
     signal_metadata_blocks = [
