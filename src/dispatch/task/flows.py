@@ -10,9 +10,13 @@
 import logging
 from collections import defaultdict
 from datetime import datetime
+from typing import List
 
-from dispatch.database.core import SessionLocal
+from sqlalchemy.orm import Session
+
 from dispatch.incident.enums import IncidentStatus
+from dispatch.incident.models import Incident
+from dispatch.participant.models import Participant
 from dispatch.messaging.strings import (
     INCIDENT_TASK_REMINDER,
     INCIDENT_TASK_NEW_NOTIFICATION,
@@ -21,7 +25,7 @@ from dispatch.messaging.strings import (
 from dispatch.plugin import service as plugin_service
 from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
-from dispatch.task.models import TaskCreate, TaskUpdate
+from dispatch.task.models import Task, TaskCreate, TaskUpdate
 
 
 log = logging.getLogger(__name__)
@@ -36,7 +40,7 @@ def group_tasks_by_assignee(tasks):
     return grouped
 
 
-def create_reminder(db_session, assignee_email, tasks, project_id):
+def create_reminder(db_session: Session, assignee_email: str, tasks: List[Task], project_id: int):
     """Contains the logic for incident task reminders."""
     # send email
     plugin = plugin_service.get_active_instance(
@@ -87,13 +91,13 @@ def create_reminder(db_session, assignee_email, tasks, project_id):
 
 
 def send_task_notification(
-    incident,
-    message_template,
-    creator,
-    assignees,
-    description,
-    weblink,
-    db_session: SessionLocal,
+    incident: Incident,
+    message_template: str,
+    creator: Participant,
+    assignees: List[Participant],
+    description: str,
+    weblink: str,
+    db_session: Session,
 ):
     """Sends a task notification."""
     # we send a notification to the incident conversation
@@ -124,7 +128,11 @@ def send_task_notification(
 
 
 def create_or_update_task(
-    db_session, incident, task: dict, notify: bool = False, sync_external: bool = True
+    db_session: Session,
+    incident: Incident,
+    task: dict,
+    notify: bool = False,
+    sync_external: bool = True,
 ):
     """Creates a new task in the database or updates an existing one."""
     existing_task = task_service.get_by_resource_id(

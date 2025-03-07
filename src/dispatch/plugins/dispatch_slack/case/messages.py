@@ -87,6 +87,10 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
         if variant := case.signal_instances[0].signal.variant:
             fields.append(f"*Variant* \n {variant}")
 
+    case_description = (
+        case.description if len(case.description) <= 2500 else f"{case.description[:2500]}..."
+    )
+
     blocks = [
         Section(
             text=title,
@@ -96,7 +100,7 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
                 url=f"{DISPATCH_UI_URL}/{case.project.organization.slug}/cases/{case.name}",
             ),
         ),
-        Section(text=f"*Description* \n {case.description}"),
+        Section(text=f"*Description* \n {case_description}"),
         Section(fields=fields),
         Section(text="*Actions*"),
     ]

@@ -2,8 +2,7 @@ import logging
 
 from schedule import every
 from sqlalchemy import func
-
-from dispatch.database.core import SessionLocal
+from sqlalchemy.orm import Session
 from dispatch.decorators import scheduled_project_task, timer
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
 from dispatch.plugin import service as plugin_service
@@ -20,7 +19,7 @@ log = logging.getLogger(__name__)
 @scheduler.add(every(1).day, name="sync-document-terms")
 @timer
 @scheduled_project_task
-def sync_document_terms(db_session: SessionLocal, project: Project):
+def sync_document_terms(db_session: Session, project: Project):
     """Performs term extraction from known documents."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session, plugin_type="storage", project_id=project.id

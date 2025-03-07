@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 
 from dispatch.plugin.models import PluginInstance
 from dispatch.project.models import Project
-from dispatch.database.core import SessionLocal
 from dispatch.exceptions import NotFoundError
 from dispatch.plugin import service as plugin_service
 from dispatch.project import service as project_service
@@ -20,13 +19,13 @@ from .models import (
 )
 
 
-def resolve_user_by_email(email, db_session: SessionLocal):
+def resolve_user_by_email(email: str, db_session: Session):
     """Resolves a user's details given their email."""
     plugin = plugin_service.get_active_instance(db_session=db_session, plugin_type="contact")
     return plugin.instance.get(email)
 
 
-def get(*, db_session, individual_contact_id: int) -> Optional[IndividualContact]:
+def get(*, db_session: Session, individual_contact_id: int) -> Optional[IndividualContact]:
     """Returns an individual given an individual id."""
     return (
         db_session.query(IndividualContact)
@@ -36,7 +35,7 @@ def get(*, db_session, individual_contact_id: int) -> Optional[IndividualContact
 
 
 def get_by_email_and_project(
-    *, db_session, email: str, project_id: int
+    *, db_session: Session, email: str, project_id: int
 ) -> Optional[IndividualContact]:
     """Returns an individual given an email address and project id."""
     return (
@@ -48,7 +47,7 @@ def get_by_email_and_project(
 
 
 def get_by_email_and_project_id_or_raise(
-    *, db_session, project_id: int, individual_contact_in=IndividualContactRead
+    *, db_session: Session, project_id: int, individual_contact_in: IndividualContactRead
 ) -> IndividualContactRead:
     """Returns the individual specified or raises ValidationError."""
     individual_contact = get_by_email_and_project(
@@ -82,7 +81,9 @@ def fetch_individual_info(contact_plugin: PluginInstance, email: str, db_session
     return contact_plugin.instance.get(email, db_session=db_session)
 
 
-def get_or_create(*, db_session, email: str, project: Project, **kwargs) -> IndividualContact:
+def get_or_create(
+    *, db_session: Session, email: str, project: Project, **kwargs
+) -> IndividualContact:
     """Gets or creates an individual."""
     # we fetch the individual contact from the database
     individual_contact = get_by_email_and_project(
@@ -120,7 +121,9 @@ def get_or_create(*, db_session, email: str, project: Project, **kwargs) -> Indi
     return individual_contact
 
 
-def create(*, db_session, individual_contact_in: IndividualContactCreate) -> IndividualContact:
+def create(
+    *, db_session: Session, individual_contact_in: IndividualContactCreate
+) -> IndividualContact:
     """Creates an individual."""
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=individual_contact_in.project
@@ -145,7 +148,7 @@ def create(*, db_session, individual_contact_in: IndividualContactCreate) -> Ind
 
 def update(
     *,
-    db_session,
+    db_session: Session,
     individual_contact: IndividualContact,
     individual_contact_in: IndividualContactUpdate,
 ) -> IndividualContact:
@@ -168,7 +171,7 @@ def update(
     return individual_contact
 
 
-def delete(*, db_session, individual_contact_id: int):
+def delete(*, db_session: Session, individual_contact_id: int):
     """Deletes an individual."""
     individual = (
         db_session.query(IndividualContact)
