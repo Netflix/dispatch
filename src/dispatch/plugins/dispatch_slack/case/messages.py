@@ -18,6 +18,7 @@ from dispatch.case import service as case_service
 from dispatch.case.enums import CaseStatus
 from dispatch.case.models import Case
 from dispatch.config import DISPATCH_UI_URL
+from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack.case.enums import (
     CaseNotificationActions,
     SignalEngagementActions,
@@ -159,11 +160,6 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
     else:
         action_buttons = [
             Button(
-                text=":mag: Investigate",
-                action_id=CaseNotificationActions.investigate,
-                value=button_metadata,
-            ),
-            Button(
                 text=":white_check_mark: Resolve",
                 action_id=CaseNotificationActions.resolve,
                 value=button_metadata,
@@ -184,15 +180,15 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
                 value=button_metadata,
             ),
         ]
-        # if case.status == CaseStatus.new:
-        #     action_buttons.insert(
-        #         0,
-        #         Button(
-        #             text=":mag: Triage",
-        #             action_id=CaseNotificationActions.triage,
-        #             value=button_metadata,
-        #         ),
-        #     )
+        if case.status == CaseStatus.new:
+            action_buttons.insert(
+                0,
+                Button(
+                    text=":mag: Triage",
+                    action_id=CaseNotificationActions.triage,
+                    value=button_metadata,
+                ),
+            )
         blocks.extend([Actions(elements=action_buttons)])
 
     return Message(blocks=blocks).build()["blocks"]
@@ -299,6 +295,21 @@ def create_action_buttons_message(
             ),
         ]
     )
+
+    investigation_plugin = plugin_service.get_active_instance(
+        db_session=db_session,
+        project_id=case.project.id,
+        plugin_type="investigation-tooling",
+    )
+
+    if investigation_plugin:
+        elements.extend(
+            Button(
+                text=":mag: Investigate",
+                action_id=CaseNotificationActions.investigate,
+                value=button_metadata,
+            ),
+        )
 
     # we create the signal metadata blocks
     signal_metadata_blocks = [
