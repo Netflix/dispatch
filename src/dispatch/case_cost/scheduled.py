@@ -6,15 +6,14 @@ from sqlalchemy.orm import Session
 
 from dispatch.decorators import scheduled_project_task, timer
 from dispatch.case import service as case_service
-from dispatch.case.enums import CaseStatus
-from dispatch.case_cost_type import service as case_cost_type_service
+from dispatch.case.enums import CaseStatus, CostModelType
 from dispatch.project.models import Project
 from dispatch.scheduler import scheduler
 
 from .service import (
     calculate_case_response_cost,
     update_case_response_cost,
-    get_or_create_default_case_response_cost,
+    get_or_create_case_response_cost_by_model_type,
 )
 
 
@@ -26,16 +25,6 @@ log = logging.getLogger(__name__)
 @scheduled_project_task
 def calculate_cases_response_cost(db_session: Session, project: Project):
     """Calculates and saves the response cost for all cases."""
-    response_cost_type = case_cost_type_service.get_default(
-        db_session=db_session, project_id=project.id
-    )
-
-    if response_cost_type is None:
-        log.warning(
-            f"A default cost type for response cost doesn't exist in the {project.name} project and organization {project.organization.name}. Response costs for cases won't be calculated."
-        )
-        return
-
     cases = case_service.get_all_by_status(
         db_session=db_session, project_id=project.id, statuses=[CaseStatus.new, CaseStatus.triage]
     )
@@ -43,8 +32,9 @@ def calculate_cases_response_cost(db_session: Session, project: Project):
     for case in cases:
         try:
             # we get the response cost for the given case
-            case_response_cost = get_or_create_default_case_response_cost(case, db_session)
-
+            case_response_cost = get_or_create_case_response_cost_by_model_type(
+                case=case, db_session=db_session, model_type=CostModelType.new
+            )
             # we don't need to update the cost of closed cases if they already have a response cost and this was updated after the case was closed
             if case.status == CaseStatus.closed:
                 if case_response_cost:

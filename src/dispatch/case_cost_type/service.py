@@ -1,8 +1,9 @@
-from sqlalchemy.sql.expression import true
 from typing import List, Optional
 
+from dispatch.case.enums import CostModelType
 from dispatch.project import service as project_service
 
+from .config import default_case_cost_type
 from .models import (
     CaseCostType,
     CaseCostTypeCreate,
@@ -15,13 +16,62 @@ def get(*, db_session, case_cost_type_id: int) -> Optional[CaseCostType]:
     return db_session.query(CaseCostType).filter(CaseCostType.id == case_cost_type_id).one_or_none()
 
 
-def get_default(*, db_session, project_id: int) -> Optional[CaseCostType]:
-    """Returns the default case cost type."""
+def get_response_cost_type(
+    *, db_session, project_id: int, model_type: str
+) -> Optional[CaseCostType]:
+    """Gets the default response cost type."""
     return (
         db_session.query(CaseCostType)
-        .filter(CaseCostType.default == true())
         .filter(CaseCostType.project_id == project_id)
+        .filter(CaseCostType.model_type == model_type)
         .one_or_none()
+    )
+
+
+def get_or_create_response_cost_type(
+    *, db_session, project_id: int, model_type: str = CostModelType.new
+) -> CaseCostType:
+    """Gets or creates the response case cost type."""
+    case_cost_type = get_response_cost_type(
+        db_session=db_session, project_id=project_id, model_type=model_type
+    )
+
+    if not case_cost_type:
+        case_cost_type_in = CaseCostTypeCreate(
+            name=default_case_cost_type["name"],
+            description=default_case_cost_type["description"],
+            category=default_case_cost_type["category"],
+            details=default_case_cost_type["details"],
+            editable=default_case_cost_type["editable"],
+            project=project_service.get(db_session=db_session, project_id=project_id),
+            model_type=model_type,
+        )
+        case_cost_type = create(db_session=db_session, case_cost_type_in=case_cost_type_in)
+
+    return case_cost_type
+
+
+def get_all_response_case_cost_types(
+    *, db_session, project_id: int
+) -> List[Optional[CaseCostType]]:
+    """Returns all response case cost types.
+
+    This function queries the database for all case cost types that are marked as the response cost type.
+    The following case cost types that match this description are:
+    - CaseCostType with model_type CLASSIC
+    - CaseCostType with model_type NEW
+
+    All other case types are not tied to the default response cost type.
+    """
+    return (
+        +db_session.query(CaseCostType)
+        .filter(CaseCostType.project_id == project_id)
+        .filter(CaseCostType.model_type == CostModelType.classic)
+        .one()
+        + db_session.query(CaseCostType)
+        .filter(CaseCostType.project_id == project_id)
+        .filter(CaseCostType.model_type == CostModelType.new)
+        .one()
     )
 
 

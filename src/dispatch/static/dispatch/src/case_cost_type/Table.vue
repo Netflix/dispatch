@@ -42,8 +42,8 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #item.default="{ value }">
-              <v-checkbox-btn :model-value="value" disabled />
+            <template #item.model_type="{ value }">
+              <v-checkbox-btn :model-value="value != null" disabled />
             </template>
             <template #item.editable="{ value }">
               <v-checkbox-btn :model-value="value" disabled />
@@ -105,7 +105,7 @@ export default {
         { title: "Description", value: "description", sortable: false },
         { title: "Category", value: "category", sortable: false },
         { title: "Details", value: "details", sortable: false },
-        { title: "Default", value: "default", sortable: true },
+        { title: "Response Cost Type", value: "model_type", sortable: true },
         { title: "Editable", value: "editable", sortable: true },
         { title: "Created At", value: "created_at", sortable: true },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
