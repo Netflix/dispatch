@@ -24,6 +24,7 @@ from starlette.requests import Request
 from dispatch import config
 from dispatch.exceptions import NotFoundError
 from dispatch.search.fulltext import make_searchable
+from dispatch.database.logging import SessionTracker
 
 
 def create_db_engine(connection_string: str):
@@ -156,7 +157,12 @@ make_searchable(Base.metadata)
 
 def get_db(request: Request) -> Session:
     """Get database session from request state."""
-    return request.state.db
+    session = request.state.db
+    if not hasattr(session, "_dispatch_session_id"):
+        session._dispatch_session_id = SessionTracker.track_session(
+            session, context="fastapi_request"
+        )
+    return session
 
 
 DbSession = Annotated[Session, Depends(get_db)]
@@ -231,14 +237,18 @@ def refetch_db_session(organization_slug: str) -> Session:
             None: f"dispatch_organization_{organization_slug}",
         }
     )
-    db_session = sessionmaker(bind=schema_engine)()
-    return db_session
+    session = sessionmaker(bind=schema_engine)()
+    session._dispatch_session_id = SessionTracker.track_session(
+        session, context=f"organization_{organization_slug}"
+    )
+    return session
 
 
 @contextmanager
 def get_session() -> Session:
     """Context manager to ensure the session is closed after use."""
     session = SessionLocal()
+    session_id = SessionTracker.track_session(session, context="context_manager")
     try:
         yield session
         session.commit()
@@ -246,12 +256,13 @@ def get_session() -> Session:
         session.rollback()
         raise
     finally:
+        SessionTracker.untrack_session(session_id)
         session.close()
 
 
 @contextmanager
 def get_organization_session(organization_slug: str) -> Session:
-    """Context manager to ensure the session is closed after use."""
+    """Context manager to ensure the organization session is closed after use."""
     session = refetch_db_session(organization_slug)
     try:
         yield session
@@ -260,4 +271,6 @@ def get_organization_session(organization_slug: str) -> Session:
         session.rollback()
         raise
     finally:
+        if hasattr(session, "_dispatch_session_id"):
+            SessionTracker.untrack_session(session._dispatch_session_id)
         session.close()
