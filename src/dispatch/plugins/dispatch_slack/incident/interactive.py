@@ -2447,12 +2447,18 @@ def handle_report_incident_submission_event(
     # Create the incident
     incident = incident_service.create(db_session=db_session, incident_in=incident_in)
 
+    incident_description = (
+        incident.description
+        if len(incident.description) <= 2500
+        else f"{incident.description[:2500]}..."
+    )
+
     blocks = [
         Section(
             text="This is a confirmation that you have reported an incident with the following information. You will be invited to an incident Slack conversation shortly."
         ),
         Section(text=f"*Title*\n {incident.title}"),
-        Section(text=f"*Description*\n {incident.description}"),
+        Section(text=f"*Description*\n {incident_description}"),
         Section(
             fields=[
                 MarkdownText(
