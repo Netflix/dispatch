@@ -1,5 +1,6 @@
 import logging
 import uuid
+from datetime import datetime
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -19,7 +20,7 @@ class SessionTracker:
         cls._sessions[session_id] = {
             "session": session,
             "context": context,
-            "created_at": uuid.uuid1().timestamp(),
+            "created_at": datetime.now().timestamp(),
         }
         logger.info(
             "Database session created",
@@ -36,7 +37,7 @@ class SessionTracker:
         """Untracks a database session."""
         if session_id in cls._sessions:
             session_info = cls._sessions.pop(session_id)
-            duration = uuid.uuid1().timestamp() - session_info["created_at"]
+            duration = datetime.now().timestamp() - session_info["created_at"]
             logger.info(
                 "Database session closed",
                 extra={
@@ -50,7 +51,7 @@ class SessionTracker:
     @classmethod
     def get_active_sessions(cls) -> list[dict[str, Any]]:
         """Returns information about all active sessions."""
-        current_time = uuid.uuid1().timestamp()
+        current_time = datetime.now().timestamp()
         return [
             {
                 "session_id": session_id,
