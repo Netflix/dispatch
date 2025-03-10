@@ -13,3 +13,10 @@ class CaseResolutionReason(DispatchEnum):
     user_acknowledge = "User Acknowledged"
     mitigated = "Mitigated"
     escalated = "Escalated"
+
+
+class CostModelType(DispatchEnum):
+    """Type of cost model used to calculate costs."""
+
+    new = "New"
+    classic = "Classic"
