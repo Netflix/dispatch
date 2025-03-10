@@ -31,18 +31,25 @@
           sup-title="Cases Escalated"
         />
       </v-col>
-      <v-col cols="12" sm="6" lg="6">
+      <v-col cols="12" sm="6" lg="4">
         <stat-widget
           icon="mdi-clock"
           :title="toNumberString(totalHours)"
           sup-title="Total Hours (New to Closed)"
         />
       </v-col>
-      <v-col cols="12" sm="6" lg="6">
+      <v-col cols="12" sm="6" lg="4">
         <stat-widget
           icon="mdi-currency-usd"
-          :title="toUSD(totalCasesCost)"
-          sup-title="Total Cases Cost"
+          :title="toUSD(totalCasesCostClassic)"
+          sup-title="Total Cases Cost (Classic)"
+        />
+      </v-col>
+      <v-col cols="12" sm="6" lg="4">
+        <stat-widget
+          icon="mdi-currency-usd"
+          :title="toUSD(totalCasesCostNew)"
+          sup-title="Total Cases Cost (New)"
         />
       </v-col>
       <!-- Widgets Ends -->
@@ -240,12 +247,16 @@ export default {
         return differenceInHours(parseISO(endTime), parseISO(item.reported_at))
       })
     },
-    totalCasesCost() {
-      let total_cost = sumBy(this.items, "total_cost")
+    totalCasesCostClassic() {
+      let total_cost = sumBy(this.items, "total_cost_classix")
+      return total_cost ? total_cost : 0
+    },
+    totalCasesCostNew() {
+      let total_cost = sumBy(this.items, "total_cost_new")
       return total_cost ? total_cost : 0
     },
     averageCaseCost() {
-      return this.totalCasesCost / this.totalCases
+      return this.totalCasesCostNew / this.totalCases
     },
     defaultUserProjects: {
       get() {

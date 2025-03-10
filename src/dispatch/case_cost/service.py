@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from dispatch.cost_model.models import CostModelActivity
 from dispatch.case import service as case_service
-from dispatch.case.models import Case
+from dispatch.case.models import Case, CaseStatus
 from dispatch.case.type.models import CaseType
 from dispatch.case_cost_type import service as case_cost_type_service
 from dispatch.case.enums import CostModelType
@@ -15,6 +15,7 @@ from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantRead
 from dispatch.participant_activity import service as participant_activity_service
 from dispatch.participant_activity.models import ParticipantActivityCreate, ParticipantActivity
+from dispatch.participant_role.models import ParticipantRoleType, ParticipantRole
 from dispatch.plugin import service as plugin_service
 
 from .models import CaseCost, CaseCostCreate, CaseCostUpdate
@@ -98,6 +99,18 @@ def delete(*, db_session: Session, case_cost_id: int):
     """Deletes an existing case cost."""
     db_session.query(CaseCost).filter(CaseCost.id == case_cost_id).delete()
     db_session.commit()
+
+
+def get_engagement_multiplier(participant_role: str):
+    """Returns an engagement multiplier for a given case role."""
+    engagement_mappings = {
+        ParticipantRoleType.assignee: 1,  # Case assignee has full engagement like incident commander
+        ParticipantRoleType.reporter: 0.5,  # Same as incident reporter
+        ParticipantRoleType.participant: 0.5,  # Same as incident participant
+        ParticipantRoleType.observer: 0,  # Same as incident observer
+    }
+
+    return engagement_mappings.get(participant_role, 0.5)  # Default to participant level
 
 
 def get_hourly_rate(project) -> int:
@@ -270,8 +283,139 @@ def update_case_participant_activities(
 
 
 def calculate_case_response_cost(case: Case, db_session: Session) -> int:
-    """Calculates the response cost of a given case."""
-    # Iterate through all the listed activities and aggregate the total participant response time spent on the case.
+    """Calculates the response cost of a given case.
+
+    Args:
+        case: The case to calculate costs for.
+        db_session: The database session.
+
+    Returns:
+        dict[str, int]: Dictionary containing costs from both models {'new': new_cost, 'classic': classic_cost}
+    """
+    results = {}
+
+    # Calculate new model cost
+    new_amount = calculate_case_response_cost_new(case=case, db_session=db_session)
+    results[CostModelType.new] = new_amount
+
+    # Calculate classic model cost
+    classic_amount = calculate_case_response_cost_classic(case=case, db_session=db_session)
+    results[CostModelType.classic] = classic_amount
+
+    return results
+
+
+def get_participant_role_time_seconds(case: Case, participant_role: ParticipantRole) -> float:
+    """Calculates the time spent by a participant in a case role starting from a given time.
+
+    The participant's time spent in the case role is adjusted based on the role's engagement multiplier.
+
+    Args:
+        case: The case the participant is part of.
+        participant_role: The role of the participant.
+        start_at: Only time spent after this will be considered.
+
+    Returns:
+        float: The time spent by the participant in the case role in seconds.
+    """
+    if participant_role.role == ParticipantRoleType.observer:
+        # skip calculating cost for participants with the observer role
+        return 0
+
+    # we set the renounced_at default time to the current time
+    participant_role_renounced_at = datetime.now(tz=timezone.utc).replace(tzinfo=None)
+    if participant_role.renounced_at:
+        participant_role_renounced_at = participant_role.renounced_at
+    elif case.status == CaseStatus.closed:
+        if case.closed_at:
+            participant_role_renounced_at = case.closed_at
+    elif case.status == CaseStatus.escalated:
+        if case.escalated_at:
+            participant_role_renounced_at = case.escalated_at
+
+    # the time the participant has spent in the case role since the last case cost update
+    participant_role_time = participant_role_renounced_at - participant_role.assumed_at
+    if participant_role_time.total_seconds() < 0:
+        # the participant was added after the case was closed/escalated
+        return 0
+
+    # we calculate the number of hours the participant has spent in the case role
+    participant_role_time_hours = participant_role_time.total_seconds() / SECONDS_IN_HOUR
+
+    # we make the assumption that participants only spend 8 hours a day working on the case,
+    # if the case goes past 24hrs
+    if participant_role_time_hours > HOURS_IN_DAY:
+        days, hours = divmod(participant_role_time_hours, HOURS_IN_DAY)
+        participant_role_time_hours = ((days * HOURS_IN_DAY) / 3) + hours
+
+    # we make the assumption that participants spend more or less time based on their role
+    # and we adjust the time spent based on that
+    return (
+        participant_role_time_hours
+        * SECONDS_IN_HOUR
+        * get_engagement_multiplier(participant_role.role)
+    )
+
+
+def get_total_participant_roles_time_seconds(case: Case) -> int:
+    """Calculates the time spent by all participants in this case starting from a given time.
+
+    The participant hours are adjusted based on their role's engagement multiplier.
+
+    Args:
+        case: The case the participants are part of.
+        start_at: Only time spent after this will be considered.
+
+    Returns:
+        int: The total time spent by all participants in the case roles in seconds.
+    """
+    total_participants_roles_time_seconds = 0
+    for participant in case.participants:
+        for participant_role in participant.participant_roles:
+            total_participants_roles_time_seconds += get_participant_role_time_seconds(
+                case=case,
+                participant_role=participant_role,
+            )
+    return total_participants_roles_time_seconds
+
+
+def calculate_case_response_cost_classic(case: Case, db_session: Session) -> int:
+    """Calculates case response cost using classic cost model.
+
+    This function aggregates all new case costs since the last case cost update.
+    If this is the first time performing cost calculation for this case,
+    it computes the total costs from the case's creation.
+
+    Args:
+        case: The case to calculate the case response cost for.
+        db_session: The database session.
+
+    Returns:
+        int: The case response cost in dollars.
+    """
+
+    case_response_cost = get_or_create_case_response_cost_by_model_type(
+        case=case, model_type=CostModelType.classic, db_session=db_session
+    )
+    if not case_response_cost:
+        return 0
+
+    # Aggregates the case response costs accumulated since the last case cost update
+    total_participants_roles_time_seconds = get_total_participant_roles_time_seconds(case)
+
+    # Calculates and rounds up the case cost
+    hourly_rate = get_hourly_rate(case.project)
+    amount = calculate_response_cost(
+        hourly_rate=hourly_rate,
+        total_response_time_seconds=total_participants_roles_time_seconds,
+    )
+
+    # Ensure we return an integer by rounding up the sum
+    return math.ceil(case_response_cost.amount + amount)
+
+
+def calculate_case_response_cost_new(case: Case, db_session: Session) -> int:
+    """Calculates case response cost using new cost model."""
     participants_total_response_time = timedelta(0)
     participant_activities = (
         participant_activity_service.get_all_case_participant_activities_for_case(
@@ -291,11 +435,13 @@ def calculate_case_response_cost(case: Case, db_session: Session) -> int:
     return amount
 
 
-def update_case_response_cost(case: Case, db_session: Session) -> int:
+def update_case_response_cost(case: Case, db_session: Session) -> dict[str, int]:
     """Updates the response cost of a given case.
 
-    This function logs all case participant activities since the last case cost update and
-    recalculates the case response cost using the new cost model.
+    This function:
+    1. Updates case participant activities
+    2. Calculates costs using both models
+    3. Updates the stored costs if they've changed
 
     Args:
         case: The case to update costs for.
@@ -307,20 +453,33 @@ def update_case_response_cost(case: Case, db_session: Session) -> int:
     # Update case participant activities before calculating costs
     update_case_participant_activities(case=case, db_session=db_session)
 
+    # Calculate costs using both models
+    costs = calculate_case_response_cost(case=case, db_session=db_session)
+
     results = {}
 
-    # Calculate and update new model cost
-    new_amount = calculate_case_response_cost(case=case, db_session=db_session)
-    new_cost = get_or_create_case_response_cost_by_model_type(
+    # Update new model cost if needed
+    if new_cost := get_or_create_case_response_cost_by_model_type(
         case=case, model_type=CostModelType.new, db_session=db_session
-    )
-
-    if new_cost:
+    ):
+        new_amount = costs[CostModelType.new]
         if new_cost.amount != new_amount:
             new_cost.amount = new_amount
             case.case_costs.append(new_cost)
             db_session.add(case)
             db_session.commit()
         results[CostModelType.new] = new_cost.amount
+
+    # Update classic model cost if needed
+    if classic_cost := get_or_create_case_response_cost_by_model_type(
+        case=case, model_type=CostModelType.classic, db_session=db_session
+    ):
+        classic_amount = costs[CostModelType.classic]
+        if classic_cost.amount != classic_amount:
+            classic_cost.amount = classic_amount
+            case.case_costs.append(classic_cost)
+            db_session.add(case)
+            db_session.commit()
+        results[CostModelType.classic] = classic_cost.amount
 
     return results
