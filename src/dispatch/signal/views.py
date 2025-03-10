@@ -104,9 +104,18 @@ def create_signal_instance(
 
     signal_instance_in.signal = signal_definition
 
-    signal_instance = signal_service.create_instance(
-        db_session=db_session, signal_instance_in=signal_instance_in
-    )
+    try:
+        signal_instance = signal_service.create_instance(
+            db_session=db_session, signal_instance_in=signal_instance_in
+        )
+    except IntegrityError:
+        msg = f"A signal instance with this id already exists. Id: {signal_instance_in.raw.get('id')}. Variant: {signal_instance_in.raw.get('variant')}"
+        log.warn(msg)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=[{"msg": msg}],
+        ) from None
+
     return signal_instance
 
 

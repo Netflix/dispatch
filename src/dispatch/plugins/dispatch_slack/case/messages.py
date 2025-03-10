@@ -18,6 +18,7 @@ from dispatch.case import service as case_service
 from dispatch.case.enums import CaseStatus
 from dispatch.case.models import Case
 from dispatch.config import DISPATCH_UI_URL
+from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack.case.enums import (
     CaseNotificationActions,
     SignalEngagementActions,
@@ -87,6 +88,10 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
         if variant := case.signal_instances[0].signal.variant:
             fields.append(f"*Variant* \n {variant}")
 
+    case_description = (
+        case.description if len(case.description) <= 2500 else f"{case.description[:2500]}..."
+    )
+
     blocks = [
         Section(
             text=title,
@@ -96,7 +101,7 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
                 url=f"{DISPATCH_UI_URL}/{case.project.organization.slug}/cases/{case.name}",
             ),
         ),
-        Section(text=f"*Description* \n {case.description}"),
+        Section(text=f"*Description* \n {case_description}"),
         Section(fields=fields),
         Section(text="*Actions*"),
     ]
@@ -290,6 +295,21 @@ def create_action_buttons_message(
             ),
         ]
     )
+
+    investigation_plugin = plugin_service.get_active_instance(
+        db_session=db_session,
+        project_id=case.project.id,
+        plugin_type="investigation-tooling",
+    )
+
+    if investigation_plugin:
+        elements.extend(
+            Button(
+                text=":mag: Investigate",
+                action_id=CaseNotificationActions.investigate,
+                value=button_metadata,
+            ),
+        )
 
     # we create the signal metadata blocks
     signal_metadata_blocks = [
