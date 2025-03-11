@@ -248,7 +248,7 @@ export default {
       })
     },
     totalCasesCostClassic() {
-      let total_cost = sumBy(this.items, "total_cost_classix")
+      let total_cost = sumBy(this.items, "total_cost_classic")
       return total_cost ? total_cost : 0
     },
     totalCasesCostNew() {

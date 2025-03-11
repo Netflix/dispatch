@@ -30,6 +30,16 @@ def has_unique_plugin_event(cost_model_in: CostModelRead) -> bool:
     return True
 
 
+def get_default(*, db_session, project_id: int) -> CostModel:
+    """Returns the default cost model."""
+    return (
+        db_session.query(CostModel)
+        .filter(CostModel.project_id == project_id)
+        .order_by(CostModel.created_at.desc())
+        .first()
+    )
+
+
 def get_all(*, db_session, project_id: int) -> List[CostModel]:
     """Returns all cost models."""
     if project_id:

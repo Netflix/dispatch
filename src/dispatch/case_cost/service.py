@@ -11,6 +11,7 @@ from dispatch.case.models import Case, CaseStatus
 from dispatch.case.type.models import CaseType
 from dispatch.case_cost_type import service as case_cost_type_service
 from dispatch.case.enums import CostModelType
+from dispatch.cost_model import service as cost_model_service
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantRead
 from dispatch.participant_activity import service as participant_activity_service
@@ -155,6 +156,9 @@ def get_or_create_case_response_cost_by_model_type(
             case=case, case_cost_type=response_cost_type, amount=0, project=case.project
         )
         case_cost = create(db_session=db_session, case_cost_in=case_cost)
+        case.case_costs.append(case_cost)
+        db_session.add(case)
+        db_session.commit()
 
     return case_cost
 
@@ -246,8 +250,14 @@ def update_case_participant_activities(
 
     case_events = []
     # Get the cost model. Iterate through all the listed activities we want to record.
-    if case.case_type.cost_model:
-        for activity in case.case_type.cost_model.activities:
+    cost_model = case.case_type.cost_model
+    if not cost_model:
+        cost_model = cost_model_service.get_default(
+            db_session=db_session, project_id=case.project.id
+        )
+
+    if cost_model:
+        for activity in cost_model.activities:
             # Array of sorted (timestamp, user_id) tuples.
             case_events.extend(
                 fetch_case_events(
@@ -411,7 +421,7 @@ def calculate_case_response_cost_classic(case: Case, db_session: Session) -> int
     )
 
     # Ensure we return an integer by rounding up the sum
-    return math.ceil(case_response_cost.amount + amount)
+    return math.ceil(amount)
 
 
 def calculate_case_response_cost_new(case: Case, db_session: Session) -> int:
