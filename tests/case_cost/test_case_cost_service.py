@@ -335,7 +335,6 @@ def test_update_case_response_cost(
     """Tests that the case response cost is created correctly."""
     from dispatch.case.enums import CostModelType
     from dispatch.case_cost.service import update_case_response_cost
-    from dispatch.case_cost_type import service as case_cost_type_service
 
     # Set up participant activity
     participant_activity.case = case
