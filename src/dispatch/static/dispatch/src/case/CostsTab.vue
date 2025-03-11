@@ -9,7 +9,8 @@
               :label="`Total Cost (${model})`"
               false-value="Classic"
               true-value="New"
-              v-bind="props" />
+              v-bind="props"
+            />
           </template>
           <span> Toggle between Classic and New Cost model costs. </span>
         </v-tooltip>
@@ -20,7 +21,6 @@
       </template>
     </v-list-item>
     <v-divider />
-
     <span v-for="(cost, index) in case_costs" :key="index">
       <v-list-item target="_blank" v-if="cost.case_cost_type.model_type == model">
         <template #prepend v-if="cost.case_cost_type.editable">
