@@ -193,7 +193,7 @@ def configure(config):
     )
     app.command(
         config.slack_command_engage_oncall,
-        middleware=[subject_middleware, configuration_middleware],
+        middleware=[message_context_middleware, subject_middleware, configuration_middleware],
     )(handle_engage_oncall_command)
 
     # sensitive commands
