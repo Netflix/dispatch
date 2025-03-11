@@ -278,6 +278,7 @@ def update_signal_message(db_session: Session, signal_instance: SignalInstance) 
     )
 
 
+# Cache structure: {case_id: {"created_at": datetime, "filter_action": SignalFilterAction}}
 _last_nonupdated_signal_cache = TTLCache(maxsize=4, ttl=60)
 
 
@@ -290,18 +291,26 @@ def _should_update_signal_message(signal_instance: SignalInstance) -> bool:
     case_id = str(signal_instance.case_id)
 
     if case_id not in _last_nonupdated_signal_cache:
-        _last_nonupdated_signal_cache[case_id] = signal_instance
+        # Store only the necessary data, not the entire object
+        _last_nonupdated_signal_cache[case_id] = {
+            "created_at": signal_instance.created_at,
+            "filter_action": signal_instance.filter_action,
+        }
         return True
 
-    last_nonupdated_signal = _last_nonupdated_signal_cache[case_id]
-    time_since_last_update = signal_instance.created_at - last_nonupdated_signal.created_at
+    last_cached_data = _last_nonupdated_signal_cache[case_id]
+    time_since_last_update = signal_instance.created_at - last_cached_data["created_at"]
 
     if (
         signal_instance.filter_action == SignalFilterAction.deduplicate
         and signal_instance.case.signal_thread_ts  # noqa
         and time_since_last_update >= timedelta(seconds=5)  # noqa
     ):
-        _last_nonupdated_signal_cache[case_id] = signal_instance
+        # Update the cache with the new data
+        _last_nonupdated_signal_cache[case_id] = {
+            "created_at": signal_instance.created_at,
+            "filter_action": signal_instance.filter_action,
+        }
         return True
     else:
         return False
