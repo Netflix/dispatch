@@ -10,7 +10,6 @@ import base64
 import json
 import logging
 import signal as os_signal
-import sys
 import time
 import zlib
 from typing import TypedDict
