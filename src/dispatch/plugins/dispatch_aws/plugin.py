@@ -91,6 +91,7 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
             message_attributes = message_body.get("MessageAttributes", {})
 
             if message_attributes.get("compressed", {}).get("Value") == "zlib":
+                # Message is compressed, decompress it
                 message_body_message = decompress_json(message_body_message)
 
             signal_data = json.loads(message_body_message)
@@ -108,6 +109,7 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
             )
             return None
 
+        # if the signal has an existing uuid we check if it already exists
         if signal_instance_in.raw and signal_instance_in.raw.get("id"):
             if signal_service.get_signal_instance(
                 db_session=db_session, signal_instance_id=signal_instance_in.raw["id"]
@@ -118,7 +120,6 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                 return None
 
         try:
-            # Create a SAVEPOINT for this message's transaction
             with db_session.begin_nested():
                 signal_instance = signal_service.create_signal_instance(
                     db_session=db_session,
@@ -190,12 +191,11 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                         WaitTimeSeconds=20,
                     )
 
-                    if not response.get("Messages"):
+                    if not response.get("Messages") or len(response["Messages"]) == 0:
                         log.info("No messages received from SQS.")
                         continue
 
                     entries: list[SqsEntries] = []
-                    # Use dispatch's session management
                     with get_session() as batch_session:
                         # Batch transaction - commits all successful messages or none
                         with batch_session.begin():
