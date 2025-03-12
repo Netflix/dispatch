@@ -187,11 +187,16 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                     response = client.receive_message(
                         QueueUrl=queue_url,
                         MaxNumberOfMessages=self.configuration.batch_size,
-                        VisibilityTimeout=40,
+                        # Increased visibility timeout to handle larger batches and potential delays
+                        # 5 minutes should cover most processing scenarios while preventing
+                        # excessive message lock time
+                        VisibilityTimeout=300,  # 5 minutes
+                        # Long polling wait time - reduces empty responses while allowing
+                        # reasonable shutdown time
                         WaitTimeSeconds=20,
                     )
 
-                    if not response.get("Messages") or len(response["Messages"]) == 0:
+                    if not response.get("Messages"):
                         log.info("No messages received from SQS.")
                         continue
 
