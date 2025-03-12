@@ -24,11 +24,11 @@ from dispatch.database.core import get_session
 from dispatch.metrics import provider as metrics_provider
 from dispatch.plugins.bases import SignalConsumerPlugin
 from dispatch.plugins.dispatch_aws.config import AWSSQSConfiguration
-from dispatch.project.models import Project
 from dispatch.project import service as project_service
+from dispatch.project.models import Project
 from dispatch.signal import service as signal_service
-from dispatch.signal.models import SignalInstanceCreate
 from dispatch.signal.exceptions import SignalNotIdentifiedException
+from dispatch.signal.models import SignalInstanceCreate
 
 from . import __version__
 
@@ -123,6 +123,15 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
 
         try:
             # Get the signal definition first
+            signal_definition = None
+            external_id = None
+
+            if not signal_instance_in.project:
+                log.warning(
+                    f"No project provided for signal instance creation. Skipping signal instance creation: {signal_instance_in.raw['id']}"
+                )
+                return None
+
             project_obj = project_service.get_by_name_or_default(
                 db_session=db_session, project_in=signal_instance_in.project
             )
@@ -151,7 +160,7 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
 
             if not signal_definition:
                 log.warning(
-                    f"No signal definition could be found for external_id={external_id} and no default exists."
+                    f"No signal definition could be found for external_id {external_id} and no default exists."
                 )
                 return None
 
@@ -170,9 +179,11 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                         "externalId": signal_instance.signal.external_id,
                     },
                 )
+
                 log.debug(
                     f"Received a signal with name {signal_instance.signal.name} and id {signal_instance.signal.id}"
                 )
+
                 return {"Id": message["MessageId"], "ReceiptHandle": message["ReceiptHandle"]}
 
         except IntegrityError as e:
