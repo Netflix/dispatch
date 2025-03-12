@@ -13,15 +13,15 @@ import signal as os_signal
 import sys
 import time
 import zlib
-from contextlib import contextmanager
 from typing import TypedDict
 
 import boto3
 from psycopg2.errors import UniqueViolation
 from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError, ResourceClosedError
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session
 
+from dispatch.database.core import get_session
 from dispatch.metrics import provider as metrics_provider
 from dispatch.plugins.bases import SignalConsumerPlugin
 from dispatch.plugins.dispatch_aws.config import AWSSQSConfiguration
@@ -69,20 +69,6 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
         # Handle graceful shutdown signals
         os_signal.signal(os_signal.SIGTERM, handle_shutdown)
         os_signal.signal(os_signal.SIGINT, handle_shutdown)
-
-    @contextmanager
-    def _session_scope(self, session_factory):
-        """Provide a transactional scope around a series of operations."""
-        session = session_factory()
-        try:
-            yield session
-            session.commit()
-        except Exception as e:
-            log.exception("Error in session scope: %s", e)
-            session.rollback()
-            raise
-        finally:
-            session.close()
 
     def _process_message(
         self, db_session: Session, message: dict, project: Project
@@ -172,17 +158,17 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
         """Consume messages from SQS queue.
 
         Implements a long-running consumer with graceful shutdown handling.
-        Uses a session-per-batch pattern with nested transactions for message-level isolation.
+        Uses the application's session management with nested transactions for message-level isolation.
 
         Args:
             db_session: Initial SQLAlchemy session (will be closed after setup)
             project: The project context for signal processing
 
         Note:
-            - The original db_session is closed after extracting its engine
-            - Each batch of messages uses a fresh session
+            - Uses dispatch's get_session() context manager for proper session lifecycle
             - Individual messages use nested transactions (SAVEPOINTs)
             - Handles SIGTERM/SIGINT for graceful shutdown
+            - Includes automatic session tracking and cleanup
         """
         try:
             self._setup_signal_handlers()
@@ -193,14 +179,7 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                 QueueOwnerAWSAccountId=self.configuration.queue_owner,
             )["QueueUrl"]
 
-            # Create session factory from the original session's engine
-            session_factory = sessionmaker(
-                bind=db_session.get_bind(),
-                class_=Session,
-                expire_on_commit=False,  # Prevent unnecessary reloading of objects
-            )
-
-            # Close the original session as we'll use our own session management
+            # Close the original session as we'll use get_session()
             db_session.close()
 
             while not self._shutdown:
@@ -217,8 +196,8 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                         continue
 
                     entries: list[SqsEntries] = []
-                    # Process batch with automatic session cleanup
-                    with self._session_scope(session_factory) as batch_session:
+                    # Use dispatch's session management
+                    with get_session() as batch_session:
                         # Batch transaction - commits all successful messages or none
                         with batch_session.begin():
                             for message in response["Messages"]:
