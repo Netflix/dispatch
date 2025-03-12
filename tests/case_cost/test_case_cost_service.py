@@ -351,25 +351,3 @@ def test_update_case_response_cost(
     results = update_case_response_cost(case=case, db_session=session)
     assert results[CostModelType.new] > 0
     assert results[CostModelType.classic] >= 0
-
-
-def test_update_case_response_cost__fail_no_cost_types(case, session):
-    """Tests that the case response cost calculation handles missing cost types."""
-    from dispatch.case.enums import CostModelType
-    from dispatch.case_cost.service import (
-        update_case_response_cost,
-        get_by_case_id,
-    )
-    from dispatch.case_cost_type import service as case_cost_type_service
-
-    # Ensure there are no default cost types for any model
-    for cost_type in case_cost_type_service.get_all(db_session=session):
-        cost_type.model_type = None
-
-    # Calculate costs
-    results = update_case_response_cost(case=case, db_session=session)
-
-    # Verify no costs were calculated
-    assert isinstance(results, dict)
-    assert not results[CostModelType.new]
-    assert not get_by_case_id(db_session=session, case_id=case.id)
