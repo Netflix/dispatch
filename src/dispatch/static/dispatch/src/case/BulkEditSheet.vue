@@ -5,6 +5,7 @@
     persistent
     no-click-animation
     :retain-focus="false"
+    scroll-strategy="none"
   >
     <handoff-dialog />
     <closed-dialog />

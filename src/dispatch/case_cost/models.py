@@ -19,7 +19,7 @@ class CaseCost(Base, TimeStampMixin, ProjectMixin):
 
     # relationships
     case_cost_type = relationship("CaseCostType", backref="case_cost")
-    case_cost_type_id = Column(Integer, ForeignKey("case_cost_type.id"))
+    case_cost_type_id = Column(Integer, ForeignKey("case_cost_type.id", ondelete="CASCADE"))
     case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"))
     search_vector = association_proxy("case_cost_type", "search_vector")
 

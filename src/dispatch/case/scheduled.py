@@ -1,9 +1,16 @@
+"""
+.. module: dispatch.case.scheduled
+    :platform: Unix
+    :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
+    :license: Apache, see LICENSE for more details.
+"""
+
 import logging
 
 from datetime import datetime, date
 from schedule import every
+from sqlalchemy.orm import Session
 
-from dispatch.database.core import SessionLocal
 from dispatch.decorators import scheduled_project_task, timer
 from dispatch.project.models import Project
 from dispatch.scheduler import scheduler
@@ -21,7 +28,7 @@ log = logging.getLogger(__name__)
 @scheduler.add(every(1).day.at("18:00"), name="case-close-reminder")
 @timer
 @scheduled_project_task
-def case_close_reminder(db_session: SessionLocal, project: Project):
+def case_close_reminder(db_session: Session, project: Project):
     """Sends a reminder to the case assignee to close out their case."""
     cases = get_all_by_status(
         db_session=db_session, project_id=project.id, statuses=[CaseStatus.triage]
@@ -43,7 +50,7 @@ def case_close_reminder(db_session: SessionLocal, project: Project):
 @scheduler.add(every(1).day.at("18:00"), name="case-triage-reminder")
 @timer
 @scheduled_project_task
-def case_triage_reminder(db_session: SessionLocal, project: Project):
+def case_triage_reminder(db_session: Session, project: Project):
     """Sends a reminder to the case assignee to triage their case."""
     cases = get_all_by_status(
         db_session=db_session, project_id=project.id, statuses=[CaseStatus.new]

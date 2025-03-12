@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 
 from dispatch.case.models import Case
 from dispatch.conference.models import Conference
-from dispatch.database.core import SessionLocal
 from dispatch.document.models import Document
 from dispatch.event import service as event_service
 from dispatch.incident.models import Incident
@@ -190,7 +189,7 @@ def create_case_conversation(
     return case.conversation
 
 
-def create_incident_conversation(incident: Incident, db_session: SessionLocal):
+def create_incident_conversation(incident: Incident, db_session: Session):
     """Creates a conversation."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
@@ -405,14 +404,24 @@ def add_conversation_bookmark(
     title: str | None = None,
 ):
     """Adds a conversation bookmark."""
-    if not resource or not hasattr(resource, "name"):
+    if not resource:
         log.warning("No conversation bookmark added since no resource available for subject.")
         return
 
-    if not subject.conversation:
-        log.warning(
-            f"Conversation bookmark {resource.name.lower()} not added. No conversation available."
+    resource_name = (
+        resource.name.lower()
+        if hasattr(resource, "name")
+        else (
+            deslug_and_capitalize_resource_type(resource.resource_type)
+            if hasattr(resource, "resource_type")
+            else title
+            if title
+            else "untitled resource"
         )
+    )
+
+    if not subject.conversation:
+        log.warning(f"Conversation bookmark {resource_name} not added. No conversation available.")
         return
 
     plugin = plugin_service.get_active_instance(
@@ -422,7 +431,7 @@ def add_conversation_bookmark(
     )
     if not plugin:
         log.warning(
-            f"Conversation bookmark {resource.name.lower()} not added. No conversation plugin enabled."
+            f"Conversation bookmark {resource_name} not added. No conversation plugin enabled."
         )
         return
 
@@ -437,7 +446,7 @@ def add_conversation_bookmark(
             )
             if resource
             else log.warning(
-                f"{resource.name} bookmark not added. No {resource.name.lower()} available for subject.."
+                f"{resource_name} bookmark not added. No {resource_name} available for subject.."
             )
         )
     except Exception as e:
@@ -445,7 +454,7 @@ def add_conversation_bookmark(
             subject=subject,
             db_session=db_session,
             source="Dispatch Core App",
-            description=f"Adding the {resource.name.lower()} bookmark failed. Reason: {e}",
+            description=f"Adding the {resource_name} bookmark failed. Reason: {e}",
         )
         log.exception(e)
 
