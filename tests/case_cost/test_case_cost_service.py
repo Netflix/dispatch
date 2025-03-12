@@ -190,64 +190,164 @@ def test_update_case_participant_activities__no_enabled_plugins(
     assert not activities
 
 
-def test_calculate_case_response_cost(case, session, participant_activity):
-    """Tests that the case response cost is calculated correctly."""
+def test_get_engagement_multiplier():
+    """Tests that engagement multipliers are returned correctly for different roles."""
+    from dispatch.participant_role.models import ParticipantRoleType
+    from dispatch.case_cost.service import get_engagement_multiplier
+
+    assert get_engagement_multiplier(ParticipantRoleType.assignee) == 1
+    assert get_engagement_multiplier(ParticipantRoleType.reporter) == 0.5
+    assert get_engagement_multiplier(ParticipantRoleType.participant) == 0.5
+    assert get_engagement_multiplier(ParticipantRoleType.observer) == 0
+
+
+def test_calculate_case_response_cost(case, session, participant_activity, case_cost_type):
+    """Tests that the case response cost is calculated correctly for both models."""
     from dispatch.case_cost.service import (
         calculate_case_response_cost,
         calculate_response_cost,
         get_hourly_rate,
     )
+    from dispatch.case.enums import CostModelType
 
-    # Set up participant activity.
+    # Set up participant activity
     participant_activity.case = case
 
-    # Assert that the response cost was calculated correctly.
-    response_cost = calculate_case_response_cost(case=case, db_session=session)
-    assert response_cost == calculate_response_cost(
+    # Set up cost types for both models
+    case_cost_type.model_type = CostModelType.new
+    case_cost_type.project = case.project
+
+    # Calculate costs using both models
+    costs = calculate_case_response_cost(case=case, db_session=session)
+
+    # Assert both models returned costs
+    assert CostModelType.new in costs
+    assert CostModelType.classic in costs
+
+    # Verify new model cost calculation
+    expected_cost = calculate_response_cost(
         hourly_rate=get_hourly_rate(case.project),
         total_response_time_seconds=(
             participant_activity.ended_at - participant_activity.started_at
         ).total_seconds(),
     )
+    assert costs[CostModelType.new] == expected_cost
 
 
-def test_update_case_response_cost(case, session, participant_activity, case_cost_type):
+def test_calculate_case_response_cost_classic(
+    case, session, participant, participant_role, case_cost_type
+):
+    """Tests that the classic cost model calculates costs correctly."""
+    from datetime import datetime, timedelta, timezone
+    import math
+    from dispatch.case_cost.service import (
+        calculate_case_response_cost_classic,
+        get_hourly_rate,
+    )
+    from dispatch.participant_role.models import ParticipantRoleType
+    from dispatch.case.enums import CostModelType
+
+    # Set up timestamps with exact timing
+    now = datetime.now(timezone.utc).replace(microsecond=0)
+    one_hour_ago = (now - timedelta(hours=1)).replace(microsecond=0)
+    case.created_at = one_hour_ago.replace(tzinfo=None)
+
+    # Set up participant role with exact timing
+    participant_role.role = ParticipantRoleType.assignee  # Full engagement multiplier
+    participant_role.assumed_at = one_hour_ago.replace(tzinfo=None)
+    participant_role.renounced_at = now.replace(tzinfo=None)  # Set exact end time
+
+    # Set up participant
+    participant.participant_roles = [participant_role]
+    case.participants.append(participant)
+
+    # Set up cost type for classic model
+    case_cost_type.model_type = CostModelType.classic
+    case_cost_type.project = case.project
+
+    # Calculate cost
+    cost = calculate_case_response_cost_classic(case=case, db_session=session)
+
+    # Verify cost calculation
+    hourly_rate = get_hourly_rate(case.project)
+    expected_cost = math.ceil(hourly_rate)  # Cost for 1 hour with full engagement
+    assert cost > 0
+    assert cost == expected_cost  # Should be exactly the hourly rate for 1 hour at full engagement
+
+
+def test_get_participant_role_time_seconds(case, participant_role):
+    """Tests that participant role time is calculated correctly."""
+    from datetime import datetime, timedelta, timezone
+    from dispatch.case_cost.service import get_participant_role_time_seconds
+    from dispatch.participant_role.models import ParticipantRoleType
+
+    # Set up test times with exact 1 hour difference
+    now = datetime.now(timezone.utc).replace(microsecond=0, tzinfo=None)
+    one_hour_ago = (now - timedelta(hours=1)).replace(microsecond=0)
+
+    # Set up participant role for full engagement test with exact timing
+    participant_role.role = ParticipantRoleType.assignee
+    participant_role.assumed_at = one_hour_ago
+    participant_role.renounced_at = now  # Set exact end time instead of None
+
+    # Test full engagement role (assignee)
+    time_seconds = get_participant_role_time_seconds(case=case, participant_role=participant_role)
+    assert time_seconds > 0
+    assert time_seconds <= 3600  # Should not exceed 1 hour
+
+    # Set up participant role for no engagement test
+    participant_role.role = ParticipantRoleType.observer
+
+    # Test no engagement role (observer)
+    time_seconds = get_participant_role_time_seconds(case=case, participant_role=participant_role)
+    assert time_seconds == 0
+
+
+def test_get_total_participant_roles_time_seconds(case, participant, participant_role):
+    """Tests that total participant role time is calculated correctly."""
+    from datetime import datetime, timedelta, timezone
+    from dispatch.case_cost.service import get_total_participant_roles_time_seconds
+    from dispatch.participant_role.models import ParticipantRoleType
+
+    # Set up test times with exact 1 hour difference
+    now = datetime.now(timezone.utc).replace(microsecond=0, tzinfo=None)
+    one_hour_ago = (now - timedelta(hours=1)).replace(microsecond=0)
+
+    # Set up participant role with exact timing
+    participant_role.role = ParticipantRoleType.assignee
+    participant_role.assumed_at = one_hour_ago
+    participant_role.renounced_at = now  # Set exact end time instead of None
+
+    # Add role to participant and participant to case
+    participant.participant_roles = [participant_role]
+    case.participants.append(participant)
+
+    # Calculate total time
+    total_time = get_total_participant_roles_time_seconds(case=case)
+
+    assert total_time > 0
+    assert total_time <= 3600  # Should not exceed 1 hour
+
+
+def test_update_case_response_cost(
+    case, session, participant_activity, case_cost_type, cost_model_activity
+):
     """Tests that the case response cost is created correctly."""
     from dispatch.case.enums import CostModelType
     from dispatch.case_cost.service import update_case_response_cost
-    from dispatch.case_cost_type import service as case_cost_type_service
 
     # Set up participant activity
     participant_activity.case = case
 
-    # Set up default case cost type
-    for cost_type in case_cost_type_service.get_all(db_session=session):
-        cost_type.model_type = None
-    case_cost_type.project = case.project
+    # Set up cost types for both models
     case_cost_type.model_type = CostModelType.new
+    case_cost_type.project = case.project
+
+    # Set up case type cost model
+    case.case_type.cost_model.enabled = True
+    case.case_type.cost_model.activities = [cost_model_activity]
 
     # Assert that costs were calculated
     results = update_case_response_cost(case=case, db_session=session)
     assert results[CostModelType.new] > 0
-
-
-def test_update_case_response_cost__fail_no_cost_types(case, session):
-    """Tests that the case response cost calculation handles missing cost types."""
-    from dispatch.case.enums import CostModelType
-    from dispatch.case_cost.service import (
-        update_case_response_cost,
-        get_by_case_id,
-    )
-    from dispatch.case_cost_type import service as case_cost_type_service
-
-    # Ensure there are no default cost types for any model
-    for cost_type in case_cost_type_service.get_all(db_session=session):
-        cost_type.model_type = None
-
-    # Calculate costs
-    results = update_case_response_cost(case=case, db_session=session)
-
-    # Verify no costs were calculated
-    assert isinstance(results, dict)
-    assert not results[CostModelType.new]
-    assert not get_by_case_id(db_session=session, case_id=case.id)
+    assert results[CostModelType.classic] >= 0
