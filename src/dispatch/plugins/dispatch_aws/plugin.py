@@ -25,8 +25,10 @@ from dispatch.metrics import provider as metrics_provider
 from dispatch.plugins.bases import SignalConsumerPlugin
 from dispatch.plugins.dispatch_aws.config import AWSSQSConfiguration
 from dispatch.project.models import Project
+from dispatch.project import service as project_service
 from dispatch.signal import service as signal_service
 from dispatch.signal.models import SignalInstanceCreate
+from dispatch.signal.exceptions import SignalNotIdentifiedException
 
 from . import __version__
 
@@ -120,10 +122,45 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                 return None
 
         try:
-            with db_session.begin_nested():
-                signal_instance = signal_service.create_signal_instance(
+            # Get the signal definition first
+            project_obj = project_service.get_by_name_or_default(
+                db_session=db_session, project_in=signal_instance_in.project
+            )
+
+            if not signal_instance_in.signal:
+                external_id = signal_instance_in.external_id
+
+                # this assumes the external_ids are uuids
+                if not external_id:
+                    msg = "A detection external id must be provided in order to get the signal definition."
+                    raise SignalNotIdentifiedException(msg)
+
+                # Try to get the signal definition by external ID or variant
+                signal_definition = signal_service.get_by_variant_or_external_id(
                     db_session=db_session,
-                    signal_instance_in=signal_instance_in,
+                    project_id=project_obj.id,
+                    external_id=external_id,
+                )
+
+            if not signal_definition:
+                # Fall back to default signal definition
+                signal_definition = signal_service.get_default(
+                    db_session=db_session,
+                    project_id=project_obj.id,
+                )
+
+            if not signal_definition:
+                log.warning(
+                    f"No signal definition could be found for external_id={external_id} and no default exists."
+                )
+                return None
+
+            signal_instance_in.signal = signal_definition
+
+            with db_session.begin_nested():
+                # Use create_instance directly to avoid the extra commit in create_signal_instance
+                signal_instance = signal_service.create_instance(
+                    db_session=db_session, signal_instance_in=signal_instance_in
                 )
 
                 metrics_provider.counter(
@@ -150,7 +187,7 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
             return None
         except (ResourceClosedError, Exception) as e:
             log.exception(
-                f"Encountered an error when trying to create a signal instance. Signal name/variant: {signal_instance_in.raw['name'] if signal_instance_in.raw and signal_instance_in.raw['name'] else signal_instance_in.raw['variant']}. Error: {e}"
+                f"Encountered an error when trying to create a signal instance. Signal name/variant: {signal_instance_in.raw.get('name', '') if signal_instance_in.raw else ''} / {signal_instance_in.raw.get('variant', '') if signal_instance_in.raw else ''}. Error: {e}"
             )
             return None
 
