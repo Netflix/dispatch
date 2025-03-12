@@ -72,6 +72,9 @@ export default {
   computed: {
     totalCost: function () {
       var totalCost = this.caseCosts.reduce(function (accumulator, item) {
+        if (item.case_cost_type.model_type == "Classic") {
+          return accumulator
+        }
         return accumulator + item.amount
       }, 0)
       return totalCost

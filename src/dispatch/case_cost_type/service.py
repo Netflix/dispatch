@@ -38,8 +38,8 @@ def get_or_create_response_cost_type(
 
     if not case_cost_type:
         case_cost_type_in = CaseCostTypeCreate(
-            name=default_case_cost_type["name"],
-            description=default_case_cost_type["description"],
+            name=f"{default_case_cost_type['name']}",
+            description=f"{default_case_cost_type['description']} ({model_type} Cost Model)",
             category=default_case_cost_type["category"],
             details=default_case_cost_type["details"],
             editable=default_case_cost_type["editable"],
