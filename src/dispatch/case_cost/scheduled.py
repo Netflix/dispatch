@@ -19,7 +19,7 @@ from .service import (
 log = logging.getLogger(__name__)
 
 
-@scheduler.add(every(1).minute, name="calculate-cases-response-cost")
+@scheduler.add(every(1).hour, name="calculate-cases-response-cost")
 @timer
 @scheduled_project_task
 def calculate_cases_response_cost(db_session: Session, project: Project):
