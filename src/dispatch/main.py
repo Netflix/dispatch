@@ -138,18 +138,43 @@ async def db_session_middleware(request: Request, call_next):
     try:
         session = scoped_session(sessionmaker(bind=schema_engine), scopefunc=get_request_id)
         request.state.db = session()
+
         # we track the session
         request.state.db._dispatch_session_id = SessionTracker.track_session(
             request.state.db, context=f"api_request_{organization_slug}"
         )
         response = await call_next(request)
+
+        # If we got here without exceptions, commit any pending changes
+        if not request.state.db.is_active:
+            request.state.db.commit()
+
     except Exception as e:
+        # Explicitly rollback on exceptions
+        try:
+            if hasattr(request.state, "db") and request.state.db.is_active:
+                request.state.db.rollback()
+        except Exception as rollback_error:
+            logging.error(f"Error during rollback: {rollback_error}")
+
+        # Re-raise the original exception
         raise e from None
     finally:
-        # we untrack the session
-        if hasattr(request.state.db, "_dispatch_session_id"):
-            SessionTracker.untrack_session(request.state.db._dispatch_session_id)
-        request.state.db.close()
+        # Always clean up resources
+        if hasattr(request.state, "db"):
+            # Untrack the session
+            if hasattr(request.state.db, "_dispatch_session_id"):
+                try:
+                    SessionTracker.untrack_session(request.state.db._dispatch_session_id)
+                except Exception as untrack_error:
+                    logging.error(f"Failed to untrack session: {untrack_error}")
+
+            # Close the session
+            try:
+                request.state.db.close()
+                session.remove()  # Remove the session from the registry
+            except Exception as close_error:
+                logging.error(f"Error closing database session: {close_error}")
 
     _request_id_ctx_var.reset(ctx_token)
     return response
