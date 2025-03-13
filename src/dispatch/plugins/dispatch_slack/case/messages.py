@@ -353,6 +353,9 @@ def create_genai_signal_message_metadata_blocks(
     """
     if isinstance(message, dict):
         message = json_to_slack_format(message)
+
+    # Truncate the message if it exceeds Block Kit's maximum length
+    message = message[:2997] + "..." if len(message) > 3000 else message
     signal_metadata_blocks.append(
         Section(text=f":magic_wand: *GenAI Alert Analysis*\n\n{message}"),
     )
