@@ -1,38 +1,36 @@
-import time
 import logging
-from os import path
-from uuid import uuid1
-from typing import Optional, Final
+import time
 from contextvars import ContextVar
+from os import path
+from typing import Final, Optional
+from uuid import uuid1
 
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
 from pydantic.error_wrappers import ValidationError
-
 from sentry_asgi import SentryMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import inspect
-from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import scoped_session, sessionmaker
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
-from starlette.requests import Request
-from starlette.routing import compile_path
 from starlette.middleware.gzip import GZipMiddleware
-
-from starlette.responses import Response, StreamingResponse, FileResponse
+from starlette.requests import Request
+from starlette.responses import FileResponse, Response, StreamingResponse
+from starlette.routing import compile_path
 from starlette.staticfiles import StaticFiles
 
 from .api import api_router
-from .common.utils.cli import install_plugins, install_plugin_events
+from .common.utils.cli import install_plugin_events, install_plugins
 from .config import (
     STATIC_DIR,
 )
-from .database.core import engine, sessionmaker
+from .database.core import engine
+from .database.logging import SessionTracker
 from .extensions import configure_extensions
 from .logging import configure_logging
 from .metrics import provider as metric_provider
 from .rate_limiter import limiter
-
 
 log = logging.getLogger(__name__)
 
@@ -121,6 +119,7 @@ async def db_session_middleware(request: Request, call_next):
     organization_slug = path_params.get("organization", "default")
     request.state.organization = organization_slug
     schema = f"dispatch_organization_{organization_slug}"
+
     # validate slug exists
     schema_names = inspect(engine).get_schema_names()
     if schema in schema_names:
@@ -139,10 +138,17 @@ async def db_session_middleware(request: Request, call_next):
     try:
         session = scoped_session(sessionmaker(bind=schema_engine), scopefunc=get_request_id)
         request.state.db = session()
+        # we track the session
+        request.state.db._dispatch_session_id = SessionTracker.track_session(
+            request.state.db, context=f"api_request_{organization_slug}"
+        )
         response = await call_next(request)
     except Exception as e:
         raise e from None
     finally:
+        # we untrack the session
+        if hasattr(request.state.db, "_dispatch_session_id"):
+            SessionTracker.untrack_session(request.state.db._dispatch_session_id)
         request.state.db.close()
 
     _request_id_ctx_var.reset(ctx_token)
