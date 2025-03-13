@@ -17,6 +17,7 @@ from dispatch.signal import service as signal_service
 
 from .models import (
     SignalCreate,
+    SignalData,
     SignalEngagementCreate,
     SignalEngagementPagination,
     SignalEngagementRead,
@@ -40,6 +41,7 @@ from .service import (
     delete_signal_filter,
     get,
     get_by_primary_or_external_id,
+    get_signal_data,
     get_signal_engagement,
     get_signal_filter,
     update,
@@ -336,3 +338,21 @@ def delete_signal(db_session: DbSession, signal_id: Union[str, PrimaryKey]):
             detail=[{"msg": "A signal with this id does not exist."}],
         )
     delete(db_session=db_session, signal_id=signal.id)
+
+
+@router.get("/data/{entity_name}", response_model=SignalData)
+def return_signal_data(
+    db_session: DbSession,
+    entity_name: str,
+    entity_type_id: int,
+):
+    """Gets a signal data given a named entity and entity type id."""
+    signal_data = get_signal_data(
+        db_session=db_session, entity_name=entity_name, entity_type_id=entity_type_id
+    )
+    if not signal_data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "No signals with that entity name were found."}],
+        )
+    return signal_data
