@@ -22,7 +22,10 @@
     </v-list-item>
     <v-divider />
     <span v-for="(cost, index) in case_costs" :key="index">
-      <v-list-item target="_blank" v-if="cost.case_cost_type.model_type == model">
+      <v-list-item
+        target="_blank"
+        v-if="cost.case_cost_type.model_type == model || !cost.case_cost_type.model_type"
+      >
         <template #prepend v-if="cost.case_cost_type.editable">
           <v-tooltip location="bottom">
             <template #activator="{ props }">
