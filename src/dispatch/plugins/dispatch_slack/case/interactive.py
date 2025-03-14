@@ -1554,9 +1554,6 @@ def create_channel_button_click(
     db_session: Session,
 ):
     ack()
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
-    case.dedicated_channel = True
-    db_session.commit()
 
     blocks = [
         Section(text="Migrate the thread conversation to a dedicated channel?"),
