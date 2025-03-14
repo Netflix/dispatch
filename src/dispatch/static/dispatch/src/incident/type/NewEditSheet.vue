@@ -127,6 +127,13 @@
               </v-col>
               <v-col cols="12">
                 <v-checkbox
+                  v-model="exclude_from_review"
+                  label="Exclude from Review"
+                  hint="Check if this incident type should be excluded from incident review document creation."
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-checkbox
                   v-model="default_incident_type"
                   label="Default Incident Type"
                   hint="Check this if this incident type should be the default."
@@ -231,6 +238,7 @@ export default {
       "selected.cost_model",
       "selected.exclude_from_metrics",
       "selected.exclude_from_reminders",
+      "selected.exclude_from_review",
       "selected.default",
       "selected.channel_description",
       "selected.description_service",
