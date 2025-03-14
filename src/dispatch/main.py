@@ -1,38 +1,36 @@
-import time
 import logging
-from os import path
-from uuid import uuid1
-from typing import Optional, Final
+import time
 from contextvars import ContextVar
+from os import path
+from typing import Final, Optional
+from uuid import uuid1
 
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
 from pydantic.error_wrappers import ValidationError
-
 from sentry_asgi import SentryMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import inspect
-from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import scoped_session, sessionmaker
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
-from starlette.requests import Request
-from starlette.routing import compile_path
 from starlette.middleware.gzip import GZipMiddleware
-
-from starlette.responses import Response, StreamingResponse, FileResponse
+from starlette.requests import Request
+from starlette.responses import FileResponse, Response, StreamingResponse
+from starlette.routing import compile_path
 from starlette.staticfiles import StaticFiles
 
 from .api import api_router
-from .common.utils.cli import install_plugins, install_plugin_events
+from .common.utils.cli import install_plugin_events, install_plugins
 from .config import (
     STATIC_DIR,
 )
-from .database.core import engine, sessionmaker
+from .database.core import engine
+from .database.logging import SessionTracker
 from .extensions import configure_extensions
 from .logging import configure_logging
 from .metrics import provider as metric_provider
 from .rate_limiter import limiter
-
 
 log = logging.getLogger(__name__)
 
@@ -115,38 +113,77 @@ async def db_session_middleware(request: Request, call_next):
     # we create a per-request id such that we can ensure that our session is scoped for a particular request.
     # see: https://github.com/tiangolo/fastapi/issues/726
     ctx_token = _request_id_ctx_var.set(request_id)
-    path_params = get_path_params_from_request(request)
+    session = None
 
-    # if this call is organization specific set the correct search path
-    organization_slug = path_params.get("organization", "default")
-    request.state.organization = organization_slug
-    schema = f"dispatch_organization_{organization_slug}"
-    # validate slug exists
-    schema_names = inspect(engine).get_schema_names()
-    if schema in schema_names:
+    try:
+        path_params = get_path_params_from_request(request)
+
+        # if this call is organization specific set the correct search path
+        organization_slug = path_params.get("organization", "default")
+        request.state.organization = organization_slug
+        schema = f"dispatch_organization_{organization_slug}"
+
+        # validate slug exists
+        schema_names = inspect(engine).get_schema_names()
+        if schema not in schema_names:
+            return JSONResponse(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content={"detail": [{"msg": f"Unknown database schema name: {schema}"}]},
+            )
+
         # add correct schema mapping depending on the request
         schema_engine = engine.execution_options(
             schema_translate_map={
                 None: schema,
             }
         )
-    else:
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"detail": [{"msg": f"Unknown database schema name: {schema}"}]},
-        )
 
-    try:
         session = scoped_session(sessionmaker(bind=schema_engine), scopefunc=get_request_id)
         request.state.db = session()
+
+        # we track the session
+        request.state.db._dispatch_session_id = SessionTracker.track_session(
+            request.state.db, context=f"api_request_{organization_slug}"
+        )
+
         response = await call_next(request)
+
+        # If we got here without exceptions, commit any pending changes
+        if hasattr(request.state, "db") and request.state.db.is_active:
+            request.state.db.commit()
+
+        return response
+
     except Exception as e:
+        # Explicitly rollback on exceptions
+        try:
+            if hasattr(request.state, "db") and request.state.db.is_active:
+                request.state.db.rollback()
+        except Exception as rollback_error:
+            logging.error(f"Error during rollback: {rollback_error}")
+
+        # Re-raise the original exception
         raise e from None
     finally:
-        request.state.db.close()
+        # Always clean up resources
+        if hasattr(request.state, "db"):
+            # Untrack the session
+            if hasattr(request.state.db, "_dispatch_session_id"):
+                try:
+                    SessionTracker.untrack_session(request.state.db._dispatch_session_id)
+                except Exception as untrack_error:
+                    logging.error(f"Failed to untrack session: {untrack_error}")
 
-    _request_id_ctx_var.reset(ctx_token)
-    return response
+            # Close the session
+            try:
+                request.state.db.close()
+                if session is not None:
+                    session.remove()  # Remove the session from the registry
+            except Exception as close_error:
+                logging.error(f"Error closing database session: {close_error}")
+
+        # Always reset the context variable
+        _request_id_ctx_var.reset(ctx_token)
 
 
 @app.middleware("http")
