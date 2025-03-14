@@ -518,7 +518,9 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
         db_session=db_session, incident_type_id=incident.incident_type_id
     )
     if incident_type.exclude_from_review:
-        log.info("Incident type is excluded from review. Skipping creation...")
+        log.info(
+            f"Incident of type {incident_type.name} is excluded from review. Skipping creation..."
+        )
         return
 
     # Create the post-incident review document.
