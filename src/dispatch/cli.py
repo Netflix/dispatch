@@ -869,11 +869,13 @@ def process_signals():
     Returns:
         None
     """
-    from sqlalchemy import asc
     from contextlib import contextmanager
 
+    from sqlalchemy import asc
+    from sqlalchemy.orm import sessionmaker
+
     from dispatch.common.utils.cli import install_plugins
-    from dispatch.database.core import SessionLocal, engine, sessionmaker
+    from dispatch.database.core import SessionLocal, engine
     from dispatch.organization.service import get_all as get_all_organizations
     from dispatch.signal import flows as signal_flows
     from dispatch.signal.models import SignalInstance
@@ -894,6 +896,7 @@ def process_signals():
             session.close()
 
     organizations = get_all_organizations(db_session=SessionLocal())
+
     while True:
         for organization in organizations:
             schema_engine = engine.execution_options(
