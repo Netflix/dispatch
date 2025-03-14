@@ -107,17 +107,17 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
             )
         except ValidationError as e:
             log.warning(
-                f"Received a signal instance that does not conform to the SignalInstanceCreate pydantic model. Skipping creation: {e}"
+                f"Received a signal that does not conform to the SignalInstanceCreate pydantic model. Skipping creation and deleting message: {e}"
             )
-            return None
+            return "DELETE_MESSAGE"
 
         # if the signal has an existing uuid we check if it already exists
         if signal_instance_in.raw and signal_instance_in.raw.get("id"):
             if signal_service.get_signal_instance(
-                db_session=db_session, signal_instance_id=signal_instance_in.raw["id"]
+                db_session=db_session, signal_instance_id=signal_instance_in.raw.get("id")
             ):
                 log.info(
-                    f"Received a signal that already exists in the database. Skipping signal instance creation: {signal_instance_in.raw['id']}"
+                    f"Received a signal that already exists in the database. Skipping signal instance creation: {signal_instance_in.raw.get('id')}"
                 )
                 return None
 
@@ -128,7 +128,7 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
 
             if not signal_instance_in.project:
                 log.warning(
-                    f"No project provided for signal instance creation. Skipping signal instance creation: {signal_instance_in.raw['id']}"
+                    f"No project provided for signal instance creation. Skipping signal instance creation: {signal_instance_in.raw.get('id')}"
                 )
                 return None
 
@@ -245,22 +245,29 @@ class AWSSQSSignalConsumerPlugin(SignalConsumerPlugin):
                     )
 
                     if not response.get("Messages"):
-                        log.info("No messages received from SQS.")
+                        log.debug("No messages received from SQS.")
                         continue
 
                     entries: list[SqsEntries] = []
                     with get_session() as batch_session:
-                        # Batch transaction - commits all successful messages or none
-                        with batch_session.begin():
+                        # Use nested transaction (SAVEPOINT) for the batch
+                        with batch_session.begin_nested():
                             for message in response["Messages"]:
                                 if self._shutdown:
                                     log.info("Shutdown requested, stopping message processing...")
                                     break
                                 entry = self._process_message(batch_session, message, project)
-                                if entry:
+                                if isinstance(entry, dict):
                                     entries.append(entry)
+                                elif entry == "DELETE_MESSAGE":
+                                    # Force deletion for hopelessly invalid messages
+                                    client.delete_message(
+                                        QueueUrl=queue_url, ReceiptHandle=message["ReceiptHandle"]
+                                    )
+                    # Commit if everything else is good
+                    batch_session.commit()
 
-                    # Only delete messages that were successfully processed
+                    # Now delete successfully processed messages in bulk
                     if entries:
                         client.delete_message_batch(QueueUrl=queue_url, Entries=entries)
 
