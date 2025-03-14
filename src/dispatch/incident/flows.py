@@ -21,6 +21,7 @@ from dispatch.group import flows as group_flows
 from dispatch.group.enums import GroupAction, GroupType
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentRead
+from dispatch.incident.type.service import get as get_incident_type
 from dispatch.incident_cost import service as incident_cost_service
 from dispatch.individual import service as individual_service
 from dispatch.individual.models import IndividualContact
@@ -511,6 +512,13 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
 
     if incident.incident_review_document:
         log.info("The post-incident review document has already been created. Skipping creation...")
+        return
+
+    incident_type = get_incident_type(
+        db_session=db_session, incident_type_id=incident.incident_type_id
+    )
+    if incident_type.exclude_from_review:
+        log.info("Incident type is excluded from review. Skipping creation...")
         return
 
     # Create the post-incident review document.
