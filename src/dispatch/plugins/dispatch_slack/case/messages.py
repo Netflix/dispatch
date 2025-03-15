@@ -93,6 +93,7 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
     )
 
     blocks = [
+        Context(elements=[f"* {case.name} - Case Details*"]),
         Section(
             text=title,
             accessory=Button(
