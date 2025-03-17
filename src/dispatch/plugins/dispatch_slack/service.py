@@ -348,6 +348,13 @@ def add_conversation_bookmark(
     )
 
 
+def remove_member_from_channel(client: WebClient, conversation_id: str, user_id: str) -> None:
+    """Removes a user from a channel."""
+    return make_call(
+        client, SlackAPIPostEndpoints.conversations_kick, channel=conversation_id, user=user_id
+    )
+
+
 def create_conversation(client: WebClient, name: str, is_private: bool = False) -> dict:
     """Make a new Slack conversation."""
     response = make_call(
