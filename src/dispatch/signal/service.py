@@ -999,10 +999,6 @@ def get_signal_data(
     ).filter(cast(SignalFilter.expression, JSONB).op("@>")(entity_subquery))
 
     snooze_result = db_session.execute(query).fetchone()
-    if snooze_result:
-        print(
-            f"Active Count: {snooze_result.active_count}, Expired Count: {snooze_result.expired_count}"
-        )
 
     # Calculate the date threshold based on num_days
     date_threshold = datetime.utcnow() - timedelta(days=num_days) if num_days is not None else None
@@ -1037,11 +1033,6 @@ def get_signal_data(
     )
 
     signal_result = db_session.execute(query).fetchone()
-    if signal_result:
-        print(
-            f"Count with Snooze: {signal_result.count_with_snooze}, "
-            f"Count without Snooze: {signal_result.count_without_snooze}"
-        )
 
     return SignalData(
         num_signals_alerted=signal_result.count_without_snooze,

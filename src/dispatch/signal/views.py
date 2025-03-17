@@ -297,11 +297,6 @@ def return_signal_data(
         entity_type_id=entity_type_id,
         num_days=num_days,
     )
-    if not signal_data:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "No signals with that entity name were found."}],
-        )
     return signal_data
 
 
