@@ -19,6 +19,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType, observes
 
+from dispatch.case.enums import CostModelType
 from dispatch.case.priority.models import CasePriorityBase, CasePriorityCreate, CasePriorityRead
 from dispatch.case.severity.models import CaseSeverityBase, CaseSeverityCreate, CaseSeverityRead
 from dispatch.case.type.models import CaseTypeBase, CaseTypeCreate, CaseTypeRead
@@ -199,10 +200,22 @@ class Case(Base, TimeStampMixin, ProjectMixin):
         return [participant.individual.email for participant in self.participants]
 
     @hybrid_property
-    def total_cost(self):
+    def total_cost_classic(self):
         total_cost = 0
         if self.case_costs:
             for cost in self.case_costs:
+                if cost.case_cost_type.model_type == CostModelType.new:
+                    continue
+                total_cost += cost.amount
+        return total_cost
+
+    @hybrid_property
+    def total_cost_new(self):
+        total_cost = 0
+        if self.case_costs:
+            for cost in self.case_costs:
+                if cost.case_cost_type.model_type == CostModelType.classic:
+                    continue
                 total_cost += cost.amount
         return total_cost
 
@@ -300,7 +313,8 @@ class CaseReadMinimal(CaseBase):
     reported_at: Optional[datetime] = None
     tags: Optional[List[TagRead]] = []
     ticket: Optional[TicketRead] = None
-    total_cost: float | None
+    total_cost_classic: float | None
+    total_cost_new: float | None
     triage_at: Optional[datetime] = None
 
 
@@ -334,7 +348,8 @@ class CaseRead(CaseBase):
     storage: Optional[StorageRead] = None
     tags: Optional[List[TagRead]] = []
     ticket: Optional[TicketRead] = None
-    total_cost: float | None
+    total_cost_classic: float | None
+    total_cost_new: float | None
     triage_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     workflow_instances: Optional[List[WorkflowInstanceRead]] = []

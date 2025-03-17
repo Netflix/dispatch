@@ -7,9 +7,8 @@ from dispatch.case.severity.models import CaseSeverityCreate
 from dispatch.case.type import service as case_type_service
 from dispatch.case.type.config import default_case_type
 from dispatch.case.type.models import CaseTypeCreate
+from dispatch.case.enums import CostModelType
 from dispatch.case_cost_type import service as case_cost_type_service
-from dispatch.case_cost_type.config import default_case_cost_type
-from dispatch.case_cost_type.models import CaseCostTypeCreate
 from dispatch.decorators import background_task
 from dispatch.incident.priority import service as incident_priority_service
 from dispatch.incident.priority.config import default_incident_priorities
@@ -104,16 +103,12 @@ def project_init_flow(*, project_id: int, organization_slug: str, db_session=Non
     )
 
     # Create default case response cost
-    case_cost_type_in = CaseCostTypeCreate(
-        name=default_case_cost_type["name"],
-        description=default_case_cost_type["description"],
-        category=default_case_cost_type["category"],
-        details=default_case_cost_type["details"],
-        default=default_case_cost_type["default"],
-        editable=default_case_cost_type["editable"],
-        project=project,
+    case_cost_type_service.get_or_create_response_cost_type(
+        db_session=db_session, project_id=project.id, model_type=CostModelType.classic
     )
-    case_cost_type_service.create(db_session=db_session, case_cost_type_in=case_cost_type_in)
+    case_cost_type_service.get_or_create_response_cost_type(
+        db_session=db_session, project_id=project.id, model_type=CostModelType.new
+    )
 
     # Create default case type
     case_type_in = CaseTypeCreate(

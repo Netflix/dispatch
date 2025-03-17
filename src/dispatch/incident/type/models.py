@@ -31,6 +31,7 @@ class IncidentType(ProjectMixin, Base):
     default = Column(Boolean, default=False)
     visibility = Column(String, default=Visibility.open)
     exclude_from_reminders = Column(Boolean, default=False)
+    exclude_from_review = Column(Boolean, default=False)
     plugin_metadata = Column(JSON, default=[])
     task_plugin_metadata = Column(JSON, default=[])
 
@@ -116,6 +117,7 @@ class IncidentTypeBase(DispatchBase):
     tracking_template_document: Optional[Document]
     exclude_from_metrics: Optional[bool] = False
     exclude_from_reminders: Optional[bool] = False
+    exclude_from_review: Optional[bool] = False
     default: Optional[bool] = False
     project: Optional[ProjectRead]
     plugin_metadata: List[PluginMetadata] = []

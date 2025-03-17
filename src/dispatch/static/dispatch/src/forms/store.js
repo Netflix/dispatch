@@ -272,7 +272,7 @@ function createPayload(selected) {
   })
   payload["form_data"] = JSON.stringify(payload["form_data"])
   payload["attorney_form_data"] = JSON.stringify(payload["attorney_form_data"])
-  payload["project_id"] = selected.project.id
+  payload["project_id"] = selected.form_type.project.id
   return payload
 }
 
@@ -287,7 +287,7 @@ function save({ commit, dispatch }) {
         commit("SET_SELECTED_LOADING", false)
         commit(
           "notification_backend/addBeNotification",
-          { text: "Form type created successfully.", type: "success" },
+          { text: "Form created successfully.", type: "success" },
           { root: true }
         )
         if (state.selected.status == "Completed") {

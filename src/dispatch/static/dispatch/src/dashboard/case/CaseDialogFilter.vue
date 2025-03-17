@@ -187,7 +187,8 @@ export default {
           "tags",
           "title",
           "triage_at",
-          "total_cost",
+          "total_cost_classic",
+          "total_cost_new",
         ],
       }
 
