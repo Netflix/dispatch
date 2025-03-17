@@ -22,6 +22,7 @@ class SlackAPIPostEndpoints(DispatchEnum):
     conversations_archive = "conversations.archive"
     conversations_create = "conversations.create"
     conversations_invite = "conversations.invite"
+    conversations_kick = "conversations.kick"
     conversations_rename = "conversations.rename"
     conversations_set_topic = "conversations.setTopic"
     conversations_set_purpose = "conversations.setPurpose"
