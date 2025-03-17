@@ -465,7 +465,7 @@ class JiraTicketPlugin(TicketPlugin):
                 "issuetype": issuetype,
                 "assignee": assignee,
                 "reporter": reporter,
-                "summary": title.strip(),
+                "summary": title.replace("\n", ""),
             }
 
             ticket = create(self.configuration, client, issue_fields)
