@@ -1,7 +1,16 @@
 import logging
 from typing import Union
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, Response, status
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    HTTPException,
+    Query,
+    Request,
+    Response,
+    status,
+)
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.exc import IntegrityError
 
@@ -274,6 +283,28 @@ def get_signals(common: CommonParameters):
     return search_filter_sort_paginate(model="Signal", **common)
 
 
+@router.get("/data", response_model=SignalData)
+def return_signal_data(
+    db_session: DbSession,
+    entity_value: str = Query(..., description="The name of the entity"),
+    entity_type_id: int = Query(..., description="The ID of the entity type"),
+    num_days: int = Query(None, description="The number of days to look back"),
+):
+    """Gets a signal data given a named entity and entity type id."""
+    signal_data = get_signal_data(
+        db_session=db_session,
+        entity_value=entity_value,
+        entity_type_id=entity_type_id,
+        num_days=num_days,
+    )
+    if not signal_data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "No signals with that entity name were found."}],
+        )
+    return signal_data
+
+
 @router.get("/{signal_id}", response_model=SignalRead)
 def get_signal(db_session: DbSession, signal_id: Union[str, PrimaryKey]):
     """Gets a signal by its id."""
@@ -338,21 +369,3 @@ def delete_signal(db_session: DbSession, signal_id: Union[str, PrimaryKey]):
             detail=[{"msg": "A signal with this id does not exist."}],
         )
     delete(db_session=db_session, signal_id=signal.id)
-
-
-@router.get("/data/{entity_name}", response_model=SignalData)
-def return_signal_data(
-    db_session: DbSession,
-    entity_name: str,
-    entity_type_id: int,
-):
-    """Gets a signal data given a named entity and entity type id."""
-    signal_data = get_signal_data(
-        db_session=db_session, entity_name=entity_name, entity_type_id=entity_type_id
-    )
-    if not signal_data:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "No signals with that entity name were found."}],
-        )
-    return signal_data

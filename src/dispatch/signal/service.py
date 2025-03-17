@@ -971,7 +971,7 @@ def get_cases_for_signal_by_resolution_reason(
 
 
 def get_signal_data(
-    *, db_session: Session, entity_name: str, entity_type_id: int
+    *, db_session: Session, entity_value: str, entity_type_id: int, num_days: int | None
 ) -> Optional[SignalData]:
     """Gets a signal data for a given named entity and type."""
     entity_subquery = (
@@ -987,7 +987,7 @@ def get_signal_data(
                 )
             )
         )
-        .filter(and_(Entity.value == entity_name, Entity.entity_type_id == entity_type_id))
+        .filter(and_(Entity.value == entity_value, Entity.entity_type_id == entity_type_id))
         .as_scalar()
     )
 
@@ -1003,6 +1003,9 @@ def get_signal_data(
         print(
             f"Active Count: {snooze_result.active_count}, Expired Count: {snooze_result.expired_count}"
         )
+
+    # Calculate the date threshold based on num_days
+    date_threshold = datetime.utcnow() - timedelta(days=num_days) if num_days is not None else None
 
     count_with_snooze = func.count().filter(SignalInstance.filter_action == "snooze")
     count_without_snooze = func.count().filter(
@@ -1024,7 +1027,13 @@ def get_signal_data(
                 assoc_signal_instance_entities.c.signal_instance_id == SignalInstance.id,
             )
         )
-        .where(and_(Entity.value == entity_name, Entity.entity_type_id == entity_type_id))
+        .where(
+            and_(
+                Entity.value == entity_value,
+                Entity.entity_type_id == entity_type_id,
+                SignalInstance.created_at >= date_threshold if date_threshold else True,
+            )
+        )
     )
 
     signal_result = db_session.execute(query).fetchone()
