@@ -335,7 +335,7 @@ class JiraTicketPlugin(TicketPlugin):
                 "issuetype": issuetype,
                 "assignee": assignee,
                 "reporter": reporter,
-                "summary": title,
+                "summary": title.replace("\n", ""),
                 **other_fields,
             }
 
@@ -518,7 +518,7 @@ class JiraTicketPlugin(TicketPlugin):
             "issuetype": issuetype,
             "assignee": assignee,
             "reporter": reporter,
-            "summary": title,
+            "summary": title.replace("\n", ""),
             **other_fields,
         }
 
