@@ -348,8 +348,8 @@ def add_conversation_bookmark(
     )
 
 
-def kick_member_from_channel(client: WebClient, conversation_id: str, user_id: str) -> None:
-    """Kicks a user from a channel."""
+def remove_member_from_channel(client: WebClient, conversation_id: str, user_id: str) -> None:
+    """Removes a user from a channel."""
     return make_call(
         client, SlackAPIPostEndpoints.conversations_kick, channel=conversation_id, user=user_id
     )
