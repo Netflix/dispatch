@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta, timezone
 
 
-def test_get_signal_data_basic(session, entity, entity_type, signal, signal_instance):
-    """Test the basic functionality of get_signal_data."""
-    from dispatch.signal.service import get_signal_data
+def test_get_signal_stats_basic(session, entity, entity_type, signal, signal_instance):
+    """Test the basic functionality of get_signal_stats."""
+    from dispatch.signal.service import get_signal_stats
 
     # Setup: Associate the entity with the signal instance
     entity.entity_type = entity_type
@@ -12,7 +12,7 @@ def test_get_signal_data_basic(session, entity, entity_type, signal, signal_inst
     session.commit()
 
     # Execute: Call the service function
-    signal_data = get_signal_data(
+    signal_data = get_signal_stats(
         db_session=session,
         entity_value=entity.value,
         entity_type_id=entity_type.id,
@@ -21,15 +21,15 @@ def test_get_signal_data_basic(session, entity, entity_type, signal, signal_inst
 
     # Assert: Check the result
     assert signal_data is not None
-    assert signal_data.num_signals_alerted >= 0
-    assert signal_data.num_signals_snoozed >= 0
+    assert signal_data.num_signal_instances_alerted >= 0
+    assert signal_data.num_signal_instances_snoozed >= 0
     assert signal_data.num_snoozes_active >= 0
     assert signal_data.num_snoozes_expired >= 0
 
 
-def test_get_signal_data_with_num_days(session, entity, entity_type, signal, signal_instance):
-    """Test get_signal_data with the num_days parameter."""
-    from dispatch.signal.service import get_signal_data
+def test_get_signal_stats_with_num_days(session, entity, entity_type, signal, signal_instance):
+    """Test get_signal_stats with the num_days parameter."""
+    from dispatch.signal.service import get_signal_stats
 
     # Setup: Associate the entity with the signal instance
     entity.entity_type = entity_type
@@ -40,7 +40,7 @@ def test_get_signal_data_with_num_days(session, entity, entity_type, signal, sig
     session.commit()
 
     # Execute: Call the service function with num_days=7 (should include our instance)
-    signal_data_7_days = get_signal_data(
+    signal_data_7_days = get_signal_stats(
         db_session=session,
         entity_value=entity.value,
         entity_type_id=entity_type.id,
@@ -48,7 +48,7 @@ def test_get_signal_data_with_num_days(session, entity, entity_type, signal, sig
     )
 
     # Execute: Call the service function with num_days=1 (should exclude our instance)
-    signal_data_1_day = get_signal_data(
+    signal_data_1_day = get_signal_stats(
         db_session=session,
         entity_value=entity.value,
         entity_type_id=entity_type.id,
@@ -57,17 +57,25 @@ def test_get_signal_data_with_num_days(session, entity, entity_type, signal, sig
 
     # Assert: Check the results
     assert signal_data_7_days is not None
-    assert signal_data_7_days.num_signals_alerted + signal_data_7_days.num_signals_snoozed > 0
+    assert (
+        signal_data_7_days.num_signal_instances_alerted
+        + signal_data_7_days.num_signal_instances_snoozed
+        > 0
+    )
 
     assert signal_data_1_day is not None
-    assert signal_data_1_day.num_signals_alerted + signal_data_1_day.num_signals_snoozed == 0
+    assert (
+        signal_data_1_day.num_signal_instances_alerted
+        + signal_data_1_day.num_signal_instances_snoozed
+        == 0
+    )
 
 
-def test_get_signal_data_with_snooze_filter(
+def test_get_signal_stats_with_snooze_filter(
     session, entity, entity_type, signal, signal_instance, signal_filter
 ):
-    """Test get_signal_data with a snooze filter applied."""
-    from dispatch.signal.service import get_signal_data
+    """Test get_signal_stats with a snooze filter applied."""
+    from dispatch.signal.service import get_signal_stats
     from dispatch.signal.models import SignalFilterAction
 
     # Setup: Associate the entity with the signal instance and add a snooze filter
@@ -87,7 +95,7 @@ def test_get_signal_data_with_snooze_filter(
     session.commit()
 
     # Execute: Call the service function
-    signal_data = get_signal_data(
+    signal_data = get_signal_stats(
         db_session=session,
         entity_value=entity.value,
         entity_type_id=entity_type.id,
@@ -96,15 +104,15 @@ def test_get_signal_data_with_snooze_filter(
 
     # Assert: Check the result
     assert signal_data is not None
-    assert signal_data.num_signals_snoozed > 0
+    assert signal_data.num_signal_instances_snoozed > 0
     assert signal_data.num_snoozes_active > 0
 
 
-def test_get_signal_data_with_expired_snooze_filter(
+def test_get_signal_stats_with_expired_snooze_filter(
     session, entity, entity_type, signal, signal_instance, signal_filter
 ):
-    """Test get_signal_data with an expired snooze filter."""
-    from dispatch.signal.service import get_signal_data
+    """Test get_signal_stats with an expired snooze filter."""
+    from dispatch.signal.service import get_signal_stats
     from dispatch.signal.models import SignalFilterAction
 
     # Setup: Associate the entity with the signal instance and add an expired snooze filter
@@ -123,7 +131,7 @@ def test_get_signal_data_with_expired_snooze_filter(
     session.commit()
 
     # Execute: Call the service function
-    signal_data = get_signal_data(
+    signal_data = get_signal_stats(
         db_session=session,
         entity_value=entity.value,
         entity_type_id=entity_type.id,
@@ -135,12 +143,12 @@ def test_get_signal_data_with_expired_snooze_filter(
     assert signal_data.num_snoozes_expired > 0
 
 
-def test_get_signal_data_not_found(session, entity_type):
-    """Test get_signal_data when no signals are found."""
-    from dispatch.signal.service import get_signal_data
+def test_get_signal_stats_not_found(session, entity_type):
+    """Test get_signal_stats when no signals are found."""
+    from dispatch.signal.service import get_signal_stats
 
     # Execute: Call the service function with a non-existent entity value
-    signal_data = get_signal_data(
+    signal_data = get_signal_stats(
         db_session=session,
         entity_value="non-existent-entity",
         entity_type_id=entity_type.id,
@@ -149,7 +157,7 @@ def test_get_signal_data_not_found(session, entity_type):
 
     # Assert: Check the result
     assert signal_data is not None
-    assert signal_data.num_signals_alerted == 0
-    assert signal_data.num_signals_snoozed == 0
+    assert signal_data.num_signal_instances_alerted == 0
+    assert signal_data.num_signal_instances_snoozed == 0
     assert signal_data.num_snoozes_active == 0
     assert signal_data.num_snoozes_expired == 0

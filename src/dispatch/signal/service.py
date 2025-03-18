@@ -38,7 +38,6 @@ from .models import (
     assoc_signal_instance_entities,
     Signal,
     SignalCreate,
-    SignalData,
     SignalEngagement,
     SignalEngagementCreate,
     SignalEngagementRead,
@@ -51,6 +50,7 @@ from .models import (
     SignalFilterUpdate,
     SignalInstance,
     SignalInstanceCreate,
+    SignalStats,
     SignalUpdate,
     assoc_signal_entity_types,
 )
@@ -970,10 +970,10 @@ def get_cases_for_signal_by_resolution_reason(
     )
 
 
-def get_signal_data(
+def get_signal_stats(
     *, db_session: Session, entity_value: str, entity_type_id: int, num_days: int | None
-) -> Optional[SignalData]:
-    """Gets a signal data for a given named entity and type."""
+) -> Optional[SignalStats]:
+    """Gets a signal statistics for a given named entity and type."""
     entity_subquery = (
         db_session.query(
             func.jsonb_build_array(
@@ -1034,9 +1034,9 @@ def get_signal_data(
 
     signal_result = db_session.execute(query).fetchone()
 
-    return SignalData(
-        num_signals_alerted=signal_result.count_without_snooze,
-        num_signals_snoozed=signal_result.count_with_snooze,
+    return SignalStats(
+        num_signal_instances_alerted=signal_result.count_without_snooze,
+        num_signal_instances_snoozed=signal_result.count_with_snooze,
         num_snoozes_active=snooze_result.active_count,
         num_snoozes_expired=snooze_result.expired_count,
     )
