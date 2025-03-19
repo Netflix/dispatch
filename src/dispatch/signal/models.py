@@ -379,6 +379,13 @@ class AdditionalMetadata(DispatchBase):
     important: Optional[bool]
 
 
+class SignalStats(DispatchBase):
+    num_signal_instances_alerted: Optional[int]
+    num_signal_instances_snoozed: Optional[int]
+    num_snoozes_active: Optional[int]
+    num_snoozes_expired: Optional[int]
+
+
 class SignalInstanceBase(DispatchBase):
     project: Optional[ProjectRead]
     case: Optional[CaseReadMinimal]

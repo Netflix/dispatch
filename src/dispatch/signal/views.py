@@ -1,7 +1,16 @@
 import logging
 from typing import Union
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, Response, status
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    HTTPException,
+    Query,
+    Request,
+    Response,
+    status,
+)
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.exc import IntegrityError
 
@@ -30,6 +39,7 @@ from .models import (
     SignalInstanceRead,
     SignalPagination,
     SignalRead,
+    SignalStats,
     SignalUpdate,
 )
 from .service import (
@@ -40,6 +50,7 @@ from .service import (
     delete_signal_filter,
     get,
     get_by_primary_or_external_id,
+    get_signal_stats,
     get_signal_engagement,
     get_signal_filter,
     update,
@@ -270,6 +281,23 @@ def delete_filter(db_session: DbSession, signal_filter_id: PrimaryKey):
 def get_signals(common: CommonParameters):
     """Gets all signal definitions."""
     return search_filter_sort_paginate(model="Signal", **common)
+
+
+@router.get("/stats", response_model=SignalStats)
+def return_signal_stats(
+    db_session: DbSession,
+    entity_value: str = Query(..., description="The name of the entity"),
+    entity_type_id: int = Query(..., description="The ID of the entity type"),
+    num_days: int = Query(None, description="The number of days to look back"),
+):
+    """Gets a signal statistics given a named entity and entity type id."""
+    signal_data = get_signal_stats(
+        db_session=db_session,
+        entity_value=entity_value,
+        entity_type_id=entity_type_id,
+        num_days=num_days,
+    )
+    return signal_data
 
 
 @router.get("/{signal_id}", response_model=SignalRead)

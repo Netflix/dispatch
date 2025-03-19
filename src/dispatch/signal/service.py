@@ -7,10 +7,11 @@ from collections import defaultdict
 
 from fastapi import HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from sqlalchemy import asc, desc, or_
+from sqlalchemy import asc, desc, or_, func, and_, select, cast
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.query import Query
 from sqlalchemy.sql.expression import true
+from sqlalchemy.dialects.postgresql import JSONB
 
 from dispatch.auth.models import DispatchUser
 from dispatch.case.models import Case
@@ -34,6 +35,7 @@ from .exceptions import (
     SignalNotIdentifiedException,
 )
 from .models import (
+    assoc_signal_instance_entities,
     Signal,
     SignalCreate,
     SignalEngagement,
@@ -48,6 +50,7 @@ from .models import (
     SignalFilterUpdate,
     SignalInstance,
     SignalInstanceCreate,
+    SignalStats,
     SignalUpdate,
     assoc_signal_entity_types,
 )
@@ -964,4 +967,76 @@ def get_cases_for_signal_by_resolution_reason(
         .filter(Case.resolution_reason == resolution_reason)
         .order_by(desc(Case.created_at))
         .limit(limit)
+    )
+
+
+def get_signal_stats(
+    *, db_session: Session, entity_value: str, entity_type_id: int, num_days: int | None
+) -> Optional[SignalStats]:
+    """Gets a signal statistics for a given named entity and type."""
+    entity_subquery = (
+        db_session.query(
+            func.jsonb_build_array(
+                func.jsonb_build_object(
+                    "or",
+                    func.jsonb_build_array(
+                        func.jsonb_build_object(
+                            "model", "Entity", "field", "id", "op", "==", "value", Entity.id
+                        )
+                    ),
+                )
+            )
+        )
+        .filter(and_(Entity.value == entity_value, Entity.entity_type_id == entity_type_id))
+        .as_scalar()
+    )
+
+    active_count = func.count().filter(SignalFilter.expiration > func.current_date())
+    expired_count = func.count().filter(SignalFilter.expiration <= func.current_date())
+
+    query = db_session.query(
+        active_count.label("active_count"), expired_count.label("expired_count")
+    ).filter(cast(SignalFilter.expression, JSONB).op("@>")(entity_subquery))
+
+    snooze_result = db_session.execute(query).fetchone()
+
+    # Calculate the date threshold based on num_days
+    date_threshold = datetime.utcnow() - timedelta(days=num_days) if num_days is not None else None
+
+    count_with_snooze = func.count().filter(SignalInstance.filter_action == "snooze")
+    count_without_snooze = func.count().filter(
+        (SignalInstance.filter_action != "snooze") | (SignalInstance.filter_action.is_(None))
+    )
+
+    query = (
+        select(
+            [
+                count_with_snooze.label("count_with_snooze"),
+                count_without_snooze.label("count_without_snooze"),
+            ]
+        )
+        .select_from(
+            assoc_signal_instance_entities.join(
+                Entity, assoc_signal_instance_entities.c.entity_id == Entity.id
+            ).join(
+                SignalInstance,
+                assoc_signal_instance_entities.c.signal_instance_id == SignalInstance.id,
+            )
+        )
+        .where(
+            and_(
+                Entity.value == entity_value,
+                Entity.entity_type_id == entity_type_id,
+                SignalInstance.created_at >= date_threshold if date_threshold else True,
+            )
+        )
+    )
+
+    signal_result = db_session.execute(query).fetchone()
+
+    return SignalStats(
+        num_signal_instances_alerted=signal_result.count_without_snooze,
+        num_signal_instances_snoozed=signal_result.count_with_snooze,
+        num_snoozes_active=snooze_result.active_count,
+        num_snoozes_expired=snooze_result.expired_count,
     )
