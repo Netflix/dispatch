@@ -1,4 +1,4 @@
-"""empty message
+"""Replaces foreign key for case_cost and case_cost_type tables 
 
 Revision ID: 37406cca756c
 Revises: da444de005a6
