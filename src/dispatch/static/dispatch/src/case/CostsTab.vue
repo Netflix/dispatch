@@ -1,24 +1,37 @@
 <template>
   <v-list>
-    <v-list-item target="_blank">
-      <v-list-item-title>
-        <v-tooltip max-width="500px" open-delay="50" location="bottom">
-          <template #activator="{ props }">
-            <v-switch
-              v-model="model"
-              :label="`Total Cost (${model})`"
-              false-value="Classic"
-              true-value="New"
-              v-bind="props"
-            />
-          </template>
-          <span> Toggle between Classic and New Cost model costs. </span>
-        </v-tooltip>
-      </v-list-item-title>
-      <template #append>
-        <span v-if="model == 'New'">{{ toUSD(totalCostNew) }}</span>
-        <span v-else>{{ toUSD(totalCostClassic) }}</span>
-      </template>
+    <v-list-item>
+      <v-row align="center" no-gutters>
+        <v-col cols="12" sm="6">
+          <v-tooltip max-width="500px" open-delay="50" location="bottom">
+            <template #activator="{ props }">
+              <div v-bind="props">
+                <v-btn-toggle v-model="model" density="comfortable" color="primary">
+                  <v-btn value="Classic" variant="tonal"> Classic Cost Model </v-btn>
+                  <v-btn value="New" variant="tonal"> New Cost Model </v-btn>
+                </v-btn-toggle>
+              </div>
+            </template>
+            <div>
+              <div class="text-subtitle-1 mb-2">Cost Model Information</div>
+              <div class="mb-1">
+                <strong>Classic Cost Model:</strong>
+                Traditional cost calculation method based on participant role time.
+              </div>
+              <div>
+                <strong>New Cost Model:</strong>
+                Cost calculation method based on participant activity time.
+              </div>
+            </div>
+          </v-tooltip>
+        </v-col>
+        <v-col cols="12" sm="6" class="d-flex flex-column align-end">
+          <div class="font-weight-bold text-primary">
+            {{ model === "New" ? toUSD(totalCostNew) : toUSD(totalCostClassic) }}
+          </div>
+          <div class="text-caption text-medium-emphasis">Total Cost</div>
+        </v-col>
+      </v-row>
     </v-list-item>
     <v-divider />
     <span v-for="(cost, index) in case_costs" :key="index">

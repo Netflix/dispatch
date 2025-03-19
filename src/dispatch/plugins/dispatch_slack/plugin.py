@@ -56,6 +56,7 @@ from .service import (
     get_user_info_by_id,
     get_user_profile_by_email,
     is_user,
+    remove_member_from_channel,
     rename_conversation,
     resolve_user,
     send_ephemeral_message,
@@ -387,6 +388,15 @@ class SlackConversationPlugin(ConversationPlugin):
         """Sets the conversation description."""
         client = create_slack_client(self.configuration)
         return set_conversation_description(client, conversation_id, description)
+
+    def remove_user(self, conversation_id: str, user_email: str):
+        """Removes a user from a conversation."""
+        client = create_slack_client(self.configuration)
+        user_id = resolve_user(client, user_email).get("id")
+        if user_id:
+            return remove_member_from_channel(
+                client=client, conversation_id=conversation_id, user_id=user_id
+            )
 
     def add_bookmark(self, conversation_id: str, weblink: str, title: str):
         """Adds a bookmark to the conversation."""
