@@ -1,4 +1,4 @@
-"""empty message
+"""Adds column to exclude incident types from review
 
 Revision ID: 92a359040b8e
 Revises: 37406cca756c
