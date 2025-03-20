@@ -84,6 +84,11 @@ def get_all_by_signal(*, db_session: Session, signal_id: int) -> list[Entity]:
     )
 
 
+
+# todo amats - get_all_desc_by_signal_and_type.
+# descending entity TYPES, and then descending entities within each type
+
+
 def get_all_desc_by_signal(*, db_session: Session, signal_id: int) -> list[Entity]:
     """Gets all entities for a specific signal in descending order."""
     return (

@@ -290,11 +290,37 @@ def return_signal_stats(
     entity_type_id: int = Query(..., description="The ID of the entity type"),
     num_days: int = Query(None, description="The number of days to look back"),
 ):
-    """Gets a signal statistics given a named entity and entity type id."""
+    """Gets signal statistics given a named entity and entity type id."""
     signal_data = get_signal_stats(
         db_session=db_session,
         entity_value=entity_value,
         entity_type_id=entity_type_id,
+        num_days=num_days,
+    )
+    return signal_data
+
+
+@router.get("/{signal_id}/stats", response_model=SignalStats)
+def return_single_signal_stats(
+    db_session: DbSession,
+    signal_id: Union[str, PrimaryKey],
+    entity_value: str = Query(..., description="The name of the entity"),
+    entity_type_id: int = Query(..., description="The ID of the entity type"),
+    num_days: int = Query(None, description="The number of days to look back"),
+):
+    """Gets signal statistics for a specific signal given a named entity and entity type id."""
+    signal = get_by_primary_or_external_id(db_session=db_session, signal_id=signal_id)
+    if not signal:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A signal with this id does not exist."}],
+        )
+
+    signal_data = get_signal_stats(
+        db_session=db_session,
+        entity_value=entity_value,
+        entity_type_id=entity_type_id,
+        signal_id=signal.id,
         num_days=num_days,
     )
     return signal_data
