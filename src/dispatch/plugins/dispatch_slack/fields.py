@@ -682,7 +682,6 @@ def entity_select(
 
     return multi_select_block(
         placeholder="Select Entities",
-        # todo: use option groups here instead.
         options=entity_options[:100],  # Limit the entities to the first 100 most recent
         action_id=action_id,
         block_id=block_id,
