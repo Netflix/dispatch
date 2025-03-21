@@ -971,9 +971,13 @@ def get_cases_for_signal_by_resolution_reason(
 
 
 def get_signal_stats(
-    *, db_session: Session, entity_value: str, entity_type_id: int, num_days: int | None
+    *, db_session: Session, entity_value: str, entity_type_id: int, signal_id: int | None = None, num_days: int | None = None
 ) -> Optional[SignalStats]:
-    """Gets a signal statistics for a given named entity and type."""
+    """
+    Gets signal statistics for a given named entity and type.
+
+    If signal_id is provided, only returns stats for that specific signal definition.
+    """
     entity_subquery = (
         db_session.query(
             func.jsonb_build_array(
@@ -1027,6 +1031,7 @@ def get_signal_stats(
             and_(
                 Entity.value == entity_value,
                 Entity.entity_type_id == entity_type_id,
+                SignalInstance.signal_id == signal_id if signal_id else True,
                 SignalInstance.created_at >= date_threshold if date_threshold else True,
             )
         )

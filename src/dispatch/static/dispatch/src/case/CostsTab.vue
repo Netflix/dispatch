@@ -87,7 +87,7 @@ export default {
   },
 
   data: () => ({
-    model: "New",
+    model: "Classic",
   }),
 
   setup() {
