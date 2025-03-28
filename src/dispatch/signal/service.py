@@ -583,7 +583,7 @@ def update(
         )
         if signal.oncall_service != oncall_service:
             updates["oncall_service"] = (
-                f"{signal.oncall_service.name} -> {oncall_service.name if oncall_service else "None"}"
+                f"{signal.oncall_service.name} -> {oncall_service.name if oncall_service else 'None'}"
             )
         signal.oncall_service = oncall_service
 
@@ -595,7 +595,7 @@ def update(
         )
         if signal.case_priority != case_priority:
             updates["case_priority"] = (
-                f"{signal.case_priority.name} -> {case_priority.name if case_priority else "None"}"
+                f"{signal.case_priority.name} -> {case_priority.name if case_priority else 'None'}"
             )
         signal.case_priority = case_priority
 
@@ -605,7 +605,7 @@ def update(
         )
         if signal.case_type != case_type:
             updates["case_type"] = (
-                f"{signal.case_type.name} -> {case_type.name if case_type else "None"}"
+                f"{signal.case_type.name} -> {case_type.name if case_type else 'None'}"
             )
         signal.case_type = case_type
 
