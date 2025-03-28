@@ -1,4 +1,4 @@
-"""empty message
+"""Adds model_type columnn to case_case_type and sets to 'New' when default
 
 Revision ID: da444de005a6
 Revises: 2f18776252bb

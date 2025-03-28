@@ -28,11 +28,11 @@ class ChannelActivityEvent(SlackPluginEvent):
         if not subject:
             log.warning("No subject provided. Cannot fetch channel activity.")
         elif not subject.conversation:
-            log.warning("No conversation provided. Cannot fetch channel activity.")
+            log.info("No conversation provided. Cannot fetch channel activity.")
         elif not subject.conversation.channel_id:
-            log.warning("No channel id provided. Cannot fetch channel activity.")
+            log.info("No channel id provided. Cannot fetch channel activity.")
         elif subject.conversation.thread_id:
-            log.warning(
+            log.info(
                 "Subject is a thread, not a channel. Fetching channel activity is not applicable for threads."
             )
         else:
@@ -53,11 +53,11 @@ class ThreadActivityEvent(SlackPluginEvent):
         if not subject:
             log.warning("No subject provided. Cannot fetch thread activity.")
         elif not subject.conversation:
-            log.warning("No conversation provided. Cannot fetch thread activity.")
+            log.info("No conversation provided. Cannot fetch thread activity.")
         elif not subject.conversation.channel_id:
-            log.warning("No channel id provided. Cannot fetch thread activity.")
+            log.info("No channel id provided. Cannot fetch thread activity.")
         elif not subject.conversation.thread_id:
-            log.warning("No thread id provided. Cannot fetch thread activity.")
+            log.info("No thread id provided. Cannot fetch thread activity.")
         else:
             return get_thread_activity(
                 client,
