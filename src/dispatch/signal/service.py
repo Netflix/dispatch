@@ -582,7 +582,9 @@ def update(
             db_session=db_session, service_id=signal_in.oncall_service.id
         )
         if signal.oncall_service != oncall_service:
-            updates["oncall_service"] = f"{signal.oncall_service.name} -> {oncall_service.name}"
+            updates["oncall_service"] = (
+                f"{signal.oncall_service.name} -> {oncall_service.name if oncall_service else 'None'}"
+            )
         signal.oncall_service = oncall_service
 
     if signal_in.case_priority:
@@ -592,7 +594,9 @@ def update(
             case_priority_in=signal_in.case_priority,
         )
         if signal.case_priority != case_priority:
-            updates["case_priority"] = f"{signal.case_priority.name} -> {case_priority.name}"
+            updates["case_priority"] = (
+                f"{signal.case_priority.name} -> {case_priority.name if case_priority else 'None'}"
+            )
         signal.case_priority = case_priority
 
     if signal_in.case_type:
@@ -600,7 +604,9 @@ def update(
             db_session=db_session, project_id=signal.project.id, case_type_in=signal_in.case_type
         )
         if signal.case_type != case_type:
-            updates["case_type"] = f"{signal.case_type.name} -> {case_type.name}"
+            updates["case_type"] = (
+                f"{signal.case_type.name} -> {case_type.name if case_type else 'None'}"
+            )
         signal.case_type = case_type
 
     db_session.commit()
@@ -971,7 +977,12 @@ def get_cases_for_signal_by_resolution_reason(
 
 
 def get_signal_stats(
-    *, db_session: Session, entity_value: str, entity_type_id: int, signal_id: int | None = None, num_days: int | None = None
+    *,
+    db_session: Session,
+    entity_value: str,
+    entity_type_id: int,
+    signal_id: int | None = None,
+    num_days: int | None = None,
 ) -> Optional[SignalStats]:
     """
     Gets signal statistics for a given named entity and type.
