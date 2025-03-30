@@ -753,7 +753,7 @@ def extension_request_checkbox(
 ):
     options = [
         PlainOption(
-            text=("Check this box if you'd like this snooze should expire longer than 2 weeks."),
+            text=("Check this box to request an expiration longer than 2 weeks."),
             value="Yes",
         )
     ]
