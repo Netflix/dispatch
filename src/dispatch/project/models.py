@@ -72,6 +72,13 @@ class Project(Base):
     report_incident_title_hint = Column(String, nullable=True)
     report_incident_description_hint = Column(String, nullable=True)
 
+    snooze_extension_oncall_service_id = Column(Integer, nullable=True)
+    snooze_extension_oncall_service = relationship(
+        "Service",
+        foreign_keys=[snooze_extension_oncall_service_id],
+        primaryjoin="Service.id == Project.snooze_extension_oncall_service_id",
+    )
+
     @hybrid_property
     def slug(self):
         return slugify(self.name)
@@ -79,6 +86,15 @@ class Project(Base):
     search_vector = Column(
         TSVectorType("name", "description", weights={"name": "A", "description": "B"})
     )
+
+
+class Service(DispatchBase):
+    id: PrimaryKey
+    description: Optional[str] = Field(None, nullable=True)
+    external_id: str
+    is_active: Optional[bool] = None
+    name: NameStr
+    type: Optional[str] = Field(None, nullable=True)
 
 
 class ProjectBase(DispatchBase):
@@ -105,6 +121,7 @@ class ProjectBase(DispatchBase):
     report_incident_instructions: Optional[str] = Field(None, nullable=True)
     report_incident_title_hint: Optional[str] = Field(None, nullable=True)
     report_incident_description_hint: Optional[str] = Field(None, nullable=True)
+    snooze_extension_oncall_service: Optional[Service]
 
 
 class ProjectCreate(ProjectBase):
@@ -116,6 +133,7 @@ class ProjectUpdate(ProjectBase):
     send_weekly_reports: Optional[bool] = Field(False, nullable=True)
     weekly_report_notification_id: Optional[int] = Field(None, nullable=True)
     stable_priority_id: Optional[int]
+    snooze_extension_oncall_service_id: Optional[int]
 
 
 class ProjectRead(ProjectBase):

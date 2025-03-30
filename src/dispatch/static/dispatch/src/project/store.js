@@ -85,6 +85,12 @@ const actions = {
   },
   save({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
+    if (state.selected.snooze_extension_oncall_service) {
+      state.selected.snooze_extension_oncall_service_id =
+        state.selected.snooze_extension_oncall_service.id
+    } else {
+      state.selected.snooze_extension_oncall_service_id = null
+    }
     if (!state.selected.id) {
       return ProjectApi.create(state.selected)
         .then(() => {

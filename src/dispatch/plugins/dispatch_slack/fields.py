@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from blockkit import (
+    Checkboxes,
     DatePicker,
     Input,
     MultiExternalSelect,
@@ -65,6 +66,7 @@ class DefaultBlockIds(DispatchEnum):
 
     # signals
     signal_definition_select = "signal-definition-select"
+    extension_request_checkbox = "extension_request_checkbox"
 
     # tags
     tags_multi_select = "tag-multi-select"
@@ -102,6 +104,7 @@ class DefaultActionIds(DispatchEnum):
 
     # signals
     signal_definition_select = "signal-definition-select"
+    extension_request_checkbox = "extension_request_checkbox"
 
     # tags
     tags_multi_select = "tag-multi-select"
@@ -738,5 +741,26 @@ def signal_definition_select(
         action_id=action_id,
         block_id=block_id,
         label=label,
+        **kwargs,
+    )
+
+
+def extension_request_checkbox(
+    action_id: str = DefaultActionIds.extension_request_checkbox,
+    block_id: str = DefaultBlockIds.extension_request_checkbox,
+    label: str = "Request longer expiration",
+    **kwargs,
+):
+    options = [
+        PlainOption(
+            text=("Check this box if you'd like this snooze should expire longer than 2 weeks."),
+            value="Yes",
+        )
+    ]
+    return Input(
+        block_id=block_id,
+        element=Checkboxes(options=options, action_id=action_id),
+        label=label,
+        optional=True,
         **kwargs,
     )

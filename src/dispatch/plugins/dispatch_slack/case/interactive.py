@@ -74,6 +74,7 @@ from dispatch.plugins.dispatch_slack.fields import (
     case_type_select,
     description_input,
     entity_select,
+    extension_request_checkbox,
     incident_priority_select,
     incident_type_select,
     project_select,
@@ -106,6 +107,7 @@ from dispatch.plugins.dispatch_slack.models import (
 from dispatch.project import service as project_service
 from dispatch.search.utils import create_filter_expression
 from dispatch.service import flows as service_flows
+from dispatch.service.models import Service
 from dispatch.signal import service as signal_service
 from dispatch.signal.enums import SignalEngagementStatus
 from dispatch.signal.models import (
@@ -733,6 +735,7 @@ def snooze_button_click(
         title_input(placeholder="A name for your snooze filter."),
         description_input(placeholder="Provide a description for your snooze filter."),
         relative_date_picker_input(label="Expiration"),
+        extension_request_checkbox(),
     ]
 
     # not all signals will have entities and slack doesn't like empty selects
@@ -903,11 +906,16 @@ def handle_snooze_submission_event(
     )
     mfa_enabled = True if mfa_plugin else False
 
+    form_data: FormData = context["subject"].form_data
+    extension_request_data = form_data.get(DefaultBlockIds.extension_request_checkbox)
+    extension_request_value = extension_request_data[0].value if extension_request_data else None
+    extension_requested = True if extension_request_value == "Yes" else False
+
     def _create_snooze_filter(
         db_session: Session,
         subject: SubjectMetadata,
         user: DispatchUser,
-    ) -> None:
+    ) -> SignalFilter:
         form_data: FormData = subject.form_data
         # Get the existing filters for the signal
         signal = signal_service.get(db_session=db_session, signal_id=subject.id)
@@ -1005,6 +1013,8 @@ def handle_snooze_submission_event(
             signal=signal,
             new_filter=new_filter,
             thread_ts=thread_id,
+            extension_requested=extension_requested,
+            oncall_service=new_filter.project.snooze_extension_oncall_service,
         )
         send_success_modal(
             client=client,
@@ -1044,6 +1054,8 @@ def handle_snooze_submission_event(
                 signal=signal,
                 new_filter=new_filter,
                 thread_ts=thread_id,
+                extension_requested=extension_requested,
+                oncall_service=new_filter.project.snooze_extension_oncall_service,
             )
             send_success_modal(
                 client=client,
@@ -1073,6 +1085,24 @@ def handle_snooze_submission_event(
             )
 
 
+def get_user_id_from_oncall_service(
+    client: WebClient,
+    db_session: Session,
+    oncall_service: Service | None,
+) -> str | None:
+    if not oncall_service:
+        return None
+
+    oncall_email = service_flows.resolve_oncall(service=oncall_service, db_session=db_session)
+    if oncall_email:
+        # Get the Slack user ID for the current oncall
+        try:
+            return client.users_lookupByEmail(email=oncall_email)["user"]["id"]
+        except SlackApiError:
+            log.error(f"Failed to find Slack user for email: {oncall_email}")
+            return None
+
+
 def post_snooze_message(
     client: WebClient,
     channel: str,
@@ -1081,6 +1111,8 @@ def post_snooze_message(
     db_session: Session,
     new_filter: SignalFilter,
     thread_ts: str | None = None,
+    extension_requested: bool = False,
+    oncall_service: Service | None = None,
 ):
     def extract_entity_ids(expression: list[dict]) -> list[int]:
         entity_ids = []
@@ -1105,13 +1137,20 @@ def post_snooze_message(
 
     message = (
         f":zzz: *New Signal Snooze Added*\n"
-        f"• User: {user.email}\n"
+        f"• Created by: {user.email}\n"
         f"• Signal: {signal.name}\n"
         f"• Snooze Name: {new_filter.name}\n"
         f"• Description: {new_filter.description}\n"
         f"• Expiration: {new_filter.expiration}\n"
         f"• Entities: {entities_text}"
     )
+    if extension_requested:
+        message += "\n• *Extension Requested*"
+        if user_id := get_user_id_from_oncall_service(
+            client=client, db_session=db_session, oncall_service=oncall_service
+        ):
+            message += f"  - notifying oncall: <@{user_id}>"
+
     client.chat_postMessage(channel=channel, text=message, thread_ts=thread_ts)
 
 
