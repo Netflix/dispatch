@@ -130,6 +130,15 @@
                   name="Owner Conversation"
                 />
               </v-col>
+              <v-col cols="12">
+                <v-form @submit.prevent>
+                  <service-select
+                    :project="project"
+                    label="Oncall Service For Signal Snooze Extensions"
+                    v-model="snooze_extension_oncall_service"
+                  />
+                </v-form>
+              </v-col>
               <span class="text-body-1 text-medium-emphasis">Alternative folder structure</span>
               <v-col cols="12">
                 <v-text-field
@@ -217,6 +226,7 @@ import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 
 import ColorPickerInput from "@/components/ColorPickerInput.vue"
+import ServiceSelect from "@/service/ServiceSelect.vue"
 
 export default {
   setup() {
@@ -228,6 +238,7 @@ export default {
 
   components: {
     ColorPickerInput,
+    ServiceSelect,
   },
 
   computed: {
@@ -253,6 +264,7 @@ export default {
       "selected.report_incident_instructions",
       "selected.report_incident_title_hint",
       "selected.report_incident_description_hint",
+      "selected.snooze_extension_oncall_service",
       "dialogs.showCreateEdit",
     ]),
   },
