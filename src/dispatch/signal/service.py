@@ -582,9 +582,9 @@ def update(
             db_session=db_session, service_id=signal_in.oncall_service.id
         )
         if signal.oncall_service != oncall_service:
-            updates["oncall_service"] = (
-                f"{signal.oncall_service.name} -> {oncall_service.name if oncall_service else 'None'}"
-            )
+            from_service = signal.oncall_service.name if signal.oncall_service else "None"
+            to_service = oncall_service.name if oncall_service else "None"
+            updates["oncall_service"] = f"{from_service} -> {to_service}"
         signal.oncall_service = oncall_service
 
     if signal_in.case_priority:
@@ -594,9 +594,9 @@ def update(
             case_priority_in=signal_in.case_priority,
         )
         if signal.case_priority != case_priority:
-            updates["case_priority"] = (
-                f"{signal.case_priority.name} -> {case_priority.name if case_priority else 'None'}"
-            )
+            from_case_priority = signal.case_priority.name if signal.case_priority else "None"
+            to_case_priority = case_priority.name if case_priority else "None"
+            updates["case_priority"] = f"{from_case_priority} -> {to_case_priority}"
         signal.case_priority = case_priority
 
     if signal_in.case_type:
@@ -604,9 +604,9 @@ def update(
             db_session=db_session, project_id=signal.project.id, case_type_in=signal_in.case_type
         )
         if signal.case_type != case_type:
-            updates["case_type"] = (
-                f"{signal.case_type.name} -> {case_type.name if case_type else 'None'}"
-            )
+            from_case_type = signal.case_type.name if signal.case_type else "None"
+            to_case_type = case_type.name if case_type else "None"
+            updates["case_type"] = f"{from_case_type} -> {to_case_type}"
         signal.case_type = case_type
 
     db_session.commit()
