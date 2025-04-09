@@ -210,7 +210,6 @@ export default {
   data() {
     return {
       oncall_plugins: [],
-      shift_hours_type: 24, // Default to 24-hour shifts
     }
   },
 
