@@ -23,24 +23,34 @@ log = logging.getLogger(__name__)
     Experimental: will wake up and check the oncall schedule for previous day
     vs current day to see if a different person is oncall, if so, the previous day's
     oncall will receive a shift feedback form.
-    Timing: for UCAN, wake at 4pm UTC == 8am PST / 9am PDT
-            for EMEA, wake at 6am UTC == 8am UTC+2 Standard / 9am UTC+2 Daylight Saving
+
+    Timing is determined by the shift_hours_type attribute of the service:
+    - For 12-hour shifts: Teams trade off between UCAN and EMEA
+      - EMEA: wake at 6am UTC == 8am UTC+2 Standard / 9am UTC+2 Daylight Saving
+      - UCAN: wake at 4pm UTC == 8am PST / 9am PDT
+    - For 24-hour shifts: All UCAN, no EMEA
+      - UCAN only: wake at 4pm UTC == 8am PST / 9am PDT
 """
 
 
-@scheduler.add(every(1).day.at("16:00"), name="oncall-shift-feedback-ucan")
+@scheduler.add(every(1).day.at("16:00"), name="oncall-shift-feedback-morning")
 @timer
 @scheduled_project_task
-def oncall_shift_feedback_ucan(db_session: Session, project: Project):
-    oncall_shift_feedback(db_session=db_session, project=project, hour=16)
+def oncall_shift_feedback_morning(db_session: Session, project: Project):
+    # Process both 12-hour shifts (UCAN handoff) and 24-hour shifts (UCAN only) at 4pm UTC
+    # First process 12-hour shifts
+    oncall_shift_feedback(db_session=db_session, project=project, hour=6, shift_hours=12)
+    # Then process 24-hour shifts
+    oncall_shift_feedback(db_session=db_session, project=project, hour=16, shift_hours=24)
     find_expired_reminders_and_send(db_session=db_session, project=project)
 
 
-@scheduler.add(every(1).day.at("06:00"), name="oncall-shift-feedback-emea")
+@scheduler.add(every(1).day.at("06:00"), name="oncall-shift-feedback-afternoon")
 @timer
 @scheduled_project_task
-def oncall_shift_feedback_emea(db_session: Session, project: Project):
-    oncall_shift_feedback(db_session=db_session, project=project, hour=6)
+def oncall_shift_feedback_afternoon(db_session: Session, project: Project):
+    # Process 12-hour shifts at 6am UTC (EMEA handoff)
+    oncall_shift_feedback(db_session=db_session, project=project, hour=16, shift_hours=12)
     find_expired_reminders_and_send(db_session=db_session, project=project)
 
 
@@ -143,10 +153,18 @@ def find_schedule_and_send(
     )
 
 
-def oncall_shift_feedback(db_session: Session, project: Project, hour: int):
+def oncall_shift_feedback(
+    db_session: Session, project: Project, hour: int, shift_hours: int = None
+):
     """
     Experimental: collects feedback from individuals participating in an oncall service that has health metrics enabled
     when their oncall shift ends. For now, only for one project and schedule.
+
+    Args:
+        db_session: Database session
+        project: Project to process
+        hour: Hour of the day to check for shift changes
+        shift_hours: If provided, only process services with this shift_hours_type (12 or 24)
     """
     oncall_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project.id, plugin_type="oncall"
@@ -167,6 +185,10 @@ def oncall_shift_feedback(db_session: Session, project: Project, hour: int):
     )
 
     for oncall_service in oncall_services:
+        # Skip services that don't match the requested shift_hours_type
+        if shift_hours and oncall_service.shift_hours_type != shift_hours:
+            continue
+
         # for each service, get the schedule_id
         external_id = oncall_service.external_id
         schedule_id = oncall_plugin.instance.get_schedule_id_from_service_id(service_id=external_id)
