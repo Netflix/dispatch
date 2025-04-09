@@ -64,7 +64,7 @@ export default {
       loading: false,
       items: [],
       more: false,
-      numItems: 40,
+      numItems: 50,
       error: null,
       lastProjectId: null,
       is_type_in_project: () => {
@@ -98,7 +98,7 @@ export default {
 
   methods: {
     loadMore() {
-      this.numItems += 40
+      this.numItems += 50
       this.fetchData()
     },
     validateType() {
@@ -153,7 +153,7 @@ export default {
               this.items.push(item)
             }
           })
-          this.more = response.data.total > this.items.length
+          this.more = response.data.total >= this.items.length
         })
         .catch((error) => {
           console.error("Error fetching case types:", error)
