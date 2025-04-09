@@ -33,10 +33,10 @@ log = logging.getLogger(__name__)
 """
 
 
-@scheduler.add(every(1).day.at("16:00"), name="oncall-shift-feedback-morning")
+@scheduler.add(every(1).day.at("16:00"), name="oncall-shift-feedback-ucan")
 @timer
 @scheduled_project_task
-def oncall_shift_feedback_morning(db_session: Session, project: Project):
+def oncall_shift_feedback_ucan(db_session: Session, project: Project):
     # Process both 12-hour shifts (UCAN handoff) and 24-hour shifts (UCAN only) at 4pm UTC
     # First process 12-hour shifts
     oncall_shift_feedback(db_session=db_session, project=project, hour=6, shift_hours=12)
@@ -45,10 +45,10 @@ def oncall_shift_feedback_morning(db_session: Session, project: Project):
     find_expired_reminders_and_send(db_session=db_session, project=project)
 
 
-@scheduler.add(every(1).day.at("06:00"), name="oncall-shift-feedback-afternoon")
+@scheduler.add(every(1).day.at("06:00"), name="oncall-shift-feedback-emea")
 @timer
 @scheduled_project_task
-def oncall_shift_feedback_afternoon(db_session: Session, project: Project):
+def oncall_shift_feedback_emea(db_session: Session, project: Project):
     # Process 12-hour shifts at 6am UTC (EMEA handoff)
     oncall_shift_feedback(db_session=db_session, project=project, hour=16, shift_hours=12)
     find_expired_reminders_and_send(db_session=db_session, project=project)
