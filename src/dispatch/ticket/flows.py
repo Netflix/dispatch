@@ -214,8 +214,9 @@ def update_case_ticket(
 
     title = case.title
     description = case.description
+    resolution = case.resolution
     if case.visibility == Visibility.restricted:
-        title = description = case.case_type.name
+        title = description = resolution = case.case_type.name
 
     case_type_plugin_metadata = case_type_service.get_by_name_or_raise(
         db_session=db_session,
@@ -237,7 +238,7 @@ def update_case_ticket(
             ticket_id=case.ticket.resource_id,
             title=title,
             description=description,
-            resolution=case.resolution,
+            resolution=resolution,
             case_type=case.case_type.name,
             case_severity=case.case_severity.name,
             case_priority=case.case_priority.name,
