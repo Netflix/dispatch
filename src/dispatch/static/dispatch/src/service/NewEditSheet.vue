@@ -71,6 +71,20 @@
               <v-col cols="12">
                 <v-checkbox v-model="health_metrics" label="Collect Health Metrics" />
               </v-col>
+              <v-col cols="12" v-if="health_metrics">
+                <v-select
+                  v-model="shift_hours_type"
+                  :items="[
+                    { title: '12-hour', value: 12 },
+                    { title: '24-hour', value: 24 },
+                  ]"
+                  item-title="title"
+                  item-value="value"
+                  label="Shift Hours Type"
+                  hint="Select between 12-hour or 24-hour shifts"
+                  name="Shift Hours Type"
+                />
+              </v-col>
               <v-col cols="12">
                 <v-checkbox v-model="is_active" label="Enabled" />
               </v-col>
@@ -177,6 +191,7 @@ export default {
       "selected.loading",
       "selected.name",
       "selected.project",
+      "selected.shift_hours_type",
       "selected.type",
       "dialogs.showCreateEdit",
     ]),
