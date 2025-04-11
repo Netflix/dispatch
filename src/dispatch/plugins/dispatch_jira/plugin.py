@@ -12,8 +12,6 @@ import logging
 import requests
 from requests.auth import HTTPBasicAuth
 
-from sqlalchemy.orm import Session
-
 from pydantic import Field, SecretStr, AnyHttpUrl
 
 from jinja2 import Template
