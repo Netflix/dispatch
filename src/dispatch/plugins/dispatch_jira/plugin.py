@@ -271,12 +271,22 @@ def update(
     return data
 
 
-def create_fallback_ticket(id: int, project: Project, db_session: Session):
-    resource_id = f"dispatch-{project.organization.slug}-{project.slug}-{id}"
+def create_fallback_ticket_incident(incident_id: int, project: Project):
+    resource_id = f"dispatch-{project.organization.slug}-{project.slug}-{incident_id}"
 
     return {
         "resource_id": resource_id,
         "weblink": f"{DISPATCH_UI_URL}/{project.organization.name}/incidents/{resource_id}?project={project.name}",
+        "resource_type": "jira-error-ticket",
+    }
+
+
+def create_fallback_ticket_case(case_id: int, project: Project):
+    resource_id = f"dispatch-{project.organization.slug}-{project.slug}-{case_id}"
+
+    return {
+        "resource_id": resource_id,
+        "weblink": f"{DISPATCH_UI_URL}/{project.organization.name}/cases/{resource_id}?project={project.name}",
         "resource_type": "jira-error-ticket",
     }
 
@@ -347,8 +357,8 @@ class JiraTicketPlugin(TicketPlugin):
             )
             # fall back to creating a ticket without the plugin
             incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-            ticket = create_fallback_ticket(
-                id=incident.id, project=incident.project, db_session=db_session
+            ticket = create_fallback_ticket_incident(
+                incident_id=incident.id, project=incident.project
             )
 
         return ticket
@@ -478,7 +488,7 @@ class JiraTicketPlugin(TicketPlugin):
             )
             # fall back to creating a ticket without the plugin
             case = case_service.get(db_session=db_session, case_id=case_id)
-            ticket = create_fallback_ticket(id=case.id, project=case.project, db_session=db_session)
+            ticket = create_fallback_ticket_case(case_id=case.id, project=case.project)
 
         return ticket
 
