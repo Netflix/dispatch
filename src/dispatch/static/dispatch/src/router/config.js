@@ -98,6 +98,12 @@ export const protectedRoute = [
       component: () => import("@/case/ReportForm.vue"),
     },
     {
+      path: "events/report",
+      name: "eventReport",
+      meta: { title: "Event Report", requiresAuth: true },
+      component: () => import("@/events/ReportForm.vue"),
+    },
+    {
       path: "dashboards",
       component: DashboardLayout,
       name: "dashboards",

@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 from dispatch.database.core import resolve_attr
 from dispatch.document import service as document_service
 from dispatch.case.models import Case, CaseRead
+from dispatch.conversation.enums import ConversationCommands
 from dispatch.messaging.strings import (
     CASE_CLOSE_REMINDER,
     CASE_TRIAGE_REMINDER,
@@ -374,6 +375,46 @@ def send_case_welcome_participant_message(
     )
 
     log.debug(f"Welcome ephemeral message sent to {participant_email}.")
+
+
+def send_event_paging_message(case: Case, db_session: Session):
+    """
+    Sends a message to the case conversation channel to notify the reporter that they can engage
+    with oncall if they need immediate assistance.
+    """
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project.id, plugin_type="conversation"
+    )
+    if plugin is None:
+        log.warning("Event paging message not sent, no conversation plugin enabled.")
+        return
+
+    notification_text = "Case can be engaged with oncall."
+    notification_type = MessageType.incident_notification
+
+    engage_oncall_command = plugin.instance.get_command_name(ConversationCommands.engage_oncall)
+
+    blocks = [
+        {"type": "section", "text": {"type": "mrkdwn", "text": "*Response Expectation*"}},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"This event was reported and the team will respond during normal business hours. If you end up needing immediate assistance, you can engage the oncall with `{engage_oncall_command}`.",
+            },
+        },
+    ]
+
+    try:
+        plugin.instance.send(
+            case.conversation.channel_id,
+            notification_text,
+            [],
+            notification_type,
+            blocks=blocks,
+        )
+    except Exception as e:
+        log.error(f"Error sending event paging message: {e}")
 
 
 def send_case_rating_feedback_message(case: Case, db_session: Session):

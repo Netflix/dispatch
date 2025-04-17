@@ -42,6 +42,7 @@ from .messaging import (
     send_case_created_notifications,
     send_case_rating_feedback_message,
     send_case_update_notifications,
+    send_event_paging_message,
 )
 from .models import Case
 from .service import get
@@ -290,6 +291,10 @@ def case_new_create_flow(
         else:
             log.warning("Case assignee not paged. No plugin of type oncall enabled.")
             return case
+    elif case.event:
+        # no one has been paged, inform the channel that they can
+        # engage the oncall if the priority changes
+        send_event_paging_message(case, db_session)
 
     if case and case.case_type.auto_close:
         # we transition the case to the closed state if its case type has auto close enabled
