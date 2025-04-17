@@ -381,6 +381,13 @@ def send_event_paging_message(case: Case, db_session: Session):
     Sends a message to the case conversation channel to notify the reporter that they can engage
     with oncall if they need immediate assistance.
     """
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project.id, plugin_type="conversation"
+    )
+    if plugin is None:
+        log.warning("Event paging message not sent, no conversation plugin enabled.")
+        return
+
     notification_text = "Case can be engaged with oncall."
     notification_type = MessageType.incident_notification
 
@@ -395,12 +402,6 @@ def send_event_paging_message(case: Case, db_session: Session):
         },
     ]
 
-    plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=case.project.id, plugin_type="conversation"
-    )
-    if plugin is None:
-        log.warning("Event paging message not sent, no conversation plugin enabled.")
-        return
     try:
         plugin.instance.send(
             case.conversation.channel_id,
