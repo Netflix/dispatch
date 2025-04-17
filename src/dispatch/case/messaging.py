@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 from dispatch.database.core import resolve_attr
 from dispatch.document import service as document_service
 from dispatch.case.models import Case, CaseRead
+from dispatch.conversation.enums import ConversationCommands
 from dispatch.messaging.strings import (
     CASE_CLOSE_REMINDER,
     CASE_TRIAGE_REMINDER,
@@ -391,13 +392,15 @@ def send_event_paging_message(case: Case, db_session: Session):
     notification_text = "Case can be engaged with oncall."
     notification_type = MessageType.incident_notification
 
+    engage_oncall_command = plugin.instance.get_command_name(ConversationCommands.engage_oncall)
+
     blocks = [
         {"type": "section", "text": {"type": "mrkdwn", "text": "*Response Expectation*"}},
         {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "This event was reported and the team will respond during normal business hours. If you end up needing immediate assistance, you can engage the oncall with `/dispatch-engage-oncall`.",
+                "text": f"This event was reported and the team will respond during normal business hours. If you end up needing immediate assistance, you can engage the oncall with `{engage_oncall_command}`.",
             },
         },
     ]
