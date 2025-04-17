@@ -33,6 +33,7 @@ class Service(Base, TimeStampMixin, ProjectMixin, EvergreenMixin):
     description = Column(String)
     external_id = Column(String)
     health_metrics = Column(Boolean, default=False)
+    shift_hours_type = Column(Integer, default=24)
 
     # Relationships
     filters = relationship("SearchFilter", secondary=assoc_service_filters, backref="services")
@@ -48,6 +49,7 @@ class ServiceBase(EvergreenBase):
     is_active: Optional[bool] = None
     name: Optional[str] = Field(None, nullable=True)
     type: Optional[str] = Field(None, nullable=True)
+    shift_hours_type: Optional[int] = Field(24, nullable=True)
 
 
 class ServiceCreate(ServiceBase):
