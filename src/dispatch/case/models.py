@@ -94,6 +94,7 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     closed_at = Column(DateTime)
     dedicated_channel = Column(Boolean, default=False)
     genai_analysis = Column(JSONB, default={}, nullable=False, server_default="{}")
+    event = Column(Boolean, default=False)
 
     search_vector = Column(
         TSVectorType(
@@ -354,6 +355,7 @@ class CaseRead(CaseBase):
     triage_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     workflow_instances: Optional[List[WorkflowInstanceRead]] = []
+    event: Optional[bool] = False
 
 
 class CaseUpdate(CaseBase):

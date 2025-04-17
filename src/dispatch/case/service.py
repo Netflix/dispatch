@@ -193,6 +193,7 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
         dedicated_channel=case_in.dedicated_channel,
         tags=tag_objs,
         case_type=case_type,
+        event=case_in.event,
     )
 
     case.visibility = case_type.visibility
