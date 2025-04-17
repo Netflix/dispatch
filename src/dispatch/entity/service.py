@@ -106,7 +106,7 @@ def get_all_desc_by_signal(
 
     if case_id is not None:
         # Add case filter if case_id is provided
-        query = query.join(SignalInstance.cases).filter(Case.id == case_id)
+        query = query.filter(SignalInstance.case_id == case_id)
 
     return query.order_by(desc(Entity.created_at)).all()
 
