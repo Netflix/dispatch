@@ -292,7 +292,8 @@ def case_new_create_flow(
             log.warning("Case assignee not paged. No plugin of type oncall enabled.")
             return case
     elif case.event:
-        # send message to the event channel with information on engaging oncall
+        # no one has been paged, inform the channel that they can
+        # engage the oncall if the priority changes
         send_event_paging_message(case, db_session)
 
     if case and case.case_type.auto_close:
