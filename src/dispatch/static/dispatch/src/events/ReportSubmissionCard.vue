@@ -36,7 +36,7 @@
               :persistent-hint="true"
             >
               <template #message="{ message, key }">
-                <div v-html="message" :key="key"></div>
+                <div v-html="message" :key="key" />
               </template>
             </v-checkbox>
           </v-row>
