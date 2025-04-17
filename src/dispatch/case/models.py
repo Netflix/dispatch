@@ -278,6 +278,7 @@ class CaseCreate(CaseBase):
     project: Optional[ProjectRead]
     reporter: Optional[ParticipantUpdate]
     tags: Optional[List[TagRead]] = []
+    event: Optional[bool] = False
 
 
 class CaseReadBasic(DispatchBase):

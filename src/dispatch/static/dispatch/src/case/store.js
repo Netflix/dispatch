@@ -47,6 +47,7 @@ const getDefaultSelectedState = () => {
     updated_at: null,
     visibility: null,
     workflow_instances: null,
+    event: false,
   }
 }
 
