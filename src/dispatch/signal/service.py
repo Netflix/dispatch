@@ -766,10 +766,22 @@ def filter_snooze(*, db_session: Session, signal_instance: SignalInstance) -> Si
         SignalInstance: The filtered signal instance.
     """
     for f in signal_instance.signal.filters:
+        if not f.mode:
+            log.warning(f"Signal filter {f.name} has no mode")
+            continue
+
         if f.mode != SignalFilterMode.active:
             continue
 
+        if not f.action:
+            log.warning(f"Signal filter {f.name} has no action")
+            continue
+
         if f.action != SignalFilterAction.snooze:
+            continue
+
+        if not f.expiration:
+            log.warning(f"Signal filter {f.name} has no expiration date")
             continue
 
         if f.expiration.replace(tzinfo=timezone.utc) <= datetime.now(timezone.utc):
