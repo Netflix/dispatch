@@ -1,19 +1,25 @@
-import { defineConfig } from "vite"
-import vue from "@vitejs/plugin-vue"
-import vuetify from "vite-plugin-vuetify"
-import monacoEditorPlugin from "vite-plugin-monaco-editor"
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import vuetify from "vite-plugin-vuetify";
+import tailwindcss from '@tailwindcss/vite';
+import monacoEditorPlugin from "vite-plugin-monaco-editor";
+import Components from "unplugin-vue-components/vite";
+import path from "path";
+import { fileURLToPath } from 'url';
 
-import Components from "unplugin-vue-components/vite"
-
-import path from "path"
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   plugins: [
     vue(),
+    tailwindcss(),
     vuetify(),
-    monacoEditorPlugin({ languageWorkers: ["json"] }),
+    monacoEditorPlugin.default({
+      languageWorkers: ['json'],
+    }),
     Components(),
     {
+      name: 'vee-validate-stub',
       resolveId(id) {
         if (id.includes("vee-validate")) {
           return "virtual:vee-validate"
@@ -48,12 +54,9 @@ export default defineConfig({
     },
   },
   resolve: {
-    alias: [
-      {
-        find: "@",
-        replacement: path.resolve(__dirname, "./src"),
-      },
-    ],
+    alias: {
+      '@': path.resolve(__dirname, "./src"),
+    },
   },
   build: {
     chunkSizeWarningLimit: 600,

@@ -14,57 +14,29 @@
       <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
         <table-export-dialog />
-        <v-btn
-          nav
-          variant="flat"
-          color="error"
-          :to="{ name: 'caseReport' }"
-          class="ml-2"
-          hide-details
-        >
+        <v-btn nav variant="flat" color="error" :to="{ name: 'caseReport' }" class="ml-2" hide-details>
           <v-icon start color="white">mdi-shield-search</v-icon>
           <span class="text-uppercase text-body-2 font-weight-bold">Report case</span>
         </v-btn>
-        <v-btn
-          v-if="userAdminOrAbove(currentUserRole)"
-          color="info"
-          class="ml-2"
-          @click="showNewSheet()"
-        >
+        <v-btn v-if="userAdminOrAbove(currentUserRole)" color="info" class="ml-2" @click="showNewSheet()">
           New
         </v-btn>
+        <Button>Button</Button>
       </v-col>
     </v-row>
     <v-row no-gutters>
       <v-col>
         <v-card variant="flat">
           <v-card-title>
-            <v-text-field
-              v-model="q"
-              append-inner-icon="mdi-magnify"
-              label="Search"
-              single-line
-              hide-details
-              clearable
-            />
+            <v-text-field v-model="q" append-inner-icon="mdi-magnify" label="Search" single-line hide-details
+              clearable />
           </v-card-title>
-          <v-data-table-server
-            show-select
-            return-object
-            :headers="loadHeaders()"
-            :items="items"
-            :items-length="total || 0"
-            :loading="loading"
-            v-model="selected"
-            loading-text="Loading... Please wait"
-            :sort-by="['reported_at']"
-            :items-per-page="itemsPerPage"
-            @click:row="showCasePage"
-            @update:options="loadItems"
-            :footer-props="{
+          <v-data-table-server show-select return-object :headers="loadHeaders()" :items="items"
+            :items-length="total || 0" :loading="loading" v-model="selected" loading-text="Loading... Please wait"
+            :sort-by="['reported_at']" :items-per-page="itemsPerPage" @click:row="showCasePage"
+            @update:options="loadItems" :footer-props="{
               'items-per-page-options': [10, 25, 50, 100],
-            }"
-          >
+            }">
             <template #item.case_severity.name="{ item, value }">
               <case-severity :severity="value" :color="item.case_severity.color" />
             </template>
@@ -72,12 +44,8 @@
               <case-priority :priority="value" :color="item.case_priority.color" />
             </template>
             <template #item.status="{ item }">
-              <case-status
-                :status="item.status"
-                :id="item.id"
-                :allowSelfJoin="item.project.allow_self_join"
-                :dedicatedChannel="item.dedicated_channel"
-              />
+              <case-status :status="item.status" :id="item.id" :allowSelfJoin="item.project.allow_self_join"
+                :dedicatedChannel="item.dedicated_channel" />
             </template>
             <template #item.project.display_name="{ item }">
               <v-chip size="small" :color="item.project.color">
@@ -114,32 +82,24 @@
                   </v-btn>
                 </template>
                 <v-list>
-                  <v-list-item
-                    :to="{
-                      name: 'CasePage',
-                      params: { name: item.name },
-                    }"
-                  >
+                  <v-list-item :to="{
+                    name: 'CasePage',
+                    params: { name: item.name },
+                  }">
                     <v-list-item-title>View</v-list-item-title>
                   </v-list-item>
-                  <v-list-item
-                    :to="{
-                      name: 'CaseTableEdit',
-                      params: { name: item.name },
-                    }"
-                  >
+                  <v-list-item :to="{
+                    name: 'CaseTableEdit',
+                    params: { name: item.name },
+                  }">
                     <v-list-item-title>Edit</v-list-item-title>
                   </v-list-item>
-                  <v-list-item
-                    @click="showRun({ type: 'case', data: item })"
-                    :disabled="item.status == 'Escalated' || item.status == 'Closed'"
-                  >
+                  <v-list-item @click="showRun({ type: 'case', data: item })"
+                    :disabled="item.status == 'Escalated' || item.status == 'Closed'">
                     <v-list-item-title>Run Workflow</v-list-item-title>
                   </v-list-item>
-                  <v-list-item
-                    @click="showEscalateDialog(item)"
-                    :disabled="item.status == 'Escalated' || item.status == 'Closed'"
-                  >
+                  <v-list-item @click="showEscalateDialog(item)"
+                    :disabled="item.status == 'Escalated' || item.status == 'Closed'">
                     <v-list-item-title>Escalate</v-list-item-title>
                   </v-list-item>
                   <v-list-item @click="showDeleteDialog(item)">
@@ -162,6 +122,7 @@ import { useStore } from "vuex"
 import { useRoute, useRouter } from "vue-router"
 import { formatRelativeDate, formatDate } from "@/filters"
 
+import { Button } from '@/components/ui/button'
 import BulkEditSheet from "@/case/BulkEditSheet.vue"
 import CaseCostCard from "@/case_cost/CaseCostCard.vue"
 import CaseParticipant from "@/case/Participant.vue"
