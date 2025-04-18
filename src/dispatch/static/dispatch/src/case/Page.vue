@@ -1,29 +1,56 @@
 <template>
   <div>
-    <PageHeader :case-description="caseDetails.description" :case-genai-analysis="caseDetails.genai_analysis"
-      :case-id="caseDetails.id" :case-name="caseDetails.name" :case-status="caseDetails.status"
-      :case-title="caseDetails.title" :case-updated-at="caseDetails.updated_at"
-      :case-visibility="caseDetails.visibility" :is-drawer-open="isDrawerOpen" :active-tab="activeTab"
-      @toggle-drawer="toggleDrawer" />
+    <PageHeader
+      :case-description="caseDetails.description"
+      :case-genai-analysis="caseDetails.genai_analysis"
+      :case-id="caseDetails.id"
+      :case-name="caseDetails.name"
+      :case-status="caseDetails.status"
+      :case-title="caseDetails.title"
+      :case-updated-at="caseDetails.updated_at"
+      :case-visibility="caseDetails.visibility"
+      :is-drawer-open="isDrawerOpen"
+      :active-tab="activeTab"
+      @toggle-drawer="toggleDrawer"
+    />
     <CaseAttributesDrawer v-model="caseDetails" :open="isDrawerOpen" />
     <VDivider />
     <div class="container mx-auto px-4">
-      <RichEditor v-if="activeTab !== 'signals' && activeTab !== 'graph'" :content="`<h2>${caseDetails.title}</h2>`"
-        class="pl-8 pb-6 pt-6" @update:model-value="handleTitleUpdate" />
-      <RichEditor v-if="activeTab !== 'signals' && activeTab !== 'graph'" :content="`${caseDetails.description}`"
-        class="pl-8 pb-6" @update:model-value="handleDescriptionUpdate" />
-      <GenaiAnalysisDisplay v-if="activeTab !== 'signals' && activeTab !== 'graph'"
-        :analysis="caseDetails.genai_analysis" class="pl-8 pb-6" />
-      <CaseStatusSelectGroup v-if="activeTab !== 'signals' && activeTab !== 'graph'" v-model="caseDetails"
-        class="pl-4 pb-8" />
-      <CaseTabs class="pt-8" :loading="loading" v-model="caseDetails" v-model:active-tab="activeTab" />
+      <RichEditor
+        v-if="activeTab !== 'signals' && activeTab !== 'graph'"
+        :content="`<h2>${caseDetails.title}</h2>`"
+        class="pl-8 pb-6 pt-6"
+        @update:model-value="handleTitleUpdate"
+      />
+      <RichEditor
+        v-if="activeTab !== 'signals' && activeTab !== 'graph'"
+        :content="`${caseDetails.description}`"
+        class="pl-8 pb-6"
+        @update:model-value="handleDescriptionUpdate"
+      />
+      <GenaiAnalysisDisplay
+        v-if="activeTab !== 'signals' && activeTab !== 'graph'"
+        :analysis="caseDetails.genai_analysis"
+        class="pl-8 pb-6"
+      />
+      <CaseStatusSelectGroup
+        v-if="activeTab !== 'signals' && activeTab !== 'graph'"
+        v-model="caseDetails"
+        class="pl-4 pb-8"
+      />
+      <CaseTabs
+        class="pt-8"
+        :loading="loading"
+        v-model="caseDetails"
+        v-model:active-tab="activeTab"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { debounce } from "lodash"
-import { ref, watch, computed, onMounted } from "vue"
+import { ref, watch, onMounted } from "vue"
 import { useRoute } from "vue-router"
 import { useSavingState } from "@/composables/useSavingState"
 import { useStore } from "vuex"
@@ -145,8 +172,8 @@ const fetchCaseDetails = async () => {
     // Check all possible cache locations for this case data
     const cachedData =
       queryClient.getQueryData(caseKeys.detail(caseId)) ||
-      queryClient.getQueryData(['cases', 'detail', caseId]) ||
-      queryClient.getQueryData(['cases', 'byName', caseName.value])
+      queryClient.getQueryData(["cases", "detail", caseId]) ||
+      queryClient.getQueryData(["cases", "byName", caseName.value])
 
     if (cachedData) {
       console.log(`Using cached data for case ID: ${caseId}`)
@@ -199,7 +226,7 @@ const saveCaseDetails = async () => {
     setSaving(true)
     await updateCaseMutation.mutateAsync({
       caseId: caseDetails.value.id,
-      caseData: caseDetails.value
+      caseData: caseDetails.value,
     })
     setSaving(false)
   } catch (e) {

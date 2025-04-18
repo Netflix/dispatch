@@ -1,14 +1,14 @@
 import API from "@/api"
-import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
+import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query"
 import SearchUtils from "@/search/utils"
 
 const resource = "cases"
 
 export const caseKeys = {
-  all: ['cases'],
-  lists: () => [...caseKeys.all, 'list'],
+  all: ["cases"],
+  lists: () => [...caseKeys.all, "list"],
   list: (filters) => [...caseKeys.lists(), { ...filters }],
-  details: () => [...caseKeys.all, 'detail'],
+  details: () => [...caseKeys.all, "detail"],
   detail: (id) => [...caseKeys.details(), id],
 }
 
@@ -80,7 +80,7 @@ export const useCases = (options = {}) => {
     queryKey: caseKeys.list(options),
     queryFn: () => {
       const params = SearchUtils.createParametersFromTableOptions({ ...options }, "Case")
-      return api.getAll(params).then(response => response.data)
+      return api.getAll(params).then((response) => response.data)
     },
   })
 }
@@ -88,26 +88,28 @@ export const useCases = (options = {}) => {
 export const useCase = (caseId) => {
   return useQuery({
     queryKey: caseKeys.detail(caseId),
-    queryFn: () => api.get(caseId).then(response => response.data),
+    queryFn: () => api.get(caseId).then((response) => response.data),
     enabled: !!caseId,
   })
 }
 
 export const useCaseByName = (caseName) => {
   return useQuery({
-    queryKey: [...caseKeys.details(), 'byName', caseName],
+    queryKey: [...caseKeys.details(), "byName", caseName],
     queryFn: () => {
-      return api.getAll({
-        filter: JSON.stringify([
-          { and: [{ model: "Case", field: "name", op: "==", value: caseName }] },
-        ]),
-      }).then((response) => {
-        if (response.data.items.length) {
-          // get the full data set
-          return api.get(response.data.items[0].id).then(response => response.data)
-        }
-        throw new Error(`Case '${caseName}' could not be found.`)
-      })
+      return api
+        .getAll({
+          filter: JSON.stringify([
+            { and: [{ model: "Case", field: "name", op: "==", value: caseName }] },
+          ]),
+        })
+        .then((response) => {
+          if (response.data.items.length) {
+            // get the full data set
+            return api.get(response.data.items[0].id).then((response) => response.data)
+          }
+          throw new Error(`Case '${caseName}' could not be found.`)
+        })
     },
     enabled: !!caseName,
   })
@@ -118,7 +120,7 @@ export const useCreateCase = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (caseData) => api.create(caseData).then(response => response.data),
+    mutationFn: (caseData) => api.create(caseData).then((response) => response.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: caseKeys.lists() })
     },
@@ -129,7 +131,8 @@ export const useUpdateCase = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ caseId, caseData }) => api.update(caseId, caseData).then(response => response.data),
+    mutationFn: ({ caseId, caseData }) =>
+      api.update(caseId, caseData).then((response) => response.data),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: caseKeys.lists() })
       queryClient.invalidateQueries({ queryKey: caseKeys.detail(data.id) })
@@ -185,7 +188,8 @@ export const useEscalateCase = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ caseId, payload }) => api.escalate(caseId, payload).then(response => response.data),
+    mutationFn: ({ caseId, payload }) =>
+      api.escalate(caseId, payload).then((response) => response.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: caseKeys.lists() })
     },

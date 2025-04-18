@@ -14,11 +14,23 @@
       <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
         <table-export-dialog />
-        <v-btn nav variant="flat" color="error" :to="{ name: 'caseReport' }" class="ml-2" hide-details>
+        <v-btn
+          nav
+          variant="flat"
+          color="error"
+          :to="{ name: 'caseReport' }"
+          class="ml-2"
+          hide-details
+        >
           <v-icon start color="white">mdi-shield-search</v-icon>
           <span class="text-uppercase text-body-2 font-weight-bold">Report case</span>
         </v-btn>
-        <v-btn v-if="userAdminOrAbove(currentUserRole)" color="info" class="ml-2" @click="showNewSheet()">
+        <v-btn
+          v-if="userAdminOrAbove(currentUserRole)"
+          color="info"
+          class="ml-2"
+          @click="showNewSheet()"
+        >
           New
         </v-btn>
       </v-col>
@@ -27,32 +39,66 @@
       <v-col>
         <v-card variant="flat">
           <v-card-title>
-            <v-text-field v-model="q" append-inner-icon="mdi-magnify" label="Search" single-line hide-details
-              clearable />
+            <v-text-field
+              v-model="q"
+              append-inner-icon="mdi-magnify"
+              label="Search"
+              single-line
+              hide-details
+              clearable
+            />
           </v-card-title>
-          <v-data-table-server show-select return-object :headers="loadHeaders()" :items="items"
-            :items-length="total || 0" :loading="loading" v-model="selected" loading-text="Loading... Please wait"
-            :sort-by="['reported_at']" :items-per-page="itemsPerPage" @update:options="loadItems" :footer-props="{
+          <v-data-table-server
+            show-select
+            return-object
+            :headers="loadHeaders()"
+            :items="items"
+            :items-length="total || 0"
+            :loading="loading"
+            v-model="selected"
+            loading-text="Loading... Please wait"
+            :sort-by="['reported_at']"
+            :items-per-page="itemsPerPage"
+            @update:options="loadItems"
+            :footer-props="{
               'items-per-page-options': [10, 25, 50, 100],
-            }">
+            }"
+          >
             <template #item="{ item }">
-              <tr @mouseenter="prefetchCase(item.id)" @focus="prefetchCase(item.id)"
-                @click="showCasePage($event, { item })">
+              <tr
+                @mouseenter="prefetchCase(item.id)"
+                @focus="prefetchCase(item.id)"
+                @click="showCasePage($event, { item })"
+              >
                 <td>
-                  <v-checkbox :model-value="selected.includes(item)" @click.stop @change="toggleSelection(item)" />
+                  <v-checkbox
+                    :model-value="selected.includes(item)"
+                    @click.stop
+                    @update:model-value="toggleSelection(item)"
+                  />
                 </td>
                 <td>{{ item.name }}</td>
                 <td>{{ item.title }}</td>
                 <td>
-                  <case-status :status="item.status" :id="item.id" :allowSelfJoin="item.project.allow_self_join"
-                    :dedicatedChannel="item.dedicated_channel" />
+                  <case-status
+                    :status="item.status"
+                    :id="item.id"
+                    :allowSelfJoin="item.project.allow_self_join"
+                    :dedicatedChannel="item.dedicated_channel"
+                  />
                 </td>
                 <td>{{ item.case_type.name }}</td>
                 <td>
-                  <case-severity :severity="item.case_severity.name" :color="item.case_severity.color" />
+                  <case-severity
+                    :severity="item.case_severity.name"
+                    :color="item.case_severity.color"
+                  />
                 </td>
                 <td>
-                  <case-priority :priority="item.case_priority.name" :color="item.case_priority.color" />
+                  <case-priority
+                    :priority="item.case_priority.name"
+                    :color="item.case_priority.color"
+                  />
                 </td>
                 <td>
                   <v-chip size="small" :color="item.project.color">
@@ -95,12 +141,16 @@
                       <v-list-item :to="{ name: 'CaseTableEdit', params: { name: item.name } }">
                         <v-list-item-title>Edit</v-list-item-title>
                       </v-list-item>
-                      <v-list-item @click="showRun({ type: 'case', data: item })"
-                        :disabled="item.status == 'Escalated' || item.status == 'Closed'">
+                      <v-list-item
+                        @click="showRun({ type: 'case', data: item })"
+                        :disabled="item.status == 'Escalated' || item.status == 'Closed'"
+                      >
                         <v-list-item-title>Run Workflow</v-list-item-title>
                       </v-list-item>
-                      <v-list-item @click="showEscalateDialog(item)"
-                        :disabled="item.status == 'Escalated' || item.status == 'Closed'">
+                      <v-list-item
+                        @click="showEscalateDialog(item)"
+                        :disabled="item.status == 'Escalated' || item.status == 'Closed'"
+                      >
                         <v-list-item-title>Escalate</v-list-item-title>
                       </v-list-item>
                       <v-list-item @click="showDeleteDialog(item)">
@@ -125,7 +175,7 @@ import { useStore } from "vuex"
 import { useRoute, useRouter } from "vue-router"
 import { formatRelativeDate, formatDate } from "@/filters"
 import CaseApi from "@/case/api"
-import { useCases, useCase, caseKeys } from "@/case/api"
+import { useCases, caseKeys } from "@/case/api"
 import { useQueryClient } from "@tanstack/vue-query"
 
 import BulkEditSheet from "@/case/BulkEditSheet.vue"
@@ -179,25 +229,27 @@ const defaultUserProjects = computed(() => {
 const prefetchCase = (caseId) => {
   console.log(`Prefetching case details for case ID: ${caseId}`)
 
-  queryClient.prefetchQuery({
-    queryKey: caseKeys.detail(caseId),
-    queryFn: () => {
-      console.log(`Executing prefetch query for case ID: ${caseId}`)
-      return CaseApi.get(caseId).then(response => {
-        console.log(`Prefetch successful for case ID: ${caseId}`)
-        return response.data
-      })
-    },
-    staleTime: 60000, // 1 minute
-  }).catch(error => {
-    console.error(`Error prefetching case ID: ${caseId}`, error)
-  })
+  queryClient
+    .prefetchQuery({
+      queryKey: caseKeys.detail(caseId),
+      queryFn: () => {
+        console.log(`Executing prefetch query for case ID: ${caseId}`)
+        return CaseApi.get(caseId).then((response) => {
+          console.log(`Prefetch successful for case ID: ${caseId}`)
+          return response.data
+        })
+      },
+      staleTime: 60000, // 1 minute
+    })
+    .catch((error) => {
+      console.error(`Error prefetching case ID: ${caseId}`, error)
+    })
 }
 
 // Toggle selection for checkboxes
 const toggleSelection = (item) => {
   if (selected.value.includes(item)) {
-    selected.value = selected.value.filter(i => i !== item)
+    selected.value = selected.value.filter((i) => i !== item)
   } else {
     selected.value.push(item)
   }

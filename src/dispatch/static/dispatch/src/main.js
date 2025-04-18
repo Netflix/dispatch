@@ -10,8 +10,8 @@ import "@formkit/themes/genesis"
 //   : null
 
 import { plugin, defaultConfig } from "@formkit/vue"
-import { VueQueryPlugin } from '@tanstack/vue-query'
-import { queryClient } from './query'
+import { VueQueryPlugin } from "@tanstack/vue-query"
+import { queryClient } from "./query"
 import VResizeDrawer from "@wdns/vuetify-resize-drawer"
 
 import "roboto-fontface/css/roboto/roboto-fontface.css"
