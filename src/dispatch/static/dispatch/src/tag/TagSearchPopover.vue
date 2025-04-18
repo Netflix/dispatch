@@ -125,13 +125,6 @@ const getTagIcon = (tag) => {
   }
   return null
 }
-
-const toggleMenu = () => {
-  menu.value = !menu.value
-  if (menu.value) {
-    searchQuery.value = ""
-  }
-}
 </script>
 
 <template>
@@ -166,8 +159,7 @@ const toggleMenu = () => {
         v-model="menu"
         :close-on-content-click="false"
         location="start"
-        :offset-x="true"
-        :position-x="-420"
+        :offset="[-420, 0]"
         transition="false"
         :max-width="300"
         :min-width="300"
