@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from dispatch.case.messaging import send_entity_update_notification
 from dispatch.entity_type.models import EntityScopeEnum
 from dispatch.signal.models import SignalInstance
 from dispatch.entity_type import service as entity_type_service
@@ -33,5 +34,11 @@ def recalculate_entity_flow(
         )
         signal_instance.entities = entities
         db_session.commit()
+
+    send_entity_update_notification(
+        db_session=db_session,
+        entity_type=entity_type,
+        case=signal_instance.case,
+    )
 
     return signal_instance

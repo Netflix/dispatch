@@ -21,6 +21,7 @@ reminder_select_values = {
 
 
 class MessageType(DispatchEnum):
+    entity_update = "entity-update"
     evergreen_reminder = "evergreen-reminder"
     incident_closed_information_review_reminder = "incident-closed-information-review-reminder"
     incident_completed_form_notification = "incident-completed-form-notification"
