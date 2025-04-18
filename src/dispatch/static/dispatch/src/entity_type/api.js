@@ -27,7 +27,7 @@ export default {
     return API.delete(`${resource}/${entityTypeId}`)
   },
 
-  recalculate(entityTypeId, signalInstanceId) {
-    return API.put(`${resource}/recalculate/${entityTypeId}/${signalInstanceId}`)
+  recalculate(entityTypeId, caseId) {
+    return API.put(`${resource}/recalculate/${entityTypeId}/${caseId}`)
   },
 }
