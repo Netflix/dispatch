@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from "vue"
+import { computed, ref, watch, onBeforeUnmount } from "vue"
 
 // Necessary import for JSON language server
 // eslint-disable-next-line no-unused-vars
@@ -33,25 +33,82 @@ const newEntityTypeJpath = ref("")
 
 const raw_str = computed(() => JSON.stringify(props.value.raw, null, "\t") || "[]")
 
+// Store a reference to the hover provider for cleanup
+let hoverProviderDisposable = null
+
+// Clean up function to dispose of hover providers
+const cleanupHoverProviders = (monacoInstance) => {
+  if (!monacoInstance || !monacoInstance.languages) return
+
+  // Get all registered hover providers for JSON language
+  const providers = monacoInstance.languages.getHoverProviders
+    ? monacoInstance.languages.getHoverProviders("json")
+    : []
+
+  // Dispose all existing hover providers
+  for (const provider of providers) {
+    provider.dispose()
+  }
+
+  // Also dispose our tracked provider if it exists
+  if (hoverProviderDisposable) {
+    hoverProviderDisposable.dispose()
+    hoverProviderDisposable = null
+  }
+}
+
+// Ensure cleanup when component is unmounted
+onBeforeUnmount(() => {
+  // We'll use the global monaco instance if available
+  if (typeof monaco !== "undefined") {
+    cleanupHoverProviders(monaco)
+  }
+})
+
 const editorBeforeMount = (monaco) => {
-  monaco.languages.registerHoverProvider("json", {
+  // Clean up any existing hover providers
+  cleanupHoverProviders(monaco)
+
+  // Register a single new hover provider
+  hoverProviderDisposable = monaco.languages.registerHoverProvider("json", {
     provideHover: (model, position) => {
       const word = model.getWordAtPosition(position)
 
       if (word) {
         const hoveredWord = word.word
 
-        const entity = props.value.entities.find((entity) => entity.value === hoveredWord)
-        if (entity) {
+        // Check in existing entities first
+        const existingEntity = props.value.entities.find((entity) => entity.value === hoveredWord)
+        if (existingEntity) {
           const range = new monaco.Range(
             position.lineNumber,
             word.startColumn,
             position.lineNumber,
             word.endColumn
           )
-          const title = `**Entity Type**: ${entity.entity_type.name}\n`
-          const pattern = `**Pattern**: ${entity.entity_type.jpath}\n`
-          const value = `**Value**: ${entity.value}`
+          const title = `**Entity Type**: ${existingEntity.entity_type.name}\n`
+          const pattern = `**Pattern**: ${existingEntity.entity_type.jpath}\n`
+          const value = `**Value**: ${existingEntity.value}`
+          return {
+            contents: [{ value: title }, { value: pattern }, { value: value }],
+            range: range,
+          }
+        }
+
+        // Then check in new entities
+        const newEntity = newEntities.value.find((entity) => entity.value === hoveredWord)
+        if (newEntity) {
+          const range = new monaco.Range(
+            position.lineNumber,
+            word.startColumn,
+            position.lineNumber,
+            word.endColumn
+          )
+          // Handle different entity structures
+          const entityType = newEntity.entity_type || newEntity
+          const title = `**Entity Type**: ${entityType.name}\n`
+          const pattern = `**Pattern**: ${entityType.jpath}\n`
+          const value = `**Value**: ${newEntity.value}`
           return {
             contents: [{ value: title }, { value: pattern }, { value: value }],
             range: range,
@@ -141,7 +198,7 @@ const editorMounted = (editor, monaco) => {
               options: {
                 isWholeLine: true,
                 glyphMarginClassName: "myGlyphMarginClass",
-                glyphMarginHoverMessage: { value: `Extract new entity from "**${key.value}**"` },
+                glyphMarginHoverMessage: [{ value: `Extract new entity from "**${key.value}**"` }],
               },
             })
             // Record line numbers where glyphs were added.
@@ -237,6 +294,11 @@ const editorOptions = {
   wordWrap: true,
   glyphMargin: true,
   contextmenu: false,
+  // Configure hover settings for immediate response
+  hover: {
+    delay: 0, // Show hover immediately with no delay
+    sticky: true, // Make hovers sticky so they don't disappear quickly
+  },
   scrollbar: {
     vertical: "hidden",
   },
