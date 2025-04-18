@@ -49,7 +49,12 @@ const props = withDefaults(
 
       <!-- Hotkeys display -->
       <div class="hotkeys-container" v-if="hotkeys.length">
-        <Hotkey v-for="(hotkey, index) in hotkeys" :key="index" :hotkey="hotkey" class="hotkey-item" />
+        <Hotkey
+          v-for="(hotkey, index) in hotkeys"
+          :key="index"
+          :hotkey="hotkey"
+          class="hotkey-item"
+        />
       </div>
     </div>
   </v-tooltip>

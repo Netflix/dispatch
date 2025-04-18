@@ -78,8 +78,14 @@ const handleResolutionUpdate = (newResolution) => {
             <div class="dispatch-font">Assignee</div>
           </v-col>
           <v-col cols="10">
-            <ParticipantSearchPopover :participant="modelValue.assignee?.individual.name" type="assignee"
-              label="Assign to..." tooltip-label="Update Assignee" hotkey="a" class="pl-8" />
+            <ParticipantSearchPopover
+              :participant="modelValue.assignee?.individual.name"
+              type="assignee"
+              label="Assign to..."
+              tooltip-label="Update Assignee"
+              hotkey="a"
+              class="pl-8"
+            />
           </v-col>
         </v-row>
         <v-row no-gutters align="center" class="pt-6">
@@ -87,8 +93,14 @@ const handleResolutionUpdate = (newResolution) => {
             <div class="dispatch-font">Reporter</div>
           </v-col>
           <v-col cols="10">
-            <ParticipantSearchPopover :participant="modelValue.reporter?.individual.name" type="reporter"
-              label="Set reporter to..." tooltip-label="Update Reporter" hotkey="r" class="pl-8" />
+            <ParticipantSearchPopover
+              :participant="modelValue.reporter?.individual.name"
+              type="reporter"
+              label="Set reporter to..."
+              tooltip-label="Update Reporter"
+              hotkey="r"
+              class="pl-8"
+            />
           </v-col>
         </v-row>
 
@@ -97,8 +109,11 @@ const handleResolutionUpdate = (newResolution) => {
             <div class="dispatch-font">Priority</div>
           </v-col>
           <v-col cols="10">
-            <CasePrioritySearchPopover :case-priority="modelValue.case_priority?.name"
-              :project="modelValue.project?.name" class="pl-6" />
+            <CasePrioritySearchPopover
+              :case-priority="modelValue.case_priority?.name"
+              :project="modelValue.project?.name"
+              class="pl-6"
+            />
           </v-col>
         </v-row>
 
@@ -107,8 +122,11 @@ const handleResolutionUpdate = (newResolution) => {
             <div class="dispatch-font">Severity</div>
           </v-col>
           <v-col cols="10">
-            <CaseSeveritySearchPopover :case-severity="modelValue.case_severity?.name"
-              :project="modelValue.project?.name" class="pl-6" />
+            <CaseSeveritySearchPopover
+              :case-severity="modelValue.case_severity?.name"
+              :project="modelValue.project?.name"
+              class="pl-6"
+            />
           </v-col>
         </v-row>
 
@@ -117,8 +135,11 @@ const handleResolutionUpdate = (newResolution) => {
             <div class="dispatch-font">Type</div>
           </v-col>
           <v-col cols="10">
-            <CaseTypeSearchPopover :case-type="modelValue.case_type?.name" :project="modelValue.project?.name"
-              class="pl-6" />
+            <CaseTypeSearchPopover
+              :case-type="modelValue.case_type?.name"
+              :project="modelValue.project?.name"
+              class="pl-6"
+            />
           </v-col>
         </v-row>
 
@@ -148,17 +169,27 @@ const handleResolutionUpdate = (newResolution) => {
           <div class="dispatch-font-title pr-2">Resolution</div>
           <DTooltip
             text="Document your findings and provide the rationale for any decisions you made as part of this case."
-            hotkeys="">
+            hotkeys=""
+          >
             <template #activator="{ tooltip }">
-              <v-btn v-bind="tooltip" variant="plain" density="compact" size="x-small" icon="mdi-information-outline" />
+              <v-btn
+                v-bind="tooltip"
+                variant="plain"
+                density="compact"
+                size="x-small"
+                icon="mdi-information-outline"
+              />
             </template>
           </DTooltip>
         </div>
         <CaseResolutionSearchPopover :case-resolution="modelValue.resolution_reason" />
       </div>
       <v-card flat color="grey-lighten-5" class="rounded-lg mt-4 ml-4 mr-4">
-        <RichEditor :content="modelValue.resolution" @update:model-value="handleResolutionUpdate"
-          style="min-height: 400px; margin: 10px; font-size: 0.9125rem; font-weight: 400" />
+        <RichEditor
+          :content="modelValue.resolution"
+          @update:model-value="handleResolutionUpdate"
+          style="min-height: 400px; margin: 10px; font-size: 0.9125rem; font-weight: 400"
+        />
       </v-card>
     </v-navigation-drawer>
   </div>
