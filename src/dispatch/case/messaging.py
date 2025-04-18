@@ -400,7 +400,7 @@ def send_event_paging_message(case: Case, db_session: Session, oncall_name: str)
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f"This event was reported and the team will respond during normal business hours. If you end up needing immediate assistance, you can engage `{oncall_name}` with `{engage_oncall_command}` and selecting the 'Page' option.",
+                "text": f"""This event was reported and the team will respond during normal business hours. If you end up needing immediate assistance, you can engage `{oncall_name}` by typing and sending the command `{engage_oncall_command}` within this channel, and, in the resulting dialog box, selecting the "Page" option."""
             },
         },
     ]
