@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List
 
 from fastapi import APIRouter, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
@@ -9,7 +9,6 @@ from dispatch.database.core import DbSession
 from dispatch.exceptions import ExistsError
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
-from dispatch.signal.service import get_signal_instance
 from dispatch.signal.models import SignalInstanceRead
 
 from .models import (
