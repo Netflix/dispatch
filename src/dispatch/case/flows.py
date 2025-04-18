@@ -294,7 +294,13 @@ def case_new_create_flow(
     elif case.event:
         # no one has been paged, inform the channel that they can
         # engage the oncall if the priority changes
-        send_event_paging_message(case, db_session)
+        oncall_service = service_service.get_by_external_id(
+            db_session=db_session,
+            external_id=case.case_type.oncall_service.external_id,
+        )
+        oncall_name = oncall_service.name if oncall_service else "the relevant team"
+
+        send_event_paging_message(case, db_session, oncall_name)
 
     if case and case.case_type.auto_close:
         # we transition the case to the closed state if its case type has auto close enabled
