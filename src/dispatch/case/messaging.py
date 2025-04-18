@@ -377,7 +377,7 @@ def send_case_welcome_participant_message(
     log.debug(f"Welcome ephemeral message sent to {participant_email}.")
 
 
-def send_event_paging_message(case: Case, db_session: Session, oncall_name: str):
+def send_event_paging_message(case: Case, db_session: Session, oncall_name: str) -> None:
     """
     Sends a message to the case conversation channel to notify the reporter that they can engage
     with oncall if they need immediate assistance.

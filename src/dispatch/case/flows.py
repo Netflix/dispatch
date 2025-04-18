@@ -294,11 +294,17 @@ def case_new_create_flow(
     elif case.event:
         # no one has been paged, inform the channel that they can
         # engage the oncall if the priority changes
-        oncall_service = service_service.get_by_external_id(
-            db_session=db_session,
-            external_id=case.case_type.oncall_service.external_id,
-        )
-        oncall_name = oncall_service.name if oncall_service else "the relevant team"
+        oncall_name = "the relevant team"
+
+        try:
+            if case.case_type and case.case_type.oncall_service:
+                oncall_service = service_service.get_by_external_id(
+                    db_session=db_session,
+                    external_id=case.case_type.oncall_service.external_id,
+                )
+                oncall_name = oncall_service.name
+        except Exception as e:
+            log.error(f"Failed to get oncall service: {e}. Falling back to default oncall_name string.")
 
         send_event_paging_message(case, db_session, oncall_name)
 
