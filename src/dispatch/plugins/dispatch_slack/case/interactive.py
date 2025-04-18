@@ -722,11 +722,17 @@ def snooze_button_click(
 
     subject = context["subject"]
 
+    case_id = None
     if subject.type == SignalSubjects.signal_instance:
         instance = signal_service.get_signal_instance(
             db_session=db_session, signal_instance_id=subject.id
         )
         subject.id = instance.signal.id
+    elif subject.type == CaseSubjects.case:
+        case = case_service.get(db_session=db_session, case_id=subject.id)
+        case_id = case.id
+        subject.type = SignalSubjects.signal_instance
+        subject.id = case.signal_instances[0].signal.id
 
     signal = signal_service.get(db_session=db_session, signal_id=subject.id)
     blocks = [
@@ -743,6 +749,7 @@ def snooze_button_click(
         db_session=db_session,
         signal_id=signal.id,
         optional=True,
+        case_id=case_id,
     )
 
     if entity_select_block:

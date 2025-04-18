@@ -668,13 +668,14 @@ def entity_select(
     action_id: str = DefaultActionIds.entity_select,
     block_id: str = DefaultBlockIds.entity_select,
     label="Entities",
+    case_id: int = None,
     **kwargs,
 ):
     """Creates an entity select."""
     entity_options = [
         {"text": entity.value[:75], "value": entity.id}
         for entity in entity_service.get_all_desc_by_signal(
-            db_session=db_session, signal_id=signal_id
+            db_session=db_session, signal_id=signal_id, case_id=case_id
         )
         if entity.value
     ]

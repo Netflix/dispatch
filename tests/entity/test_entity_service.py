@@ -34,6 +34,53 @@ def test_get_all_by_signal(session, entity, signal_instance):
     assert entities[0].id == entity.id
 
 
+def test_get_all_desc_by_signal_without_case(session, entity, signal_instance):
+    """
+    Test get_all_desc_by_signal returns entities for a signal in descending order when case_id is not provided.
+    """
+    from dispatch.entity.service import get_all_desc_by_signal
+
+    # Associate the entity with the signal_instance
+    signal_instance.entities.append(entity)
+    session.add(signal_instance)
+    session.commit()
+
+    signal_id = signal_instance.signal_id
+
+    # Should return the entity, ordered by created_at desc
+    entities = get_all_desc_by_signal(db_session=session, signal_id=signal_id)
+    assert entity in entities
+    assert len(entities) == 1
+    assert entities[0].id == entity.id
+
+
+def test_get_all_desc_by_signal_with_case(session, entity, signal_instance):
+    """
+    Test get_all_desc_by_signal returns entities for a signal and case in descending order when case_id is provided.
+    """
+    from dispatch.entity.service import get_all_desc_by_signal
+
+    # Attach the entity to the signal_instance and commit
+    signal_instance.entities.append(entity)
+    session.add(signal_instance)
+    session.commit()
+
+    # The case is linked via signal_instance.case
+    case = signal_instance.case
+    signal_id = signal_instance.signal_id
+    case_id = case.id
+
+    # Should return the entity, filtered by both signal and case
+    entities = get_all_desc_by_signal(db_session=session, signal_id=signal_id, case_id=case_id)
+    assert entity in entities
+    assert len(entities) == 1
+    assert entities[0].id == entity.id
+
+    # If we pass a non-matching case_id, should return empty
+    entities_none = get_all_desc_by_signal(db_session=session, signal_id=signal_id, case_id=case_id + 999)
+    assert len(entities_none) == 0
+
+
 def test_create(session, entity_type, project):
     from dispatch.entity.models import EntityCreate
     from dispatch.entity.service import create
