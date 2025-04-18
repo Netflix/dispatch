@@ -641,6 +641,7 @@ def dispatch_scheduler():
     """Container for all dispatch scheduler commands."""
     # we need scheduled tasks to be imported
     from .case.scheduled import case_close_reminder, case_triage_reminder  # noqa
+    from .case.scheduled_internal import schedule_placeholder  # noqa
     from .case_cost.scheduled import (
         calculate_cases_response_cost,  # noqa
     )
