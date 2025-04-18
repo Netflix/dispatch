@@ -60,7 +60,7 @@
             :options="editorOptions"
             :editorMounted="editorMounted"
             language="json"
-            style="width: 100%; height: 100%"
+            style="width: 100%; height: 240px"
           />
         </div>
 

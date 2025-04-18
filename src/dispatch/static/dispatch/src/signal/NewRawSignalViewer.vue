@@ -113,6 +113,9 @@ const editorMounted = (editor, monaco) => {
 
     glyphLines.clear()
 
+    // Combine existing and new entities for checking
+    const allEntities = [...props.value.entities, ...newEntities.value]
+
     function traverse(node) {
       // Traverse `Object` and `Array` nodes to reach their child `Property` nodes.
       if (node.type === "Object" || node.type === "Array") {
@@ -122,19 +125,28 @@ const editorMounted = (editor, monaco) => {
         const { key, value } = node
         // Check for `Literal` type and string value.
         if (value.type === "Literal" && typeof value.value === "string") {
-          const start = model.getPositionAt(value.loc.start.offset)
-          const end = model.getPositionAt(value.loc.end.offset)
-
-          decorations.push({
-            range: new monaco.Range(start.lineNumber, 1, end.lineNumber, 1),
-            options: {
-              isWholeLine: true,
-              glyphMarginClassName: "myGlyphMarginClass",
-              glyphMarginHoverMessage: { value: `Extract new entity from "**${key.value}**"` },
-            },
+          // Skip adding glyph if this value already exists as an entity
+          const stringValue = value.value
+          const entityExists = allEntities.some((entity) => {
+            // Handle both entity objects and entity_type objects
+            return entity.value === stringValue
           })
-          // Record line numbers where glyphs were added.
-          glyphLines.add(start.lineNumber)
+
+          if (!entityExists) {
+            const start = model.getPositionAt(value.loc.start.offset)
+            const end = model.getPositionAt(value.loc.end.offset)
+
+            decorations.push({
+              range: new monaco.Range(start.lineNumber, 1, end.lineNumber, 1),
+              options: {
+                isWholeLine: true,
+                glyphMarginClassName: "myGlyphMarginClass",
+                glyphMarginHoverMessage: { value: `Extract new entity from "**${key.value}**"` },
+              },
+            })
+            // Record line numbers where glyphs were added.
+            glyphLines.add(start.lineNumber)
+          }
         }
 
         // If the value of the property is an object or array, traverse it as well
