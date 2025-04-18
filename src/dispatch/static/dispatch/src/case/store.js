@@ -428,6 +428,9 @@ const actions = {
       )
     })
   },
+  resetSelected({ commit }) {
+    commit("RESET_SELECTED")
+  },
   joinCase({ commit }, caseId) {
     CaseApi.join(caseId, {}).then(() => {
       commit(
