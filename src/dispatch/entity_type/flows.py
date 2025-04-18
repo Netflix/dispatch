@@ -35,10 +35,13 @@ def recalculate_entity_flow(
         signal_instance.entities = entities
         db_session.commit()
 
-    send_entity_update_notification(
-        db_session=db_session,
-        entity_type=entity_type,
-        case=signal_instance.case,
-    )
+    try:
+        send_entity_update_notification(
+            db_session=db_session,
+            entity_type=entity_type,
+            case=signal_instance.case,
+        )
+    except Exception as e:
+        logging.error(f"Failed to send entity update notification: {e}")
 
     return signal_instance
