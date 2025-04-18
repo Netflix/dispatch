@@ -10,6 +10,8 @@ import "@formkit/themes/genesis"
 //   : null
 
 import { plugin, defaultConfig } from "@formkit/vue"
+import { VueQueryPlugin } from '@tanstack/vue-query'
+import { queryClient } from './query'
 import VResizeDrawer from "@wdns/vuetify-resize-drawer"
 
 import "roboto-fontface/css/roboto/roboto-fontface.css"
@@ -44,6 +46,7 @@ if (SENTRY_ENABLED) {
 app.use(vuetifyPlugin)
 app.use(router)
 app.use(store)
+app.use(VueQueryPlugin, { queryClient })
 app.component("VResizeDrawer", VResizeDrawer)
 // if (FORMKIT_PRO_PROJECT_KEY) {
 //   const proModule = import.meta.env.VITE_FORMKIT_PRO_PROJECT_KEY
