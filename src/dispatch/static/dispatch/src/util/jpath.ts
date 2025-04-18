@@ -1,5 +1,4 @@
 import jsonpath from "jsonpath"
-import json_to_ast from "json-to-ast"
 
 /**
  * Finds the path to a key in an object hierarchy.
