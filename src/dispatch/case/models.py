@@ -1,6 +1,6 @@
 from collections import Counter, defaultdict
 from datetime import datetime
-from typing import Any, ForwardRef, List, Optional
+from typing import Any, List, Optional
 
 from pydantic import Field, validator
 from dispatch.case_cost.models import CaseCostReadMinimal
@@ -290,9 +290,6 @@ class CaseReadBasic(DispatchBase):
 class IncidentReadBasic(DispatchBase):
     id: PrimaryKey
     name: Optional[NameStr]
-
-
-CaseReadMinimal = ForwardRef("CaseReadMinimal")
 
 
 class CaseReadMinimal(CaseBase):
