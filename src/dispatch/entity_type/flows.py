@@ -1,3 +1,4 @@
+import logging
 from sqlalchemy.orm import Session
 from dispatch.case.messaging import send_entity_update_notification
 from dispatch.entity_type.models import EntityScopeEnum
@@ -6,6 +7,8 @@ from dispatch.entity_type import service as entity_type_service
 
 from dispatch.entity_type.models import EntityType
 from dispatch.entity import service as entity_service
+
+log = logging.getLogger(__file__)
 
 
 def recalculate_entity_flow(
@@ -42,6 +45,6 @@ def recalculate_entity_flow(
             case=signal_instance.case,
         )
     except Exception as e:
-        logging.error(f"Failed to send entity update notification: {e}")
+        log.warning(f"Failed to send entity update notification: {e}")
 
     return signal_instance
