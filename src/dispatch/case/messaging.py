@@ -15,6 +15,7 @@ from dispatch.database.core import resolve_attr
 from dispatch.document import service as document_service
 from dispatch.case.models import Case, CaseRead
 from dispatch.conversation.enums import ConversationCommands
+from dispatch.entity_type.models import EntityType
 from dispatch.messaging.strings import (
     CASE_CLOSE_REMINDER,
     CASE_TRIAGE_REMINDER,
@@ -400,7 +401,7 @@ def send_event_paging_message(case: Case, db_session: Session, oncall_name: str)
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f"""Event reported. Team will respond during business hours. For urgent assistance, type `{engage_oncall_command}` in this channel and select "Page" to contact `{oncall_name}`."""
+                "text": f"""Event reported. Team will respond during business hours. For urgent assistance, type `{engage_oncall_command}` in this channel and select "Page" to contact `{oncall_name}`.""",
             },
         },
     ]
@@ -456,3 +457,39 @@ def send_case_rating_feedback_message(case: Case, db_session: Session):
             log.exception(e)
 
     log.debug("Case rating and feedback message sent to all participants.")
+
+
+def send_entity_update_notification(*, db_session: Session, entity_type: EntityType, case: Case):
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project.id, plugin_type="conversation"
+    )
+    if not plugin:
+        log.warning("Entity update notification not sent, no conversation plugin enabled.")
+        return
+
+    if case.dedicated_channel or not case.has_thread:
+        log.warning("Entity update notification not sent, can only send to case threads.")
+        return
+
+    notification_text = "Entity Update Notification"
+
+    blocks = [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"{entity_type.name} created. You can now create a snooze for entities of this type.",
+            },
+        },
+    ]
+
+    plugin.instance.send(
+        conversation_id=case.conversation.channel_id,
+        text=notification_text,
+        message_template=[],
+        notification_type=MessageType.entity_update,
+        blocks=blocks,
+        ts=case.conversation.thread_id,
+    )
+
+    log.debug("Entity update notification sent to all participants.")
