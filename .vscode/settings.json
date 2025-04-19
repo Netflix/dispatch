@@ -12,16 +12,25 @@
     "src/dispatch/static/dispatch/dist/": true
   },
   "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.validate": ["javascript", "javascriptreact", "vue"],
   "search.followSymlinks": false,
   "files.trimTrailingWhitespace": true,
   "files.trimFinalNewlines": true,
   "files.insertFinalNewline": true,
-  "vetur.format.enable": false,
   "python.testing.pytestEnabled": true,
   "[python]": {
     "editor.codeActionsOnSave": {
       "source.organizeImports": "never"
     }
   },
-  "codeQL.githubDatabase.update": "never",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[vue]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }
