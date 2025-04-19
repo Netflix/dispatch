@@ -60,7 +60,7 @@
             :options="editorOptions"
             :editorMounted="editorMounted"
             language="json"
-            style="width: 100%; height: 100%"
+            style="width: 100%; height: 240px"
           />
         </div>
 
@@ -331,6 +331,8 @@ const saveEntityType = async () => {
   }
   try {
     const newEntityType = await EntityTypeApi.create(entityTypeData)
+    // Use the case_id instead of signal_instance_id for recalculation
+    await EntityTypeApi.recalculate(newEntityType.data.id, selectedCase.value.id)
     emit("new-entity-type", newEntityType.data)
     store.commit(
       "notification_backend/addBeNotification",
@@ -340,7 +342,6 @@ const saveEntityType = async () => {
       },
       { root: true }
     )
-    await EntityTypeApi.recalculate(newEntityType.data.id, props.signalObj.raw.id)
   } catch (error) {
     store.commit(
       "notification_backend/addBeNotification",
