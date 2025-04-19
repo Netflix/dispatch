@@ -39,6 +39,10 @@ class CaseCostUpdate(CaseCostBase):
     case_cost_type: CaseCostTypeRead
 
 
+class CaseCostReadMinimal(DispatchBase):
+    amount: float = 0
+
+
 class CaseCostRead(CaseCostBase):
     id: PrimaryKey
     case_cost_type: CaseCostTypeRead

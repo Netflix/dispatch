@@ -1,8 +1,9 @@
 from collections import Counter, defaultdict
 from datetime import datetime
-from typing import Any, ForwardRef, List, Optional
+from typing import Any, List, Optional
 
 from pydantic import Field, validator
+from dispatch.case_cost.models import CaseCostReadMinimal
 from sqlalchemy import (
     Boolean,
     Column,
@@ -247,7 +248,6 @@ class ProjectRead(DispatchBase):
     color: Optional[str]
     allow_self_join: Optional[bool] = Field(True, nullable=True)
 
-
 # Pydantic models...
 class CaseBase(DispatchBase):
     title: str
@@ -292,32 +292,19 @@ class IncidentReadBasic(DispatchBase):
     name: Optional[NameStr]
 
 
-CaseReadMinimal = ForwardRef("CaseReadMinimal")
-
-
 class CaseReadMinimal(CaseBase):
     id: PrimaryKey
-    assignee: Optional[ParticipantReadMinimal]
-    case_costs: List[CaseCostRead] = []
-    case_priority: CasePriorityRead
-    case_severity: CaseSeverityRead
+    name: NameStr | None
+    status: CaseStatus | None  # Used in table and for action disabling
+    closed_at: datetime | None = None
+    reported_at: datetime | None = None
+    dedicated_channel: bool | None  # Used by CaseStatus component
     case_type: CaseTypeRead
-    duplicates: Optional[List[CaseReadBasic]] = []
-    incidents: Optional[List[IncidentReadBasic]] = []
-    related: Optional[List[CaseReadMinimal]] = []
-    closed_at: Optional[datetime] = None
-    created_at: Optional[datetime] = None
-    escalated_at: Optional[datetime] = None
-    dedicated_channel: Optional[bool]
-    name: Optional[NameStr]
+    case_severity: CaseSeverityRead
+    case_priority: CasePriorityRead
     project: ProjectRead
-    reporter: Optional[ParticipantReadMinimal]
-    reported_at: Optional[datetime] = None
-    tags: Optional[List[TagRead]] = []
-    ticket: Optional[TicketRead] = None
-    total_cost_classic: float | None
-    total_cost_new: float | None
-    triage_at: Optional[datetime] = None
+    assignee: ParticipantReadMinimal | None
+    case_costs: list[CaseCostReadMinimal] = []
 
 
 CaseReadMinimal.update_forward_refs()
