@@ -59,94 +59,107 @@
             loading-text="Loading... Please wait"
             :sort-by="['reported_at']"
             :items-per-page="itemsPerPage"
-            @click:row="showCasePage"
             @update:options="loadItems"
             :footer-props="{
               'items-per-page-options': [10, 25, 50, 100],
             }"
           >
-            <template #item.case_severity.name="{ item, value }">
-              <case-severity :severity="value" :color="item.case_severity.color" />
-            </template>
-            <template #item.case_priority.name="{ item, value }">
-              <case-priority :priority="value" :color="item.case_priority.color" />
-            </template>
-            <template #item.status="{ item }">
-              <case-status
-                :status="item.status"
-                :id="item.id"
-                :allowSelfJoin="item.project.allow_self_join"
-                :dedicatedChannel="item.dedicated_channel"
-              />
-            </template>
-            <template #item.project.display_name="{ item }">
-              <v-chip size="small" :color="item.project.color">
-                {{ item.project.display_name }}
-              </v-chip>
-            </template>
-            <template #item.case_costs="{ value }">
-              <case-cost-card :case-costs="value" />
-            </template>
-            <template #item.assignee="{ value }">
-              <case-participant :participant="value" />
-            </template>
-            <template #item.reported_at="{ value }">
-              <v-tooltip location="bottom">
-                <template #activator="{ props }">
-                  <span v-bind="props">{{ formatRelativeDate(value) }}</span>
-                </template>
-                <span>{{ formatDate(value) }}</span>
-              </v-tooltip>
-            </template>
-            <template #item.closed_at="{ value }">
-              <v-tooltip location="bottom">
-                <template #activator="{ props }">
-                  <span v-bind="props">{{ formatRelativeDate(value) }}</span>
-                </template>
-                <span>{{ formatDate(value) }}</span>
-              </v-tooltip>
-            </template>
-            <template #item.data-table-actions="{ item }">
-              <v-menu location="right" origin="overlap">
-                <template #activator="{ props }">
-                  <v-btn icon variant="text" v-bind="props">
-                    <v-icon>mdi-dots-vertical</v-icon>
-                  </v-btn>
-                </template>
-                <v-list>
-                  <v-list-item
-                    :to="{
-                      name: 'CasePage',
-                      params: { name: item.name },
-                    }"
-                  >
-                    <v-list-item-title>View</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item
-                    :to="{
-                      name: 'CaseTableEdit',
-                      params: { name: item.name },
-                    }"
-                  >
-                    <v-list-item-title>Edit</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item
-                    @click="showRun({ type: 'case', data: item })"
-                    :disabled="item.status == 'Escalated' || item.status == 'Closed'"
-                  >
-                    <v-list-item-title>Run Workflow</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item
-                    @click="showEscalateDialog(item)"
-                    :disabled="item.status == 'Escalated' || item.status == 'Closed'"
-                  >
-                    <v-list-item-title>Escalate</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item @click="showDeleteDialog(item)">
-                    <v-list-item-title>Delete</v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
+            <template #item="{ item }">
+              <tr
+                @mouseenter="prefetchCase(item.id)"
+                @focus="prefetchCase(item.id)"
+                @click="showCasePage($event, { item })"
+              >
+                <td>
+                  <v-checkbox
+                    :model-value="selected.includes(item)"
+                    @click.stop
+                    @update:model-value="toggleSelection(item)"
+                  />
+                </td>
+                <td>{{ item.name }}</td>
+                <td>{{ item.title }}</td>
+                <td>
+                  <case-status
+                    :status="item.status"
+                    :id="item.id"
+                    :allowSelfJoin="item.project.allow_self_join"
+                    :dedicatedChannel="item.dedicated_channel"
+                  />
+                </td>
+                <td>{{ item.case_type.name }}</td>
+                <td>
+                  <case-severity
+                    :severity="item.case_severity.name"
+                    :color="item.case_severity.color"
+                  />
+                </td>
+                <td>
+                  <case-priority
+                    :priority="item.case_priority.name"
+                    :color="item.case_priority.color"
+                  />
+                </td>
+                <td>
+                  <v-chip size="small" :color="item.project.color">
+                    {{ item.project.display_name }}
+                  </v-chip>
+                </td>
+                <td>
+                  <case-participant :participant="item.assignee" />
+                </td>
+                <td>
+                  <case-cost-card :case-costs="item.case_costs" />
+                </td>
+                <td>
+                  <v-tooltip location="bottom">
+                    <template #activator="{ props }">
+                      <span v-bind="props">{{ formatRelativeDate(item.reported_at) }}</span>
+                    </template>
+                    <span>{{ formatDate(item.reported_at) }}</span>
+                  </v-tooltip>
+                </td>
+                <td>
+                  <v-tooltip location="bottom">
+                    <template #activator="{ props }">
+                      <span v-bind="props">{{ formatRelativeDate(item.closed_at) }}</span>
+                    </template>
+                    <span>{{ formatDate(item.closed_at) }}</span>
+                  </v-tooltip>
+                </td>
+                <td class="text-right">
+                  <v-menu location="right" origin="overlap">
+                    <template #activator="{ props }">
+                      <v-btn icon variant="text" v-bind="props" @click.stop>
+                        <v-icon>mdi-dots-vertical</v-icon>
+                      </v-btn>
+                    </template>
+                    <v-list>
+                      <v-list-item :to="{ name: 'CasePage', params: { name: item.name } }">
+                        <v-list-item-title>View</v-list-item-title>
+                      </v-list-item>
+                      <v-list-item :to="{ name: 'CaseTableEdit', params: { name: item.name } }">
+                        <v-list-item-title>Edit</v-list-item-title>
+                      </v-list-item>
+                      <v-list-item
+                        @click="showRun({ type: 'case', data: item })"
+                        :disabled="item.status == 'Escalated' || item.status == 'Closed'"
+                      >
+                        <v-list-item-title>Run Workflow</v-list-item-title>
+                      </v-list-item>
+                      <v-list-item
+                        @click="showEscalateDialog(item)"
+                        :disabled="item.status == 'Escalated' || item.status == 'Closed'"
+                      >
+                        <v-list-item-title>Escalate</v-list-item-title>
+                      </v-list-item>
+                      <v-list-item @click="showDeleteDialog(item)">
+                        <v-list-item-title>Delete</v-list-item-title>
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
+                </td>
+              </tr>
             </template>
           </v-data-table-server>
         </v-card>
@@ -161,6 +174,9 @@ import { ref, computed, watch } from "vue"
 import { useStore } from "vuex"
 import { useRoute, useRouter } from "vue-router"
 import { formatRelativeDate, formatDate } from "@/filters"
+import CaseApi from "@/case/api"
+import { useCases, caseKeys } from "@/case/api"
+import { useQueryClient } from "@tanstack/vue-query"
 
 import BulkEditSheet from "@/case/BulkEditSheet.vue"
 import CaseCostCard from "@/case_cost/CaseCostCard.vue"
@@ -179,12 +195,25 @@ import TableFilterDialog from "@/case/TableFilterDialog.vue"
 const store = useStore()
 const router = useRouter()
 const route = useRoute()
+const queryClient = useQueryClient()
 
 const itemsPerPage = ref(25)
 const showEditSheet = ref(false)
 
 const caseManagement = computed(() => store.state.case_management)
 const auth = computed(() => store.state.auth)
+
+// Use the store's table options directly
+const tableOptions = computed(() => caseManagement.value.table.options)
+
+// Use TanStack Query to fetch cases with the store's options
+const { data, isLoading, refetch } = useCases(tableOptions.value)
+
+// Computed properties for table data
+const items = computed(() => data.value?.items || [])
+const total = computed(() => data.value?.total || 0)
+const loading = computed(() => isLoading.value || caseManagement.value.table.loading)
+const currentUserRole = computed(() => caseManagement.value.current_user_role)
 
 const defaultUserProjects = computed(() => {
   let d = null
@@ -196,19 +225,44 @@ const defaultUserProjects = computed(() => {
   return d
 })
 
+// Prefetch case details on hover
+const prefetchCase = (caseId) => {
+  console.log(`Prefetching case details for case ID: ${caseId}`)
+
+  queryClient
+    .prefetchQuery({
+      queryKey: caseKeys.detail(caseId),
+      queryFn: () => {
+        console.log(`Executing prefetch query for case ID: ${caseId}`)
+        return CaseApi.get(caseId).then((response) => {
+          console.log(`Prefetch successful for case ID: ${caseId}`)
+          return response.data
+        })
+      },
+      staleTime: 60000, // 1 minute
+    })
+    .catch((error) => {
+      console.error(`Error prefetching case ID: ${caseId}`, error)
+    })
+}
+
+// Toggle selection for checkboxes
+const toggleSelection = (item) => {
+  if (selected.value.includes(item)) {
+    selected.value = selected.value.filter((i) => i !== item)
+  } else {
+    selected.value.push(item)
+  }
+}
+
 const showRun = (data) => store.dispatch("workflow/showRun", data)
 const showEscalateDialog = (item) => store.dispatch("case_management/showEscalateDialog", item)
 const showDeleteDialog = (item) => store.dispatch("case_management/showDeleteDialog", item)
 const showNewSheet = () => store.dispatch("case_management/showNewSheet")
 
 const getAll = () => {
-  store.dispatch("case_management/getAll", caseManagement.value.table.options)
+  refetch()
 }
-
-const items = computed(() => caseManagement.value.table.rows.items)
-const total = computed(() => caseManagement.value.table.rows.total)
-const loading = computed(() => caseManagement.value.table.loading)
-const currentUserRole = computed(() => caseManagement.value.current_user_role)
 
 const selected = ref([])
 watch(selected, (newVal) => {
@@ -237,17 +291,18 @@ function loadHeaders() {
 }
 
 function loadItems({ page, itemsPerPage, sortBy }) {
-  caseManagement.value.table.options.page = page
-  caseManagement.value.table.options.itemsPerPage = itemsPerPage
+  // Update the store directly
+  store.state.case_management.table.options.page = page
+  store.state.case_management.table.options.itemsPerPage = itemsPerPage
   // Check if sortBy is an array of objects (after manual click)
   if (sortBy.length && typeof sortBy[0] === "object") {
     // Take the first sort option
     const sortOption = sortBy[0]
 
-    caseManagement.value.table.options.sortBy = [sortOption.key]
-    caseManagement.value.table.options.descending = [sortOption.order === "desc"]
+    store.state.case_management.table.options.sortBy = [sortOption.key]
+    store.state.case_management.table.options.descending = [sortOption.order === "desc"]
   } else {
-    caseManagement.value.table.options.sortBy = sortBy
+    store.state.case_management.table.options.sortBy = sortBy
   }
   getAll()
 }
@@ -268,17 +323,20 @@ const q = ref(caseManagement.value.table.options.q)
 watch(
   () => q.value,
   (newValue) => {
-    caseManagement.value.table.options.q = newValue
+    store.state.case_management.table.options.q = newValue
     getAll()
   }
 )
 
-// Deserialize the URL filters and apply them to the local filters
+// Deserialize the URL filters and apply them to the store
 const filters = {
   ...RouterUtils.deserializeFilters(route.query),
   project: defaultUserProjects,
 }
+// Set filters in the store
 store.commit("case_management/SET_FILTERS", filters)
+
+// Watch for filter changes from the store
 watch(
   () => caseManagement.value.table.options.filters,
   (newFilters, oldFilters) => {
