@@ -37,58 +37,35 @@ const props = withDefaults(
 
 <template>
   <!-- This is a tooltip component that displays text and hotkeys. -->
-  <v-tooltip :location="props.location" open-delay="400" transition="fade-transition">
+  <v-tooltip :location="props.location" open-delay="750" transition="fade-transition">
     <template #activator="{ props: tooltip }">
       <!-- Tooltip activator slot. Pass the activator component here. -->
       <slot name="activator" :tooltip="tooltip" />
     </template>
 
-    <div class="tooltip-content">
+    <v-row no-gutters>
       <!-- Tooltip text -->
-      <span>{{ text }}</span>
+      <v-col align-self="start">
+        <span>{{ text }}</span>
+      </v-col>
 
       <!-- Hotkeys display -->
-      <div class="hotkeys-container" v-if="hotkeys.length">
-        <Hotkey
-          v-for="(hotkey, index) in hotkeys"
-          :key="index"
-          :hotkey="hotkey"
-          class="hotkey-item"
-        />
-      </div>
-    </div>
+      <v-col align-self="end" :cols="hotkeys.length" v-if="hotkeys.length">
+        <Hotkey v-for="(hotkey, index) in hotkeys" :key="index" :hotkey="hotkey" />
+      </v-col>
+    </v-row>
   </v-tooltip>
 </template>
 
 <style scoped>
 .v-tooltip :deep(.v-overlay__content) {
   align-items: center !important;
-  padding: 6px 8px !important;
+  max-height: 30px !important;
   opacity: 2 !important;
   color: rgb(25, 28, 24) !important;
   font-size: 0.6875rem !important;
   backdrop-filter: blur(12px) saturate(190%) contrast(50%) brightness(130%) !important;
   background-color: rgba(255, 255, 255, 0.5) !important;
   border: 0.5px solid rgb(216, 216, 216) !important;
-}
-
-.tooltip-content {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  gap: 8px;
-}
-
-.hotkeys-container {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  gap: 4px;
-}
-
-.hotkey-item {
-  margin-left: 2px;
 }
 </style>
