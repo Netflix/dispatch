@@ -42,8 +42,7 @@
           </v-row>
         </v-container>
       </v-card-text>
-      <v-card-actions>
-        <v-spacer />
+      <v-card-actions class="pa-4 pt-0">
         <v-btn
           color="info"
           variant="flat"
