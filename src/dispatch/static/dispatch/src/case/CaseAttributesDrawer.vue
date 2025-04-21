@@ -10,6 +10,7 @@ import CaseTypeSearchPopover from "@/case/type/CaseTypeSearchPopover.vue"
 import DTooltip from "@/components/DTooltip.vue"
 import ParticipantSearchPopover from "@/participant/ParticipantSearchPopover.vue"
 import ProjectSearchPopover from "@/project/ProjectSearchPopover.vue"
+import TagSearchPopover from "@/tag/TagSearchPopover.vue"
 import { useSavingState } from "@/composables/useSavingState"
 
 // Define the props
@@ -150,6 +151,15 @@ const handleResolutionUpdate = (newResolution) => {
             <ProjectSearchPopover :project="modelValue.project?.name" class="pl-6" />
           </v-col>
         </v-row>
+
+        <v-row no-gutters class="pt-6">
+          <v-col cols="12">
+            <div class="dispatch-font mb-2">Labels</div>
+          </v-col>
+          <v-col cols="12">
+            <TagSearchPopover :case-tags="modelValue.tags" />
+          </v-col>
+        </v-row>
       </div>
 
       <v-divider class="mt-8 mb-8" />
@@ -187,6 +197,7 @@ const handleResolutionUpdate = (newResolution) => {
 
 <style lang="scss" scoped>
 @import "@/styles/index.scss";
+
 .dispatch-font {
   color: rgb(107, 111, 118) !important;
   font-size: 0.8125rem !important;
