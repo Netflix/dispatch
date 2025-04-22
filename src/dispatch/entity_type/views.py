@@ -54,6 +54,21 @@ def create_entity_type(db_session: DbSession, entity_type_in: EntityTypeCreate):
     return entity_type
 
 
+@router.post("/{case_id}", response_model=EntityTypeRead)
+def create_entity_type_with_case(
+    db_session: DbSession, case_id: PrimaryKey, entity_type_in: EntityTypeCreate
+):
+    """Create a new entity."""
+    try:
+        entity_type = create(db_session=db_session, entity_type_in=entity_type_in, case_id=case_id)
+    except IntegrityError:
+        raise ValidationError(
+            [ErrorWrapper(ExistsError(msg="An entity with this name already exists."), loc="name")],
+            model=EntityTypeCreate,
+        ) from None
+    return entity_type
+
+
 @router.put("/recalculate/{entity_type_id}/{case_id}", response_model=List[SignalInstanceRead])
 def recalculate(db_session: DbSession, entity_type_id: PrimaryKey, case_id: PrimaryKey):
     """Recalculates the associated entities for all signal instances in a case."""

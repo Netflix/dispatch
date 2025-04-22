@@ -330,7 +330,10 @@ const saveEntityType = async () => {
     signals: [signalGetResponse.data],
   }
   try {
-    const newEntityType = await EntityTypeApi.create(entityTypeData)
+    const newEntityType = await EntityTypeApi.create_with_case(
+      entityTypeData,
+      selectedCase.value.id
+    )
     // Use the case_id instead of signal_instance_id for recalculation
     await EntityTypeApi.recalculate(newEntityType.data.id, selectedCase.value.id)
     emit("new-entity-type", newEntityType.data)

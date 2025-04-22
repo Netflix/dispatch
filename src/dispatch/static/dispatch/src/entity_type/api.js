@@ -15,6 +15,10 @@ export default {
     return API.post(`${resource}`, payload)
   },
 
+  create_with_case(payload, caseId) {
+    return API.post(`${resource}/${caseId}`, payload)
+  },
+
   update(entityTypeId, payload) {
     return API.put(`${resource}/${entityTypeId}`, payload)
   },
