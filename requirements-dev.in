@@ -10,6 +10,7 @@ ipython
 packaging<25,>=21
 pre-commit
 pytest-mock
-pytest==7.4.4
+pytest-subtests>=0.14.1
+pytest>=7.4,<8.1
 ruff
 vulture
