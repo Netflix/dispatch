@@ -233,6 +233,7 @@ openai==1.75.0
     # via -r requirements-base.in
 packaging==24.2
     # via
+    #   -r requirements-base.in
     #   limits
     #   spacy
     #   statsmodels
