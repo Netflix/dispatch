@@ -11,7 +11,7 @@ packaging<25,>=21
 pre-commit
 pytest-mock
 pytest-subtests>=0.14.1
-pytest>=8.3.5,<9
+pytest>=7.4.4,<7.5
 ruff
 schemathesis>=3.39.16
 vulture
