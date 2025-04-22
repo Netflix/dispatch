@@ -1,4 +1,4 @@
-attrs==22.1.0
+attrs==22.2.0
 black
 click
 coverage
@@ -7,8 +7,9 @@ easydict
 factory-boy
 faker
 ipython
+packaging<25,>=21
 pre-commit
-pytest==7.4.4
 pytest-mock
+pytest==7.4.4
 ruff
 vulture
