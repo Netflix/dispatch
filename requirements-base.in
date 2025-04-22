@@ -43,7 +43,6 @@ python-slugify
 pytz
 requests
 schedule
-schemathesis>=3.39.16
 sentry-asgi
 sentry-sdk==1.45.0
 sh
