@@ -29,7 +29,7 @@ msal
 numpy
 oauth2client
 openai
-packaging<25,>=21
+packaging==24.2
 pandas
 pdpyras
 protobuf<4.24.0,>=3.6.1
