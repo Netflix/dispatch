@@ -161,7 +161,7 @@ pygments==2.19.1
     #   ipython-pygments-lexers
 pyrate-limiter==3.7.0
     # via schemathesis
-pytest==8.3.5
+pytest==7.4.4
     # via
     #   -r requirements-dev.in
     #   pytest-mock

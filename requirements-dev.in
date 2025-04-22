@@ -9,7 +9,7 @@ faker
 ipython
 packaging==24.2
 pre-commit
-pytest
+pytest>=7.4.4,<7.5
 pytest-mock
 pytest-subtests
 ruff
