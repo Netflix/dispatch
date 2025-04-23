@@ -85,7 +85,10 @@ def create(
     if case_id:
         # Get all signal instances for the case
         signal_instances = (
-            db_session.query(SignalInstance).filter(SignalInstance.case_id == case_id).all()
+            db_session.query(SignalInstance)
+            .filter(SignalInstance.case_id == case_id)
+            .limit(100)
+            .all()
         )
         # Extract and create entities for these instances using only the new entity_type
         for signal_instance in signal_instances:
