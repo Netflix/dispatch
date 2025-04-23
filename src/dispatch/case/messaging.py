@@ -377,7 +377,7 @@ def send_case_welcome_participant_message(
     log.debug(f"Welcome ephemeral message sent to {participant_email}.")
 
 
-def send_event_paging_message(case: Case, db_session: Session):
+def send_event_paging_message(case: Case, db_session: Session, oncall_name: str) -> None:
     """
     Sends a message to the case conversation channel to notify the reporter that they can engage
     with oncall if they need immediate assistance.
@@ -400,7 +400,7 @@ def send_event_paging_message(case: Case, db_session: Session):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f"This event was reported and the team will respond during normal business hours. If you end up needing immediate assistance, you can engage the oncall with `{engage_oncall_command}`.",
+                "text": f"""Event reported. Team will respond during business hours. For urgent assistance, type `{engage_oncall_command}` in this channel and select "Page" to contact `{oncall_name}`."""
             },
         },
     ]

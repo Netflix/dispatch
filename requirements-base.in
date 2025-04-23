@@ -3,7 +3,7 @@ aiofiles
 aiohttp
 alembic
 atlassian-python-api==3.32.0
-attrs==22.1.0
+attrs>=22.2.0  # Required by referencing; conflicts with dispatch's requirement
 bcrypt
 blockkit
 boto3
@@ -58,6 +58,7 @@ statsmodels
 tabulate
 tenacity
 tiktoken
+typing-extensions==4.13.2
 uvicorn
 uvloop
 validators==0.18.2
