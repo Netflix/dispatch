@@ -1,14 +1,14 @@
-from typing import Union
+from typing import List
 
 from fastapi import APIRouter, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.exc import IntegrityError
 
+from dispatch.case.service import get as get_case
 from dispatch.database.core import DbSession
 from dispatch.exceptions import ExistsError
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
-from dispatch.signal.service import get_signal_instance
 from dispatch.signal.models import SignalInstanceRead
 
 from .models import (
@@ -54,11 +54,24 @@ def create_entity_type(db_session: DbSession, entity_type_in: EntityTypeCreate):
     return entity_type
 
 
-@router.put("/recalculate/{entity_type_id}/{signal_instance_id}", response_model=SignalInstanceRead)
-def recalculate(
-    db_session: DbSession, entity_type_id: PrimaryKey, signal_instance_id: Union[str, PrimaryKey]
+@router.post("/{case_id}", response_model=EntityTypeRead)
+def create_entity_type_with_case(
+    db_session: DbSession, case_id: PrimaryKey, entity_type_in: EntityTypeCreate
 ):
-    """Recalculates the associated entities for a signal instance."""
+    """Create a new entity."""
+    try:
+        entity_type = create(db_session=db_session, entity_type_in=entity_type_in, case_id=case_id)
+    except IntegrityError:
+        raise ValidationError(
+            [ErrorWrapper(ExistsError(msg="An entity with this name already exists."), loc="name")],
+            model=EntityTypeCreate,
+        ) from None
+    return entity_type
+
+
+@router.put("/recalculate/{entity_type_id}/{case_id}", response_model=List[SignalInstanceRead])
+def recalculate(db_session: DbSession, entity_type_id: PrimaryKey, case_id: PrimaryKey):
+    """Recalculates the associated entities for all signal instances in a case."""
     entity_type = get(
         db_session=db_session,
         entity_type_id=entity_type_id,
@@ -69,21 +82,32 @@ def recalculate(
             detail=[{"msg": "An entity type with this id does not exist."}],
         )
 
-    signal_instance = get_signal_instance(
-        db_session=db_session,
-        signal_instance_id=signal_instance_id,
-    )
-    if not signal_instance:
+    case = get_case(db_session=db_session, case_id=case_id)
+    if not case:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "A signal instance with this id does not exist."}],
+            detail=[{"msg": "A case with this id does not exist."}],
         )
 
-    return recalculate_entity_flow(
-        db_session=db_session,
-        entity_type=entity_type,
-        signal_instance=signal_instance,
-    )
+    # Get all signal instances associated with the case
+    signal_instances = case.signal_instances
+    if not signal_instances:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "No signal instances found for this case."}],
+        )
+
+    # Recalculate entities for each signal instance
+    updated_signal_instances = []
+    for signal_instance in signal_instances:
+        updated_signal_instance = recalculate_entity_flow(
+            db_session=db_session,
+            entity_type=entity_type,
+            signal_instance=signal_instance,
+        )
+        updated_signal_instances.append(updated_signal_instance)
+
+    return updated_signal_instances
 
 
 @router.put("/{entity_type_id}", response_model=EntityTypeRead)
