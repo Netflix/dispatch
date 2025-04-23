@@ -56,8 +56,10 @@ def get_all(*, db_session: Session, scope: str = None) -> Query:
     return db_session.query(EntityType)
 
 
-def create(*, db_session: Session, entity_type_in: EntityTypeCreate) -> EntityType:
-    """Creates a new entity type."""
+def create(
+    *, db_session: Session, entity_type_in: EntityTypeCreate, case_id: int | None = None
+) -> EntityType:
+    """Creates a new entity type and extracts entities from existing signal instances."""
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=entity_type_in.project
     )
@@ -75,10 +77,35 @@ def create(*, db_session: Session, entity_type_in: EntityTypeCreate) -> EntityTy
 
     db_session.add(entity_type)
     db_session.commit()
+
+    # Extract entities for all relevant signal instances
+    from dispatch.signal.models import SignalInstance
+    from dispatch.entity.service import find_entities
+
+    if case_id:
+        # Get all signal instances for the case
+        signal_instances = (
+            db_session.query(SignalInstance)
+            .filter(SignalInstance.case_id == case_id)
+            .limit(100)
+            .all()
+        )
+        # Extract and create entities for these instances using only the new entity_type
+        for signal_instance in signal_instances:
+            new_entities = find_entities(db_session, signal_instance, [entity_type])
+            # Associate new entities with the signal_instance
+            for entity in new_entities:
+                if entity not in signal_instance.entities:
+                    signal_instance.entities.append(entity)
+
+    db_session.commit()
+
     return entity_type
 
 
-def get_or_create(*, db_session: Session, entity_type_in: EntityTypeCreate) -> EntityType:
+def get_or_create(
+    *, db_session: Session, entity_type_in: EntityTypeCreate, case_id: int | None = None
+) -> EntityType:
     """Gets or creates a new entity type."""
     q = (
         db_session.query(EntityType)
@@ -90,7 +117,7 @@ def get_or_create(*, db_session: Session, entity_type_in: EntityTypeCreate) -> E
     if instance:
         return instance
 
-    return create(db_session=db_session, entity_type_in=entity_type_in)
+    return create(db_session=db_session, entity_type_in=entity_type_in, case_id=case_id)
 
 
 def update(

@@ -482,11 +482,14 @@ def add_case_participants(
 
     try:
         if case.has_thread:
-            plugin.instance.add_to_thread(
-                case.conversation.channel_id,
-                case.conversation.thread_id,
-                participant_emails,
-            )
+            if case.signal_instances:
+                if case.signal_instances[0].signal.lifecycle == "production":
+                    # we only add participants to case threads that originate from signals in production
+                    plugin.instance.add_to_thread(
+                        case.conversation.channel_id,
+                        case.conversation.thread_id,
+                        participant_emails,
+                    )
         elif case.has_channel:
             plugin.instance.add(case.conversation.channel_id, participant_emails)
     except Exception as e:

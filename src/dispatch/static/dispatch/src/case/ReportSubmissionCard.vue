@@ -72,7 +72,6 @@
         </v-container>
       </v-card-text>
       <v-card-actions>
-        <v-spacer />
         <v-btn
           color="info"
           variant="flat"

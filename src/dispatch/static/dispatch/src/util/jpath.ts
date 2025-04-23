@@ -1,5 +1,4 @@
 import jsonpath from "jsonpath"
-import json_to_ast from "json-to-ast"
 
 /**
  * Finds the path to a key in an object hierarchy.
@@ -24,7 +23,7 @@ import json_to_ast from "json-to-ast"
 export function findPath<T>(obj: T, key: keyof any, value: any, path: string = "$"): string | null {
   if (Array.isArray(obj)) {
     for (let i = 0; i < obj.length; i++) {
-      const arrayPath = `${path}[${i}]`
+      const arrayPath = `${path}[*]`
       const result = findPath(obj[i], key, value, arrayPath)
       if (result) return result
     }
