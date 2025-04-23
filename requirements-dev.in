@@ -1,4 +1,6 @@
-attrs==22.1.0
+# Note: These requirements intentionally conflict with dispatch package
+# To resolve, install dispatch with --no-deps: pip install -e . --no-deps
+attrs>=22.2.0  # Required by referencing
 black
 click
 coverage
@@ -11,4 +13,5 @@ pre-commit
 pytest==7.4.4
 pytest-mock
 ruff
+typing-extensions==4.13.2  # Required by nflx-genai and dispatch
 vulture
