@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, computed } from "vue"
+import { ref, watch, computed } from "vue"
 import TagApi from "@/tag/api"
 import TagTypeApi from "@/tag_type/api"
 import { useSavingState } from "@/composables/useSavingState"
@@ -18,9 +18,9 @@ const props = defineProps({
 
 const store = useStore()
 const { setSaving } = useSavingState()
-const allTags = ref<TagRead[]>([])
+const allTags = ref<any[]>([])
 const groupedTags = ref<any[]>([])
-const selectedTags = ref<TagRead[]>([])
+const selectedTags = ref<any[]>([])
 const menu = ref(false)
 const searchQuery = ref("")
 const loading = ref(false)
@@ -35,14 +35,14 @@ watch(
   (newTags) => {
     if (newTags) {
       selectedTags.value = [...newTags]
-      tagsHaveChanged.value = false; // Reset change flag when props update
+      tagsHaveChanged.value = false // Reset change flag when props update
     }
   },
   { immediate: true, deep: true }
 )
 
 // Function to group tags by type
-const convertData = (data: TagRead[]) => {
+const convertData = (data: any[]) => {
   if (!data) return []
   const groupedObject = data.reduce((r, a) => {
     if (!a.tag_type || a.tag_type.id === undefined || a.tag_type.id === null) {
@@ -68,230 +68,226 @@ const convertData = (data: TagRead[]) => {
 
   return Object.values(groupedObject)
     .sort((a, b) => a.label.localeCompare(b.label))
-    .map(group => {
-      group.menuItems.sort((a, b) => a.name.localeCompare(b.name));
-      return group;
-    });
+    .map((group) => {
+      group.menuItems.sort((a, b) => a.name.localeCompare(b.name))
+      return group
+    })
 }
-
 
 // Fetch all relevant tags and group them
 const fetchData = async (force = false) => {
   const caseDetails = store.state.case_management.selected
   const project = caseDetails?.project
-  const projectId = project?.id;
+  const projectId = project?.id
 
   if (hasFetchedForCurrentProject.value && projectId === currentProjectId.value && !force) {
-    return;
+    return
   }
 
   loading.value = true
   fetchError.value = null
   allTags.value = []
   groupedTags.value = []
-  currentProjectId.value = projectId;
+  currentProjectId.value = projectId
 
   if (!project) {
     fetchError.value = "Cannot load tags: No project context available."
     loading.value = false
-    hasFetchedForCurrentProject.value = false;
+    hasFetchedForCurrentProject.value = false
     return
   }
 
   try {
     // Step 1: Fetch relevant TagType IDs
     const tagTypeFilterOptions = {
-      filter: JSON.stringify([{
-        and: [
-          { model: "TagType", field: "discoverable_case", op: "==", value: "true" },
-          { model: "TagType", field: "project_id", op: "==", value: project.id }
-        ]
-      }]),
+      filter: JSON.stringify([
+        {
+          and: [
+            { model: "TagType", field: "discoverable_case", op: "==", value: "true" },
+            { model: "TagType", field: "project_id", op: "==", value: project.id },
+          ],
+        },
+      ]),
       itemsPerPage: -1,
       fields: JSON.stringify(["id"]),
     }
 
-    const tagTypeResponse = await TagTypeApi.getAll(tagTypeFilterOptions);
-    const relevantTagTypeIds = tagTypeResponse.data.items.map((tt: { id: number }) => tt.id);
+    const tagTypeResponse = await TagTypeApi.getAll(tagTypeFilterOptions)
+    const relevantTagTypeIds = tagTypeResponse.data.items.map((tt: { id: number }) => tt.id)
 
     if (!relevantTagTypeIds.length) {
-      loading.value = false;
-      hasFetchedForCurrentProject.value = true;
-      return;
+      loading.value = false
+      hasFetchedForCurrentProject.value = true
+      return
     }
 
     // Step 2: Fetch Tags
     const tagFilterOptions = {
-      filter: JSON.stringify([{
-        and: [
-          { model: "Tag", field: "tag_type_id", op: "in", value: relevantTagTypeIds },
-          { model: "Tag", field: "discoverable", op: "==", value: "true" }
-        ]
-      }]),
+      filter: JSON.stringify([
+        {
+          and: [
+            { model: "Tag", field: "tag_type_id", op: "in", value: relevantTagTypeIds },
+            { model: "Tag", field: "discoverable", op: "==", value: "true" },
+          ],
+        },
+      ]),
       project: [project],
       itemsPerPage: -1,
       sortBy: JSON.stringify(["tag_type.name", "name"]),
       sortDesc: JSON.stringify([false, false]),
     }
 
-    const tagResponse = await TagApi.getAll(tagFilterOptions);
+    const tagResponse = await TagApi.getAll(tagFilterOptions)
     allTags.value = tagResponse.data.items
     groupedTags.value = convertData(allTags.value)
-
   } catch (error: any) {
     console.error("Error fetching tags or tag types:", error)
     fetchError.value = "Failed to load tags. Please try again."
     allTags.value = []
     groupedTags.value = []
-    hasFetchedForCurrentProject.value = false;
+    hasFetchedForCurrentProject.value = false
   } finally {
     loading.value = false
     if (!fetchError.value) {
-       hasFetchedForCurrentProject.value = true;
+      hasFetchedForCurrentProject.value = true
     }
   }
 }
 
 // Computed property for filtering based on search query
 const filteredGroupedTags = computed(() => {
-  const query = searchQuery.value.toLowerCase().trim();
+  const query = searchQuery.value.toLowerCase().trim()
   if (!query) {
-    return groupedTags.value;
+    return groupedTags.value
   }
 
   return groupedTags.value.reduce((acc, group) => {
-    const filteredItems = group.menuItems.filter((item: TagRead) =>
+    const filteredItems = group.menuItems.filter((item: any) =>
       item.name.toLowerCase().includes(query)
-    );
+    )
 
     if (filteredItems.length > 0) {
-      acc.push({ ...group, menuItems: filteredItems });
+      acc.push({ ...group, menuItems: filteredItems })
     }
-    return acc;
-  }, [] as any[]);
-});
-
+    return acc
+  }, [] as any[])
+})
 
 // Debounced search function
 const debouncedSearch = debounce((query: string) => {
   searchQuery.value = query
 }, 300)
 
-// Watch for search query input changes
-watch(searchQuery, (newQuery) => {
-  // Filtering handled by computed
-})
-
 // Re-fetch if project changes
-watch(() => store.state.case_management.selected?.project?.id, (newId, oldId) => {
-   if (newId !== oldId) {
-       hasFetchedForCurrentProject.value = false;
-       if (menu.value) {
-         fetchData(true);
-       }
-   }
-})
+watch(
+  () => store.state.case_management.selected?.project?.id,
+  (newId, oldId) => {
+    if (newId !== oldId) {
+      hasFetchedForCurrentProject.value = false
+      if (menu.value) {
+        fetchData(true)
+      }
+    }
+  }
+)
 
 // Handler for prefetching data on hover
 const prefetchData = () => {
-   const currentProjectInStore = store.state.case_management.selected?.project?.id;
-   if (!hasFetchedForCurrentProject.value || currentProjectId.value !== currentProjectInStore) {
-       fetchData();
-   }
+  const currentProjectInStore = store.state.case_management.selected?.project?.id
+  if (!hasFetchedForCurrentProject.value || currentProjectId.value !== currentProjectInStore) {
+    fetchData()
+  }
 }
 
 // Fetch data when menu opens if not already fetched & Save on close
 watch(menu, (isOpen, wasOpen) => {
   if (isOpen) {
-    prefetchData();
-  } else if (wasOpen && !isOpen && tagsHaveChanged.value) { // Save on close if changed
-    saveTagChanges();
+    prefetchData()
+  } else if (wasOpen && !isOpen && tagsHaveChanged.value) {
+    // Save on close if changed
+    saveTagChanges()
   }
 })
 
-
-const isTagSelected = (tag: TagRead) => {
+const isTagSelected = (tag: any) => {
   return Array.isArray(selectedTags.value) && selectedTags.value.some((t) => t.id === tag.id)
- }
+}
 
- // Only updates the local selectedTags ref and marks changes
- const toggleTag = (tag: TagRead) => {
-   const isCurrentlySelected = isTagSelected(tag)
-   const tagType = tag.tag_type
+// Only updates the local selectedTags ref and marks changes
+const toggleTag = (tag: any) => {
+  const isCurrentlySelected = isTagSelected(tag)
+  const tagType = tag.tag_type
 
-   let newSelectedTags = [...(selectedTags.value || [])];
+  let newSelectedTags = [...(selectedTags.value || [])]
 
-   if (isCurrentlySelected) {
-     newSelectedTags = newSelectedTags.filter((t) => t.id !== tag.id)
-   } else {
-     if (tagType?.exclusive) {
-       newSelectedTags = newSelectedTags.filter(
-         (t) => t.tag_type?.id !== tagType.id
-       )
-     }
-     newSelectedTags.push(tag)
-   }
-
-   const oldIds = (selectedTags.value || []).map(t=>t.id).sort();
-   const newIds = newSelectedTags.map(t=>t.id).sort();
-   if (JSON.stringify(oldIds) !== JSON.stringify(newIds)) {
-      selectedTags.value = newSelectedTags;
-      tagsHaveChanged.value = true;
-   }
- }
-
- // Function to save changes to the backend
- const saveTagChanges = async () => {
-    if (!tagsHaveChanged.value) return;
-
-    const caseDetails = store.state.case_management.selected;
-    if (!caseDetails) {
-        console.error("Cannot save tags: Case details not available.");
-        tagsHaveChanged.value = false;
-        return;
+  if (isCurrentlySelected) {
+    newSelectedTags = newSelectedTags.filter((t) => t.id !== tag.id)
+  } else {
+    if (tagType?.exclusive) {
+      newSelectedTags = newSelectedTags.filter((t) => t.tag_type?.id !== tagType.id)
     }
+    newSelectedTags.push(tag)
+  }
 
-    const updatedCaseDetails = {
-        ...caseDetails,
-        tags: [...(selectedTags.value || [])]
-    };
+  const oldIds = (selectedTags.value || []).map((t) => t.id).sort()
+  const newIds = newSelectedTags.map((t) => t.id).sort()
+  if (JSON.stringify(oldIds) !== JSON.stringify(newIds)) {
+    selectedTags.value = newSelectedTags
+    tagsHaveChanged.value = true
+  }
+}
 
-    setSaving(true);
-    try {
-        await CaseApi.update(updatedCaseDetails.id, updatedCaseDetails);
-        tagsHaveChanged.value = false; // Reset flag on success
-    } catch (e) {
-        console.error("Failed to save tag changes", e);
-        store.dispatch("notification_backend/addBeNotification", {
-            text: "Failed to save tag changes. Please try again.",
-            type: "error",
-        });
-        tagsHaveChanged.value = false; // Reset flag even on error
-    } finally {
-        setSaving(false);
-    }
- }
+// Function to save changes to the backend
+const saveTagChanges = async () => {
+  if (!tagsHaveChanged.value) return
 
- // Computed property to find missing required tag types
- const missingRequiredTagTypes = computed(() => {
-   if (!groupedTags.value || groupedTags.value.length === 0) return [];
+  const caseDetails = store.state.case_management.selected
+  if (!caseDetails) {
+    console.error("Cannot save tags: Case details not available.")
+    tagsHaveChanged.value = false
+    return
+  }
 
-   const requiredGroups = groupedTags.value.filter(group => group.isRequired);
-   if (!requiredGroups.length) return [];
+  const updatedCaseDetails = {
+    ...caseDetails,
+    tags: [...(selectedTags.value || [])],
+  }
 
-   const selectedTypeIds = new Set((selectedTags.value || []).map(tag => tag.tag_type?.id));
+  setSaving(true)
+  try {
+    await CaseApi.update(updatedCaseDetails.id, updatedCaseDetails)
+    tagsHaveChanged.value = false // Reset flag on success
+  } catch (e) {
+    console.error("Failed to save tag changes", e)
+    store.dispatch("notification_backend/addBeNotification", {
+      text: "Failed to save tag changes. Please try again.",
+      type: "error",
+    })
+    tagsHaveChanged.value = false // Reset flag even on error
+  } finally {
+    setSaving(false)
+  }
+}
 
-   return requiredGroups
-     .filter(group => !selectedTypeIds.has(group.id))
-     .map(group => group.label);
- });
+// Computed property to find missing required tag types
+const missingRequiredTagTypes = computed(() => {
+  if (!groupedTags.value || groupedTags.value.length === 0) return []
 
+  const requiredGroups = groupedTags.value.filter((group) => group.isRequired)
+  if (!requiredGroups.length) return []
 
- const getTagColor = (tag: TagRead) => {
-   return tag.tag_type?.color || "#1976D2"
- }
+  const selectedTypeIds = new Set((selectedTags.value || []).map((tag) => tag.tag_type?.id))
 
-const getTagIcon = (tag: TagRead) => {
+  return requiredGroups
+    .filter((group) => !selectedTypeIds.has(group.id))
+    .map((group) => group.label)
+})
+
+const getTagColor = (tag: any) => {
+  return tag.tag_type?.color || "#1976D2"
+}
+
+const getTagIcon = (tag: any) => {
   if (tag.tag_type?.icon) {
     return `mdi-${tag.tag_type.icon}`
   }
@@ -376,28 +372,38 @@ const getTagIcon = (tag: TagRead) => {
 
             <!-- Fetch Error State -->
             <v-list-item v-else-if="fetchError">
-               <template #prepend>
-                 <v-icon color="error" size="small">mdi-alert-circle-outline</v-icon>
-               </template>
-               <template #title>
-                 <span class="text-caption text-error ml-n2">{{ fetchError }}</span>
-               </template>
+              <template #prepend>
+                <v-icon color="error" size="small">mdi-alert-circle-outline</v-icon>
+              </template>
+              <template #title>
+                <span class="text-caption text-error ml-n2">{{ fetchError }}</span>
+              </template>
             </v-list-item>
 
             <!-- Empty State -->
-            <v-list-item v-else-if="!loading && !fetchError && !filteredGroupedTags.length && !searchQuery" disabled>
+            <v-list-item
+              v-else-if="!loading && !fetchError && !filteredGroupedTags.length && !searchQuery"
+              disabled
+            >
               <template #title>
                 <span class="text-subtitle-2">No discoverable tags found.</span>
               </template>
             </v-list-item>
-            <v-list-item v-else-if="!loading && !fetchError && !filteredGroupedTags.length && searchQuery" disabled>
+            <v-list-item
+              v-else-if="!loading && !fetchError && !filteredGroupedTags.length && searchQuery"
+              disabled
+            >
               <template #title>
                 <span class="text-subtitle-2">No tags matching '{{ searchQuery }}' found.</span>
               </template>
             </v-list-item>
 
             <!-- Grouped Tags List -->
-            <template v-else-if="!loading && !fetchError" v-for="group in filteredGroupedTags" :key="group.id">
+            <template
+              v-else-if="!loading && !fetchError"
+              v-for="group in filteredGroupedTags"
+              :key="group.id"
+            >
               <v-list-subheader class="tag-group-header">
                 <v-icon
                   v-if="group.icon"
@@ -405,11 +411,31 @@ const getTagIcon = (tag: TagRead) => {
                   size="16"
                   :color="group.color"
                   class="mr-1"
-                 />
-                 <span v-else class="tag-dot mr-2" :style="`background-color: ${group.color || '#9E9E9E'}`" />
+                />
+                <span
+                  v-else
+                  class="tag-dot mr-2"
+                  :style="`background-color: ${group.color || '#9E9E9E'}`"
+                />
                 {{ group.label }}
-                <v-chip v-if="group.isRequired" size="x-small" color="info" variant="tonal" class="ml-2">Required</v-chip>
-                <v-chip v-if="group.isExclusive" size="x-small" color="warning" variant="tonal" class="ml-1">Exclusive</v-chip>
+                <v-chip
+                  v-if="group.isRequired"
+                  size="x-small"
+                  color="info"
+                  variant="tonal"
+                  class="ml-2"
+                >
+                  Required
+                </v-chip>
+                <v-chip
+                  v-if="group.isExclusive"
+                  size="x-small"
+                  color="warning"
+                  variant="tonal"
+                  class="ml-1"
+                >
+                  Exclusive
+                </v-chip>
               </v-list-subheader>
 
               <v-list-item
@@ -438,16 +464,19 @@ const getTagIcon = (tag: TagRead) => {
             </template>
 
             <!-- Required Tags Validation Message -->
-            <v-list-item v-if="!loading && !fetchError && missingRequiredTagTypes.length" class="required-warning mt-2">
-               <template #prepend>
-                 <v-icon color="error" size="small">mdi-alert-circle-outline</v-icon>
-               </template>
-               <template #title>
-                 <span class="text-caption text-error">
-                   Missing required tags from: {{ missingRequiredTagTypes.join(', ') }}
-                 </span>
-               </template>
-             </v-list-item>
+            <v-list-item
+              v-if="!loading && !fetchError && missingRequiredTagTypes.length"
+              class="required-warning mt-2"
+            >
+              <template #prepend>
+                <v-icon color="error" size="small">mdi-alert-circle-outline</v-icon>
+              </template>
+              <template #title>
+                <span class="text-caption text-error">
+                  Missing required tags from: {{ missingRequiredTagTypes.join(", ") }}
+                </span>
+              </template>
+            </v-list-item>
           </v-list>
         </v-card>
       </v-menu>
@@ -541,5 +570,4 @@ const getTagIcon = (tag: TagRead) => {
   max-height: 300px;
   overflow-y: auto;
 }
-
 </style>
