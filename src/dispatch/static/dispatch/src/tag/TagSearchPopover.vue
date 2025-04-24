@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue"
+import { ref, watch, onMounted, computed } from "vue"
 import TagApi from "@/tag/api"
+import TagTypeApi from "@/tag_type/api"
 import { useSavingState } from "@/composables/useSavingState"
 import { useStore } from "vuex"
 import CaseApi from "@/case/api"
 import { debounce } from "lodash"
+// TODO(wshel) Add proper models with zod:
+// import type { TagRead } from "@/tag/models"
 
 const props = defineProps({
   caseTags: {
@@ -15,11 +18,16 @@ const props = defineProps({
 
 const store = useStore()
 const { setSaving } = useSavingState()
-const tags = ref([])
-const selectedTags = ref([])
+const allTags = ref<TagRead[]>([])
+const groupedTags = ref<any[]>([])
+const selectedTags = ref<TagRead[]>([])
 const menu = ref(false)
 const searchQuery = ref("")
 const loading = ref(false)
+const fetchError = ref<string | null>(null)
+const hasFetchedForCurrentProject = ref(false)
+const currentProjectId = ref<number | null>(null)
+const tagsHaveChanged = ref(false) // Track if changes occurred while menu was open
 
 // Initialize selected tags based on props
 watch(
@@ -27,76 +35,263 @@ watch(
   (newTags) => {
     if (newTags) {
       selectedTags.value = [...newTags]
+      tagsHaveChanged.value = false; // Reset change flag when props update
     }
   },
-  { immediate: true }
+  { immediate: true, deep: true }
 )
 
-// Search for tags with debounce
-const searchTags = debounce(async (query = "") => {
-  loading.value = true
-  try {
-    const options = {
-      filter: JSON.stringify([
-        { and: [{ model: "Tag", field: "name", op: "ilike", value: `%${query}%` }] },
-      ]),
-      itemsPerPage: 10,
+// Function to group tags by type
+const convertData = (data: TagRead[]) => {
+  if (!data) return []
+  const groupedObject = data.reduce((r, a) => {
+    if (!a.tag_type || a.tag_type.id === undefined || a.tag_type.id === null) {
+      // console.warn("Tag missing tag_type or tag_type.id:", a) // Keep minimal logs
+      return r
     }
-    const response = await TagApi.getAll(options)
-    tags.value = response.data.items
-  } catch (error) {
-    console.error("Error searching tags:", error)
+    const typeId = a.tag_type.id
+    if (!r[typeId]) {
+      r[typeId] = {
+        id: typeId,
+        icon: a.tag_type.icon,
+        label: a.tag_type.name,
+        desc: a.tag_type.description,
+        color: a.tag_type.color,
+        isRequired: a.tag_type.required ?? false,
+        isExclusive: a.tag_type.exclusive ?? false,
+        menuItems: [],
+      }
+    }
+    r[typeId].menuItems.push(a)
+    return r
+  }, {} as Record<number, any>)
+
+  return Object.values(groupedObject)
+    .sort((a, b) => a.label.localeCompare(b.label))
+    .map(group => {
+      group.menuItems.sort((a, b) => a.name.localeCompare(b.name));
+      return group;
+    });
+}
+
+
+// Fetch all relevant tags and group them
+const fetchData = async (force = false) => {
+  const caseDetails = store.state.case_management.selected
+  const project = caseDetails?.project
+  const projectId = project?.id;
+
+  if (hasFetchedForCurrentProject.value && projectId === currentProjectId.value && !force) {
+    return;
+  }
+
+  loading.value = true
+  fetchError.value = null
+  allTags.value = []
+  groupedTags.value = []
+  currentProjectId.value = projectId;
+
+  if (!project) {
+    fetchError.value = "Cannot load tags: No project context available."
+    loading.value = false
+    hasFetchedForCurrentProject.value = false;
+    return
+  }
+
+  try {
+    // Step 1: Fetch relevant TagType IDs
+    const tagTypeFilterOptions = {
+      filter: JSON.stringify([{
+        and: [
+          { model: "TagType", field: "discoverable_case", op: "==", value: "true" },
+          { model: "TagType", field: "project_id", op: "==", value: project.id }
+        ]
+      }]),
+      itemsPerPage: -1,
+      fields: JSON.stringify(["id"]),
+    }
+
+    const tagTypeResponse = await TagTypeApi.getAll(tagTypeFilterOptions);
+    const relevantTagTypeIds = tagTypeResponse.data.items.map((tt: { id: number }) => tt.id);
+
+    if (!relevantTagTypeIds.length) {
+      loading.value = false;
+      hasFetchedForCurrentProject.value = true;
+      return;
+    }
+
+    // Step 2: Fetch Tags
+    const tagFilterOptions = {
+      filter: JSON.stringify([{
+        and: [
+          { model: "Tag", field: "tag_type_id", op: "in", value: relevantTagTypeIds },
+          { model: "Tag", field: "discoverable", op: "==", value: "true" }
+        ]
+      }]),
+      project: [project],
+      itemsPerPage: -1,
+      sortBy: JSON.stringify(["tag_type.name", "name"]),
+      sortDesc: JSON.stringify([false, false]),
+    }
+
+    const tagResponse = await TagApi.getAll(tagFilterOptions);
+    allTags.value = tagResponse.data.items
+    groupedTags.value = convertData(allTags.value)
+
+  } catch (error: any) {
+    console.error("Error fetching tags or tag types:", error)
+    fetchError.value = "Failed to load tags. Please try again."
+    allTags.value = []
+    groupedTags.value = []
+    hasFetchedForCurrentProject.value = false;
   } finally {
     loading.value = false
+    if (!fetchError.value) {
+       hasFetchedForCurrentProject.value = true;
+    }
   }
+}
+
+// Computed property for filtering based on search query
+const filteredGroupedTags = computed(() => {
+  const query = searchQuery.value.toLowerCase().trim();
+  if (!query) {
+    return groupedTags.value;
+  }
+
+  return groupedTags.value.reduce((acc, group) => {
+    const filteredItems = group.menuItems.filter((item: TagRead) =>
+      item.name.toLowerCase().includes(query)
+    );
+
+    if (filteredItems.length > 0) {
+      acc.push({ ...group, menuItems: filteredItems });
+    }
+    return acc;
+  }, [] as any[]);
+});
+
+
+// Debounced search function
+const debouncedSearch = debounce((query: string) => {
+  searchQuery.value = query
 }, 300)
 
-// Watch for search query changes
+// Watch for search query input changes
 watch(searchQuery, (newQuery) => {
-  searchTags(newQuery)
+  // Filtering handled by computed
 })
 
-// Initial search on mount
-onMounted(() => {
-  searchTags("")
+// Re-fetch if project changes
+watch(() => store.state.case_management.selected?.project?.id, (newId, oldId) => {
+   if (newId !== oldId) {
+       hasFetchedForCurrentProject.value = false;
+       if (menu.value) {
+         fetchData(true);
+       }
+   }
 })
 
-const isTagSelected = (tag) => {
-  return selectedTags.value.some((t) => t.id === tag.id)
+// Handler for prefetching data on hover
+const prefetchData = () => {
+   const currentProjectInStore = store.state.case_management.selected?.project?.id;
+   if (!hasFetchedForCurrentProject.value || currentProjectId.value !== currentProjectInStore) {
+       fetchData();
+   }
 }
 
-const toggleTag = async (tag) => {
-  const caseDetails = store.state.case_management.selected
+// Fetch data when menu opens if not already fetched & Save on close
+watch(menu, (isOpen, wasOpen) => {
+  if (isOpen) {
+    prefetchData();
+  } else if (wasOpen && !isOpen && tagsHaveChanged.value) { // Save on close if changed
+    saveTagChanges();
+  }
+})
 
-  if (isTagSelected(tag)) {
-    // Remove tag
-    selectedTags.value = selectedTags.value.filter((t) => t.id !== tag.id)
-    caseDetails.tags = caseDetails.tags.filter((t) => t.id !== tag.id)
-  } else {
-    // Add tag
-    selectedTags.value.push(tag)
-    if (!caseDetails.tags) {
-      caseDetails.tags = []
+
+const isTagSelected = (tag: TagRead) => {
+  return Array.isArray(selectedTags.value) && selectedTags.value.some((t) => t.id === tag.id)
+ }
+
+ // Only updates the local selectedTags ref and marks changes
+ const toggleTag = (tag: TagRead) => {
+   const isCurrentlySelected = isTagSelected(tag)
+   const tagType = tag.tag_type
+
+   let newSelectedTags = [...(selectedTags.value || [])];
+
+   if (isCurrentlySelected) {
+     newSelectedTags = newSelectedTags.filter((t) => t.id !== tag.id)
+   } else {
+     if (tagType?.exclusive) {
+       newSelectedTags = newSelectedTags.filter(
+         (t) => t.tag_type?.id !== tagType.id
+       )
+     }
+     newSelectedTags.push(tag)
+   }
+
+   const oldIds = (selectedTags.value || []).map(t=>t.id).sort();
+   const newIds = newSelectedTags.map(t=>t.id).sort();
+   if (JSON.stringify(oldIds) !== JSON.stringify(newIds)) {
+      selectedTags.value = newSelectedTags;
+      tagsHaveChanged.value = true;
+   }
+ }
+
+ // Function to save changes to the backend
+ const saveTagChanges = async () => {
+    if (!tagsHaveChanged.value) return;
+
+    const caseDetails = store.state.case_management.selected;
+    if (!caseDetails) {
+        console.error("Cannot save tags: Case details not available.");
+        tagsHaveChanged.value = false;
+        return;
     }
-    caseDetails.tags.push(tag)
-  }
 
-  // Update the case
-  setSaving(true)
-  try {
-    await CaseApi.update(caseDetails.id, caseDetails)
-    console.log("Case tags updated successfully")
-  } catch (e) {
-    console.error("Failed to update case tags", e)
-  }
-  setSaving(false)
-}
+    const updatedCaseDetails = {
+        ...caseDetails,
+        tags: [...(selectedTags.value || [])]
+    };
 
-const getTagColor = (tag) => {
-  return tag.tag_type?.color || "#1976D2" // Default to blue if no color is specified
-}
+    setSaving(true);
+    try {
+        await CaseApi.update(updatedCaseDetails.id, updatedCaseDetails);
+        tagsHaveChanged.value = false; // Reset flag on success
+    } catch (e) {
+        console.error("Failed to save tag changes", e);
+        store.dispatch("notification_backend/addBeNotification", {
+            text: "Failed to save tag changes. Please try again.",
+            type: "error",
+        });
+        tagsHaveChanged.value = false; // Reset flag even on error
+    } finally {
+        setSaving(false);
+    }
+ }
 
-const getTagIcon = (tag) => {
+ // Computed property to find missing required tag types
+ const missingRequiredTagTypes = computed(() => {
+   if (!groupedTags.value || groupedTags.value.length === 0) return [];
+
+   const requiredGroups = groupedTags.value.filter(group => group.isRequired);
+   if (!requiredGroups.length) return [];
+
+   const selectedTypeIds = new Set((selectedTags.value || []).map(tag => tag.tag_type?.id));
+
+   return requiredGroups
+     .filter(group => !selectedTypeIds.has(group.id))
+     .map(group => group.label);
+ });
+
+
+ const getTagColor = (tag: TagRead) => {
+   return tag.tag_type?.color || "#1976D2"
+ }
+
+const getTagIcon = (tag: TagRead) => {
   if (tag.tag_type?.icon) {
     return `mdi-${tag.tag_type.icon}`
   }
@@ -106,15 +301,14 @@ const getTagIcon = (tag) => {
 
 <template>
   <div>
-    <!-- Display selected tags -->
-    <div class="d-flex flex-wrap gap-2 mb-2">
+    <!-- Display selected tags and activator button -->
+    <div id="tag-popover-anchor" class="d-flex flex-wrap gap-2 mb-2">
       <v-chip
         v-for="tag in selectedTags"
         :key="tag.id"
         variant="outlined"
         size="small"
         class="mr-1 linear-tag"
-        @click="toggleTag(tag)"
         closable
         :close-icon="'mdi-close'"
         @click:close="toggleTag(tag)"
@@ -132,15 +326,16 @@ const getTagIcon = (tag) => {
         {{ tag.name }}
       </v-chip>
 
+      <!-- Menu Component -->
       <v-menu
         v-model="menu"
         :close-on-content-click="false"
         location="start"
-        :offset="[-420, 0]"
+        :offset="[16, 24]"
         transition="false"
         :max-width="300"
         :min-width="300"
-        attach="body"
+        attach="#tag-popover-anchor"
         eager
       >
         <template #activator="{ props: menuProps }">
@@ -150,9 +345,11 @@ const getTagIcon = (tag) => {
             size="small"
             v-bind="menuProps"
             class="add-tag-button"
+            @mouseenter="prefetchData"
           />
         </template>
 
+        <!-- Menu Content -->
         <v-card width="300" class="rounded-lg">
           <v-text-field
             v-model="searchQuery"
@@ -163,56 +360,94 @@ const getTagIcon = (tag) => {
             flat
             placeholder="Search tags..."
             prepend-inner-icon="mdi-magnify"
-            :loading="loading"
+            :loading="loading && !hasFetchedForCurrentProject"
+            @update:model-value="debouncedSearch"
           />
 
           <v-divider />
 
-          <v-list density="compact">
-            <v-list-item v-if="loading && tags.length === 0" disabled>
+          <v-list density="compact" class="tag-list-container">
+            <!-- Loading State -->
+            <v-list-item v-if="loading && !hasFetchedForCurrentProject" disabled>
               <template #title>
-                <span class="text-subtitle-2">Searching...</span>
+                <span class="text-subtitle-2">Loading tags...</span>
               </template>
             </v-list-item>
-            <v-list-item v-else-if="tags.length === 0" disabled>
+
+            <!-- Fetch Error State -->
+            <v-list-item v-else-if="fetchError">
+               <template #prepend>
+                 <v-icon color="error" size="small">mdi-alert-circle-outline</v-icon>
+               </template>
+               <template #title>
+                 <span class="text-caption text-error ml-n2">{{ fetchError }}</span>
+               </template>
+            </v-list-item>
+
+            <!-- Empty State -->
+            <v-list-item v-else-if="!loading && !fetchError && !filteredGroupedTags.length && !searchQuery" disabled>
               <template #title>
-                <span class="text-subtitle-2">No matching tags found</span>
+                <span class="text-subtitle-2">No discoverable tags found.</span>
               </template>
             </v-list-item>
-            <v-list-item
-              v-for="tag in tags"
-              :key="tag.id"
-              @click="toggleTag(tag)"
-              :active="isTagSelected(tag)"
-              :class="{ 'selected-tag-item': isTagSelected(tag) }"
-              density="compact"
-            >
-              <template #prepend>
-                <v-checkbox
-                  :model-value="isTagSelected(tag)"
-                  :color="getTagColor(tag)"
-                  density="compact"
-                  hide-details
-                />
-              </template>
+            <v-list-item v-else-if="!loading && !fetchError && !filteredGroupedTags.length && searchQuery" disabled>
               <template #title>
-                <div class="d-flex align-center">
-                  <v-icon
-                    v-if="getTagIcon(tag)"
-                    :icon="getTagIcon(tag)"
-                    size="14"
+                <span class="text-subtitle-2">No tags matching '{{ searchQuery }}' found.</span>
+              </template>
+            </v-list-item>
+
+            <!-- Grouped Tags List -->
+            <template v-else-if="!loading && !fetchError" v-for="group in filteredGroupedTags" :key="group.id">
+              <v-list-subheader class="tag-group-header">
+                <v-icon
+                  v-if="group.icon"
+                  :icon="`mdi-${group.icon}`"
+                  size="16"
+                  :color="group.color"
+                  class="mr-1"
+                 />
+                 <span v-else class="tag-dot mr-2" :style="`background-color: ${group.color || '#9E9E9E'}`" />
+                {{ group.label }}
+                <v-chip v-if="group.isRequired" size="x-small" color="info" variant="tonal" class="ml-2">Required</v-chip>
+                <v-chip v-if="group.isExclusive" size="x-small" color="warning" variant="tonal" class="ml-1">Exclusive</v-chip>
+              </v-list-subheader>
+
+              <v-list-item
+                v-for="tag in group.menuItems"
+                :key="tag.id"
+                @click="toggleTag(tag)"
+                :active="isTagSelected(tag)"
+                :class="{ 'selected-tag-item': isTagSelected(tag) }"
+                density="compact"
+              >
+                <template #prepend>
+                  <v-checkbox-btn
+                    :model-value="isTagSelected(tag)"
                     :color="getTagColor(tag)"
-                    class="mr-1"
+                    density="compact"
+                    hide-details
                   />
-                  <span
-                    v-else
-                    class="tag-dot mr-2"
-                    :style="`background-color: ${getTagColor(tag)}`"
-                  />
-                  <span class="tag-name">{{ tag.name }}</span>
-                </div>
-              </template>
-            </v-list-item>
+                </template>
+                <template #title>
+                  <div class="d-flex align-center">
+                    <span class="tag-name">{{ tag.name }}</span>
+                  </div>
+                </template>
+              </v-list-item>
+              <v-divider v-if="group.menuItems.length" class="my-1" />
+            </template>
+
+            <!-- Required Tags Validation Message -->
+            <v-list-item v-if="!loading && !fetchError && missingRequiredTagTypes.length" class="required-warning mt-2">
+               <template #prepend>
+                 <v-icon color="error" size="small">mdi-alert-circle-outline</v-icon>
+               </template>
+               <template #title>
+                 <span class="text-caption text-error">
+                   Missing required tags from: {{ missingRequiredTagTypes.join(', ') }}
+                 </span>
+               </template>
+             </v-list-item>
           </v-list>
         </v-card>
       </v-menu>
@@ -268,8 +503,43 @@ const getTagIcon = (tag) => {
   font-weight: 500;
 }
 
-/* Override v-list-item styles for better spacing */
 :deep(.v-list-item__prepend) {
   margin-right: 8px !important;
 }
+
+.tag-group-header {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.7);
+  margin-top: 10px;
+  padding-left: 16px;
+  line-height: 1.4;
+  height: auto !important;
+  min-height: 32px;
+  align-items: center;
+}
+
+.tag-group-header .v-chip {
+  margin-top: -2px;
+}
+
+.required-warning .v-list-item__prepend {
+  align-self: center;
+  margin-right: 4px !important;
+}
+
+.required-warning .v-list-item-title {
+  white-space: normal;
+  line-height: 1.2;
+}
+
+:deep(.v-list-item--density-compact .v-list-item__prepend > .v-checkbox-btn) {
+  margin-inline-start: -8px;
+}
+
+.tag-list-container {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
 </style>
