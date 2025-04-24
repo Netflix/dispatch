@@ -224,15 +224,11 @@ def incident_create_resources(
 
     # we create the conference room
     if not incident.conference:
-        conference_participants = []
-        if incident.tactical_group and incident.notifications_group:
-            conference_participants = [
-                incident.tactical_group.email,
-                incident.notifications_group.email,
-            ]
-        else:
-            conference_participants = tactical_participant_emails
-
+        # we only include individuals that are directly participating in the
+        # resolution of the incident
+        conference_participants = tactical_participant_emails
+        if incident.tactical_group:
+            conference_participants = [incident.tactical_group.email]
         conference_flows.create_conference(
             incident=incident, participants=conference_participants, db_session=db_session
         )
