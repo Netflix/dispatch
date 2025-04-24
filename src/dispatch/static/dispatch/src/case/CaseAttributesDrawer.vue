@@ -154,7 +154,7 @@ const handleResolutionUpdate = (newResolution) => {
 
         <v-row no-gutters class="pt-6">
           <v-col cols="12">
-            <div class="dispatch-font mb-2">Labels</div>
+            <div class="dispatch-font mb-2">Tags</div>
           </v-col>
           <v-col cols="12">
             <TagSearchPopover :case-tags="modelValue.tags" />
