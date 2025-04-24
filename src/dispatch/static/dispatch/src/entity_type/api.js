@@ -15,6 +15,10 @@ export default {
     return API.post(`${resource}`, payload)
   },
 
+  create_with_case(payload, caseId) {
+    return API.post(`${resource}/${caseId}`, payload)
+  },
+
   update(entityTypeId, payload) {
     return API.put(`${resource}/${entityTypeId}`, payload)
   },
@@ -27,7 +31,7 @@ export default {
     return API.delete(`${resource}/${entityTypeId}`)
   },
 
-  recalculate(entityTypeId, signalInstanceId) {
-    return API.put(`${resource}/recalculate/${entityTypeId}/${signalInstanceId}`)
+  recalculate(entityTypeId, caseId) {
+    return API.put(`${resource}/recalculate/${entityTypeId}/${caseId}`)
   },
 }

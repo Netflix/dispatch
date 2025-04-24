@@ -84,16 +84,31 @@ def get_all_by_signal(*, db_session: Session, signal_id: int) -> list[Entity]:
     )
 
 
-def get_all_desc_by_signal(*, db_session: Session, signal_id: int) -> list[Entity]:
-    """Gets all entities for a specific signal in descending order."""
-    return (
+def get_all_desc_by_signal(
+    *, db_session: Session, signal_id: int, case_id: int = None
+) -> list[Entity]:
+    """Gets all entities for a specific signal in descending order.
+
+    Args:
+        db_session: The database session.
+        signal_id: The ID of the signal to filter by.
+        case_id: Optional case ID to further filter the entities.
+
+    Returns:
+        A list of entities ordered by creation date in descending order.
+    """
+    query = (
         db_session.query(Entity)
         .join(Entity.signal_instances)
         .join(SignalInstance.signal)
         .filter(Signal.id == signal_id)
-        .order_by(desc(Entity.created_at))
-        .all()
     )
+
+    if case_id is not None:
+        # Add case filter if case_id is provided
+        query = query.filter(SignalInstance.case_id == case_id)
+
+    return query.order_by(desc(Entity.created_at)).all()
 
 
 def create(*, db_session: Session, entity_in: EntityCreate) -> Entity:
