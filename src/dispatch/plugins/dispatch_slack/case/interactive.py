@@ -765,7 +765,7 @@ def snooze_button_click(
                 Actions(
                     elements=[
                         Button(
-                            text="🔐   Add entities",
+                            text="➕   Add entities",
                             action_id="button-link",
                             style="primary",
                             url=case_url,
