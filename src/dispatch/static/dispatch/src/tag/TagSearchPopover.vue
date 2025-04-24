@@ -44,35 +44,12 @@ const searchTags = debounce(async (query = "") => {
     }
     const response = await TagApi.getAll(options)
     tags.value = response.data.items
-
-    // Check if we need to create default tags
-    if (tags.value.length === 0 && !query) {
-      createDefaultTags()
-    }
   } catch (error) {
     console.error("Error searching tags:", error)
   } finally {
     loading.value = false
   }
 }, 300)
-
-// Create default tags if none exist
-const createDefaultTags = async () => {
-  const defaultTags = [
-    { name: "Improvement", description: "An improvement to existing functionality" },
-    { name: "Bug", description: "A bug or issue that needs fixing" },
-    { name: "Feature", description: "A new feature or functionality" },
-  ]
-
-  for (const tag of defaultTags) {
-    try {
-      const response = await TagApi.create(tag)
-      tags.value.push(response.data)
-    } catch (error) {
-      console.error(`Error creating tag ${tag.name}:`, error)
-    }
-  }
-}
 
 // Watch for search query changes
 watch(searchQuery, (newQuery) => {
