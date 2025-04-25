@@ -140,7 +140,7 @@ const fetchData = async (force = false) => {
     const tagResponse = await TagApi.getAll(tagFilterOptions)
     allTags.value = tagResponse.data.items
     groupedTags.value = convertData(allTags.value)
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error fetching tags or tag types:", error)
     fetchError.value = "Failed to load tags. Please try again."
     allTags.value = []
@@ -237,7 +237,6 @@ const toggleTag = (tag: any) => {
   }
 }
 
-// Function to save changes to the backend
 const saveTagChanges = async () => {
   if (!tagsHaveChanged.value) return
 
@@ -267,6 +266,12 @@ const saveTagChanges = async () => {
   } finally {
     setSaving(false)
   }
+}
+
+// Method to remove a tag and immediately save
+const removeTagAndSave = async (tag: any) => {
+  toggleTag(tag) // Update local state first
+  await saveTagChanges()
 }
 
 // Computed property to find missing required tag types
@@ -307,7 +312,7 @@ const getTagIcon = (tag: any) => {
         class="mr-1 linear-tag"
         closable
         :close-icon="'mdi-close'"
-        @click:close="toggleTag(tag)"
+        @click:close="removeTagAndSave(tag)"
       >
         <template #prepend>
           <v-icon
