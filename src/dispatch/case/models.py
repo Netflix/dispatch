@@ -362,20 +362,25 @@ class CaseUpdate(CaseBase):
     triage_at: Optional[datetime] = None
 
     @validator("tags")
-    def find_exclusive(cls, v):
-        if v:
-            exclusive_tags = defaultdict(list)
-            for t in v:
-                if t.tag_type.exclusive:
-                    exclusive_tags[t.tag_type.id].append(t)
+    def find_exclusive(cls, tags: Optional[List[TagRead]]) -> Optional[List[TagRead]]:
+        if not tags:
+            return tags
 
-            for v in exclusive_tags.values():
-                if len(v) > 1:
+        # Group tags by tag_type.id
+        exclusive_tags = defaultdict(list)
+        for t in tags:
+            if t.tag_type and t.tag_type.exclusive:
+                exclusive_tags[t.tag_type.id].append(t)
+
+            # Check for multiple exclusive tags of the same type
+            for tag_list in exclusive_tags.values():
+                if len(tag_list) > 1:
                     raise ValueError(
                         "Found multiple exclusive tags. Please ensure that only one tag of a given "
-                        f"type is applied. Tags: {','.join([t.name for t in v])}"
+                        f"type is applied. Tags: {','.join([t.name for t in tag_list])}"
                     )
-        return v
+
+        return tags
 
 
 class CasePagination(Pagination):
