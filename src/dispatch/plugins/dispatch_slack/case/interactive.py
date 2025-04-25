@@ -30,6 +30,7 @@ from dispatch.case import service as case_service
 from dispatch.case.enums import CaseResolutionReason, CaseStatus
 from dispatch.case.models import Case, CaseCreate, CaseRead, CaseUpdate
 from dispatch.case.type import service as case_type_service
+from dispatch.config import DISPATCH_UI_URL
 from dispatch.conversation import flows as conversation_flows
 from dispatch.entity import service as entity_service
 from dispatch.enums import EventType, SubjectNames, UserRoles, Visibility
@@ -723,6 +724,7 @@ def snooze_button_click(
     subject = context["subject"]
 
     case_id = None
+    case_url = None
     if subject.type == SignalSubjects.signal_instance:
         instance = signal_service.get_signal_instance(
             db_session=db_session, signal_instance_id=subject.id
@@ -733,6 +735,10 @@ def snooze_button_click(
         case_id = case.id
         subject.type = SignalSubjects.signal_instance
         subject.id = case.signal_instances[0].signal.id
+        case_url = (
+            f"{DISPATCH_UI_URL}/{case.project.organization.slug}/cases/{case.name}/"
+            f"signal/{case.signal_instances[0].id}"
+        )
 
     signal = signal_service.get(db_session=db_session, signal_id=subject.id)
     blocks = [
@@ -754,6 +760,19 @@ def snooze_button_click(
 
     if entity_select_block:
         blocks.append(entity_select_block)
+        if case_url:
+            blocks.append(
+                Actions(
+                    elements=[
+                        Button(
+                            text="➕   Add entities",
+                            action_id="button-link",
+                            style="primary",
+                            url=case_url,
+                        )
+                    ]
+                ),
+            )
         blocks.append(
             Context(
                 elements=[
@@ -761,7 +780,7 @@ def snooze_button_click(
                         text="Signals that contain all selected entities will be snoozed for the configured timeframe."
                     )
                 ]
-            )
+            ),
         )
 
     modal = Modal(
