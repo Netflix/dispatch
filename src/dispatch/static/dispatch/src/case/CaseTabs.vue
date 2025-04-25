@@ -40,7 +40,7 @@
             value="graph"
             variant="plain"
             :ripple="false"
-            :disabled="entities?.length === 0"
+            :disabled="signalInstances?.length === 0"
           >
             <span class="button-text">Graph</span>
             <v-badge v-if="entities?.length" inline :content="entities?.length" />
@@ -246,12 +246,17 @@ const editPageUrl = () => {
 
 <style scoped>
 .v-tab {
-  text-transform: initial; /* Keeping the text's original state */
-  color: #272727; /* Slightly darker shade of gray for better contrast and readability */
-  font-weight: 400; /* Normal text-weight */
+  text-transform: initial;
+  /* Keeping the text's original state */
+  color: #272727;
+  /* Slightly darker shade of gray for better contrast and readability */
+  font-weight: 400;
+  /* Normal text-weight */
   letter-spacing: normal;
-  line-height: 1.5; /* Spacing for better readability */
-  font-family: "Inter", sans-serif; /* A modern, readable typeface */
+  line-height: 1.5;
+  /* Spacing for better readability */
+  font-family: "Inter", sans-serif;
+  /* A modern, readable typeface */
 }
 
 .tab {
@@ -261,12 +266,14 @@ const editPageUrl = () => {
 .button-group-container {
   background-color: rgb(244, 245, 248);
   margin-bottom: 10px;
-  border-radius: 8px; /* Adjust as necessary */
+  border-radius: 8px;
+  /* Adjust as necessary */
   z-index: 1;
   height: 24px !important;
 
   transform: scale(0.95);
-  display: inline-flex; /* Shrink container to content's size */
+  display: inline-flex;
+  /* Shrink container to content's size */
 }
 
 .selected-button {
@@ -278,7 +285,8 @@ const editPageUrl = () => {
   border-color: rgb(223, 225, 228) !important;
   height: 24px !important;
   border-width: 1px;
-  border-radius: 7px !important; /* Adjust the value as necessary */
+  border-radius: 7px !important;
+  /* Adjust the value as necessary */
 }
 
 .small-badge {
