@@ -132,7 +132,7 @@ def get_cases(
             "page": ...,
             "total": ...,
         }
-        return json.loads(CasePagination(**pagination).json(include=include_fields))
+        return json.loads(CaseExpandedPagination(**pagination).json(include=include_fields))
     return json.loads(CasePagination(**pagination).json())
 
 

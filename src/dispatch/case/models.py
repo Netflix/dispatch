@@ -305,7 +305,6 @@ class CaseReadMinimal(CaseBase):
     project: ProjectRead
     assignee: ParticipantReadMinimal | None
     case_costs: list[CaseCostReadMinimal] = []
-    participants: Optional[List[ParticipantRead]] = []
 
 
 CaseReadMinimal.update_forward_refs()
