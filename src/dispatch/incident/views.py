@@ -92,7 +92,7 @@ def get_incidents(
             "page": ...,
             "total": ...,
         }
-        return json.loads(IncidentPagination(**pagination).json(include=include_fields))
+        return json.loads(IncidentExpandedPagination(**pagination).json(include=include_fields))
     return json.loads(IncidentPagination(**pagination).json())
 
 
