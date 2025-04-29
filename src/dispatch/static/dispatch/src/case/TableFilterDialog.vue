@@ -21,7 +21,23 @@
             <project-combobox v-model="local_project" label="Projects" />
           </v-list-item>
           <v-list-item>
-            <case-type-combobox :project="local_project" v-model="local_case_type" />
+            <v-card variant="outlined" class="pa-3">
+              <case-type-combobox :project="local_project" v-model="local_selected_case_types" />
+              <div class="d-flex align-center mt-1">
+                <v-switch
+                  v-model="exclude_mode"
+                  :disabled="!local_selected_case_types.length"
+                  color="primary"
+                  inset
+                  hide-details
+                  density="compact"
+                  class="ml-2 mt-0"
+                />
+                <span class="ml-2">{{
+                  exclude_mode ? "Exclude selected" : "Include only selected"
+                }}</span>
+              </div>
+            </v-card>
           </v-list-item>
           <v-list-item>
             <case-severity-combobox :project="local_project" v-model="local_case_severity" />
@@ -102,7 +118,12 @@ const props = defineProps({
 const display = ref(false)
 const local_case_priority = ref([])
 const local_case_severity = ref([])
-const local_case_type = ref([])
+const local_selected_case_types = ref([])
+const exclude_mode = ref(false) // Default to "include only selected" mode
+const local_case_type = computed(() => (!exclude_mode.value ? local_selected_case_types.value : []))
+const local_not_case_type = computed(() =>
+  exclude_mode.value ? local_selected_case_types.value : []
+)
 const local_closed_at = ref({})
 const local_project = ref(props.projects)
 const local_reported_at = ref({})
@@ -118,7 +139,6 @@ const case_priority = computed(
 const case_severity = computed(
   () => store.state.case_management.table.options.filters.case_severity
 )
-const case_type = computed(() => store.state.case_management.table.options.filters.case_type)
 const project = computed(() => store.state.case_management.table.options.filters.project)
 const status = computed(() => store.state.case_management.table.options.filters.status)
 const tag = computed(() => store.state.case_management.table.options.filters.tag)
@@ -128,7 +148,7 @@ const numFilters = computed(() => {
   return sum([
     case_priority.value?.length || 0,
     case_severity.value?.length || 0,
-    case_type.value?.length || 0,
+    local_selected_case_types.value?.length || 0,
     project.value?.length || 0,
     status.value?.length || 0,
     tag.value?.length || 0,
@@ -152,6 +172,7 @@ const applyFilters = () => {
     case_priority: local_case_priority.value,
     case_severity: local_case_severity.value,
     case_type: local_case_type.value,
+    not_case_type: local_not_case_type.value,
     closed_at: local_closed_at.value,
     project: local_project.value,
     reported_at: local_reported_at.value,

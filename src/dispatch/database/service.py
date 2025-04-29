@@ -116,6 +116,8 @@ class Filter(object):
                 return {"IndividualContact"}
             if model == "TagAll":
                 return {"Tag"}
+            if model == "NotCaseType":
+                return {"CaseType"}
             else:
                 return {self.filter_spec["model"]}
         return set()
@@ -124,6 +126,8 @@ class Filter(object):
         filter_spec = self.filter_spec
         if filter_spec.get("model") in ["Participant", "Commander", "Assignee"]:
             filter_spec["model"] = "IndividualContact"
+        elif filter_spec.get("model") == "NotCaseType":
+            filter_spec["model"] = "CaseType"
         elif filter_spec.get("model") == "TagAll":
             filter_spec["model"] = "Tag"
 
@@ -501,7 +505,7 @@ CommonParameters = Annotated[
 ]
 
 
-def has_tag_all(filter_spec: List[dict]):
+def has_filter_model(model: str, filter_spec: List[dict]):
     """Checks if the filter spec has a TagAll filter."""
 
     if isinstance(filter_spec, list):
@@ -511,9 +515,32 @@ def has_tag_all(filter_spec: List[dict]):
         if key == "and":
             for condition in value:
                 or_condition = condition.get("or", [])
-                if or_condition and or_condition[0].get("model") == "TagAll":
+                if or_condition and or_condition[0].get("model") == model:
                     return True
     return False
+
+
+def has_tag_all(filter_spec: List[dict]):
+    return has_filter_model("TagAll", filter_spec)
+
+
+def has_not_case_type(filter_spec: List[dict]):
+    return has_filter_model("NotCaseType", filter_spec)
+
+
+def rebuild_filter_spec_for_not_case_type(filter_spec: List[dict]):
+    new_filter_spec = []
+    for key, value in filter_spec.items():
+        if key == "and":
+            for condition in value:
+                or_condition = condition.get("or", [])
+                if or_condition and or_condition[0].get("model") == "NotCaseType":
+                    for cond in or_condition:
+                        cond["op"] = "!="
+                        new_filter_spec.append({"and": [{"and": [cond]}]})
+                else:
+                    new_filter_spec.append(condition)
+    return {"and": new_filter_spec}
 
 
 def rebuild_filter_spec_without_tag_all(filter_spec: List[dict]):
@@ -565,6 +592,10 @@ def search_filter_sort_paginate(
             query = apply_filter_specific_joins(model_cls, filter_spec, query)
             # if the filter_spec has the TagAll filter, we need to split the query up
             # and intersect all of the results
+            if has_not_case_type(filter_spec):
+                new_filter_spec = rebuild_filter_spec_for_not_case_type(filter_spec)
+                if new_filter_spec:
+                    query = apply_filters(query, new_filter_spec, model_cls)
             if has_tag_all(filter_spec):
                 new_filter_spec, tag_all_spec = rebuild_filter_spec_without_tag_all(filter_spec)
                 if new_filter_spec:
