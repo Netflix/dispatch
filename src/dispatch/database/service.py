@@ -528,7 +528,7 @@ def has_not_case_type(filter_spec: List[dict]):
     return has_filter_model("NotCaseType", filter_spec)
 
 
-def rebuild_filter_spec_for_not_case_type(filter_spec: List[dict]):
+def rebuild_filter_spec_for_not_case_type(filter_spec: dict):
     new_filter_spec = []
     for key, value in filter_spec.items():
         if key == "and":
@@ -543,7 +543,7 @@ def rebuild_filter_spec_for_not_case_type(filter_spec: List[dict]):
     return {"and": new_filter_spec}
 
 
-def rebuild_filter_spec_without_tag_all(filter_spec: List[dict]):
+def rebuild_filter_spec_without_tag_all(filter_spec: dict):
     """Rebuilds the filter spec without the TagAll filter."""
     new_filter_spec = []
     tag_all_spec = []
