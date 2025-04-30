@@ -147,6 +147,7 @@ def init_schema(*, engine, organization: Organization):
     schema_engine = engine.execution_options(
         schema_translate_map={
             None: schema_name,
+            "dispatch_core": "dispatch_core",
         }
     )
 

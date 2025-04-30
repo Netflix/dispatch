@@ -55,9 +55,17 @@ def get_active_instance(
     *, db_session: Session, plugin_type: str, project_id=None
 ) -> Optional[PluginInstance]:
     """Fetches the current active plugin for the given type."""
+    # In SQLAlchemy 1.4, we need to ensure the schema translation map is properly set up
+    # The Plugin model is in the dispatch_core schema, so we need to make sure
+    # that schema is included in the translation map
+
+    # Since we've updated the core database session creation to always include the dispatch_core schema
+    # in the translation map, we can just use the standard query directly
+
+    # If no special handling is needed, use the standard query
     return (
         db_session.query(PluginInstance)
-        .join(Plugin)
+        .join(Plugin, PluginInstance.plugin_id == Plugin.id)
         .filter(Plugin.type == plugin_type)
         .filter(PluginInstance.project_id == project_id)
         .filter(PluginInstance.enabled == True)  # noqa
@@ -68,43 +76,68 @@ def get_active_instance(
 def get_active_instances(
     *, db_session: Session, plugin_type: str, project_id=None
 ) -> Optional[PluginInstance]:
-    """Fetches the current active plugin for the given type."""
-    return (
+    """Fetches all active plugins for the given type."""
+    # Use the same approach as get_active_instance
+    plugin_table = Plugin.__table__
+    plugin_instance_table = PluginInstance.__table__
+
+    stmt = (
         db_session.query(PluginInstance)
-        .join(Plugin)
-        .filter(Plugin.type == plugin_type)
-        .filter(PluginInstance.project_id == project_id)
-        .filter(PluginInstance.enabled == True)  # noqa
-        .all()
+        .select_from(plugin_instance_table)
+        .join(
+            plugin_table,
+            plugin_instance_table.c.plugin_id == plugin_table.c.id
+        )
+        .filter(plugin_table.c.type == plugin_type)
+        .filter(plugin_instance_table.c.project_id == project_id)
+        .filter(plugin_instance_table.c.enabled == True)  # noqa
     )
+
+    return stmt.all()
 
 
 def get_active_instance_by_slug(
     *, db_session: Session, slug: str, project_id: int | None = None
 ) -> Optional[PluginInstance]:
     """Fetches the current active plugin for the given type."""
-    return (
+    plugin_table = Plugin.__table__
+    plugin_instance_table = PluginInstance.__table__
+
+    stmt = (
         db_session.query(PluginInstance)
-        .join(Plugin)
-        .filter(Plugin.slug == slug)
-        .filter(PluginInstance.project_id == project_id)
-        .filter(PluginInstance.enabled == True)  # noqa
-        .one_or_none()
+        .select_from(plugin_instance_table)
+        .join(
+            plugin_table,
+            plugin_instance_table.c.plugin_id == plugin_table.c.id
+        )
+        .filter(plugin_table.c.slug == slug)
+        .filter(plugin_instance_table.c.project_id == project_id)
+        .filter(plugin_instance_table.c.enabled == True)  # noqa
     )
+
+    return stmt.one_or_none()
 
 
 def get_enabled_instances_by_type(
     *, db_session: Session, project_id: int, plugin_type: str
 ) -> List[Optional[PluginInstance]]:
     """Fetches all enabled plugins for a given type."""
-    return (
+    plugin_table = Plugin.__table__
+    plugin_instance_table = PluginInstance.__table__
+
+    stmt = (
         db_session.query(PluginInstance)
-        .join(Plugin)
-        .filter(Plugin.type == plugin_type)
-        .filter(PluginInstance.project_id == project_id)
-        .filter(PluginInstance.enabled == True)  # noqa
-        .all()
+        .select_from(plugin_instance_table)
+        .join(
+            plugin_table,
+            plugin_instance_table.c.plugin_id == plugin_table.c.id
+        )
+        .filter(plugin_table.c.type == plugin_type)
+        .filter(plugin_instance_table.c.project_id == project_id)
+        .filter(plugin_instance_table.c.enabled == True)  # noqa
     )
+
+    return stmt.all()
 
 
 def create_instance(

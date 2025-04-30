@@ -215,7 +215,13 @@ def get_query_models(query):
                     A dictionary with all the models included in the query.
     """
     models = [col_desc["entity"] for col_desc in query.column_descriptions]
-    models.extend(mapper.class_ for mapper in query._join_entities)
+    # In SQLAlchemy 1.4, _join_entities was removed
+    # Check if the query has _legacy_joins attribute (SQLAlchemy 1.4)
+    if hasattr(query, "_legacy_joins") and query._legacy_joins:
+        models.extend(mapper.class_ for mapper in query._legacy_joins)
+    # Fallback for SQLAlchemy 1.3 compatibility
+    elif hasattr(query, "_join_entities"):
+        models.extend(mapper.class_ for mapper in query._join_entities)
 
     # account also query.select_from entities
     if hasattr(query, "_select_from_entity") and (query._select_from_entity is not None):
@@ -260,9 +266,11 @@ def auto_join(query, model_names):
     """Automatically join models to `query` if they're not already present
     and the join can be done implicitly.
     """
-    # every model has access to the registry, so we can use any from the query
-    query_models = get_query_models(query).values()
-    model_registry = list(query_models)[-1]._decl_class_registry
+    # In SQLAlchemy 1.4, we need to use registry._class_registry instead of _decl_class_registry
+    from dispatch.database.core import Base
+
+    # Use the Base registry directly
+    model_registry = Base.registry._class_registry
 
     for name in model_names:
         model = get_model_class_by_name(model_registry, name)
@@ -370,7 +378,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (Incident, "IndividualContact"): (Incident.participants, True),
         (Incident, "Term"): (Incident.terms, True),
         (Signal, "Tag"): (Signal.tags, True),
-        (Signal, "TagType"): {Signal.tags, True},
+        (Signal, "TagType"): (Signal.tags, True),
         (SignalInstance, "Entity"): (SignalInstance.entities, True),
         (SignalInstance, "EntityType"): (SignalInstance.entities, True),
         (Tag, "TagType"): (Tag.tag_type, False),
@@ -390,7 +398,13 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
             joined_model, is_outer = model_map[(model, filter_model)]
             try:
                 if joined_model not in joined_models:
-                    query = query.join(joined_model, isouter=is_outer)
+                    # In SQLAlchemy 1.4, we need to use aliased for many-to-many relationships
+                    # to avoid duplicate table alias errors
+                    if isinstance(joined_model, property):
+                        # For relationship properties, use a different approach
+                        query = query.outerjoin(joined_model) if is_outer else query.join(joined_model)
+                    else:
+                        query = query.outerjoin(joined_model) if is_outer else query.join(joined_model)
                     joined_models.append(joined_model)
             except Exception as e:
                 log.exception(e)

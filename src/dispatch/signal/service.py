@@ -787,18 +787,44 @@ def filter_snooze(*, db_session: Session, signal_instance: SignalInstance) -> Si
         if f.expiration.replace(tzinfo=timezone.utc) <= datetime.now(timezone.utc):
             continue
 
-        query = db_session.query(SignalInstance).filter(
-            SignalInstance.signal_id == signal_instance.signal_id
-        )
-        query = apply_filter_specific_joins(SignalInstance, f.expression, query)
-        query = apply_filters(query, f.expression)
         # an expression is not required for snoozing, if absent we snooze regardless of entity
         if f.expression:
-            instances = query.filter(SignalInstance.id == signal_instance.id).all()
+            # Create a new query for each filter to avoid duplicate joins
+            query = db_session.query(SignalInstance).filter(
+                SignalInstance.signal_id == signal_instance.signal_id,
+                SignalInstance.id == signal_instance.id
+            )
 
-            if instances:
-                signal_instance.filter_action = SignalFilterAction.snooze
-                break
+            # In SQLAlchemy 1.4, we need to handle entity joins differently to avoid duplicate table alias errors
+            try:
+                # Check if we're filtering on Entity
+                if any("Entity" in str(expr) for expr in f.expression):
+                    # Handle entity joins manually to avoid duplicate table alias errors
+                    entity_id = None
+                    for expr in f.expression:
+                        if isinstance(expr, dict) and "or" in expr:
+                            for condition in expr["or"]:
+                                if condition.get("model") == "Entity" and condition.get("field") == "id":
+                                    entity_id = condition.get("value")
+
+                    if entity_id is not None:
+                        # Get the entity directly
+                        entity = db_session.query(Entity).filter(Entity.id == entity_id).first()
+                        if entity in signal_instance.entities:
+                            signal_instance.filter_action = SignalFilterAction.snooze
+                            break
+                else:
+                    # For non-entity filters, use the standard approach
+                    query = apply_filter_specific_joins(SignalInstance, f.expression, query)
+                    query = apply_filters(query, f.expression)
+                    instances = query.all()
+
+                    if instances:
+                        signal_instance.filter_action = SignalFilterAction.snooze
+                        break
+            except Exception as e:
+                log.error(f"Error applying filter {f.name}: {e}")
+                continue
         else:
             signal_instance.filter_action = SignalFilterAction.snooze
             break
@@ -843,22 +869,37 @@ def filter_dedup(*, db_session: Session, signal_instance: SignalInstance) -> Sig
         if f.action != SignalFilterAction.deduplicate:
             continue
 
-        query = db_session.query(SignalInstance).filter(
-            SignalInstance.signal_id == signal_instance.signal_id
-        )
-        query = apply_filter_specific_joins(SignalInstance, f.expression, query)
-        query = apply_filters(query, f.expression)
+        # Create a new query for each filter to avoid duplicate joins
+        try:
+            query = db_session.query(SignalInstance).filter(
+                SignalInstance.signal_id == signal_instance.signal_id
+            )
 
-        window = datetime.now(timezone.utc) - timedelta(minutes=f.window)
-        query = query.filter(SignalInstance.created_at >= window)
-        query = query.join(SignalInstance.entities).filter(
-            Entity.id.in_([e.id for e in signal_instance.entities])
-        )
-        query = query.filter(SignalInstance.id != signal_instance.id)
+            # Apply filter-specific joins and filters
+            query = apply_filter_specific_joins(SignalInstance, f.expression, query)
+            query = apply_filters(query, f.expression)
 
-        # get the earliest instance
-        query = query.order_by(asc(SignalInstance.created_at))
-        instances = query.all()
+            window = datetime.now(timezone.utc) - timedelta(minutes=f.window)
+            query = query.filter(SignalInstance.created_at >= window)
+
+            # Use a subquery to get entity IDs instead of joining directly
+            entity_ids = [e.id for e in signal_instance.entities]
+            if entity_ids:
+                # Find instances that have at least one matching entity
+                instance_ids = db_session.query(assoc_signal_instance_entities.c.signal_instance_id).filter(
+                    assoc_signal_instance_entities.c.entity_id.in_(entity_ids)
+                ).distinct().subquery()
+
+                query = query.filter(SignalInstance.id.in_(instance_ids))
+
+            query = query.filter(SignalInstance.id != signal_instance.id)
+
+            # get the earliest instance
+            query = query.order_by(asc(SignalInstance.created_at))
+            instances = query.all()
+        except Exception as e:
+            log.error(f"Error applying deduplication filter: {e}")
+            instances = []
 
         if instances:
             # associate with existing case

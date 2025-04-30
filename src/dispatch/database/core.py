@@ -76,7 +76,23 @@ engine = create_db_engine(
 #         logger.warning("Slow Query (%.2fs): %s", total, statement)
 
 
-SessionLocal = sessionmaker(bind=engine)
+# Create a session factory with schema translation map
+def get_schema_engine():
+    """Get an engine with schema translation map."""
+    # In SQLAlchemy 1.4, schema translation is handled differently
+    # We need to ensure all schema names are properly mapped
+    return engine.execution_options(
+        schema_translate_map={
+            None: "dispatch_organization_default",
+            "dispatch_core": "dispatch_core",
+            # Add any other schemas that might be referenced in SQL queries
+            "dispatch_organization_default": "dispatch_organization_default",
+        }
+    )
+
+
+# Use the schema engine for SessionLocal
+SessionLocal = sessionmaker(bind=get_schema_engine())
 
 
 def resolve_table_name(name):
@@ -177,7 +193,7 @@ def get_class_by_tablename(table_fullname: str) -> Any:
     """Return class reference mapped to table."""
 
     def _find_class(name):
-        for c in Base._decl_class_registry.values():
+        for c in Base.registry._class_registry.values():
             if hasattr(c, "__table__"):
                 if c.__table__.fullname.lower() == name.lower():
                     return c
@@ -235,6 +251,7 @@ def refetch_db_session(organization_slug: str) -> Session:
     schema_engine = engine.execution_options(
         schema_translate_map={
             None: f"dispatch_organization_{organization_slug}",
+            "dispatch_core": "dispatch_core",
         }
     )
     session = sessionmaker(bind=schema_engine)()
@@ -247,7 +264,13 @@ def refetch_db_session(organization_slug: str) -> Session:
 @contextmanager
 def get_session() -> Session:
     """Context manager to ensure the session is closed after use."""
-    session = SessionLocal()
+    schema_engine = engine.execution_options(
+        schema_translate_map={
+            None: "dispatch_organization_default",
+            "dispatch_core": "dispatch_core",
+        }
+    )
+    session = sessionmaker(bind=schema_engine)()
     session_id = SessionTracker.track_session(session, context="context_manager")
     try:
         yield session
@@ -263,7 +286,16 @@ def get_session() -> Session:
 @contextmanager
 def get_organization_session(organization_slug: str) -> Session:
     """Context manager to ensure the organization session is closed after use."""
-    session = refetch_db_session(organization_slug)
+    schema_engine = engine.execution_options(
+        schema_translate_map={
+            None: f"dispatch_organization_{organization_slug}",
+            "dispatch_core": "dispatch_core",
+        }
+    )
+    session = sessionmaker(bind=schema_engine)()
+    session._dispatch_session_id = SessionTracker.track_session(
+        session, context=f"organization_{organization_slug}"
+    )
     try:
         yield session
         session.commit()

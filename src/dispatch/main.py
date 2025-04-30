@@ -132,9 +132,11 @@ async def db_session_middleware(request: Request, call_next):
             )
 
         # add correct schema mapping depending on the request
+        # Include dispatch_core schema in the translation map for SQLAlchemy 1.4 compatibility
         schema_engine = engine.execution_options(
             schema_translate_map={
                 None: schema,
+                "dispatch_core": "dispatch_core",
             }
         )
 
