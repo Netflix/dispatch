@@ -38,6 +38,7 @@ class Project(Base):
     dispatch_user_project = relationship(
         "DispatchUserProject",
         cascade="all, delete-orphan",
+        overlaps="users"
     )
 
     display_name = Column(String, nullable=False, server_default="")
