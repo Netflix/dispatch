@@ -674,7 +674,22 @@ def search_filter_sort_paginate(
 
         if sort_by:
             sort_spec = create_sort_spec(model, sort_by, descending)
-            query = apply_sort(query, sort_spec)
+
+            # Fix for duplicate table alias issue when sorting
+            # Instead of using apply_sort which would auto-join tables that might already be joined,
+            # we'll manually apply the sorting without additional joins
+            from sqlalchemy_filters.sorting import Sort
+
+            sorts = [Sort(item) for item in sort_spec]
+            default_model = get_default_model(query)
+
+            # Skip auto_join since tables are already joined by apply_filter_specific_joins
+            sqlalchemy_sorts = [
+                sort.format_for_sqlalchemy(query, default_model) for sort in sorts
+            ]
+
+            if sqlalchemy_sorts:
+                query = query.order_by(*sqlalchemy_sorts)
 
     except FieldNotFound as e:
         raise ValidationError(
