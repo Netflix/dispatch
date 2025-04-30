@@ -394,32 +394,34 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         model_map.update({(Case, "IndividualContact"): (Case.assignee, True)})
 
     filter_models = get_named_models(filters)
-    joined_models = []
+    joined_tables = set()  # Track tables that have been joined by name
     table_join_counts = {}  # Track how many times each table has been joined
 
     for filter_model in filter_models:
         if model_map.get((model, filter_model)):
             joined_model, is_outer = model_map[(model, filter_model)]
             try:
-                if joined_model not in joined_models:
-                    # In SQLAlchemy 1.4, we need to use aliased for many-to-many relationships
-                    # to avoid duplicate table alias errors
-                    if isinstance(joined_model, property):
-                        # For relationship properties, use a different approach
+                # Get the table name for the model
+                table_name = getattr(joined_model, "__tablename__", str(joined_model))
+
+                # In SQLAlchemy 1.4, we need to use aliased for many-to-many relationships
+                # to avoid duplicate table alias errors
+                if isinstance(joined_model, property):
+                    # For relationship properties, use a different approach
+                    if table_name not in joined_tables:
                         query = query.outerjoin(joined_model) if is_outer else query.join(joined_model)
+                        joined_tables.add(table_name)
+                else:
+                    # Check if we need to use an alias (for tables that might be joined multiple times)
+                    table_join_counts[table_name] = table_join_counts.get(table_name, 0) + 1
+
+                    if table_name in joined_tables:
+                        # Create an alias for subsequent joins of the same table
+                        aliased_model = aliased(joined_model, name=f"{table_name}_{table_join_counts[table_name]}")
+                        query = query.outerjoin(aliased_model) if is_outer else query.join(aliased_model)
                     else:
-                        # Check if we need to use an alias (for tables that might be joined multiple times)
-                        table_name = getattr(joined_model, "__tablename__", str(joined_model))
-                        table_join_counts[table_name] = table_join_counts.get(table_name, 0) + 1
-
-                        if table_join_counts[table_name] > 1:
-                            # Create an alias for subsequent joins of the same table
-                            aliased_model = aliased(joined_model, name=f"{table_name}_{table_join_counts[table_name]}")
-                            query = query.outerjoin(aliased_model) if is_outer else query.join(aliased_model)
-                        else:
-                            query = query.outerjoin(joined_model) if is_outer else query.join(joined_model)
-
-                    joined_models.append(joined_model)
+                        query = query.outerjoin(joined_model) if is_outer else query.join(joined_model)
+                        joined_tables.add(table_name)
             except Exception as e:
                 log.exception(e)
 
