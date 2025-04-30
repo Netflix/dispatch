@@ -34,7 +34,7 @@ def test_duplicate_table_joins(session):
     filter_spec = {
         "and": [
             {"or": [{"model": "TestTagType", "field": "name", "op": "==", "value": "type1"}]},
-            {"or": [{"model": "TestTagType", "field": "name", "op": "==", "value": "type2"}]}
+            {"or": [{"model": "TestTagType", "field": "name", "op": "==", "value": "type2"}]},
         ]
     }
 
