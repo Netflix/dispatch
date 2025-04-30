@@ -413,10 +413,9 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
                         joined_tables.add(table_name)
                 else:
                     # Check if we need to use an alias (for tables that might be joined multiple times)
-                    table_join_counts[table_name] = table_join_counts.get(table_name, 0) + 1
-
                     if table_name in joined_tables:
                         # Create an alias for subsequent joins of the same table
+                        table_join_counts[table_name] = table_join_counts.get(table_name, 0) + 1
                         aliased_model = aliased(joined_model, name=f"{table_name}_{table_join_counts[table_name]}")
                         query = query.outerjoin(aliased_model) if is_outer else query.join(aliased_model)
                     else:
