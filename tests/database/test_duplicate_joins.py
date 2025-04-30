@@ -39,7 +39,7 @@ def test_duplicate_table_joins(session):
     }
 
     # Define our model map for the test
-    model_map = {
+    model_map = { # noqa
         (TestTag, "TestTagType"): (TestTag.tag_type, False),
     }
 
