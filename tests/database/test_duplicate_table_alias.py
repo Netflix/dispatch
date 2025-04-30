@@ -2,7 +2,6 @@ import pytest
 import json
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
-from sqlalchemy.exc import ProgrammingError
 
 from dispatch.database.core import Base
 from dispatch.database.service import search_filter_sort_paginate
@@ -43,7 +42,7 @@ def test_search_filter_sort_paginate_duplicate_alias(session, monkeypatch):
     filter_spec = {
         "and": [
             {"field": "discoverable", "op": "==", "value": "true"},
-            {"model": "TestTagType", "field": "discoverable_incident", "op": "==", "value": "true"}
+            {"model": "TestTagType", "field": "discoverable_incident", "op": "==", "value": "true"},
         ]
     }
 
@@ -52,7 +51,7 @@ def test_search_filter_sort_paginate_duplicate_alias(session, monkeypatch):
     descending = [False]
 
     # Mock the apply_filter_specific_joins function to track if it's called with the right parameters
-    original_apply_filter_specific_joins = None
+    original_apply_filter_specific_joins = None # noqa
 
     def mock_apply_filter_specific_joins(model, filter_spec, query):
         # This is where we'd expect to see the duplicate table alias error
@@ -83,7 +82,9 @@ def test_search_filter_sort_paginate_duplicate_alias(session, monkeypatch):
                 if table_name in joined_tables:
                     # Create an alias for the second join
                     aliased_model = aliased(joined_model)
-                    query = query.outerjoin(aliased_model) if is_outer else query.join(aliased_model)
+                    query = (
+                        query.outerjoin(aliased_model) if is_outer else query.join(aliased_model)
+                    )
                 else:
                     # First time joining this table
                     query = query.outerjoin(joined_model) if is_outer else query.join(joined_model)
@@ -92,7 +93,9 @@ def test_search_filter_sort_paginate_duplicate_alias(session, monkeypatch):
         return query
 
     # Replace the function with our mock
-    monkeypatch.setattr("dispatch.database.service.apply_filter_specific_joins", mock_apply_filter_specific_joins)
+    monkeypatch.setattr(
+        "dispatch.database.service.apply_filter_specific_joins", mock_apply_filter_specific_joins
+    )
 
     # This would fail with duplicate table alias error before our fix
     try:
@@ -101,7 +104,7 @@ def test_search_filter_sort_paginate_duplicate_alias(session, monkeypatch):
             model="TestTag",
             filter_spec=json.dumps(filter_spec),
             sort_by=sort_by,
-            descending=descending
+            descending=descending,
         )
 
         # If we get here, no exception was raised, which means our fix works
@@ -132,7 +135,7 @@ def test_search_filter_sort_paginate_duplicate_alias_in_filter(session, monkeypa
     filter_spec = {
         "and": [
             {"model": "TestTagType", "field": "name", "op": "==", "value": "test_type"},
-            {"model": "TestTagType", "field": "discoverable_incident", "op": "==", "value": "true"}
+            {"model": "TestTagType", "field": "discoverable_incident", "op": "==", "value": "true"},
         ]
     }
 
@@ -166,7 +169,9 @@ def test_search_filter_sort_paginate_duplicate_alias_in_filter(session, monkeypa
                 if table_name in joined_tables:
                     # Create an alias for the second join
                     aliased_model = aliased(joined_model)
-                    query = query.outerjoin(aliased_model) if is_outer else query.join(aliased_model)
+                    query = (
+                        query.outerjoin(aliased_model) if is_outer else query.join(aliased_model)
+                    )
                 else:
                     # First time joining this table
                     query = query.outerjoin(joined_model) if is_outer else query.join(joined_model)
@@ -175,14 +180,14 @@ def test_search_filter_sort_paginate_duplicate_alias_in_filter(session, monkeypa
         return query
 
     # Replace the function with our mock
-    monkeypatch.setattr("dispatch.database.service.apply_filter_specific_joins", mock_apply_filter_specific_joins)
+    monkeypatch.setattr(
+        "dispatch.database.service.apply_filter_specific_joins", mock_apply_filter_specific_joins
+    )
 
     # This would fail with duplicate table alias error before our fix
     try:
         result = search_filter_sort_paginate(
-            db_session=session,
-            model="TestTag",
-            filter_spec=json.dumps(filter_spec)
+            db_session=session, model="TestTag", filter_spec=json.dumps(filter_spec)
         )
 
         # If we get here, no exception was raised, which means our fix works

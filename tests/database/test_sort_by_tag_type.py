@@ -1,9 +1,5 @@
-import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, declarative_base
 
-from dispatch.database.core import Base
-from dispatch.database.service import create_sort_spec, apply_sort, search_filter_sort_paginate
+from dispatch.database.service import search_filter_sort_paginate
 from dispatch.tag.models import Tag
 from dispatch.tag_type.models import TagType
 
@@ -55,11 +51,7 @@ class TestSortByTagType:
         session.commit()
 
         # Test sorting by tag_type.name with a filter
-        filter_spec = {
-            "and": [
-                {"or": [{"field": "name", "op": "==", "value": "Tag 3"}]}
-            ]
-        }
+        filter_spec = {"and": [{"or": [{"field": "name", "op": "==", "value": "Tag 3"}]}]}
 
         result = search_filter_sort_paginate(
             db_session=session,
