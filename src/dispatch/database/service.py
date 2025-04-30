@@ -268,15 +268,31 @@ def auto_join(query, model_names):
     """
     # In SQLAlchemy 1.4, we need to use registry._class_registry instead of _decl_class_registry
     from dispatch.database.core import Base
+    from sqlalchemy.orm import aliased
 
     # Use the Base registry directly
     model_registry = Base.registry._class_registry
+
+    # Track joined tables by name to handle duplicate joins
+    joined_tables = set()
+    table_join_counts = {}
 
     for name in model_names:
         model = get_model_class_by_name(model_registry, name)
         if model not in get_query_models(query).values():
             try:
-                query = query.join(model)
+                # Get table name
+                table_name = getattr(model, "__tablename__", str(model))
+
+                # Check if we've already joined this table
+                if table_name in joined_tables:
+                    # Create an alias for subsequent joins of the same table
+                    table_join_counts[table_name] = table_join_counts.get(table_name, 0) + 1
+                    aliased_model = aliased(model, name=f"{table_name}_{table_join_counts[table_name]}")
+                    query = query.join(aliased_model)
+                else:
+                    query = query.join(model)
+                    joined_tables.add(table_name)
             except InvalidRequestError:
                 pass  # can't be autojoined
     return query
@@ -472,6 +488,9 @@ def create_sort_spec(model, sort_by, descending):
     """Creates sort_spec."""
     sort_spec = []
     if sort_by and descending:
+        # Track models used in sorting to handle duplicate joins
+        used_models = {}
+
         for field, direction in zip(sort_by, descending, strict=False):
             direction = "desc" if direction else "asc"
 
@@ -485,10 +504,19 @@ def create_sort_spec(model, sort_by, descending):
             # we have a complex field, we may need to join
             if "." in field:
                 complex_model, complex_field = field.split(".")[-2:]
+                model_name = get_model_name_by_tablename(complex_model)
+
+                # If this model has been used before for sorting, create an alias
+                if model_name in used_models:
+                    used_models[model_name] += 1
+                    # Add a suffix to the model name to ensure unique aliases
+                    model_name = f"{model_name}_sort_{used_models[model_name]}"
+                else:
+                    used_models[model_name] = 1
 
                 sort_spec.append(
                     {
-                        "model": get_model_name_by_tablename(complex_model),
+                        "model": model_name,
                         "field": complex_field,
                         "direction": direction,
                     }
