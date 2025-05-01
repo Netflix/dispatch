@@ -46,8 +46,8 @@
             <v-col cols="7" class="text-wrap">
               {{ event.description }}
               <transition-group name="slide" v-if="showDetails">
-                <template v-for="(value, key) in event.details">
-                  <v-card :key="key">
+                <template v-for="(value, key) in event.details" :key="key">
+                  <v-card>
                     <v-card-title class="text-subtitle-1">
                       {{ snakeToCamel(key) }}
                     </v-card-title>
