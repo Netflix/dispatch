@@ -760,19 +760,20 @@ def snooze_button_click(
 
     if entity_select_block:
         blocks.append(entity_select_block)
-        if case_url:
-            blocks.append(
-                Actions(
-                    elements=[
-                        Button(
-                            text="➕   Add entities",
-                            action_id="button-link",
-                            style="primary",
-                            url=case_url,
-                        )
-                    ]
-                ),
-            )
+
+    if case_url:
+        blocks.append(
+            Actions(
+                elements=[
+                    Button(
+                        text="➕   Add entities",
+                        action_id="button-link",
+                        style="primary",
+                        url=case_url,
+                    )
+                ]
+            ),
+        )
         blocks.append(
             Context(
                 elements=[
