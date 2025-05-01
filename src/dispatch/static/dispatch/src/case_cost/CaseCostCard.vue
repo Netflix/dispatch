@@ -72,7 +72,7 @@ export default {
   computed: {
     totalCost: function () {
       var totalCost = this.caseCosts.reduce(function (accumulator, item) {
-        if (item.case_cost_type.model_type == "New") {
+        if (item.case_cost_type?.model_type == "New") {
           return accumulator
         }
         return accumulator + item.amount
