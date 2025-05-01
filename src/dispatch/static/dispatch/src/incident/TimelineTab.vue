@@ -43,11 +43,11 @@
             <v-icon color="white" />
           </template>
           <v-row justify="space-between">
-            <v-col cols="7">
+            <v-col cols="7" class="text-wrap">
               {{ event.description }}
               <transition-group name="slide" v-if="showDetails">
-                <template v-for="(value, key) in event.details" :key="key">
-                  <v-card>
+                <template v-for="(value, key) in event.details">
+                  <v-card :key="key">
                     <v-card-title class="text-subtitle-1">
                       {{ snakeToCamel(key) }}
                     </v-card-title>
