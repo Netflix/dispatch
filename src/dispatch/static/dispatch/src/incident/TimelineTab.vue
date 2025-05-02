@@ -44,7 +44,7 @@
           </template>
           <v-row justify="space-between">
             <v-col cols="7">
-              {{ event.description }}
+              <span class="force-wrap">{{ event.description }}</span>
               <transition-group name="slide" v-if="showDetails">
                 <template v-for="(value, key) in event.details" :key="key">
                   <v-card>
