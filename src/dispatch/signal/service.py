@@ -815,7 +815,7 @@ def filter_snooze(*, db_session: Session, signal_instance: SignalInstance) -> Si
                             break
                 else:
                     # For non-entity filters, use the standard approach
-                    query = apply_filter_specific_joins(SignalInstance, f.expression, query)
+                    query, _ = apply_filter_specific_joins(SignalInstance, f.expression, query)
                     query = apply_filters(query, f.expression)
                     instances = query.all()
 
@@ -876,7 +876,7 @@ def filter_dedup(*, db_session: Session, signal_instance: SignalInstance) -> Sig
             )
 
             # Apply filter-specific joins and filters
-            query = apply_filter_specific_joins(SignalInstance, f.expression, query)
+            query, _ = apply_filter_specific_joins(SignalInstance, f.expression, query)
             query = apply_filters(query, f.expression)
 
             window = datetime.now(timezone.utc) - timedelta(minutes=f.window)
