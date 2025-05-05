@@ -4,7 +4,7 @@ from collections import namedtuple
 from collections.abc import Iterable
 from inspect import signature
 from itertools import chain
-from typing import Annotated, List
+from typing import Annotated
 
 from fastapi import Depends, Query
 from pydantic import BaseModel
@@ -14,10 +14,12 @@ from six import string_types
 from sortedcontainers import SortedSet
 from sqlalchemy import and_, desc, func, not_, or_, orm
 from sqlalchemy.exc import InvalidRequestError, ProgrammingError
+from sqlalchemy.orm import aliased
 from sqlalchemy.orm.mapper import Mapper
 from sqlalchemy_filters import apply_pagination, apply_sort
 from sqlalchemy_filters.exceptions import BadFilterFormat, FieldNotFound
 from sqlalchemy_filters.models import Field, get_model_from_spec
+from sqlalchemy_filters.sorting import Sort
 
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import CurrentUser, get_current_role
@@ -443,7 +445,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
     return query
 
 
-def composite_search(*, db_session, query_str: str, models: List[Base], current_user: DispatchUser):
+def composite_search(*, db_session, query_str: str, models: list, current_user: DispatchUser):
     """Perform a multi-table search based on the supplied query."""
     s = CompositeSearch(db_session, models)
     query = s.build_query(query_str, sort=True)
@@ -539,8 +541,8 @@ def common_parameters(
     items_per_page: int = Query(5, alias="itemsPerPage", gt=-2, lt=2147483647),
     query_str: QueryStr = Query(None, alias="q"),
     filter_spec: QueryStr = Query(None, alias="filter"),
-    sort_by: List[str] = Query([], alias="sortBy[]"),
-    descending: List[bool] = Query([], alias="descending[]"),
+    sort_by: list[str] = Query([], alias="sortBy[]"),
+    descending: list[bool] = Query([], alias="descending[]"),
     role: UserRoles = Depends(get_current_role),
 ):
     return {
@@ -557,12 +559,12 @@ def common_parameters(
 
 
 CommonParameters = Annotated[
-    dict[str, int | CurrentUser | DbSession | QueryStr | Json | List[str] | List[bool] | UserRoles],
+    dict[str, int | CurrentUser | DbSession | QueryStr | Json | list[str] | list[bool] | UserRoles],
     Depends(common_parameters),
 ]
 
 
-def has_filter_model(model: str, filter_spec: List[dict]):
+def has_filter_model(model: str, filter_spec: list[dict]):
     """Checks if the filter spec has a TagAll filter."""
 
     if isinstance(filter_spec, list):
@@ -577,11 +579,11 @@ def has_filter_model(model: str, filter_spec: List[dict]):
     return False
 
 
-def has_tag_all(filter_spec: List[dict]):
+def has_tag_all(filter_spec: list[dict]):
     return has_filter_model("TagAll", filter_spec)
 
 
-def has_not_case_type(filter_spec: List[dict]):
+def has_not_case_type(filter_spec: list[dict]):
     return has_filter_model("NotCaseType", filter_spec)
 
 
@@ -623,8 +625,8 @@ def search_filter_sort_paginate(
     filter_spec: str | dict | None = None,
     page: int = 1,
     items_per_page: int = 5,
-    sort_by: List[str] = None,
-    descending: List[bool] = None,
+    sort_by: list[str] = None,
+    descending: list[bool] = None,
     current_user: DispatchUser = None,
     role: UserRoles = UserRoles.member,
 ):
@@ -675,15 +677,35 @@ def search_filter_sort_paginate(
         if sort_by:
             sort_spec = create_sort_spec(model, sort_by, descending)
 
-            # Fix for duplicate table alias issue when sorting
-            # Instead of using apply_sort which would auto-join tables that might already be joined,
-            # we'll manually apply the sorting without additional joins
-            from sqlalchemy_filters.sorting import Sort
 
-            sorts = [Sort(item) for item in sort_spec]
+            # Track joined table names after filtering/joins
+            joined_tables = set()
+            # SQLAlchemy 1.4+: _join_entities is not always present, fallback to _legacy_joins if needed
+            join_entities = []
+            if hasattr(query, "_join_entities"):
+                join_entities = query._join_entities
+            elif hasattr(query, "_legacy_joins"):
+                join_entities = query._legacy_joins
+            for entity in join_entities:
+                if hasattr(entity, "__tablename__"):
+                    joined_tables.add(entity.__tablename__.lower())
+                elif hasattr(entity, "name"):
+                    joined_tables.add(entity.name.lower())
+
+            sorts = []
+            alias_map = {}
+            for item in sort_spec:
+                model_name = item["model"]
+                # Only alias if the table is already joined
+                if isinstance(model_name, str) and model_name.lower() in joined_tables:
+                    model_cls_to_alias = get_class_by_tablename(model_name)
+                    # Create a unique alias if not already present
+                    if model_name not in alias_map:
+                        alias_map[model_name] = aliased(model_cls_to_alias, name=f"{model_name}_sort")
+                    item["model"] = alias_map[model_name]
+                sorts.append(Sort(item))
+
             default_model = get_default_model(query)
-
-            # Skip auto_join since tables are already joined by apply_filter_specific_joins
             sqlalchemy_sorts = [
                 sort.format_for_sqlalchemy(query, default_model) for sort in sorts
             ]
