@@ -12,7 +12,7 @@ from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from pydantic.types import Json, constr
 from six import string_types
 from sortedcontainers import SortedSet
-from sqlalchemy import Table, and_, desc, func, not_, or_, orm, sql
+from sqlalchemy import Table, and_, desc, func, not_, or_, orm
 from sqlalchemy.exc import InvalidRequestError, ProgrammingError
 from sqlalchemy.orm import mapperlib, Query as SQLAlchemyQuery
 from sqlalchemy_filters import apply_pagination, apply_sort
@@ -399,7 +399,7 @@ def apply_filters(query, filter_spec, model_cls=None, do_auto_join=True):
     filter_models = get_named_models(filters)
 
     if do_auto_join:
-        query = auto_join(query, filter_models)
+        query = auto_join(query, *filter_models)
 
     sqlalchemy_filters = [filter.format_for_sqlalchemy(query, default_model) for filter in filters]
 
@@ -411,6 +411,7 @@ def apply_filters(query, filter_spec, model_cls=None, do_auto_join=True):
 
 def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query):
     """Applies any model specific implicitly joins."""
+    print(f"Applying filter specific joins for model: {model} and filter_spec: {filter_spec}")
     # this is required because by default sqlalchemy-filter's auto-join
     # knows nothing about how to join many-many relationships.
     model_map = {
@@ -443,9 +444,12 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (CaseSeverity, "Project"): (CaseSeverity.project, False),
         (CasePriority, "Project"): (CasePriority.project, False),
         (IndividualContact, "Project"): (IndividualContact.project, False),
+        (Case, "IndividualContact"): (Case.assignee, False),
+        (Case, "Assignee"): (Case.assignee, False),
         (Case, "Project"): (Case.project, False),
     }
     filters = build_filters(filter_spec)
+    print(f"Filters post build: {filters}")
 
     # Replace mapping if looking for commander
     if "Commander" in str(filter_spec):
@@ -454,6 +458,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         model_map.update({(Case, "IndividualContact"): (Case.assignee, True)})
 
     filter_models = get_named_models(filters)
+    print(f"Filter models: {filter_models}")
     joined_models = []
     for filter_model in filter_models:
         if model_map.get((model, filter_model)):
@@ -465,6 +470,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
             except Exception as e:
                 log.exception(e)
 
+    print(f"Query after filter specific joins: {query}")
     return query
 
 
