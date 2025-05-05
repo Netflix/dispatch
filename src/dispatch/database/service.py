@@ -444,7 +444,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (CaseSeverity, "Project"): (CaseSeverity.project, False),
         (CasePriority, "Project"): (CasePriority.project, False),
         (IndividualContact, "Project"): (IndividualContact.project, False),
-        (Case, "IndividualContact"): (Case.assignee, False),
+        (Case, "IndividualContact"): (Case.assignee, False), # noqa: F601
         (Case, "Assignee"): (Case.assignee, False),
         (Case, "Project"): (Case.project, False),
     }
