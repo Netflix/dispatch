@@ -270,7 +270,6 @@ def auto_join(query, model_names):
     """
     # In SQLAlchemy 1.4, we need to use registry._class_registry instead of _decl_class_registry
     from dispatch.database.core import Base
-    from sqlalchemy.orm import aliased
 
     # Use the Base registry directly
     model_registry = Base.registry._class_registry
@@ -373,8 +372,6 @@ def apply_filters(query, filter_spec, model_cls=None, do_auto_join=True):
 
 def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query):
     """Applies any model specific implicitly joins and returns an alias map."""
-    from sqlalchemy.orm import aliased
-
     model_map = {
         (Feedback, "Incident"): (Incident, False),
         (Feedback, "Case"): (Case, False),
