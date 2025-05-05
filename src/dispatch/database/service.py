@@ -676,20 +676,12 @@ def search_filter_sort_paginate(
                 # Special case: sorting on TagType.name
                 if model_name == "TagType" and field == "name":
                     TagTypeAlias = aliased(TagType, name="tag_type_sort")
-                    # Only join if not already joined
-                    already_joined = False
-                    join_entities = []
-                    if hasattr(query, "_join_entities"):
-                        join_entities = query._join_entities
-                    elif hasattr(query, "_legacy_joins"):
-                        join_entities = query._legacy_joins
-                    for entity in join_entities:
-                        if hasattr(entity, "name") and entity.name == "tag_type_sort":
-                            already_joined = True
-                            break
-                    if not already_joined:
+                    table_names = ["tag_type_sort", "tag_type"]
+                    if not is_table_or_alias_joined(query, table_names):
                         query = query.join(TagTypeAlias, Tag.tag_type)
-                    col = getattr(TagTypeAlias, field)
+                        col = getattr(TagTypeAlias, field)
+                    else:
+                        col = getattr(TagType, field)
                     manual_order_bys.append(col.desc() if direction == "desc" else col.asc())
                 else:
                     sorts.append(Sort(item))
@@ -777,3 +769,16 @@ def restricted_incident_type_filter(query: orm.Query, current_user: DispatchUser
     if current_user:
         query = query.filter(IncidentType.visibility == Visibility.open)
     return query
+
+
+# Helper function to check if a table or alias is already joined in the query
+def is_table_or_alias_joined(query, table_names: list[str]) -> bool:
+    join_entities = []
+    if hasattr(query, "_join_entities"):
+        join_entities = query._join_entities
+    elif hasattr(query, "_legacy_joins"):
+        join_entities = query._legacy_joins
+    for entity in join_entities:
+        if hasattr(entity, "name") and entity.name in table_names:
+            return True
+    return False
