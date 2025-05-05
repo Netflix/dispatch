@@ -372,9 +372,7 @@ def apply_filters(query, filter_spec, model_cls=None, do_auto_join=True):
 
 
 def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query):
-    """Applies any model specific implicitly joins."""
-    # this is required because by default sqlalchemy-filter's auto-join
-    # knows nothing about how to join many-many relationships.
+    """Applies any model specific implicitly joins and returns an alias map."""
     from sqlalchemy.orm import aliased
 
     model_map = {
@@ -405,44 +403,40 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
     }
     filters = build_filters(filter_spec)
 
-    # Replace mapping if looking for commander
     if "Commander" in str(filter_spec):
         model_map.update({(Incident, "IndividualContact"): (Incident.commander, True)})
     if "Assignee" in str(filter_spec):
         model_map.update({(Case, "IndividualContact"): (Case.assignee, True)})
 
     filter_models = get_named_models(filters)
-    joined_tables = set()  # Track tables that have been joined by name
-    table_join_counts = {}  # Track how many times each table has been joined
+    joined_tables = set()
+    table_join_counts = {}
+    alias_map = {}
 
     for filter_model in filter_models:
         if model_map.get((model, filter_model)):
             joined_model, is_outer = model_map[(model, filter_model)]
             try:
-                # Get the table name for the model
                 table_name = getattr(joined_model, "__tablename__", str(joined_model))
-
-                # In SQLAlchemy 1.4, we need to use aliased for many-to-many relationships
-                # to avoid duplicate table alias errors
                 if isinstance(joined_model, property):
-                    # For relationship properties, use a different approach
                     if table_name not in joined_tables:
                         query = query.outerjoin(joined_model) if is_outer else query.join(joined_model)
                         joined_tables.add(table_name)
+                        alias_map[filter_model] = joined_model
                 else:
-                    # Check if we need to use an alias (for tables that might be joined multiple times)
                     if table_name in joined_tables:
-                        # Create an alias for subsequent joins of the same table
                         table_join_counts[table_name] = table_join_counts.get(table_name, 0) + 1
                         aliased_model = aliased(joined_model, name=f"{table_name}_{table_join_counts[table_name]}")
                         query = query.outerjoin(aliased_model) if is_outer else query.join(aliased_model)
+                        alias_map[filter_model] = aliased_model
                     else:
                         query = query.outerjoin(joined_model) if is_outer else query.join(joined_model)
                         joined_tables.add(table_name)
+                        alias_map[filter_model] = joined_model
             except Exception as e:
                 log.exception(e)
 
-    return query
+    return query, alias_map
 
 
 def composite_search(*, db_session, query_str: str, models: list, current_user: DispatchUser):
@@ -643,14 +637,11 @@ def search_filter_sort_paginate(
         query_restricted = apply_model_specific_filters(model_cls, query, current_user, role)
 
         tag_all_filters = []
+        alias_map = {}
         if filter_spec:
-            # some functions pass filter_spec as dictionary such as auth/views.py/get_users
-            # but most come from API as seraialized JSON
             if isinstance(filter_spec, str):
                 filter_spec = json.loads(filter_spec)
-            query = apply_filter_specific_joins(model_cls, filter_spec, query)
-            # if the filter_spec has the TagAll filter, we need to split the query up
-            # and intersect all of the results
+            query, alias_map = apply_filter_specific_joins(model_cls, filter_spec, query)
             if has_not_case_type(filter_spec):
                 new_filter_spec = rebuild_filter_spec_for_not_case_type(filter_spec)
                 if new_filter_spec:
@@ -677,10 +668,8 @@ def search_filter_sort_paginate(
         if sort_by:
             sort_spec = create_sort_spec(model, sort_by, descending)
 
-
             # Track joined table names after filtering/joins
             joined_tables = set()
-            # SQLAlchemy 1.4+: _join_entities is not always present, fallback to _legacy_joins if needed
             join_entities = []
             if hasattr(query, "_join_entities"):
                 join_entities = query._join_entities
@@ -693,15 +682,10 @@ def search_filter_sort_paginate(
                     joined_tables.add(entity.name.lower())
 
             sorts = []
-            alias_map = {}
             for item in sort_spec:
                 model_name = item["model"]
-                # Only alias if the table is already joined
-                if isinstance(model_name, str) and model_name.lower() in joined_tables:
-                    model_cls_to_alias = get_class_by_tablename(model_name)
-                    # Create a unique alias if not already present
-                    if model_name not in alias_map:
-                        alias_map[model_name] = aliased(model_cls_to_alias, name=f"{model_name}_sort")
+                # Use the alias if it exists in alias_map
+                if model_name in alias_map:
                     item["model"] = alias_map[model_name]
                 sorts.append(Sort(item))
 
