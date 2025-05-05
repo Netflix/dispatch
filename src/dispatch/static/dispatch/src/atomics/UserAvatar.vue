@@ -35,7 +35,15 @@ const props = defineProps({
     type: String,
     default: "white",
   },
+  // New prop to force gradient in specific component instances
+  forceGradient: {
+    type: Boolean,
+    default: false,
+  },
 })
+
+// Check if we should force gradient display from environment variable
+const forceGradientFromEnv = import.meta.env.VITE_DISPATCH_FORCE_AVATAR_GRADIENT === "true"
 
 // Generate a color gradient based on the user's name
 const getAvatarGradient = (name) => {
@@ -60,8 +68,12 @@ const getAvatarUrlFromEmail = (email) => {
     const avatarTemplate = import.meta.env.VITE_DISPATCH_AVATAR_TEMPLATE || "/avatar/*/128x128.jpg"
     // Use a regular expression with the global flag to replace all occurrences of "*"
     const stem = avatarTemplate.replace(/\*/g, userId)
-    const loc = `${window.location.protocol}//${window.location.host}${stem}`
-    return loc
+
+    // Use the base URL from environment variable if available, otherwise use window.location
+    const envBaseUrl = import.meta.env.VITE_DISPATCH_AVATAR_BASE_URL
+    const defaultBaseUrl = `${window.location.protocol}//${window.location.host}`
+    const baseUrl = envBaseUrl || defaultBaseUrl
+    return `${baseUrl}${stem}`
   }
 
   return ""
@@ -76,7 +88,16 @@ const effectiveImageUrl = computed(() => {
   return getAvatarUrlFromEmail(props.email)
 })
 
-const hasValidImage = computed(() => Boolean(effectiveImageUrl.value))
+// Check if we should show the image or the gradient
+const hasValidImage = computed(() => {
+  // If force gradient is enabled (either via prop or env var), always show gradient
+  if (props.forceGradient || forceGradientFromEnv) {
+    return false
+  }
+
+  // Otherwise, check if we have a URL
+  return Boolean(effectiveImageUrl.value)
+})
 
 // Get the tooltip text (use provided text or fall back to name)
 const displayTooltipText = computed(() => props.tooltipText || props.name)
