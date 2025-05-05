@@ -20,7 +20,11 @@
 
       <DTooltip text="View case participants" :hotkeys="['⌘', '⇧', 'P']">
         <template #activator="{ tooltip }">
-          <ParticipantAvatarGroup :participants="caseParticipants" class="pl-3" v-bind="tooltip" />
+          <ParticipantAvatarGroup
+            :participants="caseParticipants"
+            class="pl-3 d-flex align-center"
+            v-bind="tooltip"
+          />
         </template>
       </DTooltip>
       <DTooltip

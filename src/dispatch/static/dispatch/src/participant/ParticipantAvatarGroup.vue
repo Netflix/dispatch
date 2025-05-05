@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watch } from "vue"
 import { useHotKey } from "@/composables/useHotkey"
+import UserAvatar from "@/atomics/UserAvatar.vue"
 
 const props = defineProps({
   participants: {
@@ -67,19 +68,6 @@ const filteredParticipants = computed(() => {
   return orderedParticipants.value
 })
 
-const getAvatarGradient = (participant) => {
-  let hash = 5381
-  for (let i = 0; i < participant.length; i++) {
-    hash = ((hash << 5) + hash) ^ participant.charCodeAt(i) // Using XOR operator for better distribution
-  }
-
-  const hue = Math.abs(hash) % 360 // Ensure hue is a positive number
-  const fromColor = `hsl(${hue}, 95%, 50%)`
-  const toColor = `hsl(${(hue + 120) % 360}, 95%, 50%)` // Getting triadic color by adding 120 to hue
-
-  return `linear-gradient(${fromColor}, ${toColor})`
-}
-
 const toggleMenu = () => {
   menu.value = !menu.value
   if (!menu.value) {
@@ -98,7 +86,7 @@ const toggleMenu = () => {
       transition="false"
     >
       <template #activator="{ props: menuProps }">
-        <v-btn variant="text" v-bind="menuProps">
+        <v-btn variant="text" v-bind="menuProps" class="d-flex align-center justify-center pa-0">
           <!-- Display Visible Participants -->
           <div class="avatar-row">
             <!-- Display +n Avatar -->
@@ -112,10 +100,11 @@ const toggleMenu = () => {
               :key="index"
               class="avatar-container"
             >
-              <v-avatar
-                size="20px"
-                :style="{ background: getAvatarGradient(participant.individual.name) }"
-                v-on="on"
+              <UserAvatar
+                :name="participant.individual.name"
+                :email="participant.individual.email"
+                :size="20"
+                :border="false"
               />
             </div>
           </div>
@@ -134,10 +123,12 @@ const toggleMenu = () => {
             active-class="ma-4"
           >
             <template #prepend>
-              <v-avatar
-                class="mr-n2"
-                size="12px"
-                :style="{ background: getAvatarGradient(participant.individual.name) }"
+              <UserAvatar
+                :name="participant.individual.name"
+                :email="participant.individual.email"
+                :size="14"
+                :border="false"
+                class="mr-2"
               />
               <!-- <v-icon class="mr-n6 ml-n2" size="x-small" icon="mdi-account"></v-icon> -->
             </template>
@@ -157,7 +148,7 @@ const toggleMenu = () => {
 .avatar-row {
   display: flex;
   align-items: center;
-  justify-content: start;
+  justify-content: center;
   flex-direction: row-reverse;
   position: relative;
 }
@@ -167,6 +158,10 @@ const toggleMenu = () => {
   border-radius: 50%; /* Make the border circular */
   position: relative;
   margin-right: -5px; /* Adjust this value to change the overlapping amount */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* Ensure content doesn't overflow the circular container */
 }
 
 .extra-avatar {
@@ -176,6 +171,8 @@ const toggleMenu = () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 .hotkey {
