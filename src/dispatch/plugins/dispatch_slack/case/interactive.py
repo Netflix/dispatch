@@ -186,7 +186,7 @@ def handle_escalate_case_command(
             view=modal,
         )
 
-    default_title = case.name
+    default_title = case.title
     default_description = case.description
     default_project = {"text": case.project.display_name, "value": case.project.id}
 
