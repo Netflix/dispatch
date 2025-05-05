@@ -90,10 +90,8 @@ const fetchParticipantEmail = async (name) => {
     if (response.data.items.length > 0) {
       const individual = response.data.items[0]
       const email = individual.email || ""
-      console.log(`[DEBUG] Found email for ${name}: ${email}`)
       return email
     } else {
-      console.log(`[DEBUG] No individual found with name ${name}`)
       return ""
     }
   } catch (error) {
