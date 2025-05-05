@@ -12,16 +12,19 @@ from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from pydantic.types import Json, constr
 from six import string_types
 from sortedcontainers import SortedSet
-from sqlalchemy import and_, desc, func, not_, or_, orm
+from sqlalchemy import Table, and_, desc, func, not_, or_, orm, sql
 from sqlalchemy.exc import InvalidRequestError, ProgrammingError
-from sqlalchemy.orm.mapper import Mapper
+from sqlalchemy.orm import mapperlib, Query as SQLAlchemyQuery
 from sqlalchemy_filters import apply_pagination, apply_sort
 from sqlalchemy_filters.exceptions import BadFilterFormat, FieldNotFound
-from sqlalchemy_filters.models import Field, get_model_from_spec
+from sqlalchemy_filters.models import Field, BadQuery, BadSpec
 
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import CurrentUser, get_current_role
 from dispatch.case.models import Case
+from dispatch.case.type.models import CaseType
+from dispatch.case.severity.models import CaseSeverity
+from dispatch.case.priority.models import CasePriority
 from dispatch.data.query.models import Query as QueryModel
 from dispatch.data.source.models import Source
 from dispatch.database.core import DbSession
@@ -122,7 +125,7 @@ class Filter(object):
                 return {self.filter_spec["model"]}
         return set()
 
-    def format_for_sqlalchemy(self, query, default_model):
+    def format_for_sqlalchemy(self, query: SQLAlchemyQuery, default_model):
         filter_spec = self.filter_spec
         if filter_spec.get("model") in ["Participant", "Commander", "Assignee"]:
             filter_spec["model"] = "IndividualContact"
@@ -150,6 +153,44 @@ class Filter(object):
             return function(sqlalchemy_field, value)
 
 
+
+def get_model_from_spec(spec, query, default_model=None):
+    """Determine the model to which a spec applies on a given query.
+    A spec that does not specify a model may be applied to a query that
+    contains a single model. Otherwise the spec must specify the model to
+    which it applies, and that model must be present in the query.
+    :param query:
+        A :class:`sqlalchemy.orm.Query` instance.
+    :param spec:
+        A dictionary that may or may not contain a model name to resolve
+        against the query.
+    :returns:
+        A model instance.
+    :raise BadSpec:
+        If the spec is ambiguous or refers to a model not in the query.
+    :raise BadQuery:
+        If the query contains no models.
+    """
+    models = get_query_models(query)
+    if not models:
+        raise BadQuery("The query does not contain any models.")
+
+    model_name = spec.get("model")
+    if model_name is not None:
+        models = [v for (k, v) in models.items() if k == model_name]
+        if not models:
+            raise BadSpec(f"The query had models {models} does not contain model `{model_name}`.")
+        model = models[0]
+    else:
+        if len(models) == 1:
+            model = list(models.values())[0]
+        elif default_model is not None:
+            return default_model
+        else:
+            raise BadSpec("Ambiguous spec. Please specify a model.")
+
+    return model
+
 class BooleanFilter(object):
     def __init__(self, function, *filters):
         self.function = function
@@ -163,7 +204,7 @@ class BooleanFilter(object):
                 models.add(*named_models)
         return models
 
-    def format_for_sqlalchemy(self, query, default_model):
+    def format_for_sqlalchemy(self, query: SQLAlchemyQuery, default_model):
         return self.function(
             *[filter.format_for_sqlalchemy(query, default_model) for filter in self.filters]
         )
@@ -205,27 +246,44 @@ def build_filters(filter_spec):
     return [Filter(filter_spec)]
 
 
+def get_model_from_table(table: Table):  # pragma: nocover
+    """Resolve model class from table object"""
+
+    for registry in mapperlib._all_registries():
+        for mapper in registry.mappers:
+            if table in mapper.tables:
+                return mapper.class_
+    return None
+
+
 def get_query_models(query):
     """Get models from query.
 
     :param query:
-                    A :class:`sqlalchemy.orm.Query` instance.
+        A :class:`sqlalchemy.orm.Query` instance.
 
     :returns:
-                    A dictionary with all the models included in the query.
+        A dictionary with all the models included in the query.
     """
     models = [col_desc["entity"] for col_desc in query.column_descriptions]
-    models.extend(mapper.class_ for mapper in query._join_entities)
+
+    # account joined entities
+    try:
+        models.extend(mapper.class_ for mapper in query._compile_state()._join_entities)
+    except InvalidRequestError:
+        # query might not contain columns yet, hence cannot be compiled
+        # try to infer the models from various internals
+        for table_tuple in query._setup_joins + query._legacy_setup_joins:
+            model_class = get_model_from_table(table_tuple[0])
+            if model_class:
+                models.append(model_class)
 
     # account also query.select_from entities
-    if hasattr(query, "_select_from_entity") and (query._select_from_entity is not None):
-        model_class = (
-            query._select_from_entity.class_
-            if isinstance(query._select_from_entity, Mapper)  # sqlalchemy>=1.1
-            else query._select_from_entity  # sqlalchemy==1.0
-        )
-        if model_class not in models:
-            models.append(model_class)
+    model_class = None
+    if query._from_obj:
+        model_class = get_model_from_table(query._from_obj[0])
+    if model_class and (model_class not in models):
+        models.append(model_class)
 
     return {model.__name__: model for model in models}
 
@@ -256,19 +314,25 @@ def get_default_model(query):
     return default_model
 
 
-def auto_join(query, model_names):
+def auto_join(query, *model_names):
     """Automatically join models to `query` if they're not already present
     and the join can be done implicitly.
     """
     # every model has access to the registry, so we can use any from the query
     query_models = get_query_models(query).values()
-    model_registry = list(query_models)[-1]._decl_class_registry
+    last_model = list(query_models)[-1]
+    model_registry = last_model.registry._class_registry
 
     for name in model_names:
         model = get_model_class_by_name(model_registry, name)
-        if model not in get_query_models(query).values():
-            try:
-                query = query.join(model)
+        if model and (model not in get_query_models(query).values()):
+            try:  # pragma: nocover
+                # https://docs.sqlalchemy.org/en/14/changelog/migration_14.html
+                # Many Core and ORM statement objects now perform much of
+                # their construction and validation in the compile phase
+                tmp = query.join(model)
+                tmp._compile_state()
+                query = tmp
             except InvalidRequestError:
                 pass  # can't be autojoined
     return query
@@ -353,6 +417,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (Feedback, "Incident"): (Incident, False),
         (Feedback, "Case"): (Case, False),
         (Task, "Project"): (Incident, False),
+        (Tag, "Project"): (Tag.project, False),
         (Task, "Incident"): (Incident, False),
         (Task, "IncidentPriority"): (Incident, False),
         (Task, "IncidentType"): (Incident, False),
@@ -370,10 +435,15 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (Incident, "IndividualContact"): (Incident.participants, True),
         (Incident, "Term"): (Incident.terms, True),
         (Signal, "Tag"): (Signal.tags, True),
-        (Signal, "TagType"): {Signal.tags, True},
+        (Signal, "TagType"): (Signal.tags, True),
         (SignalInstance, "Entity"): (SignalInstance.entities, True),
         (SignalInstance, "EntityType"): (SignalInstance.entities, True),
         (Tag, "TagType"): (Tag.tag_type, False),
+        (CaseType, "Project"): (CaseType.project, False),
+        (CaseSeverity, "Project"): (CaseSeverity.project, False),
+        (CasePriority, "Project"): (CasePriority.project, False),
+        (IndividualContact, "Project"): (IndividualContact.project, False),
+        (Case, "Project"): (Case.project, False),
     }
     filters = build_filters(filter_spec)
 
