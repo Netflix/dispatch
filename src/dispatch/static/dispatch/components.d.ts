@@ -12,6 +12,7 @@ declare module '@vue/runtime-core' {
     AppDrawer: typeof import('./src/components/AppDrawer.vue')['default']
     AppToolbar: typeof import('./src/components/AppToolbar.vue')['default']
     AutoComplete: typeof import('./src/components/AutoComplete.vue')['default']
+    Avatar: typeof import('./src/components/Avatar.vue')['default']
     BaseCombobox: typeof import('./src/components/BaseCombobox.vue')['default']
     BasicLayout: typeof import('./src/components/layouts/BasicLayout.vue')['default']
     ColorPickerInput: typeof import('./src/components/ColorPickerInput.vue')['default']

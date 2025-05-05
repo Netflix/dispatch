@@ -4,6 +4,7 @@ import { useSavingState } from "@/composables/useSavingState"
 import IndividualApi from "@/individual/api"
 import Hotkey from "@/atomics/Hotkey.vue"
 import { useHotKey } from "@/composables/useHotkey"
+import UserAvatar from "@/atomics/UserAvatar.vue"
 
 import DTooltip from "@/components/DTooltip.vue"
 import type { Ref } from "vue"
@@ -24,11 +25,17 @@ const props = withDefaults(
   }
 )
 
+interface Participant {
+  name: string
+  email: string
+}
+
 const store = useStore()
 const { setSaving } = useSavingState()
 const menu: Ref<boolean> = ref(false)
-const participants: Ref<string[]> = ref([])
+const participants: Ref<Participant[]> = ref([])
 const selectedParticipant: Ref<string> = ref("")
+const selectedParticipantEmail: Ref<string> = ref("")
 const hoveredParticipant: Ref<string> = ref("")
 const searchQuery: Ref<string> = ref("")
 
@@ -40,7 +47,7 @@ useHotKey([props.hotkey], () => {
 
 const emit = defineEmits(["participant-selected"])
 
-// Fetch priorities
+// Fetch participants with their emails
 const fetchParticipants = async (query = "") => {
   try {
     const options = {
@@ -50,7 +57,10 @@ const fetchParticipants = async (query = "") => {
       itemsPerPage: 10,
     }
     const response = await IndividualApi.getAll(options)
-    participants.value = response.data.items.map((item: any) => item.name)
+    participants.value = response.data.items.map((item: any) => ({
+      name: item.name,
+      email: item.email || "",
+    }))
   } catch (error) {
     console.error("Error fetching participants:", error)
   }
@@ -64,8 +74,50 @@ watch(
   { immediate: true }
 )
 
-onMounted(() => {
-  fetchParticipants()
+// Fetch email for a specific participant by name
+const fetchParticipantEmail = async (name) => {
+  if (!name || name === "Select assignee" || name === "Select reporter") {
+    return ""
+  }
+
+  try {
+    console.log(`[DEBUG] Fetching email for participant: ${name}`)
+    const response = await IndividualApi.getAll({
+      filter: JSON.stringify([
+        { and: [{ model: "IndividualContact", field: "name", op: "==", value: name }] },
+      ]),
+    })
+
+    if (response.data.items.length > 0) {
+      const individual = response.data.items[0]
+      const email = individual.email || ""
+      console.log(`[DEBUG] Found email for ${name}: ${email}`)
+      return email
+    } else {
+      console.log(`[DEBUG] No individual found with name ${name}`)
+      return ""
+    }
+  } catch (error) {
+    console.error(`[DEBUG] Error fetching email for participant ${name}:`, error)
+    return ""
+  }
+}
+
+onMounted(async () => {
+  console.log(`[DEBUG] onMounted - Initial participant from props: ${props.participant}`)
+  await fetchParticipants()
+
+  // If we have an initial participant from props, fetch their email
+  if (
+    props.participant &&
+    props.participant !== "Select assignee" &&
+    props.participant !== "Select reporter"
+  ) {
+    console.log(`[DEBUG] Fetching email for initial participant: ${props.participant}`)
+    const email = await fetchParticipantEmail(props.participant)
+    selectedParticipantEmail.value = email
+    console.log(`[DEBUG] After fetch, selectedParticipantEmail: ${selectedParticipantEmail.value}`)
+  }
 })
 
 watch(selectedParticipant, async (newValue: string) => {
@@ -87,6 +139,9 @@ watch(selectedParticipant, async (newValue: string) => {
       console.error(`No individual found with name ${newValue}`)
       return
     }
+
+    // Update the selected participant email
+    selectedParticipantEmail.value = individual.email || ""
 
     // Get the case details from the Vuex store
     const caseDetails = store.state.case_management.selected
@@ -110,18 +165,27 @@ watch(selectedParticipant, async (newValue: string) => {
 
 watch(
   () => props.participant,
-  (newVal) => {
+  async (newVal) => {
+    console.log(`[DEBUG] props.participant changed to: ${newVal}`)
     if (newVal) {
       selectedParticipant.value = newVal
+
+      // Directly fetch the email for this participant
+      const email = await fetchParticipantEmail(newVal)
+      selectedParticipantEmail.value = email
+      console.log(`[DEBUG] Set selectedParticipantEmail to: ${email}`)
     } else {
       selectedParticipant.value = props.type === "assignee" ? "Select assignee" : "Select reporter"
+      selectedParticipantEmail.value = ""
+      console.log(`[DEBUG] Reset selectedParticipant and selectedParticipantEmail`)
     }
   },
   { immediate: true }
 )
 
-const selectParticipant = (participant: string) => {
-  selectedParticipant.value = participant
+const selectParticipant = (participant: Participant) => {
+  selectedParticipant.value = participant.name
+  selectedParticipantEmail.value = participant.email
   menu.value = false
 }
 
@@ -131,11 +195,13 @@ const filteredParticipants = computed(() => {
   // If searching, only include participants that match the query
   if (lowerCaseQuery) {
     const otherParticipants = participants.value
-      .filter((p) => p.toLowerCase().includes(lowerCaseQuery))
+      .filter((p) => p.name.toLowerCase().includes(lowerCaseQuery))
       .slice(0, 10)
 
     // Check if the selected participant matches the search query
-    const isSelectedParticipantIncluded = otherParticipants.includes(selectedParticipant.value)
+    const isSelectedParticipantIncluded = otherParticipants.some(
+      (p) => p.name === selectedParticipant.value
+    )
 
     // If not included, add to the top of the list
     if (
@@ -143,34 +209,36 @@ const filteredParticipants = computed(() => {
       !isSelectedParticipantIncluded &&
       selectedParticipant.value.toLowerCase().includes(lowerCaseQuery)
     ) {
-      otherParticipants.unshift(selectedParticipant.value)
+      otherParticipants.unshift({
+        name: selectedParticipant.value,
+        email: selectedParticipantEmail.value,
+      })
     }
 
     return otherParticipants
   }
 
   // If not searching, include all participants
-  const selectedParticipantItem = selectedParticipant.value ? [selectedParticipant.value] : []
+  const selectedParticipantItem = selectedParticipant.value
+    ? [
+        {
+          name: selectedParticipant.value,
+          email: selectedParticipantEmail.value,
+        },
+      ]
+    : []
+
   const otherParticipants = participants.value
-    .filter((p) => p !== selectedParticipant.value)
+    .filter((p) => p.name !== selectedParticipant.value)
     .slice(0, 9) // Adjust this number if you want more items in the list
 
   return [...selectedParticipantItem, ...otherParticipants]
 })
 
-// Function to generate a hue from a string
-const getAvatarGradient = (participant: string) => {
-  let hash = 5381
-  for (let i = 0; i < participant.length; i++) {
-    hash = ((hash << 5) + hash) ^ participant.charCodeAt(i) // Using XOR operator for better distribution
-  }
-
-  const hue = Math.abs(hash) % 360 // Ensure hue is a positive number
-  const fromColor = `hsl(${hue}, 95%, 50%)`
-  const toColor = `hsl(${(hue + 120) % 360}, 95%, 50%)` // Getting triadic color by adding 120 to hue
-
-  return `linear-gradient(${fromColor}, ${toColor})`
-}
+// Watch selectedParticipantEmail for changes
+watch(selectedParticipantEmail, (newVal) => {
+  console.log(`[DEBUG] selectedParticipantEmail changed to: ${newVal}`)
+})
 
 const toggleMenu = () => {
   menu.value = !menu.value
@@ -198,13 +266,14 @@ const toggleMenu = () => {
               v-bind="{ ...tooltip, ...menuProps }"
             >
               <template #prepend>
-                <v-avatar
+                <UserAvatar
                   v-if="
                     selectedParticipant !== 'Select assignee' &&
                     selectedParticipant !== 'Select reporter'
                   "
-                  size="14px"
-                  :style="{ background: getAvatarGradient(selectedParticipant) }"
+                  :name="selectedParticipant"
+                  :email="selectedParticipantEmail"
+                  :size="14"
                 />
                 <v-icon v-else size="14px">mdi-account-reactivate</v-icon>
                 <!-- Show icon if selectedParticipant is default -->
@@ -240,10 +309,10 @@ const toggleMenu = () => {
         <v-divider />
         <v-list lines="one">
           <v-list-item
-            v-for="(filteredParticipant, index) in filteredParticipants"
+            v-for="(participant, index) in filteredParticipants"
             :key="index"
-            @click="selectParticipant(filteredParticipant)"
-            @mouseover="hoveredParticipant = filteredParticipant"
+            @click="selectParticipant(participant)"
+            @mouseover="hoveredParticipant = participant.name"
             @mouseleave="hoveredParticipant = ''"
             density="compact"
             rounded="lg"
@@ -251,19 +320,19 @@ const toggleMenu = () => {
             active-class="ma-4"
           >
             <template #prepend>
-              <v-avatar
-                class="mr-n2"
-                size="12px"
-                :style="{ background: getAvatarGradient(filteredParticipant) }"
+              <UserAvatar
+                class="mr-2"
+                :name="participant.name"
+                :email="participant.email"
+                :size="12"
               />
-              <!-- <v-icon class="mr-n6 ml-n2" size="x-small" icon="mdi-account"></v-icon> -->
             </template>
             <v-list-item-title class="dispatch-text-title">
-              {{ filteredParticipant }}
+              {{ participant.name }}
             </v-list-item-title>
             <template #append>
               <v-icon
-                v-if="filteredParticipant === selectedParticipant"
+                v-if="participant.name === selectedParticipant"
                 class="ml-2"
                 size="x-small"
                 :color="hoveredParticipant === selectedParticipant ? 'black' : ''"

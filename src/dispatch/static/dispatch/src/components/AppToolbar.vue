@@ -58,22 +58,12 @@
         </v-menu>
       </v-btn>
       <v-btn icon size="large" variant="text">
-        <v-avatar size="30px" v-if="userAvatarUrl(currentUser())">
-          <v-img :src="userAvatarUrl(currentUser())" />
-        </v-avatar>
-        <v-avatar size="30px" v-else>
-          <v-icon>mdi-account-circle</v-icon>
-        </v-avatar>
+        <CurrentUserAvatar :size="30" />
         <v-menu activator="parent" width="400">
           <v-list class="pb-0">
             <v-list-item class="px-2">
               <template #prepend>
-                <v-avatar v-if="userAvatarUrl(currentUser())">
-                  <v-img :src="userAvatarUrl(currentUser())" />
-                </v-avatar>
-                <v-avatar v-else>
-                  <v-icon size="30px">mdi-account-circle</v-icon>
-                </v-avatar>
+                <CurrentUserAvatar :size="30" />
               </template>
 
               <v-list-item-title class="text-h6">
@@ -148,6 +138,7 @@ import { formatHash } from "@/filters"
 import OrganizationApi from "@/organization/api"
 import OrganizationCreateEditDialog from "@/organization/CreateEditDialog.vue"
 import UserApi from "@/auth/api"
+import CurrentUserAvatar from "@/atomics/CurrentUserAvatar.vue"
 
 export default {
   name: "AppToolbar",
@@ -161,6 +152,7 @@ export default {
   },
   components: {
     OrganizationCreateEditDialog,
+    CurrentUserAvatar,
   },
   computed: {
     queryString: {
