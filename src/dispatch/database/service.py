@@ -16,7 +16,7 @@ from sqlalchemy import and_, desc, func, not_, or_, orm
 from sqlalchemy.exc import InvalidRequestError, ProgrammingError
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm.mapper import Mapper
-from sqlalchemy_filters import apply_pagination, apply_sort
+from sqlalchemy_filters import apply_pagination
 from sqlalchemy_filters.exceptions import BadFilterFormat, FieldNotFound
 from sqlalchemy_filters.models import Field, get_model_from_spec
 from sqlalchemy_filters.sorting import Sort
