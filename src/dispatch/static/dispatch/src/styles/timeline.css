@@ -1,13 +1,13 @@
 .wavy-underline {
-    text-decoration: underline;
-    text-decoration-style: dotted;
-    text-decoration-color: silver;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 3px;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: silver;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
 }
 
 .pre-formatted {
-    white-space: pre;
+  white-space: pre;
 }
 
 .time-zone-notice {
@@ -121,6 +121,10 @@
   font-style: italic;
 }
 
-.signal-timeline{
+.signal-timeline {
   padding-bottom: 50px;
+}
+
+.force-wrap {
+  word-break: break-all;
 }
